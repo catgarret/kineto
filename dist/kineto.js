@@ -457,13 +457,18 @@ var Z = {
 	replay(e, t, n) {
 		let r = g(e), i = [];
 		Array.from(P).forEach((e) => {
-			e.name === t && Y(e, r) && (i.push({
-				el: e.sourceEl,
-				options: n || e.options
-			}), J(e, !0, !1));
+			e.name === t && Y(e, r) && i.push(e);
 		});
-		let a = i.map(({ el: e, options: n }) => this.create(t, e, n)).filter(Boolean);
-		return a.length <= 1 ? a[0] || null : a;
+		let a = [];
+		return i.forEach((e) => {
+			if (!n && typeof e.instance?.replay == "function") e.instance.replay(), a.push(e.instance);
+			else {
+				let r = e.sourceEl, i = n || e.options;
+				J(e, !0, !1);
+				let o = this.create(t, r, i);
+				o && a.push(o);
+			}
+		}), a.length <= 1 ? a[0] || null : a;
 	},
 	destroy(e) {
 		if (e) {
@@ -860,7 +865,9 @@ var de = {
 			ease: h,
 			stagger: t.stagger || void 0,
 			onStart: () => le(e, t),
-			onComplete: () => t.onComplete?.(e),
+			onComplete: () => t.onComplete?.(e)
+		}, _ = {
+			...g,
 			scrollTrigger: {
 				trigger: e,
 				start: t.start || "top 85%",
@@ -881,21 +888,25 @@ var de = {
 		d.forEach((e) => {
 			e.style.willChange = "transform,opacity,filter,clip-path";
 		});
-		let _ = n.fromTo(u, l, g);
+		let S = n.fromTo(u, l, _);
 		return {
 			el: e,
 			type: "reveal",
 			replay() {
-				_.restart();
+				n.fromTo(u, l, {
+					...g,
+					delay: 0,
+					overwrite: "auto"
+				});
 			},
 			pause() {
-				_.pause();
+				S.pause();
 			},
 			resume() {
-				_.resume();
+				S.resume();
 			},
 			destroy() {
-				_.scrollTrigger?.kill?.(), _.kill(), f.forEach((e) => e());
+				S.scrollTrigger?.kill?.(), S.kill(), f.forEach((e) => e());
 			}
 		};
 	},
@@ -3685,10 +3696,13 @@ var ot = {
 						let c = Math.hypot(e - D.xs[s], t - D.ys[s]), l = p(i + (1 - i) * Math.sqrt(Math.min(1, c / r)), i, 1);
 						D.scales[s] = f(D.scales[s] ?? 1, l, a), o.style.transform = `translate3d(${D.xs[s]}px,${D.ys[s]}px,0) scale(${D.scales[s].toFixed(3)})`, e = D.xs[s], t = D.ys[s];
 					});
-				} else n === "orbit" && (D.orbitCur = f(D.orbitCur, V ? D.orbitHoverRadius : D.orbitRadius, .12), D.squashCur = f(D.squashCur, V ? 1 : D.squash, .12), D.angles = D.angles.map((e) => e + D.orbitSpeed), D.nodes.forEach((e, t) => {
-					let n = F + D.orbitCur * Math.cos(D.angles[t]), r = I + D.orbitCur * Math.sin(D.angles[t]) * D.squashCur;
-					e.style.transform = `translate3d(${Math.round(n)}px,${Math.round(r)}px,0)`;
-				}));
+				} else if (n === "orbit") {
+					let e = (V ? D.orbitHoverRadius : D.orbitRadius) * (z ? s : 1);
+					D.orbitCur = f(D.orbitCur, e, z ? .28 : .12), D.squashCur = f(D.squashCur, V ? 1 : D.squash, .12), D.angles = D.angles.map((e) => e + D.orbitSpeed), D.nodes.forEach((e, t) => {
+						let n = F + D.orbitCur * Math.cos(D.angles[t]), r = I + D.orbitCur * Math.sin(D.angles[t]) * D.squashCur;
+						e.style.transform = `translate3d(${Math.round(n)}px,${Math.round(r)}px,0)`;
+					});
+				}
 				B = requestAnimationFrame(ce);
 			}
 		};

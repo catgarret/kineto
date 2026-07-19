@@ -450,8 +450,10 @@ export default {
           leadY = chain.ys[index];
         });
       } else if (type === 'orbit') {
-        // Ellipse → circle bloom on hover, eased for smoothness.
-        chain.orbitCur = lerp(chain.orbitCur, hoverTarget ? chain.orbitHoverRadius : chain.orbitRadius, 0.12);
+        // Ellipse → circle bloom on hover, eased for smoothness. Pressing
+        // contracts the ring by pressScale so a click on a target is felt.
+        const orbitBase = (hoverTarget ? chain.orbitHoverRadius : chain.orbitRadius) * (pressed ? pressScale : 1);
+        chain.orbitCur = lerp(chain.orbitCur, orbitBase, pressed ? 0.28 : 0.12);
         chain.squashCur = lerp(chain.squashCur, hoverTarget ? 1 : chain.squash, 0.12);
         chain.angles = chain.angles.map((angle) => angle + chain.orbitSpeed);
         chain.nodes.forEach((node, index) => {

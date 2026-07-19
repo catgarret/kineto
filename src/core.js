@@ -390,14 +390,27 @@ const Kineto = {
 
   replay(target, name, options) {
     const roots = q(target);
-    const previous = [];
+    const matched = [];
     Array.from(records).forEach((record) => {
-      if (record.name === name && matchesRoot(record, roots)) {
-        previous.push({ el: record.sourceEl, options: options || record.options });
+      if (record.name === name && matchesRoot(record, roots)) matched.push(record);
+    });
+    const results = [];
+    matched.forEach((record) => {
+      // Prefer the instance's own replay() when no new options are given: it plays
+      // the effect in place, which works even when the element is already on screen.
+      // Destroy + recreate builds a fresh ScrollTrigger that won't fire onEnter for
+      // an already-visible element, so the effect would stay stuck at its start.
+      if (!options && typeof record.instance?.replay === 'function') {
+        record.instance.replay();
+        results.push(record.instance);
+      } else {
+        const el = record.sourceEl;
+        const opts = options || record.options;
         removeRecord(record, true, false);
+        const inst = this.create(name, el, opts);
+        if (inst) results.push(inst);
       }
     });
-    const results = previous.map(({ el, options: opts }) => this.create(name, el, opts)).filter(Boolean);
     return results.length <= 1 ? (results[0] || null) : results;
   },
 

@@ -196,7 +196,7 @@ export default {
     const restores = targets.map((node) => snapshotAttributes(node, ['style', 'class']));
     const duration = Math.max(0, Number(opts.duration ?? 0.8));
     const ease = opts.ease || (opts.spring === true ? 'back.out(1.25)' : 'power3.out');
-    const to = {
+    const animateVars = {
       x: 0,
       y: 0,
       xPercent: 0,
@@ -213,7 +213,10 @@ export default {
       ease,
       stagger: opts.stagger || undefined,
       onStart: () => addClasses(el, opts),
-      onComplete: () => opts.onComplete?.(el),
+      onComplete: () => opts.onComplete?.(el)
+    };
+    const to = {
+      ...animateVars,
       scrollTrigger: {
         trigger: el,
         start: opts.start || 'top 85%',
@@ -236,7 +239,10 @@ export default {
     return {
       el,
       type: 'reveal',
-      replay() { tween.restart(); },
+      // Play the entrance now as a one-shot, independent of the scroll trigger —
+      // ScrollTrigger holds its own tween paused while the element is already in
+      // view, so tween.restart() alone would just snap back to the start state.
+      replay() { gsap.fromTo(target, from, { ...animateVars, delay: 0, overwrite: 'auto' }); },
       pause() { tween.pause(); },
       resume() { tween.resume(); },
       destroy() {

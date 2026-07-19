@@ -4,7 +4,9 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
 
 ## [0.8.8]
 
-- **Slider / Coverflow — true infinite loop**: `loop` now cycles seamlessly in both directions with no snap-back at the ends. Slides are rendered at their shortest distance around a ring (no cloned DOM nodes), so drag, buttons, keyboard and autoplay all wrap continuously.
+- **Fix — `replay()` now works for on-screen elements**: `Kineto.replay()` used to destroy and recreate the instance, which built a fresh ScrollTrigger that never fires `onEnter` for an element already in view — so reveal effects stayed frozen at their start (e.g. `wipe` showed a blank/white box, `class` hooks did nothing). Replay now calls the instance's own `replay()` in place, and reveal's replay plays the entrance as a one-shot independent of the scroll trigger.
+- **Slider / Coverflow — true infinite loop**: `loop` now cycles seamlessly in both directions with no snap-back at the ends. Slides are rendered at their shortest distance around a ring (no cloned DOM nodes), so drag, buttons, keyboard and autoplay all wrap continuously. `loop` stays an opt-in option (off by default).
+- **Cursor (orbit) — press feedback**: while the orbit ring is bloomed over a hover target, pressing now contracts it by `pressScale` so a click is felt.
 - **Lightbox — share no longer closes the viewer**: dismissing the native share sheet by clicking the page previously registered as a backdrop click and closed the lightbox; close is now suppressed while sharing (and briefly after).
 - **Demo — intro scroll lock restored**: scrolling is locked at the root while the intro is up, so lazy images loading in behind it no longer shift the layout and jolt the scroll position when the intro releases.
 - **Demo — no layout jank on overflow toggle**: `scrollbar-gutter: stable` reserves the scrollbar's width, so toggling `overflow:hidden` (intro, sitemap, lightbox) no longer changes the page width.
