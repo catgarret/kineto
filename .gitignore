@@ -13,3 +13,6 @@ tests/framework-qa/dist-iife/
 # 로컬 전용 배포 가이드 (GitHub/npm에 올리지 않음)
 PUBLISH-GUIDE.md
 VSCODE-GUIDE.md
+
+# tests는 저장소에서 제외(로컬 유지)
+tests/

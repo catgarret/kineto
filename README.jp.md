@@ -1,12 +1,12 @@
 <div align="center">
 
-<img src="logo.svg" width="72" height="72" alt="MotionKit">
+<img src="assets/logo.svg" width="72" height="72" alt="MotionKit">
 
 # MotionKit
 
 HTML属性または JavaScript API で制御するWebインタラクションツールキット
 
-[한국어](README.md) · [English](README.en.md) · 日本語
+[한국어](README.ko.md) · [English](README.md) · 日本語 · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [Italiano](README.it.md)
 
 [![npm](https://img.shields.io/npm/v/@dong-gri/motionkit.svg)](https://www.npmjs.com/package/@dong-gri/motionkit) [![license](https://img.shields.io/npm/l/@dong-gri/motionkit.svg)](LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/motionkit.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/motionkit)
 
