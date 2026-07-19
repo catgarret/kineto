@@ -2,6 +2,11 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.9]
+
+- **Counter (slot) — direction follows the count**: a decreasing counter (e.g. a 34,000 → 10,000 discount) now rolls its digits downward (new digits drop in from above), while an increasing counter still rolls upward. Previously every reel scrolled up regardless of direction.
+- **Demo — narrow-phone responsiveness**: the card grid drops to a single fluid column below 560px (the old `minmax(330px,…)` forced horizontal overflow that clipped cards and the overflow-text bar on iPhone-width screens), the overflow-text bar is now fluid, and the settings drawer gets a dedicated ≤480px layout (single-column controls, tighter gutters, wrapping header actions).
+
 ## [0.8.8]
 
 - **Fix — `replay()` now works for on-screen elements**: `Kineto.replay()` used to destroy and recreate the instance, which built a fresh ScrollTrigger that never fires `onEnter` for an element already in view — so reveal effects stayed frozen at their start (e.g. `wipe` showed a blank/white box, `class` hooks did nothing). Replay now calls the instance's own `replay()` in place, and reveal's replay plays the entrance as a one-shot independent of the scroll trigger.
