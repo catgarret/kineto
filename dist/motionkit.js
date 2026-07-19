@@ -352,7 +352,7 @@ function X() {
 	e.id = "motionkit-inline-fallback", e.textContent = "\n    @property --mk-angle { syntax: \"<angle>\"; initial-value: 0deg; inherits: false; }\n    @keyframes mk-border-spin { to { --mk-angle: 360deg; } }\n    @keyframes mk-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }\n    @keyframes mk-aurora { to { transform: rotate(360deg); } }\n    @keyframes mk-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }\n    @keyframes mk-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }\n    .mk-cursor-active, .mk-cursor-active * { cursor: none !important; }\n    .mk-cursor-scope, .mk-cursor-scope * { cursor: none !important; }\n    .mk-tw-caret { animation: mk-caret .8s step-end infinite; }\n    .mk-slide { position: relative; flex: 0 0 100%; min-width: 0; }\n    .mk-slider-wrap { position: relative; overflow: hidden; }\n    @media (prefers-reduced-motion: reduce) {\n      [data-mk-reveal], [data-mk-text-split], [data-mk-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }\n    }\n  ", document.head.appendChild(e);
 }
 var Z = {
-	version: "0.8.0",
+	version: "0.8.1",
 	get env() {
 		return H ||= u(), H;
 	},

@@ -1,5 +1,5 @@
 import { createElement, forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
-import MotionKit from 'motionkit';
+import MotionKit from '@dong-gri/motionkit';
 
 /**
  * React hook for one MotionKit module.

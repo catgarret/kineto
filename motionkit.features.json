@@ -1,7 +1,7 @@
 {
   "$schema": "./motionkit.features.schema.json",
   "contractVersion": "1.3.0",
-  "libraryVersion": "0.8.0",
+  "libraryVersion": "0.8.1",
   "moduleCount": 34,
   "modules": [
     {

@@ -1,4 +1,4 @@
-import MotionKit from 'motionkit';
+import MotionKit from '@dong-gri/motionkit';
 
 export function installMotionKit($) {
   if (!$?.fn) throw new TypeError('A jQuery-compatible instance is required.');

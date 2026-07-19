@@ -1,5 +1,5 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import MotionKit from 'motionkit';
+import MotionKit from '@dong-gri/motionkit';
 
 function normalizeBinding(binding) {
   if (typeof binding.value === 'string') return { type: binding.value, options: {} };

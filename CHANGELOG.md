@@ -2,6 +2,11 @@
 
 MotionKit follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.1]
+
+- **Fix: framework adapters resolve the scoped package.** The React, Vue, and jQuery adapters imported the core as `motionkit`; after the rename to `@dong-gri/motionkit` that no longer resolved, breaking adapter users on 0.8.0. They now import `@dong-gri/motionkit`.
+- Removed a stray duplicated `demo/motionKit/` directory from the package.
+
 ## [Unreleased]
 
 ### Added / Changed (release prep)

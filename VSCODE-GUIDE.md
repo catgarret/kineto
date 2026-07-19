@@ -156,6 +156,24 @@ git push --follow-tags
 
 ## 5. 자주 겪는 문제
 
+- `push`가 거부됨 — `! [rejected] main -> main (fetch first)` / `Updates were rejected because the remote contains work...`: 원격 저장소에 로컬에 없는 커밋(대개 저장소 생성 시 자동 만들어진 README/LICENSE)이 있어서입니다. 방금 만든 저장소라 로컬이 정본이면 원격을 덮어씁니다.
+
+  ```bash
+  git push -u origin main --force
+  ```
+
+  원격 파일도 남기고 합치려면:
+
+  ```bash
+  git pull origin main --allow-unrelated-histories --no-rebase
+  git add .
+  git commit -m "Merge remote"
+  git push -u origin main
+  ```
+
+- `no upstream branch`: 처음 푸시할 때 `git push -u origin main`으로 업스트림을 지정하면 이후에는 `git push`만으로 됩니다.
+
+
 - `npm publish`에서 402/403 오류: 스코프가 계정과 다르거나 로그인이 안 된 경우입니다. `npm whoami`로 확인하고 이름이 `@dong-gri/...`인지 보세요.
 - `You cannot publish over the previously published versions`: 버전을 올리지 않았습니다. `npm version patch` 후 다시 시도하세요.
 - CDN에 최신이 안 뜸: jsDelivr/unpkg는 버전별로 캐시합니다. 새 버전을 배포하면 새 버전 URL에서 즉시 반영됩니다. GitHub 직접 서빙(`/gh/...@main`)은 커밋 태그를 쓰는 편이 안정적입니다.
