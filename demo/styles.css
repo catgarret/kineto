@@ -16,7 +16,7 @@
     }
     *{box-sizing:border-box}
     html{scroll-behavior:auto;overflow-anchor:none;overflow-x:clip}
-    body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 var(--font-sans);overflow-anchor:none;-webkit-font-smoothing:antialiased;word-break:keep-all}
+    body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 var(--font-sans);overflow-anchor:none;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-x:clip;max-width:100%}
     button,a{font:inherit}
     ::selection{background:color-mix(in srgb,var(--accent) 24%,transparent)}
 
@@ -29,7 +29,7 @@
        ButtonText), so the brand text went invisible in dark mode — force it. */
     .brand{font-weight:900;letter-spacing:-.04em;display:inline-flex;align-items:center;gap:9px;background:none;border:0;padding:0;cursor:pointer;font-family:inherit;color:var(--text)}
     .brand-mark{width:20px;height:20px;flex:0 0 auto;border-radius:6px;display:block}
-    .header-actions{display:flex;gap:8px}
+    .header-actions{display:flex;gap:8px;align-items:center}
     .theme-switch{position:relative;display:inline-flex;align-items:center;justify-content:space-between;width:58px;height:30px;padding:0 7px;border:1px solid var(--line);border-radius:99px;background:var(--panel2);cursor:pointer;transition:border-color .18s ease,background-color .18s ease}
     .theme-switch svg,.theme-switch i{font-size:15px;line-height:1;position:relative;z-index:1;transition:color .18s ease,opacity .18s ease}
     /* 무채색: 현재 모드 쪽 아이콘만 진하게. 다크=달, 라이트=해 */
@@ -37,7 +37,7 @@
     .theme-switch .ts-moon{color:var(--text);opacity:1}
     html.light .theme-switch .ts-sun{color:var(--text);opacity:1}
     html.light .theme-switch .ts-moon{color:var(--muted);opacity:.45}
-    .ts-knob{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--panel);border:1px solid var(--line);box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .22s cubic-bezier(.3,.7,.3,1);transform:translateX(28px)}
+    .ts-knob{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:color-mix(in srgb,var(--text) 30%,var(--panel));border:1px solid color-mix(in srgb,var(--text) 22%,var(--line));box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .22s cubic-bezier(.3,.7,.3,1);transform:translateX(28px)}
     html.light .theme-switch .ts-knob{transform:translateX(0)}
     .theme-switch:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
     a.btn{text-decoration:none;display:inline-flex;align-items:center;gap:7px}
@@ -234,7 +234,8 @@
     .fp-slide:nth-child(even){background:color-mix(in srgb,var(--accent) 6%,transparent)}
     .fp-index{font:600 11px/1 var(--font-mono);color:var(--accent);letter-spacing:.14em}
     /* Fullpage + normal-scroll coexistence demo. */
-    .fp-scroll-host{height:300px;overflow-y:auto;border-radius:var(--r-stage) var(--r-stage) 0 0;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line) 55%,transparent);overscroll-behavior:contain;background:color-mix(in srgb,var(--accent) 5%,var(--panel))}
+    .fp-scroll-host{height:300px;overflow-y:auto;border-radius:var(--r-stage) var(--r-stage) 0 0;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line) 55%,transparent);overscroll-behavior:contain;background:color-mix(in srgb,var(--accent) 5%,var(--panel));scrollbar-width:none;-ms-overflow-style:none}
+    .fp-scroll-host::-webkit-scrollbar{width:0;height:0;display:none}
     .fp-scroll-host .fullpage-demo{height:300px;border-radius:var(--r-stage) var(--r-stage) 0 0;box-shadow:none}
     .fp-normal{display:flex;flex-direction:column;gap:6px;padding:28px;background:color-mix(in srgb,var(--accent) 6%,var(--panel))}
     .fp-normal strong{font-size:13px;font-weight:800;letter-spacing:-.01em}
@@ -267,3 +268,13 @@
 /* Phosphor icons in the demo chrome */
 .replay-fab i{font-size:15px;line-height:1;display:block}
 .btn i,.copy-chip i{font-size:14px;line-height:1;vertical-align:-2px;margin-right:5px}
+
+/* Mobile performance: backdrop-filter blur is repainted on every scroll and is
+   the biggest cause of jank/crashes on Android. Drop it on small screens and
+   use a more opaque solid background instead. */
+@media (max-width:1080px){
+  .site-header{backdrop-filter:none;-webkit-backdrop-filter:none;background:color-mix(in srgb,var(--bg) 94%,transparent)}
+  .side-nav{backdrop-filter:none;-webkit-backdrop-filter:none;background:color-mix(in srgb,var(--bg) 96%,transparent)}
+  .to-top{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--panel)}
+  .kt-progress-ring{backdrop-filter:none!important}
+}
