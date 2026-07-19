@@ -2,7 +2,7 @@
 
 ## 시작 전
 
-`OWNER_REQUIREMENTS.md`, `FEATURE_CONTRACT.md`, `AGENTS.md`, 영향을 받는 테스트를 먼저 읽습니다. 현재 공개 범위는 **32개 모듈·20개 Core API·46개 소유자 요구사항**이며, 기능명뿐 아니라 카테고리·variant 의미·공개 option·시각 동작도 계약입니다.
+`OWNER_REQUIREMENTS.md`, `FEATURE_CONTRACT.md`, `docs/AGENTS.md`, 영향을 받는 테스트를 먼저 읽습니다. 현재 공개 범위는 **32개 모듈·20개 Core API·46개 소유자 요구사항**이며, 기능명뿐 아니라 카테고리·variant 의미·공개 option·시각 동작도 계약입니다.
 
 ## 변경 원칙
 

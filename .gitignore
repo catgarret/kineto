@@ -9,3 +9,7 @@ tests/framework-qa/dist-iife/
 **/.DS_Store
 .vscode/
 .idea/
+
+# 로컬 전용 배포 가이드 (GitHub/npm에 올리지 않음)
+PUBLISH-GUIDE.md
+VSCODE-GUIDE.md

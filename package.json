@@ -60,17 +60,13 @@
     "motionkit.features.schema.json",
     "OWNER_REQUIREMENTS.md",
     "motionkit.requirements.json",
-    "AGENTS.md",
-    "ARCHITECTURE.md",
-    "CONTEXT.md",
+    "AI-PROMPT-GUIDE.md",
     "CHANGELOG.md",
     "README.md",
     "README.en.md",
     "README.jp.md",
     "LICENSE",
-    "CONTRIBUTING.md",
-    "STABILIZATION_REPORT.md",
-    "QA_REPORT.md"
+    "CONTRIBUTING.md"
   ],
   "sideEffects": [
     "**/*.css"
