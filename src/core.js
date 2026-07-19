@@ -1,5 +1,5 @@
 /**
- * MotionKit core
+ * Kineto core
  * Public API and lifecycle manager. The feature set is defined in
  * FEATURE_CONTRACT.md and tests/feature-contract.mjs.
  */
@@ -31,7 +31,7 @@ const config = {
 };
 
 function debug(...args) {
-  if (config.debug) console.info('[MotionKit]', ...args);
+  if (config.debug) console.info('[Kineto]', ...args);
 }
 
 function normalizeInstance(instance, sourceEl, name, options) {
@@ -83,7 +83,7 @@ function removeRecord(record, destroy = true, teardownIfEmpty = true) {
     try {
       record.destroyImplementation();
     } catch (error) {
-      console.error(`[MotionKit/${record.name}] destroy() failed:`, error);
+      console.error(`[Kineto/${record.name}] destroy() failed:`, error);
     }
   }
   if (teardownIfEmpty && records.size === 0) teardownCoreServices();
@@ -100,13 +100,13 @@ function matchesRoot(record, roots) {
 }
 
 function ensureCoreServices() {
-  if (initialized || MotionKit.env.ssr) return;
+  if (initialized || Kineto.env.ssr) return;
   initialized = true;
   injectCSSFallback();
 
   const gsap = G();
   const scrollTrigger = ST();
-  const performance = MotionKit.performance;
+  const performance = Kineto.performance;
 
   if (config.smooth && performance !== 'low') startSmoothService(gsap, scrollTrigger);
 
@@ -116,7 +116,7 @@ function ensureCoreServices() {
       try {
         instance[method]();
       } catch (error) {
-        console.error(`[MotionKit/${name}] ${method}() failed:`, error);
+        console.error(`[Kineto/${name}] ${method}() failed:`, error);
       }
     });
   };
@@ -125,7 +125,7 @@ function ensureCoreServices() {
 
 
 function startSmoothService(gsap = G(), scrollTrigger = ST()) {
-  if (lenis || MotionKit.env.ssr || !config.smooth || MotionKit.performance === 'low') return lenis;
+  if (lenis || Kineto.env.ssr || !config.smooth || Kineto.performance === 'low') return lenis;
   try {
     lenis = new Lenis(config.smoothOptions);
     if (scrollTrigger) lenis.on('scroll', scrollTrigger.update);
@@ -173,29 +173,29 @@ function teardownCoreServices() {
 }
 
 function injectCSSFallback() {
-  if (typeof document === 'undefined' || document.getElementById('motionkit-inline-fallback')) return;
+  if (typeof document === 'undefined' || document.getElementById('kineto-inline-fallback')) return;
   const style = document.createElement('style');
-  style.id = 'motionkit-inline-fallback';
+  style.id = 'kineto-inline-fallback';
   style.textContent = `
-    @property --mk-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
-    @keyframes mk-border-spin { to { --mk-angle: 360deg; } }
-    @keyframes mk-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    @keyframes mk-aurora { to { transform: rotate(360deg); } }
-    @keyframes mk-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }
-    @keyframes mk-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-    .mk-cursor-active, .mk-cursor-active * { cursor: none !important; }
-    .mk-cursor-scope, .mk-cursor-scope * { cursor: none !important; }
-    .mk-tw-caret { animation: mk-caret .8s step-end infinite; }
-    .mk-slide { position: relative; flex: 0 0 100%; min-width: 0; }
-    .mk-slider-wrap { position: relative; overflow: hidden; }
+    @property --kt-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+    @keyframes kt-border-spin { to { --kt-angle: 360deg; } }
+    @keyframes kt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    @keyframes kt-aurora { to { transform: rotate(360deg); } }
+    @keyframes kt-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }
+    @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    .kt-cursor-active, .kt-cursor-active * { cursor: none !important; }
+    .kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }
+    .kt-tw-caret { animation: kt-caret .8s step-end infinite; }
+    .kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }
+    .kt-slider-wrap { position: relative; overflow: hidden; }
     @media (prefers-reduced-motion: reduce) {
-      [data-mk-reveal], [data-mk-text-split], [data-mk-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }
+      [data-kt-reveal], [data-kt-text-split], [data-kt-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }
     }
   `;
   document.head.appendChild(style);
 }
 
-const MotionKit = {
+const Kineto = {
   version: '0.8.1',
 
   get env() {
@@ -265,7 +265,7 @@ const MotionKit = {
 
   register(name, module) {
     if (!name || !module || typeof module.create !== 'function') {
-      console.warn(`[MotionKit] Module "${name}" needs a create() function.`);
+      console.warn(`[Kineto] Module "${name}" needs a create() function.`);
       return this;
     }
     modules.set(name, module);
@@ -285,7 +285,7 @@ const MotionKit = {
   create(name, target, options = {}) {
     const module = modules.get(name);
     if (!module) {
-      console.warn(`[MotionKit] Unknown module: ${name}`);
+      console.warn(`[Kineto] Unknown module: ${name}`);
       return null;
     }
 
@@ -315,7 +315,7 @@ const MotionKit = {
         if (!instance) return null;
         return addRecord(el, name, instance, options);
       } catch (error) {
-        console.error(`[MotionKit/${name}] create() failed:`, error);
+        console.error(`[Kineto/${name}] create() failed:`, error);
         return null;
       }
     }).filter(Boolean);
@@ -329,18 +329,18 @@ const MotionKit = {
     ensureCoreServices();
 
     modules.forEach((_module, name) => {
-      const selector = `[data-mk-${dash(name)}]`;
+      const selector = `[data-kt-${dash(name)}]`;
       const candidates = [];
       if (typeof Element !== 'undefined' && root instanceof Element && root.matches(selector)) candidates.push(root);
       if (typeof root.querySelectorAll === 'function') candidates.push(...root.querySelectorAll(selector));
       candidates.forEach((el) => this.create(name, el, readOpts(el, name)));
     });
     // Pre-init flash guard: once modules have applied their initial states,
-    // release the `mk-preload` veil (see motionkit.css).
+    // release the `kt-preload` veil (see kineto.css).
     if (typeof requestAnimationFrame !== 'undefined') {
-      requestAnimationFrame(() => document.documentElement.classList.remove('mk-preload'));
+      requestAnimationFrame(() => document.documentElement.classList.remove('kt-preload'));
     } else {
-      document.documentElement.classList.remove('mk-preload');
+      document.documentElement.classList.remove('kt-preload');
     }
     return this;
   },
@@ -433,16 +433,16 @@ const MotionKit = {
   }
 };
 
-MotionKit.core = {
-  initModules: (targets) => MotionKit.initModules(targets),
-  destroyModule: (target, name) => MotionKit.destroyModule(target, name),
-  getInstance: (target, name) => MotionKit.getInstance(target, name),
-  replay: (target, name, options) => MotionKit.replay(target, name, options),
-  scan: (root) => MotionKit.scan(root),
-  enableSmooth: (options) => MotionKit.enableSmooth(options),
-  disableSmooth: () => MotionKit.disableSmooth(),
-  toggleSmooth: (force, options) => MotionKit.toggleSmooth(force, options),
-  scrollTo: (target, options) => MotionKit.scrollTo(target, options)
+Kineto.core = {
+  initModules: (targets) => Kineto.initModules(targets),
+  destroyModule: (target, name) => Kineto.destroyModule(target, name),
+  getInstance: (target, name) => Kineto.getInstance(target, name),
+  replay: (target, name, options) => Kineto.replay(target, name, options),
+  scan: (root) => Kineto.scan(root),
+  enableSmooth: (options) => Kineto.enableSmooth(options),
+  disableSmooth: () => Kineto.disableSmooth(),
+  toggleSmooth: (force, options) => Kineto.toggleSmooth(force, options),
+  scrollTo: (target, options) => Kineto.scrollTo(target, options)
 };
 
-export default MotionKit;
+export default Kineto;

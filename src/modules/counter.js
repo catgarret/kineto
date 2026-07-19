@@ -21,11 +21,11 @@ function blinkNode(node) {
 // Shared flip visuals — seam color, drop-shadow (toggle/custom) and separator
 // color, all overridable via options or the matching CSS custom properties.
 function flipVisuals(opts) {
-  const seam = `var(--mk-counter-seam,${opts.seamColor || 'rgba(0,0,0,.5)'})`;
+  const seam = `var(--kt-counter-seam,${opts.seamColor || 'rgba(0,0,0,.5)'})`;
   const shadowValue = opts.shadow === false || opts.shadow === 'none'
     ? 'none'
     : (typeof opts.shadow === 'string' ? opts.shadow : 'drop-shadow(0 2px 5px rgba(0,0,0,.3))');
-  const shadow = `var(--mk-counter-flip-shadow,${shadowValue})`;
+  const shadow = `var(--kt-counter-flip-shadow,${shadowValue})`;
   return { seam, shadow, hasShadow: shadowValue !== 'none', separatorColor: opts.separatorColor || '' };
 }
 
@@ -37,7 +37,7 @@ function appendAffix(el, value, className) {
   el.appendChild(node);
 }
 
-function createCharacter(el, char, className = 'mk-counter-char') {
+function createCharacter(el, char, className = 'kt-counter-char') {
   const node = document.createElement('span');
   node.className = className;
   node.textContent = char;
@@ -119,14 +119,14 @@ export default {
       el.innerHTML = '';
       el.style.display = 'inline-flex';
       el.style.alignItems = 'baseline';
-      appendAffix(el, prefix, 'mk-counter-prefix');
+      appendAffix(el, prefix, 'kt-counter-prefix');
 
       const digitNodes = [];
       for (const char of finalNumericString) {
-        if (/\d/.test(char)) digitNodes.push({ node: createCharacter(el, '0', 'mk-counter-digit'), target: Number(char) });
-        else createCharacter(el, char, 'mk-counter-separator');
+        if (/\d/.test(char)) digitNodes.push({ node: createCharacter(el, '0', 'kt-counter-digit'), target: Number(char) });
+        else createCharacter(el, char, 'kt-counter-separator');
       }
-      appendAffix(el, suffix, 'mk-counter-suffix');
+      appendAffix(el, suffix, 'kt-counter-suffix');
 
       const loops = Math.max(0, Number(opts.loops ?? 2));
       const stagger = Math.max(0, Number(opts.stagger ?? 0.06));
@@ -164,13 +164,13 @@ export default {
       el.innerHTML = '';
       el.style.display = 'inline-flex';
       el.style.alignItems = 'baseline';
-      appendAffix(el, prefix, 'mk-counter-prefix');
+      appendAffix(el, prefix, 'kt-counter-prefix');
       const characters = Array.from(finalNumericString, (char) => createCharacter(
         el,
         char,
-        /\d/.test(char) ? 'mk-counter-digit mk-counter-pop-char' : 'mk-counter-separator mk-counter-pop-char'
+        /\d/.test(char) ? 'kt-counter-digit kt-counter-pop-char' : 'kt-counter-separator kt-counter-pop-char'
       ));
-      appendAffix(el, suffix, 'mk-counter-suffix');
+      appendAffix(el, suffix, 'kt-counter-suffix');
 
       // Where the pop lands from: bottom (default), center, or top.
       const popAlign = opts.popAlign || 'bottom';
@@ -222,7 +222,7 @@ export default {
       el.style.display = 'inline-flex';
       el.style.alignItems = 'center';
       el.style.gap = `${Math.max(0, Number(opts.gap ?? 3))}px`;
-      appendAffix(el, prefix, 'mk-counter-prefix');
+      appendAffix(el, prefix, 'kt-counter-prefix');
 
       const tile = opts.tile !== false;
       const tileColor = opts.tileColor || '#191b20';
@@ -254,14 +254,14 @@ export default {
         const digit = /\d/.test(char);
         if (!digit) {
           const separator = document.createElement('span');
-          separator.className = 'mk-counter-separator';
+          separator.className = 'kt-counter-separator';
           separator.textContent = char;
           if (tile) separator.style.opacity = '.7';
           el.appendChild(separator);
           continue;
         }
         const cell = document.createElement('span');
-        cell.className = 'mk-counter-flip-cell';
+        cell.className = 'kt-counter-flip-cell';
         cell.style.cssText = `display:inline-block;position:relative;width:${tile ? '1.34ch' : '1.12ch'};height:${cellHeight};perspective:340px;${(tile && flip.hasShadow) ? `filter:${flip.shadow};` : ''}`;
         const topStatic = buildHalf(true, false);     // shows the NEXT digit
         const bottomStatic = buildHalf(false, false); // shows the CURRENT digit
@@ -271,7 +271,7 @@ export default {
         cell.append(topStatic.half, bottomStatic.half, topFlap.half, bottomFlap.half);
         if (tile) {
           const seam = document.createElement('span');
-          seam.className = 'mk-counter-seam';
+          seam.className = 'kt-counter-seam';
           seam.setAttribute('aria-hidden', 'true');
           seam.style.cssText = `position:absolute;left:0;right:0;top:50%;height:1px;margin-top:-0.5px;background:${flip.seam};z-index:4;pointer-events:none;`;
           cell.appendChild(seam);
@@ -279,7 +279,7 @@ export default {
         el.appendChild(cell);
         cells.push({ topStatic, bottomStatic, topFlap, bottomFlap, target: Number(char) });
       }
-      appendAffix(el, suffix, 'mk-counter-suffix');
+      appendAffix(el, suffix, 'kt-counter-suffix');
 
       const loops = Math.max(0, Number(opts.loops ?? 1));
       const timers = new Set();
@@ -401,7 +401,7 @@ export default {
 
       const makeDigit = (char) => {
         const viewport = document.createElement('span');
-        viewport.className = 'mk-counter-digit mk-counter-clock-digit';
+        viewport.className = 'kt-counter-digit kt-counter-clock-digit';
         viewport.style.cssText = `display:inline-block;overflow:hidden;height:${lineHeight}px;min-width:1ch;text-align:center;`;
         const stack = document.createElement('span');
         stack.style.cssText = 'display:block;will-change:transform;';
@@ -441,7 +441,7 @@ export default {
           return { half, glyph };
         };
         const cell = document.createElement('span');
-        cell.className = 'mk-counter-digit mk-counter-clock-digit mk-counter-flip-cell';
+        cell.className = 'kt-counter-digit kt-counter-clock-digit kt-counter-flip-cell';
         cell.style.cssText = `display:inline-block;position:relative;width:${f.tile ? '1.34ch' : '1.12ch'};height:1.24em;perspective:340px;${f.tile ? `${flipVis.hasShadow ? `filter:${flipVis.shadow};` : ''}margin:0 1px;` : ''}`;
         const parts = {
           topStatic: buildHalf(true, false),
@@ -453,7 +453,7 @@ export default {
         cell.append(parts.topStatic.half, parts.bottomStatic.half, parts.topFlap.half, parts.bottomFlap.half);
         if (f.tile) {
           const seam = document.createElement('span');
-          seam.className = 'mk-counter-seam';
+          seam.className = 'kt-counter-seam';
           seam.setAttribute('aria-hidden', 'true');
           seam.style.cssText = `position:absolute;left:0;right:0;top:50%;height:1px;margin-top:-0.5px;background:${flipVis.seam};z-index:4;pointer-events:none;`;
           cell.appendChild(seam);
@@ -504,10 +504,10 @@ export default {
         cells = [];
         meridiemNode = null;
         daysNode = null;
-        appendAffix(el, prefix, 'mk-counter-prefix');
+        appendAffix(el, prefix, 'kt-counter-prefix');
         if (showDays(state.days)) {
           daysNode = document.createElement('span');
-          daysNode.className = 'mk-counter-days';
+          daysNode.className = 'kt-counter-days';
           daysNode.style.cssText = 'margin-right:.5ch;';
           daysNode.textContent = `${state.days}${daysLabel}`;
           el.appendChild(daysNode);
@@ -518,7 +518,7 @@ export default {
             el.appendChild(cell.viewport);
             cells.push(cell);
           } else {
-            const separator = createCharacter(el, char, 'mk-counter-separator mk-counter-clock-separator');
+            const separator = createCharacter(el, char, 'kt-counter-separator kt-counter-clock-separator');
             if (blink) {
               const player = blinkNode(separator);
               if (player) blinkPlayers.add(player);
@@ -528,12 +528,12 @@ export default {
         }
         if (hour12 && !until && !since) {
           meridiemNode = document.createElement('span');
-          meridiemNode.className = 'mk-counter-suffix mk-counter-meridiem';
+          meridiemNode.className = 'kt-counter-suffix kt-counter-meridiem';
           meridiemNode.style.cssText = 'margin-left:.4ch;font-size:.55em;opacity:.75;align-self:center;';
           meridiemNode.textContent = state.meridiem;
           el.appendChild(meridiemNode);
         }
-        appendAffix(el, suffix, 'mk-counter-suffix');
+        appendAffix(el, suffix, 'kt-counter-suffix');
       };
 
       const changeTo = (cell, nextChar) => {
@@ -633,7 +633,7 @@ export default {
       el.style.display = 'inline-flex';
       el.style.alignItems = 'flex-end';
       el.style.overflow = 'hidden';
-      appendAffix(el, prefix, 'mk-counter-prefix');
+      appendAffix(el, prefix, 'kt-counter-prefix');
 
       // Roll each digit reel from the `from` value's digit to the target digit,
       // in the correct direction (down when counting down, e.g. a 34,000 → 10,000
@@ -645,7 +645,7 @@ export default {
       let digitIndex = 0;
       for (const char of finalNumericString) {
         if (!/\d/.test(char)) {
-          createCharacter(el, char, 'mk-counter-separator');
+          createCharacter(el, char, 'kt-counter-separator');
           continue;
         }
 
@@ -658,10 +658,10 @@ export default {
           : (((startDigit - targetDigit) % 10) + 10) % 10;
         const steps = base + loops * 10;
         const viewport = document.createElement('span');
-        viewport.className = 'mk-counter-slot';
+        viewport.className = 'kt-counter-slot';
         viewport.style.cssText = `display:inline-block;overflow:hidden;height:${lineHeight}px;vertical-align:bottom;`;
         const reel = document.createElement('span');
-        reel.className = 'mk-counter-reel';
+        reel.className = 'kt-counter-reel';
         reel.style.cssText = 'display:flex;flex-direction:column;will-change:transform;';
         for (let k = 0; k <= steps; k += 1) {
           const digit = countingUp ? (startDigit + k) % 10 : (((startDigit - k) % 10) + 10) % 10;
@@ -674,7 +674,7 @@ export default {
         el.appendChild(viewport);
         slots.push({ reel, steps });
       }
-      appendAffix(el, suffix, 'mk-counter-suffix');
+      appendAffix(el, suffix, 'kt-counter-suffix');
 
       if (gsap) {
         const timeline = gsap.timeline({
@@ -698,14 +698,14 @@ export default {
 
     // Custom separator color (comma, colon, …) — option or CSS var.
     if (opts.separatorColor) {
-      el.querySelectorAll('.mk-counter-separator').forEach((node) => {
-        node.style.color = `var(--mk-counter-separator,${opts.separatorColor})`;
+      el.querySelectorAll('.kt-counter-separator').forEach((node) => {
+        node.style.color = `var(--kt-counter-separator,${opts.separatorColor})`;
       });
     }
 
     // Optional clock-style blink on grouping/custom separators in any mode.
     if (opts.blinkSeparators === true && mode !== 'clock' && mode !== 'plain') {
-      el.querySelectorAll('.mk-counter-separator').forEach((node) => {
+      el.querySelectorAll('.kt-counter-separator').forEach((node) => {
         const player = blinkNode(node);
         if (player) addAnimation({ kill: () => player.cancel(), pause: () => player.pause(), resume: () => player.play() });
       });

@@ -91,7 +91,7 @@ export default {
     const maxY = opts.maxY ?? 40;
     const eventTarget = opts.global ? window : el;
     const useGyro = opts.gyro !== false && environment.hasGyro && environment.touch;
-    const targets = Array.from(el.querySelectorAll('[data-mp-speed], [data-mk-mouse-speed]'));
+    const targets = Array.from(el.querySelectorAll('[data-mp-speed], [data-kt-mouse-speed]'));
     if (!targets.length) targets.push(el);
     const restores = targets.map((target) => snapshotInlineStyles(target, ['transform', 'willChange']));
 
@@ -142,7 +142,7 @@ export default {
     const tick = () => {
       if (!alive) return;
       targets.forEach((target, index) => {
-        const multiplier = Number(target.dataset.mpSpeed ?? target.dataset.mkMouseSpeed ?? opts.speed ?? 0.05);
+        const multiplier = Number(target.dataset.mpSpeed ?? target.dataset.ktMouseSpeed ?? opts.speed ?? 0.05);
         currentX[index] = lerp(currentX[index], xTarget * maxX * multiplier, ease);
         currentY[index] = lerp(currentY[index], yTarget * maxY * multiplier, ease);
         target.style.transform = `translate3d(${currentX[index]}px, ${currentY[index]}px, 0)`;

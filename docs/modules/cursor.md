@@ -13,17 +13,17 @@
 
 ```html
 <section
-  data-mk-cursor="ring"
-  data-mk-color="#4d6bff"
-  data-mk-follower-size="42"
-  data-mk-hover-scale="1.8"
+  data-kt-cursor="ring"
+  data-kt-color="#4d6bff"
+  data-kt-follower-size="42"
+  data-kt-hover-scale="1.8"
 >
-  <button data-mk-cursor-label="OPEN">Hover</button>
+  <button data-kt-cursor-label="OPEN">Hover</button>
 </section>
 ```
 
 ```js
-MotionKit.cursor(document.body, {
+Kineto.cursor(document.body, {
   type: 'custom',
   template: '<span class="my-cursor">VIEW</span>',
   smoothing: 0.16,

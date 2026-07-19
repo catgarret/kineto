@@ -19,12 +19,12 @@
 
 ```html
 <img
-  data-mk-lazy="skeleton"
+  data-kt-lazy="skeleton"
   data-src="./photo.webp"
-  data-mk-skeleton-variant="shimmer"
-  data-mk-skeleton-speed="1.4"
-  data-mk-skeleton-color="#222"
-  data-mk-skeleton-highlight="rgba(255,255,255,.25)"
+  data-kt-skeleton-variant="shimmer"
+  data-kt-skeleton-speed="1.4"
+  data-kt-skeleton-color="#222"
+  data-kt-skeleton-highlight="rgba(255,255,255,.25)"
   alt="Skeleton loading"
 >
 ```
@@ -35,13 +35,13 @@
 
 ```html
 <img
-  data-mk-lazy="pixelate"
+  data-kt-lazy="pixelate"
   data-src="./motion-demo.gif"
-  data-mk-steps="[0.02,0.05,0.12,0.28,0.56,1]"
-  data-mk-delay="100"
-  data-mk-step-duration="220"
-  data-mk-hold-duration="120"
-  data-mk-animated="true"
+  data-kt-steps="[0.02,0.05,0.12,0.28,0.56,1]"
+  data-kt-delay="100"
+  data-kt-step-duration="220"
+  data-kt-hold-duration="120"
+  data-kt-animated="true"
   alt="Pixel reveal"
 >
 ```
@@ -52,14 +52,14 @@
 
 ```html
 <img
-  data-mk-lazy="print"
+  data-kt-lazy="print"
   data-src="./generated.png"
-  data-mk-direction="down"
-  data-mk-duration="2.4"
-  data-mk-feather="72"
-  data-mk-noise="0.24"
-  data-mk-noise-fps="18"
-  data-mk-blur="18"
+  data-kt-direction="down"
+  data-kt-duration="2.4"
+  data-kt-feather="72"
+  data-kt-noise="0.24"
+  data-kt-noise-fps="18"
+  data-kt-blur="18"
   alt="Progressive print"
 >
 ```
@@ -70,12 +70,12 @@
 
 ```html
 <img
-  data-mk-lazy="dissolve"
+  data-kt-lazy="dissolve"
   data-src="./photo.jpg"
-  data-mk-duration="1.8"
-  data-mk-blur="18"
-  data-mk-noise="0.3"
-  data-mk-noise-fps="20"
+  data-kt-duration="1.8"
+  data-kt-blur="18"
+  data-kt-noise="0.3"
+  data-kt-noise-fps="20"
   alt="Noise dissolve"
 >
 ```
@@ -86,11 +86,11 @@
 
 ```html
 <img
-  data-mk-lazy="dissolve"
-  data-mk-ambient-media="image-clone"
-  data-mk-lightbox="viewer"
+  data-kt-lazy="dissolve"
+  data-kt-ambient-media="image-clone"
+  data-kt-lightbox="viewer"
   data-src="./motion-demo.webp"
-  data-mk-animated="true"
+  data-kt-animated="true"
   alt="Animated WebP"
 >
 ```

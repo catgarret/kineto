@@ -11,19 +11,19 @@
 ### HTML (디자이너)
 
 ```html
-<img src="hero.jpg" data-mk-parallax data-mk-speed="0.5">
+<img src="hero.jpg" data-kt-parallax data-kt-speed="0.5">
 
 <!-- 음수 = 더 천천히 (배경) -->
-<div class="bg" data-mk-parallax data-mk-speed="-0.3"></div>
+<div class="bg" data-kt-parallax data-kt-speed="-0.3"></div>
 
 <!-- 양수 = 더 빠르게 (전경) -->
-<div class="fg" data-mk-parallax data-mk-speed="0.4"></div>
+<div class="fg" data-kt-parallax data-kt-speed="0.4"></div>
 ```
 
 ### JS API (개발자)
 
 ```js
-const instance = MotionKit.parallax('.hero-img', {
+const instance = Kineto.parallax('.hero-img', {
   speed: 0.5,
   axis: 'y',
 });
@@ -59,22 +59,22 @@ instance.destroy();
 
 ```html
 <div class="parallax-stage">
-  <img src="bg.jpg"   data-mk-parallax data-mk-speed="-0.3">
-  <img src="mid.png"  data-mk-parallax data-mk-speed="0">
-  <img src="char.png" data-mk-parallax data-mk-speed="0.4">
+  <img src="bg.jpg"   data-kt-parallax data-kt-speed="-0.3">
+  <img src="mid.png"  data-kt-parallax data-kt-speed="0">
+  <img src="char.png" data-kt-parallax data-kt-speed="0.4">
 </div>
 ```
 
 ### 가로 패럴럭스
 
 ```html
-<div data-mk-parallax data-mk-axis="x" data-mk-speed="0.3"></div>
+<div data-kt-parallax data-kt-axis="x" data-kt-speed="0.3"></div>
 ```
 
 ### 부드러운 scrub
 
 ```js
-MotionKit.parallax('.hero', {
+Kineto.parallax('.hero', {
   speed: 0.5,
   scrub: 0.6,  // 0.6초 lerp
 });
@@ -95,5 +95,5 @@ MotionKit.parallax('.hero', {
 - 100+ 요소에 적용하면 ScrollTrigger 인스턴스 과다로 부드러움 ↓. 정말 필요한 곳에만.
 - `will-change: transform`이 자동 적용되지 않음 → 매우 큰 이미지에는 직접 추가 권장:
   ```css
-  [data-mk-parallax] { will-change: transform; }
+  [data-kt-parallax] { will-change: transform; }
   ```

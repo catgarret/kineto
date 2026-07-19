@@ -8,7 +8,7 @@ export default defineConfig({
     emptyOutDir: true,
     lib: {
       entry: resolve(import.meta.dirname, 'src/main.jsx'),
-      name: 'MotionKitFrameworkQA',
+      name: 'KinetoFrameworkQA',
       formats: ['iife'],
       fileName: () => 'framework-qa.js'
     }

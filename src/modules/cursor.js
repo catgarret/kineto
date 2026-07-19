@@ -54,21 +54,21 @@ export default {
     const mixBlendMode = opts.mixBlendMode || 'normal';
     const opacity = clamp(Number(opts.opacity ?? 1), 0, 1);
     const zIndex = Number(opts.zIndex ?? 2147483000);
-    const hoverSelector = opts.hoverSelector || 'a,button,input,select,textarea,label,[role="button"],[data-mk-cursor-hover]';
-    const hiddenSelector = opts.hiddenSelector || '[data-mk-cursor-hide]';
+    const hoverSelector = opts.hoverSelector || 'a,button,input,select,textarea,label,[role="button"],[data-kt-cursor-hover]';
+    const hiddenSelector = opts.hiddenSelector || '[data-kt-cursor-hide]';
     const scoped = isScopedElement(el, opts);
     const root = document.documentElement;
     const originalRootCursor = root.style.cursor;
 
     if (scoped) {
-      el.classList.add('mk-cursor-scope');
-      el.setAttribute('data-mk-cursor-scope', '');
+      el.classList.add('kt-cursor-scope');
+      el.setAttribute('data-kt-cursor-scope', '');
     } else {
-      root.classList.add('mk-cursor-active');
+      root.classList.add('kt-cursor-active');
     }
 
     const cursor = document.createElement('div');
-    cursor.className = `mk-cursor mk-cursor-${type}${opts.className ? ` ${opts.className}` : ''}`;
+    cursor.className = `kt-cursor kt-cursor-${type}${opts.className ? ` ${opts.className}` : ''}`;
     cursor.setAttribute('aria-hidden', 'true');
     cursor.style.cssText = `position:fixed;top:0;left:0;z-index:${zIndex};pointer-events:none;opacity:0;color:${color};mix-blend-mode:${mixBlendMode};transition:opacity .18s ease;`;
 
@@ -84,20 +84,20 @@ export default {
 
     const addDot = (size = dotSize) => {
       dot = document.createElement('span');
-      dot.className = 'mk-cursor-dot';
+      dot.className = 'kt-cursor-dot';
       dot.dataset.baseSize = String(size);
       dot.style.cssText = `position:fixed;left:0;top:0;width:${size}px;height:${size}px;border-radius:50%;background:${opts.dotColor || color};will-change:transform;transform:translate3d(-100px,-100px,0) translate(-50%,-50%);transition:width .22s cubic-bezier(.3,.7,.35,1.25),height .22s cubic-bezier(.3,.7,.35,1.25),opacity .18s ease;`;
       cursor.appendChild(dot);
     };
     const addFollower = (shape = 'circle') => {
       follower = document.createElement('span');
-      follower.className = 'mk-cursor-follower';
+      follower.className = 'kt-cursor-follower';
       follower.style.cssText = `position:fixed;left:0;top:0;width:${followerSize}px;height:${followerSize}px;border:${Math.max(0, Number(opts.borderWidth ?? 1))}px solid ${borderColor};border-radius:${shape === 'square' ? (opts.radius || '8px') : '50%'};background:${background};box-shadow:${opts.shadow || 'none'};will-change:transform;transform:translate3d(-100px,-100px,0) translate(-50%,-50%) scale(1);transition:background-color .2s ease,border-color .2s ease;backdrop-filter:${opts.backdropFilter || 'none'};`;
       cursor.appendChild(follower);
     };
     const addSingle = (html) => {
       single = document.createElement('span');
-      single.className = 'mk-cursor-single';
+      single.className = 'kt-cursor-single';
       single.style.cssText = 'position:fixed;left:0;top:0;will-change:transform;transform:translate3d(-100px,-100px,0);';
       if (html != null) single.innerHTML = html;
       cursor.appendChild(single);
@@ -141,8 +141,8 @@ export default {
     } else if (type === 'text') {
       // Rotating circular text ring (SVG textPath) that follows the pointer.
       const ringSize = Math.max(40, followerSize * 2.4);
-      const ringText = opts.rotateText || opts.text || 'MOTIONKIT · MOTIONKIT · ';
-      const uid = `mk-cur-txt-${Math.random().toString(36).slice(2, 7)}`;
+      const ringText = opts.rotateText || opts.text || 'KINETO · KINETO · ';
+      const uid = `kt-cur-txt-${Math.random().toString(36).slice(2, 7)}`;
       injectedStyle = document.createElement('style');
       injectedStyle.textContent = `@keyframes ${uid} { to { transform: rotate(360deg); } }`;
       document.head.appendChild(injectedStyle);
@@ -162,7 +162,7 @@ export default {
       chain.spring = clamp(Number(opts.spring ?? 0.28), 0.05, 0.9);
     } else if (type === 'orbit') {
       // Characters orbiting the eased pointer on a flat ellipse.
-      const orbitText = String(opts.orbitText || opts.text || 'MOTIONKIT · ');
+      const orbitText = String(opts.orbitText || opts.text || 'KINETO · ');
       const characters = Array.from(orbitText);
       characters.forEach((char, index) => {
         const node = addChainNode(`font:700 ${Number(opts.labelSize ?? 12)}px ui-monospace,monospace;color:${opts.textColor || color};text-transform:uppercase;line-height:1;`, index);
@@ -179,7 +179,7 @@ export default {
     } else if (type === 'snake') {
       // Text snake: each character chases the one before it while keeping a
       // minimum spacing, so letters never pile into a blob when idle.
-      const snakeText = String(opts.snakeText || opts.text || 'MOTIONKIT');
+      const snakeText = String(opts.snakeText || opts.text || 'KINETO');
       const snakeSize = Number(opts.labelSize ?? 14);
       Array.from(snakeText).forEach((char, index) => {
         const node = addChainNode(`font:800 ${snakeSize}px ui-monospace,monospace;color:${opts.textColor || color};line-height:1;`, index);
@@ -218,7 +218,7 @@ export default {
       // The label sits centered inside the grown hover dot (reference look)
       // instead of hanging below the ring where it collided with the outline.
       label = document.createElement('span');
-      label.className = 'mk-cursor-label';
+      label.className = 'kt-cursor-label';
       label.style.cssText = `position:absolute;inset:0;display:flex;align-items:center;justify-content:center;white-space:nowrap;font:800 ${Number(opts.labelSize ?? 9)}px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:${opts.labelColor || '#fff'};opacity:0;transition:opacity .18s ease;pointer-events:none;`;
       (dot || follower || single).appendChild(label);
     }
@@ -251,16 +251,16 @@ export default {
       // custom HTML, or just add a class you style yourself.
       if (opts.hoverClass) cursor.classList.add(...String(opts.hoverClass).split(/\s+/).filter(Boolean));
       if (single) {
-        const swapSrc = target.getAttribute('data-mk-cursor-hover-src') || opts.hoverSrc;
+        const swapSrc = target.getAttribute('data-kt-cursor-hover-src') || opts.hoverSrc;
         const img = single.querySelector('img');
         if (img && swapSrc) { if (!img.dataset.baseSrc) img.dataset.baseSrc = img.src; img.src = swapSrc; }
         if (type === 'custom' && opts.hoverTemplate) { if (single.dataset.baseHtml == null) single.dataset.baseHtml = single.innerHTML; single.innerHTML = opts.hoverTemplate; }
       }
-      const text = target.getAttribute('data-mk-cursor-label') || opts.hoverLabel || '';
+      const text = target.getAttribute('data-kt-cursor-label') || opts.hoverLabel || '';
       if (label) { label.textContent = text; label.style.opacity = text ? '1' : '0'; }
       if (follower) {
-        follower.style.backgroundColor = target.getAttribute('data-mk-cursor-background') || opts.hoverBackground || background;
-        follower.style.borderColor = target.getAttribute('data-mk-cursor-color') || opts.hoverColor || borderColor;
+        follower.style.backgroundColor = target.getAttribute('data-kt-cursor-background') || opts.hoverBackground || background;
+        follower.style.borderColor = target.getAttribute('data-kt-cursor-color') || opts.hoverColor || borderColor;
       }
       if (dot) {
         if (opts.hideDotOnHover === true) dot.style.opacity = '0';
@@ -321,13 +321,13 @@ export default {
 
     const shouldShowAt = (event) => {
       if (scoped) return insideScope;
-      return !event.target?.closest?.('[data-mk-cursor-scope]');
+      return !event.target?.closest?.('[data-kt-cursor-scope]');
     };
 
     const onMove = (event) => {
       mouseX = event.clientX;
       mouseY = event.clientY;
-      if (scoped) insideScope = Boolean(event.target && typeof event.target.closest === 'function' && (event.target.closest('[data-mk-cursor-scope]') === el || el.contains(event.target)));
+      if (scoped) insideScope = Boolean(event.target && typeof event.target.closest === 'function' && (event.target.closest('[data-kt-cursor-scope]') === el || el.contains(event.target)));
       const show = shouldShowAt(event) && pointInsideViewport(event) && !event.target?.closest?.(hiddenSelector);
       if (show !== visible) setVisible(show);
       if (dot) dot.style.transform = `translate3d(${mouseX}px,${mouseY}px,0) translate(-50%,-50%)`;
@@ -369,7 +369,7 @@ export default {
         const duration = Math.max(80, Number(opts.clickSpriteDuration ?? 480));
         const signature = `${frameWidth}x${frames}`;
         if (!clickStyle) {
-          const uid = `mk-cur-spr-${Math.random().toString(36).slice(2, 7)}`;
+          const uid = `kt-cur-spr-${Math.random().toString(36).slice(2, 7)}`;
           clickStyle = document.createElement('style');
           clickStyle.dataset.uid = uid;
           document.head.appendChild(clickStyle);
@@ -492,14 +492,14 @@ export default {
         window.removeEventListener('mouseout', onWindowOut);
         if (scoped) {
           el.removeEventListener('pointerleave', onScopeLeave);
-          el.classList.remove('mk-cursor-scope');
-          el.removeAttribute('data-mk-cursor-scope');
+          el.classList.remove('kt-cursor-scope');
+          el.removeAttribute('data-kt-cursor-scope');
         }
         injectedStyle?.remove();
         clickStyle?.remove();
         cursor.remove();
-        if (!scoped && !document.querySelector('.mk-cursor')) {
-          root.classList.remove('mk-cursor-active');
+        if (!scoped && !document.querySelector('.kt-cursor')) {
+          root.classList.remove('kt-cursor-active');
           root.style.cursor = originalRootCursor;
         }
       }
@@ -519,7 +519,7 @@ export default {
         const duration = Math.max(80, Number(opts.clickSpriteDuration ?? 480));
         const signature = `${frameWidth}x${frames}`;
         if (!clickStyle) {
-          const uid = `mk-cur-spr-${Math.random().toString(36).slice(2, 7)}`;
+          const uid = `kt-cur-spr-${Math.random().toString(36).slice(2, 7)}`;
           clickStyle = document.createElement('style');
           clickStyle.dataset.uid = uid;
           document.head.appendChild(clickStyle);

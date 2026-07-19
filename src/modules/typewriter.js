@@ -19,8 +19,8 @@ export default {
     const hangul = opts.hangul === true || opts.compose === true;
 
     el.setAttribute('aria-label', strings.join(', '));
-    el.innerHTML = `<span class="mk-tw-text" aria-hidden="true"></span>${caretEnabled ? `<span class="mk-tw-caret" aria-hidden="true">${caretChar}</span>` : ''}`;
-    const textEl = el.querySelector('.mk-tw-text');
+    el.innerHTML = `<span class="kt-tw-text" aria-hidden="true"></span>${caretEnabled ? `<span class="kt-tw-caret" aria-hidden="true">${caretChar}</span>` : ''}`;
+    const textEl = el.querySelector('.kt-tw-text');
     let stringIndex = 0;
     let charIndex = 0;
     let frameIndex = 0;

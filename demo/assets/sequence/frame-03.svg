@@ -1,4 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
 <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="hsl(234 80% 18%)"/><stop offset="1" stop-color="hsl(284 75% 45%)"/></linearGradient></defs>
-<rect width="1200" height="700" fill="url(#g)"/><circle cx="180" cy="350" r="120" fill="rgba(255,255,255,.9)"/><circle cx="1020" cy="350" r="80" fill="rgba(255,255,255,.35)"/><text x="60" y="100" fill="white" font-family="Arial,sans-serif" font-size="44" font-weight="700">MotionKit Sequence 03</text>
+<rect width="1200" height="700" fill="url(#g)"/><circle cx="180" cy="350" r="120" fill="rgba(255,255,255,.9)"/><circle cx="1020" cy="350" r="80" fill="rgba(255,255,255,.35)"/><text x="60" y="100" fill="white" font-family="Arial,sans-serif" font-size="44" font-weight="700">Kineto Sequence 03</text>
 </svg>

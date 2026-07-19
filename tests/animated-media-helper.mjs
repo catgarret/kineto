@@ -1,4 +1,4 @@
-/* global Buffer, document, getComputedStyle, MotionKit, window */
+/* global Buffer, document, getComputedStyle, Kineto, window */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
@@ -21,8 +21,8 @@ export async function runAnimatedMediaQa(browser, root) {
 
   try {
     await page.setContent('<!doctype html><html><head><style>body{margin:0}.host{width:320px;height:200px;position:relative;margin:20px}.host img,.host video{width:100%;height:100%;object-fit:cover}</style></head><body><div id="root"></div></body></html>');
-    await page.addStyleTag({ path: resolve(root, 'dist/motionkit.css') });
-    await page.addScriptTag({ path: resolve(root, 'dist/motionkit.umd.js') });
+    await page.addStyleTag({ path: resolve(root, 'dist/kineto.css') });
+    await page.addScriptTag({ path: resolve(root, 'dist/kineto.umd.js') });
     const cdp = await page.context().newCDPSession(page);
     const sleep = (ms) => new Promise((resolveSleep) => setTimeout(resolveSleep, ms));
 
@@ -61,9 +61,9 @@ export async function runAnimatedMediaQa(browser, root) {
         image.dataset.src = src;
         host.appendChild(image);
         document.querySelector('#root').appendChild(host);
-        const lazy = MotionKit.lazy(image, { effect, src, nativeLazy: false, rootMargin: '10000px', duration: 0.45, minDuration: effect === 'skeleton' ? 160 : 0, delay: 0 });
-        const ambient = MotionKit.ambientMedia(host, { blur: 20, opacity: 0.62 });
-        const lightbox = MotionKit.lightbox(image, { src, duration: 0, minimap: true, title: name });
+        const lazy = Kineto.lazy(image, { effect, src, nativeLazy: false, rootMargin: '10000px', duration: 0.45, minDuration: effect === 'skeleton' ? 160 : 0, delay: 0 });
+        const ambient = Kineto.ambientMedia(host, { blur: 20, opacity: 0.62 });
+        const lightbox = Kineto.lightbox(image, { src, duration: 0, minimap: true, title: name });
         window.__mediaQa = { lazy, ambient, lightbox };
       }, { name, src, effect });
 
@@ -73,18 +73,18 @@ export async function runAnimatedMediaQa(browser, root) {
       }, name, { timeout: 7000 });
 
       const originalMoving = await changes(`#image-${name}`);
-      const cloneSelector = `#host-${name} .mk-ambient-image-clone`;
+      const cloneSelector = `#host-${name} .kt-ambient-image-clone`;
       const cloneMoving = await changes(cloneSelector);
       await page.evaluate(() => window.__mediaQa.lightbox.open());
       await page.waitForFunction(() => {
-        const image = document.querySelector('#mk-lightbox .mk-lightbox-image');
-        return image?.complete && image.naturalWidth > 0 && !document.querySelector('#mk-lightbox').hidden;
+        const image = document.querySelector('#kt-lightbox .kt-lightbox-image');
+        return image?.complete && image.naturalWidth > 0 && !document.querySelector('#kt-lightbox').hidden;
       }, { timeout: 7000 });
-      const viewerMoving = await changes('#mk-lightbox .mk-lightbox-image');
+      const viewerMoving = await changes('#kt-lightbox .kt-lightbox-image');
       const tags = await page.evaluate((formatName) => ({
         original: document.querySelector(`#image-${formatName}`)?.tagName,
-        clone: document.querySelector(`#host-${formatName} .mk-ambient-image-clone`)?.tagName,
-        viewer: document.querySelector('#mk-lightbox .mk-lightbox-image')?.tagName
+        clone: document.querySelector(`#host-${formatName} .kt-ambient-image-clone`)?.tagName,
+        viewer: document.querySelector('#kt-lightbox .kt-lightbox-image')?.tagName
       }), name);
       formatResults[name] = { originalMoving, cloneMoving, viewerMoving, tags };
       await page.evaluate(() => {
@@ -120,20 +120,20 @@ export async function runAnimatedMediaQa(browser, root) {
         return false;
       };
       const ready = await wait(() => media.readyState >= 2 && media.currentTime > 0);
-      const instance = MotionKit.ambientMedia(host, { sampleFps: 12, blur: 24 });
-      const sampled = await wait(() => Number(host.querySelector('.mk-ambient-video-canvas')?.dataset.frames || 0) >= 3);
+      const instance = Kineto.ambientMedia(host, { sampleFps: 12, blur: 24 });
+      const sampled = await wait(() => Number(host.querySelector('.kt-ambient-video-canvas')?.dataset.frames || 0) >= 3);
       const before = media.currentTime;
       await new Promise((resolveWait) => setTimeout(resolveWait, 350));
       const advancing = media.currentTime > before;
-      const frames = Number(host.querySelector('.mk-ambient-video-canvas')?.dataset.frames || 0);
+      const frames = Number(host.querySelector('.kt-ambient-video-canvas')?.dataset.frames || 0);
       instance.destroy();
       media.pause();
       host.remove();
       return { ready, sampled, advancing, frames };
     }, sources.mp4);
 
-    await page.evaluate(() => MotionKit.destroy());
-    const instanceCount = await page.evaluate(() => MotionKit.instanceCount);
+    await page.evaluate(() => Kineto.destroy());
+    const instanceCount = await page.evaluate(() => Kineto.instanceCount);
 
     for (const [name, state] of Object.entries(formatResults)) {
       assert.equal(state.originalMoving, true, `${name} original animation froze`);

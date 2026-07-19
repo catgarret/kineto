@@ -1,6 +1,6 @@
-# MotionKit Owner Requirements
+# Kineto Owner Requirements
 
-이 문서는 기능 아이디어가 아니라 **삭제·축소·자의적 재해석 금지 요구사항**입니다. 기계 판독 원본은 `motionkit.requirements.json`입니다.
+이 문서는 기능 아이디어가 아니라 **삭제·축소·자의적 재해석 금지 요구사항**입니다. 기계 판독 원본은 `kineto.requirements.json`입니다.
 
 ## 현재 계약
 
@@ -23,7 +23,7 @@
 | ID | 대상 | 제목 | 수락 조건 |
 |---|---|---|---|
 | `MK-DEMO-001` | `demo` | Complete categorized demo gallery | The demo exposes all public modules, keeps product categories distinct, and provides replay controls for inspectable text and entrance motion. |
-| `MK-DEMO-002` | `demo` | Live settings playground and code copy | Every adjustable demo exposes relevant live settings, replay, reset, synchronized HTML and JavaScript examples, and a working copy action without leaking MotionKit instances. |
+| `MK-DEMO-002` | `demo` | Live settings playground and code copy | Every adjustable demo exposes relevant live settings, replay, reset, synchronized HTML and JavaScript examples, and a working copy action without leaking Kineto instances. |
 | `MK-COUNTER-001` | `counter` | Grouped number formatting | Comma or locale grouping works in slot, plain, digit, and pop counter modes. |
 | `MK-COUNTER-002` | `counter` | Direct digit cycling | Digit mode cycles 0-9 by replacing glyphs without vertical reels. |
 | `MK-COUNTER-003` | `counter` | Final-value pop landing | Pop never counts up or cycles through intermediate values; the final formatted characters already exist and land one by one from a larger scale. |

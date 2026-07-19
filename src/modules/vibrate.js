@@ -30,7 +30,7 @@ export default {
     };
 
     // trigger:'manual' binds nothing — developers call instance.play()
-    // (or MotionKit.getInstance(el,'vibrate').play()) whenever they want.
+    // (or Kineto.getInstance(el,'vibrate').play()) whenever they want.
     if (trigger === 'hover' && !window.matchMedia?.('(hover: none)').matches) el.addEventListener('pointerenter', vibrate);
     else if (trigger === 'click') el.addEventListener('click', vibrate);
     else if (trigger === 'scroll' && typeof IntersectionObserver !== 'undefined') {

@@ -3,7 +3,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const contract = JSON.parse(await readFile(new URL('../motionkit.features.json', import.meta.url), 'utf8'));
+const contract = JSON.parse(await readFile(new URL('../kineto.features.json', import.meta.url), 'utf8'));
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 const expectedContractKeys = ['$schema', 'additionalNamedExports', 'behaviorContractVersion', 'compatibilityApi', 'contractVersion', 'coreApi', 'coreProperties', 'criticalBehaviors', 'libraryVersion', 'moduleCount', 'modules'].sort();
 assert.deepEqual(Object.keys(contract).sort(), expectedContractKeys, 'feature contract top-level shape drifted');
@@ -26,7 +26,7 @@ assert.deepEqual(moduleFiles, contract.modules.map(({ name }) => name).sort(), '
 
 for (const moduleContract of contract.modules) {
   assert.deepEqual(Object.keys(moduleContract).sort(), expectedModuleKeys, `${moduleContract.name} contract shape drifted`);
-  assert.equal(moduleContract.attribute, `data-mk-${dash(moduleContract.name)}`, `${moduleContract.name} activation attribute does not match its public name`);
+  assert.equal(moduleContract.attribute, `data-kt-${dash(moduleContract.name)}`, `${moduleContract.name} activation attribute does not match its public name`);
   assert.ok(moduleContract.variants.includes(moduleContract.defaultVariant), `${moduleContract.name} defaultVariant must be listed in variants`);
   assert.equal(new Set(moduleContract.publicOptions).size, moduleContract.publicOptions.length, `${moduleContract.name} publicOptions must be unique`);
   const sourcePath = resolve(import.meta.dirname, `../src/modules/${moduleContract.name}.js`);
@@ -37,28 +37,28 @@ for (const moduleContract of contract.modules) {
   assert.deepEqual([...new Set(sourceOptions)].sort(), [...moduleContract.publicOptions].sort(), `${moduleContract.name} source options drifted from the behavior contract`);
 }
 
-const built = await import(`${pathToFileURL(new URL('../dist/motionkit.js', import.meta.url).pathname).href}?t=${Date.now()}`);
-const MotionKit = built.default;
-assert.equal(MotionKit.version, contract.libraryVersion, 'runtime version must match the contract');
+const built = await import(`${pathToFileURL(new URL('../dist/kineto.js', import.meta.url).pathname).href}?t=${Date.now()}`);
+const Kineto = built.default;
+assert.equal(Kineto.version, contract.libraryVersion, 'runtime version must match the contract');
 assert.deepEqual(Object.keys(built).sort(), ['default', ...contract.modules.map(({ name }) => name), ...contract.additionalNamedExports].sort(), 'named ESM export surface drifted');
 const expected = contract.modules.map(({ name }) => name).sort();
-const actual = Object.keys(MotionKit.registry).sort();
+const actual = Object.keys(Kineto.registry).sort();
 assert.deepEqual(actual, expected, 'built registry differs from frozen feature contract');
 
 for (const { name } of contract.modules) {
-  assert.equal(typeof MotionKit[name], 'function', `MotionKit.${name} is missing`);
+  assert.equal(typeof Kineto[name], 'function', `Kineto.${name} is missing`);
   assert.equal(typeof built[name], 'function', `named ESM export ${name} is missing`);
 }
-for (const property of contract.coreProperties) assert.ok(property in MotionKit, `core property ${property} is missing`);
-for (const method of contract.coreApi) assert.equal(typeof MotionKit[method], 'function', `core API ${method} is missing`);
+for (const property of contract.coreProperties) assert.ok(property in Kineto, `core property ${property} is missing`);
+for (const method of contract.coreApi) assert.equal(typeof Kineto[method], 'function', `core API ${method} is missing`);
 const expectedRootKeys = [...contract.modules.map(({ name }) => name), ...contract.coreProperties, ...contract.coreApi].sort();
-assert.deepEqual(Object.keys(MotionKit).sort(), expectedRootKeys, 'uncontracted root API was added or a contracted API was removed');
+assert.deepEqual(Object.keys(Kineto).sort(), expectedRootKeys, 'uncontracted root API was added or a contracted API was removed');
 
 for (const path of contract.compatibilityApi) {
   const [group, method] = path.split('.');
-  assert.equal(typeof MotionKit[group]?.[method], 'function', `compatibility API ${path} is missing`);
+  assert.equal(typeof Kineto[group]?.[method], 'function', `compatibility API ${path} is missing`);
 }
 const expectedCompatibilityKeys = contract.compatibilityApi.map((path) => path.split('.')[1]).sort();
-assert.deepEqual(Object.keys(MotionKit.core).sort(), expectedCompatibilityKeys, 'compatibility API surface drifted');
+assert.deepEqual(Object.keys(Kineto.core).sort(), expectedCompatibilityKeys, 'compatibility API surface drifted');
 
 console.log(`Feature contract OK: ${contract.moduleCount} modules and ${contract.coreApi.length} core APIs.`);

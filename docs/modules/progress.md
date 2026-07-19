@@ -9,7 +9,7 @@
 ### HTML
 
 ```html
-<div class="scroll-progress" data-mk-progress></div>
+<div class="scroll-progress" data-kt-progress></div>
 ```
 
 ```css
@@ -27,7 +27,7 @@
 ### JS API
 
 ```js
-MotionKit.progress('.scroll-progress', {
+Kineto.progress('.scroll-progress', {
   target: 'page',
   property: 'scaleX',
 });
@@ -61,7 +61,7 @@ MotionKit.progress('.scroll-progress', {
 
 ```html
 <article class="post">
-  <div class="reading-progress" data-mk-progress data-mk-target=".post"></div>
+  <div class="reading-progress" data-kt-progress data-kt-target=".post"></div>
   <h1>제목</h1>
   <p>본문...</p>
 </article>
@@ -70,7 +70,7 @@ MotionKit.progress('.scroll-progress', {
 ### 비디오 같은 width 모드
 
 ```html
-<div class="bar" data-mk-progress data-mk-property="width"></div>
+<div class="bar" data-kt-progress data-kt-property="width"></div>
 ```
 
 ---

@@ -3,14 +3,14 @@ import { clamp } from '../utils.js';
 function createProgressUI(el, type, opts) {
   // Bring-your-own visuals: `renderUI(el, opts)` may return { root?, render }
   // and completely replaces the built-in DOM. Built-in visuals are plain,
-  // class-named elements (mk-loader-*) driven by --mk-loader-color, so they
+  // class-named elements (kt-loader-*) driven by --kt-loader-color, so they
   // can also be restyled with CSS alone.
   if (typeof opts.renderUI === 'function') {
     const custom = opts.renderUI(el, opts) || {};
     if (custom.root) el.appendChild(custom.root);
     return { root: custom.root || el, render: custom.render || (() => {}) };
   }
-  const color = opts.color || 'var(--mk-loader-color,currentColor)';
+  const color = opts.color || 'var(--kt-loader-color,currentColor)';
   const trackColor = opts.trackColor || 'rgba(127,127,127,.18)';
   const showPercent = opts.showPercent !== false;
   let valueEl = null;
@@ -19,8 +19,8 @@ function createProgressUI(el, type, opts) {
 
   if (type === 'slot') {
     root = document.createElement('div');
-    root.className = 'mk-loader-counter';
-    root.style.cssText = 'position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(2.5rem,8vw,5rem);font-weight:850;font-variant-numeric:tabular-nums;color:var(--mk-loader-color,currentColor);';
+    root.className = 'kt-loader-counter';
+    root.style.cssText = 'position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(2.5rem,8vw,5rem);font-weight:850;font-variant-numeric:tabular-nums;color:var(--kt-loader-color,currentColor);';
     valueEl = document.createElement('span');
     valueEl.textContent = '0%';
     root.appendChild(valueEl);
@@ -30,22 +30,22 @@ function createProgressUI(el, type, opts) {
     const radius = (size - stroke) / 2;
     const circumference = 2 * Math.PI * radius;
     root = document.createElement('div');
-    root.className = 'mk-loader-circular';
+    root.className = 'kt-loader-circular';
     root.style.cssText = `position:absolute;left:50%;top:50%;width:${size}px;height:${size}px;transform:translate(-50%,-50%);`;
-    root.innerHTML = `<svg aria-hidden="true" viewBox="0 0 ${size} ${size}" style="display:block;width:100%;height:100%;transform:rotate(-90deg)"><circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke="${trackColor}" stroke-width="${stroke}"></circle><circle class="mk-loader-circular-progress" cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}"></circle></svg><span class="mk-loader-value" style="position:absolute;inset:0;display:${showPercent ? 'grid' : 'none'};place-items:center;font-weight:800;font-variant-numeric:tabular-nums">0%</span>`;
-    progressEl = root.querySelector('.mk-loader-circular-progress');
-    valueEl = root.querySelector('.mk-loader-value');
+    root.innerHTML = `<svg aria-hidden="true" viewBox="0 0 ${size} ${size}" style="display:block;width:100%;height:100%;transform:rotate(-90deg)"><circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke="${trackColor}" stroke-width="${stroke}"></circle><circle class="kt-loader-circular-progress" cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}"></circle></svg><span class="kt-loader-value" style="position:absolute;inset:0;display:${showPercent ? 'grid' : 'none'};place-items:center;font-weight:800;font-variant-numeric:tabular-nums">0%</span>`;
+    progressEl = root.querySelector('.kt-loader-circular-progress');
+    valueEl = root.querySelector('.kt-loader-value');
     progressEl.dataset.circumference = String(circumference);
   } else if (type === 'bar') {
     const width = opts.barWidth || 'min(68vw,420px)';
     const height = Math.max(2, Number(opts.barHeight ?? 5));
     root = document.createElement('div');
-    root.className = 'mk-loader-bar';
+    root.className = 'kt-loader-bar';
     root.style.cssText = `position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:${typeof width === 'number' ? `${width}px` : width};display:grid;gap:12px;`;
-    const label = opts.label ? `<span class="mk-loader-label" style="font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;opacity:.65">${String(opts.label)}</span>` : '';
-    root.innerHTML = `${label}<span class="mk-loader-bar-track" style="display:block;position:relative;height:${height}px;border-radius:999px;overflow:hidden;background:${trackColor}"><span class="mk-loader-bar-progress" style="display:block;width:100%;height:100%;transform:scaleX(0);transform-origin:left;background:${color};border-radius:inherit"></span></span><span class="mk-loader-value" style="display:${showPercent ? 'block' : 'none'};text-align:right;font-variant-numeric:tabular-nums;font-weight:700">0%</span>`;
-    progressEl = root.querySelector('.mk-loader-bar-progress');
-    valueEl = root.querySelector('.mk-loader-value');
+    const label = opts.label ? `<span class="kt-loader-label" style="font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;opacity:.65">${String(opts.label)}</span>` : '';
+    root.innerHTML = `${label}<span class="kt-loader-bar-track" style="display:block;position:relative;height:${height}px;border-radius:999px;overflow:hidden;background:${trackColor}"><span class="kt-loader-bar-progress" style="display:block;width:100%;height:100%;transform:scaleX(0);transform-origin:left;background:${color};border-radius:inherit"></span></span><span class="kt-loader-value" style="display:${showPercent ? 'block' : 'none'};text-align:right;font-variant-numeric:tabular-nums;font-weight:700">0%</span>`;
+    progressEl = root.querySelector('.kt-loader-bar-progress');
+    valueEl = root.querySelector('.kt-loader-value');
   }
   // Optional page-fill: the overlay background fills with the accent color
   // like a giant progress bar (fill: 'up' | 'down' | 'left' | 'right').
@@ -53,7 +53,7 @@ function createProgressUI(el, type, opts) {
   const fillDirection = opts.fill === true ? 'up' : opts.fill;
   if (['up', 'down', 'left', 'right'].includes(fillDirection)) {
     fillEl = document.createElement('div');
-    fillEl.className = 'mk-loader-fill';
+    fillEl.className = 'kt-loader-fill';
     fillEl.setAttribute('aria-hidden', 'true');
     const origin = { up: 'bottom', down: 'top', left: 'right', right: 'left' }[fillDirection];
     const axis = (fillDirection === 'left' || fillDirection === 'right') ? 'scaleX' : 'scaleY';

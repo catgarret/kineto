@@ -145,7 +145,7 @@ export default {
     };
     const createSegment = (value = text, clone = false, html = false) => {
       const segment = document.createElement('span');
-      segment.className = 'mk-overflow-text-segment';
+      segment.className = 'kt-overflow-text-segment';
       if (html) segment.innerHTML = value;
       else segment.textContent = value;
       segment.style.cssText = 'display:inline-block;flex:0 0 auto;white-space:nowrap;';
@@ -159,10 +159,10 @@ export default {
       el.setAttribute('role', opts.role || 'status');
       el.setAttribute('aria-live', opts.ariaLive || 'polite');
       const rollViewport = document.createElement('span');
-      rollViewport.className = 'mk-overflow-rolling-viewport';
+      rollViewport.className = 'kt-overflow-rolling-viewport';
       rollViewport.style.cssText = 'display:block;position:relative;height:1.35em;overflow:hidden;';
       track = document.createElement('span');
-      track.className = 'mk-overflow-rolling-track';
+      track.className = 'kt-overflow-rolling-track';
       track.style.cssText = 'display:flex;flex-direction:column;will-change:transform;';
       const current = createSegment(items[0], false, true);
       const next = createSegment(items[1 % items.length], true, true);
@@ -214,10 +214,10 @@ export default {
       clearMotion();
       el.textContent = '';
       viewport = document.createElement('span');
-      viewport.className = 'mk-overflow-text-viewport';
+      viewport.className = 'kt-overflow-text-viewport';
       viewport.style.cssText = 'display:block;position:relative;overflow:hidden;will-change:clip-path,transform;';
       track = document.createElement('span');
-      track.className = `mk-overflow-text-track mk-overflow-text-${mode}`;
+      track.className = `kt-overflow-text-track kt-overflow-text-${mode}`;
       track.setAttribute('aria-hidden', 'true');
       track.dataset.mode = mode;
       track.style.cssText = 'display:inline-flex;align-items:center;white-space:nowrap;will-change:transform;';
@@ -232,7 +232,7 @@ export default {
       const viewportWidth = viewport.clientWidth || el.clientWidth;
       const overflow = Math.max(0, first.scrollWidth - viewportWidth);
       const shouldAnimate = opts.force === true || overflow > number(opts.threshold, 1);
-      el.dataset.mkOverflowActive = String(shouldAnimate);
+      el.dataset.ktOverflowActive = String(shouldAnimate);
       if (!shouldAnimate) {
         track.style.display = 'inline-block';
         track.style.maxWidth = '100%';
@@ -302,7 +302,7 @@ export default {
         track.remove();
         const makeLine = (offsetPx) => {
           const line = document.createElement('span');
-          line.className = 'mk-overflow-text-line';
+          line.className = 'kt-overflow-text-line';
           line.setAttribute('aria-hidden', 'true');
           line.style.cssText = 'position:absolute;left:0;top:0;height:100%;display:inline-flex;align-items:center;white-space:nowrap;will-change:transform;';
           const segment = createSegment();
@@ -560,7 +560,7 @@ export default {
         if (originalAria == null) el.removeAttribute('aria-label'); else el.setAttribute('aria-label', originalAria);
         if (originalRole == null) el.removeAttribute('role'); else el.setAttribute('role', originalRole);
         el.innerHTML = originalHTML;
-        delete el.dataset.mkOverflowActive;
+        delete el.dataset.ktOverflowActive;
       }
     };
   },

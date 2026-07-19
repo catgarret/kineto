@@ -11,9 +11,9 @@
 ### HTML
 
 ```html
-<p data-mk-text-fill
-   data-mk-base-color="rgba(255,255,255,0.15)"
-   data-mk-fill-color="rgba(255,255,255,1)">
+<p data-kt-text-fill
+   data-kt-base-color="rgba(255,255,255,0.15)"
+   data-kt-fill-color="rgba(255,255,255,1)">
   Motion is no longer decoration. It is the language of trust...
 </p>
 ```
@@ -21,7 +21,7 @@
 ### JS API
 
 ```js
-MotionKit.textFill('p.quote', {
+Kineto.textFill('p.quote', {
   baseColor: 'rgba(0,0,0,0.15)',
   fillColor: 'rgba(0,0,0,1)',
   start: 'top 70%',
@@ -53,9 +53,9 @@ MotionKit.textFill('p.quote', {
 ### 라이트 테마
 
 ```html
-<p data-mk-text-fill
-   data-mk-base-color="#cccccc"
-   data-mk-fill-color="#000000">
+<p data-kt-text-fill
+   data-kt-base-color="#cccccc"
+   data-kt-fill-color="#000000">
   큰 텍스트가 스크롤 따라 검정으로 채워집니다.
 </p>
 ```
@@ -63,9 +63,9 @@ MotionKit.textFill('p.quote', {
 ### 컬러 강조
 
 ```html
-<p data-mk-text-fill
-   data-mk-base-color="rgba(255,255,255,0.1)"
-   data-mk-fill-color="#ff5b1c">
+<p data-kt-text-fill
+   data-kt-base-color="rgba(255,255,255,0.1)"
+   data-kt-fill-color="#ff5b1c">
   스크롤하면 오렌지로 빛납니다.
 </p>
 ```

@@ -13,10 +13,10 @@ const esm = await rolldown({
   external: ['gsap', 'gsap/ScrollTrigger.js', 'lenis'],
   moduleTypes: { '.css': 'empty' }
 });
-await esm.write({ file: rel('dist/motionkit.min.js'), format: 'es', minify: true, exports: 'named' });
+await esm.write({ file: rel('dist/kineto.min.js'), format: 'es', minify: true, exports: 'named' });
 await esm.close();
 
-await copyFile(rel('dist/motionkit.umd.js'), rel('dist/motionkit.umd.min.js'));
-await copyFile(rel('dist/motionkit.css'), rel('dist/motionkit.min.css'));
+await copyFile(rel('dist/kineto.umd.js'), rel('dist/kineto.umd.min.js'));
+await copyFile(rel('dist/kineto.css'), rel('dist/kineto.min.css'));
 
-console.log('Minified: motionkit.min.js (ESM), motionkit.umd.min.js (UMD), motionkit.min.css');
+console.log('Minified: kineto.min.js (ESM), kineto.umd.min.js (UMD), kineto.min.css');

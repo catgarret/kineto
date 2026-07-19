@@ -1,13 +1,13 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
-const contractUrl = new URL('../motionkit.features.json', import.meta.url);
+const contractUrl = new URL('../kineto.features.json', import.meta.url);
 const outputUrl = new URL('../docs/module-reference.md', import.meta.url);
 const contract = JSON.parse(await readFile(contractUrl, 'utf8'));
 
 const lines = [
-  '# MotionKit Module Behavior Reference',
+  '# Kineto Module Behavior Reference',
   '',
-  '> 이 문서는 `motionkit.features.json`에서 생성됩니다. 직접 수정하지 말고 계약 파일을 명시적으로 변경한 뒤 `npm run docs:contract`를 실행하세요.',
+  '> 이 문서는 `kineto.features.json`에서 생성됩니다. 직접 수정하지 말고 계약 파일을 명시적으로 변경한 뒤 `npm run docs:contract`를 실행하세요.',
   '',
   `- Library: ${contract.libraryVersion}`,
   `- Feature contract: ${contract.contractVersion}`,

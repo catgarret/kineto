@@ -1,7 +1,7 @@
-# MotionKit v0.8.0 QA Report
+# Kineto v0.8.0 QA Report
 
 검증일: 2026-07-18  
-대상: MotionKit v0.8.0 reconstructed complete source
+대상: Kineto v0.8.0 reconstructed complete source
 
 ## 결과 요약
 
@@ -43,7 +43,7 @@
 
 ## 실제 tarball 설치 결과
 
-설치 파일: `motionkit-0.8.0.tgz`
+설치 파일: `kineto-0.8.0.tgz`
 
 ```json
 {

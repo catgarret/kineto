@@ -1,12 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 32 32" role="img" aria-label="MotionKit">
-  <title>MotionKit</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 32 32" role="img" aria-label="Kineto">
+  <title>Kineto</title>
   <defs>
-    <linearGradient id="mk-grad" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="kt-grad" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#ff5b1c"/>
       <stop offset="1" stop-color="#ffd166"/>
     </linearGradient>
   </defs>
-  <rect width="32" height="32" rx="9" fill="url(#mk-grad)"/>
+  <rect width="32" height="32" rx="9" fill="url(#kt-grad)"/>
   <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
     <path d="M8 22 C 12.5 22, 13.5 10, 24 10" stroke-width="3.3"/>
   </g>

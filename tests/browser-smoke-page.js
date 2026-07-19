@@ -1,4 +1,4 @@
-import MotionKit from '../src/index.js';
+import Kineto from '../src/index.js';
 
 async function runSmoke() {
 
@@ -11,11 +11,11 @@ async function runSmoke() {
   const errors = [];
   window.addEventListener('error', (event) => errors.push(String(event.error || event.message)));
   window.addEventListener('unhandledrejection', (event) => errors.push(String(event.reason)));
-  MotionKit.config({ smooth: false, debug: false });
+  Kineto.config({ smooth: false, debug: false });
 
   const root = document.querySelector('#fixtures');
   const svg = `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#888"/><circle cx="32" cy="32" r="18" fill="#ddd"/></svg>')}`;
-  const make = (tag = 'div', text = 'MotionKit') => {
+  const make = (tag = 'div', text = 'Kineto') => {
     const el = document.createElement(tag);
     el.className = 'fixture';
     el.textContent = text;
@@ -25,8 +25,8 @@ async function runSmoke() {
   const results = {};
   const run = (name, el, options = {}, { allowNull = false } = {}) => {
     try {
-      const first = MotionKit.create(name, el, options);
-      const second = MotionKit.create(name, el, options);
+      const first = Kineto.create(name, el, options);
+      const second = Kineto.create(name, el, options);
       if (!allowNull && !first) throw new Error(`${name} returned null`);
       if (first && second !== first) throw new Error(`${name} duplicate initialization created a new instance`);
       if (first) {
@@ -34,14 +34,14 @@ async function runSmoke() {
         first.resume?.();
         if (name === 'reveal') {
           first.destroy();
-          if (MotionKit.getInstance(el, name)) throw new Error(`${name} direct destroy left a stale core record`);
-          const recreated = MotionKit.create(name, el, options);
+          if (Kineto.getInstance(el, name)) throw new Error(`${name} direct destroy left a stale core record`);
+          const recreated = Kineto.create(name, el, options);
           if (!recreated || recreated === first) throw new Error(`${name} could not recreate after direct destroy`);
         }
-        const replayed = MotionKit.replay(el, name);
+        const replayed = Kineto.replay(el, name);
         if (!replayed) throw new Error(`${name} replay returned null`);
-        MotionKit.destroyModule(el, name);
-        if (MotionKit.getInstance(el, name)) throw new Error(`${name} was not destroyed`);
+        Kineto.destroyModule(el, name);
+        if (Kineto.getInstance(el, name)) throw new Error(`${name} was not destroyed`);
       }
       results[name] = first ? 'ok' : 'supported-null';
     } catch (error) {
@@ -74,14 +74,14 @@ async function runSmoke() {
   const floating = make(); floating.innerHTML = '<div>A</div><div>B</div><div>C</div>'; run('stickyStack', floating, { mode: 'floating', pin: false, scrub: 0.1, scrollLength: 10 });
   run('scrollVelocity', make(), { mode: 'translate', axis: 'x', distance: 24 });
   run('progress', make());
-  const slider = make(); slider.innerHTML = '<div class="mk-slider-wrap"><div class="mk-slider-track"><div class="mk-slide">A</div><div class="mk-slide">B</div></div></div>';
+  const slider = make(); slider.innerHTML = '<div class="kt-slider-wrap"><div class="kt-slider-track"><div class="kt-slide">A</div><div class="kt-slide">B</div></div></div>';
   try {
-    const sliderInstance = MotionKit.create('slider', slider, { autoplay: false, speed: 0.01 });
+    const sliderInstance = Kineto.create('slider', slider, { autoplay: false, speed: 0.01 });
     if (!sliderInstance) throw new Error('slider returned null');
     if (sliderInstance.index !== 0) throw new Error(`slider initial getter is invalid: ${sliderInstance.index}`);
     sliderInstance.next();
     if (sliderInstance.index !== 1) throw new Error(`slider live index getter was flattened: ${sliderInstance.index}`);
-    const duplicateSlider = MotionKit.create('slider', slider, { autoplay: false });
+    const duplicateSlider = Kineto.create('slider', slider, { autoplay: false });
     if (duplicateSlider !== sliderInstance) throw new Error('slider duplicate initialization created a new instance');
     sliderInstance.destroy();
     results.slider = 'ok';
@@ -111,30 +111,30 @@ async function runSmoke() {
     return element;
   };
   const autoInitElement = makeFunctional('div', 'Auto init');
-  autoInitElement.setAttribute('data-mk-reveal', 'fade-up');
-  MotionKit.scan(autoInitElement);
-  if (!MotionKit.getInstance(autoInitElement, 'reveal')) errors.push('data attribute scan failed');
-  MotionKit.destroy(autoInitElement);
+  autoInitElement.setAttribute('data-kt-reveal', 'fade-up');
+  Kineto.scan(autoInitElement);
+  if (!Kineto.getInstance(autoInitElement, 'reveal')) errors.push('data attribute scan failed');
+  Kineto.destroy(autoInitElement);
 
   const unknownTarget = makeFunctional('div', 'Untouched');
   unknownTarget.setAttribute('data-owner-state', 'keep');
   const unknownBefore = unknownTarget.outerHTML;
-  const unknownResult = MotionKit.create('notAContractedModule', unknownTarget, { invented: true });
+  const unknownResult = Kineto.create('notAContractedModule', unknownTarget, { invented: true });
   if (unknownResult !== null || unknownTarget.outerHTML !== unknownBefore) errors.push('unknown module mutated its target or returned a non-null instance');
 
   const destroyRoot = makeFunctional('section', '');
   const destroyChild = document.createElement('div');
   destroyChild.textContent = 'Nested reveal';
   destroyRoot.appendChild(destroyChild);
-  MotionKit.create('reveal', destroyChild, { duration: 0.01 });
-  MotionKit.destroy(destroyRoot);
-  if (MotionKit.getInstance(destroyChild, 'reveal')) errors.push('root destroy did not remove descendant instances');
+  Kineto.create('reveal', destroyChild, { duration: 0.01 });
+  Kineto.destroy(destroyRoot);
+  if (Kineto.getInstance(destroyChild, 'reveal')) errors.push('root destroy did not remove descendant instances');
 
   let lazyLoaded = false;
   const pixelImage = makeFunctional('img', '');
   pixelImage.style.height = '128px';
   pixelImage.setAttribute('data-src', svg);
-  const pixelInstance = MotionKit.create('lazy', pixelImage, {
+  const pixelInstance = Kineto.create('lazy', pixelImage, {
     effect: 'pixelate',
     steps: [0.1, 0.25, 1],
     delay: 0,
@@ -146,20 +146,20 @@ async function runSmoke() {
 
 
   const slotCounter = makeFunctional('div', '0');
-  const slotCounterInstance = MotionKit.create('counter', slotCounter, { mode: 'slot', to: 12345, format: ',', duration: 0.02, loops: 0 });
-  if (!slotCounter.querySelector('.mk-counter-separator') || slotCounter.getAttribute('aria-label') !== '12,345') {
+  const slotCounterInstance = Kineto.create('counter', slotCounter, { mode: 'slot', to: 12345, format: ',', duration: 0.02, loops: 0 });
+  if (!slotCounter.querySelector('.kt-counter-separator') || slotCounter.getAttribute('aria-label') !== '12,345') {
     errors.push('slot counter did not preserve comma grouping');
   }
 
   const digitCounter = makeFunctional('div', '0');
-  const digitCounterInstance = MotionKit.create('counter', digitCounter, { mode: 'digit', to: 54321, format: ',', duration: 0.03, loops: 0, stagger: 0 });
-  if (digitCounter.querySelector('.mk-counter-reel') || !digitCounter.querySelector('.mk-counter-digit')) {
+  const digitCounterInstance = Kineto.create('counter', digitCounter, { mode: 'digit', to: 54321, format: ',', duration: 0.03, loops: 0, stagger: 0 });
+  if (digitCounter.querySelector('.kt-counter-reel') || !digitCounter.querySelector('.kt-counter-digit')) {
     errors.push('digit counter used a vertical reel or omitted digit nodes');
   }
 
   const popCounter = makeFunctional('div', '0');
-  const popCounterInstance = MotionKit.create('counter', popCounter, { mode: 'pop', to: 9876, format: ',', duration: 0.03, loops: 0, stagger: 0, popScale: 1.6 });
-  if (popCounter.querySelector('.mk-counter-reel') || !popCounter.querySelector('.mk-counter-digit')) {
+  const popCounterInstance = Kineto.create('counter', popCounter, { mode: 'pop', to: 9876, format: ',', duration: 0.03, loops: 0, stagger: 0, popScale: 1.6 });
+  if (popCounter.querySelector('.kt-counter-reel') || !popCounter.querySelector('.kt-counter-digit')) {
     errors.push('pop counter used a vertical reel or omitted pop digit nodes');
   }
 
@@ -167,7 +167,7 @@ async function runSmoke() {
   const rangedPixelImage = makeFunctional('img', '');
   rangedPixelImage.style.height = '128px';
   rangedPixelImage.setAttribute('data-src', svg);
-  const rangedPixelInstance = MotionKit.create('lazy', rangedPixelImage, {
+  const rangedPixelInstance = Kineto.create('lazy', rangedPixelImage, {
     effect: 'pixelate', pixelStart: 0.05, pixelEnd: 1, pixelStepCount: 4,
     delay: 0, stepDuration: 4, holdDuration: 2, fadeDuration: 0.01,
     onProgress: () => { pixelProgress += 1; }
@@ -176,43 +176,43 @@ async function runSmoke() {
   const printImage = makeFunctional('img', '');
   printImage.style.height = '128px';
   printImage.setAttribute('data-src', svg);
-  const printInstance = MotionKit.create('lazy', printImage, {
+  const printInstance = Kineto.create('lazy', printImage, {
     effect: 'print', duration: 0.05, delay: 0, feather: 12, noise: 0.1, direction: 'down', fadeDuration: 0.01
   });
   if (printImage.parentElement.querySelector('[class*="scanner"]')) errors.push('print effect reintroduced a scanner/laser element');
 
   const glowCard = makeFunctional('div', 'Glow');
   glowCard.style.height = '80px';
-  const glowInstance = MotionKit.create('cardGlow', glowCard, { radius: 70, color: 'rgba(90,120,255,.7)' });
-  const glowLayer = glowCard.querySelector('.mk-card-glow-spotlight');
+  const glowInstance = Kineto.create('cardGlow', glowCard, { radius: 70, color: 'rgba(90,120,255,.7)' });
+  const glowLayer = glowCard.querySelector('.kt-card-glow-spotlight');
   if (!glowLayer || glowLayer.firstElementChild?.style.background.includes('conic-gradient')) {
     errors.push('default card glow is not a clipped single-color spotlight');
   }
 
   const overflowLong = makeFunctional('div', 'This title is intentionally much longer than the display width');
   overflowLong.style.width = '90px';
-  const overflowLongInstance = MotionKit.create('overflowText', overflowLong, { mode: 'bounce', delay: 0, speed: 200, endPause: 10 });
+  const overflowLongInstance = Kineto.create('overflowText', overflowLong, { mode: 'bounce', delay: 0, speed: 200, endPause: 10 });
   const overflowShort = makeFunctional('div', 'Short');
   overflowShort.style.width = '200px';
-  const overflowShortInstance = MotionKit.create('overflowText', overflowShort, { mode: 'loop', delay: 0 });
-  if (overflowLong.querySelector('.mk-overflow-text-track')?.getAnimations().length === 0) errors.push('overflow text did not animate overflowing content');
-  if (overflowShort.querySelector('.mk-overflow-text-track')?.getAnimations().length !== 0) errors.push('overflow text animated content that fits');
+  const overflowShortInstance = Kineto.create('overflowText', overflowShort, { mode: 'loop', delay: 0 });
+  if (overflowLong.querySelector('.kt-overflow-text-track')?.getAnimations().length === 0) errors.push('overflow text did not animate overflowing content');
+  if (overflowShort.querySelector('.kt-overflow-text-track')?.getAnimations().length !== 0) errors.push('overflow text animated content that fits');
 
   const simpleLightboxImage = makeFunctional('img', '');
   simpleLightboxImage.src = svg;
-  const simpleLightboxInstance = MotionKit.create('lightbox', simpleLightboxImage, { duration: 0.01 });
+  const simpleLightboxInstance = Kineto.create('lightbox', simpleLightboxImage, { duration: 0.01 });
   simpleLightboxImage.click();
 
   const hangulElement = makeFunctional('div', '강');
-  const hangulInstance = MotionKit.create('textReveal', hangulElement, { mode: 'hangul', speed: 2 });
+  const hangulInstance = Kineto.create('textReveal', hangulElement, { mode: 'hangul', speed: 2 });
 
   const plainCounter = makeFunctional('div', '0');
-  MotionKit.create('counter', plainCounter, { mode: 'plain', to: 42, duration: 0.02 });
+  Kineto.create('counter', plainCounter, { mode: 'plain', to: 42, duration: 0.02 });
 
   const ariaCounter = makeFunctional('div', '7');
   ariaCounter.setAttribute('aria-label', 'Original counter');
   ariaCounter.setAttribute('aria-live', 'assertive');
-  const ariaCounterInstance = MotionKit.create('counter', ariaCounter, { mode: 'plain', to: 8, duration: 0.01 });
+  const ariaCounterInstance = Kineto.create('counter', ariaCounter, { mode: 'plain', to: 8, duration: 0.01 });
   ariaCounterInstance?.destroy();
   if (ariaCounter.getAttribute('aria-label') !== 'Original counter' || ariaCounter.getAttribute('aria-live') !== 'assertive') {
     errors.push('counter destroy did not restore original ARIA attributes');
@@ -221,16 +221,16 @@ async function runSmoke() {
   const staggerReveal = makeFunctional('div', '');
   staggerReveal.innerHTML = '<span style="opacity:.4;transform:scale(1.2)">A</span><span style="filter:blur(1px)">B</span>';
   const staggerStyles = Array.from(staggerReveal.children, (child) => child.getAttribute('style'));
-  const staggerInstance = MotionKit.create('reveal', staggerReveal, { stagger: 0.01, duration: 0.01 });
+  const staggerInstance = Kineto.create('reveal', staggerReveal, { stagger: 0.01, duration: 0.01 });
   staggerInstance?.destroy();
   const restoredStaggerStyles = Array.from(staggerReveal.children, (child) => child.getAttribute('style'));
   if (JSON.stringify(restoredStaggerStyles) !== JSON.stringify(staggerStyles)) errors.push('stagger reveal did not restore child styles');
 
-  MotionKit.config({ forceReducedMotion: true });
+  Kineto.config({ forceReducedMotion: true });
   const reducedCounter = makeFunctional('div', '');
   reducedCounter.innerHTML = '<strong>0</strong>';
   const reducedCounterOriginal = reducedCounter.innerHTML;
-  const reducedCounterInstance = MotionKit.create('counter', reducedCounter, { to: 99 });
+  const reducedCounterInstance = Kineto.create('counter', reducedCounter, { to: 99 });
   if (reducedCounter.textContent !== '99') errors.push(`reduced counter did not render final value: ${reducedCounter.textContent}`);
   reducedCounterInstance?.destroy();
   if (reducedCounter.innerHTML !== reducedCounterOriginal) errors.push('reduced counter destroy did not restore original HTML');
@@ -241,20 +241,20 @@ async function runSmoke() {
   reducedLazy.setAttribute('style', 'opacity:.5');
   const reducedLazyOriginalStyle = reducedLazy.getAttribute('style');
   const reducedLazyOriginalSrc = reducedLazy.getAttribute('src');
-  const reducedLazyInstance = MotionKit.create('lazy', reducedLazy);
+  const reducedLazyInstance = Kineto.create('lazy', reducedLazy);
   reducedLazyInstance?.destroy();
   if (reducedLazy.getAttribute('style') !== reducedLazyOriginalStyle || reducedLazy.getAttribute('src') !== reducedLazyOriginalSrc) {
     errors.push('reduced lazy destroy did not restore source and style');
   }
 
   const reducedTypewriter = makeFunctional('div', 'Original');
-  const reducedTypewriterInstance = MotionKit.create('typewriter', reducedTypewriter, { strings: ['Static', 'Ignored'], loop: true });
-  if (reducedTypewriter.textContent !== 'Static' || reducedTypewriter.querySelector('.mk-tw-caret')) {
+  const reducedTypewriterInstance = Kineto.create('typewriter', reducedTypewriter, { strings: ['Static', 'Ignored'], loop: true });
+  if (reducedTypewriter.textContent !== 'Static' || reducedTypewriter.querySelector('.kt-tw-caret')) {
     errors.push('reduced typewriter started an animated caret/loop instead of rendering a static value');
   }
   reducedTypewriterInstance?.destroy();
   if (reducedTypewriter.textContent !== 'Original') errors.push('reduced typewriter destroy did not restore original content');
-  MotionKit.config({ forceReducedMotion: false });
+  Kineto.config({ forceReducedMotion: false });
 
   await new Promise((resolve) => setTimeout(resolve, 300));
   if (!lazyLoaded || !pixelImage.complete || !pixelImage.src.startsWith('data:image/svg+xml')) errors.push('lazy pixelate did not load its real image');
@@ -265,11 +265,11 @@ async function runSmoke() {
   if (popCounter.textContent !== '9,876') errors.push(`pop counter did not reach grouped target: ${popCounter.textContent}`);
   if (pixelProgress < 3 || !rangedPixelImage.complete || !rangedPixelImage.src.startsWith('data:image/svg+xml')) errors.push('pixelate range controls did not complete');
   if (!printImage.complete || !printImage.src.startsWith('data:image/svg+xml') || printImage.style.opacity !== '1') errors.push('progressive print did not reveal the real image');
-  const lightboxDialog = document.querySelector('#mk-lightbox');
-  if (!lightboxDialog || lightboxDialog.hidden || lightboxDialog.style.display === 'none' || getComputedStyle(lightboxDialog).position !== 'fixed' || lightboxDialog.getBoundingClientRect().width < window.innerWidth - 1 || !lightboxDialog.querySelector('.mk-lightbox-minimap')) errors.push('full lightbox viewer did not open across the viewport');
-  lightboxDialog?.querySelector('.mk-lightbox-close')?.click();
+  const lightboxDialog = document.querySelector('#kt-lightbox');
+  if (!lightboxDialog || lightboxDialog.hidden || lightboxDialog.style.display === 'none' || getComputedStyle(lightboxDialog).position !== 'fixed' || lightboxDialog.getBoundingClientRect().width < window.innerWidth - 1 || !lightboxDialog.querySelector('.kt-lightbox-minimap')) errors.push('full lightbox viewer did not open across the viewport');
+  lightboxDialog?.querySelector('.kt-lightbox-close')?.click();
 
-  const replayedCounter = MotionKit.replay(plainCounter, 'counter', { mode: 'plain', to: 84, duration: 0.02, start: false });
+  const replayedCounter = Kineto.replay(plainCounter, 'counter', { mode: 'plain', to: 84, duration: 0.02, start: false });
   if (!replayedCounter) errors.push('counter replay with replacement options returned null');
   await new Promise((resolve) => setTimeout(resolve, 100));
   if (plainCounter.textContent !== '84') errors.push(`replay replacement options were not applied: ${plainCounter.textContent}`);
@@ -286,11 +286,11 @@ async function runSmoke() {
   hangulInstance?.destroy();
   replayedCounter?.destroy();
   functionalHost.remove();
-  const registry = Object.keys(MotionKit.registry).sort();
+  const registry = Object.keys(Kineto.registry).sort();
   if (JSON.stringify(registry) !== JSON.stringify(expected)) errors.push(`registry mismatch: ${registry.join(',')}`);
-  MotionKit.destroy();
-  if (MotionKit.instanceCount !== 0) errors.push(`instance leak: ${MotionKit.instanceCount}`);
-  window.__MK_SMOKE__ = { ok: errors.length === 0, errors, results, registry, instanceCount: MotionKit.instanceCount };
+  Kineto.destroy();
+  if (Kineto.instanceCount !== 0) errors.push(`instance leak: ${Kineto.instanceCount}`);
+  window.__MK_SMOKE__ = { ok: errors.length === 0, errors, results, registry, instanceCount: Kineto.instanceCount };
   document.documentElement.dataset.smokeDone = 'true';
 }
 

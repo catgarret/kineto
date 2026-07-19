@@ -2,15 +2,15 @@
   'use strict';
 
   const MODULE_ATTRIBUTES = {
-    parallax: 'data-mk-parallax', mouseParallax: 'data-mk-mouse-parallax', reveal: 'data-mk-reveal',
-    counter: 'data-mk-counter', lazy: 'data-mk-lazy', textSplit: 'data-mk-text-split',
-    blurText: 'data-mk-blur-text', shuffle: 'data-mk-shuffle', typewriter: 'data-mk-typewriter', progress: 'data-mk-progress', fullpage: 'data-mk-fullpage',
-    textReveal: 'data-mk-text-reveal', textTransition: 'data-mk-text-transition', magnetic: 'data-mk-magnetic',
-    ripple: 'data-mk-ripple', marquee: 'data-mk-marquee', overflowText: 'data-mk-overflow-text',
-    tilt: 'data-mk-tilt', cursor: 'data-mk-cursor', textFill: 'data-mk-text-fill', stickyStack: 'data-mk-sticky-stack',
-    scrollVelocity: 'data-mk-scroll-velocity', slider: 'data-mk-slider', ambientMedia: 'data-mk-ambient-media',
-    glitch: 'data-mk-glitch', cardGlow: 'data-mk-card-glow', lightbox: 'data-mk-lightbox', vibrate: 'data-mk-vibrate',
-    cssScroll: 'data-mk-css-scroll', scrollSequence: 'data-mk-scroll-sequence', brushReveal: 'data-mk-brush-reveal'
+    parallax: 'data-kt-parallax', mouseParallax: 'data-kt-mouse-parallax', reveal: 'data-kt-reveal',
+    counter: 'data-kt-counter', lazy: 'data-kt-lazy', textSplit: 'data-kt-text-split',
+    blurText: 'data-kt-blur-text', shuffle: 'data-kt-shuffle', typewriter: 'data-kt-typewriter', progress: 'data-kt-progress', fullpage: 'data-kt-fullpage',
+    textReveal: 'data-kt-text-reveal', textTransition: 'data-kt-text-transition', magnetic: 'data-kt-magnetic',
+    ripple: 'data-kt-ripple', marquee: 'data-kt-marquee', overflowText: 'data-kt-overflow-text',
+    tilt: 'data-kt-tilt', cursor: 'data-kt-cursor', textFill: 'data-kt-text-fill', stickyStack: 'data-kt-sticky-stack',
+    scrollVelocity: 'data-kt-scroll-velocity', slider: 'data-kt-slider', ambientMedia: 'data-kt-ambient-media',
+    glitch: 'data-kt-glitch', cardGlow: 'data-kt-card-glow', lightbox: 'data-kt-lightbox', vibrate: 'data-kt-vibrate',
+    cssScroll: 'data-kt-css-scroll', scrollSequence: 'data-kt-scroll-sequence', brushReveal: 'data-kt-brush-reveal'
   };
 
   const PUBLIC_OPTIONS = {"ambientMedia":["allowOverflow","ambientSrc","ambientSrcset","blur","brightness","color","fallbackColor","hideOnPause","inset","opacity","radius","sampleFps","sampleHeight","sampleWidth","saturation","scale","source","src"],"blurText":["duration","ease","onComplete","once","stagger","start"],"brushReveal":["blur","crossOrigin","fade","maxDpr","onError","opacity","persist","radius","revealSrc","softness","src"],"cardGlow":["alwaysOn","blendMode","blur","borderBlur","borderColor","borderColor2","borderGlow","borderInset","borderOpacity","borderRadius","borderWidth","color","color1","color2","cycleDuration","disableOnMobile","duration","ease","follow","halo","intensity","luminousBorder","mode","opacity","preset","radius","reflection","sensitivity","smoothing","speed","spread","surface","surfaceBlend","surfaceBlur","surfaceColor","surfaceColor2","surfaceGradient","surfaceInset","surfaceOpacity","surfaceSize"],"counter":["bareBackground","blink","blinkSeparators","clockSeparator","clockStyle","comma","daysLabel","decimals","delay","duration","ease","format","from","gap","grouping","hour12","lineHeight","locale","loops","mode","onComplete","once","popAlign","popDuration","popScale","prefix","preset","rollDirection","rollDuration","seamColor","seconds","separator","separatorColor","shadow","showDays","since","stagger","start","style","suffix","tile","tileColor","tileRadius","tileTextColor","to","until"],"cssScroll":["cssAnimation","end","onUpdate","property","rangeEnd","rangeStart","start"],"cursor":["backdropFilter","background","blur","borderColor","borderWidth","className","clickImage","clickImageDuration","clickImageSize","clickSprite","clickSpriteDuration","clickSpriteFrames","clickSpriteHeight","clickSpriteWidth","color","crosshairSize","dot","dotColor","dotSize","ease","follower","followerSize","full","global","height","hiddenSelector","hideDotOnHover","hoverBackground","hoverClass","hoverColor","hoverDotOpacity","hoverDotSize","hoverEffect","hoverLabel","hoverScale","hoverSelector","hoverSrc","hoverTemplate","html","label","labelColor","labelSize","mixBlendMode","onEnter","onLeave","opacity","orbitHoverScale","orbitRadius","orbitSpeed","orbitSquash","orbitText","preset","pressScale","radius","rotate","rotateDuration","rotateText","shadow","shape","smoothing","snakeGap","snakeMinScale","snakeScaleEase","snakeText","sparkleColor","sparkleColor2","sparkleDuration","sparkleSize","sparkleSymbols","sparkleThrottle","speed","spring","src","template","text","textColor","trailColor","trailCount","trailSize","type","width","zIndex"],"fullpage":["axis","dots","drag","duration","ease","height","initial","keyboard","loop","mode","onChange","onLeave","sectionSelector","threshold","touch","wheel"],"glitch":["blendMode","colors","delay","duration","intensity","loop","preset","sliceCount","speed","trigger","type"],"lazy":["animated","aspectRatio","blur","crossOrigin","delay","direction","display","duration","ease","edgeOpacity","edgeWidth","effect","fadeDuration","fallbackSrc","feather","flickerBackground","frame","frameColor","glitchStrength","height","holdDuration","keepFrame","maxDpr","minDuration","nativeLazy","noise","noiseBlend","noiseContrast","noiseFps","noiseHeight","noiseWidth","objectFit","objectPosition","onError","onLoad","onProgress","pixelEnd","pixelStart","pixelStepCount","preset","renderFps","rootMargin","rotate","sizes","skeletonAngle","skeletonColor","skeletonHighlight","skeletonIcon","skeletonSpeed","skeletonVariant","sliceCount","src","srcset","startScale","stepCount","stepDuration","steps","threshold","variant"],"lightbox":["alt","backdropBlur","backdropColor","backdropOpacity","caption","className","closeOnBackdrop","cursor","description","doubleClickZoom","duration","group","info","lazyEffect","lazyOptions","lightboxDuration","maxZoom","metadata","minZoom","minimap","onChange","onClose","onLoad","onOpen","radius","renderUI","src","title","toolbar","uiTemplate","wheelStep","zoom","zoomStep"],"loader":["ariaLabel","barHeight","barWidth","className","color","completeHold","completeOnError","duration","exit","exitDirection","exitDuration","expectedResources","fetch","fetchOptions","fill","fillColor","hideScrollbar","label","labelBlend","labelColor","manualDuration","minDuration","onComplete","onError","onProgress","percent","preset","progress","progressSource","promise","promiseCeiling","promiseStart","renderUI","resourceSelector","resources","showPercent","size","smoothing","source","stroke","trackColor","transition","type","url"],"magnetic":["ease","radius","strength"],"marquee":["clones","direction","pauseOnHover","reverseOnScrollUp","scrollAcceleration","skew","speed"],"mouseParallax":["compassRange","ease","global","gyro","maxX","maxY","mode","preset","rotateOffset","sensitivity","smoothing","speed"],"overflowText":["ariaLive","delay","direction","dissolveDuration","easing","ellipsis","endPause","flipDirection","flipDuration","force","gap","holdDuration","items","jitter","maskDirection","maskDuration","maskEase","mode","onChange","onPage","pageDuration","pageOverlap","pauseOnHover","perspective","preset","repeat","restartDelay","role","rollDirection","rollDuration","speed","text","threshold","title","transitionDirection"],"pageReveal":["angle","axis","color","color2","count","delay","direction","duration","ease","effect","onComplete","preset","stagger"],"pageTransition":["animationSelector","cache","container","executeScripts","linkSelector","minDuration","onClick","onEnter","onError","onLeave","scrollTop"],"parallax":["axis","distance","end","onUpdate","scrub","speed","start"],"progress":["attach","clickToTop","color","color2","hideAtEnd","label","offset","onUpdate","position","property","radius","showAfter","showPercent","size","smoothing","stroke","target","thickness","trackColor","ui","zIndex"],"reveal":["activeClass","classOnly","clockDirection","delay","direction","duration","ease","end","enterClass","leaveClass","onClassChange","onComplete","onEnter","onEnterBack","onLeave","onLeaveBack","once","preset","removeClassOnLeave","rootMargin","spring","stagger","start","startAngle","threshold"],"ripple":["centered","color","disableInReducedMotion","duration","easing","opacity","scale","unbounded"],"scrollSequence":["crossOrigin","end","extension","fit","frames","height","maxDpr","onError","onFrame","padding","preloadRadius","scrollLength","scrub","start","top","urlPrefix","urls","vhPerFrame"],"scrollVelocity":["axis","damping","decay","distance","effect","elastic","end","global","mass","maxBlur","maxRotate","maxScale","maxSkew","mode","onDirection","onUpdate","preset","response","reverse","smoothing","spring","start","stiffness","velocityDivisor"],"shuffle":["chars","onComplete","rainbow","rainbowColors","revealRate","rootMargin","scrambleFade","speed","text","threshold"],"slider":["align","autoplay","axis","depth","duration","effect","gap","initial","label","loop","minOpacity","minScale","nextSelector","onChange","opacityStep","pauseOnHover","perView","perspective","preset","prevSelector","rotate","scaleStep","smoothing","spacing","speed"],"stickyStack":["align","blur","bottomSpace","distance","ease","effect","end","fadePrevious","gap","itemDuration","itemHeight","minHeight","mode","offset","offsetTop","offsetY","onProgress","overlap","panelWidth","perspective","pin","pinSpacing","preset","previousBlur","previousOpacity","previousScale","previousY","reverseZ","rotate","scaleFrom","scalePrevious","scrollLength","scrub","snap","start","top","transformOrigin","transitionStartOffset","type"],"textFill":["baseColor","end","fillColor","onUpdate","scrub","start"],"textReveal":["chars","delay","duration","ease","flickerCount","flickerLoop","hold","loop","mode","onComplete","preset","rainbow","rainbowColors","rootMargin","scrambleFade","speed","stagger","text","threshold"],"textSplit":["animation","by","delay","duration","ease","hold","onComplete","onSwap","once","pause","perspective","preset","stagger","start","swapEase","swapOut","texts"],"textTransition":["ariaLive","baseColor","blur","charMode","duration","ease","effect","endScale","hold","jitter","loop","minHeight","onChange","onComplete","pause","preset","shimColor","shimSpeed","stagger","startScale","texts"],"tilt":["axis","disableOnMobile","ease","glare","glareBlur","glareColor","glareOpacity","glareRadius","gyro","max","maxX","maxY","perspective","reset","reverse","scale","sensitivity","smoothing"],"typewriter":["caret","caretChar","compose","eraseSpeed","hangul","loop","onComplete","pauseAfter","strings","typeSpeed"],"vibrate":["haptic","pattern","preset","threshold","trigger"]};
@@ -241,7 +241,7 @@ counter: {
     }
     const allowed = new Set(PUBLIC_OPTIONS[descriptor.module] || []);
     Array.from(target.attributes).forEach((attribute) => {
-      if (!attribute.name.startsWith('data-mk-') || attribute.name === activation) return;
+      if (!attribute.name.startsWith('data-kt-') || attribute.name === activation) return;
       const key = camel(attribute.name.slice(8));
       if (allowed.size && !allowed.has(key)) return;
       options[key] = parse(attribute.value);
@@ -285,7 +285,7 @@ counter: {
 
   function setOption(descriptor, key, value, type) {
     const activation = MODULE_ATTRIBUTES[descriptor.module];
-    const attribute = key === 'preset' ? activation : `data-mk-${dash(key)}`;
+    const attribute = key === 'preset' ? activation : `data-kt-${dash(key)}`;
     descriptor.targets.forEach((target) => {
       if (type === 'checkbox') target.setAttribute(attribute, value ? 'true' : 'false');
       else if (value === '' || value == null) target.removeAttribute(attribute);
@@ -294,7 +294,7 @@ counter: {
   }
 
   function syncVisibility(host, descriptors) {
-    const panel = host.querySelector(':scope > .mk-playground');
+    const panel = host.querySelector(':scope > .kt-playground');
     const body = panel?.__mkBody || panel;
     if (!body) return;
     descriptors.forEach((descriptor) => {
@@ -311,7 +311,7 @@ counter: {
   }
 
   function runPageRevealDescriptor(descriptor) {
-    const MK = window.MotionKit;
+    const MK = window.Kineto;
     MK.destroyModule(document.body, 'pageReveal');
     MK.pageReveal(document.body, { ...descriptor.options });
   }
@@ -325,7 +325,7 @@ counter: {
     // Rebuild a single element module in place — inner modules on the same card
     // stay untouched, so a stacked container (ambientMedia over a lazy image)
     // never has its subtree torn out from under it.
-    const MK = window.MotionKit;
+    const MK = window.Kineto;
     descriptor.targets.forEach((target) => {
       MK.destroyModule(target, descriptor.module);
       try {
@@ -338,7 +338,7 @@ counter: {
   }
 
   function apply(host, descriptors, status, message = 'Applied') {
-    const MK = window.MotionKit;
+    const MK = window.Kineto;
     descriptors.forEach((descriptor) => {
       if (descriptor.kind === 'pageReveal') runPageRevealDescriptor(descriptor);
     });
@@ -363,7 +363,7 @@ counter: {
   }
 
   function replay(host, descriptors, status) {
-    const MK = window.MotionKit;
+    const MK = window.Kineto;
     const loader = descriptors.find((item) => item.kind === 'loader');
     if (loader) {
       runLoader(loader, status);
@@ -381,7 +381,7 @@ counter: {
   }
 
   function reset(host, descriptors) {
-    const MK = window.MotionKit;
+    const MK = window.Kineto;
     clearTimeout(state.timers.get(host));
     state.timers.delete(host);
     const elementDescriptors = descriptors.filter((descriptor) => descriptor.kind !== 'loader');
@@ -404,12 +404,12 @@ counter: {
   function runLoader(descriptor, status) {
     const options = { ...descriptor.options };
     const overlay = document.createElement('div');
-    overlay.className = 'mk-demo-loader-overlay';
+    overlay.className = 'kt-demo-loader-overlay';
     overlay.dataset.loaderType = options.type || 'slot';
     overlay.style.cssText = 'position:fixed;inset:0;z-index:10010;background:var(--bg);color:var(--text);';
     document.body.appendChild(overlay);
     let instance;
-    instance = window.MotionKit.loader(overlay, { ...options, onComplete: () => { instance?.destroy(); overlay.remove(); } });
+    instance = window.Kineto.loader(overlay, { ...options, onComplete: () => { instance?.destroy(); overlay.remove(); } });
     status.textContent = `Running ${options.type || 'slot'} loader`;
   }
 
@@ -418,20 +418,20 @@ counter: {
       const options = JSON.stringify(descriptor.options, null, 2);
       return {
         html: `<button id="reveal-page">Reveal</button>`,
-        js: `// 화면 전환 커버 — 원하는 시점에 코드로 실행합니다.\nMotionKit.pageReveal(document.body, ${options});`
+        js: `// 화면 전환 커버 — 원하는 시점에 코드로 실행합니다.\nKineto.pageReveal(document.body, ${options});`
       };
     }
     if (descriptor.kind === 'loader') {
       const options = JSON.stringify(descriptor.options, null, 2);
       return {
         html: `<button id="show-loader">Run loader</button>`,
-        js: `const overlay = document.createElement('div');\noverlay.className = 'loader-overlay';\ndocument.body.appendChild(overlay);\n\nMotionKit.loader(overlay, ${options});`
+        js: `const overlay = document.createElement('div');\noverlay.className = 'loader-overlay';\ndocument.body.appendChild(overlay);\n\nKineto.loader(overlay, ${options});`
       };
     }
     const html = descriptor.targets.map((target) => {
       const clean = state.snapshots.get(target)?.cloneNode(true) || target.cloneNode(true);
       const activation = MODULE_ATTRIBUTES[descriptor.module];
-      Array.from(target.attributes).filter((attribute) => attribute.name.startsWith('data-mk-') && attribute.name !== 'data-mk-note').forEach((attribute) => clean.setAttribute(attribute.name, attribute.value));
+      Array.from(target.attributes).filter((attribute) => attribute.name.startsWith('data-kt-') && attribute.name !== 'data-kt-note').forEach((attribute) => clean.setAttribute(attribute.name, attribute.value));
       if (activation && target.hasAttribute(activation)) clean.setAttribute(activation, target.getAttribute(activation));
       return clean.outerHTML;
     }).join('\n');
@@ -440,7 +440,7 @@ counter: {
     const selector = target?.id
       ? `#${target.id}`
       : (target?.classList?.length ? `.${target.classList[0]}` : `[${MODULE_ATTRIBUTES[descriptor.module]}]`);
-    const js = `// data-mk-* 속성 없이 JS만으로도 동일하게 적용됩니다.\n// 셀렉터 문자열(#id / .class)이나 요소를 그대로 전달하세요.\nconst instance = MotionKit.${descriptor.module}('${selector}', ${JSON.stringify(options, null, 2)});\n// 같은 API: MotionKit.${descriptor.module}(document.querySelector('${selector}'), options)`;
+    const js = `// data-kt-* 속성 없이 JS만으로도 동일하게 적용됩니다.\n// 셀렉터 문자열(#id / .class)이나 요소를 그대로 전달하세요.\nconst instance = Kineto.${descriptor.module}('${selector}', ${JSON.stringify(options, null, 2)});\n// 같은 API: Kineto.${descriptor.module}(document.querySelector('${selector}'), options)`;
     return { html, js };
   }
 
@@ -453,27 +453,27 @@ counter: {
   }
 
   function updateCode(host, descriptors) {
-    const panel = host.matches('.mk-playground-host') ? host.querySelector('.mk-playground') : host.querySelector(':scope > .mk-playground');
+    const panel = host.matches('.kt-playground-host') ? host.querySelector('.kt-playground') : host.querySelector(':scope > .kt-playground');
     if (!panel) return;
     const source = combinedSource(descriptors);
     panel.dataset.htmlCode = source.html;
     panel.dataset.jsCode = source.js;
-    const active = (panel.__mkBody || panel).querySelector('.mk-playground__tab.is-active')?.dataset.codeTab || 'html';
-    const code = (panel.__mkBody || panel).querySelector('.mk-playground__pre code');
+    const active = (panel.__mkBody || panel).querySelector('.kt-playground__tab.is-active')?.dataset.codeTab || 'html';
+    const code = (panel.__mkBody || panel).querySelector('.kt-playground__pre code');
     if (code) code.innerHTML = escapeHtml(active === 'html' ? source.html : source.js);
   }
 
   function createField(descriptor, definition, host, descriptors, status) {
     const [key, label, type, a, b, c] = definition;
     const wrapper = document.createElement('label');
-    wrapper.className = `mk-playground__field${type === 'checkbox' ? ' mk-playground__check' : ''}`;
+    wrapper.className = `kt-playground__field${type === 'checkbox' ? ' kt-playground__check' : ''}`;
     const caption = document.createElement('span');
     caption.textContent = label;
     const tip = HELP[descriptor.module]?.[key];
     if (tip) {
       const help = document.createElement('button');
       help.type = 'button';
-      help.className = 'mk-help';
+      help.className = 'kt-help';
       help.setAttribute('aria-label', `${label} 설명`);
       help.dataset.tip = tip;
       help.textContent = '?';
@@ -497,7 +497,7 @@ counter: {
     else if (type === 'color') input.value = normalizeColor(value);
     else input.value = value;
     const valueLabel = document.createElement('small');
-    valueLabel.className = 'mk-playground__value';
+    valueLabel.className = 'kt-playground__value';
     // Only echo a compact value for ranges/checkboxes — long text/HTML values
     // wrapped and overlapped neighbouring fields.
     const showValue = type === 'range' || type === 'checkbox';
@@ -512,9 +512,9 @@ counter: {
           apply(host, descriptors, status);
         } else {
           rebuildModule(descriptor);
-          window.MotionKit.refresh?.();
+          window.Kineto.refresh?.();
           updateCode(host, descriptors);
-          status.textContent = `Applied · active instances ${window.MotionKit.instanceCount}`;
+          status.textContent = `Applied · active instances ${window.Kineto.instanceCount}`;
         }
       }, type === 'range' ? 80 : 0));
     };
@@ -536,27 +536,27 @@ counter: {
 
   function panelFor(host, descriptors) {
     const details = document.createElement('details');
-    details.className = 'mk-playground';
+    details.className = 'kt-playground';
     const summary = document.createElement('summary');
     const moduleNames = descriptors.map((item) => item.module === 'loader' ? 'Loader' : labelize(item.module)).join(' + ');
-    summary.innerHTML = `<span class="mk-playground__summary-copy">Customize & copy code</span><span class="mk-playground__summary-name">${escapeHtml(moduleNames)}</span>`;
-    // Dogfood: if the module name is wider than its slot, MotionKit's own
+    summary.innerHTML = `<span class="kt-playground__summary-copy">Customize & copy code</span><span class="kt-playground__summary-name">${escapeHtml(moduleNames)}</span>`;
+    // Dogfood: if the module name is wider than its slot, Kineto's own
     // overflowText scrolls it (bounce, pause on hover) instead of truncating —
     // also covers longer translated strings.
     requestAnimationFrame(() => {
-      const nameEl = summary.querySelector('.mk-playground__summary-name');
+      const nameEl = summary.querySelector('.kt-playground__summary-name');
       if (nameEl && nameEl.scrollWidth > nameEl.clientWidth + 2) {
-        window.MotionKit?.overflowText?.(nameEl, { mode: 'bounce', speed: 34, delay: 900, endPause: 900, pauseOnHover: true });
+        window.Kineto?.overflowText?.(nameEl, { mode: 'bounce', speed: 34, delay: 900, endPause: 900, pauseOnHover: true });
       }
     });
-    const body = document.createElement('div'); body.className = 'mk-playground__body';
-    const groups = document.createElement('div'); groups.className = 'mk-playground__groups';
-    const status = document.createElement('div'); status.className = 'mk-playground__status'; status.setAttribute('aria-live','polite');
+    const body = document.createElement('div'); body.className = 'kt-playground__body';
+    const groups = document.createElement('div'); groups.className = 'kt-playground__groups';
+    const status = document.createElement('div'); status.className = 'kt-playground__status'; status.setAttribute('aria-live','polite');
 
     descriptors.forEach((descriptor) => {
-      const fieldset = document.createElement('fieldset'); fieldset.className = 'mk-playground__group';
-      const legend = document.createElement('legend'); legend.className = 'mk-playground__legend'; legend.textContent = descriptor.module === 'loader' ? 'Loader' : labelize(descriptor.module);
-      const controls = document.createElement('div'); controls.className = 'mk-playground__controls';
+      const fieldset = document.createElement('fieldset'); fieldset.className = 'kt-playground__group';
+      const legend = document.createElement('legend'); legend.className = 'kt-playground__legend'; legend.textContent = descriptor.module === 'loader' ? 'Loader' : labelize(descriptor.module);
+      const controls = document.createElement('div'); controls.className = 'kt-playground__controls';
       const currentOptions = descriptor.kind === 'loader' ? { preset: descriptor.options.type, ...descriptor.options } : { ...(DEFAULTS[descriptor.module] || {}), ...descriptorOptions(descriptor) };
       const definitions = descriptor.kind === 'pageReveal' ? [
         ['effect','Effect','select',['curtain','split','circle','wipe','blinds','diagonal','checker','strips','shutter','fade']],['direction','Direction','select',['up','down','left','right']],['duration','Duration','range',0.2,2,0.05],['delay','Delay','range',0,1,0.05],['color','Color','color'],['color2','Color 2','color'],['count','Pieces','range',3,14,1],['stagger','Stagger','range',0,0.2,0.005],['angle','Diagonal angle','range',-45,45,1]
@@ -576,24 +576,24 @@ counter: {
       fieldset.append(legend, controls); groups.appendChild(fieldset);
     });
 
-    const toolbar = document.createElement('div'); toolbar.className = 'mk-playground__toolbar';
+    const toolbar = document.createElement('div'); toolbar.className = 'kt-playground__toolbar';
     const replayButton = document.createElement('button'); replayButton.type = 'button'; replayButton.className = 'is-primary'; replayButton.textContent = descriptors.some((item) => item.kind === 'loader') ? 'Run' : 'Replay';
     const applyButton = document.createElement('button'); applyButton.type = 'button'; applyButton.textContent = 'Apply';
     const resetButton = document.createElement('button'); resetButton.type = 'button'; resetButton.textContent = 'Reset';
-    replayButton.addEventListener('click', () => { replay(host, descriptors, status); window.mkToast?.('다시 재생했습니다'); });
-    applyButton.addEventListener('click', () => { apply(host, descriptors, status); window.mkToast?.('설정을 적용했습니다'); });
-    resetButton.addEventListener('click', () => { reset(host, descriptors); window.mkToast?.('기본값으로 되돌렸습니다'); });
+    replayButton.addEventListener('click', () => { replay(host, descriptors, status); window.ktToast?.('다시 재생했습니다'); });
+    applyButton.addEventListener('click', () => { apply(host, descriptors, status); window.ktToast?.('설정을 적용했습니다'); });
+    resetButton.addEventListener('click', () => { reset(host, descriptors); window.ktToast?.('기본값으로 되돌렸습니다'); });
     toolbar.append(replayButton, applyButton, resetButton);
 
-    const codeWrap = document.createElement('div'); codeWrap.className = 'mk-playground__code';
-    codeWrap.innerHTML = `<div class="mk-playground__code-head"><div class="mk-playground__tabs"><button type="button" class="mk-playground__tab is-active" data-code-tab="html">HTML</button><button type="button" class="mk-playground__tab" data-code-tab="js">JS</button></div><button type="button" class="mk-playground__copy">Copy</button></div><pre class="mk-playground__pre"><code></code></pre>`;
+    const codeWrap = document.createElement('div'); codeWrap.className = 'kt-playground__code';
+    codeWrap.innerHTML = `<div class="kt-playground__code-head"><div class="kt-playground__tabs"><button type="button" class="kt-playground__tab is-active" data-code-tab="html">HTML</button><button type="button" class="kt-playground__tab" data-code-tab="js">JS</button></div><button type="button" class="kt-playground__copy">Copy</button></div><pre class="kt-playground__pre"><code></code></pre>`;
     codeWrap.querySelectorAll('[data-code-tab]').forEach((tab) => tab.addEventListener('click', () => {
       codeWrap.querySelectorAll('[data-code-tab]').forEach((item) => item.classList.toggle('is-active', item === tab));
       updateCode(host, descriptors);
     }));
-    codeWrap.querySelector('.mk-playground__copy').addEventListener('click', async (event) => {
+    codeWrap.querySelector('.kt-playground__copy').addEventListener('click', async (event) => {
       const copyButton = event.currentTarget;
-      const active = codeWrap.querySelector('.mk-playground__tab.is-active').dataset.codeTab;
+      const active = codeWrap.querySelector('.kt-playground__tab.is-active').dataset.codeTab;
       const text = details.dataset[active === 'html' ? 'htmlCode' : 'jsCode'] || '';
       try {
         await navigator.clipboard.writeText(text);
@@ -601,7 +601,7 @@ counter: {
         const textarea = document.createElement('textarea'); textarea.value = text; document.body.appendChild(textarea); textarea.select(); document.execCommand('copy'); textarea.remove();
       }
       copyButton.textContent = 'Copied'; status.textContent = `${active.toUpperCase()} copied`;
-      window.mkToast?.('복사되었습니다');
+      window.ktToast?.('복사되었습니다');
       setTimeout(() => { copyButton.textContent = 'Copy'; }, 1000);
     });
 
@@ -609,20 +609,20 @@ counter: {
     // actions; controls fill the middle; the code preview is tucked into a
     // collapsible drawer so the panel reads like a design tool, not a console.
     const drawerHead = document.createElement('div');
-    drawerHead.className = 'mk-playground__drawer-head';
+    drawerHead.className = 'kt-playground__drawer-head';
     const headText = document.createElement('div');
-    headText.className = 'mk-playground__drawer-heading';
+    headText.className = 'kt-playground__drawer-heading';
     const drawerTitle = document.createElement('strong');
     drawerTitle.textContent = moduleNames;
     const drawerSub = document.createElement('span');
-    drawerSub.className = 'mk-playground__drawer-sub';
+    drawerSub.className = 'kt-playground__drawer-sub';
     drawerSub.textContent = '옵션을 바꾸면 위 예제에 바로 반영됩니다';
     headText.append(drawerTitle, drawerSub);
     const headActions = document.createElement('div');
-    headActions.className = 'mk-playground__head-actions';
+    headActions.className = 'kt-playground__head-actions';
     const closeButton = document.createElement('button');
     closeButton.type = 'button';
-    closeButton.className = 'mk-playground__close';
+    closeButton.className = 'kt-playground__close';
     closeButton.setAttribute('aria-label', '옵션 닫기');
     closeButton.innerHTML = '<i class="ph-bold ph-x" aria-hidden="true"></i>';
     closeButton.addEventListener('click', () => { details.open = false; });
@@ -632,7 +632,7 @@ counter: {
 
     // Collapsible code preview.
     const codeSection = document.createElement('details');
-    codeSection.className = 'mk-playground__codebox';
+    codeSection.className = 'kt-playground__codebox';
     const codeSummary = document.createElement('summary');
     codeSummary.innerHTML = '<i class="ph-bold ph-code" aria-hidden="true"></i> 코드 보기 · 복사';
     codeSection.append(codeSummary, codeWrap);
@@ -642,11 +642,11 @@ counter: {
     body.classList.add('is-portal');
     body.hidden = true;
     body.append(groups, codeSection, status);
-    // Long, module-specific notes (data-mk-note) sit just under the head.
-    const noteText = descriptors.map((d) => d.targets?.[0]?.getAttribute?.('data-mk-note')).find(Boolean);
+    // Long, module-specific notes (data-kt-note) sit just under the head.
+    const noteText = descriptors.map((d) => d.targets?.[0]?.getAttribute?.('data-kt-note')).find(Boolean);
     if (noteText) {
       const note = document.createElement('p');
-      note.className = 'mk-playground__note';
+      note.className = 'kt-playground__note';
       note.textContent = noteText;
       body.prepend(note);
     }
@@ -656,7 +656,7 @@ counter: {
     details.append(summary);
     details.addEventListener('toggle', () => {
       if (details.open) {
-        document.querySelectorAll('.mk-playground[open]').forEach((other) => { if (other !== details) other.open = false; });
+        document.querySelectorAll('.kt-playground[open]').forEach((other) => { if (other !== details) other.open = false; });
         drawer.show(body, moduleNames, details);
       } else if (drawer.current === body) {
         drawer.hide();
@@ -673,9 +673,9 @@ counter: {
   function drawerRoot() {
     if (_drawer) return _drawer;
     const backdrop = document.createElement('div');
-    backdrop.className = 'mk-drawer-backdrop';
+    backdrop.className = 'kt-drawer-backdrop';
     const sheet = document.createElement('div');
-    sheet.className = 'mk-drawer-sheet';
+    sheet.className = 'kt-drawer-sheet';
     document.body.append(backdrop, sheet);
     const api = {
       sheet, backdrop, current: null, spotlit: null,
@@ -685,11 +685,11 @@ counter: {
         api.current = body;
         // Spotlight the owning card above the dim so its demo stays crisp.
         const card = owner?.closest?.('.card')
-          || (owner?.closest?.('.mk-playground-host')?.previousElementSibling)
+          || (owner?.closest?.('.kt-playground-host')?.previousElementSibling)
           || owner;
-        api.spotlit?.classList.remove('mk-fp-spotlight');
+        api.spotlit?.classList.remove('kt-fp-spotlight');
         api.spotlit = card;
-        card?.classList?.add('mk-fp-spotlight');
+        card?.classList?.add('kt-fp-spotlight');
         requestAnimationFrame(() => {
           backdrop.classList.add('is-open');
           sheet.classList.add('is-open');
@@ -710,7 +710,7 @@ counter: {
       hide() {
         backdrop.classList.remove('is-open');
         sheet.classList.remove('is-open');
-        api.spotlit?.classList.remove('mk-fp-spotlight');
+        api.spotlit?.classList.remove('kt-fp-spotlight');
         api.spotlit = null;
         const owner = api.current?.__mkOwner;
         api.current = null;
@@ -729,7 +729,7 @@ counter: {
   // its summary trigger.
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
-    const open = document.querySelector('.mk-playground[open]');
+    const open = document.querySelector('.kt-playground[open]');
     if (!open) return;
     event.preventDefault();
     open.open = false;
@@ -737,7 +737,7 @@ counter: {
   });
 
   function rebuildPanel(host, descriptors, message = '', keepOpen = false) {
-    const previous = host.querySelector(':scope > .mk-playground');
+    const previous = host.querySelector(':scope > .kt-playground');
     const wasOpen = keepOpen || previous?.open;
     previous?.__mkBody?.remove();
     previous?.remove();
@@ -745,15 +745,15 @@ counter: {
     if (wasOpen) panel.open = true;
     host.appendChild(panel);
     updateCode(host, descriptors);
-    if (message) (panel.__mkBody || panel).querySelector('.mk-playground__status').textContent = message;
+    if (message) (panel.__mkBody || panel).querySelector('.kt-playground__status').textContent = message;
   }
 
   function mountHost(host, descriptors) {
     if (!descriptors.length || host.dataset.playgroundMounted === 'true') return;
     let controlHost = host;
-    if (!host.classList.contains('card') && !host.classList.contains('mk-playground-host')) {
+    if (!host.classList.contains('card') && !host.classList.contains('kt-playground-host')) {
       controlHost = document.createElement('div');
-      controlHost.className = 'mk-playground-host';
+      controlHost.className = 'kt-playground-host';
       host.insertAdjacentElement('afterend', controlHost);
     }
     controlHost.dataset.playgroundMounted = 'true';
@@ -787,7 +787,7 @@ counter: {
         descriptors = [loaderDescriptor];
         loaderButton.addEventListener('click', (event) => {
           event.preventDefault();
-          const status = card.querySelector('.mk-playground__status') || { textContent: '' };
+          const status = card.querySelector('.kt-playground__status') || { textContent: '' };
           runLoader(loaderDescriptor, status);
         });
       }
@@ -798,26 +798,26 @@ counter: {
     if (pageRevealCard && pageRevealCard.dataset.playgroundMounted !== 'true') {
       const options = { effect: 'curtain', duration: .65, delay: 0, direction: 'up', color: '#ff5b1c', color2: '#101318', count: 8, stagger: .05, angle: -14 };
       const descriptor = { module: 'pageReveal', targets: [], kind: 'pageReveal', options, initialOptions: { ...options } };
-      window.MotionKitPlayground.pageRevealOptions = () => ({ ...descriptor.options });
+      window.KinetoPlayground.pageRevealOptions = () => ({ ...descriptor.options });
       mountHost(pageRevealCard, [descriptor]);
     }
 
-    root.querySelectorAll('[data-mk-sticky-stack],[data-mk-marquee],[data-mk-scroll-sequence]').forEach((element) => {
-      if (element.closest('.card') || element.nextElementSibling?.classList.contains('mk-playground-host')) return;
+    root.querySelectorAll('[data-kt-sticky-stack],[data-kt-marquee],[data-kt-scroll-sequence]').forEach((element) => {
+      if (element.closest('.card') || element.nextElementSibling?.classList.contains('kt-playground-host')) return;
       mountHost(element, discover(element));
     });
 
   }
 
-  window.MotionKitPlayground = {
+  window.KinetoPlayground = {
     setHelpLang(lang){ HELP_LANG = lang; },
     // Re-point every already-rendered tooltip to the current language.
     refreshHelp(){
-      document.querySelectorAll('.mk-playground__field[data-module][data-key]').forEach((field) => {
+      document.querySelectorAll('.kt-playground__field[data-module][data-key]').forEach((field) => {
         const tip = HELP[field.dataset.module]?.[field.dataset.key];
         if (tip == null) return;
         field.dataset.tip = tip;
-        const help = field.querySelector('.mk-help');
+        const help = field.querySelector('.kt-help');
         if (help) { help.dataset.tip = tip; help.setAttribute('aria-label', tip); }
       });
     }, capture, mount, updateCode, publicOptions: PUBLIC_OPTIONS };

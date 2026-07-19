@@ -4,7 +4,7 @@ function mediaSource(media, opts = {}) {
 
 function createImageClone(src, media, opts) {
   const clone = document.createElement('img');
-  clone.className = 'mk-ambient-image-clone';
+  clone.className = 'kt-ambient-image-clone';
   clone.alt = '';
   clone.setAttribute('aria-hidden', 'true');
   clone.loading = 'eager';
@@ -23,17 +23,17 @@ export default {
     const actualMedia = media.tagName === 'PICTURE' ? media.querySelector('img') : media;
     if (!actualMedia) return null;
 
-    let host = actualMedia.closest('.mk-lazy-wrap') || actualMedia;
+    let host = actualMedia.closest('.kt-lazy-wrap') || actualMedia;
     let outer = host.parentElement;
     let createdWrapper = false;
     const originalOuterStyle = outer?.getAttribute('style') ?? null;
     const originalHostStyle = host.getAttribute('style');
     const originalMediaStyle = actualMedia.getAttribute('style');
 
-    const needsWrapper = !outer || !outer.classList.contains('mk-ambient-wrap') || getComputedStyle(outer).overflow === 'hidden';
+    const needsWrapper = !outer || !outer.classList.contains('kt-ambient-wrap') || getComputedStyle(outer).overflow === 'hidden';
     if (needsWrapper) {
       outer = document.createElement('span');
-      outer.className = 'mk-ambient-wrap';
+      outer.className = 'kt-ambient-wrap';
       // Fill the parent box: without explicit size this wrapper broke the
       // percentage sizing chain of lazy-loaded images (they collapsed into a
       // thin bar inside fixed-ratio stages).
@@ -54,7 +54,7 @@ export default {
     actualMedia.style.zIndex = '1';
 
     const glow = document.createElement('span');
-    glow.className = 'mk-ambient-glow';
+    glow.className = 'kt-ambient-glow';
     glow.setAttribute('aria-hidden', 'true');
     const inset = Number(opts.inset ?? -28);
     const blur = Math.max(0, Number(opts.blur ?? 42));
@@ -96,7 +96,7 @@ export default {
       } else setFallback();
     } else if (tag === 'VIDEO') {
       canvas = document.createElement('canvas');
-      canvas.className = 'mk-ambient-video-canvas';
+      canvas.className = 'kt-ambient-video-canvas';
       canvas.width = Math.max(16, Number(opts.sampleWidth ?? 48));
       canvas.height = Math.max(9, Number(opts.sampleHeight ?? 27));
       canvas.style.cssText = 'display:block;width:100%;height:100%;object-fit:cover;';

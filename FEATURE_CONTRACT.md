@@ -1,6 +1,6 @@
-# MotionKit Feature Contract
+# Kineto Feature Contract
 
-이 문서는 MotionKit의 **공개 기능 범위 잠금 규칙**입니다. 기계 판독 원본은 `motionkit.features.json`이며, 소유자가 의도한 시각 동작은 `motionkit.requirements.json`과 `OWNER_REQUIREMENTS.md`가 함께 규정합니다.
+이 문서는 Kineto의 **공개 기능 범위 잠금 규칙**입니다. 기계 판독 원본은 `kineto.features.json`이며, 소유자가 의도한 시각 동작은 `kineto.requirements.json`과 `OWNER_REQUIREMENTS.md`가 함께 규정합니다.
 
 ## 공개 범위
 
@@ -13,7 +13,7 @@
 - compatibility API: **9개**
 - additional named export: `modules`
 
-모듈명, `data-mk-*` 활성화 속성, 기본 variant, 허용 variant, 공개 option은 정확한 allowlist입니다. 자동 생성된 세부 표는 [`docs/module-reference.md`](docs/module-reference.md)를 확인합니다.
+모듈명, `data-kt-*` 활성화 속성, 기본 variant, 허용 variant, 공개 option은 정확한 allowlist입니다. 자동 생성된 세부 표는 [`docs/module-reference.md`](docs/module-reference.md)를 확인합니다.
 
 ## 중요 동작 계약
 
@@ -42,8 +42,8 @@
 ## 계약 우선순위
 
 1. 소유자의 구체적인 최신 요청
-2. `motionkit.requirements.json` / `OWNER_REQUIREMENTS.md`
-3. `motionkit.features.json` / 이 문서
+2. `kineto.requirements.json` / `OWNER_REQUIREMENTS.md`
+3. `kineto.features.json` / 이 문서
 4. 자동 테스트로 확인된 기존 공개 동작
 5. 모듈 문서와 데모
 6. 구현 세부사항

@@ -11,16 +11,16 @@
 ### HTML
 
 ```html
-<span data-mk-typewriter
-      data-mk-strings='["빌드.", "출시.", "감동을 전달."]'
-      data-mk-type-speed="60"
-      data-mk-pause-after="1500"></span>
+<span data-kt-typewriter
+      data-kt-strings='["빌드.", "출시.", "감동을 전달."]'
+      data-kt-type-speed="60"
+      data-kt-pause-after="1500"></span>
 ```
 
 ### JS API
 
 ```js
-MotionKit.typewriter('.hero-text', {
+Kineto.typewriter('.hero-text', {
   strings: ['Build.', 'Ship.', 'Delight.'],
   typeSpeed: 60,
   eraseSpeed: 30,
@@ -58,24 +58,24 @@ MotionKit.typewriter('.hero-text', {
 ### 빠른 타이핑
 
 ```html
-<span data-mk-typewriter
-      data-mk-strings='["FAST.", "FASTER.", "FASTEST."]'
-      data-mk-type-speed="30"></span>
+<span data-kt-typewriter
+      data-kt-strings='["FAST.", "FASTER.", "FASTEST."]'
+      data-kt-type-speed="30"></span>
 ```
 
 ### 한 번만
 
 ```html
-<span data-mk-typewriter
-      data-mk-strings='["Welcome."]'
-      data-mk-loop="false"></span>
+<span data-kt-typewriter
+      data-kt-strings='["Welcome."]'
+      data-kt-loop="false"></span>
 ```
 
 ### 한국어
 
 ```html
-<span data-mk-typewriter
-      data-mk-strings='["안녕하세요", "반갑습니다", "환영합니다"]'></span>
+<span data-kt-typewriter
+      data-kt-strings='["안녕하세요", "반갑습니다", "환영합니다"]'></span>
 ```
 
 ---

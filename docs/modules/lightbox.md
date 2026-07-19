@@ -10,10 +10,10 @@
 ```html
 <img
   src="./work-1.jpg"
-  data-mk-lightbox="viewer"
-  data-mk-group="portfolio"
-  data-mk-title="Work 1"
-  data-mk-description="Detail view"
+  data-kt-lightbox="viewer"
+  data-kt-group="portfolio"
+  data-kt-title="Work 1"
+  data-kt-description="Detail view"
   alt="Work 1"
 >
 ```
@@ -23,7 +23,7 @@
 ## Lazy 조합
 
 ```js
-MotionKit.lightbox('.gallery-item', {
+Kineto.lightbox('.gallery-item', {
   group: 'portfolio',
   lazyEffect: 'dissolve',
   lazyOptions: { blur: 16, noise: 0.24 },
@@ -37,7 +37,7 @@ Lightbox 내부 이미지도 Lazy 효과를 사용할 수 있으며 GIF·APNG·a
 ## UI 커스텀
 
 ```js
-MotionKit.lightbox('.gallery-item', {
+Kineto.lightbox('.gallery-item', {
   uiTemplate: '<button class="my-action">Action</button>',
   renderUI(container, controls) {
     container.querySelector('.my-action')?.addEventListener('click', () => {
@@ -47,4 +47,4 @@ MotionKit.lightbox('.gallery-item', {
 });
 ```
 
-`className`, `uiTemplate`, `renderUI`와 `.mk-lightbox-*` class를 이용해 아이콘과 UI를 HTML/CSS로 교체할 수 있습니다. 마지막 lightbox instance가 파괴되면 공유 viewer manager도 제거됩니다.
+`className`, `uiTemplate`, `renderUI`와 `.kt-lightbox-*` class를 이용해 아이콘과 UI를 HTML/CSS로 교체할 수 있습니다. 마지막 lightbox instance가 파괴되면 공유 viewer manager도 제거됩니다.

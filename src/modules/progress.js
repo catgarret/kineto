@@ -4,8 +4,8 @@ import { clamp, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
 //  - default: drives the element itself (scaleX / width), unchanged behaviour
 //  - ui:'bar'  : builds a track + fill reading-progress bar (fixed or in-place)
 //  - ui:'ring' : builds a circular SVG indicator, optionally a back-to-top button
-// Both UI shapes expose mk-progress-* classes and read their colors from CSS
-// custom properties (--mk-progress-color/-track/-ring-bg) so designers can
+// Both UI shapes expose kt-progress-* classes and read their colors from CSS
+// custom properties (--kt-progress-color/-track/-ring-bg) so designers can
 // restyle them from a stylesheet.
 
 function progressReader(opts) {
@@ -64,16 +64,16 @@ export default {
       const attach = opts.attach || 'fixed';
       const positionSide = opts.position === 'bottom' ? 'bottom' : 'top';
       const radius = Math.max(0, Number(opts.radius ?? 0));
-      const color = opts.color || 'var(--mk-progress-color,#ff5b1c)';
+      const color = opts.color || 'var(--kt-progress-color,#ff5b1c)';
       const fillBackground = opts.color2 ? `linear-gradient(90deg,${color},${opts.color2})` : color;
       const track = document.createElement('div');
-      track.className = 'mk-progress-bar';
+      track.className = 'kt-progress-bar';
       track.setAttribute('aria-hidden', 'true');
       track.style.cssText = attach === 'fixed'
-        ? `position:fixed;left:0;right:0;${positionSide}:0;height:${thickness}px;z-index:${Number(opts.zIndex ?? 1002)};background:${opts.trackColor || 'var(--mk-progress-track,transparent)'};border-radius:${radius}px;transition:opacity .25s ease;`
-        : `position:relative;width:100%;height:${thickness}px;background:${opts.trackColor || 'var(--mk-progress-track,rgba(128,128,128,.18))'};border-radius:${radius}px;overflow:hidden;transition:opacity .25s ease;`;
+        ? `position:fixed;left:0;right:0;${positionSide}:0;height:${thickness}px;z-index:${Number(opts.zIndex ?? 1002)};background:${opts.trackColor || 'var(--kt-progress-track,transparent)'};border-radius:${radius}px;transition:opacity .25s ease;`
+        : `position:relative;width:100%;height:${thickness}px;background:${opts.trackColor || 'var(--kt-progress-track,rgba(128,128,128,.18))'};border-radius:${radius}px;overflow:hidden;transition:opacity .25s ease;`;
       const fill = document.createElement('div');
-      fill.className = 'mk-progress-bar-fill';
+      fill.className = 'kt-progress-bar-fill';
       fill.style.cssText = `width:100%;height:100%;background:${fillBackground};border-radius:inherit;transform:scaleX(0);transform-origin:left center;will-change:transform;`;
       track.appendChild(fill);
       (attach === 'fixed' ? document.body : el).appendChild(track);
@@ -90,27 +90,27 @@ export default {
       const clickToTop = opts.clickToTop === true;
       const ringRadius = (size - stroke) / 2;
       const circumference = 2 * Math.PI * ringRadius;
-      const color = opts.color || 'var(--mk-progress-color,#ff5b1c)';
-      const trackColor = opts.trackColor || 'var(--mk-progress-track,rgba(128,128,128,.22))';
+      const color = opts.color || 'var(--kt-progress-color,#ff5b1c)';
+      const trackColor = opts.trackColor || 'var(--kt-progress-track,rgba(128,128,128,.22))';
       const root = document.createElement(clickToTop ? 'button' : 'div');
-      root.className = 'mk-progress-ring';
+      root.className = 'kt-progress-ring';
       if (clickToTop) {
         root.type = 'button';
         root.setAttribute('aria-label', opts.label || 'Scroll back to top');
       } else {
         root.setAttribute('aria-hidden', 'true');
       }
-      root.style.cssText = `${attach === 'fixed' ? `position:fixed;${cornerStyle(opts.position, Math.max(0, Number(opts.offset ?? 18)))}z-index:${Number(opts.zIndex ?? 1200)};` : 'position:relative;'}width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;border:0;padding:0;background:var(--mk-progress-ring-bg,transparent);border-radius:50%;${clickToTop ? 'cursor:pointer;' : ''}transition:opacity .25s ease;color:inherit;`;
+      root.style.cssText = `${attach === 'fixed' ? `position:fixed;${cornerStyle(opts.position, Math.max(0, Number(opts.offset ?? 18)))}z-index:${Number(opts.zIndex ?? 1200)};` : 'position:relative;'}width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;border:0;padding:0;background:var(--kt-progress-ring-bg,transparent);border-radius:50%;${clickToTop ? 'cursor:pointer;' : ''}transition:opacity .25s ease;color:inherit;`;
       root.innerHTML = `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" aria-hidden="true" style="position:absolute;inset:0;transform:rotate(-90deg);">`
-        + `<circle class="mk-progress-ring-track" cx="${size / 2}" cy="${size / 2}" r="${ringRadius}" fill="none" stroke="${trackColor}" stroke-width="${stroke}"/>`
-        + `<circle class="mk-progress-ring-fill" cx="${size / 2}" cy="${size / 2}" r="${ringRadius}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}"/>`
+        + `<circle class="kt-progress-ring-track" cx="${size / 2}" cy="${size / 2}" r="${ringRadius}" fill="none" stroke="${trackColor}" stroke-width="${stroke}"/>`
+        + `<circle class="kt-progress-ring-fill" cx="${size / 2}" cy="${size / 2}" r="${ringRadius}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}"/>`
         + '</svg>';
       const center = document.createElement('span');
-      center.className = 'mk-progress-ring-label';
+      center.className = 'kt-progress-ring-label';
       center.style.cssText = `position:relative;font:600 ${Math.round(size * (showPercent ? 0.26 : 0.36))}px/1 ui-monospace,monospace;user-select:none;`;
       center.textContent = showPercent ? '0%' : (clickToTop ? '↑' : '');
       root.appendChild(center);
-      const fillCircle = root.querySelector('.mk-progress-ring-fill');
+      const fillCircle = root.querySelector('.kt-progress-ring-fill');
       if (clickToTop) root.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
       (attach === 'fixed' ? document.body : el).appendChild(root);
       created.push(root);

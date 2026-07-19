@@ -8,10 +8,10 @@
 | `coverflow` | 중앙 active slide와 양옆 preview를 depth/rotation/scale로 표시 |
 
 ```html
-<div data-mk-slider="coverflow" data-mk-gap="24" data-mk-rotate="34" data-mk-depth="120">
-  <article class="mk-slide">1</article>
-  <article class="mk-slide">2</article>
-  <article class="mk-slide">3</article>
+<div data-kt-slider="coverflow" data-kt-gap="24" data-kt-rotate="34" data-kt-depth="120">
+  <article class="kt-slide">1</article>
+  <article class="kt-slide">2</article>
+  <article class="kt-slide">3</article>
 </div>
 ```
 

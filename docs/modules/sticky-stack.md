@@ -9,12 +9,12 @@
 | `zindex` | 전체 화면 sticky 패널을 순서대로 겹침 |
 | `floating` | 고정된 무대 안에서 콘텐츠가 순차 진입·퇴장 |
 
-활성화 속성의 값은 공통 파서에서 `preset`으로 전달되므로 모듈은 `data-mk-sticky-stack="horizontal"`과 JS `{ mode: 'horizontal' }`를 동일하게 처리합니다.
+활성화 속성의 값은 공통 파서에서 `preset`으로 전달되므로 모듈은 `data-kt-sticky-stack="horizontal"`과 JS `{ mode: 'horizontal' }`를 동일하게 처리합니다.
 
 ## Vertical
 
 ```html
-<div data-mk-sticky-stack="vertical" data-mk-offset="22">
+<div data-kt-sticky-stack="vertical" data-kt-offset="22">
   <article>01</article><article>02</article><article>03</article>
 </div>
 ```
@@ -23,11 +23,11 @@
 
 ```html
 <div
-  data-mk-sticky-stack="horizontal"
-  data-mk-gap="20"
-  data-mk-panel-width="100%"
-  data-mk-scrub="0.8"
-  data-mk-snap="true"
+  data-kt-sticky-stack="horizontal"
+  data-kt-gap="20"
+  data-kt-panel-width="100%"
+  data-kt-scrub="0.8"
+  data-kt-snap="true"
 >
   <article>01</article><article>02</article><article>03</article>
 </div>
@@ -37,11 +37,11 @@
 
 ```html
 <div
-  data-mk-sticky-stack="floating"
-  data-mk-effect="depth"
-  data-mk-overlap="0.35"
-  data-mk-scroll-length="90"
-  data-mk-previous-opacity="0.12"
+  data-kt-sticky-stack="floating"
+  data-kt-effect="depth"
+  data-kt-overlap="0.35"
+  data-kt-scroll-length="90"
+  data-kt-previous-opacity="0.12"
 >
   <article>FLOAT</article><article>FOCUS</article><article>FLOW</article>
 </div>

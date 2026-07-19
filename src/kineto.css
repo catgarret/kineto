@@ -1,0 +1,109 @@
+:root {
+  --kt-loader-color: currentColor;
+  --kt-ambient: rgba(120, 120, 120, 0.25);
+}
+
+@property --kt-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes kt-border-spin { to { --kt-angle: 360deg; } }
+@keyframes kt-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@keyframes kt-aurora { to { transform: rotate(360deg); } }
+@keyframes kt-aurora-drift {
+  0% { transform: translate3d(-3%, -2%, 0) scale(1.06); }
+  100% { transform: translate3d(3%, 2%, 0) scale(1.12); }
+}
+@keyframes kt-skeleton-pulse { 0%,100% { opacity:.48; } 50% { opacity:1; } }
+@keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+.kt-no-js [data-kt-reveal],
+.kt-no-js [data-kt-text-split],
+.kt-no-js [data-kt-blur-text] {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+.kt-cursor-active,
+.kt-cursor-active * {
+  cursor: none !important;
+}
+
+.kt-cursor-scope,
+.kt-cursor-scope * {
+  cursor: none !important;
+}
+
+.kt-tw-caret {
+  animation: kt-caret 0.8s step-end infinite;
+}
+
+.kt-lazy-wrap {
+  position: relative;
+  overflow: hidden;
+  display: block;
+  line-height: 0;
+}
+
+.kt-slider-wrap {
+  position: relative;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.kt-slider-track {
+  display: flex;
+  will-change: transform;
+}
+
+.kt-slide {
+  position: relative;
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+.kt-transition-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.kt-transition-layer.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+  }
+
+  [data-kt-reveal],
+  [data-kt-text-split],
+  [data-kt-blur-text],
+  [data-kt-text-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
+  }
+}
+
+/* Pre-init state: add `kt-preload` to <html> via an inline script and
+   entrance-animated elements stay invisible from the very first paint until
+   Kineto has taken over — no flash of final content before the entrance
+   choreography plays. The class is removed automatically after scan(). */
+html.kt-preload [data-kt-reveal],
+html.kt-preload [data-kt-text-reveal],
+html.kt-preload [data-kt-blur-text],
+html.kt-preload [data-kt-text-split],
+html.kt-preload [data-kt-shuffle],
+html.kt-preload [data-kt-text-transition] {
+  visibility: hidden !important;
+}

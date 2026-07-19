@@ -1,17 +1,17 @@
-import MotionKit from '@dong-gri/motionkit';
+import Kineto from '@dong-gri/kineto';
 
-export function installMotionKit($) {
+export function installKineto($) {
   if (!$?.fn) throw new TypeError('A jQuery-compatible instance is required.');
 
-  $.fn.motionKit = function motionKit(type, options = {}) {
-    this.each((_index, element) => MotionKit.create(type, element, options));
+  $.fn.kineto = function kineto(type, options = {}) {
+    this.each((_index, element) => Kineto.create(type, element, options));
     return this;
   };
 
-  $.fn.destroyMotionKit = function destroyMotionKit(type) {
+  $.fn.destroyKineto = function destroyKineto(type) {
     this.each((_index, element) => {
-      if (type) MotionKit.destroyModule(element, type);
-      else MotionKit.destroy(element);
+      if (type) Kineto.destroyModule(element, type);
+      else Kineto.destroy(element);
     });
     return this;
   };
@@ -19,7 +19,7 @@ export function installMotionKit($) {
   return $;
 }
 
-if (typeof window !== 'undefined' && window.jQuery) installMotionKit(window.jQuery);
+if (typeof window !== 'undefined' && window.jQuery) installKineto(window.jQuery);
 
-export { MotionKit };
-export default installMotionKit;
+export { Kineto };
+export default installKineto;

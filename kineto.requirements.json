@@ -1,0 +1,284 @@
+{
+  "requirementsVersion": "3.0.0",
+  "libraryVersion": "0.8.1",
+  "owner": "dongri.me",
+  "changePolicy": "Requirements may only be removed or semantically changed with explicit owner approval.",
+  "requirements": [
+    {
+      "id": "MK-DEMO-001",
+      "module": "demo",
+      "title": "Complete categorized demo gallery",
+      "acceptance": "The demo exposes all public modules, keeps product categories distinct, and provides replay controls for inspectable text and entrance motion."
+    },
+    {
+      "id": "MK-DEMO-002",
+      "module": "demo",
+      "title": "Live settings playground and code copy",
+      "acceptance": "Every adjustable demo exposes relevant live settings, replay, reset, synchronized HTML and JavaScript examples, and a working copy action without leaking Kineto instances."
+    },
+    {
+      "id": "MK-COUNTER-001",
+      "module": "counter",
+      "title": "Grouped number formatting",
+      "acceptance": "Comma or locale grouping works in slot, plain, digit, and pop counter modes."
+    },
+    {
+      "id": "MK-COUNTER-002",
+      "module": "counter",
+      "title": "Direct digit cycling",
+      "acceptance": "Digit mode cycles 0-9 by replacing glyphs without vertical reels."
+    },
+    {
+      "id": "MK-COUNTER-003",
+      "module": "counter",
+      "title": "Final-value pop landing",
+      "acceptance": "Pop never counts up or cycles through intermediate values; the final formatted characters already exist and land one by one from a larger scale."
+    },
+    {
+      "id": "MK-LOADER-001",
+      "module": "loader",
+      "title": "Circular progress loader",
+      "acceptance": "Circular progress is a loader mode, not a counter mode, and exposes size, stroke, color and percent controls."
+    },
+    {
+      "id": "MK-LOADER-002",
+      "module": "loader",
+      "title": "Progress bar loader",
+      "acceptance": "A horizontal loading bar with progress and optional label is available as a loader mode."
+    },
+    {
+      "id": "MK-LAZY-001",
+      "module": "lazy",
+      "title": "Working pixelate reveal",
+      "acceptance": "Pixelate reliably reveals the final image with configurable live-image pixel stages and does not freeze animated image formats."
+    },
+    {
+      "id": "MK-LAZY-002",
+      "module": "lazy",
+      "title": "Pixel stage controls",
+      "acceptance": "Pixelate exposes explicit steps or pixelStart, pixelEnd and pixelStepCount plus delay, stepDuration and holdDuration."
+    },
+    {
+      "id": "MK-LAZY-003",
+      "module": "lazy",
+      "title": "True skeleton placeholder",
+      "acceptance": "Skeleton is a temporary shimmer placeholder layer and is visually and structurally distinct from blur-up."
+    },
+    {
+      "id": "MK-LAZY-004",
+      "module": "lazy",
+      "title": "Progressive print scan",
+      "acceptance": "Print starts as blurred image plus fine noise and resolves sharply in a configurable scan direction without square mosaic blocks or neon scan lines."
+    },
+    {
+      "id": "MK-LAZY-005",
+      "module": "lazy",
+      "title": "Dissolve reveal",
+      "acceptance": "Dissolve removes global fine noise and blur across the whole image until the original is sharp, without directional wipe or simple opacity-only fade."
+    },
+    {
+      "id": "MK-REVEAL-001",
+      "module": "reveal",
+      "title": "Content entrance classification",
+      "acceptance": "Slide-up and wipe are reveal presets triggered by viewport entrance and are not lazy image-loading presets."
+    },
+    {
+      "id": "MK-TEXT-001",
+      "module": "shuffle",
+      "title": "Working shuffle decode",
+      "acceptance": "Shuffle visibly randomizes unresolved characters, resolves to the exact target text and can replay."
+    },
+    {
+      "id": "MK-TEXT-002",
+      "module": "textTransition",
+      "title": "Working text transition",
+      "acceptance": "Text transition measures a stable container, cycles visible items, exposes index and next, and can replay to the first item."
+    },
+    {
+      "id": "MK-GLITCH-001",
+      "module": "glitch",
+      "title": "Original RGB slice glitch",
+      "acceptance": "The default RGB glitch preserves the original three colored duplicate layers and intermittent horizontal slice bursts."
+    },
+    {
+      "id": "MK-BUTTON-001",
+      "module": "ripple",
+      "title": "Android-style click ripple",
+      "acceptance": "Clicking a button creates a circular Material-style ripple from the pointer location and cleans it up after animation."
+    },
+    {
+      "id": "MK-GLOW-001",
+      "module": "cardGlow",
+      "title": "Bounded pointer glow",
+      "acceptance": "The default glow is a clipped single-color pointer spotlight with configurable radius, opacity, blur, spread, follow and sensitivity."
+    },
+    {
+      "id": "MK-TILT-001",
+      "module": "tilt",
+      "title": "Configurable tilt response",
+      "acceptance": "Tilt exposes angle, axis, sensitivity, smoothing, perspective, scale, reverse, reset and glare controls."
+    },
+    {
+      "id": "MK-CATEGORY-001",
+      "module": "demo",
+      "title": "Card and button categories remain separate",
+      "acceptance": "Card Glow and Tilt contains only card glow and tilt; magnetic, ripple, vibrate and mouse-parallax demos live in Pointer and Button Feedback."
+    },
+    {
+      "id": "MK-OVERFLOW-001",
+      "module": "overflowText",
+      "title": "Distinct MP3 overflow modes",
+      "acceptance": "Overflow text animates only when needed and provides loop, bounce, rewind, once and page modes."
+    },
+    {
+      "id": "MK-OVERFLOW-002",
+      "module": "overflowText",
+      "title": "Masked rewind reset",
+      "acceptance": "Rewind travels only toward the end, masks out, snaps invisibly to the beginning, masks in and repeats; it never animates backward like bounce."
+    },
+    {
+      "id": "MK-OVERFLOW-003",
+      "module": "overflowText",
+      "title": "Page-step display",
+      "acceptance": "Page mode changes page-sized text segments using a directional mask instead of a plain tween or opacity-only transition."
+    },
+    {
+      "id": "MK-SCROLL-001",
+      "module": "scrollVelocity",
+      "title": "Direction-responsive text motion",
+      "acceptance": "Scroll velocity supports direction and speed-responsive skew, translate, rotate, scale and combo responses."
+    },
+    {
+      "id": "MK-SCROLL-002",
+      "module": "stickyStack",
+      "title": "Horizontal pinned scroll",
+      "acceptance": "Sticky stack includes a functioning configurable horizontal pinned scroll mode."
+    },
+    {
+      "id": "MK-SCROLL-003",
+      "module": "stickyStack",
+      "title": "Floating pinned sequence",
+      "acceptance": "Sticky stack includes a functioning floating pinned content sequence with configurable entry and previous-item treatment."
+    },
+    {
+      "id": "MK-MEDIA-001",
+      "module": "lightbox",
+      "title": "Full grouped lightbox viewer",
+      "acceptance": "Lightbox covers the complete viewport and supports grouped navigation, captions, metadata, zoom, pan, minimap and custom UI hooks."
+    },
+    {
+      "id": "MK-MEDIA-002",
+      "module": "slider",
+      "title": "Working coverflow slider",
+      "acceptance": "Coverflow displays centered active and adjacent preview slides and supports buttons, keyboard, drag, index state and cleanup."
+    },
+    {
+      "id": "MK-MEDIA-003",
+      "module": "ambientMedia",
+      "title": "Visible bounded ambient glow",
+      "acceptance": "Ambient glow remains visible around the media instead of disappearing behind the page and restores original styles on destroy."
+    },
+    {
+      "id": "MK-LIFECYCLE-001",
+      "module": "core",
+      "title": "No runtime or lifecycle leaks",
+      "acceptance": "Repeated create, replay and destroy leaves zero active instances, timers, generated UI or browser runtime errors in automated QA."
+    },
+    {
+      "id": "MK-LAZY-006",
+      "module": "lazy",
+      "title": "Animated image continuity",
+      "acceptance": "GIF, APNG and animated WebP continue playing during lazy effects and after completion."
+    },
+    {
+      "id": "MK-LAZY-007",
+      "module": "lazy",
+      "title": "Dynamic fine noise",
+      "acceptance": "Print and Dissolve noise changes continuously and does not expose an obvious repeating pattern."
+    },
+    {
+      "id": "MK-OVERFLOW-004",
+      "module": "overflowText",
+      "title": "Directional mask transitions",
+      "acceptance": "Rewind and Page accept top-to-bottom, bottom-to-top, left-to-right and right-to-left mask directions."
+    },
+    {
+      "id": "MK-OVERFLOW-005",
+      "module": "overflowText",
+      "title": "Realtime ranking rolling",
+      "acceptance": "Rolling mode changes multiple items vertically like a legacy realtime-search ranking ticker."
+    },
+    {
+      "id": "MK-GLOW-002",
+      "module": "cardGlow",
+      "title": "Surface reflection layer",
+      "acceptance": "Card glow optionally renders a configurable pointer-responsive surface reflection gradient."
+    },
+    {
+      "id": "MK-GLOW-003",
+      "module": "cardGlow",
+      "title": "Luminous gradient border",
+      "acceptance": "Card glow optionally renders a configurable gradient light along the card outline."
+    },
+    {
+      "id": "MK-REVEAL-002",
+      "module": "reveal",
+      "title": "Directional entrance presets",
+      "acceptance": "Reveal includes up, down, left and right slide/fade directions plus mask, wipe, zoom, blur, flip and rotate presets."
+    },
+    {
+      "id": "MK-REVEAL-003",
+      "module": "reveal",
+      "title": "Designer class hooks",
+      "acceptance": "Reveal can operate class-only and toggle configurable enter/leave classes for custom CSS."
+    },
+    {
+      "id": "MK-SCROLL-004",
+      "module": "scrollVelocity",
+      "title": "Optional spring response",
+      "acceptance": "Direction-responsive motion exposes spring on/off plus stiffness, damping, mass and response controls."
+    },
+    {
+      "id": "MK-SCROLL-005",
+      "module": "stickyStack",
+      "title": "Working vertical sticky stack",
+      "acceptance": "Vertical stack uses reliable CSS sticky positioning and restores owned styles on destroy."
+    },
+    {
+      "id": "MK-MEDIA-004",
+      "module": "lightbox",
+      "title": "Viewer UI customization",
+      "acceptance": "Lightbox UI can be replaced or extended with custom HTML, CSS classes and render callbacks."
+    },
+    {
+      "id": "MK-MEDIA-005",
+      "module": "media",
+      "title": "Composable animated media",
+      "acceptance": "A media element can combine Lazy, Ambient and Lightbox without freezing GIF, APNG or animated WebP."
+    },
+    {
+      "id": "MK-MEDIA-006",
+      "module": "ambientMedia",
+      "title": "Image and video ambient glow",
+      "acceptance": "Ambient glow supports live image clones and sampled video frames with configurable blur, opacity, saturation and brightness."
+    },
+    {
+      "id": "MK-CURSOR-001",
+      "module": "cursor",
+      "title": "Custom cursor system",
+      "acceptance": "Cursor supports dot, ring, blob, crosshair, image and custom templates with hover, press, label, color, size and smoothing options."
+    },
+    {
+      "id": "MK-LOADER-003",
+      "module": "loader",
+      "title": "Real progress sources",
+      "acceptance": "Loader accepts manual updates and can track window load, selected resources, promises and streamed fetch progress."
+    },
+    {
+      "id": "MK-SMOOTH-001",
+      "module": "core",
+      "title": "Optional Lenis smooth scrolling",
+      "acceptance": "Smooth scrolling is disabled or enabled explicitly and exposes runtime enable, disable, toggle and scrollTo APIs."
+    }
+  ]
+}

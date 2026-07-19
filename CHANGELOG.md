@@ -1,11 +1,11 @@
 # Changelog
 
-MotionKit follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
+Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
 ## [0.8.1]
 
-- **Fix: framework adapters resolve the scoped package.** The React, Vue, and jQuery adapters imported the core as `motionkit`; after the rename to `@dong-gri/motionkit` that no longer resolved, breaking adapter users on 0.8.0. They now import `@dong-gri/motionkit`.
-- Removed a stray duplicated `demo/motionKit/` directory from the package.
+- **Fix: framework adapters resolve the scoped package.** The React, Vue, and jQuery adapters imported the core as `kineto`; after the rename to `@dong-gri/kineto` that no longer resolved, breaking adapter users on 0.8.0. They now import `@dong-gri/kineto`.
+- Removed a stray duplicated `demo/kineto/` directory from the package.
 
 ## [Unreleased]
 
@@ -15,22 +15,22 @@ MotionKit follows Semantic Versioning. Public scope is additionally governed by 
 - **Fullpage scroll hand-off (Chrome mouse wheel)**: restored `overscroll-behavior:contain` on the pager to stop the compositor from chain-scrolling the parent on uncancelable wheel events, and drive the outer scroll manually at the edges so nothing gets trapped. Normalises `deltaMode` (line/page → px) for mice that don't report pixels. Inside a scroll container the deck only takes over once it is fully pinned, so scrolling back up lets the parent rise first.
 - **Safari `file://` fix**: removed `?v=` cache-buster query strings from local demo resources — Safari refuses query strings on `file://` URLs, which had blocked the whole bundle from loading. The demo intro loader also has a failsafe so it can never leave the page blank.
 - **Header (dark mode)**: the brand button now sets its own `color` (buttons don't inherit it), so the wordmark is visible in dark mode.
-- **Release packaging**: package renamed to `@dong-gri/motionkit` with repository/homepage/bugs/keywords and `publishConfig.access: public`; READMEs (ko/en/ja) rewritten; added `PUBLISH-GUIDE.md` and `VSCODE-GUIDE.md`; removed the stale `motionkit-0.5.1-stabilized` snapshot and stray `.DS_Store` files.
+- **Release packaging**: package renamed to `@dong-gri/kineto` with repository/homepage/bugs/keywords and `publishConfig.access: public`; READMEs (ko/en/ja) rewritten; added `PUBLISH-GUIDE.md` and `VSCODE-GUIDE.md`; removed the stale `kineto-0.5.1-stabilized` snapshot and stray `.DS_Store` files.
 
 ### Changed / Added (round 24 — inline options panel & polish)
 
 - **Options are a wide floating dock with a spotlight.** The panel is a wide bottom dock; the card being edited is lifted above a light dim (no blur on the example) and scrolled into view, so you watch the live effect while adjusting. Toss/Supabase-style layout: grouped setting cards, label + value on one row, boolean toggles as switches, focus rings, and the code preview tucked into a collapsible "코드 보기" drawer. Actions (Replay/Apply/Reset/close) live in a sticky head; the sheet keeps its rounded top.
-- **Fullpage — real mixed axis.** A single sequence can change direction per step: `axis:"mixed"` with `data-mk-fp-axis="x|y"` on each section (e.g. A→B→C horizontal, C→D vertical). Sections are placed on a 2D grid and the track translates in both axes. Added to the playground axis select.
+- **Fullpage — real mixed axis.** A single sequence can change direction per step: `axis:"mixed"` with `data-kt-fp-axis="x|y"` on each section (e.g. A→B→C horizontal, C→D vertical). Sections are placed on a 2D grid and the track translates in both axes. Added to the playground axis select.
 - **Fullpage coexists with normal scroll.** At an edge it can't move toward, the wheel gesture is now fully released — even mid-gesture — so an outer scroll container or the page takes over. New demo: two slides that hand off to a normal-scroll area + footer ("첫 화면만 슬라이드").
 - **Cursor orbit** demo now has a hover target so the ellipse→circle bloom is visible; **cursor image** demo shows the click burst (`clickSprite`/`clickImage` fire on click for any cursor type).
 - **Glitch** gains a `reveal` preset: the flicker/decode-in load effect as a one-shot on an image, with its own `duration`.
 - **Haptic** buttons show a toast on PC/iOS explaining vibration only fires on supported (mainly Android) hardware, instead of silently doing nothing.
-- The Customize summary now scrolls long / translated module names with MotionKit's own overflowText instead of clipping them.
+- The Customize summary now scrolls long / translated module names with Kineto's own overflowText instead of clipping them.
 - Lightbox Viewer grid rows trimmed to a fixed height so images no longer overlap the Customize summary.
-- **Brand symbol.** New MotionKit mark (`assets/logo.svg` / `demo/favicon.svg`) — a rounded tile with an object tracing an easing curve and a fading motion trail. Wired into the demo header (replacing the plain square), the favicon, and all READMEs.
-- **Reusable toast** (`window.mkToast(msg)`): multi-line via `\n`, always centered, one shared component. Used by the copy buttons ("복사되었습니다"), Apply/Reset/Replay, and the Haptic-unsupported hint.
+- **Brand symbol.** New Kineto mark (`assets/logo.svg` / `demo/favicon.svg`) — a rounded tile with an object tracing an easing curve and a fading motion trail. Wired into the demo header (replacing the plain square), the favicon, and all READMEs.
+- **Reusable toast** (`window.ktToast(msg)`): multi-line via `\n`, always centered, one shared component. Used by the copy buttons ("복사되었습니다"), Apply/Reset/Replay, and the Haptic-unsupported hint.
 - **Fullpage release fix.** Dropped `overscroll-behavior:contain` on the container — because it's an overflow:hidden scroll container, `contain` was blocking wheel chaining and trapping the gesture. The wheel handoff is now gesture-scoped: while the deck can move, a whole flick is hijacked (one step, outer never scrolls); the outer scroller only takes over on a *fresh* gesture once the deck is exhausted — so fullpage and page never scroll at the same time. The coexistence demo fills its host and its normal-scroll area has a warm tint so it no longer reads as an error.
-- **Lightbox fade speed fix.** When a lightbox shares `data-mk-duration` with another module on the same element (e.g. a lazy loader), the loader's long duration used to bleed into the backdrop fade. New `lightboxDuration` option (`data-mk-lightbox-duration`) overrides just the viewer fade; default lowered to 0.12s. The ambient/animated demo lightboxes now open/close at the same speed as the Lightbox Viewer.
+- **Lightbox fade speed fix.** When a lightbox shares `data-kt-duration` with another module on the same element (e.g. a lazy loader), the loader's long duration used to bleed into the backdrop fade. New `lightboxDuration` option (`data-kt-lightbox-duration`) overrides just the viewer fade; default lowered to 0.12s. The ambient/animated demo lightboxes now open/close at the same speed as the Lightbox Viewer.
 
 ### Fixed / Added (round 23 — media fixes, real photos & cursor hover)
 
@@ -38,15 +38,15 @@ MotionKit follows Semantic Versioning. Public scope is additionally governed by 
 - Lightbox demo opens fast (gallery `duration:0.12`, entry animation 240→170ms).
 - Cursor image/custom react to hover: `hoverSrc` swaps the image, `hoverTemplate` swaps the custom HTML, `hoverClass` adds a class for your own CSS. Demo Image/Custom cards show it (image swap, DRAG→OPEN).
 - **Real photo gallery**: 6 supplied images optimized to webp (28–64KB) and wired into the Lightbox Viewer (now 6, tidy 3-col grid, no overlap with the panel), Slider/Coverflow, Image Glitch, Brush Reveal and all Image Loading Effects cards.
-- The Customize summary module name uses MotionKit's own overflowText (bounce, pause on hover) when it's wider than its slot — also covers longer translated strings.
+- The Customize summary module name uses Kineto's own overflowText (bounce, pause on hover) when it's wider than its slot — also covers longer translated strings.
 
 ### Added (round 22 — counter/cursor customization & drawer notes)
 
-- Counter flip (incl. clock/countdown): `seamColor` (fold-line color), `shadow` (toggle/custom drop-shadow), and `separatorColor` (comma/colon color) — all also overridable via CSS vars `--mk-counter-seam`, `--mk-counter-flip-shadow`, `--mk-counter-separator`.
+- Counter flip (incl. clock/countdown): `seamColor` (fold-line color), `shadow` (toggle/custom drop-shadow), and `separatorColor` (comma/colon color) — all also overridable via CSS vars `--kt-counter-seam`, `--kt-counter-flip-shadow`, `--kt-counter-separator`.
 - Cursor **snake**: eased, gentler shrink (`snakeMinScale`, sqrt curve) so glyphs stay legible instead of collapsing instantly.
 - Cursor **orbit**: blooms from a flat ellipse into a larger full circle on hover over links (`orbitHoverScale`).
 - Cursor **image / custom**: added demo cards + full tooltips (the HELP set never had a `cursor` module before — now ko/en, others fall back to en), with `src/width/height` and `template` exposed in the panel.
-- clickSprite already auto-detects frame size/count; the demo now omits explicit sizes to show it, and the verbose sprite-sheet explanation moved into the drawer as a `data-mk-note` block (a reusable "notes in the settings drawer" mechanism).
+- clickSprite already auto-detects frame size/count; the demo now omits explicit sizes to show it, and the verbose sprite-sheet explanation moved into the drawer as a `data-kt-note` block (a reusable "notes in the settings drawer" mechanism).
 
 ### Changed (round 21 — full i18n tooltips, scramble & footer)
 
@@ -57,11 +57,11 @@ MotionKit follows Semantic Versioning. Public scope is additionally governed by 
 
 ### Added (round 20 — release packaging & demo polish)
 
-- **Minified distributables + CDN**: `npm run build` now also emits `dist/motionkit.min.js` (ESM, rolldown-minified, gzip ~62KB), `dist/motionkit.umd.min.js` (CDN drop-in) and `dist/motionkit.min.css`. `package.json` `unpkg`/`jsdelivr` fields point at the min UMD, and `exports` adds `./min` and `./umd`.
+- **Minified distributables + CDN**: `npm run build` now also emits `dist/kineto.min.js` (ESM, rolldown-minified, gzip ~62KB), `dist/kineto.umd.min.js` (CDN drop-in) and `dist/kineto.min.css`. `package.json` `unpkg`/`jsdelivr` fields point at the min UMD, and `exports` adds `./min` and `./umd`.
 - **README bundle documentation**: a "번들 · 배포 포맷" table (file / format / use / gzip size) plus CDN (`jsdelivr`/`unpkg`), ESM CDN (`/+esm`), and optional GSAP/Lenis snippets; demo install box points at the npm CDN paths.
 - **Tooltip i18n**: option `?` tooltips are now multilingual (`demo/help-i18n.js`, Korean + full English, 291 entries) and follow the language selector with per-key English→Korean fallback (ja/zh/ru/it fall back to English).
 - **Phosphor Icons** across the demo chrome (via jsDelivr CDN): replay FABs, theme switch (sun/moon), hero support icons — replacing the hand-rolled inline SVGs that overlapped/looked off. The library itself stays icon-font-free (zero dependencies).
-- **Intro loader redesign**: oversized thin Wanted Sans percentage (clamp up to 14rem, weight 100), a `MOTIONKIT` monospace wordmark, and `difference` blend so the number stays vivid over both the dark start and the rising orange fill.
+- **Intro loader redesign**: oversized thin Wanted Sans percentage (clamp up to 14rem, weight 100), a `KINETO` monospace wordmark, and `difference` blend so the number stays vivid over both the dark start and the rising orange fill.
 
 ### Fixed (round 19 — release QA)
 
@@ -69,14 +69,14 @@ MotionKit follows Semantic Versioning. Public scope is additionally governed by 
 - Loader scroll lock now locks the **root scroller** too (body overflow alone doesn't propagate when `<html>` has `overflow-x:clip`) and restores both on exit/destroy — applies to every loader, not just the intro.
 - Intro percentage set in thin Wanted Sans (variable weight 100, tabular numerals) — `!important`ed over the module's inline slot typography.
 - demo-qa waits for the deferred module boot before asserting.
-- **Release QA sweep** (headless, full demo): 40 replay FABs, 87 option panels opened/changed/closed, lightbox open→nav→zoom→reset→close, 3 loaders with scroll-lock/restore, page reveals, fullpage round-trip, slider next/prev, 7-language cycle, theme round-trip, `MotionKit.destroy()` → 0 instances → re-init — **zero page/console errors**. Full suite green: contract 34, owner requirements 46, package surface, utils/SSR, browser smoke; demo-qa passes except the sandbox-only H.264 video assert.
+- **Release QA sweep** (headless, full demo): 40 replay FABs, 87 option panels opened/changed/closed, lightbox open→nav→zoom→reset→close, 3 loaders with scroll-lock/restore, page reveals, fullpage round-trip, slider next/prev, 7-language cycle, theme round-trip, `Kineto.destroy()` → 0 instances → re-init — **zero page/console errors**. Full suite green: contract 34, owner requirements 46, package surface, utils/SSR, browser smoke; demo-qa passes except the sandbox-only H.264 video assert.
 
 ### Added (round 18 — demo split, Page Reveal panel & fixes)
 
 - Demo split into `index.html` / `styles.css` / `main.js` (pre-paint theme/preload scripts stay inline by design); QA/requirement tests read the split files.
 - Page Reveal card gained a full Customize panel (effect/direction/duration/delay/colors/pieces/stagger/angle) — the effect buttons and the panel share the same options.
 - Loader: `exit:'slide'` is directional now (exitDirection or the fill direction), and `exit:'wipe'` actually sweeps — the mask transition had no start state, so it snapped instead of animating.
-- Scramble options broke when the painter moved into utils (the option names vanished from the modules' contract extraction, so the playground filtered `data-mk-rainbow` & co. away) — modules now pass the options explicitly; rainbow / palette-range / fade all work from the drawer.
+- Scramble options broke when the painter moved into utils (the option names vanished from the modules' contract extraction, so the playground filtered `data-kt-rainbow` & co. away) — modules now pass the options explicitly; rainbow / palette-range / fade all work from the drawer.
 - Drawer field show/hide had silently stopped (descriptor kind guard was too broad) — WHEN-based visibility works again for every module.
 - Mobile: the hero column was locked at 640px by its content and got clipped — it now stretches to the container (100%/min-width:0), verified at 390px.
 - First visit: the whole page fades in (0.65s) the moment the preload veil lifts, with the entrance choreography playing underneath (skipped under reduced motion).
@@ -89,12 +89,12 @@ MotionKit follows Semantic Versioning. Public scope is additionally governed by 
 
 ### Added (round 16 — deterministic startup, axes everywhere & full i18n)
 
-- **Deterministic startup (library + demo)**: new `mk-preload` convention — an inline script adds the class to `<html>` at first paint, entrance-animated elements stay invisible (motionkit.css rules), and `scan()` releases the veil after modules apply their initial states. No more content flashing before its entrance plays, on any connection speed. The demo defers all module init to window `load`, covered by a **slot intro loader** (orange, thin mono type) whose background fills like a giant progress bar.
+- **Deterministic startup (library + demo)**: new `kt-preload` convention — an inline script adds the class to `<html>` at first paint, entrance-animated elements stay invisible (kineto.css rules), and `scan()` releases the veil after modules apply their initial states. No more content flashing before its entrance plays, on any connection speed. The demo defers all module init to window `load`, covered by a **slot intro loader** (orange, thin mono type) whose background fills like a giant progress bar.
 - **loader**: `fill` ('up'/'down'/'left'/'right') fills the overlay background with `fillColor` as progress rises; `labelColor` + `labelBlend` (e.g. `difference`) keep the percentage readable over the fill.
 - **fullpage**: `axis:'x'` (horizontal paging — dots at bottom, arrow keys, nesting inside a vertical container gives mixed layouts), mouse **drag-swipe** (`drag`, on by default), and snap mode actually scrolls now (the percent chain was collapsing; dots sync to native snapping). Horizontal demo card added.
 - **slider/coverflow**: `axis:'y'` — vertical sliding and vertical coverflow (rotateX), drag and arrow keys follow the axis.
 - **Scramble styling** shared by shuffle + textReveal decode/flicker: `rainbow`, `rainbowColors` (hex/rgba stops sampled algorithmically instead of the full rainbow) and `scrambleFade` (brightness-only flicker).
-- **vibrate**: `trigger:'manual'` + `instance.play()` for firing patterns from code; every module's JS code tab now shows selector-based usage (`MotionKit.module('#id'|'.class', options)`).
+- **vibrate**: `trigger:'manual'` + `instance.play()` for firing patterns from code; every module's JS code tab now shows selector-based usage (`Kineto.module('#id'|'.class', options)`).
 - **cursor clickSprite** auto-detects frame size/count from the sheet (square frames assumed) when width/frames are omitted — explicit options still win.
 - **tilt / cardGlow**: `disableOnMobile` switches the effect off entirely on touch devices.
 - **i18n completed**: all 68 card descriptions translated into the 6 languages (plus chips/tooltips/support/footer); tooltips wrap at punctuation (`white-space:pre-line`).
@@ -112,7 +112,7 @@ MotionKit follows Semantic Versioning. Public scope is additionally governed by 
 
 ### Added (round 14 — first-screen snap, 7 languages & final polish)
 
-- Demo hero is a full-viewport (100svh) first screen: one scroll gesture snaps to the first section fullpage-style — and scrolling up from there snaps back — with gesture-grouped momentum swallowing on wheel and touch; everything below scrolls normally. Disabled under prefers-reduced-motion. The header brand (MotionKit 0.8.0) scrolls to the top on click.
+- Demo hero is a full-viewport (100svh) first screen: one scroll gesture snaps to the first section fullpage-style — and scrolling up from there snaps back — with gesture-grouped momentum swallowing on wheel and touch; everything below scrolls normally. Disabled under prefers-reduced-motion. The header brand (Kineto 0.8.0) scrolls to the top on click.
 - Language selector grew to 7 languages: 한국어 · English · 日本語 · 简体中文 · 繁體中文 · Русский · Italiano (section copies + hero lead, `<html lang>` synced).
 - Hero feature chips rewritten in plain Korean with centered hover tooltips (arrow caret) explaining each point; the dependency line now says it plainly — the core runs standalone, and an "PLUS" install row provides copyable GSAP + ScrollTrigger + Lenis CDN tags for the scroll-scrub/smooth modules.
 - Counter countdown rolls digits downward by default (they're decreasing); `rollDirection` still overrides.
@@ -136,7 +136,7 @@ MotionKit follows Semantic Versioning. Public scope is additionally governed by 
 
 - Counter clock: `clockStyle` (roll · fade · instant), `rollDirection` (up/down), **countdown** (`until`) and **elapsed** (`since`) modes with automatic day count (`daysLabel`, `showDays`) and onComplete at zero; the layout rebuilds itself when the day digits change. Reduced motion renders plain updating text for all clock modes. Demo gains a Countdown card (D-day to 2027).
 - Theme control is now a real switch — sun/moon at each end, sliding knob, `role="switch"` + `aria-checked`, larger icons.
-- Install box: npm row is a copyable `npm install motionkit` like the others; CDN/ESM snippets point at `dong-gri/motionKit`.
+- Install box: npm row is a copyable `npm install kineto` like the others; CDN/ESM snippets point at `dong-gri/kineto`.
 
 ### Fixed (round 12)
 
@@ -147,7 +147,7 @@ MotionKit follows Semantic Versioning. Public scope is additionally governed by 
 ### Added (round 11 — fullpage, progress UI & clock) — 34 modules
 
 - **fullpage** (new 34th module): fullpage.js-style section paging — wheel / touch swipe / keyboard / dot navigation, `mode:'snap'` for native scroll-snap, loop, callbacks. Percent-based transforms adapt to any resize instantly; the container releases scroll at its edges so it never traps the page; reduced motion falls back to native snap scrolling.
-- **progress** module grew visual shapes: `ui:'bar'` (fixed or in-place track+fill, thickness/radius/gradient/trackColor/position) and `ui:'ring'` (SVG circle, size/stroke, `showPercent`, `clickToTop` back-to-top button, corner + offset, `showAfter`, `hideAtEnd`, smoothing, per-element `target`). Themable via `--mk-progress-*` variables. The demo's floating TOP button is now this ring.
+- **progress** module grew visual shapes: `ui:'bar'` (fixed or in-place track+fill, thickness/radius/gradient/trackColor/position) and `ui:'ring'` (SVG circle, size/stroke, `showPercent`, `clickToTop` back-to-top button, corner + offset, `showAfter`, `hideAtEnd`, smoothing, per-element `target`). Themable via `--kt-progress-*` variables. The demo's floating TOP button is now this ring.
 - **counter**: `clock` mode — a live clock (HH:MM:SS) where only changing digits roll and the colon blinks each second (`seconds`, `hour12`, `blink`, `clockSeparator`, `rollDuration`); grouping separator accepts any character (`separator`), and `blinkSeparators` makes separators blink in the other modes. Reduced motion renders a plain updating time.
 - **shuffle**: `rainbow` option — scrambled characters flash in random rainbow colors (or a custom `rainbowColors` palette) until they settle.
 - **pageReveal**: three new effects — `checker` (random tile grid), `strips` (shuffled vertical strips), `shutter` (alternating horizontal blades).
@@ -161,7 +161,7 @@ MotionKit follows Semantic Versioning. Public scope is additionally governed by 
 
 ### Added (round 10 — hero identity & lightbox polish)
 
-- Lightbox: `backdropBlur` option (px, 0 disables) alongside `backdropOpacity`; zoom −/+/reset buttons disable themselves at min/max/100%; the whole viewer is now designer-themable via CSS custom properties (`--mk-lightbox-backdrop`, `--mk-lightbox-backdrop-blur`, `--mk-lightbox-button-bg/-border/-color/-radius`, `--mk-lightbox-radius`) — explicit JS options still win.
+- Lightbox: `backdropBlur` option (px, 0 disables) alongside `backdropOpacity`; zoom −/+/reset buttons disable themselves at min/max/100%; the whole viewer is now designer-themable via CSS custom properties (`--kt-lightbox-backdrop`, `--kt-lightbox-backdrop-blur`, `--kt-lightbox-button-bg/-border/-color/-radius`, `--kt-lightbox-radius`) — explicit JS options still win.
 - Demo: hero title flows with an animated gradient glow (disabled under prefers-reduced-motion); theme switch is a sun/moon icon toggle; floating TOP button bottom-right (sits above the mobile nav); install box with copyable CDN/ESM snippets and an "npm 준비 중" row replaces the three wordy fact cards; custom cursors switch to `mix-blend-mode:difference` while the lightbox is open so they stay visible over the dim.
 
 ### Fixed (round 10)
@@ -266,7 +266,7 @@ MotionKit follows Semantic Versioning. Public scope is additionally governed by 
 
 ### Fixed (round 3)
 
-- Demo assets are now cache-busted (`?v=r3-20260718`): Chrome kept serving a stale `dist/motionkit.umd.js` from the file:// cache, which made every new module look broken (typewriter hangul/caret, text transition, glitch, new cursors, shuffle fix). The footer shows the build stamp.
+- Demo assets are now cache-busted (`?v=r3-20260718`): Chrome kept serving a stale `dist/kineto.umd.js` from the file:// cache, which made every new module look broken (typewriter hangul/caret, text transition, glitch, new cursors, shuffle fix). The footer shows the build stamp.
 - Counter flip: bare mode no longer flashes shaded boxes — fold shading only applies to tiles.
 - Cursor sparkle: pooled stars restarted mid-transition and never became visible after the first burst; transitions are now re-armed per spawn so stars keep coming.
 - Overflow Text: full timing control — `speed`, `delay`(시작), `endPause`(끝 대기), new `restartDelay`(한 사이클 후 재시작 대기), `pageDuration`/`flipDuration` — all exposed in the playground.
@@ -294,7 +294,7 @@ MotionKit follows Semantic Versioning. Public scope is additionally governed by 
 
 - Text Split: `spin`, `flip`, `scale`, `blur`, `slide-up`, `slide-down` entrance animations plus Toss-style text swap (`texts`, `hold`, `swapOut`, `swapEase`, `onSwap`).
 - Card Glow: restored the original rotating conic `aurora` outer halo that leaks beyond the card edge.
-- Cursor: scoped cursors (`data-mk-cursor` on a bounded element activates only inside it), `full` crosshair, `dot` toggle for ring mode, `global`/`hideDotOnHover` options.
+- Cursor: scoped cursors (`data-kt-cursor` on a bounded element activates only inside it), `full` crosshair, `dot` toggle for ring mode, `global`/`hideDotOnHover` options.
 - Lazy Polaroid: instant-photo development curve with optional paper frame (`frame`, `frameColor`, `keepFrame`).
 - Lazy Print: soft printing-edge highlight (`edgeWidth`, `edgeOpacity`) with eased scan.
 - Lazy Skeleton: media-icon placeholder (`skeletonIcon`) and refined diagonal shimmer.
@@ -375,7 +375,7 @@ MotionKit follows Semantic Versioning. Public scope is additionally governed by 
 
 ### Added
 
-- `motionkit.requirements.json` and expanded `OWNER_REQUIREMENTS.md` with 29 machine-tested owner requirements.
+- `kineto.requirements.json` and expanded `OWNER_REQUIREMENTS.md` with 29 machine-tested owner requirements.
 - Full categorized 32-module QA demo.
 - Browser assertions for Counter/Loader classification, image effect convergence, MP3 mode semantics, replay controls, ripple cleanup, bounded glow, media UI, and zero-instance teardown.
 
@@ -403,7 +403,7 @@ MotionKit follows Semantic Versioning. Public scope is additionally governed by 
 - Repaired slider pointer, keyboard, autoplay, hover pause, accessibility state, and cleanup behavior.
 - Repaired page transition content replacement, history handling, abortable fetch, re-scan, and teardown.
 - Fixed timers/listeners/observers/RAF/GSAP cleanup across modules, including pageReveal timer cleanup.
-- Restored compatibility methods used by the existing demo under `MotionKit.core`.
+- Restored compatibility methods used by the existing demo under `Kineto.core`.
 - Preserved property descriptors while normalizing instances so live getters such as `slider.index` remain live.
 - Restored original HTML, inline styles, and ARIA attributes for repaired modules, including reduced-motion fallbacks.
 - Replaced the slot counter's fixed row height with computed typography-aware line height.
@@ -412,7 +412,7 @@ MotionKit follows Semantic Versioning. Public scope is additionally governed by 
 
 ### Added
 
-- `motionkit.features.json`: machine-readable module/API contract covering modules, activation attributes, variants, public options, root properties, and core methods.
+- `kineto.features.json`: machine-readable module/API contract covering modules, activation attributes, variants, public options, root properties, and core methods.
 - `FEATURE_CONTRACT.md`: no-silent-feature-change rules.
 - `AGENTS.md`: strict workflow for AI-assisted patches.
 - React, Vue 3, and jQuery adapter entry points.
@@ -421,8 +421,8 @@ MotionKit follows Semantic Versioning. Public scope is additionally governed by 
 
 ### Changed
 
-- Correct package CSS import is now `motionkit/style.css`.
-- Browser bundle is `dist/motionkit.umd.js`; CommonJS uses `dist/motionkit.umd.cjs`.
+- Correct package CSS import is now `kineto/style.css`.
+- Browser bundle is `dist/kineto.umd.js`; CommonJS uses `dist/kineto.umd.cjs`.
 - Primary documentation now describes tested behavior and known limitations instead of unverified performance or compatibility claims.
 - Build tooling updated to Vite 8.1.5 and Playwright Core 1.61.1.
 

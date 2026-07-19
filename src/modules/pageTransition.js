@@ -1,4 +1,4 @@
-import MotionKit from '../core.js';
+import Kineto from '../core.js';
 
 let activeInstance = null;
 
@@ -14,7 +14,7 @@ export default {
     if (activeInstance) return activeInstance;
 
     const containerSelector = opts.container || 'main';
-    const linkSelector = opts.linkSelector || 'a[href]:not([target="_blank"]):not([download]):not([data-mk-no-transition])';
+    const linkSelector = opts.linkSelector || 'a[href]:not([target="_blank"]):not([download]):not([data-kt-no-transition])';
     const animationSelector = opts.animationSelector || '[class*="transition-"]';
     const minDuration = Number(opts.minDuration ?? 400);
     const cache = new Map();
@@ -38,7 +38,7 @@ export default {
       try {
         const response = await fetch(url, {
           signal: controller.signal,
-          headers: { 'X-MotionKit-Navigation': '1' }
+          headers: { 'X-Kineto-Navigation': '1' }
         });
         if (!response.ok) return null;
         const text = await response.text();
@@ -71,24 +71,24 @@ export default {
       const nextContainer = doc.querySelector(containerSelector);
       if (!currentContainer || !nextContainer) return false;
 
-      MotionKit.destroy(currentContainer);
+      Kineto.destroy(currentContainer);
       currentContainer.innerHTML = nextContainer.innerHTML;
       Array.from(nextContainer.attributes).forEach((attribute) => {
         if (attribute.name !== 'id') currentContainer.setAttribute(attribute.name, attribute.value);
       });
       if (opts.executeScripts !== false) activateScripts(currentContainer);
       document.title = doc.title || document.title;
-      if (!popState) history.pushState({ motionKitUrl: url }, document.title, url);
+      if (!popState) history.pushState({ kinetoUrl: url }, document.title, url);
 
       window.scrollTo({ top: Number(opts.scrollTop ?? 0), behavior: 'auto' });
       const html = document.documentElement;
-      html.classList.remove('mk-is-leaving');
-      html.classList.add('mk-is-entering');
-      MotionKit.scan(currentContainer);
-      MotionKit.refresh();
+      html.classList.remove('kt-is-leaving');
+      html.classList.add('kt-is-entering');
+      Kineto.scan(currentContainer);
+      Kineto.refresh();
       opts.onEnter?.(currentContainer, doc);
       requestAnimationFrame(() => requestAnimationFrame(() => {
-        html.classList.remove('mk-is-animating', 'mk-is-entering');
+        html.classList.remove('kt-is-animating', 'kt-is-entering');
       }));
       return true;
     };
@@ -97,8 +97,8 @@ export default {
       if (navigating || destroyed) return;
       navigating = true;
       const html = document.documentElement;
-      html.classList.add('mk-is-animating', 'mk-is-leaving');
-      html.classList.remove('mk-is-entering');
+      html.classList.add('kt-is-animating', 'kt-is-leaving');
+      html.classList.remove('kt-is-entering');
       opts.onLeave?.(url);
 
       const [htmlText] = await Promise.all([fetchPage(url), waitForLeave()]);
@@ -117,7 +117,7 @@ export default {
     };
     const onPopState = () => navigate(window.location.href, true);
 
-    if (!history.state?.motionKitUrl) history.replaceState({ ...(history.state || {}), motionKitUrl: window.location.href }, document.title, window.location.href);
+    if (!history.state?.kinetoUrl) history.replaceState({ ...(history.state || {}), kinetoUrl: window.location.href }, document.title, window.location.href);
     document.addEventListener('click', onClick);
     window.addEventListener('popstate', onPopState);
 
@@ -132,7 +132,7 @@ export default {
         controller?.abort();
         document.removeEventListener('click', onClick);
         window.removeEventListener('popstate', onPopState);
-        document.documentElement.classList.remove('mk-is-animating', 'mk-is-leaving', 'mk-is-entering');
+        document.documentElement.classList.remove('kt-is-animating', 'kt-is-leaving', 'kt-is-entering');
         if (activeInstance === this) activeInstance = null;
       }
     };

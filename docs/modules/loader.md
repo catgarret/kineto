@@ -11,8 +11,8 @@
 `fade`, `slide`, `wipe`는 Loader 모드가 아니라 완료 시 overlay가 사라지는 `exit` 옵션입니다.
 
 ```html
-<div data-mk-loader="circular" data-mk-source="window" data-mk-size="140" data-mk-stroke="8"></div>
-<div data-mk-loader="bar" data-mk-source="resources" data-mk-label="Loading"></div>
+<div data-kt-loader="circular" data-kt-source="window" data-kt-size="140" data-kt-stroke="8"></div>
+<div data-kt-loader="bar" data-kt-source="resources" data-kt-label="Loading"></div>
 ```
 
 ## 진행률 소스
@@ -26,7 +26,7 @@
 | `fetch` | Content-Length가 있으면 실제 byte 진행률 추적 |
 
 ```js
-const loader = MotionKit.loader('.loader', { type: 'bar', source: 'manual' });
+const loader = Kineto.loader('.loader', { type: 'bar', source: 'manual' });
 loader.setProgress(38);
 await loader.trackPromise(fetch('/api/bootstrap'));
 loader.complete();

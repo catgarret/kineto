@@ -12,12 +12,12 @@
 
 ```html
 <h2
-  data-mk-scroll-velocity="translate"
-  data-mk-axis="x"
-  data-mk-spring="true"
-  data-mk-stiffness="150"
-  data-mk-damping="22"
-  data-mk-mass="1"
+  data-kt-scroll-velocity="translate"
+  data-kt-axis="x"
+  data-kt-spring="true"
+  data-kt-stiffness="150"
+  data-kt-damping="22"
+  data-kt-mass="1"
 >SCROLL DIRECTION →</h2>
 ```
 

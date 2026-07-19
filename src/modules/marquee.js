@@ -18,7 +18,7 @@ export default {
     el.style.whiteSpace = 'nowrap';
 
     const group = document.createElement('div');
-    group.className = 'mk-marquee-group';
+    group.className = 'kt-marquee-group';
     group.style.cssText = 'display:flex;flex:0 0 auto;will-change:transform;';
     while (el.firstChild) group.appendChild(el.firstChild);
     el.appendChild(group);

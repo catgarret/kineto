@@ -3,10 +3,10 @@
 해결되지 않은 글자를 무작위 문자로 바꾸다가 왼쪽부터 정확한 목표 문자열로 정착시키는 decode 효과입니다.
 
 ```html
-<h2 data-mk-shuffle data-mk-speed="32" data-mk-reveal-rate="2">
+<h2 data-kt-shuffle data-kt-speed="32" data-kt-reveal-rate="2">
   DECRYPTING SIGNAL
 </h2>
-<button type="button" onclick="MotionKit.replay('[data-mk-shuffle]', 'shuffle')">Replay</button>
+<button type="button" onclick="Kineto.replay('[data-kt-shuffle]', 'shuffle')">Replay</button>
 ```
 
 | 옵션 | 설명 |

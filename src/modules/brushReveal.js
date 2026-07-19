@@ -31,7 +31,7 @@ export default {
     el.style.touchAction = 'none';
 
     const canvas = document.createElement('canvas');
-    canvas.className = 'mk-brush-reveal-canvas';
+    canvas.className = 'kt-brush-reveal-canvas';
     canvas.setAttribute('aria-hidden', 'true');
     canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:inherit;z-index:2;';
     el.appendChild(canvas);
@@ -44,7 +44,7 @@ export default {
     if (opts.crossOrigin) image.crossOrigin = opts.crossOrigin;
     let ready = false;
     image.onload = () => { ready = true; };
-    image.onerror = () => opts.onError?.(new Error(`MotionKit brushReveal image failed to load: ${src}`), el);
+    image.onerror = () => opts.onError?.(new Error(`Kineto brushReveal image failed to load: ${src}`), el);
     image.src = src;
 
     let cssWidth = 0;

@@ -1,2 +1,2 @@
-import MotionKit from './index.js';
-export default MotionKit;
+import Kineto from './index.js';
+export default Kineto;

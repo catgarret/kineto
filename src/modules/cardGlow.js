@@ -32,12 +32,12 @@ export default {
     const color2 = opts.color2 || 'rgba(148,255,226,.34)';
 
     const root = document.createElement('span');
-    root.className = `mk-card-glow mk-card-glow-${mode}`;
+    root.className = `kt-card-glow kt-card-glow-${mode}`;
     root.setAttribute('aria-hidden', 'true');
     root.style.cssText = 'position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .2s ease;';
 
     const spotlight = document.createElement('span');
-    spotlight.className = 'mk-card-glow-spotlight';
+    spotlight.className = 'kt-card-glow-spotlight';
     spotlight.style.cssText = `position:absolute;left:${-radius}px;top:${-radius}px;width:${radius * 2}px;height:${radius * 2}px;border-radius:50%;background:radial-gradient(circle,${color} 0%,transparent 70%);filter:blur(${blur}px);opacity:${opacity};mix-blend-mode:${opts.blendMode || 'screen'};will-change:transform;`;
     root.appendChild(spotlight);
 
@@ -45,7 +45,7 @@ export default {
     let surface = null;
     if (surfaceEnabled) {
       surface = document.createElement('span');
-      surface.className = 'mk-card-glow-surface';
+      surface.className = 'kt-card-glow-surface';
       const surfaceOpacity = clamp(Number(opts.surfaceOpacity ?? 0.38), 0, 1);
       const surfaceBlur = Math.max(0, Number(opts.surfaceBlur ?? 0));
       const surfaceBlend = opts.surfaceBlend || 'soft-light';
@@ -57,10 +57,10 @@ export default {
     let border = null;
     if (borderEnabled) {
       border = document.createElement('span');
-      border.className = 'mk-card-glow-border';
+      border.className = 'kt-card-glow-border';
       const width = Math.max(1, Number(opts.borderWidth ?? 1.5));
       const borderOpacity = clamp(Number(opts.borderOpacity ?? 0.8), 0, 1);
-      border.style.cssText = `position:absolute;inset:${Number(opts.borderInset ?? spread)}px;border-radius:inherit;padding:${width}px;opacity:${borderOpacity};filter:blur(${Math.max(0, Number(opts.borderBlur ?? 0))}px);background:radial-gradient(${Math.max(40, Number(opts.borderRadius ?? radius * 0.75))}px circle at var(--mk-x,50%) var(--mk-y,50%),${opts.borderColor || color},${opts.borderColor2 || color2} 42%,transparent 74%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;will-change:background;`;
+      border.style.cssText = `position:absolute;inset:${Number(opts.borderInset ?? spread)}px;border-radius:inherit;padding:${width}px;opacity:${borderOpacity};filter:blur(${Math.max(0, Number(opts.borderBlur ?? 0))}px);background:radial-gradient(${Math.max(40, Number(opts.borderRadius ?? radius * 0.75))}px circle at var(--kt-x,50%) var(--kt-y,50%),${opts.borderColor || color},${opts.borderColor2 || color2} 42%,transparent 74%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;will-change:background;`;
       root.appendChild(border);
     }
 
@@ -72,11 +72,11 @@ export default {
       const cometColor2 = opts.borderColor2 || opts.color2 || 'rgba(91,232,190,.9)';
       const cycle = Math.max(0.8, Number(opts.cycleDuration ?? opts.speed ?? 3));
       root.style.cssText = `position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none;opacity:${bool(opts.alwaysOn, true) ? 1 : 0};transition:opacity .35s ease;`;
-      spotlight.style.cssText = `position:absolute;inset:0;border-radius:inherit;padding:${width}px;background:conic-gradient(from var(--mk-angle,0deg),transparent 0deg,${cometColor} 80deg,${cometColor2} 160deg,transparent 280deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;opacity:${opacity};animation:mk-border-spin ${cycle}s linear infinite;filter:blur(${Math.max(0, Number(opts.blur ?? 0))}px);will-change:background;`;
+      spotlight.style.cssText = `position:absolute;inset:0;border-radius:inherit;padding:${width}px;background:conic-gradient(from var(--kt-angle,0deg),transparent 0deg,${cometColor} 80deg,${cometColor2} 160deg,transparent 280deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;opacity:${opacity};animation:kt-border-spin ${cycle}s linear infinite;filter:blur(${Math.max(0, Number(opts.blur ?? 0))}px);will-change:background;`;
       if (blur > 0 && opts.halo !== false) {
         // Soft duplicate underneath for a light haze around the edge.
         const haze = spotlight.cloneNode(false);
-        haze.className = 'mk-card-glow-comet-haze';
+        haze.className = 'kt-card-glow-comet-haze';
         haze.style.filter = `blur(${Math.max(6, blur)}px)`;
         haze.style.opacity = String(opacity * 0.7);
         root.appendChild(haze);
@@ -88,7 +88,7 @@ export default {
       const auroraColor = opts.color1 || opts.color || 'rgba(88,150,255,.55)';
       const auroraColor2 = opts.color2 || 'rgba(94,234,195,.45)';
       root.style.cssText = `position:absolute;inset:${-inset}px;z-index:-1;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .45s ease;`;
-      spotlight.style.cssText = `position:absolute;inset:0;border-radius:inherit;background:conic-gradient(from var(--mk-angle,0deg),${auroraColor},${auroraColor2},${auroraColor});filter:blur(${Math.max(4, blur)}px);opacity:${opacity};animation:mk-border-spin ${cycle}s linear infinite;will-change:filter;`;
+      spotlight.style.cssText = `position:absolute;inset:0;border-radius:inherit;background:conic-gradient(from var(--kt-angle,0deg),${auroraColor},${auroraColor2},${auroraColor});filter:blur(${Math.max(4, blur)}px);opacity:${opacity};animation:kt-border-spin ${cycle}s linear infinite;will-change:filter;`;
     } else if (mode === 'shine') {
       spotlight.style.cssText = `position:absolute;top:0;bottom:0;left:-55%;width:42%;border-radius:0;background:linear-gradient(90deg,transparent,${color},transparent);filter:blur(${blur}px);opacity:${opacity};transform:skewX(-20deg);will-change:transform;`;
     }
@@ -123,8 +123,8 @@ export default {
       const height = Math.max(1, el.clientHeight);
       const xPercent = clamp(currentX / width * 100, 0, 100);
       const yPercent = clamp(currentY / height * 100, 0, 100);
-      root.style.setProperty('--mk-x', `${xPercent}%`);
-      root.style.setProperty('--mk-y', `${yPercent}%`);
+      root.style.setProperty('--kt-x', `${xPercent}%`);
+      root.style.setProperty('--kt-y', `${yPercent}%`);
       if (mode === 'spotlight' || mode === 'pointer' || mode === 'border') {
         spotlight.style.transform = `translate3d(${currentX}px,${currentY}px,0)`;
       }

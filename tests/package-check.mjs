@@ -3,12 +3,12 @@ import { access, readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 
 const required = [
-  'dist/motionkit.js',
-  'dist/motionkit.umd.js',
-  'dist/motionkit.umd.cjs',
-  'dist/motionkit.css',
+  'dist/kineto.js',
+  'dist/kineto.umd.js',
+  'dist/kineto.umd.cjs',
+  'dist/kineto.css',
   'FEATURE_CONTRACT.md',
-  'motionkit.features.json',
+  'kineto.features.json',
   'demo/index.html',
   'demo/playground.js',
   'demo/playground.css'
@@ -16,24 +16,24 @@ const required = [
 for (const path of required) await access(new URL(`../${path}`, import.meta.url));
 
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-assert.equal(packageJson.exports['./style.css'], './dist/motionkit.css');
+assert.equal(packageJson.exports['./style.css'], './dist/kineto.css');
 assert.equal(packageJson.exports['./package.json'], './package.json');
 
-const esm = await import('@dong-gri/motionkit');
+const esm = await import('@dong-gri/kineto');
 assert.equal(esm.default.version, '0.8.1');
 assert.equal(Object.keys(esm.default.registry).length, 34);
 assert.equal(typeof esm.lazy, 'function');
 assert.equal(typeof esm.scrollSequence, 'function');
 
 const require = createRequire(import.meta.url);
-const commonJs = require('@dong-gri/motionkit');
+const commonJs = require('@dong-gri/kineto');
 assert.equal(commonJs.version, '0.8.1');
 assert.equal(Object.keys(commonJs.registry).length, 34);
 assert.equal(typeof commonJs.autoInit, 'function');
 
 for (const adapter of ['react', 'vue', 'jquery']) {
   const source = await readFile(new URL(`../src/adapters/${adapter}.js`, import.meta.url), 'utf8');
-  assert.match(source, /from ['"]@dong-gri\/motionkit['"]/, `${adapter} adapter must resolve the packaged core`);
+  assert.match(source, /from ['"]@dong-gri\/kineto['"]/, `${adapter} adapter must resolve the packaged core`);
 }
 
 console.log('Package surface OK: ESM, CommonJS, CSS and adapter entry points verified.');

@@ -1,20 +1,20 @@
 import { createElement, forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
-import MotionKit from '@dong-gri/motionkit';
+import Kineto from '@dong-gri/kineto';
 
 /**
- * React hook for one MotionKit module.
+ * React hook for one Kineto module.
  * Recreates the module only when `type` or `dependencies` change.
  */
-export function useMotionKit(type, options = {}, dependencies = []) {
+export function useKineto(type, options = {}, dependencies = []) {
   const elementRef = useRef(null);
   const instanceRef = useRef(null);
 
   useEffect(() => {
     const element = elementRef.current;
     if (!element || !type) return undefined;
-    instanceRef.current = MotionKit.create(type, element, options);
+    instanceRef.current = Kineto.create(type, element, options);
     return () => {
-      MotionKit.destroyModule(element, type);
+      Kineto.destroyModule(element, type);
       instanceRef.current = null;
     };
   // Options are intentionally controlled by the caller through dependencies.
@@ -31,7 +31,7 @@ export const Motion = forwardRef(function Motion(
   { as = 'div', type, options = {}, dependencies = [], children, ...props },
   forwardedRef
 ) {
-  const { ref, instance } = useMotionKit(type, options, dependencies);
+  const { ref, instance } = useKineto(type, options, dependencies);
   useImperativeHandle(forwardedRef, () => ({
     get element() { return ref.current; },
     get instance() { return instance.current; }
@@ -39,5 +39,5 @@ export const Motion = forwardRef(function Motion(
   return createElement(as, { ...props, ref }, children);
 });
 
-export { MotionKit };
+export { Kineto };
 export default Motion;

@@ -11,7 +11,7 @@
 ### HTML
 
 ```html
-<div class="marquee" data-mk-marquee data-mk-speed="60">
+<div class="marquee" data-kt-marquee data-kt-speed="60">
   <span>PARALLAX · REVEAL · COUNTER · LAZY · MAGNETIC</span>
 </div>
 ```
@@ -19,7 +19,7 @@
 ### JS API
 
 ```js
-MotionKit.marquee('.marquee', {
+Kineto.marquee('.marquee', {
   speed: 60,
   direction: 'left',
   pauseOnHover: true,
@@ -49,7 +49,7 @@ MotionKit.marquee('.marquee', {
 ### 빠른 흐름
 
 ```html
-<div data-mk-marquee data-mk-speed="120">
+<div data-kt-marquee data-kt-speed="120">
   <span>QUICK BROWN FOX JUMPS OVER</span>
 </div>
 ```
@@ -57,7 +57,7 @@ MotionKit.marquee('.marquee', {
 ### 오른쪽으로
 
 ```html
-<div data-mk-marquee data-mk-direction="right">
+<div data-kt-marquee data-kt-direction="right">
   <span>TRENDING NOW</span>
 </div>
 ```
@@ -65,7 +65,7 @@ MotionKit.marquee('.marquee', {
 ### 호버 정지 끄기
 
 ```html
-<div data-mk-marquee data-mk-pause-on-hover="false">
+<div data-kt-marquee data-kt-pause-on-hover="false">
   <span>NEVER STOPS</span>
 </div>
 ```

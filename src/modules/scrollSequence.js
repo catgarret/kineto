@@ -18,7 +18,7 @@ export default {
     };
 
     const triggerWrap = document.createElement('div');
-    triggerWrap.className = 'mk-scroll-sequence-wrap';
+    triggerWrap.className = 'kt-scroll-sequence-wrap';
     triggerWrap.style.height = opts.scrollLength || `${Math.max(2, frameCount * Number(opts.vhPerFrame ?? 3))}vh`;
     original.parent.insertBefore(triggerWrap, el);
     triggerWrap.appendChild(el);

@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>MotionKit · Vanilla JS Example</title>
+  <title>Kineto · Vanilla JS Example</title>
   <style>
     body { margin: 0; font-family: -apple-system, sans-serif; background: #0a0908; color: #f5f1ea; }
     .spacer { height: 80vh; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #555; }
@@ -11,45 +11,45 @@
     .stat { font-size: 80px; font-weight: 300; }
     .accent { color: #ff5b1c; }
   </style>
-  <link rel="stylesheet" href="../../dist/motionkit.css">
+  <link rel="stylesheet" href="../../dist/kineto.css">
 </head>
 <body>
 
   <div class="spacer">↓ 아래로 스크롤하세요</div>
 
   <div class="target">
-    <h1 data-mk-reveal="fade-up">Vanilla JS</h1>
-    <p data-mk-reveal="fade-up" data-mk-delay="0.1" style="color:#8a847d">
+    <h1 data-kt-reveal="fade-up">Vanilla JS</h1>
+    <p data-kt-reveal="fade-up" data-kt-delay="0.1" style="color:#8a847d">
       별도 빌드 도구 없이 <code>&lt;script&gt;</code> 한 줄로 사용
     </p>
     <div class="stat" style="margin-top: 64px;">
-      <span class="accent" data-mk-counter data-mk-to="1234" data-mk-format=",">0</span>
+      <span class="accent" data-kt-counter data-kt-to="1234" data-kt-format=",">0</span>
     </div>
   </div>
 
   <div class="spacer">↓ 더 아래로</div>
 
   <div class="target">
-    <h2 data-mk-text-split="char" data-mk-stagger="0.04" style="font-size: 64px; font-weight: 300;">
+    <h2 data-kt-text-split="char" data-kt-stagger="0.04" style="font-size: 64px; font-weight: 300;">
       한 글자씩 등장합니다
     </h2>
   </div>
 
   <div class="spacer">END</div>
 
-  <!-- MotionKit UMD는 GSAP, ScrollTrigger, Lenis를 포함합니다. -->
-  <script src="../../dist/motionkit.umd.js"></script>
+  <!-- Kineto UMD는 GSAP, ScrollTrigger, Lenis를 포함합니다. -->
+  <script src="../../dist/kineto.umd.js"></script>
 
   <!-- 자동 init이 작동하지만, 추가로 JS API도 사용 가능 -->
   <script>
-    MotionKit.autoInit();
+    Kineto.autoInit();
 
     // 콘솔에서 확인
-    console.log('MotionKit version:', MotionKit.version);
-    console.log('Environment:', MotionKit.env);
+    console.log('Kineto version:', Kineto.version);
+    console.log('Environment:', Kineto.env);
 
     // 동적으로 추가하기
-    // MotionKit.parallax('.some-img', { speed: 0.5 });
+    // Kineto.parallax('.some-img', { speed: 0.5 });
   </script>
 
 </body>

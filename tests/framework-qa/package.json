@@ -1,5 +1,5 @@
 {
-  "name": "motionkit-framework-qa",
+  "name": "kineto-framework-qa",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "jquery": "^3.7.1",
-    "motionkit": "file:../..",
+    "kineto": "file:../..",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "vue": "^3.5.18"

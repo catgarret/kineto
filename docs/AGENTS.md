@@ -1,11 +1,11 @@
-# Instructions for AI-assisted MotionKit changes
+# Instructions for AI-assisted Kineto changes
 
 ## 반드시 먼저 읽을 문서
 
 1. `OWNER_REQUIREMENTS.md`
-2. `motionkit.requirements.json`
+2. `kineto.requirements.json`
 3. `FEATURE_CONTRACT.md`
-4. `motionkit.features.json`
+4. `kineto.features.json`
 5. `CONTEXT.md`
 6. 영향받는 모듈 문서, 소스, 테스트
 
@@ -14,7 +14,7 @@
 - 현재 공개 범위는 정확히 **32개 모듈**입니다.
 - 소유자의 명시적 요청 없이 모듈·variant·option·기본값·활성화 속성·return shape·public method를 삭제하거나 재해석하지 않습니다.
 - 기능 분류 역시 계약입니다. 예: `circular`/`bar`는 Loader, `slide-up`/`wipe`는 viewport Reveal, `ripple`은 Button Feedback입니다.
-- `motionkit.features.json`이나 `motionkit.requirements.json`을 실패한 구현에 맞춰 낮추지 않습니다.
+- `kineto.features.json`이나 `kineto.requirements.json`을 실패한 구현에 맞춰 낮추지 않습니다.
 - 계약된 옵션은 `opts.optionName`으로 접근합니다. bracket access와 option destructuring은 계약 검사 우회를 막기 위해 금지합니다.
 - 관련 없는 모듈을 함께 리팩터링하지 않습니다.
 - 데모를 축약해 버그를 숨기지 않습니다. 데모는 QA 표면입니다.

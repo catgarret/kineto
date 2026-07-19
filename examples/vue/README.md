@@ -1,18 +1,18 @@
 # Vue 3 adapter example
 
 ```bash
-npm install motionkit vue
+npm install kineto vue
 ```
 
 ```js
 // main.js
 import { createApp } from 'vue';
 import App from './App.vue';
-import MotionKitVue from 'motionkit/vue';
-import 'motionkit/style.css';
+import KinetoVue from 'kineto/vue';
+import 'kineto/style.css';
 
 createApp(App)
-  .use(MotionKitVue)
+  .use(KinetoVue)
   .mount('#app');
 ```
 
@@ -32,9 +32,9 @@ Composable도 사용할 수 있습니다.
 
 ```vue
 <script setup>
-import { useMotionKit } from 'motionkit/vue';
+import { useKineto } from 'kineto/vue';
 
-const { element, replay } = useMotionKit(
+const { element, replay } = useKineto(
   'reveal',
   { preset: 'fade-up' }
 );

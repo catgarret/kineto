@@ -1,36 +1,50 @@
 <div align="center">
 
-<img src="assets/logo.svg" width="72" height="72" alt="MotionKit">
+<img src="assets/logo.svg" width="72" height="72" alt="Kineto">
 
-# MotionKit
+# Kineto
 
 **실시간으로 조절하고 코드를 그대로 복사해 쓰는 웹 모션 라이브러리 — 바닐라 JS · React · Vue · jQuery 지원.**
 
 [English](README.md) · 한국어 · [日本語](README.jp.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [Italiano](README.it.md)
 
-[![npm](https://img.shields.io/npm/v/@dong-gri/motionkit.svg)](https://www.npmjs.com/package/@dong-gri/motionkit) [![license](https://img.shields.io/npm/l/@dong-gri/motionkit.svg)](LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/motionkit.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/motionkit)
+[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
 
-[라이브 데모](https://git.dongri.me/example/motionKit) · [모듈 레퍼런스](docs/module-reference.md) · [AI 프롬프트 가이드](AI-PROMPT-GUIDE.md) · [기능 계약](FEATURE_CONTRACT.md)
+[라이브 데모](https://git.dongri.me/example/kineto) · [모듈 레퍼런스](docs/module-reference.md) · [AI 프롬프트 가이드](AI-PROMPT-GUIDE.md) · [기능 계약](FEATURE_CONTRACT.md)
 
 </div>
 
 ---
 
-MotionKit은 34개의 인터랙션 모듈(모션·미디어·스크롤·로더·텍스트)을 `data-mk-*` 속성 하나로 붙이거나 JavaScript API로 세밀하게 제어할 수 있는 라이브러리입니다. 코어는 외부 의존성이 없으며, 미지원 브라우저나 저사양 기기에서는 효과만 비활성화되고 콘텐츠는 그대로 유지됩니다.
+> **Kineto** — 이름은 “운동·움직임”을 뜻하는 그리스어 *kínēsis*(키네시스)에서 유래한 *kinetic*(키네틱)에서 따왔습니다. 웹의 모션을 다루는 라이브러리에 어울리는 이름입니다.
 
-> AI 코딩 도구(Cursor, Claude 등)로 작업한다면 [AI 프롬프트 가이드](AI-PROMPT-GUIDE.md)를 참고하세요. 모션·인터랙션을 MotionKit 모듈로 우선 적용하도록 지시하는, 그대로 붙여넣는 프롬프트가 들어 있습니다.
+Kineto은 34개의 인터랙션 모듈(모션·미디어·스크롤·로더·텍스트)을 `data-kt-*` 속성 하나로 붙이거나 JavaScript API로 세밀하게 제어할 수 있는 라이브러리입니다. 코어는 외부 의존성이 없으며, 미지원 브라우저나 저사양 기기에서는 효과만 비활성화되고 콘텐츠는 그대로 유지됩니다.
+
+> AI 코딩 도구(Cursor, Claude 등)로 작업한다면 [AI 프롬프트 가이드](AI-PROMPT-GUIDE.md)를 참고하세요. 모션·인터랙션을 Kineto 모듈로 우선 적용하도록 지시하는, 그대로 붙여넣는 프롬프트가 들어 있습니다.
 
 ## 대표 기능
 
-모든 효과는 [라이브 데모](https://git.dongri.me/example/motionKit)에서 옵션을 바꿔 Apply를 누르면 바로 확인하고, 결과 HTML·JavaScript를 복사해 쓸 수 있습니다.
+모든 효과는 [라이브 데모](https://git.dongri.me/example/kineto)에서 옵션을 바꿔 Apply를 누르면 바로 확인하고, 결과 HTML·JavaScript를 복사해 쓸 수 있습니다.
 
-| 효과 | 모듈 | 설명 |
-|---|---|---|
-| Progressive Print | `lazy` | 잉크젯 인쇄처럼 줄 단위·저해상도→고해상도로 이미지가 차오름 |
-| Card Spotlight & Reflection | `cardGlow` | 포인터를 따라가는 스포트라이트·표면 광택·발광 외곽선 |
-| Text Transition | `textTransition` | 슬라이드·블러·스케일로 문구를 전환 |
-| ScrollVelocity | `scrollVelocity` | 스크롤 속도·방향에 따라 요소를 스큐·스케일·이동 |
-| Lightbox | `lightbox` | 그룹·확대·미니맵을 갖춘 전체화면 이미지 뷰어 |
+**Progressive Print** — `lazy`. 잉크젯 인쇄처럼 줄 단위로, 저해상도에서 고해상도로 이미지가 차오릅니다.
+
+<img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/print.gif" width="620" alt="Progressive Print">
+
+**Card Spotlight & Reflection** — `cardGlow`. 포인터를 따라가는 스포트라이트·표면 광택·발광 외곽선.
+
+<img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/cardglow.gif" width="620" alt="Card Spotlight and Reflection">
+
+**Text Transition** — `textTransition`. 슬라이드·블러·스케일로 문구를 전환합니다.
+
+<img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/texttransition.gif" width="620" alt="Text Transition">
+
+**ScrollVelocity** — `scrollVelocity`. 스크롤 속도·방향에 따라 요소를 스큐·스케일·이동합니다.
+
+<img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/scrollvelocity.gif" width="620" alt="ScrollVelocity">
+
+**Lightbox** — `lightbox`. 그룹·확대·미니맵을 갖춘 전체화면 이미지 뷰어.
+
+<img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/lightbox.gif" width="620" alt="Lightbox">
 
 전체 34개 모듈은 아래 [모듈 목록](#모듈)을 참고하세요.
 
@@ -39,30 +53,30 @@ MotionKit은 34개의 인터랙션 모듈(모션·미디어·스크롤·로더·
 ### npm
 
 ```bash
-npm install @dong-gri/motionkit
+npm install @dong-gri/kineto
 ```
 
 ```js
-import MotionKit from '@dong-gri/motionkit';
-import '@dong-gri/motionkit/style.css';
+import Kineto from '@dong-gri/kineto';
+import '@dong-gri/kineto/style.css';
 
-MotionKit.autoInit();
+Kineto.autoInit();
 ```
 
 ### CDN (설치 없이 script 태그)
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dong-gri/motionkit/dist/motionkit.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@dong-gri/motionkit/dist/motionkit.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.umd.min.js"></script>
 <script>
-  MotionKit.autoInit();
+  Kineto.autoInit();
 </script>
 ```
 
 ### CDN (ESM)
 
 ```js
-import MotionKit from 'https://cdn.jsdelivr.net/npm/@dong-gri/motionkit/+esm';
+import Kineto from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/+esm';
 ```
 
 ## 빠른 시작
@@ -70,18 +84,18 @@ import MotionKit from 'https://cdn.jsdelivr.net/npm/@dong-gri/motionkit/+esm';
 HTML 속성만으로 동작합니다.
 
 ```html
-<h2 data-mk-text-reveal="stream">문장이 흐르듯 나타납니다</h2>
-<strong data-mk-counter="pop" data-mk-to="98760" data-mk-format=",">98,760</strong>
-<img data-mk-lazy="skeleton" data-src="./cover.webp" alt="Cover">
-<section data-mk-reveal="fade-up">스크롤 진입 시 나타납니다</section>
+<h2 data-kt-text-reveal="stream">문장이 흐르듯 나타납니다</h2>
+<strong data-kt-counter="pop" data-kt-to="98760" data-kt-format=",">98,760</strong>
+<img data-kt-lazy="skeleton" data-src="./cover.webp" alt="Cover">
+<section data-kt-reveal="fade-up">스크롤 진입 시 나타납니다</section>
 ```
 
 동일한 기능을 JavaScript API로도 쓸 수 있습니다.
 
 ```js
-MotionKit.counter('#total', { preset: 'pop', to: 98760, format: ',' });
-MotionKit.reveal('.card', { preset: 'fade-up', stagger: 0.06 });
-const lightbox = MotionKit.lightbox('.gallery img', { group: 'work', minimap: true });
+Kineto.counter('#total', { preset: 'pop', to: 98760, format: ',' });
+Kineto.reveal('.card', { preset: 'fade-up', stagger: 0.06 });
+const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true });
 ```
 
 ## 선택적 의존성
@@ -97,67 +111,67 @@ const lightbox = MotionKit.lightbox('.gallery img', { group: 'work', minimap: tr
 스무스 스크롤은 기본 비활성화이며, 필요할 때만 켤 수 있습니다.
 
 ```js
-MotionKit.enableSmooth({ lerp: 0.08 });
-MotionKit.disableSmooth();
+Kineto.enableSmooth({ lerp: 0.08 });
+Kineto.disableSmooth();
 ```
 
 ## 모듈
 
 | 모듈 | 활성화 속성 | 용도 |
 |---|---|---|
-| `ambientMedia` | `data-mk-ambient-media` | 미디어 주변광(Ambient Glow) |
-| `blurText` | `data-mk-blur-text` | 글자별 블러 리빌 |
-| `brushReveal` | `data-mk-brush-reveal` | 포인터 브러시 마스크 리빌 |
-| `cardGlow` | `data-mk-card-glow` | 포인터 스포트라이트·표면 반사·발광 외곽선 |
-| `counter` | `data-mk-counter` | 숫자 카운트·플립·시계·카운트다운 |
-| `cssScroll` | `data-mk-css-scroll` | CSS 변수·애니메이션 타임라인 스크롤 연동 |
-| `cursor` | `data-mk-cursor` | 커스텀 커서 11종 |
-| `fullpage` | `data-mk-fullpage` | 풀페이지 섹션 페이징(세로·가로·혼합축) |
-| `glitch` | `data-mk-glitch` | RGB 슬라이스·글리치 리빌 |
-| `lazy` | `data-mk-lazy` | 이미지 로딩 연출(스켈레톤·픽셀·프린트·디졸브) |
-| `lightbox` | `data-mk-lightbox` | 전체화면 뷰어·그룹·확대·미니맵 |
-| `loader` | `data-mk-loader` | 실제 진행률 연동 로더 |
-| `magnetic` | `data-mk-magnetic` | 포인터 자석 반응 |
-| `marquee` | `data-mk-marquee` | 무한 흐름 텍스트 |
-| `mouseParallax` | `data-mk-mouse-parallax` | 포인터·자이로 패럴럭스 |
-| `overflowText` | `data-mk-overflow-text` | 넘치는 텍스트 처리 8종 |
-| `pageReveal` | `data-mk-page-reveal` | 페이지 진입 오버레이 |
-| `pageTransition` | `data-mk-page-transition` | 동일 출처 페이지 전환 |
-| `parallax` | `data-mk-parallax` | 스크롤 패럴럭스 |
-| `progress` | `data-mk-progress` | 읽기 진행률 바·링 |
-| `reveal` | `data-mk-reveal` | 스크롤 진입 리빌 |
-| `ripple` | `data-mk-ripple` | 클릭 리플 |
-| `scrollSequence` | `data-mk-scroll-sequence` | 이미지 시퀀스 스크럽 |
-| `scrollVelocity` | `data-mk-scroll-velocity` | 스크롤 속도·방향 반응 |
-| `shuffle` | `data-mk-shuffle` | 문자 셔플 디코드 |
-| `slider` | `data-mk-slider` | 슬라이드·커버플로우 |
-| `stickyStack` | `data-mk-sticky-stack` | 스티키 스택(세로·가로·플로팅) |
-| `textFill` | `data-mk-text-fill` | 스크롤 텍스트 채움 |
-| `textReveal` | `data-mk-text-reveal` | 텍스트 리빌(한글 조합 포함) |
-| `textSplit` | `data-mk-text-split` | 글자·단어 분할 모션 |
-| `textTransition` | `data-mk-text-transition` | 텍스트 교체 전환 |
-| `tilt` | `data-mk-tilt` | 3D 틸트·글레어 |
-| `typewriter` | `data-mk-typewriter` | 타이핑 효과 |
-| `vibrate` | `data-mk-vibrate` | 햅틱 진동 피드백 |
+| `ambientMedia` | `data-kt-ambient-media` | 미디어 주변광(Ambient Glow) |
+| `blurText` | `data-kt-blur-text` | 글자별 블러 리빌 |
+| `brushReveal` | `data-kt-brush-reveal` | 포인터 브러시 마스크 리빌 |
+| `cardGlow` | `data-kt-card-glow` | 포인터 스포트라이트·표면 반사·발광 외곽선 |
+| `counter` | `data-kt-counter` | 숫자 카운트·플립·시계·카운트다운 |
+| `cssScroll` | `data-kt-css-scroll` | CSS 변수·애니메이션 타임라인 스크롤 연동 |
+| `cursor` | `data-kt-cursor` | 커스텀 커서 11종 |
+| `fullpage` | `data-kt-fullpage` | 풀페이지 섹션 페이징(세로·가로·혼합축) |
+| `glitch` | `data-kt-glitch` | RGB 슬라이스·글리치 리빌 |
+| `lazy` | `data-kt-lazy` | 이미지 로딩 연출(스켈레톤·픽셀·프린트·디졸브) |
+| `lightbox` | `data-kt-lightbox` | 전체화면 뷰어·그룹·확대·미니맵 |
+| `loader` | `data-kt-loader` | 실제 진행률 연동 로더 |
+| `magnetic` | `data-kt-magnetic` | 포인터 자석 반응 |
+| `marquee` | `data-kt-marquee` | 무한 흐름 텍스트 |
+| `mouseParallax` | `data-kt-mouse-parallax` | 포인터·자이로 패럴럭스 |
+| `overflowText` | `data-kt-overflow-text` | 넘치는 텍스트 처리 8종 |
+| `pageReveal` | `data-kt-page-reveal` | 페이지 진입 오버레이 |
+| `pageTransition` | `data-kt-page-transition` | 동일 출처 페이지 전환 |
+| `parallax` | `data-kt-parallax` | 스크롤 패럴럭스 |
+| `progress` | `data-kt-progress` | 읽기 진행률 바·링 |
+| `reveal` | `data-kt-reveal` | 스크롤 진입 리빌 |
+| `ripple` | `data-kt-ripple` | 클릭 리플 |
+| `scrollSequence` | `data-kt-scroll-sequence` | 이미지 시퀀스 스크럽 |
+| `scrollVelocity` | `data-kt-scroll-velocity` | 스크롤 속도·방향 반응 |
+| `shuffle` | `data-kt-shuffle` | 문자 셔플 디코드 |
+| `slider` | `data-kt-slider` | 슬라이드·커버플로우 |
+| `stickyStack` | `data-kt-sticky-stack` | 스티키 스택(세로·가로·플로팅) |
+| `textFill` | `data-kt-text-fill` | 스크롤 텍스트 채움 |
+| `textReveal` | `data-kt-text-reveal` | 텍스트 리빌(한글 조합 포함) |
+| `textSplit` | `data-kt-text-split` | 글자·단어 분할 모션 |
+| `textTransition` | `data-kt-text-transition` | 텍스트 교체 전환 |
+| `tilt` | `data-kt-tilt` | 3D 틸트·글레어 |
+| `typewriter` | `data-kt-typewriter` | 타이핑 효과 |
+| `vibrate` | `data-kt-vibrate` | 햅틱 진동 피드백 |
 
-각 모듈의 variant와 옵션 전체 목록은 [모듈 레퍼런스](docs/module-reference.md)와 `motionkit.features.json`을 참고하세요.
+각 모듈의 variant와 옵션 전체 목록은 [모듈 레퍼런스](docs/module-reference.md)와 `kineto.features.json`을 참고하세요.
 
 ## 프레임워크 어댑터
 
 ```jsx
-import { Motion } from '@dong-gri/motionkit/react';
+import { Motion } from '@dong-gri/kineto/react';
 <Motion as="h2" type="textReveal" options={{ mode: 'hangul' }}>안녕하세요</Motion>
 ```
 
 ```js
-import MotionKitVue from '@dong-gri/motionkit/vue';
-app.use(MotionKitVue);
+import KinetoVue from '@dong-gri/kineto/vue';
+app.use(KinetoVue);
 ```
 
 ```js
-import installMotionKit from '@dong-gri/motionkit/jquery';
-installMotionKit(window.jQuery);
-$('.card').motionKit('reveal', { preset: 'fade-up' });
+import installKineto from '@dong-gri/kineto/jquery';
+installKineto(window.jQuery);
+$('.card').kineto('reveal', { preset: 'fade-up' });
 ```
 
 ## 브라우저 지원

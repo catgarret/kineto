@@ -186,7 +186,7 @@ export default {
     let from = PRESETS[preset];
     if (preset === 'wipe' || preset === 'mask') from = { clipPath: directionalClip(direction), opacity: 1 };
     if (!from) {
-      console.warn(`[MotionKit/reveal] Unknown preset: ${preset}`);
+      console.warn(`[Kineto/reveal] Unknown preset: ${preset}`);
       return null;
     }
     if (!gsap || !scrollTrigger) return this.fallback(el, opts, from);

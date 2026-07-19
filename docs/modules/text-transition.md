@@ -11,7 +11,7 @@
 | `clip` | clip 기반 전환 |
 
 ```html
-<div data-mk-text-transition="slide" data-mk-hold="1200" data-mk-loop="true">
+<div data-kt-text-transition="slide" data-kt-hold="1200" data-kt-loop="true">
   <span>Design</span>
   <span>Motion</span>
   <span>Automation</span>
@@ -19,7 +19,7 @@
 ```
 
 ```js
-const transition = MotionKit.textTransition('.roles', {
+const transition = Kineto.textTransition('.roles', {
   effect: 'blur',
   duration: 0.45,
   hold: 1200

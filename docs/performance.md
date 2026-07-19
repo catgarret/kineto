@@ -2,7 +2,7 @@
 
 ## 자동 환경 티어
 
-`MotionKit.env`는 다음 신호를 사용합니다.
+`Kineto.env`는 다음 신호를 사용합니다.
 
 - `navigator.connection.saveData`
 - 2G/slow-2g effective connection
@@ -14,7 +14,7 @@
 성능 티어는 `high`, `mid`, `low`입니다.
 
 ```js
-MotionKit.config({ performance: 'auto' });
+Kineto.config({ performance: 'auto' });
 ```
 
 - save-data 또는 매우 느린 네트워크: `low`
@@ -26,9 +26,9 @@ MotionKit.config({ performance: 'auto' });
 ## 수동 설정
 
 ```js
-MotionKit.config({ performance: 'low' });
-MotionKit.config({ smooth: false });
-MotionKit.config({ forceReducedMotion: true });
+Kineto.config({ performance: 'low' });
+Kineto.config({ smooth: false });
+Kineto.config({ forceReducedMotion: true });
 ```
 
 지원 값은 `auto`, `high`, `mid`, `low`입니다. 과거 문서의 `off` 및 자동 FPS 강등 기능은 현재 구현되어 있지 않습니다.
@@ -57,8 +57,8 @@ MotionKit.config({ forceReducedMotion: true });
 - 패럴럭스/velocity 효과는 페이지의 핵심 구간에만 사용합니다.
 - large image는 AVIF/WebP, `srcset`, `sizes`로 먼저 최적화합니다.
 - slider autoplay는 화면 밖 또는 문서 hidden 상태에서 불필요한 작업이 없도록 lifecycle을 유지합니다.
-- SPA 전환 전에 route container의 `MotionKit.destroy(container)`를 호출하거나 pageTransition의 내장 정리를 사용합니다.
-- 레이아웃 변경 후 `MotionKit.refresh()`를 호출합니다.
+- SPA 전환 전에 route container의 `Kineto.destroy(container)`를 호출하거나 pageTransition의 내장 정리를 사용합니다.
+- 레이아웃 변경 후 `Kineto.refresh()`를 호출합니다.
 
 ## 번들 측정
 

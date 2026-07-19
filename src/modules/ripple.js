@@ -22,7 +22,7 @@ export default {
       const y = centered ? rect.height / 2 : event.clientY - rect.top;
       const radius = Math.hypot(Math.max(x, rect.width - x), Math.max(y, rect.height - y)) * scale;
       const ripple = document.createElement('span');
-      ripple.className = 'mk-ripple-wave';
+      ripple.className = 'kt-ripple-wave';
       ripple.setAttribute('aria-hidden', 'true');
       ripple.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${radius * 2}px;height:${radius * 2}px;border-radius:50%;background:${color};opacity:${opacity};pointer-events:none;transform:translate(-50%,-50%) scale(0);transform-origin:center;z-index:0;will-change:transform,opacity;`;
       el.appendChild(ripple);

@@ -1,5 +1,5 @@
-import './motionkit.css';
-import MotionKit from './core.js';
+import './kineto.css';
+import Kineto from './core.js';
 import parallaxModule from './modules/parallax.js';
 import mouseParallaxModule from './modules/mouseParallax.js';
 import revealModule from './modules/reveal.js';
@@ -72,9 +72,9 @@ const moduleEntries = {
   fullpage: fullpageModule
 };
 
-Object.entries(moduleEntries).forEach(([name, module]) => MotionKit.register(name, module));
+Object.entries(moduleEntries).forEach(([name, module]) => Kineto.register(name, module));
 
-const call = (name) => (target, options) => MotionKit[name](target, options);
+const call = (name) => (target, options) => Kineto[name](target, options);
 
 export const parallax = call('parallax');
 export const mouseParallax = call('mouseParallax');
@@ -112,4 +112,4 @@ export const brushReveal = call('brushReveal');
 export const fullpage = call('fullpage');
 
 export { moduleEntries as modules };
-export default MotionKit;
+export default Kineto;

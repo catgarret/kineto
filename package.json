@@ -1,5 +1,5 @@
 {
-  "name": "@dong-gri/motionkit",
+  "name": "@dong-gri/kineto",
   "version": "0.8.1",
   "description": "Interactive web motion effects with live controls and copy-ready code — 34 modules for JavaScript, React, Vue, and jQuery. Zero required dependencies.",
   "type": "module",
@@ -25,34 +25,34 @@
     "vanilla-js",
     "frontend"
   ],
-  "homepage": "https://git.dongri.me/example/motionKit",
+  "homepage": "https://git.dongri.me/example/kineto",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/catgarret/motionKit.git"
+    "url": "git+https://github.com/catgarret/kineto.git"
   },
   "bugs": {
-    "url": "https://github.com/catgarret/motionKit/issues"
+    "url": "https://github.com/catgarret/kineto/issues"
   },
   "publishConfig": {
     "access": "public"
   },
-  "main": "./dist/motionkit.umd.cjs",
-  "module": "./dist/motionkit.js",
-  "browser": "./dist/motionkit.umd.cjs",
-  "unpkg": "./dist/motionkit.umd.min.js",
-  "jsdelivr": "./dist/motionkit.umd.min.js",
+  "main": "./dist/kineto.umd.cjs",
+  "module": "./dist/kineto.js",
+  "browser": "./dist/kineto.umd.cjs",
+  "unpkg": "./dist/kineto.umd.min.js",
+  "jsdelivr": "./dist/kineto.umd.min.js",
   "exports": {
     ".": {
-      "import": "./dist/motionkit.js",
-      "require": "./dist/motionkit.umd.cjs",
-      "default": "./dist/motionkit.js"
+      "import": "./dist/kineto.js",
+      "require": "./dist/kineto.umd.cjs",
+      "default": "./dist/kineto.js"
     },
-    "./min": "./dist/motionkit.min.js",
-    "./umd": "./dist/motionkit.umd.min.js",
+    "./min": "./dist/kineto.min.js",
+    "./umd": "./dist/kineto.umd.min.js",
     "./react": "./src/adapters/react.js",
     "./vue": "./src/adapters/vue.js",
     "./jquery": "./src/adapters/jquery.js",
-    "./style.css": "./dist/motionkit.css",
+    "./style.css": "./dist/kineto.css",
     "./package.json": "./package.json"
   },
   "files": [
@@ -60,12 +60,12 @@
     "src/adapters",
     "demo",
     "docs",
-    "assets",
+    "assets/logo.svg",
     "FEATURE_CONTRACT.md",
-    "motionkit.features.json",
-    "motionkit.features.schema.json",
+    "kineto.features.json",
+    "kineto.features.schema.json",
     "OWNER_REQUIREMENTS.md",
-    "motionkit.requirements.json",
+    "kineto.requirements.json",
     "AI-PROMPT-GUIDE.md",
     "CHANGELOG.md",
     "README.md",

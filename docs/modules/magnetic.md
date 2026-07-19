@@ -11,7 +11,7 @@
 ### HTML
 
 ```html
-<a href="#" class="btn" data-mk-magnetic data-mk-strength="0.4">
+<a href="#" class="btn" data-kt-magnetic data-kt-strength="0.4">
   더 알아보기 →
 </a>
 ```
@@ -19,7 +19,7 @@
 ### JS API
 
 ```js
-MotionKit.magnetic('.btn', {
+Kineto.magnetic('.btn', {
   strength: 0.4,
   radius: 100,
   ease: 0.15,
@@ -52,19 +52,19 @@ MotionKit.magnetic('.btn', {
 ### 작은 강도 (서브틀)
 
 ```html
-<a data-mk-magnetic data-mk-strength="0.2">조용히 따라옴</a>
+<a data-kt-magnetic data-kt-strength="0.2">조용히 따라옴</a>
 ```
 
 ### 강한 자석
 
 ```html
-<a data-mk-magnetic data-mk-strength="0.8">매우 강하게 따라옴</a>
+<a data-kt-magnetic data-kt-strength="0.8">매우 강하게 따라옴</a>
 ```
 
 ### 큰 반경
 
 ```html
-<button data-mk-magnetic data-mk-radius="200">멀리서부터 끌려옴</button>
+<button data-kt-magnetic data-kt-radius="200">멀리서부터 끌려옴</button>
 ```
 
 ---

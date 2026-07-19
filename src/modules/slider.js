@@ -8,8 +8,8 @@ import { clamp, lerp, snapshotInlineStyles } from '../utils.js';
  */
 export default {
   create(el, opts = {}) {
-    const wrap = el.querySelector('.mk-slider-wrap') || el;
-    const track = wrap.querySelector('.mk-slider-track') || el.firstElementChild;
+    const wrap = el.querySelector('.kt-slider-wrap') || el;
+    const track = wrap.querySelector('.kt-slider-track') || el.firstElementChild;
     if (!track) return null;
     const slides = Array.from(track.children);
     if (!slides.length) return null;
@@ -133,7 +133,7 @@ export default {
         slide.setAttribute('aria-hidden', String(coverflow ? !active : hidden));
         slide.classList.toggle('is-active', active);
       });
-      el.dataset.mkSliderIndex = String(index);
+      el.dataset.ktSliderIndex = String(index);
       opts.onChange?.(index, slides[index], el);
     };
 
@@ -223,9 +223,9 @@ export default {
       else if (event.key === 'End') { event.preventDefault(); goTo(maxIndex); }
     };
 
-    const nextButtons = Array.from(document.querySelectorAll(opts.nextSelector || `[data-mk-slider-next="${el.id || ''}"], [data-mk-slider-next]`)).filter((button) => !button.dataset.mkSliderBound);
-    const prevButtons = Array.from(document.querySelectorAll(opts.prevSelector || `[data-mk-slider-prev="${el.id || ''}"], [data-mk-slider-prev]`)).filter((button) => !button.dataset.mkSliderBound);
-    const bindButton = (button, handler) => { button.dataset.mkSliderBound = 'true'; button.addEventListener('click', handler); };
+    const nextButtons = Array.from(document.querySelectorAll(opts.nextSelector || `[data-kt-slider-next="${el.id || ''}"], [data-kt-slider-next]`)).filter((button) => !button.dataset.ktSliderBound);
+    const prevButtons = Array.from(document.querySelectorAll(opts.prevSelector || `[data-kt-slider-prev="${el.id || ''}"], [data-kt-slider-prev]`)).filter((button) => !button.dataset.ktSliderBound);
+    const bindButton = (button, handler) => { button.dataset.ktSliderBound = 'true'; button.addEventListener('click', handler); };
     nextButtons.forEach((button) => bindButton(button, next));
     prevButtons.forEach((button) => bindButton(button, prev));
 
@@ -264,12 +264,12 @@ export default {
         if (rafId != null) cancelAnimationFrame(rafId);
         resizeObserver?.disconnect();
         wrap.removeEventListener('pointerdown', onDown); wrap.removeEventListener('pointermove', onMove); wrap.removeEventListener('pointerup', onEnd); wrap.removeEventListener('pointercancel', onEnd); wrap.removeEventListener('touchmove', onTouchMove); wrap.removeEventListener('keydown', onKey); wrap.removeEventListener('pointerenter', onEnter); wrap.removeEventListener('pointerleave', onLeave);
-        nextButtons.forEach((button) => { button.removeEventListener('click', next); delete button.dataset.mkSliderBound; });
-        prevButtons.forEach((button) => { button.removeEventListener('click', prev); delete button.dataset.mkSliderBound; });
+        nextButtons.forEach((button) => { button.removeEventListener('click', next); delete button.dataset.ktSliderBound; });
+        prevButtons.forEach((button) => { button.removeEventListener('click', prev); delete button.dataset.ktSliderBound; });
         const restore = (node, name, value) => value == null ? node.removeAttribute(name) : node.setAttribute(name, value);
         restore(wrap, 'style', original.wrap); restore(track, 'style', original.track); restore(wrap, 'role', original.wrapRole); restore(wrap, 'aria-label', original.wrapLabel); restore(wrap, 'tabindex', original.wrapTab);
         slides.forEach((slide, slideIndex) => { const state = original.slides[slideIndex]; restore(slide, 'style', state.style); restore(slide, 'role', state.role); restore(slide, 'aria-hidden', state.hidden); restore(slide, 'aria-label', state.label); slide.classList.remove('is-active'); });
-        delete el.dataset.mkSliderIndex;
+        delete el.dataset.ktSliderIndex;
       }
     };
   },

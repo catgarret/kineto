@@ -29,10 +29,10 @@
 
 ```html
 <div
-  data-mk-reveal="fade-up"
-  data-mk-duration="0.8"
-  data-mk-once="false"
-  data-mk-stagger='{"each":0.08,"from":"center"}'
+  data-kt-reveal="fade-up"
+  data-kt-duration="0.8"
+  data-kt-once="false"
+  data-kt-stagger='{"each":0.08,"from":"center"}'
 ></div>
 ```
 
@@ -44,13 +44,13 @@
 | `"{...}"`, `"[...]"` | JSON parse 결과 |
 | 그 외 | string |
 
-모듈 활성화 속성 자체의 값은 `preset`으로 읽습니다. 예를 들어 `data-mk-reveal="fade-up"`은 `{ preset: 'fade-up' }`과 같습니다.
+모듈 활성화 속성 자체의 값은 `preset`으로 읽습니다. 예를 들어 `data-kt-reveal="fade-up"`은 `{ preset: 'fade-up' }`과 같습니다.
 
 ## 반환값
 
 ```js
-const one = MotionKit.reveal('#hero', { preset: 'fade-up' });
-const many = MotionKit.reveal('.card', { preset: 'fade-up' });
+const one = Kineto.reveal('#hero', { preset: 'fade-up' });
+const many = Kineto.reveal('.card', { preset: 'fade-up' });
 ```
 
 - 일치 요소 1개: 인스턴스

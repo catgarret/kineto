@@ -66,9 +66,9 @@ function ensureWrapper(el, opts) {
   let wrapper = el.parentElement;
   let created = false;
   const originalWrapperStyle = wrapper?.getAttribute('style') ?? null;
-  if (!wrapper?.classList.contains('mk-lazy-wrap')) {
+  if (!wrapper?.classList.contains('kt-lazy-wrap')) {
     wrapper = document.createElement('span');
-    wrapper.className = 'mk-lazy-wrap';
+    wrapper.className = 'kt-lazy-wrap';
     el.parentNode?.insertBefore(wrapper, el);
     wrapper.appendChild(el);
     created = true;
@@ -105,7 +105,7 @@ function createLayer(wrapper, className, zIndex = 2) {
 
 function createLiveImage(src, el, opts = {}) {
   const image = document.createElement('img');
-  image.className = 'mk-lazy-live-image';
+  image.className = 'kt-lazy-live-image';
   image.alt = '';
   image.setAttribute('aria-hidden', 'true');
   image.loading = 'eager';
@@ -122,7 +122,7 @@ function createLiveImage(src, el, opts = {}) {
 
 function createNoiseCanvas(wrapper, opts, zIndex = 4) {
   const canvas = document.createElement('canvas');
-  canvas.className = 'mk-lazy-noise';
+  canvas.className = 'kt-lazy-noise';
   canvas.setAttribute('aria-hidden', 'true');
   canvas.width = Math.max(32, Number(opts.noiseWidth ?? 128));
   canvas.height = Math.max(18, Number(opts.noiseHeight ?? 72));
@@ -171,7 +171,7 @@ function preload(src, el, opts) {
     const srcset = opts.srcset || el.getAttribute('data-srcset') || el.getAttribute('srcset');
     if (srcset) image.srcset = srcset;
     image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error(`MotionKit lazy image failed to load: ${src}`));
+    image.onerror = () => reject(new Error(`Kineto lazy image failed to load: ${src}`));
     image.src = src;
   });
 }
@@ -246,22 +246,22 @@ export default {
 
     const setupSkeleton = () => {
       const variant = opts.skeletonVariant || opts.variant || 'shimmer';
-      const layer = createLayer(wrapper, `mk-lazy-skeleton mk-lazy-skeleton-${variant}`, 5);
+      const layer = createLayer(wrapper, `kt-lazy-skeleton kt-lazy-skeleton-${variant}`, 5);
       const base = opts.skeletonColor || 'color-mix(in srgb, currentColor 9%, transparent)';
       const highlight = opts.skeletonHighlight || 'rgba(255,255,255,.45)';
       const speed = Math.max(0.3, Number(opts.skeletonSpeed ?? 1.5));
       layer.style.backgroundColor = base;
       if (variant === 'pulse') {
-        layer.style.animation = `mk-skeleton-pulse ${speed}s ease-in-out infinite`;
+        layer.style.animation = `kt-skeleton-pulse ${speed}s ease-in-out infinite`;
       } else {
         // Diagonal sweep with a soft band, closer to product skeletons.
         layer.style.backgroundImage = `linear-gradient(${Number(opts.skeletonAngle ?? 100)}deg,transparent 32%,${highlight} 50%,transparent 68%)`;
         layer.style.backgroundSize = '250% 100%';
-        layer.style.animation = `mk-shimmer ${speed}s cubic-bezier(.4,.2,.6,.8) infinite`;
+        layer.style.animation = `kt-shimmer ${speed}s cubic-bezier(.4,.2,.6,.8) infinite`;
       }
       if (opts.skeletonIcon !== false) {
         const icon = document.createElement('span');
-        icon.className = 'mk-lazy-skeleton-icon';
+        icon.className = 'kt-lazy-skeleton-icon';
         icon.setAttribute('aria-hidden', 'true');
         icon.style.cssText = 'position:absolute;left:50%;top:50%;width:15%;max-width:64px;min-width:28px;aspect-ratio:1;transform:translate(-50%,-50%);opacity:.32;';
         icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:100%;height:100%"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.8" cy="8.8" r="1.9"/><path d="m21 15.2-3.6-3.6a1.8 1.8 0 0 0-2.6 0L6 21"/></svg>';
@@ -341,7 +341,7 @@ export default {
         const frameEnabled = opts.frame !== false;
         let frame = null;
         if (frameEnabled) {
-          frame = createLayer(wrapper, 'mk-lazy-polaroid-frame', 6);
+          frame = createLayer(wrapper, 'kt-lazy-polaroid-frame', 6);
           const frameWidth = `clamp(6px, 4.5%, 18px)`;
           frame.style.cssText += `border:${frameWidth} solid ${opts.frameColor || '#fbfaf7'};border-bottom-width:calc(${frameWidth} * 3.2);box-shadow:inset 0 0 8px rgba(0,0,0,.12);`;
           layers.push(frame);
@@ -363,9 +363,9 @@ export default {
       if (effect === 'pixelate') {
         el.src = src;
         el.style.opacity = '1';
-        const layer = createLayer(wrapper, 'mk-lazy-pixelate-layer', 3);
+        const layer = createLayer(wrapper, 'kt-lazy-pixelate-layer', 3);
         const canvas = document.createElement('canvas');
-        canvas.className = 'mk-lazy-pixelate-canvas';
+        canvas.className = 'kt-lazy-pixelate-canvas';
         canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;';
         layer.appendChild(canvas);
         layers.push(layer);
@@ -472,7 +472,7 @@ export default {
         // slice displacements and blackout flashes on a canvas, then settles.
         el.src = src;
         el.style.opacity = '1';
-        const layer = createLayer(wrapper, 'mk-lazy-flicker-layer', 3);
+        const layer = createLayer(wrapper, 'kt-lazy-flicker-layer', 3);
         layer.style.background = opts.flickerBackground || '#000';
         const canvas = document.createElement('canvas');
         canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;';
@@ -544,7 +544,7 @@ export default {
       if (effect === 'print' || effect === 'dissolve') {
         el.src = src;
         el.style.opacity = '0';
-        const base = createLayer(wrapper, `mk-lazy-${effect}-base`, 2);
+        const base = createLayer(wrapper, `kt-lazy-${effect}-base`, 2);
         const baseImage = createLiveImage(src, el, opts);
         base.appendChild(baseImage);
         layers.push(base);
@@ -552,13 +552,13 @@ export default {
         let sharpImage = null;
         let edge = null;
         if (effect === 'print') {
-          sharp = createLayer(wrapper, 'mk-lazy-print-sharp', 3);
+          sharp = createLayer(wrapper, 'kt-lazy-print-sharp', 3);
           sharpImage = createLiveImage(src, el, opts);
           sharp.appendChild(sharpImage);
           layers.push(sharp);
           // Soft printing edge: a faint, wide luminance lift that travels with
           // the scan front. Deliberately subtle — no neon line.
-          edge = createLayer(wrapper, 'mk-lazy-print-edge', 5);
+          edge = createLayer(wrapper, 'kt-lazy-print-edge', 5);
           edge.style.mixBlendMode = 'soft-light';
           layers.push(edge);
         }

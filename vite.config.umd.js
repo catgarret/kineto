@@ -6,15 +6,15 @@ export default defineConfig({
     emptyOutDir: false,
     lib: {
       entry: resolve(import.meta.dirname, 'src/umd.js'),
-      name: 'MotionKit',
+      name: 'Kineto',
       formats: ['umd'],
-      fileName: () => 'motionkit.umd.js',
-      cssFileName: 'motionkit'
+      fileName: () => 'kineto.umd.js',
+      cssFileName: 'kineto'
     },
     rollupOptions: {
       output: {
         exports: 'default',
-        assetFileNames: (assetInfo) => assetInfo.name === 'style.css' ? 'motionkit.css' : '[name][extname]'
+        assetFileNames: (assetInfo) => assetInfo.name === 'style.css' ? 'kineto.css' : '[name][extname]'
       }
     }
   }

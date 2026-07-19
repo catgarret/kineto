@@ -85,10 +85,10 @@ export function q(target, root = typeof document !== 'undefined' ? document : nu
 
 export function readOpts(el, name) {
   const options = {};
-  const activationKey = `mk${name[0].toUpperCase()}${name.slice(1)}`;
+  const activationKey = `kt${name[0].toUpperCase()}${name.slice(1)}`;
 
   for (const [key, rawValue] of Object.entries(el.dataset || {})) {
-    if (!key.startsWith('mk')) continue;
+    if (!key.startsWith('kt')) continue;
 
     if (key === activationKey) {
       const parsed = coerce(rawValue);

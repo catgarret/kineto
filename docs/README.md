@@ -1,6 +1,6 @@
-# MotionKit Documentation
+# Kineto Documentation
 
-MotionKit v0.8.0의 공개 API와 소유자 의도를 기준으로 정리한 문서입니다.
+Kineto v0.8.0의 공개 API와 소유자 의도를 기준으로 정리한 문서입니다.
 
 ## 시작하기
 
@@ -16,4 +16,4 @@ MotionKit v0.8.0의 공개 API와 소유자 의도를 기준으로 정리한 문
 - [46개 소유자 요구사항](../OWNER_REQUIREMENTS.md)
 - [전체 라이브 데모](../demo/index.html)
 
-`module-reference.md`는 `motionkit.features.json`에서 생성됩니다. variant 또는 공개 option을 바꾸려면 소유자 승인을 확인한 뒤 `npm run docs:contract`를 실행하고 테스트·데모·changelog를 함께 갱신합니다.
+`module-reference.md`는 `kineto.features.json`에서 생성됩니다. variant 또는 공개 option을 바꾸려면 소유자 승인을 확인한 뒤 `npm run docs:contract`를 실행하고 테스트·데모·changelog를 함께 갱신합니다.

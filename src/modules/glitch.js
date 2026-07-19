@@ -37,7 +37,7 @@ export default {
       const originalHostPosition = host.style.position;
       if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
       const canvas = document.createElement('canvas');
-      canvas.className = 'mk-glitch-image-canvas';
+      canvas.className = 'kt-glitch-image-canvas';
       canvas.setAttribute('aria-hidden', 'true');
       canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:inherit;z-index:2;opacity:0;';
       host.appendChild(canvas);

@@ -1,4 +1,4 @@
-# Contributing to MotionKit
+# Contributing to Kineto
 
 ## 시작 전
 
@@ -28,8 +28,8 @@
 
 1. 영향을 받는 모듈과 lifecycle
 2. 전체 데모의 해당 카테고리와 플레이그라운드
-3. `motionkit.features.json` — 공개 surface가 실제로 바뀌는 경우만
-4. `motionkit.requirements.json` — 소유자 승인으로 요구사항이 바뀌는 경우만
+3. `kineto.features.json` — 공개 surface가 실제로 바뀌는 경우만
+4. `kineto.requirements.json` — 소유자 승인으로 요구사항이 바뀌는 경우만
 5. 자동 테스트, README, Module Reference, `CHANGELOG.md`
 
 ```bash

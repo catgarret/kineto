@@ -4,14 +4,14 @@ Card 내부에 제한되는 pointer spotlight와 선택적 표면 반사·발광
 
 ```html
 <article
-  data-mk-card-glow="spotlight"
-  data-mk-color="rgba(120,160,255,.65)"
-  data-mk-radius="180"
-  data-mk-surface="true"
-  data-mk-surface-opacity=".22"
-  data-mk-luminous-border="true"
-  data-mk-border-color="#7aa2ff"
-  data-mk-border-color2="#d9e3ff"
+  data-kt-card-glow="spotlight"
+  data-kt-color="rgba(120,160,255,.65)"
+  data-kt-radius="180"
+  data-kt-surface="true"
+  data-kt-surface-opacity=".22"
+  data-kt-luminous-border="true"
+  data-kt-border-color="#7aa2ff"
+  data-kt-border-color2="#d9e3ff"
 >Card</article>
 ```
 

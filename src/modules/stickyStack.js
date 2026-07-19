@@ -85,7 +85,7 @@ export default {
       children.forEach((child) => { child.style.flex = `0 0 ${panelWidth}`; });
       const distance = () => Math.max(0, el.scrollWidth - el.clientWidth);
       const tween = gsap.to(el, {
-        '--mk-horizontal-progress': 1,
+        '--kt-horizontal-progress': 1,
         ease: 'none',
         scrollTrigger: {
           trigger: el,

@@ -16,32 +16,32 @@ function createButton(className, label, text) {
 
 function createManager() {
   const root = document.createElement('div');
-  root.id = 'mk-lightbox';
-  root.className = 'mk-lightbox';
+  root.id = 'kt-lightbox';
+  root.className = 'kt-lightbox';
   root.hidden = true;
   root.setAttribute('role', 'dialog');
   root.setAttribute('aria-modal', 'true');
   root.setAttribute('aria-label', 'Media viewer');
-  // Stay below MotionKit cursors (default z 2147483000) so the custom pointer
+  // Stay below Kineto cursors (default z 2147483000) so the custom pointer
   // remains visible above the dimmed backdrop.
   root.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;margin:0;padding:0;z-index:2147482000;display:none;overflow:hidden;';
 
-  if (!document.getElementById('mk-lightbox-style')) {
+  if (!document.getElementById('kt-lightbox-style')) {
     const style = document.createElement('style');
-    style.id = 'mk-lightbox-style';
+    style.id = 'kt-lightbox-style';
     style.textContent = `
-      .mk-lightbox button{transition:background-color .18s ease,border-color .18s ease,transform .18s ease,opacity .18s ease;}
-      .mk-lightbox .mk-lightbox-toolbar button:hover:not(:disabled){background:rgba(255,255,255,.16)!important;border-color:rgba(255,255,255,.3)!important;}
-      .mk-lightbox .mk-lightbox-toolbar button:disabled{opacity:.32;cursor:default;}
-      .mk-lightbox .mk-lightbox-prev:hover,.mk-lightbox .mk-lightbox-next:hover{background:rgba(255,255,255,.14)!important;transform:translateY(-50%) scale(1.06);}
-      .mk-lightbox .mk-lightbox-stage.is-zoomed{cursor:grab;}
-      .mk-lightbox .mk-lightbox-stage.is-panning{cursor:grabbing;}
+      .kt-lightbox button{transition:background-color .18s ease,border-color .18s ease,transform .18s ease,opacity .18s ease;}
+      .kt-lightbox .kt-lightbox-toolbar button:hover:not(:disabled){background:rgba(255,255,255,.16)!important;border-color:rgba(255,255,255,.3)!important;}
+      .kt-lightbox .kt-lightbox-toolbar button:disabled{opacity:.32;cursor:default;}
+      .kt-lightbox .kt-lightbox-prev:hover,.kt-lightbox .kt-lightbox-next:hover{background:rgba(255,255,255,.14)!important;transform:translateY(-50%) scale(1.06);}
+      .kt-lightbox .kt-lightbox-stage.is-zoomed{cursor:grab;}
+      .kt-lightbox .kt-lightbox-stage.is-panning{cursor:grabbing;}
       @media (max-width: 760px) {
-        .mk-lightbox .mk-lightbox-toolbar{padding:12px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));}
-        .mk-lightbox .mk-lightbox-toolbar button{min-width:34px;height:34px;}
-        .mk-lightbox .mk-lightbox-prev{left:max(10px, env(safe-area-inset-left)) !important;}
-        .mk-lightbox .mk-lightbox-next{right:max(10px, env(safe-area-inset-right)) !important;}
-        .mk-lightbox .mk-lightbox-info{padding-bottom:calc(22px + env(safe-area-inset-bottom)) !important;}
+        .kt-lightbox .kt-lightbox-toolbar{padding:12px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));}
+        .kt-lightbox .kt-lightbox-toolbar button{min-width:34px;height:34px;}
+        .kt-lightbox .kt-lightbox-prev{left:max(10px, env(safe-area-inset-left)) !important;}
+        .kt-lightbox .kt-lightbox-next{right:max(10px, env(safe-area-inset-right)) !important;}
+        .kt-lightbox .kt-lightbox-info{padding-bottom:calc(22px + env(safe-area-inset-bottom)) !important;}
       }
     `;
     document.head.appendChild(style);
@@ -49,32 +49,32 @@ function createManager() {
 
   const backdrop = document.createElement('button');
   backdrop.type = 'button';
-  backdrop.className = 'mk-lightbox-backdrop';
+  backdrop.className = 'kt-lightbox-backdrop';
   backdrop.setAttribute('aria-label', 'Close viewer');
   // Visual styling reads CSS custom properties first so designers can retheme
-  // the viewer from a stylesheet (.mk-lightbox{--mk-lightbox-*:...}) without
+  // the viewer from a stylesheet (.kt-lightbox{--kt-lightbox-*:...}) without
   // touching JS. Options still win when passed explicitly.
-  backdrop.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;margin:0;padding:0;background:var(--mk-lightbox-backdrop,rgba(10,10,14,.88));backdrop-filter:blur(var(--mk-lightbox-backdrop-blur,20px)) saturate(1.15);-webkit-backdrop-filter:blur(var(--mk-lightbox-backdrop-blur,20px)) saturate(1.15);cursor:zoom-out;';
+  backdrop.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;margin:0;padding:0;background:var(--kt-lightbox-backdrop,rgba(10,10,14,.88));backdrop-filter:blur(var(--kt-lightbox-backdrop-blur,20px)) saturate(1.15);-webkit-backdrop-filter:blur(var(--kt-lightbox-backdrop-blur,20px)) saturate(1.15);cursor:zoom-out;';
 
   const shell = document.createElement('div');
-  shell.className = 'mk-lightbox-shell';
+  shell.className = 'kt-lightbox-shell';
   shell.style.cssText = 'position:absolute;inset:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;pointer-events:none;color:white;';
 
   const toolbar = document.createElement('div');
-  toolbar.className = 'mk-lightbox-toolbar';
+  toolbar.className = 'kt-lightbox-toolbar';
   toolbar.style.cssText = 'position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;pointer-events:auto;';
   const counter = document.createElement('span');
-  counter.className = 'mk-lightbox-counter';
+  counter.className = 'kt-lightbox-counter';
   counter.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:600 13px/1 ui-monospace,monospace;letter-spacing:.08em;opacity:.72;';
   const actions = document.createElement('div');
-  actions.className = 'mk-lightbox-actions';
+  actions.className = 'kt-lightbox-actions';
   actions.style.cssText = 'display:flex;align-items:center;gap:6px;';
-  const zoomOut = createButton('mk-lightbox-zoom-out', 'Zoom out', '−');
-  const zoomReset = createButton('mk-lightbox-zoom-reset', 'Reset zoom', '100%');
-  const zoomIn = createButton('mk-lightbox-zoom-in', 'Zoom in', '+');
-  const closeButton = createButton('mk-lightbox-close', 'Close viewer', '×');
+  const zoomOut = createButton('kt-lightbox-zoom-out', 'Zoom out', '−');
+  const zoomReset = createButton('kt-lightbox-zoom-reset', 'Reset zoom', '100%');
+  const zoomIn = createButton('kt-lightbox-zoom-in', 'Zoom in', '+');
+  const closeButton = createButton('kt-lightbox-close', 'Close viewer', '×');
   [zoomOut, zoomReset, zoomIn, closeButton].forEach((button) => {
-    button.style.cssText = 'min-width:38px;height:38px;padding:0 10px;border:1px solid var(--mk-lightbox-button-border,rgba(255,255,255,.14));border-radius:var(--mk-lightbox-button-radius,11px);background:var(--mk-lightbox-button-bg,rgba(255,255,255,.08));color:var(--mk-lightbox-button-color,white);font:600 14px/1 sans-serif;backdrop-filter:blur(12px);cursor:pointer;';
+    button.style.cssText = 'min-width:38px;height:38px;padding:0 10px;border:1px solid var(--kt-lightbox-button-border,rgba(255,255,255,.14));border-radius:var(--kt-lightbox-button-radius,11px);background:var(--kt-lightbox-button-bg,rgba(255,255,255,.08));color:var(--kt-lightbox-button-color,white);font:600 14px/1 sans-serif;backdrop-filter:blur(12px);cursor:pointer;';
   });
   closeButton.style.fontSize = '24px';
   closeButton.style.marginLeft = '8px';
@@ -83,28 +83,28 @@ function createManager() {
   toolbar.append(counter, actions);
 
   const stage = document.createElement('div');
-  stage.className = 'mk-lightbox-stage';
+  stage.className = 'kt-lightbox-stage';
   stage.style.cssText = 'position:relative;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;pointer-events:auto;touch-action:none;';
   // Image and its caption travel together so the title/description sit right
   // under the picture instead of hugging the bottom of the screen.
   const stageContent = document.createElement('div');
-  stageContent.className = 'mk-lightbox-stage-content';
+  stageContent.className = 'kt-lightbox-stage-content';
   stageContent.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:16px;max-width:100%;max-height:100%;min-height:0;';
   const mediaHost = document.createElement('div');
-  mediaHost.className = 'mk-lightbox-media-host';
+  mediaHost.className = 'kt-lightbox-media-host';
   mediaHost.style.cssText = 'position:relative;display:grid;place-items:center;max-width:100%;min-height:0;will-change:transform;transform-origin:center;';
   const image = document.createElement('img');
-  image.className = 'mk-lightbox-image';
+  image.className = 'kt-lightbox-image';
   image.alt = '';
-  image.style.cssText = 'display:block;max-width:min(94vw,1800px);max-height:calc(100vh - 230px);width:auto;height:auto;object-fit:contain;border-radius:var(--mk-lightbox-radius,4px);user-select:none;-webkit-user-drag:none;';
+  image.style.cssText = 'display:block;max-width:min(94vw,1800px);max-height:calc(100vh - 230px);width:auto;height:auto;object-fit:contain;border-radius:var(--kt-lightbox-radius,4px);user-select:none;-webkit-user-drag:none;';
   mediaHost.appendChild(image);
   stageContent.appendChild(mediaHost);
   stage.appendChild(stageContent);
 
-  const previous = createButton('mk-lightbox-prev', 'Previous item', '‹');
-  const next = createButton('mk-lightbox-next', 'Next item', '›');
+  const previous = createButton('kt-lightbox-prev', 'Previous item', '‹');
+  const next = createButton('kt-lightbox-next', 'Next item', '›');
   [previous, next].forEach((button) => {
-    button.style.cssText = 'position:absolute;top:50%;z-index:4;width:48px;height:48px;border:1px solid var(--mk-lightbox-button-border,rgba(255,255,255,.14));border-radius:999px;background:var(--mk-lightbox-button-bg,rgba(255,255,255,.08));backdrop-filter:blur(10px);color:var(--mk-lightbox-button-color,white);font:300 30px/1 sans-serif;transform:translateY(-50%);cursor:pointer;pointer-events:auto;display:grid;place-items:center;padding-bottom:4px;';
+    button.style.cssText = 'position:absolute;top:50%;z-index:4;width:48px;height:48px;border:1px solid var(--kt-lightbox-button-border,rgba(255,255,255,.14));border-radius:999px;background:var(--kt-lightbox-button-bg,rgba(255,255,255,.08));backdrop-filter:blur(10px);color:var(--kt-lightbox-button-color,white);font:300 30px/1 sans-serif;transform:translateY(-50%);cursor:pointer;pointer-events:auto;display:grid;place-items:center;padding-bottom:4px;';
     stage.appendChild(button);
   });
   previous.style.left = '14px';
@@ -113,26 +113,26 @@ function createManager() {
   // Caption lives with the image (title/description right under it); the
   // bottom bar keeps only the metadata, floated up from the screen edge.
   const textInfo = document.createElement('div');
-  textInfo.className = 'mk-lightbox-caption';
+  textInfo.className = 'kt-lightbox-caption';
   textInfo.style.cssText = 'max-width:min(860px,92vw);text-align:center;flex:0 0 auto;transition:opacity .25s ease;';
   const title = document.createElement('strong');
-  title.className = 'mk-lightbox-title';
+  title.className = 'kt-lightbox-title';
   title.style.cssText = 'display:block;font:650 15px/1.4 sans-serif;';
   const description = document.createElement('span');
-  description.className = 'mk-lightbox-description';
+  description.className = 'kt-lightbox-description';
   description.style.cssText = 'display:block;margin-top:4px;opacity:.68;font:400 13px/1.45 sans-serif;';
   textInfo.append(title, description);
   stageContent.appendChild(textInfo);
   const info = document.createElement('div');
-  info.className = 'mk-lightbox-info';
+  info.className = 'kt-lightbox-info';
   info.style.cssText = 'position:relative;z-index:5;display:flex;flex-direction:column;align-items:center;padding:16px 18px 26px;pointer-events:none;text-align:center;';
   const meta = document.createElement('span');
-  meta.className = 'mk-lightbox-meta';
+  meta.className = 'kt-lightbox-meta';
   meta.style.cssText = 'font:500 11px/1.4 ui-monospace,monospace;opacity:.55;text-align:center;';
   info.append(meta);
 
   const minimap = document.createElement('div');
-  minimap.className = 'mk-lightbox-minimap';
+  minimap.className = 'kt-lightbox-minimap';
   minimap.hidden = true;
   minimap.style.cssText = 'position:absolute;right:18px;bottom:86px;z-index:6;width:140px;height:90px;border:1px solid rgba(255,255,255,.25);border-radius:8px;overflow:hidden;background:#111;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.35);';
   const miniImage = document.createElement('img');
@@ -143,7 +143,7 @@ function createManager() {
   minimap.append(miniImage, miniViewport);
 
   const custom = document.createElement('div');
-  custom.className = 'mk-lightbox-custom-ui';
+  custom.className = 'kt-lightbox-custom-ui';
   custom.style.pointerEvents = 'auto';
   toolbar.prepend(custom);
 
@@ -229,16 +229,16 @@ function createManager() {
       const opacity = clamp(Number(activeEntry?.backdropOpacity ?? 0.9), 0, 1);
       backdrop.style.background = activeEntry?.backdropColor || `rgba(0,0,0,${opacity})`;
     } else {
-      backdrop.style.background = 'var(--mk-lightbox-backdrop,rgba(10,10,14,.88))';
+      backdrop.style.background = 'var(--kt-lightbox-backdrop,rgba(10,10,14,.88))';
     }
     const blurValue = activeEntry?.backdropBlur != null
       ? `${Math.max(0, Number(activeEntry.backdropBlur))}px`
-      : 'var(--mk-lightbox-backdrop-blur,20px)';
+      : 'var(--kt-lightbox-backdrop-blur,20px)';
     const filterValue = `blur(${blurValue}) saturate(1.15)`;
     backdrop.style.backdropFilter = filterValue;
     backdrop.style.webkitBackdropFilter = filterValue;
-    root.style.setProperty('--mk-lightbox-radius', `${Number(activeEntry?.radius ?? 4)}px`);
-    root.className = `mk-lightbox ${activeEntry?.className || ''}`.trim();
+    root.style.setProperty('--kt-lightbox-radius', `${Number(activeEntry?.radius ?? 4)}px`);
+    root.className = `kt-lightbox ${activeEntry?.className || ''}`.trim();
     toolbar.hidden = activeEntry?.toolbar === false;
     info.hidden = activeEntry?.info === false;
     custom.innerHTML = activeEntry?.uiTemplate || '';
@@ -262,7 +262,7 @@ function createManager() {
     if (activeEntry.lazyEffect) {
       image.removeAttribute('src');
       image.dataset.src = source;
-      lazyInstance = activeEntry.MotionKit?.create('lazy', image, {
+      lazyInstance = activeEntry.Kineto?.create('lazy', image, {
         effect: activeEntry.lazyEffect,
         ...(activeEntry.lazyOptions || {}),
         rootMargin: '0px',
@@ -357,7 +357,7 @@ function createManager() {
     return { x: (points[0].x + points[1].x) / 2, y: (points[0].y + points[1].y) / 2 };
   };
   const onPointerDown = (event) => {
-    if (event.target.closest('button,.mk-lightbox-toolbar,.mk-lightbox-info')) return;
+    if (event.target.closest('button,.kt-lightbox-toolbar,.kt-lightbox-info')) return;
     activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     try { stage.setPointerCapture?.(event.pointerId); } catch (_error) { /* synthetic events */ }
     if (activePointers.size === 2) {
@@ -450,7 +450,7 @@ function clamp(value, min, max) {
 }
 
 export default {
-  create(el, opts = {}, MotionKit) {
+  create(el, opts = {}, Kineto) {
     const src = sourceOf(el, opts);
     if (!src) return null;
     if (!manager) manager = createManager();
@@ -463,12 +463,12 @@ export default {
       title: opts.title || el.dataset.title || imageEl?.dataset?.title || imageEl?.alt || '',
       description: opts.description || opts.caption || el.dataset.description || el.dataset.caption || '',
       metadata: opts.metadata,
-      group: opts.group || el.dataset.mkLightboxGroup || el.getAttribute('data-mk-lightbox-group') || null,
+      group: opts.group || el.dataset.ktLightboxGroup || el.getAttribute('data-kt-lightbox-group') || null,
       backdropColor: opts.backdropColor,
       backdropOpacity: opts.backdropOpacity,
       backdropBlur: opts.backdropBlur,
       // lightboxDuration lets the viewer fade stay fast even when the element
-      // shares data-mk-duration with another module (e.g. a lazy loader whose
+      // shares data-kt-duration with another module (e.g. a lazy loader whose
       // long load duration would otherwise bleed into the backdrop fade).
       duration: opts.lightboxDuration ?? opts.duration,
       radius: opts.radius,
@@ -491,7 +491,7 @@ export default {
       onClose: opts.onClose,
       onChange: opts.onChange,
       onLoad: opts.onLoad,
-      MotionKit
+      Kineto
     };
     entries.add(entry);
     el.style.cursor = opts.cursor || 'zoom-in';

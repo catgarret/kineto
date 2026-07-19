@@ -24,11 +24,11 @@ export default {
     const loop = opts.loop === true;
     // Mixed axis: a SINGLE sequence whose steps change direction — e.g. A→B→C
     // slide horizontally, C→D slides vertically. Each section carries the axis
-    // of the move that lands on it via data-mk-fp-axis ('x'|'y'); the first
+    // of the move that lands on it via data-kt-fp-axis ('x'|'y'); the first
     // section has none. Unspecified steps default to horizontal.
     const perStepAxis = sections.map((section, sectionIndex) => {
       if (sectionIndex === 0) return null;
-      const declared = section.getAttribute('data-mk-fp-axis');
+      const declared = section.getAttribute('data-kt-fp-axis');
       return declared === 'x' || declared === 'y' ? declared : null;
     });
     const mixed = opts.axis === 'mixed' || perStepAxis.some(Boolean);
@@ -50,7 +50,7 @@ export default {
 
     if (opts.height) el.style.height = typeof opts.height === 'number' ? `${opts.height}px` : String(opts.height);
     else if (el.clientHeight < 10) el.style.height = '100svh';
-    el.classList.add('mk-fullpage');
+    el.classList.add('kt-fullpage');
     el.style.position = 'relative';
     el.style.overflow = 'hidden';
     // overscroll-behavior:contain stops the COMPOSITOR from chain-scrolling the
@@ -73,14 +73,14 @@ export default {
     };
 
     const track = document.createElement('div');
-    track.className = 'mk-fullpage-track';
+    track.className = 'kt-fullpage-track';
     track.style.cssText = mixed
       ? 'position:relative;height:100%;width:100%;will-change:transform;'
       : horizontal
         ? 'height:100%;width:100%;display:flex;will-change:transform;'
         : 'height:100%;will-change:transform;';
     sections.forEach((section, sectionIndex) => {
-      section.classList.add('mk-fullpage-section');
+      section.classList.add('kt-fullpage-section');
       section.style.height = '100%';
       if (mixed) {
         // Each section is absolutely placed at its 2D grid coordinate; the
@@ -138,7 +138,7 @@ export default {
     });
     if (opts.dots !== false) {
       dotsWrap = document.createElement('div');
-      dotsWrap.className = 'mk-fullpage-dots';
+      dotsWrap.className = 'kt-fullpage-dots';
       dotsWrap.setAttribute('role', 'tablist');
       dotsWrap.style.cssText = bidir
         ? 'position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;flex-direction:row;gap:10px;z-index:5;'
@@ -146,9 +146,9 @@ export default {
       dots = sections.map((_, dotIndex) => {
         const dot = document.createElement('button');
         dot.type = 'button';
-        dot.className = 'mk-fullpage-dot';
+        dot.className = 'kt-fullpage-dot';
         dot.setAttribute('aria-label', `Go to section ${dotIndex + 1}`);
-        dot.style.cssText = 'width:8px;height:8px;border-radius:50%;border:0;padding:0;cursor:pointer;background:var(--mk-fullpage-dot,currentColor);opacity:.45;transition:transform .25s ease,opacity .25s ease;';
+        dot.style.cssText = 'width:8px;height:8px;border-radius:50%;border:0;padding:0;cursor:pointer;background:var(--kt-fullpage-dot,currentColor);opacity:.45;transition:transform .25s ease,opacity .25s ease;';
         dot.addEventListener('click', () => go(dotIndex));
         dotsWrap.appendChild(dot);
         return dot;
@@ -304,7 +304,7 @@ export default {
     let dragConsumed = false;
     const onPointerDown = (event) => {
       if (useSnap || event.pointerType !== 'mouse' || event.button !== 0) return;
-      if (event.target.closest('.mk-fullpage-dot')) return;
+      if (event.target.closest('.kt-fullpage-dot')) return;
       dragStart = horizontal ? event.clientX : event.clientY;
       dragConsumed = false;
       el.style.cursor = 'grabbing';
@@ -361,7 +361,7 @@ export default {
         window.removeEventListener('pointerup', onPointerUp);
         if (onSnapScroll) el.removeEventListener('scroll', onSnapScroll);
         track.removeEventListener('transitionend', settle);
-        el.classList.remove('mk-fullpage');
+        el.classList.remove('kt-fullpage');
         el.innerHTML = originalHTML;
         if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);
       }

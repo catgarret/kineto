@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import MotionKit from '../src/core.js';
+import Kineto from '../src/core.js';
 import { coerce, dash, decomposeHangul, hangulFrames, q, readOpts, segmentText } from '../src/utils.js';
 
 assert.equal(dash('scrollSequence'), 'scroll-sequence');
@@ -14,10 +14,10 @@ assert.deepEqual(q('#missing'), [], 'q() must be SSR-safe');
 
 const mockElement = {
   dataset: {
-    mkReveal: 'fade-up',
-    mkDuration: '0.8',
-    mkOnce: 'false',
-    mkOptions: '{"debug":true}'
+    ktReveal: 'fade-up',
+    ktDuration: '0.8',
+    ktOnce: 'false',
+    ktOptions: '{"debug":true}'
   }
 };
 assert.deepEqual(readOpts(mockElement, 'reveal'), {
@@ -27,10 +27,10 @@ assert.deepEqual(readOpts(mockElement, 'reveal'), {
   options: { debug: true }
 });
 
-assert.equal(MotionKit.env.ssr, true);
-assert.doesNotThrow(() => MotionKit.scan());
-assert.doesNotThrow(() => MotionKit.init());
-assert.doesNotThrow(() => MotionKit.autoInit());
-assert.doesNotThrow(() => MotionKit.destroy());
+assert.equal(Kineto.env.ssr, true);
+assert.doesNotThrow(() => Kineto.scan());
+assert.doesNotThrow(() => Kineto.init());
+assert.doesNotThrow(() => Kineto.autoInit());
+assert.doesNotThrow(() => Kineto.destroy());
 
 console.log('Utility and SSR checks OK.');

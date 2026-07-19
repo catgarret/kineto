@@ -9,8 +9,8 @@
 | `color` | 지정 색상 또는 fallback 색상 glow |
 
 ```html
-<video data-mk-ambient-media="video-sample" autoplay muted loop playsinline src="movie.mp4"></video>
-<img data-mk-ambient-media="image-clone" data-src="motion-demo.gif" alt="Animated image">
+<video data-kt-ambient-media="video-sample" autoplay muted loop playsinline src="movie.mp4"></video>
+<img data-kt-ambient-media="image-clone" data-src="motion-demo.gif" alt="Animated image">
 ```
 
 이미지 clone은 GIF·APNG·animated WebP의 재생을 유지합니다. `blur`, `opacity`, `scale`, `inset`, `saturation`, `brightness`, `sampleFps`를 조절할 수 있습니다.

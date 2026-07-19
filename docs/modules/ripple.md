@@ -3,7 +3,7 @@
 버튼을 누른 위치에서 원이 퍼지는 Android/Material 스타일 click feedback입니다.
 
 ```html
-<button data-mk-ripple data-mk-color="255,255,255" data-mk-opacity="0.28">
+<button data-kt-ripple data-kt-color="255,255,255" data-kt-opacity="0.28">
   저장
 </button>
 ```

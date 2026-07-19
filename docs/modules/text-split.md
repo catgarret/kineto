@@ -11,7 +11,7 @@
 ### HTML
 
 ```html
-<h1 data-mk-text-split="char" data-mk-stagger="0.04">
+<h1 data-kt-text-split="char" data-kt-stagger="0.04">
   Move everything.
 </h1>
 ```
@@ -19,7 +19,7 @@
 ### JS API
 
 ```js
-MotionKit.textSplit('h1', {
+Kineto.textSplit('h1', {
   by: 'char',          // 'char' | 'word'
   animation: 'rise',   // 'rise' | 'fade' | 'wave'
   stagger: 0.04,
@@ -56,10 +56,10 @@ MotionKit.textSplit('h1', {
 ### 영화 타이틀 스타일
 
 ```html
-<h1 data-mk-text-split="char"
-    data-mk-animation="rise"
-    data-mk-stagger="0.05"
-    data-mk-duration="1.2">
+<h1 data-kt-text-split="char"
+    data-kt-animation="rise"
+    data-kt-stagger="0.05"
+    data-kt-duration="1.2">
   Tomorrow Awaits
 </h1>
 ```
@@ -67,7 +67,7 @@ MotionKit.textSplit('h1', {
 ### 단어 단위
 
 ```html
-<p data-mk-text-split="word" data-mk-animation="fade" data-mk-stagger="0.08">
+<p data-kt-text-split="word" data-kt-animation="fade" data-kt-stagger="0.08">
   자연스러운 단어 단위 등장
 </p>
 ```

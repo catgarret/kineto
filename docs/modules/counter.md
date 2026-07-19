@@ -12,10 +12,10 @@
 ## HTML
 
 ```html
-<span data-mk-counter="slot" data-mk-to="95800" data-mk-format=",">0</span>
-<span data-mk-counter="plain" data-mk-to="2389540" data-mk-format=",">0</span>
-<span data-mk-counter="digit" data-mk-to="126540" data-mk-format="," data-mk-loops="2">0</span>
-<span data-mk-counter="pop" data-mk-to="98760" data-mk-format="," data-mk-pop-scale="1.9">98,760</span>
+<span data-kt-counter="slot" data-kt-to="95800" data-kt-format=",">0</span>
+<span data-kt-counter="plain" data-kt-to="2389540" data-kt-format=",">0</span>
+<span data-kt-counter="digit" data-kt-to="126540" data-kt-format="," data-kt-loops="2">0</span>
+<span data-kt-counter="pop" data-kt-to="98760" data-kt-format="," data-kt-pop-scale="1.9">98,760</span>
 ```
 
 ## Pop 동작 계약
