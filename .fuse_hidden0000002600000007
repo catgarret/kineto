@@ -8,7 +8,7 @@
 
 실시간으로 조절하고 코드를 그대로 복사해 쓰는 웹 모션 라이브러리 — 바닐라 JS · React · Vue · jQuery 지원.
 
-English · [한국어](i18n/README.ko.md) · [日本語](i18n/README.jp.md) · [简体中文](i18n/README.zh-CN.md) · [繁體中文](i18n/README.zh-TW.md) · [Русский](i18n/README.ru.md) · [Italiano](i18n/README.it.md)
+English · [한국어](README.ko.md) · [日本語](README.jp.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [Italiano](README.it.md)
 
 [![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
 

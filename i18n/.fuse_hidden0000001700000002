@@ -1,16 +1,16 @@
 <div align="center">
 
-<img src="../assets/logo.svg" width="72" height="72" alt="Kineto">
+<img src="assets/logo.svg" width="72" height="72" alt="Kineto">
 
 # Kineto
 
 HTML属性または JavaScript API で制御するWebインタラクションツールキット
 
-[한국어](README.ko.md) · [English](../README.md) · 日本語 · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [Italiano](README.it.md)
+[한국어](README.ko.md) · [English](README.md) · 日本語 · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [Italiano](README.it.md)
 
-[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](../LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
+[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
 
-[ライブデモ](https://git.dongri.me/example/kineto) · [モジュールリファレンス](../docs/module-reference.md) · [AIプロンプトガイド](../AI-PROMPT-GUIDE.md) · [機能コントラクト](../FEATURE_CONTRACT.md)
+[ライブデモ](https://git.dongri.me/example/kineto) · [モジュールリファレンス](docs/module-reference.md) · [AIプロンプトガイド](AI-PROMPT-GUIDE.md) · [機能コントラクト](FEATURE_CONTRACT.md)
 
 </div>
 
@@ -20,7 +20,7 @@ HTML属性または JavaScript API で制御するWebインタラクションツ
 
 Kineto は、モーション・メディア・スクロール・ローダー・テキストにわたる34個のインタラクションモジュールを、`data-kt-*` 属性ひとつで付与するか、JavaScript API で細かく制御できるライブラリです。コアに必須の依存はなく、非対応ブラウザや低スペック端末では効果だけが無効化され、コンテンツはそのまま保たれます。
 
-> AIコーディングツール（Cursor、Claude など）で作業する場合は [AIプロンプトガイド](../AI-PROMPT-GUIDE.md) を参照してください。モーションとインタラクションに Kineto のモジュールを優先的に使わせる、貼り付けるだけの指示文が入っています。
+> AIコーディングツール（Cursor、Claude など）で作業する場合は [AIプロンプトガイド](AI-PROMPT-GUIDE.md) を参照してください。モーションとインタラクションに Kineto のモジュールを優先的に使わせる、貼り付けるだけの指示文が入っています。
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/kineto.gif" width="620" alt="Kineto Preview">
 
@@ -130,7 +130,7 @@ Kineto.disableSmooth();
 | `typewriter` | `data-kt-typewriter` | タイピング効果 |
 | `vibrate` | `data-kt-vibrate` | ハプティック振動フィードバック |
 
-各モジュールの variant とオプション一覧は [モジュールリファレンス](../docs/module-reference.md) と `kineto.features.json` を参照してください。
+各モジュールの variant とオプション一覧は [モジュールリファレンス](docs/module-reference.md) と `kineto.features.json` を参照してください。
 
 ## フレームワークアダプター
 

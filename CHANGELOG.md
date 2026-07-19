@@ -2,6 +2,14 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.3]
+
+- **GSAP conflict when a CDN copy is also loaded**: Kineto bundles gsap + ScrollTrigger, but if the host page also loaded gsap from a CDN there were two gsap instances — ScrollTrigger registered on one while Kineto animated on the other, so every scrollTrigger tween failed ("Invalid property scrollTrigger … Missing plugin? gsap.registerPlugin()") and scroll-sequence, sticky-stack (floating/horizontal scale-fade), parallax scrub and textFill silently stopped. Kineto now prefers the gsap/ScrollTrigger already present on the page and registers the plugin, so loading them from a CDN no longer breaks anything (loading them is unnecessary either way).
+- **Fullpage swipe on mobile**: vertical and mixed-axis decks now use `touch-action:none` and hand the gesture off to the outer scroll themselves at the first/last section, so swipes are captured reliably instead of competing with the page's native scroll — without trapping the page at the edges.
+- **Playground**: pressing Apply on a touch device now gives a short success haptic.
+- **Ripple on touch devices**: the click-ripple was suppressed on some mobile browsers because touch `pointerdown` can report a non-zero `button`. The guard now only ignores secondary *mouse* buttons, so taps on phones (iOS Safari, Android Chrome) trigger the ripple.
+- **npm README fix**: the npm package now ships only the English `README.md`, so the package page reliably shows it instead of arbitrarily picking one of the translated `README.*.md` files. All translations remain available in the GitHub repository.
+
 ## [0.8.2]
 
 - **Brand consistency**: replaced the remaining all-caps `MOTIONKIT` strings — including the default `cursor` ring/orbit/snake text shipped in the library — with `KINETO`. Demo header, title, and footer updated to the current version.

@@ -15,7 +15,9 @@ export default {
     const scale = Math.max(1, Number(opts.scale ?? 1));
 
     const onPointerDown = (event) => {
-      if (event.button != null && event.button !== 0) return;
+      // Only ignore secondary mouse buttons. Touch/pen must always ripple —
+      // some mobile browsers report a non-zero button for touch pointerdown.
+      if (event.pointerType === 'mouse' && event.button > 0) return;
       const rect = el.getBoundingClientRect();
       const centered = opts.centered === true;
       const x = centered ? rect.width / 2 : event.clientX - rect.left;

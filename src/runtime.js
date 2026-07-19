@@ -2,9 +2,17 @@ import gsapPackage from 'gsap';
 import ScrollTriggerPackage from 'gsap/ScrollTrigger.js';
 
 const resolveDefault = (value) => value?.default || value?.gsap || value;
+const win = typeof window !== 'undefined' ? window : undefined;
 
-let gsapInstance = resolveDefault(gsapPackage);
-let scrollTriggerInstance = resolveDefault(ScrollTriggerPackage);
+// Kineto bundles its own gsap + ScrollTrigger so it works with zero setup.
+// But if the host page ALSO loads gsap from a CDN, there would be two gsap
+// instances: the CDN's ScrollTrigger registers onto window.gsap while Kineto
+// animates on the bundled copy, so every scrollTrigger tween fails with
+// "Invalid property scrollTrigger ... Missing plugin? gsap.registerPlugin()"
+// and scroll-sequence / sticky-stack / textFill silently stop working.
+// Preferring the instance already on the page keeps everything on one gsap.
+let gsapInstance = (win && win.gsap) || resolveDefault(gsapPackage);
+let scrollTriggerInstance = (win && win.ScrollTrigger) || resolveDefault(ScrollTriggerPackage);
 
 function registerScrollTrigger() {
   if (!gsapInstance || !scrollTriggerInstance || typeof gsapInstance.registerPlugin !== 'function') return;
@@ -26,12 +34,12 @@ export function setAnimationEngine({ gsap, ScrollTrigger } = {}) {
 
 export function getGSAP() {
   if (gsapInstance) return gsapInstance;
-  if (typeof window !== 'undefined') return window.gsap || null;
+  if (win) return win.gsap || null;
   return null;
 }
 
 export function getScrollTrigger() {
   if (scrollTriggerInstance) return scrollTriggerInstance;
-  if (typeof window !== 'undefined') return window.ScrollTrigger || null;
+  if (win) return win.ScrollTrigger || null;
   return null;
 }

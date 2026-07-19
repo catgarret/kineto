@@ -20,14 +20,14 @@ assert.equal(packageJson.exports['./style.css'], './dist/kineto.css');
 assert.equal(packageJson.exports['./package.json'], './package.json');
 
 const esm = await import('@dong-gri/kineto');
-assert.equal(esm.default.version, '0.8.2');
+assert.equal(esm.default.version, '0.8.3');
 assert.equal(Object.keys(esm.default.registry).length, 34);
 assert.equal(typeof esm.lazy, 'function');
 assert.equal(typeof esm.scrollSequence, 'function');
 
 const require = createRequire(import.meta.url);
 const commonJs = require('@dong-gri/kineto');
-assert.equal(commonJs.version, '0.8.2');
+assert.equal(commonJs.version, '0.8.3');
 assert.equal(Object.keys(commonJs.registry).length, 34);
 assert.equal(typeof commonJs.autoInit, 'function');
 

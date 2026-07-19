@@ -1,16 +1,16 @@
 <div align="center">
 
-<img src="../assets/logo.svg" width="72" height="72" alt="Kineto">
+<img src="assets/logo.svg" width="72" height="72" alt="Kineto">
 
 # Kineto
 
 透過 HTML 屬性或 JavaScript API 驅動的網頁互動工具庫
 
-[한국어](README.ko.md) · [English](../README.md) · [日本語](README.jp.md) · [简体中文](README.zh-CN.md) · 繁體中文 · [Русский](README.ru.md) · [Italiano](README.it.md)
+[한국어](README.ko.md) · [English](README.md) · [日本語](README.jp.md) · [简体中文](README.zh-CN.md) · 繁體中文 · [Русский](README.ru.md) · [Italiano](README.it.md)
 
-[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](../LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
+[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
 
-[線上示範](https://git.dongri.me/example/kineto) · [模組參考](../docs/module-reference.md) · [功能契約](../FEATURE_CONTRACT.md)
+[線上示範](https://git.dongri.me/example/kineto) · [模組參考](docs/module-reference.md) · [功能契約](FEATURE_CONTRACT.md)
 
 </div>
 
@@ -20,7 +20,7 @@
 
 Kineto 是一個包含 34 個互動模組（動效、媒體、捲動、載入器、文字）的函式庫，你可以用一個 `data-kt-*` 屬性直接掛載，或透過 JavaScript API 精細控制。核心沒有任何必要相依；在不支援的瀏覽器或低階裝置上，效果會自動關閉而內容維持完整。
 
-> 使用 AI 編程工具（Cursor、Claude 等）？請參閱 [AI 提示詞指南](../AI-PROMPT-GUIDE.md)——內含可直接貼上的指令，讓助手在處理動效與互動時優先使用 Kineto 模組。
+> 使用 AI 編程工具（Cursor、Claude 等）？請參閱 [AI 提示詞指南](AI-PROMPT-GUIDE.md)——內含可直接貼上的指令，讓助手在處理動效與互動時優先使用 Kineto 模組。
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/kineto.gif" width="620" alt="Kineto Preview">
 
@@ -130,7 +130,7 @@ Kineto.disableSmooth();
 | `typewriter` | `data-kt-typewriter` | 打字效果 |
 | `vibrate` | `data-kt-vibrate` | 觸覺震動回饋 |
 
-各模組的 variant 與完整選項清單請見 [模組參考](../docs/module-reference.md) 與 `kineto.features.json`。
+各模組的 variant 與完整選項清單請見 [模組參考](docs/module-reference.md) 與 `kineto.features.json`。
 
 ## 框架轉接器
 

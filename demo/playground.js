@@ -581,7 +581,7 @@ counter: {
     const applyButton = document.createElement('button'); applyButton.type = 'button'; applyButton.textContent = 'Apply';
     const resetButton = document.createElement('button'); resetButton.type = 'button'; resetButton.textContent = 'Reset';
     replayButton.addEventListener('click', () => { replay(host, descriptors, status); window.ktToast?.('다시 재생했습니다'); });
-    applyButton.addEventListener('click', () => { apply(host, descriptors, status); window.ktToast?.('설정을 적용했습니다'); });
+    applyButton.addEventListener('click', () => { apply(host, descriptors, status); try { if (matchMedia('(pointer:coarse)').matches && navigator.vibrate) navigator.vibrate([14, 40, 26]); } catch (_) {} window.ktToast?.('설정을 적용했습니다'); });
     resetButton.addEventListener('click', () => { reset(host, descriptors); window.ktToast?.('기본값으로 되돌렸습니다'); });
     toolbar.append(replayButton, applyButton, resetButton);
 

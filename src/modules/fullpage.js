@@ -97,7 +97,11 @@ export default {
       track.appendChild(section);
     });
     el.appendChild(track);
-    if (horizontal) el.style.touchAction = 'pan-y';
+    // Horizontal deck: allow native vertical page scroll (pan-y), capture horizontal.
+    // Vertical/mixed deck: block native scroll entirely (none) and drive the
+    // outer scroll ourselves at the edges — otherwise the page's own vertical
+    // scroll competes with the swipe on mobile and the deck feels unresponsive.
+    el.style.touchAction = horizontal ? 'pan-y' : 'none';
 
     let onSnapScroll = null;
     if (useSnap) {
@@ -256,34 +260,62 @@ export default {
       if (!canMove(dir)) absorbTail = true;
     };
 
-    // Touch swipe. While a swipe is being handled (or a transition runs), the
-    // move events are prevented so the page behind never pans on mobile; a
-    // swipe at the first/last section falls through to normal page scroll.
-    let touchStartY = null;
+    // Touch swipe with manual edge hand-off, mirroring the wheel logic.
+    // Horizontal decks keep touch-action:pan-y (vertical page scroll stays
+    // native); vertical/mixed decks use touch-action:none so the swipe is never
+    // stolen by the page's own scroll — and at the deck edges we drive the outer
+    // scroll ourselves so nothing gets trapped.
+    let tStart = null;
+    let tLast = null;
     let touchConsumed = false;
-    const onTouchStart = (event) => { touchStartY = event.touches[0].clientY; touchConsumed = false; };
+    const swipeDelta = (cur) => {
+      const dxv = tStart.x - cur.x;
+      const dyv = tStart.y - cur.y;
+      if (horizontal) return dxv;
+      if (mixed) return Math.abs(dxv) >= Math.abs(dyv) ? dxv : dyv;
+      return dyv;
+    };
+    const onTouchStart = (event) => {
+      const t = event.touches[0];
+      tStart = { x: t.clientX, y: t.clientY };
+      tLast = { x: t.clientX, y: t.clientY };
+      touchConsumed = false;
+    };
     const onTouchMove = (event) => {
-      if (useSnap || touchStartY == null) return;
+      if (useSnap || !tStart) return;
+      const t = event.touches[0];
+      const cur = { x: t.clientX, y: t.clientY };
+      const stepY = tLast.y - cur.y; // incremental, drives manual page scroll
+      tLast = cur;
+      const delta = swipeDelta(cur);
+      if (Math.abs(delta) < 3) return;
+      const dir = delta > 0 ? 1 : -1;
+      // Inside a scroll container (vertical decks): forward the gesture until the
+      // deck is fully pinned, so the parent rises into place first.
+      const sp = horizontal ? null : scrollParent();
+      if (sp) {
+        const er = el.getBoundingClientRect();
+        const pr = sp.getBoundingClientRect();
+        const pinned = er.top <= pr.top + 1 && er.bottom >= pr.bottom - 1;
+        if (!pinned) { event.preventDefault(); sp.scrollTop += stepY; return; }
+      }
       if (animating || touchConsumed) { event.preventDefault(); return; }
-      const delta = touchStartY - event.touches[0].clientY;
-      if (Math.abs(delta) > 6 && canMove(delta > 0 ? 1 : -1)) {
-        event.preventDefault();
-        if (Math.abs(delta) >= threshold) {
-          // Navigate as soon as the swipe passes the threshold — the rest of
-          // this touch is swallowed entirely.
-          touchConsumed = true;
-          go(index + (delta > 0 ? 1 : -1));
+      if (!canMove(dir)) {
+        // At an edge. Vertical/mixed block native scroll, so hand it off
+        // ourselves; horizontal decks let the native vertical scroll through.
+        if (!horizontal) {
+          event.preventDefault();
+          if (sp) sp.scrollTop += stepY; else window.scrollBy(0, stepY);
         }
+        return;
+      }
+      event.preventDefault();
+      if (Math.abs(delta) >= threshold) {
+        touchConsumed = true;
+        go(index + dir);
       }
     };
-    const onTouchEnd = (event) => {
-      if (useSnap || touchStartY == null) return;
-      const delta = touchStartY - event.changedTouches[0].clientY;
-      touchStartY = null;
-      if (touchConsumed || Math.abs(delta) < threshold || animating) return;
-      const dir = delta > 0 ? 1 : -1;
-      if (canMove(dir)) go(index + dir);
-    };
+    const onTouchEnd = () => { tStart = null; tLast = null; };
 
     // Keyboard, when focus is on/inside the container.
     const onKeyDown = (event) => {

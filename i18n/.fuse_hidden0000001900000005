@@ -1,16 +1,16 @@
 <div align="center">
 
-<img src="../assets/logo.svg" width="72" height="72" alt="Kineto">
+<img src="assets/logo.svg" width="72" height="72" alt="Kineto">
 
 # Kineto
 
 通过 HTML 属性或 JavaScript API 驱动的网页交互工具库
 
-[한국어](README.ko.md) · [English](../README.md) · [日本語](README.jp.md) · 简体中文 · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [Italiano](README.it.md)
+[한국어](README.ko.md) · [English](README.md) · [日本語](README.jp.md) · 简体中文 · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [Italiano](README.it.md)
 
-[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](../LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
+[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
 
-[在线演示](https://git.dongri.me/example/kineto) · [模块参考](../docs/module-reference.md) · [功能契约](../FEATURE_CONTRACT.md)
+[在线演示](https://git.dongri.me/example/kineto) · [模块参考](docs/module-reference.md) · [功能契约](FEATURE_CONTRACT.md)
 
 </div>
 
@@ -20,7 +20,7 @@
 
 Kineto 是一个包含 34 个交互模块（动效、媒体、滚动、加载器、文本）的库，你可以用一个 `data-kt-*` 属性直接挂载，或通过 JavaScript API 精细控制。核心无任何必需依赖；在不支持的浏览器或低端设备上，效果会自动关闭而内容保持完整。
 
-> 使用 AI 编程工具（Cursor、Claude 等）？请参阅 [AI 提示词指南](../AI-PROMPT-GUIDE.md)——其中包含可直接粘贴的指令，让助手在处理动效与交互时优先使用 Kineto 模块。
+> 使用 AI 编程工具（Cursor、Claude 等）？请参阅 [AI 提示词指南](AI-PROMPT-GUIDE.md)——其中包含可直接粘贴的指令，让助手在处理动效与交互时优先使用 Kineto 模块。
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/kineto.gif" width="620" alt="Kineto Preview">
 
@@ -130,7 +130,7 @@ Kineto.disableSmooth();
 | `typewriter` | `data-kt-typewriter` | 打字效果 |
 | `vibrate` | `data-kt-vibrate` | 触觉振动反馈 |
 
-各模块的 variant 与完整选项列表请见 [模块参考](../docs/module-reference.md) 与 `kineto.features.json`。
+各模块的 variant 与完整选项列表请见 [模块参考](docs/module-reference.md) 与 `kineto.features.json`。
 
 ## 框架适配器
 

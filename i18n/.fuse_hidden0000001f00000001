@@ -1,16 +1,16 @@
 <div align="center">
 
-<img src="../assets/logo.svg" width="72" height="72" alt="Kineto">
+<img src="assets/logo.svg" width="72" height="72" alt="Kineto">
 
 # Kineto
 
 Un toolkit di interazioni web guidato da attributi HTML o da un'API JavaScript
 
-[한국어](README.ko.md) · [English](../README.md) · [日本語](README.jp.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · Italiano
+[한국어](README.ko.md) · [English](README.md) · [日本語](README.jp.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · Italiano
 
-[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](../LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
+[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
 
-[Demo dal vivo](https://git.dongri.me/example/kineto) · [Riferimento moduli](../docs/module-reference.md) · [Contratto delle funzionalità](../FEATURE_CONTRACT.md)
+[Demo dal vivo](https://git.dongri.me/example/kineto) · [Riferimento moduli](docs/module-reference.md) · [Contratto delle funzionalità](FEATURE_CONTRACT.md)
 
 </div>
 
@@ -20,7 +20,7 @@ Un toolkit di interazioni web guidato da attributi HTML o da un'API JavaScript
 
 Kineto è una libreria di 34 moduli di interazione — movimento, media, scroll, loader e testo — che colleghi con un solo attributo `data-kt-*` o controlli con precisione tramite un'API JavaScript. Il core non ha dipendenze obbligatorie e, su browser non supportati o dispositivi datati, gli effetti si disattivano mentre il contenuto resta intatto.
 
-> Lavori con strumenti di coding AI (Cursor, Claude, ecc.)? Vedi la [guida ai prompt AI](../AI-PROMPT-GUIDE.md): contiene un'istruzione pronta da incollare che indica all'assistente di usare prima i moduli Kineto per movimento e interazioni.
+> Lavori con strumenti di coding AI (Cursor, Claude, ecc.)? Vedi la [guida ai prompt AI](AI-PROMPT-GUIDE.md): contiene un'istruzione pronta da incollare che indica all'assistente di usare prima i moduli Kineto per movimento e interazioni.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/kineto.gif" width="620" alt="Kineto Preview">
 
@@ -130,7 +130,7 @@ Kineto.disableSmooth();
 | `typewriter` | `data-kt-typewriter` | Effetto macchina da scrivere |
 | `vibrate` | `data-kt-vibrate` | Feedback aptico di vibrazione |
 
-Per varianti e opzioni complete di ogni modulo, vedi il [riferimento moduli](../docs/module-reference.md) e `kineto.features.json`.
+Per varianti e opzioni complete di ogni modulo, vedi il [riferimento moduli](docs/module-reference.md) e `kineto.features.json`.
 
 ## Adattatori per framework
 

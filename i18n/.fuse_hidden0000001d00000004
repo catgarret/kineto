@@ -1,16 +1,16 @@
 <div align="center">
 
-<img src="../assets/logo.svg" width="72" height="72" alt="Kineto">
+<img src="assets/logo.svg" width="72" height="72" alt="Kineto">
 
 # Kineto
 
 Инструментарий веб-интеракций, управляемый HTML-атрибутами или JavaScript API
 
-[한국어](README.ko.md) · [English](../README.md) · [日本語](README.jp.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · Русский · [Italiano](README.it.md)
+[한국어](README.ko.md) · [English](README.md) · [日本語](README.jp.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · Русский · [Italiano](README.it.md)
 
-[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](../LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
+[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
 
-[Живое демо](https://git.dongri.me/example/kineto) · [Справочник модулей](../docs/module-reference.md) · [Контракт возможностей](../FEATURE_CONTRACT.md)
+[Живое демо](https://git.dongri.me/example/kineto) · [Справочник модулей](docs/module-reference.md) · [Контракт возможностей](FEATURE_CONTRACT.md)
 
 </div>
 
@@ -20,7 +20,7 @@
 
 Kineto — библиотека из 34 интерактивных модулей (движение, медиа, скролл, лоадер, текст), которые подключаются одним атрибутом `data-kt-*` или точно управляются через JavaScript API. Ядро не имеет обязательных зависимостей; в неподдерживаемых браузерах и на слабых устройствах эффекты отключаются, а контент остаётся нетронутым.
 
-> Работаете с ИИ-инструментами (Cursor, Claude и т. п.)? Смотрите [руководство по промтам для ИИ](../AI-PROMPT-GUIDE.md) — там есть готовая инструкция, которая велит ассистенту в первую очередь использовать модули Kineto для движения и интеракций.
+> Работаете с ИИ-инструментами (Cursor, Claude и т. п.)? Смотрите [руководство по промтам для ИИ](AI-PROMPT-GUIDE.md) — там есть готовая инструкция, которая велит ассистенту в первую очередь использовать модули Kineto для движения и интеракций.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/kineto.gif" width="620" alt="Kineto Preview">
 
@@ -130,7 +130,7 @@ Kineto.disableSmooth();
 | `typewriter` | `data-kt-typewriter` | Эффект печатной машинки |
 | `vibrate` | `data-kt-vibrate` | Тактильная вибро-отдача |
 
-Варианты и полный список опций каждого модуля — в [справочнике модулей](../docs/module-reference.md) и `kineto.features.json`.
+Варианты и полный список опций каждого модуля — в [справочнике модулей](docs/module-reference.md) и `kineto.features.json`.
 
 ## Адаптеры фреймворков
 
