@@ -55,8 +55,11 @@
 .kt-drawer-sheet .kt-playground__field>span{grid-area:label;font-size:12px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:5px}
 .kt-drawer-sheet .kt-playground__field>input,.kt-drawer-sheet .kt-playground__field>select,.kt-drawer-sheet .kt-playground__field>textarea{grid-area:input}
 .kt-drawer-sheet .kt-playground__value{grid-area:val;justify-self:end;margin:0;font-weight:700}
-.kt-drawer-sheet .kt-playground__field input,.kt-drawer-sheet .kt-playground__field select,.kt-drawer-sheet .kt-playground__field textarea{min-height:40px;border-radius:10px;background:var(--panel2)}
-.kt-drawer-sheet .kt-playground__field input:focus,.kt-drawer-sheet .kt-playground__field select:focus,.kt-drawer-sheet .kt-playground__field textarea:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent);background:var(--panel)}
+.kt-drawer-sheet .kt-playground__field input,.kt-drawer-sheet .kt-playground__field select,.kt-drawer-sheet .kt-playground__field textarea{min-height:40px;border-radius:10px;background-color:var(--panel2)}
+/* background-color (not the background shorthand) so the select's dropdown-arrow
+   background-image survives, and keep room on the right for it. */
+.kt-drawer-sheet .kt-playground__field select{padding-right:34px;background-position:right 13px center}
+.kt-drawer-sheet .kt-playground__field input:focus,.kt-drawer-sheet .kt-playground__field select:focus,.kt-drawer-sheet .kt-playground__field textarea:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent);background-color:var(--panel)}
 .kt-drawer-sheet .kt-playground__field input[type="range"]{min-height:0;background:transparent;padding:0}
 .kt-drawer-sheet .kt-playground__field input[type="color"]{min-height:40px;padding:4px}
 /* Toggle switch for booleans (Toss-style) */

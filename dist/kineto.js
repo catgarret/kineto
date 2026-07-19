@@ -273,10 +273,10 @@ var N = /* @__PURE__ */ new Map(), P = /* @__PURE__ */ new Set(), F = /* @__PURE
 	performance: "auto",
 	debug: !1
 };
-function ee(...e) {
+function G(...e) {
 	W.debug && console.info("[Kineto]", ...e);
 }
-function G(e, t, n, r) {
+function ee(e, t, n, r) {
 	let i = e || C(t, n), a = {};
 	return Object.defineProperties(a, Object.getOwnPropertyDescriptors(i)), a.el = i.el || t, a.sourceEl = t, a.type = i.type || n, a.options = r, a.pause = typeof i.pause == "function" ? i.pause.bind(i) : () => {}, a.resume = typeof i.resume == "function" ? i.resume.bind(i) : () => {}, a.destroy = typeof i.destroy == "function" ? i.destroy.bind(i) : () => {}, a;
 }
@@ -284,8 +284,8 @@ function K(e, t = !1) {
 	let n = F.get(e);
 	return !n && t && (n = /* @__PURE__ */ new Map(), F.set(e, n)), n;
 }
-function te(e, t, n, r) {
-	let i = G(n, e, t, r), a = {
+function q(e, t, n, r) {
+	let i = ee(n, e, t, r), a = {
 		sourceEl: e,
 		name: t,
 		instance: i,
@@ -293,9 +293,9 @@ function te(e, t, n, r) {
 		destroyImplementation: i.destroy,
 		destroying: !1
 	};
-	return i.destroy = () => q(a), P.add(a), K(e, !0).set(t, a), i;
+	return i.destroy = () => J(a), P.add(a), K(e, !0).set(t, a), i;
 }
-function q(e, t = !0, n = !0) {
+function J(e, t = !0, n = !0) {
 	if (!e || !P.has(e) || e.destroying) return;
 	e.destroying = !0, P.delete(e);
 	let r = K(e.sourceEl);
@@ -306,14 +306,14 @@ function q(e, t = !0, n = !0) {
 	}
 	n && P.size === 0 && X();
 }
-function ne(e, t) {
+function te(e, t) {
 	return t.some((t) => typeof document < "u" && t === document || typeof window < "u" && t === window || e.sourceEl === t || e.instance.el === t || typeof t.contains == "function" && (t.contains(e.sourceEl) || t.contains(e.instance.el)));
 }
-function J() {
+function ne() {
 	if (I || Z.env.ssr) return;
 	I = !0, ie();
 	let e = v(), t = y(), n = Z.performance;
-	W.smooth && n !== "low" && Y(e, t), H = () => {
+	W.smooth && n !== "low" && re(e, t), H = () => {
 		let e = document.hidden ? "pause" : "resume";
 		P.forEach(({ instance: t, name: n }) => {
 			try {
@@ -324,7 +324,7 @@ function J() {
 		});
 	}, document.addEventListener("visibilitychange", H);
 }
-function Y(t = v(), n = y()) {
+function re(t = v(), n = y()) {
 	if (z || Z.env.ssr || !W.smooth || Z.performance === "low") return z;
 	try {
 		if (z = new e(W.smoothOptions), n && z.on("scroll", n.update), t?.ticker) V = (e) => z?.raf(e * 1e3), t.ticker.add(V), t.ticker.lagSmoothing(0);
@@ -335,16 +335,16 @@ function Y(t = v(), n = y()) {
 			B = requestAnimationFrame(e);
 		}
 	} catch (e) {
-		z = null, ee("Lenis initialization skipped.", e);
+		z = null, G("Lenis initialization skipped.", e);
 	}
 	return z;
 }
-function re() {
+function Y() {
 	let e = v();
 	V && e?.ticker && e.ticker.remove(V), V = null, B && cancelAnimationFrame(B), B = null, z?.destroy?.(), z = null;
 }
 function X() {
-	H && typeof document < "u" && document.removeEventListener("visibilitychange", H), H = null, R && typeof document < "u" && document.removeEventListener("DOMContentLoaded", R), R = null, re(), I = !1, L = !1;
+	H && typeof document < "u" && document.removeEventListener("visibilitychange", H), H = null, R && typeof document < "u" && document.removeEventListener("DOMContentLoaded", R), R = null, Y(), I = !1, L = !1;
 }
 function ie() {
 	if (typeof document > "u" || document.getElementById("kineto-inline-fallback")) return;
@@ -352,7 +352,7 @@ function ie() {
 	e.id = "kineto-inline-fallback", e.textContent = "\n    @property --kt-angle { syntax: \"<angle>\"; initial-value: 0deg; inherits: false; }\n    @keyframes kt-border-spin { to { --kt-angle: 360deg; } }\n    @keyframes kt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }\n    @keyframes kt-aurora { to { transform: rotate(360deg); } }\n    @keyframes kt-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }\n    @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }\n    .kt-cursor-active, .kt-cursor-active * { cursor: none !important; }\n    .kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }\n    .kt-tw-caret { animation: kt-caret .8s step-end infinite; }\n    .kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }\n    .kt-slider-wrap { position: relative; overflow: hidden; }\n    @media (prefers-reduced-motion: reduce) {\n      [data-kt-reveal], [data-kt-text-split], [data-kt-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }\n    }\n  ", document.head.appendChild(e);
 }
 var Z = {
-	version: "0.8.5",
+	version: "0.8.7",
 	get env() {
 		return U ||= d(), U;
 	},
@@ -385,10 +385,10 @@ var Z = {
 		return W.smooth = !0, W.smoothOptions = {
 			...W.smoothOptions,
 			...e
-		}, I ? Y() : J(), this;
+		}, I ? re() : ne(), this;
 	},
 	disableSmooth() {
-		return W.smooth = !1, re(), this;
+		return W.smooth = !1, Y(), this;
 	},
 	toggleSmooth(e, t = {}) {
 		return (typeof e == "boolean" ? e : !W.smooth) ? this.enableSmooth(t) : this.disableSmooth();
@@ -407,7 +407,7 @@ var Z = {
 	},
 	unregister(e) {
 		return Array.from(P).forEach((t) => {
-			t.name === e && q(t);
+			t.name === e && J(t);
 		}), N.delete(e), delete this[e], this;
 	},
 	create(e, t, n = {}) {
@@ -420,15 +420,15 @@ var Z = {
 			if (i) return i.instance;
 			try {
 				let i, a = W.forceReducedMotion || W.respectReducedMotion && this.env.reducedMotion, o = r.reducedMotion || r.reduced;
-				return i = a ? o?.(t, n, this) || C(t, e) : this.performance === "low" && typeof r.fallback == "function" ? r.fallback(t, n, this) || C(t, e) : r.create(t, n, this), i ? te(t, e, i, n) : null;
+				return i = a ? o?.(t, n, this) || C(t, e) : this.performance === "low" && typeof r.fallback == "function" ? r.fallback(t, n, this) || C(t, e) : r.create(t, n, this), i ? q(t, e, i, n) : null;
 			} catch (t) {
 				return console.error(`[Kineto/${e}] create() failed:`, t), null;
 			}
 		}).filter(Boolean);
-		return a.length && J(), a.length <= 1 ? a[0] || null : a;
+		return a.length && ne(), a.length <= 1 ? a[0] || null : a;
 	},
 	scan(e = typeof document < "u" ? document : null) {
-		return this.env.ssr || !e ? this : (J(), N.forEach((t, n) => {
+		return this.env.ssr || !e ? this : (ne(), N.forEach((t, n) => {
 			let r = `[data-kt-${h(n)}]`, i = [];
 			typeof Element < "u" && e instanceof Element && e.matches(r) && i.push(e), typeof e.querySelectorAll == "function" && i.push(...e.querySelectorAll(r)), i.forEach((e) => this.create(n, e, _(e, n)));
 		}), typeof requestAnimationFrame < "u" ? requestAnimationFrame(() => document.documentElement.classList.remove("kt-preload")) : document.documentElement.classList.remove("kt-preload"), this);
@@ -451,16 +451,16 @@ var Z = {
 	destroyModule(e, t) {
 		let n = g(e);
 		return n.length && Array.from(P).forEach((e) => {
-			e.name === t && ne(e, n) && q(e);
+			e.name === t && te(e, n) && J(e);
 		}), this;
 	},
 	replay(e, t, n) {
 		let r = g(e), i = [];
 		Array.from(P).forEach((e) => {
-			e.name === t && ne(e, r) && (i.push({
+			e.name === t && te(e, r) && (i.push({
 				el: e.sourceEl,
 				options: n || e.options
-			}), q(e, !0, !1));
+			}), J(e, !0, !1));
 		});
 		let a = i.map(({ el: e, options: n }) => this.create(t, e, n)).filter(Boolean);
 		return a.length <= 1 ? a[0] || null : a;
@@ -469,10 +469,10 @@ var Z = {
 		if (e) {
 			let t = g(e);
 			return Array.from(P).forEach((e) => {
-				ne(e, t) && q(e);
+				te(e, t) && J(e);
 			}), this;
 		}
-		return Array.from(P).forEach((e) => q(e)), X(), this;
+		return Array.from(P).forEach((e) => J(e)), X(), this;
 	},
 	pause() {
 		return P.forEach(({ instance: e }) => e.pause()), z?.stop(), this;
@@ -1642,13 +1642,15 @@ var je = {
 				if (r === "crt") {
 					e.src = i;
 					let n = Math.max(.3, Number(t.duration ?? 1.1));
-					if (e.style.opacity = "1", e.style.transformOrigin = "center", e.style.willChange = "transform, filter, opacity", e.style.animation = `kt-lazy-crt ${n}s cubic-bezier(.2,.7,.2,1) both`, t.frame !== !1) {
+					e.style.opacity = "1", e.style.transformOrigin = "center", e.style.willChange = "transform, filter, opacity", e.style.animation = `kt-lazy-crt ${n}s cubic-bezier(.2,.7,.2,1) both`;
+					let r = Ee(o, "kt-lazy-crt-beam", 7);
+					r.style.cssText += `pointer-events:none;top:50%;bottom:auto;height:2px;transform:translateY(-50%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.85) 16%,#fff 50%,rgba(255,255,255,.85) 84%,transparent);box-shadow:0 0 12px 2px rgba(255,255,255,.5);animation:kt-lazy-crt-beam ${n}s ease-out both;`, l.push(r);
+					let a = Ee(o, "kt-lazy-crt-bloom", 8);
+					if (a.style.cssText += `pointer-events:none;background:#fff;animation:kt-lazy-crt-bloom ${n}s ease-out both;`, l.push(a), t.frame !== !1) {
 						let e = Ee(o, "kt-lazy-crt-scan", 5);
-						e.style.cssText += "pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(0,0,0,.16) 0,rgba(0,0,0,.16) 1px,transparent 1px,transparent 3px);mix-blend-mode:multiply;opacity:0;transition:opacity .3s ease;", l.push(e), requestAnimationFrame(() => {
-							e.style.opacity = "1";
-						}), v(() => {
-							e.style.opacity = "0";
-						}, n * 1e3);
+						e.style.cssText += `pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(0,0,0,.09) 0,rgba(0,0,0,.09) 1px,transparent 1px,transparent 3px);mix-blend-mode:multiply;opacity:0;animation:kt-lazy-crt-scan ${n}s ease both;`, l.push(e);
+						let t = Ee(o, "kt-lazy-crt-roll", 6);
+						t.style.cssText += `pointer-events:none;top:0;bottom:auto;height:60%;background:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.18) 35%,rgba(0,0,0,.28) 50%,rgba(0,0,0,.18) 65%,transparent 100%);filter:blur(3px);animation:kt-lazy-crt-roll ${n}s linear both;`, l.push(t);
 					}
 					v(() => {
 						e.style.animation = "", e.style.willChange = "", S();
@@ -3595,7 +3597,7 @@ var ot = {
 		t.label !== !1 && (S || C || w) && (T = document.createElement("span"), T.className = "kt-cursor-label", T.style.cssText = `position:absolute;inset:0;display:flex;align-items:center;justify-content:center;white-space:nowrap;font:800 ${Number(t.labelSize ?? 9)}px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:${t.labelColor || "#fff"};opacity:0;transition:opacity .18s ease;pointer-events:none;`, (S || C || w).appendChild(T)), document.body.appendChild(x);
 		let N = window.innerWidth / 2, P = window.innerHeight / 2, F = N, I = P, L = !0, R = !1, z = !1, B = null, V = null, H = !v, U = (e) => {
 			R = e, x.style.opacity = e ? String(m) : "0";
-		}, W = t.hoverEffect || (S ? "dot" : "ring"), ee = Math.max(i + 2, Number(t.hoverDotSize ?? (C ? a * .58 : i * 3))), G = () => (V && W === "ring" ? o : 1) * (z ? s : 1), K = (e) => {
+		}, W = t.hoverEffect || (S ? "dot" : "ring"), G = Math.max(i + 2, Number(t.hoverDotSize ?? (C ? a * .58 : i * 3))), ee = () => (V && W === "ring" ? o : 1) * (z ? s : 1), K = (e) => {
 			if (V = e, x.classList.add("is-hover"), t.hoverClass && x.classList.add(...String(t.hoverClass).split(/\s+/).filter(Boolean)), w) {
 				let r = e.getAttribute("data-kt-cursor-hover-src") || t.hoverSrc, i = w.querySelector("img");
 				i && r && (i.dataset.baseSrc || (i.dataset.baseSrc = i.src), i.src = r), n === "custom" && t.hoverTemplate && (w.dataset.baseHtml ?? (w.dataset.baseHtml = w.innerHTML), w.innerHTML = t.hoverTemplate);
@@ -3604,12 +3606,12 @@ var ot = {
 			if (T && (T.textContent = r, T.style.opacity = r ? "1" : "0"), C && (C.style.backgroundColor = e.getAttribute("data-kt-cursor-background") || t.hoverBackground || u, C.style.borderColor = e.getAttribute("data-kt-cursor-color") || t.hoverColor || l), S) {
 				if (t.hideDotOnHover === !0) S.style.opacity = "0";
 				else if (W === "dot") {
-					let e = T && r ? Math.max(ee, T.scrollWidth + 18) : ee;
+					let e = T && r ? Math.max(G, T.scrollWidth + 18) : G;
 					S.style.width = `${e}px`, S.style.height = `${e}px`, S.style.opacity = String(t.hoverDotOpacity ?? .94);
 				}
 			}
 			t.onEnter?.(e, x);
-		}, te = () => {
+		}, q = () => {
 			let e = V;
 			if (V = null, x.classList.remove("is-hover"), t.hoverClass && x.classList.remove(...String(t.hoverClass).split(/\s+/).filter(Boolean)), w) {
 				let e = w.querySelector("img");
@@ -3621,7 +3623,7 @@ var ot = {
 				S.style.width = `${e}px`, S.style.height = `${e}px`;
 			}
 			t.onLeave?.(e, x);
-		}, q = (e, t) => {
+		}, J = (e, t) => {
 			let n = O.pool.pop() || document.createElement("span");
 			n.setAttribute("aria-hidden", "true");
 			let r = O.symbols[Math.floor(Math.random() * O.symbols.length)], i = Math.random() > .5 ? O.colors[0] : O.colors[1], a = O.size * (.6 + Math.random() * .9), o = Math.random() * 360, s = 8 + Math.random() * 26, c = Math.cos(o * Math.PI / 180) * s, l = Math.sin(o * Math.PI / 180) * s;
@@ -3630,19 +3632,19 @@ var ot = {
 			}), setTimeout(() => {
 				n.parentNode && O.pool.push(n);
 			}, O.duration + 60);
-		}, ne = (e) => v ? H : !e.target?.closest?.("[data-kt-cursor-scope]"), J = (t) => {
+		}, te = (e) => v ? H : !e.target?.closest?.("[data-kt-cursor-scope]"), ne = (t) => {
 			N = t.clientX, P = t.clientY, v && (H = !!(t.target && typeof t.target.closest == "function" && (t.target.closest("[data-kt-cursor-scope]") === e || e.contains(t.target))));
-			let r = ne(t) && it(t) && !t.target?.closest?.(_);
+			let r = te(t) && it(t) && !t.target?.closest?.(_);
 			if (r !== R && U(r), S && (S.style.transform = `translate3d(${N}px,${P}px,0) translate(-50%,-50%)`), w && (w.dataset.crosshairFull ? (w.children[0].style.transform = `translateY(${P}px)`, w.children[1].style.transform = `translateX(${N}px)`) : w.style.transform = `translate3d(${N}px,${P}px,0)`), n === "sparkle" && R) {
 				let e = performance.now();
-				e - O.last >= O.throttle && (O.last = e, q(N, P));
+				e - O.last >= O.throttle && (O.last = e, J(N, P));
 			}
-		}, Y = (t) => {
+		}, re = (t) => {
 			if (v && !e.contains(t.target)) return;
 			let n = t.target.closest?.(g);
-			n && n !== V ? K(n) : !n && V && te();
-		}, re = (e) => {
-			V && !V.contains(e.relatedTarget) && te(), e.relatedTarget || U(!1);
+			n && n !== V ? K(n) : !n && V && q();
+		}, Y = (e) => {
+			V && !V.contains(e.relatedTarget) && q(), e.relatedTarget || U(!1);
 		}, X = null, ie = (e, n) => {
 			if (t.clickSprite) {
 				let r = rt(t) || {}, i = Math.max(8, Number(t.clickSpriteWidth ?? r.width ?? 96)), a = Math.max(8, Number(t.clickSpriteHeight ?? r.height ?? i)), o = Math.max(1, Math.round(Number(t.clickSpriteFrames ?? r.frames ?? 8))), s = Math.max(80, Number(t.clickSpriteDuration ?? 480)), c = `${i}x${o}`;
@@ -3666,10 +3668,10 @@ var ot = {
 		}, oe = (e) => {
 			e.relatedTarget || U(!1);
 		}, se = () => {
-			H = !1, U(!1), V && te();
+			H = !1, U(!1), V && q();
 		}, ce = () => {
 			if (L) {
-				if (F = f(F, N, r), I = f(I, P, r), C && (C.style.transform = `translate3d(${F}px,${I}px,0) translate(-50%,-50%) scale(${G()})`), n === "text" && w && !w.dataset.crosshairFull && (w.style.transform = `translate3d(${F}px,${I}px,0) scale(${z ? s : 1})`), n === "trail") {
+				if (F = f(F, N, r), I = f(I, P, r), C && (C.style.transform = `translate3d(${F}px,${I}px,0) translate(-50%,-50%) scale(${ee()})`), n === "text" && w && !w.dataset.crosshairFull && (w.style.transform = `translate3d(${F}px,${I}px,0) scale(${z ? s : 1})`), n === "trail") {
 					let e = N, t = P, n = D.spring || .2;
 					D.nodes.forEach((r, i) => {
 						D.xs[i] = f(D.xs[i], e, n), D.ys[i] = f(D.ys[i], t, n);
@@ -3690,7 +3692,7 @@ var ot = {
 				B = requestAnimationFrame(ce);
 			}
 		};
-		return window.addEventListener("pointermove", J, { passive: !0 }), document.addEventListener("pointerover", Y), document.addEventListener("pointerout", re), document.addEventListener("pointerdown", Z, { passive: !0 }), document.addEventListener("pointerup", ae, { passive: !0 }), window.addEventListener("mouseout", oe), v && e.addEventListener("pointerleave", se), B = requestAnimationFrame(ce), {
+		return window.addEventListener("pointermove", ne, { passive: !0 }), document.addEventListener("pointerover", re), document.addEventListener("pointerout", Y), document.addEventListener("pointerdown", Z, { passive: !0 }), document.addEventListener("pointerup", ae, { passive: !0 }), window.addEventListener("mouseout", oe), v && e.addEventListener("pointerleave", se), B = requestAnimationFrame(ce), {
 			el: e,
 			type: "cursor",
 			cursor: x,
@@ -3710,7 +3712,7 @@ var ot = {
 				L || (L = !0, x.hidden = !1, B = requestAnimationFrame(ce));
 			},
 			destroy() {
-				L = !1, B != null && cancelAnimationFrame(B), window.removeEventListener("pointermove", J), document.removeEventListener("pointerover", Y), document.removeEventListener("pointerout", re), document.removeEventListener("pointerdown", Z), document.removeEventListener("pointerup", ae), window.removeEventListener("mouseout", oe), v && (e.removeEventListener("pointerleave", se), e.classList.remove("kt-cursor-scope"), e.removeAttribute("data-kt-cursor-scope")), E?.remove(), X?.remove(), x.remove(), !v && !document.querySelector(".kt-cursor") && (y.classList.remove("kt-cursor-active"), y.style.cursor = b);
+				L = !1, B != null && cancelAnimationFrame(B), window.removeEventListener("pointermove", ne), document.removeEventListener("pointerover", re), document.removeEventListener("pointerout", Y), document.removeEventListener("pointerdown", Z), document.removeEventListener("pointerup", ae), window.removeEventListener("mouseout", oe), v && (e.removeEventListener("pointerleave", se), e.classList.remove("kt-cursor-scope"), e.removeAttribute("data-kt-cursor-scope")), E?.remove(), X?.remove(), x.remove(), !v && !document.querySelector(".kt-cursor") && (y.classList.remove("kt-cursor-active"), y.style.cursor = b);
 			}
 		};
 	},
@@ -4147,71 +4149,71 @@ var pt = { create(e, t) {
 			L && (T = f(T, E, D ? .55 : d), B(), D || Math.abs(T - E) > .0015 ? P = requestAnimationFrame(H) : (T = E, B(), P = null));
 		}, U = () => {
 			L && P == null && (P = requestAnimationFrame(H));
-		}, W = (e) => u ? (Math.round(e) % i.length + i.length) % i.length : p(Math.round(e), 0, l), ee = (e) => {
+		}, W = (e) => u ? (Math.round(e) % i.length + i.length) % i.length : p(Math.round(e), 0, l), G = (e) => {
 			let t = W(e);
 			t !== w && (w = t, V()), E = w, U();
-		}, G = () => ee(w >= l && u ? 0 : w + 1), K = () => ee(w <= 0 && u ? l : w - 1), te = () => {
+		}, ee = () => G(w >= l && u ? 0 : w + 1), K = () => G(w <= 0 && u ? l : w - 1), q = () => {
 			clearInterval(F), F = null;
-		}, q = () => {
-			te(), !(!m || I) && (F = setInterval(() => {
-				D || G();
+		}, J = () => {
+			q(), !(!m || I) && (F = setInterval(() => {
+				D || ee();
 			}, m));
+		}, te = (e) => {
+			e.pointerType === "mouse" && e.button !== 0 || (D = !0, N = e.pointerId, O = S ? e.clientY : e.clientX, k = E, A = S ? e.clientY : e.clientX, j = performance.now(), M = 0, n.setPointerCapture?.(N), q(), U());
 		}, ne = (e) => {
-			e.pointerType === "mouse" && e.button !== 0 || (D = !0, N = e.pointerId, O = S ? e.clientY : e.clientX, k = E, A = S ? e.clientY : e.clientX, j = performance.now(), M = 0, n.setPointerCapture?.(N), te(), U());
-		}, J = (e) => {
 			if (!D || e.pointerId !== N) return;
 			let { step: t } = z(), n = S ? e.clientY : e.clientX, r = n - O, i = k - r / Math.max(1, t);
 			u || (i < 0 ? i *= .3 : i > l && (i = l + (i - l) * .3));
 			let a = performance.now(), o = Math.max(1, a - j);
 			M = (A - n) / o, A = n, j = a, E = i, U();
-		}, Y = (e) => {
+		}, re = (e) => {
 			if (!D || e.pointerId !== N) return;
 			D = !1, n.releasePointerCapture?.(N);
 			let { step: t } = z(), r = p(M * t * .35 / Math.max(1, t), -1.2, 1.2);
-			ee(E + r), q();
-		}, re = (e) => {
+			G(E + r), J();
+		}, Y = (e) => {
 			let t = S ? "ArrowDown" : "ArrowRight", n = S ? "ArrowUp" : "ArrowLeft";
-			e.key === t ? (e.preventDefault(), G()) : e.key === n ? (e.preventDefault(), K()) : e.key === "Home" ? (e.preventDefault(), ee(0)) : e.key === "End" && (e.preventDefault(), ee(l));
+			e.key === t ? (e.preventDefault(), ee()) : e.key === n ? (e.preventDefault(), K()) : e.key === "Home" ? (e.preventDefault(), G(0)) : e.key === "End" && (e.preventDefault(), G(l));
 		}, X = Array.from(document.querySelectorAll(t.nextSelector || `[data-kt-slider-next="${e.id || ""}"], [data-kt-slider-next]`)).filter((e) => !e.dataset.ktSliderBound), ie = Array.from(document.querySelectorAll(t.prevSelector || `[data-kt-slider-prev="${e.id || ""}"], [data-kt-slider-prev]`)).filter((e) => !e.dataset.ktSliderBound), Z = (e, t) => {
 			e.dataset.ktSliderBound = "true", e.addEventListener("click", t);
 		};
-		X.forEach((e) => Z(e, G)), ie.forEach((e) => Z(e, K));
+		X.forEach((e) => Z(e, ee)), ie.forEach((e) => Z(e, K));
 		let ae = (e) => {
 			D && e.preventDefault();
 		};
-		n.addEventListener("pointerdown", ne), n.addEventListener("pointermove", J), n.addEventListener("pointerup", Y), n.addEventListener("pointercancel", Y), n.addEventListener("touchmove", ae, { passive: !1 }), n.addEventListener("keydown", re);
+		n.addEventListener("pointerdown", te), n.addEventListener("pointermove", ne), n.addEventListener("pointerup", re), n.addEventListener("pointercancel", re), n.addEventListener("touchmove", ae, { passive: !1 }), n.addEventListener("keydown", Y);
 		let oe = () => {
-			h && te();
-		}, se = () => {
 			h && q();
+		}, se = () => {
+			h && J();
 		};
 		n.addEventListener("pointerenter", oe), n.addEventListener("pointerleave", se);
 		let ce = typeof ResizeObserver < "u" ? new ResizeObserver(() => {
 			B();
 		}) : null;
-		return ce?.observe(n), B(), V(), q(), {
+		return ce?.observe(n), B(), V(), J(), {
 			el: e,
 			type: "slider",
 			get index() {
 				return w;
 			},
-			next: G,
+			next: ee,
 			prev: K,
 			goTo(e) {
-				ee(Number(e));
+				G(Number(e));
 			},
 			replay() {
-				ee(0);
+				G(0);
 			},
 			pause() {
-				I = !0, te();
+				I = !0, q();
 			},
 			resume() {
-				I = !1, q();
+				I = !1, J();
 			},
 			destroy() {
-				L = !1, te(), P != null && cancelAnimationFrame(P), ce?.disconnect(), n.removeEventListener("pointerdown", ne), n.removeEventListener("pointermove", J), n.removeEventListener("pointerup", Y), n.removeEventListener("pointercancel", Y), n.removeEventListener("touchmove", ae), n.removeEventListener("keydown", re), n.removeEventListener("pointerenter", oe), n.removeEventListener("pointerleave", se), X.forEach((e) => {
-					e.removeEventListener("click", G), delete e.dataset.ktSliderBound;
+				L = !1, q(), P != null && cancelAnimationFrame(P), ce?.disconnect(), n.removeEventListener("pointerdown", te), n.removeEventListener("pointermove", ne), n.removeEventListener("pointerup", re), n.removeEventListener("pointercancel", re), n.removeEventListener("touchmove", ae), n.removeEventListener("keydown", Y), n.removeEventListener("pointerenter", oe), n.removeEventListener("pointerleave", se), X.forEach((e) => {
+					e.removeEventListener("click", ee), delete e.dataset.ktSliderBound;
 				}), ie.forEach((e) => {
 					e.removeEventListener("click", K), delete e.dataset.ktSliderBound;
 				});
@@ -4445,6 +4447,39 @@ function yt(e) {
 var bt = "!@#$%^&*()<>?/|{}~ABCDEFGHIJabcdefghij0123456789", xt = {
 	create(e, t) {
 		let n = t.preset || t.type || "rgb", r = n === "digital" ? "noise" : n, i = p(Number(t.intensity ?? 1), .1, 3), a = Math.max(.1, Number(t.speed ?? 1)), o = t.loop !== !1, s = t.trigger || "auto";
+		if (r === "crt" || r === "vcr") {
+			let t = e.tagName === "IMG" ? e : e.querySelector?.("img"), n = e.tagName === "IMG" ? e.parentElement : e;
+			if (t && n) {
+				let o = r === "vcr", s = n.style.position, c = n.style.overflow, l = t.style.filter, u = t.style.animation;
+				getComputedStyle(n).position === "static" && (n.style.position = "relative"), n.style.overflow = "hidden";
+				let d = .08 * i, f = .035 * i, p = document.createElement("div");
+				p.className = "kt-glitch-crt", p.setAttribute("aria-hidden", "true"), p.style.cssText = `position:absolute;inset:0;z-index:3;pointer-events:none;border-radius:inherit;overflow:hidden;background:repeating-linear-gradient(0deg,rgba(0,0,0,${d}) 0,rgba(0,0,0,${d}) 1px,transparent 1px,transparent 3px),repeating-linear-gradient(90deg,rgba(255,40,40,${f}) 0,rgba(255,40,40,${f}) 1px,rgba(40,255,90,${f}) 1px,rgba(40,255,90,${f}) 2px,rgba(60,120,255,${f}) 2px,rgba(60,120,255,${f}) 3px);box-shadow:inset 0 0 ${o ? 70 : 110}px rgba(0,0,0,${o ? .45 : .4}),inset 0 0 20px rgba(0,0,0,.28);animation:kt-crt-flicker ${(o ? 2.2 : 3.4) / a}s ease-in-out infinite;`;
+				let m = document.createElement("div");
+				m.style.cssText = `position:absolute;left:0;right:0;height:${o ? 22 : 34}%;pointer-events:none;background:linear-gradient(to bottom,transparent,rgba(255,255,255,${o ? .04 : .07}) 45%,rgba(255,255,255,${o ? .08 : .11}) 55%,transparent);filter:blur(1px);animation:kt-crt-roll ${(o ? 4.5 : 8) / a}s linear infinite;`, p.appendChild(m), t.style.filter = `${l ? l + " " : ""}saturate(${o ? 1.18 : 1.08}) contrast(1.06) brightness(1.02)`;
+				let h = null, g = null;
+				o && (h = document.createElement("div"), h.style.cssText = `position:absolute;inset:-20%;pointer-events:none;opacity:.08;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:kt-vcr-noise ${.5 / a}s steps(3,end) infinite;`, p.appendChild(h), g = document.createElement("div"), g.style.cssText = `position:absolute;left:0;right:0;height:20%;pointer-events:none;background:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.16) 38%,rgba(0,0,0,.32) 50%,rgba(0,0,0,.16) 62%,transparent 100%);mix-blend-mode:multiply;filter:blur(2px);animation:kt-vcr-track ${3.2 / a}s linear infinite;`, p.appendChild(g), t.style.filter += " drop-shadow(1.2px 0 0 rgba(255,0,60,.4)) drop-shadow(-1.2px 0 0 rgba(0,180,255,.4))", t.style.animation = `kt-vcr-jitter ${7 / a}s steps(1,end) infinite`), n.appendChild(p);
+				let _ = (e) => {
+					[
+						p,
+						m,
+						h,
+						g
+					].forEach((t) => {
+						t && (t.style.animationPlayState = e);
+					}), o && (t.style.animationPlayState = e);
+				};
+				return {
+					el: e,
+					type: "glitch",
+					replay: () => {},
+					pause: () => _("paused"),
+					resume: () => _("running"),
+					destroy: () => {
+						p.remove(), n.style.position = s, n.style.overflow = c, t.style.filter = l, t.style.animation = u;
+					}
+				};
+			}
+		}
 		if (r === "image" || r === "reveal") {
 			let n = r === "reveal", c = e.tagName === "IMG" ? e : e.querySelector?.("img");
 			if (!c) return null;
@@ -4518,6 +4553,14 @@ var bt = "!@#$%^&*()<>?/|{}~ABCDEFGHIJabcdefghij0123456789", xt = {
 			"#00b894",
 			"#2f6bff"
 		];
+		if (e.tagName === "IMG" || e.querySelector && e.querySelector("img") || !d || !String(d).trim()) return {
+			el: e,
+			type: "glitch",
+			replay() {},
+			pause() {},
+			resume() {},
+			destroy() {}
+		};
 		e.setAttribute("aria-label", d), e.innerHTML = "", e.style.position = "relative", e.style.display = "inline-block";
 		let g = document.createElement("span");
 		g.textContent = d, g.style.cssText = "position:relative;z-index:2;display:inline-block;will-change:transform;", g.setAttribute("aria-hidden", "true"), e.appendChild(g);
@@ -4759,8 +4802,20 @@ var Ct = {
 			}), j();
 		}, P = () => {
 			O = !1, S = e.clientWidth / 2, C = e.clientHeight / 2, g.style.opacity = St(t.alwaysOn, n === "aurora" || n === "comet") ? String(o) : "0", j();
+		}, F = (e) => {
+			O = !0, g.style.opacity = "1", M(e), g.animate([
+				{ filter: "brightness(1)" },
+				{
+					filter: "brightness(1.5) saturate(1.15)",
+					offset: .28
+				},
+				{ filter: "brightness(1)" }
+			], {
+				duration: 520,
+				easing: "cubic-bezier(.2,.7,.2,1)"
+			}), j();
 		};
-		return e.addEventListener("pointerenter", N), e.addEventListener("pointermove", M, { passive: !0 }), e.addEventListener("pointerleave", P), St(t.alwaysOn, n === "aurora" || n === "comet") && (g.style.opacity = String(o)), k(50, 50), {
+		return e.addEventListener("pointerenter", N), e.addEventListener("pointermove", M, { passive: !0 }), e.addEventListener("pointerleave", P), e.addEventListener("pointerdown", F), St(t.alwaysOn, n === "aurora" || n === "comet") && (g.style.opacity = String(o)), k(50, 50), {
 			el: e,
 			type: "cardGlow",
 			pause() {
@@ -4770,7 +4825,7 @@ var Ct = {
 				D || (D = !0, _.style.animationPlayState = "running", j());
 			},
 			destroy() {
-				D = !1, E != null && cancelAnimationFrame(E), e.removeEventListener("pointerenter", N), e.removeEventListener("pointermove", M), e.removeEventListener("pointerleave", P), g.remove(), r == null ? e.removeAttribute("style") : e.setAttribute("style", r);
+				D = !1, E != null && cancelAnimationFrame(E), e.removeEventListener("pointerenter", N), e.removeEventListener("pointermove", M), e.removeEventListener("pointerleave", P), e.removeEventListener("pointerdown", F), g.remove(), r == null ? e.removeAttribute("style") : e.setAttribute("style", r);
 			}
 		};
 	},
@@ -4796,106 +4851,112 @@ function Ot() {
 	let r = document.createElement("div");
 	r.className = "kt-lightbox-toolbar", r.style.cssText = "position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;pointer-events:auto;";
 	let i = document.createElement("span");
-	i.className = "kt-lightbox-counter", i.style.cssText = "position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:600 13px/1 ui-monospace,monospace;letter-spacing:.08em;opacity:.72;";
+	i.className = "kt-lightbox-counter", i.style.cssText = "position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:600 12.5px/1 ui-monospace,monospace;letter-spacing:.06em;color:rgba(255,255,255,.85);background:rgba(20,20,26,.5);border:1px solid rgba(255,255,255,.12);padding:6px 13px;border-radius:99px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);";
 	let a = document.createElement("div");
-	a.className = "kt-lightbox-actions", a.style.cssText = "display:flex;align-items:center;gap:6px;";
-	let o = Dt("kt-lightbox-zoom-out", "Zoom out", "−"), s = Dt("kt-lightbox-zoom-reset", "Reset zoom", "100%"), c = Dt("kt-lightbox-zoom-in", "Zoom in", "+"), l = Dt("kt-lightbox-close", "Close viewer", "×");
+	a.className = "kt-lightbox-actions", a.style.cssText = "display:flex;align-items:center;gap:2px;padding:4px;background:rgba(20,20,26,.5);border:1px solid rgba(255,255,255,.12);border-radius:13px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);";
+	let o = Dt("kt-lightbox-zoom-out", "Zoom out", "−"), s = Dt("kt-lightbox-zoom-reset", "Reset zoom", "100%"), c = Dt("kt-lightbox-zoom-in", "Zoom in", "+"), l = Dt("kt-lightbox-share", "Share", "↗"), u = Dt("kt-lightbox-close", "Close viewer", "×");
 	[
 		o,
 		s,
 		c,
-		l
+		l,
+		u
 	].forEach((e) => {
-		e.style.cssText = "min-width:38px;height:38px;padding:0 10px;border:1px solid var(--kt-lightbox-button-border,rgba(255,255,255,.14));border-radius:var(--kt-lightbox-button-radius,11px);background:var(--kt-lightbox-button-bg,rgba(255,255,255,.08));color:var(--kt-lightbox-button-color,white);font:600 14px/1 sans-serif;backdrop-filter:blur(12px);cursor:pointer;";
-	}), l.style.fontSize = "24px", l.style.marginLeft = "8px", a.append(o, s, c, l), a.style.marginLeft = "auto", r.append(i, a);
-	let u = document.createElement("div");
-	u.className = "kt-lightbox-stage", u.style.cssText = "position:relative;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;pointer-events:auto;touch-action:none;";
-	let d = document.createElement("div");
-	d.className = "kt-lightbox-stage-content", d.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:16px;max-width:100%;max-height:100%;min-height:0;";
+		e.style.cssText = "min-width:34px;height:34px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:9px;background:var(--kt-lightbox-button-bg,transparent);color:var(--kt-lightbox-button-color,white);font:600 15px/1 sans-serif;cursor:pointer;transition:background-color .15s ease;";
+	});
+	let d = document.createElement("span");
+	d.style.cssText = "width:1px;height:18px;margin:0 8px;background:rgba(255,255,255,.16);flex:0 0 auto;", s.style.minWidth = "54px", s.title = "Click to type an exact zoom %", l.hidden = !0, l.title = "Share", l.innerHTML = "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx='18' cy='5' r='3'/><circle cx='6' cy='12' r='3'/><circle cx='18' cy='19' r='3'/><path d='M8.6 13.5l6.8 4M15.4 6.5l-6.8 4'/></svg>", u.style.fontSize = "22px", a.append(o, s, c, d, l, u), a.style.marginLeft = "auto", r.append(i, a);
 	let f = document.createElement("div");
-	f.className = "kt-lightbox-media-host", f.style.cssText = "position:relative;display:grid;place-items:center;max-width:100%;min-height:0;will-change:transform;transform-origin:center;";
-	let p = document.createElement("img");
-	p.className = "kt-lightbox-image", p.alt = "", p.style.cssText = "display:block;max-width:min(94vw,1800px);max-height:calc(100vh - 230px);width:auto;height:auto;object-fit:contain;border-radius:var(--kt-lightbox-radius,4px);user-select:none;-webkit-user-drag:none;", f.appendChild(p), d.appendChild(f), u.appendChild(d);
-	let m = Dt("kt-lightbox-prev", "Previous item", "‹"), h = Dt("kt-lightbox-next", "Next item", "›");
-	[m, h].forEach((e) => {
-		e.style.cssText = "position:absolute;top:50%;z-index:4;width:48px;height:48px;border:1px solid var(--kt-lightbox-button-border,rgba(255,255,255,.14));border-radius:999px;background:var(--kt-lightbox-button-bg,rgba(255,255,255,.08));backdrop-filter:blur(10px);color:var(--kt-lightbox-button-color,white);font:300 30px/1 sans-serif;transform:translateY(-50%);cursor:pointer;pointer-events:auto;display:grid;place-items:center;padding-bottom:4px;", u.appendChild(e);
-	}), m.style.left = "14px", h.style.right = "14px";
-	let g = document.createElement("div");
-	g.className = "kt-lightbox-caption", g.style.cssText = "max-width:min(860px,92vw);text-align:center;flex:0 0 auto;transition:opacity .25s ease;";
-	let _ = document.createElement("strong");
-	_.className = "kt-lightbox-title", _.style.cssText = "display:block;font:650 15px/1.4 sans-serif;";
-	let v = document.createElement("span");
-	v.className = "kt-lightbox-description", v.style.cssText = "display:block;margin-top:4px;opacity:.68;font:400 13px/1.45 sans-serif;", g.append(_, v), d.appendChild(g);
-	let y = document.createElement("div");
-	y.className = "kt-lightbox-info", y.style.cssText = "position:relative;z-index:5;display:flex;flex-direction:column;align-items:center;padding:16px 18px 26px;pointer-events:none;text-align:center;";
+	f.className = "kt-lightbox-stage", f.style.cssText = "position:relative;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;pointer-events:auto;touch-action:none;";
+	let p = document.createElement("div");
+	p.className = "kt-lightbox-stage-content", p.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:16px;max-width:100%;max-height:100%;min-height:0;";
+	let m = document.createElement("div");
+	m.className = "kt-lightbox-media-host", m.style.cssText = "position:relative;display:grid;place-items:center;max-width:100%;min-height:0;will-change:transform;transform-origin:center;";
+	let h = document.createElement("img");
+	h.className = "kt-lightbox-image", h.alt = "", h.style.cssText = "display:block;max-width:min(94vw,1800px);max-height:calc(100vh - 230px);width:auto;height:auto;object-fit:contain;border-radius:var(--kt-lightbox-radius,4px);user-select:none;-webkit-user-drag:none;", m.appendChild(h), p.appendChild(m), f.appendChild(p);
+	let g = Dt("kt-lightbox-prev", "Previous item", "‹"), _ = Dt("kt-lightbox-next", "Next item", "›");
+	[g, _].forEach((e) => {
+		e.style.cssText = "position:absolute;top:50%;z-index:4;width:48px;height:48px;border:1px solid var(--kt-lightbox-button-border,rgba(255,255,255,.14));border-radius:999px;background:var(--kt-lightbox-button-bg,rgba(255,255,255,.08));backdrop-filter:blur(10px);color:var(--kt-lightbox-button-color,white);font:300 30px/1 sans-serif;transform:translateY(-50%);cursor:pointer;pointer-events:auto;display:grid;place-items:center;padding-bottom:4px;", f.appendChild(e);
+	}), g.style.left = "14px", _.style.right = "14px";
+	let v = document.createElement("div");
+	v.className = "kt-lightbox-caption", v.style.cssText = "max-width:min(860px,92vw);text-align:center;flex:0 0 auto;transition:opacity .25s ease;";
+	let y = document.createElement("strong");
+	y.className = "kt-lightbox-title", y.style.cssText = "display:block;font:650 15px/1.4 sans-serif;";
 	let b = document.createElement("span");
-	b.className = "kt-lightbox-meta", b.style.cssText = "font:500 11px/1.4 ui-monospace,monospace;opacity:.55;text-align:center;", y.append(b);
+	b.className = "kt-lightbox-description", b.style.cssText = "display:block;margin-top:4px;opacity:.68;font:400 13px/1.45 sans-serif;", v.append(y, b), p.appendChild(v);
 	let x = document.createElement("div");
-	x.className = "kt-lightbox-minimap", x.hidden = !0, x.style.cssText = "position:absolute;right:18px;bottom:86px;z-index:6;width:140px;height:90px;border:1px solid rgba(255,255,255,.25);border-radius:8px;overflow:hidden;background:#111;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.35);";
-	let S = document.createElement("img");
-	S.alt = "", S.style.cssText = "width:100%;height:100%;object-fit:contain;opacity:.65;";
-	let C = document.createElement("span");
-	C.style.cssText = "position:absolute;border:1px solid white;background:rgba(255,255,255,.08);", x.append(S, C);
-	let w = document.createElement("div");
-	w.className = "kt-lightbox-custom-ui", w.style.pointerEvents = "auto", r.prepend(w), n.append(r, u, y), e.append(t, n, x), document.body.appendChild(e);
-	let T = null, E = [], D = 0, O = "", k = null, A = 1, j = 0, M = 0, N = !1, P = null, F = 0, I = 0, L = 0, R = 0, z = null, B = {
+	x.className = "kt-lightbox-info", x.style.cssText = "position:relative;z-index:5;display:flex;flex-direction:column;align-items:center;padding:16px 18px 26px;pointer-events:none;text-align:center;";
+	let S = document.createElement("span");
+	S.className = "kt-lightbox-meta", S.style.cssText = "font:500 11px/1.4 ui-monospace,monospace;opacity:.55;text-align:center;", x.append(S);
+	let C = document.createElement("div");
+	C.className = "kt-lightbox-minimap", C.hidden = !0, C.style.cssText = "position:absolute;right:18px;bottom:86px;z-index:6;width:140px;height:90px;border:1px solid rgba(255,255,255,.25);border-radius:8px;overflow:hidden;background:#111;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.35);";
+	let w = document.createElement("img");
+	w.alt = "", w.style.cssText = "width:100%;height:100%;object-fit:contain;opacity:.65;";
+	let T = document.createElement("span");
+	T.style.cssText = "position:absolute;border:1px solid white;background:rgba(255,255,255,.08);", C.append(w, T);
+	let E = document.createElement("div");
+	E.className = "kt-lightbox-custom-ui", E.style.pointerEvents = "auto", r.prepend(E), n.append(r, f, x), e.append(t, n, C), document.body.appendChild(e);
+	let D = null, O = [], k = 0, A = "", j = null, M = 1, N = 0, P = 0, F = !1, I = null, L = 0, R = 0, z = 0, B = 0, V = null, H = {
 		root: e,
 		backdrop: t,
 		shell: n,
 		toolbar: r,
-		stage: u,
-		image: p,
-		closeButton: l,
-		previous: m,
-		next: h,
+		stage: f,
+		image: h,
+		closeButton: u,
+		previous: g,
+		next: _,
 		zoomIn: c,
 		zoomOut: o,
 		zoomReset: s,
-		info: y,
-		title: _,
-		description: v,
-		meta: b,
-		minimap: x,
-		custom: w,
+		shareButton: l,
+		info: x,
+		title: y,
+		description: b,
+		meta: S,
+		minimap: C,
+		custom: E,
 		counter: i
-	}, V = () => {
-		let e = T?.minimap !== !1 && A > 1.02;
-		if (x.hidden = !e, !e) return;
-		let t = kt(100 / A, 12, 100), n = kt(100 / A, 12, 100), r = Math.max(1, u.clientWidth * (A - 1) / 2), i = Math.max(1, u.clientHeight * (A - 1) / 2), a = kt(50 - t / 2 - j / (r * 2) * (100 - t), 0, 100 - t), o = kt(50 - n / 2 - M / (i * 2) * (100 - n), 0, 100 - n);
-		C.style.width = `${t}%`, C.style.height = `${n}%`, C.style.left = `${a}%`, C.style.top = `${o}%`;
-	}, H = () => {
-		let e = Math.max(0, u.clientWidth * (A - 1) / 2), t = Math.max(0, u.clientHeight * (A - 1) / 2);
-		j = kt(j, -e, e), M = kt(M, -t, t), f.style.transform = `translate3d(${j}px,${M}px,0) scale(${A})`, s.textContent = `${Math.round(A * 100)}%`;
-		let n = Number(T?.minZoom ?? 1), r = Math.max(n, Number(T?.maxZoom ?? 5));
-		o.disabled = A <= n + .001, c.disabled = A >= r - .001, s.disabled = Math.abs(A - 1) <= .001, u.classList.toggle("is-zoomed", A > 1.001), g.style.opacity = A > 1.02 ? "0" : "1", V();
-	}, U = (e, t, n) => {
-		let r = Number(T?.minZoom ?? 1), i = kt(e, r, Math.max(r, Number(T?.maxZoom ?? 5)));
-		if (t != null && n != null && i !== A) {
-			let e = u.getBoundingClientRect(), r = t - e.left - e.width / 2, a = n - e.top - e.height / 2, o = i / A;
-			j = r - (r - j) * o, M = a - (a - M) * o;
-		}
-		A = i, A <= 1.001 && (j = 0, M = 0), H();
+	}, U = () => {
+		let e = D?.minimap !== !1 && M > 1.02;
+		if (C.hidden = !e, !e) return;
+		let t = kt(100 / M, 12, 100), n = kt(100 / M, 12, 100), r = Math.max(1, f.clientWidth * (M - 1) / 2), i = Math.max(1, f.clientHeight * (M - 1) / 2), a = kt(50 - t / 2 - N / (r * 2) * (100 - t), 0, 100 - t), o = kt(50 - n / 2 - P / (i * 2) * (100 - n), 0, 100 - n);
+		T.style.width = `${t}%`, T.style.height = `${n}%`, T.style.left = `${a}%`, T.style.top = `${o}%`;
 	}, W = () => {
-		A = 1, j = 0, M = 0, H();
+		let e = Math.max(0, f.clientWidth * (M - 1) / 2), t = Math.max(0, f.clientHeight * (M - 1) / 2);
+		N = kt(N, -e, e), P = kt(P, -t, t), m.style.transform = `translate3d(${N}px,${P}px,0) scale(${M})`, s.querySelector("input") || (s.textContent = `${Math.round(M * 100)}%`);
+		let n = Number(D?.minZoom ?? 1), r = Math.max(n, Number(D?.maxZoom ?? 5));
+		o.disabled = M <= n + .001, c.disabled = M >= r - .001, f.classList.toggle("is-zoomed", M > 1.001), v.style.opacity = M > 1.02 ? "0" : "1", U();
+	}, G = (e, t, n) => {
+		let r = Number(D?.minZoom ?? 1), i = kt(e, r, Math.max(r, Number(D?.maxZoom ?? 5)));
+		if (t != null && n != null && i !== M) {
+			let e = f.getBoundingClientRect(), r = t - e.left - e.width / 2, a = n - e.top - e.height / 2, o = i / M;
+			N = r - (r - N) * o, P = a - (a - P) * o;
+		}
+		M = i, M <= 1.001 && (N = 0, P = 0), W();
 	}, ee = () => {
-		if (T?.backdropColor != null || T?.backdropOpacity != null) {
-			let e = kt(Number(T?.backdropOpacity ?? .9), 0, 1);
-			t.style.background = T?.backdropColor || `rgba(0,0,0,${e})`;
+		M = 1, N = 0, P = 0, W();
+	}, K = () => {
+		if (D?.backdropColor != null || D?.backdropOpacity != null) {
+			let e = kt(Number(D?.backdropOpacity ?? .9), 0, 1);
+			t.style.background = D?.backdropColor || `rgba(0,0,0,${e})`;
 		} else t.style.background = "var(--kt-lightbox-backdrop,rgba(10,10,14,.88))";
-		let n = `blur(${T?.backdropBlur == null ? "var(--kt-lightbox-backdrop-blur,20px)" : `${Math.max(0, Number(T.backdropBlur))}px`}) saturate(1.15)`;
-		t.style.backdropFilter = n, t.style.webkitBackdropFilter = n, e.style.setProperty("--kt-lightbox-radius", `${Number(T?.radius ?? 4)}px`), e.className = `kt-lightbox ${T?.className || ""}`.trim(), r.hidden = T?.toolbar === !1, y.hidden = T?.info === !1, w.innerHTML = T?.uiTemplate || "", T?.renderUI?.(w, B, T);
-	}, G = (e) => {
-		if (!E.length) return;
-		z?.destroy?.(), z = null, D = (e + E.length) % E.length, T = E[D], W();
-		let t = T.src;
-		p.removeAttribute("srcset"), p.removeAttribute("sizes"), p.alt = T.alt || "", p.style.opacity = "1", p.style.filter = "none", p.style.transform = "none", T.lazyEffect ? (p.removeAttribute("src"), p.dataset.src = t, z = T.Kineto?.create("lazy", p, {
-			effect: T.lazyEffect,
-			...T.lazyOptions || {},
+		let n = `blur(${D?.backdropBlur == null ? "var(--kt-lightbox-backdrop-blur,20px)" : `${Math.max(0, Number(D.backdropBlur))}px`}) saturate(1.15)`;
+		t.style.backdropFilter = n, t.style.webkitBackdropFilter = n, e.style.setProperty("--kt-lightbox-radius", `${Number(D?.radius ?? 4)}px`), e.className = `kt-lightbox ${D?.className || ""}`.trim(), r.hidden = D?.toolbar === !1;
+		let i = typeof location < "u" && /^https?:$/i.test(location.protocol), a = typeof navigator < "u" && typeof navigator.share == "function" && i;
+		l.hidden = !(D?.share === !0 && a), d.hidden = l.hidden, x.hidden = D?.info === !1, E.innerHTML = D?.uiTemplate || "", D?.renderUI?.(E, H, D);
+	}, q = (e) => {
+		if (!O.length) return;
+		V?.destroy?.(), V = null, k = (e + O.length) % O.length, D = O[k], ee();
+		let t = D.src;
+		h.removeAttribute("srcset"), h.removeAttribute("sizes"), h.alt = D.alt || "", h.style.opacity = "1", h.style.filter = "none", h.style.transform = "none", D.lazyEffect ? (h.removeAttribute("src"), h.dataset.src = t, V = D.Kineto?.create("lazy", h, {
+			effect: D.lazyEffect,
+			...D.lazyOptions || {},
 			rootMargin: "0px",
 			nativeLazy: !1
-		})) : (p.removeAttribute("data-src"), p.src = t), S.src = t, _.textContent = T.title || "", v.textContent = T.description || "";
-		let n = E.length > 1;
-		m.hidden = !n, h.hidden = !n, i.textContent = n ? `${D + 1} / ${E.length}` : "", f.animate?.([{
+		})) : (h.removeAttribute("data-src"), h.src = t), w.src = t, y.textContent = D.title || "", b.textContent = D.description || "";
+		let n = O.length > 1;
+		g.hidden = !n, _.hidden = !n, i.textContent = n ? `${k + 1} / ${O.length}` : "", m.animate?.([{
 			opacity: 0,
 			transform: "translate3d(0,10px,0) scale(.985)"
 		}, {
@@ -4904,100 +4965,216 @@ function Ot() {
 		}], {
 			duration: 170,
 			easing: "cubic-bezier(.22,.8,.3,1)"
-		}), ee(), p.onload = () => {
-			let e = `${p.naturalWidth || "?"}×${p.naturalHeight || "?"} · ${D + 1}/${E.length}`, t = T.metadata && typeof T.metadata == "object" ? Object.entries(T.metadata).map(([e, t]) => `${e}: ${t}`).join(" · ") : String(T.metadata || "");
-			b.textContent = t ? `${e} · ${t}` : e, T.onLoad?.(p, T);
-		}, T.onChange?.(D, T, B);
-	}, K = () => {
+		}), K(), h.onload = () => {
+			let e = `${h.naturalWidth || "?"}×${h.naturalHeight || "?"} · ${k + 1}/${O.length}`, t = D.metadata && typeof D.metadata == "object" ? Object.entries(D.metadata).map(([e, t]) => `${e}: ${t}`).join(" · ") : String(D.metadata || "");
+			if (S.textContent = t ? `${e} · ${t}` : e, D.onLoad?.(h, D), D.exif && D.src) {
+				let e = D.src;
+				fetch(e).then((e) => e.arrayBuffer()).then((t) => {
+					if (D?.src !== e) return;
+					let n = At(t);
+					n && (S.textContent += ` · ${n}`);
+				}).catch(() => {});
+			}
+		}, D.onChange?.(k, D, H);
+	}, J = () => {
 		if (e.hidden) return;
-		let t = Math.max(0, Number(T?.duration ?? .12));
+		let t = Math.max(0, Number(D?.duration ?? .12));
 		e.style.transition = `opacity ${t}s ease`, e.style.opacity = "0", setTimeout(() => {
-			e.hidden = !0, e.style.display = "none", e.style.opacity = "1", document.body.style.overflow = O, z?.destroy?.(), z = null, k?.focus?.(), T?.onClose?.();
+			e.hidden = !0, e.style.display = "none", e.style.opacity = "1", document.body.style.overflow = A, V?.destroy?.(), V = null, j?.focus?.(), D?.onClose?.();
 		}, t * 1e3);
 	}, te = (t) => {
-		k = document.activeElement, O = document.body.style.overflow, E = t.group ? Array.from(wt).filter((e) => e.group === t.group) : [t], G(Math.max(0, E.indexOf(t))), e.hidden = !1, e.style.display = "block", e.style.opacity = "0", document.body.style.overflow = "hidden";
+		j = document.activeElement, A = document.body.style.overflow, O = t.group ? Array.from(wt).filter((e) => e.group === t.group) : [t], q(Math.max(0, O.indexOf(t))), e.hidden = !1, e.style.display = "block", e.style.opacity = "0", document.body.style.overflow = "hidden";
 		let n = Math.max(0, Number(t.duration ?? .12));
 		e.style.transition = `opacity ${n}s ease`, requestAnimationFrame(() => {
 			e.style.opacity = "1";
-		}), l.focus(), t.onOpen?.(B);
-	}, q = (t) => {
-		e.hidden || (t.key === "Escape" ? K() : t.key === "ArrowLeft" && E.length > 1 ? G(D - 1) : t.key === "ArrowRight" && E.length > 1 ? G(D + 1) : t.key === "+" || t.key === "=" ? U(A + Number(T?.zoomStep ?? .5)) : t.key === "-" ? U(A - Number(T?.zoomStep ?? .5)) : t.key === "0" && W());
-	}, ne = (e) => {
-		if (T?.zoom === !1) return;
+		}), u.focus(), t.onOpen?.(H);
+	}, ne = (t) => {
+		e.hidden || (t.key === "Escape" ? J() : t.key === "ArrowLeft" && O.length > 1 ? q(k - 1) : t.key === "ArrowRight" && O.length > 1 ? q(k + 1) : t.key === "+" || t.key === "=" ? G(M + Number(D?.zoomStep ?? .5)) : t.key === "-" ? G(M - Number(D?.zoomStep ?? .5)) : t.key === "0" && ee());
+	}, re = (e) => {
+		if (D?.zoom === !1) return;
 		e.preventDefault();
-		let t = Number(T?.wheelStep ?? .18);
-		U(A * (e.deltaY < 0 ? 1 + t : 1 / (1 + t)), e.clientX, e.clientY);
-	}, J = /* @__PURE__ */ new Map(), Y = 0, re = 1, X = () => {
-		let e = [...J.values()];
+		let t = Number(D?.wheelStep ?? .18);
+		G(M * (e.deltaY < 0 ? 1 + t : 1 / (1 + t)), e.clientX, e.clientY);
+	}, Y = /* @__PURE__ */ new Map(), X = 0, ie = 1, Z = () => {
+		let e = [...Y.values()];
 		return Math.hypot(e[0].x - e[1].x, e[0].y - e[1].y);
-	}, ie = () => {
-		let e = [...J.values()];
+	}, ae = () => {
+		let e = [...Y.values()];
 		return {
 			x: (e[0].x + e[1].x) / 2,
 			y: (e[0].y + e[1].y) / 2
 		};
-	}, Z = (e) => {
+	}, oe = (e) => {
 		if (!e.target.closest("button,.kt-lightbox-toolbar,.kt-lightbox-info")) {
-			J.set(e.pointerId, {
+			Y.set(e.pointerId, {
 				x: e.clientX,
 				y: e.clientY
 			});
 			try {
-				u.setPointerCapture?.(e.pointerId);
+				f.setPointerCapture?.(e.pointerId);
 			} catch {}
-			if (J.size === 2) {
-				Y = X(), re = A, N = !1;
+			if (Y.size === 2) {
+				X = Z(), ie = M, F = !1;
 				return;
 			}
-			A <= 1 || (N = !0, P = e.pointerId, F = e.clientX, I = e.clientY, L = j, R = M, u.classList.add("is-panning"));
+			M <= 1 || (F = !0, I = e.pointerId, L = e.clientX, R = e.clientY, z = N, B = P, f.classList.add("is-panning"));
 		}
-	}, ae = (e) => {
-		if (J.has(e.pointerId) && J.set(e.pointerId, {
+	}, se = (e) => {
+		if (Y.has(e.pointerId) && Y.set(e.pointerId, {
 			x: e.clientX,
 			y: e.clientY
-		}), J.size === 2 && Y > 0) {
-			let e = ie();
-			U(re * (X() / Y), e.x, e.y);
+		}), Y.size === 2 && X > 0) {
+			let e = ae();
+			G(ie * (Z() / X), e.x, e.y);
 			return;
 		}
-		!N || e.pointerId !== P || (j = L + e.clientX - F, M = R + e.clientY - I, H());
-	}, oe = (e) => {
-		J.delete(e.pointerId), u.releasePointerCapture?.(e.pointerId), J.size < 2 && (Y = 0), !(!N || e.pointerId !== P) && (N = !1, u.classList.remove("is-panning"));
+		!F || e.pointerId !== I || (N = z + e.clientX - L, P = B + e.clientY - R, W());
+	}, ce = (e) => {
+		Y.delete(e.pointerId), f.releasePointerCapture?.(e.pointerId), Y.size < 2 && (X = 0), !(!F || e.pointerId !== I) && (F = !1, f.classList.remove("is-panning"));
 	};
 	t.addEventListener("click", () => {
-		T?.closeOnBackdrop !== !1 && K();
+		D?.closeOnBackdrop !== !1 && J();
 	});
-	let se = null;
-	return u.addEventListener("pointerdown", (e) => {
-		se = {
+	let le = null;
+	f.addEventListener("pointerdown", (e) => {
+		le = {
 			x: e.clientX,
 			y: e.clientY
 		};
-	}), u.addEventListener("click", (e) => {
-		T?.closeOnBackdrop === !1 || A > 1.001 || e.target !== u && e.target !== d || se && Math.hypot(e.clientX - se.x, e.clientY - se.y) > 8 || K();
-	}), l.addEventListener("click", K), m.addEventListener("click", () => G(D - 1)), h.addEventListener("click", () => G(D + 1)), c.addEventListener("click", () => U(A + Number(T?.zoomStep ?? .5))), o.addEventListener("click", () => U(A - Number(T?.zoomStep ?? .5))), s.addEventListener("click", W), u.addEventListener("wheel", ne, { passive: !1 }), u.addEventListener("pointerdown", Z), u.addEventListener("pointermove", ae), u.addEventListener("pointerup", oe), u.addEventListener("pointercancel", oe), p.addEventListener("dblclick", (e) => U(A > 1 ? 1 : Number(T?.doubleClickZoom ?? 2), e.clientX, e.clientY)), document.addEventListener("keydown", q), {
+	}), f.addEventListener("click", (e) => {
+		D?.closeOnBackdrop === !1 || M > 1.001 || e.target !== f && e.target !== p || le && Math.hypot(e.clientX - le.x, e.clientY - le.y) > 8 || J();
+	}), u.addEventListener("click", J), g.addEventListener("click", () => q(k - 1)), _.addEventListener("click", () => q(k + 1)), c.addEventListener("click", () => G(M + Number(D?.zoomStep ?? .5))), o.addEventListener("click", () => G(M - Number(D?.zoomStep ?? .5))), s.addEventListener("dblclick", ee), s.addEventListener("click", () => {
+		if (D?.zoom === !1 || s.querySelector("input")) return;
+		let e = document.createElement("input");
+		e.type = "text", e.inputMode = "numeric", e.value = String(Math.round(M * 100)), e.setAttribute("aria-label", "Zoom percent"), e.style.cssText = "width:46px;background:transparent;border:0;color:inherit;font:inherit;text-align:center;outline:none;", s.textContent = "", s.appendChild(e), e.focus(), e.select();
+		let t = (t) => {
+			if (t) {
+				let t = parseFloat(e.value);
+				!isNaN(t) && t > 0 && G(t / 100);
+			}
+			e.isConnected && e.remove(), W();
+		};
+		e.addEventListener("keydown", (e) => {
+			e.stopPropagation(), e.key === "Enter" ? (e.preventDefault(), t(!0)) : e.key === "Escape" && (e.preventDefault(), t(!1));
+		}), e.addEventListener("click", (e) => e.stopPropagation()), e.addEventListener("blur", () => t(!0));
+	}), l.addEventListener("click", async () => {
+		let e = D?.src || "";
+		try {
+			e = new URL(e, location.href).href;
+		} catch {}
+		let t = {
+			title: D?.title || document.title,
+			url: e
+		}, n = /^https?:/i.test(e), r = async () => {
+			if (navigator.clipboard) {
+				await navigator.clipboard.writeText(e);
+				let t = l.innerHTML;
+				l.textContent = "✓", setTimeout(() => {
+					l.innerHTML = t;
+				}, 1200);
+			}
+		};
+		try {
+			n && navigator.share && (!navigator.canShare || navigator.canShare(t)) ? await navigator.share(t) : await r();
+		} catch {}
+	}), f.addEventListener("wheel", re, { passive: !1 }), f.addEventListener("pointerdown", oe), f.addEventListener("pointermove", se), f.addEventListener("pointerup", ce), f.addEventListener("pointercancel", ce);
+	let ue = null, de = null, fe = null;
+	return f.addEventListener("pointerdown", (e) => {
+		if (!e.isPrimary || e.pointerType === "mouse" || M > 1.001 || O.length <= 1 || e.target.closest("button,.kt-lightbox-toolbar,.kt-lightbox-info")) {
+			ue = null;
+			return;
+		}
+		fe = e.pointerId, ue = e.clientX, de = e.clientY;
+	}), f.addEventListener("pointerup", (e) => {
+		if (ue == null || e.pointerId !== fe) return;
+		let t = e.clientX - ue, n = e.clientY - de;
+		ue = de = null, fe = null, M <= 1.001 && Math.abs(t) > 50 && Math.abs(t) > Math.abs(n) * 1.4 && q(k + (t < 0 ? 1 : -1));
+	}), h.addEventListener("dblclick", (e) => G(M > 1 ? 1 : Number(D?.doubleClickZoom ?? 2), e.clientX, e.clientY)), document.addEventListener("keydown", ne), {
 		root: e,
-		controls: B,
+		controls: H,
 		open: te,
-		close: K,
+		close: J,
 		next() {
-			G(D + 1);
+			q(k + 1);
 		},
 		prev() {
-			G(D - 1);
+			q(k - 1);
 		},
 		zoom(e) {
-			U(Number(e));
+			G(Number(e));
 		},
 		destroy() {
-			z?.destroy?.(), document.removeEventListener("keydown", q), document.body.style.overflow = O, e.remove();
+			V?.destroy?.(), document.removeEventListener("keydown", ne), document.body.style.overflow = A, e.remove();
 		}
 	};
 }
 function kt(e, t, n) {
 	return Math.min(n, Math.max(t, e));
 }
-var At = {
+function At(e) {
+	try {
+		let t = new DataView(e);
+		if (t.byteLength < 12 || t.getUint16(0) !== 65496) return "";
+		let n = 2, r = -1;
+		for (; n < t.byteLength - 4 && t.getUint8(n) === 255;) {
+			if (t.getUint16(n) === 65505) {
+				r = n;
+				break;
+			}
+			n += 2 + t.getUint16(n + 2);
+		}
+		if (r < 0 || t.getUint32(r + 4) !== 1165519206) return "";
+		let i = r + 10, a = t.getUint16(i) === 18761, o = (e) => t.getUint16(e, a), s = (e) => t.getUint32(e, a), c = {
+			1: 1,
+			2: 1,
+			3: 2,
+			4: 4,
+			5: 8,
+			7: 1,
+			9: 4,
+			10: 8
+		}, l = {}, u = (e) => {
+			if (e + 2 > t.byteLength) return;
+			let n = o(e);
+			for (let r = 0; r < n; r += 1) {
+				let n = e + 2 + r * 12;
+				if (n + 12 > t.byteLength) break;
+				let a = o(n), u = o(n + 2), d = s(n + 4), f = n + 8;
+				(c[u] || 1) * d > 4 && (f = i + s(n + 8)), l[a] = {
+					type: u,
+					num: d,
+					valOff: f
+				};
+			}
+		}, d = (e) => {
+			if (!e) return "";
+			let n = "";
+			for (let r = 0; r < e.num && e.valOff + r < t.byteLength; r += 1) {
+				let i = t.getUint8(e.valOff + r);
+				i && (n += String.fromCharCode(i));
+			}
+			return n.trim();
+		}, f = (e) => {
+			if (!e || e.valOff + 8 > t.byteLength) return null;
+			let n = s(e.valOff), r = s(e.valOff + 4);
+			return r ? n / r : null;
+		}, p = (e) => e ? e.type === 3 ? o(e.valOff) : s(e.valOff) : null;
+		u(i + s(i + 4)), l[34665] && u(i + p(l[34665]));
+		let m = [], h = d(l[271]), g = d(l[272]);
+		g ? m.push(h && !g.startsWith(h) ? `${h} ${g}` : g) : h && m.push(h);
+		let _ = f(l[33434]);
+		_ && m.push(_ >= 1 ? `${_}s` : `1/${Math.round(1 / _)}s`);
+		let v = f(l[33437]);
+		v && m.push(`f/${Math.round(v * 10) / 10}`);
+		let y = p(l[34855]);
+		y && m.push(`ISO ${y}`);
+		let b = f(l[37386]);
+		return b && m.push(`${Math.round(b)}mm`), m.join(" · ");
+	} catch {
+		return "";
+	}
+}
+var jt = {
 	create(e, t = {}, n) {
 		let r = Et(e, t);
 		if (!r) return null;
@@ -5034,6 +5211,8 @@ var At = {
 			onClose: t.onClose,
 			onChange: t.onChange,
 			onLoad: t.onLoad,
+			share: t.share === !0,
+			exif: t.exif === !0,
 			Kineto: n
 		};
 		wt.add(o), e.style.cursor = t.cursor || "zoom-in";
@@ -5064,14 +5243,14 @@ var At = {
 		};
 	},
 	reduced() {}
-}, jt = null;
-function Mt(e) {
+}, Mt = null;
+function Nt(e) {
 	let t = getComputedStyle(e), n = t.transitionDuration.split(",").map((e) => Number.parseFloat(e) * (e.includes("ms") ? 1 : 1e3)), r = t.transitionDelay.split(",").map((e) => Number.parseFloat(e) * (e.includes("ms") ? 1 : 1e3));
 	return Math.max(0, ...n.map((e, t) => e + (r[t] ?? r[0] ?? 0)));
 }
-var Nt = {
+var Pt = {
 	create(e, t) {
-		if (jt) return jt;
+		if (Mt) return Mt;
 		let n = t.container || "main", r = t.linkSelector || "a[href]:not([target=\"_blank\"]):not([download]):not([data-kt-no-transition])", i = t.animationSelector || "[class*=\"transition-\"]", a = Number(t.minDuration ?? 400), o = /* @__PURE__ */ new Map(), s = null, c = !1, l = !1, u = (e, t) => {
 			if (!t || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return !1;
 			let n = new URL(t.href, window.location.href);
@@ -5091,7 +5270,7 @@ var Nt = {
 				return e.name !== "AbortError" && t.onError?.(e), null;
 			}
 		}, f = () => {
-			let e = Array.from(document.querySelectorAll(i)), t = Math.max(a, ...e.map(Mt));
+			let e = Array.from(document.querySelectorAll(i)), t = Math.max(a, ...e.map(Nt));
 			return new Promise((e) => setTimeout(e, t));
 		}, p = (e) => {
 			e.querySelectorAll("script").forEach((e) => {
@@ -5127,19 +5306,19 @@ var Nt = {
 		return history.state?.kinetoUrl || history.replaceState({
 			...history.state || {},
 			kinetoUrl: window.location.href
-		}, document.title, window.location.href), document.addEventListener("click", g), window.addEventListener("popstate", _), jt = {
+		}, document.title, window.location.href), document.addEventListener("click", g), window.addEventListener("popstate", _), Mt = {
 			el: document.documentElement,
 			type: "pageTransition",
 			navigate: h,
 			pause() {},
 			resume() {},
 			destroy() {
-				c = !0, s?.abort(), document.removeEventListener("click", g), window.removeEventListener("popstate", _), document.documentElement.classList.remove("kt-is-animating", "kt-is-leaving", "kt-is-entering"), jt === this && (jt = null);
+				c = !0, s?.abort(), document.removeEventListener("click", g), window.removeEventListener("popstate", _), document.documentElement.classList.remove("kt-is-animating", "kt-is-leaving", "kt-is-entering"), Mt === this && (Mt = null);
 			}
-		}, jt;
+		}, Mt;
 	},
 	reduced() {}
-}, Pt = {
+}, Ft = {
 	tap: [10],
 	"double-tap": [
 		12,
@@ -5191,10 +5370,10 @@ var Nt = {
 		34
 	],
 	"long-press": [90]
-}, Ft = {
+}, It = {
 	create(e, t) {
 		if (typeof navigator > "u" || typeof navigator.vibrate != "function") return null;
-		let n = Pt[t.preset || t.haptic] || (Array.isArray(t.pattern) ? t.pattern.map(Number) : Number(t.pattern ?? 50)), r = t.trigger || "hover", i = !0, a = null, o = () => {
+		let n = Ft[t.preset || t.haptic] || (Array.isArray(t.pattern) ? t.pattern.map(Number) : Number(t.pattern ?? 50)), r = t.trigger || "hover", i = !0, a = null, o = () => {
 			i && navigator.vibrate(n);
 		};
 		return r === "hover" && !window.matchMedia?.("(hover: none)").matches ? e.addEventListener("pointerenter", o) : r === "click" ? e.addEventListener("click", o) : r === "scroll" && typeof IntersectionObserver < "u" && (a = new IntersectionObserver((e) => {
@@ -5216,7 +5395,7 @@ var Nt = {
 		};
 	},
 	reduced() {}
-}, It = {
+}, Lt = {
 	create(e, t) {
 		let n = S(e, [
 			"position",
@@ -5269,7 +5448,7 @@ var Nt = {
 			destroy() {}
 		};
 	}
-}, Lt = { create(e, t) {
+}, Rt = { create(e, t) {
 	let n = t.property || "--scroll-progress", r = typeof CSS < "u" && CSS.supports?.("animation-timeline", "scroll()"), i = {
 		animationName: e.style.animationName,
 		animationTimeline: e.style.animationTimeline,
@@ -5312,7 +5491,7 @@ var Nt = {
 			o.kill(), i.property ? e.style.setProperty(n, i.property) : e.style.removeProperty(n);
 		}
 	};
-} }, Rt = {
+} }, zt = {
 	create(e, t) {
 		let n = v(), r = y();
 		if (!n || !r) return null;
@@ -5399,7 +5578,7 @@ var Nt = {
 };
 //#endregion
 //#region src/modules/brushReveal.js
-function zt(e, t, n, r) {
+function Bt(e, t, n, r) {
 	let i = Math.max(n / e, r / t), a = Math.min(e, n / i), o = Math.min(t, r / i);
 	return {
 		sx: (e - a) / 2,
@@ -5410,7 +5589,7 @@ function zt(e, t, n, r) {
 }
 //#endregion
 //#region src/index.js
-var Bt = {
+var Vt = {
 	parallax: ae,
 	mouseParallax: oe,
 	reveal: de,
@@ -5437,12 +5616,12 @@ var Bt = {
 	pageReveal: vt,
 	glitch: xt,
 	cardGlow: Ct,
-	lightbox: At,
-	pageTransition: Nt,
-	vibrate: Ft,
-	ripple: It,
-	cssScroll: Lt,
-	scrollSequence: Rt,
+	lightbox: jt,
+	pageTransition: Pt,
+	vibrate: It,
+	ripple: Lt,
+	cssScroll: Rt,
+	scrollSequence: zt,
 	brushReveal: {
 		create(e, t = {}) {
 			let n = t.src || t.revealSrc || e.getAttribute("data-reveal-src") || "";
@@ -5481,7 +5660,7 @@ var Bt = {
 						m.globalCompositeOperation = "destination-out", m.fillStyle = `rgba(0,0,0,${e})`, m.fillRect(0, 0, f.width, f.height), w *= 1 - e;
 					}
 					if (S && T != null && O(T, E), d.clearRect(0, 0, u.width, u.height), g && C) {
-						let e = zt(h.naturalWidth, h.naturalHeight, u.width, u.height);
+						let e = Bt(h.naturalWidth, h.naturalHeight, u.width, u.height);
 						d.globalCompositeOperation = "source-over", d.drawImage(h, e.sx, e.sy, e.sw, e.sh, 0, 0, u.width, u.height), d.globalCompositeOperation = "destination-in", d.drawImage(f, 0, 0), d.globalCompositeOperation = "source-over";
 					}
 					if (!o && !S && w < .008) {
@@ -5732,7 +5911,7 @@ var Bt = {
 		}
 	}
 };
-Object.entries(Bt).forEach(([e, t]) => Z.register(e, t));
-var $ = (e) => (t, n) => Z[e](t, n), Vt = $("parallax"), Ht = $("mouseParallax"), Ut = $("reveal"), Wt = $("counter"), Gt = $("lazy"), Kt = $("textSplit"), qt = $("blurText"), Jt = $("shuffle"), Yt = $("typewriter"), Xt = $("textReveal"), Zt = $("textTransition"), Qt = $("magnetic"), $t = $("marquee"), en = $("overflowText"), tn = $("loader"), nn = $("tilt"), rn = $("cursor"), an = $("textFill"), on = $("stickyStack"), sn = $("scrollVelocity"), cn = $("progress"), ln = $("slider"), un = $("ambientMedia"), dn = $("pageReveal"), fn = $("glitch"), pn = $("cardGlow"), mn = $("lightbox"), hn = $("pageTransition"), gn = $("vibrate"), _n = $("ripple"), vn = $("cssScroll"), yn = $("scrollSequence"), bn = $("brushReveal"), xn = $("fullpage"), Sn = Z;
+Object.entries(Vt).forEach(([e, t]) => Z.register(e, t));
+var $ = (e) => (t, n) => Z[e](t, n), Ht = $("parallax"), Ut = $("mouseParallax"), Wt = $("reveal"), Gt = $("counter"), Kt = $("lazy"), qt = $("textSplit"), Jt = $("blurText"), Yt = $("shuffle"), Xt = $("typewriter"), Zt = $("textReveal"), Qt = $("textTransition"), $t = $("magnetic"), en = $("marquee"), tn = $("overflowText"), nn = $("loader"), rn = $("tilt"), an = $("cursor"), on = $("textFill"), sn = $("stickyStack"), cn = $("scrollVelocity"), ln = $("progress"), un = $("slider"), dn = $("ambientMedia"), fn = $("pageReveal"), pn = $("glitch"), mn = $("cardGlow"), hn = $("lightbox"), gn = $("pageTransition"), _n = $("vibrate"), vn = $("ripple"), yn = $("cssScroll"), bn = $("scrollSequence"), xn = $("brushReveal"), Sn = $("fullpage"), Cn = Z;
 //#endregion
-export { un as ambientMedia, qt as blurText, bn as brushReveal, pn as cardGlow, Wt as counter, vn as cssScroll, rn as cursor, Sn as default, xn as fullpage, fn as glitch, Gt as lazy, mn as lightbox, tn as loader, Qt as magnetic, $t as marquee, Bt as modules, Ht as mouseParallax, en as overflowText, dn as pageReveal, hn as pageTransition, Vt as parallax, cn as progress, Ut as reveal, _n as ripple, yn as scrollSequence, sn as scrollVelocity, Jt as shuffle, ln as slider, on as stickyStack, an as textFill, Xt as textReveal, Kt as textSplit, Zt as textTransition, nn as tilt, Yt as typewriter, gn as vibrate };
+export { dn as ambientMedia, Jt as blurText, xn as brushReveal, mn as cardGlow, Gt as counter, yn as cssScroll, an as cursor, Cn as default, Sn as fullpage, pn as glitch, Kt as lazy, hn as lightbox, nn as loader, $t as magnetic, en as marquee, Vt as modules, Ut as mouseParallax, tn as overflowText, fn as pageReveal, gn as pageTransition, Ht as parallax, ln as progress, Wt as reveal, vn as ripple, bn as scrollSequence, cn as scrollVelocity, Yt as shuffle, un as slider, sn as stickyStack, on as textFill, Zt as textReveal, qt as textSplit, Qt as textTransition, rn as tilt, Xt as typewriter, _n as vibrate };

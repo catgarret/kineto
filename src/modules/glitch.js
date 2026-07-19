@@ -25,6 +25,79 @@ export default {
     const loop = opts.loop !== false;
     const trigger = opts.trigger || 'auto';
 
+    // ── Continuous CRT / VCR overlay on an image (retro scanlines + roll bar) ──
+    // `crt`/`vcr` on an <img> apply a persistent CSS overlay: 1px scanlines, a
+    // sweeping roll bar, a vignette and flicker (VCR adds tracking noise + a
+    // jitter on the picture). CSS-only, so it's cheap on mobile. Previously `crt`
+    // on an image fell through to the text path and blanked the image out.
+    if (preset === 'crt' || preset === 'vcr') {
+      const imageEl = el.tagName === 'IMG' ? el : el.querySelector?.('img');
+      const host = el.tagName === 'IMG' ? el.parentElement : el;
+      if (imageEl && host) {
+        const isVcr = preset === 'vcr';
+        const oHostPos = host.style.position;
+        const oHostOvf = host.style.overflow;
+        const oImgFilter = imageEl.style.filter;
+        const oImgAnim = imageEl.style.animation;
+        if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+        host.style.overflow = 'hidden';
+        const sl = 0.08 * intensity;   // scanline darkness (kept subtle)
+        const gr = 0.035 * intensity;  // aperture-grille (RGB phosphor) strength
+        const overlay = document.createElement('div');
+        overlay.className = 'kt-glitch-crt';
+        overlay.setAttribute('aria-hidden', 'true');
+        // Layer 1: fine horizontal scanlines. Layer 2: vertical RGB aperture
+        // grille (phosphor stripes). Soft vignette + gentle flicker on top.
+        overlay.style.cssText = 'position:absolute;inset:0;z-index:3;pointer-events:none;border-radius:inherit;overflow:hidden;'
+          + `background:repeating-linear-gradient(0deg,rgba(0,0,0,${sl}) 0,rgba(0,0,0,${sl}) 1px,transparent 1px,transparent 3px),`
+          + `repeating-linear-gradient(90deg,rgba(255,40,40,${gr}) 0,rgba(255,40,40,${gr}) 1px,rgba(40,255,90,${gr}) 1px,rgba(40,255,90,${gr}) 2px,rgba(60,120,255,${gr}) 2px,rgba(60,120,255,${gr}) 3px);`
+          + `box-shadow:inset 0 0 ${isVcr ? 70 : 110}px rgba(0,0,0,${isVcr ? 0.45 : 0.4}),inset 0 0 20px rgba(0,0,0,.28);`
+          + `animation:kt-crt-flicker ${(isVcr ? 2.2 : 3.4) / speed}s ease-in-out infinite;`;
+        // Soft bright scan band drifting down slowly (CRT refresh sweep).
+        const roll = document.createElement('div');
+        roll.style.cssText = `position:absolute;left:0;right:0;height:${isVcr ? 22 : 34}%;pointer-events:none;`
+          + `background:linear-gradient(to bottom,transparent,rgba(255,255,255,${isVcr ? 0.04 : 0.07}) 45%,rgba(255,255,255,${isVcr ? 0.08 : 0.11}) 55%,transparent);`
+          + `filter:blur(1px);animation:kt-crt-roll ${(isVcr ? 4.5 : 8) / speed}s linear infinite;`;
+        overlay.appendChild(roll);
+        // Subtle CRT phosphor bloom / color lift on the picture itself.
+        imageEl.style.filter = `${oImgFilter ? oImgFilter + ' ' : ''}saturate(${isVcr ? 1.18 : 1.08}) contrast(1.06) brightness(1.02)`;
+        let noise = null;
+        let track = null;
+        if (isVcr) {
+          // Analogue VCR noise (SVG fractal turbulence), a jumping tracking band,
+          // chromatic bleed and a slight picture jitter — the tape look.
+          noise = document.createElement('div');
+          noise.style.cssText = "position:absolute;inset:-20%;pointer-events:none;opacity:.08;mix-blend-mode:overlay;"
+            + "background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\");"
+            + `animation:kt-vcr-noise ${0.5 / speed}s steps(3,end) infinite;`;
+          overlay.appendChild(noise);
+          track = document.createElement('div');
+          track.style.cssText = 'position:absolute;left:0;right:0;height:20%;pointer-events:none;'
+            + 'background:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.16) 38%,rgba(0,0,0,.32) 50%,rgba(0,0,0,.16) 62%,transparent 100%);mix-blend-mode:multiply;filter:blur(2px);'
+            + `animation:kt-vcr-track ${3.2 / speed}s linear infinite;`;
+          overlay.appendChild(track);
+          imageEl.style.filter += ' drop-shadow(1.2px 0 0 rgba(255,0,60,.4)) drop-shadow(-1.2px 0 0 rgba(0,180,255,.4))';
+          imageEl.style.animation = `kt-vcr-jitter ${7 / speed}s steps(1,end) infinite`;
+        }
+        host.appendChild(overlay);
+        const setPlay = (s) => { [overlay, roll, noise, track].forEach((n) => { if (n) n.style.animationPlayState = s; }); if (isVcr) imageEl.style.animationPlayState = s; };
+        return {
+          el,
+          type: 'glitch',
+          replay: () => {},
+          pause: () => setPlay('paused'),
+          resume: () => setPlay('running'),
+          destroy: () => {
+            overlay.remove();
+            host.style.position = oHostPos;
+            host.style.overflow = oHostOvf;
+            imageEl.style.filter = oImgFilter;
+            imageEl.style.animation = oImgAnim;
+          }
+        };
+      }
+    }
+
     // ── Ambient image glitch (독립 상시 효과, 레이지 로딩과 무관) ──────────
     // A canvas overlay bursts slice displacements / blackout flashes over a
     // live <img> at random intervals, then goes transparent again.
@@ -176,6 +249,13 @@ export default {
     const colors = Array.isArray(opts.colors) && opts.colors.length >= 2
       ? opts.colors
       : (dark ? ['rgba(255,0,60,.9)', 'rgba(0,255,0,.85)', 'rgba(61,139,255,.9)'] : ['#ff0040', '#00b894', '#2f6bff']);
+
+    // Text-glitch presets (rgb/noise/crt-burst) wrap and rewrite the element's
+    // text. On an image, an element containing an image, or anything with no
+    // text, that would blank the content — so no-op safely instead of breaking.
+    if (el.tagName === 'IMG' || (el.querySelector && el.querySelector('img')) || !text || !String(text).trim()) {
+      return { el, type: 'glitch', replay() {}, pause() {}, resume() {}, destroy() {} };
+    }
 
     el.setAttribute('aria-label', text);
     el.innerHTML = '';

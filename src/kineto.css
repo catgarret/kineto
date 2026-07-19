@@ -20,13 +20,41 @@
 /* Old CRT / cathode-ray TV power-on: a bright horizontal line snaps open, the
    picture expands vertically out of it with an overexposed bloom, then settles. */
 @keyframes kt-lazy-crt {
-  0%   { opacity:0; transform:scaleY(0.004) scaleX(1.35); filter:brightness(5) contrast(1.6) saturate(0); }
-  7%   { opacity:1; transform:scaleY(0.008) scaleX(1.2);  filter:brightness(5) contrast(1.6) saturate(0); }
-  34%  { transform:scaleY(1) scaleX(1); filter:brightness(2.6) contrast(1.3) saturate(.6); }
-  46%  { filter:brightness(1.5) contrast(1.12) saturate(1); }
-  55%  { transform:scaleY(1.015) scaleX(1); filter:brightness(1.28) contrast(1.06); }
-  100% { transform:scaleY(1) scaleX(1); filter:brightness(1) contrast(1) saturate(1); }
+  0%   { opacity:0; transform:scaleY(0.002); filter:brightness(2.4) contrast(1.2) saturate(.5); }
+  7%   { opacity:1; transform:scaleY(0.01); filter:brightness(2.2) contrast(1.2) saturate(.5); }
+  42%  { transform:scaleY(1); filter:brightness(1.35) contrast(1.08) saturate(.9); }
+  72%  { filter:brightness(1.08) contrast(1.02); }
+  100% { transform:scaleY(1); filter:brightness(1) contrast(1) saturate(1); }
 }
+/* The bright electron-beam line that snaps open, then fades as the picture grows. */
+@keyframes kt-lazy-crt-beam {
+  0%   { opacity:0; transform:translateY(-50%) scaleX(.12); }
+  5%   { opacity:1; transform:translateY(-50%) scaleX(1); }
+  16%  { opacity:1; transform:translateY(-50%) scaleX(1); }
+  40%  { opacity:0; transform:translateY(-50%) scaleX(1); }
+  100% { opacity:0; }
+}
+/* A quick white bloom flash at the moment of power-on. */
+@keyframes kt-lazy-crt-bloom { 0% { opacity:0; } 5% { opacity:.5; } 24% { opacity:0; } 100% { opacity:0; } }
+/* Scanlines hold hidden until the picture has expanded, then softly fade in/out. */
+@keyframes kt-lazy-crt-scan { 0%,45% { opacity:0; } 62% { opacity:.6; } 82% { opacity:.6; } 100% { opacity:0; } }
+/* Soft black roll bar during CRT power-on — a real vertical-hold roll drifts in
+   ONE direction (downward) and wraps off-screen, never bouncing back up. Two
+   passes, the second fainter, resetting to the top while invisible. */
+@keyframes kt-lazy-crt-roll {
+  0%   { opacity:0; transform:translateY(-120%); }
+  18%  { opacity:.3; }
+  82%  { opacity:.3; transform:translateY(120%); }
+  100% { opacity:0; transform:translateY(120%); }
+}
+/* Continuous CRT / VCR overlay. */
+@keyframes kt-crt-roll { 0% { transform:translateY(-140%); } 100% { transform:translateY(320%); } }
+/* Gentle, mostly-on flicker (subtle brightness wobble, not a harsh strobe). */
+@keyframes kt-crt-flicker { 0%,100% { opacity:1; } 7% { opacity:.94; } 8% { opacity:1; } 43% { opacity:.97; } 44% { opacity:.9; } 45% { opacity:1; } 72% { opacity:.96; } 73% { opacity:1; } }
+@keyframes kt-vcr-noise { 0% { background-position:0 0; } 100% { background-position:60px 40px; } }
+@keyframes kt-vcr-jitter { 0%,90%,100% { transform:translateX(0); } 91% { transform:translateX(-3px); } 93% { transform:translateX(2px) skewX(-1deg); } 95% { transform:translateX(-1px); } 97% { transform:translateX(1px); } }
+/* Continuous downward drift (rolling tape tracking), not a jumpy appear/disappear. */
+@keyframes kt-vcr-track { 0% { transform:translateY(-60%); } 100% { transform:translateY(1150%); } }
 @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
 .kt-no-js [data-kt-reveal],

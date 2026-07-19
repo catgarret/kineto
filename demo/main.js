@@ -14,7 +14,21 @@
       const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
       let started=false;
       const startModules=()=>{ if(started)return; started=true; try{Kineto.init(document);}catch(_){}
-        document.documentElement.classList.remove('kt-preload'); };
+        document.documentElement.classList.remove('kt-preload');
+        // Restore a bookmarked #hash once modules are up: the intro locks scroll
+        // and lazy images / reveals shift layout, so the browser's initial jump
+        // lands in the wrong place. Re-scroll a few times as things settle, and
+        // bail the moment the visitor scrolls themselves.
+        const hash=location.hash;
+        if(hash&&hash.length>1){
+          let cancelled=false;
+          const stop=()=>{cancelled=true;};
+          const jump=()=>{ if(cancelled)return; let t=null; try{t=document.querySelector(hash);}catch(_){} if(t)t.scrollIntoView(); };
+          window.addEventListener('wheel',stop,{passive:true,once:true});
+          window.addEventListener('touchmove',stop,{passive:true,once:true});
+          requestAnimationFrame(jump); setTimeout(jump,260); setTimeout(jump,800);
+        }
+      };
       // Reduced motion: no intro, just wait for load (or start now if done).
       if(reduced){
         if(document.readyState==='complete')startModules();
@@ -311,4 +325,31 @@
           btn.addEventListener('click',()=>window.ktToast('이 환경에서는 진동(Haptic)이 지원되지 않습니다.\n주로 Android 기기에서 동작합니다.'),{passive:true});
         });
       }
+
+      // Sitemap: a header button opens a full overview of every section so you
+      // can jump straight to any module (instead of hunting the side nav). Links
+      // are plain in-page anchors (data-kt-no-transition) — no page transition.
+      (function sitemap(){
+        const btn=document.getElementById('sitemap-btn');
+        if(!btn)return;
+        const sections=[...document.querySelectorAll('main section[id]')];
+        const overlay=document.createElement('div');
+        overlay.className='sitemap-overlay';
+        overlay.hidden=true;
+        overlay.innerHTML='<div class="sitemap-panel" role="dialog" aria-modal="true" aria-label="Sitemap">'
+          +'<div class="sitemap-head"><strong>Kineto — Sitemap</strong><button class="sitemap-close" type="button" aria-label="닫기"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>'
+          +'<div class="sitemap-grid">'+sections.map((s,i)=>{
+            const h=s.querySelector('.section-head h2, h2, h1');
+            const title=h?h.textContent.trim():s.id;
+            return `<a href="#${s.id}" data-kt-no-transition><i>${String(i+1).padStart(2,'0')}</i><span>${title}</span></a>`;
+          }).join('')+'</div></div>';
+        document.body.appendChild(overlay);
+        const open=()=>{overlay.hidden=false;requestAnimationFrame(()=>overlay.classList.add('is-open'));document.documentElement.style.overflow='hidden';};
+        const close=()=>{overlay.classList.remove('is-open');document.documentElement.style.overflow='';setTimeout(()=>{overlay.hidden=true;},260);};
+        btn.addEventListener('click',open);
+        overlay.addEventListener('click',(e)=>{ if(e.target===overlay)close(); });
+        overlay.querySelector('.sitemap-close').addEventListener('click',close);
+        overlay.querySelectorAll('.sitemap-grid a').forEach(a=>a.addEventListener('click',()=>{ close(); }));
+        document.addEventListener('keydown',(e)=>{ if(e.key==='Escape'&&!overlay.hidden)close(); });
+      })();
     })();

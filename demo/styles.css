@@ -277,3 +277,23 @@
   .to-top{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:color-mix(in srgb,var(--panel) 88%,transparent)}
   .kt-progress-ring{backdrop-filter:blur(8px)!important}
 }
+
+/* Header icon button + Module Index sitemap overlay */
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;line-height:0}
+.icon-btn i{font-size:16px;line-height:1;margin:0;vertical-align:0}
+.sitemap-overlay{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:24px;background:color-mix(in srgb,var(--bg) 36%,rgba(0,0,0,.55));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .24s ease}
+/* Critical: the class sets display:grid which would otherwise beat [hidden]'s
+   display:none, leaving an invisible full-screen overlay that eats every click. */
+.sitemap-overlay[hidden]{display:none}
+.sitemap-overlay.is-open{opacity:1}
+.sitemap-panel{width:min(680px,100%);max-height:calc(100dvh - 56px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-hover);transform:translateY(10px);transition:transform .24s cubic-bezier(.2,.8,.3,1)}
+.sitemap-overlay.is-open .sitemap-panel{transform:none}
+.sitemap-head{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);border-radius:16px 16px 0 0}
+.sitemap-head strong{font-weight:850;letter-spacing:-.02em}
+.sitemap-close{width:32px;height:32px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.sitemap-close:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+.sitemap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;padding:16px}
+.sitemap-grid a{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:11px;background:var(--panel2);color:var(--text);text-decoration:none;font-weight:650;font-size:13.5px;transition:border-color .15s ease,background-color .15s ease,transform .15s ease}
+.sitemap-grid a:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));transform:translateY(-1px)}
+.sitemap-grid a i{font:700 11px/1 var(--font-mono);color:var(--accent);font-style:normal;flex:0 0 auto}
+@media(max-width:520px){.sitemap-grid{grid-template-columns:1fr 1fr}.sitemap-overlay{padding-top:64px}}

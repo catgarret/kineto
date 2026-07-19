@@ -370,12 +370,26 @@ export default {
         el.style.transformOrigin = 'center';
         el.style.willChange = 'transform, filter, opacity';
         el.style.animation = `kt-lazy-crt ${duration}s cubic-bezier(.2,.7,.2,1) both`;
+        // The bright electron-beam line + a brief white bloom = authentic power-on.
+        const beam = createLayer(wrapper, 'kt-lazy-crt-beam', 7);
+        beam.style.cssText += 'pointer-events:none;top:50%;bottom:auto;height:2px;transform:translateY(-50%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.85) 16%,#fff 50%,rgba(255,255,255,.85) 84%,transparent);box-shadow:0 0 12px 2px rgba(255,255,255,.5);'
+          + `animation:kt-lazy-crt-beam ${duration}s ease-out both;`;
+        layers.push(beam);
+        const bloom = createLayer(wrapper, 'kt-lazy-crt-bloom', 8);
+        bloom.style.cssText += `pointer-events:none;background:#fff;animation:kt-lazy-crt-bloom ${duration}s ease-out both;`;
+        layers.push(bloom);
         if (opts.frame !== false) {
           const scan = createLayer(wrapper, 'kt-lazy-crt-scan', 5);
-          scan.style.cssText += 'pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(0,0,0,.16) 0,rgba(0,0,0,.16) 1px,transparent 1px,transparent 3px);mix-blend-mode:multiply;opacity:0;transition:opacity .3s ease;';
+          scan.style.cssText += 'pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(0,0,0,.09) 0,rgba(0,0,0,.09) 1px,transparent 1px,transparent 3px);mix-blend-mode:multiply;opacity:0;'
+            // Stays hidden while the picture is still a thin line (no grey flash),
+            // then gently fades in and back out — no abrupt on/off.
+            + `animation:kt-lazy-crt-scan ${duration}s ease both;`;
           layers.push(scan);
-          requestAnimationFrame(() => { scan.style.opacity = '1'; });
-          later(() => { scan.style.opacity = '0'; }, duration * 1000);
+          // Black roll bar sweeping up/down (vertical-hold rolling) as it powers on.
+          const roll = createLayer(wrapper, 'kt-lazy-crt-roll', 6);
+          roll.style.cssText += 'pointer-events:none;top:0;bottom:auto;height:60%;background:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.18) 35%,rgba(0,0,0,.28) 50%,rgba(0,0,0,.18) 65%,transparent 100%);filter:blur(3px);'
+            + `animation:kt-lazy-crt-roll ${duration}s linear both;`;
+          layers.push(roll);
         }
         later(() => { el.style.animation = ''; el.style.willChange = ''; finish(); }, duration * 1000 + 160);
         return;

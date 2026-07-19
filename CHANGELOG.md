@@ -2,6 +2,19 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.7]
+
+- **Lightbox — share, editable zoom, swipe, EXIF**: opt-in `share` button (Web Share API, falls back to copying the URL); click the zoom percentage to type an exact value (double-click resets); swipe left/right to change image on touch when not zoomed; opt-in `exif` reads camera/exposure tags from the file and appends them to the info line (best-effort — silently skipped when absent or CORS-blocked).
+- **Higher-quality CRT / VCR**: added an RGB aperture-grille (phosphor stripes), softer vignette, a gentle non-strobe flicker and a slow refresh sweep; VCR now has analogue SVG-turbulence noise, chromatic bleed and a tracking band. CRT power-on toned down — removed the horizontal flip/overstretch and softened the roll bar and overexposure.
+- **Demo — sitemap centering**: the Module Index overlay now opens centred on screen; header icon button vertically aligned.
+
+- **Continuous CRT / VCR effect** (`data-kt-glitch="crt"` / `"vcr"` on an image): a CSS overlay with 1px scanlines, a sweeping roll bar, vignette and flicker; VCR adds tracking noise and a picture jitter. Lightweight (no canvas). Added to the Media & UI demo.
+- **Fix — glitch no longer destroys images**: text glitch presets (rgb/noise) applied to an image (or any element without text) previously blanked the content to grey; they now no-op safely. Any glitch preset is safe on any target.
+- **CRT power-on (`lazy` crt)**: added black roll bars sweeping up/down as the picture powers on, for a more convincing tube feel.
+- **Card Glow — press / tap reaction**: pressing/tapping moves the light to the touch point and pulses a brightness burst (touch + corner taps get a response without hover).
+- **Demo — Module Index sitemap**: a header button opens a full overview of every section; each entry jumps straight to that module (in-page anchors, no page transition).
+- **Playground selects**: restored the dropdown arrow in the options drawer (a `background` shorthand was wiping the arrow image) and gave the value room on the right.
+
 ## [0.8.5]
 
 - **New `lazy` effect — `crt`**: old CRT / cathode-ray TV power-on. A bright line snaps open, the picture expands vertically out of it with an overexposed bloom, then settles behind a faint scanline overlay. Added to the demo and the playground effect list.

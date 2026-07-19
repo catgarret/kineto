@@ -166,9 +166,25 @@ export default {
       requestRender();
     };
 
+    // Press / tap reaction: move the light to the touch point and pulse a
+    // brightness burst — gives touch devices (and corner taps) a light-flow
+    // response even without hover. Works across all modes.
+    const onPress = (event) => {
+      hovering = true;
+      root.style.opacity = '1';
+      setPointer(event);
+      root.animate([
+        { filter: 'brightness(1)' },
+        { filter: 'brightness(1.5) saturate(1.15)', offset: 0.28 },
+        { filter: 'brightness(1)' }
+      ], { duration: 520, easing: 'cubic-bezier(.2,.7,.2,1)' });
+      requestRender();
+    };
+
     el.addEventListener('pointerenter', onEnter);
     el.addEventListener('pointermove', setPointer, { passive: true });
     el.addEventListener('pointerleave', onLeave);
+    el.addEventListener('pointerdown', onPress);
     if (bool(opts.alwaysOn, mode === 'aurora' || mode === 'comet')) root.style.opacity = String(opacity);
     updateSurface(50, 50);
 
@@ -193,6 +209,7 @@ export default {
         el.removeEventListener('pointerenter', onEnter);
         el.removeEventListener('pointermove', setPointer);
         el.removeEventListener('pointerleave', onLeave);
+        el.removeEventListener('pointerdown', onPress);
         root.remove();
         if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);
       }
