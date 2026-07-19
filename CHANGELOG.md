@@ -2,6 +2,13 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.8]
+
+- **Slider / Coverflow — true infinite loop**: `loop` now cycles seamlessly in both directions with no snap-back at the ends. Slides are rendered at their shortest distance around a ring (no cloned DOM nodes), so drag, buttons, keyboard and autoplay all wrap continuously.
+- **Lightbox — share no longer closes the viewer**: dismissing the native share sheet by clicking the page previously registered as a backdrop click and closed the lightbox; close is now suppressed while sharing (and briefly after).
+- **Demo — intro scroll lock restored**: scrolling is locked at the root while the intro is up, so lazy images loading in behind it no longer shift the layout and jolt the scroll position when the intro releases.
+- **Demo — no layout jank on overflow toggle**: `scrollbar-gutter: stable` reserves the scrollbar's width, so toggling `overflow:hidden` (intro, sitemap, lightbox) no longer changes the page width.
+
 ## [0.8.7]
 
 - **Lightbox — share, editable zoom, swipe, EXIF**: opt-in `share` button (Web Share API, falls back to copying the URL); click the zoom percentage to type an exact value (double-click resets); swipe left/right to change image on touch when not zoomed; opt-in `exif` reads camera/exposure tags from the file and appends them to the info line (best-effort — silently skipped when absent or CORS-blocked).
