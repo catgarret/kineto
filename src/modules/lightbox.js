@@ -37,8 +37,12 @@ function createManager() {
       .kt-lightbox .kt-lightbox-stage.is-zoomed{cursor:grab;}
       .kt-lightbox .kt-lightbox-stage.is-panning{cursor:grabbing;}
       @media (max-width: 760px) {
-        .kt-lightbox .kt-lightbox-toolbar{padding:12px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));}
-        .kt-lightbox .kt-lightbox-toolbar button{min-width:34px;height:34px;}
+        .kt-lightbox .kt-lightbox-toolbar{padding:12px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));justify-content:space-between;}
+        /* On narrow screens the absolutely-centered counter overlaps the zoom /
+           close controls — drop it back into flow so space-between separates them. */
+        .kt-lightbox .kt-lightbox-counter{position:static !important;left:auto !important;top:auto !important;transform:none !important;}
+        .kt-lightbox .kt-lightbox-toolbar button{min-width:34px;height:34px;padding:0 8px;}
+        .kt-lightbox .kt-lightbox-zoom-out,.kt-lightbox .kt-lightbox-zoom-in,.kt-lightbox .kt-lightbox-close{width:34px;padding:0;aspect-ratio:1;}
         .kt-lightbox .kt-lightbox-prev{left:max(10px, env(safe-area-inset-left)) !important;}
         .kt-lightbox .kt-lightbox-next{right:max(10px, env(safe-area-inset-right)) !important;}
         .kt-lightbox .kt-lightbox-info{padding-bottom:calc(22px + env(safe-area-inset-bottom)) !important;}

@@ -24,7 +24,7 @@
       ['tile','Flip tile','checkbox'], ['tileColor','Tile color','color'], ['tileTextColor','Tile text','color'], ['gap','Flip gap','range',0,12,1], ['separatorColor','Separator color','color'], ['seamColor','Flip seam color','color'], ['shadow','Flip shadow','checkbox'], ['seconds','Show seconds','checkbox'], ['hour12','12-hour + AM/PM','checkbox'], ['blink','Blink colon','checkbox'], ['clockStyle','Digit change','select',['roll','fade','instant','flip']], ['rollDirection','Roll direction','select',['up','down']], ['until','Countdown until','text'], ['since','Elapsed since','text'], ['daysLabel','Days label','text'], ['clockSeparator','Clock separator','text'], ['rollDuration','Roll duration','range',0.1,0.8,0.02]
     ],
     lazy: [
-      ['preset','Effect','select',['fade','blur-up','skeleton','pixelate','print','dissolve','flicker','polaroid']],
+      ['preset','Effect','select',['fade','blur-up','skeleton','pixelate','print','dissolve','flicker','polaroid','crt']],
       ['glitchStrength','Glitch strength','range',0.1,3,0.05], ['sliceCount','Glitch slices','range',2,16,1],
       ['duration','Duration','range',0.1,4,0.1], ['delay','Delay (ms)','range',0,1500,50], ['blur','Blur','range',0,40,1],
       ['noise','Noise','range',0,1,0.01], ['direction','Direction','select',['down','up','left','right']],

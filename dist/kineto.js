@@ -352,7 +352,7 @@ function ie() {
 	e.id = "kineto-inline-fallback", e.textContent = "\n    @property --kt-angle { syntax: \"<angle>\"; initial-value: 0deg; inherits: false; }\n    @keyframes kt-border-spin { to { --kt-angle: 360deg; } }\n    @keyframes kt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }\n    @keyframes kt-aurora { to { transform: rotate(360deg); } }\n    @keyframes kt-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }\n    @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }\n    .kt-cursor-active, .kt-cursor-active * { cursor: none !important; }\n    .kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }\n    .kt-tw-caret { animation: kt-caret .8s step-end infinite; }\n    .kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }\n    .kt-slider-wrap { position: relative; overflow: hidden; }\n    @media (prefers-reduced-motion: reduce) {\n      [data-kt-reveal], [data-kt-text-split], [data-kt-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }\n    }\n  ", document.head.appendChild(e);
 }
 var Z = {
-	version: "0.8.4",
+	version: "0.8.5",
 	get env() {
 		return U ||= d(), U;
 	},
@@ -1637,6 +1637,22 @@ var je = {
 					})), v(() => {
 						t.keepFrame === !0 ? (x(), t.onLoad?.(e, s)) : S();
 					}, a * 1e3 + 120);
+					return;
+				}
+				if (r === "crt") {
+					e.src = i;
+					let n = Math.max(.3, Number(t.duration ?? 1.1));
+					if (e.style.opacity = "1", e.style.transformOrigin = "center", e.style.willChange = "transform, filter, opacity", e.style.animation = `kt-lazy-crt ${n}s cubic-bezier(.2,.7,.2,1) both`, t.frame !== !1) {
+						let e = Ee(o, "kt-lazy-crt-scan", 5);
+						e.style.cssText += "pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(0,0,0,.16) 0,rgba(0,0,0,.16) 1px,transparent 1px,transparent 3px);mix-blend-mode:multiply;opacity:0;transition:opacity .3s ease;", l.push(e), requestAnimationFrame(() => {
+							e.style.opacity = "1";
+						}), v(() => {
+							e.style.opacity = "0";
+						}, n * 1e3);
+					}
+					v(() => {
+						e.style.animation = "", e.style.willChange = "", S();
+					}, n * 1e3 + 160);
 					return;
 				}
 				if (r === "pixelate") {
@@ -4771,7 +4787,7 @@ function Ot() {
 	let e = document.createElement("div");
 	if (e.id = "kt-lightbox", e.className = "kt-lightbox", e.hidden = !0, e.setAttribute("role", "dialog"), e.setAttribute("aria-modal", "true"), e.setAttribute("aria-label", "Media viewer"), e.style.cssText = "position:fixed;inset:0;width:100%;height:100%;margin:0;padding:0;z-index:2147482000;display:none;overflow:hidden;", !document.getElementById("kt-lightbox-style")) {
 		let e = document.createElement("style");
-		e.id = "kt-lightbox-style", e.textContent = "\n      .kt-lightbox button{transition:background-color .18s ease,border-color .18s ease,transform .18s ease,opacity .18s ease;}\n      .kt-lightbox .kt-lightbox-toolbar button:hover:not(:disabled){background:rgba(255,255,255,.16)!important;border-color:rgba(255,255,255,.3)!important;}\n      .kt-lightbox .kt-lightbox-toolbar button:disabled{opacity:.32;cursor:default;}\n      .kt-lightbox .kt-lightbox-prev:hover,.kt-lightbox .kt-lightbox-next:hover{background:rgba(255,255,255,.14)!important;transform:translateY(-50%) scale(1.06);}\n      .kt-lightbox .kt-lightbox-stage.is-zoomed{cursor:grab;}\n      .kt-lightbox .kt-lightbox-stage.is-panning{cursor:grabbing;}\n      @media (max-width: 760px) {\n        .kt-lightbox .kt-lightbox-toolbar{padding:12px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));}\n        .kt-lightbox .kt-lightbox-toolbar button{min-width:34px;height:34px;}\n        .kt-lightbox .kt-lightbox-prev{left:max(10px, env(safe-area-inset-left)) !important;}\n        .kt-lightbox .kt-lightbox-next{right:max(10px, env(safe-area-inset-right)) !important;}\n        .kt-lightbox .kt-lightbox-info{padding-bottom:calc(22px + env(safe-area-inset-bottom)) !important;}\n      }\n    ", document.head.appendChild(e);
+		e.id = "kt-lightbox-style", e.textContent = "\n      .kt-lightbox button{transition:background-color .18s ease,border-color .18s ease,transform .18s ease,opacity .18s ease;}\n      .kt-lightbox .kt-lightbox-toolbar button:hover:not(:disabled){background:rgba(255,255,255,.16)!important;border-color:rgba(255,255,255,.3)!important;}\n      .kt-lightbox .kt-lightbox-toolbar button:disabled{opacity:.32;cursor:default;}\n      .kt-lightbox .kt-lightbox-prev:hover,.kt-lightbox .kt-lightbox-next:hover{background:rgba(255,255,255,.14)!important;transform:translateY(-50%) scale(1.06);}\n      .kt-lightbox .kt-lightbox-stage.is-zoomed{cursor:grab;}\n      .kt-lightbox .kt-lightbox-stage.is-panning{cursor:grabbing;}\n      @media (max-width: 760px) {\n        .kt-lightbox .kt-lightbox-toolbar{padding:12px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));justify-content:space-between;}\n        /* On narrow screens the absolutely-centered counter overlaps the zoom /\n           close controls — drop it back into flow so space-between separates them. */\n        .kt-lightbox .kt-lightbox-counter{position:static !important;left:auto !important;top:auto !important;transform:none !important;}\n        .kt-lightbox .kt-lightbox-toolbar button{min-width:34px;height:34px;padding:0 8px;}\n        .kt-lightbox .kt-lightbox-zoom-out,.kt-lightbox .kt-lightbox-zoom-in,.kt-lightbox .kt-lightbox-close{width:34px;padding:0;aspect-ratio:1;}\n        .kt-lightbox .kt-lightbox-prev{left:max(10px, env(safe-area-inset-left)) !important;}\n        .kt-lightbox .kt-lightbox-next{right:max(10px, env(safe-area-inset-right)) !important;}\n        .kt-lightbox .kt-lightbox-info{padding-bottom:calc(22px + env(safe-area-inset-bottom)) !important;}\n      }\n    ", document.head.appendChild(e);
 	}
 	let t = document.createElement("button");
 	t.type = "button", t.className = "kt-lightbox-backdrop", t.setAttribute("aria-label", "Close viewer"), t.style.cssText = "position:absolute;inset:0;width:100%;height:100%;border:0;margin:0;padding:0;background:var(--kt-lightbox-backdrop,rgba(10,10,14,.88));backdrop-filter:blur(var(--kt-lightbox-backdrop-blur,20px)) saturate(1.15);-webkit-backdrop-filter:blur(var(--kt-lightbox-backdrop-blur,20px)) saturate(1.15);cursor:zoom-out;";

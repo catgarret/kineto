@@ -2,6 +2,12 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.5]
+
+- **New `lazy` effect — `crt`**: old CRT / cathode-ray TV power-on. A bright line snaps open, the picture expands vertically out of it with an overexposed bloom, then settles behind a faint scanline overlay. Added to the demo and the playground effect list.
+- **Lightbox mobile toolbar**: on narrow screens the centered `1 / N` counter overlapped the zoom/close controls — it now drops into flow so the counter sits left and the controls right (no overlap); zoom/close buttons are square.
+- **Demo mobile fixes**: lightbox thumbnail grid no longer overlaps (robust 2-column, square thumbnails); the ripple sample is more visible (higher opacity) so the effect reads on touch.
+
 ## [0.8.4]
 
 - **ambientMedia performance**: the video-sampling loop now pauses when the element scrolls off-screen or the tab is hidden (IntersectionObserver + visibilitychange), instead of sampling every frame forever. Cuts background work on long pages and weaker mobile GPUs.

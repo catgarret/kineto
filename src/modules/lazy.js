@@ -360,6 +360,27 @@ export default {
         return;
       }
 
+      if (effect === 'crt') {
+        // Old CRT / brown-tube TV power-on. A bright line snaps open, the
+        // picture expands vertically out of it with a bloom, then settles.
+        // A faint scanline overlay (on by default) sells the tube look.
+        el.src = src;
+        const duration = Math.max(0.3, Number(opts.duration ?? 1.1));
+        el.style.opacity = '1';
+        el.style.transformOrigin = 'center';
+        el.style.willChange = 'transform, filter, opacity';
+        el.style.animation = `kt-lazy-crt ${duration}s cubic-bezier(.2,.7,.2,1) both`;
+        if (opts.frame !== false) {
+          const scan = createLayer(wrapper, 'kt-lazy-crt-scan', 5);
+          scan.style.cssText += 'pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(0,0,0,.16) 0,rgba(0,0,0,.16) 1px,transparent 1px,transparent 3px);mix-blend-mode:multiply;opacity:0;transition:opacity .3s ease;';
+          layers.push(scan);
+          requestAnimationFrame(() => { scan.style.opacity = '1'; });
+          later(() => { scan.style.opacity = '0'; }, duration * 1000);
+        }
+        later(() => { el.style.animation = ''; el.style.willChange = ''; finish(); }, duration * 1000 + 160);
+        return;
+      }
+
       if (effect === 'pixelate') {
         el.src = src;
         el.style.opacity = '1';

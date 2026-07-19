@@ -17,6 +17,16 @@
   100% { transform: translate3d(3%, 2%, 0) scale(1.12); }
 }
 @keyframes kt-skeleton-pulse { 0%,100% { opacity:.48; } 50% { opacity:1; } }
+/* Old CRT / cathode-ray TV power-on: a bright horizontal line snaps open, the
+   picture expands vertically out of it with an overexposed bloom, then settles. */
+@keyframes kt-lazy-crt {
+  0%   { opacity:0; transform:scaleY(0.004) scaleX(1.35); filter:brightness(5) contrast(1.6) saturate(0); }
+  7%   { opacity:1; transform:scaleY(0.008) scaleX(1.2);  filter:brightness(5) contrast(1.6) saturate(0); }
+  34%  { transform:scaleY(1) scaleX(1); filter:brightness(2.6) contrast(1.3) saturate(.6); }
+  46%  { filter:brightness(1.5) contrast(1.12) saturate(1); }
+  55%  { transform:scaleY(1.015) scaleX(1); filter:brightness(1.28) contrast(1.06); }
+  100% { transform:scaleY(1) scaleX(1); filter:brightness(1) contrast(1) saturate(1); }
+}
 @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
 .kt-no-js [data-kt-reveal],
