@@ -122,7 +122,10 @@ export default {
       rafId = requestAnimationFrame(draw);
     } else setFallback();
 
-    return {
+    let io = null;
+    let onVisibility = null;
+    let onScreen = true;
+    const instance = {
       el,
       type: 'ambientMedia',
       get mode() { return glow.dataset.mode; },
@@ -154,6 +157,8 @@ export default {
         alive = false;
         if (rafId != null) cancelAnimationFrame(rafId);
         observer?.disconnect();
+        io?.disconnect();
+        if (onVisibility) document.removeEventListener('visibilitychange', onVisibility);
         if (glow._mkLoadHandler) actualMedia.removeEventListener('load', glow._mkLoadHandler);
         glow.remove();
         if (createdWrapper && outer.parentNode) {
@@ -166,6 +171,21 @@ export default {
         if (originalMediaStyle == null) actualMedia.removeAttribute('style'); else actualMedia.setAttribute('style', originalMediaStyle);
       }
     };
+
+    // Only the video sampler runs a continuous rAF loop. Pause it while the
+    // element is off-screen or the tab is hidden — multiple ambient canvases
+    // sampling every frame is one of the heaviest mobile costs.
+    if (canvas && typeof IntersectionObserver !== 'undefined') {
+      io = new IntersectionObserver((entries) => {
+        onScreen = !!entries[0]?.isIntersecting;
+        if (onScreen && !document.hidden) instance.resume(); else instance.pause();
+      }, { rootMargin: '120px' });
+      io.observe(el);
+      onVisibility = () => { if (document.hidden) instance.pause(); else if (onScreen) instance.resume(); };
+      document.addEventListener('visibilitychange', onVisibility);
+    }
+
+    return instance;
   },
   reduced() {}
 };

@@ -2,7 +2,7 @@
 
 > 이 문서는 `kineto.features.json`에서 생성됩니다. 직접 수정하지 말고 계약 파일을 명시적으로 변경한 뒤 `npm run docs:contract`를 실행하세요.
 
-- Library: 0.8.3
+- Library: 0.8.4
 - Feature contract: 1.3.0
 - Behavior contract: 1.2.0
 - Public modules: 34

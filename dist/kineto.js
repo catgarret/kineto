@@ -352,7 +352,7 @@ function ie() {
 	e.id = "kineto-inline-fallback", e.textContent = "\n    @property --kt-angle { syntax: \"<angle>\"; initial-value: 0deg; inherits: false; }\n    @keyframes kt-border-spin { to { --kt-angle: 360deg; } }\n    @keyframes kt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }\n    @keyframes kt-aurora { to { transform: rotate(360deg); } }\n    @keyframes kt-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }\n    @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }\n    .kt-cursor-active, .kt-cursor-active * { cursor: none !important; }\n    .kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }\n    .kt-tw-caret { animation: kt-caret .8s step-end infinite; }\n    .kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }\n    .kt-slider-wrap { position: relative; overflow: hidden; }\n    @media (prefers-reduced-motion: reduce) {\n      [data-kt-reveal], [data-kt-text-split], [data-kt-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }\n    }\n  ", document.head.appendChild(e);
 }
 var Z = {
-	version: "0.8.3",
+	version: "0.8.4",
 	get env() {
 		return U ||= d(), U;
 	},
@@ -4282,7 +4282,7 @@ var _t = {
 			};
 			b = requestAnimationFrame(n);
 		} else E();
-		return {
+		let D = null, O = null, k = !0, A = {
 			el: e,
 			type: "ambientMedia",
 			get mode() {
@@ -4314,9 +4314,14 @@ var _t = {
 				})));
 			},
 			destroy() {
-				x = !1, b != null && cancelAnimationFrame(b), C?.disconnect(), u._mkLoadHandler && r.removeEventListener("load", u._mkLoadHandler), u.remove(), o && a.parentNode ? (a.parentNode.insertBefore(i, a), a.remove()) : o || (s == null ? a.removeAttribute("style") : a.setAttribute("style", s)), c == null ? i.removeAttribute("style") : i.setAttribute("style", c), l == null ? r.removeAttribute("style") : r.setAttribute("style", l);
+				x = !1, b != null && cancelAnimationFrame(b), C?.disconnect(), D?.disconnect(), O && document.removeEventListener("visibilitychange", O), u._mkLoadHandler && r.removeEventListener("load", u._mkLoadHandler), u.remove(), o && a.parentNode ? (a.parentNode.insertBefore(i, a), a.remove()) : o || (s == null ? a.removeAttribute("style") : a.setAttribute("style", s)), c == null ? i.removeAttribute("style") : i.setAttribute("style", c), l == null ? r.removeAttribute("style") : r.setAttribute("style", l);
 			}
 		};
+		return _ && typeof IntersectionObserver < "u" && (D = new IntersectionObserver((e) => {
+			k = !!e[0]?.isIntersecting, k && !document.hidden ? A.resume() : A.pause();
+		}, { rootMargin: "120px" }), D.observe(e), O = () => {
+			document.hidden ? A.pause() : k && A.resume();
+		}, document.addEventListener("visibilitychange", O)), A;
 	},
 	reduced() {}
 }, vt = {

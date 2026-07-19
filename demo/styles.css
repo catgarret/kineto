@@ -273,8 +273,8 @@
    the biggest cause of jank/crashes on Android. Drop it on small screens and
    use a more opaque solid background instead. */
 @media (max-width:1080px){
-  .site-header{backdrop-filter:none;-webkit-backdrop-filter:none;background:color-mix(in srgb,var(--bg) 94%,transparent)}
-  .side-nav{backdrop-filter:none;-webkit-backdrop-filter:none;background:color-mix(in srgb,var(--bg) 96%,transparent)}
-  .to-top{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--panel)}
-  .kt-progress-ring{backdrop-filter:none!important}
+  .site-header{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:color-mix(in srgb,var(--bg) 82%,transparent)}
+  .side-nav{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:color-mix(in srgb,var(--bg) 86%,transparent)}
+  .to-top{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:color-mix(in srgb,var(--panel) 88%,transparent)}
+  .kt-progress-ring{backdrop-filter:blur(8px)!important}
 }

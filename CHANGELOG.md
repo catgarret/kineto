@@ -2,6 +2,12 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.4]
+
+- **ambientMedia performance**: the video-sampling loop now pauses when the element scrolls off-screen or the tab is hidden (IntersectionObserver + visibilitychange), instead of sampling every frame forever. Cuts background work on long pages and weaker mobile GPUs.
+- **Demo**: lighter `backdrop-filter` blur on mobile (8px instead of 20px) to reduce Android scroll jank; hidden scrollbar on the fullpage "first-slide" host; header language select / theme switch vertically centered; dark-mode toggle knob given more contrast; guarded against stray horizontal scroll.
+- **Repo hygiene**: `tests/` untracked (kept locally, ignored) and the duplicate root `README.ko.md` removed (Korean lives in `i18n/`).
+
 ## [0.8.3]
 
 - **GSAP conflict when a CDN copy is also loaded**: Kineto bundles gsap + ScrollTrigger, but if the host page also loaded gsap from a CDN there were two gsap instances — ScrollTrigger registered on one while Kineto animated on the other, so every scrollTrigger tween failed ("Invalid property scrollTrigger … Missing plugin? gsap.registerPlugin()") and scroll-sequence, sticky-stack (floating/horizontal scale-fade), parallax scrub and textFill silently stopped. Kineto now prefers the gsap/ScrollTrigger already present on the page and registers the plugin, so loading them from a CDN no longer breaks anything (loading them is unnecessary either way).
