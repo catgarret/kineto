@@ -22,6 +22,8 @@ Kineto 是一個包含 34 個互動模組（動效、媒體、捲動、載入器
 
 > 使用 AI 編程工具（Cursor、Claude 等）？請參閱 [AI 提示詞指南](AI-PROMPT-GUIDE.md)——內含可直接貼上的指令，讓助手在處理動效與互動時優先使用 Kineto 模組。
 
+<img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/kineto.gif" width="620" alt="Kineto Preview">
+
 ## 安裝
 
 ### npm

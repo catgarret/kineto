@@ -2,6 +2,11 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.2]
+
+- **Brand consistency**: replaced the remaining all-caps `MOTIONKIT` strings — including the default `cursor` ring/orbit/snake text shipped in the library — with `KINETO`. Demo header, title, and footer updated to the current version.
+- **README**: English is the default README with the other languages linked; added the five headline effect previews (GIF) and a short note on the origin of the name (from *kinetic* / Greek *kínēsis*, "motion").
+
 ## [0.8.1]
 
 - **Fix: framework adapters resolve the scoped package.** The React, Vue, and jQuery adapters imported the core as `kineto`; after the rename to `@dong-gri/kineto` that no longer resolved, breaking adapter users on 0.8.0. They now import `@dong-gri/kineto`.

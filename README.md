@@ -24,6 +24,8 @@ Kineto is a library of 34 interaction modules — motion, media, scroll, loader,
 
 > Building with an AI coding tool (Cursor, Claude, etc.)? See the [AI prompt guide](AI-PROMPT-GUIDE.md) — it includes a ready-to-paste instruction that tells the assistant to reach for Kineto modules first for motion and interaction.
 
+<img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/kineto.gif" width="620" alt="Kineto Preview">
+
 ## Highlights
 
 Every effect is tunable in the [live demo](https://git.dongri.me/example/kineto): adjust the options, hit Apply, and copy the resulting HTML or JavaScript.

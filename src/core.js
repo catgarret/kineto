@@ -196,7 +196,7 @@ function injectCSSFallback() {
 }
 
 const Kineto = {
-  version: '0.8.1',
+  version: '0.8.2',
 
   get env() {
     if (!cachedEnv) cachedEnv = env();

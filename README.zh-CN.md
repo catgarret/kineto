@@ -22,6 +22,8 @@ Kineto 是一个包含 34 个交互模块（动效、媒体、滚动、加载器
 
 > 使用 AI 编程工具（Cursor、Claude 等）？请参阅 [AI 提示词指南](AI-PROMPT-GUIDE.md)——其中包含可直接粘贴的指令，让助手在处理动效与交互时优先使用 Kineto 模块。
 
+<img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/kineto.gif" width="620" alt="Kineto Preview">
+
 ## 安装
 
 ### npm

@@ -22,6 +22,8 @@ Kineto은 34개의 인터랙션 모듈(모션·미디어·스크롤·로더·텍
 
 > AI 코딩 도구(Cursor, Claude 등)로 작업한다면 [AI 프롬프트 가이드](AI-PROMPT-GUIDE.md)를 참고하세요. 모션·인터랙션을 Kineto 모듈로 우선 적용하도록 지시하는, 그대로 붙여넣는 프롬프트가 들어 있습니다.
 
+<img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/kineto.gif" width="620" alt="Kineto Preview">
+
 ## 대표 기능
 
 모든 효과는 [라이브 데모](https://git.dongri.me/example/kineto)에서 옵션을 바꿔 Apply를 누르면 바로 확인하고, 결과 HTML·JavaScript를 복사해 쓸 수 있습니다.
