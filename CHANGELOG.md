@@ -2,6 +2,14 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.14]
+
+- **Wipe/mask — actually animates now**: the real cause was that the bundled gsap won't tween a `clip-path: inset()` string (it stayed frozen fully-clipped = blank). Wipe/mask now run on a numeric proxy tween and build the inset string in onUpdate, so the reveal always plays (via ScrollTrigger or the IntersectionObserver backup) and on replay.
+- **Lazy replay on Safari/iOS**: `preload` now resolves immediately for an already-cached image (Safari doesn't re-fire `onload` for a cached src), so BlurUp/Fade replay no longer hangs.
+- **Demo — mobile notice keeps the border**: the touch “desktop only” overlay redraws the stage's 1px border so cards don't look broken.
+- **Demo — progress ring centered**: the ring stage uses explicit flex centering so the indicator sits dead-center on mobile.
+- **Demo — motion button placement**: the iOS “모션 센서 켜기” button sits above the bottom bar and fades out over the footer so it never overlaps it (still auto-dismisses after granting).
+
 ## [0.8.13]
 
 - **Reveal — reliable entrance (fixes stuck Wipe)**: an IntersectionObserver backup now guarantees a reveal plays when it actually enters the viewport, even if ScrollTrigger measured its position before images/intro settled or the element was already on screen. Wipe no longer stays blank.

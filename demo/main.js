@@ -122,10 +122,14 @@
     (()=>{const DOE=window.DeviceOrientationEvent;
       if(!DOE||typeof DOE.requestPermission!=='function')return;
       const btn=document.createElement('button');btn.type='button';btn.textContent='📱 모션 센서 켜기';
-      btn.style.cssText='position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:9000;padding:11px 18px;border-radius:999px;border:0;background:var(--accent,#ff5b1c);color:#fff;font:700 13px/1 var(--font-sans,sans-serif);box-shadow:0 8px 26px rgba(0,0,0,.28);cursor:pointer;transition:opacity .4s ease';
-      const dismiss=(txt)=>{btn.textContent=txt;setTimeout(()=>{btn.style.opacity='0';setTimeout(()=>btn.remove(),450);},1000);};
+      btn.style.cssText='position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:9000;padding:10px 16px;border-radius:999px;border:0;background:var(--accent,#ff5b1c);color:#fff;font:700 12.5px/1 var(--font-sans,sans-serif);box-shadow:0 8px 26px rgba(0,0,0,.28);cursor:pointer;transition:opacity .35s ease';
+      let done=false;
+      const dismiss=(txt)=>{done=true;btn.textContent=txt;setTimeout(()=>{btn.style.opacity='0';setTimeout(()=>btn.remove(),450);},1000);};
       btn.addEventListener('click',async()=>{try{const r=await DOE.requestPermission();dismiss(r==='granted'?'✓ 모션 켜짐':'거부됨 — 설정 › Safari › 동작 및 방향 접근');}catch(_){dismiss('요청 실패 — 다시 탭');}});
       document.body.appendChild(btn);
+      // Never overlap the footer: fade the button out while the footer is on screen.
+      const footer=document.querySelector('footer,.site-footer,.footer');
+      if(footer&&'IntersectionObserver'in window){new IntersectionObserver(es=>{if(done)return;const vis=es[0].isIntersecting;btn.style.opacity=vis?'0':'1';btn.style.pointerEvents=vis?'none':'auto';}).observe(footer);}
     })();
 
     // Pointer-only demos (custom cursors, magnetic hover) can't be experienced on

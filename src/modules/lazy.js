@@ -173,6 +173,10 @@ function preload(src, el, opts) {
     image.onload = () => resolve(image);
     image.onerror = () => reject(new Error(`Kineto lazy image failed to load: ${src}`));
     image.src = src;
+    // Safari (esp. iOS) does not re-fire onload for an already-cached image, so a
+    // replay would hang forever awaiting preload. Resolve straight away when the
+    // image is already complete.
+    if (image.complete && image.naturalWidth) resolve(image);
   });
 }
 

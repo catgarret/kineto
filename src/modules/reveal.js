@@ -183,13 +183,70 @@ export default {
       };
     }
 
+    // Wipe/mask: gsap can't reliably tween a `clip-path: inset()` string, so we
+    // animate the reveal via a numeric progress and build the inset ourselves in
+    // onUpdate. clipAt(p): p=1 fully clipped (hidden) → p=0 fully shown.
+    const isClip = preset === 'wipe' || preset === 'mask';
+    const clipAt = (p) => {
+      const v = `${(Math.max(0, Math.min(1, p)) * 100).toFixed(2)}%`;
+      if (direction === 'down') return `inset(0px 0px ${v} 0px)`;
+      if (direction === 'left') return `inset(0px 0px 0px ${v})`;
+      if (direction === 'right') return `inset(0px ${v} 0px 0px)`;
+      return `inset(${v} 0px 0px 0px)`; // up (default)
+    };
     let from = PRESETS[preset];
-    if (preset === 'wipe' || preset === 'mask') from = { clipPath: directionalClip(direction), opacity: 1 };
+    if (isClip) from = { opacity: 1 };
     if (!from) {
       console.warn(`[Kineto/reveal] Unknown preset: ${preset}`);
       return null;
     }
     if (!gsap || !scrollTrigger) return this.fallback(el, opts, from);
+
+    // Wipe/mask run on their own proxy-number tween — a real changing value that
+    // gsap always ticks — with the clip string built in onUpdate. Triggered by
+    // ScrollTrigger plus an IntersectionObserver backup (already-in-view / late
+    // layout), so the entrance never stays frozen at the clipped start.
+    if (isClip) {
+      const clipRestore = snapshotAttributes(el, ['style', 'class']);
+      const clipDuration = Math.max(0.05, Number(opts.duration ?? 0.8));
+      el.style.willChange = 'clip-path';
+      const state = { p: 1 };
+      const apply = () => { el.style.clipPath = state.p <= 0.002 ? 'none' : clipAt(state.p); };
+      apply();
+      let clipTween = null;
+      let played = false;
+      const play = () => {
+        clipTween?.kill();
+        state.p = 1; apply();
+        clipTween = gsap.to(state, {
+          p: 0, duration: clipDuration, ease, delay: Number(opts.delay ?? 0),
+          onStart: () => addClasses(el, opts), onUpdate: apply,
+          onComplete: () => { apply(); opts.onComplete?.(el); }
+        });
+      };
+      const trigger = scrollTrigger.create({
+        trigger: el, start: opts.start || 'top 85%', once,
+        onEnter: () => { if (!played) { played = true; play(); } }
+      });
+      let clipIO = null;
+      if (typeof IntersectionObserver !== 'undefined') {
+        clipIO = new IntersectionObserver((entries) => {
+          if (!entries.some((e) => e.isIntersecting) || played) return;
+          played = true; clipIO.disconnect(); clipIO = null;
+          trigger?.disable(false);
+          play();
+        }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+        clipIO.observe(el);
+      }
+      return {
+        el,
+        type: 'reveal',
+        replay() { played = true; play(); },
+        pause() { clipTween?.pause(); },
+        resume() { clipTween?.resume(); },
+        destroy() { clipIO?.disconnect(); trigger?.kill?.(); clipTween?.kill(); clipRestore(); }
+      };
+    }
 
     const target = opts.stagger && el.children.length ? Array.from(el.children) : el;
     const targets = Array.isArray(target) ? target : [target];
@@ -207,7 +264,6 @@ export default {
       rotationY: 0,
       opacity: 1,
       filter: 'blur(0px)',
-      clipPath: 'inset(0 0 0 0)',
       duration,
       delay: Number(opts.delay ?? 0),
       ease,
