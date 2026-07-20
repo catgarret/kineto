@@ -115,22 +115,9 @@
     syncTheme();
     themeButton.addEventListener('click',()=>{const light=document.documentElement.classList.toggle('light');syncTheme();try{localStorage.setItem('kt-theme',light?'light':'dark')}catch(_){}});})();
 
-    // iOS-only: DeviceOrientation needs an explicit permission from a genuine tap.
-    // A visible button guarantees a real activation (a scroll-tap can silently
-    // fail) and gives feedback. Tapping it also satisfies the library's internal
-    // gate, so tilt + compass switch on together.
-    (()=>{const DOE=window.DeviceOrientationEvent;
-      if(!DOE||typeof DOE.requestPermission!=='function')return;
-      const btn=document.createElement('button');btn.type='button';btn.textContent='📱 모션 센서 켜기';
-      btn.style.cssText='position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:9000;padding:10px 16px;border-radius:999px;border:0;background:var(--accent,#ff5b1c);color:#fff;font:700 12.5px/1 var(--font-sans,sans-serif);box-shadow:0 8px 26px rgba(0,0,0,.28);cursor:pointer;transition:opacity .35s ease';
-      let done=false;
-      const dismiss=(txt)=>{done=true;btn.textContent=txt;setTimeout(()=>{btn.style.opacity='0';setTimeout(()=>btn.remove(),450);},1000);};
-      btn.addEventListener('click',async()=>{try{const r=await DOE.requestPermission();dismiss(r==='granted'?'✓ 모션 켜짐':'거부됨 — 설정 › Safari › 동작 및 방향 접근');}catch(_){dismiss('요청 실패 — 다시 탭');}});
-      document.body.appendChild(btn);
-      // Never overlap the footer: fade the button out while the footer is on screen.
-      const footer=document.querySelector('footer,.site-footer,.footer');
-      if(footer&&'IntersectionObserver'in window){new IntersectionObserver(es=>{if(done)return;const vis=es[0].isIntersecting;btn.style.opacity=vis?'0':'1';btn.style.pointerEvents=vis?'none':'auto';}).observe(footer);}
-    })();
+    // (iOS motion-permission button removed — the library's built-in gate now
+    // grants DeviceOrientation on the first genuine tap, so tilt + compass work
+    // without an explicit button.)
 
     // Pointer-only demos (custom cursors, magnetic hover) can't be experienced on
     // touch — dim their stage and explain, instead of showing a dead example.
@@ -276,6 +263,10 @@
       if(!hero||!target)return;
       let snapping=false,lastAt=0,consumed=false;
       const inHero=()=>window.scrollY<hero.offsetHeight-120;
+      // Only snap once the hero's own content is fully scrolled into view — if the
+      // hero is taller than the viewport (low-res / small window), let the cut-off
+      // content scroll natively first instead of jumping straight to #counter.
+      const heroFullySeen=()=>window.scrollY+window.innerHeight>=hero.offsetHeight-4;
       const snap=()=>{
         snapping=true;
         target.scrollIntoView({behavior:'smooth',block:'start'});
@@ -296,14 +287,14 @@
         lastAt=now;
         if(!sameGesture)consumed=false;
         if(snapping||(sameGesture&&consumed)){event.preventDefault();return;}
-        if(inHero()&&event.deltaY>8){event.preventDefault();consumed=true;snap();}
+        if(inHero()&&heroFullySeen()&&event.deltaY>8){event.preventDefault();consumed=true;snap();}
         else if(nearFirstSection()&&event.deltaY<-8){event.preventDefault();consumed=true;snapTop();}
       },{passive:false});
       document.getElementById('brand-home')?.addEventListener('click',snapTop);
       let touchY=null,touchDone=false;
       hero.addEventListener('touchstart',(event)=>{touchY=event.touches[0].clientY;touchDone=false;},{passive:true});
       hero.addEventListener('touchmove',(event)=>{
-        if(touchY==null||!inHero())return;
+        if(touchY==null||!inHero()||!heroFullySeen())return;
         if(snapping||touchDone){event.preventDefault();return;}
         const delta=touchY-event.touches[0].clientY;
         if(delta>10){event.preventDefault();if(delta>26){touchDone=true;snap();}}

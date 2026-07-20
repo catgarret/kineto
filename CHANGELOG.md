@@ -2,6 +2,11 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.16]
+
+- **Demo — first-screen snap only after content is seen**: the hero→first-section snap now waits until the hero is fully scrolled into view, so a hero taller than the viewport (low-res / small window) reveals its cut-off content by normal scroll before snapping instead of jumping straight past it.
+- **Demo — iOS motion button removed**: the built-in permission gate grants DeviceOrientation on the first genuine tap, so tilt + compass work without the extra button.
+
 ## [0.8.15]
 
 - **Demo — Fullpage inner-scroll shown**: the "Fullpage Sections" demo now has a long section (02) that scrolls its own content before paging to the next, demonstrating the inner-scroll-then-advance behavior added in 0.8.13.
