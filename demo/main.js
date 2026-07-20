@@ -115,6 +115,34 @@
     syncTheme();
     themeButton.addEventListener('click',()=>{const light=document.documentElement.classList.toggle('light');syncTheme();try{localStorage.setItem('kt-theme',light?'light':'dark')}catch(_){}});})();
 
+    // iOS-only: DeviceOrientation needs an explicit permission from a genuine tap.
+    // A visible button guarantees a real activation (a scroll-tap can silently
+    // fail) and gives feedback. Tapping it also satisfies the library's internal
+    // gate, so tilt + compass switch on together.
+    (()=>{const DOE=window.DeviceOrientationEvent;
+      if(!DOE||typeof DOE.requestPermission!=='function')return;
+      const btn=document.createElement('button');btn.type='button';btn.textContent='📱 모션 센서 켜기';
+      btn.style.cssText='position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:9000;padding:11px 18px;border-radius:999px;border:0;background:var(--accent,#ff5b1c);color:#fff;font:700 13px/1 var(--font-sans,sans-serif);box-shadow:0 8px 26px rgba(0,0,0,.28);cursor:pointer;transition:opacity .4s ease';
+      const dismiss=(txt)=>{btn.textContent=txt;setTimeout(()=>{btn.style.opacity='0';setTimeout(()=>btn.remove(),450);},1000);};
+      btn.addEventListener('click',async()=>{try{const r=await DOE.requestPermission();dismiss(r==='granted'?'✓ 모션 켜짐':'거부됨 — 설정 › Safari › 동작 및 방향 접근');}catch(_){dismiss('요청 실패 — 다시 탭');}});
+      document.body.appendChild(btn);
+    })();
+
+    // Pointer-only demos (custom cursors, magnetic hover) can't be experienced on
+    // touch — dim their stage and explain, instead of showing a dead example.
+    (()=>{
+      if(!window.matchMedia||!window.matchMedia('(hover:none)').matches)return;
+      const msg='마우스 환경에서 확인할 수 있는 예제입니다.\n모바일에서는 동작을 보기 어려워요.';
+      const seen=new Set();
+      ['[data-kt-cursor]','[data-kt-magnetic]'].forEach(sel=>document.querySelectorAll(sel).forEach(node=>{
+        const stage=node.closest('.demo-stage');
+        if(!stage||seen.has(stage))return; seen.add(stage);
+        stage.classList.add('mk-na');
+        const ov=document.createElement('div'); ov.className='mk-na-overlay'; ov.textContent=msg;
+        stage.appendChild(ov);
+      }));
+    })();
+
     document.addEventListener('click',(event)=>{
       const button=event.target.closest('[data-action]');
       if(!button)return;

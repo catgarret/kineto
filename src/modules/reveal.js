@@ -236,6 +236,25 @@ export default {
     };
     targets.forEach((node) => { node.style.willChange = 'transform,opacity,filter,clip-path'; });
     const tween = gsap.fromTo(target, from, to);
+
+    // Backup trigger: ScrollTrigger can miss an element whose position it measured
+    // before late images / the intro overlay settled, or one that is already in
+    // view at init — leaving the entrance frozen at its `from` state (e.g. a wipe
+    // stuck fully clipped). An IntersectionObserver guarantees the entrance plays
+    // once the element is actually on screen, and yields to ScrollTrigger if it
+    // already ran (tween.progress() > 0).
+    let io = null;
+    if (typeof IntersectionObserver !== 'undefined') {
+      io = new IntersectionObserver((entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        io.disconnect(); io = null;
+        if (tween.progress() === 0) {
+          tween.scrollTrigger?.disable(false); // stop ScrollTrigger double-firing
+          gsap.fromTo(target, from, { ...animateVars, delay: 0, overwrite: 'auto' });
+        }
+      }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+      io.observe(el);
+    }
     return {
       el,
       type: 'reveal',
@@ -246,6 +265,7 @@ export default {
       pause() { tween.pause(); },
       resume() { tween.resume(); },
       destroy() {
+        io?.disconnect();
         tween.scrollTrigger?.kill?.();
         tween.kill();
         restores.forEach((restore) => restore());

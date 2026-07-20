@@ -1,7 +1,7 @@
 {
   "$schema": "./kineto.features.schema.json",
   "contractVersion": "1.3.0",
-  "libraryVersion": "0.8.12",
+  "libraryVersion": "0.8.13",
   "moduleCount": 34,
   "modules": [
     {
@@ -310,6 +310,7 @@
     {
       "name": "fullpage",
       "publicOptions": [
+        "autoAdvance",
         "axis",
         "dots",
         "drag",

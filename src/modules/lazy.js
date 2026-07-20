@@ -299,7 +299,13 @@ export default {
         const fade = Math.max(0, Number(opts.fadeDuration ?? opts.duration ?? 0.45));
         el.style.transform = 'scale(1.015)';
         el.style.transition = `opacity ${fade}s ease, transform ${Math.max(fade, 0.5)}s cubic-bezier(.22,.8,.3,1)`;
-        skeleton.style.transition = `opacity ${fade * 0.8}s ease`;
+        // The pulse/shimmer keyframes animate opacity/background, which would
+        // override the inline opacity fade — so the skeleton (and its icon) would
+        // linger as an afterimage. Stop the animation first so it fades cleanly,
+        // and fade it out faster than the image so the icon is gone before the
+        // photo resolves.
+        skeleton.style.animation = 'none';
+        skeleton.style.transition = `opacity ${Math.min(Math.max(fade * 0.5, 0.18), 0.32)}s ease`;
         requestAnimationFrame(() => {
           el.style.opacity = '1';
           el.style.transform = 'scale(1)';

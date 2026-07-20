@@ -2,6 +2,19 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.13]
+
+- **Reveal — reliable entrance (fixes stuck Wipe)**: an IntersectionObserver backup now guarantees a reveal plays when it actually enters the viewport, even if ScrollTrigger measured its position before images/intro settled or the element was already on screen. Wipe no longer stays blank.
+- **Slider — two loop styles**: `loop:'infinite'` (or `true`) endlessly wraps seamlessly; `loop:'rewind'` plays to the last slide then returns to the first; `loop:'off'` disables.
+- **Counter (split-flap) — up & down**: the flip counter supports decreasing values (folds up) as well as increasing (folds down), following `from`→`to`.
+- **Lazy skeleton/pulse — no icon ghost**: the pulse opacity keyframe is stopped before the fade-out, so the skeleton + icon disappear cleanly instead of lingering over the loaded image.
+- **Fullpage — auto-advance + inner scroll**: new `autoAdvance` (ms) steps sections on a timer (pauses when hidden, resets on manual nav); a section taller than the viewport scrolls its own content before the deck pages on.
+- **iOS — motion enable button** and **mobile demo polish**: a visible “모션 센서 켜기” button guarantees a valid tap to grant DeviceOrientation; pointer-only demos show a dimmed “desktop only” notice on touch; progress ring centers vertically; `scrollbar-gutter` is desktop-only to reduce mobile scroll jitter.
+
+## [0.8.12]
+
+- **iOS gyroscope — retry until granted**: the motion-permission gate now retries on each genuine tap (a first tap that turns into a scroll no longer permanently gives up) and listens in the capture phase, using `click`/`touchend`.
+
 ## [0.8.11]
 
 - **Packaging — leaner tarball**: `.DS_Store` and stray `.fuse_hidden*` filesystem artifacts are excluded from the published package via negation patterns in the `files` list (a plain `.npmignore` is bypassed when `files` whitelists whole folders). Publish size dropped and no junk files ship.

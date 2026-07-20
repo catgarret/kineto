@@ -22,7 +22,11 @@ export default {
     // restores the classic left-edge slide alignment.
     const centered = coverflow || (opts.align || 'center') !== 'left';
     const maxIndex = centered ? slides.length - 1 : Math.max(0, Math.ceil(slides.length - perView));
-    const loop = opts.loop === true;
+    // loop: false/'off' = none · true/'infinite' = seamless endless ring ·
+    // 'rewind' = play to the last slide, then return to the first.
+    const loopMode = opts.loop === true ? 'infinite' : (opts.loop || 'off');
+    const loop = loopMode === 'infinite' || loopMode === 'rewind';
+    const seamless = loopMode === 'infinite';
     const smoothing = clamp(Number(opts.smoothing ?? (0.14 / Math.max(0.2, Number(opts.speed ?? opts.duration ?? 0.55) / 0.55))), 0.02, 0.5);
     const autoplayDelay = opts.autoplay === true ? 3000 : Math.max(0, Number(opts.autoplay || 0));
     const pauseOnHover = opts.pauseOnHover !== false;
@@ -105,7 +109,7 @@ export default {
       const { width, slideWidth, step } = metrics();
       const centerOffset = centered ? (width - slideWidth) / 2 : 0;
       slides.forEach((slide, slideIndex) => {
-        const distance = loop ? wrapDelta(slideIndex - position) : slideIndex - position;
+        const distance = seamless ? wrapDelta(slideIndex - position) : slideIndex - position;
         const absolute = Math.abs(distance);
         const baseX = centerOffset + distance * step * (coverflow ? Number(opts.spacing ?? 0.62) : 1);
         if (coverflow) {
@@ -161,17 +165,25 @@ export default {
     // In loop mode the continuous target just keeps climbing/falling forever, so
     // the spring never has to unwind the whole track to wrap around.
     const settle = (raw) => {
-      target = loop ? raw : clamp(raw, 0, maxIndex);
-      const nextIndex = loop ? normalize(target) : clamp(Math.round(target), 0, maxIndex);
+      target = seamless ? raw : clamp(raw, 0, maxIndex);
+      const nextIndex = seamless ? normalize(target) : clamp(Math.round(target), 0, maxIndex);
       if (nextIndex !== index) { index = nextIndex; syncState(); }
       wake();
     };
     const goTo = (value) => {
-      if (loop) { const base = Math.round(target); settle(base + Math.round(wrapDelta(value - base))); }
+      if (seamless) { const base = Math.round(target); settle(base + Math.round(wrapDelta(value - base))); }
       else settle(value);
     };
-    const next = () => (loop ? settle(Math.round(target) + 1) : goTo(index + 1));
-    const prev = () => (loop ? settle(Math.round(target) - 1) : goTo(index - 1));
+    const next = () => {
+      if (seamless) return settle(Math.round(target) + 1);
+      if (loopMode === 'rewind' && index >= maxIndex) return goTo(0);
+      return goTo(index + 1);
+    };
+    const prev = () => {
+      if (seamless) return settle(Math.round(target) - 1);
+      if (loopMode === 'rewind' && index <= 0) return goTo(maxIndex);
+      return goTo(index - 1);
+    };
 
     const stop = () => { clearInterval(timer); timer = null; };
     const start = () => {
@@ -199,7 +211,7 @@ export default {
       const pointerPosition = vertical ? event.clientY : event.clientX;
       const diff = pointerPosition - dragStartX;
       let value = dragStartTarget - diff / Math.max(1, step);
-      if (!loop) {
+      if (!seamless) {
         if (value < 0) value *= 0.3;
         else if (value > maxIndex) value = maxIndex + (value - maxIndex) * 0.3;
       }

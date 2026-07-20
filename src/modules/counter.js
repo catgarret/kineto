@@ -250,6 +250,11 @@ export default {
         return { half, glyph };
       };
 
+      // Direction: count up folds down (classic Solari), count down folds up.
+      const flipCountingUp = to >= from;
+      const flipDigitCount = finalNumericString.replace(/\D/g, '').length;
+      const flipFromDigits = String(Math.round(Math.abs(from))).padStart(flipDigitCount, '0').slice(-flipDigitCount);
+      let flipDigitIndex = 0;
       for (const char of finalNumericString) {
         const digit = /\d/.test(char);
         if (!digit) {
@@ -260,6 +265,8 @@ export default {
           el.appendChild(separator);
           continue;
         }
+        const startDigit = Number(flipFromDigits[flipDigitIndex] || '0');
+        flipDigitIndex += 1;
         const cell = document.createElement('span');
         cell.className = 'kt-counter-flip-cell';
         cell.style.cssText = `display:inline-block;position:relative;width:${tile ? '1.34ch' : '1.12ch'};height:${cellHeight};perspective:340px;${(tile && flip.hasShadow) ? `filter:${flip.shadow};` : ''}`;
@@ -277,7 +284,7 @@ export default {
           cell.appendChild(seam);
         }
         el.appendChild(cell);
-        cells.push({ topStatic, bottomStatic, topFlap, bottomFlap, target: Number(char) });
+        cells.push({ topStatic, bottomStatic, topFlap, bottomFlap, target: Number(char), start: startDigit });
       }
       appendAffix(el, suffix, 'kt-counter-suffix');
 
@@ -296,28 +303,52 @@ export default {
         cell.topFlap.half.style.transform = 'rotateX(0deg)';
         cell.bottomFlap.half.style.transform = 'rotateX(90deg)';
       };
-      const flipStep = (cell, current, next, flipMs) => {
+      const shade = (frames) => (tile ? frames.withFilter : frames.plain);
+      const flipStep = (cell, current, next, flipMs, up = true) => {
         const half = Math.max(34, flipMs / 2);
-        // Prepare faces: statics show where we are going / where we came from.
-        cell.topStatic.glyph.textContent = String(next);
-        cell.bottomStatic.glyph.textContent = String(current);
-        cell.topFlap.glyph.textContent = String(current);
-        cell.bottomFlap.glyph.textContent = String(next);
-        cell.topFlap.half.style.transform = 'rotateX(0deg)';
-        cell.bottomFlap.half.style.transform = 'rotateX(90deg)';
-        // Shading sells the fold on tiles, but on bare cells it would tint the
-        // matching background into a visible grey box — skip it there.
-        const downFrames = tile
-          ? [{ transform: 'rotateX(0deg)', filter: 'brightness(1)' }, { transform: 'rotateX(-90deg)', filter: 'brightness(.6)' }]
-          : [{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-90deg)' }];
-        const upFrames = tile
-          ? [{ transform: 'rotateX(90deg)', filter: 'brightness(.6)' }, { transform: 'rotateX(0deg)', filter: 'brightness(1)' }]
-          : [{ transform: 'rotateX(90deg)' }, { transform: 'rotateX(0deg)' }];
-        cell.topFlap.half.animate(downFrames, { duration: half, easing: 'cubic-bezier(.55,0,.85,.5)', fill: 'forwards' });
-        later(() => {
-          cell.bottomFlap.half.animate(upFrames, { duration: half, easing: 'cubic-bezier(.15,.6,.3,1.15)', fill: 'forwards' });
-          later(() => { cell.bottomStatic.glyph.textContent = String(next); }, half);
-        }, half);
+        if (up) {
+          // Counting up: top half (current) folds down, bottom half (next) unfolds.
+          cell.topStatic.glyph.textContent = String(next);
+          cell.bottomStatic.glyph.textContent = String(current);
+          cell.topFlap.glyph.textContent = String(current);
+          cell.bottomFlap.glyph.textContent = String(next);
+          cell.topFlap.half.style.transform = 'rotateX(0deg)';
+          cell.bottomFlap.half.style.transform = 'rotateX(90deg)';
+          const downFrames = shade({
+            withFilter: [{ transform: 'rotateX(0deg)', filter: 'brightness(1)' }, { transform: 'rotateX(-90deg)', filter: 'brightness(.6)' }],
+            plain: [{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-90deg)' }]
+          });
+          const upFrames = shade({
+            withFilter: [{ transform: 'rotateX(90deg)', filter: 'brightness(.6)' }, { transform: 'rotateX(0deg)', filter: 'brightness(1)' }],
+            plain: [{ transform: 'rotateX(90deg)' }, { transform: 'rotateX(0deg)' }]
+          });
+          cell.topFlap.half.animate(downFrames, { duration: half, easing: 'cubic-bezier(.55,0,.85,.5)', fill: 'forwards' });
+          later(() => {
+            cell.bottomFlap.half.animate(upFrames, { duration: half, easing: 'cubic-bezier(.15,.6,.3,1.15)', fill: 'forwards' });
+            later(() => { cell.bottomStatic.glyph.textContent = String(next); }, half);
+          }, half);
+        } else {
+          // Counting down: bottom half (current) folds up, top half (next) unfolds down.
+          cell.topStatic.glyph.textContent = String(current);
+          cell.bottomStatic.glyph.textContent = String(next);
+          cell.bottomFlap.glyph.textContent = String(current);
+          cell.topFlap.glyph.textContent = String(next);
+          cell.bottomFlap.half.style.transform = 'rotateX(0deg)';
+          cell.topFlap.half.style.transform = 'rotateX(-90deg)';
+          const foldUp = shade({
+            withFilter: [{ transform: 'rotateX(0deg)', filter: 'brightness(1)' }, { transform: 'rotateX(90deg)', filter: 'brightness(.6)' }],
+            plain: [{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(90deg)' }]
+          });
+          const unfoldDown = shade({
+            withFilter: [{ transform: 'rotateX(-90deg)', filter: 'brightness(.6)' }, { transform: 'rotateX(0deg)', filter: 'brightness(1)' }],
+            plain: [{ transform: 'rotateX(-90deg)' }, { transform: 'rotateX(0deg)' }]
+          });
+          cell.bottomFlap.half.animate(foldUp, { duration: half, easing: 'cubic-bezier(.55,0,.85,.5)', fill: 'forwards' });
+          later(() => {
+            cell.topFlap.half.animate(unfoldDown, { duration: half, easing: 'cubic-bezier(.15,.6,.3,1.15)', fill: 'forwards' });
+            later(() => { cell.topStatic.glyph.textContent = String(next); }, half);
+          }, half);
+        }
       };
       const run = () => {
         timers.forEach(clearTimeout);
@@ -326,15 +357,20 @@ export default {
         const staggerMs = Math.max(0, Number(opts.stagger ?? 0.08)) * 1000;
         let pending = 0;
         cells.forEach((cell, index) => {
-          setCell(cell, 0);
-          const stepsCount = loops * 10 + cell.target;
+          setCell(cell, cell.start);
+          const delta = flipCountingUp
+            ? (((cell.target - cell.start) % 10) + 10) % 10
+            : (((cell.start - cell.target) % 10) + 10) % 10;
+          const stepsCount = loops * 10 + delta;
           if (stepsCount === 0) return;
           pending += 1;
           const flipMs = Math.max(120, (duration * 1000) / Math.max(1, stepsCount));
           for (let step = 1; step <= stepsCount; step += 1) {
             const isLast = step === stepsCount;
+            const current = flipCountingUp ? (cell.start + step - 1) % 10 : (((cell.start - (step - 1)) % 10) + 10) % 10;
+            const nextDigit = flipCountingUp ? (cell.start + step) % 10 : (((cell.start - step) % 10) + 10) % 10;
             later(() => {
-              flipStep(cell, (step - 1) % 10, step % 10, flipMs);
+              flipStep(cell, current, nextDigit, flipMs, flipCountingUp);
               if (isLast) {
                 pending -= 1;
                 if (pending === 0) later(() => opts.onComplete?.(el), flipMs);

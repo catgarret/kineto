@@ -44,6 +44,10 @@ export default {
     }
     const bidir = horizontal || mixed;
     const threshold = Math.max(4, Number(opts.threshold ?? 24));
+    // autoAdvance (ms): step to the next section on a timer (0 = off). Resets on
+    // any manual navigation and pauses while the tab is hidden.
+    const autoAdvance = Math.max(0, Number(opts.autoAdvance || 0));
+    let autoTimer = null;
     let index = Math.min(sections.length - 1, Math.max(0, Number(opts.initial ?? 0)));
     let animating = false;
     let alive = true;
@@ -93,7 +97,11 @@ export default {
       } else if (horizontal) {
         section.style.flex = '0 0 100%';
       }
-      section.style.overflow = 'hidden';
+      // overflowY is switched to 'auto' per-section by syncSectionScroll() when
+      // its content is taller than the viewport, so a long section scrolls
+      // internally before the deck pages on.
+      section.style.overflowX = 'hidden';
+      section.style.overflowY = 'hidden';
       track.appendChild(section);
     });
     el.appendChild(track);
@@ -187,10 +195,35 @@ export default {
         if (!immediate) setTimeout(settle, duration * 1000 + 120);
       }
       syncDots();
+      if (autoAdvance) startAuto(); // reset the timer on every navigation
       opts.onChange?.(index, sections[index]);
     };
 
     const canMove = (dir) => loop || (dir > 0 ? index < sections.length - 1 : index > 0);
+
+    // Give each section internal scrolling only when its content overflows, so a
+    // tall section consumes the scroll first and the deck pages only at its edge.
+    const syncSectionScroll = () => sections.forEach((section) => {
+      section.style.overflowY = section.scrollHeight > section.clientHeight + 2 ? 'auto' : 'hidden';
+    });
+    // True while the active section can still scroll internally in `dir`.
+    const sectionCanScroll = (dir) => {
+      const section = sections[index];
+      if (!section) return false;
+      const max = section.scrollHeight - section.clientHeight;
+      if (max <= 2) return false;
+      return dir > 0 ? section.scrollTop < max - 1 : section.scrollTop > 1;
+    };
+
+    const stopAuto = () => { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } };
+    const startAuto = () => {
+      if (!autoAdvance || !alive) return;
+      stopAuto();
+      autoTimer = setInterval(() => {
+        if (animating) return;
+        if (index >= sections.length - 1 && !loop) go(0); else go(index + 1);
+      }, autoAdvance);
+    };
 
     // Wheel handling, gated ONLY by the transition:
     //   • While the deck can move in the wheel's direction, we preventDefault —
@@ -219,6 +252,14 @@ export default {
       const delta = bidir ? (Math.abs(dx) >= Math.abs(dy) ? dx : dy) : dy;
       if (Math.abs(delta) < 4) return;
       const dir = delta > 0 ? 1 : -1;
+      // Long section: let its own content scroll first; page only at its edge.
+      if (!horizontal && sectionCanScroll(dir)) {
+        event.preventDefault();
+        event.stopPropagation();
+        sections[index].scrollTop += dy;
+        if (autoAdvance) startAuto();
+        return;
+      }
       // Inside a scroll container, only take over once the deck is fully pinned
       // (covers the container's viewport). Otherwise let the container finish
       // scrolling the deck into place first — e.g. scrolling back UP, the parent
@@ -290,6 +331,12 @@ export default {
       const delta = swipeDelta(cur);
       if (Math.abs(delta) < 3) return;
       const dir = delta > 0 ? 1 : -1;
+      // Long section scrolls its own content first, then the deck pages at the edge.
+      if (!horizontal && sectionCanScroll(dir)) {
+        event.preventDefault();
+        sections[index].scrollTop += stepY;
+        return;
+      }
       // Inside a scroll container (vertical decks): forward the gesture until the
       // deck is fully pinned, so the parent rises into place first.
       const sp = horizontal ? null : scrollParent();
@@ -371,6 +418,10 @@ export default {
     }
 
     go(index, true);
+    requestAnimationFrame(syncSectionScroll);
+    let sectionRO = null;
+    if (typeof ResizeObserver !== 'undefined') { sectionRO = new ResizeObserver(syncSectionScroll); sectionRO.observe(el); }
+    startAuto();
 
     return {
       el,
@@ -379,10 +430,12 @@ export default {
       next: () => go(index + 1),
       prev: () => go(index - 1),
       get index() { return index; },
-      pause() {},
-      resume() {},
+      pause() { stopAuto(); },
+      resume() { startAuto(); },
       destroy() {
         alive = false;
+        stopAuto();
+        sectionRO?.disconnect();
         el.removeEventListener('wheel', onWheel);
         el.removeEventListener('touchstart', onTouchStart);
         el.removeEventListener('touchmove', onTouchMove);

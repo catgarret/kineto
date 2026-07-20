@@ -17,7 +17,10 @@
     *{box-sizing:border-box}
     /* Reserve the scrollbar's space always, so toggling overflow:hidden (intro
        lock, sitemap, lightbox) doesn't change the page width and jolt the layout. */
-    html{scroll-behavior:auto;overflow-anchor:none;overflow-x:clip;scrollbar-gutter:stable}
+    html{scroll-behavior:auto;overflow-anchor:none;overflow-x:clip}
+    /* Reserve scrollbar space only where there's a classic scrollbar (desktop).
+       On touch (overlay scrollbars) it's unneeded and can jitter scrolling. */
+    @media(pointer:fine){html{scrollbar-gutter:stable}}
     body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 var(--font-sans);overflow-anchor:none;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-x:clip;max-width:100%}
     button,a{font:inherit}
     ::selection{background:color-mix(in srgb,var(--accent) 24%,transparent)}
@@ -146,6 +149,9 @@
     .media-card .demo-stage{padding:0;aspect-ratio:4/3}
     .media-card img{width:100%;height:100%;object-fit:cover}
 
+    /* Touch-device notice for pointer-only demos (cursor, magnetic). */
+    .mk-na{position:relative}
+    .mk-na-overlay{position:absolute;inset:0;z-index:20;display:grid;place-items:center;text-align:center;white-space:pre-line;padding:18px;background:color-mix(in srgb,var(--panel) 74%,transparent);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);color:var(--muted);font:600 12.5px/1.55 var(--font-sans);border-radius:inherit}
     .overflow-display{width:100%;max-width:340px;padding:14px 18px;border-radius:10px;background:#101318;color:#ffd166;font:700 17px/1.25 var(--font-mono);border:1px solid #2b333f;box-shadow:inset 0 0 0 2px #0b0d10,inset 0 12px 24px rgba(0,0,0,.35)}
 
     .glow-demo{min-height:290px;padding:50px;text-align:center;display:grid;place-items:center;background:linear-gradient(150deg,#171a21,#232833);color:#fff;border:1px solid var(--line)}
