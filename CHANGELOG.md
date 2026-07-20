@@ -2,6 +2,10 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.17]
+
+- **Demo — progress ring truly centered**: the ring stage now fills its cell and grid-centers the indicator, so it sits dead-center vertically on mobile instead of drifting up.
+
 ## [0.8.16]
 
 - **Demo — first-screen snap only after content is seen**: the hero→first-section snap now waits until the hero is fully scrolled into view, so a hero taller than the viewport (low-res / small window) reveals its cut-off content by normal scroll before snapping instead of jumping straight past it.
