@@ -4,6 +4,7 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
 
 ## [0.8.18]
 
+- **Fix — horizontal pinned deck clipped**: the horizontal sticky-stack deck used `vh` for its height, so on mobile the bottom of a panel was clipped while scrolling down (URL bar showing). It now uses `svh` so panels always fit.
 - **Fix — mobile pinned-scroll bounce**: ScrollTrigger no longer refreshes on the mobile URL-bar show/hide resize (`ignoreMobileResize`), so sticky-stack / scroll-sequence sections stop jumping the page down to the footer.
 - **Demo — progress ring centered (for real)**: the ring stage now flex-centers, fixing the indicator being clipped at the top on mobile.
 

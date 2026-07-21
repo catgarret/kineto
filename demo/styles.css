@@ -201,8 +201,10 @@
 
     .scroll-word{font-size:clamp(2.5rem,9vw,7rem);font-weight:950;white-space:nowrap;letter-spacing:-.06em}
     .stack-vertical>article{min-height:170px;border-radius:var(--r-card);padding:28px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);margin-bottom:18px}
-    .horizontal-scroll{height:70vh}
-    .horizontal-scroll>article{min-height:65vh;border-radius:20px;padding:40px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;font-size:clamp(2rem,6vw,5rem);font-weight:900}
+    /* svh (small viewport) so the pinned deck fits even while the mobile URL bar
+       is showing — otherwise scrolling down clips the bottom of the panels. */
+    .horizontal-scroll{height:70vh;height:70svh}
+    .horizontal-scroll>article{min-height:65vh;min-height:65svh;border-radius:20px;padding:40px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;font-size:clamp(2rem,6vw,5rem);font-weight:900}
     .floating-scroll{height:70vh;border-radius:24px;background:#0f131a;color:#fff;overflow:hidden}
     .floating-scroll>article{padding:50px;text-align:center}
     .floating-scroll h3{font-size:clamp(2.4rem,7vw,6rem);margin:0;letter-spacing:-.06em}
