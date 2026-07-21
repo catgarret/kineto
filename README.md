@@ -192,4 +192,4 @@ npm run verify  # lint, build, tests, contract checks
 
 ## License
 
-MIT © [dongri](https://dongri.me) · Built with AI vibe-coding.
+MIT © [dongri.me](https://dongri.me) · Built with AI vibe-coding.
