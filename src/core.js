@@ -108,6 +108,11 @@ function ensureCoreServices() {
   const scrollTrigger = ST();
   const performance = Kineto.performance;
 
+  // Stop ScrollTrigger from refreshing (and yanking pinned sections) when the
+  // mobile browser's URL bar shows/hides — that tiny viewport resize is what
+  // makes pinned scroll (sticky-stack, scroll-sequence) bounce on phones.
+  try { scrollTrigger?.config?.({ ignoreMobileResize: true }); } catch (_error) { /* older ScrollTrigger */ }
+
   if (config.smooth && performance !== 'low') startSmoothService(gsap, scrollTrigger);
 
   visibilityHandler = () => {
@@ -196,7 +201,7 @@ function injectCSSFallback() {
 }
 
 const Kineto = {
-  version: '0.8.17',
+  version: '0.8.18',
 
   get env() {
     if (!cachedEnv) cachedEnv = env();

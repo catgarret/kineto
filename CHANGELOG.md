@@ -2,6 +2,11 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.18]
+
+- **Fix — mobile pinned-scroll bounce**: ScrollTrigger no longer refreshes on the mobile URL-bar show/hide resize (`ignoreMobileResize`), so sticky-stack / scroll-sequence sections stop jumping the page down to the footer.
+- **Demo — progress ring centered (for real)**: the ring stage now flex-centers, fixing the indicator being clipped at the top on mobile.
+
 ## [0.8.17]
 
 - **Demo — progress ring truly centered**: the ring stage now fills its cell and grid-centers the indicator, so it sits dead-center vertically on mobile instead of drifting up.
