@@ -164,4 +164,4 @@ npm run verify  # lint、建置、測試、契約檢查
 
 ## 授權
 
-MIT © [dongri](https://dongri.me) · 以 AI 氛圍編程（vibe coding）打造。
+MIT © [dongri.me](https://dongri.me) · 以 AI 氛圍編程（vibe coding）打造。
