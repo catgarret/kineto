@@ -371,7 +371,7 @@ function oe() {
 	e.id = "kineto-inline-fallback", e.textContent = "\n    @property --kt-angle { syntax: \"<angle>\"; initial-value: 0deg; inherits: false; }\n    @keyframes kt-border-spin { to { --kt-angle: 360deg; } }\n    @keyframes kt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }\n    @keyframes kt-aurora { to { transform: rotate(360deg); } }\n    @keyframes kt-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }\n    @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }\n    .kt-cursor-active, .kt-cursor-active * { cursor: none !important; }\n    .kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }\n    .kt-tw-caret { animation: kt-caret .8s step-end infinite; }\n    .kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }\n    .kt-slider-wrap { position: relative; overflow: hidden; }\n    @media (prefers-reduced-motion: reduce) {\n      [data-kt-reveal], [data-kt-text-split], [data-kt-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }\n    }\n  ", document.head.appendChild(e);
 }
 var Z = {
-	version: "0.8.22",
+	version: "0.8.23",
 	get env() {
 		return G ||= d(), G;
 	},
@@ -859,51 +859,51 @@ var fe = {
 		if (l && (d = { opacity: 1 }), !d) return console.warn(`[Kineto/reveal] Unknown preset: ${i}`), null;
 		if (!n || !r) return this.fallback(e, t, d);
 		if (l) {
-			let i = C(e, ["style", "class"]), a = Math.max(.05, Number(t.duration ?? .8));
+			let i = C(e, ["style", "class"]), a = Math.max(.05, Number(t.duration ?? .8)), o = t.ease || (t.spring === !0 ? "back.out(1.25)" : "power3.out");
 			e.style.willChange = "clip-path";
-			let o = { p: 1 }, c = () => {
-				e.style.clipPath = o.p <= .002 ? "none" : u(o.p);
+			let c = { p: 1 }, l = () => {
+				e.style.clipPath = c.p <= .002 ? "none" : u(c.p);
 			};
-			c();
-			let l = null, d = !1, f = () => {
-				l?.kill(), o.p = 1, c(), l = n.to(o, {
+			l();
+			let d = null, f = !1, p = () => {
+				d?.kill(), c.p = 1, l(), d = n.to(c, {
 					p: 0,
 					duration: a,
-					ease: _,
+					ease: o,
 					delay: Number(t.delay ?? 0),
 					onStart: () => ue(e, t),
-					onUpdate: c,
+					onUpdate: l,
 					onComplete: () => {
-						c(), t.onComplete?.(e);
+						l(), t.onComplete?.(e);
 					}
 				});
-			}, p = r.create({
+			}, m = r.create({
 				trigger: e,
 				start: t.start || "top 85%",
 				once: s,
 				onEnter: () => {
-					d || (d = !0, f());
+					f || (f = !0, p());
 				}
-			}), m = null;
-			return typeof IntersectionObserver < "u" && (m = new IntersectionObserver((e) => {
-				!e.some((e) => e.isIntersecting) || d || (d = !0, m.disconnect(), m = null, p?.disable(!1), f());
+			}), h = null;
+			return typeof IntersectionObserver < "u" && (h = new IntersectionObserver((e) => {
+				!e.some((e) => e.isIntersecting) || f || (f = !0, h.disconnect(), h = null, m?.disable(!1), p());
 			}, {
 				threshold: .12,
 				rootMargin: "0px 0px -8% 0px"
-			}), m.observe(e)), {
+			}), h.observe(e)), {
 				el: e,
 				type: "reveal",
 				replay() {
-					d = !0, f();
+					f = !0, p();
 				},
 				pause() {
-					l?.pause();
+					d?.pause();
 				},
 				resume() {
-					l?.resume();
+					d?.resume();
 				},
 				destroy() {
-					m?.disconnect(), p?.kill?.(), l?.kill(), i();
+					h?.disconnect(), m?.kill?.(), d?.kill(), i();
 				}
 			};
 		}

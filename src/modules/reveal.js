@@ -209,6 +209,9 @@ export default {
     if (isClip) {
       const clipRestore = snapshotAttributes(el, ['style', 'class']);
       const clipDuration = Math.max(0.05, Number(opts.duration ?? 0.8));
+      // Compute ease locally: the shared `const ease` below is declared after this
+      // branch's early return, so referencing it here would throw (TDZ).
+      const clipEase = opts.ease || (opts.spring === true ? 'back.out(1.25)' : 'power3.out');
       el.style.willChange = 'clip-path';
       const state = { p: 1 };
       const apply = () => { el.style.clipPath = state.p <= 0.002 ? 'none' : clipAt(state.p); };
@@ -219,7 +222,7 @@ export default {
         clipTween?.kill();
         state.p = 1; apply();
         clipTween = gsap.to(state, {
-          p: 0, duration: clipDuration, ease, delay: Number(opts.delay ?? 0),
+          p: 0, duration: clipDuration, ease: clipEase, delay: Number(opts.delay ?? 0),
           onStart: () => addClasses(el, opts), onUpdate: apply,
           onComplete: () => { apply(); opts.onComplete?.(el); }
         });

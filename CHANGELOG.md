@@ -2,6 +2,10 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.23]
+
+- **Fix — Wipe/mask stayed blank (real bug)**: the clip branch referenced `ease` before its declaration (TDZ), so `play()` threw and the clip never animated — the element stayed fully clipped (white). ease is now computed inside the branch; wipe reveals correctly.
+
 ## [0.8.22]
 
 - **Demo deploy — back to @latest + purge script**: the site loads the library from `@latest` again; run `npm run purge` after publishing to flush the jsDelivr cache so the newest build shows immediately.
