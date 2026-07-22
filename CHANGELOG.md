@@ -2,6 +2,10 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.20]
+
+- **Fix — progress ring off-center (root cause)**: a mobile `@media` rule lifted *every* `.kt-progress-ring` with `bottom:calc(...)!important`, shoving the in-card static ring up ~78px. Scoped it to `body>.kt-progress-ring` so only the floating corner ring is lifted; the demo ring now centers.
+
 ## [0.8.19]
 
 - **Demo — progress ring centered (absolute fill)**: the ring container now absolutely fills its stage and grid-centers, independent of any flex/grid height quirks, so the indicator is dead-center on mobile.

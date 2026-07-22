@@ -28,7 +28,10 @@
     .top-progress{position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));transform-origin:left;z-index:2}
     :root{--kt-progress-color:var(--accent)}
     .kt-progress-ring{--kt-progress-ring-bg:color-mix(in srgb,var(--panel) 82%,transparent);backdrop-filter:blur(10px)}
-    @media(max-width:1080px){.kt-progress-ring{bottom:calc(64px + max(14px,env(safe-area-inset-bottom)))!important}}
+    /* Only the FLOATING ring (appended straight to <body>) gets lifted above the
+       bottom bar — scoping to body> keeps this off the in-card static demo ring,
+       which is position:relative and would otherwise be shoved up ~78px. */
+    @media(max-width:1080px){body>.kt-progress-ring{bottom:calc(64px + max(14px,env(safe-area-inset-bottom)))!important}}
     .site-header{position:fixed;z-index:1000;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:13px 26px;background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent);color:var(--text)}
     /* buttons don't inherit color by default (they use the black system
        ButtonText), so the brand text went invisible in dark mode — force it. */
@@ -291,7 +294,7 @@
   .site-header{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:color-mix(in srgb,var(--bg) 82%,transparent)}
   .side-nav{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:color-mix(in srgb,var(--bg) 86%,transparent)}
   .to-top{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:color-mix(in srgb,var(--panel) 88%,transparent)}
-  .kt-progress-ring{backdrop-filter:blur(8px)!important}
+  body>.kt-progress-ring{backdrop-filter:blur(8px)!important}
 }
 
 /* Header icon button + Module Index sitemap overlay */
