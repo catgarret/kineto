@@ -100,6 +100,14 @@ Kineto.reveal('.card', { preset: 'fade-up', stagger: 0.06 });
 const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true });
 ```
 
+### iOS 엣지투엣지 (노치·홈바)
+
+전체화면 효과(로더·페이지 리빌·페이지 트랜지션)는 화면 전체를 덮습니다. 아이폰 노치와 홈바 아래까지 자연스럽게 이어지도록(색이 어긋난 띠가 생기지 않도록) viewport 메타에 `viewport-fit=cover`를 추가하세요:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+```
+
 ## 선택적 의존성
 
 코어는 단독으로 동작합니다. 아래 라이브러리가 페이지에 있으면 자동으로 감지해 스크롤 스크럽(GSAP + ScrollTrigger)과 스무스 스크롤(Lenis)에 활용하고, 없으면 표준 API로 폴백합니다.

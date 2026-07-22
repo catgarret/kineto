@@ -74,6 +74,14 @@ Kineto.reveal('.card', { preset: 'fade-up', stagger: 0.06 });
 const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true });
 ```
 
+### iOS 全面屏（刘海与主屏幕指示条）
+
+全屏效果（加载器、页面揭示、页面转场）会覆盖整个视口。为了让它们延伸到 iPhone 刘海和主屏幕指示条下方（而不是留下颜色不一致的条带），请在 viewport meta 中加入 `viewport-fit=cover`：
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+```
+
 ## 可选依赖
 
 核心可独立运行。如果页面中存在 GSAP + ScrollTrigger（滚动 scrub）或 Lenis（平滑滚动），Kineto 会自动检测并使用；否则回退到标准 API。

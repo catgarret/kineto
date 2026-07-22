@@ -147,6 +147,14 @@ import '@dong-gri/kineto/style.css';
 Kineto.autoInit();
 ```
 
+### iOS 풀스크린 대응 (노치·홈바)
+
+로더·페이지 리빌·페이지 트랜지션 같은 전체화면 효과가 아이폰 노치/홈바 아래까지 이어지려면 viewport 메타에 `viewport-fit=cover`를 넣으세요. (안 넣으면 안전영역만 색이 어긋나 보입니다.)
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+```
+
 ---
 
 ## 5. 예시

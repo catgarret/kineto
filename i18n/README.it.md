@@ -74,6 +74,14 @@ Kineto.reveal('.card', { preset: 'fade-up', stagger: 0.06 });
 const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true });
 ```
 
+### iOS edge-to-edge (notch e home bar)
+
+Gli effetti a schermo intero (loader, page reveal, page transition) coprono l'intero viewport. Perché si estendano sotto il notch e la home bar dell'iPhone (invece di lasciare una striscia di colore diverso), aggiungi `viewport-fit=cover` al meta viewport:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+```
+
 ## Dipendenze opzionali
 
 Il core funziona da solo. Se nella pagina sono presenti GSAP + ScrollTrigger (scrub allo scroll) o Lenis (smooth scroll), Kineto li rileva e li usa automaticamente; altrimenti ricade sulle API standard.

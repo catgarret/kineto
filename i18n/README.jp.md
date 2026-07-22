@@ -74,6 +74,14 @@ Kineto.reveal('.card', { preset: 'fade-up', stagger: 0.06 });
 const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true });
 ```
 
+### iOS エッジトゥエッジ（ノッチ・ホームバー）
+
+全画面エフェクト（ローダー・ページリビール・ページトランジション）はビューポート全体を覆います。iPhone のノッチやホームバーの下まで自然に伸びるよう（色のずれた帯が出ないよう）、viewport メタに `viewport-fit=cover` を追加してください：
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+```
+
 ## オプションの依存関係
 
 コアは単体で動作します。GSAP + ScrollTrigger（スクロールスクラブ）や Lenis（スムーススクロール）がページにあれば自動検出して活用し、なければ標準APIにフォールバックします。

@@ -102,6 +102,14 @@ Kineto.reveal('.card', { preset: 'fade-up', stagger: 0.06 });
 const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true });
 ```
 
+### iOS edge-to-edge (notch & home bar)
+
+Full-screen effects — the loader, page reveal and page transition — cover the whole viewport. So they extend under the iPhone notch and home bar instead of leaving a mismatched strip, add `viewport-fit=cover` to your viewport meta:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+```
+
 ## Optional dependencies
 
 The core runs on its own. If GSAP + ScrollTrigger (scroll scrubbing) or Lenis (smooth scroll) are present on the page, Kineto detects and uses them automatically; otherwise it falls back to standard APIs.

@@ -74,6 +74,14 @@ Kineto.reveal('.card', { preset: 'fade-up', stagger: 0.06 });
 const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true });
 ```
 
+### iOS 全螢幕（瀏海與主畫面列）
+
+全螢幕效果（載入器、頁面揭示、頁面轉場）會覆蓋整個視窗。為了讓它們延伸到 iPhone 瀏海與主畫面列底下（而非留下顏色不一致的長條），請在 viewport meta 加入 `viewport-fit=cover`：
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+```
+
 ## 選用相依
 
 核心可獨立運作。若頁面中存在 GSAP + ScrollTrigger（捲動 scrub）或 Lenis（平滑捲動），Kineto 會自動偵測並使用；否則回退到標準 API。

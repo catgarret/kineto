@@ -74,6 +74,14 @@ Kineto.reveal('.card', { preset: 'fade-up', stagger: 0.06 });
 const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true });
 ```
 
+### iOS во весь экран (вырез и домашняя полоса)
+
+Полноэкранные эффекты (загрузчик, page reveal, page transition) закрывают весь вьюпорт. Чтобы они заходили под вырез и домашнюю полосу iPhone (а не оставляли полоску другого цвета), добавьте `viewport-fit=cover` в мета viewport:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+```
+
 ## Необязательные зависимости
 
 Ядро работает самостоятельно. Если на странице есть GSAP + ScrollTrigger (scrub при скролле) или Lenis (плавный скролл), Kineto сам их обнаружит и задействует; иначе используется откат на стандартные API.

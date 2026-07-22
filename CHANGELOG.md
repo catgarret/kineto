@@ -2,7 +2,11 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
-## [0.8.25]
+## [0.8.26]
+
+- **Docs — iOS `viewport-fit=cover` note**: README (+ all 6 translations) and AI-PROMPT-GUIDE now tell consumers to add `viewport-fit=cover` so full-screen effects reach under the notch & home bar.
+
+## [0.8.25 audit]
 
 - **Fix — clip/mask on iOS Safari (audit)**: every clip-path animation now also sets `-webkit-clip-path` so iOS repaints intermediate frames instead of popping to the end — reveal wipe/mask (gsap), loader exit wipe/mask (CSS transition), and the textTransition / overflowText / glitch WAAPI keyframes. Full-screen overlays (loader, pageReveal, pageTransition) are `position:fixed;inset:0`, so they cover the notch & home-bar when the host page uses `viewport-fit=cover`.
 
