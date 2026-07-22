@@ -214,7 +214,13 @@ export default {
       const clipEase = opts.ease || (opts.spring === true ? 'back.out(1.25)' : 'power3.out');
       el.style.willChange = 'clip-path';
       const state = { p: 1 };
-      const apply = () => { el.style.clipPath = state.p <= 0.002 ? 'none' : clipAt(state.p); };
+      // iOS Safari needs the -webkit- prefix to repaint clip-path each frame;
+      // without it the intermediate frames are skipped and the reveal just pops.
+      const apply = () => {
+        const value = state.p <= 0.002 ? 'none' : clipAt(state.p);
+        el.style.clipPath = value;
+        el.style.webkitClipPath = value;
+      };
       apply();
       let clipTween = null;
       let played = false;

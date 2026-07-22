@@ -2,6 +2,10 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.25]
+
+- **Fix — Wipe/mask on iOS Safari**: the clip animation now also sets `-webkit-clip-path` each frame, so iOS repaints the intermediate frames instead of flashing blank then popping to the final state.
+
 ## [0.8.24]
 
 - **Demo — iOS notch & home-bar**: `viewport-fit=cover` + a `theme-color` meta (kept in sync with the light/dark toggle) + base bg on `<html>` + safe-area padding on the header, so the notch and home-bar areas match the page instead of showing mismatched colors — including the intro loader, whose orange fill now reaches the screen edges (theme-color also tinted to the intro canvas while it plays).

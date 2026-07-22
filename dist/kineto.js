@@ -371,7 +371,7 @@ function oe() {
 	e.id = "kineto-inline-fallback", e.textContent = "\n    @property --kt-angle { syntax: \"<angle>\"; initial-value: 0deg; inherits: false; }\n    @keyframes kt-border-spin { to { --kt-angle: 360deg; } }\n    @keyframes kt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }\n    @keyframes kt-aurora { to { transform: rotate(360deg); } }\n    @keyframes kt-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }\n    @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }\n    .kt-cursor-active, .kt-cursor-active * { cursor: none !important; }\n    .kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }\n    .kt-tw-caret { animation: kt-caret .8s step-end infinite; }\n    .kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }\n    .kt-slider-wrap { position: relative; overflow: hidden; }\n    @media (prefers-reduced-motion: reduce) {\n      [data-kt-reveal], [data-kt-text-split], [data-kt-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }\n    }\n  ", document.head.appendChild(e);
 }
 var Z = {
-	version: "0.8.24",
+	version: "0.8.25",
 	get env() {
 		return G ||= d(), G;
 	},
@@ -862,7 +862,8 @@ var fe = {
 			let i = C(e, ["style", "class"]), a = Math.max(.05, Number(t.duration ?? .8)), o = t.ease || (t.spring === !0 ? "back.out(1.25)" : "power3.out");
 			e.style.willChange = "clip-path";
 			let c = { p: 1 }, l = () => {
-				e.style.clipPath = c.p <= .002 ? "none" : u(c.p);
+				let t = c.p <= .002 ? "none" : u(c.p);
+				e.style.clipPath = t, e.style.webkitClipPath = t;
 			};
 			l();
 			let d = null, f = !1, p = () => {
