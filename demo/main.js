@@ -49,6 +49,10 @@
       // so releasing the intro leaves the scroll position jumping around.
       const introScrollLock = document.documentElement.style.overflow;
       document.documentElement.style.overflow = 'hidden';
+      // Match the iOS status-bar / home-bar tint to the intro canvas so the notch
+      // and home-bar areas blend with the loader while it fills.
+      const introTcMeta = document.getElementById('theme-color-meta');
+      introTcMeta?.setAttribute('content', '#efe9de');
       // Fast/file loads can already be complete when this script runs —
       // resolve immediately then, otherwise the loader would never finish
       // (and skipping it entirely meant no intro at all).
@@ -56,7 +60,7 @@
         ? Promise.resolve()
         : new Promise(resolve=>window.addEventListener('load',resolve,{once:true}));
       let finished=false;
-      const finishIntro=()=>{ if(finished)return; finished=true; if(overlay.parentNode)overlay.remove(); document.documentElement.style.overflow=introScrollLock; startModules(); };
+      const finishIntro=()=>{ if(finished)return; finished=true; if(overlay.parentNode)overlay.remove(); document.documentElement.style.overflow=introScrollLock; introTcMeta?.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#0d0e12'); startModules(); };
       try{
         Kineto.loader(overlay,{
           type:'slot',
