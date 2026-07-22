@@ -2,6 +2,10 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.19]
+
+- **Demo — progress ring centered (absolute fill)**: the ring container now absolutely fills its stage and grid-centers, independent of any flex/grid height quirks, so the indicator is dead-center on mobile.
+
 ## [0.8.18]
 
 - **Fix — horizontal pinned deck clipped**: the horizontal sticky-stack deck used `vh` for its height, so on mobile the bottom of a panel was clipped while scrolling down (URL bar showing). It now uses `svh` so panels always fit.
