@@ -320,9 +320,9 @@ export default {
       layers.forEach((layer, index) => {
         const direction = index === 1 ? -0.6 : index === 2 ? 0.45 : 1;
         animate(layer, [
-          { opacity: 0.9, clipPath: sliceOf(), transform: `translate(${offsetX * direction}px,${offsetY * direction}px)` },
-          { opacity: 0.85, clipPath: sliceOf(), transform: `translate(${-offsetX * direction * 0.6}px,${-offsetY * direction}px)`, offset: 0.5 },
-          { opacity: 0, clipPath: 'inset(0 0 0 0)', transform: 'translate(0,0)' }
+          { opacity: 0.9, clipPath: sliceOf(), webkitClipPath: sliceOf(), transform: `translate(${offsetX * direction}px,${offsetY * direction}px)` },
+          { opacity: 0.85, clipPath: sliceOf(), webkitClipPath: sliceOf(), transform: `translate(${-offsetX * direction * 0.6}px,${-offsetY * direction}px)`, offset: 0.5 },
+          { opacity: 0, clipPath: 'inset(0 0 0 0)', webkitClipPath: 'inset(0 0 0 0)', transform: 'translate(0,0)' }
         ], { duration, delay: index * 18, easing: `steps(${steps}, end)`, fill: 'forwards' });
       });
       animate(base, [

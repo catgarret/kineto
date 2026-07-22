@@ -127,8 +127,8 @@ export default {
     // so left/right wipes travel exactly across what the eye can see.
     const maskOut = async (node) => {
       const current = node.animate([
-        { clipPath: 'inset(0 0 0 0)', transform: 'translate3d(0,0,0)', opacity: 1 },
-        { clipPath: hiddenClip(maskDirection), transform: nudge(maskDirection), opacity: 0.6 }
+        { clipPath: 'inset(0 0 0 0)', webkitClipPath: 'inset(0 0 0 0)', transform: 'translate3d(0,0,0)', opacity: 1 },
+        { clipPath: hiddenClip(maskDirection), webkitClipPath: hiddenClip(maskDirection), transform: nudge(maskDirection), opacity: 0.6 }
       ], { duration: maskDuration, easing: opts.maskEase || 'cubic-bezier(.5,0,.75,.4)', fill: 'forwards' });
       animation = current;
       try { await current.finished; } catch (_error) { /* cancelled */ }
@@ -136,8 +136,8 @@ export default {
     };
     const maskIn = async (node) => {
       const current = node.animate([
-        { clipPath: oppositeClip(maskDirection), transform: nudge(maskDirection === 'bottom-to-top' ? 'top-to-bottom' : maskDirection === 'top-to-bottom' ? 'bottom-to-top' : maskDirection === 'left-to-right' ? 'right-to-left' : 'left-to-right'), opacity: 0.6 },
-        { clipPath: 'inset(0 0 0 0)', transform: 'translate3d(0,0,0)', opacity: 1 }
+        { clipPath: oppositeClip(maskDirection), webkitClipPath: oppositeClip(maskDirection), transform: nudge(maskDirection === 'bottom-to-top' ? 'top-to-bottom' : maskDirection === 'top-to-bottom' ? 'bottom-to-top' : maskDirection === 'left-to-right' ? 'right-to-left' : 'left-to-right'), opacity: 0.6 },
+        { clipPath: 'inset(0 0 0 0)', webkitClipPath: 'inset(0 0 0 0)', transform: 'translate3d(0,0,0)', opacity: 1 }
       ], { duration: maskDuration, easing: opts.maskEase || 'cubic-bezier(.22,.8,.3,1)', fill: 'forwards' });
       animation = current;
       try { await current.finished; } catch (_error) { /* cancelled */ }

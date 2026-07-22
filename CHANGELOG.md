@@ -4,7 +4,7 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
 
 ## [0.8.25]
 
-- **Fix — Wipe/mask on iOS Safari**: the clip animation now also sets `-webkit-clip-path` each frame, so iOS repaints the intermediate frames instead of flashing blank then popping to the final state.
+- **Fix — clip/mask on iOS Safari (audit)**: every clip-path animation now also sets `-webkit-clip-path` so iOS repaints intermediate frames instead of popping to the end — reveal wipe/mask (gsap), loader exit wipe/mask (CSS transition), and the textTransition / overflowText / glitch WAAPI keyframes. Full-screen overlays (loader, pageReveal, pageTransition) are `position:fixed;inset:0`, so they cover the notch & home-bar when the host page uses `viewport-fit=cover`.
 
 ## [0.8.24]
 

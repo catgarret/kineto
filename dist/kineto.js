@@ -2616,8 +2616,20 @@ var ze = {
 		}]
 	},
 	clip: {
-		enter: [{ clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0 0 0)" }],
-		leave: [{ clipPath: "inset(0 0 0 0)" }, { clipPath: "inset(0 0 0 100%)" }]
+		enter: [{
+			clipPath: "inset(0 100% 0 0)",
+			webkitClipPath: "inset(0 100% 0 0)"
+		}, {
+			clipPath: "inset(0 0 0 0)",
+			webkitClipPath: "inset(0 0 0 0)"
+		}],
+		leave: [{
+			clipPath: "inset(0 0 0 0)",
+			webkitClipPath: "inset(0 0 0 0)"
+		}, {
+			clipPath: "inset(0 0 0 100%)",
+			webkitClipPath: "inset(0 0 0 100%)"
+		}]
 	}
 };
 He.slide = He["slide-up"];
@@ -2981,10 +2993,12 @@ var Qe = {
 		}, N = async (e) => {
 			let n = e.animate([{
 				clipPath: "inset(0 0 0 0)",
+				webkitClipPath: "inset(0 0 0 0)",
 				transform: "translate3d(0,0,0)",
 				opacity: 1
 			}, {
 				clipPath: qe(l),
+				webkitClipPath: qe(l),
 				transform: Ye(l),
 				opacity: .6
 			}], {
@@ -3000,10 +3014,12 @@ var Qe = {
 		}, P = async (e) => {
 			let n = e.animate([{
 				clipPath: Je(l),
+				webkitClipPath: Je(l),
 				transform: Ye(l === "bottom-to-top" ? "top-to-bottom" : l === "top-to-bottom" ? "bottom-to-top" : l === "left-to-right" ? "right-to-left" : "left-to-right"),
 				opacity: .6
 			}, {
 				clipPath: "inset(0 0 0 0)",
+				webkitClipPath: "inset(0 0 0 0)",
 				transform: "translate3d(0,0,0)",
 				opacity: 1
 			}], {
@@ -3443,7 +3459,7 @@ var tt = {
 				"left",
 				"right"
 			], a = i.includes(t.exitDirection) ? t.exitDirection : i.includes(t.fill) ? t.fill : "up";
-			if ((r === "wipe" || r === "mask") && (e.style.clipPath = "inset(0 0 0 0)", e.offsetWidth), e.style.transition = `opacity ${n}s ease,transform ${n}s cubic-bezier(.4,0,.2,1),clip-path ${n}s cubic-bezier(.76,0,.24,1)`, r === "slide") {
+			if ((r === "wipe" || r === "mask") && (e.style.clipPath = "inset(0 0 0 0)", e.style.webkitClipPath = "inset(0 0 0 0)", e.offsetWidth), e.style.transition = `opacity ${n}s ease,transform ${n}s cubic-bezier(.4,0,.2,1),clip-path ${n}s cubic-bezier(.76,0,.24,1),-webkit-clip-path ${n}s cubic-bezier(.76,0,.24,1)`, r === "slide") {
 				let t = {
 					up: "0,-100%",
 					down: "0,100%",
@@ -3458,7 +3474,7 @@ var tt = {
 					left: "0 100% 0 0",
 					right: "0 0 0 100%"
 				};
-				e.style.clipPath = `inset(${t[a]})`;
+				e.style.clipPath = `inset(${t[a]})`, e.style.webkitClipPath = `inset(${t[a]})`;
 			} else e.style.opacity = "0";
 			m = setTimeout(() => {
 				e.style.display = "none", document.body.style.overflow = o.bodyOverflow, document.documentElement.style.overflow = o.rootOverflow, t.onComplete?.(e);
@@ -4724,17 +4740,20 @@ var xt = "!@#$%^&*()<>?/|{}~ABCDEFGHIJabcdefghij0123456789", St = {
 					{
 						opacity: .9,
 						clipPath: t(),
+						webkitClipPath: t(),
 						transform: `translate(${n * o}px,${r * o}px)`
 					},
 					{
 						opacity: .85,
 						clipPath: t(),
+						webkitClipPath: t(),
 						transform: `translate(${-n * o * .6}px,${-r * o}px)`,
 						offset: .5
 					},
 					{
 						opacity: 0,
 						clipPath: "inset(0 0 0 0)",
+						webkitClipPath: "inset(0 0 0 0)",
 						transform: "translate(0,0)"
 					}
 				], {

@@ -153,15 +153,19 @@ export default {
         // The transition needs a concrete start state — from `none` the mask
         // would snap instead of sweeping.
         el.style.clipPath = 'inset(0 0 0 0)';
+        el.style.webkitClipPath = 'inset(0 0 0 0)';
         void el.offsetWidth;
       }
-      el.style.transition = `opacity ${duration}s ease,transform ${duration}s cubic-bezier(.4,0,.2,1),clip-path ${duration}s cubic-bezier(.76,0,.24,1)`;
+      // -webkit-clip-path in the transition too, so iOS Safari sweeps the mask
+      // instead of snapping to the end.
+      el.style.transition = `opacity ${duration}s ease,transform ${duration}s cubic-bezier(.4,0,.2,1),clip-path ${duration}s cubic-bezier(.76,0,.24,1),-webkit-clip-path ${duration}s cubic-bezier(.76,0,.24,1)`;
       if (exitEffect === 'slide') {
         const slides = { up: '0,-100%', down: '0,100%', left: '-100%,0', right: '100%,0' };
         el.style.transform = `translate3d(${slides[exitDirection]},0)`;
       } else if (exitEffect === 'wipe' || exitEffect === 'mask') {
         const insets = { up: '0 0 100% 0', down: '100% 0 0 0', left: '0 100% 0 0', right: '0 0 0 100%' };
         el.style.clipPath = `inset(${insets[exitDirection]})`;
+        el.style.webkitClipPath = `inset(${insets[exitDirection]})`;
       } else el.style.opacity = '0';
       timer = setTimeout(() => {
         el.style.display = 'none';

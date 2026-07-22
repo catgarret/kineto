@@ -29,8 +29,9 @@ const EFFECTS = {
     leave: [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(1.12)' }]
   },
   clip: {
-    enter: [{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }],
-    leave: [{ clipPath: 'inset(0 0 0 0)' }, { clipPath: 'inset(0 0 0 100%)' }]
+    // -webkit-clip-path mirrors keep the clip animation working on iOS Safari.
+    enter: [{ clipPath: 'inset(0 100% 0 0)', webkitClipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)', webkitClipPath: 'inset(0 0 0 0)' }],
+    leave: [{ clipPath: 'inset(0 0 0 0)', webkitClipPath: 'inset(0 0 0 0)' }, { clipPath: 'inset(0 0 0 100%)', webkitClipPath: 'inset(0 0 0 100%)' }]
   }
 };
 EFFECTS.slide = EFFECTS['slide-up'];
