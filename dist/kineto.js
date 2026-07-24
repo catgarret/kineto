@@ -6848,13 +6848,15 @@ var Ht = {
 			}
 			let v = !1, y = null, b = [], x = () => {
 				if (v) return;
-				v = !0, _.forEach((e, t) => {
-					let n = l - 1 - t, r = setTimeout(() => {
-						e.style.transform = g;
-					}, s + n * u);
-					b.push(r);
+				v = !0, m.offsetWidth, requestAnimationFrame(() => {
+					_.forEach((e, t) => {
+						let n = l - 1 - t;
+						b.push(setTimeout(() => {
+							e.style.transform = g;
+						}, s + n * u));
+					});
 				});
-				let n = s + (l - 1) * u + o * 1e3 + 60;
+				let n = s + (l - 1) * u + o * 1e3 + 80;
 				b.push(setTimeout(() => {
 					_.forEach((e) => e.remove()), t.onComplete?.(e);
 				}, n));

@@ -50,13 +50,17 @@ export default {
     const play = () => {
       if (played) return;
       played = true;
-      // Top layer leaves first, lower layers follow, uncovering the element.
-      panels.forEach((panel, i) => {
-        const order = layers - 1 - i;
-        const t = setTimeout(() => { panel.style.transform = exitTransform; }, delay + order * stagger);
-        timers.push(t);
+      // Ensure the covered start frame is painted, then trigger the transitions
+      // on the next frame — otherwise a 0ms delay jumps instead of animating.
+      void wrap.offsetWidth;
+      requestAnimationFrame(() => {
+        // Top layer leaves first, lower layers follow, uncovering the element.
+        panels.forEach((panel, i) => {
+          const order = layers - 1 - i;
+          timers.push(setTimeout(() => { panel.style.transform = exitTransform; }, delay + order * stagger));
+        });
       });
-      const total = delay + (layers - 1) * stagger + duration * 1000 + 60;
+      const total = delay + (layers - 1) * stagger + duration * 1000 + 80;
       timers.push(setTimeout(() => { panels.forEach((panel) => panel.remove()); opts.onComplete?.(el); }, total));
     };
 
