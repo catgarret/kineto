@@ -2,6 +2,15 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.34]
+
+- **Playground robustness (systemic)**: DOM-mutating modules (text-split, wrap, line-split, item-move) are now restored to their pristine snapshot before each live rebuild (keeping the current option values), so toggling options no longer leaves a demo broken until Reset. Stacked containers (e.g. ambient over lazy) are skipped to avoid wiping an inner module.
+- **Full destroy() audit of all 45 modules** for restore-completeness. Fixes found:
+  - **`loader`**: the page-fill overlay was never removed on destroy and accumulated on every recreate; also guarded against removing the host element when a custom `renderUI` returns no root.
+  - **`hold`**: now restores the element's `position`/`overflow` and clears `kt-hold-confirmed` / `aria-pressed` on destroy.
+  - **`cardGlow`**: restores the inline `position` it promoted onto child elements.
+- **`coverReveal`**: `lines` mode on an element with no text (e.g. an image) now falls back to a whole-element block cover instead of blanking it; original text is restored on destroy.
+
 ## [0.8.33]
 
 - **2 new Motion-benchmarked modules (43 → 45)**:

@@ -78,7 +78,7 @@ function createProgressUI(el, type, opts) {
     }
     if (fillEl) fillEl.style.transform = `${fillEl.dataset.axis}(${progress / 100})`;
   };
-  return { root, render };
+  return { root, fillEl, render };
 }
 
 function collectPageResources(opts) {
@@ -294,7 +294,11 @@ export default {
         if (loadHandler) window.removeEventListener('load', loadHandler);
         performanceObserver?.disconnect();
         cleanupFunctions.forEach((cleanup) => cleanup());
-        progressUI.root?.remove();
+        // Only remove UI we created — never the host element itself (a custom
+        // renderUI with no root falls back to `el`). Also remove the page-fill
+        // overlay so it doesn't accumulate across recreate.
+        if (progressUI.root && progressUI.root !== el) progressUI.root.remove();
+        progressUI.fillEl?.remove();
         document.body.style.overflow = original.bodyOverflow;
         document.documentElement.style.overflow = original.rootOverflow;
         if (original.style == null) el.removeAttribute('style'); else el.setAttribute('style', original.style);

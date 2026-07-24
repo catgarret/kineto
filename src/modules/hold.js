@@ -10,6 +10,8 @@ export default {
     const duration = Math.max(120, Number(opts.duration ?? 1000));
     const color = opts.color || 'color-mix(in srgb, currentColor 22%, transparent)';
 
+    const prevPosition = el.style.position;
+    const prevOverflow = el.style.overflow;
     if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
     el.style.overflow = el.style.overflow || 'hidden';
 
@@ -108,6 +110,10 @@ export default {
         el.removeEventListener('keydown', onKey);
         el.removeEventListener('keyup', onKeyUp);
         fill.remove();
+        el.style.position = prevPosition;
+        el.style.overflow = prevOverflow;
+        el.classList.remove('kt-hold-confirmed');
+        el.removeAttribute('aria-pressed');
       }
     };
   }

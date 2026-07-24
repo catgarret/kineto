@@ -94,8 +94,10 @@ export default {
     }
 
     el.insertBefore(root, el.firstChild);
+    // Track the children we promote to positioned so destroy() can undo it.
+    const promotedChildren = [];
     Array.from(el.children).forEach((child) => {
-      if (child !== root && getComputedStyle(child).position === 'static') child.style.position = 'relative';
+      if (child !== root && getComputedStyle(child).position === 'static') { child.style.position = 'relative'; promotedChildren.push(child); }
     });
 
     let targetX = el.clientWidth / 2;
@@ -211,6 +213,7 @@ export default {
         el.removeEventListener('pointerleave', onLeave);
         el.removeEventListener('pointerdown', onPress);
         root.remove();
+        promotedChildren.forEach((child) => { child.style.position = ''; });
         if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);
       }
     };

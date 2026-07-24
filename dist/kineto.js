@@ -371,7 +371,7 @@ function oe() {
 	e.id = "kineto-inline-fallback", e.textContent = "\n    @property --kt-angle { syntax: \"<angle>\"; initial-value: 0deg; inherits: false; }\n    @keyframes kt-border-spin { to { --kt-angle: 360deg; } }\n    @keyframes kt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }\n    @keyframes kt-aurora { to { transform: rotate(360deg); } }\n    @keyframes kt-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }\n    @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }\n    .kt-cursor-active, .kt-cursor-active * { cursor: none !important; }\n    .kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }\n    .kt-tw-caret { animation: kt-caret .8s step-end infinite; }\n    .kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }\n    .kt-slider-wrap { position: relative; overflow: hidden; }\n    @media (prefers-reduced-motion: reduce) {\n      [data-kt-reveal], [data-kt-text-split], [data-kt-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }\n    }\n  ", document.head.appendChild(e);
 }
 var Z = {
-	version: "0.8.33",
+	version: "0.8.34",
 	get env() {
 		return G ||= d(), G;
 	},
@@ -3425,6 +3425,7 @@ function $e(e, t, n) {
 	}
 	return c && (c.setAttribute("aria-hidden", "true"), e.appendChild(c), n.labelColor && (c.style.color = n.labelColor), n.labelBlend && (c.style.mixBlendMode = String(n.labelBlend))), {
 		root: c,
+		fillEl: l,
 		render: (e) => {
 			let n = h(Number(e) || 0, 0, 100);
 			if (o && (o.textContent = `${Math.round(n)}%`), t === "bar" && s && (s.style.transform = `scaleX(${n / 100})`), t === "circular" && s) {
@@ -3581,7 +3582,7 @@ var tt = {
 				f = !1;
 			},
 			destroy() {
-				d = !0, clearTimeout(m), p != null && cancelAnimationFrame(p), g && window.removeEventListener("load", g), _?.disconnect(), v.forEach((e) => e()), s.root?.remove(), document.body.style.overflow = o.bodyOverflow, document.documentElement.style.overflow = o.rootOverflow, o.style == null ? e.removeAttribute("style") : e.setAttribute("style", o.style), o.aria == null ? e.removeAttribute("aria-label") : e.setAttribute("aria-label", o.aria), o.role == null ? e.removeAttribute("role") : e.setAttribute("role", o.role), o.class == null ? e.removeAttribute("class") : e.setAttribute("class", o.class), e.removeAttribute("aria-valuenow");
+				d = !0, clearTimeout(m), p != null && cancelAnimationFrame(p), g && window.removeEventListener("load", g), _?.disconnect(), v.forEach((e) => e()), s.root && s.root !== e && s.root.remove(), s.fillEl?.remove(), document.body.style.overflow = o.bodyOverflow, document.documentElement.style.overflow = o.rootOverflow, o.style == null ? e.removeAttribute("style") : e.setAttribute("style", o.style), o.aria == null ? e.removeAttribute("aria-label") : e.setAttribute("aria-label", o.aria), o.role == null ? e.removeAttribute("role") : e.setAttribute("role", o.role), o.class == null ? e.removeAttribute("class") : e.setAttribute("class", o.class), e.removeAttribute("aria-valuenow");
 			}
 		};
 	},
@@ -4952,37 +4953,39 @@ var wt = {
 			let e = Math.max(2, Number(t.spread ?? 6)), n = Math.max(1, Number(t.cycleDuration ?? t.speed ?? 6)), r = t.color1 || t.color || "rgba(88,150,255,.55)", i = t.color2 || "rgba(94,234,195,.45)";
 			g.style.cssText = `position:absolute;inset:${-e}px;z-index:-1;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .45s ease;`, _.style.cssText = `position:absolute;inset:0;border-radius:inherit;background:conic-gradient(from var(--kt-angle,0deg),${r},${i},${r});filter:blur(${Math.max(4, s)}px);opacity:${o};animation:kt-border-spin ${n}s linear infinite;will-change:filter;`;
 		} else n === "shine" && (_.style.cssText = `position:absolute;top:0;bottom:0;left:-55%;width:42%;border-radius:0;background:linear-gradient(90deg,transparent,${f},transparent);filter:blur(${s}px);opacity:${o};transform:skewX(-20deg);will-change:transform;`);
-		e.insertBefore(g, e.firstChild), Array.from(e.children).forEach((e) => {
-			e !== g && getComputedStyle(e).position === "static" && (e.style.position = "relative");
+		e.insertBefore(g, e.firstChild);
+		let S = [];
+		Array.from(e.children).forEach((e) => {
+			e !== g && getComputedStyle(e).position === "static" && (e.style.position = "relative", S.push(e));
 		});
-		let S = e.clientWidth / 2, C = e.clientHeight / 2, w = S, T = C, E = null, D = !0, O = !1, k = (e, n) => {
+		let C = e.clientWidth / 2, w = e.clientHeight / 2, T = C, E = w, D = null, O = !0, k = !1, A = (e, n) => {
 			if (!y) return;
 			let r = Math.atan2(n - 50, e - 50) * 180 / Math.PI + 90, i = t.surfaceGradient;
 			y.style.background = i || `linear-gradient(${r}deg,transparent 12%,${t.surfaceColor || "rgba(255,255,255,.48)"} 42%,${t.surfaceColor2 || "rgba(145,180,255,.16)"} 55%,transparent 78%)`, y.style.backgroundSize = `${Math.max(100, Number(t.surfaceSize ?? 170))}% ${Math.max(100, Number(t.surfaceSize ?? 170))}%`, y.style.backgroundPosition = `${e}% ${n}%`;
-		}, A = () => {
-			if (!D) return;
-			w = m(w, S, d), T = m(T, C, d);
-			let t = Math.max(1, e.clientWidth), r = Math.max(1, e.clientHeight), i = h(w / t * 100, 0, 100), a = h(T / r * 100, 0, 100);
-			g.style.setProperty("--kt-x", `${i}%`), g.style.setProperty("--kt-y", `${a}%`), (n === "spotlight" || n === "pointer" || n === "border") && (_.style.transform = `translate3d(${w}px,${T}px,0)`), k(i, a);
-			let o = Math.abs(w - S) > .08 || Math.abs(T - C) > .08;
-			E = O && (l || o) ? requestAnimationFrame(A) : null;
 		}, j = () => {
-			D && E == null && n !== "aurora" && n !== "shine" && n !== "comet" && (E = requestAnimationFrame(A));
-		}, M = (t) => {
+			if (!O) return;
+			T = m(T, C, d), E = m(E, w, d);
+			let t = Math.max(1, e.clientWidth), r = Math.max(1, e.clientHeight), i = h(T / t * 100, 0, 100), a = h(E / r * 100, 0, 100);
+			g.style.setProperty("--kt-x", `${i}%`), g.style.setProperty("--kt-y", `${a}%`), (n === "spotlight" || n === "pointer" || n === "border") && (_.style.transform = `translate3d(${T}px,${E}px,0)`), A(i, a);
+			let o = Math.abs(T - C) > .08 || Math.abs(E - w) > .08;
+			D = k && (l || o) ? requestAnimationFrame(j) : null;
+		}, M = () => {
+			O && D == null && n !== "aurora" && n !== "shine" && n !== "comet" && (D = requestAnimationFrame(j));
+		}, N = (t) => {
 			if (!l) return;
 			let n = e.getBoundingClientRect();
 			if (!n.width || !n.height) return;
 			let r = h(((t.clientX - n.left) / n.width - .5) * u + .5, 0, 1), i = h(((t.clientY - n.top) / n.height - .5) * u + .5, 0, 1);
-			S = r * n.width, C = i * n.height, j();
-		}, N = (e) => {
-			O = !0, g.style.opacity = "1", M(e), n === "shine" && _.animate([{ transform: "translateX(0) skewX(-20deg)" }, { transform: "translateX(390%) skewX(-20deg)" }], {
+			C = r * n.width, w = i * n.height, M();
+		}, P = (e) => {
+			k = !0, g.style.opacity = "1", N(e), n === "shine" && _.animate([{ transform: "translateX(0) skewX(-20deg)" }, { transform: "translateX(390%) skewX(-20deg)" }], {
 				duration: Math.max(100, Number(t.duration ?? 800)),
 				easing: t.ease || "ease-in-out"
-			}), j();
-		}, P = () => {
-			O = !1, S = e.clientWidth / 2, C = e.clientHeight / 2, g.style.opacity = Ct(t.alwaysOn, n === "aurora" || n === "comet") ? String(o) : "0", j();
-		}, F = (e) => {
-			O = !0, g.style.opacity = "1", M(e), g.animate([
+			}), M();
+		}, F = () => {
+			k = !1, C = e.clientWidth / 2, w = e.clientHeight / 2, g.style.opacity = Ct(t.alwaysOn, n === "aurora" || n === "comet") ? String(o) : "0", M();
+		}, I = (e) => {
+			k = !0, g.style.opacity = "1", N(e), g.animate([
 				{ filter: "brightness(1)" },
 				{
 					filter: "brightness(1.5) saturate(1.15)",
@@ -4992,19 +4995,21 @@ var wt = {
 			], {
 				duration: 520,
 				easing: "cubic-bezier(.2,.7,.2,1)"
-			}), j();
+			}), M();
 		};
-		return e.addEventListener("pointerenter", N), e.addEventListener("pointermove", M, { passive: !0 }), e.addEventListener("pointerleave", P), e.addEventListener("pointerdown", F), Ct(t.alwaysOn, n === "aurora" || n === "comet") && (g.style.opacity = String(o)), k(50, 50), {
+		return e.addEventListener("pointerenter", P), e.addEventListener("pointermove", N, { passive: !0 }), e.addEventListener("pointerleave", F), e.addEventListener("pointerdown", I), Ct(t.alwaysOn, n === "aurora" || n === "comet") && (g.style.opacity = String(o)), A(50, 50), {
 			el: e,
 			type: "cardGlow",
 			pause() {
-				D = !1, E != null && cancelAnimationFrame(E), _.style.animationPlayState = "paused";
+				O = !1, D != null && cancelAnimationFrame(D), _.style.animationPlayState = "paused";
 			},
 			resume() {
-				D || (D = !0, _.style.animationPlayState = "running", j());
+				O || (O = !0, _.style.animationPlayState = "running", M());
 			},
 			destroy() {
-				D = !1, E != null && cancelAnimationFrame(E), e.removeEventListener("pointerenter", N), e.removeEventListener("pointermove", M), e.removeEventListener("pointerleave", P), e.removeEventListener("pointerdown", F), g.remove(), r == null ? e.removeAttribute("style") : e.setAttribute("style", r);
+				O = !1, D != null && cancelAnimationFrame(D), e.removeEventListener("pointerenter", P), e.removeEventListener("pointermove", N), e.removeEventListener("pointerleave", F), e.removeEventListener("pointerdown", I), g.remove(), S.forEach((e) => {
+					e.style.position = "";
+				}), r == null ? e.removeAttribute("style") : e.setAttribute("style", r);
 			}
 		};
 	},
@@ -6294,15 +6299,15 @@ var Ht = {
 		};
 	}
 }, Kt = { create(e, t = {}) {
-	let n = Math.max(120, Number(t.duration ?? 1e3)), r = t.color || "color-mix(in srgb, currentColor 22%, transparent)";
+	let n = Math.max(120, Number(t.duration ?? 1e3)), r = t.color || "color-mix(in srgb, currentColor 22%, transparent)", i = e.style.position, a = e.style.overflow;
 	getComputedStyle(e).position === "static" && (e.style.position = "relative"), e.style.overflow = e.style.overflow || "hidden";
-	let i = document.createElement("span");
-	i.className = "kt-hold-fill", i.setAttribute("aria-hidden", "true"), i.style.cssText = `position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);background:${r};pointer-events:none;border-radius:inherit;z-index:0;`, e.insertBefore(i, e.firstChild);
-	let a = null, o = 0, s = !1, c = !1, l = (e) => {
-		i.style.transform = `scaleX(${h(e, 0, 1)})`;
-	}, u = () => {
-		a != null && (cancelAnimationFrame(a), a = null);
-	}, d = () => {
+	let o = document.createElement("span");
+	o.className = "kt-hold-fill", o.setAttribute("aria-hidden", "true"), o.style.cssText = `position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);background:${r};pointer-events:none;border-radius:inherit;z-index:0;`, e.insertBefore(o, e.firstChild);
+	let s = null, c = 0, l = !1, u = !1, d = (e) => {
+		o.style.transform = `scaleX(${h(e, 0, 1)})`;
+	}, f = () => {
+		s != null && (cancelAnimationFrame(s), s = null);
+	}, p = () => {
 		if (t.submit === !1) return;
 		let n = t.action || e.getAttribute("data-kt-hold-action");
 		if (n) {
@@ -6315,10 +6320,10 @@ var Ht = {
 		}
 		let r = e.closest?.("form"), i = t.submit === !0 || e.type === "submit" || e.getAttribute("data-kt-hold-submit") != null;
 		r && i && (typeof r.requestSubmit == "function" ? r.requestSubmit(e.type === "submit" ? e : void 0) : r.submit());
-	}, f = (r) => {
-		let i = h((r - o) / n, 0, 1);
-		if (l(i), i >= 1) {
-			c = !0, s = !1, a = null, e.classList.add("kt-hold-confirmed"), e.setAttribute("aria-pressed", "true");
+	}, m = (r) => {
+		let i = h((r - c) / n, 0, 1);
+		if (d(i), i >= 1) {
+			u = !0, l = !1, s = null, e.classList.add("kt-hold-confirmed"), e.setAttribute("aria-pressed", "true");
 			let n = !0;
 			try {
 				let t = new CustomEvent("kt-hold-confirm", {
@@ -6327,31 +6332,31 @@ var Ht = {
 				});
 				n = e.dispatchEvent(t);
 			} catch {}
-			t.onComplete?.(e), n && d();
+			t.onComplete?.(e), n && p();
 			return;
 		}
-		a = requestAnimationFrame(f);
-	}, p = () => {
-		s || c || (s = !0, o = performance.now(), i.style.transition = "none", u(), a = requestAnimationFrame(f));
-	}, m = () => {
-		s = !1, u(), !c && (i.style.transition = `transform ${Math.min(.35, n / 3e3)}s ease`, l(0));
-	}, g = (e) => {
-		e.pointerType === "mouse" && e.button !== 0 || p();
-	}, _ = (e) => {
-		(e.key === "Enter" || e.key === " ") && (e.preventDefault(), p());
+		s = requestAnimationFrame(m);
+	}, g = () => {
+		l || u || (l = !0, c = performance.now(), o.style.transition = "none", f(), s = requestAnimationFrame(m));
+	}, _ = () => {
+		l = !1, f(), !u && (o.style.transition = `transform ${Math.min(.35, n / 3e3)}s ease`, d(0));
 	}, v = (e) => {
-		(e.key === "Enter" || e.key === " ") && m();
+		e.pointerType === "mouse" && e.button !== 0 || g();
+	}, y = (e) => {
+		(e.key === "Enter" || e.key === " ") && (e.preventDefault(), g());
+	}, b = (e) => {
+		(e.key === "Enter" || e.key === " ") && _();
 	};
-	return e.addEventListener("pointerdown", g), e.addEventListener("pointerup", m), e.addEventListener("pointerleave", m), e.addEventListener("pointercancel", m), e.addEventListener("keydown", _), e.addEventListener("keyup", v), {
+	return e.addEventListener("pointerdown", v), e.addEventListener("pointerup", _), e.addEventListener("pointerleave", _), e.addEventListener("pointercancel", _), e.addEventListener("keydown", y), e.addEventListener("keyup", b), {
 		el: e,
 		type: "hold",
 		reset() {
-			c = !1, e.classList.remove("kt-hold-confirmed"), m();
+			u = !1, e.classList.remove("kt-hold-confirmed"), _();
 		},
 		pause() {},
 		resume() {},
 		destroy() {
-			u(), e.removeEventListener("pointerdown", g), e.removeEventListener("pointerup", m), e.removeEventListener("pointerleave", m), e.removeEventListener("pointercancel", m), e.removeEventListener("keydown", _), e.removeEventListener("keyup", v), i.remove();
+			f(), e.removeEventListener("pointerdown", v), e.removeEventListener("pointerup", _), e.removeEventListener("pointerleave", _), e.removeEventListener("pointercancel", _), e.removeEventListener("keydown", y), e.removeEventListener("keyup", b), o.remove(), e.style.position = i, e.style.overflow = a, e.classList.remove("kt-hold-confirmed"), e.removeAttribute("aria-pressed");
 		}
 	};
 } }, qt = {
