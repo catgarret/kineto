@@ -2,7 +2,7 @@
   "$schema": "./kineto.features.schema.json",
   "contractVersion": "1.3.0",
   "libraryVersion": "0.8.33",
-  "moduleCount": 43,
+  "moduleCount": 45,
   "modules": [
     {
       "name": "ambientMedia",
@@ -1352,6 +1352,36 @@
         "stagger",
         "threshold",
         "waitForImage"
+      ]
+    },
+    {
+      "name": "gesture",
+      "attribute": "data-kt-gesture",
+      "defaultVariant": "spring",
+      "variants": [
+        "spring"
+      ],
+      "publicOptions": [
+        "duration",
+        "ease",
+        "hoverScale",
+        "lift",
+        "tapScale"
+      ]
+    },
+    {
+      "name": "drag",
+      "attribute": "data-kt-drag",
+      "defaultVariant": "free",
+      "variants": [
+        "free"
+      ],
+      "publicOptions": [
+        "axis",
+        "bounds",
+        "handle",
+        "inertia",
+        "snapBack"
       ]
     }
   ],

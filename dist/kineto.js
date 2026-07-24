@@ -3673,7 +3673,7 @@ function at(e) {
 	return e.clientX >= 0 && e.clientY >= 0 && e.clientX <= window.innerWidth && e.clientY <= window.innerHeight;
 }
 function ot(e, t) {
-	return t.global === !0 ? !1 : t.global === !1 ? !0 : !e || e === document.body || e === document.documentElement ? !1 : e.clientWidth > 4 && e.clientHeight > 4;
+	return t.global === !0 ? !1 : t.global === !1 ? !0 : !e || e === document.body || e === document.documentElement || !e.children.length && !e.textContent.trim() ? !1 : e.clientWidth > 4 && e.clientHeight > 4;
 }
 var st = {
 	create(e, t = {}) {
@@ -6928,9 +6928,122 @@ var Ht = {
 		reduced(e, t) {
 			return this.create(e, t);
 		}
+	},
+	gesture: {
+		create(e, t = {}) {
+			if (d().reducedMotion) return {
+				el: e,
+				type: "gesture",
+				pause() {},
+				resume() {},
+				destroy() {}
+			};
+			let n = Number(t.hoverScale ?? 1.04), r = Number(t.tapScale ?? .96), i = Number(t.lift ?? 0), a = Math.max(0, Number(t.duration ?? .22)), o = t.ease || "cubic-bezier(.34,1.56,.64,1)", s = e.style.transition, c = e.style.transform, l = e.style.willChange;
+			e.style.transition = `transform ${a}s ${o}`, e.style.willChange = "transform";
+			let u = !1, f = !1, p = () => {
+				let t = f ? r : u ? n : 1, a = u && !f ? -i : 0;
+				e.style.transform = `translateY(${a}px) scale(${t})`;
+			}, m = () => {
+				u = !0, p();
+			}, h = () => {
+				u = !1, f = !1, p();
+			}, g = () => {
+				f = !0, p();
+			}, _ = () => {
+				f = !1, p();
+			}, v = () => {
+				u = !0, p();
+			}, y = () => {
+				u = !1, f = !1, p();
+			}, b = (e) => {
+				(e.key === " " || e.key === "Enter") && (f = !0, p());
+			}, x = (e) => {
+				(e.key === " " || e.key === "Enter") && (f = !1, p());
+			};
+			return e.addEventListener("pointerenter", m), e.addEventListener("pointerleave", h), e.addEventListener("pointerdown", g), e.addEventListener("pointerup", _), e.addEventListener("pointercancel", _), e.addEventListener("focus", v), e.addEventListener("blur", y), e.addEventListener("keydown", b), e.addEventListener("keyup", x), {
+				el: e,
+				type: "gesture",
+				pause() {},
+				resume() {},
+				destroy() {
+					e.removeEventListener("pointerenter", m), e.removeEventListener("pointerleave", h), e.removeEventListener("pointerdown", g), e.removeEventListener("pointerup", _), e.removeEventListener("pointercancel", _), e.removeEventListener("focus", v), e.removeEventListener("blur", y), e.removeEventListener("keydown", b), e.removeEventListener("keyup", x), e.style.transition = s, e.style.transform = c, e.style.willChange = l;
+				}
+			};
+		},
+		reduced(e) {
+			return {
+				el: e,
+				type: "gesture",
+				pause() {},
+				resume() {},
+				destroy() {}
+			};
+		}
+	},
+	drag: {
+		create(e, t = {}) {
+			d().reducedMotion;
+			let n = [
+				"x",
+				"y",
+				"both"
+			].includes(t.axis) ? t.axis : "both", r = t.bounds, i = t.snapBack === !0, a = t.inertia !== !1 && !i, o = t.handle && e.querySelector(t.handle) || e, s = e.style.transform, c = e.style.transition, l = e.style.touchAction, u = o.style.cursor;
+			e.style.touchAction = n === "x" ? "pan-y" : n === "y" ? "pan-x" : "none", o.style.cursor = "grab";
+			let f = 0, p = 0, m = !1, g = 0, _ = 0, v = 0, y = 0, b = 0, x = 0, S = 0, C = 0, w = 0, T = null, E = () => {
+				if (r !== "parent") return null;
+				let t = e.offsetParent || e.parentElement;
+				if (!t) return null;
+				let n = t.getBoundingClientRect(), i = e.getBoundingClientRect(), a = i.left - f, o = i.top - p;
+				return {
+					minX: n.left - a,
+					maxX: n.right - (a + i.width),
+					minY: n.top - o,
+					maxY: n.bottom - (o + i.height)
+				};
+			}, D = (t, r) => {
+				n === "y" && (t = 0), n === "x" && (r = 0);
+				let i = E();
+				i && (t = h(t, i.minX, i.maxX), r = h(r, i.minY, i.maxY)), f = t, p = r, e.style.transform = `translate(${f}px, ${p}px)`;
+			}, O = (t) => {
+				t.button != null && t.button !== 0 || (m = !0, e.style.transition = "none", o.style.cursor = "grabbing", g = t.clientX, _ = t.clientY, v = f, y = p, b = t.clientX, x = t.clientY, S = performance.now(), T &&= (cancelAnimationFrame(T), null));
+			}, k = (e) => {
+				if (!m) return;
+				D(v + (e.clientX - g), y + (e.clientY - _));
+				let t = performance.now(), n = t - S || 16;
+				C = (e.clientX - b) / n, w = (e.clientY - x) / n, b = e.clientX, x = e.clientY, S = t;
+			}, A = () => {
+				if (m) {
+					if (m = !1, o.style.cursor = "grab", i) e.style.transition = "transform .42s cubic-bezier(.22,.8,.3,1)", D(0, 0);
+					else if (a && (Math.abs(C) > .02 || Math.abs(w) > .02)) {
+						let e = () => {
+							C *= .92, w *= .92, D(f + C * 16, p + w * 16), T = Math.abs(C) > .02 || Math.abs(w) > .02 ? requestAnimationFrame(e) : null;
+						};
+						T = requestAnimationFrame(e);
+					}
+				}
+			}, j = (t) => {
+				let n = t.shiftKey ? 20 : 6, r = !0;
+				e.style.transition = "transform .12s ease", t.key === "ArrowLeft" ? D(f - n, p) : t.key === "ArrowRight" ? D(f + n, p) : t.key === "ArrowUp" ? D(f, p - n) : t.key === "ArrowDown" ? D(f, p + n) : r = !1, r && t.preventDefault();
+			};
+			return o.addEventListener("pointerdown", O), window.addEventListener("pointermove", k), window.addEventListener("pointerup", A), window.addEventListener("pointercancel", A), e.hasAttribute("tabindex") || (e.tabIndex = 0), e.addEventListener("keydown", j), {
+				el: e,
+				type: "drag",
+				reset() {
+					e.style.transition = "transform .42s cubic-bezier(.22,.8,.3,1)", D(0, 0);
+				},
+				pause() {},
+				resume() {},
+				destroy() {
+					T && cancelAnimationFrame(T), o.removeEventListener("pointerdown", O), window.removeEventListener("pointermove", k), window.removeEventListener("pointerup", A), window.removeEventListener("pointercancel", A), e.removeEventListener("keydown", j), e.style.transform = s, e.style.transition = c, e.style.touchAction = l, o.style.cursor = u;
+				}
+			};
+		},
+		reduced(e, t) {
+			return this.create(e, t);
+		}
 	}
 };
 Object.entries(Xt).forEach(([e, t]) => Z.register(e, t));
-var $ = (e) => (t, n) => Z[e](t, n), Zt = $("parallax"), Qt = $("mouseParallax"), $t = $("reveal"), en = $("counter"), tn = $("lazy"), nn = $("textSplit"), rn = $("blurText"), an = $("shuffle"), on = $("typewriter"), sn = $("textReveal"), cn = $("textTransition"), ln = $("magnetic"), un = $("marquee"), dn = $("overflowText"), fn = $("loader"), pn = $("tilt"), mn = $("cursor"), hn = $("textFill"), gn = $("stickyStack"), _n = $("scrollVelocity"), vn = $("progress"), yn = $("slider"), bn = $("ambientMedia"), xn = $("pageReveal"), Sn = $("glitch"), Cn = $("cardGlow"), wn = $("lightbox"), Tn = $("pageTransition"), En = $("vibrate"), Dn = $("ripple"), On = $("cssScroll"), kn = $("scrollSequence"), An = $("brushReveal"), jn = $("fullpage"), Mn = $("confetti"), Nn = $("accordion"), Pn = $("hold"), Fn = $("megaMenu"), In = $("toast"), Ln = $("bottomSheet"), Rn = $("tabs"), zn = $("radial"), Bn = $("coverReveal"), Vn = Z;
+var $ = (e) => (t, n) => Z[e](t, n), Zt = $("parallax"), Qt = $("mouseParallax"), $t = $("reveal"), en = $("counter"), tn = $("lazy"), nn = $("textSplit"), rn = $("blurText"), an = $("shuffle"), on = $("typewriter"), sn = $("textReveal"), cn = $("textTransition"), ln = $("magnetic"), un = $("marquee"), dn = $("overflowText"), fn = $("loader"), pn = $("tilt"), mn = $("cursor"), hn = $("textFill"), gn = $("stickyStack"), _n = $("scrollVelocity"), vn = $("progress"), yn = $("slider"), bn = $("ambientMedia"), xn = $("pageReveal"), Sn = $("glitch"), Cn = $("cardGlow"), wn = $("lightbox"), Tn = $("pageTransition"), En = $("vibrate"), Dn = $("ripple"), On = $("cssScroll"), kn = $("scrollSequence"), An = $("brushReveal"), jn = $("fullpage"), Mn = $("confetti"), Nn = $("accordion"), Pn = $("hold"), Fn = $("megaMenu"), In = $("toast"), Ln = $("bottomSheet"), Rn = $("tabs"), zn = $("radial"), Bn = $("coverReveal"), Vn = $("gesture"), Hn = $("drag"), Un = Z;
 //#endregion
-export { Nn as accordion, bn as ambientMedia, rn as blurText, Ln as bottomSheet, An as brushReveal, Cn as cardGlow, Mn as confetti, en as counter, Bn as coverReveal, On as cssScroll, mn as cursor, Vn as default, jn as fullpage, Sn as glitch, Pn as hold, tn as lazy, wn as lightbox, fn as loader, ln as magnetic, un as marquee, Fn as megaMenu, Xt as modules, Qt as mouseParallax, dn as overflowText, xn as pageReveal, Tn as pageTransition, Zt as parallax, vn as progress, zn as radial, $t as reveal, Dn as ripple, kn as scrollSequence, _n as scrollVelocity, an as shuffle, yn as slider, gn as stickyStack, Rn as tabs, hn as textFill, sn as textReveal, nn as textSplit, cn as textTransition, pn as tilt, In as toast, on as typewriter, En as vibrate };
+export { Nn as accordion, bn as ambientMedia, rn as blurText, Ln as bottomSheet, An as brushReveal, Cn as cardGlow, Mn as confetti, en as counter, Bn as coverReveal, On as cssScroll, mn as cursor, Un as default, Hn as drag, jn as fullpage, Vn as gesture, Sn as glitch, Pn as hold, tn as lazy, wn as lightbox, fn as loader, ln as magnetic, un as marquee, Fn as megaMenu, Xt as modules, Qt as mouseParallax, dn as overflowText, xn as pageReveal, Tn as pageTransition, Zt as parallax, vn as progress, zn as radial, $t as reveal, Dn as ripple, kn as scrollSequence, _n as scrollVelocity, an as shuffle, yn as slider, gn as stickyStack, Rn as tabs, hn as textFill, sn as textReveal, nn as textSplit, cn as textTransition, pn as tilt, In as toast, on as typewriter, En as vibrate };

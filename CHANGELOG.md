@@ -4,6 +4,13 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
 
 ## [0.8.33]
 
+- **2 new Motion-benchmarked modules (43 → 45)**:
+  - **`data-kt-gesture`** — whileHover / whileTap feedback: springs up (+ optional `lift`) on hover/focus, presses down on pointer/Enter/Space. Options: `hoverScale`, `tapScale`, `lift`, `duration`, `ease`. Keyboard-accessible; no-op under reduced motion.
+  - **`data-kt-drag`** — draggable with `axis` lock, `bounds:"parent"` containment, `snapBack` spring-return, `inertia` momentum, and a `handle` selector. Focus + arrow keys nudge (Shift = larger). Reduced motion keeps drag, drops momentum.
+- **Cursor**: empty cursor holders (`<div data-kt-cursor>` with no children/text) are now treated as **global** automatically, so the native OS cursor is reliably hidden (a stretched empty holder was being mis-detected as a scoped container).
+- **Demo i18n**: language switch no longer breaks Replay — module-bearing elements (e.g. the text `coverReveal`) are excluded from the translation pass that rewrites paragraph HTML.
+- All README translations (ko/jp/zh-CN/zh-TW/ru/it) and AI-PROMPT-GUIDE updated to 45 modules.
+
 - **Radial carousel**: prev/next now advance on a single click (the pointer-capture that stole clicks is gone), wrap-around items jump instantly instead of sweeping across the arc, and the `left`/`right` dock focal angles are corrected (items were landing off-screen).
 - **Cover reveal**: load-aware — when wrapping an `<img>` that isn't decoded yet it waits for load before sweeping (`waitForImage`, default on), so it never uncovers a blank frame; inherits the element's `border-radius` so panels clip to rounded corners; text (`lines`) mode split fixed to real rendered lines with sequential per-line reveal and 2-layer support.
 - **Mega-menu**: the open/close indicator is now a clean SVG chevron (was a crude CSS border caret); ↑/↓ move between links in an open panel.

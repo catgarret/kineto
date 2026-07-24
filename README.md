@@ -20,7 +20,7 @@ English · [한국어](i18n/README.ko.md) · [日本語](i18n/README.jp.md) · [
 
 > **Kineto** — the name comes from *kinetic* (from the Greek *kínēsis*, “motion”). A fitting name for a library that is all about motion on the web.
 
-Kineto is an interactive web motion effects library with live controls and copy-ready code — 34 modules for motion, media, scroll, loaders, and text, with integrations for JavaScript, React, Vue, and jQuery. Attach effects with a single `data-kt-*` attribute or drive them precisely through a JavaScript API. The core has no required dependencies, and on unsupported browsers or low-end devices the effects switch off while the content stays intact.
+Kineto is an interactive web motion effects library with live controls and copy-ready code — 45 modules for motion, media, scroll, loaders, and text, with integrations for JavaScript, React, Vue, and jQuery. Attach effects with a single `data-kt-*` attribute or drive them precisely through a JavaScript API. The core has no required dependencies, and on unsupported browsers or low-end devices the effects switch off while the content stays intact.
 
 > Building with an AI coding tool (Cursor, Claude, etc.)? See the [AI prompt guide](AI-PROMPT-GUIDE.md) — it includes a ready-to-paste instruction that tells the assistant to reach for Kineto modules first for motion and interaction.
 
@@ -50,7 +50,7 @@ Every effect is tunable in the [live demo](https://git.dongri.me/example/kineto)
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/lightbox.gif" width="620" alt="Lightbox">
 
-See the [full module list](#modules) below for all 34 modules.
+See the [full module list](#modules) below for all 45 modules.
 
 ## Installation
 

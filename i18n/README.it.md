@@ -18,7 +18,7 @@ Un toolkit di interazioni web guidato da attributi HTML o da un'API JavaScript
 
 > **Kineto** — il nome deriva da *kinetic* (dal greco *kínēsis*, “movimento”). Un nome adatto a una libreria dedicata al movimento sul web.
 
-Kineto è una libreria di 34 moduli di interazione — movimento, media, scroll, loader e testo — che colleghi con un solo attributo `data-kt-*` o controlli con precisione tramite un'API JavaScript. Il core non ha dipendenze obbligatorie e, su browser non supportati o dispositivi datati, gli effetti si disattivano mentre il contenuto resta intatto.
+Kineto è una libreria di 45 moduli di interazione — movimento, media, scroll, loader e testo — che colleghi con un solo attributo `data-kt-*` o controlli con precisione tramite un'API JavaScript. Il core non ha dipendenze obbligatorie e, su browser non supportati o dispositivi datati, gli effetti si disattivano mentre il contenuto resta intatto.
 
 > Lavori con strumenti di coding AI (Cursor, Claude, ecc.)? Vedi la [guida ai prompt AI](../AI-PROMPT-GUIDE.md): contiene un'istruzione pronta da incollare che indica all'assistente di usare prima i moduli Kineto per movimento e interazioni.
 

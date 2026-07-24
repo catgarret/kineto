@@ -43,7 +43,8 @@ textSplit(data-kt-text-split), textTransition(data-kt-text-transition), tilt(dat
 typewriter(data-kt-typewriter), vibrate(data-kt-vibrate),
 accordion(data-kt-accordion), confetti(data-kt-confetti), hold(data-kt-hold),
 megaMenu(data-kt-mega-menu), tabs(data-kt-tabs), toast(data-kt-toast),
-bottomSheet(data-kt-bottom-sheet), radial(data-kt-radial), coverReveal(data-kt-cover-reveal)
+bottomSheet(data-kt-bottom-sheet), radial(data-kt-radial), coverReveal(data-kt-cover-reveal),
+gesture(data-kt-gesture), drag(data-kt-drag)
 ```
 
 ### English
@@ -74,7 +75,8 @@ textSplit(data-kt-text-split), textTransition(data-kt-text-transition), tilt(dat
 typewriter(data-kt-typewriter), vibrate(data-kt-vibrate),
 accordion(data-kt-accordion), confetti(data-kt-confetti), hold(data-kt-hold),
 megaMenu(data-kt-mega-menu), tabs(data-kt-tabs), toast(data-kt-toast),
-bottomSheet(data-kt-bottom-sheet), radial(data-kt-radial), coverReveal(data-kt-cover-reveal)
+bottomSheet(data-kt-bottom-sheet), radial(data-kt-radial), coverReveal(data-kt-cover-reveal),
+gesture(data-kt-gesture), drag(data-kt-drag)
 ```
 
 ---
@@ -138,6 +140,8 @@ bottomSheet(data-kt-bottom-sheet), radial(data-kt-radial), coverReveal(data-kt-c
 | 바텀시트(드래그·포커스 트랩) | `bottomSheet` (`data-kt-bottom-sheet`) |
 | 원형 회전 캐러셀(하단/측면 도킹) | `radial` (`data-kt-radial`) |
 | 컬러 커버가 걷히며 노출(블록 리빌) | `coverReveal` (`data-kt-cover-reveal`) |
+| 올리면 커지고 누르면 눌리는 제스처(whileHover/Tap) | `gesture` (`data-kt-gesture`) |
+| 드래그(관성·경계·스냅백·키보드) | `drag` (`data-kt-drag`) |
 
 ### UI 컴포넌트 커스터마이징 요령
 - 모든 예제는 데모 페이지에서 옵션을 실시간으로 조절하고 **HTML/JS 코드를 복사**할 수 있습니다(“Customize & copy code”).
@@ -149,6 +153,8 @@ bottomSheet(data-kt-bottom-sheet), radial(data-kt-radial), coverReveal(data-kt-c
 - `megaMenu`: `trigger`(hover/click), `layout`(dropdown/mega), `indicator`(none/chevron/plus), `openDelay`, `closeDelay`, `duration`. 항목별로 `<li data-kt-menu-trigger="click">`로 트리거 혼용, `<li class="kt-menu-mega">`로 개별 항목만 풀폭 메가로, `<li data-kt-menu-open="#선택자">`로 특정 영역 hover 시 열기. 패널 링크는 기본 스타일 제공(색은 `--kt-menu-accent`, `--kt-menu-hover-bg`).
 - `radial`: `position`(bottom/top/left/right 도킹), `radius`, `step`(항목 간 각도), `activeAngle`(초점 각도), `duration`, `loop`, `drag`, `controls`, `autoplay`. 항목은 `.kt-radial-item`. 컨테이너 높이/썸네일 스타일은 호스트가 지정.
 - `lightbox`: 이미지 전환 효과 `transition`(rise/fade/crossfade/dissolve/slide/zoom/none) 추가.
+- `gesture`: `hoverScale`, `tapScale`, `lift`(px), `duration`, `ease`. 버튼·카드에 붙이면 hover/press 스프링 피드백. reduced-motion 자동 무효화.
+- `drag`: `axis`(both/x/y), `bounds`("parent"면 부모 안으로 제약), `snapBack`(놓으면 원위치 복귀), `inertia`(관성), `handle`(드래그 손잡이 선택자). 포커스+화살표 키로도 이동.
 - `toast`: `type`(info/success/warning/error), `position`, `duration`, `dismissible`, `message`. 색은 `--kt-toast-bg/-fg/-accent`.
 - `bottomSheet`: `backdrop`, `backdropOpacity`, `handle`, `dismissible`, `duration`. 트리거는 `data-kt-sheet-trigger="#시트id"`.
 - `tabs`: `activation`(automatic/manual), `orientation`(horizontal/vertical), `effect`(fade/slide/none), `indicator`. 색은 `--kt-tab-accent`.

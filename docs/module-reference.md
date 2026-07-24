@@ -2,10 +2,10 @@
 
 > 이 문서는 `kineto.features.json`에서 생성됩니다. 직접 수정하지 말고 계약 파일을 명시적으로 변경한 뒤 `npm run docs:contract`를 실행하세요.
 
-- Library: 0.8.32
+- Library: 0.8.33
 - Feature contract: 1.3.0
 - Behavior contract: 1.2.0
-- Public modules: 43
+- Public modules: 45
 - Root properties: `version`, `env`, `performance`, `registry`, `instanceCount`, `smoothEnabled`, `lenis`, `core`
 - Core methods: `config()`, `setAnimationEngine()`, `enableSmooth()`, `disableSmooth()`, `toggleSmooth()`, `scrollTo()`, `register()`, `unregister()`, `create()`, `scan()`, `init()`, `initModules()`, `autoInit()`, `getInstance()`, `destroyModule()`, `replay()`, `destroy()`, `pause()`, `resume()`, `refresh()`
 - Additional named exports: `modules`
@@ -312,3 +312,17 @@
 - Default variant: `block`
 - Variants: `block`
 - Public options: `color`, `color2`, `delay`, `direction`, `duration`, `ease`, `layers`, `lines`, `onComplete`, `stagger`, `threshold`, `waitForImage`
+
+## gesture
+
+- Attribute: `data-kt-gesture`
+- Default variant: `spring`
+- Variants: `spring`
+- Public options: `duration`, `ease`, `hoverScale`, `lift`, `tapScale`
+
+## drag
+
+- Attribute: `data-kt-drag`
+- Default variant: `free`
+- Variants: `free`
+- Public options: `axis`, `bounds`, `handle`, `inertia`, `snapBack`

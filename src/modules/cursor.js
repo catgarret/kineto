@@ -28,6 +28,11 @@ function isScopedElement(el, opts) {
   if (opts.global === true) return false;
   if (opts.global === false) return true;
   if (!el || el === document.body || el === document.documentElement) return false;
+  // A dedicated, empty cursor holder (no children, no text) is a GLOBAL cursor,
+  // not a scoped container. Prevents a stretched empty <div data-kt-cursor>
+  // from being mis-detected as a scope (which left the native cursor visible
+  // everywhere outside that div).
+  if (!el.children.length && !el.textContent.trim()) return false;
   return el.clientWidth > 4 && el.clientHeight > 4;
 }
 

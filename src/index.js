@@ -43,6 +43,8 @@ import bottomSheetModule from './modules/bottomSheet.js';
 import tabsModule from './modules/tabs.js';
 import radialModule from './modules/radial.js';
 import coverRevealModule from './modules/coverReveal.js';
+import gestureModule from './modules/gesture.js';
+import dragModule from './modules/drag.js';
 
 const moduleEntries = {
   parallax: parallaxModule,
@@ -87,7 +89,9 @@ const moduleEntries = {
   bottomSheet: bottomSheetModule,
   tabs: tabsModule,
   radial: radialModule,
-  coverReveal: coverRevealModule
+  coverReveal: coverRevealModule,
+  gesture: gestureModule,
+  drag: dragModule
 };
 
 Object.entries(moduleEntries).forEach(([name, module]) => Kineto.register(name, module));
@@ -137,6 +141,8 @@ export const bottomSheet = call('bottomSheet');
 export const tabs = call('tabs');
 export const radial = call('radial');
 export const coverReveal = call('coverReveal');
+export const gesture = call('gesture');
+export const drag = call('drag');
 
 export { moduleEntries as modules };
 export default Kineto;
