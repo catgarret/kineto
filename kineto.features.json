@@ -1347,6 +1347,7 @@
         "duration",
         "ease",
         "layers",
+        "lines",
         "onComplete",
         "stagger",
         "threshold"

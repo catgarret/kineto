@@ -255,7 +255,9 @@ html.kt-preload [data-kt-text-transition] {
 /* Countdown progress bar (opt-in via `progress:true`). Colour = accent. */
 .kt-toast__bar {
   position: absolute; left: 0; bottom: 0; height: var(--kt-toast-bar-size, 3px); width: 100%;
-  transform-origin: left center; background: var(--kt-toast-bar, var(--kt-toast-accent, #4aa8ff));
+  transform-origin: left center; opacity: .85;
+  /* Key orange by default (not the type accent) — override with --kt-toast-bar. */
+  background: var(--kt-toast-bar, #ff5b1c);
 }
 /* Type accent is opt-in only (add your own border/icon via --kt-toast-accent):
    no decorative border by default. */
@@ -264,10 +266,12 @@ html.kt-preload [data-kt-text-transition] {
 .kt-toast--error   { --kt-toast-accent: #ff5a5a; }
 .kt-toast__msg { flex: 1 1 auto; }
 .kt-toast__close {
-  flex: 0 0 auto; border: 0; background: transparent; color: inherit; cursor: pointer;
-  font-size: 18px; line-height: 1; opacity: .6; padding: 0 2px;
+  flex: 0 0 auto; width: 22px; height: 22px; margin: -2px -4px -2px 2px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 6px; background: transparent; color: inherit; cursor: pointer;
+  font-size: 17px; line-height: 1; opacity: .55;
 }
-.kt-toast__close:hover { opacity: 1; }
+.kt-toast__close:hover { opacity: 1; background: color-mix(in srgb, currentColor 14%, transparent); }
 
 /* ── Bottom sheet ─────────────────────────────────────────────────────────────
    Themeable via --kt-sheet-bg, --kt-sheet-radius, --kt-sheet-max. */

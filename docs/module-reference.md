@@ -311,4 +311,4 @@
 - Attribute: `data-kt-cover-reveal`
 - Default variant: `block`
 - Variants: `block`
-- Public options: `color`, `color2`, `delay`, `direction`, `duration`, `ease`, `layers`, `onComplete`, `stagger`, `threshold`
+- Public options: `color`, `color2`, `delay`, `direction`, `duration`, `ease`, `layers`, `lines`, `onComplete`, `stagger`, `threshold`

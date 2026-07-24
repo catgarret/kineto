@@ -6516,12 +6516,12 @@ var Ht = {
 				}
 				d.appendChild(f), n || f.animate([{
 					opacity: 0,
-					transform: "translateY(12px) scale(.98)"
+					transform: "translateY(10px)"
 				}, {
 					opacity: 1,
-					transform: "none"
+					transform: "translateY(0)"
 				}], {
-					duration: 260,
+					duration: 240,
 					easing: "cubic-bezier(.22,.8,.3,1)"
 				});
 				let m = null, h = Number(t.duration ?? a), g = 0, _ = null, v = () => {
@@ -6750,8 +6750,8 @@ var Ht = {
 			].includes(t.position) ? t.position : "bottom", s = {
 				bottom: -90,
 				top: 90,
-				left: 180,
-				right: 0
+				left: 0,
+				right: 180
 			}[o], c = t.activeAngle == null ? s : Number(t.activeAngle), l = Math.max(0, Number(t.duration ?? .6)), u = t.loop !== !1, f = t.drag !== !1, p = t.controls !== !1;
 			e.classList.add("kt-radial", `kt-radial--${o}`), e.style.setProperty("--kt-radial-radius", `${i}px`), e.setAttribute("role", "group"), e.setAttribute("aria-roledescription", "carousel");
 			let m = document.createElement("div");
@@ -6760,64 +6760,61 @@ var Ht = {
 			});
 			let g = Math.floor(r.length / 2), _ = document.createElement("div");
 			_.className = "kt-radial-live", _.setAttribute("aria-live", "polite"), _.style.cssText = "position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);", e.appendChild(_);
-			let v = () => {
+			let v = r.length, y = () => {
 				r.forEach((e, t) => {
-					let o = t - g;
-					if (u) {
-						let e = r.length;
-						o = (o % e + e) % e, o > e / 2 && (o -= e);
-					}
-					let s = c + o * a;
-					e.style.transition = n || l === 0 ? "none" : `transform ${l}s cubic-bezier(.22,.8,.3,1)`, e.style.transform = `rotate(${s}deg) translate(${i}px) rotate(${-s}deg) translate(-50%, -50%)`;
-					let d = t === g;
-					e.classList.toggle("kt-active", d), e.classList.toggle("active-item", d), d ? e.setAttribute("aria-current", "true") : e.removeAttribute("aria-current"), e.style.zIndex = String(100 - Math.abs(o));
+					let r = t - g;
+					u && (r = (r % v + v) % v, r > v / 2 && (r -= v));
+					let o = e._ktOffset, s = o !== void 0 && Math.abs(r - o) > v / 2;
+					e._ktOffset = r;
+					let d = c + r * a;
+					e.style.transition = n || l === 0 || s ? "none" : `transform ${l}s cubic-bezier(.22,.8,.3,1)`, e.style.transform = `rotate(${d}deg) translate(${i}px) rotate(${-d}deg) translate(-50%, -50%)`;
+					let f = t === g;
+					e.classList.toggle("kt-active", f), e.classList.toggle("active-item", f), f ? e.setAttribute("aria-current", "true") : e.removeAttribute("aria-current"), e.style.zIndex = String(100 - Math.abs(r));
 				}), _.textContent = `${g + 1} / ${r.length}`;
-			}, y = (e) => {
-				g = u ? (e % r.length + r.length) % r.length : h(e, 0, r.length - 1), v();
-			}, b = () => y(g + 1), x = () => y(g - 1);
+			}, b = (e) => {
+				g = u ? (e % r.length + r.length) % r.length : h(e, 0, r.length - 1), y();
+			}, x = () => b(g + 1), S = () => b(g - 1);
 			r.forEach((e, t) => {
-				e.style.cursor = "pointer", e.addEventListener("click", () => y(t)), e.hasAttribute("tabindex") || (e.tabIndex = -1);
+				e.style.cursor = "pointer", e.addEventListener("click", () => b(t)), e.hasAttribute("tabindex") || (e.tabIndex = -1);
 			});
-			let S = e.querySelector(".kt-radial-controls"), C = null, w = null, T = !1;
-			p && (S || (S = document.createElement("div"), S.className = "kt-radial-controls", S.innerHTML = "<button type=\"button\" class=\"kt-radial-prev\" aria-label=\"Previous\"></button><button type=\"button\" class=\"kt-radial-next\" aria-label=\"Next\"></button>", e.appendChild(S), T = !0), C = S.querySelector(".kt-radial-prev, [data-kt-radial-prev]"), w = S.querySelector(".kt-radial-next, [data-kt-radial-next]"), C?.addEventListener("click", x), w?.addEventListener("click", b));
-			let E = (e) => {
-				e.key === "ArrowRight" || e.key === "ArrowDown" ? (e.preventDefault(), b()) : (e.key === "ArrowLeft" || e.key === "ArrowUp") && (e.preventDefault(), x());
+			let C = e.querySelector(".kt-radial-controls"), w = null, T = null, E = !1;
+			p && (C || (C = document.createElement("div"), C.className = "kt-radial-controls", C.innerHTML = "<button type=\"button\" class=\"kt-radial-prev\" aria-label=\"Previous\"></button><button type=\"button\" class=\"kt-radial-next\" aria-label=\"Next\"></button>", e.appendChild(C), E = !0), w = C.querySelector(".kt-radial-prev, [data-kt-radial-prev]"), T = C.querySelector(".kt-radial-next, [data-kt-radial-next]"), w?.addEventListener("click", S), T?.addEventListener("click", x));
+			let D = (e) => {
+				e.key === "ArrowRight" || e.key === "ArrowDown" ? (e.preventDefault(), x()) : (e.key === "ArrowLeft" || e.key === "ArrowUp") && (e.preventDefault(), S());
 			};
-			e.hasAttribute("tabindex") || (e.tabIndex = 0), e.addEventListener("keydown", E);
-			let D = null, O = o === "bottom" || o === "top", k = (t) => {
-				f && (D = {
-					x: t.clientX,
-					y: t.clientY,
+			e.hasAttribute("tabindex") || (e.tabIndex = 0), e.addEventListener("keydown", D);
+			let O = null, k = o === "bottom" || o === "top", A = (e) => {
+				!f || e.target.closest(".kt-radial-controls, button") || (O = {
+					x: e.clientX,
+					y: e.clientY,
 					start: g,
 					moved: !1
-				}, e.setPointerCapture?.(t.pointerId));
-			}, A = (e) => {
-				if (!D) return;
-				let t = O ? e.clientX - D.x : e.clientY - D.y;
-				Math.abs(t) > 6 && (D.moved = !0);
-				let n = Math.round(-t / 60);
-				y(D.start + n);
-			}, j = () => {
-				D = null;
+				});
+			}, j = (e) => {
+				if (!O) return;
+				let t = k ? e.clientX - O.x : e.clientY - O.y;
+				Math.abs(t) <= 6 || (O.moved = !0, b(O.start + Math.round(-t / 60)));
+			}, M = () => {
+				O = null;
 			};
-			f && (e.addEventListener("pointerdown", k), e.addEventListener("pointermove", A), e.addEventListener("pointerup", j), e.addEventListener("pointercancel", j));
-			let M = Math.max(0, Number(t.autoplay ?? 0)), N = null, P = () => {
-				M && !n && (F(), N = setInterval(b, M));
-			}, F = () => {
-				N &&= (clearInterval(N), null);
+			f && (e.addEventListener("pointerdown", A), e.addEventListener("pointermove", j), e.addEventListener("pointerup", M), e.addEventListener("pointercancel", M));
+			let N = Math.max(0, Number(t.autoplay ?? 0)), P = null, F = () => {
+				N && !n && (I(), P = setInterval(x, N));
+			}, I = () => {
+				P &&= (clearInterval(P), null);
 			};
-			return M && (e.addEventListener("mouseenter", F), e.addEventListener("mouseleave", P), P()), v(), {
+			return N && (e.addEventListener("mouseenter", I), e.addEventListener("mouseleave", F), F()), y(), {
 				el: e,
 				type: "radial",
-				next: b,
-				prev: x,
-				go: y,
-				pause: F,
-				resume: P,
+				next: x,
+				prev: S,
+				go: b,
+				pause: I,
+				resume: F,
 				destroy() {
-					F(), e.removeEventListener("keydown", E), e.removeEventListener("pointerdown", k), e.removeEventListener("pointermove", A), e.removeEventListener("pointerup", j), e.removeEventListener("pointercancel", j), e.removeEventListener("mouseenter", F), e.removeEventListener("mouseleave", P), C?.removeEventListener("click", x), w?.removeEventListener("click", b), r.forEach((t) => {
+					I(), e.removeEventListener("keydown", D), e.removeEventListener("pointerdown", A), e.removeEventListener("pointermove", j), e.removeEventListener("pointerup", M), e.removeEventListener("pointercancel", M), e.removeEventListener("mouseenter", I), e.removeEventListener("mouseleave", F), w?.removeEventListener("click", S), T?.removeEventListener("click", x), r.forEach((t) => {
 						t.style.transform = "", t.style.transition = "", t.classList.remove("kt-active", "active-item"), e.appendChild(t);
-					}), m.remove(), _.remove(), T && S.remove(), e.classList.remove("kt-radial", `kt-radial--${o}`), e.removeAttribute("role"), e.removeAttribute("aria-roledescription");
+					}), m.remove(), _.remove(), E && C.remove(), e.classList.remove("kt-radial", `kt-radial--${o}`), e.removeAttribute("role"), e.removeAttribute("aria-roledescription");
 				}
 			};
 		},
@@ -6832,57 +6829,89 @@ var Ht = {
 				"right",
 				"up",
 				"down"
-			].includes(t.direction) ? t.direction : "right", o = Math.max(.05, Number(t.duration ?? .7)), s = Math.max(0, Number(t.delay ?? 0)), c = t.ease || "cubic-bezier(.77,0,.18,1)", l = h(Math.round(Number(t.layers ?? 2)), 1, 3), u = Math.max(0, Number(t.stagger ?? 120)), f = getComputedStyle(e), p = e.tagName === "IMG" || f.display.startsWith("inline"), m = document.createElement("div");
-			m.className = "kt-cover-wrap", m.style.cssText = `position:relative;overflow:hidden;display:${p ? "inline-block" : "block"};`, e.parentNode.insertBefore(m, e), m.appendChild(e);
-			let g = {
+			].includes(t.direction) ? t.direction : "right", o = Math.max(.05, Number(t.duration ?? .7)), s = Math.max(0, Number(t.delay ?? 0)), c = t.ease || "cubic-bezier(.77,0,.18,1)", l = h(Math.round(Number(t.layers ?? 2)), 1, 3), u = Math.max(0, Number(t.stagger ?? 120)), f = t.lines === !0, p = {
 				right: "translateX(101%)",
 				left: "translateX(-101%)",
 				down: "translateY(101%)",
 				up: "translateY(-101%)"
-			}[a], _ = [];
-			if (!n) for (let e = 0; e < l; e += 1) {
-				let t = document.createElement("div");
-				t.setAttribute("aria-hidden", "true");
-				let n = l > 1 && e === l - 1 ? i : r;
-				t.style.cssText = `position:absolute;inset:0;background:${n};z-index:${20 + e};transform:translate(0,0);transition:transform ${o}s ${c};pointer-events:none;will-change:transform;`, m.appendChild(t), _.push(t);
+			}[a], m = [], g = [], _ = e, v = null, y = (e) => {
+				let t = e.style.position, n = e.style.overflow;
+				getComputedStyle(e).position === "static" && (e.style.position = "relative"), e.style.overflow = "hidden";
+				let a = [];
+				for (let t = 0; t < l; t += 1) {
+					let n = l > 1 && t === l - 1 ? i : r, s = document.createElement("span");
+					s.setAttribute("aria-hidden", "true"), s.style.cssText = `position:absolute;inset:0;background:${n};z-index:${20 + t};transform:translate(0,0);transition:transform ${o}s ${c};pointer-events:none;will-change:transform;`, e.appendChild(s), a.push(s);
+				}
+				return g.push({
+					container: e,
+					panels: a,
+					restorePosition: t,
+					restoreOverflow: n
+				}), a;
+			};
+			if (f) b();
+			else {
+				let t = getComputedStyle(e), n = e.tagName === "IMG" || t.display.startsWith("inline"), r = document.createElement("div");
+				r.className = "kt-cover-wrap", r.style.cssText = `position:relative;overflow:hidden;display:${n ? "inline-block" : "block"};`, e.parentNode.insertBefore(r, e), r.appendChild(e), _ = r, v = () => {
+					r.parentNode && (r.parentNode.insertBefore(e, r), r.remove());
+				}, y(r);
 			}
-			let v = !1, y = null, b = [], x = () => {
-				if (v) return;
-				v = !0, m.offsetWidth, requestAnimationFrame(() => {
-					_.forEach((e, t) => {
-						let n = l - 1 - t;
-						b.push(setTimeout(() => {
-							e.style.transform = g;
-						}, s + n * u));
+			function b() {
+				let t = e.textContent.split(/\s+/).filter((e) => e.length);
+				e.textContent = "";
+				let n = t.map((n, r) => {
+					let i = document.createElement("span");
+					return i.textContent = n, e.appendChild(i), r < t.length - 1 && e.appendChild(document.createTextNode(" ")), i;
+				}), r = [], i = null, a = null;
+				n.forEach((e) => {
+					let t = Math.round(e.getBoundingClientRect().top);
+					(a === null || Math.abs(t - a) > 3) && (i = [], r.push(i), a = t), i.push(e);
+				}), e.textContent = "", r.forEach((t) => {
+					let n = document.createElement("span");
+					n.className = "kt-cover-line", n.style.cssText = "position:relative;display:block;overflow:hidden;width:max-content;max-width:100%;", n.textContent = t.map((e) => e.textContent).join(" "), e.appendChild(n), y(n);
+				});
+			}
+			let x = !1, S = null, C = () => {
+				if (x) return;
+				x = !0, e.offsetWidth, requestAnimationFrame(() => {
+					g.forEach((e, t) => {
+						let n = s + (f ? t * u : 0);
+						e.panels.forEach((e, t) => {
+							let r = l - 1 - t;
+							m.push(setTimeout(() => {
+								e.style.transform = p;
+							}, n + r * u));
+						});
 					});
 				});
-				let n = s + (l - 1) * u + o * 1e3 + 80;
-				b.push(setTimeout(() => {
-					_.forEach((e) => e.remove()), t.onComplete?.(e);
-				}, n));
+				let n = f ? Math.max(0, g.length - 1) : 0, r = s + n * u + (l - 1) * u + o * 1e3 + 80;
+				m.push(setTimeout(() => {
+					g.forEach((e) => e.panels.forEach((e) => e.remove())), t.onComplete?.(e);
+				}, r));
 			};
-			return n || (typeof IntersectionObserver < "u" ? (y = new IntersectionObserver((e) => {
+			return n ? g.forEach((e) => e.panels.forEach((e) => e.remove())) : typeof IntersectionObserver < "u" ? (S = new IntersectionObserver((e) => {
 				for (let t of e) if (t.isIntersecting) {
-					y.disconnect(), y = null, x();
+					S.disconnect(), S = null, C();
 					break;
 				}
-			}, { threshold: h(Number(t.threshold ?? .2), 0, 1) }), y.observe(m)) : x()), {
+			}, { threshold: h(Number(t.threshold ?? .2), 0, 1) }), S.observe(_)) : C(), {
 				el: e,
 				type: "coverReveal",
 				replay() {
-					if (v = !1, b.forEach(clearTimeout), b = [], !n) {
-						_.length = 0;
-						for (let e = 0; e < l; e += 1) {
-							let t = document.createElement("div"), n = l > 1 && e === l - 1 ? i : r;
-							t.style.cssText = `position:absolute;inset:0;background:${n};z-index:${20 + e};transform:translate(0,0);transition:transform ${o}s ${c};pointer-events:none;`, m.appendChild(t), _.push(t);
+					x = !1, m.forEach(clearTimeout), m = [], !n && (g.forEach((e) => {
+						e.panels = [];
+						for (let t = 0; t < l; t += 1) {
+							let n = l > 1 && t === l - 1 ? i : r, a = document.createElement("span");
+							a.style.cssText = `position:absolute;inset:0;background:${n};z-index:${20 + t};transform:translate(0,0);transition:transform ${o}s ${c};pointer-events:none;`, e.container.appendChild(a), e.panels.push(a);
 						}
-						requestAnimationFrame(x);
-					}
+					}), requestAnimationFrame(C));
 				},
 				pause() {},
 				resume() {},
 				destroy() {
-					y?.disconnect(), b.forEach(clearTimeout), _.forEach((e) => e.remove()), m.parentNode && (m.parentNode.insertBefore(e, m), m.remove());
+					S?.disconnect(), m.forEach(clearTimeout), g.forEach((e) => {
+						e.panels.forEach((e) => e.remove()), e.container.style.overflow = e.restoreOverflow, e.container.style.position = e.restorePosition;
+					}), v?.();
 				}
 			};
 		},

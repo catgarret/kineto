@@ -55,8 +55,8 @@ export default {
       region.appendChild(toast);
       if (!reduce) {
         toast.animate(
-          [{ opacity: 0, transform: 'translateY(12px) scale(.98)' }, { opacity: 1, transform: 'none' }],
-          { duration: 260, easing: 'cubic-bezier(.22,.8,.3,1)' }
+          [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'translateY(0)' }],
+          { duration: 240, easing: 'cubic-bezier(.22,.8,.3,1)' }
         );
       }
       let timer = null;

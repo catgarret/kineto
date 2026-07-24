@@ -1,10 +1,14 @@
 import { clamp, env } from '../utils.js';
 
-// Cover reveal — a coloured panel (or two, layered) covers the element and then
-// sweeps away to reveal it when it scrolls into view. The classic
-// agency/portfolio "block reveal" (e.g. designnas nomos). Rich options: panel
-// colour(s), sweep direction, play duration, start delay, easing, layer count
-// and per-layer stagger. Reduced motion reveals instantly with no panels.
+// Cover reveal — coloured panel(s) cover the target and sweep away when it
+// scrolls into view. Two modes:
+//   • block (default): covers the whole element — good for images/cards.
+//   • lines (`lines:true`): splits text into its rendered lines and covers each
+//     line to its own width, revealing them one after another (staggered) —
+//     the cover hugs the text, not the surrounding box.
+// Options: color / color2 (panel colours), direction, duration, delay, ease,
+// layers (1–3), stagger (ms between layers, and between lines), threshold.
+// Reduced motion reveals instantly with no panels.
 export default {
   create(el, opts = {}) {
     const reduce = env().reducedMotion;
@@ -16,61 +20,115 @@ export default {
     const ease = opts.ease || 'cubic-bezier(.77,0,.18,1)';
     const layers = clamp(Math.round(Number(opts.layers ?? 2)), 1, 3);
     const stagger = Math.max(0, Number(opts.stagger ?? 120));
-
-    // Wrap the element so panels can be positioned over it without disturbing
-    // the surrounding layout.
-    const cs = getComputedStyle(el);
-    const inline = el.tagName === 'IMG' || cs.display.startsWith('inline');
-    const wrap = document.createElement('div');
-    wrap.className = 'kt-cover-wrap';
-    wrap.style.cssText = `position:relative;overflow:hidden;display:${inline ? 'inline-block' : 'block'};`;
-    el.parentNode.insertBefore(wrap, el);
-    wrap.appendChild(el);
-
+    const linesMode = opts.lines === true;
     const exitTransform = {
       right: 'translateX(101%)', left: 'translateX(-101%)',
       down: 'translateY(101%)', up: 'translateY(-101%)'
     }[direction];
 
-    const panels = [];
-    if (!reduce) {
+    let timers = [];
+    const covers = []; // { container, panels[], restoreOverflow, restorePosition }
+    let observeTarget = el;
+    let unwrap = null;
+
+    // Add cover panels over a container and return a play() for it.
+    const coverOf = (container) => {
+      const restorePosition = container.style.position;
+      const restoreOverflow = container.style.overflow;
+      if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
+      container.style.overflow = 'hidden';
+      const panels = [];
       for (let i = 0; i < layers; i += 1) {
-        const panel = document.createElement('div');
-        panel.setAttribute('aria-hidden', 'true');
         const c = layers > 1 && i === layers - 1 ? color2 : color;
+        const panel = document.createElement('span');
+        panel.setAttribute('aria-hidden', 'true');
         panel.style.cssText = `position:absolute;inset:0;background:${c};z-index:${20 + i};transform:translate(0,0);transition:transform ${duration}s ${ease};pointer-events:none;will-change:transform;`;
-        wrap.appendChild(panel);
+        container.appendChild(panel);
         panels.push(panel);
       }
+      covers.push({ container, panels, restorePosition, restoreOverflow });
+      return panels;
+    };
+
+    if (linesMode) {
+      // Split text into rendered lines, wrap each line, cover per line.
+      buildLines();
+    } else {
+      // Block mode — wrap so panels overlay without disturbing layout.
+      const cs = getComputedStyle(el);
+      const inline = el.tagName === 'IMG' || cs.display.startsWith('inline');
+      const wrap = document.createElement('div');
+      wrap.className = 'kt-cover-wrap';
+      wrap.style.cssText = `position:relative;overflow:hidden;display:${inline ? 'inline-block' : 'block'};`;
+      el.parentNode.insertBefore(wrap, el);
+      wrap.appendChild(el);
+      observeTarget = wrap;
+      unwrap = () => { if (wrap.parentNode) { wrap.parentNode.insertBefore(el, wrap); wrap.remove(); } };
+      coverOf(wrap);
+    }
+
+    function buildLines() {
+      const raw = el.textContent;
+      // Measure with plain inline spans (they wrap naturally at the element's
+      // real width); group by rendered top via getBoundingClientRect.
+      const words = raw.split(/\s+/).filter((w) => w.length);
+      el.textContent = '';
+      const wordSpans = words.map((w, i) => {
+        const s = document.createElement('span');
+        s.textContent = w;
+        el.appendChild(s);
+        if (i < words.length - 1) el.appendChild(document.createTextNode(' '));
+        return s;
+      });
+      const lines = [];
+      let current = null; let lastTop = null;
+      wordSpans.forEach((s) => {
+        const top = Math.round(s.getBoundingClientRect().top);
+        if (lastTop === null || Math.abs(top - lastTop) > 3) { current = []; lines.push(current); lastTop = top; }
+        current.push(s);
+      });
+      el.textContent = '';
+      lines.forEach((group) => {
+        const line = document.createElement('span');
+        line.className = 'kt-cover-line';
+        line.style.cssText = 'position:relative;display:block;overflow:hidden;width:max-content;max-width:100%;';
+        line.textContent = group.map((s) => s.textContent).join(' ');
+        el.appendChild(line);
+        coverOf(line);
+      });
     }
 
     let played = false;
     let io = null;
-    let timers = [];
     const play = () => {
       if (played) return;
       played = true;
-      // Ensure the covered start frame is painted, then trigger the transitions
-      // on the next frame — otherwise a 0ms delay jumps instead of animating.
-      void wrap.offsetWidth;
+      void el.offsetWidth; // paint the covered start frame first
       requestAnimationFrame(() => {
-        // Top layer leaves first, lower layers follow, uncovering the element.
-        panels.forEach((panel, i) => {
-          const order = layers - 1 - i;
-          timers.push(setTimeout(() => { panel.style.transform = exitTransform; }, delay + order * stagger));
+        covers.forEach((cover, lineIndex) => {
+          const lineDelay = delay + (linesMode ? lineIndex * stagger : 0);
+          cover.panels.forEach((panel, i) => {
+            const order = layers - 1 - i;
+            timers.push(setTimeout(() => { panel.style.transform = exitTransform; }, lineDelay + order * stagger));
+          });
         });
       });
-      const total = delay + (layers - 1) * stagger + duration * 1000 + 80;
-      timers.push(setTimeout(() => { panels.forEach((panel) => panel.remove()); opts.onComplete?.(el); }, total));
+      const totalLines = linesMode ? Math.max(0, covers.length - 1) : 0;
+      const total = delay + totalLines * stagger + (layers - 1) * stagger + duration * 1000 + 80;
+      timers.push(setTimeout(() => {
+        covers.forEach((cover) => cover.panels.forEach((panel) => panel.remove()));
+        opts.onComplete?.(el);
+      }, total));
     };
 
     if (reduce) {
-      // Nothing to reveal — element is already visible.
+      // Instantly visible — remove any panels.
+      covers.forEach((cover) => cover.panels.forEach((panel) => panel.remove()));
     } else if (typeof IntersectionObserver !== 'undefined') {
       io = new IntersectionObserver((records) => {
         for (const record of records) { if (record.isIntersecting) { io.disconnect(); io = null; play(); break; } }
       }, { threshold: clamp(Number(opts.threshold ?? 0.2), 0, 1) });
-      io.observe(wrap);
+      io.observe(observeTarget);
     } else {
       play();
     }
@@ -82,26 +140,29 @@ export default {
         played = false;
         timers.forEach(clearTimeout); timers = [];
         if (reduce) return;
-        // Rebuild panels covering, then play again.
-        panels.length = 0;
-        for (let i = 0; i < layers; i += 1) {
-          const panel = document.createElement('div');
-          const c = layers > 1 && i === layers - 1 ? color2 : color;
-          panel.style.cssText = `position:absolute;inset:0;background:${c};z-index:${20 + i};transform:translate(0,0);transition:transform ${duration}s ${ease};pointer-events:none;`;
-          wrap.appendChild(panel); panels.push(panel);
-        }
+        covers.forEach((cover) => {
+          cover.panels = [];
+          for (let i = 0; i < layers; i += 1) {
+            const c = layers > 1 && i === layers - 1 ? color2 : color;
+            const panel = document.createElement('span');
+            panel.style.cssText = `position:absolute;inset:0;background:${c};z-index:${20 + i};transform:translate(0,0);transition:transform ${duration}s ${ease};pointer-events:none;`;
+            cover.container.appendChild(panel); cover.panels.push(panel);
+          }
+        });
         requestAnimationFrame(play);
       },
-      pause() {},
-      resume() {},
+      pause() {}, resume() {},
       destroy() {
         io?.disconnect();
         timers.forEach(clearTimeout);
-        panels.forEach((panel) => panel.remove());
-        if (wrap.parentNode) { wrap.parentNode.insertBefore(el, wrap); wrap.remove(); }
+        covers.forEach((cover) => {
+          cover.panels.forEach((panel) => panel.remove());
+          cover.container.style.overflow = cover.restoreOverflow;
+          cover.container.style.position = cover.restorePosition;
+        });
+        unwrap?.();
       }
     };
   },
-  // Reduced motion: reveal instantly (create() already skips panels).
   reduced(el, opts) { return this.create(el, opts); }
 };

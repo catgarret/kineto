@@ -19,7 +19,9 @@ export default {
     const radius = Math.max(40, Number(opts.radius ?? 260));
     const step = Number(opts.step ?? 26);
     const position = ['bottom', 'top', 'left', 'right'].includes(opts.position) ? opts.position : 'bottom';
-    const presetAngle = { bottom: -90, top: 90, left: 180, right: 0 }[position];
+    // Focal angle points AWAY from the docked edge, into the visible area:
+    // bottom → up, top → down, left → right, right → left.
+    const presetAngle = { bottom: -90, top: 90, left: 0, right: 180 }[position];
     const activeAngle = opts.activeAngle != null ? Number(opts.activeAngle) : presetAngle;
     const duration = Math.max(0, Number(opts.duration ?? 0.6));
     const loop = opts.loop !== false;
@@ -46,16 +48,21 @@ export default {
     live.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);';
     el.appendChild(live);
 
+    const n = items.length;
     const layout = () => {
       items.forEach((item, i) => {
         let offset = i - active;
         if (loop) { // shortest way around
-          const n = items.length;
           offset = ((offset % n) + n) % n;
           if (offset > n / 2) offset -= n;
         }
+        // When an item wraps to the opposite side, jump instantly (no transition)
+        // so it doesn't sweep across the visible arc.
+        const prevOffset = item._ktOffset;
+        const teleport = prevOffset !== undefined && Math.abs(offset - prevOffset) > n / 2;
+        item._ktOffset = offset;
         const angle = activeAngle + offset * step;
-        item.style.transition = reduce || duration === 0 ? 'none' : `transform ${duration}s cubic-bezier(.22,.8,.3,1)`;
+        item.style.transition = (reduce || duration === 0 || teleport) ? 'none' : `transform ${duration}s cubic-bezier(.22,.8,.3,1)`;
         // transform-origin is the hub point (0,0); the inner translate(-50%,-50%)
         // (applied FIRST) centers the item there, then rotate·translate·rotate
         // orbits its centre to radius·(cosθ,sinθ), upright.
@@ -110,13 +117,19 @@ export default {
     // Drag to spin (a full `step` of drag advances one item).
     let dragState = null;
     const dragAxisH = position === 'bottom' || position === 'top';
-    const onDown = (e) => { if (!drag) return; dragState = { x: e.clientX, y: e.clientY, start: active, moved: false }; el.setPointerCapture?.(e.pointerId); };
+    // Don't start a drag on the control buttons, and DON'T capture the pointer
+    // (capturing stole clicks from the prev/next buttons — hence "had to click
+    // repeatedly"). Only spin once the drag actually passes a small threshold.
+    const onDown = (e) => {
+      if (!drag || e.target.closest('.kt-radial-controls, button')) return;
+      dragState = { x: e.clientX, y: e.clientY, start: active, moved: false };
+    };
     const onMove = (e) => {
       if (!dragState) return;
       const delta = dragAxisH ? e.clientX - dragState.x : e.clientY - dragState.y;
-      if (Math.abs(delta) > 6) dragState.moved = true;
-      const advanced = Math.round(-delta / 60);
-      go(dragState.start + advanced);
+      if (Math.abs(delta) <= 6) return; // ignore micro-moves (taps/clicks)
+      dragState.moved = true;
+      go(dragState.start + Math.round(-delta / 60));
     };
     const onUp = () => { dragState = null; };
     if (drag) {
