@@ -423,6 +423,12 @@ export default {
         canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;';
         layer.appendChild(canvas);
         layers.push(layer);
+        // Monochrome film-grain over the mosaic (Pixel-Mosaic-Lazy-Loader style),
+        // fading out as the picture resolves. On by default; data-kt-noise="false"
+        // (or 0) turns it off, a number sets its peak opacity.
+        const pxNoiseOn = opts.noise !== false && opts.noise !== 0 && opts.noise !== '0' && opts.noise !== 'false';
+        const pxNoiseOpacity = typeof opts.noise === 'number' ? clamp(opts.noise, 0, 1) : 0.14;
+        if (pxNoiseOn) { noise = createNoiseCanvas(wrapper, opts, 4); noise.canvas.style.opacity = String(pxNoiseOpacity); }
         const context = canvas.getContext('2d', { alpha: true, desynchronized: true });
         const small = document.createElement('canvas');
         const smallContext = small.getContext('2d', { alpha: true });
@@ -494,6 +500,7 @@ export default {
           }
           if (startTime == null) startTime = time;
           const progress = clamp((time - startTime) / Math.max(1, total), 0, 1);
+          if (noise) { noise.draw(time); noise.canvas.style.opacity = String(pxNoiseOpacity * Math.max(0, 1 - progress)); }
           const index = progress >= 1 ? steps.length - 1 : Math.min(steps.length - 1, Math.floor(progress * steps.length));
           // Never skip a stage: every configured pixel step renders and
           // reports progress at least once, even under slow frames.

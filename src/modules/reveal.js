@@ -230,7 +230,7 @@ export default {
         clipTween = gsap.to(state, {
           p: 0, duration: clipDuration, ease: clipEase, delay: Number(opts.delay ?? 0),
           onStart: () => addClasses(el, opts), onUpdate: apply,
-          onComplete: () => { apply(); opts.onComplete?.(el); }
+          onComplete: () => { apply(); el.style.willChange = ''; opts.onComplete?.(el); }
         });
       };
       const trigger = scrollTrigger.create({
@@ -278,7 +278,8 @@ export default {
       ease,
       stagger: opts.stagger || undefined,
       onStart: () => addClasses(el, opts),
-      onComplete: () => opts.onComplete?.(el)
+      // Release the GPU layer once the entrance is done (frees graphics memory).
+      onComplete: () => { targets.forEach((node) => { node.style.willChange = ''; }); opts.onComplete?.(el); }
     };
     const to = {
       ...animateVars,

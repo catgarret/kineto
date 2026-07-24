@@ -371,7 +371,7 @@ function oe() {
 	e.id = "kineto-inline-fallback", e.textContent = "\n    @property --kt-angle { syntax: \"<angle>\"; initial-value: 0deg; inherits: false; }\n    @keyframes kt-border-spin { to { --kt-angle: 360deg; } }\n    @keyframes kt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }\n    @keyframes kt-aurora { to { transform: rotate(360deg); } }\n    @keyframes kt-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }\n    @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }\n    .kt-cursor-active, .kt-cursor-active * { cursor: none !important; }\n    .kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }\n    .kt-tw-caret { animation: kt-caret .8s step-end infinite; }\n    .kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }\n    .kt-slider-wrap { position: relative; overflow: hidden; }\n    @media (prefers-reduced-motion: reduce) {\n      [data-kt-reveal], [data-kt-text-split], [data-kt-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }\n    }\n  ", document.head.appendChild(e);
 }
 var Z = {
-	version: "0.8.26",
+	version: "0.8.28",
 	get env() {
 		return G ||= d(), G;
 	},
@@ -875,7 +875,7 @@ var fe = {
 					onStart: () => ue(e, t),
 					onUpdate: l,
 					onComplete: () => {
-						l(), t.onComplete?.(e);
+						l(), e.style.willChange = "", t.onComplete?.(e);
 					}
 				});
 			}, m = r.create({
@@ -924,7 +924,11 @@ var fe = {
 			ease: _,
 			stagger: t.stagger || void 0,
 			onStart: () => ue(e, t),
-			onComplete: () => t.onComplete?.(e)
+			onComplete: () => {
+				p.forEach((e) => {
+					e.style.willChange = "";
+				}), t.onComplete?.(e);
+			}
 		}, y = {
 			...v,
 			scrollTrigger: {
@@ -1787,45 +1791,49 @@ var Me = {
 					e.src = i, e.style.opacity = "1";
 					let n = De(o, "kt-lazy-pixelate-layer", 3), r = document.createElement("canvas");
 					r.className = "kt-lazy-pixelate-canvas", r.style.cssText = "position:absolute;inset:0;width:100%;height:100%;display:block;", n.appendChild(r), l.push(n);
-					let a = r.getContext("2d", {
+					let a = t.noise !== !1 && t.noise !== 0 && t.noise !== "0" && t.noise !== "false", c = typeof t.noise == "number" ? h(t.noise, 0, 1) : .14;
+					a && (_ = ke(o, t, 4), _.canvas.style.opacity = String(c));
+					let u = r.getContext("2d", {
 						alpha: !0,
 						desynchronized: !0
-					}), c = document.createElement("canvas"), u = c.getContext("2d", { alpha: !0 }), d = o.getBoundingClientRect(), g = we(Ce(t, d.width, d.height)), _ = Math.max(0, Number(t.stepDuration ?? 0)), y = _ > 0 ? _ * g.length : Se(t.duration, 1.25), b = Math.max(0, Number(t.delay ?? 100)), S = Math.max(0, Number(t.holdDuration ?? 0)), C = h(Number(t.maxDpr ?? 2), .5, 4), w = 1e3 / h(Number(t.renderFps ?? 60), 4, 120), T = 0, E = 0, D = () => {
+					}), d = document.createElement("canvas"), g = d.getContext("2d", { alpha: !0 }), y = o.getBoundingClientRect(), b = we(Ce(t, y.width, y.height)), S = Math.max(0, Number(t.stepDuration ?? 0)), C = S > 0 ? S * b.length : Se(t.duration, 1.25), w = Math.max(0, Number(t.delay ?? 100)), T = Math.max(0, Number(t.holdDuration ?? 0)), E = h(Number(t.maxDpr ?? 2), .5, 4), D = 1e3 / h(Number(t.renderFps ?? 60), 4, 120), O = 0, k = 0, A = () => {
 						let e = o.getBoundingClientRect();
-						T = Math.max(1, e.width), E = Math.max(1, e.height);
-						let t = h(window.devicePixelRatio || 1, 1, C), n = Math.max(1, Math.round(T * t)), i = Math.max(1, Math.round(E * t));
-						(r.width !== n || r.height !== i) && (r.width = n, r.height = i), a.setTransform(t, 0, 0, t, 0, 0);
-					}, O = (t) => {
+						O = Math.max(1, e.width), k = Math.max(1, e.height);
+						let t = h(window.devicePixelRatio || 1, 1, E), n = Math.max(1, Math.round(O * t)), i = Math.max(1, Math.round(k * t));
+						(r.width !== n || r.height !== i) && (r.width = n, r.height = i), u.setTransform(t, 0, 0, t, 0, 0);
+					}, j = (t) => {
 						let n = e.complete && e.naturalWidth ? e : s, r = n.naturalWidth, i = n.naturalHeight;
 						if (!r || !i) return;
-						let o = Math.max(1, Math.ceil(T / Math.max(1, t))), l = Math.max(1, Math.ceil(E / Math.max(1, t)));
-						(c.width !== o || c.height !== l) && (c.width = o, c.height = l);
-						let d = Te(r, i, T, E);
-						u.clearRect(0, 0, o, l), u.imageSmoothingEnabled = !0;
+						let a = Math.max(1, Math.ceil(O / Math.max(1, t))), o = Math.max(1, Math.ceil(k / Math.max(1, t)));
+						(d.width !== a || d.height !== o) && (d.width = a, d.height = o);
+						let c = Te(r, i, O, k);
+						g.clearRect(0, 0, a, o), g.imageSmoothingEnabled = !0;
 						try {
-							u.drawImage(n, d.sx, d.sy, d.sw, d.sh, 0, 0, o, l);
+							g.drawImage(n, c.sx, c.sy, c.sw, c.sh, 0, 0, a, o);
 						} catch {
 							return;
 						}
-						a.clearRect(0, 0, T, E), a.imageSmoothingEnabled = !1, a.drawImage(c, 0, 0, o, l, 0, 0, T, E);
-					}, k = null, A = null, j = -Infinity, M = -1, N = (n) => {
+						u.clearRect(0, 0, O, k), u.imageSmoothingEnabled = !1, u.drawImage(d, 0, 0, a, o, 0, 0, O, k);
+					}, M = null, N = null, P = -Infinity, F = -1, I = (n) => {
 						if (p) return;
 						if (m) {
-							A ??= n, f = requestAnimationFrame(N);
+							N ??= n, f = requestAnimationFrame(I);
 							return;
 						}
-						A != null && k != null && (k += n - A, A = null), k ??= n;
-						let r = h((n - k) / Math.max(1, y), 0, 1), i = r >= 1 ? g.length - 1 : Math.min(g.length - 1, Math.floor(r * g.length));
-						for (; M < i;) M += 1, D(), O(g[M]), j = n, t.onProgress?.(h((M + 1) / (g.length + 1), 0, 1), e);
+						N != null && M != null && (M += n - N, N = null), M ??= n;
+						let r = h((n - M) / Math.max(1, C), 0, 1);
+						_ && (_.draw(n), _.canvas.style.opacity = String(c * Math.max(0, 1 - r)));
+						let i = r >= 1 ? b.length - 1 : Math.min(b.length - 1, Math.floor(r * b.length));
+						for (; F < i;) F += 1, A(), j(b[F]), P = n, t.onProgress?.(h((F + 1) / (b.length + 1), 0, 1), e);
 						if (r >= 1) {
-							v(x, S);
+							v(x, T);
 							return;
 						}
-						n - j >= w && (D(), O(g[i]), j = n), f = requestAnimationFrame(N);
+						n - P >= D && (A(), j(b[i]), P = n), f = requestAnimationFrame(I);
 					};
-					D(), O(g[0]), v(() => {
-						f = requestAnimationFrame(N);
-					}, b);
+					A(), j(b[0]), v(() => {
+						f = requestAnimationFrame(I);
+					}, w);
 					return;
 				}
 				if (r === "flicker") {
@@ -4412,12 +4420,16 @@ var vt = {
 		let u = document.createElement("span");
 		u.className = "kt-ambient-glow", u.setAttribute("aria-hidden", "true");
 		let d = Number(t.inset ?? -28), f = Math.max(0, Number(t.blur ?? 42)), p = Math.min(1, Math.max(0, Number(t.opacity ?? .62))), m = Math.max(1, Number(t.scale ?? 1.06));
-		u.style.cssText = `position:absolute;inset:${d}px;z-index:0;pointer-events:none;border-radius:${t.radius || "inherit"};overflow:hidden;filter:blur(${f}px) saturate(${Number(t.saturation ?? 1.45)}) brightness(${Number(t.brightness ?? .82)});opacity:${p};transform:scale(${m}) translateZ(0);transform-origin:center;transition:opacity .25s ease;`, a.insertBefore(u, i);
-		let h = r.tagName, g = gt(r, t), _ = null, v = null, y = null, b = null, x = !0, S = 0, C = null, w = 0, T = t.color || t.fallbackColor || "rgba(100,120,180,.42)", E = () => {
-			u.style.background = T, u.dataset.mode = "color";
+		u.style.cssText = `position:absolute;inset:${d}px;z-index:0;pointer-events:none;border-radius:${t.radius || "inherit"};overflow:hidden;filter:blur(${f}px) saturate(${Number(t.saturation ?? 1.45)}) brightness(${Number(t.brightness ?? .82)});opacity:0;transform:scale(${m}) translateZ(0);transform-origin:center;transition:opacity .45s ease;`, a.insertBefore(u, i);
+		let h = r.tagName, g = gt(r, t), _ = null, v = null, y = null, b = null, x = !0, S = 0, C = null, w = 0, T = !1, E = !0, D = null, O = t.color || t.fallbackColor || "rgba(100,120,180,.42)", k = !1, A = () => {
+			k = !0, u.style.opacity = String(p);
+		}, j = () => {
+			k = !1, u.style.opacity = "0";
+		}, M = () => {
+			u.style.background = O, u.dataset.mode = "color", A();
 		};
 		if (h === "IMG" || h === "IFRAME" && g) if (g) {
-			y = _t(g, r, t), u.appendChild(y), u.dataset.mode = "image-clone";
+			y = _t(g, r, t), u.appendChild(y), u.dataset.mode = "image-clone", y.complete && y.naturalWidth ? A() : y.addEventListener("load", A, { once: !0 });
 			let e = () => {
 				let e = gt(r, t);
 				e && y.src !== new URL(e, document.baseURI).href && (y.src = e);
@@ -4431,9 +4443,12 @@ var vt = {
 					"data-srcset"
 				]
 			}), r.addEventListener("load", e), u._mkLoadHandler = e;
-		} else E();
+		} else M();
 		else if (h === "VIDEO") {
-			_ = document.createElement("canvas"), _.className = "kt-ambient-video-canvas", _.width = Math.max(16, Number(t.sampleWidth ?? 48)), _.height = Math.max(9, Number(t.sampleHeight ?? 27)), _.style.cssText = "display:block;width:100%;height:100%;object-fit:cover;", v = _.getContext("2d", { alpha: !1 }), u.appendChild(_), u.dataset.mode = "video-sample";
+			_ = document.createElement("canvas"), _.className = "kt-ambient-video-canvas", _.width = Math.max(16, Number(t.sampleWidth ?? 48)), _.height = Math.max(9, Number(t.sampleHeight ?? 27)), _.style.cssText = "display:block;width:100%;height:100%;object-fit:cover;", v = _.getContext("2d", {
+				alpha: !1,
+				desynchronized: !0
+			}), u.appendChild(_), u.dataset.mode = "video-sample";
 			let e = 1e3 / Math.min(30, Math.max(2, Number(t.sampleFps ?? 12))), n = (t) => {
 				if (x) {
 					if (t - S >= e && r.readyState >= 2) {
@@ -4441,15 +4456,43 @@ var vt = {
 						try {
 							v.drawImage(r, 0, 0, _.width, _.height), w += 1, _.dataset.frames = String(w);
 						} catch {
-							E();
+							M();
 						}
 					}
 					b = requestAnimationFrame(n);
 				}
+			}, i = () => {
+				b == null && x && (S = 0, b = requestAnimationFrame(n));
+			}, a = () => {
+				b != null && (cancelAnimationFrame(b), b = null);
+			}, o = () => {
+				if (!(r.readyState < 2)) try {
+					v.drawImage(r, 0, 0, _.width, _.height), w += 1, _.dataset.frames = String(w);
+				} catch {
+					M();
+				}
 			};
-			b = requestAnimationFrame(n);
-		} else E();
-		let D = null, O = null, k = !0, A = {
+			D = {
+				start: i,
+				stop: a
+			};
+			let s = () => {
+				T = !0, E && !document.hidden && (A(), i());
+			}, c = () => {
+				T = !1, a(), o(), r.readyState >= 2 && A();
+			}, l = () => {
+				T || (o(), r.readyState >= 2 && A());
+			}, d = () => {
+				T = !1, a(), j();
+			};
+			r.addEventListener("playing", s), r.addEventListener("pause", c), r.addEventListener("ended", c), r.addEventListener("loadeddata", l), r.addEventListener("emptied", d), u._mkVid = {
+				onPlaying: s,
+				onPause: c,
+				onFrame: l,
+				onBlank: d
+			}, !r.paused && !r.ended && r.readyState >= 2 ? s() : r.readyState >= 2 && l();
+		} else M();
+		let N = null, P = null, F = {
 			el: e,
 			type: "ambientMedia",
 			get mode() {
@@ -4459,36 +4502,20 @@ var vt = {
 				return w;
 			},
 			pause() {
-				x = !1, b != null && cancelAnimationFrame(b), u.style.opacity = t.hideOnPause === !0 ? "0" : String(p);
+				x = !1, D?.stop(), b != null && (cancelAnimationFrame(b), b = null), (t.hideOnPause === !0 || _ && !k) && (u.style.opacity = "0");
 			},
 			resume() {
-				x || (x = !0, u.style.opacity = String(p), _ && (b = requestAnimationFrame((e) => {
-					S = e - 1e3;
-					let n = (e) => {
-						if (x) {
-							if (e - S >= 1e3 / Math.min(30, Math.max(2, Number(t.sampleFps ?? 12))) && r.readyState >= 2) {
-								S = e;
-								try {
-									v.drawImage(r, 0, 0, _.width, _.height), w += 1, _.dataset.frames = String(w);
-								} catch {
-									E();
-								}
-							}
-							b = requestAnimationFrame(n);
-						}
-					};
-					n(e);
-				})));
+				x || (x = !0, _ && k && A(), _ && T && D?.start());
 			},
 			destroy() {
-				x = !1, b != null && cancelAnimationFrame(b), C?.disconnect(), D?.disconnect(), O && document.removeEventListener("visibilitychange", O), u._mkLoadHandler && r.removeEventListener("load", u._mkLoadHandler), u.remove(), o && a.parentNode ? (a.parentNode.insertBefore(i, a), a.remove()) : o || (s == null ? a.removeAttribute("style") : a.setAttribute("style", s)), c == null ? i.removeAttribute("style") : i.setAttribute("style", c), l == null ? r.removeAttribute("style") : r.setAttribute("style", l);
+				x = !1, D?.stop(), b != null && cancelAnimationFrame(b), C?.disconnect(), N?.disconnect(), P && document.removeEventListener("visibilitychange", P), u._mkLoadHandler && r.removeEventListener("load", u._mkLoadHandler), u._mkVid && (r.removeEventListener("playing", u._mkVid.onPlaying), r.removeEventListener("pause", u._mkVid.onPause), r.removeEventListener("ended", u._mkVid.onPause), r.removeEventListener("loadeddata", u._mkVid.onFrame), r.removeEventListener("emptied", u._mkVid.onBlank)), u.remove(), o && a.parentNode ? (a.parentNode.insertBefore(i, a), a.remove()) : o || (s == null ? a.removeAttribute("style") : a.setAttribute("style", s)), c == null ? i.removeAttribute("style") : i.setAttribute("style", c), l == null ? r.removeAttribute("style") : r.setAttribute("style", l);
 			}
 		};
-		return _ && typeof IntersectionObserver < "u" && (D = new IntersectionObserver((e) => {
-			k = !!e[0]?.isIntersecting, k && !document.hidden ? A.resume() : A.pause();
-		}, { rootMargin: "120px" }), D.observe(e), O = () => {
-			document.hidden ? A.pause() : k && A.resume();
-		}, document.addEventListener("visibilitychange", O)), A;
+		return _ && typeof IntersectionObserver < "u" && (N = new IntersectionObserver((e) => {
+			E = !!e[0]?.isIntersecting, E && !document.hidden ? F.resume() : F.pause();
+		}, { rootMargin: "120px" }), N.observe(e), P = () => {
+			document.hidden ? F.pause() : E && F.resume();
+		}, document.addEventListener("visibilitychange", P)), F;
 	},
 	reduced() {}
 }, yt = {
@@ -6103,9 +6130,206 @@ var Ht = {
 				}
 			};
 		}
-	}
+	},
+	confetti: {
+		create(e, t = {}) {
+			let n = d(), r = t.trigger || "click", i = h(Math.round(Number(t.count ?? 90)), 4, 400), a = h(Number(t.spread ?? 62), 5, 180), o = Math.max(.4, Number(t.duration ?? 1.8)), s = Number(t.gravity ?? .9), c = h(Number(t.scalar ?? 1), .3, 4), l = Number(t.zIndex ?? 11e3), u = Array.isArray(t.colors) && t.colors.length ? t.colors : typeof t.colors == "string" && t.colors.trim() ? t.colors.split(",").map((e) => e.trim()) : [
+				"#ff5b1c",
+				"#ffd166",
+				"#2ec16b",
+				"#4aa8ff",
+				"#c86bff"
+			], f = null, p = null, m = [], g = null, _ = 0, v = () => {
+				if (f) return;
+				f = document.createElement("canvas"), f.setAttribute("aria-hidden", "true"), f.style.cssText = `position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:${l};`;
+				let e = h(window.devicePixelRatio || 1, 1, 2);
+				f.width = Math.round(window.innerWidth * e), f.height = Math.round(window.innerHeight * e), p = f.getContext("2d", {
+					alpha: !0,
+					desynchronized: !0
+				}), p.setTransform(e, 0, 0, e, 0, 0), document.body.appendChild(f);
+			}, y = (e) => {
+				let t = _ ? Math.min(48, e - _) / 16.67 : 1;
+				_ = e, p.clearRect(0, 0, window.innerWidth, window.innerHeight);
+				let n = 0;
+				for (let e of m) e.life <= 0 || (n += 1, e.life -= t / (o * 60), e.vy += s * .28 * t, e.vx *= .99, e.x += e.vx * t, e.y += e.vy * t, e.rotation += e.spin * t, p.globalAlpha = h(e.life, 0, 1), p.fillStyle = e.color, p.save(), p.translate(e.x, e.y), p.rotate(e.rotation), p.fillRect(-e.size / 2, -e.size / 2, e.size, e.size * .6), p.restore());
+				p.globalAlpha = 1, n > 0 ? g = requestAnimationFrame(y) : (g = null, f?.remove(), f = null, p = null, m = []);
+			}, b = (t, r) => {
+				if (n.reducedMotion) return;
+				v();
+				let o = e.getBoundingClientRect(), s = t ?? o.left + o.width / 2, l = r ?? o.top + o.height / 2, d = -Math.PI / 2;
+				for (let e = 0; e < i; e += 1) {
+					let e = d + (Math.random() - .5) * (a * Math.PI / 180) * 2, t = (5 + Math.random() * 6) * c;
+					m.push({
+						x: s,
+						y: l,
+						vx: Math.cos(e) * t,
+						vy: Math.sin(e) * t,
+						size: (6 + Math.random() * 6) * c,
+						color: u[Math.random() * u.length | 0],
+						rotation: Math.random() * Math.PI,
+						spin: (Math.random() - .5) * .4,
+						life: 1
+					});
+				}
+				g ??= (_ = 0, requestAnimationFrame(y));
+			}, x = (e) => b(e.clientX, e.clientY);
+			return r === "click" ? e.addEventListener("click", x) : r === "auto" && b(), {
+				el: e,
+				type: "confetti",
+				fire: (e, t) => b(e, t),
+				replay: () => b(),
+				pause() {},
+				resume() {},
+				destroy() {
+					r === "click" && e.removeEventListener("click", x), g != null && cancelAnimationFrame(g), g = null, f?.remove(), f = null, m = [];
+				}
+			};
+		},
+		reduced(e) {
+			return {
+				el: e,
+				type: "confetti",
+				fire() {},
+				replay() {},
+				pause() {},
+				resume() {},
+				destroy() {}
+			};
+		}
+	},
+	accordion: {
+		create(e, t = {}) {
+			let n = e.matches("details") ? [e] : Array.from(e.querySelectorAll("details"));
+			if (!n.length) return null;
+			let r = Math.max(.05, Number(t.duration ?? .4)), i = t.ease || "cubic-bezier(.22,.8,.3,1)", a = t.single === !0, o = Math.max(0, Number(t.blur ?? 6)), s = [], c = (e) => {
+				let t = e.querySelector("summary");
+				if (!t) return null;
+				let n = document.createElement("div");
+				n.className = "kt-accordion-panel", n.style.overflow = "hidden", Array.from(e.childNodes).forEach((e) => {
+					e !== t && n.appendChild(e);
+				}), e.appendChild(n);
+				let c = null, l = () => {
+					c &&= (c.cancel(), null);
+				}, u = () => {
+					l(), e.open = !0;
+					let t = n.scrollHeight;
+					c = n.animate([{
+						height: "0px",
+						opacity: 0,
+						filter: `blur(${o}px)`
+					}, {
+						height: `${t}px`,
+						opacity: 1,
+						filter: "blur(0px)"
+					}], {
+						duration: r * 1e3,
+						easing: i
+					}), c.onfinish = () => {
+						n.style.height = "", c = null;
+					};
+				}, d = () => {
+					l();
+					let t = n.scrollHeight;
+					c = n.animate([{
+						height: `${t}px`,
+						opacity: 1,
+						filter: "blur(0px)"
+					}, {
+						height: "0px",
+						opacity: 0,
+						filter: `blur(${o}px)`
+					}], {
+						duration: r * 1e3,
+						easing: i
+					}), c.onfinish = () => {
+						e.open = !1, c = null;
+					};
+				}, f = (t) => {
+					if (t.preventDefault(), e.open) {
+						d();
+						return;
+					}
+					a && s.forEach((t) => {
+						t.details !== e && t.details.open && t.closeIt();
+					}), u();
+				};
+				return t.addEventListener("click", f), {
+					details: e,
+					closeIt: d,
+					destroy() {
+						l(), t.removeEventListener("click", f), Array.from(n.childNodes).forEach((t) => e.insertBefore(t, n)), n.remove();
+					}
+				};
+			};
+			return n.forEach((e) => {
+				let t = c(e);
+				t && s.push(t);
+			}), {
+				el: e,
+				type: "accordion",
+				pause() {},
+				resume() {},
+				destroy() {
+					s.forEach((e) => e.destroy());
+				}
+			};
+		},
+		reduced(e) {
+			return {
+				el: e,
+				type: "accordion",
+				pause() {},
+				resume() {},
+				destroy() {}
+			};
+		}
+	},
+	hold: { create(e, t = {}) {
+		let n = Math.max(120, Number(t.duration ?? 1e3)), r = t.color || "color-mix(in srgb, currentColor 22%, transparent)";
+		getComputedStyle(e).position === "static" && (e.style.position = "relative"), e.style.overflow = e.style.overflow || "hidden";
+		let i = document.createElement("span");
+		i.className = "kt-hold-fill", i.setAttribute("aria-hidden", "true"), i.style.cssText = `position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);background:${r};pointer-events:none;border-radius:inherit;z-index:0;`, e.insertBefore(i, e.firstChild);
+		let a = null, o = 0, s = !1, c = !1, l = (e) => {
+			i.style.transform = `scaleX(${h(e, 0, 1)})`;
+		}, u = () => {
+			a != null && (cancelAnimationFrame(a), a = null);
+		}, d = (r) => {
+			let i = h((r - o) / n, 0, 1);
+			if (l(i), i >= 1) {
+				c = !0, s = !1, a = null, e.classList.add("kt-hold-confirmed");
+				try {
+					e.dispatchEvent(new CustomEvent("kt-hold-confirm", { bubbles: !0 }));
+				} catch {}
+				t.onComplete?.(e);
+				return;
+			}
+			a = requestAnimationFrame(d);
+		}, f = () => {
+			s || c || (s = !0, o = performance.now(), i.style.transition = "none", u(), a = requestAnimationFrame(d));
+		}, p = () => {
+			s = !1, u(), !c && (i.style.transition = `transform ${Math.min(.35, n / 3e3)}s ease`, l(0));
+		}, m = (e) => {
+			e.pointerType === "mouse" && e.button !== 0 || f();
+		}, g = (e) => {
+			(e.key === "Enter" || e.key === " ") && (e.preventDefault(), f());
+		}, _ = (e) => {
+			(e.key === "Enter" || e.key === " ") && p();
+		};
+		return e.addEventListener("pointerdown", m), e.addEventListener("pointerup", p), e.addEventListener("pointerleave", p), e.addEventListener("pointercancel", p), e.addEventListener("keydown", g), e.addEventListener("keyup", _), {
+			el: e,
+			type: "hold",
+			reset() {
+				c = !1, e.classList.remove("kt-hold-confirmed"), p();
+			},
+			pause() {},
+			resume() {},
+			destroy() {
+				u(), e.removeEventListener("pointerdown", m), e.removeEventListener("pointerup", p), e.removeEventListener("pointerleave", p), e.removeEventListener("pointercancel", p), e.removeEventListener("keydown", g), e.removeEventListener("keyup", _), i.remove();
+			}
+		};
+	} }
 };
 Object.entries(Ht).forEach(([e, t]) => Z.register(e, t));
-var $ = (e) => (t, n) => Z[e](t, n), Ut = $("parallax"), Wt = $("mouseParallax"), Gt = $("reveal"), Kt = $("counter"), qt = $("lazy"), Jt = $("textSplit"), Yt = $("blurText"), Xt = $("shuffle"), Zt = $("typewriter"), Qt = $("textReveal"), $t = $("textTransition"), en = $("magnetic"), tn = $("marquee"), nn = $("overflowText"), rn = $("loader"), an = $("tilt"), on = $("cursor"), sn = $("textFill"), cn = $("stickyStack"), ln = $("scrollVelocity"), un = $("progress"), dn = $("slider"), fn = $("ambientMedia"), pn = $("pageReveal"), mn = $("glitch"), hn = $("cardGlow"), gn = $("lightbox"), _n = $("pageTransition"), vn = $("vibrate"), yn = $("ripple"), bn = $("cssScroll"), xn = $("scrollSequence"), Sn = $("brushReveal"), Cn = $("fullpage"), wn = Z;
+var $ = (e) => (t, n) => Z[e](t, n), Ut = $("parallax"), Wt = $("mouseParallax"), Gt = $("reveal"), Kt = $("counter"), qt = $("lazy"), Jt = $("textSplit"), Yt = $("blurText"), Xt = $("shuffle"), Zt = $("typewriter"), Qt = $("textReveal"), $t = $("textTransition"), en = $("magnetic"), tn = $("marquee"), nn = $("overflowText"), rn = $("loader"), an = $("tilt"), on = $("cursor"), sn = $("textFill"), cn = $("stickyStack"), ln = $("scrollVelocity"), un = $("progress"), dn = $("slider"), fn = $("ambientMedia"), pn = $("pageReveal"), mn = $("glitch"), hn = $("cardGlow"), gn = $("lightbox"), _n = $("pageTransition"), vn = $("vibrate"), yn = $("ripple"), bn = $("cssScroll"), xn = $("scrollSequence"), Sn = $("brushReveal"), Cn = $("fullpage"), wn = $("confetti"), Tn = $("accordion"), En = $("hold"), Dn = Z;
 //#endregion
-export { fn as ambientMedia, Yt as blurText, Sn as brushReveal, hn as cardGlow, Kt as counter, bn as cssScroll, on as cursor, wn as default, Cn as fullpage, mn as glitch, qt as lazy, gn as lightbox, rn as loader, en as magnetic, tn as marquee, Ht as modules, Wt as mouseParallax, nn as overflowText, pn as pageReveal, _n as pageTransition, Ut as parallax, un as progress, Gt as reveal, yn as ripple, xn as scrollSequence, ln as scrollVelocity, Xt as shuffle, dn as slider, cn as stickyStack, sn as textFill, Qt as textReveal, Jt as textSplit, $t as textTransition, an as tilt, Zt as typewriter, vn as vibrate };
+export { Tn as accordion, fn as ambientMedia, Yt as blurText, Sn as brushReveal, hn as cardGlow, wn as confetti, Kt as counter, bn as cssScroll, on as cursor, Dn as default, Cn as fullpage, mn as glitch, En as hold, qt as lazy, gn as lightbox, rn as loader, en as magnetic, tn as marquee, Ht as modules, Wt as mouseParallax, nn as overflowText, pn as pageReveal, _n as pageTransition, Ut as parallax, un as progress, Gt as reveal, yn as ripple, xn as scrollSequence, ln as scrollVelocity, Xt as shuffle, dn as slider, cn as stickyStack, sn as textFill, Qt as textReveal, Jt as textSplit, $t as textTransition, an as tilt, Zt as typewriter, vn as vibrate };

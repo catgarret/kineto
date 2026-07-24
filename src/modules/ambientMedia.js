@@ -60,7 +60,9 @@ export default {
     const blur = Math.max(0, Number(opts.blur ?? 42));
     const opacity = Math.min(1, Math.max(0, Number(opts.opacity ?? 0.62)));
     const scale = Math.max(1, Number(opts.scale ?? 1.06));
-    glow.style.cssText = `position:absolute;inset:${inset}px;z-index:0;pointer-events:none;border-radius:${opts.radius || 'inherit'};overflow:hidden;filter:blur(${blur}px) saturate(${Number(opts.saturation ?? 1.45)}) brightness(${Number(opts.brightness ?? 0.82)});opacity:${opacity};transform:scale(${scale}) translateZ(0);transform-origin:center;transition:opacity .25s ease;`;
+    // Start hidden: the glow fades in with the media (image load / video play),
+    // not before it — otherwise a blurred backdrop sits there over a blank box.
+    glow.style.cssText = `position:absolute;inset:${inset}px;z-index:0;pointer-events:none;border-radius:${opts.radius || 'inherit'};overflow:hidden;filter:blur(${blur}px) saturate(${Number(opts.saturation ?? 1.45)}) brightness(${Number(opts.brightness ?? 0.82)});opacity:0;transform:scale(${scale}) translateZ(0);transform-origin:center;transition:opacity .45s ease;`;
     outer.insertBefore(glow, host);
 
     const tag = actualMedia.tagName;
@@ -73,11 +75,18 @@ export default {
     let lastDraw = 0;
     let observer = null;
     let drawCount = 0;
+    let playing = false;
+    let onScreen = true;
+    let videoControls = null;
     const fallbackColor = opts.color || opts.fallbackColor || 'rgba(100,120,180,.42)';
+    let shown = false;
+    const showGlow = () => { shown = true; glow.style.opacity = String(opacity); };
+    const hideGlow = () => { shown = false; glow.style.opacity = '0'; };
 
     const setFallback = () => {
       glow.style.background = fallbackColor;
       glow.dataset.mode = 'color';
+      showGlow(); // static colour — nothing to wait for
     };
 
     if (tag === 'IMG' || (tag === 'IFRAME' && source)) {
@@ -85,6 +94,10 @@ export default {
         clone = createImageClone(source, actualMedia, opts);
         glow.appendChild(clone);
         glow.dataset.mode = 'image-clone';
+        // Fade the glow in only once its image actually decodes (in step with the
+        // lazy-loaded picture), never before.
+        if (clone.complete && clone.naturalWidth) showGlow();
+        else clone.addEventListener('load', showGlow, { once: true });
         const updateSource = () => {
           const next = mediaSource(actualMedia, opts);
           if (next && clone.src !== new URL(next, document.baseURI).href) clone.src = next;
@@ -100,7 +113,7 @@ export default {
       canvas.width = Math.max(16, Number(opts.sampleWidth ?? 48));
       canvas.height = Math.max(9, Number(opts.sampleHeight ?? 27));
       canvas.style.cssText = 'display:block;width:100%;height:100%;object-fit:cover;';
-      context = canvas.getContext('2d', { alpha: false });
+      context = canvas.getContext('2d', { alpha: false, desynchronized: true });
       glow.appendChild(canvas);
       glow.dataset.mode = 'video-sample';
       const fps = Math.min(30, Math.max(2, Number(opts.sampleFps ?? 12)));
@@ -119,47 +132,69 @@ export default {
         }
         rafId = requestAnimationFrame(draw);
       };
-      rafId = requestAnimationFrame(draw);
+      const startSampling = () => { if (rafId == null && alive) { lastDraw = 0; rafId = requestAnimationFrame(draw); } };
+      const stopSampling = () => { if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; } };
+      const sampleOnce = () => {
+        if (actualMedia.readyState < 2) return;
+        try { context.drawImage(actualMedia, 0, 0, canvas.width, canvas.height); drawCount += 1; canvas.dataset.frames = String(drawCount); }
+        catch (_error) { setFallback(); }
+      };
+      videoControls = { start: startSampling, stop: stopSampling };
+      // The glow tracks whatever the video is *showing*, not just whether it is
+      // playing: fade in + live-sample while playing; on pause/end freeze on the
+      // last frame and KEEP the glow (a still frame / poster is still on screen);
+      // only fade out when the video truly shows nothing (source cleared/error).
+      const onPlaying = () => { playing = true; if (onScreen && !document.hidden) { showGlow(); startSampling(); } };
+      const onPause = () => { playing = false; stopSampling(); sampleOnce(); if (actualMedia.readyState >= 2) showGlow(); };
+      const onFrame = () => { if (!playing) { sampleOnce(); if (actualMedia.readyState >= 2) showGlow(); } };
+      const onBlank = () => { playing = false; stopSampling(); hideGlow(); };
+      actualMedia.addEventListener('playing', onPlaying);
+      actualMedia.addEventListener('pause', onPause);
+      actualMedia.addEventListener('ended', onPause);
+      actualMedia.addEventListener('loadeddata', onFrame);
+      actualMedia.addEventListener('emptied', onBlank);
+      glow._mkVid = { onPlaying, onPause, onFrame, onBlank };
+      // Sync to the current state at init.
+      if (!actualMedia.paused && !actualMedia.ended && actualMedia.readyState >= 2) onPlaying();
+      else if (actualMedia.readyState >= 2) onFrame();
     } else setFallback();
 
     let io = null;
     let onVisibility = null;
-    let onScreen = true;
     const instance = {
       el,
       type: 'ambientMedia',
       get mode() { return glow.dataset.mode; },
       get frames() { return drawCount; },
+      // Performance pause (off-screen / hidden tab): stop the sampler. The glow
+      // only reappears on resume if the video is actually still playing.
       pause() {
         alive = false;
-        if (rafId != null) cancelAnimationFrame(rafId);
-        glow.style.opacity = opts.hideOnPause === true ? '0' : String(opacity);
+        videoControls?.stop();
+        if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
+        if (opts.hideOnPause === true || (canvas && !shown)) glow.style.opacity = '0';
       },
       resume() {
-        if (!alive) {
-          alive = true;
-          glow.style.opacity = String(opacity);
-          if (canvas) rafId = requestAnimationFrame((time) => {
-            lastDraw = time - 1000;
-            const loop = (now) => {
-              if (!alive) return;
-              if (now - lastDraw >= 1000 / Math.min(30, Math.max(2, Number(opts.sampleFps ?? 12))) && actualMedia.readyState >= 2) {
-                lastDraw = now;
-                try { context.drawImage(actualMedia, 0, 0, canvas.width, canvas.height); drawCount += 1; canvas.dataset.frames = String(drawCount); } catch (_error) { setFallback(); }
-              }
-              rafId = requestAnimationFrame(loop);
-            };
-            loop(time);
-          });
-        }
+        if (alive) return;
+        alive = true;
+        if (canvas && shown) showGlow();
+        if (canvas && playing) videoControls?.start();
       },
       destroy() {
         alive = false;
+        videoControls?.stop();
         if (rafId != null) cancelAnimationFrame(rafId);
         observer?.disconnect();
         io?.disconnect();
         if (onVisibility) document.removeEventListener('visibilitychange', onVisibility);
         if (glow._mkLoadHandler) actualMedia.removeEventListener('load', glow._mkLoadHandler);
+        if (glow._mkVid) {
+          actualMedia.removeEventListener('playing', glow._mkVid.onPlaying);
+          actualMedia.removeEventListener('pause', glow._mkVid.onPause);
+          actualMedia.removeEventListener('ended', glow._mkVid.onPause);
+          actualMedia.removeEventListener('loadeddata', glow._mkVid.onFrame);
+          actualMedia.removeEventListener('emptied', glow._mkVid.onBlank);
+        }
         glow.remove();
         if (createdWrapper && outer.parentNode) {
           outer.parentNode.insertBefore(host, outer);

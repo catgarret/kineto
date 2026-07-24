@@ -2,10 +2,10 @@
 
 > 이 문서는 `kineto.features.json`에서 생성됩니다. 직접 수정하지 말고 계약 파일을 명시적으로 변경한 뒤 `npm run docs:contract`를 실행하세요.
 
-- Library: 0.8.4
+- Library: 0.8.28
 - Feature contract: 1.3.0
 - Behavior contract: 1.2.0
-- Public modules: 34
+- Public modules: 37
 - Root properties: `version`, `env`, `performance`, `registry`, `instanceCount`, `smoothEnabled`, `lenis`, `core`
 - Core methods: `config()`, `setAnimationEngine()`, `enableSmooth()`, `disableSmooth()`, `toggleSmooth()`, `scrollTo()`, `register()`, `unregister()`, `create()`, `scan()`, `init()`, `initModules()`, `autoInit()`, `getInstance()`, `destroyModule()`, `replay()`, `destroy()`, `pause()`, `resume()`, `refresh()`
 - Additional named exports: `modules`
@@ -66,13 +66,13 @@
 - Attribute: `data-kt-fullpage`
 - Default variant: `transform`
 - Variants: `transform`, `snap`
-- Public options: `axis`, `dots`, `drag`, `duration`, `ease`, `height`, `initial`, `keyboard`, `loop`, `mode`, `onChange`, `onLeave`, `sectionSelector`, `threshold`, `touch`, `wheel`
+- Public options: `autoAdvance`, `axis`, `dots`, `drag`, `duration`, `ease`, `height`, `initial`, `keyboard`, `loop`, `mode`, `onChange`, `onLeave`, `sectionSelector`, `threshold`, `touch`, `wheel`
 
 ## glitch
 
 - Attribute: `data-kt-glitch`
 - Default variant: `rgb`
-- Variants: `rgb`, `noise`, `crt`, `digital`, `image`
+- Variants: `rgb`, `noise`, `crt`, `digital`, `image`, `vcr`
 - Public options: `blendMode`, `colors`, `delay`, `duration`, `intensity`, `loop`, `preset`, `sliceCount`, `speed`, `trigger`, `type`
 
 ## lazy
@@ -87,7 +87,7 @@
 - Attribute: `data-kt-lightbox`
 - Default variant: `viewer`
 - Variants: `viewer`, `grouped`
-- Public options: `alt`, `backdropBlur`, `backdropColor`, `backdropOpacity`, `caption`, `className`, `closeOnBackdrop`, `cursor`, `description`, `doubleClickZoom`, `duration`, `group`, `info`, `lazyEffect`, `lazyOptions`, `lightboxDuration`, `maxZoom`, `metadata`, `minZoom`, `minimap`, `onChange`, `onClose`, `onLoad`, `onOpen`, `radius`, `renderUI`, `src`, `title`, `toolbar`, `uiTemplate`, `wheelStep`, `zoom`, `zoomStep`
+- Public options: `alt`, `backdropBlur`, `backdropColor`, `backdropOpacity`, `caption`, `className`, `closeOnBackdrop`, `cursor`, `description`, `doubleClickZoom`, `duration`, `exif`, `group`, `info`, `lazyEffect`, `lazyOptions`, `lightboxDuration`, `maxZoom`, `metadata`, `minZoom`, `minimap`, `onChange`, `onClose`, `onLoad`, `onOpen`, `radius`, `renderUI`, `share`, `src`, `title`, `toolbar`, `uiTemplate`, `wheelStep`, `zoom`, `zoomStep`
 
 ## loader
 
@@ -249,3 +249,24 @@
 - Default variant: `tap`
 - Variants: `tap`, `double-tap`, `soft`, `rigid`, `heavy`, `success`, `warning`, `error`, `ratchet`, `heartbeat`, `long-press`
 - Public options: `haptic`, `pattern`, `preset`, `threshold`, `trigger`
+
+## confetti
+
+- Attribute: `data-kt-confetti`
+- Default variant: `burst`
+- Variants: `burst`
+- Public options: `colors`, `count`, `duration`, `gravity`, `scalar`, `spread`, `trigger`, `zIndex`
+
+## accordion
+
+- Attribute: `data-kt-accordion`
+- Default variant: `panel`
+- Variants: `panel`
+- Public options: `blur`, `duration`, `ease`, `single`
+
+## hold
+
+- Attribute: `data-kt-hold`
+- Default variant: `confirm`
+- Variants: `confirm`
+- Public options: `color`, `duration`, `onComplete`

@@ -2,6 +2,21 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.28]
+
+- **3 new modules (34 → 37)** — filling gaps benchmarked against Motion UI / Toss, all attribute-driven, a11y-aware, progressively enhanced:
+  - **`data-kt-accordion`**: animates native `<details>`/`<summary>` with a springy height morph + blur-in, keeping keyboard & aria; `single` (one-open), `duration`, `ease`, `blur`. Reduced motion leaves the native (instant) accordion.
+  - **`data-kt-confetti`**: canvas celebration burst on click / `trigger:"auto"` / manual `.fire()`; `count`, `spread`, `colors`, `duration`, `gravity`, `scalar`. Skipped under reduced motion; the rAF loop stops once particles die.
+  - **`data-kt-hold`**: hold-to-confirm control with a sweeping fill; fires a `kt-hold-confirm` event + `onComplete`, rewinds on early release; pointer + keyboard.
+- **Ambient video — follows the frame, not just play state**: the glow now fades in with the first decodable frame (poster/paused frame included), keeps showing the frozen frame on pause/end, and only fades out when the video truly shows nothing (source cleared).
+- **Demo — spacing fix**: standalone full-width cards in a section (e.g. "Scroll text fill" + "Direction responsive") were glued together with no gap; consecutive section-level cards/grids now share the 16px grid rhythm. New Accordion / Confetti / Hold-to-confirm demo cards added.
+
+## [0.8.27]
+
+- **Lazy pixelate — film-grain noise (Pixel-Mosaic parity)**: the pixel-mosaic reveal now composites monochrome noise that fades out as the picture resolves, matching the standalone Pixel-Mosaic-Lazy-Loader. On by default; `data-kt-noise="false"` (or `0`) disables it, a number sets peak opacity. Steps / stepCount / explicit px steps already worked.
+- **Ambient media — synced to the media**: the glow starts hidden and fades in with the content — images fade in when their clone decodes; videos fade in on play, out on pause/end, and only sample while actually playing (YouTube-style). No more blurred backdrop sitting over a blank/paused box.
+- **Optimization**: reveal releases its `will-change` GPU layer on completion; the ambient video sampler uses a desynchronized canvas. (Existing modern patterns kept: IntersectionObserver gating, rAF fps caps, DPR caps, off-screen/hidden-tab pause.)
+
 ## [0.8.26]
 
 - **Docs — iOS `viewport-fit=cover` note**: README (+ all 6 translations) and AI-PROMPT-GUIDE now tell consumers to add `viewport-fit=cover` so full-screen effects reach under the notch & home bar.

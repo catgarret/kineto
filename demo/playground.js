@@ -120,7 +120,7 @@ counter: {
     },
     lazy: {
       blur:(o)=>['blur-up','print','dissolve'].includes(o.preset||'fade'),
-      noise:(o)=>['print','dissolve'].includes(o.preset), direction:(o)=>(o.preset)==='print', feather:(o)=>(o.preset)==='print',
+      noise:(o)=>['print','dissolve','pixelate'].includes(o.preset), direction:(o)=>(o.preset)==='print', feather:(o)=>(o.preset)==='print',
       steps:(o)=>(o.preset)==='pixelate', stepCount:(o)=>(o.preset)==='pixelate', stepDuration:(o)=>(o.preset)==='pixelate', holdDuration:(o)=>(o.preset)==='pixelate',
       glitchStrength:(o)=>(o.preset)==='flicker', sliceCount:(o)=>(o.preset)==='flicker',
       minDuration:(o)=>(o.preset)==='skeleton', skeletonColor:(o)=>(o.preset)==='skeleton', skeletonHighlight:(o)=>(o.preset)==='skeleton', skeletonIcon:(o)=>(o.preset)==='skeleton',

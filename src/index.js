@@ -34,6 +34,9 @@ import cssScrollModule from './modules/cssScroll.js';
 import scrollSequenceModule from './modules/scrollSequence.js';
 import brushRevealModule from './modules/brushReveal.js';
 import fullpageModule from './modules/fullpage.js';
+import confettiModule from './modules/confetti.js';
+import accordionModule from './modules/accordion.js';
+import holdModule from './modules/hold.js';
 
 const moduleEntries = {
   parallax: parallaxModule,
@@ -69,7 +72,10 @@ const moduleEntries = {
   cssScroll: cssScrollModule,
   scrollSequence: scrollSequenceModule,
   brushReveal: brushRevealModule,
-  fullpage: fullpageModule
+  fullpage: fullpageModule,
+  confetti: confettiModule,
+  accordion: accordionModule,
+  hold: holdModule
 };
 
 Object.entries(moduleEntries).forEach(([name, module]) => Kineto.register(name, module));
@@ -110,6 +116,9 @@ export const cssScroll = call('cssScroll');
 export const scrollSequence = call('scrollSequence');
 export const brushReveal = call('brushReveal');
 export const fullpage = call('fullpage');
+export const confetti = call('confetti');
+export const accordion = call('accordion');
+export const hold = call('hold');
 
 export { moduleEntries as modules };
 export default Kineto;

@@ -1,8 +1,8 @@
 {
   "$schema": "./kineto.features.schema.json",
   "contractVersion": "1.3.0",
-  "libraryVersion": "0.8.26",
-  "moduleCount": 34,
+  "libraryVersion": "0.8.28",
+  "moduleCount": 37,
   "modules": [
     {
       "name": "ambientMedia",
@@ -1194,6 +1194,51 @@
         "preset",
         "threshold",
         "trigger"
+      ]
+    },
+    {
+      "name": "confetti",
+      "attribute": "data-kt-confetti",
+      "defaultVariant": "burst",
+      "variants": [
+        "burst"
+      ],
+      "publicOptions": [
+        "colors",
+        "count",
+        "duration",
+        "gravity",
+        "scalar",
+        "spread",
+        "trigger",
+        "zIndex"
+      ]
+    },
+    {
+      "name": "accordion",
+      "attribute": "data-kt-accordion",
+      "defaultVariant": "panel",
+      "variants": [
+        "panel"
+      ],
+      "publicOptions": [
+        "blur",
+        "duration",
+        "ease",
+        "single"
+      ]
+    },
+    {
+      "name": "hold",
+      "attribute": "data-kt-hold",
+      "defaultVariant": "confirm",
+      "variants": [
+        "confirm"
+      ],
+      "publicOptions": [
+        "color",
+        "duration",
+        "onComplete"
       ]
     }
   ],
