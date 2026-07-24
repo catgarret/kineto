@@ -4,6 +4,13 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
 
 ## [0.8.34]
 
+- **New module `data-kt-tooltip` (45 → 46)** — accessible, themeable tooltips: content from `content`/`title`/`aria-label`, `placement` (top/bottom/left/right, auto-flips at the viewport edge), `trigger` (hover / focus / click / manual), `delay` / `hideDelay`, `offset`, `duration`, `interactive`. role="tooltip" + aria-describedby, shows on keyboard focus, Esc closes. Theme with `--kt-tooltip-*`.
+- **Toast progress option renamed** `progress` → **`progressBar`** (`data-kt-progress-bar`) — the old name collided with the `progress` module's `data-kt-progress` activation attribute, which was attaching a scroll-progress bar to the toast button (squished button, "Progress + Toast" panel, broken stacking/timing).
+- **Class Hook (and all in-place) replay fixed**: the playground now replays via the instance's own `replay()` (no forced recreate), so `classOnly` reveals re-trigger their CSS transition.
+- **Reading Progress — headless API**: set `property` to a CSS custom property (e.g. `--read`) to stream the 0–1 progress into it and render any custom shape from CSS; `onUpdate(value, el)` fires every frame. No built-in bar/ring required.
+- **Bottom sheet** default now uses `light-dark()` + `color-scheme` so it adapts to the user's OS light/dark automatically (no site theming needed), still overridable via `--kt-sheet-bg` / `--kt-sheet-fg`.
+- **Composition note**: modules stack — e.g. `data-kt-magnetic data-kt-ripple` gives a magnetic button with a click ripple (demoed).
+
 - **Playground robustness (systemic)**: DOM-mutating modules (text-split, wrap, line-split, item-move) are now restored to their pristine snapshot before each live rebuild (keeping the current option values), so toggling options no longer leaves a demo broken until Reset. Stacked containers (e.g. ambient over lazy) are skipped to avoid wiping an inner module.
 - **Full destroy() audit of all 45 modules** for restore-completeness. Fixes found:
   - **`loader`**: the page-fill overlay was never removed on destroy and accumulated on every recreate; also guarded against removing the host element when a custom `renderUI` returns no root.

@@ -289,8 +289,11 @@ html.kt-preload [data-kt-text-transition] {
 }
 .kt-sheet {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 11900;
+  /* Adapts to the user's OS light/dark automatically (no site theming needed);
+     override with --kt-sheet-bg / --kt-sheet-fg for a site-specific palette. */
+  color-scheme: light dark;
   max-height: var(--kt-sheet-max, 85vh); overflow: auto;
-  background: var(--kt-sheet-bg, #14161b); color: var(--kt-sheet-fg, #f6f7fb);
+  background: var(--kt-sheet-bg, light-dark(#ffffff, #14161b)); color: var(--kt-sheet-fg, light-dark(#1a1c22, #f6f7fb));
   border-radius: var(--kt-sheet-radius, 18px) var(--kt-sheet-radius, 18px) 0 0;
   padding: 8px 20px 24px; box-shadow: 0 -18px 50px rgba(0,0,0,.4);
   margin-inline: auto; max-width: var(--kt-sheet-width, 640px);
@@ -348,3 +351,20 @@ html.kt-preload [data-kt-text-transition] {
 .kt-radial-controls .kt-radial-prev::before { content: "‹"; font-size: 22px; line-height: 1; }
 .kt-radial-controls .kt-radial-next::before { content: "›"; font-size: 22px; line-height: 1; }
 .kt-radial:focus-visible { outline: 2px solid var(--kt-radial-accent, #ff5b1c); outline-offset: 3px; }
+
+/* ── Tooltip ──────────────────────────────────────────────────────────────────
+   Themeable via --kt-tooltip-bg/-fg/-radius/-size/-max. `data-placement` is set
+   by the module for arrow orientation. */
+.kt-tooltip {
+  z-index: 13000; max-width: var(--kt-tooltip-max, 260px);
+  padding: var(--kt-tooltip-pad, 7px 10px); border-radius: var(--kt-tooltip-radius, 8px);
+  background: var(--kt-tooltip-bg, #1c1f26); color: var(--kt-tooltip-fg, #f6f7fb);
+  font-size: var(--kt-tooltip-size, 13px); line-height: 1.4;
+  box-shadow: 0 8px 24px rgba(0,0,0,.28); pointer-events: none;
+}
+.kt-tooltip[hidden] { display: none; }
+.kt-tooltip__arrow { position: absolute; width: 8px; height: 8px; background: inherit; transform: rotate(45deg); }
+.kt-tooltip[data-placement="top"] .kt-tooltip__arrow { bottom: -4px; left: 50%; margin-left: -4px; }
+.kt-tooltip[data-placement="bottom"] .kt-tooltip__arrow { top: -4px; left: 50%; margin-left: -4px; }
+.kt-tooltip[data-placement="left"] .kt-tooltip__arrow { right: -4px; top: 50%; margin-top: -4px; }
+.kt-tooltip[data-placement="right"] .kt-tooltip__arrow { left: -4px; top: 50%; margin-top: -4px; }

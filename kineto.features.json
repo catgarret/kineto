@@ -2,7 +2,7 @@
   "$schema": "./kineto.features.schema.json",
   "contractVersion": "1.3.0",
   "libraryVersion": "0.8.34",
-  "moduleCount": 45,
+  "moduleCount": 46,
   "modules": [
     {
       "name": "ambientMedia",
@@ -1382,6 +1382,24 @@
         "handle",
         "inertia",
         "snapBack"
+      ]
+    },
+    {
+      "name": "tooltip",
+      "attribute": "data-kt-tooltip",
+      "defaultVariant": "default",
+      "variants": [
+        "default"
+      ],
+      "publicOptions": [
+        "content",
+        "delay",
+        "duration",
+        "hideDelay",
+        "interactive",
+        "offset",
+        "placement",
+        "trigger"
       ]
     }
   ],

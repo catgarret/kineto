@@ -5,7 +5,7 @@
 - Library: 0.8.34
 - Feature contract: 1.3.0
 - Behavior contract: 1.2.0
-- Public modules: 45
+- Public modules: 46
 - Root properties: `version`, `env`, `performance`, `registry`, `instanceCount`, `smoothEnabled`, `lenis`, `core`
 - Core methods: `config()`, `setAnimationEngine()`, `enableSmooth()`, `disableSmooth()`, `toggleSmooth()`, `scrollTo()`, `register()`, `unregister()`, `create()`, `scan()`, `init()`, `initModules()`, `autoInit()`, `getInstance()`, `destroyModule()`, `replay()`, `destroy()`, `pause()`, `resume()`, `refresh()`
 - Additional named exports: `modules`
@@ -326,3 +326,10 @@
 - Default variant: `free`
 - Variants: `free`
 - Public options: `axis`, `bounds`, `handle`, `inertia`, `snapBack`
+
+## tooltip
+
+- Attribute: `data-kt-tooltip`
+- Default variant: `default`
+- Variants: `default`
+- Public options: `content`, `delay`, `duration`, `hideDelay`, `interactive`, `offset`, `placement`, `trigger`

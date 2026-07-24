@@ -45,6 +45,7 @@ import radialModule from './modules/radial.js';
 import coverRevealModule from './modules/coverReveal.js';
 import gestureModule from './modules/gesture.js';
 import dragModule from './modules/drag.js';
+import tooltipModule from './modules/tooltip.js';
 
 const moduleEntries = {
   parallax: parallaxModule,
@@ -91,7 +92,8 @@ const moduleEntries = {
   radial: radialModule,
   coverReveal: coverRevealModule,
   gesture: gestureModule,
-  drag: dragModule
+  drag: dragModule,
+  tooltip: tooltipModule
 };
 
 Object.entries(moduleEntries).forEach(([name, module]) => Kineto.register(name, module));
@@ -143,6 +145,7 @@ export const radial = call('radial');
 export const coverReveal = call('coverReveal');
 export const gesture = call('gesture');
 export const drag = call('drag');
+export const tooltip = call('tooltip');
 
 export { moduleEntries as modules };
 export default Kineto;

@@ -121,15 +121,24 @@ export default {
       };
     } else {
       const property = opts.property || 'scaleX';
-      restore = snapshotInlineStyles(el, ['transform', 'transformOrigin', 'width', 'willChange']);
-      restoreAttributes = snapshotAttributes(el, ['aria-hidden']);
-      el.style.transformOrigin = 'left center';
-      el.style.willChange = property === 'scaleX' ? 'transform' : 'width';
-      el.setAttribute('aria-hidden', 'true');
-      apply = (value) => {
-        if (property === 'scaleX') el.style.transform = `scaleX(${value})`;
-        else el.style.width = `${value * 100}%`;
-      };
+      if (property.startsWith('--')) {
+        // Headless API: stream the progress (0..1) into a CSS custom property so
+        // designers/devs can render ANY shape from it (e.g.
+        // width:calc(var(--read)*100%), or an SVG dashoffset). onUpdate(value)
+        // fires every frame too. No transform/markup is imposed.
+        restore = () => el.style.removeProperty(property);
+        apply = (value) => { el.style.setProperty(property, value.toFixed(4)); };
+      } else {
+        restore = snapshotInlineStyles(el, ['transform', 'transformOrigin', 'width', 'willChange']);
+        restoreAttributes = snapshotAttributes(el, ['aria-hidden']);
+        el.style.transformOrigin = 'left center';
+        el.style.willChange = property === 'scaleX' ? 'transform' : 'width';
+        el.setAttribute('aria-hidden', 'true');
+        apply = (value) => {
+          if (property === 'scaleX') el.style.transform = `scaleX(${value})`;
+          else el.style.width = `${value * 100}%`;
+        };
+      }
     }
 
     rafId = requestAnimationFrame(tick);

@@ -44,7 +44,7 @@ typewriter(data-kt-typewriter), vibrate(data-kt-vibrate),
 accordion(data-kt-accordion), confetti(data-kt-confetti), hold(data-kt-hold),
 megaMenu(data-kt-mega-menu), tabs(data-kt-tabs), toast(data-kt-toast),
 bottomSheet(data-kt-bottom-sheet), radial(data-kt-radial), coverReveal(data-kt-cover-reveal),
-gesture(data-kt-gesture), drag(data-kt-drag)
+gesture(data-kt-gesture), drag(data-kt-drag), tooltip(data-kt-tooltip)
 ```
 
 ### English
@@ -76,7 +76,7 @@ typewriter(data-kt-typewriter), vibrate(data-kt-vibrate),
 accordion(data-kt-accordion), confetti(data-kt-confetti), hold(data-kt-hold),
 megaMenu(data-kt-mega-menu), tabs(data-kt-tabs), toast(data-kt-toast),
 bottomSheet(data-kt-bottom-sheet), radial(data-kt-radial), coverReveal(data-kt-cover-reveal),
-gesture(data-kt-gesture), drag(data-kt-drag)
+gesture(data-kt-gesture), drag(data-kt-drag), tooltip(data-kt-tooltip)
 ```
 
 ---
@@ -142,6 +142,7 @@ gesture(data-kt-gesture), drag(data-kt-drag)
 | 컬러 커버가 걷히며 노출(블록 리빌) | `coverReveal` (`data-kt-cover-reveal`) |
 | 올리면 커지고 누르면 눌리는 제스처(whileHover/Tap) | `gesture` (`data-kt-gesture`) |
 | 드래그(관성·경계·스냅백·키보드) | `drag` (`data-kt-drag`) |
+| 접근성 툴팁(배치·트리거·인터랙티브) | `tooltip` (`data-kt-tooltip`) |
 
 ### UI 컴포넌트 커스터마이징 요령
 - 모든 예제는 데모 페이지에서 옵션을 실시간으로 조절하고 **HTML/JS 코드를 복사**할 수 있습니다(“Customize & copy code”).
@@ -155,6 +156,8 @@ gesture(data-kt-gesture), drag(data-kt-drag)
 - `lightbox`: 이미지 전환 효과 `transition`(rise/fade/crossfade/dissolve/slide/zoom/none) 추가.
 - `gesture`: `hoverScale`, `tapScale`, `lift`(px), `duration`, `ease`. 버튼·카드에 붙이면 hover/press 스프링 피드백. reduced-motion 자동 무효화.
 - `drag`: `axis`(both/x/y), `bounds`("parent"면 부모 안으로 제약), `snapBack`(놓으면 원위치 복귀), `inertia`(관성), `handle`(드래그 손잡이 선택자). 포커스+화살표 키로도 이동.
+- `tooltip`: `content`(없으면 data-kt-title/title/aria-label 사용), `placement`(top/bottom/left/right, 자동 플립), `trigger`(hover/focus/click/manual), `delay`·`hideDelay`, `offset`, `duration`, `interactive`(툴팁 위 마우스 유지). role=tooltip + aria-describedby, Esc 닫힘. 색은 `--kt-tooltip-*`.
+- `progress` headless API: `onUpdate(value 0~1, el)` 콜백이 매 프레임 호출됨. `property`에 CSS 변수(예: `--read`)를 주면 진행값을 그 변수로 흘려줘서 bar/ring 대신 원하는 형태를 CSS로 직접 그릴 수 있음. `bottomSheet`/`toast`/`tooltip` 색은 CSS 변수로 커스텀, bottomSheet는 `light-dark()`로 OS 라이트/다크 자동 대응(--kt-sheet-bg로 override).
 - `toast`: `type`(info/success/warning/error), `position`, `duration`, `dismissible`, `message`. 색은 `--kt-toast-bg/-fg/-accent`.
 - `bottomSheet`: `backdrop`, `backdropOpacity`, `handle`, `dismissible`, `duration`. 트리거는 `data-kt-sheet-trigger="#시트id"`.
 - `tabs`: `activation`(automatic/manual), `orientation`(horizontal/vertical), `effect`(fade/slide/none), `indicator`. 색은 `--kt-tab-accent`.

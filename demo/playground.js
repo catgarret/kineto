@@ -208,7 +208,7 @@ counter: {
     confetti: 'data-kt-confetti', accordion: 'data-kt-accordion', hold: 'data-kt-hold',
     megaMenu: 'data-kt-mega-menu', toast: 'data-kt-toast', bottomSheet: 'data-kt-bottom-sheet', tabs: 'data-kt-tabs',
     radial: 'data-kt-radial', coverReveal: 'data-kt-cover-reveal',
-    gesture: 'data-kt-gesture', drag: 'data-kt-drag'
+    gesture: 'data-kt-gesture', drag: 'data-kt-drag', tooltip: 'data-kt-tooltip'
   });
   Object.assign(PUBLIC_OPTIONS, {
     confetti: ['colors','count','duration','gravity','scalar','spread','trigger','zIndex'],
@@ -221,7 +221,8 @@ counter: {
     radial: ['activeAngle','autoplay','controls','drag','duration','loop','position','radius','step'],
     coverReveal: ['color','color2','delay','direction','duration','ease','layers','lines','onComplete','stagger','threshold','waitForImage'],
     gesture: ['duration','ease','hoverScale','lift','tapScale'],
-    drag: ['axis','bounds','handle','inertia','snapBack']
+    drag: ['axis','bounds','handle','inertia','snapBack'],
+    tooltip: ['content','delay','duration','hideDelay','interactive','offset','placement','trigger']
   });
   Object.assign(FIELDS, {
     confetti: [['count','Count','range',10,300,5],['spread','Spread','range',10,180,2],['gravity','Gravity','range',0,3,0.05],['scalar','Scale','range',0.4,3,0.05],['duration','Duration (s)','range',0.5,4,0.1],['colors','Colors (comma)','text'],['trigger','Trigger','select',['click','view','auto']],['zIndex','z-index','range',1000,20000,500]],
@@ -234,7 +235,8 @@ counter: {
     radial: [['position','Dock','select',['bottom','top','left','right']],['radius','Radius','range',80,900,10],['step','Angle step','range',6,60,1],['activeAngle','Active angle','range',-180,180,5],['duration','Duration (s)','range',0,1.5,0.05],['loop','Loop','checkbox'],['drag','Drag','checkbox'],['controls','Controls','checkbox'],['autoplay','Autoplay (ms)','range',0,6000,250]],
     coverReveal: [['lines','Per-line (text)','checkbox'],['color','Panel color','color'],['color2','Panel color 2','color'],['direction','Direction','select',['right','left','up','down']],['duration','Duration (s)','range',0.2,2,0.05],['delay','Delay (ms)','range',0,2000,50],['layers','Layers','range',1,3,1],['stagger','Stagger (ms)','range',0,400,10],['waitForImage','Wait for image','checkbox']],
     gesture: [['hoverScale','Hover scale','range',1,1.4,0.01],['tapScale','Tap scale','range',0.7,1,0.01],['lift','Lift (px)','range',0,20,1],['duration','Duration (s)','range',0,0.6,0.02]],
-    drag: [['axis','Axis','select',['both','x','y']],['bounds','Bounds','select',['','parent']],['snapBack','Snap back','checkbox'],['inertia','Inertia','checkbox']]
+    drag: [['axis','Axis','select',['both','x','y']],['bounds','Bounds','select',['','parent']],['snapBack','Snap back','checkbox'],['inertia','Inertia','checkbox']],
+    tooltip: [['content','Content','text'],['placement','Placement','select',['top','bottom','left','right']],['trigger','Trigger','select',['hover','focus','click','manual']],['delay','Show delay (ms)','range',0,800,20],['hideDelay','Hide delay (ms)','range',0,800,20],['offset','Offset (px)','range',0,24,1],['duration','Fade (s)','range',0,0.5,0.02],['interactive','Interactive','checkbox']]
   });
   Object.assign(DEFAULTS, {
     confetti:{count:140,spread:75,gravity:.9,scalar:1,duration:1.8,trigger:'click'},
@@ -245,6 +247,7 @@ counter: {
     coverReveal:{color:'#ff5b1c',color2:'#12141a',direction:'right',duration:.7,delay:0,layers:2,stagger:120,lines:false,waitForImage:true},
     gesture:{hoverScale:1.04,tapScale:.96,lift:0,duration:.22},
     drag:{axis:'both',bounds:'',snapBack:false,inertia:true},
+    tooltip:{placement:'top',trigger:'hover',delay:120,hideDelay:80,offset:8,duration:.16,interactive:false},
     toast:{type:'info',position:'bottom-right',duration:3200,dismissible:true},
     bottomSheet:{backdrop:true,backdropOpacity:.5,dismissible:true,handle:true,duration:.34},
     tabs:{activation:'automatic',orientation:'horizontal',effect:'fade',indicator:true,duration:.28}
@@ -442,9 +445,12 @@ counter: {
       return;
     }
     descriptors.forEach((descriptor) => descriptor.targets.forEach((target) => {
-      const inst = MK.replay(target, descriptor.module, descriptorOptions({ ...descriptor, targets: [target] }));
-      // Action modules (e.g. confetti) don't auto-play on recreate — fire them
-      // so Replay visibly does something for button/trigger-type demos.
+      // No options → core uses the instance's own replay() (in-place, e.g. the
+      // classOnly reveal that removes+re-adds its class to retrigger the CSS
+      // transition). The module already holds the current options from the last
+      // live edit, so recreating with options here would only break in-place
+      // replays like Class Hook. Falls back to recreate when no replay() exists.
+      const inst = MK.replay(target, descriptor.module);
       const one = Array.isArray(inst) ? inst[0] : inst;
       if (one && typeof one.fire === 'function') one.fire();
     }));

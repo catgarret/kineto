@@ -4230,14 +4230,16 @@ var mt = { create(e, t) {
 		};
 	} else {
 		let n = t.property || "scaleX";
-		m = w(e, [
+		n.startsWith("--") ? (m = () => e.style.removeProperty(n), u = (t) => {
+			e.style.setProperty(n, t.toFixed(4));
+		}) : (m = w(e, [
 			"transform",
 			"transformOrigin",
 			"width",
 			"willChange"
 		]), g = C(e, ["aria-hidden"]), e.style.transformOrigin = "left center", e.style.willChange = n === "scaleX" ? "transform" : "width", e.setAttribute("aria-hidden", "true"), u = (t) => {
 			n === "scaleX" ? e.style.transform = `scaleX(${t})` : e.style.width = `${t * 100}%`;
-		};
+		});
 	}
 	return c = requestAnimationFrame(f), {
 		el: e,
@@ -7046,9 +7048,80 @@ var Ht = {
 		reduced(e, t) {
 			return this.create(e, t);
 		}
+	},
+	tooltip: {
+		create(e, t = {}) {
+			let n = d().reducedMotion, r = e.getAttribute("title"), i = t.content || e.getAttribute("data-kt-title") || r || e.getAttribute("aria-label") || "";
+			if (!i) return null;
+			r != null && e.removeAttribute("title");
+			let a = [
+				"top",
+				"bottom",
+				"left",
+				"right"
+			].includes(t.placement) ? t.placement : "top", o = [
+				"hover",
+				"focus",
+				"click",
+				"manual"
+			].includes(t.trigger) ? t.trigger : "hover", s = Math.max(0, Number(t.delay ?? 120)), c = Math.max(0, Number(t.hideDelay ?? 80)), l = Number(t.offset ?? 8), u = Math.max(0, Number(t.duration ?? .16)), f = t.interactive === !0, p = document.createElement("div");
+			p.className = "kt-tooltip", p.setAttribute("role", "tooltip"), p.id = `kt-tooltip-${Math.random().toString(36).slice(2, 8)}`, p.hidden = !0, p.style.position = "fixed", p.style.opacity = "0", p.textContent = i;
+			let m = document.createElement("span");
+			m.className = "kt-tooltip__arrow", m.setAttribute("aria-hidden", "true"), p.appendChild(m), document.body.appendChild(p);
+			let g = e.getAttribute("aria-describedby");
+			e.setAttribute("aria-describedby", g ? `${g} ${p.id}` : p.id);
+			let _ = !1, v = null, y = null, b = null, x = () => {
+				let t = e.getBoundingClientRect(), n = p.offsetWidth, r = p.offsetHeight, i = window.innerWidth, o = window.innerHeight, s = a;
+				s === "top" && t.top - r - l < 0 ? s = "bottom" : s === "bottom" && t.bottom + r + l > o ? s = "top" : s === "left" && t.left - n - l < 0 ? s = "right" : s === "right" && t.right + n + l > i && (s = "left");
+				let c, u;
+				s === "top" ? (c = t.left + t.width / 2 - n / 2, u = t.top - r - l) : s === "bottom" ? (c = t.left + t.width / 2 - n / 2, u = t.bottom + l) : s === "left" ? (c = t.left - n - l, u = t.top + t.height / 2 - r / 2) : (c = t.right + l, u = t.top + t.height / 2 - r / 2), c = h(c, 4, i - n - 4), u = h(u, 4, o - r - 4), p.dataset.placement = s, p.style.left = `${Math.round(c)}px`, p.style.top = `${Math.round(u)}px`;
+			}, S = () => {
+				clearTimeout(y), !_ && (_ = !0, p.hidden = !1, x(), b && b.cancel(), n ? p.style.opacity = "1" : b = p.animate([{ opacity: 0 }, { opacity: 1 }], {
+					duration: u * 1e3,
+					easing: "ease",
+					fill: "forwards"
+				}), window.addEventListener("scroll", x, !0), window.addEventListener("resize", x));
+			}, C = () => {
+				if (clearTimeout(v), !_) return;
+				_ = !1;
+				let e = () => {
+					p.hidden = !0, p.style.opacity = "0";
+				};
+				b && b.cancel(), n ? e() : (b = p.animate([{ opacity: 1 }, { opacity: 0 }], {
+					duration: u * 700,
+					easing: "ease"
+				}), b.onfinish = e, b.oncancel = e), window.removeEventListener("scroll", x, !0), window.removeEventListener("resize", x);
+			}, w = () => {
+				clearTimeout(y), v = setTimeout(S, s);
+			}, T = () => {
+				clearTimeout(v), y = setTimeout(C, c);
+			}, E = () => w(), D = () => T(), O = () => S(), k = () => C(), A = () => {
+				_ ? C() : S();
+			}, j = (e) => {
+				e.key === "Escape" && _ && C();
+			}, M = (t) => {
+				_ && !e.contains(t.target) && !p.contains(t.target) && C();
+			};
+			return o === "hover" ? (e.addEventListener("pointerenter", E), e.addEventListener("pointerleave", D), e.addEventListener("focus", O), e.addEventListener("blur", k), f && (p.style.pointerEvents = "auto", p.addEventListener("pointerenter", () => clearTimeout(y)), p.addEventListener("pointerleave", T))) : o === "focus" ? (e.addEventListener("focus", O), e.addEventListener("blur", k)) : o === "click" && (e.addEventListener("click", A), document.addEventListener("pointerdown", M, !0)), e.addEventListener("keydown", j), {
+				el: e,
+				type: "tooltip",
+				show: S,
+				hide: C,
+				pause() {},
+				resume() {},
+				destroy() {
+					clearTimeout(v), clearTimeout(y), window.removeEventListener("scroll", x, !0), window.removeEventListener("resize", x), e.removeEventListener("pointerenter", E), e.removeEventListener("pointerleave", D), e.removeEventListener("focus", O), e.removeEventListener("blur", k), e.removeEventListener("click", A), document.removeEventListener("pointerdown", M, !0), e.removeEventListener("keydown", j), p.remove();
+					let t = (e.getAttribute("aria-describedby") || "").split(/\s+/).filter((e) => e && e !== p.id).join(" ");
+					t ? e.setAttribute("aria-describedby", t) : e.removeAttribute("aria-describedby"), r != null && e.setAttribute("title", r);
+				}
+			};
+		},
+		reduced(e, t) {
+			return this.create(e, t);
+		}
 	}
 };
 Object.entries(Xt).forEach(([e, t]) => Z.register(e, t));
-var $ = (e) => (t, n) => Z[e](t, n), Zt = $("parallax"), Qt = $("mouseParallax"), $t = $("reveal"), en = $("counter"), tn = $("lazy"), nn = $("textSplit"), rn = $("blurText"), an = $("shuffle"), on = $("typewriter"), sn = $("textReveal"), cn = $("textTransition"), ln = $("magnetic"), un = $("marquee"), dn = $("overflowText"), fn = $("loader"), pn = $("tilt"), mn = $("cursor"), hn = $("textFill"), gn = $("stickyStack"), _n = $("scrollVelocity"), vn = $("progress"), yn = $("slider"), bn = $("ambientMedia"), xn = $("pageReveal"), Sn = $("glitch"), Cn = $("cardGlow"), wn = $("lightbox"), Tn = $("pageTransition"), En = $("vibrate"), Dn = $("ripple"), On = $("cssScroll"), kn = $("scrollSequence"), An = $("brushReveal"), jn = $("fullpage"), Mn = $("confetti"), Nn = $("accordion"), Pn = $("hold"), Fn = $("megaMenu"), In = $("toast"), Ln = $("bottomSheet"), Rn = $("tabs"), zn = $("radial"), Bn = $("coverReveal"), Vn = $("gesture"), Hn = $("drag"), Un = Z;
+var $ = (e) => (t, n) => Z[e](t, n), Zt = $("parallax"), Qt = $("mouseParallax"), $t = $("reveal"), en = $("counter"), tn = $("lazy"), nn = $("textSplit"), rn = $("blurText"), an = $("shuffle"), on = $("typewriter"), sn = $("textReveal"), cn = $("textTransition"), ln = $("magnetic"), un = $("marquee"), dn = $("overflowText"), fn = $("loader"), pn = $("tilt"), mn = $("cursor"), hn = $("textFill"), gn = $("stickyStack"), _n = $("scrollVelocity"), vn = $("progress"), yn = $("slider"), bn = $("ambientMedia"), xn = $("pageReveal"), Sn = $("glitch"), Cn = $("cardGlow"), wn = $("lightbox"), Tn = $("pageTransition"), En = $("vibrate"), Dn = $("ripple"), On = $("cssScroll"), kn = $("scrollSequence"), An = $("brushReveal"), jn = $("fullpage"), Mn = $("confetti"), Nn = $("accordion"), Pn = $("hold"), Fn = $("megaMenu"), In = $("toast"), Ln = $("bottomSheet"), Rn = $("tabs"), zn = $("radial"), Bn = $("coverReveal"), Vn = $("gesture"), Hn = $("drag"), Un = $("tooltip"), Wn = Z;
 //#endregion
-export { Nn as accordion, bn as ambientMedia, rn as blurText, Ln as bottomSheet, An as brushReveal, Cn as cardGlow, Mn as confetti, en as counter, Bn as coverReveal, On as cssScroll, mn as cursor, Un as default, Hn as drag, jn as fullpage, Vn as gesture, Sn as glitch, Pn as hold, tn as lazy, wn as lightbox, fn as loader, ln as magnetic, un as marquee, Fn as megaMenu, Xt as modules, Qt as mouseParallax, dn as overflowText, xn as pageReveal, Tn as pageTransition, Zt as parallax, vn as progress, zn as radial, $t as reveal, Dn as ripple, kn as scrollSequence, _n as scrollVelocity, an as shuffle, yn as slider, gn as stickyStack, Rn as tabs, hn as textFill, sn as textReveal, nn as textSplit, cn as textTransition, pn as tilt, In as toast, on as typewriter, En as vibrate };
+export { Nn as accordion, bn as ambientMedia, rn as blurText, Ln as bottomSheet, An as brushReveal, Cn as cardGlow, Mn as confetti, en as counter, Bn as coverReveal, On as cssScroll, mn as cursor, Wn as default, Hn as drag, jn as fullpage, Vn as gesture, Sn as glitch, Pn as hold, tn as lazy, wn as lightbox, fn as loader, ln as magnetic, un as marquee, Fn as megaMenu, Xt as modules, Qt as mouseParallax, dn as overflowText, xn as pageReveal, Tn as pageTransition, Zt as parallax, vn as progress, zn as radial, $t as reveal, Dn as ripple, kn as scrollSequence, _n as scrollVelocity, an as shuffle, yn as slider, gn as stickyStack, Rn as tabs, hn as textFill, sn as textReveal, nn as textSplit, cn as textTransition, pn as tilt, In as toast, Un as tooltip, on as typewriter, En as vibrate };
