@@ -50,10 +50,9 @@ export default {
       return panels;
     };
 
-    if (linesMode) {
-      // Split text into rendered lines, wrap each line, cover per line.
-      buildLines();
-    } else {
+    let linesText = null; // original text — restored on destroy (lines mode)
+
+    const coverBlock = () => {
       // Block mode — wrap so panels overlay without disturbing layout.
       const cs = getComputedStyle(el);
       const inline = el.tagName === 'IMG' || cs.display.startsWith('inline');
@@ -67,13 +66,17 @@ export default {
       observeTarget = wrap;
       unwrap = () => { if (wrap.parentNode) { wrap.parentNode.insertBefore(el, wrap); wrap.remove(); } };
       coverOf(wrap);
-    }
+    };
 
     function buildLines() {
       const raw = el.textContent;
+      const words = raw.split(/\s+/).filter((w) => w.length);
+      // Nothing to line-split (e.g. an image, or empty) — leave the element
+      // untouched so the caller can fall back to a whole-element block cover.
+      if (words.length < 1) return false;
+      linesText = raw;
       // Measure with plain inline spans (they wrap naturally at the element's
       // real width); group by rendered top via getBoundingClientRect.
-      const words = raw.split(/\s+/).filter((w) => w.length);
       el.textContent = '';
       const wordSpans = words.map((w, i) => {
         const s = document.createElement('span');
@@ -98,7 +101,11 @@ export default {
         el.appendChild(line);
         coverOf(line);
       });
+      return true;
     }
+
+    // Lines mode only when there's real text; otherwise a whole-element cover.
+    if (!(linesMode && buildLines())) coverBlock();
 
     let played = false;
     let io = null;
@@ -181,6 +188,8 @@ export default {
           cover.container.style.position = cover.restorePosition;
         });
         unwrap?.();
+        // Lines mode replaced the text with per-line spans — put the text back.
+        if (linesText != null) el.textContent = linesText;
       }
     };
   },

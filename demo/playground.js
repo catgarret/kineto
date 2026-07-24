@@ -380,10 +380,24 @@ counter: {
     const MK = window.Kineto;
     descriptor.targets.forEach((target) => {
       MK.destroyModule(target, descriptor.module);
+      const snapshot = state.snapshots.get(target);
+      // Restore the pristine DOM (keeping the current data-kt-* option values)
+      // before recreating, so DOM-mutating modules — coverReveal line-split,
+      // radial item moves, accordion/tabs/megaMenu wrapping — never rebuild on
+      // top of their own previous output (which left demos broken until Reset).
+      // Skip when the target hosts ANOTHER module inside it (stacked containers
+      // like ambientMedia over a lazy image), where a restore would wipe it.
+      const activation = MODULE_ATTRIBUTES[descriptor.module];
+      const hasInnerModule = Object.values(MODULE_ATTRIBUTES).some((attr) => attr !== activation && target.querySelector && target.querySelector(`[${attr}]`));
+      if (snapshot && !hasInnerModule) {
+        const currentKt = Array.from(target.attributes).filter((a) => a.name.startsWith('data-kt-')).map((a) => [a.name, a.value]);
+        restoreElement(target);
+        Array.from(target.attributes).filter((a) => a.name.startsWith('data-kt-')).forEach((a) => target.removeAttribute(a.name));
+        currentKt.forEach(([n, v]) => target.setAttribute(n, v));
+      }
       try {
         MK.create(descriptor.module, target, descriptorOptions({ ...descriptor, targets: [target] }));
       } catch (_e) {
-        const snapshot = state.snapshots.get(target);
         if (snapshot) { restoreElement(target); MK.create(descriptor.module, target, descriptorOptions({ ...descriptor, targets: [target] })); }
       }
     });

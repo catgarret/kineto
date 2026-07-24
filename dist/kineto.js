@@ -6848,32 +6848,32 @@ var Ht = {
 					restorePosition: t,
 					restoreOverflow: n
 				}), a;
-			};
-			if (f) b();
-			else {
+			}, b = null, x = () => {
 				let t = getComputedStyle(e), n = e.tagName === "IMG" || t.display.startsWith("inline"), r = document.createElement("div");
 				r.className = "kt-cover-wrap", r.style.cssText = `position:relative;overflow:hidden;display:${n ? "inline-block" : "block"};border-radius:${t.borderRadius};`, e.parentNode.insertBefore(r, e), r.appendChild(e), _ = r, v = () => {
 					r.parentNode && (r.parentNode.insertBefore(e, r), r.remove());
 				}, y(r);
-			}
-			function b() {
-				let t = e.textContent.split(/\s+/).filter((e) => e.length);
-				e.textContent = "";
-				let n = t.map((n, r) => {
+			};
+			function S() {
+				let t = e.textContent, n = t.split(/\s+/).filter((e) => e.length);
+				if (n.length < 1) return !1;
+				b = t, e.textContent = "";
+				let r = n.map((t, r) => {
 					let i = document.createElement("span");
-					return i.textContent = n, e.appendChild(i), r < t.length - 1 && e.appendChild(document.createTextNode(" ")), i;
-				}), r = [], i = null, a = null;
-				n.forEach((e) => {
+					return i.textContent = t, e.appendChild(i), r < n.length - 1 && e.appendChild(document.createTextNode(" ")), i;
+				}), i = [], a = null, o = null;
+				return r.forEach((e) => {
 					let t = Math.round(e.getBoundingClientRect().top);
-					(a === null || Math.abs(t - a) > 3) && (i = [], r.push(i), a = t), i.push(e);
-				}), e.textContent = "", r.forEach((t) => {
+					(o === null || Math.abs(t - o) > 3) && (a = [], i.push(a), o = t), a.push(e);
+				}), e.textContent = "", i.forEach((t) => {
 					let n = document.createElement("span");
 					n.className = "kt-cover-line", n.style.cssText = "position:relative;display:block;overflow:hidden;width:max-content;max-width:100%;", n.textContent = t.map((e) => e.textContent).join(" "), e.appendChild(n), y(n);
-				});
+				}), !0;
 			}
-			let x = !1, S = null, C = () => {
-				if (x) return;
-				x = !0, e.offsetWidth, requestAnimationFrame(() => {
+			f && S() || x();
+			let C = !1, w = null, T = () => {
+				if (C) return;
+				C = !0, e.offsetWidth, requestAnimationFrame(() => {
 					g.forEach((e, t) => {
 						let n = s + (f ? t * u : 0);
 						e.panels.forEach((e, t) => {
@@ -6888,40 +6888,40 @@ var Ht = {
 				m.push(setTimeout(() => {
 					g.forEach((e) => e.panels.forEach((e) => e.remove())), t.onComplete?.(e);
 				}, r));
-			}, w = t.waitForImage !== !1, T = f ? null : e.tagName === "IMG" ? e : e.querySelector && e.querySelector("img"), E = () => {
-				if (w && T && !(T.complete && T.naturalWidth)) {
+			}, E = t.waitForImage !== !1, D = f ? null : e.tagName === "IMG" ? e : e.querySelector && e.querySelector("img"), O = () => {
+				if (E && D && !(D.complete && D.naturalWidth)) {
 					let e = !1, t = () => {
-						e || (e = !0, C());
+						e || (e = !0, T());
 					};
 					try {
-						T.decode && T.decode().then(t, t);
+						D.decode && D.decode().then(t, t);
 					} catch {}
-					T.addEventListener("load", t, { once: !0 }), T.addEventListener("error", t, { once: !0 }), setTimeout(t, 4e3);
-				} else C();
+					D.addEventListener("load", t, { once: !0 }), D.addEventListener("error", t, { once: !0 }), setTimeout(t, 4e3);
+				} else T();
 			};
-			return n ? g.forEach((e) => e.panels.forEach((e) => e.remove())) : typeof IntersectionObserver < "u" ? (S = new IntersectionObserver((e) => {
+			return n ? g.forEach((e) => e.panels.forEach((e) => e.remove())) : typeof IntersectionObserver < "u" ? (w = new IntersectionObserver((e) => {
 				for (let t of e) if (t.isIntersecting) {
-					S.disconnect(), S = null, E();
+					w.disconnect(), w = null, O();
 					break;
 				}
-			}, { threshold: h(Number(t.threshold ?? .2), 0, 1) }), S.observe(_)) : E(), {
+			}, { threshold: h(Number(t.threshold ?? .2), 0, 1) }), w.observe(_)) : O(), {
 				el: e,
 				type: "coverReveal",
 				replay() {
-					x = !1, m.forEach(clearTimeout), m = [], !n && (g.forEach((e) => {
+					C = !1, m.forEach(clearTimeout), m = [], !n && (g.forEach((e) => {
 						e.panels = [];
 						for (let t = 0; t < l; t += 1) {
 							let n = l > 1 && t === l - 1 ? i : r, a = document.createElement("span");
 							a.style.cssText = `position:absolute;inset:0;background:${n};z-index:${20 + t};transform:translate(0,0);transition:transform ${o}s ${c};pointer-events:none;`, e.container.appendChild(a), e.panels.push(a);
 						}
-					}), requestAnimationFrame(C));
+					}), requestAnimationFrame(T));
 				},
 				pause() {},
 				resume() {},
 				destroy() {
-					S?.disconnect(), m.forEach(clearTimeout), g.forEach((e) => {
+					w?.disconnect(), m.forEach(clearTimeout), g.forEach((e) => {
 						e.panels.forEach((e) => e.remove()), e.container.style.overflow = e.restoreOverflow, e.container.style.position = e.restorePosition;
-					}), v?.();
+					}), v?.(), b != null && (e.textContent = b);
 				}
 			};
 		},
