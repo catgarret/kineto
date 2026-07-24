@@ -40,7 +40,10 @@ reveal(data-kt-reveal), ripple(data-kt-ripple), scrollSequence(data-kt-scroll-se
 scrollVelocity(data-kt-scroll-velocity), shuffle(data-kt-shuffle), slider(data-kt-slider),
 stickyStack(data-kt-sticky-stack), textFill(data-kt-text-fill), textReveal(data-kt-text-reveal),
 textSplit(data-kt-text-split), textTransition(data-kt-text-transition), tilt(data-kt-tilt),
-typewriter(data-kt-typewriter), vibrate(data-kt-vibrate)
+typewriter(data-kt-typewriter), vibrate(data-kt-vibrate),
+accordion(data-kt-accordion), confetti(data-kt-confetti), hold(data-kt-hold),
+megaMenu(data-kt-mega-menu), tabs(data-kt-tabs), toast(data-kt-toast),
+bottomSheet(data-kt-bottom-sheet)
 ```
 
 ### English
@@ -68,7 +71,10 @@ reveal(data-kt-reveal), ripple(data-kt-ripple), scrollSequence(data-kt-scroll-se
 scrollVelocity(data-kt-scroll-velocity), shuffle(data-kt-shuffle), slider(data-kt-slider),
 stickyStack(data-kt-sticky-stack), textFill(data-kt-text-fill), textReveal(data-kt-text-reveal),
 textSplit(data-kt-text-split), textTransition(data-kt-text-transition), tilt(data-kt-tilt),
-typewriter(data-kt-typewriter), vibrate(data-kt-vibrate)
+typewriter(data-kt-typewriter), vibrate(data-kt-vibrate),
+accordion(data-kt-accordion), confetti(data-kt-confetti), hold(data-kt-hold),
+megaMenu(data-kt-mega-menu), tabs(data-kt-tabs), toast(data-kt-toast),
+bottomSheet(data-kt-bottom-sheet)
 ```
 
 ---
@@ -123,6 +129,23 @@ typewriter(data-kt-typewriter), vibrate(data-kt-vibrate)
 | 페이지 진입 오버레이 | `pageReveal` (`data-kt-page-reveal`) |
 | 동일 출처 페이지 전환(리로드 없이) | `pageTransition` (`data-kt-page-transition`) |
 | 햅틱 진동 피드백(모바일) | `vibrate` (`data-kt-vibrate`) |
+| 성공/클릭 색종이, 완료화면 배경 버스트(trigger:view) | `confetti` (`data-kt-confetti`) |
+| 길게 눌러 확정(게이지) | `hold` (`data-kt-hold`) |
+| 상태 알림 토스트(role=status/alert) | `toast` (`data-kt-toast`) |
+| FAQ·아코디언(details 기반, 화살표 CSS 커스텀) | `accordion` (`data-kt-accordion`) |
+| GNB 드롭다운·메가메뉴(키보드/aria) | `megaMenu` (`data-kt-mega-menu`) |
+| 탭 UI(WAI-ARIA/KRDS, 키보드) | `tabs` (`data-kt-tabs`) |
+| 바텀시트(드래그·포커스 트랩) | `bottomSheet` (`data-kt-bottom-sheet`) |
+
+### UI 컴포넌트 커스터마이징 요령
+- 모든 예제는 데모 페이지에서 옵션을 실시간으로 조절하고 **HTML/JS 코드를 복사**할 수 있습니다(“Customize & copy code”).
+- `confetti`: `colors`(쉼표 구분), `count`, `gravity`, `spread`, `scalar`, `duration`, `trigger`(click/view/auto). 다크모드는 흑백 팔레트를 `colors`로 전달.
+- `hold`: `duration`(ms), `color`(채움색), 완료 시 `kt-hold-confirm` 이벤트 + `onComplete`.
+- `accordion`: `single`, `duration`, `blur`, `arrowPosition`(right/left). 화살표는 CSS 변수 `--kt-accordion-arrow`, `--kt-accordion-arrow-size`, `--kt-accordion-arrow-weight`, `--kt-accordion-arrow-duration`로, 또는 `.kt-accordion-summary::after` 재정의로 커스텀.
+- `megaMenu`: `trigger`(hover/click), `layout`(dropdown/mega), `openDelay`, `closeDelay`, `duration`. `<li class="kt-menu-mega">`로 개별 항목만 풀폭 메가로.
+- `toast`: `type`(info/success/warning/error), `position`, `duration`, `dismissible`, `message`. 색은 `--kt-toast-bg/-fg/-accent`.
+- `bottomSheet`: `backdrop`, `backdropOpacity`, `handle`, `dismissible`, `duration`. 트리거는 `data-kt-sheet-trigger="#시트id"`.
+- `tabs`: `activation`(automatic/manual), `orientation`(horizontal/vertical), `effect`(fade/slide/none), `indicator`. 색은 `--kt-tab-accent`.
 
 ---
 

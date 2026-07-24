@@ -2,6 +2,18 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.30]
+
+- **3 new modules (38 → 41)**:
+  - **`data-kt-toast`** — transient status notifications in a shared live region (`role="status"`, or `"alert"` for warning/error), auto-dismiss with hover/focus pause, dismiss button, imperative `instance.show(msg, overrides)`. Options: `type`, `position`, `duration`, `dismissible`, `message`. Themeable via `.kt-toast*` / CSS variables.
+  - **`data-kt-bottom-sheet`** — panel that slides up from the bottom with backdrop, drag-to-dismiss handle, Esc/backdrop close, focus trap and focus return. Triggers via `data-kt-sheet-trigger="#id"`. Options: `backdrop`, `backdropOpacity`, `dismissible`, `handle`, `duration`, `trigger`.
+  - **`data-kt-tabs`** — WAI-ARIA / KRDS tab pattern: roving tabindex, ←/→ (↑/↓ vertical), Home/End, `automatic`/`manual` activation, animated indicator, panel fade/slide. Options: `activation`, `orientation`, `effect`, `indicator`, `duration`.
+- **Playground: every new component is now fully customizable + copyable.** confetti, hold, accordion, megaMenu, toast, bottomSheet and tabs were added to the playground registry, so each demo card now has the live "Customize & copy code" drawer with option controls and HTML/JS copy — previously confetti and the others had no options panel at all.
+- **Mouse Parallax fix**: the default per-layer multiplier was `0.05`, so `maxX`/`maxY` produced only ~1px of movement (effectively invisible). Default is now `1` — `maxX`/`maxY` are the real travel in px; layered depth stays opt-in per child via `data-mp-speed`.
+- **Accordion**: cleaner default chevron (SVG-mask caret, vertically centred) and a new `arrowPosition:"left" | "right"` option (`.kt-accordion--arrow-left`).
+- **Mega-menu**: fixed the broken demo layout — panels are dropdowns by default and only go full-width when the `<li>` has `.kt-menu-mega` (or `layout:"mega"`); removed the hover gap between trigger and panel.
+- **AI-PROMPT-GUIDE.md**: added all seven UI/interaction modules (accordion, confetti, hold, megaMenu, toast, bottomSheet, tabs) to the module lists, the intent→module table, and a new customization cheat-sheet.
+
 ## [0.8.29]
 
 - **New module `data-kt-mega-menu` (37 → 38)** — accessible GNB / mega-menu navigation. Hover-to-open dropdowns (Korean GNB style) or full-width mega panels (`layout:"mega"`), one open at a time. Progressive enhancement over a plain nested `<ul>`; full keyboard support (Enter/Space/↓ open, Esc close & return focus, ←/→ move between top items), automatic `aria-haspopup` / `aria-expanded` / `aria-controls`, outside-click & Esc to close, `openDelay` / `closeDelay` / `duration` / `trigger`.

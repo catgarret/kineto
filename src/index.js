@@ -38,6 +38,9 @@ import confettiModule from './modules/confetti.js';
 import accordionModule from './modules/accordion.js';
 import holdModule from './modules/hold.js';
 import megaMenuModule from './modules/megaMenu.js';
+import toastModule from './modules/toast.js';
+import bottomSheetModule from './modules/bottomSheet.js';
+import tabsModule from './modules/tabs.js';
 
 const moduleEntries = {
   parallax: parallaxModule,
@@ -77,7 +80,10 @@ const moduleEntries = {
   confetti: confettiModule,
   accordion: accordionModule,
   hold: holdModule,
-  megaMenu: megaMenuModule
+  megaMenu: megaMenuModule,
+  toast: toastModule,
+  bottomSheet: bottomSheetModule,
+  tabs: tabsModule
 };
 
 Object.entries(moduleEntries).forEach(([name, module]) => Kineto.register(name, module));
@@ -122,6 +128,9 @@ export const confetti = call('confetti');
 export const accordion = call('accordion');
 export const hold = call('hold');
 export const megaMenu = call('megaMenu');
+export const toast = call('toast');
+export const bottomSheet = call('bottomSheet');
+export const tabs = call('tabs');
 
 export { moduleEntries as modules };
 export default Kineto;

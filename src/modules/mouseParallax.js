@@ -118,7 +118,9 @@ export default {
     const tick = () => {
       if (!alive) return;
       targets.forEach((target, index) => {
-        const multiplier = Number(target.dataset.mpSpeed ?? target.dataset.ktMouseSpeed ?? opts.speed ?? 0.05);
+        // Default multiplier is 1 so `maxX`/`maxY` are the real travel in px.
+        // Layered depth is opt-in per child via data-mp-speed / data-kt-mouse-speed.
+        const multiplier = Number(target.dataset.mpSpeed ?? target.dataset.ktMouseSpeed ?? opts.speed ?? 1);
         currentX[index] = lerp(currentX[index], xTarget * maxX * multiplier, ease);
         currentY[index] = lerp(currentY[index], yTarget * maxY * multiplier, ease);
         target.style.transform = `translate3d(${currentX[index]}px, ${currentY[index]}px, 0)`;

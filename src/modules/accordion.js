@@ -13,6 +13,10 @@ export default {
     const ease = opts.ease || 'cubic-bezier(.22,.8,.3,1)';
     const single = opts.single === true;
     const blur = Math.max(0, Number(opts.blur ?? 6));
+    // Arrow side is a CSS hook: `left` puts the chevron before the label.
+    const arrowPosition = opts.arrowPosition === 'left' ? 'left' : 'right';
+    el.classList.add('kt-accordion');
+    el.classList.toggle('kt-accordion--arrow-left', arrowPosition === 'left');
     const entries = [];
 
     const build = (details) => {
@@ -80,7 +84,10 @@ export default {
       type: 'accordion',
       pause() {},
       resume() {},
-      destroy() { entries.forEach((entry) => entry.destroy()); }
+      destroy() {
+        entries.forEach((entry) => entry.destroy());
+        el.classList.remove('kt-accordion', 'kt-accordion--arrow-left');
+      }
     };
   },
   // Reduced motion: don't touch <details> — native toggle is instant & accessible.

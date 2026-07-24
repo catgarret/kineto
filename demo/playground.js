@@ -202,6 +202,40 @@ counter: {
     }
   });
 
+  // ── Interaction / component modules added to the playground so every demo
+  // card exposes live options + copyable code (same as all other modules).
+  Object.assign(MODULE_ATTRIBUTES, {
+    confetti: 'data-kt-confetti', accordion: 'data-kt-accordion', hold: 'data-kt-hold',
+    megaMenu: 'data-kt-mega-menu', toast: 'data-kt-toast', bottomSheet: 'data-kt-bottom-sheet', tabs: 'data-kt-tabs'
+  });
+  Object.assign(PUBLIC_OPTIONS, {
+    confetti: ['colors','count','duration','gravity','scalar','spread','trigger','zIndex'],
+    accordion: ['arrowPosition','blur','duration','ease','single'],
+    hold: ['color','duration','onComplete'],
+    megaMenu: ['closeDelay','duration','layout','openDelay','trigger'],
+    toast: ['dismissible','duration','message','position','type'],
+    bottomSheet: ['backdrop','backdropOpacity','dismissible','duration','handle','trigger'],
+    tabs: ['activation','duration','effect','indicator','orientation']
+  });
+  Object.assign(FIELDS, {
+    confetti: [['count','Count','range',10,300,5],['spread','Spread','range',10,180,2],['gravity','Gravity','range',0,3,0.05],['scalar','Scale','range',0.4,3,0.05],['duration','Duration (s)','range',0.5,4,0.1],['colors','Colors (comma)','text'],['trigger','Trigger','select',['click','view','auto']],['zIndex','z-index','range',1000,20000,500]],
+    hold: [['duration','Duration (ms)','range',300,4000,50],['color','Fill color','text']],
+    accordion: [['single','Single open','checkbox'],['duration','Duration (s)','range',0.1,1,0.02],['blur','Blur','range',0,20,1],['arrowPosition','Arrow side','select',['right','left']],['ease','Ease','text']],
+    megaMenu: [['trigger','Trigger','select',['hover','click']],['layout','Layout','select',['dropdown','mega']],['openDelay','Open delay (ms)','range',0,400,10],['closeDelay','Close delay (ms)','range',0,600,10],['duration','Duration (s)','range',0.05,0.6,0.01]],
+    toast: [['message','Message','text'],['type','Type','select',['info','success','warning','error']],['position','Position','select',['bottom-right','bottom-left','top-right','top-left','top','bottom']],['duration','Duration (ms)','range',1000,8000,200],['dismissible','Dismissible','checkbox']],
+    bottomSheet: [['backdrop','Backdrop','checkbox'],['backdropOpacity','Backdrop opacity','range',0,1,0.05],['dismissible','Dismissible','checkbox'],['handle','Drag handle','checkbox'],['duration','Duration (s)','range',0.1,0.8,0.02]],
+    tabs: [['activation','Activation','select',['automatic','manual']],['orientation','Orientation','select',['horizontal','vertical']],['effect','Panel effect','select',['fade','slide','none']],['indicator','Indicator','checkbox'],['duration','Duration (s)','range',0,0.6,0.02]]
+  });
+  Object.assign(DEFAULTS, {
+    confetti:{count:140,spread:75,gravity:.9,scalar:1,duration:1.8,trigger:'click'},
+    hold:{duration:1100},
+    accordion:{single:false,duration:.4,blur:6,arrowPosition:'right'},
+    megaMenu:{trigger:'hover',layout:'dropdown',openDelay:60,closeDelay:180,duration:.24},
+    toast:{type:'info',position:'bottom-right',duration:3200,dismissible:true},
+    bottomSheet:{backdrop:true,backdropOpacity:.5,dismissible:true,handle:true,duration:.34},
+    tabs:{activation:'automatic',orientation:'horizontal',effect:'fade',indicator:true,duration:.28}
+  });
+
   const state = { snapshots: new WeakMap(), mounted: false, timers: new WeakMap() };
   const dash = (value) => value.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
   const camel = (value) => value.replace(/-([a-z])/g, (_m, c) => c.toUpperCase());

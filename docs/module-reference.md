@@ -2,10 +2,10 @@
 
 > 이 문서는 `kineto.features.json`에서 생성됩니다. 직접 수정하지 말고 계약 파일을 명시적으로 변경한 뒤 `npm run docs:contract`를 실행하세요.
 
-- Library: 0.8.29
+- Library: 0.8.30
 - Feature contract: 1.3.0
 - Behavior contract: 1.2.0
-- Public modules: 38
+- Public modules: 41
 - Root properties: `version`, `env`, `performance`, `registry`, `instanceCount`, `smoothEnabled`, `lenis`, `core`
 - Core methods: `config()`, `setAnimationEngine()`, `enableSmooth()`, `disableSmooth()`, `toggleSmooth()`, `scrollTo()`, `register()`, `unregister()`, `create()`, `scan()`, `init()`, `initModules()`, `autoInit()`, `getInstance()`, `destroyModule()`, `replay()`, `destroy()`, `pause()`, `resume()`, `refresh()`
 - Additional named exports: `modules`
@@ -262,7 +262,7 @@
 - Attribute: `data-kt-accordion`
 - Default variant: `panel`
 - Variants: `panel`
-- Public options: `blur`, `duration`, `ease`, `single`
+- Public options: `arrowPosition`, `blur`, `duration`, `ease`, `single`
 
 ## hold
 
@@ -277,3 +277,24 @@
 - Default variant: `dropdown`
 - Variants: `dropdown`, `mega`
 - Public options: `closeDelay`, `duration`, `layout`, `openDelay`, `trigger`
+
+## toast
+
+- Attribute: `data-kt-toast`
+- Default variant: `stack`
+- Variants: `stack`
+- Public options: `dismissible`, `duration`, `message`, `position`, `type`
+
+## bottomSheet
+
+- Attribute: `data-kt-bottom-sheet`
+- Default variant: `sheet`
+- Variants: `sheet`
+- Public options: `backdrop`, `backdropOpacity`, `dismissible`, `duration`, `handle`, `trigger`
+
+## tabs
+
+- Attribute: `data-kt-tabs`
+- Default variant: `line`
+- Variants: `line`
+- Public options: `activation`, `duration`, `effect`, `indicator`, `orientation`

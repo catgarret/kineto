@@ -150,12 +150,13 @@ html.kt-preload [data-kt-text-transition] {
    Default chevron + open-state hooks for `data-kt-accordion`. Everything is
    themeable with CSS variables (or override the selectors outright):
      --kt-accordion-arrow            arrow colour        (default currentColor)
-     --kt-accordion-arrow-size       arrow size          (default .6em)
-     --kt-accordion-arrow-weight     arrow line weight   (default 2px)
+     --kt-accordion-arrow-size       box size            (default 1.1em)
+     --kt-accordion-arrow-weight     line weight         (default 2px)
      --kt-accordion-arrow-duration   rotate duration     (default .3s)
    `.kt-open` is added to the open <details>; `.kt-accordion-summary` to the
-   trigger. To use your own icon, just restyle `.kt-accordion-summary::after`. */
-[data-kt-accordion] .kt-accordion-summary {
+   trigger. `arrowPosition:"left"` adds `.kt-accordion--arrow-left`. To use your
+   own icon, restyle `.kt-accordion-summary::after`. */
+.kt-accordion .kt-accordion-summary {
   list-style: none;
   display: flex;
   align-items: center;
@@ -163,42 +164,113 @@ html.kt-preload [data-kt-text-transition] {
   gap: 12px;
   cursor: pointer;
 }
-[data-kt-accordion] .kt-accordion-summary::-webkit-details-marker { display: none; }
-[data-kt-accordion] .kt-accordion-summary::after {
+.kt-accordion .kt-accordion-summary::-webkit-details-marker { display: none; }
+/* A clean chevron drawn with a rounded caret inside a fixed box, so it stays
+   vertically centred regardless of the line height of the label. */
+.kt-accordion .kt-accordion-summary::after {
   content: "";
   flex: 0 0 auto;
-  width: var(--kt-accordion-arrow-size, .6em);
-  height: var(--kt-accordion-arrow-size, .6em);
-  border-right: var(--kt-accordion-arrow-weight, 2px) solid var(--kt-accordion-arrow, currentColor);
-  border-bottom: var(--kt-accordion-arrow-weight, 2px) solid var(--kt-accordion-arrow, currentColor);
-  transform: rotate(45deg);
-  transition: transform var(--kt-accordion-arrow-duration, .3s) cubic-bezier(.22,.8,.3,1);
-  opacity: .65;
+  width: var(--kt-accordion-arrow-size, 1.1em);
+  height: var(--kt-accordion-arrow-size, 1.1em);
+  background: var(--kt-accordion-arrow, currentColor);
+  opacity: .55;
+  transition: transform var(--kt-accordion-arrow-duration, .3s) cubic-bezier(.22,.8,.3,1),
+              opacity var(--kt-accordion-arrow-duration, .3s) ease;
+  -webkit-mask: no-repeat center / 60% 60% url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+          mask: no-repeat center / 60% 60% url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
 }
-[data-kt-accordion] .kt-open > .kt-accordion-summary::after { transform: rotate(-135deg); }
+.kt-accordion .kt-open > .kt-accordion-summary::after { transform: rotate(180deg); opacity: .8; }
+/* Arrow on the left of the label. */
+.kt-accordion--arrow-left .kt-accordion-summary { flex-direction: row-reverse; justify-content: flex-end; }
 @media (prefers-reduced-motion: reduce) {
-  [data-kt-accordion] .kt-accordion-summary::after { transition: none; }
+  .kt-accordion .kt-accordion-summary::after { transition: none; }
 }
 
 /* ── Mega-menu / GNB ─────────────────────────────────────────────────────────
    Structural defaults for `data-kt-mega-menu`. Colours/spacing are left to the
    host site — only positioning + the show/hide contract live here.
-   `.kt-open` marks the open <li>; `.kt-menu--mega` panels span full width. */
-[data-kt-mega-menu] .kt-menu-panel[hidden] { display: none; }
-.kt-menu--dropdown > ul > li,
+   `.kt-open` marks the open <li>. Panels are dropdowns by default; add
+   `.kt-menu-mega` to an <li> (or `layout:"mega"`) for a full-width panel. */
+.kt-menu > ul { position: relative; }
 .kt-menu > ul > li { position: relative; }
-.kt-menu--dropdown .kt-menu-panel {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 50;
+.kt-menu .kt-menu-panel { position: absolute; top: 100%; left: 0; z-index: 50; }
+.kt-menu .kt-menu-panel[hidden] { display: none; }
+/* Full-width mega panel: anchored to the whole bar, not the item. */
+.kt-menu--mega .kt-menu-panel,
+.kt-menu .kt-menu-mega > .kt-menu-panel { left: 0; right: 0; width: 100%; }
+/* Keep panels reachable by the pointer (no gap flicker on hover). */
+.kt-menu .kt-menu-panel { margin-top: 0; }
+
+/* ── Toast ───────────────────────────────────────────────────────────────────
+   Live-region notifications. Themeable via `.kt-toast*` + CSS variables:
+   --kt-toast-bg, --kt-toast-fg, --kt-toast-radius, --kt-toast-gap. Type accents
+   via --kt-toast-accent (overridden per --success/--warning/--error). */
+.kt-toast-region {
+  position: fixed; z-index: 12000; display: flex; flex-direction: column;
+  gap: var(--kt-toast-gap, 10px); padding: 16px; pointer-events: none; max-width: min(92vw, 380px);
 }
-.kt-menu--mega { position: relative; }
-.kt-menu--mega .kt-menu-panel {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  width: 100%;
-  z-index: 50;
+.kt-toast-region--bottom-right { right: 0; bottom: 0; align-items: flex-end; }
+.kt-toast-region--bottom-left { left: 0; bottom: 0; align-items: flex-start; }
+.kt-toast-region--top-right { right: 0; top: 0; align-items: flex-end; }
+.kt-toast-region--top-left { left: 0; top: 0; align-items: flex-start; }
+.kt-toast-region--top { left: 50%; top: 0; transform: translateX(-50%); align-items: center; }
+.kt-toast-region--bottom { left: 50%; bottom: 0; transform: translateX(-50%); align-items: center; }
+.kt-toast {
+  pointer-events: auto; display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: var(--kt-toast-radius, 12px);
+  background: var(--kt-toast-bg, #1c1f26); color: var(--kt-toast-fg, #f6f7fb);
+  box-shadow: 0 12px 34px rgba(0,0,0,.32); border-left: 3px solid var(--kt-toast-accent, #4aa8ff);
+  font-size: 14px; line-height: 1.4; max-width: 100%;
+}
+.kt-toast--success { --kt-toast-accent: #2ec16b; }
+.kt-toast--warning { --kt-toast-accent: #ffb020; }
+.kt-toast--error   { --kt-toast-accent: #ff5a5a; }
+.kt-toast__msg { flex: 1 1 auto; }
+.kt-toast__close {
+  flex: 0 0 auto; border: 0; background: transparent; color: inherit; cursor: pointer;
+  font-size: 18px; line-height: 1; opacity: .6; padding: 0 2px;
+}
+.kt-toast__close:hover { opacity: 1; }
+
+/* ── Bottom sheet ─────────────────────────────────────────────────────────────
+   Themeable via --kt-sheet-bg, --kt-sheet-radius, --kt-sheet-max. */
+.kt-sheet-backdrop {
+  position: fixed; inset: 0; z-index: 11800;
+  background: rgba(0,0,0, var(--kt-sheet-backdrop-opacity, .5));
+}
+.kt-sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 11900;
+  max-height: var(--kt-sheet-max, 85vh); overflow: auto;
+  background: var(--kt-sheet-bg, #14161b); color: var(--kt-sheet-fg, #f6f7fb);
+  border-radius: var(--kt-sheet-radius, 18px) var(--kt-sheet-radius, 18px) 0 0;
+  padding: 8px 20px 24px; box-shadow: 0 -18px 50px rgba(0,0,0,.4);
+  margin-inline: auto; max-width: var(--kt-sheet-width, 640px);
+}
+.kt-sheet__handle {
+  width: 40px; height: 4px; border-radius: 99px; background: currentColor; opacity: .3;
+  margin: 8px auto 14px; cursor: grab; touch-action: none;
+}
+
+/* ── Tabs ─────────────────────────────────────────────────────────────────────
+   `[role=tablist]`/`.kt-tablist` gets an animated indicator. Themeable via
+   --kt-tab-accent, --kt-tab-indicator-size. `.kt-active` marks the current tab. */
+.kt-tabs--vertical { display: flex; gap: 16px; }
+.kt-tabs--vertical .kt-tablist, .kt-tabs--vertical [role="tablist"] { flex-direction: column; }
+.kt-tabs .kt-tablist, .kt-tabs [role="tablist"] { display: flex; position: relative; gap: 4px; }
+.kt-tabs [role="tab"] {
+  appearance: none; border: 0; background: transparent; cursor: pointer; color: inherit;
+  padding: 10px 14px; font: inherit; opacity: .62; border-radius: 8px;
+  transition: opacity .2s ease, background .2s ease;
+}
+.kt-tabs [role="tab"]:hover { opacity: .85; }
+.kt-tabs [role="tab"].kt-active { opacity: 1; font-weight: 700; }
+.kt-tabs [role="tab"]:focus-visible { outline: 2px solid var(--kt-tab-accent, #ff5b1c); outline-offset: 2px; }
+.kt-tabs__indicator {
+  position: absolute; left: 0; bottom: 0; height: var(--kt-tab-indicator-size, 2px);
+  background: var(--kt-tab-accent, #ff5b1c); border-radius: 99px;
+  transition: transform .28s cubic-bezier(.22,.8,.3,1), width .28s cubic-bezier(.22,.8,.3,1), height .28s ease;
+}
+.kt-tabs--vertical .kt-tabs__indicator { top: 0; bottom: auto; left: 0; width: var(--kt-tab-indicator-size, 2px) !important; }
+@media (prefers-reduced-motion: reduce) {
+  .kt-tabs__indicator { transition: none; }
 }
