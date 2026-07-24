@@ -6509,7 +6509,7 @@ var Ht = {
 	megaMenu: qt,
 	toast: {
 		create(e, t = {}) {
-			let n = d().reducedMotion, r = t.position || "bottom-right", i = t.type || "info", a = Math.max(600, Number(t.duration ?? 3200)), o = t.dismissible !== !1, s = t.message || e.getAttribute("data-kt-message") || e.textContent.trim() || "Done", c = t.progress === !0, l = Math.max(1, Number(t.max ?? 5)), u = (e, t = {}) => {
+			let n = d().reducedMotion, r = t.position || "bottom-right", i = t.type || "info", a = Math.max(600, Number(t.duration ?? 3200)), o = t.dismissible !== !1, s = t.message || e.getAttribute("data-kt-message") || e.textContent.trim() || "Done", c = t.progressBar === !0, l = Math.max(1, Number(t.max ?? 5)), u = (e, t = {}) => {
 				let u = t.type || i, d = Yt(t.position || r);
 				for (; d.children.length >= l;) d.firstElementChild?.remove();
 				let f = document.createElement("div");

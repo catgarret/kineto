@@ -28,7 +28,9 @@ export default {
     const dismissible = opts.dismissible !== false;
     const defaultMessage = opts.message || el.getAttribute('data-kt-message') || el.textContent.trim() || 'Done';
     // A countdown progress bar that drains over the duration (pauses on hover).
-    const showProgress = opts.progress === true;
+    // Named `progressBar` (attr data-kt-progress-bar) to avoid colliding with
+    // the separate `progress` module's data-kt-progress activation attribute.
+    const showProgress = opts.progressBar === true;
     // Cap how many toasts stack at once — the oldest is evicted past this.
     const maxVisible = Math.max(1, Number(opts.max ?? 5));
 

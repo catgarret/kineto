@@ -1275,7 +1275,7 @@
         "max",
         "message",
         "position",
-        "progress",
+        "progressBar",
         "type"
       ]
     },
