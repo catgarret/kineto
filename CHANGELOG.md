@@ -6,6 +6,8 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
 
 - **New module `data-kt-switch` (46 → 47)** — accessible animated toggle: role="switch" + aria-checked, sliding thumb, click/Space/Enter, `onChange(checked, el)` + `kt-switch-change` event, `instance.toggle()/set()/checked`. Options `size`, `onColor`, `offColor`, `thumbColor`, `duration` (or `--kt-switch-*` CSS vars).
 - **Tabs — segmented style**: add the `kt-tabs--segment` class to render the animated indicator as a sliding pill behind the active tab (the "Published / Scheduled / Drafts" look). Themeable via `--kt-seg-*`.
+- **overflowText `scroll-fade` — `crossfade` option**: two overlapping tracks so the end fades out while the start fades in (no empty gap between passes).
+- **Loader — headless API**: the built-in `renderUI` (custom DOM) and `onProgress` callback already allow full custom loaders; now the progress is also streamed to CSS variables `--kt-loader-progress` (0–1) and `--kt-loader-percent` (0–100) on the element, so a custom loader can be built in pure CSS. Built-in visuals stay restyleable via the `kt-loader-*` classes.
 - **Lightbox — download button** (`download:true`) next to Share, and confirmed per-image thumbnail↔full-resolution: the thumbnail is the `<img src>`, the full image is `data-kt-src` (each image independent). Download fetches the full image as a blob (works cross-origin).
 
 ## [0.8.36]

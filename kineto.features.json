@@ -616,6 +616,7 @@
       ],
       "publicOptions": [
         "ariaLive",
+        "crossfade",
         "delay",
         "direction",
         "dissolveDuration",

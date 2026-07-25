@@ -128,6 +128,11 @@ export default {
     const render = () => {
       progressUI.render(displayed);
       el.setAttribute('aria-valuenow', String(Math.round(displayed)));
+      // Headless API: stream progress to CSS variables so a fully custom loader
+      // can be built with `renderUI` OR pure CSS (no JS): --kt-loader-progress
+      // is 0..1, --kt-loader-percent is 0..100. onProgress(value, el) also fires.
+      el.style.setProperty('--kt-loader-progress', (displayed / 100).toFixed(4));
+      el.style.setProperty('--kt-loader-percent', String(Math.round(displayed)));
       opts.onProgress?.(displayed, el);
     };
     const animate = () => {

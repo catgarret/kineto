@@ -296,6 +296,33 @@ export default {
         // Scroll to the end, fade out, then fade the start back in and scroll
         // again — a soft-looping marquee with no hard jump.
         const fadeMs = number(opts.maskDuration, 300, 10);
+        if (opts.crossfade === true) {
+          // Two overlapping tracks: the end fades OUT while the start fades IN
+          // at the same time — no empty gap between passes.
+          const P = 2 * fadeMs + moveDuration;
+          const frames = [
+            { transform: `translate3d(${startX}px,0,0)`, opacity: 0, offset: 0 },
+            { transform: `translate3d(${startX}px,0,0)`, opacity: 1, offset: clamp(fadeMs / P, 0, 1) },
+            { transform: `translate3d(${endX}px,0,0)`, opacity: 1, offset: clamp((fadeMs + moveDuration) / P, 0, 1) },
+            { transform: `translate3d(${endX}px,0,0)`, opacity: 0, offset: 1 }
+          ];
+          const h = first.getBoundingClientRect().height || first.offsetHeight;
+          viewport.style.height = h ? `${h}px` : '1.35em';
+          track.style.position = 'absolute';
+          track.style.left = '0';
+          track.style.top = '0';
+          const track2 = document.createElement('span');
+          track2.className = track.className;
+          track2.setAttribute('aria-hidden', 'true');
+          track2.style.cssText = track.style.cssText;
+          track2.appendChild(createSegment(text, true));
+          viewport.appendChild(track2);
+          const cfg = { duration: P, iterations: opts.repeat === false ? 1 : Infinity, easing: 'linear', fill: 'both' };
+          animation = track.animate(frames, { ...cfg, delay });
+          // Phase-shift the second track so its fade-in lands on the first's fade-out.
+          track2.animate(frames, { ...cfg, delay: delay - (moveDuration + fadeMs) });
+          return;
+        }
         const total = delay + fadeMs + moveDuration + fadeMs + endPause;
         const d0 = clamp(delay / total, 0, 1);
         const o1 = clamp((delay + fadeMs) / total, d0, 1);

@@ -3149,7 +3149,49 @@ var Qe = {
 				return;
 			}
 			if (n === "scroll-fade" || n === "scrollFade") {
-				let e = Q(t.maskDuration, 300, 10), n = i + e + m + e + a, r = h(i / n, 0, 1), o = h((i + e) / n, r, 1), s = h((i + e + m) / n, o, 1), c = h((i + e + m + e) / n, s, 1);
+				let e = Q(t.maskDuration, 300, 10);
+				if (t.crossfade === !0) {
+					let n = 2 * e + m, r = [
+						{
+							transform: `translate3d(${g}px,0,0)`,
+							opacity: 0,
+							offset: 0
+						},
+						{
+							transform: `translate3d(${g}px,0,0)`,
+							opacity: 1,
+							offset: h(e / n, 0, 1)
+						},
+						{
+							transform: `translate3d(${_}px,0,0)`,
+							opacity: 1,
+							offset: h((e + m) / n, 0, 1)
+						},
+						{
+							transform: `translate3d(${_}px,0,0)`,
+							opacity: 0,
+							offset: 1
+						}
+					], a = l.getBoundingClientRect().height || l.offsetHeight;
+					T.style.height = a ? `${a}px` : "1.35em", E.style.position = "absolute", E.style.left = "0", E.style.top = "0";
+					let o = document.createElement("span");
+					o.className = E.className, o.setAttribute("aria-hidden", "true"), o.style.cssText = E.style.cssText, o.appendChild(F(v, !0)), T.appendChild(o);
+					let s = {
+						duration: n,
+						iterations: t.repeat === !1 ? 1 : Infinity,
+						easing: "linear",
+						fill: "both"
+					};
+					b = E.animate(r, {
+						...s,
+						delay: i
+					}), o.animate(r, {
+						...s,
+						delay: i - (m + e)
+					});
+					return;
+				}
+				let n = i + e + m + e + a, r = h(i / n, 0, 1), o = h((i + e) / n, r, 1), s = h((i + e + m) / n, o, 1), c = h((i + e + m + e) / n, s, 1);
 				b = E.animate([
 					{
 						transform: `translate3d(${g}px,0,0)`,
@@ -3517,7 +3559,7 @@ var tt = {
 		let s = $e(e, n, t), c = h(Number(t.progress ?? t.percent ?? 0), 0, 100), l = c, u = !1, d = !1, f = !1, p = null, m = null, g = null, _ = null, v = [], y = performance.now();
 		e.setAttribute("role", "status"), e.setAttribute("aria-label", t.ariaLabel || "Loading"), a && (document.body.style.overflow = "hidden", document.documentElement.style.overflow = "hidden");
 		let b = () => {
-			s.render(l), e.setAttribute("aria-valuenow", String(Math.round(l))), t.onProgress?.(l, e);
+			s.render(l), e.setAttribute("aria-valuenow", String(Math.round(l))), e.style.setProperty("--kt-loader-progress", (l / 100).toFixed(4)), e.style.setProperty("--kt-loader-percent", String(Math.round(l))), t.onProgress?.(l, e);
 		}, x = () => {
 			d || (f || (l += (c - l) * h(Number(t.smoothing ?? .16), .01, 1)), Math.abs(l - c) < .05 && (l = c), b(), p = requestAnimationFrame(x));
 		};

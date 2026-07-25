@@ -39,7 +39,7 @@
       ['maskDuration','Mask time (ms)','range',50,700,10], ['pageDuration','Page hold (ms)','range',100,2500,50],
       ['flipDuration','Flip time (ms)','range',100,900,20], ['flipDirection','Flip direction','select',['down','up']],
       ['dissolveDuration','Dissolve time (ms)','range',150,1200,10], ['jitter','Dissolve jitter','range',0,14,1],
-      ['gap','Loop gap','range',0,120,2], ['maskDirection','Mask direction','select',['top-to-bottom','bottom-to-top','left-to-right','right-to-left']], ['rollDuration','Roll time (ms)','range',80,1200,20],['rollDirection','Roll direction','select',['up','down']],['items','Rolling items','text'], ['pauseOnHover','Pause on hover','checkbox']
+      ['gap','Loop gap','range',0,120,2], ['maskDirection','Mask direction','select',['top-to-bottom','bottom-to-top','left-to-right','right-to-left']], ['rollDuration','Roll time (ms)','range',80,1200,20],['rollDirection','Roll direction','select',['up','down']],['items','Rolling items','text'], ['crossfade','Crossfade','checkbox'], ['pauseOnHover','Pause on hover','checkbox']
     ],
     cardGlow: [
       ['preset','Glow','select',['spotlight','pointer','border','comet','aurora','shine']], ['color','Color','color'],
@@ -136,6 +136,7 @@ counter: {
       restartDelay:(o)=>['bounce','rewind','page','flip','dissolve','page-roll','fade'].includes(o.preset),
       maskDuration:(o)=>['rewind','page','fade','scroll-fade'].includes(o.preset), maskDirection:(o)=>['rewind','page'].includes(o.preset),
       pageDuration:(o)=>['page','flip','dissolve','page-roll','fade'].includes(o.preset),
+      crossfade:(o)=>o.preset==='scroll-fade',
       flipDuration:(o)=>(o.preset)==='flip', flipDirection:(o)=>(o.preset)==='flip',
       dissolveDuration:(o)=>(o.preset)==='dissolve', jitter:(o)=>(o.preset)==='dissolve',
       rollDuration:(o)=>['rolling','page-roll'].includes(o.preset), rollDirection:(o)=>['rolling','page-roll'].includes(o.preset),
