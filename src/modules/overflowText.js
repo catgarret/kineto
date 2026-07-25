@@ -86,6 +86,10 @@ export default {
     // Rolling items must be read before the element is emptied below,
     // otherwise markup children (div/span items) would be lost.
     const rollingItems = mode === 'rolling' ? parseItems(el, opts) : null;
+    // fade/dissolve/flip/page also work as ITEM scene transitions (like rolling)
+    // when the element holds multiple item children — not only overflowing text.
+    const sceneModes = ['fade', 'dissolve', 'flip', 'page'];
+    const sceneItems = (sceneModes.includes(mode) && el.children.length >= 2) ? parseItems(el, opts) : null;
 
     let animation = null;
     let resizeObserver = null;
@@ -214,6 +218,87 @@ export default {
       if (items.length > 1) schedule(advance, number(opts.delay, hold));
     };
 
+    // Item scene transitions: cycle discrete items with fade / dissolve / flip /
+    // page(mask). Items overlap during the transition, then the new one settles
+    // into flow (so the viewport sizes to it).
+    const buildScenes = () => {
+      const list = sceneItems || [];
+      if (list.length < 2) { buildOverflow(); return; }
+      clearMotion();
+      el.innerHTML = '';
+      el.style.whiteSpace = 'normal';
+      el.setAttribute('role', opts.role || 'status');
+      el.setAttribute('aria-live', opts.ariaLive || 'polite');
+      const vp = document.createElement('span');
+      vp.className = 'kt-overflow-scene-viewport';
+      vp.style.cssText = 'display:block;position:relative;overflow:hidden;';
+      if (mode === 'flip') vp.style.perspective = `${number(opts.perspective, 700, 100)}px`;
+      el.appendChild(vp);
+      const nodes = list.map((html) => {
+        const node = document.createElement('span');
+        node.className = 'kt-overflow-scene';
+        node.innerHTML = html;
+        // Measure each item stacked in normal flow first (so we can lock the
+        // viewport to the tallest and it never collapses mid-transition).
+        node.style.cssText = 'display:block;white-space:normal;position:relative;';
+        if (mode === 'flip') node.style.transformOrigin = 'center';
+        vp.appendChild(node);
+        return node;
+      });
+      // Lock the box to the tallest item, then overlap all items absolutely so
+      // switching one out never shrinks the parent (the old bug).
+      let maxH = 0;
+      nodes.forEach((node) => { maxH = Math.max(maxH, node.offsetHeight); });
+      if (maxH > 0) vp.style.height = `${maxH}px`;
+      nodes.forEach((node, i) => {
+        node.style.position = 'absolute';
+        node.style.inset = '0';
+        node.style.opacity = i === 0 ? '1' : '0';
+      });
+      let idx = 0;
+      const pageHold = number(opts.pageDuration, 1800, 120);
+      const dur = number(opts.dissolveDuration ?? opts.flipDuration ?? opts.maskDuration, 460, 60);
+      const flipDown = opts.flipDirection !== 'up';
+      const framesFor = () => {
+        if (mode === 'dissolve') return [[{ opacity: 1, filter: 'blur(0px)' }, { opacity: 0, filter: 'blur(7px)' }], [{ opacity: 0, filter: 'blur(7px)' }, { opacity: 1, filter: 'blur(0px)' }]];
+        if (mode === 'flip') return [[{ transform: 'rotateX(0deg)', opacity: 1 }, { transform: `rotateX(${flipDown ? -90 : 90}deg)`, opacity: 0 }], [{ transform: `rotateX(${flipDown ? 90 : -90}deg)`, opacity: 0 }, { transform: 'rotateX(0deg)', opacity: 1 }]];
+        if (mode === 'page') { // vertical mask wipe
+          const down = opts.maskDirection !== 'bottom-to-top';
+          return [[{ clipPath: 'inset(0 0 0 0)' }, { clipPath: down ? 'inset(0 0 100% 0)' : 'inset(100% 0 0 0)' }], [{ clipPath: down ? 'inset(100% 0 0 0)' : 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0 0)' }]];
+        }
+        return [[{ opacity: 1 }, { opacity: 0 }], [{ opacity: 0 }, { opacity: 1 }]]; // fade
+      };
+      const swap = (nextIdx) => {
+        if (destroyed) return;
+        const cur = nodes[idx];
+        const nxt = nodes[nextIdx];
+        // Both stay absolutely overlapped (box height already locked); we only
+        // cross-animate opacity/transform/clip so nothing reflows.
+        const [outKf, inKf] = framesFor();
+        const cfg = { duration: dur, easing: mode === 'flip' ? 'cubic-bezier(.4,0,.2,1)' : 'ease', fill: 'both' };
+        const outAnim = cur.animate(outKf, cfg);
+        animation = nxt.animate(inKf, cfg);
+        const settle = () => {
+          outAnim.cancel();
+          animation?.cancel?.();
+          cur.style.opacity = '0'; cur.style.transform = ''; cur.style.filter = ''; cur.style.clipPath = '';
+          nxt.style.opacity = '1'; nxt.style.transform = ''; nxt.style.filter = ''; nxt.style.clipPath = '';
+        };
+        animation.onfinish = settle;
+        idx = nextIdx;
+        activeIndex = nextIdx;
+        opts.onPage?.(nextIdx, nodes.length, el);
+      };
+      const step = () => {
+        if (destroyed) return;
+        if (paused) { schedule(step, pageHold); return; }
+        const nextIdx = (idx + 1) % nodes.length;
+        swap(nextIdx);
+        if (opts.repeat !== false || nextIdx !== 0) schedule(step, pageHold);
+      };
+      schedule(step, delay + pageHold);
+    };
+
     const buildOverflow = () => {
       clearMotion();
       el.textContent = '';
@@ -295,32 +380,50 @@ export default {
       if (mode === 'scroll-fade' || mode === 'scrollFade') {
         // Scroll to the end, fade out, then fade the start back in and scroll
         // again — a soft-looping marquee with no hard jump.
-        const fadeMs = number(opts.maskDuration, 300, 10);
+        const fadeMs = number(opts.maskDuration, 320, 10);
         if (opts.crossfade === true) {
-          // Two overlapping tracks: the end fades OUT while the start fades IN
-          // at the same time — no empty gap between passes.
-          const P = 2 * fadeMs + moveDuration;
-          const frames = [
-            { transform: `translate3d(${startX}px,0,0)`, opacity: 0, offset: 0 },
-            { transform: `translate3d(${startX}px,0,0)`, opacity: 1, offset: clamp(fadeMs / P, 0, 1) },
-            { transform: `translate3d(${endX}px,0,0)`, opacity: 1, offset: clamp((fadeMs + moveDuration) / P, 0, 1) },
-            { transform: `translate3d(${endX}px,0,0)`, opacity: 0, offset: 1 }
-          ];
+          // Cross-dissolve the END view into the START view with no dead frame:
+          // one track scrolls, and at the seam a frozen ghost of the end fades
+          // out while the track (reset to the start) fades in — over the SAME
+          // spot, so the two never scroll past each other and smear.
           const h = first.getBoundingClientRect().height || first.offsetHeight;
           viewport.style.height = h ? `${h}px` : '1.35em';
           track.style.position = 'absolute';
           track.style.left = '0';
           track.style.top = '0';
-          const track2 = document.createElement('span');
-          track2.className = track.className;
-          track2.setAttribute('aria-hidden', 'true');
-          track2.style.cssText = track.style.cssText;
-          track2.appendChild(createSegment(text, true));
-          viewport.appendChild(track2);
-          const cfg = { duration: P, iterations: opts.repeat === false ? 1 : Infinity, easing: 'linear', fill: 'both' };
-          animation = track.animate(frames, { ...cfg, delay });
-          // Phase-shift the second track so its fade-in lands on the first's fade-out.
-          track2.animate(frames, { ...cfg, delay: delay - (moveDuration + fadeMs) });
+          track.style.willChange = 'transform,opacity';
+          const runCross = async () => {
+            if (destroyed || paused) return;
+            track.style.opacity = '1';
+            track.style.transform = `translate3d(${startX}px,0,0)`;
+            const move = track.animate(
+              [{ transform: `translate3d(${startX}px,0,0)` }, { transform: `translate3d(${endX}px,0,0)` }],
+              { duration: moveDuration, delay, easing: opts.easing || 'linear', fill: 'forwards' }
+            );
+            animation = move;
+            try { await move.finished; } catch (_e) { return; }
+            if (destroyed || paused) return;
+            move.cancel();
+            track.style.transform = `translate3d(${endX}px,0,0)`;
+            await new Promise((resolve) => schedule(resolve, endPause));
+            if (destroyed || paused) return;
+            const ghost = track.cloneNode(true);
+            ghost.setAttribute('aria-hidden', 'true');
+            ghost.style.cssText = track.style.cssText;
+            ghost.style.transform = `translate3d(${endX}px,0,0)`;
+            ghost.style.opacity = '1';
+            viewport.appendChild(ghost);
+            track.style.transform = `translate3d(${startX}px,0,0)`;
+            track.style.opacity = '0';
+            ghost.animate([{ opacity: 1 }, { opacity: 0 }], { duration: fadeMs, easing: 'ease', fill: 'forwards' });
+            const fadeIn = track.animate([{ opacity: 0 }, { opacity: 1 }], { duration: fadeMs, easing: 'ease', fill: 'forwards' });
+            animation = fadeIn;
+            try { await fadeIn.finished; } catch (_e) { ghost.remove(); return; }
+            ghost.remove();
+            track.style.opacity = '1';
+            if (opts.repeat !== false) schedule(runCross, restartDelay);
+          };
+          runCross();
           return;
         }
         const total = delay + fadeMs + moveDuration + fadeMs + endPause;
@@ -586,16 +689,24 @@ export default {
 
     const build = () => {
       if (mode === 'rolling') buildRolling();
+      else if (sceneItems && sceneItems.length >= 2) buildScenes();
       else buildOverflow();
     };
     build();
+
+    // Modes that drive themselves with schedule()/recursion (not a single WAAPI
+    // handle) must be REBUILT to resume, and rebuilt via build() on resize so
+    // scene transitions aren't clobbered into a plain overflow marquee.
+    const selfScheduling = ['rolling', 'fade', 'dissolve', 'flip', 'page', 'page-roll', 'pageRoll', 'scroll-fade', 'scrollFade'].includes(mode)
+      || (sceneItems && sceneItems.length >= 2);
 
     if (typeof ResizeObserver !== 'undefined' && mode !== 'rolling') {
       let width = el.clientWidth;
       resizeObserver = new ResizeObserver(() => {
         if (Math.abs(el.clientWidth - width) < 1) return;
         width = el.clientWidth;
-        buildOverflow();
+        clearMotion();
+        build();
       });
       resizeObserver.observe(el);
     }
@@ -627,7 +738,13 @@ export default {
       get index() { return activeIndex; },
       replay() { clearMotion(); activeIndex = 0; build(); },
       pause() { paused = true; animation?.pause?.(); clearTimeout(timer); },
-      resume() { paused = false; animation?.play?.(); if (!animation) build(); },
+      resume() {
+        paused = false;
+        // Self-scheduling loops (scroll-fade crossfade, page/flip/scene, rolling)
+        // leave a stale finished handle, so re-run the loop instead of play().
+        if (selfScheduling) { clearMotion(); build(); }
+        else { animation?.play?.(); if (!animation) build(); }
+      },
       destroy() {
         destroyed = true;
         clearMotion();

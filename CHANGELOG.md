@@ -2,6 +2,43 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.42]
+
+- **slider**: `wheel:true` — mouse-wheel navigation (whichever wheel axis has the larger delta pages the slider, throttled to one slide per flick).
+- **tooltip**: `effect` (`fade` / `scale` / `shift` / `none`) for the show/hide animation; colours/shape stay themeable via `--kt-tooltip-*`.
+- **radial**: items fade out toward the arc edges so a wrapping/leaving item no longer lingers as a translucent ghost.
+- **Demo**: content reorganized into 7 category sections (Text / Media / Scroll / Pointer / Components / Feedback / System) matching the sidebar nav order 1:1; card descriptions trimmed to a single line; sticky-header / cover-to-fixed demos moved into cards with an options panel; loader/intro overlays cover the scrollbar-gutter; asset cache-busting.
+
+## [0.8.41]
+
+- **Scroll toolkit — three new modules** (now 51), CSS-first where the browser allows:
+  - **`scrollShadows`** (`data-kt-scroll-shadows`): soft edge shadows on a scroll container that melt away at each end. Pure-CSS gradient technique — no per-scroll JS. Options: `axis`, `size`, `color`, `shadow`.
+  - **`stickyHeader`** (`data-kt-sticky-header`): a sticky header that gains a shadow and (optionally) shrinks past a threshold — the shrinking-header / cover-to-fixed pattern. Publishes `--kt-header-progress` (0→1) for custom scrubbed styling. Options: `offset`, `distance`, `shrink`, `shadow`, `activeClass`, `onChange`.
+  - **`horizontalScroll`** (`data-kt-horizontal-scroll`): pins a stage and slides its inner track sideways as you scroll vertically. Universal (no GSAP needed), `smooth` for inertial easing; `destroy()` rebuilds the original DOM.
+- **`cssScroll` engine** gained `timeline:"scroll"` (links to the scrollport, for reading bars / reverse columns) alongside the default `view()`, plus an `axis` option — so more scroll-driven-animation patterns resolve to native CSS timelines when supported.
+- **Global spring** — `Kineto.config({ spring: true })` gives `reveal` entrances and `gesture` feedback springy, overshooting easing by default (still overridable per element).
+- **Segmented tabs fixes**: the active pill is restored in **vertical** orientation (was collapsing to zero height), marker motion / effects apply in both orientations, and activating a tab no longer reflows its width/height (a hidden bold twin reserves the space).
+- **Tabs** `indicatorMotion` (`slide`/`none`/`fade`) — controls the moving marker independent of the panel `effect`.
+- **overflowText**: item **scene transitions** (fade/dissolve/flip/page) no longer collapse the parent height mid-swap (box is locked to the tallest item and items cross-fade in place); **scroll-fade `crossfade`** rewritten to a clean end→start cross-dissolve so characters no longer smear over each other.
+- **Toast** `progressBar:"fill"` — the whole toast box fills like a progress bar (in addition to `bar`/`ring`).
+- **Confetti** `once:true` — fire a single burst instead of on every click.
+- **Playground — easing editor**: `ease` / `easing` fields are now a **preset picker with a live cubic-bezier curve preview** (easings.net curves, CSS keywords, spring/back, GSAP eases) — pick a feel and see the curve, then copy the code.
+- **scrollShadows** also gained `opacity` (0–1 shadow strength) and `shape:"radial"|"linear"` (soft bloom vs straight edge gradient).
+- **scrollShadows** `mode:"mask"` — instead of edge shadows, the content itself **dissolves** at the overflowing edges via a scroll-aware gradient mask (ramped smoothly, not toggled). Shadow colour now reads a themeable `--kt-scroll-shadow` CSS variable.
+- **marquee** `fade` — a gradient edge-mask (px) so continuous strips / logo rows dissolve at the ends instead of hard-cutting.
+- **radial** `align:"center"` — places the active item at the container's centre for any dock/angle (was clipping at the docked edge).
+- **parallax** now has a **native (non-GSAP) scroll fallback**, so parallax + reverse-scrolling-column layouts work everywhere, degrading gracefully.
+- **textFill** — rounded glyph edges (e.g. the right of an "O") are no longer shaved off under tight letter-spacing.
+- **Lightbox**: new `thumbnails:true` shows a **filmstrip** of the group's thumbnails inside the viewer (click to jump, active highlighted); the strip uses the on-page thumbnail so it stays light even when `data-kt-src` points at a big original (thumbnail↔original was already supported via `data-kt-src`). The playground panel now exposes `share`/`thumbnails` so it matches the live demo.
+
+## [0.8.40]
+
+- **Layout (FLIP) motion — new module `flip`** (48th): `data-kt-flip` smoothly animates children when they're reordered, added, or removed (First-Last-Invert-Play via a `MutationObserver`). Options: `duration`, `ease`, `stagger`, `item`, `watch`; API `record()` / `play()`. Fully accessible (honours reduced-motion) and `destroy()` restores the DOM untouched.
+- **Brush Reveal — scratch-card API**: `hold:true` only paints while the pointer is pressed (click-drag), matching a lottery scratch card; default still paints on hover/drag. `threshold` (0–1) fires `onReveal(p, el)` + a `kt-brush-reveal` event once that fraction of the back image is uncovered, and `onProgress(p, el)` + `kt-brush-progress` stream the ratio continuously. New `progress()` API returns the current ratio.
+- **Text Transition — reveal direction**: `charDirection` adds `rtl` (right→left) and `random` alongside the default `ltr`, so characters can cascade in from either side or scatter in.
+- **Tabs — marker motion**: new `indicatorMotion` (`slide` / `none` / `fade`) controls the moving tab pill/underline itself, independent of the panel `effect` — glide it, snap it instantly, or blink it across.
+- **Segmented tabs — vertical fix**: the active pill now spans the column width and moves vertically when `orientation:"vertical"` (was breaking horizontally).
+
 ## [0.8.39]
 
 - **Toast polish**: default duration is now **10s (max 30s)**; clean **line-symbol icons** per type (no emoji); when using the countdown **ring**, the type icon sits in the ring's centre (no more overlap).
@@ -11,6 +48,8 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
 - **Radial carousel**: the active item exposes `.kt-active` / `.active-item` / `aria-current` for custom styling; the demo now scales the active thumbnail up and dims the rest.
 - **Demo Module Index**: all 47 modules are listed and every chip scrolls to its section (button-triggered/body-level modules like loader, pageReveal, pageTransition now map correctly).
 - **Gesture** `origin` and **Hold** `mash` `step`/`decay` demos retuned so the options' effect is clear.
+- **overflowText — item scene transitions**: `fade` / `dissolve` / `flip` / `page` now also cycle **discrete item children** (like `rolling`), not just paginated overflowing text — automatically when the element holds ≥2 item children (keeping full markup).
+- **Segmented tabs** demo: white active pill in light theme, light overlay in dark.
 
 ## [0.8.38]
 

@@ -255,6 +255,20 @@ export default {
     wrap.addEventListener('pointercancel', onEnd);
     wrap.addEventListener('touchmove', onTouchMove, { passive: false });
     wrap.addEventListener('keydown', onKey);
+    // Mouse-wheel navigation (opt-in): whichever wheel axis has the larger delta
+    // pages the slider, throttled so one flick advances one slide.
+    const wheelNav = opts.wheel === true;
+    let wheelLock = 0;
+    const onWheel = (event) => {
+      const delta = Math.abs(event.deltaX) >= Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+      if (Math.abs(delta) < 6) return;
+      event.preventDefault();
+      const now = performance.now();
+      if (now - wheelLock < 320) return;
+      wheelLock = now;
+      if (delta > 0) next(); else prev();
+    };
+    if (wheelNav) wrap.addEventListener('wheel', onWheel, { passive: false });
     const onEnter = () => { if (pauseOnHover) stop(); };
     const onLeave = () => { if (pauseOnHover) start(); };
     wrap.addEventListener('pointerenter', onEnter);
@@ -281,7 +295,7 @@ export default {
         stop();
         if (rafId != null) cancelAnimationFrame(rafId);
         resizeObserver?.disconnect();
-        wrap.removeEventListener('pointerdown', onDown); wrap.removeEventListener('pointermove', onMove); wrap.removeEventListener('pointerup', onEnd); wrap.removeEventListener('pointercancel', onEnd); wrap.removeEventListener('touchmove', onTouchMove); wrap.removeEventListener('keydown', onKey); wrap.removeEventListener('pointerenter', onEnter); wrap.removeEventListener('pointerleave', onLeave);
+        wrap.removeEventListener('pointerdown', onDown); wrap.removeEventListener('pointermove', onMove); wrap.removeEventListener('pointerup', onEnd); wrap.removeEventListener('pointercancel', onEnd); wrap.removeEventListener('touchmove', onTouchMove); wrap.removeEventListener('keydown', onKey); wrap.removeEventListener('wheel', onWheel); wrap.removeEventListener('pointerenter', onEnter); wrap.removeEventListener('pointerleave', onLeave);
         nextButtons.forEach((button) => { button.removeEventListener('click', next); delete button.dataset.ktSliderBound; });
         prevButtons.forEach((button) => { button.removeEventListener('click', prev); delete button.dataset.ktSliderBound; });
         const restore = (node, name, value) => value == null ? node.removeAttribute(name) : node.setAttribute(name, value);

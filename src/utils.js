@@ -1,5 +1,11 @@
 import { getGSAP, getScrollTrigger } from './runtime.js';
 
+// Global motion defaults, set via Kineto.config({ spring: true }). Modules read
+// these as the fallback when a per-instance option isn't given, so a single
+// switch can give the whole page springy, physical transforms.
+export const motionDefaults = { spring: false };
+export function setMotionDefaults(patch = {}) { Object.assign(motionDefaults, patch); }
+
 export function env() {
   if (typeof window === 'undefined') {
     return {

@@ -1,4 +1,4 @@
-import { env } from '../utils.js';
+import { env, motionDefaults } from '../utils.js';
 
 // Gesture — Motion-style whileHover / whileTap feedback. The element springs up
 // (and optionally lifts) on hover/focus and presses down on pointer/keydown,
@@ -13,7 +13,8 @@ export default {
     const tapScale = Number(opts.tapScale ?? 0.96);
     const lift = Number(opts.lift ?? 0);
     const duration = Math.max(0, Number(opts.duration ?? 0.22));
-    const ease = opts.ease || 'cubic-bezier(.34,1.56,.64,1)';
+    // Global `Kineto.config({spring:true})` bumps the default overshoot.
+    const ease = opts.ease || (motionDefaults.spring ? 'cubic-bezier(.34,1.8,.5,1)' : 'cubic-bezier(.34,1.56,.64,1)');
     // Where the scale/press grows from (center | top | bottom | left | right |
     // any CSS transform-origin value).
     const origin = opts.origin || 'center';

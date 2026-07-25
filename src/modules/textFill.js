@@ -21,7 +21,10 @@ export default {
       const span = document.createElement('span');
       span.setAttribute('aria-hidden', 'true');
       span.textContent = char;
-      span.style.cssText = `background-image:linear-gradient(to right,${fillColor} 50%,${baseColor} 50%);background-size:200% 100%;background-position:100% 0;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;`;
+      // A hair of side padding (with compensating negative margin so layout is
+      // unchanged) enlarges the background-clip:text box, so rounded glyph edges
+      // — e.g. the right of an "O" — aren't shaved off under negative letter-spacing.
+      span.style.cssText = `display:inline-block;padding:0 .06em;margin:0 -.06em;background-image:linear-gradient(to right,${fillColor} 50%,${baseColor} 50%);background-size:200% 100%;background-position:100% 0;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;`;
       el.appendChild(span);
       return span;
     }).filter(Boolean);

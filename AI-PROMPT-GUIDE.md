@@ -44,7 +44,8 @@ typewriter(data-kt-typewriter), vibrate(data-kt-vibrate),
 accordion(data-kt-accordion), confetti(data-kt-confetti), hold(data-kt-hold),
 megaMenu(data-kt-mega-menu), tabs(data-kt-tabs), toast(data-kt-toast),
 bottomSheet(data-kt-bottom-sheet), radial(data-kt-radial), coverReveal(data-kt-cover-reveal), switch(data-kt-switch),
-gesture(data-kt-gesture), drag(data-kt-drag), tooltip(data-kt-tooltip)
+gesture(data-kt-gesture), drag(data-kt-drag), tooltip(data-kt-tooltip),
+flip(data-kt-flip)
 ```
 
 ### English
@@ -76,7 +77,8 @@ typewriter(data-kt-typewriter), vibrate(data-kt-vibrate),
 accordion(data-kt-accordion), confetti(data-kt-confetti), hold(data-kt-hold),
 megaMenu(data-kt-mega-menu), tabs(data-kt-tabs), toast(data-kt-toast),
 bottomSheet(data-kt-bottom-sheet), radial(data-kt-radial), coverReveal(data-kt-cover-reveal), switch(data-kt-switch),
-gesture(data-kt-gesture), drag(data-kt-drag), tooltip(data-kt-tooltip)
+gesture(data-kt-gesture), drag(data-kt-drag), tooltip(data-kt-tooltip),
+flip(data-kt-flip)
 ```
 
 ---
@@ -144,6 +146,10 @@ gesture(data-kt-gesture), drag(data-kt-drag), tooltip(data-kt-tooltip)
 | 드래그(관성·경계·스냅백·키보드) | `drag` (`data-kt-drag`) |
 | 접근성 툴팁(배치·트리거·인터랙티브) | `tooltip` (`data-kt-tooltip`) |
 | 토글 스위치(role=switch, 애니메이션) | `switch` (`data-kt-switch`) |
+| 레이아웃(FLIP) 자동 이동(정렬·추가·삭제 시 부드럽게) | `flip` (`data-kt-flip`) |
+| 스크롤 컨테이너 가장자리 그림자(끝에서 사라짐) | `scrollShadows` (`data-kt-scroll-shadows`) |
+| 스크롤 시 헤더 축소+그림자(shrinking/cover-to-fixed) | `stickyHeader` (`data-kt-sticky-header`) |
+| 섹션 pin + 세로 스크롤에 가로 이동(가로 스크롤 섹션) | `horizontalScroll` (`data-kt-horizontal-scroll`) |
 
 ### UI 컴포넌트 커스터마이징 요령
 - 모든 예제는 데모 페이지에서 옵션을 실시간으로 조절하고 **HTML/JS 코드를 복사**할 수 있습니다(“Customize & copy code”).
@@ -154,14 +160,22 @@ gesture(data-kt-gesture), drag(data-kt-drag), tooltip(data-kt-tooltip)
 - `accordion`: `single`, `duration`, `blur`, `arrowPosition`(right/left). 화살표는 CSS 변수 `--kt-accordion-arrow`, `--kt-accordion-arrow-size`, `--kt-accordion-arrow-weight`, `--kt-accordion-arrow-duration`로, 또는 `.kt-accordion-summary::after` 재정의로 커스텀.
 - `megaMenu`: `trigger`(hover/click), `layout`(dropdown/mega), `indicator`(none/chevron/plus), `openDelay`, `closeDelay`, `duration`. 항목별로 `<li data-kt-menu-trigger="click">`로 트리거 혼용, `<li class="kt-menu-mega">`로 개별 항목만 풀폭 메가로, `<li data-kt-menu-open="#선택자">`로 특정 영역 hover 시 열기. 패널 링크는 기본 스타일 제공(색은 `--kt-menu-accent`, `--kt-menu-hover-bg`).
 - `radial`: `position`(bottom/top/left/right 도킹), `radius`, `step`(항목 간 각도), `activeAngle`(초점 각도), `duration`, `loop`, `drag`, `controls`, `autoplay`. 항목은 `.kt-radial-item`. 컨테이너 높이/썸네일 스타일은 호스트가 지정.
-- `lightbox`: 이미지 전환 효과 `transition`(rise/fade/crossfade/dissolve/slide/zoom/none) 추가.
+- `lightbox`: 이미지 전환 효과 `transition`(rise/fade/crossfade/dissolve/slide/zoom/none). **썸네일↔원본 분리**: 페이지엔 `<img src="썸네일">`, 열 때 원본은 `data-kt-src="원본"`(= `opts.src`)로 지정. `share`(공유)·`download`(다운로드) 버튼, `thumbnails:true`면 그룹 이미지의 **필름스트립**(하단 썸네일 열, 클릭 이동·활성 강조)을 뷰어 안에 표시.
 - `gesture`: `hoverScale`, `tapScale`, `lift`(px), `duration`, `ease`. 버튼·카드에 붙이면 hover/press 스프링 피드백. reduced-motion 자동 무효화.
 - `drag`: `axis`(both/x/y), `bounds`("parent"면 부모 안으로 제약), `snapBack`(놓으면 원위치 복귀), `inertia`(관성), `handle`(드래그 손잡이 선택자). 포커스+화살표 키로도 이동.
 - `tooltip`: `content`(없으면 data-kt-title/title/aria-label 사용), `placement`(top/bottom/left/right, 자동 플립), `trigger`(hover/focus/click/manual), `delay`·`hideDelay`, `offset`, `duration`, `interactive`(툴팁 위 마우스 유지). role=tooltip + aria-describedby, Esc 닫힘. 색은 `--kt-tooltip-*`.
 - `progress` headless API: `onUpdate(value 0~1, el)` 콜백이 매 프레임 호출됨. `property`에 CSS 변수(예: `--read`)를 주면 진행값을 그 변수로 흘려줘서 bar/ring 대신 원하는 형태를 CSS로 직접 그릴 수 있음. `bottomSheet`/`toast`/`tooltip` 색은 CSS 변수로 커스텀, bottomSheet는 `light-dark()`로 OS 라이트/다크 자동 대응(--kt-sheet-bg로 override).
-- `toast`: `type`(info/success/warning/error), `position`, `duration`, `dismissible`, `message`. 색은 `--kt-toast-bg/-fg/-accent`.
+- `toast`: `type`(info/success/warning/error/none), `position`, `duration`(기본 10초·최대 30초), `dismissible`, `message`, `icon`(글리프/커스텀 SVG), `progressBar`(none/bar/ring/**fill** — fill은 박스 전체가 차오름), `barColor`. 색은 `--kt-toast-bg/-fg/-accent`.
 - `bottomSheet`: `backdrop`, `backdropOpacity`, `handle`, `dismissible`, `duration`. 트리거는 `data-kt-sheet-trigger="#시트id"`.
-- `tabs`: `activation`(automatic/manual), `orientation`(horizontal/vertical), `effect`(fade/slide/none), `indicator`. 색은 `--kt-tab-accent`.
+- `tabs`: `activation`(automatic/manual), `orientation`(horizontal/vertical), `effect`(패널 전환 fade/slide/blur/cross/none), `indicatorMotion`(탭 마커 자체 이동 slide/none/fade — `effect`와 별개), `indicator`, `onChange`. 세그먼트형은 `.kt-tabs--segment`(활성 pill, 가로/세로 모두 지원, 활성 bold로 인한 리플로우 없음). 색은 `--kt-tab-accent`, 세그먼트 pill은 `--kt-seg-active`.
+- `flip`: `data-kt-flip`. 자식이 재정렬·추가·삭제되면 옛→새 위치로 자동 애니메이션(Motion layout 대응). `duration`, `ease`, `stagger`, `item`, `watch`. API `record()`/`play()`.
+- `scrollShadows`: `data-kt-scroll-shadows`. `axis`(vertical/horizontal), `size`, `color`(컨테이너 배경색과 맞춤), `shadow`. 순수 CSS 그라디언트(스크롤 시 JS 없음).
+- `stickyHeader`: `data-kt-sticky-header`. `offset`(고정 판정 px), `distance`(진행률 px), `shrink`, `shadow`, `activeClass`, `onChange`. `--kt-header-progress`(0→1) 변수 노출 — 커스텀 스크럽에 사용.
+- `horizontalScroll`: `data-kt-horizontal-scroll`. 내부 트랙(첫 자식들)이 세로 스크롤에 맞춰 가로 이동. `height`(스테이지 높이, 기본 100vh), `smooth`(관성). GSAP 불필요.
+- `confetti`: `once:true`면 최초 1회만, 기본은 클릭마다.
+- `textTransition`: `charDirection`(ltr/rtl/random)로 글자 등장 방향.
+- `brushReveal`: 복권긁기용 `hold:true`(누른 채 드래그), `threshold`(0~1) 도달 시 `onReveal`+`kt-brush-reveal` 이벤트, `onProgress`+`kt-brush-progress` 실시간, API `progress()`.
+- **스프링 전역**: `Kineto.config({ spring: true })` 한 줄로 `reveal` 진입·`gesture` 피드백이 오버슈트 스프링 이징을 기본 사용(요소별 `spring`/`ease`로 개별 override).
 
 ---
 

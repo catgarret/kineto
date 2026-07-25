@@ -16,6 +16,14 @@ export default {
     el.style.display = 'flex';
     el.style.overflow = 'hidden';
     el.style.whiteSpace = 'nowrap';
+    // Edge fade: dissolve the left/right ends with a gradient mask so the loop
+    // doesn't hard-cut at the container edges (great for logo strips / carousels).
+    const fade = Math.max(0, Number(opts.fade ?? 0));
+    if (fade > 0) {
+      const maskValue = `linear-gradient(to right, transparent 0, #000 ${fade}px, #000 calc(100% - ${fade}px), transparent 100%)`;
+      el.style.webkitMaskImage = maskValue;
+      el.style.maskImage = maskValue;
+    }
 
     const group = document.createElement('div');
     group.className = 'kt-marquee-group';

@@ -164,7 +164,14 @@ function createManager() {
   custom.style.pointerEvents = 'auto';
   toolbar.prepend(custom);
 
-  shell.append(toolbar, stage, info);
+  // Filmstrip: a scrollable row of thumbnails for grouped images (opt-in via
+  // `thumbnails:true`) so you can jump around while zoomed out.
+  const filmstrip = document.createElement('div');
+  filmstrip.className = 'kt-lightbox-filmstrip';
+  filmstrip.hidden = true;
+  filmstrip.style.cssText = 'position:relative;z-index:5;display:flex;gap:8px;justify-content:center;flex-wrap:nowrap;overflow-x:auto;padding:6px 16px 16px;pointer-events:auto;scrollbar-width:none;';
+
+  shell.append(toolbar, stage, filmstrip, info);
   root.append(backdrop, shell, minimap);
   document.body.appendChild(root);
 
@@ -185,7 +192,37 @@ function createManager() {
   let lazyInstance = null;
   let sharing = false; // true while the native share sheet is up (+ a short grace)
 
-  const controls = { root, backdrop, shell, toolbar, stage, image, closeButton, previous, next, zoomIn, zoomOut, zoomReset, shareButton, downloadButton, info, title, description, meta, minimap, custom, counter };
+  const controls = { root, backdrop, shell, toolbar, stage, image, closeButton, previous, next, zoomIn, zoomOut, zoomReset, shareButton, downloadButton, info, title, description, meta, minimap, custom, counter, filmstrip };
+
+  // Rebuild the thumbnail row for the current group and highlight the active one.
+  const buildFilmstrip = () => {
+    const show = activeEntry?.thumbnails === true && activeList.length > 1;
+    filmstrip.hidden = !show;
+    if (!show) { filmstrip.innerHTML = ''; return; }
+    filmstrip.innerHTML = '';
+    activeList.forEach((item, i) => {
+      const thumb = document.createElement('button');
+      thumb.type = 'button';
+      thumb.className = 'kt-lightbox-thumb' + (i === activeIndex ? ' kt-active' : '');
+      thumb.setAttribute('aria-label', `${i + 1}`);
+      thumb.style.cssText = `flex:0 0 auto;width:64px;height:44px;border-radius:6px;overflow:hidden;padding:0;cursor:pointer;background:#111;border:2px solid ${i === activeIndex ? 'var(--kt-lightbox-accent,#ff5b1c)' : 'transparent'};opacity:${i === activeIndex ? '1' : '.55'};transition:opacity .16s ease,border-color .16s ease;`;
+      const ti = document.createElement('img');
+      ti.src = item.thumb; ti.alt = item.alt || ''; ti.loading = 'lazy';
+      ti.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+      thumb.appendChild(ti);
+      thumb.addEventListener('click', (e) => { e.stopPropagation(); render(i); });
+      filmstrip.appendChild(thumb);
+    });
+  };
+  const syncFilmstripActive = () => {
+    if (filmstrip.hidden) return;
+    Array.from(filmstrip.children).forEach((thumb, i) => {
+      const on = i === activeIndex;
+      thumb.classList.toggle('kt-active', on);
+      thumb.style.borderColor = on ? 'var(--kt-lightbox-accent,#ff5b1c)' : 'transparent';
+      thumb.style.opacity = on ? '1' : '.55';
+    });
+  };
 
   const updateMinimap = () => {
     const show = activeEntry?.minimap !== false && scale > 1.02;
@@ -337,6 +374,7 @@ function createManager() {
       if (frames) mediaHost.animate(frames, { duration: effect === 'slide' ? 260 : 200, easing: 'cubic-bezier(.22,.8,.3,1)' });
     }
     applyOptions();
+    syncFilmstripActive();
     image.onload = () => {
       const basic = `${image.naturalWidth || '?'}×${image.naturalHeight || '?'} · ${activeIndex + 1}/${activeList.length}`;
       const supplied = activeEntry.metadata && typeof activeEntry.metadata === 'object'
@@ -381,6 +419,7 @@ function createManager() {
     previousOverflow = document.body.style.overflow;
     activeList = entry.group ? Array.from(entries).filter((item) => item.group === entry.group) : [entry];
     render(Math.max(0, activeList.indexOf(entry)));
+    buildFilmstrip();
     root.hidden = false;
     root.style.display = 'block';
     root.style.opacity = '0';
@@ -637,6 +676,10 @@ export default {
     const entry = {
       el,
       src,
+      // The on-page thumbnail (low-res) — used for the filmstrip so it stays
+      // light even when `src` (data-kt-src) points at a big original.
+      thumb: imageEl?.currentSrc || imageEl?.src || el.getAttribute('href') || src,
+      thumbnails: opts.thumbnails === true,
       alt: opts.alt || imageEl?.alt || el.getAttribute('aria-label') || '',
       title: opts.title || el.dataset.title || imageEl?.dataset?.title || imageEl?.alt || '',
       description: opts.description || opts.caption || el.dataset.description || el.dataset.caption || '',

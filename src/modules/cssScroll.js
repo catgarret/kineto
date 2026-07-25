@@ -15,10 +15,16 @@ export default {
     };
 
     if (supportsTimeline && opts.cssAnimation) {
+      // `timeline:"scroll"` links to the nearest scrollport's progress (great for
+      // reading bars / reverse columns); default `view()` links to the element's
+      // own passage through the scrollport (fade/reveal on enter). `axis` picks
+      // block/inline/x/y for either.
+      const rawAxis = (opts.axis || '').trim();
+      const usesScroll = opts.timeline === 'scroll';
       el.style.animationName = opts.cssAnimation;
-      el.style.animationTimeline = 'view()';
-      el.style.animationRangeStart = opts.rangeStart || 'entry 0%';
-      el.style.animationRangeEnd = opts.rangeEnd || 'exit 100%';
+      el.style.animationTimeline = usesScroll ? `scroll(nearest${rawAxis ? ` ${rawAxis}` : ''})` : `view(${rawAxis})`;
+      el.style.animationRangeStart = opts.rangeStart || (usesScroll ? '0%' : 'entry 0%');
+      el.style.animationRangeEnd = opts.rangeEnd || (usesScroll ? '100%' : 'exit 100%');
       el.style.animationFillMode = 'both';
       el.style.animationPlayState = 'running';
       return {

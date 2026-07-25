@@ -65,6 +65,18 @@ export default {
     // Dissolve is inherently per-character.
     const charMode = opts.charMode === true || dissolve;
     const stagger = Math.max(0, Number(opts.stagger ?? 0.035)) * 1000;
+    // Per-character reveal order: ltr (left→right, default), rtl (right→left),
+    // or random.
+    const charDirection = ['ltr', 'rtl', 'random'].includes(opts.charDirection) ? opts.charDirection : 'ltr';
+    const staggerOrder = (n) => {
+      if (charDirection === 'rtl') return Array.from({ length: n }, (_, i) => n - 1 - i);
+      if (charDirection === 'random') {
+        const a = Array.from({ length: n }, (_, i) => i);
+        for (let i = n - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+        return a;
+      }
+      return Array.from({ length: n }, (_, i) => i);
+    };
     const jitterAmp = Math.max(0, Number(opts.jitter ?? 5));
 
     el.innerHTML = '';
@@ -177,10 +189,11 @@ export default {
         const spans = charSpans();
         let finished = 0;
         if (!spans.length) { onDone?.(); return; }
+        const order = staggerOrder(spans.length);
         spans.forEach((span, spanIndex) => {
           const player = animate(span, dissolve ? dissolveFrames(true) : effect.enter, {
             duration,
-            delay: dissolve ? Math.random() * duration * 0.5 : spanIndex * Math.min(stagger, 900 / Math.max(1, spans.length)),
+            delay: dissolve ? Math.random() * duration * 0.5 : order[spanIndex] * Math.min(stagger, 900 / Math.max(1, spans.length)),
             easing: dissolve ? `steps(${2 + Math.floor(Math.random() * 3)}, end)` : (typeof opts.ease === 'string' && opts.ease.includes('(') ? opts.ease : 'cubic-bezier(.22,.8,.3,1)')
           });
           player.finished.then(() => {

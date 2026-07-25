@@ -25,6 +25,43 @@ export default {
     const persist = opts.persist === true;
     const fade = clamp(Number(opts.fade ?? 0.045), 0.002, 0.5);
     const maxDpr = clamp(Number(opts.maxDpr ?? 2), 1, 3);
+    // Scratch-card use: `hold:true` only paints while the pointer is pressed
+    // (drag with button down); default paints on hover/drag. `threshold` (0..1)
+    // fires onReveal + a `kt-brush-reveal` event once that fraction of the back
+    // image is uncovered; onProgress + `kt-brush-progress` fire continuously.
+    const holdMode = opts.hold === true;
+    const threshold = clamp(Number(opts.threshold ?? 0.5), 0, 1);
+    // Sample the MASK (our own paint — never tainted) at low-res for the %.
+    const sampleCanvas = document.createElement('canvas');
+    sampleCanvas.width = sampleCanvas.height = 48;
+    const sampleCtx = sampleCanvas.getContext('2d', { willReadFrequently: true });
+    let lastSample = 0; let lastProgress = 0; let thresholdFired = false;
+    const computeReveal = () => {
+      try {
+        sampleCtx.clearRect(0, 0, 48, 48);
+        sampleCtx.drawImage(mask, 0, 0, 48, 48);
+        const data = sampleCtx.getImageData(0, 0, 48, 48).data;
+        let count = 0;
+        for (let i = 3; i < data.length; i += 4) { if (data[i] > 50) count += 1; }
+        return count / (48 * 48);
+      } catch (_e) { return null; }
+    };
+    const emitProgress = (now) => {
+      if (now - lastSample < 120) return;
+      lastSample = now;
+      const p = computeReveal();
+      if (p == null) return;
+      if (Math.abs(p - lastProgress) > 0.004) {
+        lastProgress = p;
+        opts.onProgress?.(p, el);
+        try { el.dispatchEvent(new CustomEvent('kt-brush-progress', { bubbles: true, detail: { progress: p } })); } catch (_e) { /* older */ }
+      }
+      if (!thresholdFired && p >= threshold) {
+        thresholdFired = true;
+        opts.onReveal?.(p, el);
+        try { el.dispatchEvent(new CustomEvent('kt-brush-reveal', { bubbles: true, detail: { progress: p } })); } catch (_e) { /* older */ }
+      }
+    };
     const originalStyle = el.getAttribute('style');
     if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
     // Scratch-card behavior on touch: the finger paints instead of scrolling.
@@ -154,6 +191,7 @@ export default {
         context.drawImage(mask, 0, 0);
         context.globalCompositeOperation = 'source-over';
       }
+      if (hasInk) emitProgress(performance.now());
       if (!persist && !active && inkLevel < 0.008) {
         // Every stroke has fully healed — stop the loop and clear.
         hasInk = false;
@@ -168,7 +206,7 @@ export default {
     };
     const wake = () => { if (alive && rafId == null) rafId = requestAnimationFrame(render); };
 
-    const onEnter = () => { active = true; lastX = null; lastY = null; sync(); wake(); };
+    const onEnter = () => { if (holdMode) return; active = true; lastX = null; lastY = null; sync(); wake(); };
     const onMove = (event) => {
       if (!active) return;
       const box = el.getBoundingClientRect();
@@ -189,7 +227,7 @@ export default {
       wake();
     };
     const onUp = (event) => {
-      if (event.pointerType !== 'mouse') { active = false; lastX = null; lastY = null; }
+      if (holdMode || event.pointerType !== 'mouse') { active = false; lastX = null; lastY = null; }
       wake();
     };
     el.addEventListener('pointerenter', onEnter);
@@ -209,7 +247,9 @@ export default {
         context.clearRect(0, 0, canvas.width, canvas.height);
         hasInk = false;
         inkLevel = 0;
+        thresholdFired = false; lastProgress = 0; lastSample = 0;
       },
+      progress() { return lastProgress; },
       replay() { this.clear(); },
       pause() { alive = false; if (rafId != null) cancelAnimationFrame(rafId); rafId = null; },
       resume() { if (!alive) { alive = true; wake(); } },

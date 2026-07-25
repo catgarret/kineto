@@ -63,19 +63,19 @@
     shuffle: [['speed','Frame speed (ms)','range',10,160,2],['revealRate','Reveal rate','range',1,8,1],['chars','Characters','text'],['rainbow','Rainbow scramble','checkbox'],['rainbowColors','Scramble palette','text'],['scrambleFade','Fade scramble','checkbox']],
     typewriter: [['typeSpeed','Type speed (ms)','range',10,200,5],['eraseSpeed','Erase speed (ms)','range',10,160,5],['pauseAfter','Pause (ms)','range',0,3000,50],['loop','Loop','checkbox'],['caret','Caret (|)','checkbox'],['hangul','한글 조합 타이핑','checkbox']],
     textReveal: [['preset','Mode','select',['stream','char','word','line','bounce','hangul','decode','flicker']],['rainbow','Rainbow scramble','checkbox'],['rainbowColors','Scramble palette','text'],['scrambleFade','Fade scramble','checkbox'],['flickerLoop','Ambient flicker','checkbox'],['loop','Loop','checkbox'],['hold','Loop hold (ms)','range',200,4000,100],['flickerCount','Decode frames','range',1,8,1],['speed','Speed (ms)','range',10,200,5],['stagger','Stagger','range',0,0.2,0.005],['duration','Duration','range',0.1,2,0.05]],
-    textTransition: [['preset','Effect','select',['slide-up','rise','fade','blur','scale','clip','dissolve','shimmer']],['jitter','Dissolve jitter','range',0,14,1],['duration','Duration','range',0.1,2,0.05],['pause','Pause (ms)','range',100,4000,100],['blur','Blur','range',0,40,1],['startScale','Start scale','range',0.4,1.4,0.05],['endScale','End scale','range',0.4,1.4,0.05],['charMode','Char mode','checkbox'],['loop','Loop','checkbox']],
+    textTransition: [['preset','Effect','select',['slide-up','rise','fade','blur','scale','clip','dissolve','shimmer']],['jitter','Dissolve jitter','range',0,14,1],['duration','Duration','range',0.1,2,0.05],['pause','Pause (ms)','range',100,4000,100],['blur','Blur','range',0,40,1],['startScale','Start scale','range',0.4,1.4,0.05],['endScale','End scale','range',0.4,1.4,0.05],['charMode','Char mode','checkbox'],['charDirection','Char order','select',['ltr','rtl','random']],['loop','Loop','checkbox']],
     glitch: [['preset','Type','select',['rgb','noise','crt','image','reveal','vcr']],['sliceCount','Image slices','range',2,16,1],['intensity','Intensity','range',0.1,3,0.05],['speed','Speed','range',0.2,3,0.05],['duration','Reveal duration','range',0.3,3,0.05],['trigger','Trigger','select',['auto','hover','scroll']],['delay','Burst delay','range',0,3,0.05],['loop','Loop','checkbox']],
     cursor: [['preset','Type','select',['dot','ring','blob','crosshair','text','trail','orbit','snake','sparkle','image','custom']],['src','Image URL','text'],['hoverSrc','Hover image URL','text'],['width','Image width','range',16,120,2],['height','Image height','range',16,120,2],['template','Custom HTML','text'],['hoverTemplate','Hover HTML','text'],['hoverClass','Hover class','text'],['snakeText','Snake text','text'],['snakeMinScale','Snake min scale','range',0.1,1,0.02],['orbitHoverScale','Orbit hover grow','range',1,2.5,0.05],['color','Color','color'],['dotSize','Dot size','range',1,30,1],['followerSize','Follower size','range',8,120,2],['smoothing','Smoothing','range',0.01,1,0.01],['hoverScale','Hover scale','range',0.5,4,0.1],['pressScale','Press scale','range',0.3,1.5,0.05],['hoverEffect','Hover effect','select',['dot','ring']],['hoverDotSize','Hover dot size','range',6,80,2],['trailCount','Trail count','range',3,16,1],['orbitRadius','Orbit radius','range',20,120,2],['orbitText','Orbit text','text'],['snakeText','Snake text','text'],['rotateText','Rotate text','text'],['mixBlendMode','Blend','select',['normal','difference','screen','multiply']]],
     textFill: [['baseColor','Base color','color'],['fillColor','Fill color','color'],['start','Start','text'],['end','End','text'],['scrub','Scrub','range',0,2,0.1]],
     reveal: [['preset','Preset','select',['fade','fade-up','fade-down','fade-left','fade-right','slide-up','slide-down','slide-left','slide-right','zoom','zoom-in','zoom-out','blur','rise','soft','flip','flip-x','flip-y','rotate','mask','wipe','clock','class']],['startAngle','Clock start (deg)','range',0,360,5],['clockDirection','Clock direction','select',['cw','ccw']],['direction','Direction','select',['up','down','left','right']],['duration','Duration','range',0.1,2.5,0.05],['delay','Delay','range',0,2,0.05],['once','Once','checkbox']],
     scrollVelocity: [['preset','Effect','select',['skew','translate','rotate','scale','combo']],['axis','Axis','select',['x','y']],['distance','Distance','range',0,180,5],['maxSkew','Max skew','range',0,24,1],['maxRotate','Max rotate','range',0,24,1],['maxScale','Max scale','range',0,0.5,0.01],['maxBlur','Max blur','range',0,12,0.25],['smoothing','Smoothing','range',0.01,0.5,0.01],['spring','Spring','checkbox'],['stiffness','Stiffness','range',20,400,5],['damping','Damping','range',1,60,1],['mass','Mass','range',0.1,4,0.1],['reverse','Reverse','checkbox']],
     stickyStack: [['preset','Mode','select',['vertical','horizontal','zindex','floating']],['align','Align','select',['center','top']],['gap','Gap','range',0,80,2],['scrub','Scrub','range',0,2,0.05],['snap','Snap','checkbox'],['effect','Floating effect','select',['depth','fade','scale','slide']],['overlap','Overlap','range',0,0.9,0.05],['previousOpacity','Previous opacity','range',0,1,0.05],['previousScale','Previous scale','range',0.5,1,0.02],['previousBlur','Previous blur','range',0,30,1],['scrollLength','Scroll length','range',20,300,5]],
-    slider: [['preset','Effect','select',['slide','coverflow']],['axis','Axis','select',['x','y']],['align','Align','select',['center','left']],['loop','Loop','select',['off','infinite','rewind']],['gap','Gap','range',0,80,2],['perView','Per view','range',1,2.5,0.05],['speed','Speed','range',0.1,2,0.05],['autoplay','Autoplay (ms)','range',0,6000,250],['rotate','Rotate','range',0,70,1],['depth','Depth','range',0,400,10],['minScale','Side scale','range',0.5,1,0.02]],
+    slider: [['preset','Effect','select',['slide','coverflow']],['axis','Axis','select',['x','y']],['align','Align','select',['center','left']],['loop','Loop','select',['off','infinite','rewind']],['wheel','Wheel nav','checkbox'],['gap','Gap','range',0,80,2],['perView','Per view','range',1,2.5,0.05],['speed','Speed','range',0.1,2,0.05],['autoplay','Autoplay (ms)','range',0,6000,250],['rotate','Rotate','range',0,70,1],['depth','Depth','range',0,400,10],['minScale','Side scale','range',0.5,1,0.02]],
     ambientMedia: [['ambientSrc','Image source','text'],['blur','Blur','range',0,100,2],['inset','Inset','range',-80,30,2],['opacity','Opacity','range',0,1,0.02],['saturation','Saturation','range',0,3,0.05],['brightness','Brightness','range',0,2,0.05],['sampleFps','Video FPS','range',2,30,1]],
     lightbox: [['preset','Viewer','select',['viewer','grouped']],['duration','Duration','range',0,1.5,0.05],['backdropOpacity','Backdrop opacity','range',0,1,0.05],['backdropBlur','Backdrop blur','range',0,40,1],['minZoom','Min zoom','range',0.25,1,0.05],['maxZoom','Max zoom','range',1,8,0.25],['zoomStep','Zoom step','range',0.1,1,0.05],['minimap','Minimap','checkbox'],['toolbar','Toolbar','checkbox'],['share','Share button','checkbox'],['exif','Show EXIF','checkbox'],['info','Info','checkbox'],['closeOnBackdrop','Close on backdrop','checkbox']],
     progress: [['ui','UI','select',['bar','ring']],['thickness','Bar thickness','range',1,14,1],['radius','Bar radius','range',0,99,1],['color2','Gradient end','color'],['size','Ring size','range',24,120,2],['stroke','Ring stroke','range',1,10,1],['showPercent','Show percent','checkbox'],['clickToTop','Click to top','checkbox'],['smoothing','Smoothing','range',0,0.9,0.05],['hideAtEnd','Hide at end','checkbox']],
     fullpage: [['duration','Duration','range',0.2,1.6,0.05],['axis','Axis','select',['y','x','mixed']],['drag','Mouse drag','checkbox'],['mode','Mode','select',['transform','snap']],['loop','Loop','checkbox'],['dots','Dots','checkbox'],['wheel','Wheel','checkbox'],['touch','Touch swipe','checkbox'],['keyboard','Keyboard','checkbox'],['threshold','Swipe threshold','range',10,80,2],['autoAdvance','Auto advance (ms)','range',0,6000,250]],
-    marquee: [['direction','Direction','select',['left','right']],['skew','Scroll skew (deg)','range',0,20,1],['speed','Speed','range',10,200,5],['pauseOnHover','Pause on hover','checkbox'],['reverseOnScrollUp','Reverse on scroll','checkbox'],['scrollAcceleration','Acceleration','range',0,1.5,0.05]],
+    marquee: [['direction','Direction','select',['left','right']],['skew','Scroll skew (deg)','range',0,20,1],['fade','Edge fade (px)','range',0,120,4],['speed','Speed','range',10,200,5],['pauseOnHover','Pause on hover','checkbox'],['reverseOnScrollUp','Reverse on scroll','checkbox'],['scrollAcceleration','Acceleration','range',0,1.5,0.05]],
     parallax: [['axis','Axis','select',['x','y']],['speed','Speed','range',-1,1,0.05],['distance','Distance','range',-300,300,10],['scrub','Scrub','range',0,2,0.1]],
     cssScroll: [['property','CSS property','text'],['start','Start','text'],['end','End','text']],
     scrollSequence: [['fit','Fit','select',['cover','contain']],['scrollLength','Scroll length','text'],['scrub','Scrub','range',0,2,0.1],['preloadRadius','Preload radius','range',0,12,1]],
@@ -170,6 +170,7 @@ counter: {
       blur:(o)=>(o.preset)==='blur', startScale:(o)=>(o.preset)==='scale', endScale:(o)=>(o.preset)==='scale',
       jitter:(o)=>(o.preset)==='dissolve',
       charMode:(o)=>!['shimmer','dissolve'].includes(o.preset),
+      charDirection:(o)=>o.charMode===true&&!['shimmer'].includes(o.preset),
       pause:(o)=>(o.preset)!=='shimmer', loop:(o)=>(o.preset)!=='shimmer'
     },
     glitch: { sliceCount:(o)=>['image','reveal'].includes(o.preset), duration:(o)=>(o.preset)==='reveal', loop:(o)=>(o.preset)!=='reveal', delay:(o)=>!['image','reveal'].includes(o.preset) },
@@ -217,7 +218,7 @@ counter: {
     confetti: 'data-kt-confetti', accordion: 'data-kt-accordion', hold: 'data-kt-hold',
     megaMenu: 'data-kt-mega-menu', toast: 'data-kt-toast', bottomSheet: 'data-kt-bottom-sheet', tabs: 'data-kt-tabs',
     radial: 'data-kt-radial', coverReveal: 'data-kt-cover-reveal',
-    gesture: 'data-kt-gesture', drag: 'data-kt-drag', tooltip: 'data-kt-tooltip', switch: 'data-kt-switch'
+    gesture: 'data-kt-gesture', drag: 'data-kt-drag', tooltip: 'data-kt-tooltip', switch: 'data-kt-switch', flip: 'data-kt-flip'
   });
   Object.assign(PUBLIC_OPTIONS, {
     confetti: ['colors','count','duration','gravity','scalar','spread','trigger','zIndex'],
@@ -226,13 +227,14 @@ counter: {
     megaMenu: ['closeDelay','duration','indicator','layout','openDelay','trigger'],
     toast: ['barColor','dismissible','duration','icon','max','message','position','progressBar','type'],
     bottomSheet: ['backdrop','backdropOpacity','dismissible','duration','handle','trigger'],
-    tabs: ['activation','duration','effect','indicator','orientation'],
-    radial: ['activeAngle','autoplay','controls','drag','duration','loop','position','radius','step'],
+    tabs: ['activation','duration','effect','indicator','indicatorMotion','orientation'],
+    radial: ['activeAngle','align','autoplay','controls','drag','duration','loop','position','radius','step'],
     coverReveal: ['color','color2','delay','direction','duration','ease','layers','lines','onComplete','stagger','threshold','waitForImage'],
     gesture: ['duration','ease','hoverScale','lift','origin','tapScale'],
     drag: ['axis','bounds','handle','inertia','snapBack'],
-    tooltip: ['content','delay','duration','hideDelay','interactive','offset','placement','trigger'],
-    switch: ['checked','duration','offColor','onChange','onColor','size','thumbColor']
+    tooltip: ['content','delay','duration','effect','hideDelay','interactive','offset','placement','trigger'],
+    switch: ['checked','duration','offColor','onChange','onColor','size','thumbColor'],
+    flip: ['duration','ease','item','stagger','watch']
   });
   Object.assign(FIELDS, {
     confetti: [['count','Count','range',10,300,5],['spread','Spread','range',10,180,2],['gravity','Gravity','range',0,3,0.05],['scalar','Scale','range',0.4,3,0.05],['duration','Duration (s)','range',0.5,4,0.1],['colors','Colors (comma)','text'],['trigger','Trigger','select',['click','view','auto']],['zIndex','z-index','range',1000,20000,500]],
@@ -241,28 +243,30 @@ counter: {
     megaMenu: [['trigger','Trigger','select',['hover','click']],['layout','Layout','select',['dropdown','mega']],['indicator','Indicator','select',['none','chevron','plus']],['openDelay','Open delay (ms)','range',0,400,10],['closeDelay','Close delay (ms)','range',0,600,10],['duration','Duration (s)','range',0.05,0.6,0.01]],
     toast: [['message','Message','text'],['type','Type','select',['info','success','warning','error','none']],['icon','Icon (glyph/emoji)','text'],['position','Position','select',['bottom-right','bottom-left','top-right','top-left','top','bottom']],['duration','Duration (ms)','range',1000,8000,200],['progressBar','Progress','select',['none','bar','ring']],['barColor','Progress color','text'],['max','Max stack','range',1,8,1],['dismissible','Dismissible (close btn)','checkbox']],
     bottomSheet: [['backdrop','Backdrop','checkbox'],['backdropOpacity','Backdrop opacity','range',0,1,0.05],['dismissible','Dismissible','checkbox'],['handle','Drag handle','checkbox'],['duration','Duration (s)','range',0.1,0.8,0.02]],
-    tabs: [['activation','Activation','select',['automatic','manual']],['orientation','Orientation','select',['horizontal','vertical']],['effect','Panel effect','select',['fade','slide','blur','cross','none']],['indicator','Indicator','checkbox'],['duration','Duration (s)','range',0,0.6,0.02]],
-    radial: [['position','Dock','select',['bottom','top','left','right']],['radius','Radius','range',80,900,10],['step','Angle step','range',6,60,1],['activeAngle','Active angle','range',-180,180,5],['duration','Duration (s)','range',0,1.5,0.05],['loop','Loop','checkbox'],['drag','Drag','checkbox'],['controls','Controls','checkbox'],['autoplay','Autoplay (ms)','range',0,6000,250]],
+    tabs: [['activation','Activation','select',['automatic','manual']],['orientation','Orientation','select',['horizontal','vertical']],['effect','Panel effect','select',['fade','slide','blur','cross','none']],['indicatorMotion','Marker motion','select',['slide','none','fade']],['indicator','Indicator','checkbox'],['duration','Duration (s)','range',0,0.6,0.02]],
+    radial: [['position','Dock','select',['bottom','top','left','right']],['align','Align','select',['center','edge']],['radius','Radius','range',80,900,10],['step','Angle step','range',6,60,1],['activeAngle','Active angle','range',-180,180,5],['duration','Duration (s)','range',0,1.5,0.05],['loop','Loop','checkbox'],['drag','Drag','checkbox'],['controls','Controls','checkbox'],['autoplay','Autoplay (ms)','range',0,6000,250]],
     coverReveal: [['lines','Per-line (text)','checkbox'],['color','Panel color','color'],['color2','Panel color 2','color'],['direction','Direction','select',['right','left','up','down']],['duration','Duration (s)','range',0.2,2,0.05],['delay','Delay (ms)','range',0,2000,50],['layers','Layers','range',1,3,1],['stagger','Stagger (ms)','range',0,400,10],['waitForImage','Wait for image','checkbox']],
     gesture: [['hoverScale','Hover scale','range',1,1.4,0.01],['tapScale','Tap scale','range',0.7,1,0.01],['lift','Lift (px)','range',0,20,1],['origin','Origin','select',['center','top','bottom','left','right']],['duration','Duration (s)','range',0,0.6,0.02]],
     drag: [['axis','Axis','select',['both','x','y']],['bounds','Bounds','select',['','parent']],['snapBack','Snap back','checkbox'],['inertia','Inertia','checkbox']],
-    tooltip: [['content','Content','text'],['placement','Placement','select',['top','bottom','left','right']],['trigger','Trigger','select',['hover','focus','click','manual']],['delay','Show delay (ms)','range',0,800,20],['hideDelay','Hide delay (ms)','range',0,800,20],['offset','Offset (px)','range',0,24,1],['duration','Fade (s)','range',0,0.5,0.02],['interactive','Interactive','checkbox']],
-    switch: [['checked','On','checkbox'],['size','Size','range',14,40,2],['onColor','On color','color'],['offColor','Off color','text'],['thumbColor','Thumb color','color'],['duration','Duration (s)','range',0,0.6,0.02]]
+    tooltip: [['content','Content','text'],['placement','Placement','select',['top','bottom','left','right']],['effect','Show/hide','select',['fade','scale','shift','none']],['trigger','Trigger','select',['hover','focus','click','manual']],['delay','Show delay (ms)','range',0,800,20],['hideDelay','Hide delay (ms)','range',0,800,20],['offset','Offset (px)','range',0,24,1],['duration','Fade (s)','range',0,0.5,0.02],['interactive','Interactive','checkbox']],
+    switch: [['checked','On','checkbox'],['size','Size','range',14,40,2],['onColor','On color','color'],['offColor','Off color','text'],['thumbColor','Thumb color','color'],['duration','Duration (s)','range',0,0.6,0.02]],
+    flip: [['duration','Duration (s)','range',0,1,0.02],['stagger','Stagger (s)','range',0,0.15,0.01],['watch','Auto-watch','checkbox']]
   });
   Object.assign(DEFAULTS, {
     confetti:{count:140,spread:75,gravity:.9,scalar:1,duration:1.8,trigger:'click'},
     hold:{mode:'hold',duration:1100,step:.08,decay:.4,blend:'normal'},
     accordion:{single:false,effect:'blur',duration:.4,blur:6,arrowPosition:'right'},
     megaMenu:{trigger:'hover',layout:'dropdown',indicator:'none',openDelay:60,closeDelay:180,duration:.24},
-    radial:{position:'bottom',radius:260,step:26,activeAngle:-90,duration:.6,loop:true,drag:true,controls:true,autoplay:0},
+    radial:{position:'bottom',align:'center',radius:260,step:26,activeAngle:-90,duration:.6,loop:true,drag:true,controls:true,autoplay:0},
     coverReveal:{color:'#ff5b1c',color2:'#12141a',direction:'right',duration:.7,delay:0,layers:2,stagger:120,lines:false,waitForImage:true},
     gesture:{hoverScale:1.04,tapScale:.96,lift:0,origin:'center',duration:.22},
     drag:{axis:'both',bounds:'',snapBack:false,inertia:true},
-    tooltip:{placement:'top',trigger:'hover',delay:120,hideDelay:80,offset:8,duration:.16,interactive:false},
+    tooltip:{placement:'top',effect:'fade',trigger:'hover',delay:120,hideDelay:80,offset:8,duration:.16,interactive:false},
     switch:{checked:false,size:24,onColor:'#ff5b1c',duration:.22},
+    flip:{duration:.4,stagger:0,watch:true},
     toast:{type:'info',position:'bottom-right',duration:3200,dismissible:true},
     bottomSheet:{backdrop:true,backdropOpacity:.5,dismissible:true,handle:true,duration:.34},
-    tabs:{activation:'automatic',orientation:'horizontal',effect:'fade',indicator:true,duration:.28}
+    tabs:{activation:'automatic',orientation:'horizontal',effect:'fade',indicatorMotion:'slide',indicator:true,duration:.28}
   });
 
   // Lightbox gained a per-item change `transition` option — expose it too.
@@ -270,6 +274,96 @@ counter: {
   if (FIELDS.lightbox && !FIELDS.lightbox.some((f) => f[0] === 'transition')) FIELDS.lightbox.push(['transition','Change effect','select',['rise','fade','crossfade','dissolve','slide','zoom','none']]);
   if (PUBLIC_OPTIONS.lightbox && !PUBLIC_OPTIONS.lightbox.includes('download')) PUBLIC_OPTIONS.lightbox.push('download');
   if (FIELDS.lightbox && !FIELDS.lightbox.some((f) => f[0] === 'download')) FIELDS.lightbox.push(['download','Download button','checkbox']);
+  ['share','thumbnails'].forEach((o) => { if (PUBLIC_OPTIONS.lightbox && !PUBLIC_OPTIONS.lightbox.includes(o)) PUBLIC_OPTIONS.lightbox.push(o); });
+  if (FIELDS.lightbox && !FIELDS.lightbox.some((f) => f[0] === 'share')) FIELDS.lightbox.push(['share','Share button','checkbox']);
+  if (FIELDS.lightbox && !FIELDS.lightbox.some((f) => f[0] === 'thumbnails')) FIELDS.lightbox.push(['thumbnails','Filmstrip (group)','checkbox']);
+  if (PUBLIC_OPTIONS.brushReveal) ['hold','threshold'].forEach((o) => { if (!PUBLIC_OPTIONS.brushReveal.includes(o)) PUBLIC_OPTIONS.brushReveal.push(o); });
+  if (FIELDS.brushReveal && !FIELDS.brushReveal.some((f) => f[0] === 'hold')) { FIELDS.brushReveal.push(['hold','Hold to scratch','checkbox']); FIELDS.brushReveal.push(['threshold','Reveal threshold','range',0.1,1,0.05]); }
+
+  // New scroll modules + expanded options for existing ones.
+  Object.assign(MODULE_ATTRIBUTES, {
+    scrollShadows: 'data-kt-scroll-shadows', stickyHeader: 'data-kt-sticky-header', horizontalScroll: 'data-kt-horizontal-scroll'
+  });
+  Object.assign(PUBLIC_OPTIONS, {
+    scrollShadows: ['axis','color','mode','opacity','shadow','shape','size'],
+    stickyHeader: ['activeClass','distance','offset','onChange','shadow','shrink'],
+    horizontalScroll: ['height','smooth']
+  });
+  Object.assign(FIELDS, {
+    scrollShadows: [['mode','Mode','select',['shadow','mask']],['shape','Shape','select',['radial','linear']],['axis','Axis','select',['vertical','horizontal']],['size','Edge size (px)','range',12,80,2],['opacity','Shadow opacity','range',0,1,0.05],['shadow','Shadow color','text'],['color','Cover color','text']],
+    stickyHeader: [['shrink','Shrink','checkbox'],['shadow','Shadow','checkbox'],['offset','Stuck offset (px)','range',0,120,2],['distance','Progress distance (px)','range',20,400,10]],
+    horizontalScroll: [['height','Stage height','text'],['smooth','Smooth','checkbox']]
+  });
+  Object.assign(DEFAULTS, {
+    scrollShadows:{mode:'shadow',shape:'radial',axis:'vertical',size:44,opacity:1},
+    stickyHeader:{shrink:true,shadow:true,offset:8,distance:120},
+    horizontalScroll:{height:'100vh',smooth:false}
+  });
+  // cssScroll gained scroll/view timeline + axis.
+  if (PUBLIC_OPTIONS.cssScroll) ['axis','timeline'].forEach((o) => { if (!PUBLIC_OPTIONS.cssScroll.includes(o)) PUBLIC_OPTIONS.cssScroll.push(o); });
+  // marquee gained an edge `fade`.
+  if (PUBLIC_OPTIONS.marquee && !PUBLIC_OPTIONS.marquee.includes('fade')) PUBLIC_OPTIONS.marquee.push('fade');
+  // slider gained mouse-wheel navigation.
+  if (PUBLIC_OPTIONS.slider && !PUBLIC_OPTIONS.slider.includes('wheel')) PUBLIC_OPTIONS.slider.push('wheel');
+  // confetti gained `once`.
+  if (PUBLIC_OPTIONS.confetti && !PUBLIC_OPTIONS.confetti.includes('once')) PUBLIC_OPTIONS.confetti.push('once');
+  if (FIELDS.confetti && !FIELDS.confetti.some((f) => f[0] === 'once')) FIELDS.confetti.push(['once','Fire once only','checkbox']);
+  // toast progress gained a `fill` style (whole box fills).
+  if (FIELDS.toast) { const pf = FIELDS.toast.find((f) => f[0] === 'progressBar'); if (pf && !pf[3].includes('fill')) pf[3].push('fill'); }
+
+  // ── Easing editor: preset picker + live cubic-bezier curve preview ──────────
+  // Grouped presets (CSS keywords, easings.net cubic-beziers, spring, GSAP).
+  // Full easings.net set (cubic-beziers) + CSS keywords + spring/back + GSAP.
+  const EASING_GROUPS = [
+    ['Basic', [['default (module)', ''], ['linear', 'linear'], ['ease', 'ease'], ['ease-in', 'ease-in'], ['ease-out', 'ease-out'], ['ease-in-out', 'ease-in-out']]],
+    ['Sine', [['In', 'cubic-bezier(0.12,0,0.39,0)'], ['Out', 'cubic-bezier(0.61,1,0.88,1)'], ['In-Out', 'cubic-bezier(0.37,0,0.63,1)']]],
+    ['Quad', [['In', 'cubic-bezier(0.11,0,0.5,0)'], ['Out', 'cubic-bezier(0.5,1,0.89,1)'], ['In-Out', 'cubic-bezier(0.45,0,0.55,1)']]],
+    ['Cubic', [['In', 'cubic-bezier(0.32,0,0.67,0)'], ['Out', 'cubic-bezier(0.33,1,0.68,1)'], ['In-Out', 'cubic-bezier(0.65,0,0.35,1)']]],
+    ['Quart', [['In', 'cubic-bezier(0.5,0,0.75,0)'], ['Out', 'cubic-bezier(0.25,1,0.5,1)'], ['In-Out', 'cubic-bezier(0.76,0,0.24,1)']]],
+    ['Quint', [['In', 'cubic-bezier(0.64,0,0.78,0)'], ['Out', 'cubic-bezier(0.22,1,0.36,1)'], ['In-Out', 'cubic-bezier(0.83,0,0.17,1)']]],
+    ['Expo', [['In', 'cubic-bezier(0.7,0,0.84,0)'], ['Out', 'cubic-bezier(0.16,1,0.3,1)'], ['In-Out', 'cubic-bezier(0.87,0,0.13,1)']]],
+    ['Circ', [['In', 'cubic-bezier(0.55,0,1,0.45)'], ['Out', 'cubic-bezier(0,0.55,0.45,1)'], ['In-Out', 'cubic-bezier(0.85,0,0.15,1)']]],
+    ['Back', [['In', 'cubic-bezier(0.36,0,0.66,-0.56)'], ['Out', 'cubic-bezier(0.34,1.56,0.64,1)'], ['In-Out', 'cubic-bezier(0.68,-0.6,0.32,1.6)']]],
+    ['Spring', [['Gentle', 'cubic-bezier(0.34,1.56,0.64,1)'], ['Bouncy', 'cubic-bezier(0.34,1.8,0.5,1)']]],
+    ['GSAP (reveal/parallax)', [['power2.out', 'power2.out'], ['power3.out', 'power3.out'], ['power4.out', 'power4.out'], ['back.out(1.7)', 'back.out(1.7)'], ['elastic.out(1,0.5)', 'elastic.out(1,0.5)'], ['none', 'none']]]
+  ];
+  // Resolve a value to [x1,y1,x2,y2] control points for the preview (or null).
+  const CSS_EASE_BEZIER = { linear: [0, 0, 1, 1], ease: [0.25, 0.1, 0.25, 1], 'ease-in': [0.42, 0, 1, 1], 'ease-out': [0, 0, 0.58, 1], 'ease-in-out': [0.42, 0, 0.58, 1] };
+  const easingBezier = (value) => {
+    const v = String(value || '').trim();
+    if (CSS_EASE_BEZIER[v]) return CSS_EASE_BEZIER[v];
+    const m = v.match(/cubic-bezier\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/i);
+    return m ? [Number(m[1]), Number(m[2]), Number(m[3]), Number(m[4])] : null;
+  };
+  const easingPreviewSVG = (value) => {
+    const b = easingBezier(value);
+    const W = 132, H = 44, pad = 6;
+    const ix = (t) => pad + t * (W - pad * 2);
+    const iy = (t) => (H - pad) - t * (H - pad * 2);
+    const grid = `<line x1="${pad}" y1="${iy(0)}" x2="${W - pad}" y2="${iy(0)}" class="ek-grid"/><line x1="${pad}" y1="${iy(1)}" x2="${W - pad}" y2="${iy(1)}" class="ek-grid"/>`;
+    if (!b) return `<svg class="ek-svg" viewBox="0 0 ${W} ${H}">${grid}<text x="${W / 2}" y="${H / 2 + 4}" class="ek-note">no preview</text></svg>`;
+    const path = `M ${ix(0)} ${iy(0)} C ${ix(b[0])} ${iy(b[1])} ${ix(b[2])} ${iy(b[3])} ${ix(1)} ${iy(1)}`;
+    return `<svg class="ek-svg" viewBox="0 0 ${W} ${H}">${grid}<path d="${path}" class="ek-curve"/><circle cx="${ix(0)}" cy="${iy(0)}" r="2" class="ek-dot"/><circle cx="${ix(1)}" cy="${iy(1)}" r="2" class="ek-dot"/></svg>`;
+  };
+  // One-line module descriptions shown atop each options panel (daisyUI-style).
+  const MODULE_DESC = {
+    counter: '숫자 카운트업·플립·시계·카운트다운.', loader: '실제 진행률에 연동되는 로딩 화면.', lazy: '이미지 로딩 연출(스켈레톤·픽셀·프린트·디졸브).',
+    overflowText: '넘치는 텍스트/목록 아이템 처리(루프·페이지·롤링·씬전환).', cardGlow: '포인터 스포트라이트·표면 반사·발광 외곽선.', tilt: '3D 기울기와 글레어.',
+    reveal: '스크롤 진입 시 등장(페이드·슬라이드·마스크·시계).', textSplit: '글자/단어 단위 분할 모션.', textReveal: '글자 단위 등장(스트림·디코드·한글).',
+    textTransition: '문구 교체 전환(방향·랜덤 옵션).', shuffle: '문자 셔플 디코드.', typewriter: '타이핑 효과(한글 조합).', blurText: '글자별 블러 리빌.', textFill: '스크롤에 따라 텍스트 채우기.',
+    glitch: 'RGB 슬라이스·글리치 리빌.', marquee: '무한 흐르는 마퀴(엣지 페이드 옵션).', slider: '슬라이드·커버플로우.', lightbox: '전체화면 그룹 뷰어(줌·미니맵·필름스트립).',
+    ambientMedia: '미디어에서 샘플링한 주변광.', cursor: '커스텀 커서 프리셋 11종.', magnetic: '버튼 자석 반응.', ripple: '클릭 리플.', mouseParallax: '포인터/자이로 패럴럭스.',
+    parallax: '스크롤 패럴럭스(요소 이동).', scrollVelocity: '스크롤 속도·방향 반응.', scrollSequence: '이미지 시퀀스 스크럽.', progress: '읽기 진행률 바/링.', fullpage: '풀페이지 섹션 넘기기.',
+    stickyStack: '쌓이는 스티키 스택.', cssScroll: 'CSS scroll/view 타임라인 연동.', scrollShadows: '스크롤 가장자리 그림자/마스크 페이드.', stickyHeader: '스크롤 시 축소·그림자 헤더.', horizontalScroll: '섹션 고정 + 가로 스크롤.',
+    accordion: '접근성 details 아코디언.', megaMenu: 'GNB 드롭다운·메가메뉴.', tabs: 'WAI-ARIA 탭·세그먼트 컨트롤.', bottomSheet: '드래그 바텀시트.', tooltip: '자동 배치 툴팁.', switch: '폼 연동 토글 스위치.',
+    radial: '원형(휠) 캐러셀.', coverReveal: '컬러 커버가 걷히는 리빌.', gesture: 'hover/press 스프링 피드백.', drag: '관성·경계·키보드 드래그.', flip: 'FLIP 레이아웃 자동 이동.',
+    confetti: '클릭/뷰 색종이 버스트.', hold: '길게 눌러 확정 게이지.', toast: '상태 알림 토스트.', pageReveal: '페이지 진입 오버레이.', pageTransition: '동일 출처 페이지 전환.', vibrate: '햅틱 진동 피드백.', brushReveal: '포인터 브러시 리빌/복권긁기.'
+  };
+  // Promote every `ease` / `easing` text field to the rich easing picker.
+  Object.values(FIELDS).forEach((defs) => {
+    if (!Array.isArray(defs)) return;
+    defs.forEach((def) => { if ((def[0] === 'ease' || def[0] === 'easing') && (def[2] === 'text' || def[2] == null)) def[2] = 'easing'; });
+  });
 
   const state = { snapshots: new WeakMap(), mounted: false, timers: new WeakMap() };
   const dash = (value) => value.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
@@ -573,11 +667,37 @@ counter: {
       wrapper.dataset.tip = tip;
     }
     let input;
+    let easingPreview = null;
+    let easingCustom = null;
     if (type === 'select') {
       input = document.createElement('select');
       a.forEach((choice) => {
         const option = document.createElement('option'); option.value = choice; option.textContent = choice || 'none'; input.appendChild(option);
       });
+    } else if (type === 'easing') {
+      input = document.createElement('select');
+      input.className = 'kt-ease-select';
+      const known = new Set();
+      EASING_GROUPS.forEach(([grp, items]) => {
+        const og = document.createElement('optgroup'); og.label = grp;
+        items.forEach(([name, val]) => { known.add(val); const o = document.createElement('option'); o.value = val; o.textContent = name; og.appendChild(o); });
+        input.appendChild(og);
+      });
+      // Keep a module's own default (e.g. power3.out / cubic-bezier) selectable
+      // even if it isn't one of the presets.
+      const current = optionValue(descriptor, key);
+      if (current && !known.has(String(current))) {
+        const o = document.createElement('option'); o.value = current; o.textContent = `current · ${current}`; input.insertBefore(o, input.firstChild);
+      }
+      easingPreview = document.createElement('div');
+      easingPreview.className = 'kt-ease-preview';
+      easingPreview.innerHTML = easingPreviewSVG(current);
+      // Free-form custom value (any cubic-bezier(...) / keyword / GSAP ease).
+      easingCustom = document.createElement('input');
+      easingCustom.type = 'text';
+      easingCustom.className = 'kt-ease-custom';
+      easingCustom.placeholder = 'cubic-bezier(…) / custom';
+      easingCustom.value = current || '';
     } else {
       input = document.createElement('input'); input.type = type;
       if (type === 'range') { input.min = a; input.max = b; input.step = c; }
@@ -587,6 +707,7 @@ counter: {
     const value = optionValue(descriptor, key);
     if (type === 'checkbox') input.checked = Boolean(value);
     else if (type === 'color') input.value = normalizeColor(value);
+    else if (type === 'easing') input.value = (value == null ? '' : String(value));
     else input.value = value;
     const valueLabel = document.createElement('small');
     valueLabel.className = 'kt-playground__value';
@@ -615,13 +736,25 @@ counter: {
       if (showValue) valueLabel.textContent = type === 'checkbox' ? (input.checked ? 'on' : 'off') : input.value;
       if (descriptor.kind === 'loader' || descriptor.kind === 'pageReveal') descriptor.options[descriptor.kind === 'loader' && key === 'preset' ? 'type' : key] = type === 'checkbox' ? next : (type === 'number' || type === 'range' ? Number(next) : next);
       else setOption(descriptor, key, next, type);
+      if (easingPreview) easingPreview.innerHTML = easingPreviewSVG(input.value);
+      if (easingCustom) easingCustom.value = input.value;
       updateCode(host, descriptors);
       schedule();
       // No panel rebuild on option changes — field visibility syncs in
       // place, so the drawer never flickers.
       syncVisibility(host, descriptors);
     });
+    if (easingCustom) {
+      easingCustom.addEventListener('input', () => {
+        const next = easingCustom.value.trim();
+        setOption(descriptor, key, next, 'text');
+        if (easingPreview) easingPreview.innerHTML = easingPreviewSVG(next);
+        updateCode(host, descriptors);
+        schedule();
+      });
+    }
     if (type === 'checkbox') { wrapper.append(input, caption, valueLabel); }
+    else if (type === 'easing') { const row = document.createElement('div'); row.className = 'kt-ease-row'; row.append(input, easingPreview); wrapper.append(caption, row, easingCustom, valueLabel); }
     else { wrapper.append(caption, input, valueLabel); }
     return wrapper;
   }
@@ -708,7 +841,9 @@ counter: {
     drawerTitle.textContent = moduleNames;
     const drawerSub = document.createElement('span');
     drawerSub.className = 'kt-playground__drawer-sub';
-    drawerSub.textContent = '옵션을 바꾸면 위 예제에 바로 반영됩니다';
+    // daisyUI-style: lead with what the module does, then the live-edit hint.
+    const descLine = descriptors.map((d) => MODULE_DESC[d.module]).filter(Boolean).join(' ');
+    drawerSub.textContent = descLine ? `${descLine} · 옵션을 바꾸면 위 예제에 바로 반영됩니다` : '옵션을 바꾸면 위 예제에 바로 반영됩니다';
     headText.append(drawerTitle, drawerSub);
     const headActions = document.createElement('div');
     headActions.className = 'kt-playground__head-actions';

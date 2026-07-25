@@ -261,6 +261,13 @@ html.kt-preload [data-kt-text-transition] {
   /* Key orange by default (not the type accent) — override with --kt-toast-bar. */
   background: var(--kt-toast-bar, #ff5b1c);
 }
+/* progressBar:"fill" — a tinted layer sweeps the whole box like a filling bar. */
+.kt-toast__fill {
+  position: absolute; inset: 0; z-index: 0; transform-origin: left center; pointer-events: none;
+  border-radius: inherit; opacity: var(--kt-toast-fill-opacity, .16);
+  background: var(--kt-toast-bar, var(--kt-toast-accent, #ff5b1c));
+}
+.kt-toast > :not(.kt-toast__fill) { position: relative; z-index: 1; }
 /* Circular countdown (progressBar:"ring") — wraps the type icon in its centre. */
 .kt-toast__ring { flex: 0 0 auto; width: 22px; height: 22px; position: relative; }
 .kt-toast__ring svg { width: 100%; height: 100%; display: block; }
@@ -327,6 +334,13 @@ html.kt-preload [data-kt-text-transition] {
   appearance: none; border: 0; background: transparent; cursor: pointer; color: inherit;
   padding: 10px 14px; font: inherit; opacity: .62; border-radius: 8px;
   transition: opacity .2s ease, background .2s ease;
+  /* Stack the label over a hidden bold twin so switching to bold on activation
+     never changes the tab's width/height (no layout shift). */
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.kt-tabs [role="tab"][data-kt-label]::after {
+  content: attr(data-kt-label); font-weight: 700; height: 0;
+  overflow: hidden; visibility: hidden; pointer-events: none; user-select: none;
 }
 .kt-tabs [role="tab"]:hover { opacity: .85; }
 .kt-tabs [role="tab"].kt-active { opacity: 1; font-weight: 700; }
@@ -350,11 +364,14 @@ html.kt-preload [data-kt-text-transition] {
    background (light or dark) without needing site theming; override with
    --kt-seg-active. */
 .kt-tabs--segment .kt-tabs__indicator {
-  top: 4px; bottom: 4px; left: 0; height: auto !important;
   border-radius: var(--kt-seg-pill-radius, 7px); z-index: 0;
   background: var(--kt-seg-active, color-mix(in srgb, currentColor 16%, transparent));
   box-shadow: 0 1px 2px rgba(0,0,0,.16);
 }
+/* Horizontal segmented: pill spans the row height, JS drives its width. */
+.kt-tabs--segment:not(.kt-tabs--vertical) .kt-tabs__indicator { top: 4px; bottom: 4px; height: auto !important; }
+/* Vertical segmented: pill spans the column width, JS drives its height. */
+.kt-tabs--segment.kt-tabs--vertical .kt-tabs__indicator { left: 4px; right: 4px; width: auto !important; }
 .kt-tabs--segment [role="tab"] { position: relative; z-index: 1; opacity: 1; border-radius: var(--kt-seg-pill-radius, 7px); }
 .kt-tabs--segment [role="tab"].kt-active { font-weight: 700; }
 
@@ -408,3 +425,33 @@ html.kt-preload [data-kt-text-transition] {
 .kt-tooltip[data-placement="bottom"] .kt-tooltip__arrow { top: -4px; left: 50%; margin-left: -4px; }
 .kt-tooltip[data-placement="left"] .kt-tooltip__arrow { right: -4px; top: 50%; margin-top: -4px; }
 .kt-tooltip[data-placement="right"] .kt-tooltip__arrow { left: -4px; top: 50%; margin-top: -4px; }
+
+/* Tab marker motion — 'none' snaps the indicator instantly (no glide). */
+.kt-tabs--ind-none .kt-tabs__indicator { transition: none !important; }
+
+/* ── Sticky header (data-kt-sticky-header) ───────────────────────────────────
+   Drops a shadow (and optionally shrinks) once scrolled past the offset. The
+   module toggles `.kt-stuck` and publishes `--kt-header-progress` (0→1) for any
+   custom scrubbed styling. Themeable — override these selectors freely. */
+.kt-sticky-header {
+  position: sticky; top: 0; z-index: 30;
+  transition: padding .28s ease, box-shadow .28s ease, background-color .28s ease;
+}
+.kt-sticky-header.kt-sh-shadow.kt-stuck { box-shadow: 0 8px 24px -14px rgba(0,0,0,.32); }
+.kt-sticky-header.kt-sh-shrink.kt-stuck { padding-top: .45rem; padding-bottom: .45rem; }
+
+/* ── Horizontal scroll section (data-kt-horizontal-scroll) ───────────────────
+   The module pins a viewport and translates the inner track sideways. The
+   track is a flex row; children keep their own sizing. */
+.kt-hscroll-viewport { scrollbar-width: none; }
+.kt-hscroll-viewport::-webkit-scrollbar { display: none; }
+.kt-hscroll-track > * { flex: 0 0 auto; }
+
+/* ── Scroll shadows (data-kt-scroll-shadows) ─────────────────────────────────
+   Pure-CSS edge shadows; the module paints the gradients inline. No extra
+   styling needed, but expose a hook for the shadow colour. */
+.kt-scroll-shadows { --kt-scroll-shadow: rgba(0,0,0,.24); }
+
+/* Lightbox filmstrip (thumbnails:true on grouped images). */
+.kt-lightbox-filmstrip::-webkit-scrollbar { display: none; }
+.kt-lightbox-filmstrip .kt-lightbox-thumb:hover { opacity: 1 !important; }

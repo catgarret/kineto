@@ -47,6 +47,10 @@ import gestureModule from './modules/gesture.js';
 import dragModule from './modules/drag.js';
 import tooltipModule from './modules/tooltip.js';
 import switchModule from './modules/switch.js';
+import flipModule from './modules/flip.js';
+import scrollShadowsModule from './modules/scrollShadows.js';
+import stickyHeaderModule from './modules/stickyHeader.js';
+import horizontalScrollModule from './modules/horizontalScroll.js';
 
 const moduleEntries = {
   parallax: parallaxModule,
@@ -95,7 +99,11 @@ const moduleEntries = {
   gesture: gestureModule,
   drag: dragModule,
   tooltip: tooltipModule,
-  switch: switchModule
+  switch: switchModule,
+  flip: flipModule,
+  scrollShadows: scrollShadowsModule,
+  stickyHeader: stickyHeaderModule,
+  horizontalScroll: horizontalScrollModule
 };
 
 Object.entries(moduleEntries).forEach(([name, module]) => Kineto.register(name, module));
@@ -152,6 +160,10 @@ export const tooltip = call('tooltip');
 // an aliased name (importable via `import { switch as toggle } from ...`).
 const switchApi = call('switch');
 export { switchApi as switch };
+export const flip = call('flip');
+export const scrollShadows = call('scrollShadows');
+export const stickyHeader = call('stickyHeader');
+export const horizontalScroll = call('horizontalScroll');
 
 export { moduleEntries as modules };
 export default Kineto;

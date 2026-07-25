@@ -47,15 +47,40 @@ export default {
     return { el, type: 'parallax', pause() {}, resume() {}, destroy: restore };
   },
 
-  fallback(el) {
-    const restore = snapshotInlineStyles(el, ['transform']);
-    el.style.transform = 'none';
+  // No GSAP/ScrollTrigger on the page → drive the same translate from a native
+  // passive scroll listener (rAF-throttled) so parallax still works everywhere,
+  // e.g. reverse-scrolling columns. Honours axis + speed sign (negative = slower
+  // / opposite direction).
+  fallback(el, opts = {}) {
+    const restore = snapshotInlineStyles(el, ['transform', 'willChange']);
+    const axis = opts.axis === 'x' ? 'x' : 'y';
+    const speed = Number(opts.speed ?? 0.5);
+    const distance = (Number(opts.distance ?? 200)) * speed;
+    el.style.willChange = 'transform';
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      // 0 as the element enters from the bottom, 1 as it leaves past the top.
+      const progress = (vh - rect.top) / (vh + rect.height);
+      const value = (progress - 0.5) * 2 * -distance;
+      el.style.transform = axis === 'x' ? `translate3d(${value}px,0,0)` : `translate3d(0,${value}px,0)`;
+    };
+    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
     return {
       el,
       type: 'parallax',
-      pause() {},
-      resume() {},
-      destroy() { restore(); }
+      pause() { window.removeEventListener('scroll', onScroll); },
+      resume() { window.addEventListener('scroll', onScroll, { passive: true }); },
+      destroy() {
+        window.removeEventListener('scroll', onScroll);
+        window.removeEventListener('resize', onScroll);
+        restore();
+      }
     };
   }
 };

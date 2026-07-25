@@ -5,7 +5,7 @@
  */
 
 import Lenis from 'lenis';
-import { dash, env, G, noopInstance, q, readOpts, ST } from './utils.js';
+import { dash, env, G, noopInstance, q, readOpts, ST, setMotionDefaults } from './utils.js';
 import { setAnimationEngine } from './runtime.js';
 
 const modules = new Map();
@@ -27,6 +27,7 @@ const config = {
   respectReducedMotion: true,
   forceReducedMotion: false,
   performance: 'auto',
+  spring: false,
   debug: false
 };
 
@@ -201,7 +202,7 @@ function injectCSSFallback() {
 }
 
 const Kineto = {
-  version: '0.8.39',
+  version: '0.8.42',
 
   get env() {
     if (!cachedEnv) cachedEnv = env();
@@ -233,6 +234,7 @@ const Kineto = {
       config.smoothOptions = { ...config.smoothOptions, ...options.smoothOptions };
     }
     Object.assign(config, { ...options, smoothOptions: config.smoothOptions });
+    if (options.spring !== undefined) setMotionDefaults({ spring: options.spring === true });
     cachedEnv = null;
     return this;
   },

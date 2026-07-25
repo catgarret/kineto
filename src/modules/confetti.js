@@ -95,7 +95,13 @@ export default {
     // success / completion screen where the burst should go off in the
     // background on arrival rather than on a click.
     let io = null;
-    const onClick = (event) => fire(event.clientX, event.clientY);
+    // `once:true` fires a single burst then stops responding to clicks; default
+    // keeps celebrating on every click.
+    const fireOnce = opts.once === true;
+    const onClick = (event) => {
+      fire(event.clientX, event.clientY);
+      if (fireOnce) el.removeEventListener('click', onClick);
+    };
     if (trigger === 'click') el.addEventListener('click', onClick);
     else if (trigger === 'auto') fire();
     else if (trigger === 'view' && typeof IntersectionObserver !== 'undefined') {

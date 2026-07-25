@@ -37,7 +37,9 @@ export default {
     const duration = clamp(Number(opts.duration ?? 10000), 1000, 30000);
     const dismissible = opts.dismissible !== false;
     const defaultMessage = opts.message || el.getAttribute('data-kt-message') || el.textContent.trim() || 'Done';
-    const progressStyle = opts.progressBar === 'ring' ? 'ring' : (opts.progressBar === true || opts.progressBar === 'bar') ? 'bar' : 'none';
+    const progressStyle = opts.progressBar === 'ring' ? 'ring'
+      : opts.progressBar === 'fill' ? 'fill'
+      : (opts.progressBar === true || opts.progressBar === 'bar') ? 'bar' : 'none';
     const maxVisible = Math.max(1, Number(opts.max ?? 5));
     const iconOpt = opts.icon; // undefined → default glyph; false → none; string → custom
 
@@ -134,6 +136,14 @@ export default {
           bar.setAttribute('aria-hidden', 'true');
           toast.appendChild(bar);
           barAnim = bar.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: remaining, easing: 'linear' });
+        } else if (progressStyle === 'fill' && !reduce && toast.animate) {
+          // The whole toast box fills like a progress bar: a tinted layer sweeps
+          // across behind the content over the lifetime.
+          const fill = document.createElement('span');
+          fill.className = 'kt-toast__fill';
+          fill.setAttribute('aria-hidden', 'true');
+          toast.insertBefore(fill, toast.firstChild);
+          barAnim = fill.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: remaining, easing: 'linear', fill: 'forwards' });
         }
       }
 

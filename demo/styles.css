@@ -49,6 +49,9 @@
     html.light .theme-switch .ts-moon{color:var(--muted);opacity:.45}
     .ts-knob{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:color-mix(in srgb,var(--text) 30%,var(--panel));border:1px solid color-mix(in srgb,var(--text) 22%,var(--line));box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .22s cubic-bezier(.3,.7,.3,1);transform:translateX(28px)}
     html.light .theme-switch .ts-knob{transform:translateX(0)}
+    /* Light mode: the sliding knob (over the sun) goes white — the track stays
+       its original grey. */
+    html.light .theme-switch .ts-knob{background:#fff;border-color:color-mix(in srgb,var(--text) 14%,var(--line))}
     .theme-switch:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
     a.btn{text-decoration:none;display:inline-flex;align-items:center;gap:7px}
     .btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:9px 14px;border-radius:10px;cursor:pointer;font-weight:600;font-size:13.5px;transition:border-color .16s ease,background-color .16s ease,transform .16s ease}
@@ -103,7 +106,7 @@
     .container{width:min(1200px,calc(100% - 40px));margin:auto}
     /* ── sidebar layout ─────────────────────────────────────────────── */
     .layout{display:grid;grid-template-columns:206px minmax(0,1fr);align-items:start}
-    .side-nav{position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;padding:26px 10px 26px 18px}
+    .side-nav{position:sticky;top:56px;height:calc(100vh - 56px);overflow:hidden;padding:26px 10px 26px 18px}
     .layout>main{border-left:1px solid var(--line)}
     .side-label{margin:0 0 12px;padding-left:10px;font:600 8px/1 var(--font-mono);letter-spacing:.18em;text-transform:uppercase;color:var(--muted);opacity:.7}
     .side-nav-inner{display:flex;flex-direction:column;gap:2px}
@@ -112,6 +115,32 @@
     .side-nav a:hover{color:var(--text);background:color-mix(in srgb,var(--accent) 7%,transparent)}
     .side-nav a.active{color:var(--text);background:color-mix(in srgb,var(--accent) 12%,transparent)}
     .side-nav a.active i{color:var(--accent)}
+    /* Search box */
+    .side-nav-inner{display:flex;flex-direction:column;height:100%;gap:10px;min-height:0}
+    .side-nav-scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:2px 4px 2px 0;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 10px,#000 calc(100% - 16px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 10px,#000 calc(100% - 16px),transparent 100%);scrollbar-width:thin}
+    .nav-search{flex:0 0 auto;display:flex;align-items:center;gap:8px;margin:0 2px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+    .nav-search i{font-size:13px;color:var(--muted)}
+    .nav-search input{flex:1;min-width:0;border:0;background:transparent;color:var(--text);font-size:12.5px;outline:none}
+    .nav-search input::placeholder{color:var(--muted)}
+    /* Kill the browser's native (blue) search clear/decoration glyphs. */
+    .nav-search input[type=search]::-webkit-search-cancel-button,
+    .nav-search input[type=search]::-webkit-search-decoration{-webkit-appearance:none;appearance:none;display:none}
+    .nav-search-kbd{font:600 10px/1 var(--font-mono);color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:3px 5px}
+    .nav-search:focus-within{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+    /* Categories */
+    .side-nav-modules{display:flex;flex-direction:column;gap:4px}
+    .nav-cat[hidden]{display:none}
+    .nav-cat-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;border:0;background:transparent;cursor:pointer;color:var(--muted);font:700 9px/1 var(--font-mono);letter-spacing:.16em;text-transform:uppercase;border-radius:8px}
+    .nav-cat-head:hover{color:var(--text)}
+    .nav-cat-head i{font-size:11px;transition:transform .2s ease}
+    .nav-cat.collapsed .nav-cat-head i{transform:rotate(-90deg)}
+    .nav-cat-list{display:flex;flex-direction:column;gap:1px;overflow:hidden}
+    .nav-cat.collapsed .nav-cat-list{display:none}
+    .nav-mod{display:block;padding:6px 10px;border-radius:7px;color:var(--muted);text-decoration:none;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .14s ease,background-color .14s ease}
+    .nav-mod[hidden]{display:none}
+    .nav-mod:hover{color:var(--text);background:color-mix(in srgb,var(--accent) 7%,transparent)}
+    .nav-mod.active{color:var(--text);background:color-mix(in srgb,var(--accent) 13%,transparent)}
+    .nav-empty{padding:10px;color:var(--muted);font-size:12px;text-align:center}
     main{min-width:0}
     main .container{width:min(1120px,calc(100% - 56px))}
     @media(max-width:1080px){
@@ -119,8 +148,19 @@
       body{padding-bottom:66px}
       .side-nav{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;z-index:1200;border-right:0;border-top:1px solid var(--line);background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:8px 10px calc(8px + env(safe-area-inset-bottom));overflow-x:auto;overflow-y:hidden}
       .side-label{display:none}
-      .side-nav-inner{flex-direction:row;gap:4px;width:max-content}
+      .side-nav-inner{flex-direction:column;gap:6px;width:100%}
       .side-nav a{white-space:nowrap;padding:7px 11px}
+      /* Bottom bar: hide category heads, lay modules out as one horizontal row. */
+      .nav-search{margin:0}
+      .side-nav-scroll{overflow-x:auto;overflow-y:hidden;-webkit-mask-image:none;mask-image:none;padding:0}
+      .side-nav-modules{flex-direction:row;overflow-x:auto;gap:6px;width:100%;scrollbar-width:none}
+      .side-nav-modules::-webkit-scrollbar{display:none}
+      .nav-cat{display:contents}
+      .nav-cat-head{display:none}
+      .nav-cat-list{flex-direction:row;gap:6px}
+      .nav-cat.collapsed .nav-cat-list{display:flex}
+      .nav-mod{white-space:nowrap;border:1px solid var(--line)}
+      .nav-mod code{display:none}
     }
 
     main{counter-reset:sec}
@@ -163,13 +203,15 @@
     .mk-na-overlay{position:absolute;inset:0;z-index:20;display:grid;place-items:center;text-align:center;white-space:pre-line;padding:18px;background:color-mix(in srgb,var(--panel) 74%,transparent);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);color:var(--muted);font:600 12.5px/1.55 var(--font-sans);border-radius:inherit;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line) 55%,transparent)}
     .overflow-display{width:100%;max-width:340px;padding:14px 18px;border-radius:10px;background:#101318;color:#ffd166;font:700 17px/1.25 var(--font-mono);border:1px solid #2b333f;box-shadow:inset 0 0 0 2px #0b0d10,inset 0 12px 24px rgba(0,0,0,.35)}
 
-    .glow-demo{min-height:290px;padding:50px;text-align:center;display:grid;place-items:center;background:linear-gradient(150deg,#171a21,#232833);color:#fff;border:1px solid var(--line)}
+    .glow-demo{min-height:290px;padding:0;text-align:center;display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(150deg,#171a21,#232833);color:#fff;border:1px solid var(--line)}
     .glow-demo>*{position:relative;z-index:1}
-    .glow-demo>div{display:grid;gap:12px;place-items:center;align-content:center}
+    /* Demo label fills the upper area (centered); the playground panel is pinned
+       to the bottom like every other card, instead of floating in the middle. */
+    .glow-demo>div{flex:1;display:grid;gap:12px;place-items:center;align-content:center;padding:50px;width:100%}
     .glow-demo>div h3{margin:0}
     .glow-demo>div p{margin:0}
     /* 글로우 카드의 옵션 패널: 카드 패딩(50px)을 뚫고 넓게, 좌측 정렬 + 여유 자간 */
-    .glow-demo>.kt-playground{width:calc(100% + 68px);max-width:none;margin-left:-34px;margin-right:-34px;text-align:left}
+    .glow-demo>.kt-playground{width:100%;max-width:none;margin:0;text-align:left}
     .glow-demo .kt-playground>summary{letter-spacing:.015em;padding:9px 16px}
     .glow-demo p{color:#9aa5bb}
     .magnetic-zone{padding:60px}
@@ -229,7 +271,8 @@
     .module-index span{padding:5px 10px;background:var(--panel2);border:1px solid var(--line);border-radius:99px;color:var(--muted);font:500 11.5px/1.2 var(--font-mono);transition:color .15s ease,border-color .15s ease}
     .module-index span:hover{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
     .module-index span[data-module]{cursor:pointer}
-    .footer{padding:56px 0 110px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);margin-top:0}
+    .footer{padding:56px max(26px,env(safe-area-inset-right)) 110px max(26px,env(safe-area-inset-left));color:var(--muted);font-size:13px;border-top:1px solid var(--line);margin-top:0}
+    .footer>.container{width:100%;max-width:none;margin:0}
     .footer-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:28px;align-items:start}
     .footer-brand strong{display:block;color:var(--text);font-size:16px;letter-spacing:-.02em;margin-bottom:8px}
     .footer-brand p{margin:0;line-height:1.7;word-break:keep-all;text-wrap:pretty;max-width:380px}
@@ -244,7 +287,7 @@
       .card,.card.wide{grid-column:auto}
       .site-header{padding-inline:16px}
       .grid{gap:14px}
-      .glow-demo{padding:30px}
+      .glow-demo>div{padding:30px}
       .section{padding:80px 0 60px}
     }
     /* Below ~560px the 330px min column no longer fits, so drop to a single
@@ -327,3 +370,64 @@
 .kt-radial-item img { transition: transform .45s cubic-bezier(.22,.8,.3,1), opacity .45s ease, box-shadow .45s ease; }
 .kt-radial-item:not(.kt-active) img { opacity: .68; }
 .kt-radial-item.kt-active img { transform: scale(1.18); box-shadow: 0 14px 32px rgba(0,0,0,.48); }
+
+/* Segmented tabs demo: white active pill in light theme, light overlay in dark. */
+.kt-tabs--segment { --kt-seg-active: rgba(255,255,255,.14); --kt-seg-bg: rgba(255,255,255,.06); }
+html.light .kt-tabs--segment { --kt-seg-active: #ffffff; --kt-seg-bg: rgba(0,0,0,.05); }
+
+/* FLIP demo chips */
+.flip-chip { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent, #ff5b1c), #ffd166); color: #1a1a1a; font-weight: 800; }
+
+
+/* Horizontal-scroll gallery cards (distinct from stickyStack full panels) */
+.hs-card{flex:0 0 clamp(230px,30vw,380px);height:min(52vh,430px);display:grid;place-items:center;border-radius:22px;font:800 clamp(2.4rem,6vw,5rem)/1 var(--font-sans);box-shadow:0 18px 60px rgba(0,0,0,.32)}
+
+/* Easing editor (playground) — preset picker + live cubic-bezier curve */
+.kt-ease-row{display:flex;align-items:center;gap:10px}
+.kt-ease-select{flex:1;min-width:0}
+.kt-ease-preview{flex:0 0 auto}
+.ek-svg{display:block;width:132px;height:44px;border:1px solid var(--line);border-radius:8px;background:color-mix(in srgb,var(--panel2) 60%,transparent)}
+.ek-curve{fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round}
+.ek-grid{stroke:color-mix(in srgb,var(--muted) 35%,transparent);stroke-width:1;stroke-dasharray:2 3}
+.ek-dot{fill:var(--accent)}
+.ek-note{fill:var(--muted);font:500 9px var(--font-mono);text-anchor:middle}
+
+/* Demo scroll boxes (sticky-header / cover-fixed): header contrasts with body */
+.demo-scrollbox{width:100%;max-height:260px;overflow:auto;border-radius:var(--r-stage);border:1px solid var(--line);overscroll-behavior:contain}
+.demo-sticky-head{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;background:var(--panel);border-bottom:1px solid var(--line);font-weight:800;font-size:17px}
+.demo-sticky-head.kt-stuck{padding-top:12px;padding-bottom:12px}
+.demo-sticky-head .k-badge{font:600 10px/1 var(--font-mono);color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:5px 7px}
+.demo-scroll-body{padding:18px 20px;line-height:2.4;color:var(--muted);background:var(--panel2)}
+
+/* Cover card → fixed header (scrubbed by stickyHeader's --kt-header-progress) */
+.cover-fixed-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  height:calc(200px - 136px * var(--kt-header-progress,0));
+  background:var(--panel);
+  border-bottom:1px solid color-mix(in srgb, var(--line) calc(100% * var(--kt-header-progress,0)), transparent);
+  box-shadow:0 10px 30px -20px rgba(0,0,0,calc(.6 * var(--kt-header-progress,0)))}
+.cover-fixed-header .cff-title{font-weight:900;letter-spacing:-.045em;line-height:1;font-size:calc(2.4rem - 1.15rem * var(--kt-header-progress,0));
+  background:linear-gradient(100deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+/* Absolute so the title stays vertically centred as the header shrinks. */
+.cover-fixed-header .cff-sub{position:absolute;left:0;right:0;bottom:16px;text-align:center;font-size:13px;font-weight:600;color:var(--muted);opacity:calc(1 - var(--kt-header-progress,0) * 1.6);pointer-events:none}
+
+/* Glued playground under the glow-demo card: drop its own radius so it doesn't
+   double-line against the card's rounded corners. */
+.glow-demo>.kt-playground{border-radius:0}
+.glow-demo{border-bottom-left-radius:var(--r-card);border-bottom-right-radius:var(--r-card)}
+
+/* Radial controls: match the demo's button look (library default differs). */
+.demo-stage .kt-radial-controls{z-index:5}
+.demo-stage .kt-radial-controls button{width:38px;height:38px;background:var(--panel);border:1px solid var(--line);color:var(--text);box-shadow:var(--shadow)}
+.demo-stage .kt-radial-controls button:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));color:var(--accent)}
+
+/* Cards: bottom-align the demo area so a long description above doesn't leave
+   the demo floating at the top (keeps demos aligned across a grid row). */
+.card>.demo-stage,.card>.fullpage-demo{margin-top:auto}
+
+/* Accordion demo: subtle title background (gentle contrast, not stark white),
+   and square off the bottom corners when open so it joins the body. */
+.demo-stage [data-kt-accordion] details>summary{background:color-mix(in srgb,var(--panel2) 84%,var(--text) 5%);border-radius:10px}
+.demo-stage [data-kt-accordion] details.kt-open>summary,
+.demo-stage [data-kt-accordion] details[open]>summary{border-bottom-left-radius:0;border-bottom-right-radius:0}
+.kt-ease-custom{width:100%;margin-top:6px;font:500 11px/1 var(--font-mono)}

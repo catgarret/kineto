@@ -20,7 +20,7 @@ English · [한국어](i18n/README.ko.md) · [日本語](i18n/README.jp.md) · [
 
 > **Kineto** — the name comes from *kinetic* (from the Greek *kínēsis*, “motion”). A fitting name for a library that is all about motion on the web.
 
-Kineto is an interactive web motion effects library with live controls and copy-ready code — 45 modules for motion, media, scroll, loaders, and text, with integrations for JavaScript, React, Vue, and jQuery. Attach effects with a single `data-kt-*` attribute or drive them precisely through a JavaScript API. The core has no required dependencies, and on unsupported browsers or low-end devices the effects switch off while the content stays intact.
+Kineto is an interactive web motion effects library with live controls and copy-ready code — 51 modules for motion, media, scroll, loaders, and text, with integrations for JavaScript, React, Vue, and jQuery. Attach effects with a single `data-kt-*` attribute or drive them precisely through a JavaScript API. The core has no required dependencies, and on unsupported browsers or low-end devices the effects switch off while the content stays intact.
 
 > Building with an AI coding tool (Cursor, Claude, etc.)? See the [AI prompt guide](AI-PROMPT-GUIDE.md) — it includes a ready-to-paste instruction that tells the assistant to reach for Kineto modules first for motion and interaction.
 
@@ -50,7 +50,7 @@ Every effect is tunable in the [live demo](https://git.dongri.me/example/kineto)
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/lightbox.gif" width="620" alt="Lightbox">
 
-See the [full module list](#modules) below for all 45 modules.
+See the [full module list](#modules) below for all 51 modules.
 
 ## Installation
 
@@ -131,38 +131,55 @@ Kineto.disableSmooth();
 
 | Module | Activation attribute | Purpose |
 |---|---|---|
+| `accordion` | `data-kt-accordion` | Accessible `<details>` accordion, CSS-customizable arrow |
 | `ambientMedia` | `data-kt-ambient-media` | Ambient glow sampled from media |
 | `blurText` | `data-kt-blur-text` | Per-character blur reveal |
-| `brushReveal` | `data-kt-brush-reveal` | Pointer brush-mask reveal |
+| `bottomSheet` | `data-kt-bottom-sheet` | Draggable bottom sheet with focus trap |
+| `brushReveal` | `data-kt-brush-reveal` | Pointer brush-mask reveal / scratch card |
 | `cardGlow` | `data-kt-card-glow` | Pointer spotlight, surface sheen, luminous border |
+| `confetti` | `data-kt-confetti` | Click / view confetti burst |
 | `counter` | `data-kt-counter` | Number count, flip, clock, countdown |
-| `cssScroll` | `data-kt-css-scroll` | Scroll bound to CSS vars / animation timeline |
+| `coverReveal` | `data-kt-cover-reveal` | Color cover wipe reveal |
+| `cssScroll` | `data-kt-css-scroll` | Scroll bound to CSS vars / scroll & view timeline |
 | `cursor` | `data-kt-cursor` | Eleven custom cursor presets |
+| `drag` | `data-kt-drag` | Drag with inertia, bounds, snap-back, keyboard |
+| `flip` | `data-kt-flip` | FLIP layout animation on reorder / add / remove |
 | `fullpage` | `data-kt-fullpage` | Fullpage section paging (x / y / mixed axis) |
+| `gesture` | `data-kt-gesture` | whileHover / whileTap spring feedback |
 | `glitch` | `data-kt-glitch` | RGB slice and glitch reveal |
+| `hold` | `data-kt-hold` | Hold / mash-to-confirm gauge |
+| `horizontalScroll` | `data-kt-horizontal-scroll` | Pinned horizontal scroll section |
 | `lazy` | `data-kt-lazy` | Image load effects (skeleton, pixelate, print, dissolve) |
-| `lightbox` | `data-kt-lightbox` | Full-screen viewer, groups, zoom, minimap |
+| `lightbox` | `data-kt-lightbox` | Full-screen viewer, groups, zoom, minimap, filmstrip |
 | `loader` | `data-kt-loader` | Loader bound to real progress sources |
 | `magnetic` | `data-kt-magnetic` | Magnetic pointer response |
 | `marquee` | `data-kt-marquee` | Continuous marquee |
+| `megaMenu` | `data-kt-mega-menu` | GNB dropdown / mega menu (keyboard + aria) |
 | `mouseParallax` | `data-kt-mouse-parallax` | Pointer / gyroscope parallax |
-| `overflowText` | `data-kt-overflow-text` | Eight ways to handle overflowing text |
+| `overflowText` | `data-kt-overflow-text` | Ways to handle overflowing text + item scenes |
 | `pageReveal` | `data-kt-page-reveal` | Page-entry overlay |
 | `pageTransition` | `data-kt-page-transition` | Same-origin page transitions |
 | `parallax` | `data-kt-parallax` | Scroll parallax |
 | `progress` | `data-kt-progress` | Reading progress bar / ring |
+| `radial` | `data-kt-radial` | Radial (wheel) carousel |
 | `reveal` | `data-kt-reveal` | Scroll-entry reveal |
 | `ripple` | `data-kt-ripple` | Click ripple |
 | `scrollSequence` | `data-kt-scroll-sequence` | Image-sequence scrubbing |
+| `scrollShadows` | `data-kt-scroll-shadows` | CSS edge shadows on scroll containers |
 | `scrollVelocity` | `data-kt-scroll-velocity` | Scroll speed / direction response |
 | `shuffle` | `data-kt-shuffle` | Character shuffle decode |
 | `slider` | `data-kt-slider` | Slide and coverflow |
+| `stickyHeader` | `data-kt-sticky-header` | Shrinking / cover-to-fixed sticky header |
 | `stickyStack` | `data-kt-sticky-stack` | Sticky stack (vertical / horizontal / floating) |
+| `switch` | `data-kt-switch` | Accessible toggle switch (form-usable) |
+| `tabs` | `data-kt-tabs` | WAI-ARIA tabs, segmented control |
 | `textFill` | `data-kt-text-fill` | Scroll-driven text fill |
 | `textReveal` | `data-kt-text-reveal` | Text reveal (incl. Hangul composition) |
 | `textSplit` | `data-kt-text-split` | Character / word split motion |
-| `textTransition` | `data-kt-text-transition` | Text swap transitions |
+| `textTransition` | `data-kt-text-transition` | Text swap transitions (direction options) |
 | `tilt` | `data-kt-tilt` | 3D tilt and glare |
+| `toast` | `data-kt-toast` | Status toast (role=status/alert) |
+| `tooltip` | `data-kt-tooltip` | Accessible tooltip (auto-placement) |
 | `typewriter` | `data-kt-typewriter` | Typing effect |
 | `vibrate` | `data-kt-vibrate` | Haptic vibration feedback |
 

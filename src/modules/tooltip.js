@@ -24,6 +24,12 @@ export default {
     const offset = Number(opts.offset ?? 8);
     const duration = Math.max(0, Number(opts.duration ?? 0.16));
     const interactive = opts.interactive === true;
+    // Enter/leave animation: fade (default) · scale (pop) · shift (rise) · none.
+    const effect = ['fade', 'scale', 'shift', 'none'].includes(opts.effect) ? opts.effect : 'fade';
+    const fromState = effect === 'scale' ? { opacity: 0, transform: 'scale(0.9)' }
+      : effect === 'shift' ? { opacity: 0, transform: 'translateY(5px)' }
+      : { opacity: 0, transform: 'none' };
+    const toState = { opacity: 1, transform: 'none' };
 
     const tip = document.createElement('div');
     tip.className = 'kt-tooltip';
@@ -79,7 +85,7 @@ export default {
       position();
       if (anim) anim.cancel(); // may fire a lingering hide's oncancel — guarded by !visible
       tip.style.opacity = '1';
-      if (!reduce) anim = tip.animate([{ opacity: 0 }, { opacity: 1 }], { duration: duration * 1000, easing: 'ease' });
+      if (!reduce && effect !== 'none') anim = tip.animate([fromState, toState], { duration: duration * 1000, easing: 'ease' });
       window.addEventListener('scroll', position, true);
       window.addEventListener('resize', position);
     };
@@ -91,8 +97,7 @@ export default {
       const done = () => { if (!visible) { tip.hidden = true; tip.style.opacity = '0'; } };
       if (anim) anim.cancel();
       tip.style.opacity = '0';
-      if (!reduce) { anim = tip.animate([{ opacity: 1 }, { opacity: 0 }], { duration: duration * 700, easing: 'ease' }); anim.onfinish = done; anim.oncancel = done; }
-      else done();
+      if (!reduce && effect !== 'none') { anim = tip.animate([toState, fromState], { duration: duration * 700, easing: 'ease' }); anim.onfinish = done; anim.oncancel = done; } else done();
       window.removeEventListener('scroll', position, true);
       window.removeEventListener('resize', position);
     };

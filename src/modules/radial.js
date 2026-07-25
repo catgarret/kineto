@@ -40,6 +40,15 @@ export default {
     el.appendChild(hub);
     items.forEach((item) => { item.classList.add('kt-radial-item'); hub.appendChild(item); });
 
+    // `align:"center"` places the hub so the ACTIVE item lands at the container's
+    // centre (instead of being clipped at the docked edge), for every dock/angle.
+    // `align:"edge"` (default) keeps the hub on the docked edge (CSS class).
+    if (opts.align === 'center') {
+      const a = activeAngle * Math.PI / 180;
+      hub.style.left = `calc(50% - ${(Math.cos(a) * radius).toFixed(1)}px)`;
+      hub.style.top = `calc(50% - ${(Math.sin(a) * radius).toFixed(1)}px)`;
+    }
+
     let active = Math.floor(items.length / 2);
 
     const live = document.createElement('div');
@@ -62,11 +71,14 @@ export default {
         const teleport = prevOffset !== undefined && Math.abs(offset - prevOffset) > n / 2;
         item._ktOffset = offset;
         const angle = activeAngle + offset * step;
-        item.style.transition = (reduce || duration === 0 || teleport) ? 'none' : `transform ${duration}s cubic-bezier(.22,.8,.3,1)`;
+        item.style.transition = (reduce || duration === 0 || teleport) ? 'none' : `transform ${duration}s cubic-bezier(.22,.8,.3,1), opacity ${duration}s ease`;
         // transform-origin is the hub point (0,0); the inner translate(-50%,-50%)
         // (applied FIRST) centers the item there, then rotate·translate·rotate
         // orbits its centre to radius·(cosθ,sinθ), upright.
         item.style.transform = `rotate(${angle}deg) translate(${radius}px) rotate(${-angle}deg) translate(-50%, -50%)`;
+        // Fade items out toward the arc edges so a wrapping/leaving item never
+        // lingers as a translucent ghost (teleport skips the fade transition).
+        item.style.opacity = String(Math.max(0, 1 - Math.abs(offset) * 0.42));
         const on = i === active;
         item.classList.toggle('kt-active', on);
         item.classList.toggle('active-item', on);

@@ -1,4 +1,4 @@
-import { clamp, G, observeOnce, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
+import { clamp, G, motionDefaults, observeOnce, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
 
 const PRESETS = {
   fade: { opacity: 0 },
@@ -211,7 +211,7 @@ export default {
       const clipDuration = Math.max(0.05, Number(opts.duration ?? 0.8));
       // Compute ease locally: the shared `const ease` below is declared after this
       // branch's early return, so referencing it here would throw (TDZ).
-      const clipEase = opts.ease || (opts.spring === true ? 'back.out(1.25)' : 'power3.out');
+      const clipEase = opts.ease || ((opts.spring ?? motionDefaults.spring) === true ? 'back.out(1.25)' : 'power3.out');
       el.style.willChange = 'clip-path';
       const state = { p: 1 };
       // iOS Safari needs the -webkit- prefix to repaint clip-path each frame;
@@ -261,7 +261,7 @@ export default {
     const targets = Array.isArray(target) ? target : [target];
     const restores = targets.map((node) => snapshotAttributes(node, ['style', 'class']));
     const duration = Math.max(0, Number(opts.duration ?? 0.8));
-    const ease = opts.ease || (opts.spring === true ? 'back.out(1.25)' : 'power3.out');
+    const ease = opts.ease || ((opts.spring ?? motionDefaults.spring) === true ? 'back.out(1.25)' : 'power3.out');
     const animateVars = {
       x: 0,
       y: 0,

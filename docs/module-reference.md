@@ -2,10 +2,10 @@
 
 > 이 문서는 `kineto.features.json`에서 생성됩니다. 직접 수정하지 말고 계약 파일을 명시적으로 변경한 뒤 `npm run docs:contract`를 실행하세요.
 
-- Library: 0.8.39
+- Library: 0.8.41
 - Feature contract: 1.3.0
 - Behavior contract: 1.2.0
-- Public modules: 47
+- Public modules: 51
 - Root properties: `version`, `env`, `performance`, `registry`, `instanceCount`, `smoothEnabled`, `lenis`, `core`
 - Core methods: `config()`, `setAnimationEngine()`, `enableSmooth()`, `disableSmooth()`, `toggleSmooth()`, `scrollTo()`, `register()`, `unregister()`, `create()`, `scan()`, `init()`, `initModules()`, `autoInit()`, `getInstance()`, `destroyModule()`, `replay()`, `destroy()`, `pause()`, `resume()`, `refresh()`
 - Additional named exports: `modules`
@@ -31,7 +31,7 @@
 - Attribute: `data-kt-brush-reveal`
 - Default variant: `brush`
 - Variants: `brush`
-- Public options: `blur`, `crossOrigin`, `fade`, `maxDpr`, `onError`, `opacity`, `persist`, `radius`, `revealSrc`, `softness`, `src`
+- Public options: `blur`, `crossOrigin`, `fade`, `hold`, `maxDpr`, `onError`, `onProgress`, `onReveal`, `opacity`, `persist`, `radius`, `revealSrc`, `softness`, `src`, `threshold`
 
 ## cardGlow
 
@@ -51,8 +51,8 @@
 
 - Attribute: `data-kt-css-scroll`
 - Default variant: `progress-property`
-- Variants: `progress-property`, `css-animation-timeline`
-- Public options: `cssAnimation`, `end`, `onUpdate`, `property`, `rangeEnd`, `rangeStart`, `start`
+- Variants: `progress-property`, `css-animation-timeline`, `scroll-timeline`
+- Public options: `axis`, `cssAnimation`, `end`, `onUpdate`, `property`, `rangeEnd`, `rangeStart`, `start`, `timeline`
 
 ## cursor
 
@@ -87,7 +87,7 @@
 - Attribute: `data-kt-lightbox`
 - Default variant: `viewer`
 - Variants: `viewer`, `grouped`
-- Public options: `alt`, `backdropBlur`, `backdropColor`, `backdropOpacity`, `caption`, `className`, `closeOnBackdrop`, `cursor`, `description`, `doubleClickZoom`, `download`, `duration`, `exif`, `group`, `info`, `lazyEffect`, `lazyOptions`, `lightboxDuration`, `maxZoom`, `metadata`, `minZoom`, `minimap`, `onChange`, `onClose`, `onLoad`, `onOpen`, `radius`, `renderUI`, `share`, `src`, `title`, `toolbar`, `transition`, `uiTemplate`, `wheelStep`, `zoom`, `zoomStep`
+- Public options: `alt`, `backdropBlur`, `backdropColor`, `backdropOpacity`, `caption`, `className`, `closeOnBackdrop`, `cursor`, `description`, `doubleClickZoom`, `download`, `duration`, `exif`, `group`, `info`, `lazyEffect`, `lazyOptions`, `lightboxDuration`, `maxZoom`, `metadata`, `minZoom`, `minimap`, `onChange`, `onClose`, `onLoad`, `onOpen`, `radius`, `renderUI`, `share`, `src`, `thumbnails`, `title`, `toolbar`, `transition`, `uiTemplate`, `wheelStep`, `zoom`, `zoomStep`
 
 ## loader
 
@@ -108,7 +108,7 @@
 - Attribute: `data-kt-marquee`
 - Default variant: `left`
 - Variants: `left`, `right`, `reverse-on-scroll`
-- Public options: `clones`, `direction`, `pauseOnHover`, `reverseOnScrollUp`, `scrollAcceleration`, `skew`, `speed`
+- Public options: `clones`, `direction`, `fade`, `pauseOnHover`, `reverseOnScrollUp`, `scrollAcceleration`, `skew`, `speed`
 
 ## mouseParallax
 
@@ -192,7 +192,7 @@
 - Attribute: `data-kt-slider`
 - Default variant: `slide`
 - Variants: `slide`, `coverflow`
-- Public options: `align`, `autoplay`, `axis`, `depth`, `duration`, `effect`, `gap`, `initial`, `label`, `loop`, `minOpacity`, `minScale`, `nextSelector`, `onChange`, `opacityStep`, `pauseOnHover`, `perView`, `perspective`, `preset`, `prevSelector`, `rotate`, `scaleStep`, `smoothing`, `spacing`, `speed`
+- Public options: `align`, `autoplay`, `axis`, `depth`, `duration`, `effect`, `gap`, `initial`, `label`, `loop`, `minOpacity`, `minScale`, `nextSelector`, `onChange`, `opacityStep`, `pauseOnHover`, `perView`, `perspective`, `preset`, `prevSelector`, `rotate`, `scaleStep`, `smoothing`, `spacing`, `speed`, `wheel`
 
 ## stickyStack
 
@@ -227,7 +227,7 @@
 - Attribute: `data-kt-text-transition`
 - Default variant: `slide`
 - Variants: `slide-up`, `slide`, `rise`, `fade`, `blur`, `scale`, `clip`, `dissolve`, `shimmer`
-- Public options: `ariaLive`, `baseColor`, `blur`, `charMode`, `duration`, `ease`, `effect`, `endScale`, `hold`, `jitter`, `loop`, `minHeight`, `onChange`, `onComplete`, `pause`, `preset`, `shimColor`, `shimSpeed`, `stagger`, `startScale`, `texts`
+- Public options: `ariaLive`, `baseColor`, `blur`, `charDirection`, `charMode`, `duration`, `ease`, `effect`, `endScale`, `hold`, `jitter`, `loop`, `minHeight`, `onChange`, `onComplete`, `pause`, `preset`, `shimColor`, `shimSpeed`, `stagger`, `startScale`, `texts`
 
 ## tilt
 
@@ -255,7 +255,7 @@
 - Attribute: `data-kt-confetti`
 - Default variant: `burst`
 - Variants: `burst`
-- Public options: `colors`, `count`, `duration`, `gravity`, `scalar`, `spread`, `trigger`, `zIndex`
+- Public options: `colors`, `count`, `duration`, `gravity`, `once`, `scalar`, `spread`, `trigger`, `zIndex`
 
 ## accordion
 
@@ -297,14 +297,14 @@
 - Attribute: `data-kt-tabs`
 - Default variant: `line`
 - Variants: `line`
-- Public options: `activation`, `duration`, `effect`, `indicator`, `onChange`, `orientation`
+- Public options: `activation`, `duration`, `effect`, `indicator`, `indicatorMotion`, `onChange`, `orientation`
 
 ## radial
 
 - Attribute: `data-kt-radial`
 - Default variant: `bottom`
 - Variants: `bottom`, `top`, `left`, `right`
-- Public options: `activeAngle`, `autoplay`, `controls`, `drag`, `duration`, `loop`, `position`, `radius`, `step`
+- Public options: `activeAngle`, `align`, `autoplay`, `controls`, `drag`, `duration`, `loop`, `position`, `radius`, `step`
 
 ## coverReveal
 
@@ -332,7 +332,7 @@
 - Attribute: `data-kt-tooltip`
 - Default variant: `default`
 - Variants: `default`
-- Public options: `content`, `delay`, `duration`, `hideDelay`, `interactive`, `offset`, `placement`, `trigger`
+- Public options: `content`, `delay`, `duration`, `effect`, `hideDelay`, `interactive`, `offset`, `placement`, `trigger`
 
 ## switch
 
@@ -340,3 +340,31 @@
 - Default variant: `toggle`
 - Variants: `toggle`
 - Public options: `checked`, `duration`, `offColor`, `onChange`, `onColor`, `size`, `thumbColor`
+
+## flip
+
+- Attribute: `data-kt-flip`
+- Default variant: `layout`
+- Variants: `layout`
+- Public options: `duration`, `ease`, `item`, `stagger`, `watch`
+
+## scrollShadows
+
+- Attribute: `data-kt-scroll-shadows`
+- Default variant: `vertical`
+- Variants: `vertical`, `horizontal`, `mask`
+- Public options: `axis`, `color`, `mode`, `opacity`, `shadow`, `shape`, `size`
+
+## stickyHeader
+
+- Attribute: `data-kt-sticky-header`
+- Default variant: `shrink`
+- Variants: `shrink`, `toggle`
+- Public options: `activeClass`, `distance`, `offset`, `onChange`, `shadow`, `shrink`
+
+## horizontalScroll
+
+- Attribute: `data-kt-horizontal-scroll`
+- Default variant: `pin`
+- Variants: `pin`
+- Public options: `height`, `smooth`

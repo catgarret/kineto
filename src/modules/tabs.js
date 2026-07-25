@@ -18,6 +18,12 @@ export default {
     const duration = Math.max(0, Number(opts.duration ?? 0.28));
     const showIndicator = opts.indicator !== false;
     const effect = opts.effect || 'fade';
+    // Tab-marker (the moving pill / underline itself) motion, independent of the
+    // panel `effect`: 'slide' glides it, 'none' snaps it instantly, 'fade' blinks
+    // it out at the old tab and in at the new one.
+    const indicatorMotion = ['slide', 'none', 'fade'].includes(opts.indicatorMotion)
+      ? opts.indicatorMotion
+      : 'slide';
 
     const list = el.querySelector('[role="tablist"], .kt-tablist') || el.firstElementChild;
     if (!list) return null;
@@ -27,7 +33,8 @@ export default {
     if (!tabs.length || !panels.length) return null;
 
     el.classList.add('kt-tabs', `kt-tabs--${orientation}`);
-    if (effect === 'none') el.classList.add('kt-tabs--instant'); // no indicator slide either
+    if (effect === 'none') el.classList.add('kt-tabs--instant');
+    if (indicatorMotion === 'none') el.classList.add('kt-tabs--ind-none');
     list.setAttribute('role', 'tablist');
     list.setAttribute('aria-orientation', orientation);
 
@@ -47,6 +54,9 @@ export default {
     tabs.forEach((tab, i) => {
       tab.setAttribute('role', 'tab');
       tab.id = tab.id || `kt-tab-${uid}-${i}`;
+      // Reserve the bold width so activation (which bolds the label) never
+      // reflows the tab — only text-only tabs get the hidden bold twin.
+      if (!tab.querySelector('*') && !tab.hasAttribute('data-kt-label')) tab.setAttribute('data-kt-label', tab.textContent.trim());
       const panel = panels[i];
       if (panel) {
         panel.setAttribute('role', 'tabpanel');
@@ -57,17 +67,38 @@ export default {
       }
     });
 
-    const moveIndicator = () => {
-      if (!indicator) return;
+    const placeIndicator = () => {
       const tab = tabs[active];
+      // Use setProperty(..'important') so the measured geometry always wins over
+      // the stylesheet's `!important` segment rules (which set the OTHER axis).
       if (orientation === 'vertical') {
         indicator.style.transform = `translateY(${tab.offsetTop}px)`;
-        indicator.style.height = `${tab.offsetHeight}px`;
-        indicator.style.width = '';
+        indicator.style.setProperty('height', `${tab.offsetHeight}px`, 'important');
+        indicator.style.removeProperty('width');
       } else {
         indicator.style.transform = `translateX(${tab.offsetLeft}px)`;
-        indicator.style.width = `${tab.offsetWidth}px`;
+        indicator.style.setProperty('width', `${tab.offsetWidth}px`, 'important');
+        indicator.style.removeProperty('height');
       }
+    };
+    let indFirst = true;
+    const moveIndicator = () => {
+      if (!indicator) return;
+      // 'fade': blink the marker out, teleport it (no slide), fade it back in —
+      // skipped on the very first placement so it just appears in position.
+      if (indicatorMotion === 'fade' && !indFirst && !reduce && typeof indicator.animate === 'function') {
+        const prevTransition = indicator.style.transition;
+        indicator.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, easing: 'ease' }).onfinish = () => {
+          indicator.style.transition = 'none';
+          placeIndicator();
+          void indicator.offsetWidth;
+          indicator.style.transition = prevTransition;
+          indicator.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: 'ease' });
+        };
+      } else {
+        placeIndicator();
+      }
+      indFirst = false;
     };
 
     // Enter animation for the incoming panel. `cross` waits for the outgoing
@@ -148,9 +179,9 @@ export default {
       resume() {},
       destroy() {
         window.removeEventListener('resize', onResize);
-        tabs.forEach((tab) => { tab.removeEventListener('click', onClick); tab.removeEventListener('keydown', onKey); });
+        tabs.forEach((tab) => { tab.removeEventListener('click', onClick); tab.removeEventListener('keydown', onKey); tab.removeAttribute('data-kt-label'); });
         indicator?.remove();
-        el.classList.remove('kt-tabs', `kt-tabs--${orientation}`, 'kt-tabs--instant');
+        el.classList.remove('kt-tabs', `kt-tabs--${orientation}`, 'kt-tabs--ind-none', 'kt-tabs--instant');
         panels.forEach((panel) => { panel.hidden = false; });
       }
     };

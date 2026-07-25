@@ -38,7 +38,10 @@
       const overlay=document.createElement('div');
       overlay.className='intro-loader';
       // Light brand canvas so the black percentage reads before + during the fill.
-      overlay.style.cssText='position:fixed;inset:0;z-index:10020;background:#efe9de;color:#14110d;';
+      // width:100vw (not just inset:0) so the overlay also covers the reserved
+      // scrollbar-gutter strip on the right — otherwise that ~15px column shows
+      // the page background as a mismatched off-white band during the intro.
+      overlay.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100dvh;z-index:10020;background:#efe9de;color:#14110d;';
       const wordmark=document.createElement('span');
       wordmark.className='kt-loader-wordmark';
       wordmark.textContent='Kineto';
@@ -49,6 +52,10 @@
       // so releasing the intro leaves the scroll position jumping around.
       const introScrollLock = document.documentElement.style.overflow;
       document.documentElement.style.overflow = 'hidden';
+      // Paint the <html> itself (incl. the reserved scrollbar-gutter strip) the
+      // intro colour, so no off-white band shows on the right during loading.
+      const introHtmlBg = document.documentElement.style.background;
+      document.documentElement.style.background = '#efe9de';
       // Match the iOS status-bar / home-bar tint to the intro canvas so the notch
       // and home-bar areas blend with the loader while it fills.
       const introTcMeta = document.getElementById('theme-color-meta');
@@ -60,7 +67,7 @@
         ? Promise.resolve()
         : new Promise(resolve=>window.addEventListener('load',resolve,{once:true}));
       let finished=false;
-      const finishIntro=()=>{ if(finished)return; finished=true; if(overlay.parentNode)overlay.remove(); document.documentElement.style.overflow=introScrollLock; introTcMeta?.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#0d0e12'); startModules(); };
+      const finishIntro=()=>{ if(finished)return; finished=true; if(overlay.parentNode)overlay.remove(); document.documentElement.style.overflow=introScrollLock; document.documentElement.style.background=introHtmlBg; introTcMeta?.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#0d0e12'); startModules(); };
       try{
         Kineto.loader(overlay,{
           type:'slot',
@@ -91,7 +98,7 @@
     const MODULE_GROUPS={
       'Text':['textSplit','blurText','shuffle','typewriter','textReveal','textTransition','textFill','overflowText','glitch','counter'],
       'Media':['lazy','lightbox','slider','ambientMedia','brushReveal','scrollSequence','marquee','radial','coverReveal'],
-      'Scroll':['parallax','reveal','stickyStack','scrollVelocity','cssScroll','progress','fullpage'],
+      'Scroll':['parallax','reveal','stickyStack','scrollVelocity','cssScroll','scrollShadows','stickyHeader','horizontalScroll','progress','fullpage'],
       'Pointer':['cursor','tilt','cardGlow','magnetic','ripple','vibrate','mouseParallax','gesture','drag'],
       'Components':['accordion','megaMenu','tabs','bottomSheet','tooltip','switch'],
       'Feedback':['confetti','hold','toast'],
@@ -105,15 +112,18 @@
       const chips=names.filter(name=>registered.has(name)).map(name=>`<span role="link" tabindex="0" data-module="${name}" title="데모로 이동">${name}</span>`).join('');
       return `<div class="module-group"><p class="module-group-label">${group}</p><div class="module-group-chips">${chips}</div></div>`;
     }).join('');
+    // Shared: scroll to a module's live demo (used by the sidebar + Module Index).
+    const targetSectionFor=(name)=>{
+      const attr='data-kt-'+name.replace(/[A-Z]/g,m=>'-'+m.toLowerCase());
+      let node=[...document.querySelectorAll('['+attr+']')].map(el=>el.closest('section[id]')).find(Boolean);
+      if(!node&&SECTION_FALLBACK[name])node=document.getElementById(SECTION_FALLBACK[name]);
+      return node;
+    };
+    const scrollToModule=(name)=>{ targetSectionFor(name)?.scrollIntoView({behavior:'smooth',block:'start'}); };
     // Module Index 뱃지 → 해당 모듈 데모 섹션으로 스크롤
     document.getElementById('module-list').addEventListener('click',(event)=>{
       const chip=event.target.closest('[data-module]');
-      if(!chip)return;
-      const name=chip.dataset.module;
-      const attr='data-kt-'+name.replace(/[A-Z]/g,m=>'-'+m.toLowerCase());
-      let section=[...document.querySelectorAll('['+attr+']')].map(el=>el.closest('section[id]')).find(Boolean);
-      if(!section&&SECTION_FALLBACK[name])section=document.getElementById(SECTION_FALLBACK[name]);
-      section?.scrollIntoView({behavior:'smooth',block:'start'});
+      if(chip)scrollToModule(chip.dataset.module);
     });
     document.getElementById('module-list').addEventListener('keydown',(event)=>{
       if(event.key==='Enter'||event.key===' '){
@@ -121,6 +131,80 @@
         if(chip){event.preventDefault();chip.click();}
       }
     });
+
+    // ── Categorized + searchable sidebar nav ──────────────────────────────
+    (()=>{
+      const host=document.getElementById('side-nav-modules');
+      const search=document.getElementById('nav-search');
+      const empty=document.getElementById('nav-empty');
+      if(!host)return;
+      const labelize=(n)=>n.replace(/([a-z0-9])([A-Z])/g,'$1 $2').replace(/^./,c=>c.toUpperCase());
+      // Category nav (Text / Media / Scroll / …), ordered by where each category
+      // first appears on the page and by DOM order within.
+      // Fixed category order (matches the content's category ordering). Inside
+      // each category, order modules by the ACTUAL on-page position of their
+      // first demo (compareDocumentPosition) — after merging sections into one
+      // per category, a section-index sort was no longer fine-grained enough.
+      const attrOf=(n)=>'data-kt-'+n.replace(/[A-Z]/g,m=>'-'+m.toLowerCase());
+      const firstEl=(n)=>document.querySelector('['+attrOf(n)+']');
+      const cmp=(a,b)=>{const ea=firstEl(a),eb=firstEl(b);if(!ea&&!eb)return 0;if(!ea)return 1;if(!eb)return -1;return (ea.compareDocumentPosition(eb)&Node.DOCUMENT_POSITION_FOLLOWING)?-1:1;};
+      const groups=Object.entries(MODULE_GROUPS)
+        .map(([group,names])=>({group,items:names.filter(n=>registered.has(n)).sort(cmp)}))
+        .filter(g=>g.items.length);
+      host.innerHTML=groups.map(({group,items})=>{
+        const links=items.map(n=>
+          `<a class="nav-mod" data-module="${n}" href="#" data-name="${n.toLowerCase()}" data-label="${labelize(n).toLowerCase()}">${labelize(n)}</a>`
+        ).join('');
+        return `<section class="nav-cat" data-cat>
+          <button type="button" class="nav-cat-head" aria-expanded="true"><span>${group}</span><i class="ph-bold ph-caret-down" aria-hidden="true"></i></button>
+          <div class="nav-cat-list">${links}</div>
+        </section>`;
+      }).join('');
+      // Navigate
+      host.addEventListener('click',(e)=>{
+        const head=e.target.closest('.nav-cat-head');
+        if(head){const cat=head.closest('.nav-cat');const open=cat.classList.toggle('collapsed');head.setAttribute('aria-expanded',open?'false':'true');return;}
+        const mod=e.target.closest('.nav-mod');
+        if(mod){e.preventDefault();scrollToModule(mod.dataset.module);
+          host.querySelectorAll('.nav-mod.active').forEach(a=>a.classList.remove('active'));
+          mod.classList.add('active');}
+      });
+      // Live search filter
+      const filter=()=>{
+        const q=(search.value||'').trim().toLowerCase();
+        let anyVisible=false;
+        host.querySelectorAll('.nav-cat').forEach(cat=>{
+          let catVisible=false;
+          cat.querySelectorAll('.nav-mod').forEach(a=>{
+            const hit=!q||a.dataset.name.includes(q)||a.dataset.label.includes(q);
+            a.hidden=!hit; if(hit){catVisible=true;anyVisible=true;}
+          });
+          cat.hidden=!catVisible;
+          if(q)cat.classList.remove('collapsed'); // auto-expand while searching
+        });
+        if(empty)empty.hidden=anyVisible;
+      };
+      search?.addEventListener('input',filter);
+      // '/' focuses search
+      document.addEventListener('keydown',(e)=>{
+        if(e.key==='/'&&document.activeElement!==search&&!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName||'')){e.preventDefault();search?.focus();}
+      });
+      // Active highlight while scrolling (which module's section is in view)
+      if('IntersectionObserver'in window){
+        const seen=new Map();
+        const io=new IntersectionObserver((ents)=>{
+          ents.forEach(en=>seen.set(en.target,en.intersectionRatio));
+          let best=null,bestR=0;
+          seen.forEach((r,sec)=>{if(r>bestR){bestR=r;best=sec;}});
+          if(!best)return;
+          const id=best.id;
+          const link=host.querySelector(`.nav-mod[data-module]`)&&[...host.querySelectorAll('.nav-mod')].find(a=>targetSectionFor(a.dataset.module)===best);
+          if(link){host.querySelectorAll('.nav-mod.active').forEach(a=>a.classList.remove('active'));link.classList.add('active');
+            link.scrollIntoView({block:'nearest'});}
+        },{threshold:[0.15,0.4,0.7]});
+        document.querySelectorAll('main section[id]').forEach(s=>io.observe(s));
+      }
+    })();
     (()=>{const themeButton=document.getElementById('theme');
     const themeColorMeta=document.getElementById('theme-color-meta');
     const syncThemeColor=()=>{ if(!themeColorMeta)return; const bg=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(); if(bg) themeColorMeta.setAttribute('content',bg); };
@@ -172,12 +256,12 @@
       const overlay=document.createElement('div');
       overlay.className='kt-demo-loader-overlay';
       overlay.dataset.loaderType=type;
-      overlay.style.cssText='position:fixed;inset:0;z-index:10010;background:var(--bg);color:var(--text);';
+      overlay.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100dvh;z-index:10010;background:var(--bg);color:var(--text);';
       document.body.appendChild(overlay);
       let instance;
       instance=Kineto.loader(overlay,{type,minDuration:1100,duration:.45,label:type==='bar'?'Loading assets':'',onComplete:()=>{instance?.destroy();overlay.remove();}});
     };
-    document.getElementById('loader-demo')?.addEventListener('click',()=>runLoader('circular'));
+    document.querySelectorAll('.loader-demo-button,[data-loader-type]').forEach((btn)=>btn.addEventListener('click',()=>runLoader(btn.dataset.loaderType||'slot')));
     document.getElementById('smooth-on')?.addEventListener('click',()=>Kineto.enableSmooth({duration:1.05}));
     document.getElementById('smooth-off')?.addEventListener('click',()=>Kineto.disableSmooth());
     document.querySelectorAll('[data-slider-action]').forEach(button=>button.addEventListener('click',()=>{
@@ -338,6 +422,11 @@
       window.ktToast?.('복사되었습니다');
       setTimeout(()=>{chip.textContent=prev;chip.disabled=false;},1200);
     }));
+    // FLIP demo: shuffle the grid children — the flip module animates the move.
+    document.getElementById('flip-shuffle')?.addEventListener('click',()=>{
+      const grid=document.getElementById('flip-grid'); if(!grid)return;
+      [...grid.children].sort(()=>Math.random()-0.5).forEach((c)=>grid.appendChild(c));
+    });
     KinetoPlayground.mount(document);
 
     // Reusable toast — window.ktToast(msg, {duration}). Multi-line via '\n',

@@ -1,6 +1,6 @@
 # Module Catalog
 
-공개 모듈은 정확히 **32개**입니다. 각 모듈은 `Kineto.<name>(target, options)`와 대응하는 `data-kt-*` 활성화 속성을 제공합니다.
+공개 모듈은 정확히 **51개**입니다. 각 모듈은 `Kineto.<name>(target, options)`와 대응하는 `data-kt-*` 활성화 속성을 제공합니다. 전체 옵션·변형은 [module-reference.md](../module-reference.md)와 `kineto.features.json`을 참고하세요.
 
 | 모듈 | 속성 | 핵심 역할 |
 |---|---|---|
@@ -34,8 +34,27 @@
 | `lightbox` | `data-kt-lightbox` | full-viewport grouped viewer with zoom/minimap/custom UI |
 | `pageTransition` | `data-kt-page-transition` | same-origin document transition |
 | `vibrate` | `data-kt-vibrate` | device vibration feedback |
-| `cssScroll` | `data-kt-css-scroll` | CSS scroll progress |
+| `cssScroll` | `data-kt-css-scroll` | CSS scroll / view timeline progress |
 | `scrollSequence` | `data-kt-scroll-sequence` | Canvas frame sequence |
+| `brushReveal` | `data-kt-brush-reveal` | brush-mask reveal / scratch card |
+| `fullpage` | `data-kt-fullpage` | fullpage section paging |
+| `scrollShadows` | `data-kt-scroll-shadows` | CSS edge shadows on scroll containers |
+| `stickyHeader` | `data-kt-sticky-header` | shrinking / cover-to-fixed sticky header |
+| `horizontalScroll` | `data-kt-horizontal-scroll` | pinned horizontal scroll section |
+| `accordion` | `data-kt-accordion` | accessible details accordion |
+| `megaMenu` | `data-kt-mega-menu` | GNB dropdown / mega menu |
+| `tabs` | `data-kt-tabs` | WAI-ARIA tabs / segmented control |
+| `bottomSheet` | `data-kt-bottom-sheet` | draggable bottom sheet |
+| `tooltip` | `data-kt-tooltip` | accessible auto-placed tooltip |
+| `switch` | `data-kt-switch` | accessible toggle switch |
+| `radial` | `data-kt-radial` | radial (wheel) carousel |
+| `coverReveal` | `data-kt-cover-reveal` | color cover wipe reveal |
+| `confetti` | `data-kt-confetti` | click / view confetti burst |
+| `hold` | `data-kt-hold` | hold / mash-to-confirm gauge |
+| `toast` | `data-kt-toast` | status toast (bar/ring/fill progress) |
+| `gesture` | `data-kt-gesture` | whileHover / whileTap feedback |
+| `drag` | `data-kt-drag` | drag with inertia / bounds / keyboard |
+| `flip` | `data-kt-flip` | FLIP layout animation |
 
 ## 카테고리 원칙
 
