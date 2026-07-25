@@ -44,6 +44,14 @@ export default {
       const toast = document.createElement('div');
       toast.className = `kt-toast kt-toast--${kind}`;
       toast.setAttribute('role', kind === 'error' || kind === 'warning' ? 'alert' : 'status');
+      if (opts.barColor) toast.style.setProperty('--kt-toast-bar', opts.barColor);
+      // Small type-coloured dot — the visible difference between info/success/
+      // warning/error (accent = --kt-toast-accent per type). Hide via CSS if
+      // unwanted (`.kt-toast__dot{display:none}`).
+      const dot = document.createElement('span');
+      dot.className = 'kt-toast__dot';
+      dot.setAttribute('aria-hidden', 'true');
+      toast.appendChild(dot);
       const body = document.createElement('span');
       body.className = 'kt-toast__msg';
       body.textContent = message ?? defaultMessage;
@@ -99,8 +107,11 @@ export default {
         }
         barAnim.onfinish = dismiss;
       }
-      const arm = () => { if (barAnim) { barAnim.play(); } else { startedAt = performance.now(); timer = setTimeout(dismiss, remaining); } };
-      const pause = () => { if (barAnim) { barAnim.pause(); } else { clearTimeout(timer); remaining -= performance.now() - startedAt; } };
+      const arm = () => { if (barAnim) { barAnim.play(); } else { startedAt = performance.now(); timer = setTimeout(dismiss, Math.max(200, remaining)); } };
+      // Guard: only subtract elapsed time if the timer was actually running
+      // (startedAt set) — otherwise remaining could go negative and the next
+      // arm() would dismiss instantly.
+      const pause = () => { if (barAnim) { barAnim.pause(); } else if (startedAt) { clearTimeout(timer); remaining = Math.max(0, remaining - (performance.now() - startedAt)); startedAt = 0; } };
       toast.addEventListener('mouseenter', pause);
       toast.addEventListener('mouseleave', arm);
       toast.addEventListener('focusin', pause);

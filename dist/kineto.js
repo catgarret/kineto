@@ -371,7 +371,7 @@ function oe() {
 	e.id = "kineto-inline-fallback", e.textContent = "\n    @property --kt-angle { syntax: \"<angle>\"; initial-value: 0deg; inherits: false; }\n    @keyframes kt-border-spin { to { --kt-angle: 360deg; } }\n    @keyframes kt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }\n    @keyframes kt-aurora { to { transform: rotate(360deg); } }\n    @keyframes kt-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }\n    @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }\n    .kt-cursor-active, .kt-cursor-active * { cursor: none !important; }\n    .kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }\n    .kt-tw-caret { animation: kt-caret .8s step-end infinite; }\n    .kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }\n    .kt-slider-wrap { position: relative; overflow: hidden; }\n    @media (prefers-reduced-motion: reduce) {\n      [data-kt-reveal], [data-kt-text-split], [data-kt-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }\n    }\n  ", document.head.appendChild(e);
 }
 var Z = {
-	version: "0.8.35",
+	version: "0.8.36",
 	get env() {
 		return G ||= d(), G;
 	},
@@ -3148,6 +3148,47 @@ var Qe = {
 				});
 				return;
 			}
+			if (n === "scroll-fade" || n === "scrollFade") {
+				let e = Q(t.maskDuration, 300, 10), n = i + e + m + e + a, r = h(i / n, 0, 1), o = h((i + e) / n, r, 1), s = h((i + e + m) / n, o, 1), c = h((i + e + m + e) / n, s, 1);
+				b = E.animate([
+					{
+						transform: `translate3d(${g}px,0,0)`,
+						opacity: 0,
+						offset: 0
+					},
+					{
+						transform: `translate3d(${g}px,0,0)`,
+						opacity: 0,
+						offset: r
+					},
+					{
+						transform: `translate3d(${g}px,0,0)`,
+						opacity: 1,
+						offset: o
+					},
+					{
+						transform: `translate3d(${_}px,0,0)`,
+						opacity: 1,
+						offset: s
+					},
+					{
+						transform: `translate3d(${_}px,0,0)`,
+						opacity: 0,
+						offset: c
+					},
+					{
+						transform: `translate3d(${_}px,0,0)`,
+						opacity: 0,
+						offset: 1
+					}
+				], {
+					duration: n,
+					iterations: t.repeat === !1 ? 1 : Infinity,
+					easing: "linear",
+					fill: "both"
+				});
+				return;
+			}
 			if (n === "page-roll" || n === "pageRoll") {
 				let n = Math.max(1, u - Q(t.pageOverlap, 12)), r = [0];
 				for (let e = n; e < d; e += n) r.push(e);
@@ -3260,6 +3301,27 @@ var Qe = {
 					E.style.transform = `translate3d(${i}px,0,0)`, await f(!0), E.dataset.page = String(p), t.onPage?.(p, r.length, e), (t.repeat !== !1 || p < r.length - 1) && M(h, p === 0 ? o : m);
 				};
 				M(h, i);
+				return;
+			}
+			if (n === "fade") {
+				let n = Math.max(1, u - Q(t.pageOverlap, 12)), r = [0];
+				for (let e = n; e < d; e += n) r.push(e);
+				r.at(-1) !== d && r.push(d);
+				let a = Q(t.maskDuration, 300, 10), s = Q(t.pageDuration, 1200, 120), l = 0, f = async () => {
+					if (C || w || (await E.animate([{ opacity: 1 }, { opacity: 0 }], {
+						duration: a,
+						easing: "ease",
+						fill: "forwards"
+					}).finished.catch(() => {}), C)) return;
+					l = (l + 1) % r.length;
+					let n = r[l], i = c < 0 ? -n : -(d - n);
+					E.style.transform = `translate3d(${i}px,0,0)`, b = E.animate([{ opacity: 0 }, { opacity: 1 }], {
+						duration: a,
+						easing: "ease",
+						fill: "forwards"
+					}), await b.finished.catch(() => {}), E.dataset.page = String(l), t.onPage?.(l, r.length, e), (t.repeat !== !1 || l < r.length - 1) && M(f, l === 0 ? o : s);
+				};
+				M(f, i);
 				return;
 			}
 			if (n === "flip") {
@@ -6301,15 +6363,15 @@ var Ht = {
 		};
 	}
 }, Kt = { create(e, t = {}) {
-	let n = Math.max(120, Number(t.duration ?? 1e3)), r = t.color || "color-mix(in srgb, currentColor 22%, transparent)", i = e.style.position, a = e.style.overflow;
+	let n = t.mode === "mash" ? "mash" : "hold", r = Math.max(120, Number(t.duration ?? 1e3)), i = t.color || "var(--kt-hold-fill, color-mix(in srgb, currentColor 22%, transparent))", a = t.blend || "var(--kt-hold-blend, normal)", o = h(Number(t.step ?? .08), .01, 1), s = Math.max(0, Number(t.decay ?? .4)), c = e.style.position, l = e.style.overflow;
 	getComputedStyle(e).position === "static" && (e.style.position = "relative"), e.style.overflow = e.style.overflow || "hidden";
-	let o = document.createElement("span");
-	o.className = "kt-hold-fill", o.setAttribute("aria-hidden", "true"), o.style.cssText = `position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);background:${r};pointer-events:none;border-radius:inherit;z-index:0;`, e.insertBefore(o, e.firstChild);
-	let s = null, c = 0, l = !1, u = !1, d = (e) => {
-		o.style.transform = `scaleX(${h(e, 0, 1)})`;
-	}, f = () => {
-		s != null && (cancelAnimationFrame(s), s = null);
-	}, p = () => {
+	let u = document.createElement("span");
+	u.className = "kt-hold-fill", u.setAttribute("aria-hidden", "true"), u.style.cssText = `position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);background:${i};mix-blend-mode:${a};pointer-events:none;border-radius:inherit;z-index:0;`, e.insertBefore(u, e.firstChild);
+	let d = null, f = !1, p = !1, m = 0, g = (e) => {
+		m = h(e, 0, 1), u.style.transform = `scaleX(${m})`;
+	}, _ = () => {
+		d != null && (cancelAnimationFrame(d), d = null);
+	}, v = () => {
 		if (t.submit === !1) return;
 		let n = t.action || e.getAttribute("data-kt-hold-action");
 		if (n) {
@@ -6322,43 +6384,61 @@ var Ht = {
 		}
 		let r = e.closest?.("form"), i = t.submit === !0 || e.type === "submit" || e.getAttribute("data-kt-hold-submit") != null;
 		r && i && (typeof r.requestSubmit == "function" ? r.requestSubmit(e.type === "submit" ? e : void 0) : r.submit());
-	}, m = (r) => {
-		let i = h((r - c) / n, 0, 1);
-		if (d(i), i >= 1) {
-			u = !0, l = !1, s = null, e.classList.add("kt-hold-confirmed"), e.setAttribute("aria-pressed", "true");
-			let n = !0;
-			try {
-				let t = new CustomEvent("kt-hold-confirm", {
-					bubbles: !0,
-					cancelable: !0
-				});
-				n = e.dispatchEvent(t);
-			} catch {}
-			t.onComplete?.(e), n && p();
+	}, y = () => {
+		if (p) return;
+		p = !0, f = !1, _(), g(1), e.classList.add("kt-hold-confirmed"), e.setAttribute("aria-pressed", "true");
+		let n = !0;
+		try {
+			n = e.dispatchEvent(new CustomEvent("kt-hold-confirm", {
+				bubbles: !0,
+				cancelable: !0
+			}));
+		} catch {}
+		t.onComplete?.(e), n && v();
+	}, b = 0, x = (e) => {
+		let t = h((e - b) / r, 0, 1);
+		if (g(t), t >= 1) {
+			d = null, y();
 			return;
 		}
-		s = requestAnimationFrame(m);
-	}, g = () => {
-		l || u || (l = !0, c = performance.now(), o.style.transition = "none", f(), s = requestAnimationFrame(m));
-	}, _ = () => {
-		l = !1, f(), !u && (o.style.transition = `transform ${Math.min(.35, n / 3e3)}s ease`, d(0));
-	}, v = (e) => {
-		e.pointerType === "mouse" && e.button !== 0 || g();
-	}, y = (e) => {
-		(e.key === "Enter" || e.key === " ") && (e.preventDefault(), g());
-	}, b = (e) => {
-		(e.key === "Enter" || e.key === " ") && _();
+		d = requestAnimationFrame(x);
+	}, S = () => {
+		f || p || (f = !0, b = performance.now(), u.style.transition = "none", _(), d = requestAnimationFrame(x));
+	}, C = () => {
+		f = !1, _(), !p && (u.style.transition = `transform ${Math.min(.35, r / 3e3)}s ease`, g(0));
+	}, w = 0, T = (e) => {
+		let t = w ? (e - w) / 1e3 : 0;
+		if (w = e, g(m - s * t), m <= 0) {
+			d = null, w = 0;
+			return;
+		}
+		d = requestAnimationFrame(T);
+	}, E = () => {
+		if (!p) {
+			if (u.style.transition = "none", g(m + o), m >= 1) {
+				y();
+				return;
+			}
+			w = 0, d ??= requestAnimationFrame(T);
+		}
+	}, D = (e) => {
+		e.pointerType === "mouse" && e.button !== 0 || (n === "mash" ? E() : S());
+	}, O = (e) => {
+		e.key !== "Enter" && e.key !== " " || (e.preventDefault(), n === "mash" ? e.repeat || E() : S());
+	}, k = (e) => {
+		n === "hold" && (e.key === "Enter" || e.key === " ") && C();
 	};
-	return e.addEventListener("pointerdown", v), e.addEventListener("pointerup", _), e.addEventListener("pointerleave", _), e.addEventListener("pointercancel", _), e.addEventListener("keydown", y), e.addEventListener("keyup", b), {
+	return e.addEventListener("pointerdown", D), n === "hold" && (e.addEventListener("pointerup", C), e.addEventListener("pointerleave", C), e.addEventListener("pointercancel", C)), e.addEventListener("keydown", O), e.addEventListener("keyup", k), {
 		el: e,
 		type: "hold",
+		progress: () => m,
 		reset() {
-			u = !1, e.classList.remove("kt-hold-confirmed"), _();
+			p = !1, e.classList.remove("kt-hold-confirmed"), e.removeAttribute("aria-pressed"), _(), w = 0, u.style.transition = "transform .2s ease", g(0);
 		},
 		pause() {},
 		resume() {},
 		destroy() {
-			f(), e.removeEventListener("pointerdown", v), e.removeEventListener("pointerup", _), e.removeEventListener("pointerleave", _), e.removeEventListener("pointercancel", _), e.removeEventListener("keydown", y), e.removeEventListener("keyup", b), o.remove(), e.style.position = i, e.style.overflow = a, e.classList.remove("kt-hold-confirmed"), e.removeAttribute("aria-pressed");
+			_(), e.removeEventListener("pointerdown", D), e.removeEventListener("pointerup", C), e.removeEventListener("pointerleave", C), e.removeEventListener("pointercancel", C), e.removeEventListener("keydown", O), e.removeEventListener("keyup", k), u.remove(), e.style.position = c, e.style.overflow = l, e.classList.remove("kt-hold-confirmed"), e.removeAttribute("aria-pressed");
 		}
 	};
 } }, qt = {
@@ -6511,17 +6591,19 @@ var Ht = {
 	megaMenu: qt,
 	toast: {
 		create(e, t = {}) {
-			let n = d().reducedMotion, r = t.position || "bottom-right", i = t.type || "info", a = Math.max(600, Number(t.duration ?? 3200)), o = t.dismissible !== !1, s = t.message || e.getAttribute("data-kt-message") || e.textContent.trim() || "Done", c = t.progressBar === "ring" ? "ring" : t.progressBar === !0 || t.progressBar === "bar" ? "bar" : "none", l = c !== "none", u = Math.max(1, Number(t.max ?? 5)), f = (e, t = {}) => {
-				let d = t.type || i, f = Yt(t.position || r);
-				for (; f.children.length >= u;) f.firstElementChild?.remove();
-				let p = document.createElement("div");
-				p.className = `kt-toast kt-toast--${d}`, p.setAttribute("role", d === "error" || d === "warning" ? "alert" : "status");
-				let m = document.createElement("span");
-				if (m.className = "kt-toast__msg", m.textContent = e ?? s, p.appendChild(m), o) {
+			let n = d().reducedMotion, r = t.position || "bottom-right", i = t.type || "info", a = Math.max(600, Number(t.duration ?? 3200)), o = t.dismissible !== !1, s = t.message || e.getAttribute("data-kt-message") || e.textContent.trim() || "Done", c = t.progressBar === "ring" ? "ring" : t.progressBar === !0 || t.progressBar === "bar" ? "bar" : "none", l = c !== "none", u = Math.max(1, Number(t.max ?? 5)), f = (e, d = {}) => {
+				let f = d.type || i, p = Yt(d.position || r);
+				for (; p.children.length >= u;) p.firstElementChild?.remove();
+				let m = document.createElement("div");
+				m.className = `kt-toast kt-toast--${f}`, m.setAttribute("role", f === "error" || f === "warning" ? "alert" : "status"), t.barColor && m.style.setProperty("--kt-toast-bar", t.barColor);
+				let h = document.createElement("span");
+				h.className = "kt-toast__dot", h.setAttribute("aria-hidden", "true"), m.appendChild(h);
+				let g = document.createElement("span");
+				if (g.className = "kt-toast__msg", g.textContent = e ?? s, m.appendChild(g), o) {
 					let e = document.createElement("button");
-					e.type = "button", e.className = "kt-toast__close", e.setAttribute("aria-label", "Dismiss"), e.innerHTML = "&times;", e.addEventListener("click", () => y()), p.appendChild(e);
+					e.type = "button", e.className = "kt-toast__close", e.setAttribute("aria-label", "Dismiss"), e.innerHTML = "&times;", e.addEventListener("click", () => x()), m.appendChild(e);
 				}
-				f.appendChild(p), n || p.animate([{
+				p.appendChild(m), n || m.animate([{
 					opacity: 0,
 					transform: "translateY(10px)"
 				}, {
@@ -6531,14 +6613,14 @@ var Ht = {
 					duration: 240,
 					easing: "cubic-bezier(.22,.8,.3,1)"
 				});
-				let h = null, g = Number(t.duration ?? a), _ = 0, v = null, y = () => {
-					if (clearTimeout(h), !p.isConnected) return;
-					let e = () => p.remove();
+				let _ = null, v = Number(d.duration ?? a), y = 0, b = null, x = () => {
+					if (clearTimeout(_), !m.isConnected) return;
+					let e = () => m.remove();
 					if (n) {
 						e();
 						return;
 					}
-					let t = p.animate([{
+					let t = m.animate([{
 						opacity: 1,
 						transform: "none"
 					}, {
@@ -6550,32 +6632,32 @@ var Ht = {
 					});
 					t.onfinish = e, t.oncancel = e;
 				};
-				if (l && !n && p.animate) {
+				if (l && !n && m.animate) {
 					if (c === "ring") {
 						let e = document.createElement("span");
 						e.className = "kt-toast__ring", e.setAttribute("aria-hidden", "true");
 						let t = 2 * Math.PI * 9;
-						e.innerHTML = `<svg viewBox="0 0 24 24"><circle class="kt-toast__ring-track" cx="12" cy="12" r="9"></circle><circle class="kt-toast__ring-fill" cx="12" cy="12" r="9" transform="rotate(-90 12 12)" stroke-dasharray="${t}" stroke-dashoffset="0"></circle></svg>`, p.insertBefore(e, p.firstChild), v = e.querySelector(".kt-toast__ring-fill").animate([{ strokeDashoffset: 0 }, { strokeDashoffset: t }], {
-							duration: g,
+						e.innerHTML = `<svg viewBox="0 0 24 24"><circle class="kt-toast__ring-track" cx="12" cy="12" r="9"></circle><circle class="kt-toast__ring-fill" cx="12" cy="12" r="9" transform="rotate(-90 12 12)" stroke-dasharray="${t}" stroke-dashoffset="0"></circle></svg>`, m.insertBefore(e, m.firstChild), b = e.querySelector(".kt-toast__ring-fill").animate([{ strokeDashoffset: 0 }, { strokeDashoffset: t }], {
+							duration: v,
 							easing: "linear"
 						});
 					} else {
 						let e = document.createElement("span");
-						e.className = "kt-toast__bar", e.setAttribute("aria-hidden", "true"), p.appendChild(e), v = e.animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
-							duration: g,
+						e.className = "kt-toast__bar", e.setAttribute("aria-hidden", "true"), m.appendChild(e), b = e.animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
+							duration: v,
 							easing: "linear"
 						});
 					}
-					v.onfinish = y;
+					b.onfinish = x;
 				}
-				let b = () => {
-					v ? v.play() : (_ = performance.now(), h = setTimeout(y, g));
-				}, x = () => {
-					v ? v.pause() : (clearTimeout(h), g -= performance.now() - _);
+				let S = () => {
+					b ? b.play() : (y = performance.now(), _ = setTimeout(x, Math.max(200, v)));
+				}, C = () => {
+					b ? b.pause() : y &&= (clearTimeout(_), v = Math.max(0, v - (performance.now() - y)), 0);
 				};
-				return p.addEventListener("mouseenter", x), p.addEventListener("mouseleave", b), p.addEventListener("focusin", x), p.addEventListener("focusout", b), b(), {
-					dismiss: y,
-					el: p
+				return m.addEventListener("mouseenter", C), m.addEventListener("mouseleave", S), m.addEventListener("focusin", C), m.addEventListener("focusout", S), S(), {
+					dismiss: x,
+					el: m
 				};
 			}, p = () => f();
 			return e.addEventListener("click", p), {
@@ -6956,35 +7038,35 @@ var Ht = {
 				resume() {},
 				destroy() {}
 			};
-			let n = Number(t.hoverScale ?? 1.04), r = Number(t.tapScale ?? .96), i = Number(t.lift ?? 0), a = Math.max(0, Number(t.duration ?? .22)), o = t.ease || "cubic-bezier(.34,1.56,.64,1)", s = e.style.transition, c = e.style.transform, l = e.style.willChange;
-			e.style.transition = `transform ${a}s ${o}`, e.style.willChange = "transform";
-			let u = !1, f = !1, p = () => {
-				let t = f ? r : u ? n : 1, a = u && !f ? -i : 0;
+			let n = Number(t.hoverScale ?? 1.04), r = Number(t.tapScale ?? .96), i = Number(t.lift ?? 0), a = Math.max(0, Number(t.duration ?? .22)), o = t.ease || "cubic-bezier(.34,1.56,.64,1)", s = t.origin || "center", c = e.style.transition, l = e.style.transform, u = e.style.transformOrigin, f = e.style.willChange;
+			e.style.transition = `transform ${a}s ${o}`, e.style.transformOrigin = s, e.style.willChange = "transform";
+			let p = !1, m = !1, h = () => {
+				let t = m ? r : p ? n : 1, a = p && !m ? -i : 0;
 				e.style.transform = `translateY(${a}px) scale(${t})`;
-			}, m = () => {
-				u = !0, p();
-			}, h = () => {
-				u = !1, f = !1, p();
 			}, g = () => {
-				f = !0, p();
+				p = !0, h();
 			}, _ = () => {
-				f = !1, p();
+				p = !1, m = !1, h();
 			}, v = () => {
-				u = !0, p();
+				m = !0, h();
 			}, y = () => {
-				u = !1, f = !1, p();
-			}, b = (e) => {
-				(e.key === " " || e.key === "Enter") && (f = !0, p());
-			}, x = (e) => {
-				(e.key === " " || e.key === "Enter") && (f = !1, p());
+				m = !1, h();
+			}, b = () => {
+				p = !0, h();
+			}, x = () => {
+				p = !1, m = !1, h();
+			}, S = (e) => {
+				(e.key === " " || e.key === "Enter") && (m = !0, h());
+			}, C = (e) => {
+				(e.key === " " || e.key === "Enter") && (m = !1, h());
 			};
-			return e.addEventListener("pointerenter", m), e.addEventListener("pointerleave", h), e.addEventListener("pointerdown", g), e.addEventListener("pointerup", _), e.addEventListener("pointercancel", _), e.addEventListener("focus", v), e.addEventListener("blur", y), e.addEventListener("keydown", b), e.addEventListener("keyup", x), {
+			return e.addEventListener("pointerenter", g), e.addEventListener("pointerleave", _), e.addEventListener("pointerdown", v), e.addEventListener("pointerup", y), e.addEventListener("pointercancel", y), e.addEventListener("focus", b), e.addEventListener("blur", x), e.addEventListener("keydown", S), e.addEventListener("keyup", C), {
 				el: e,
 				type: "gesture",
 				pause() {},
 				resume() {},
 				destroy() {
-					e.removeEventListener("pointerenter", m), e.removeEventListener("pointerleave", h), e.removeEventListener("pointerdown", g), e.removeEventListener("pointerup", _), e.removeEventListener("pointercancel", _), e.removeEventListener("focus", v), e.removeEventListener("blur", y), e.removeEventListener("keydown", b), e.removeEventListener("keyup", x), e.style.transition = s, e.style.transform = c, e.style.willChange = l;
+					e.removeEventListener("pointerenter", g), e.removeEventListener("pointerleave", _), e.removeEventListener("pointerdown", v), e.removeEventListener("pointerup", y), e.removeEventListener("pointercancel", y), e.removeEventListener("focus", b), e.removeEventListener("blur", x), e.removeEventListener("keydown", S), e.removeEventListener("keyup", C), e.style.transition = c, e.style.transform = l, e.style.transformOrigin = u, e.style.willChange = f;
 				}
 			};
 		},

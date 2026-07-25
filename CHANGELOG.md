@@ -2,6 +2,13 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.36]
+
+- **overflowText — two new modes**: `fade` (pure page crossfade, no noise) and `scroll-fade` (scroll to the end, fade out, fade the start back in, repeat — a soft-looping marquee with no hard jump).
+- **Hold — `mode:"mash"`** (button-mashing): each tap adds `step` and the fill `decay`s between taps, so rapid taps climb it to full — for games/UI mechanics. Also: fill is themeable via `color` / `--kt-hold-fill` and a `blend` (mix-blend-mode) option; new `instance.progress()`.
+- **Gesture — `origin` option** (transform-origin: center/top/bottom/left/right or any value) so the hover/press scale grows from where you want.
+- **Toast**: type is now visually distinct via a small type-coloured dot (info/success/warning/error) instead of the removed border; `barColor` option (or `--kt-toast-bar`) for the progress colour; `progressBar` also accepts `"ring"`; `dismissible` toggles the close button; hardened the auto-dismiss timer so a stray hover can't make it vanish instantly.
+
 ## [0.8.35]
 
 - **New module `data-kt-tooltip` (45 → 46)** — accessible, themeable tooltips: content from `content`/`title`/`aria-label`, `placement` (top/bottom/left/right, auto-flips at the viewport edge), `trigger` (hover / focus / click / manual), `delay` / `hideDelay`, `offset`, `duration`, `interactive`. role="tooltip" + aria-describedby, shows on keyboard focus, Esc closes. Theme with `--kt-tooltip-*`.

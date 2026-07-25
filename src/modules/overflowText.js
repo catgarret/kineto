@@ -292,6 +292,26 @@ export default {
         return;
       }
 
+      if (mode === 'scroll-fade' || mode === 'scrollFade') {
+        // Scroll to the end, fade out, then fade the start back in and scroll
+        // again — a soft-looping marquee with no hard jump.
+        const fadeMs = number(opts.maskDuration, 300, 10);
+        const total = delay + fadeMs + moveDuration + fadeMs + endPause;
+        const d0 = clamp(delay / total, 0, 1);
+        const o1 = clamp((delay + fadeMs) / total, d0, 1);
+        const o2 = clamp((delay + fadeMs + moveDuration) / total, o1, 1);
+        const o3 = clamp((delay + fadeMs + moveDuration + fadeMs) / total, o2, 1);
+        animation = track.animate([
+          { transform: `translate3d(${startX}px,0,0)`, opacity: 0, offset: 0 },
+          { transform: `translate3d(${startX}px,0,0)`, opacity: 0, offset: d0 },
+          { transform: `translate3d(${startX}px,0,0)`, opacity: 1, offset: o1 },
+          { transform: `translate3d(${endX}px,0,0)`, opacity: 1, offset: o2 },
+          { transform: `translate3d(${endX}px,0,0)`, opacity: 0, offset: o3 },
+          { transform: `translate3d(${endX}px,0,0)`, opacity: 0, offset: 1 }
+        ], { duration: total, iterations: opts.repeat === false ? 1 : Infinity, easing: 'linear', fill: 'both' });
+        return;
+      }
+
       if (mode === 'page-roll' || mode === 'pageRoll') {
         // Page + rolling hybrid: the first page shows as-is, then each next
         // page of the same long text rolls in vertically like a ticker.
@@ -415,6 +435,34 @@ export default {
           if (opts.repeat !== false || pageIndex < positions.length - 1) schedule(swapDissolve, pageIndex === 0 ? restartDelay : pageHold);
         };
         schedule(swapDissolve, delay);
+        return;
+      }
+
+      if (mode === 'fade') {
+        // Pure crossfade between pages of the long text (no noise) — fade out,
+        // jump to the next page, fade in.
+        const pageSize = Math.max(1, viewportWidth - number(opts.pageOverlap, 12));
+        const positions = [0];
+        for (let moved = pageSize; moved < overflow; moved += pageSize) positions.push(moved);
+        if (positions.at(-1) !== overflow) positions.push(overflow);
+        const fadeMs = number(opts.maskDuration, 300, 10);
+        const pageHold = number(opts.pageDuration, 1200, 120);
+        let pageIndex = 0;
+        const swapFade = async () => {
+          if (destroyed || paused) return;
+          await track.animate([{ opacity: 1 }, { opacity: 0 }], { duration: fadeMs, easing: 'ease', fill: 'forwards' }).finished.catch(() => {});
+          if (destroyed) return;
+          pageIndex = (pageIndex + 1) % positions.length;
+          const moved = positions[pageIndex];
+          const target = horizontalDirection < 0 ? -moved : -(overflow - moved);
+          track.style.transform = `translate3d(${target}px,0,0)`;
+          animation = track.animate([{ opacity: 0 }, { opacity: 1 }], { duration: fadeMs, easing: 'ease', fill: 'forwards' });
+          await animation.finished.catch(() => {});
+          track.dataset.page = String(pageIndex);
+          opts.onPage?.(pageIndex, positions.length, el);
+          if (opts.repeat !== false || pageIndex < positions.length - 1) schedule(swapFade, pageIndex === 0 ? restartDelay : pageHold);
+        };
+        schedule(swapFade, delay);
         return;
       }
 

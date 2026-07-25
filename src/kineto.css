@@ -271,6 +271,7 @@ html.kt-preload [data-kt-text-transition] {
 .kt-toast--success { --kt-toast-accent: #2ec16b; }
 .kt-toast--warning { --kt-toast-accent: #ffb020; }
 .kt-toast--error   { --kt-toast-accent: #ff5a5a; }
+.kt-toast__dot { flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: var(--kt-toast-accent, #4aa8ff); }
 .kt-toast__msg { flex: 1 1 auto; }
 .kt-toast__close {
   flex: 0 0 auto; width: 22px; height: 22px; margin: -2px -4px -2px 2px; padding: 0;

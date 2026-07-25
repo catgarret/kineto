@@ -2,7 +2,7 @@
 
 > 이 문서는 `kineto.features.json`에서 생성됩니다. 직접 수정하지 말고 계약 파일을 명시적으로 변경한 뒤 `npm run docs:contract`를 실행하세요.
 
-- Library: 0.8.34
+- Library: 0.8.36
 - Feature contract: 1.3.0
 - Behavior contract: 1.2.0
 - Public modules: 46
@@ -121,7 +121,7 @@
 
 - Attribute: `data-kt-overflow-text`
 - Default variant: `loop`
-- Variants: `loop`, `bounce`, `rewind`, `once`, `page`, `flip`, `dissolve`, `page-roll`, `rolling`
+- Variants: `loop`, `bounce`, `rewind`, `once`, `page`, `flip`, `dissolve`, `page-roll`, `rolling`, `fade`, `scroll-fade`
 - Public options: `ariaLive`, `delay`, `direction`, `dissolveDuration`, `easing`, `ellipsis`, `endPause`, `flipDirection`, `flipDuration`, `force`, `gap`, `holdDuration`, `items`, `jitter`, `maskDirection`, `maskDuration`, `maskEase`, `mode`, `onChange`, `onPage`, `pageDuration`, `pageOverlap`, `pauseOnHover`, `perspective`, `preset`, `repeat`, `restartDelay`, `role`, `rollDirection`, `rollDuration`, `speed`, `text`, `threshold`, `title`, `transitionDirection`
 
 ## pageReveal
@@ -269,7 +269,7 @@
 - Attribute: `data-kt-hold`
 - Default variant: `confirm`
 - Variants: `confirm`
-- Public options: `action`, `color`, `duration`, `onComplete`, `submit`
+- Public options: `action`, `blend`, `color`, `decay`, `duration`, `mode`, `onComplete`, `step`, `submit`
 
 ## megaMenu
 
@@ -283,7 +283,7 @@
 - Attribute: `data-kt-toast`
 - Default variant: `stack`
 - Variants: `stack`
-- Public options: `dismissible`, `duration`, `max`, `message`, `position`, `progressBar`, `type`
+- Public options: `barColor`, `dismissible`, `duration`, `max`, `message`, `position`, `progressBar`, `type`
 
 ## bottomSheet
 
@@ -318,7 +318,7 @@
 - Attribute: `data-kt-gesture`
 - Default variant: `spring`
 - Variants: `spring`
-- Public options: `duration`, `ease`, `hoverScale`, `lift`, `tapScale`
+- Public options: `duration`, `ease`, `hoverScale`, `lift`, `origin`, `tapScale`
 
 ## drag
 

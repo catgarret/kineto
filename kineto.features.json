@@ -1,7 +1,7 @@
 {
   "$schema": "./kineto.features.schema.json",
   "contractVersion": "1.3.0",
-  "libraryVersion": "0.8.35",
+  "libraryVersion": "0.8.36",
   "moduleCount": 46,
   "modules": [
     {
@@ -609,7 +609,9 @@
         "flip",
         "dissolve",
         "page-roll",
-        "rolling"
+        "rolling",
+        "fade",
+        "scroll-fade"
       ],
       "publicOptions": [
         "ariaLive",
@@ -1239,9 +1241,13 @@
       ],
       "publicOptions": [
         "action",
+        "blend",
         "color",
+        "decay",
         "duration",
+        "mode",
         "onComplete",
+        "step",
         "submit"
       ]
     },
@@ -1270,6 +1276,7 @@
         "stack"
       ],
       "publicOptions": [
+        "barColor",
         "dismissible",
         "duration",
         "max",
@@ -1366,6 +1373,7 @@
         "ease",
         "hoverScale",
         "lift",
+        "origin",
         "tapScale"
       ]
     },

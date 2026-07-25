@@ -1,14 +1,22 @@
 import { clamp } from '../utils.js';
 
-// Hold-to-confirm — press and hold a control for `duration` ms to confirm a
-// (usually destructive or important) action. A fill sweeps across as you hold;
-// releasing early rewinds it. Fires a `kt-hold-confirm` event and opts.onComplete
-// on success. Pointer + keyboard (Enter/Space). Reduced motion keeps the fill
-// but skips the rewind easing.
+// Hold-to-confirm — press and hold (mode:"hold", default) for `duration` ms to
+// confirm, or button-mash (mode:"mash") where each tap adds `step` and the fill
+// slowly `decay`s between taps, so repeated taps climb it to full (game-style).
+// A fill sweeps across; on success it fires a cancelable `kt-hold-confirm`
+// event + opts.onComplete and performs the element's action (link/submit/click).
+// Pointer + keyboard (Enter/Space). API: instance.reset() / progress().
 export default {
   create(el, opts = {}) {
+    const mode = opts.mode === 'mash' ? 'mash' : 'hold';
     const duration = Math.max(120, Number(opts.duration ?? 1000));
-    const color = opts.color || 'color-mix(in srgb, currentColor 22%, transparent)';
+    // Fill is themeable: `color` option or the --kt-hold-fill CSS variable, and
+    // an optional `blend` (mix-blend-mode). It also carries the `.kt-hold-fill`
+    // class so you can style it entirely from CSS.
+    const color = opts.color || 'var(--kt-hold-fill, color-mix(in srgb, currentColor 22%, transparent))';
+    const blend = opts.blend || 'var(--kt-hold-blend, normal)';
+    const step = clamp(Number(opts.step ?? 0.08), 0.01, 1); // mash: per-tap gain
+    const decay = Math.max(0, Number(opts.decay ?? 0.4));   // mash: per-second drain
 
     const prevPosition = el.style.position;
     const prevOverflow = el.style.overflow;
@@ -18,22 +26,21 @@ export default {
     const fill = document.createElement('span');
     fill.className = 'kt-hold-fill';
     fill.setAttribute('aria-hidden', 'true');
-    fill.style.cssText = `position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);background:${color};pointer-events:none;border-radius:inherit;z-index:0;`;
+    fill.style.cssText = `position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);background:${color};mix-blend-mode:${blend};pointer-events:none;border-radius:inherit;z-index:0;`;
     el.insertBefore(fill, el.firstChild);
 
     let rafId = null;
-    let startTime = 0;
     let holding = false;
     let confirmed = false;
+    let progress = 0;
 
-    const setProgress = (p) => { fill.style.transform = `scaleX(${clamp(p, 0, 1)})`; };
+    const setProgress = (p) => { progress = clamp(p, 0, 1); fill.style.transform = `scaleX(${progress})`; };
     const cancelRaf = () => { if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; } };
 
-    // On confirm, actually perform the action so devs don't have to wire it up:
-    //  1) opts.action / data-kt-hold-action selector → click that element
-    //  2) an <a href> → navigate
-    //  3) a submit button or `submit:true` / data-kt-hold-submit → submit the form
-    // Opt out entirely with submit:false. The event + onComplete always fire too.
+    // On confirm, perform the element's action so devs don't have to wire it up:
+    // opts.action/data-kt-hold-action → click; <a href> → navigate; submit
+    // button / submit:true / data-kt-hold-submit → submit the form. submit:false
+    // opts out. The cancelable event + onComplete always fire.
     const runAction = () => {
       if (opts.submit === false) return;
       const targetSel = opts.action || el.getAttribute('data-kt-hold-action');
@@ -47,66 +54,89 @@ export default {
       }
     };
 
+    const confirm = () => {
+      if (confirmed) return;
+      confirmed = true; holding = false; cancelRaf();
+      setProgress(1);
+      el.classList.add('kt-hold-confirmed');
+      el.setAttribute('aria-pressed', 'true');
+      let proceed = true;
+      try { proceed = el.dispatchEvent(new CustomEvent('kt-hold-confirm', { bubbles: true, cancelable: true })); } catch (_error) { /* older */ }
+      opts.onComplete?.(el);
+      if (proceed) runAction();
+    };
+
+    // ── Hold mode ────────────────────────────────────────────────────────────
+    let startTime = 0;
     const tick = (time) => {
       const p = clamp((time - startTime) / duration, 0, 1);
       setProgress(p);
-      if (p >= 1) {
-        confirmed = true; holding = false; rafId = null;
-        el.classList.add('kt-hold-confirmed');
-        el.setAttribute('aria-pressed', 'true');
-        // Cancelable event: preventDefault() in a listener skips the auto action.
-        let proceed = true;
-        try {
-          const ev = new CustomEvent('kt-hold-confirm', { bubbles: true, cancelable: true });
-          proceed = el.dispatchEvent(ev);
-        } catch (_error) { /* older */ }
-        opts.onComplete?.(el);
-        if (proceed) runAction();
-        return;
-      }
+      if (p >= 1) { rafId = null; confirm(); return; }
       rafId = requestAnimationFrame(tick);
     };
-
     const start = () => {
       if (holding || confirmed) return;
-      holding = true;
-      startTime = performance.now();
+      holding = true; startTime = performance.now();
       fill.style.transition = 'none';
-      cancelRaf();
-      rafId = requestAnimationFrame(tick);
+      cancelRaf(); rafId = requestAnimationFrame(tick);
     };
-    const reset = () => {
-      holding = false;
-      cancelRaf();
+    const release = () => {
+      holding = false; cancelRaf();
       if (confirmed) return;
-      // Rewind smoothly back to empty.
       fill.style.transition = `transform ${Math.min(0.35, duration / 3000)}s ease`;
       setProgress(0);
     };
 
-    const onDown = (event) => { if (event.pointerType === 'mouse' && event.button !== 0) return; start(); };
-    const onKey = (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); start(); } };
-    const onKeyUp = (event) => { if (event.key === 'Enter' || event.key === ' ') reset(); };
+    // ── Mash mode ────────────────────────────────────────────────────────────
+    let lastT = 0;
+    const decayTick = (time) => {
+      const dt = lastT ? (time - lastT) / 1000 : 0; lastT = time;
+      setProgress(progress - decay * dt);
+      if (progress <= 0) { rafId = null; lastT = 0; return; }
+      rafId = requestAnimationFrame(decayTick);
+    };
+    const tap = () => {
+      if (confirmed) return;
+      fill.style.transition = 'none';
+      setProgress(progress + step);
+      if (progress >= 1) { confirm(); return; }
+      lastT = 0;
+      if (rafId == null) rafId = requestAnimationFrame(decayTick);
+    };
+
+    const onDown = (event) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      if (mode === 'mash') tap(); else start();
+    };
+    const onKey = (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      if (mode === 'mash') { if (!event.repeat) tap(); } else start();
+    };
+    const onKeyUp = (event) => { if (mode === 'hold' && (event.key === 'Enter' || event.key === ' ')) release(); };
 
     el.addEventListener('pointerdown', onDown);
-    el.addEventListener('pointerup', reset);
-    el.addEventListener('pointerleave', reset);
-    el.addEventListener('pointercancel', reset);
+    if (mode === 'hold') {
+      el.addEventListener('pointerup', release);
+      el.addEventListener('pointerleave', release);
+      el.addEventListener('pointercancel', release);
+    }
     el.addEventListener('keydown', onKey);
     el.addEventListener('keyup', onKeyUp);
 
     return {
       el,
       type: 'hold',
-      reset() { confirmed = false; el.classList.remove('kt-hold-confirmed'); reset(); },
+      progress: () => progress,
+      reset() { confirmed = false; el.classList.remove('kt-hold-confirmed'); el.removeAttribute('aria-pressed'); cancelRaf(); lastT = 0; fill.style.transition = 'transform .2s ease'; setProgress(0); },
       pause() {},
       resume() {},
       destroy() {
         cancelRaf();
         el.removeEventListener('pointerdown', onDown);
-        el.removeEventListener('pointerup', reset);
-        el.removeEventListener('pointerleave', reset);
-        el.removeEventListener('pointercancel', reset);
+        el.removeEventListener('pointerup', release);
+        el.removeEventListener('pointerleave', release);
+        el.removeEventListener('pointercancel', release);
         el.removeEventListener('keydown', onKey);
         el.removeEventListener('keyup', onKeyUp);
         fill.remove();

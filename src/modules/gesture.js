@@ -14,11 +14,16 @@ export default {
     const lift = Number(opts.lift ?? 0);
     const duration = Math.max(0, Number(opts.duration ?? 0.22));
     const ease = opts.ease || 'cubic-bezier(.34,1.56,.64,1)';
+    // Where the scale/press grows from (center | top | bottom | left | right |
+    // any CSS transform-origin value).
+    const origin = opts.origin || 'center';
 
     const prevTransition = el.style.transition;
     const prevTransform = el.style.transform;
+    const prevOrigin = el.style.transformOrigin;
     const prevWillChange = el.style.willChange;
     el.style.transition = `transform ${duration}s ${ease}`;
+    el.style.transformOrigin = origin;
     el.style.willChange = 'transform';
 
     let hovered = false;
@@ -64,6 +69,7 @@ export default {
         el.removeEventListener('keyup', onKeyUp);
         el.style.transition = prevTransition;
         el.style.transform = prevTransform;
+        el.style.transformOrigin = prevOrigin;
         el.style.willChange = prevWillChange;
       }
     };
