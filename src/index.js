@@ -46,6 +46,7 @@ import coverRevealModule from './modules/coverReveal.js';
 import gestureModule from './modules/gesture.js';
 import dragModule from './modules/drag.js';
 import tooltipModule from './modules/tooltip.js';
+import switchModule from './modules/switch.js';
 
 const moduleEntries = {
   parallax: parallaxModule,
@@ -93,7 +94,8 @@ const moduleEntries = {
   coverReveal: coverRevealModule,
   gesture: gestureModule,
   drag: dragModule,
-  tooltip: tooltipModule
+  tooltip: tooltipModule,
+  switch: switchModule
 };
 
 Object.entries(moduleEntries).forEach(([name, module]) => Kineto.register(name, module));
@@ -146,6 +148,10 @@ export const coverReveal = call('coverReveal');
 export const gesture = call('gesture');
 export const drag = call('drag');
 export const tooltip = call('tooltip');
+// `switch` is a reserved word, so it can't be a `const` binding — export it as
+// an aliased name (importable via `import { switch as toggle } from ...`).
+const switchApi = call('switch');
+export { switchApi as switch };
 
 export { moduleEntries as modules };
 export default Kineto;

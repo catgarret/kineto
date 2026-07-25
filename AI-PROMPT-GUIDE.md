@@ -43,7 +43,7 @@ textSplit(data-kt-text-split), textTransition(data-kt-text-transition), tilt(dat
 typewriter(data-kt-typewriter), vibrate(data-kt-vibrate),
 accordion(data-kt-accordion), confetti(data-kt-confetti), hold(data-kt-hold),
 megaMenu(data-kt-mega-menu), tabs(data-kt-tabs), toast(data-kt-toast),
-bottomSheet(data-kt-bottom-sheet), radial(data-kt-radial), coverReveal(data-kt-cover-reveal),
+bottomSheet(data-kt-bottom-sheet), radial(data-kt-radial), coverReveal(data-kt-cover-reveal), switch(data-kt-switch),
 gesture(data-kt-gesture), drag(data-kt-drag), tooltip(data-kt-tooltip)
 ```
 
@@ -75,7 +75,7 @@ textSplit(data-kt-text-split), textTransition(data-kt-text-transition), tilt(dat
 typewriter(data-kt-typewriter), vibrate(data-kt-vibrate),
 accordion(data-kt-accordion), confetti(data-kt-confetti), hold(data-kt-hold),
 megaMenu(data-kt-mega-menu), tabs(data-kt-tabs), toast(data-kt-toast),
-bottomSheet(data-kt-bottom-sheet), radial(data-kt-radial), coverReveal(data-kt-cover-reveal),
+bottomSheet(data-kt-bottom-sheet), radial(data-kt-radial), coverReveal(data-kt-cover-reveal), switch(data-kt-switch),
 gesture(data-kt-gesture), drag(data-kt-drag), tooltip(data-kt-tooltip)
 ```
 
@@ -143,6 +143,7 @@ gesture(data-kt-gesture), drag(data-kt-drag), tooltip(data-kt-tooltip)
 | 올리면 커지고 누르면 눌리는 제스처(whileHover/Tap) | `gesture` (`data-kt-gesture`) |
 | 드래그(관성·경계·스냅백·키보드) | `drag` (`data-kt-drag`) |
 | 접근성 툴팁(배치·트리거·인터랙티브) | `tooltip` (`data-kt-tooltip`) |
+| 토글 스위치(role=switch, 애니메이션) | `switch` (`data-kt-switch`) |
 
 ### UI 컴포넌트 커스터마이징 요령
 - 모든 예제는 데모 페이지에서 옵션을 실시간으로 조절하고 **HTML/JS 코드를 복사**할 수 있습니다(“Customize & copy code”).

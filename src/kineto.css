@@ -329,6 +329,29 @@ html.kt-preload [data-kt-text-transition] {
   transition: transform .28s cubic-bezier(.22,.8,.3,1), width .28s cubic-bezier(.22,.8,.3,1), height .28s ease;
 }
 .kt-tabs--vertical .kt-tabs__indicator { top: 0; bottom: auto; left: 0; width: var(--kt-tab-indicator-size, 2px) !important; }
+/* effect:"none" → no indicator slide (instant switch). */
+.kt-tabs--instant .kt-tabs__indicator { transition: none; }
+
+/* Segmented-control style: add class `kt-tabs--segment` to the container. The
+   animated indicator becomes a sliding pill behind the active tab. */
+.kt-tabs--segment [role="tablist"], .kt-tabs--segment .kt-tablist {
+  gap: 0; padding: 4px; border-radius: var(--kt-seg-radius, 10px);
+  background: var(--kt-seg-bg, color-mix(in srgb, currentColor 8%, transparent));
+}
+.kt-tabs--segment .kt-tabs__indicator {
+  top: 4px; bottom: 4px; left: 0; height: auto !important;
+  border-radius: var(--kt-seg-pill-radius, 7px); z-index: 0;
+  background: var(--kt-seg-active, light-dark(#fff, #2a2d34));
+  box-shadow: 0 1px 3px rgba(0,0,0,.14);
+}
+.kt-tabs--segment [role="tab"] { position: relative; z-index: 1; opacity: 1; border-radius: var(--kt-seg-pill-radius, 7px); }
+.kt-tabs--segment [role="tab"].kt-active { font-weight: 700; }
+
+/* ── Switch (toggle) ──────────────────────────────────────────────────────────
+   Mostly inline-styled by the module; these are just theming variables:
+   --kt-switch-on, --kt-switch-off, --kt-switch-thumb. */
+.kt-switch { -webkit-tap-highlight-color: transparent; }
+.kt-switch:focus-visible { outline: 2px solid var(--kt-switch-on, #ff5b1c); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
   .kt-tabs__indicator { transition: none; }
 }

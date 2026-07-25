@@ -27,6 +27,7 @@ export default {
     if (!tabs.length || !panels.length) return null;
 
     el.classList.add('kt-tabs', `kt-tabs--${orientation}`);
+    if (effect === 'none') el.classList.add('kt-tabs--instant'); // no indicator slide either
     list.setAttribute('role', 'tablist');
     list.setAttribute('aria-orientation', orientation);
 
@@ -69,8 +70,21 @@ export default {
       }
     };
 
+    // Enter animation for the incoming panel. `cross` waits for the outgoing
+    // panel to fade out first (fade-out → fade-in), the rest animate the
+    // incoming only. Themeable via CSS; `none` switches instantly.
+    const enterFrames = () => (
+      effect === 'slide' ? [{ opacity: 0, transform: 'translateX(8px)' }, { opacity: 1, transform: 'none' }]
+      : effect === 'blur' ? [{ opacity: 0, filter: 'blur(6px)' }, { opacity: 1, filter: 'blur(0px)' }]
+      : [{ opacity: 0 }, { opacity: 1 }]
+    );
+
     const select = (index, focusTab = true) => {
+      const prev = active;
       active = clamp(index, 0, tabs.length - 1);
+      const changed = prev !== active;
+      const animate = !reduce && effect !== 'none' && duration > 0;
+      const cross = effect === 'cross' || effect === 'crossfade';
       tabs.forEach((tab, i) => {
         const on = i === active;
         tab.setAttribute('aria-selected', on ? 'true' : 'false');
@@ -81,10 +95,16 @@ export default {
         if (on) {
           panel.hidden = false;
           panel.classList.add('kt-active');
-          if (!reduce && effect !== 'none' && duration > 0) {
-            const from = effect === 'slide' ? 'translateX(8px)' : 'none';
-            panel.animate([{ opacity: 0, transform: from }, { opacity: 1, transform: 'none' }], { duration: duration * 1000, easing: 'cubic-bezier(.22,.8,.3,1)' });
+          if (animate) {
+            const delay = cross && changed ? duration * 500 : 0;
+            panel.animate(enterFrames(), { duration: duration * (cross ? 500 : 1000), delay, easing: 'cubic-bezier(.22,.8,.3,1)', fill: 'backwards' });
           }
+        } else if (i === prev && cross && animate && changed) {
+          // Fade the outgoing panel out, then hide it.
+          panel.classList.remove('kt-active');
+          const out = panel.animate([{ opacity: 1 }, { opacity: 0 }], { duration: duration * 500, easing: 'ease' });
+          out.onfinish = () => { panel.hidden = true; };
+          out.oncancel = () => { panel.hidden = true; };
         } else {
           panel.hidden = true;
           panel.classList.remove('kt-active');
@@ -126,7 +146,7 @@ export default {
         window.removeEventListener('resize', onResize);
         tabs.forEach((tab) => { tab.removeEventListener('click', onClick); tab.removeEventListener('keydown', onKey); });
         indicator?.remove();
-        el.classList.remove('kt-tabs', `kt-tabs--${orientation}`);
+        el.classList.remove('kt-tabs', `kt-tabs--${orientation}`, 'kt-tabs--instant');
         panels.forEach((panel) => { panel.hidden = false; });
       }
     };

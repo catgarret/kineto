@@ -2,10 +2,19 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.37]
+
+- **New module `data-kt-switch` (46 → 47)** — accessible animated toggle: role="switch" + aria-checked, sliding thumb, click/Space/Enter, `onChange(checked, el)` + `kt-switch-change` event, `instance.toggle()/set()/checked`. Options `size`, `onColor`, `offColor`, `thumbColor`, `duration` (or `--kt-switch-*` CSS vars).
+- **Tabs — segmented style**: add the `kt-tabs--segment` class to render the animated indicator as a sliding pill behind the active tab (the "Published / Scheduled / Drafts" look). Themeable via `--kt-seg-*`.
+- **Lightbox — download button** (`download:true`) next to Share, and confirmed per-image thumbnail↔full-resolution: the thumbnail is the `<img src>`, the full image is `data-kt-src` (each image independent). Download fetches the full image as a blob (works cross-origin).
+
 ## [0.8.36]
 
 - **overflowText — two new modes**: `fade` (pure page crossfade, no noise) and `scroll-fade` (scroll to the end, fade out, fade the start back in, repeat — a soft-looping marquee with no hard jump).
 - **Hold — `mode:"mash"`** (button-mashing): each tap adds `step` and the fill `decay`s between taps, so rapid taps climb it to full — for games/UI mechanics. Also: fill is themeable via `color` / `--kt-hold-fill` and a `blend` (mix-blend-mode) option; new `instance.progress()`.
+- **Accordion — `effect` option**: `blur` (blur + fade + height, default), `fade` (fade + height), or `none` (plain height, no opacity/blur).
+- **Tabs — richer `effect`**: `fade` · `slide` · `blur` (blur-in) · `cross` (outgoing fades out, then incoming fades in) · `none` (instant, and the indicator no longer slides). The indicator is CSS-customizable (`--kt-tab-accent`, `--kt-tab-indicator-size`, or override `.kt-tabs__indicator`).
+- **Reading Progress playground**: when `property` is a CSS variable (headless), the bar/ring `ui` options are hidden — switching them was clipping the custom-gauge demo.
 - **Gesture — `origin` option** (transform-origin: center/top/bottom/left/right or any value) so the hover/press scale grows from where you want.
 - **Toast**: type is now visually distinct via a small type-coloured dot (info/success/warning/error) instead of the removed border; `barColor` option (or `--kt-toast-bar`) for the progress colour; `progressBar` also accepts `"ring"`; `dismissible` toggles the close button; hardened the auto-dismiss timer so a stray hover can't make it vanish instantly.
 

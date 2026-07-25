@@ -1,8 +1,8 @@
 {
   "$schema": "./kineto.features.schema.json",
   "contractVersion": "1.3.0",
-  "libraryVersion": "0.8.36",
-  "moduleCount": 46,
+  "libraryVersion": "0.8.37",
+  "moduleCount": 47,
   "modules": [
     {
       "name": "ambientMedia",
@@ -456,6 +456,7 @@
         "cursor",
         "description",
         "doubleClickZoom",
+        "download",
         "duration",
         "exif",
         "group",
@@ -1229,6 +1230,7 @@
         "blur",
         "duration",
         "ease",
+        "effect",
         "single"
       ]
     },
@@ -1408,6 +1410,23 @@
         "offset",
         "placement",
         "trigger"
+      ]
+    },
+    {
+      "name": "switch",
+      "attribute": "data-kt-switch",
+      "defaultVariant": "toggle",
+      "variants": [
+        "toggle"
+      ],
+      "publicOptions": [
+        "checked",
+        "duration",
+        "offColor",
+        "onChange",
+        "onColor",
+        "size",
+        "thumbColor"
       ]
     }
   ],

@@ -115,7 +115,10 @@ counter: {
     },
     shuffle: { rainbowColors:(o)=>o.rainbow===true&&o.scrambleFade!==true },
     progress: {
-      thickness:(o)=>(o.ui||'bar')==='bar', radius:(o)=>(o.ui||'bar')==='bar', color2:(o)=>(o.ui||'bar')==='bar',
+      // Headless (property is a CSS var like --read): no built-in UI, so hide
+      // the bar/ring options entirely — switching them broke the custom demo.
+      ui:(o)=>!String(o.property||'').startsWith('--'),
+      thickness:(o)=>!String(o.property||'').startsWith('--')&&(o.ui||'bar')==='bar', radius:(o)=>!String(o.property||'').startsWith('--')&&(o.ui||'bar')==='bar', color2:(o)=>!String(o.property||'').startsWith('--')&&(o.ui||'bar')==='bar',
       size:(o)=>o.ui==='ring', stroke:(o)=>o.ui==='ring', showPercent:(o)=>o.ui==='ring', clickToTop:(o)=>o.ui==='ring'
     },
     lazy: {
@@ -142,6 +145,7 @@ counter: {
       step:(o)=>o.mode==='mash', decay:(o)=>o.mode==='mash',
       duration:(o)=>(o.mode||'hold')!=='mash'
     },
+    accordion: { blur:(o)=>(o.effect||'blur')==='blur' },
     cursor: {
       dotSize:(o)=>['dot','ring','crosshair','sparkle','text'].includes(o.preset||'dot'),
       followerSize:(o)=>['dot','ring','blob','text'].includes(o.preset||'dot'),
@@ -212,11 +216,11 @@ counter: {
     confetti: 'data-kt-confetti', accordion: 'data-kt-accordion', hold: 'data-kt-hold',
     megaMenu: 'data-kt-mega-menu', toast: 'data-kt-toast', bottomSheet: 'data-kt-bottom-sheet', tabs: 'data-kt-tabs',
     radial: 'data-kt-radial', coverReveal: 'data-kt-cover-reveal',
-    gesture: 'data-kt-gesture', drag: 'data-kt-drag', tooltip: 'data-kt-tooltip'
+    gesture: 'data-kt-gesture', drag: 'data-kt-drag', tooltip: 'data-kt-tooltip', switch: 'data-kt-switch'
   });
   Object.assign(PUBLIC_OPTIONS, {
     confetti: ['colors','count','duration','gravity','scalar','spread','trigger','zIndex'],
-    accordion: ['arrowPosition','blur','duration','ease','single'],
+    accordion: ['arrowPosition','blur','duration','ease','effect','single'],
     hold: ['action','blend','color','decay','duration','mode','onComplete','step','submit'],
     megaMenu: ['closeDelay','duration','indicator','layout','openDelay','trigger'],
     toast: ['barColor','dismissible','duration','max','message','position','progressBar','type'],
@@ -226,32 +230,35 @@ counter: {
     coverReveal: ['color','color2','delay','direction','duration','ease','layers','lines','onComplete','stagger','threshold','waitForImage'],
     gesture: ['duration','ease','hoverScale','lift','origin','tapScale'],
     drag: ['axis','bounds','handle','inertia','snapBack'],
-    tooltip: ['content','delay','duration','hideDelay','interactive','offset','placement','trigger']
+    tooltip: ['content','delay','duration','hideDelay','interactive','offset','placement','trigger'],
+    switch: ['checked','duration','offColor','onChange','onColor','size','thumbColor']
   });
   Object.assign(FIELDS, {
     confetti: [['count','Count','range',10,300,5],['spread','Spread','range',10,180,2],['gravity','Gravity','range',0,3,0.05],['scalar','Scale','range',0.4,3,0.05],['duration','Duration (s)','range',0.5,4,0.1],['colors','Colors (comma)','text'],['trigger','Trigger','select',['click','view','auto']],['zIndex','z-index','range',1000,20000,500]],
     hold: [['mode','Mode','select',['hold','mash']],['duration','Duration (ms)','range',300,4000,50],['step','Mash step','range',0.02,0.4,0.02],['decay','Mash decay/s','range',0,2,0.05],['color','Fill color','text'],['blend','Fill blend','select',['normal','multiply','screen','overlay','difference','luminosity']],['submit','Auto submit/action','checkbox'],['action','Action selector','text']],
-    accordion: [['single','Single open','checkbox'],['duration','Duration (s)','range',0.1,1,0.02],['blur','Blur','range',0,20,1],['arrowPosition','Arrow side','select',['right','left']],['ease','Ease','text']],
+    accordion: [['single','Single open','checkbox'],['effect','Reveal effect','select',['blur','fade','none']],['duration','Duration (s)','range',0.1,1,0.02],['blur','Blur','range',0,20,1],['arrowPosition','Arrow side','select',['right','left']],['ease','Ease','text']],
     megaMenu: [['trigger','Trigger','select',['hover','click']],['layout','Layout','select',['dropdown','mega']],['indicator','Indicator','select',['none','chevron','plus']],['openDelay','Open delay (ms)','range',0,400,10],['closeDelay','Close delay (ms)','range',0,600,10],['duration','Duration (s)','range',0.05,0.6,0.01]],
     toast: [['message','Message','text'],['type','Type','select',['info','success','warning','error']],['position','Position','select',['bottom-right','bottom-left','top-right','top-left','top','bottom']],['duration','Duration (ms)','range',1000,8000,200],['progressBar','Progress','select',['none','bar','ring']],['barColor','Progress color','text'],['max','Max stack','range',1,8,1],['dismissible','Dismissible (close btn)','checkbox']],
     bottomSheet: [['backdrop','Backdrop','checkbox'],['backdropOpacity','Backdrop opacity','range',0,1,0.05],['dismissible','Dismissible','checkbox'],['handle','Drag handle','checkbox'],['duration','Duration (s)','range',0.1,0.8,0.02]],
-    tabs: [['activation','Activation','select',['automatic','manual']],['orientation','Orientation','select',['horizontal','vertical']],['effect','Panel effect','select',['fade','slide','none']],['indicator','Indicator','checkbox'],['duration','Duration (s)','range',0,0.6,0.02]],
+    tabs: [['activation','Activation','select',['automatic','manual']],['orientation','Orientation','select',['horizontal','vertical']],['effect','Panel effect','select',['fade','slide','blur','cross','none']],['indicator','Indicator','checkbox'],['duration','Duration (s)','range',0,0.6,0.02]],
     radial: [['position','Dock','select',['bottom','top','left','right']],['radius','Radius','range',80,900,10],['step','Angle step','range',6,60,1],['activeAngle','Active angle','range',-180,180,5],['duration','Duration (s)','range',0,1.5,0.05],['loop','Loop','checkbox'],['drag','Drag','checkbox'],['controls','Controls','checkbox'],['autoplay','Autoplay (ms)','range',0,6000,250]],
     coverReveal: [['lines','Per-line (text)','checkbox'],['color','Panel color','color'],['color2','Panel color 2','color'],['direction','Direction','select',['right','left','up','down']],['duration','Duration (s)','range',0.2,2,0.05],['delay','Delay (ms)','range',0,2000,50],['layers','Layers','range',1,3,1],['stagger','Stagger (ms)','range',0,400,10],['waitForImage','Wait for image','checkbox']],
     gesture: [['hoverScale','Hover scale','range',1,1.4,0.01],['tapScale','Tap scale','range',0.7,1,0.01],['lift','Lift (px)','range',0,20,1],['origin','Origin','select',['center','top','bottom','left','right']],['duration','Duration (s)','range',0,0.6,0.02]],
     drag: [['axis','Axis','select',['both','x','y']],['bounds','Bounds','select',['','parent']],['snapBack','Snap back','checkbox'],['inertia','Inertia','checkbox']],
-    tooltip: [['content','Content','text'],['placement','Placement','select',['top','bottom','left','right']],['trigger','Trigger','select',['hover','focus','click','manual']],['delay','Show delay (ms)','range',0,800,20],['hideDelay','Hide delay (ms)','range',0,800,20],['offset','Offset (px)','range',0,24,1],['duration','Fade (s)','range',0,0.5,0.02],['interactive','Interactive','checkbox']]
+    tooltip: [['content','Content','text'],['placement','Placement','select',['top','bottom','left','right']],['trigger','Trigger','select',['hover','focus','click','manual']],['delay','Show delay (ms)','range',0,800,20],['hideDelay','Hide delay (ms)','range',0,800,20],['offset','Offset (px)','range',0,24,1],['duration','Fade (s)','range',0,0.5,0.02],['interactive','Interactive','checkbox']],
+    switch: [['checked','On','checkbox'],['size','Size','range',14,40,2],['onColor','On color','color'],['offColor','Off color','text'],['thumbColor','Thumb color','color'],['duration','Duration (s)','range',0,0.6,0.02]]
   });
   Object.assign(DEFAULTS, {
     confetti:{count:140,spread:75,gravity:.9,scalar:1,duration:1.8,trigger:'click'},
     hold:{mode:'hold',duration:1100,step:.08,decay:.4,blend:'normal'},
-    accordion:{single:false,duration:.4,blur:6,arrowPosition:'right'},
+    accordion:{single:false,effect:'blur',duration:.4,blur:6,arrowPosition:'right'},
     megaMenu:{trigger:'hover',layout:'dropdown',indicator:'none',openDelay:60,closeDelay:180,duration:.24},
     radial:{position:'bottom',radius:260,step:26,activeAngle:-90,duration:.6,loop:true,drag:true,controls:true,autoplay:0},
     coverReveal:{color:'#ff5b1c',color2:'#12141a',direction:'right',duration:.7,delay:0,layers:2,stagger:120,lines:false,waitForImage:true},
     gesture:{hoverScale:1.04,tapScale:.96,lift:0,origin:'center',duration:.22},
     drag:{axis:'both',bounds:'',snapBack:false,inertia:true},
     tooltip:{placement:'top',trigger:'hover',delay:120,hideDelay:80,offset:8,duration:.16,interactive:false},
+    switch:{checked:false,size:24,onColor:'#ff5b1c',duration:.22},
     toast:{type:'info',position:'bottom-right',duration:3200,dismissible:true},
     bottomSheet:{backdrop:true,backdropOpacity:.5,dismissible:true,handle:true,duration:.34},
     tabs:{activation:'automatic',orientation:'horizontal',effect:'fade',indicator:true,duration:.28}
@@ -260,6 +267,8 @@ counter: {
   // Lightbox gained a per-item change `transition` option — expose it too.
   if (PUBLIC_OPTIONS.lightbox && !PUBLIC_OPTIONS.lightbox.includes('transition')) PUBLIC_OPTIONS.lightbox.push('transition');
   if (FIELDS.lightbox && !FIELDS.lightbox.some((f) => f[0] === 'transition')) FIELDS.lightbox.push(['transition','Change effect','select',['rise','fade','crossfade','dissolve','slide','zoom','none']]);
+  if (PUBLIC_OPTIONS.lightbox && !PUBLIC_OPTIONS.lightbox.includes('download')) PUBLIC_OPTIONS.lightbox.push('download');
+  if (FIELDS.lightbox && !FIELDS.lightbox.some((f) => f[0] === 'download')) FIELDS.lightbox.push(['download','Download button','checkbox']);
 
   const state = { snapshots: new WeakMap(), mounted: false, timers: new WeakMap() };
   const dash = (value) => value.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();

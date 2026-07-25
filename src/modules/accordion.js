@@ -13,6 +13,11 @@ export default {
     const ease = opts.ease || 'cubic-bezier(.22,.8,.3,1)';
     const single = opts.single === true;
     const blur = Math.max(0, Number(opts.blur ?? 6));
+    // Reveal effect for the panel content: 'blur' (blur+fade+height, default),
+    // 'fade' (fade+height), 'none' (height only — plain, no opacity/blur).
+    const effect = ['blur', 'fade', 'none'].includes(opts.effect) ? opts.effect : 'blur';
+    const openOpacity = effect === 'none' ? 1 : 0;
+    const openBlur = effect === 'blur' ? blur : 0;
     // Arrow side is a CSS hook: `left` puts the chevron before the label.
     const arrowPosition = opts.arrowPosition === 'left' ? 'left' : 'right';
     el.classList.add('kt-accordion');
@@ -40,7 +45,7 @@ export default {
         details.classList.add('kt-open');
         const target = panel.scrollHeight;
         anim = panel.animate(
-          [{ height: '0px', opacity: 0, filter: `blur(${blur}px)` }, { height: `${target}px`, opacity: 1, filter: 'blur(0px)' }],
+          [{ height: '0px', opacity: openOpacity, filter: `blur(${openBlur}px)` }, { height: `${target}px`, opacity: 1, filter: 'blur(0px)' }],
           { duration: duration * 1000, easing: ease }
         );
         anim.onfinish = () => { panel.style.height = ''; anim = null; };
@@ -50,7 +55,7 @@ export default {
         details.classList.remove('kt-open'); // arrow rotates back during the close
         const start = panel.scrollHeight;
         anim = panel.animate(
-          [{ height: `${start}px`, opacity: 1, filter: 'blur(0px)' }, { height: '0px', opacity: 0, filter: `blur(${blur}px)` }],
+          [{ height: `${start}px`, opacity: 1, filter: 'blur(0px)' }, { height: '0px', opacity: openOpacity, filter: `blur(${openBlur}px)` }],
           { duration: duration * 1000, easing: ease }
         );
         anim.onfinish = () => { details.open = false; anim = null; };

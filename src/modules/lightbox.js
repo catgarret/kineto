@@ -78,8 +78,9 @@ function createManager() {
   const zoomReset = createButton('kt-lightbox-zoom-reset', 'Reset zoom', '100%');
   const zoomIn = createButton('kt-lightbox-zoom-in', 'Zoom in', '+');
   const shareButton = createButton('kt-lightbox-share', 'Share', '↗');
+  const downloadButton = createButton('kt-lightbox-download', 'Download', '');
   const closeButton = createButton('kt-lightbox-close', 'Close viewer', '×');
-  [zoomOut, zoomReset, zoomIn, shareButton, closeButton].forEach((button) => {
+  [zoomOut, zoomReset, zoomIn, shareButton, downloadButton, closeButton].forEach((button) => {
     button.style.cssText = 'min-width:34px;height:34px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:9px;background:var(--kt-lightbox-button-bg,transparent);color:var(--kt-lightbox-button-color,white);font:600 15px/1 sans-serif;cursor:pointer;transition:background-color .15s ease;';
   });
   // A hairline divider separates the zoom segment from share / close.
@@ -90,8 +91,11 @@ function createManager() {
   shareButton.hidden = true;
   shareButton.title = 'Share';
   shareButton.innerHTML = "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx='18' cy='5' r='3'/><circle cx='6' cy='12' r='3'/><circle cx='18' cy='19' r='3'/><path d='M8.6 13.5l6.8 4M15.4 6.5l-6.8 4'/></svg>";
+  downloadButton.hidden = true;
+  downloadButton.title = 'Download';
+  downloadButton.innerHTML = "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M12 3v12'/><path d='M7 11l5 5 5-5'/><path d='M5 21h14'/></svg>";
   closeButton.style.fontSize = '22px';
-  actions.append(zoomOut, zoomReset, zoomIn, divider, shareButton, closeButton);
+  actions.append(zoomOut, zoomReset, zoomIn, divider, shareButton, downloadButton, closeButton);
   actions.style.marginLeft = 'auto';
   toolbar.append(counter, actions);
 
@@ -181,7 +185,7 @@ function createManager() {
   let lazyInstance = null;
   let sharing = false; // true while the native share sheet is up (+ a short grace)
 
-  const controls = { root, backdrop, shell, toolbar, stage, image, closeButton, previous, next, zoomIn, zoomOut, zoomReset, shareButton, info, title, description, meta, minimap, custom, counter };
+  const controls = { root, backdrop, shell, toolbar, stage, image, closeButton, previous, next, zoomIn, zoomOut, zoomReset, shareButton, downloadButton, info, title, description, meta, minimap, custom, counter };
 
   const updateMinimap = () => {
     const show = activeEntry?.minimap !== false && scale > 1.02;
@@ -263,7 +267,8 @@ function createManager() {
     const httpPage = typeof location !== 'undefined' && /^https?:$/i.test(location.protocol);
     const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function' && httpPage;
     shareButton.hidden = !(activeEntry?.share === true && canShare);
-    divider.hidden = shareButton.hidden;
+    downloadButton.hidden = !(activeEntry?.download === true);
+    divider.hidden = shareButton.hidden && downloadButton.hidden;
     info.hidden = activeEntry?.info === false;
     custom.innerHTML = activeEntry?.uiTemplate || '';
     activeEntry?.renderUI?.(custom, controls, activeEntry);
@@ -514,6 +519,22 @@ function createManager() {
       } else await copy();
     } catch (_error) { setTimeout(() => { sharing = false; }, 400); }
   });
+  // Download the full-resolution image (fetch → blob so cross-origin images
+  // download instead of navigating; falls back to a direct link).
+  downloadButton.addEventListener('click', async () => {
+    const url = activeEntry?.src;
+    if (!url) return;
+    const name = String(activeEntry?.title || url.split('/').pop() || 'image').replace(/[^\w.-]+/g, '_');
+    try {
+      const res = await fetch(url, { mode: 'cors' });
+      const blob = await res.blob();
+      const obj = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = obj; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(obj), 4000);
+    } catch (_error) {
+      const a = document.createElement('a'); a.href = url; a.download = name; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove();
+    }
+  });
   stage.addEventListener('wheel', onWheel, { passive: false });
   stage.addEventListener('pointerdown', onPointerDown);
   stage.addEventListener('pointermove', onPointerMove);
@@ -650,6 +671,7 @@ export default {
       onChange: opts.onChange,
       onLoad: opts.onLoad,
       share: opts.share === true,
+      download: opts.download === true,
       exif: opts.exif === true,
       Kineto
     };
