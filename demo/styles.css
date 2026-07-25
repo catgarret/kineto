@@ -322,3 +322,8 @@
 .sitemap-grid a:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));transform:translateY(-1px)}
 .sitemap-grid a i{font:700 11px/1 var(--font-mono);color:var(--accent);font-style:normal;flex:0 0 auto}
 @media(max-width:520px){.sitemap-grid{grid-template-columns:1fr 1fr}.sitemap-overlay{padding-top:64px}}
+
+/* Radial carousel — emphasise the active item (active gets .kt-active). */
+.kt-radial-item img { transition: transform .45s cubic-bezier(.22,.8,.3,1), opacity .45s ease, box-shadow .45s ease; }
+.kt-radial-item:not(.kt-active) img { opacity: .68; }
+.kt-radial-item.kt-active img { transform: scale(1.18); box-shadow: 0 14px 32px rgba(0,0,0,.48); }

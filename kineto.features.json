@@ -1,7 +1,7 @@
 {
   "$schema": "./kineto.features.schema.json",
   "contractVersion": "1.3.0",
-  "libraryVersion": "0.8.38",
+  "libraryVersion": "0.8.39",
   "moduleCount": 47,
   "modules": [
     {
@@ -1318,6 +1318,7 @@
         "duration",
         "effect",
         "indicator",
+        "onChange",
         "orientation"
       ]
     },

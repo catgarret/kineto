@@ -261,23 +261,25 @@ html.kt-preload [data-kt-text-transition] {
   /* Key orange by default (not the type accent) — override with --kt-toast-bar. */
   background: var(--kt-toast-bar, #ff5b1c);
 }
-/* Circular countdown (progressBar:"ring"). */
-.kt-toast__ring { flex: 0 0 auto; width: 18px; height: 18px; }
+/* Circular countdown (progressBar:"ring") — wraps the type icon in its centre. */
+.kt-toast__ring { flex: 0 0 auto; width: 22px; height: 22px; position: relative; }
 .kt-toast__ring svg { width: 100%; height: 100%; display: block; }
-.kt-toast__ring-track { fill: none; stroke: color-mix(in srgb, currentColor 26%, transparent); stroke-width: 3; }
-.kt-toast__ring-fill { fill: none; stroke: var(--kt-toast-bar, #ff5b1c); stroke-width: 3; stroke-linecap: round; }
+.kt-toast__ring-track { fill: none; stroke: color-mix(in srgb, currentColor 24%, transparent); stroke-width: 2.4; }
+.kt-toast__ring-fill { fill: none; stroke: var(--kt-toast-bar, #ff5b1c); stroke-width: 2.4; stroke-linecap: round; }
+.kt-toast__ring-icon { position: absolute; inset: 0; display: grid; place-items: center; color: var(--kt-toast-accent, #4aa8ff); }
+.kt-toast__ring-icon svg { width: 12px; height: 12px; display: block; }
 /* Type accent is opt-in only (add your own border/icon via --kt-toast-accent):
    no decorative border by default. */
 .kt-toast--success { --kt-toast-accent: #2ec16b; }
 .kt-toast--warning { --kt-toast-accent: #ffb020; }
 .kt-toast--error   { --kt-toast-accent: #ff5a5a; }
-/* Type icon: the accent-coloured glyph (or your custom icon/emoji). Style or
-   hide it freely (`.kt-toast__icon{display:none}`); `type:"none"` omits it. */
+/* Type icon: accent-coloured line symbol (or your custom icon). Style or hide
+   freely (`.kt-toast__icon{display:none}`); `type:"none"` omits it. */
 .kt-toast__icon {
   flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
-  min-width: 1.1em; color: var(--kt-toast-accent, #4aa8ff);
-  font: 800 14px/1 ui-sans-serif, system-ui, sans-serif;
+  color: var(--kt-toast-accent, #4aa8ff); font: 800 14px/1 ui-sans-serif, system-ui, sans-serif;
 }
+.kt-toast__icon svg { width: 17px; height: 17px; display: block; }
 .kt-toast__msg { flex: 1 1 auto; }
 .kt-toast__close {
   flex: 0 0 auto; width: 22px; height: 22px; margin: -2px -4px -2px 2px; padding: 0;
@@ -342,13 +344,16 @@ html.kt-preload [data-kt-text-transition] {
    animated indicator becomes a sliding pill behind the active tab. */
 .kt-tabs--segment [role="tablist"], .kt-tabs--segment .kt-tablist {
   gap: 0; padding: 4px; border-radius: var(--kt-seg-radius, 10px);
-  background: var(--kt-seg-bg, color-mix(in srgb, currentColor 8%, transparent));
+  background: var(--kt-seg-bg, color-mix(in srgb, currentColor 7%, transparent));
 }
+/* Active pill uses a currentColor mix so it's clearly visible on any
+   background (light or dark) without needing site theming; override with
+   --kt-seg-active. */
 .kt-tabs--segment .kt-tabs__indicator {
   top: 4px; bottom: 4px; left: 0; height: auto !important;
   border-radius: var(--kt-seg-pill-radius, 7px); z-index: 0;
-  background: var(--kt-seg-active, light-dark(#fff, #2a2d34));
-  box-shadow: 0 1px 3px rgba(0,0,0,.14);
+  background: var(--kt-seg-active, color-mix(in srgb, currentColor 16%, transparent));
+  box-shadow: 0 1px 2px rgba(0,0,0,.16);
 }
 .kt-tabs--segment [role="tab"] { position: relative; z-index: 1; opacity: 1; border-radius: var(--kt-seg-pill-radius, 7px); }
 .kt-tabs--segment [role="tab"].kt-active { font-weight: 700; }

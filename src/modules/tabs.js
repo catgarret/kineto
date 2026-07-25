@@ -111,6 +111,10 @@ export default {
         }
       });
       moveIndicator();
+      if (changed) {
+        opts.onChange?.(active, tabs[active], panels[active]);
+        try { el.dispatchEvent(new CustomEvent('kt-tabs-change', { bubbles: true, detail: { index: active } })); } catch (_e) { /* older */ }
+      }
       if (focusTab) tabs[active].focus();
     };
 

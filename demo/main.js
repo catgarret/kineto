@@ -90,11 +90,16 @@
     })();
     const MODULE_GROUPS={
       'Text':['textSplit','blurText','shuffle','typewriter','textReveal','textTransition','textFill','overflowText','glitch','counter'],
-      'Media':['lazy','lightbox','slider','ambientMedia','brushReveal','scrollSequence','marquee'],
+      'Media':['lazy','lightbox','slider','ambientMedia','brushReveal','scrollSequence','marquee','radial','coverReveal'],
       'Scroll':['parallax','reveal','stickyStack','scrollVelocity','cssScroll','progress','fullpage'],
-      'Pointer':['cursor','tilt','cardGlow','magnetic','ripple','vibrate','mouseParallax'],
+      'Pointer':['cursor','tilt','cardGlow','magnetic','ripple','vibrate','mouseParallax','gesture','drag'],
+      'Components':['accordion','megaMenu','tabs','bottomSheet','tooltip','switch'],
+      'Feedback':['confetti','hold','toast'],
       'System':['loader','pageReveal','pageTransition']
     };
+    // Modules whose data-kt-* attribute isn't inside a demo section (button-
+    // triggered / body-level) map to their section by id instead.
+    const SECTION_FALLBACK={loader:'loading',pageReveal:'content-reveal',pageTransition:'module-index',marquee:'text-effects',confetti:'buttons-feedback',hold:'buttons-feedback',toast:'buttons-feedback',gesture:'buttons-feedback',drag:'buttons-feedback',bottomSheet:'components',switch:'components'};
     const registered=new Set(Object.keys(Kineto.registry));
     document.getElementById('module-list').innerHTML=Object.entries(MODULE_GROUPS).map(([group,names])=>{
       const chips=names.filter(name=>registered.has(name)).map(name=>`<span role="link" tabindex="0" data-module="${name}" title="데모로 이동">${name}</span>`).join('');
@@ -104,8 +109,10 @@
     document.getElementById('module-list').addEventListener('click',(event)=>{
       const chip=event.target.closest('[data-module]');
       if(!chip)return;
-      const attr='data-kt-'+chip.dataset.module.replace(/[A-Z]/g,m=>'-'+m.toLowerCase());
-      const section=[...document.querySelectorAll('['+attr+']')].map(el=>el.closest('section[id]')).find(Boolean);
+      const name=chip.dataset.module;
+      const attr='data-kt-'+name.replace(/[A-Z]/g,m=>'-'+m.toLowerCase());
+      let section=[...document.querySelectorAll('['+attr+']')].map(el=>el.closest('section[id]')).find(Boolean);
+      if(!section&&SECTION_FALLBACK[name])section=document.getElementById(SECTION_FALLBACK[name]);
       section?.scrollIntoView({behavior:'smooth',block:'start'});
     });
     document.getElementById('module-list').addEventListener('keydown',(event)=>{

@@ -1,4 +1,4 @@
-import { env } from '../utils.js';
+import { clamp, env } from '../utils.js';
 
 // Toast — transient status messages in a shared live region (role="status", or
 // "alert" for warning/error) so screen readers announce them. Auto-dismisses
@@ -9,7 +9,14 @@ import { env } from '../utils.js';
 // --kt-toast-bg / -fg / -accent / -bar (per type with .kt-toast--*). Reduced
 // motion: no entrance/exit animation.
 const REGIONS = {};
-const TYPE_GLYPH = { info: 'i', success: '✓', warning: '!', error: '✕' };
+// Clean line-symbol icons (stroke = currentColor → the accent). No emoji.
+const svg = (paths) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+const TYPE_ICON = {
+  info: svg('<path d="M12 11v5"/><path d="M12 7.5h.01"/>'),
+  success: svg('<path d="M5 12.5l4.2 4.2L19 7"/>'),
+  warning: svg('<path d="M12 8v5"/><path d="M12 16.5h.01"/>'),
+  error: svg('<path d="M7.5 7.5l9 9"/><path d="M16.5 7.5l-9 9"/>')
+};
 
 const regionFor = (position) => {
   if (REGIONS[position]) return REGIONS[position];
@@ -27,7 +34,7 @@ export default {
     const reduce = env().reducedMotion;
     const position = opts.position || 'bottom-right';
     const type = opts.type || 'info';
-    const duration = Math.max(1000, Number(opts.duration ?? 3200));
+    const duration = clamp(Number(opts.duration ?? 10000), 1000, 30000);
     const dismissible = opts.dismissible !== false;
     const defaultMessage = opts.message || el.getAttribute('data-kt-message') || el.textContent.trim() || 'Done';
     const progressStyle = opts.progressBar === 'ring' ? 'ring' : (opts.progressBar === true || opts.progressBar === 'bar') ? 'bar' : 'none';
@@ -44,18 +51,9 @@ export default {
       toast.setAttribute('role', kind === 'error' || kind === 'warning' ? 'alert' : 'status');
       if (opts.barColor) toast.style.setProperty('--kt-toast-bar', opts.barColor);
 
-      // Icon (customizable): default type glyph, unless type is "none" or
-      // icon:false. A string is used verbatim (emoji or inline HTML/SVG).
-      if (kind !== 'none' && iconOpt !== false) {
-        const html = typeof iconOpt === 'string' ? iconOpt : (TYPE_GLYPH[kind] || '');
-        if (html) {
-          const icon = document.createElement('span');
-          icon.className = 'kt-toast__icon';
-          icon.setAttribute('aria-hidden', 'true');
-          icon.innerHTML = html;
-          toast.appendChild(icon);
-        }
-      }
+      // Icon HTML (customizable): default clean type symbol, unless type is
+      // "none" or icon:false. A string is used verbatim (custom SVG/text).
+      const iconHtml = (kind !== 'none' && iconOpt !== false) ? (typeof iconOpt === 'string' ? iconOpt : (TYPE_ICON[kind] || '')) : '';
 
       const body = document.createElement('span');
       body.className = 'kt-toast__msg';
@@ -105,16 +103,32 @@ export default {
       const startTimer = () => { if (closed) return; startedAt = performance.now(); clearTimeout(timerId); timerId = setTimeout(dismiss, Math.max(300, remaining)); };
       const pauseTimer = () => { if (closed || !startedAt) return; clearTimeout(timerId); remaining = Math.max(300, remaining - (performance.now() - startedAt)); startedAt = 0; };
 
-      if (progressStyle !== 'none' && !reduce && toast.animate) {
-        if (progressStyle === 'ring') {
-          const ring = document.createElement('span');
-          ring.className = 'kt-toast__ring';
-          ring.setAttribute('aria-hidden', 'true');
-          const C = 2 * Math.PI * 9;
-          ring.innerHTML = `<svg viewBox="0 0 24 24"><circle class="kt-toast__ring-track" cx="12" cy="12" r="9"></circle><circle class="kt-toast__ring-fill" cx="12" cy="12" r="9" transform="rotate(-90 12 12)" stroke-dasharray="${C}" stroke-dashoffset="0"></circle></svg>`;
-          toast.insertBefore(ring, toast.firstChild);
-          barAnim = ring.querySelector('.kt-toast__ring-fill').animate([{ strokeDashoffset: 0 }, { strokeDashoffset: C }], { duration: remaining, easing: 'linear' });
-        } else {
+      // Lead element (before the message): a countdown ring — which WRAPS the
+      // type icon in its centre so they never overlap — or a standalone icon.
+      if (progressStyle === 'ring' && !reduce && toast.animate) {
+        const ring = document.createElement('span');
+        ring.className = 'kt-toast__ring';
+        ring.setAttribute('aria-hidden', 'true');
+        const C = 2 * Math.PI * 9;
+        ring.innerHTML = `<svg viewBox="0 0 24 24"><circle class="kt-toast__ring-track" cx="12" cy="12" r="9"></circle><circle class="kt-toast__ring-fill" cx="12" cy="12" r="9" transform="rotate(-90 12 12)" stroke-dasharray="${C}" stroke-dashoffset="0"></circle></svg>`;
+        if (iconHtml) {
+          const ic = document.createElement('span');
+          ic.className = 'kt-toast__ring-icon';
+          ic.setAttribute('aria-hidden', 'true');
+          ic.innerHTML = iconHtml;
+          ring.appendChild(ic);
+        }
+        toast.insertBefore(ring, toast.firstChild);
+        barAnim = ring.querySelector('.kt-toast__ring-fill').animate([{ strokeDashoffset: 0 }, { strokeDashoffset: C }], { duration: remaining, easing: 'linear' });
+      } else {
+        if (iconHtml) {
+          const icon = document.createElement('span');
+          icon.className = 'kt-toast__icon';
+          icon.setAttribute('aria-hidden', 'true');
+          icon.innerHTML = iconHtml;
+          toast.insertBefore(icon, toast.firstChild);
+        }
+        if (progressStyle === 'bar' && !reduce && toast.animate) {
           const bar = document.createElement('span');
           bar.className = 'kt-toast__bar';
           bar.setAttribute('aria-hidden', 'true');

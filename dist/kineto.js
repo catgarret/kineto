@@ -371,7 +371,7 @@ function oe() {
 	e.id = "kineto-inline-fallback", e.textContent = "\n    @property --kt-angle { syntax: \"<angle>\"; initial-value: 0deg; inherits: false; }\n    @keyframes kt-border-spin { to { --kt-angle: 360deg; } }\n    @keyframes kt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }\n    @keyframes kt-aurora { to { transform: rotate(360deg); } }\n    @keyframes kt-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }\n    @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }\n    .kt-cursor-active, .kt-cursor-active * { cursor: none !important; }\n    .kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }\n    .kt-tw-caret { animation: kt-caret .8s step-end infinite; }\n    .kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }\n    .kt-slider-wrap { position: relative; overflow: hidden; }\n    @media (prefers-reduced-motion: reduce) {\n      [data-kt-reveal], [data-kt-text-split], [data-kt-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }\n    }\n  ", document.head.appendChild(e);
 }
 var Z = {
-	version: "0.8.38",
+	version: "0.8.39",
 	get env() {
 		return G ||= d(), G;
 	},
@@ -6606,16 +6606,16 @@ var Ht = {
 	reduced(e, t) {
 		return this.create(e, t);
 	}
-}, Jt = {}, Yt = {
-	info: "i",
-	success: "✓",
-	warning: "!",
-	error: "✕"
-}, Xt = (e) => {
+}, Jt = {}, Yt = (e) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${e}</svg>`, Xt = {
+	info: Yt("<path d=\"M12 11v5\"/><path d=\"M12 7.5h.01\"/>"),
+	success: Yt("<path d=\"M5 12.5l4.2 4.2L19 7\"/>"),
+	warning: Yt("<path d=\"M12 8v5\"/><path d=\"M12 16.5h.01\"/>"),
+	error: Yt("<path d=\"M7.5 7.5l9 9\"/><path d=\"M16.5 7.5l-9 9\"/>")
+}, Zt = (e) => {
 	if (Jt[e]) return Jt[e];
 	let t = document.createElement("div");
 	return t.className = `kt-toast-region kt-toast-region--${e}`, t.setAttribute("role", "region"), t.setAttribute("aria-label", "Notifications"), document.body.appendChild(t), Jt[e] = t, t;
-}, Zt = {
+}, Qt = {
 	parallax: se,
 	mouseParallax: ce,
 	reveal: fe,
@@ -6656,23 +6656,17 @@ var Ht = {
 	megaMenu: qt,
 	toast: {
 		create(e, t = {}) {
-			let n = d().reducedMotion, r = t.position || "bottom-right", i = t.type || "info", a = Math.max(1e3, Number(t.duration ?? 3200)), o = t.dismissible !== !1, s = t.message || e.getAttribute("data-kt-message") || e.textContent.trim() || "Done", c = t.progressBar === "ring" ? "ring" : t.progressBar === !0 || t.progressBar === "bar" ? "bar" : "none", l = Math.max(1, Number(t.max ?? 5)), u = t.icon, f = (e, d = {}) => {
-				let f = d.type || i, p = Xt(d.position || r);
+			let n = d().reducedMotion, r = t.position || "bottom-right", i = t.type || "info", a = h(Number(t.duration ?? 1e4), 1e3, 3e4), o = t.dismissible !== !1, s = t.message || e.getAttribute("data-kt-message") || e.textContent.trim() || "Done", c = t.progressBar === "ring" ? "ring" : t.progressBar === !0 || t.progressBar === "bar" ? "bar" : "none", l = Math.max(1, Number(t.max ?? 5)), u = t.icon, f = (e, d = {}) => {
+				let f = d.type || i, p = Zt(d.position || r);
 				for (; p.children.length >= l;) p.firstElementChild?.remove();
 				let m = document.createElement("div");
-				if (m.className = `kt-toast kt-toast--${f}`, m.setAttribute("role", f === "error" || f === "warning" ? "alert" : "status"), t.barColor && m.style.setProperty("--kt-toast-bar", t.barColor), f !== "none" && u !== !1) {
-					let e = typeof u == "string" ? u : Yt[f] || "";
-					if (e) {
-						let t = document.createElement("span");
-						t.className = "kt-toast__icon", t.setAttribute("aria-hidden", "true"), t.innerHTML = e, m.appendChild(t);
-					}
-				}
-				let h = document.createElement("span");
-				h.className = "kt-toast__msg", h.textContent = e ?? s, m.appendChild(h);
-				let g = !1, _ = () => m.remove(), v = () => {
-					if (g) return;
-					if (g = !0, clearTimeout(x), S && S.cancel(), n || !m.animate) {
-						_();
+				m.className = `kt-toast kt-toast--${f}`, m.setAttribute("role", f === "error" || f === "warning" ? "alert" : "status"), t.barColor && m.style.setProperty("--kt-toast-bar", t.barColor);
+				let h = f !== "none" && u !== !1 ? typeof u == "string" ? u : Xt[f] || "" : "", g = document.createElement("span");
+				g.className = "kt-toast__msg", g.textContent = e ?? s, m.appendChild(g);
+				let _ = !1, v = () => m.remove(), y = () => {
+					if (_) return;
+					if (_ = !0, clearTimeout(S), C && C.cancel(), n || !m.animate) {
+						v();
 						return;
 					}
 					let e = m.animate([{
@@ -6685,11 +6679,11 @@ var Ht = {
 						duration: 200,
 						easing: "ease"
 					});
-					e.onfinish = _, e.oncancel = _;
+					e.onfinish = v, e.oncancel = v;
 				};
 				if (o) {
 					let e = document.createElement("button");
-					e.type = "button", e.className = "kt-toast__close", e.setAttribute("aria-label", "Dismiss"), e.innerHTML = "&times;", e.addEventListener("click", v), m.appendChild(e);
+					e.type = "button", e.className = "kt-toast__close", e.setAttribute("aria-label", "Dismiss"), e.innerHTML = "&times;", e.addEventListener("click", y), m.appendChild(e);
 				}
 				p.appendChild(m), !n && m.animate && m.animate([{
 					opacity: 0,
@@ -6701,33 +6695,43 @@ var Ht = {
 					duration: 240,
 					easing: "cubic-bezier(.22,.8,.3,1)"
 				});
-				let y = Math.max(1e3, Number(d.duration ?? a)), b = 0, x = null, S = null, C = () => {
-					g || (b = performance.now(), clearTimeout(x), x = setTimeout(v, Math.max(300, y)));
-				}, w = () => {
-					g || !b || (clearTimeout(x), y = Math.max(300, y - (performance.now() - b)), b = 0);
+				let b = Math.max(1e3, Number(d.duration ?? a)), x = 0, S = null, C = null, w = () => {
+					_ || (x = performance.now(), clearTimeout(S), S = setTimeout(y, Math.max(300, b)));
+				}, T = () => {
+					_ || !x || (clearTimeout(S), b = Math.max(300, b - (performance.now() - x)), x = 0);
 				};
-				if (c !== "none" && !n && m.animate) if (c === "ring") {
+				if (c === "ring" && !n && m.animate) {
 					let e = document.createElement("span");
 					e.className = "kt-toast__ring", e.setAttribute("aria-hidden", "true");
 					let t = 2 * Math.PI * 9;
-					e.innerHTML = `<svg viewBox="0 0 24 24"><circle class="kt-toast__ring-track" cx="12" cy="12" r="9"></circle><circle class="kt-toast__ring-fill" cx="12" cy="12" r="9" transform="rotate(-90 12 12)" stroke-dasharray="${t}" stroke-dashoffset="0"></circle></svg>`, m.insertBefore(e, m.firstChild), S = e.querySelector(".kt-toast__ring-fill").animate([{ strokeDashoffset: 0 }, { strokeDashoffset: t }], {
-						duration: y,
+					if (e.innerHTML = `<svg viewBox="0 0 24 24"><circle class="kt-toast__ring-track" cx="12" cy="12" r="9"></circle><circle class="kt-toast__ring-fill" cx="12" cy="12" r="9" transform="rotate(-90 12 12)" stroke-dasharray="${t}" stroke-dashoffset="0"></circle></svg>`, h) {
+						let t = document.createElement("span");
+						t.className = "kt-toast__ring-icon", t.setAttribute("aria-hidden", "true"), t.innerHTML = h, e.appendChild(t);
+					}
+					m.insertBefore(e, m.firstChild), C = e.querySelector(".kt-toast__ring-fill").animate([{ strokeDashoffset: 0 }, { strokeDashoffset: t }], {
+						duration: b,
 						easing: "linear"
 					});
 				} else {
-					let e = document.createElement("span");
-					e.className = "kt-toast__bar", e.setAttribute("aria-hidden", "true"), m.appendChild(e), S = e.animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
-						duration: y,
-						easing: "linear"
-					});
+					if (h) {
+						let e = document.createElement("span");
+						e.className = "kt-toast__icon", e.setAttribute("aria-hidden", "true"), e.innerHTML = h, m.insertBefore(e, m.firstChild);
+					}
+					if (c === "bar" && !n && m.animate) {
+						let e = document.createElement("span");
+						e.className = "kt-toast__bar", e.setAttribute("aria-hidden", "true"), m.appendChild(e), C = e.animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
+							duration: b,
+							easing: "linear"
+						});
+					}
 				}
-				let T = () => {
-					w(), S && S.pause();
-				}, E = () => {
-					C(), S && S.play();
+				let E = () => {
+					T(), C && C.pause();
+				}, D = () => {
+					w(), C && C.play();
 				};
-				return m.addEventListener("mouseenter", T), m.addEventListener("mouseleave", E), m.addEventListener("focusin", T), m.addEventListener("focusout", E), C(), {
-					dismiss: v,
+				return m.addEventListener("mouseenter", E), m.addEventListener("mouseleave", D), m.addEventListener("focusin", E), m.addEventListener("focusout", D), w(), {
+					dismiss: y,
 					el: m
 				};
 			}, p = () => f();
@@ -6859,37 +6863,46 @@ var Ht = {
 			}, {
 				opacity: 1,
 				filter: "blur(0px)"
-			}] : [{ opacity: 0 }, { opacity: 1 }], v = (e, t = !0) => {
-				let r = p;
-				p = h(e, 0, l.length - 1);
-				let i = r !== p, o = !n && s !== "none" && a > 0, c = s === "cross" || s === "crossfade";
-				l.forEach((e, t) => {
+			}] : [{ opacity: 0 }, { opacity: 1 }], v = (r, i = !0) => {
+				let o = p;
+				p = h(r, 0, l.length - 1);
+				let c = o !== p, d = !n && s !== "none" && a > 0, f = s === "cross" || s === "crossfade";
+				if (l.forEach((e, t) => {
 					let n = t === p;
 					e.setAttribute("aria-selected", n ? "true" : "false"), e.setAttribute("tabindex", n ? "0" : "-1"), e.classList.toggle("kt-active", n);
-					let s = u[t];
-					if (s) if (n) {
-						if (s.hidden = !1, s.classList.add("kt-active"), o) {
-							let e = c && i ? a * 500 : 0;
-							s.animate(_(), {
-								duration: a * (c ? 500 : 1e3),
+					let r = u[t];
+					if (r) if (n) {
+						if (r.hidden = !1, r.classList.add("kt-active"), d) {
+							let e = f && c ? a * 500 : 0;
+							r.animate(_(), {
+								duration: a * (f ? 500 : 1e3),
 								delay: e,
 								easing: "cubic-bezier(.22,.8,.3,1)",
 								fill: "backwards"
 							});
 						}
-					} else if (t === r && c && o && i) {
-						s.classList.remove("kt-active");
-						let e = s.animate([{ opacity: 1 }, { opacity: 0 }], {
+					} else if (t === o && f && d && c) {
+						r.classList.remove("kt-active");
+						let e = r.animate([{ opacity: 1 }, { opacity: 0 }], {
 							duration: a * 500,
 							easing: "ease"
 						});
 						e.onfinish = () => {
-							s.hidden = !0;
+							r.hidden = !0;
 						}, e.oncancel = () => {
-							s.hidden = !0;
+							r.hidden = !0;
 						};
-					} else s.hidden = !0, s.classList.remove("kt-active");
-				}), g(), t && l[p].focus();
+					} else r.hidden = !0, r.classList.remove("kt-active");
+				}), g(), c) {
+					t.onChange?.(p, l[p], u[p]);
+					try {
+						e.dispatchEvent(new CustomEvent("kt-tabs-change", {
+							bubbles: !0,
+							detail: { index: p }
+						}));
+					} catch {}
+				}
+				i && l[p].focus();
 			}, y = (e) => {
 				let t = l.indexOf(e.currentTarget);
 				t >= 0 && (e.preventDefault(), v(t, !1));
@@ -7307,39 +7320,46 @@ var Ht = {
 	},
 	switch: {
 		create(e, t = {}) {
-			let n = d().reducedMotion, r = Math.max(14, Number(t.size ?? 24)), i = t.onColor || "var(--kt-switch-on, #ff5b1c)", a = t.offColor || "var(--kt-switch-off, color-mix(in srgb, currentColor 26%, transparent))", o = t.thumbColor || "var(--kt-switch-thumb, #fff)", s = Math.max(0, Number(t.duration ?? .22)), c = t.checked === !0 || e.getAttribute("aria-checked") === "true" || e.hasAttribute("checked"), l = e.getAttribute("style"), u = Math.round(r * .16), f = Math.round(r * .8);
-			e.classList.add("kt-switch"), e.setAttribute("role", "switch"), e.tagName !== "BUTTON" && e.tagName !== "INPUT" && !e.hasAttribute("tabindex") && (e.tabIndex = 0), e.style.display = "inline-flex", e.style.alignItems = "center", e.style.boxSizing = "content-box", e.style.width = `${r + f}px`, e.style.height = `${r}px`, e.style.padding = `${u}px`, e.style.borderRadius = `${r}px`, e.style.border = "0", e.style.cursor = "pointer", e.style.transition = `background-color ${s}s ease`, e.style.verticalAlign = "middle";
-			let p = document.createElement("span");
-			p.className = "kt-switch__thumb", p.setAttribute("aria-hidden", "true"), p.style.cssText = `width:${r}px;height:${r}px;border-radius:50%;background:${o};box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform ${n ? 0 : s}s cubic-bezier(.22,.8,.3,1);will-change:transform;flex:0 0 auto;`, e.appendChild(p);
-			let m = () => {
-				e.setAttribute("aria-checked", c ? "true" : "false"), e.classList.toggle("kt-on", c), e.style.backgroundColor = c ? i : a, p.style.transform = c ? `translateX(${f}px)` : "translateX(0)";
-			}, h = () => {
-				c = !c, m(), t.onChange?.(c, e);
+			let n = d().reducedMotion, r = Math.max(14, Number(t.size ?? 24)), i = t.onColor || "var(--kt-switch-on, #ff5b1c)", a = t.offColor || "var(--kt-switch-off, color-mix(in srgb, currentColor 26%, transparent))", o = t.thumbColor || "var(--kt-switch-thumb, #fff)", s = Math.max(0, Number(t.duration ?? .22)), c = e.tagName === "INPUT" ? null : e.querySelector("input[type=\"checkbox\"], input[type=\"radio\"]");
+			c && (c.style.position = "absolute", c.style.opacity = "0", c.style.pointerEvents = "none", c.style.width = "0", c.style.height = "0", c.tabIndex = -1);
+			let l = t.checked === !0 || (c ? c.checked : e.getAttribute("aria-checked") === "true" || e.hasAttribute("checked")), u = e.getAttribute("style"), f = Math.round(r * .16), p = Math.round(r * .8);
+			e.classList.add("kt-switch"), e.setAttribute("role", "switch"), e.tagName !== "BUTTON" && e.tagName !== "INPUT" && !e.hasAttribute("tabindex") && (e.tabIndex = 0), e.style.display = "inline-flex", e.style.alignItems = "center", e.style.boxSizing = "content-box", e.style.width = `${r + p}px`, e.style.height = `${r}px`, e.style.padding = `${f}px`, e.style.borderRadius = `${r}px`, e.style.border = "0", e.style.cursor = "pointer", e.style.transition = `background-color ${s}s ease`, e.style.verticalAlign = "middle";
+			let m = document.createElement("span");
+			m.className = "kt-switch__thumb", m.setAttribute("aria-hidden", "true"), m.style.cssText = `width:${r}px;height:${r}px;border-radius:50%;background:${o};box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform ${n ? 0 : s}s cubic-bezier(.22,.8,.3,1);will-change:transform;flex:0 0 auto;`, e.appendChild(m);
+			let h = () => {
+				e.setAttribute("aria-checked", l ? "true" : "false"), e.classList.toggle("kt-on", l), e.style.backgroundColor = l ? i : a, m.style.transform = l ? `translateX(${p}px)` : "translateX(0)", c && c.checked !== l && (c.checked = l);
+			}, g = () => {
+				if (l = !l, h(), c) try {
+					c.dispatchEvent(new Event("change", { bubbles: !0 })), c.dispatchEvent(new Event("input", { bubbles: !0 }));
+				} catch {}
+				t.onChange?.(l, e);
 				try {
 					e.dispatchEvent(new CustomEvent("kt-switch-change", {
 						bubbles: !0,
-						detail: { checked: c }
+						detail: { checked: l }
 					}));
 				} catch {}
-			}, g = (e) => {
-				e.preventDefault(), h();
 			}, _ = (e) => {
-				(e.key === " " || e.key === "Enter") && (e.preventDefault(), h());
+				e.target !== c && (e.preventDefault(), g());
+			}, v = (e) => {
+				(e.key === " " || e.key === "Enter") && (e.preventDefault(), g());
+			}, y = () => {
+				c && c.checked !== l && (l = c.checked, h());
 			};
-			return e.addEventListener("click", g), e.addEventListener("keydown", _), m(), {
+			return e.addEventListener("click", _), e.addEventListener("keydown", v), c && c.addEventListener("change", y), h(), {
 				el: e,
 				type: "switch",
-				toggle: h,
+				toggle: g,
 				set(e) {
-					c = !!e, m();
+					l = !!e, h();
 				},
 				get checked() {
-					return c;
+					return l;
 				},
 				pause() {},
 				resume() {},
 				destroy() {
-					e.removeEventListener("click", g), e.removeEventListener("keydown", _), p.remove(), e.classList.remove("kt-switch", "kt-on"), e.removeAttribute("role"), e.removeAttribute("aria-checked"), l == null ? e.removeAttribute("style") : e.setAttribute("style", l);
+					e.removeEventListener("click", _), e.removeEventListener("keydown", v), c && (c.removeEventListener("change", y), c.style.position = "", c.style.opacity = "", c.style.pointerEvents = "", c.style.width = "", c.style.height = "", c.removeAttribute("tabindex")), m.remove(), e.classList.remove("kt-switch", "kt-on"), e.removeAttribute("role"), e.removeAttribute("aria-checked"), u == null ? e.removeAttribute("style") : e.setAttribute("style", u);
 				}
 			};
 		},
@@ -7348,7 +7368,7 @@ var Ht = {
 		}
 	}
 };
-Object.entries(Zt).forEach(([e, t]) => Z.register(e, t));
-var $ = (e) => (t, n) => Z[e](t, n), Qt = $("parallax"), $t = $("mouseParallax"), en = $("reveal"), tn = $("counter"), nn = $("lazy"), rn = $("textSplit"), an = $("blurText"), on = $("shuffle"), sn = $("typewriter"), cn = $("textReveal"), ln = $("textTransition"), un = $("magnetic"), dn = $("marquee"), fn = $("overflowText"), pn = $("loader"), mn = $("tilt"), hn = $("cursor"), gn = $("textFill"), _n = $("stickyStack"), vn = $("scrollVelocity"), yn = $("progress"), bn = $("slider"), xn = $("ambientMedia"), Sn = $("pageReveal"), Cn = $("glitch"), wn = $("cardGlow"), Tn = $("lightbox"), En = $("pageTransition"), Dn = $("vibrate"), On = $("ripple"), kn = $("cssScroll"), An = $("scrollSequence"), jn = $("brushReveal"), Mn = $("fullpage"), Nn = $("confetti"), Pn = $("accordion"), Fn = $("hold"), In = $("megaMenu"), Ln = $("toast"), Rn = $("bottomSheet"), zn = $("tabs"), Bn = $("radial"), Vn = $("coverReveal"), Hn = $("gesture"), Un = $("drag"), Wn = $("tooltip"), Gn = $("switch"), Kn = Z;
+Object.entries(Qt).forEach(([e, t]) => Z.register(e, t));
+var $ = (e) => (t, n) => Z[e](t, n), $t = $("parallax"), en = $("mouseParallax"), tn = $("reveal"), nn = $("counter"), rn = $("lazy"), an = $("textSplit"), on = $("blurText"), sn = $("shuffle"), cn = $("typewriter"), ln = $("textReveal"), un = $("textTransition"), dn = $("magnetic"), fn = $("marquee"), pn = $("overflowText"), mn = $("loader"), hn = $("tilt"), gn = $("cursor"), _n = $("textFill"), vn = $("stickyStack"), yn = $("scrollVelocity"), bn = $("progress"), xn = $("slider"), Sn = $("ambientMedia"), Cn = $("pageReveal"), wn = $("glitch"), Tn = $("cardGlow"), En = $("lightbox"), Dn = $("pageTransition"), On = $("vibrate"), kn = $("ripple"), An = $("cssScroll"), jn = $("scrollSequence"), Mn = $("brushReveal"), Nn = $("fullpage"), Pn = $("confetti"), Fn = $("accordion"), In = $("hold"), Ln = $("megaMenu"), Rn = $("toast"), zn = $("bottomSheet"), Bn = $("tabs"), Vn = $("radial"), Hn = $("coverReveal"), Un = $("gesture"), Wn = $("drag"), Gn = $("tooltip"), Kn = $("switch"), qn = Z;
 //#endregion
-export { Pn as accordion, xn as ambientMedia, an as blurText, Rn as bottomSheet, jn as brushReveal, wn as cardGlow, Nn as confetti, tn as counter, Vn as coverReveal, kn as cssScroll, hn as cursor, Kn as default, Un as drag, Mn as fullpage, Hn as gesture, Cn as glitch, Fn as hold, nn as lazy, Tn as lightbox, pn as loader, un as magnetic, dn as marquee, In as megaMenu, Zt as modules, $t as mouseParallax, fn as overflowText, Sn as pageReveal, En as pageTransition, Qt as parallax, yn as progress, Bn as radial, en as reveal, On as ripple, An as scrollSequence, vn as scrollVelocity, on as shuffle, bn as slider, _n as stickyStack, Gn as switch, zn as tabs, gn as textFill, cn as textReveal, rn as textSplit, ln as textTransition, mn as tilt, Ln as toast, Wn as tooltip, sn as typewriter, Dn as vibrate };
+export { Fn as accordion, Sn as ambientMedia, on as blurText, zn as bottomSheet, Mn as brushReveal, Tn as cardGlow, Pn as confetti, nn as counter, Hn as coverReveal, An as cssScroll, gn as cursor, qn as default, Wn as drag, Nn as fullpage, Un as gesture, wn as glitch, In as hold, rn as lazy, En as lightbox, mn as loader, dn as magnetic, fn as marquee, Ln as megaMenu, Qt as modules, en as mouseParallax, pn as overflowText, Cn as pageReveal, Dn as pageTransition, $t as parallax, bn as progress, Vn as radial, tn as reveal, kn as ripple, jn as scrollSequence, yn as scrollVelocity, sn as shuffle, xn as slider, vn as stickyStack, Kn as switch, Bn as tabs, _n as textFill, ln as textReveal, an as textSplit, un as textTransition, hn as tilt, Rn as toast, Gn as tooltip, cn as typewriter, On as vibrate };

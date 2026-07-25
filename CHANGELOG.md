@@ -2,6 +2,16 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.39]
+
+- **Toast polish**: default duration is now **10s (max 30s)**; clean **line-symbol icons** per type (no emoji); when using the countdown **ring**, the type icon sits in the ring's centre (no more overlap).
+- **Switch — form-usable**: wrap a checkbox (`<button data-kt-switch><input type="checkbox" name="notify" hidden></button>`) and the switch drives it — it submits with the form and fires native `change`/`input` — while staying an accessible `role="switch"` control. Radios work the same way.
+- **Tabs — selection API**: `onChange(index, tab, panel)` callback + a `kt-tabs-change` event on every change (so a segmented control can drive form state / analytics).
+- **Segmented tabs** active pill now uses a `currentColor` mix so it's clearly visible on any background (was invisible on dark).
+- **Radial carousel**: the active item exposes `.kt-active` / `.active-item` / `aria-current` for custom styling; the demo now scales the active thumbnail up and dims the rest.
+- **Demo Module Index**: all 47 modules are listed and every chip scrolls to its section (button-triggered/body-level modules like loader, pageReveal, pageTransition now map correctly).
+- **Gesture** `origin` and **Hold** `mash` `step`/`decay` demos retuned so the options' effect is clear.
+
 ## [0.8.38]
 
 - **Toast rewrite for robustness + customization**:
