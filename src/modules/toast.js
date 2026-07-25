@@ -1,12 +1,15 @@
-import { clamp, env } from '../utils.js';
+import { env } from '../utils.js';
 
-// Toast — transient status messages. Attach `data-kt-toast` to a trigger; each
-// activation shows a toast in a shared, live region (role="status", or
-// "alert" for the error type) so screen readers announce it. Auto-dismisses
-// after `duration`; hovering/focusing pauses the timer. Fully imperative too:
-// `instance.show(message, overrides)`. Under reduced motion it appears without
-// the slide. Everything is themeable via `.kt-toast*` classes / CSS variables.
+// Toast — transient status messages in a shared live region (role="status", or
+// "alert" for warning/error) so screen readers announce them. Auto-dismisses
+// after `duration`; hovering/focusing pauses it. Imperative: instance.show().
+// Customization: `type` (info/success/warning/error/none), `icon` (default type
+// glyph, false = none, or a custom string/emoji/HTML), `progressBar`
+// (none/bar/ring), `barColor`, `dismissible`, `position`, `max`. Colours via
+// --kt-toast-bg / -fg / -accent / -bar (per type with .kt-toast--*). Reduced
+// motion: no entrance/exit animation.
 const REGIONS = {};
+const TYPE_GLYPH = { info: 'i', success: '✓', warning: '!', error: '✕' };
 
 const regionFor = (position) => {
   if (REGIONS[position]) return REGIONS[position];
@@ -24,72 +27,85 @@ export default {
     const reduce = env().reducedMotion;
     const position = opts.position || 'bottom-right';
     const type = opts.type || 'info';
-    const duration = Math.max(600, Number(opts.duration ?? 3200));
+    const duration = Math.max(1000, Number(opts.duration ?? 3200));
     const dismissible = opts.dismissible !== false;
     const defaultMessage = opts.message || el.getAttribute('data-kt-message') || el.textContent.trim() || 'Done';
-    // A countdown progress bar that drains over the duration (pauses on hover).
-    // Named `progressBar` (attr data-kt-progress-bar) to avoid colliding with
-    // the separate `progress` module's data-kt-progress activation attribute.
-    // progressBar: true | "bar" → linear bar; "ring" → circular countdown.
-    const progressStyle = opts.progressBar === 'ring' ? 'ring'
-      : (opts.progressBar === true || opts.progressBar === 'bar') ? 'bar' : 'none';
-    const showProgress = progressStyle !== 'none';
-    // Cap how many toasts stack at once — the oldest is evicted past this.
+    const progressStyle = opts.progressBar === 'ring' ? 'ring' : (opts.progressBar === true || opts.progressBar === 'bar') ? 'bar' : 'none';
     const maxVisible = Math.max(1, Number(opts.max ?? 5));
+    const iconOpt = opts.icon; // undefined → default glyph; false → none; string → custom
 
     const show = (message, overrides = {}) => {
       const kind = overrides.type || type;
       const region = regionFor(overrides.position || position);
       while (region.children.length >= maxVisible) region.firstElementChild?.remove();
+
       const toast = document.createElement('div');
       toast.className = `kt-toast kt-toast--${kind}`;
       toast.setAttribute('role', kind === 'error' || kind === 'warning' ? 'alert' : 'status');
       if (opts.barColor) toast.style.setProperty('--kt-toast-bar', opts.barColor);
-      // Small type-coloured dot — the visible difference between info/success/
-      // warning/error (accent = --kt-toast-accent per type). Hide via CSS if
-      // unwanted (`.kt-toast__dot{display:none}`).
-      const dot = document.createElement('span');
-      dot.className = 'kt-toast__dot';
-      dot.setAttribute('aria-hidden', 'true');
-      toast.appendChild(dot);
+
+      // Icon (customizable): default type glyph, unless type is "none" or
+      // icon:false. A string is used verbatim (emoji or inline HTML/SVG).
+      if (kind !== 'none' && iconOpt !== false) {
+        const html = typeof iconOpt === 'string' ? iconOpt : (TYPE_GLYPH[kind] || '');
+        if (html) {
+          const icon = document.createElement('span');
+          icon.className = 'kt-toast__icon';
+          icon.setAttribute('aria-hidden', 'true');
+          icon.innerHTML = html;
+          toast.appendChild(icon);
+        }
+      }
+
       const body = document.createElement('span');
       body.className = 'kt-toast__msg';
       body.textContent = message ?? defaultMessage;
       toast.appendChild(body);
+
+      let closed = false;
+      const removeNow = () => toast.remove();
+      const dismiss = () => {
+        if (closed) return;
+        closed = true;
+        clearTimeout(timerId);
+        if (barAnim) barAnim.cancel();
+        if (reduce || !toast.animate) { removeNow(); return; }
+        const out = toast.animate(
+          [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(6px) scale(.98)' }],
+          { duration: 200, easing: 'ease' }
+        );
+        out.onfinish = removeNow; out.oncancel = removeNow;
+      };
+
       if (dismissible) {
         const close = document.createElement('button');
         close.type = 'button';
         close.className = 'kt-toast__close';
         close.setAttribute('aria-label', 'Dismiss');
         close.innerHTML = '&times;';
-        close.addEventListener('click', () => dismiss());
+        close.addEventListener('click', dismiss);
         toast.appendChild(close);
       }
       region.appendChild(toast);
-      if (!reduce) {
+
+      if (!reduce && toast.animate) {
         toast.animate(
           [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'translateY(0)' }],
           { duration: 240, easing: 'cubic-bezier(.22,.8,.3,1)' }
         );
       }
-      let timer = null;
-      let remaining = Number(overrides.duration ?? duration);
+
+      // Dismissal is driven ONLY by this timer, never below 300ms — so a stray
+      // hover / event can never make the toast vanish instantly. The progress
+      // bar/ring below is purely visual and stays in sync (pause/resume).
+      let remaining = Math.max(1000, Number(overrides.duration ?? duration));
       let startedAt = 0;
+      let timerId = null;
       let barAnim = null;
-      const dismiss = () => {
-        clearTimeout(timer);
-        if (!toast.isConnected) return;
-        const done = () => toast.remove();
-        if (reduce) { done(); return; }
-        const out = toast.animate(
-          [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(6px) scale(.98)' }],
-          { duration: 200, easing: 'ease' }
-        );
-        out.onfinish = done; out.oncancel = done;
-      };
-      // Progress bar drives (and visualises) the countdown when enabled; hover
-      // pauses both the bar and the dismissal so they stay in sync.
-      if (showProgress && !reduce && toast.animate) {
+      const startTimer = () => { if (closed) return; startedAt = performance.now(); clearTimeout(timerId); timerId = setTimeout(dismiss, Math.max(300, remaining)); };
+      const pauseTimer = () => { if (closed || !startedAt) return; clearTimeout(timerId); remaining = Math.max(300, remaining - (performance.now() - startedAt)); startedAt = 0; };
+
+      if (progressStyle !== 'none' && !reduce && toast.animate) {
         if (progressStyle === 'ring') {
           const ring = document.createElement('span');
           ring.className = 'kt-toast__ring';
@@ -105,18 +121,15 @@ export default {
           toast.appendChild(bar);
           barAnim = bar.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: remaining, easing: 'linear' });
         }
-        barAnim.onfinish = dismiss;
       }
-      const arm = () => { if (barAnim) { barAnim.play(); } else { startedAt = performance.now(); timer = setTimeout(dismiss, Math.max(200, remaining)); } };
-      // Guard: only subtract elapsed time if the timer was actually running
-      // (startedAt set) — otherwise remaining could go negative and the next
-      // arm() would dismiss instantly.
-      const pause = () => { if (barAnim) { barAnim.pause(); } else if (startedAt) { clearTimeout(timer); remaining = Math.max(0, remaining - (performance.now() - startedAt)); startedAt = 0; } };
+
+      const pause = () => { pauseTimer(); if (barAnim) barAnim.pause(); };
+      const resume = () => { startTimer(); if (barAnim) barAnim.play(); };
       toast.addEventListener('mouseenter', pause);
-      toast.addEventListener('mouseleave', arm);
+      toast.addEventListener('mouseleave', resume);
       toast.addEventListener('focusin', pause);
-      toast.addEventListener('focusout', arm);
-      arm();
+      toast.addEventListener('focusout', resume);
+      startTimer();
       return { dismiss, el: toast };
     };
 
@@ -127,11 +140,9 @@ export default {
       el,
       type: 'toast',
       show,
-      pause() {},
-      resume() {},
+      pause() {}, resume() {},
       destroy() { el.removeEventListener('click', onTrigger); }
     };
   },
-  // Reduced motion: still functional, no entrance/exit animation (handled inside).
   reduced(el, opts) { return this.create(el, opts); }
 };

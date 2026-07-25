@@ -2,6 +2,14 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.38]
+
+- **Toast rewrite for robustness + customization**:
+  - **Instant-dismiss fixed for good**: dismissal is now driven ONLY by a timer that can never drop below 300 ms; the progress bar/ring is purely visual (and stays in sync on hover). No event or hover can make a toast vanish instantly.
+  - **`type:"none"`** (no accent/icon) added alongside info/success/warning/error.
+  - **`icon` option**: default is the accent-coloured type glyph; `icon:false` removes it; or pass a custom string / emoji / inline SVG. Cleaner default than the old dot, and fully restyleable via `.kt-toast__icon` — or set a per-type background with `.kt-toast--error{--kt-toast-bg:…}`.
+- Added **docs/DESIGN-PRINCIPLES.md** — every module (current 47 + future) must be optimized, accessible, progressively degrading, easy to apply, and easy to customize (options + CSS variables + class hooks); retro-applied where missing.
+
 ## [0.8.37]
 
 - **New module `data-kt-switch` (46 → 47)** — accessible animated toggle: role="switch" + aria-checked, sliding thumb, click/Space/Enter, `onChange(checked, el)` + `kt-switch-change` event, `instance.toggle()/set()/checked`. Options `size`, `onColor`, `offColor`, `thumbColor`, `duration` (or `--kt-switch-*` CSS vars).

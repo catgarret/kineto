@@ -1,7 +1,7 @@
 {
   "$schema": "./kineto.features.schema.json",
   "contractVersion": "1.3.0",
-  "libraryVersion": "0.8.37",
+  "libraryVersion": "0.8.38",
   "moduleCount": 47,
   "modules": [
     {
@@ -1282,6 +1282,7 @@
         "barColor",
         "dismissible",
         "duration",
+        "icon",
         "max",
         "message",
         "position",

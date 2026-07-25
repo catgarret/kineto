@@ -371,7 +371,7 @@ function oe() {
 	e.id = "kineto-inline-fallback", e.textContent = "\n    @property --kt-angle { syntax: \"<angle>\"; initial-value: 0deg; inherits: false; }\n    @keyframes kt-border-spin { to { --kt-angle: 360deg; } }\n    @keyframes kt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }\n    @keyframes kt-aurora { to { transform: rotate(360deg); } }\n    @keyframes kt-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }\n    @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }\n    .kt-cursor-active, .kt-cursor-active * { cursor: none !important; }\n    .kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }\n    .kt-tw-caret { animation: kt-caret .8s step-end infinite; }\n    .kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }\n    .kt-slider-wrap { position: relative; overflow: hidden; }\n    @media (prefers-reduced-motion: reduce) {\n      [data-kt-reveal], [data-kt-text-split], [data-kt-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }\n    }\n  ", document.head.appendChild(e);
 }
 var Z = {
-	version: "0.8.37",
+	version: "0.8.38",
 	get env() {
 		return G ||= d(), G;
 	},
@@ -6606,11 +6606,16 @@ var Ht = {
 	reduced(e, t) {
 		return this.create(e, t);
 	}
-}, Jt = {}, Yt = (e) => {
+}, Jt = {}, Yt = {
+	info: "i",
+	success: "✓",
+	warning: "!",
+	error: "✕"
+}, Xt = (e) => {
 	if (Jt[e]) return Jt[e];
 	let t = document.createElement("div");
 	return t.className = `kt-toast-region kt-toast-region--${e}`, t.setAttribute("role", "region"), t.setAttribute("aria-label", "Notifications"), document.body.appendChild(t), Jt[e] = t, t;
-}, Xt = {
+}, Zt = {
 	parallax: se,
 	mouseParallax: ce,
 	reveal: fe,
@@ -6651,36 +6656,26 @@ var Ht = {
 	megaMenu: qt,
 	toast: {
 		create(e, t = {}) {
-			let n = d().reducedMotion, r = t.position || "bottom-right", i = t.type || "info", a = Math.max(600, Number(t.duration ?? 3200)), o = t.dismissible !== !1, s = t.message || e.getAttribute("data-kt-message") || e.textContent.trim() || "Done", c = t.progressBar === "ring" ? "ring" : t.progressBar === !0 || t.progressBar === "bar" ? "bar" : "none", l = c !== "none", u = Math.max(1, Number(t.max ?? 5)), f = (e, d = {}) => {
-				let f = d.type || i, p = Yt(d.position || r);
-				for (; p.children.length >= u;) p.firstElementChild?.remove();
+			let n = d().reducedMotion, r = t.position || "bottom-right", i = t.type || "info", a = Math.max(1e3, Number(t.duration ?? 3200)), o = t.dismissible !== !1, s = t.message || e.getAttribute("data-kt-message") || e.textContent.trim() || "Done", c = t.progressBar === "ring" ? "ring" : t.progressBar === !0 || t.progressBar === "bar" ? "bar" : "none", l = Math.max(1, Number(t.max ?? 5)), u = t.icon, f = (e, d = {}) => {
+				let f = d.type || i, p = Xt(d.position || r);
+				for (; p.children.length >= l;) p.firstElementChild?.remove();
 				let m = document.createElement("div");
-				m.className = `kt-toast kt-toast--${f}`, m.setAttribute("role", f === "error" || f === "warning" ? "alert" : "status"), t.barColor && m.style.setProperty("--kt-toast-bar", t.barColor);
-				let h = document.createElement("span");
-				h.className = "kt-toast__dot", h.setAttribute("aria-hidden", "true"), m.appendChild(h);
-				let g = document.createElement("span");
-				if (g.className = "kt-toast__msg", g.textContent = e ?? s, m.appendChild(g), o) {
-					let e = document.createElement("button");
-					e.type = "button", e.className = "kt-toast__close", e.setAttribute("aria-label", "Dismiss"), e.innerHTML = "&times;", e.addEventListener("click", () => x()), m.appendChild(e);
+				if (m.className = `kt-toast kt-toast--${f}`, m.setAttribute("role", f === "error" || f === "warning" ? "alert" : "status"), t.barColor && m.style.setProperty("--kt-toast-bar", t.barColor), f !== "none" && u !== !1) {
+					let e = typeof u == "string" ? u : Yt[f] || "";
+					if (e) {
+						let t = document.createElement("span");
+						t.className = "kt-toast__icon", t.setAttribute("aria-hidden", "true"), t.innerHTML = e, m.appendChild(t);
+					}
 				}
-				p.appendChild(m), n || m.animate([{
-					opacity: 0,
-					transform: "translateY(10px)"
-				}, {
-					opacity: 1,
-					transform: "translateY(0)"
-				}], {
-					duration: 240,
-					easing: "cubic-bezier(.22,.8,.3,1)"
-				});
-				let _ = null, v = Number(d.duration ?? a), y = 0, b = null, x = () => {
-					if (clearTimeout(_), !m.isConnected) return;
-					let e = () => m.remove();
-					if (n) {
-						e();
+				let h = document.createElement("span");
+				h.className = "kt-toast__msg", h.textContent = e ?? s, m.appendChild(h);
+				let g = !1, _ = () => m.remove(), v = () => {
+					if (g) return;
+					if (g = !0, clearTimeout(x), S && S.cancel(), n || !m.animate) {
+						_();
 						return;
 					}
-					let t = m.animate([{
+					let e = m.animate([{
 						opacity: 1,
 						transform: "none"
 					}, {
@@ -6690,33 +6685,49 @@ var Ht = {
 						duration: 200,
 						easing: "ease"
 					});
-					t.onfinish = e, t.oncancel = e;
+					e.onfinish = _, e.oncancel = _;
 				};
-				if (l && !n && m.animate) {
-					if (c === "ring") {
-						let e = document.createElement("span");
-						e.className = "kt-toast__ring", e.setAttribute("aria-hidden", "true");
-						let t = 2 * Math.PI * 9;
-						e.innerHTML = `<svg viewBox="0 0 24 24"><circle class="kt-toast__ring-track" cx="12" cy="12" r="9"></circle><circle class="kt-toast__ring-fill" cx="12" cy="12" r="9" transform="rotate(-90 12 12)" stroke-dasharray="${t}" stroke-dashoffset="0"></circle></svg>`, m.insertBefore(e, m.firstChild), b = e.querySelector(".kt-toast__ring-fill").animate([{ strokeDashoffset: 0 }, { strokeDashoffset: t }], {
-							duration: v,
-							easing: "linear"
-						});
-					} else {
-						let e = document.createElement("span");
-						e.className = "kt-toast__bar", e.setAttribute("aria-hidden", "true"), m.appendChild(e), b = e.animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
-							duration: v,
-							easing: "linear"
-						});
-					}
-					b.onfinish = x;
+				if (o) {
+					let e = document.createElement("button");
+					e.type = "button", e.className = "kt-toast__close", e.setAttribute("aria-label", "Dismiss"), e.innerHTML = "&times;", e.addEventListener("click", v), m.appendChild(e);
 				}
-				let S = () => {
-					b ? b.play() : (y = performance.now(), _ = setTimeout(x, Math.max(200, v)));
-				}, C = () => {
-					b ? b.pause() : y &&= (clearTimeout(_), v = Math.max(0, v - (performance.now() - y)), 0);
+				p.appendChild(m), !n && m.animate && m.animate([{
+					opacity: 0,
+					transform: "translateY(10px)"
+				}, {
+					opacity: 1,
+					transform: "translateY(0)"
+				}], {
+					duration: 240,
+					easing: "cubic-bezier(.22,.8,.3,1)"
+				});
+				let y = Math.max(1e3, Number(d.duration ?? a)), b = 0, x = null, S = null, C = () => {
+					g || (b = performance.now(), clearTimeout(x), x = setTimeout(v, Math.max(300, y)));
+				}, w = () => {
+					g || !b || (clearTimeout(x), y = Math.max(300, y - (performance.now() - b)), b = 0);
 				};
-				return m.addEventListener("mouseenter", C), m.addEventListener("mouseleave", S), m.addEventListener("focusin", C), m.addEventListener("focusout", S), S(), {
-					dismiss: x,
+				if (c !== "none" && !n && m.animate) if (c === "ring") {
+					let e = document.createElement("span");
+					e.className = "kt-toast__ring", e.setAttribute("aria-hidden", "true");
+					let t = 2 * Math.PI * 9;
+					e.innerHTML = `<svg viewBox="0 0 24 24"><circle class="kt-toast__ring-track" cx="12" cy="12" r="9"></circle><circle class="kt-toast__ring-fill" cx="12" cy="12" r="9" transform="rotate(-90 12 12)" stroke-dasharray="${t}" stroke-dashoffset="0"></circle></svg>`, m.insertBefore(e, m.firstChild), S = e.querySelector(".kt-toast__ring-fill").animate([{ strokeDashoffset: 0 }, { strokeDashoffset: t }], {
+						duration: y,
+						easing: "linear"
+					});
+				} else {
+					let e = document.createElement("span");
+					e.className = "kt-toast__bar", e.setAttribute("aria-hidden", "true"), m.appendChild(e), S = e.animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
+						duration: y,
+						easing: "linear"
+					});
+				}
+				let T = () => {
+					w(), S && S.pause();
+				}, E = () => {
+					C(), S && S.play();
+				};
+				return m.addEventListener("mouseenter", T), m.addEventListener("mouseleave", E), m.addEventListener("focusin", T), m.addEventListener("focusout", E), C(), {
+					dismiss: v,
 					el: m
 				};
 			}, p = () => f();
@@ -7337,7 +7348,7 @@ var Ht = {
 		}
 	}
 };
-Object.entries(Xt).forEach(([e, t]) => Z.register(e, t));
-var $ = (e) => (t, n) => Z[e](t, n), Zt = $("parallax"), Qt = $("mouseParallax"), $t = $("reveal"), en = $("counter"), tn = $("lazy"), nn = $("textSplit"), rn = $("blurText"), an = $("shuffle"), on = $("typewriter"), sn = $("textReveal"), cn = $("textTransition"), ln = $("magnetic"), un = $("marquee"), dn = $("overflowText"), fn = $("loader"), pn = $("tilt"), mn = $("cursor"), hn = $("textFill"), gn = $("stickyStack"), _n = $("scrollVelocity"), vn = $("progress"), yn = $("slider"), bn = $("ambientMedia"), xn = $("pageReveal"), Sn = $("glitch"), Cn = $("cardGlow"), wn = $("lightbox"), Tn = $("pageTransition"), En = $("vibrate"), Dn = $("ripple"), On = $("cssScroll"), kn = $("scrollSequence"), An = $("brushReveal"), jn = $("fullpage"), Mn = $("confetti"), Nn = $("accordion"), Pn = $("hold"), Fn = $("megaMenu"), In = $("toast"), Ln = $("bottomSheet"), Rn = $("tabs"), zn = $("radial"), Bn = $("coverReveal"), Vn = $("gesture"), Hn = $("drag"), Un = $("tooltip"), Wn = $("switch"), Gn = Z;
+Object.entries(Zt).forEach(([e, t]) => Z.register(e, t));
+var $ = (e) => (t, n) => Z[e](t, n), Qt = $("parallax"), $t = $("mouseParallax"), en = $("reveal"), tn = $("counter"), nn = $("lazy"), rn = $("textSplit"), an = $("blurText"), on = $("shuffle"), sn = $("typewriter"), cn = $("textReveal"), ln = $("textTransition"), un = $("magnetic"), dn = $("marquee"), fn = $("overflowText"), pn = $("loader"), mn = $("tilt"), hn = $("cursor"), gn = $("textFill"), _n = $("stickyStack"), vn = $("scrollVelocity"), yn = $("progress"), bn = $("slider"), xn = $("ambientMedia"), Sn = $("pageReveal"), Cn = $("glitch"), wn = $("cardGlow"), Tn = $("lightbox"), En = $("pageTransition"), Dn = $("vibrate"), On = $("ripple"), kn = $("cssScroll"), An = $("scrollSequence"), jn = $("brushReveal"), Mn = $("fullpage"), Nn = $("confetti"), Pn = $("accordion"), Fn = $("hold"), In = $("megaMenu"), Ln = $("toast"), Rn = $("bottomSheet"), zn = $("tabs"), Bn = $("radial"), Vn = $("coverReveal"), Hn = $("gesture"), Un = $("drag"), Wn = $("tooltip"), Gn = $("switch"), Kn = Z;
 //#endregion
-export { Nn as accordion, bn as ambientMedia, rn as blurText, Ln as bottomSheet, An as brushReveal, Cn as cardGlow, Mn as confetti, en as counter, Bn as coverReveal, On as cssScroll, mn as cursor, Gn as default, Hn as drag, jn as fullpage, Vn as gesture, Sn as glitch, Pn as hold, tn as lazy, wn as lightbox, fn as loader, ln as magnetic, un as marquee, Fn as megaMenu, Xt as modules, Qt as mouseParallax, dn as overflowText, xn as pageReveal, Tn as pageTransition, Zt as parallax, vn as progress, zn as radial, $t as reveal, Dn as ripple, kn as scrollSequence, _n as scrollVelocity, an as shuffle, yn as slider, gn as stickyStack, Wn as switch, Rn as tabs, hn as textFill, sn as textReveal, nn as textSplit, cn as textTransition, pn as tilt, In as toast, Un as tooltip, on as typewriter, En as vibrate };
+export { Pn as accordion, xn as ambientMedia, an as blurText, Rn as bottomSheet, jn as brushReveal, wn as cardGlow, Nn as confetti, tn as counter, Vn as coverReveal, kn as cssScroll, hn as cursor, Kn as default, Un as drag, Mn as fullpage, Hn as gesture, Cn as glitch, Fn as hold, nn as lazy, Tn as lightbox, pn as loader, un as magnetic, dn as marquee, In as megaMenu, Zt as modules, $t as mouseParallax, fn as overflowText, Sn as pageReveal, En as pageTransition, Qt as parallax, yn as progress, Bn as radial, en as reveal, On as ripple, An as scrollSequence, vn as scrollVelocity, on as shuffle, bn as slider, _n as stickyStack, Gn as switch, zn as tabs, gn as textFill, cn as textReveal, rn as textSplit, ln as textTransition, mn as tilt, Ln as toast, Wn as tooltip, sn as typewriter, Dn as vibrate };
