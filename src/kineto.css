@@ -261,6 +261,11 @@ html.kt-preload [data-kt-text-transition] {
   /* Key orange by default (not the type accent) — override with --kt-toast-bar. */
   background: var(--kt-toast-bar, #ff5b1c);
 }
+/* Circular countdown (progressBar:"ring"). */
+.kt-toast__ring { flex: 0 0 auto; width: 18px; height: 18px; }
+.kt-toast__ring svg { width: 100%; height: 100%; display: block; }
+.kt-toast__ring-track { fill: none; stroke: color-mix(in srgb, currentColor 26%, transparent); stroke-width: 3; }
+.kt-toast__ring-fill { fill: none; stroke: var(--kt-toast-bar, #ff5b1c); stroke-width: 3; stroke-linecap: round; }
 /* Type accent is opt-in only (add your own border/icon via --kt-toast-accent):
    no decorative border by default. */
 .kt-toast--success { --kt-toast-accent: #2ec16b; }

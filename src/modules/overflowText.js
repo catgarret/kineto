@@ -156,6 +156,10 @@ export default {
     const buildRolling = () => {
       const items = rollingItems || [];
       if (!items.length) return;
+      // Clear any previously-built viewport first — items were captured once at
+      // create, so replay/rebuild must not append a second rolling viewport
+      // (which left stacked tracks with only the last one animating).
+      el.innerHTML = '';
       el.setAttribute('role', opts.role || 'status');
       el.setAttribute('aria-live', opts.ariaLive || 'polite');
       const rollViewport = document.createElement('span');

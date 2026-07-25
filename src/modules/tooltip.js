@@ -77,9 +77,9 @@ export default {
       visible = true;
       tip.hidden = false;
       position();
-      if (anim) anim.cancel();
-      if (!reduce) anim = tip.animate([{ opacity: 0 }, { opacity: 1 }], { duration: duration * 1000, easing: 'ease', fill: 'forwards' });
-      else tip.style.opacity = '1';
+      if (anim) anim.cancel(); // may fire a lingering hide's oncancel — guarded by !visible
+      tip.style.opacity = '1';
+      if (!reduce) anim = tip.animate([{ opacity: 0 }, { opacity: 1 }], { duration: duration * 1000, easing: 'ease' });
       window.addEventListener('scroll', position, true);
       window.addEventListener('resize', position);
     };
@@ -87,8 +87,10 @@ export default {
       clearTimeout(showTimer);
       if (!visible) return;
       visible = false;
-      const done = () => { tip.hidden = true; tip.style.opacity = '0'; };
+      // Guard: if re-shown before this finishes/cancels, don't hide the new one.
+      const done = () => { if (!visible) { tip.hidden = true; tip.style.opacity = '0'; } };
       if (anim) anim.cancel();
+      tip.style.opacity = '0';
       if (!reduce) { anim = tip.animate([{ opacity: 1 }, { opacity: 0 }], { duration: duration * 700, easing: 'ease' }); anim.onfinish = done; anim.oncancel = done; }
       else done();
       window.removeEventListener('scroll', position, true);

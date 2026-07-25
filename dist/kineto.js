@@ -3046,7 +3046,7 @@ var Qe = {
 		}, I = () => {
 			let n = y || [];
 			if (!n.length) return;
-			e.setAttribute("role", t.role || "status"), e.setAttribute("aria-live", t.ariaLive || "polite");
+			e.innerHTML = "", e.setAttribute("role", t.role || "status"), e.setAttribute("aria-live", t.ariaLive || "polite");
 			let r = document.createElement("span");
 			r.className = "kt-overflow-rolling-viewport", r.style.cssText = "display:block;position:relative;height:1.35em;overflow:hidden;", E = document.createElement("span"), E.className = "kt-overflow-rolling-track", E.style.cssText = "display:flex;flex-direction:column;will-change:transform;";
 			let i = F(n[0], !1, !0), a = F(n[1 % n.length], !0, !0);
@@ -6511,17 +6511,17 @@ var Ht = {
 	megaMenu: qt,
 	toast: {
 		create(e, t = {}) {
-			let n = d().reducedMotion, r = t.position || "bottom-right", i = t.type || "info", a = Math.max(600, Number(t.duration ?? 3200)), o = t.dismissible !== !1, s = t.message || e.getAttribute("data-kt-message") || e.textContent.trim() || "Done", c = t.progressBar === !0, l = Math.max(1, Number(t.max ?? 5)), u = (e, t = {}) => {
-				let u = t.type || i, d = Yt(t.position || r);
-				for (; d.children.length >= l;) d.firstElementChild?.remove();
-				let f = document.createElement("div");
-				f.className = `kt-toast kt-toast--${u}`, f.setAttribute("role", u === "error" || u === "warning" ? "alert" : "status");
-				let p = document.createElement("span");
-				if (p.className = "kt-toast__msg", p.textContent = e ?? s, f.appendChild(p), o) {
+			let n = d().reducedMotion, r = t.position || "bottom-right", i = t.type || "info", a = Math.max(600, Number(t.duration ?? 3200)), o = t.dismissible !== !1, s = t.message || e.getAttribute("data-kt-message") || e.textContent.trim() || "Done", c = t.progressBar === "ring" ? "ring" : t.progressBar === !0 || t.progressBar === "bar" ? "bar" : "none", l = c !== "none", u = Math.max(1, Number(t.max ?? 5)), f = (e, t = {}) => {
+				let d = t.type || i, f = Yt(t.position || r);
+				for (; f.children.length >= u;) f.firstElementChild?.remove();
+				let p = document.createElement("div");
+				p.className = `kt-toast kt-toast--${d}`, p.setAttribute("role", d === "error" || d === "warning" ? "alert" : "status");
+				let m = document.createElement("span");
+				if (m.className = "kt-toast__msg", m.textContent = e ?? s, p.appendChild(m), o) {
 					let e = document.createElement("button");
-					e.type = "button", e.className = "kt-toast__close", e.setAttribute("aria-label", "Dismiss"), e.innerHTML = "&times;", e.addEventListener("click", () => v()), f.appendChild(e);
+					e.type = "button", e.className = "kt-toast__close", e.setAttribute("aria-label", "Dismiss"), e.innerHTML = "&times;", e.addEventListener("click", () => y()), p.appendChild(e);
 				}
-				d.appendChild(f), n || f.animate([{
+				f.appendChild(p), n || p.animate([{
 					opacity: 0,
 					transform: "translateY(10px)"
 				}, {
@@ -6531,14 +6531,14 @@ var Ht = {
 					duration: 240,
 					easing: "cubic-bezier(.22,.8,.3,1)"
 				});
-				let m = null, h = Number(t.duration ?? a), g = 0, _ = null, v = () => {
-					if (clearTimeout(m), !f.isConnected) return;
-					let e = () => f.remove();
+				let h = null, g = Number(t.duration ?? a), _ = 0, v = null, y = () => {
+					if (clearTimeout(h), !p.isConnected) return;
+					let e = () => p.remove();
 					if (n) {
 						e();
 						return;
 					}
-					let t = f.animate([{
+					let t = p.animate([{
 						opacity: 1,
 						transform: "none"
 					}, {
@@ -6550,31 +6550,42 @@ var Ht = {
 					});
 					t.onfinish = e, t.oncancel = e;
 				};
-				if (c && !n && f.animate) {
-					let e = document.createElement("span");
-					e.className = "kt-toast__bar", e.setAttribute("aria-hidden", "true"), f.appendChild(e), _ = e.animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
-						duration: h,
-						easing: "linear"
-					}), _.onfinish = v;
+				if (l && !n && p.animate) {
+					if (c === "ring") {
+						let e = document.createElement("span");
+						e.className = "kt-toast__ring", e.setAttribute("aria-hidden", "true");
+						let t = 2 * Math.PI * 9;
+						e.innerHTML = `<svg viewBox="0 0 24 24"><circle class="kt-toast__ring-track" cx="12" cy="12" r="9"></circle><circle class="kt-toast__ring-fill" cx="12" cy="12" r="9" transform="rotate(-90 12 12)" stroke-dasharray="${t}" stroke-dashoffset="0"></circle></svg>`, p.insertBefore(e, p.firstChild), v = e.querySelector(".kt-toast__ring-fill").animate([{ strokeDashoffset: 0 }, { strokeDashoffset: t }], {
+							duration: g,
+							easing: "linear"
+						});
+					} else {
+						let e = document.createElement("span");
+						e.className = "kt-toast__bar", e.setAttribute("aria-hidden", "true"), p.appendChild(e), v = e.animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
+							duration: g,
+							easing: "linear"
+						});
+					}
+					v.onfinish = y;
 				}
-				let y = () => {
-					_ ? _.play() : (g = performance.now(), m = setTimeout(v, h));
-				}, b = () => {
-					_ ? _.pause() : (clearTimeout(m), h -= performance.now() - g);
+				let b = () => {
+					v ? v.play() : (_ = performance.now(), h = setTimeout(y, g));
+				}, x = () => {
+					v ? v.pause() : (clearTimeout(h), g -= performance.now() - _);
 				};
-				return f.addEventListener("mouseenter", b), f.addEventListener("mouseleave", y), f.addEventListener("focusin", b), f.addEventListener("focusout", y), y(), {
-					dismiss: v,
-					el: f
+				return p.addEventListener("mouseenter", x), p.addEventListener("mouseleave", b), p.addEventListener("focusin", x), p.addEventListener("focusout", b), b(), {
+					dismiss: y,
+					el: p
 				};
-			}, f = () => u();
-			return e.addEventListener("click", f), {
+			}, p = () => f();
+			return e.addEventListener("click", p), {
 				el: e,
 				type: "toast",
-				show: u,
+				show: f,
 				pause() {},
 				resume() {},
 				destroy() {
-					e.removeEventListener("click", f);
+					e.removeEventListener("click", p);
 				}
 			};
 		},
@@ -7076,18 +7087,17 @@ var Ht = {
 				let c, u;
 				s === "top" ? (c = t.left + t.width / 2 - n / 2, u = t.top - r - l) : s === "bottom" ? (c = t.left + t.width / 2 - n / 2, u = t.bottom + l) : s === "left" ? (c = t.left - n - l, u = t.top + t.height / 2 - r / 2) : (c = t.right + l, u = t.top + t.height / 2 - r / 2), c = h(c, 4, i - n - 4), u = h(u, 4, o - r - 4), p.dataset.placement = s, p.style.left = `${Math.round(c)}px`, p.style.top = `${Math.round(u)}px`;
 			}, S = () => {
-				clearTimeout(y), !_ && (_ = !0, p.hidden = !1, x(), b && b.cancel(), n ? p.style.opacity = "1" : b = p.animate([{ opacity: 0 }, { opacity: 1 }], {
+				clearTimeout(y), !_ && (_ = !0, p.hidden = !1, x(), b && b.cancel(), p.style.opacity = "1", n || (b = p.animate([{ opacity: 0 }, { opacity: 1 }], {
 					duration: u * 1e3,
-					easing: "ease",
-					fill: "forwards"
-				}), window.addEventListener("scroll", x, !0), window.addEventListener("resize", x));
+					easing: "ease"
+				})), window.addEventListener("scroll", x, !0), window.addEventListener("resize", x));
 			}, C = () => {
 				if (clearTimeout(v), !_) return;
 				_ = !1;
 				let e = () => {
-					p.hidden = !0, p.style.opacity = "0";
+					_ || (p.hidden = !0, p.style.opacity = "0");
 				};
-				b && b.cancel(), n ? e() : (b = p.animate([{ opacity: 1 }, { opacity: 0 }], {
+				b && b.cancel(), p.style.opacity = "0", n ? e() : (b = p.animate([{ opacity: 1 }, { opacity: 0 }], {
 					duration: u * 700,
 					easing: "ease"
 				}), b.onfinish = e, b.oncancel = e), window.removeEventListener("scroll", x, !0), window.removeEventListener("resize", x);

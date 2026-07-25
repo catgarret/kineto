@@ -30,7 +30,10 @@ export default {
     // A countdown progress bar that drains over the duration (pauses on hover).
     // Named `progressBar` (attr data-kt-progress-bar) to avoid colliding with
     // the separate `progress` module's data-kt-progress activation attribute.
-    const showProgress = opts.progressBar === true;
+    // progressBar: true | "bar" → linear bar; "ring" → circular countdown.
+    const progressStyle = opts.progressBar === 'ring' ? 'ring'
+      : (opts.progressBar === true || opts.progressBar === 'bar') ? 'bar' : 'none';
+    const showProgress = progressStyle !== 'none';
     // Cap how many toasts stack at once — the oldest is evicted past this.
     const maxVisible = Math.max(1, Number(opts.max ?? 5));
 
@@ -79,11 +82,21 @@ export default {
       // Progress bar drives (and visualises) the countdown when enabled; hover
       // pauses both the bar and the dismissal so they stay in sync.
       if (showProgress && !reduce && toast.animate) {
-        const bar = document.createElement('span');
-        bar.className = 'kt-toast__bar';
-        bar.setAttribute('aria-hidden', 'true');
-        toast.appendChild(bar);
-        barAnim = bar.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: remaining, easing: 'linear' });
+        if (progressStyle === 'ring') {
+          const ring = document.createElement('span');
+          ring.className = 'kt-toast__ring';
+          ring.setAttribute('aria-hidden', 'true');
+          const C = 2 * Math.PI * 9;
+          ring.innerHTML = `<svg viewBox="0 0 24 24"><circle class="kt-toast__ring-track" cx="12" cy="12" r="9"></circle><circle class="kt-toast__ring-fill" cx="12" cy="12" r="9" transform="rotate(-90 12 12)" stroke-dasharray="${C}" stroke-dashoffset="0"></circle></svg>`;
+          toast.insertBefore(ring, toast.firstChild);
+          barAnim = ring.querySelector('.kt-toast__ring-fill').animate([{ strokeDashoffset: 0 }, { strokeDashoffset: C }], { duration: remaining, easing: 'linear' });
+        } else {
+          const bar = document.createElement('span');
+          bar.className = 'kt-toast__bar';
+          bar.setAttribute('aria-hidden', 'true');
+          toast.appendChild(bar);
+          barAnim = bar.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: remaining, easing: 'linear' });
+        }
         barAnim.onfinish = dismiss;
       }
       const arm = () => { if (barAnim) { barAnim.play(); } else { startedAt = performance.now(); timer = setTimeout(dismiss, remaining); } };

@@ -9,6 +9,9 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
 - **Class Hook (and all in-place) replay fixed**: the playground now replays via the instance's own `replay()` (no forced recreate), so `classOnly` reveals re-trigger their CSS transition.
 - **Reading Progress — headless API**: set `property` to a CSS custom property (e.g. `--read`) to stream the 0–1 progress into it and render any custom shape from CSS; `onUpdate(value, el)` fires every frame. No built-in bar/ring required.
 - **Bottom sheet** default now uses `light-dark()` + `color-scheme` so it adapts to the user's OS light/dark automatically (no site theming needed), still overridable via `--kt-sheet-bg` / `--kt-sheet-fg`.
+- **Tooltip re-show fix**: it showed once then never again — `show()` cancelling a lingering hide animation fired that animation's `oncancel`, which re-hid the freshly-shown tooltip. `done` is now guarded by the visible state.
+- **Rolling ticker replay fix**: replaying appended a second rolling viewport each time (stacked tracks, only the last animating). `buildRolling` now clears prior output first.
+- **Toast**: `progressBar` now accepts `"ring"` for a circular countdown (as well as `"bar"`/`true`). The flicker/instant-dismiss users saw was the `data-kt-progress`↔`progress`-module collision, resolved by the `progressBar` rename in this release.
 - **Composition note**: modules stack — e.g. `data-kt-magnetic data-kt-ripple` gives a magnetic button with a click ripple (demoed).
 
 ## [0.8.34]
