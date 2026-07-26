@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import revealModule, { staggerDelays } from '../src/modules/reveal.js';
+import fullpageModule from '../src/modules/fullpage.js';
 
 const rounded = (values) => values.map((value) => Number(value.toFixed(3)));
 assert.deepEqual(rounded(staggerDelays(5, 0.1, 'start')), [0, 0.1, 0.2, 0.3, 0.4]);
@@ -62,6 +63,35 @@ assert.ok(
 clockReveal.destroy();
 assert.ok([...clockList.children].every((item) => item.getAttribute('style') == null), 'clock reveal destroy must restore item styles');
 clockList.remove();
+
+// The wheel gesture that changes to a long section must stop at the section's
+// top. Trackpad inertia from that same gesture used to scroll the new section
+// immediately, so it appeared halfway down on first entry.
+const fullpageEl = document.createElement('div');
+fullpageEl.innerHTML = '<section>Overview</section><section>Long</section><section>End</section>';
+document.body.appendChild(fullpageEl);
+Object.defineProperty(fullpageEl, 'clientHeight', { configurable: true, value: 360 });
+const fullpageSections = [...fullpageEl.children];
+fullpageSections.forEach((section, index) => {
+  Object.defineProperty(section, 'clientHeight', { configurable: true, value: 360 });
+  Object.defineProperty(section, 'scrollHeight', { configurable: true, value: index === 1 ? 900 : 360 });
+});
+const fullpage = fullpageModule.create(fullpageEl, { duration: 0.15 });
+const wheel = () => fullpageEl.dispatchEvent(new window.WheelEvent('wheel', {
+  bubbles: true,
+  cancelable: true,
+  deltaY: 80
+}));
+wheel();
+assert.equal(fullpage.index, 1, 'first wheel must move to the long second section');
+assert.equal(fullpageSections[1].scrollTop, 0, 'long section must enter at its top');
+wheel();
+assert.equal(fullpageSections[1].scrollTop, 0, 'same wheel gesture tail must not scroll the newly entered section');
+await new Promise((resolve) => setTimeout(resolve, 320));
+wheel();
+assert.equal(fullpageSections[1].scrollTop, 80, 'the next wheel gesture must scroll the long section internally');
+fullpage.destroy();
+fullpageEl.remove();
 
 const sliderModule = (await import('../src/modules/slider.js')).default;
 const coverRevealModule = (await import('../src/modules/coverReveal.js')).default;
@@ -182,4 +212,4 @@ Kineto.unregister('slider');
 Kineto.unregister('progress');
 dom.window.close();
 
-console.log('Motion regressions OK — reveal order; Cover Reveal combinations; slider pause/progress, CSS hooks, and activation collisions.');
+console.log('Motion regressions OK — reveal order; fullpage gesture handoff; Cover Reveal combinations; slider pause/progress, CSS hooks, and activation collisions.');

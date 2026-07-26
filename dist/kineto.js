@@ -7310,6 +7310,10 @@ var Ln = {
 			let o = t.deltaMode === 1 ? 16 : t.deltaMode === 2 ? e.clientHeight : 1, s = t.deltaY * o, c = t.deltaX * o, l = p && Math.abs(c) >= Math.abs(s) ? c : s;
 			if (Math.abs(l) < 4) return;
 			let f = l > 0 ? 1 : -1;
+			if (v || F) {
+				t.preventDefault(), t.stopPropagation();
+				return;
+			}
 			if (!d && A(f)) {
 				t.preventDefault(), t.stopPropagation(), i[_].scrollTop += s, h && M();
 				return;
@@ -7327,7 +7331,7 @@ var Ln = {
 				m ? m.scrollTop += s : window.scrollBy(0, s);
 				return;
 			}
-			t.preventDefault(), t.stopPropagation(), !(v || n < N) && (N = n + Math.max(320, a * 1e3 + 90), D(_ + f), O(f) || (F = !0));
+			t.preventDefault(), t.stopPropagation(), !(v || n < N) && (N = n + Math.max(320, a * 1e3 + 90), D(_ + f), F = !0);
 		}, L = null, R = null, z = !1, B = (e) => {
 			let t = L.x - e.x, n = L.y - e.y;
 			return d || l && Math.abs(t) >= Math.abs(n) ? t : n;
@@ -7350,6 +7354,10 @@ var Ln = {
 			let o = B(r);
 			if (Math.abs(o) < 3) return;
 			let s = o > 0 ? 1 : -1;
+			if (v || z) {
+				t.preventDefault();
+				return;
+			}
 			if (!d && A(s)) {
 				t.preventDefault(), i[_].scrollTop += a;
 				return;
@@ -7361,10 +7369,6 @@ var Ln = {
 					t.preventDefault(), c.scrollTop += a;
 					return;
 				}
-			}
-			if (v || z) {
-				t.preventDefault();
-				return;
 			}
 			if (!O(s)) {
 				d || (t.preventDefault(), c ? c.scrollTop += a : window.scrollBy(0, a));

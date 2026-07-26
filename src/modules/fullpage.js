@@ -256,6 +256,15 @@ export default {
       const delta = bidir ? (Math.abs(dx) >= Math.abs(dy) ? dx : dy) : dy;
       if (Math.abs(delta) < 4) return;
       const dir = delta > 0 ? 1 : -1;
+      // A trackpad/mouse wheel keeps emitting momentum events after the event
+      // that changed the page. Never let that tail immediately scroll the newly
+      // entered long section: the first gesture lands at its top, and only the
+      // next distinct gesture may begin its internal scroll.
+      if (animating || absorbTail) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
       // Long section: let its own content scroll first; page only at its edge.
       if (!horizontal && sectionCanScroll(dir)) {
         event.preventDefault();
@@ -301,8 +310,10 @@ export default {
       if (animating || now < cooldownUntil) return;
       cooldownUntil = now + Math.max(320, duration * 1000 + 90);
       go(index + dir);
-      // If that step landed on an edge, absorb the rest of THIS flick's tail.
-      if (!canMove(dir)) absorbTail = true;
+      // Absorb the rest of THIS flick's tail after every page change. Without
+      // this, landing on a long section and continuing the same trackpad flick
+      // advanced its internal scroll before the user made a second gesture.
+      absorbTail = true;
     };
 
     // Touch swipe with manual edge hand-off, mirroring the wheel logic.
@@ -335,6 +346,10 @@ export default {
       const delta = swipeDelta(cur);
       if (Math.abs(delta) < 3) return;
       const dir = delta > 0 ? 1 : -1;
+      // touchConsumed remains true until touchend. Check it before the long
+      // section path so the swipe that changes the page cannot also scroll the
+      // new page's inner content.
+      if (animating || touchConsumed) { event.preventDefault(); return; }
       // Long section scrolls its own content first, then the deck pages at the edge.
       if (!horizontal && sectionCanScroll(dir)) {
         event.preventDefault();
@@ -350,7 +365,6 @@ export default {
         const pinned = er.top <= pr.top + 1 && er.bottom >= pr.bottom - 1;
         if (!pinned) { event.preventDefault(); sp.scrollTop += stepY; return; }
       }
-      if (animating || touchConsumed) { event.preventDefault(); return; }
       if (!canMove(dir)) {
         // At an edge. Vertical/mixed block native scroll, so hand it off
         // ourselves; horizontal decks let the native vertical scroll through.

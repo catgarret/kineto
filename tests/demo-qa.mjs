@@ -339,6 +339,49 @@ try {
   );
   assert.equal(drawerVisuals.horizontalSpotlightOwner,true,'Horizontal pinned scroll spotlight must frame the whole demo unit');
   assert.equal(drawerVisuals.horizontalRadius,true,'Horizontal pinned scroll spotlight radius must match the demo unit');
+
+  const fullpageFlow=await page.evaluate(async()=>{
+    const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));
+    const deck=document.querySelector('#mod-fullpage [data-kt-fullpage]');
+    const instance=window.Kineto.getInstance(deck,'fullpage');
+    const sections=[...deck.querySelectorAll('.kt-fullpage-section')];
+    const longSection=sections[1];
+    const host=document.querySelector('#mod-fullpage .fp-scroll-host');
+    const embedded=host?.querySelector(':scope > .fullpage-demo');
+    const normal=host?.querySelector(':scope > .fp-normal');
+    if(!instance||!longSection||!host||!embedded||!normal)return {found:false};
+    instance.go(0,true);
+    longSection.scrollTop=0;
+    const wheel=()=>deck.dispatchEvent(new window.WheelEvent('wheel',{
+      bubbles:true,cancelable:true,deltaY:80
+    }));
+    wheel();
+    const afterLanding={index:instance.index,scrollTop:longSection.scrollTop};
+    wheel();
+    const afterTail=longSection.scrollTop;
+    await sleep(900);
+    wheel();
+    const afterNextGesture=longSection.scrollTop;
+    const result={
+      found:true,
+      embeddedFillsHost:Math.abs(embedded.getBoundingClientRect().height-host.getBoundingClientRect().height)<=1,
+      normalStartsAfterDeck:normal.offsetTop>=embedded.offsetHeight-1,
+      longSectionOverflows:longSection.scrollHeight>longSection.clientHeight+2,
+      afterLanding,
+      afterTail,
+      afterNextGesture
+    };
+    instance.go(0,true);
+    longSection.scrollTop=0;
+    return result;
+  });
+  assert.equal(fullpageFlow.found,true,'Fullpage flow QA fixture was not found');
+  assert.equal(fullpageFlow.embeddedFillsHost,true,'first-screen-only Fullpage deck must fill the demo viewport');
+  assert.equal(fullpageFlow.normalStartsAfterDeck,true,'normal scroll content must begin below the full demo-height deck');
+  assert.equal(fullpageFlow.longSectionOverflows,true,'Fullpage long-section fixture must actually overflow');
+  assert.deepEqual(fullpageFlow.afterLanding,{index:1,scrollTop:0},'first wheel must land at the top of the long section');
+  assert.equal(fullpageFlow.afterTail,0,'the first wheel gesture tail must not scroll the new long section');
+  assert.ok(fullpageFlow.afterNextGesture>0,'the next wheel gesture must scroll the long section internally');
   assert.deepEqual(runtimeErrors,[],`Demo runtime errors:\n${runtimeErrors.join('\n')}`);
 
   // Run representative lifecycle coverage in the same Chromium process.
