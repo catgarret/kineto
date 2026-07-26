@@ -4,7 +4,7 @@
 
 ## 프리셋
 
-`fade`, `fade-up/down/left/right`, `slide-up/down/left/right`, `zoom`, `zoom-in/out`, `blur`, `rise`, `soft`, `flip`, `flip-x/y`, `rotate`, `mask`, `wipe`, `class`
+`fade`, `fade-up/down/left/right`, `slide-up/down/left/right`, `zoom`, `zoom-in/out`, `blur`, `rise`, `soft`, `flip`, `flip-x/y`, `rotate`, `mask`, `wipe`, `clock`, `class`
 
 ```html
 <section data-kt-reveal="slide-left">왼쪽에서 등장</section>
@@ -15,6 +15,15 @@
 
 ```html
 <ul data-kt-reveal="fade-up" data-kt-stagger="0.08" data-kt-order="edges">
+  <li>01</li><li>02</li><li>03</li><li>04</li>
+</ul>
+```
+
+`clock`도 `stagger`가 설정된 컨테이너에서는 부모 전체를 한 번에 자르지
+않고 각 직계 자식에 독립적인 원형 마스크를 적용합니다.
+
+```html
+<ul data-kt-reveal="clock" data-kt-stagger="0.08" data-kt-order="start">
   <li>01</li><li>02</li><li>03</li><li>04</li>
 </ul>
 ```

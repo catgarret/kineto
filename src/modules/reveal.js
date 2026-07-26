@@ -134,51 +134,84 @@ export default {
 
     if (preset === 'clock') {
       // Clock wipe: a conic mask sweeps around like a watch hand until the
-      // content is fully revealed (SOL-style timed activation).
-      const startAngle = Number(opts.startAngle ?? 0);
-      const counter = opts.clockDirection === 'ccw';
-      const duration = Math.max(0.05, Number(opts.duration ?? 1.4));
-      const originalStyleAttr = el.getAttribute('style');
-      const apply = (progress) => {
+      // content is fully revealed. A staggered container applies a separate
+      // clock mask to every direct child instead of masking the whole list.
+      const clockNodes = (opts.stagger && el.children.length) ? Array.from(el.children) : [el];
+      const restores = clockNodes.map((node) => snapshotAttributes(node, ['style', 'class']));
+      const rootRestore = clockNodes[0] === el ? null : snapshotAttributes(el, ['style', 'class']);
+      const apply = (node, progress) => {
+        const startAngle = Number(opts.startAngle ?? 0);
+        const counter = opts.clockDirection === 'ccw';
         const sweep = clamp(progress, 0, 1) * 360;
         const gradient = counter
           ? `conic-gradient(from ${startAngle}deg, transparent 0deg ${360 - sweep}deg, #000 ${360 - sweep}deg)`
           : `conic-gradient(from ${startAngle}deg, #000 ${sweep}deg, transparent ${sweep}deg)`;
-        el.style.maskImage = gradient;
-        el.style.webkitMaskImage = gradient;
-        el.style.opacity = '1';
+        node.style.maskImage = gradient;
+        node.style.webkitMaskImage = gradient;
+        node.style.opacity = '1';
       };
-      apply(0);
-      let clockTween = null;
+      const finishNode = (node) => {
+        node.style.maskImage = 'none';
+        node.style.webkitMaskImage = 'none';
+      };
+      clockNodes.forEach((node) => apply(node, 0));
+      let clockTweens = [];
       let clockRaf = null;
       let clockObserver = null;
-      const finish = () => {
-        el.style.maskImage = 'none';
-        el.style.webkitMaskImage = 'none';
-        addClasses(el, opts);
-        opts.onComplete?.(el);
+      const stop = () => {
+        clockTweens.forEach((tween) => tween.kill?.());
+        clockTweens = [];
+        if (clockRaf != null) cancelAnimationFrame(clockRaf);
+        clockRaf = null;
       };
       const runRaf = () => {
+        const duration = Math.max(0.05, Number(opts.duration ?? 1.4));
+        const baseDelay = Math.max(0, Number(opts.delay ?? 0));
+        const delays = clockNodes.length > 1 ? staggerDelays(clockNodes.length, opts.stagger, opts.order) : [0];
         let startTime = null;
         const frame = (time) => {
           if (startTime == null) startTime = time;
-          const progress = Math.min(1, (time - startTime) / (duration * 1000));
-          apply(progress);
-          if (progress < 1) clockRaf = requestAnimationFrame(frame);
-          else finish();
+          const elapsed = (time - startTime) / 1000;
+          let complete = 0;
+          clockNodes.forEach((node, index) => {
+            const progress = clamp((elapsed - baseDelay - delays[index]) / duration, 0, 1);
+            apply(node, progress);
+            if (progress >= 1) {
+              finishNode(node);
+              complete += 1;
+            }
+          });
+          if (complete < clockNodes.length) clockRaf = requestAnimationFrame(frame);
+          else {
+            clockRaf = null;
+            opts.onComplete?.(el);
+          }
         };
         clockRaf = requestAnimationFrame(frame);
       };
       const startClock = () => {
+        stop();
+        clockNodes.forEach((node) => apply(node, 0));
+        addClasses(el, opts);
         if (gsap) {
-          const state = { p: 0 };
-          clockTween = gsap.to(state, {
-            p: 1,
-            duration,
-            delay: Number(opts.delay ?? 0),
-            ease: (opts.enterEase ?? opts.ease) ? gsapEaseName(opts.enterEase ?? opts.ease) : 'power1.inOut',
-            onUpdate: () => apply(state.p),
-            onComplete: finish
+          const duration = Math.max(0.05, Number(opts.duration ?? 1.4));
+          const baseDelay = Math.max(0, Number(opts.delay ?? 0));
+          const delays = clockNodes.length > 1 ? staggerDelays(clockNodes.length, opts.stagger, opts.order) : [0];
+          let complete = 0;
+          clockTweens = clockNodes.map((node, index) => {
+            const state = { p: 0 };
+            return gsap.to(state, {
+              p: 1,
+              duration,
+              delay: baseDelay + delays[index],
+              ease: (opts.enterEase ?? opts.ease) ? gsapEaseName(opts.enterEase ?? opts.ease) : 'power1.inOut',
+              onUpdate: () => apply(node, state.p),
+              onComplete: () => {
+                finishNode(node);
+                complete += 1;
+                if (complete === clockNodes.length) opts.onComplete?.(el);
+              }
+            });
           });
         } else runRaf();
       };
@@ -195,19 +228,16 @@ export default {
         type: 'reveal',
         replay(nextOptions) {
           Object.assign(opts, nextOptions || {});
-          clockTween?.kill?.();
-          if (clockRaf != null) cancelAnimationFrame(clockRaf);
-          apply(0);
           startClock();
         },
-        pause() { clockTween?.pause?.(); },
-        resume() { clockTween?.resume?.(); },
+        pause() { clockTweens.forEach((tween) => tween.pause?.()); },
+        resume() { clockTweens.forEach((tween) => tween.resume?.()); },
         destroy() {
-          clockTween?.kill?.();
-          if (clockRaf != null) cancelAnimationFrame(clockRaf);
+          stop();
           clockObserver?.kill?.();
           clockObserver?.disconnect?.();
-          if (originalStyleAttr == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyleAttr);
+          restores.forEach((restore) => restore());
+          rootRestore?.();
         }
       };
     }

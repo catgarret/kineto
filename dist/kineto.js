@@ -1310,30 +1310,40 @@ var et = {
 			};
 		}
 		if (i === "clock") {
-			let i = Number(t.startAngle ?? 0), a = t.clockDirection === "ccw", o = Math.max(.05, Number(t.duration ?? 1.4)), s = e.getAttribute("style"), c = (t) => {
-				let n = U(t, 0, 1) * 360, r = a ? `conic-gradient(from ${i}deg, transparent 0deg ${360 - n}deg, #000 ${360 - n}deg)` : `conic-gradient(from ${i}deg, #000 ${n}deg, transparent ${n}deg)`;
-				e.style.maskImage = r, e.style.webkitMaskImage = r, e.style.opacity = "1";
+			let i = t.stagger && e.children.length ? Array.from(e.children) : [e], a = i.map((e) => q(e, ["style", "class"])), o = i[0] === e ? null : q(e, ["style", "class"]), s = (e, n) => {
+				let r = Number(t.startAngle ?? 0), i = t.clockDirection === "ccw", a = U(n, 0, 1) * 360, o = i ? `conic-gradient(from ${r}deg, transparent 0deg ${360 - a}deg, #000 ${360 - a}deg)` : `conic-gradient(from ${r}deg, #000 ${a}deg, transparent ${a}deg)`;
+				e.style.maskImage = o, e.style.webkitMaskImage = o, e.style.opacity = "1";
+			}, c = (e) => {
+				e.style.maskImage = "none", e.style.webkitMaskImage = "none";
 			};
-			c(0);
-			let l = null, u = null, d = null, f = () => {
-				e.style.maskImage = "none", e.style.webkitMaskImage = "none", Qe(e, t), t.onComplete?.(e);
+			i.forEach((e) => s(e, 0));
+			let l = [], u = null, d = null, f = () => {
+				l.forEach((e) => e.kill?.()), l = [], u != null && cancelAnimationFrame(u), u = null;
 			}, p = () => {
-				let e = null, t = (n) => {
-					e ??= n;
-					let r = Math.min(1, (n - e) / (o * 1e3));
-					c(r), r < 1 ? u = requestAnimationFrame(t) : f();
+				let n = Math.max(.05, Number(t.duration ?? 1.4)), r = Math.max(0, Number(t.delay ?? 0)), a = i.length > 1 ? Ze(i.length, t.stagger, t.order) : [0], o = null, l = (d) => {
+					o ??= d;
+					let f = (d - o) / 1e3, p = 0;
+					i.forEach((e, t) => {
+						let i = U((f - r - a[t]) / n, 0, 1);
+						s(e, i), i >= 1 && (c(e), p += 1);
+					}), p < i.length ? u = requestAnimationFrame(l) : (u = null, t.onComplete?.(e));
 				};
-				u = requestAnimationFrame(t);
+				u = requestAnimationFrame(l);
 			}, m = () => {
-				if (n) {
-					let e = { p: 0 };
-					l = n.to(e, {
-						p: 1,
-						duration: o,
-						delay: Number(t.delay ?? 0),
-						ease: t.enterEase ?? t.ease ? L(t.enterEase ?? t.ease) : "power1.inOut",
-						onUpdate: () => c(e.p),
-						onComplete: f
+				if (f(), i.forEach((e) => s(e, 0)), Qe(e, t), n) {
+					let r = Math.max(.05, Number(t.duration ?? 1.4)), a = Math.max(0, Number(t.delay ?? 0)), o = i.length > 1 ? Ze(i.length, t.stagger, t.order) : [0], u = 0;
+					l = i.map((l, d) => {
+						let f = { p: 0 };
+						return n.to(f, {
+							p: 1,
+							duration: r,
+							delay: a + o[d],
+							ease: t.enterEase ?? t.ease ? L(t.enterEase ?? t.ease) : "power1.inOut",
+							onUpdate: () => s(l, f.p),
+							onComplete: () => {
+								c(l), u += 1, u === i.length && t.onComplete?.(e);
+							}
+						});
 					});
 				} else p();
 			};
@@ -1346,16 +1356,16 @@ var et = {
 				el: e,
 				type: "reveal",
 				replay(e) {
-					Object.assign(t, e || {}), l?.kill?.(), u != null && cancelAnimationFrame(u), c(0), m();
+					Object.assign(t, e || {}), m();
 				},
 				pause() {
-					l?.pause?.();
+					l.forEach((e) => e.pause?.());
 				},
 				resume() {
-					l?.resume?.();
+					l.forEach((e) => e.resume?.());
 				},
 				destroy() {
-					l?.kill?.(), u != null && cancelAnimationFrame(u), d?.kill?.(), d?.disconnect?.(), s == null ? e.removeAttribute("style") : e.setAttribute("style", s);
+					f(), d?.kill?.(), d?.disconnect?.(), a.forEach((e) => e()), o?.();
 				}
 			};
 		}

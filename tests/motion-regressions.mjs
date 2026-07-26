@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
-import { staggerDelays } from '../src/modules/reveal.js';
+import revealModule, { staggerDelays } from '../src/modules/reveal.js';
 
 const rounded = (values) => values.map((value) => Number(value.toFixed(3)));
 assert.deepEqual(rounded(staggerDelays(5, 0.1, 'start')), [0, 0.1, 0.2, 0.3, 0.4]);
@@ -37,6 +37,31 @@ Object.assign(globalThis, {
   cancelAnimationFrame: window.cancelAnimationFrame.bind(window)
 });
 Object.defineProperty(globalThis, 'navigator', { configurable: true, value: window.navigator });
+
+// Clock reveal on a staggered list must mask each item independently. Masking
+// the <ul> itself turns the whole list into one large clock wipe.
+const clockList = document.createElement('ul');
+clockList.innerHTML = '<li>A</li><li>B</li><li>C</li>';
+document.body.appendChild(clockList);
+const clockReveal = revealModule.create(clockList, {
+  preset: 'clock',
+  duration: 0.2,
+  stagger: 0.05,
+  order: 'start'
+});
+assert.equal(clockList.style.maskImage, '', 'staggered clock reveal must not mask the list root');
+assert.ok(
+  [...clockList.children].every((item) => item.style.maskImage.includes('conic-gradient')),
+  'every list item must receive its own clock mask'
+);
+await new Promise((resolve) => setTimeout(resolve, 90));
+assert.ok(
+  new Set([...clockList.children].map((item) => item.style.maskImage)).size > 1,
+  'staggered item masks must advance independently'
+);
+clockReveal.destroy();
+assert.ok([...clockList.children].every((item) => item.getAttribute('style') == null), 'clock reveal destroy must restore item styles');
+clockList.remove();
 
 const sliderModule = (await import('../src/modules/slider.js')).default;
 const coverRevealModule = (await import('../src/modules/coverReveal.js')).default;

@@ -270,6 +270,8 @@ try {
       found:true,
       expanded:expanded.length,
       full:expanded.length===1&&getComputedStyle(expanded[0]).gridColumnEnd==='-1',
+      collapsedTailFull:collapsed.length%2===0
+        || getComputedStyle(collapsed.at(-1)).gridColumnEnd==='-1',
       compact:collapsed.every((group)=>group.querySelector('.kt-playground__controls')?.offsetHeight===0&&group.offsetHeight<80),
       overlap
     };
@@ -280,8 +282,63 @@ try {
   assert.equal(drawerLayout.found,true,'no multi-group settings panel available for layout QA');
   assert.equal(drawerLayout.expanded,1,'settings layout QA must leave exactly one expanded group');
   assert.equal(drawerLayout.full,true,'the only expanded settings group must span the full drawer width');
+  assert.equal(drawerLayout.collapsedTailFull,true,'an unpaired collapsed settings group must span the full row');
   assert.equal(drawerLayout.compact,true,'collapsed settings groups must not retain empty body height');
   assert.equal(drawerLayout.overlap,false,'settings groups overlap after collapsing');
+
+  const drawerVisuals=await page.evaluate(async()=>{
+    const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));
+    const blurCard=document.querySelector('[data-demo-module="blurText"]');
+    const blurPanel=blurCard?.querySelector(':scope > .kt-playground');
+    if(!blurPanel)return {found:false};
+    blurPanel.open=true;
+    blurPanel.dispatchEvent(new window.Event('toggle'));
+    await sleep(140);
+    const body=blurPanel.__mkBody;
+    const ease=body?.querySelector('.kt-ease-field');
+    const graph=ease?.querySelector('.kt-bz-svg');
+    const duration=body?.querySelector('[data-option="duration"]')?.closest('.kt-playground__field');
+    const stagger=body?.querySelector('[data-option="stagger"]')?.closest('.kt-playground__field');
+    const close=body?.querySelector('.kt-playground__close');
+    const controls=ease?.closest('.kt-playground__controls');
+    const rect=(node)=>node?.getBoundingClientRect();
+    const easeRect=rect(ease); const graphRect=rect(graph);
+    const durationRect=rect(duration); const staggerRect=rect(stagger);
+    const gap=Number.parseFloat(getComputedStyle(controls).columnGap)||0;
+    const result={
+      found:Boolean(ease&&graph&&duration&&stagger&&close),
+      easeTrackFit:Math.abs(easeRect.width-(durationRect.width+staggerRect.width+gap))<=3,
+      graphSquare:Math.abs(graphRect.width-graphRect.height)<=1,
+      closeBackground:getComputedStyle(close).backgroundColor
+    };
+    blurPanel.open=false;
+    blurPanel.dispatchEvent(new window.Event('toggle'));
+    await sleep(80);
+
+    const horizontal=document.querySelector('[data-kt-sticky-stack="horizontal"]');
+    const unit=horizontal?.closest('.scroll-demo-unit');
+    const horizontalPanel=unit?.querySelector('.kt-playground');
+    horizontalPanel.open=true;
+    horizontalPanel.dispatchEvent(new window.Event('toggle'));
+    await sleep(140);
+    const spotlight=document.querySelector('.kt-fp-spotlight');
+    result.horizontalSpotlightOwner=spotlight===unit;
+    result.horizontalRadius=spotlight&&unit
+      ? getComputedStyle(spotlight).borderRadius===getComputedStyle(unit).borderRadius
+      : false;
+    horizontalPanel.open=false;
+    horizontalPanel.dispatchEvent(new window.Event('toggle'));
+    return result;
+  });
+  assert.equal(drawerVisuals.found,true,'Blur Text ease editor visual QA fixture was not found');
+  assert.equal(drawerVisuals.easeTrackFit,true,'ease editor does not fill its two allocated grid tracks');
+  assert.equal(drawerVisuals.graphSquare,true,'ease graph must remain square');
+  assert.ok(
+    drawerVisuals.closeBackground==='rgba(0, 0, 0, 0)'||drawerVisuals.closeBackground==='transparent',
+    `settings close button still has a background: ${drawerVisuals.closeBackground}`
+  );
+  assert.equal(drawerVisuals.horizontalSpotlightOwner,true,'Horizontal pinned scroll spotlight must frame the whole demo unit');
+  assert.equal(drawerVisuals.horizontalRadius,true,'Horizontal pinned scroll spotlight radius must match the demo unit');
   assert.deepEqual(runtimeErrors,[],`Demo runtime errors:\n${runtimeErrors.join('\n')}`);
 
   // Run representative lifecycle coverage in the same Chromium process.
