@@ -16,8 +16,10 @@ export default {
 
     const effect = opts.effect || opts.preset || 'slide';
     const coverflow = effect === 'coverflow';
+    // fade/dissolve: slides stack in place and cross-fade by distance from active.
+    const fade = effect === 'fade' || effect === 'dissolve';
     const gap = Math.max(0, Number(opts.gap ?? (coverflow ? 22 : 0)));
-    const perView = clamp(Number(opts.perView ?? (coverflow ? 1.35 : 1)), 1, slides.length);
+    const perView = fade ? 1 : clamp(Number(opts.perView ?? (coverflow ? 1.35 : 1)), 1, slides.length);
     // The active slide is centered by default in both effects; align:'left'
     // restores the classic left-edge slide alignment.
     const centered = coverflow || (opts.align || 'center') !== 'left';
@@ -25,11 +27,12 @@ export default {
     // loop: false/'off' = none · true/'infinite' = seamless endless ring ·
     // 'rewind' = play to the last slide, then return to the first.
     const loopMode = opts.loop === true ? 'infinite' : (opts.loop || 'off');
-    const loop = loopMode === 'infinite' || loopMode === 'rewind';
     const seamless = loopMode === 'infinite';
     const smoothing = clamp(Number(opts.smoothing ?? (0.14 / Math.max(0.2, Number(opts.speed ?? opts.duration ?? 0.55) / 0.55))), 0.02, 0.5);
     const autoplayDelay = opts.autoplay === true ? 3000 : Math.max(0, Number(opts.autoplay || 0));
-    const pauseOnHover = opts.pauseOnHover !== false;
+    // Hover pausing is opt-in. This keeps the runtime aligned with the settings
+    // switch: an unchecked Pause on hover control must never pause autoplay.
+    const pauseOnHover = opts.pauseOnHover === true;
     const rotate = Number(opts.rotate ?? 32);
     const depth = Number(opts.depth ?? 140);
     const scaleStep = Number(opts.scaleStep ?? 0.12);
@@ -57,8 +60,15 @@ export default {
     let pointerId = null;
     let rafId = null;
     let timer = null;
+    let timerStartedAt = 0;
+    let remaining = autoplayDelay;
+    let hoverPaused = false;
     let paused = false;
     let alive = true;
+    let pauseButton = null;
+    // Assigned once the progress bar is set up (below); no-op until then so the
+    // autoplay start() can call it without a temporal-dead-zone hazard.
+    let resetProgressSafe = () => {};
 
     wrap.setAttribute('role', 'region');
     wrap.setAttribute('aria-roledescription', 'carousel');
@@ -106,6 +116,18 @@ export default {
     };
 
     const render = () => {
+      if (fade) {
+        // Stack every slide and cross-fade by distance from the active position.
+        slides.forEach((slide, slideIndex) => {
+          const distance = seamless ? wrapDelta(slideIndex - position) : slideIndex - position;
+          const absolute = Math.abs(distance);
+          slide.style.transform = 'translate3d(0,0,0)';
+          slide.style.opacity = String(clamp(1 - absolute, 0, 1));
+          slide.style.zIndex = String(absolute < 0.5 ? 2 : 1);
+          slide.style.pointerEvents = absolute < 0.5 ? '' : 'none';
+        });
+        return;
+      }
       const { width, slideWidth, step } = metrics();
       const centerOffset = centered ? (width - slideWidth) / 2 : 0;
       slides.forEach((slide, slideIndex) => {
@@ -138,6 +160,7 @@ export default {
         slide.classList.toggle('is-active', active);
       });
       el.dataset.ktSliderIndex = String(index);
+      updateDots();
       opts.onChange?.(index, slides[index], el);
     };
 
@@ -185,11 +208,31 @@ export default {
       return goTo(index - 1);
     };
 
-    const stop = () => { clearInterval(timer); timer = null; };
-    const start = () => {
-      stop();
-      if (!autoplayDelay || paused) return;
-      timer = setInterval(() => { if (!dragging) next(); }, autoplayDelay);
+    const stop = (preserve = true) => {
+      if (timer != null && preserve) {
+        remaining = Math.max(0, remaining - (performance.now() - timerStartedAt));
+      }
+      clearTimeout(timer);
+      timer = null;
+    };
+    const resetAutoplayClock = () => {
+      remaining = autoplayDelay;
+      resetProgressSafe();
+    };
+    const start = (reset = false) => {
+      stop(false);
+      if (reset) resetAutoplayClock();
+      if (!autoplayDelay || paused || hoverPaused || dragging) return;
+      if (remaining <= 16) remaining = autoplayDelay;
+      timerStartedAt = performance.now();
+      timer = setTimeout(() => {
+        timer = null;
+        if (!dragging && !paused && !hoverPaused) {
+          next();
+          resetAutoplayClock();
+        }
+        start();
+      }, remaining);
     };
 
     const onDown = (event) => {
@@ -269,16 +312,122 @@ export default {
       if (delta > 0) next(); else prev();
     };
     if (wheelNav) wrap.addEventListener('wheel', onWheel, { passive: false });
-    const onEnter = () => { if (pauseOnHover) stop(); };
-    const onLeave = () => { if (pauseOnHover) start(); };
+    const onEnter = () => { if (pauseOnHover) { hoverPaused = true; stop(); } };
+    const onLeave = () => { if (pauseOnHover) { hoverPaused = false; start(); } };
     wrap.addEventListener('pointerenter', onEnter);
     wrap.addEventListener('pointerleave', onLeave);
     const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => { render(); }) : null;
     resizeObserver?.observe(wrap);
 
+    // Pagination dots — intentionally class-only so product code can completely
+    // restyle them without fighting inline declarations.
+    const showDots = opts.dots === true;
+    const dotButtons = [];
+    let dotsWrap = null;
+    if (showDots) {
+      dotsWrap = document.createElement('div');
+      dotsWrap.className = 'kt-slider-dots';
+      slides.forEach((_slide, dotIndex) => {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'kt-slider-dot';
+        dot.setAttribute('aria-label', `Go to slide ${dotIndex + 1}`);
+        dot.addEventListener('pointerdown', (event) => event.stopPropagation());
+        dot.addEventListener('click', (event) => {
+          event.stopPropagation();
+          goTo(dotIndex);
+          start(true);
+        });
+        dotsWrap.appendChild(dot);
+        dotButtons.push(dot);
+      });
+      wrap.appendChild(dotsWrap);
+    }
+    const updateDots = () => {
+      dotButtons.forEach((dot, dotIndex) => {
+        const active = dotIndex === index;
+        dot.classList.toggle('is-active', active);
+        dot.setAttribute('aria-current', String(active));
+      });
+    };
+
+    // Autoplay progress — bar or ring — fills across each interval, resets on
+    // advance, and freezes while paused/dragging. No-op when autoplay is off.
+    const showProgress = opts.progress === true && autoplayDelay > 0;
+    const progressType = opts.progressType === 'ring' ? 'ring' : 'bar';
+    let progressFill = null;
+    let progressWrap = null;
+    let progressRaf = null;
+    if (showProgress) {
+      progressWrap = document.createElement('div');
+      progressWrap.className = `kt-slider-progress kt-slider-progress--${progressType}`;
+      if (progressType === 'ring') {
+        progressWrap.innerHTML = '<svg class="kt-slider-progress__svg" viewBox="0 0 36 36" aria-hidden="true"><circle class="kt-slider-progress__track" cx="18" cy="18" r="15"/><circle class="kt-slider-progress__fill" cx="18" cy="18" r="15" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/></svg>';
+        progressFill = progressWrap.querySelector('.kt-slider-progress__fill');
+      } else {
+        progressWrap.setAttribute('aria-hidden', 'true');
+        progressFill = document.createElement('div');
+        progressFill.className = 'kt-slider-progress__fill';
+        progressWrap.appendChild(progressFill);
+      }
+      wrap.appendChild(progressWrap);
+    }
+
+    // When a ring is shown, the play/pause control lives inside it. This matches
+    // familiar carousel controls and makes the elapsed-time indicator actionable.
+    const playIcon = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5.2v9.6L14.5 10 7 5.2Z" fill="currentColor"/></svg>';
+    const pauseIcon = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6.4 5.2h2.4v9.6H6.4zm4.8 0h2.4v9.6h-2.4z" fill="currentColor"/></svg>';
+    const syncPauseButton = () => {
+      if (!pauseButton) return;
+      pauseButton.dataset.paused = String(paused);
+      pauseButton.setAttribute('aria-label', paused ? 'Resume carousel autoplay' : 'Pause carousel autoplay');
+      pauseButton.setAttribute('aria-pressed', String(paused));
+      pauseButton.innerHTML = paused ? playIcon : pauseIcon;
+    };
+    if (opts.pauseButton === true && autoplayDelay > 0) {
+      pauseButton = document.createElement('button');
+      pauseButton.type = 'button';
+      pauseButton.className = 'kt-slider-pause';
+      pauseButton.addEventListener('pointerdown', (event) => event.stopPropagation());
+      pauseButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        paused = !paused;
+        if (paused) stop(); else start();
+        syncPauseButton();
+      });
+      syncPauseButton();
+      if (progressWrap && progressType === 'ring') {
+        progressWrap.classList.add('has-control');
+        progressWrap.appendChild(pauseButton);
+      } else wrap.appendChild(pauseButton);
+    }
+
+    let progressValue = 0;
+    const paintProgress = () => {
+      if (!progressFill) return;
+      if (progressType === 'ring') progressFill.style.strokeDashoffset = String(1 - progressValue);
+      else progressFill.style.transform = `scaleX(${progressValue})`;
+    };
+    const resetProgress = () => { progressValue = 0; paintProgress(); };
+    const stopProgressLoop = () => { if (progressRaf != null) { cancelAnimationFrame(progressRaf); progressRaf = null; } };
+    const progressLoop = () => {
+      if (!progressFill) { progressRaf = null; return; }
+      // `remaining` is preserved by stop(), so the ring and the actual timeout
+      // freeze and resume from the same point.
+      if (timer != null && !dragging && !paused && !hoverPaused) {
+        const elapsed = performance.now() - timerStartedAt;
+        progressValue = clamp((autoplayDelay - remaining + elapsed) / autoplayDelay, 0, 1);
+      }
+      paintProgress();
+      progressRaf = requestAnimationFrame(progressLoop);
+    };
+    const startProgressLoop = () => { if (progressFill && progressRaf == null) progressLoop(); };
+    resetProgressSafe = resetProgress;
+
     render();
     syncState();
     start();
+    startProgressLoop();
 
     return {
       el,
@@ -288,11 +437,17 @@ export default {
       prev,
       goTo(value) { goTo(Number(value)); },
       replay() { goTo(0); },
-      pause() { paused = true; stop(); },
-      resume() { paused = false; start(); },
+      get paused() { return paused; },
+      pause() { paused = true; stop(); syncPauseButton(); },
+      resume() { paused = false; start(); syncPauseButton(); },
       destroy() {
         alive = false;
         stop();
+        stopProgressLoop();
+        dotButtons.forEach((dot) => dot.remove());
+        dotsWrap?.remove();
+        progressWrap?.remove();
+        pauseButton?.remove();
         if (rafId != null) cancelAnimationFrame(rafId);
         resizeObserver?.disconnect();
         wrap.removeEventListener('pointerdown', onDown); wrap.removeEventListener('pointermove', onMove); wrap.removeEventListener('pointerup', onEnd); wrap.removeEventListener('pointercancel', onEnd); wrap.removeEventListener('touchmove', onTouchMove); wrap.removeEventListener('keydown', onKey); wrap.removeEventListener('wheel', onWheel); wrap.removeEventListener('pointerenter', onEnter); wrap.removeEventListener('pointerleave', onLeave);

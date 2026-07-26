@@ -1,4 +1,4 @@
-# Kineto v0.8.0 — 개발·유지보수 컨텍스트
+# Kineto v0.8.43 — 개발·유지보수 컨텍스트
 
 ## 프로젝트 목적
 
@@ -6,11 +6,11 @@ Kineto은 `dongri.me`의 픽셀 모자이크 실험을 출발점으로 확장한
 
 ## 현재 기준
 
-- 버전: `0.8.0`
-- 공개 모듈: 32개
-- Core API: 20개
+- 버전: `0.8.43`
+- 공개 모듈: 50개
+- Core API: 26개
 - 소유자 고정 요구사항: 46개
-- 라이브 플레이그라운드: 58개
+- 라이브 플레이그라운드: 131개
 - Smooth Scroll: 기본 비활성화, Lenis runtime API로 선택 사용
 
 소스 오브 트루스:
@@ -21,7 +21,7 @@ Kineto은 `dongri.me`의 픽셀 모자이크 실험을 출발점으로 확장한
 4. 자동 테스트와 전체 데모
 5. 문서
 
-`demo/index.html`은 소개 페이지이면서 시각 회귀 QA 표면입니다. 조절 가능한 데모는 Live Settings, Apply/Replay, Reset, 현재 설정 기반 HTML/JavaScript와 Copy 동작을 유지합니다.
+`demo/index.html`은 소개 페이지이면서 시각 회귀 QA 표면입니다. 조절 가능한 데모는 실시간 설정, Replay, Reset, 현재 설정 기반 HTML/JavaScript와 Copy 동작을 유지합니다.
 
 ## 특히 보존해야 하는 동작
 
@@ -53,7 +53,7 @@ Kineto은 `dongri.me`의 픽셀 모자이크 실험을 출발점으로 확장한
 ## 검증
 
 ```bash
-npm run verify
+npm run ci
 ```
 
-배포 전에는 최종 `.tgz`를 별도 프로젝트에 설치해 ESM/CommonJS surface와 React StrictMode, Vue, jQuery 반복 mount/unmount를 검사합니다. 자동 브라우저 QA는 Chromium 기준이며 Safari/WebKit, Firefox, 실제 iOS/Android는 별도 QA 대상입니다.
+배포 전에는 `npm run verify`로 전체 검사와 의존성 보안 감사를 실행하고, 최종 `.tgz`를 별도 프로젝트에 설치해 ESM/CommonJS surface와 React StrictMode, Vue, jQuery 반복 mount/unmount를 검사합니다. 자동 브라우저 QA는 Chromium 기준이며 Safari/WebKit, Firefox, 실제 iOS/Android는 별도 QA 대상입니다.

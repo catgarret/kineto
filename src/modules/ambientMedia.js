@@ -62,7 +62,7 @@ export default {
     const scale = Math.max(1, Number(opts.scale ?? 1.06));
     // Start hidden: the glow fades in with the media (image load / video play),
     // not before it — otherwise a blurred backdrop sits there over a blank box.
-    glow.style.cssText = `position:absolute;inset:${inset}px;z-index:0;pointer-events:none;border-radius:${opts.radius || 'inherit'};overflow:hidden;filter:blur(${blur}px) saturate(${Number(opts.saturation ?? 1.45)}) brightness(${Number(opts.brightness ?? 0.82)});opacity:0;transform:scale(${scale}) translateZ(0);transform-origin:center;transition:opacity .45s ease;`;
+    glow.style.cssText = `position:absolute;inset:${inset}px;z-index:0;pointer-events:none;border-radius:${opts.radius || 'inherit'};overflow:hidden;filter:blur(${blur}px) saturate(${Number(opts.saturation ?? 1.45)}) brightness(${Number(opts.brightness ?? 0.82)});opacity:0;transform:scale(${scale}) translateZ(0);transform-origin:center;transition:opacity .45s var(--kt-ease-ui, ease);`;
     outer.insertBefore(glow, host);
 
     const tag = actualMedia.tagName;

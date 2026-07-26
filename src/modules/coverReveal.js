@@ -1,4 +1,4 @@
-import { clamp, env } from '../utils.js';
+import { clamp, cssEase, env } from '../utils.js';
 
 // Cover reveal — coloured panel(s) cover the target and sweep away when it
 // scrolls into view. Two modes:
@@ -14,22 +14,26 @@ export default {
     const reduce = env().reducedMotion;
     const color = opts.color || '#ff5b1c';
     const color2 = opts.color2 || '#12141a';
-    const direction = ['left', 'right', 'up', 'down'].includes(opts.direction) ? opts.direction : 'right';
+    const requestedDirection = ['left', 'right', 'up', 'down', 'random'].includes(opts.direction) ? opts.direction : 'right';
     const duration = Math.max(0.05, Number(opts.duration ?? 0.7));
     const delay = Math.max(0, Number(opts.delay ?? 0));
-    const ease = opts.ease || 'cubic-bezier(.77,0,.18,1)';
+    const ease = opts.ease ? cssEase(opts.ease) : 'cubic-bezier(.77,0,.18,1)';
     const layers = clamp(Math.round(Number(opts.layers ?? 2)), 1, 3);
     const stagger = Math.max(0, Number(opts.stagger ?? 120));
     const linesMode = opts.lines === true;
-    const exitTransform = {
+    const pickDirection = () => requestedDirection === 'random'
+      ? ['left', 'right', 'up', 'down'][Math.floor(Math.random() * 4)]
+      : requestedDirection;
+    const exitFor = (direction) => ({
       right: 'translateX(101%)', left: 'translateX(-101%)',
       down: 'translateY(101%)', up: 'translateY(-101%)'
-    }[direction];
+    }[direction]);
 
     let timers = [];
     const covers = []; // { container, panels[], restoreOverflow, restorePosition }
     let observeTarget = el;
     let unwrap = null;
+    let alive = true;
 
     // Add cover panels over a container and return a play() for it.
     const coverOf = (container) => {
@@ -60,7 +64,7 @@ export default {
       wrap.className = 'kt-cover-wrap';
       // Inherit the element's rounding so the panels are clipped to the same
       // shape (otherwise their square corners poke outside a rounded element).
-      wrap.style.cssText = `position:relative;overflow:hidden;display:${inline ? 'inline-block' : 'block'};border-radius:${cs.borderRadius};`;
+      wrap.style.cssText = `position:relative;overflow:hidden;display:${inline ? 'inline-block' : 'block'};width:${inline ? 'auto' : '100%'};height:${inline ? 'auto' : '100%'};min-width:0;min-height:0;border-radius:${cs.borderRadius};`;
       el.parentNode.insertBefore(wrap, el);
       wrap.appendChild(el);
       observeTarget = wrap;
@@ -109,22 +113,25 @@ export default {
 
     let played = false;
     let io = null;
+    let initRaf = null;
     const play = () => {
-      if (played) return;
+      if (!alive || played) return;
       played = true;
+      const exitTransform = exitFor(pickDirection());
       void el.offsetWidth; // paint the covered start frame first
       requestAnimationFrame(() => {
         covers.forEach((cover, lineIndex) => {
           const lineDelay = delay + (linesMode ? lineIndex * stagger : 0);
           cover.panels.forEach((panel, i) => {
             const order = layers - 1 - i;
-            timers.push(setTimeout(() => { panel.style.transform = exitTransform; }, lineDelay + order * stagger));
+          timers.push(setTimeout(() => { if (alive) panel.style.transform = exitTransform; }, lineDelay + order * stagger));
           });
         });
       });
       const totalLines = linesMode ? Math.max(0, covers.length - 1) : 0;
       const total = delay + totalLines * stagger + (layers - 1) * stagger + duration * 1000 + 80;
       timers.push(setTimeout(() => {
+        if (!alive) return;
         covers.forEach((cover) => cover.panels.forEach((panel) => panel.remove()));
         opts.onComplete?.(el);
       }, total));
@@ -138,11 +145,17 @@ export default {
     const startPlay = () => {
       if (waitForImage && img && !(img.complete && img.naturalWidth)) {
         let fired = false;
-        const kick = () => { if (fired) return; fired = true; play(); };
+        const kick = () => {
+          if (fired || !alive) return;
+          fired = true;
+          img.removeEventListener('load', kick);
+          img.removeEventListener('error', kick);
+          play();
+        };
         try { if (img.decode) img.decode().then(kick, kick); } catch (_e) { /* ignore */ }
         img.addEventListener('load', kick, { once: true });
         img.addEventListener('error', kick, { once: true });
-        setTimeout(kick, 4000); // safety: never hang
+        timers.push(setTimeout(kick, 4000)); // safety: never hang
       } else {
         play();
       }
@@ -152,10 +165,31 @@ export default {
       // Instantly visible — remove any panels.
       covers.forEach((cover) => cover.panels.forEach((panel) => panel.remove()));
     } else if (typeof IntersectionObserver !== 'undefined') {
-      io = new IntersectionObserver((records) => {
-        for (const record of records) { if (record.isIntersecting) { io.disconnect(); io = null; startPlay(); break; } }
-      }, { threshold: clamp(Number(opts.threshold ?? 0.2), 0, 1) });
-      io.observe(observeTarget);
+      // Live settings recreate a cover while its demo is already visible.
+      // Some browsers do not deliver a new observer entry before the opaque
+      // start panel paints, leaving the demo black indefinitely. Start directly
+      // for an on-screen target; observe only targets that are actually outside.
+      initRaf = requestAnimationFrame(() => {
+        if (!alive) return;
+        const rect = observeTarget.getBoundingClientRect();
+        const visibleNow = rect.bottom > 0 && rect.right > 0
+          && rect.top < window.innerHeight && rect.left < window.innerWidth;
+        if (visibleNow) {
+          startPlay();
+          return;
+        }
+        io = new IntersectionObserver((records) => {
+          for (const record of records) {
+            if (record.isIntersecting) {
+              io.disconnect();
+              io = null;
+              startPlay();
+              break;
+            }
+          }
+        }, { threshold: clamp(Number(opts.threshold ?? 0.2), 0, 1) });
+        io.observe(observeTarget);
+      });
     } else {
       startPlay();
     }
@@ -168,10 +202,15 @@ export default {
         timers.forEach(clearTimeout); timers = [];
         if (reduce) return;
         covers.forEach((cover) => {
+          // A replay may be requested before the previous sweep's cleanup timer
+          // fires (live settings and gallery shuffle both do this). Remove those
+          // panels first; otherwise every replay stacks another opaque layer set.
+          cover.panels.forEach((panel) => panel.remove());
           cover.panels = [];
           for (let i = 0; i < layers; i += 1) {
             const c = layers > 1 && i === layers - 1 ? color2 : color;
             const panel = document.createElement('span');
+            panel.setAttribute('aria-hidden', 'true');
             panel.style.cssText = `position:absolute;inset:0;background:${c};z-index:${20 + i};transform:translate(0,0);transition:transform ${duration}s ${ease};pointer-events:none;`;
             cover.container.appendChild(panel); cover.panels.push(panel);
           }
@@ -180,7 +219,9 @@ export default {
       },
       pause() {}, resume() {},
       destroy() {
+        alive = false;
         io?.disconnect();
+        if (initRaf != null) cancelAnimationFrame(initRaf);
         timers.forEach(clearTimeout);
         covers.forEach((cover) => {
           cover.panels.forEach((panel) => panel.remove());

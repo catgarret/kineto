@@ -1,4 +1,4 @@
-import { clamp, G, motionDefaults, observeOnce, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
+import { clamp, G, gsapEaseName, motionDefaults, observeOnce, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
 
 const PRESETS = {
   fade: { opacity: 0 },
@@ -24,11 +24,35 @@ const PRESETS = {
   wipe: { clipPath: 'inset(100% 0 0 0)', opacity: 1 }
 };
 
-function directionalClip(direction) {
-  if (direction === 'down') return 'inset(0 0 100% 0)';
-  if (direction === 'left') return 'inset(0 0 0 100%)';
-  if (direction === 'right') return 'inset(0 100% 0 0)';
-  return 'inset(100% 0 0 0)';
+// Per-index stagger delays that mirror gsap's stagger `from` orders, so wipe/mask
+// (which run on their own clip-path proxy tweens, not a gsap stagger) still honor
+// the `order` option: start / end / center / edges / random.
+const ORDER_PRESETS = new Set(['start', 'end', 'center', 'edges', 'random']);
+function normalizeOrder(value) {
+  return ORDER_PRESETS.has(String(value)) ? String(value) : 'start';
+}
+
+function staggerDelays(count, each, from) {
+  from = normalizeOrder(from);
+  const step = Math.max(0, Number(each) || 0);
+  const last = Math.max(0, count - 1);
+  const mid = last / 2;
+  let dist;
+  if (from === 'end') dist = (i) => last - i;
+  else if (from === 'center') dist = (i) => Math.abs(i - mid);
+  else if (from === 'edges') dist = (i) => mid - Math.abs(i - mid);
+  else if (from === 'random') {
+    // Use a real shuffled rank (0...n-1), not unrelated random fractions.
+    // This guarantees every item gets a distinct slot in the reveal sequence.
+    const ranks = Array.from({ length: count }, (_unused, i) => i);
+    for (let i = ranks.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [ranks[i], ranks[j]] = [ranks[j], ranks[i]];
+    }
+    dist = (i) => ranks[i];
+  }
+  else dist = (i) => i; // 'start' (default)
+  return Array.from({ length: count }, (_unused, i) => dist(i) * step);
 }
 
 function addClasses(el, opts) {
@@ -47,14 +71,18 @@ function removeClasses(el, opts) {
   opts.onClassChange?.(false, el);
 }
 
-export { PRESETS };
+export { PRESETS, staggerDelays };
 
 export default {
   create(el, opts = {}) {
     const gsap = G();
     const scrollTrigger = ST();
     const preset = opts.preset || 'fade-up';
-    const direction = opts.direction || 'up';
+    const presetDirection = preset.startsWith('slide-') ? preset.slice(6) : null;
+    const direction = opts.direction || presetDirection || 'up';
+    const resolvedPreset = preset.startsWith('slide-') && ['up', 'down', 'left', 'right'].includes(direction)
+      ? `slide-${direction}`
+      : preset;
     const classOnly = opts.classOnly === true || preset === 'class';
     const once = opts.once !== false;
     const originalClass = el.getAttribute('class');
@@ -93,7 +121,7 @@ export default {
       return {
         el,
         type: 'reveal',
-        replay() { removeClasses(el, opts); requestAnimationFrame(enter); },
+        replay(nextOptions) { Object.assign(opts, nextOptions || {}); removeClasses(el, opts); requestAnimationFrame(enter); },
         pause() { trigger?.disable?.(); observer?.disconnect?.(); },
         resume() { trigger?.enable?.(); },
         destroy() {
@@ -148,7 +176,7 @@ export default {
             p: 1,
             duration,
             delay: Number(opts.delay ?? 0),
-            ease: opts.ease || 'power1.inOut',
+            ease: (opts.enterEase ?? opts.ease) ? gsapEaseName(opts.enterEase ?? opts.ease) : 'power1.inOut',
             onUpdate: () => apply(state.p),
             onComplete: finish
           });
@@ -165,7 +193,8 @@ export default {
       return {
         el,
         type: 'reveal',
-        replay() {
+        replay(nextOptions) {
+          Object.assign(opts, nextOptions || {});
           clockTween?.kill?.();
           if (clockRaf != null) cancelAnimationFrame(clockRaf);
           apply(0);
@@ -186,7 +215,7 @@ export default {
     // Wipe/mask: gsap can't reliably tween a `clip-path: inset()` string, so we
     // animate the reveal via a numeric progress and build the inset ourselves in
     // onUpdate. clipAt(p): p=1 fully clipped (hidden) → p=0 fully shown.
-    const isClip = preset === 'wipe' || preset === 'mask';
+    const isClip = resolvedPreset === 'wipe' || resolvedPreset === 'mask';
     const clipAt = (p) => {
       const v = `${(Math.max(0, Math.min(1, p)) * 100).toFixed(2)}%`;
       if (direction === 'down') return `inset(0px 0px ${v} 0px)`;
@@ -194,8 +223,8 @@ export default {
       if (direction === 'right') return `inset(0px ${v} 0px 0px)`;
       return `inset(${v} 0px 0px 0px)`; // up (default)
     };
-    let from = PRESETS[preset];
-    if (isClip) from = { opacity: 1 };
+    let from = PRESETS[resolvedPreset];
+    if (isClip) from = { opacity: 1, clipPath: clipAt(1) };
     if (!from) {
       console.warn(`[Kineto/reveal] Unknown preset: ${preset}`);
       return null;
@@ -207,30 +236,44 @@ export default {
     // ScrollTrigger plus an IntersectionObserver backup (already-in-view / late
     // layout), so the entrance never stays frozen at the clipped start.
     if (isClip) {
-      const clipRestore = snapshotAttributes(el, ['style', 'class']);
+      // Stagger across children when asked (and they exist) so a list wipes in
+      // item-by-item; otherwise the whole element is one clip. `order` reshapes
+      // the per-child delays exactly like the transform path below.
+      const clipNodes = (opts.stagger && el.children.length) ? Array.from(el.children) : [el];
+      const staggered = clipNodes.length > 1;
+      const nodeRestores = clipNodes.map((node) => snapshotAttributes(node, ['style', 'class']));
+      const elRestore = staggered ? snapshotAttributes(el, ['style', 'class']) : null;
+      const clipRestore = () => { nodeRestores.forEach((fn) => fn()); elRestore?.(); };
       const clipDuration = Math.max(0.05, Number(opts.duration ?? 0.8));
       // Compute ease locally: the shared `const ease` below is declared after this
       // branch's early return, so referencing it here would throw (TDZ).
-      const clipEase = opts.ease || ((opts.spring ?? motionDefaults.spring) === true ? 'back.out(1.25)' : 'power3.out');
-      el.style.willChange = 'clip-path';
-      const state = { p: 1 };
+      const clipEase = (opts.enterEase ?? opts.ease) ? gsapEaseName(opts.enterEase ?? opts.ease) : ((opts.spring ?? motionDefaults.spring) === true ? 'back.out(1.25)' : 'power3.out');
+      const baseDelay = Number(opts.delay ?? 0);
+      const states = clipNodes.map(() => ({ p: 1 }));
       // iOS Safari needs the -webkit- prefix to repaint clip-path each frame;
       // without it the intermediate frames are skipped and the reveal just pops.
-      const apply = () => {
-        const value = state.p <= 0.002 ? 'none' : clipAt(state.p);
-        el.style.clipPath = value;
-        el.style.webkitClipPath = value;
+      const applyNode = (i) => {
+        const value = states[i].p <= 0.002 ? 'none' : clipAt(states[i].p);
+        clipNodes[i].style.clipPath = value;
+        clipNodes[i].style.webkitClipPath = value;
       };
-      apply();
-      let clipTween = null;
+      clipNodes.forEach((node, i) => { node.style.willChange = 'clip-path'; applyNode(i); });
+      let clipTweens = [];
       let played = false;
       const play = () => {
-        clipTween?.kill();
-        state.p = 1; apply();
-        clipTween = gsap.to(state, {
-          p: 0, duration: clipDuration, ease: clipEase, delay: Number(opts.delay ?? 0),
-          onStart: () => addClasses(el, opts), onUpdate: apply,
-          onComplete: () => { apply(); el.style.willChange = ''; opts.onComplete?.(el); }
+        clipTweens.forEach((tween) => tween.kill());
+        clipTweens = [];
+        states.forEach((state, i) => { state.p = 1; applyNode(i); });
+        addClasses(el, opts);
+        // Recalculate on every run so random order really shuffles on replay.
+        const delays = staggered ? staggerDelays(clipNodes.length, opts.stagger, opts.order) : [0];
+        const finalIndex = delays.indexOf(Math.max(...delays));
+        clipNodes.forEach((node, i) => {
+          clipTweens.push(gsap.to(states[i], {
+            p: 0, duration: clipDuration, ease: clipEase, delay: baseDelay + delays[i],
+            onUpdate: () => applyNode(i),
+            onComplete: () => { applyNode(i); node.style.willChange = ''; if (i === finalIndex) opts.onComplete?.(el); }
+          }));
         });
       };
       const trigger = scrollTrigger.create({
@@ -250,10 +293,10 @@ export default {
       return {
         el,
         type: 'reveal',
-        replay() { played = true; play(); },
-        pause() { clipTween?.pause(); },
-        resume() { clipTween?.resume(); },
-        destroy() { clipIO?.disconnect(); trigger?.kill?.(); clipTween?.kill(); clipRestore(); }
+        replay(nextOptions) { Object.assign(opts, nextOptions || {}); played = true; play(); },
+        pause() { clipTweens.forEach((tween) => tween.pause()); },
+        resume() { clipTweens.forEach((tween) => tween.resume()); },
+        destroy() { clipIO?.disconnect(); trigger?.kill?.(); clipTweens.forEach((tween) => tween.kill()); clipRestore(); }
       };
     }
 
@@ -261,28 +304,33 @@ export default {
     const targets = Array.isArray(target) ? target : [target];
     const restores = targets.map((node) => snapshotAttributes(node, ['style', 'class']));
     const duration = Math.max(0, Number(opts.duration ?? 0.8));
-    const ease = opts.ease || ((opts.spring ?? motionDefaults.spring) === true ? 'back.out(1.25)' : 'power3.out');
-    const animateVars = {
-      x: 0,
-      y: 0,
-      xPercent: 0,
-      yPercent: 0,
-      scale: 1,
-      rotation: 0,
-      rotationX: 0,
-      rotationY: 0,
-      opacity: 1,
-      filter: 'blur(0px)',
-      duration,
-      delay: Number(opts.delay ?? 0),
-      ease,
-      stagger: opts.stagger || undefined,
-      onStart: () => addClasses(el, opts),
-      // Release the GPU layer once the entrance is done (frees graphics memory).
-      onComplete: () => { targets.forEach((node) => { node.style.willChange = ''; }); opts.onComplete?.(el); }
+    const ease = (opts.enterEase ?? opts.ease) ? gsapEaseName(opts.enterEase ?? opts.ease) : ((opts.spring ?? motionDefaults.spring) === true ? 'back.out(1.25)' : 'power3.out');
+    const animateVars = (delay = Number(opts.delay ?? 0)) => {
+      // Explicit delays keep every order preset identical across the GSAP and
+      // CSS fallback paths. Random is rebuilt for each entrance/replay.
+      const delays = staggerDelays(targets.length, opts.stagger, opts.order);
+      return {
+        x: 0,
+        y: 0,
+        xPercent: 0,
+        yPercent: 0,
+        scale: 1,
+        rotation: 0,
+        rotationX: 0,
+        rotationY: 0,
+        opacity: 1,
+        filter: 'blur(0px)',
+        duration,
+        delay,
+        ease,
+        stagger: opts.stagger ? (index) => delays[index] : undefined,
+        onStart: () => addClasses(el, opts),
+        // Release the GPU layer once the entrance is done (frees graphics memory).
+        onComplete: () => { targets.forEach((node) => { node.style.willChange = ''; }); opts.onComplete?.(el); }
+      };
     };
     const to = {
-      ...animateVars,
+      ...animateVars(),
       scrollTrigger: {
         trigger: el,
         start: opts.start || 'top 85%',
@@ -316,7 +364,7 @@ export default {
         io.disconnect(); io = null;
         if (tween.progress() === 0) {
           tween.scrollTrigger?.disable(false); // stop ScrollTrigger double-firing
-          gsap.fromTo(target, from, { ...animateVars, delay: 0, overwrite: 'auto' });
+          gsap.fromTo(target, from, { ...animateVars(0), overwrite: 'auto' });
         }
       }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
       io.observe(el);
@@ -327,7 +375,7 @@ export default {
       // Play the entrance now as a one-shot, independent of the scroll trigger —
       // ScrollTrigger holds its own tween paused while the element is already in
       // view, so tween.restart() alone would just snap back to the start state.
-      replay() { gsap.fromTo(target, from, { ...animateVars, delay: 0, overwrite: 'auto' }); },
+      replay(nextOptions) { Object.assign(opts, nextOptions || {}); gsap.fromTo(target, from, { ...animateVars(0), overwrite: 'auto' }); },
       pause() { tween.pause(); },
       resume() { tween.resume(); },
       destroy() {
@@ -349,34 +397,54 @@ export default {
   },
 
   fallback(el, opts = {}, from = PRESETS['fade-up']) {
-    const restore = snapshotAttributes(el, ['style', 'class']);
+    const targets = opts.stagger && el.children.length ? Array.from(el.children) : [el];
+    const restores = targets.map((node) => snapshotAttributes(node, ['style', 'class']));
+    const restoreRoot = targets.length > 1 ? snapshotAttributes(el, ['style', 'class']) : null;
     const x = Number(from.x ?? 0);
     const y = Number(from.y ?? 24);
+    const xPercent = Number(from.xPercent ?? 0);
+    const yPercent = Number(from.yPercent ?? 0);
     const scale = Number(from.scale ?? 1);
-    el.style.opacity = String(from.opacity ?? 0);
-    el.style.transform = `translate3d(${x}px,${y}px,0) scale(${scale})`;
-    if (from.filter) el.style.filter = from.filter;
-    if (from.clipPath) el.style.clipPath = from.clipPath;
+    const duration = Math.max(0, Number(opts.duration ?? 0.55));
+    let timers = [];
+    const initial = (node) => {
+      node.style.transition = 'none';
+      node.style.opacity = String(from.opacity ?? 0);
+      node.style.transform = `translate3d(${x}px,${y}px,0) translate(${xPercent}%,${yPercent}%) scale(${scale})`;
+      if (from.filter) node.style.filter = from.filter;
+      if (from.clipPath) node.style.clipPath = from.clipPath;
+    };
+    targets.forEach(initial);
     const enter = () => {
-      const duration = Math.max(0, Number(opts.duration ?? 0.55));
-      el.style.transition = `opacity ${duration}s ease,transform ${duration}s ease,filter ${duration}s ease,clip-path ${duration}s ease`;
+      timers.forEach(clearTimeout);
+      timers = [];
+      const delays = staggerDelays(targets.length, opts.stagger, opts.order);
+      const finalIndex = delays.indexOf(Math.max(...delays));
       addClasses(el, opts);
-      requestAnimationFrame(() => {
-        el.style.opacity = '1';
-        el.style.transform = 'none';
-        el.style.filter = 'none';
-        el.style.clipPath = 'inset(0)';
-        opts.onComplete?.(el);
+      targets.forEach((node, index) => {
+        timers.push(setTimeout(() => requestAnimationFrame(() => {
+          node.style.transition = `opacity ${duration}s ease,transform ${duration}s ease,filter ${duration}s ease,clip-path ${duration}s ease`;
+          node.style.opacity = '1';
+          node.style.transform = 'none';
+          node.style.filter = 'none';
+          node.style.clipPath = 'inset(0)';
+          if (index === finalIndex) opts.onComplete?.(el);
+        }), delays[index] * 1000));
       });
     };
     const observer = observeOnce(el, enter, { threshold: Number(opts.threshold ?? 0.1), rootMargin: opts.rootMargin || '0px 0px -10% 0px' });
     return {
       el,
       type: 'reveal',
-      replay() { el.style.opacity = String(from.opacity ?? 0); requestAnimationFrame(enter); },
+      replay(nextOptions) { Object.assign(opts, nextOptions || {}); targets.forEach(initial); requestAnimationFrame(enter); },
       pause() {},
       resume() {},
-      destroy() { observer.disconnect(); restore(); }
+      destroy() {
+        observer.disconnect();
+        timers.forEach(clearTimeout);
+        restores.forEach((restore) => restore());
+        restoreRoot?.();
+      }
     };
   }
 };

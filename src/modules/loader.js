@@ -1,5 +1,40 @@
 import { clamp } from '../utils.js';
 
+// Reference-counted global scroll lock. Overlapping loaders used to each save
+// and restore <html>/<body> overflow independently, so a second loader would
+// snapshot the ALREADY-locked value and then write it back — freezing the page
+// permanently. Here the original values are captured once on the first lock and
+// restored only when the last holder releases; every holder releases exactly
+// once. Only hideScrollbar:true instances ever participate.
+let scrollLockCount = 0;
+let scrollLockOriginal = null;
+function acquireScrollLock() {
+  if (typeof document === 'undefined') return;
+  if (scrollLockCount === 0) {
+    scrollLockOriginal = {
+      body: document.body.style.overflow,
+      root: document.documentElement.style.overflow,
+      gutter: document.documentElement.style.scrollbarGutter
+    };
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    // Release the reserved scrollbar-gutter too, or a `scrollbar-gutter:stable`
+    // page keeps an empty strip on the right that the overlay can't cover.
+    document.documentElement.style.scrollbarGutter = 'auto';
+  }
+  scrollLockCount += 1;
+}
+function releaseScrollLock() {
+  if (typeof document === 'undefined' || scrollLockCount === 0) return;
+  scrollLockCount -= 1;
+  if (scrollLockCount === 0 && scrollLockOriginal) {
+    document.body.style.overflow = scrollLockOriginal.body;
+    document.documentElement.style.overflow = scrollLockOriginal.root;
+    document.documentElement.style.scrollbarGutter = scrollLockOriginal.gutter;
+    scrollLockOriginal = null;
+  }
+}
+
 function createProgressUI(el, type, opts) {
   // Bring-your-own visuals: `renderUI(el, opts)` may return { root?, render }
   // and completely replaces the built-in DOM. Built-in visuals are plain,
@@ -96,8 +131,6 @@ export default {
     const original = {
       style: el.getAttribute('style'),
       class: el.getAttribute('class'),
-      bodyOverflow: document.body.style.overflow,
-      rootOverflow: document.documentElement.style.overflow,
       aria: el.getAttribute('aria-label'),
       role: el.getAttribute('role')
     };
@@ -109,21 +142,24 @@ export default {
     let destroyed = false;
     let paused = false;
     let rafId = null;
-    let timer = null;
     let loadHandler = null;
     let performanceObserver = null;
     const cleanupFunctions = [];
+    // Track every timeout so destroy() can cancel the minDuration wait, the
+    // completeHold delay and the exit timer — none were cancellable before.
+    const timeouts = new Set();
+    const later = (fn, ms) => { const id = setTimeout(() => { timeouts.delete(id); fn(); }, ms); timeouts.add(id); return id; };
     const startedAt = performance.now();
+
+    // Scroll lock is opt-out (hideScrollbar:false). A false instance NEVER
+    // touches <html>/<body> overflow in create, exit or destroy. `holdsLock`
+    // guarantees this instance releases the shared lock exactly once.
+    let holdsLock = false;
+    const releaseLock = () => { if (holdsLock) { holdsLock = false; releaseScrollLock(); } };
 
     el.setAttribute('role', 'status');
     el.setAttribute('aria-label', opts.ariaLabel || 'Loading');
-    // Lock scrolling while the loader runs. The body overflow alone is not
-    // enough when <html> is the scroller (e.g. overflow-x:clip blocks the
-    // body→viewport propagation), so lock the root too.
-    if (hideScrollbar) {
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-    }
+    if (hideScrollbar) { acquireScrollLock(); holdsLock = true; }
 
     const render = () => {
       progressUI.render(displayed);
@@ -136,16 +172,25 @@ export default {
       opts.onProgress?.(displayed, el);
     };
     const animate = () => {
+      rafId = null;
       if (destroyed) return;
       if (!paused) displayed += (progress - displayed) * clamp(Number(opts.smoothing ?? 0.16), 0.01, 1);
       if (Math.abs(displayed - progress) < 0.05) displayed = progress;
       render();
-      rafId = requestAnimationFrame(animate);
+      // Keep ticking only while there is motion. Once displayed == progress the
+      // loop stops; setProgress()/complete() call wake() to resume it. This is
+      // what stops the rAF (and onProgress) from running forever after the
+      // overlay is gone.
+      if (!destroyed && displayed !== progress) rafId = requestAnimationFrame(animate);
     };
+    const wake = () => { if (!destroyed && rafId == null && displayed !== progress) rafId = requestAnimationFrame(animate); };
     rafId = requestAnimationFrame(animate);
 
     const exit = () => {
       if (destroyed) return;
+      // The steady-state fill animation is done; stop its rAF so onProgress
+      // can't keep firing behind the exit transition.
+      if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
       const duration = Math.max(0, Number(opts.exitDuration ?? opts.duration ?? 0.45));
       const exitEffect = opts.exit || opts.transition || 'fade';
       // Both directional exits honor exitDirection, falling back to the fill
@@ -154,6 +199,14 @@ export default {
       const exitDirection = directions.includes(opts.exitDirection)
         ? opts.exitDirection
         : (directions.includes(opts.fill) ? opts.fill : 'up');
+      // Release the scroll lock NOW, before the overlay wipes away — not after.
+      // While <html> is overflow:hidden the page has no scrollport, so any
+      // position:sticky element (e.g. the demo's side nav) collapses to its
+      // in-flow position and looks "gone". The overlay still fully covers the
+      // viewport at this point, so restoring early is invisible but means the
+      // page revealed underneath already has a working sticky nav. A no-op for
+      // hideScrollbar:false instances (they never held the lock).
+      releaseLock();
       if (exitEffect === 'wipe' || exitEffect === 'mask') {
         // The transition needs a concrete start state — from `none` the mask
         // would snap instead of sweeping.
@@ -172,10 +225,9 @@ export default {
         el.style.clipPath = `inset(${insets[exitDirection]})`;
         el.style.webkitClipPath = `inset(${insets[exitDirection]})`;
       } else el.style.opacity = '0';
-      timer = setTimeout(() => {
+      later(() => {
         el.style.display = 'none';
-        document.body.style.overflow = original.bodyOverflow;
-        document.documentElement.style.overflow = original.rootOverflow;
+        releaseLock();
         opts.onComplete?.(el);
       }, duration * 1000 + 20);
     };
@@ -184,16 +236,17 @@ export default {
       completed = true;
       progress = 100;
       const wait = Math.max(0, minDuration - (performance.now() - startedAt));
-      setTimeout(() => {
+      later(() => {
         progress = 100;
         displayed = 100;
         render();
-        setTimeout(exit, Math.max(0, Number(opts.completeHold ?? 120)));
+        later(exit, Math.max(0, Number(opts.completeHold ?? 120)));
       }, wait);
     };
     const setProgress = (value) => {
       if (destroyed || completed) return;
       progress = clamp(Number(value) || 0, 0, 100);
+      wake();
       if (progress >= 100) complete();
     };
 
@@ -293,19 +346,22 @@ export default {
       pause() { paused = true; },
       resume() { paused = false; },
       destroy() {
+        if (destroyed) return; // idempotent — safe to call repeatedly
         destroyed = true;
-        clearTimeout(timer);
-        if (rafId != null) cancelAnimationFrame(rafId);
+        timeouts.forEach((id) => clearTimeout(id));
+        timeouts.clear();
+        if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
         if (loadHandler) window.removeEventListener('load', loadHandler);
         performanceObserver?.disconnect();
         cleanupFunctions.forEach((cleanup) => cleanup());
+        // Release the shared scroll lock exactly once (no-op if exit already
+        // released it, or if this instance never held it).
+        releaseLock();
         // Only remove UI we created — never the host element itself (a custom
         // renderUI with no root falls back to `el`). Also remove the page-fill
         // overlay so it doesn't accumulate across recreate.
         if (progressUI.root && progressUI.root !== el) progressUI.root.remove();
         progressUI.fillEl?.remove();
-        document.body.style.overflow = original.bodyOverflow;
-        document.documentElement.style.overflow = original.rootOverflow;
         if (original.style == null) el.removeAttribute('style'); else el.setAttribute('style', original.style);
         if (original.aria == null) el.removeAttribute('aria-label'); else el.setAttribute('aria-label', original.aria);
         if (original.role == null) el.removeAttribute('role'); else el.setAttribute('role', original.role);
@@ -314,9 +370,22 @@ export default {
       }
     };
   },
-  reduced(el) {
+  // Low-perf devices skip the loader entirely (same as reduced) so the page
+  // isn't held behind an animation it can't render smoothly (audit D-2 / D-6).
+  fallback(el, opts = {}) { return this.reduced(el, opts); },
+  reduced(el, opts = {}) {
     const original = el.style.display;
     el.style.display = 'none';
-    return { el, type: 'loader', pause() {}, resume() {}, destroy() { el.style.display = original; } };
+    // Even when the loader is skipped, onComplete must still fire exactly once
+    // (async) so callers gating page reveal / cleanup on it aren't left hanging.
+    let done = false;
+    const id = setTimeout(() => { done = true; opts.onComplete?.(el); }, 0);
+    return {
+      el,
+      type: 'loader',
+      pause() {},
+      resume() {},
+      destroy() { if (!done) clearTimeout(id); el.style.display = original; }
+    };
   }
 };

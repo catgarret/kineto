@@ -4,9 +4,36 @@
  * FEATURE_CONTRACT.md and tests/feature-contract.mjs.
  */
 
-import Lenis from 'lenis';
+// Lenis (smooth scroll) is NOT bundled — it is loaded on demand via
+// ensureLenis() (page global or official CDN) the first time enableSmooth() is
+// called. Smooth scroll is opt-in and off by default, so a page that never
+// enables it never fetches Lenis. See src/runtime.js for the engine loader.
 import { dash, env, G, noopInstance, q, readOpts, ST, setMotionDefaults } from './utils.js';
-import { setAnimationEngine } from './runtime.js';
+import { setAnimationEngine, setEngineSource, getEngineSource, ensureGSAP, ensureLenis, gsapReady } from './runtime.js';
+
+// Modules whose motion is driven by GSAP / ScrollTrigger. If a page uses any of
+// these, scan() fetches the engine (from the page or the CDN) before creating
+// them, then initialises the rest immediately — so nothing that doesn't need
+// GSAP is ever blocked on it.
+const GSAP_MODULES = new Set([
+  'blurText', 'counter', 'cssScroll', 'marquee', 'parallax', 'reveal',
+  'scrollSequence', 'scrollVelocity', 'stickyStack', 'textFill', 'textReveal', 'textSplit'
+]);
+// A few concise option names intentionally match another module's activation
+// attribute. On a slider, for example, `data-kt-progress="true"` means
+// "show autoplay progress"; it must not also instantiate the standalone
+// Progress module on the same node. Composition remains available by nesting
+// elements or by calling create() explicitly.
+const ACTIVATION_OPTION_OWNERS = {
+  cursor: ['lightbox'],
+  drag: ['fullpage', 'radial'],
+  hold: ['textReveal', 'textSplit'],
+  progress: ['slider']
+};
+function activationIsOwnedOption(el, name) {
+  return (ACTIVATION_OPTION_OWNERS[name] || []).some((owner) => el.hasAttribute?.(`data-kt-${dash(owner)}`));
+}
+import { toCSS as easingToCSS, fn as easingFn, EASINGS } from './easings.js';
 
 const modules = new Map();
 const records = new Set();
@@ -18,6 +45,7 @@ let domReadyHandler = null;
 let lenis = null;
 let lenisRaf = null;
 let lenisTicker = null;
+let lenisLoading = null;
 let visibilityHandler = null;
 let cachedEnv = null;
 
@@ -30,6 +58,51 @@ const config = {
   spring: false,
   debug: false
 };
+
+// Watch the OS reduced-motion setting for RUNTIME changes and keep the cached
+// env in sync, dispatching `kineto:reduced-motion` so live views/instances can
+// react instead of the value being read only once at first access (D-1 / J-5).
+// Recreate active instances so a reduced-motion change takes effect on the
+// elements already on the page — not just future ones. Each module re-runs its
+// create()/reduced() path with the SAME element + options, so nothing is lost.
+function reapplyReducedMotion() {
+  if (typeof document === 'undefined' || !records.size) return;
+  const snap = [...records].map((r) => ({ el: r.sourceEl, name: r.name, options: r.options }));
+  snap.forEach(({ el, name }) => { try { Kineto.destroyModule(el, name); } catch (_e) { /* keep going */ } });
+  snap.forEach(({ el, name, options }) => { try { Kineto.create(name, el, options); } catch (_e) { /* keep going */ } });
+}
+
+let rmWatched = false;
+function installReducedMotionWatch() {
+  if (rmWatched || typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+  rmWatched = true;
+  const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const onChange = () => {
+    if (cachedEnv) cachedEnv.reducedMotion = mq.matches;
+    // Only re-apply on an OS change when the policy actually follows the OS.
+    if (config.respectReducedMotion && !config.forceReducedMotion) reapplyReducedMotion();
+    try { document.dispatchEvent(new CustomEvent('kineto:reduced-motion', { detail: { reduced: Kineto.prefersReducedMotion } })); } catch (_e) { /* older */ }
+  };
+  if (mq.addEventListener) mq.addEventListener('change', onChange);
+  else if (mq.addListener) mq.addListener(onChange);
+  installConnectionWatch();
+}
+
+// Watch Network Information changes (Save-Data toggled, effectiveType shifting
+// between wifi/4g/2g) so the derived performance tier and saveData flag stay
+// live rather than being sampled once (audit D-1). We refresh the cached env and
+// emit `kineto:environment` for views/instances that adapt to network quality.
+let connWatched = false;
+function installConnectionWatch() {
+  if (connWatched || typeof navigator === 'undefined') return;
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (!conn || typeof conn.addEventListener !== 'function') return;
+  connWatched = true;
+  conn.addEventListener('change', () => {
+    cachedEnv = null; // re-derive perf/saveData on next read
+    try { document.dispatchEvent(new CustomEvent('kineto:environment', { detail: { performance: Kineto.performance, saveData: !!conn.saveData, effectiveType: conn.effectiveType } })); } catch (_e) { /* older */ }
+  });
+}
 
 function debug(...args) {
   if (config.debug) console.info('[Kineto]', ...args);
@@ -130,27 +203,74 @@ function ensureCoreServices() {
 }
 
 
-function startSmoothService(gsap = G(), scrollTrigger = ST()) {
-  if (lenis || Kineto.env.ssr || !config.smooth || Kineto.performance === 'low') return lenis;
-  try {
-    lenis = new Lenis(config.smoothOptions);
-    if (scrollTrigger) lenis.on('scroll', scrollTrigger.update);
-    if (gsap?.ticker) {
-      lenisTicker = (time) => lenis?.raf(time * 1000);
-      gsap.ticker.add(lenisTicker);
-      gsap.ticker.lagSmoothing(0);
-    } else {
-      const tick = (time) => {
-        lenis?.raf(time);
-        if (lenis) lenisRaf = requestAnimationFrame(tick);
-      };
-      lenisRaf = requestAnimationFrame(tick);
+// Async because Lenis is dynamically imported the first time smooth scroll is
+// enabled. enableSmooth() still returns synchronously (chainable); the Lenis
+// instance simply becomes live a microtask later, once the module resolves. A
+// single in-flight guard (lenisLoading) stops concurrent enables from creating
+// two Lenis instances.
+// True when `node` is inside a scrollable container (or one tagged with
+// data-lenis-prevent), so Lenis should skip it and let native scroll happen.
+function isInnerScrollable(node) {
+  let el = node && node.nodeType === 1 ? node : (node && node.parentElement);
+  const root = typeof document !== 'undefined' ? document : null;
+  while (el && root && el !== root.body && el !== root.documentElement) {
+    if (el.nodeType === 1) {
+      if (el.hasAttribute('data-lenis-prevent') || el.hasAttribute('data-lenis-prevent-wheel')) return true;
+      const style = getComputedStyle(el);
+      const oy = style.overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      const ox = style.overflowX;
+      if ((ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 1) return true;
     }
-  } catch (error) {
-    lenis = null;
-    debug('Lenis initialization skipped.', error);
+    el = el.parentElement;
   }
-  return lenis;
+  return false;
+}
+
+function startSmoothService(gsap = G(), scrollTrigger = ST()) {
+  if (lenis || Kineto.env.ssr || !config.smooth || Kineto.performance === 'low') return Promise.resolve(lenis);
+  if (lenisLoading) return lenisLoading;
+  lenisLoading = (async () => {
+    try {
+      const Lenis = await ensureLenis();
+      // ensureLenis resolves to null when offline / CDN blocked — fall back to
+      // native scrolling instead of throwing.
+      if (!Lenis) return lenis;
+      // enableSmooth may have been toggled back off (or SSR entered) while the
+      // engine was loading — bail without constructing anything.
+      if (lenis || !config.smooth || Kineto.env.ssr || Kineto.performance === 'low') return lenis;
+      // Let native wheel/touch through over inner scroll containers. Lenis
+      // captures the wheel for the whole page, which otherwise freezes nested
+      // scrollers (e.g. a scroll-shadow box or a sticky-header inner panel).
+      // We merge a default `prevent` that returns true when the event target
+      // sits inside an independently scrollable ancestor (or one flagged with
+      // data-lenis-prevent). A user-supplied `prevent` is respected as-is.
+      const smoothOptions = { ...config.smoothOptions };
+      if (typeof smoothOptions.prevent !== 'function') {
+        smoothOptions.prevent = (node) => isInnerScrollable(node);
+      }
+      lenis = new Lenis(smoothOptions);
+      if (scrollTrigger) lenis.on('scroll', scrollTrigger.update);
+      if (gsap?.ticker) {
+        lenisTicker = (time) => lenis?.raf(time * 1000);
+        gsap.ticker.add(lenisTicker);
+        gsap.ticker.lagSmoothing(0);
+      } else {
+        const tick = (time) => {
+          lenis?.raf(time);
+          if (lenis) lenisRaf = requestAnimationFrame(tick);
+        };
+        lenisRaf = requestAnimationFrame(tick);
+      }
+    } catch (error) {
+      lenis = null;
+      debug('Lenis initialization skipped.', error);
+    } finally {
+      lenisLoading = null;
+    }
+    return lenis;
+  })();
+  return lenisLoading;
 }
 
 function stopSmoothService() {
@@ -202,11 +322,41 @@ function injectCSSFallback() {
 }
 
 const Kineto = {
-  version: '0.8.42',
+  version: '0.8.43',
+
+  // Central easing subsystem (audit C / J-3). `Kineto.easing(name)` resolves any
+  // token — CSS keyword, easings.net name, 'elastic-out'/'bounce-in-out'
+  // (emitted as real `linear()` curves), 'spring' or {spring:{stiffness,damping,
+  // mass,velocity}} (a real physics spring, also `linear()`), or a raw
+  // cubic-bezier/linear string — to a valid CSS <easing-function>.
+  easing: easingToCSS,
+  easingFn,
+  easings: EASINGS,
 
   get env() {
-    if (!cachedEnv) cachedEnv = env();
+    if (!cachedEnv) { cachedEnv = env(); installReducedMotionWatch(); }
     return cachedEnv;
+  },
+
+  // Live, policy-resolved reduced-motion state (audit D-1 / J-5). Reflects OS
+  // changes at runtime (see installReducedMotionWatch) and the active policy set
+  // via setReducedMotion('user' | 'always' | 'never').
+  get prefersReducedMotion() {
+    if (config.forceReducedMotion) return true;
+    return !!(config.respectReducedMotion && this.env.reducedMotion);
+  },
+
+  // Set the reduced-motion policy and notify listeners. New module inits honour
+  // it immediately; a `kineto:reduced-motion` event fires so live views can react.
+  setReducedMotion(policy) {
+    if (policy === 'always') { config.forceReducedMotion = true; config.respectReducedMotion = true; }
+    else if (policy === 'never') { config.forceReducedMotion = false; config.respectReducedMotion = false; }
+    else { config.forceReducedMotion = false; config.respectReducedMotion = true; }
+    // Re-apply to elements already on the page so the switch is live, not just
+    // for future inits.
+    reapplyReducedMotion();
+    try { document.dispatchEvent(new CustomEvent('kineto:reduced-motion', { detail: { reduced: this.prefersReducedMotion } })); } catch (_e) { /* SSR */ }
+    return this;
   },
 
   get performance() {
@@ -240,6 +390,12 @@ const Kineto = {
   },
 
   setAnimationEngine,
+
+  // Point Kineto at a specific GSAP/Lenis build (pin a version, self-host, or use
+  // an internal mirror) before any scroll effect initialises. Merges over the
+  // defaults; unspecified engines keep the jsDelivr CDN source.
+  setEngineSource(sources = {}) { setEngineSource(sources); return this; },
+  getEngineSource() { return getEngineSource(); },
 
   enableSmooth(options = {}) {
     config.smooth = true;
@@ -305,15 +461,17 @@ const Kineto = {
 
       try {
         let instance;
-        const reduced = config.forceReducedMotion ||
-          (config.respectReducedMotion && this.env.reducedMotion);
+        const reduced = this.prefersReducedMotion;
         const reducedHandler = module.reducedMotion || module.reduced;
 
         if (reduced) {
-          const reducedResult = reducedHandler?.(el, options, this);
+          // Bind to the module so a `reduced(){ return this.create(...) }` handler
+          // keeps its `this` (calling `reducedHandler(...)` detached loses it and
+          // breaks reduced-motion init for those modules).
+          const reducedResult = reducedHandler ? reducedHandler.call(module, el, options, this) : undefined;
           instance = reducedResult || noopInstance(el, name);
         } else if (this.performance === 'low' && typeof module.fallback === 'function') {
-          const fallbackResult = module.fallback(el, options, this);
+          const fallbackResult = module.fallback.call(module, el, options, this);
           instance = fallbackResult || noopInstance(el, name);
         } else {
           instance = module.create(el, options, this);
@@ -335,19 +493,44 @@ const Kineto = {
     if (this.env.ssr || !root) return this;
     ensureCoreServices();
 
-    modules.forEach((_module, name) => {
-      const selector = `[data-kt-${dash(name)}]`;
-      const candidates = [];
-      if (typeof Element !== 'undefined' && root instanceof Element && root.matches(selector)) candidates.push(root);
-      if (typeof root.querySelectorAll === 'function') candidates.push(...root.querySelectorAll(selector));
-      candidates.forEach((el) => this.create(name, el, readOpts(el, name)));
-    });
+    const scanModules = (accept) => {
+      modules.forEach((_module, name) => {
+        if (!accept(name)) return;
+        const selector = `[data-kt-${dash(name)}]`;
+        const candidates = [];
+        if (typeof Element !== 'undefined' && root instanceof Element && root.matches(selector)) candidates.push(root);
+        if (typeof root.querySelectorAll === 'function') candidates.push(...root.querySelectorAll(selector));
+        candidates.filter((el) => !activationIsOwnedOption(el, name))
+          .forEach((el) => this.create(name, el, readOpts(el, name)));
+      });
+    };
     // Pre-init flash guard: once modules have applied their initial states,
     // release the `kt-preload` veil (see kineto.css).
-    if (typeof requestAnimationFrame !== 'undefined') {
-      requestAnimationFrame(() => document.documentElement.classList.remove('kt-preload'));
+    const releaseVeil = () => {
+      if (typeof document === 'undefined') return;
+      if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(() => document.documentElement.classList.remove('kt-preload'));
+      else document.documentElement.classList.remove('kt-preload');
+    };
+
+    // Effects that don't need GSAP init immediately — they must never wait on a
+    // network fetch. GSAP-backed effects init after the engine is ready.
+    scanModules((name) => !GSAP_MODULES.has(name));
+
+    const matches = (name) => {
+      const selector = `[data-kt-${dash(name)}]`;
+      if (typeof Element !== 'undefined' && root instanceof Element && root.matches(selector) && !activationIsOwnedOption(root, name)) return true;
+      return typeof root.querySelectorAll === 'function'
+        && Array.from(root.querySelectorAll(selector)).some((el) => !activationIsOwnedOption(el, name));
+    };
+    const needsGsap = Array.from(GSAP_MODULES).some(matches);
+
+    if (needsGsap && !gsapReady()) {
+      // Fetch the engine (page global or CDN), THEN create the scroll modules so
+      // they find GSAP — keeping the preload veil up until they've applied.
+      ensureGSAP().finally(() => { scanModules((name) => GSAP_MODULES.has(name)); releaseVeil(); });
     } else {
-      document.documentElement.classList.remove('kt-preload');
+      scanModules((name) => GSAP_MODULES.has(name));
+      releaseVeil();
     }
     return this;
   },
@@ -384,6 +567,34 @@ const Kineto = {
     if (!el) return null;
     if (name) return getElementMap(el)?.get(name)?.instance || null;
     return Array.from(getElementMap(el)?.values() || [], ({ instance }) => instance);
+  },
+
+  // Live-update an instance IN PLACE when the module supports it, instead of the
+  // blunt destroy→recreate cycle (audit B-5 / section I). A module that
+  // implements `update(patch, mergedOptions)` mutates its existing DOM/animation
+  // (e.g. a colour, speed or label change) with no teardown; modules that don't
+  // fall back to recreate. Returns whether at least one instance updated live.
+  updateModule(target, name, patch = {}) {
+    const els = q(target);
+    let liveCount = 0;
+    els.forEach((el) => {
+      const record = getElementMap(el)?.get(name);
+      if (record && typeof record.instance.update === 'function') {
+        const merged = { ...record.options, ...patch };
+        try {
+          record.instance.update(patch, merged);
+          record.options = merged;
+          liveCount += 1;
+          return;
+        } catch (error) {
+          console.error(`[Kineto/${name}] update() failed, recreating:`, error);
+        }
+      }
+      const opts = record ? { ...record.options, ...patch } : patch;
+      this.destroyModule(el, name);
+      this.create(name, el, opts);
+    });
+    return liveCount > 0;
   },
 
   destroyModule(target, name) {

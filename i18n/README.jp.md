@@ -127,7 +127,7 @@ Kineto.disableSmooth();
 | `ripple` | `data-kt-ripple` | クリックリップル |
 | `scrollSequence` | `data-kt-scroll-sequence` | 画像シーケンスのスクラブ |
 | `scrollVelocity` | `data-kt-scroll-velocity` | スクロール速度・方向への反応 |
-| `shuffle` | `data-kt-shuffle` | 文字シャッフルデコード |
+| `textReveal (shuffle)` | `data-kt-text-reveal="shuffle"` | 文字シャッフルデコード |
 | `slider` | `data-kt-slider` | スライド・カバーフロー |
 | `stickyStack` | `data-kt-sticky-stack` | スティッキースタック（縦・横・フローティング） |
 | `textFill` | `data-kt-text-fill` | スクロール連動のテキスト塗り |
@@ -167,7 +167,8 @@ $('.card').kineto('reveal', { preset: 'fade-up' });
 ```bash
 npm install
 npm run build   # dist/ を生成
-npm run verify  # lint・build・テスト・コントラクト検証
+npm run ci      # lint・build・Node/Chromiumテスト・コントラクト/パッケージ検証
+npm run verify  # CI全体 + 依存関係のセキュリティ監査
 ```
 
 ## ライセンス

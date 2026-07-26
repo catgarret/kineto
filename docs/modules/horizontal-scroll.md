@@ -22,7 +22,11 @@ GSAP 없이 네이티브 스크롤 위치만으로 단일 transform을 구동해
 ### JS API (개발자)
 
 ```js
-const instance = Kineto.horizontalScroll('.gallery', { height: '80vh', smooth: true });
+const instance = Kineto.horizontalScroll('.gallery', {
+  height: 'min(58vh, 460px)',
+  top: 'calc((100svh - min(58vh, 460px)) / 2)',
+  smooth: true
+});
 instance.destroy();
 ```
 
@@ -33,6 +37,7 @@ instance.destroy();
 | 옵션 | 타입 | 기본값 | 설명 |
 |---|---|---|---|
 | `height` | string | `'100vh'` | 고정 뷰포트(스테이지) 높이. `min(70vh,540px)`처럼 상한을 두면 큰 화면에서 과하게 커지지 않음 |
+| `top` | string | viewport 중앙 정렬식 | sticky 시작 위치. 고정 header safe area나 직접 정렬이 필요할 때 CSS 길이/계산식 지정 |
 | `smooth` | boolean \| number | `false` | 트랙 이동에 관성(lerp) 적용. 숫자면 lerp 계수(0.02~1) |
 
 ---

@@ -51,7 +51,7 @@ export default {
       glareWrap.style.cssText = 'position:absolute;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none;z-index:9;';
       glare = document.createElement('span');
       glare.className = 'kt-tilt-glare';
-      glare.style.cssText = `position:absolute;width:${glareRadius * 2}px;height:${glareRadius * 2}px;left:${-glareRadius}px;top:${-glareRadius}px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,${glareColor},rgba(255,255,255,0) 68%);filter:blur(${glareBlur}px);opacity:0;transition:opacity .2s ease;mix-blend-mode:screen;`;
+      glare.style.cssText = `position:absolute;width:${glareRadius * 2}px;height:${glareRadius * 2}px;left:${-glareRadius}px;top:${-glareRadius}px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,${glareColor},rgba(255,255,255,0) 68%);filter:blur(${glareBlur}px);opacity:0;transition:opacity .2s var(--kt-ease-ui, ease);mix-blend-mode:screen;`;
       glareWrap.appendChild(glare);
       el.appendChild(glareWrap);
     }

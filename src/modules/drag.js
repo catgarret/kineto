@@ -1,4 +1,4 @@
-import { clamp, env } from '../utils.js';
+import { clamp } from '../utils.js';
 
 // Drag — make an element draggable with a pointer. Axis lock (`axis`),
 // containment to the offset parent (`bounds:"parent"`), spring-back to origin
@@ -7,7 +7,6 @@ import { clamp, env } from '../utils.js';
 // (Shift = larger step). Reduced motion keeps drag but drops momentum.
 export default {
   create(el, opts = {}) {
-    const reduce = env().reducedMotion;
     const axis = ['x', 'y', 'both'].includes(opts.axis) ? opts.axis : 'both';
     const bounds = opts.bounds; // 'parent' | undefined
     const snapBack = opts.snapBack === true;
@@ -83,7 +82,7 @@ export default {
     const onKey = (e) => {
       const step = e.shiftKey ? 20 : 6;
       let moved = true;
-      el.style.transition = 'transform .12s ease';
+      el.style.transition = 'transform .12s var(--kt-ease-ui, ease)';
       if (e.key === 'ArrowLeft') setPos(x - step, y);
       else if (e.key === 'ArrowRight') setPos(x + step, y);
       else if (e.key === 'ArrowUp') setPos(x, y - step);

@@ -2,8 +2,18 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [0.8.43]
+
+- **Demo layout and reliability**: settings triggers now sit directly below their demo stages, Sticky/Floating/Horizontal scroll examples have native fallbacks, and fullpage/tab/slider/cover layouts are balanced. The rejected Split-flap Minimal variant and its standalone code/docs were removed.
+- **Playground UX**: settings update live without a redundant Apply button; the settings/code views cross-fade in a content-sized responsive drawer, groups flow through a height-aware two-column layout and expand to full width when alone, unsupported option combinations stay hidden, and invalid values roll back to the last working state.
+- **Module updates**: Slider adds dissolve, dots, CSS-customizable progress, and pause controls; hover and manual pauses preserve the remaining autoplay time instead of restarting the interval, while coverflow keeps its adjacent-card preview. Cover Reveal adds random direction and FLIP composition; FLIP adds reorder/shuffle/sort APIs; Scroll Shadows adds transitions, CSS variables, state APIs, and change events.
+- **Runtime hardening**: option attributes that share another module's activation name (`progress`, `hold`, `drag`, `cursor`) are no longer double-initialized, preventing settings-driven destroy/recreate collisions.
+- **Demo content and documentation**: Korean descriptions were tightened and completed across every card, translations and module contracts were synchronized to the 50-module registry, and obsolete standalone Shuffle help was folded into Text Reveal. Static inline styles/scripts were moved into the demo CSS/JS, and generated/package artifacts now pass browser, lifecycle, structure, dependency, size, and package checks.
+
 ## [0.8.42]
 
+- **Accessibility & progressive enhancement**: `hold` and `progress` now provide a **reduced-motion path** so they keep working (hold confirms on click; the progress bar / back-to-top still render) instead of being no-op'd; `bottomSheet` dialog gets an accessible name (from a heading, `aria-label`, or `label`); `lightbox` traps <kbd>Tab</kbd> focus inside the modal; the reduced-motion "show it anyway" CSS now also covers `text-transition` / `shuffle` / `cover-reveal` / `text-fill`.
+- **Performance**: `progress` no longer runs a permanent per-frame rAF (it idles when settled and wakes on scroll/resize) and caches its target element instead of `querySelector` every frame; `marquee` caches its width (re-measured on resize) instead of reading `offsetWidth` each frame; `radial.destroy()` now fully restores items (removes `kt-radial-item`, clearing the lingering `will-change`).
 - **slider**: `wheel:true` — mouse-wheel navigation (whichever wheel axis has the larger delta pages the slider, throttled to one slide per flick).
 - **tooltip**: `effect` (`fade` / `scale` / `shift` / `none`) for the show/hide animation; colours/shape stay themeable via `--kt-tooltip-*`.
 - **radial**: items fade out toward the arc edges so a wrapping/leaving item no longer lingers as a translucent ghost.

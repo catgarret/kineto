@@ -1,4 +1,4 @@
-import { G, segmentText, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
+import { G, gsapEaseName, segmentText, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
 
 // Per-animation from/to states. "rise" clips inside an overflow wrapper,
 // "spin"/"flip" rotate every glyph in 3D, "wave" is a soft bounce-up.
@@ -75,7 +75,7 @@ export default {
     const texts = Array.isArray(opts.texts) && opts.texts.length ? opts.texts.map(String) : null;
     const duration = Number(opts.duration ?? 0.8);
     const stagger = Number(opts.stagger ?? 0.03);
-    const ease = opts.ease || 'power3.out';
+    const ease = opts.ease ? gsapEaseName(opts.ease) : 'power3.out';
 
     el.setAttribute('aria-label', texts ? texts.join(', ') : originalText);
     el.innerHTML = '';
@@ -93,7 +93,7 @@ export default {
         ...definition.to,
         duration,
         delay: Number(opts.delay ?? 0),
-        ease: animationName === 'wave' ? (opts.ease || 'back.out(2.2)') : ease,
+        ease: animationName === 'wave' ? (opts.ease ? gsapEaseName(opts.ease) : 'back.out(2.2)') : ease,
         stagger,
         overwrite: true,
         onComplete: () => {
@@ -104,7 +104,7 @@ export default {
       return tween;
     };
 
-    // Toss-style text swap: current glyphs stagger out (slide-up + fade by
+    // Soft text swap: current glyphs stagger out (slide-up + fade by
     // default), the next text staggers in with the entrance animation.
     const hold = Math.max(200, Number(opts.hold ?? opts.pause ?? 2000));
     const outDefinition = SWAP_OUT[opts.swapOut] || SWAP_OUT['slide-up'];
@@ -117,7 +117,7 @@ export default {
         tween = gsap.to(units, {
           ...outDefinition,
           duration: Math.min(0.45, duration),
-          ease: opts.swapEase || 'power2.in',
+          ease: opts.swapEase ? gsapEaseName(opts.swapEase) : 'power2.in',
           stagger: Math.min(0.02, stagger),
           overwrite: true,
           onComplete: () => {

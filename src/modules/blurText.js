@@ -1,4 +1,4 @@
-import { G, observeOnce, segmentText, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
+import { G, gsapEaseName, observeOnce, segmentText, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
 
 export default {
   create(el, opts) {
@@ -34,6 +34,11 @@ export default {
       timers.clear();
     };
 
+    // Release the compositor hint once the one-shot entrance is done so it isn't
+    // pinned for the life of the element (audit D-5). Kept while `once:false`
+    // (the effect can replay/reverse on re-entry).
+    const releaseWillChange = () => { if (opts.once !== false) chars.forEach((char) => { char.style.willChange = ''; }); };
+
     const fallbackPlay = () => {
       clearTimers();
       if (!chars.length) {
@@ -46,7 +51,7 @@ export default {
           char.style.transition = `filter ${duration}s ease, opacity ${duration}s ease`;
           char.style.filter = 'blur(0)';
           char.style.opacity = '1';
-          if (index === chars.length - 1) opts.onComplete?.();
+          if (index === chars.length - 1) { releaseWillChange(); opts.onComplete?.(); }
         }, stagger * index * 1000);
         timers.add(timer);
       });
@@ -58,8 +63,8 @@ export default {
         opacity: 1,
         duration,
         stagger,
-        ease: opts.ease || 'power2.out',
-        onComplete: opts.onComplete,
+        ease: opts.ease ? gsapEaseName(opts.ease) : 'power2.out',
+        onComplete: () => { releaseWillChange(); opts.onComplete?.(); },
         scrollTrigger: {
           trigger: el,
           start: opts.start || 'top 85%',

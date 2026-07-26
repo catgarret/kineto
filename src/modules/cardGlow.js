@@ -34,7 +34,7 @@ export default {
     const root = document.createElement('span');
     root.className = `kt-card-glow kt-card-glow-${mode}`;
     root.setAttribute('aria-hidden', 'true');
-    root.style.cssText = 'position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .2s ease;';
+    root.style.cssText = 'position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .2s var(--kt-ease-ui, ease);';
 
     const spotlight = document.createElement('span');
     spotlight.className = 'kt-card-glow-spotlight';
@@ -71,7 +71,7 @@ export default {
       const cometColor = opts.borderColor || opts.color || 'rgba(123,159,255,1)';
       const cometColor2 = opts.borderColor2 || opts.color2 || 'rgba(91,232,190,.9)';
       const cycle = Math.max(0.8, Number(opts.cycleDuration ?? opts.speed ?? 3));
-      root.style.cssText = `position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none;opacity:${bool(opts.alwaysOn, true) ? 1 : 0};transition:opacity .35s ease;`;
+      root.style.cssText = `position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none;opacity:${bool(opts.alwaysOn, true) ? 1 : 0};transition:opacity .35s var(--kt-ease-ui, ease);`;
       spotlight.style.cssText = `position:absolute;inset:0;border-radius:inherit;padding:${width}px;background:conic-gradient(from var(--kt-angle,0deg),transparent 0deg,${cometColor} 80deg,${cometColor2} 160deg,transparent 280deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;opacity:${opacity};animation:kt-border-spin ${cycle}s linear infinite;filter:blur(${Math.max(0, Number(opts.blur ?? 0))}px);will-change:background;`;
       if (blur > 0 && opts.halo !== false) {
         // Soft duplicate underneath for a light haze around the edge.
@@ -87,7 +87,7 @@ export default {
       const cycle = Math.max(1, Number(opts.cycleDuration ?? opts.speed ?? 6));
       const auroraColor = opts.color1 || opts.color || 'rgba(88,150,255,.55)';
       const auroraColor2 = opts.color2 || 'rgba(94,234,195,.45)';
-      root.style.cssText = `position:absolute;inset:${-inset}px;z-index:-1;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .45s ease;`;
+      root.style.cssText = `position:absolute;inset:${-inset}px;z-index:-1;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .45s var(--kt-ease-ui, ease);`;
       spotlight.style.cssText = `position:absolute;inset:0;border-radius:inherit;background:conic-gradient(from var(--kt-angle,0deg),${auroraColor},${auroraColor2},${auroraColor});filter:blur(${Math.max(4, blur)}px);opacity:${opacity};animation:kt-border-spin ${cycle}s linear infinite;will-change:filter;`;
     } else if (mode === 'shine') {
       spotlight.style.cssText = `position:absolute;top:0;bottom:0;left:-55%;width:42%;border-radius:0;background:linear-gradient(90deg,transparent,${color},transparent);filter:blur(${blur}px);opacity:${opacity};transform:skewX(-20deg);will-change:transform;`;

@@ -1,6 +1,10 @@
 :root {
   --kt-loader-color: currentColor;
   --kt-ambient: rgba(120, 120, 120, 0.25);
+  /* Easing for internal UI micro-transitions (glow/cursor/lightbox/tooltip
+     fades, etc.). Override globally or per-element to retheme them — the
+     effect's own motion `ease` option is separate (audit C-3). */
+  --kt-ease-ui: ease;
 }
 
 @property --kt-angle {
@@ -103,6 +107,151 @@
   min-width: 0;
 }
 
+.kt-slider-dots {
+  --kt-slider-dot-size: 8px;
+  --kt-slider-dot-active-width: 20px;
+  --kt-slider-dot-gap: 8px;
+  position: absolute;
+  right: 0;
+  bottom: 12px;
+  left: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  gap: var(--kt-slider-dot-gap);
+  color: var(--kt-slider-ui-color, #fff);
+  pointer-events: auto;
+}
+
+.kt-slider-dot {
+  width: var(--kt-slider-dot-size);
+  height: var(--kt-slider-dot-size);
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: var(--kt-slider-dot-opacity, .42);
+  cursor: pointer;
+  transition: width .2s ease, opacity .2s ease, transform .2s ease;
+}
+
+.kt-slider-dot:hover {
+  opacity: .72;
+  transform: scale(1.08);
+}
+
+.kt-slider-dot.is-active {
+  width: var(--kt-slider-dot-active-width);
+  opacity: 1;
+}
+
+.kt-slider-progress {
+  --kt-slider-ui-color: #fff;
+  --kt-slider-ui-bg: rgba(10, 14, 22, .5);
+  --kt-slider-progress-color: currentColor;
+  --kt-slider-progress-track: color-mix(in srgb, currentColor 24%, transparent);
+  --kt-slider-progress-size: 44px;
+  --kt-slider-progress-width: 2.5px;
+  --kt-slider-progress-inset: 14px;
+  position: absolute;
+  z-index: 21;
+  color: var(--kt-slider-ui-color);
+}
+
+.kt-slider-progress--bar {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: var(--kt-slider-progress-width, 3px);
+  background: var(--kt-slider-progress-track);
+}
+
+.kt-slider-progress--bar .kt-slider-progress__fill {
+  width: 100%;
+  height: 100%;
+  background: var(--kt-slider-progress-color);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.kt-slider-progress--ring {
+  right: var(--kt-slider-progress-inset);
+  bottom: var(--kt-slider-progress-inset);
+  width: var(--kt-slider-progress-size);
+  height: var(--kt-slider-progress-size);
+  filter: drop-shadow(0 2px 7px rgba(0, 0, 0, .3));
+}
+
+.kt-slider-progress__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: rotate(-90deg);
+}
+
+.kt-slider-progress--ring .kt-slider-progress__track {
+  fill: var(--kt-slider-ui-bg);
+  stroke: var(--kt-slider-progress-track);
+  stroke-width: var(--kt-slider-progress-width);
+}
+
+.kt-slider-progress--ring .kt-slider-progress__fill {
+  fill: none;
+  stroke: var(--kt-slider-progress-color);
+  stroke-width: var(--kt-slider-progress-width);
+  stroke-linecap: round;
+}
+
+.kt-slider-pause {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 22;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--kt-slider-ui-color, #fff) 50%, transparent);
+  border-radius: 999px;
+  background: var(--kt-slider-ui-bg, rgba(10, 14, 22, .58));
+  color: var(--kt-slider-ui-color, #fff);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: background-color .18s ease, transform .18s ease;
+}
+
+.kt-slider-progress--ring.has-control .kt-slider-pause {
+  inset: 50% auto auto 50%;
+  width: calc(var(--kt-slider-progress-size) - 12px);
+  height: calc(var(--kt-slider-progress-size) - 12px);
+  border: 0;
+  background: transparent;
+  backdrop-filter: none;
+  transform: translate(-50%, -50%);
+}
+
+.kt-slider-pause:hover {
+  background: color-mix(in srgb, var(--kt-slider-ui-bg, rgba(10, 14, 22, .58)) 82%, #fff);
+}
+
+.kt-slider-progress--ring.has-control .kt-slider-pause:hover {
+  background: color-mix(in srgb, var(--kt-slider-ui-color, #fff) 14%, transparent);
+  transform: translate(-50%, -50%) scale(1.04);
+}
+
+.kt-slider-pause svg {
+  width: 17px;
+  height: 17px;
+}
+
+.kt-slider-pause:focus-visible,
+.kt-slider-dot:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
 .kt-transition-layer {
   position: fixed;
   inset: 0;
@@ -125,7 +274,10 @@
   [data-kt-reveal],
   [data-kt-text-split],
   [data-kt-blur-text],
-  [data-kt-text-reveal] {
+  [data-kt-text-reveal],
+  [data-kt-text-transition],
+  [data-kt-cover-reveal],
+  [data-kt-text-fill] {
     opacity: 1 !important;
     transform: none !important;
     filter: none !important;
@@ -141,7 +293,6 @@ html.kt-preload [data-kt-reveal],
 html.kt-preload [data-kt-text-reveal],
 html.kt-preload [data-kt-blur-text],
 html.kt-preload [data-kt-text-split],
-html.kt-preload [data-kt-shuffle],
 html.kt-preload [data-kt-text-transition] {
   visibility: hidden !important;
 }
@@ -264,7 +415,9 @@ html.kt-preload [data-kt-text-transition] {
 /* progressBar:"fill" — a tinted layer sweeps the whole box like a filling bar. */
 .kt-toast__fill {
   position: absolute; inset: 0; z-index: 0; transform-origin: left center; pointer-events: none;
-  border-radius: inherit; opacity: var(--kt-toast-fill-opacity, .16);
+  /* No radius on the fill — the toast's own overflow:hidden clips the outer
+     corners, and the growing (right) edge stays a clean straight line. */
+  border-radius: 0; opacity: var(--kt-toast-fill-opacity, .16);
   background: var(--kt-toast-bar, var(--kt-toast-accent, #ff5b1c));
 }
 .kt-toast > :not(.kt-toast__fill) { position: relative; z-index: 1; }
@@ -397,16 +550,22 @@ html.kt-preload [data-kt-text-transition] {
 .kt-radial--right .kt-radial-hub { left: 100%; top: 50%; }
 .kt-radial-item { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
 .kt-radial-controls { position: absolute; z-index: 200; display: flex; gap: 8px; }
-.kt-radial--bottom .kt-radial-controls, .kt-radial--top .kt-radial-controls { left: 50%; bottom: 12px; transform: translateX(-50%); }
-.kt-radial--left .kt-radial-controls, .kt-radial--right .kt-radial-controls { right: 12px; top: 50%; transform: translateY(-50%); flex-direction: column; }
+.kt-radial--bottom .kt-radial-controls { left: 50%; bottom: 20px; gap: 16px; transform: translateX(-50%); }
+.kt-radial--top .kt-radial-controls { left: 50%; top: 20px; gap: 16px; transform: translateX(-50%); }
+.kt-radial--left .kt-radial-controls, .kt-radial--right .kt-radial-controls { right: 12px; top: 50%; gap: 14px; transform: translateY(-50%); flex-direction: column; }
 .kt-radial-controls button {
   width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
   border: 1px solid var(--kt-radial-btn-border, rgba(128,128,128,.4));
   background: var(--kt-radial-btn-bg, rgba(20,20,20,.5)); color: var(--kt-radial-btn-fg, #fff);
   display: grid; place-items: center;
 }
-.kt-radial-controls .kt-radial-prev::before { content: "‹"; font-size: 22px; line-height: 1; }
-.kt-radial-controls .kt-radial-next::before { content: "›"; font-size: 22px; line-height: 1; }
+/* Chevrons drawn as centered SVG masks (the ‹ › text glyphs sat off-centre). */
+.kt-radial-controls button::before { content: ""; width: 42%; height: 42%; background: currentColor; -webkit-mask: no-repeat center / contain; mask: no-repeat center / contain; }
+.kt-radial-controls .kt-radial-prev::before { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M15 5l-7 7 7 7'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M15 5l-7 7 7 7'/%3E%3C/svg%3E"); }
+.kt-radial-controls .kt-radial-next::before { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M9 5l7 7-7 7'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M9 5l7 7-7 7'/%3E%3C/svg%3E"); }
+/* Side docks (left/right) move items vertically → up/down chevrons instead. */
+.kt-radial--left .kt-radial-prev::before, .kt-radial--right .kt-radial-prev::before { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M5 15l7-7 7 7'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M5 15l7-7 7 7'/%3E%3C/svg%3E"); }
+.kt-radial--left .kt-radial-next::before, .kt-radial--right .kt-radial-next::before { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M5 9l7 7 7-7'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M5 9l7 7 7-7'/%3E%3C/svg%3E"); }
 .kt-radial:focus-visible { outline: 2px solid var(--kt-radial-accent, #ff5b1c); outline-offset: 3px; }
 
 /* ── Tooltip ──────────────────────────────────────────────────────────────────
@@ -443,7 +602,12 @@ html.kt-preload [data-kt-text-transition] {
 /* ── Horizontal scroll section (data-kt-horizontal-scroll) ───────────────────
    The module pins a viewport and translates the inner track sideways. The
    track is a flex row; children keep their own sizing. */
-.kt-hscroll-viewport { scrollbar-width: none; }
+.kt-hscroll-viewport {
+  scrollbar-width: none;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
 .kt-hscroll-viewport::-webkit-scrollbar { display: none; }
 .kt-hscroll-track > * { flex: 0 0 auto; }
 

@@ -24,6 +24,9 @@ export default {
     const offset = Number(opts.offset ?? 8);
     const duration = Math.max(0, Number(opts.duration ?? 0.16));
     const interactive = opts.interactive === true;
+    // `html:true` renders the content as markup (e.g. a link inside the tip).
+    // Pair with `interactive:true` so the pointer can travel onto it and click.
+    const allowHtml = opts.html === true;
     // Enter/leave animation: fade (default) · scale (pop) · shift (rise) · none.
     const effect = ['fade', 'scale', 'shift', 'none'].includes(opts.effect) ? opts.effect : 'fade';
     const fromState = effect === 'scale' ? { opacity: 0, transform: 'scale(0.9)' }
@@ -38,7 +41,7 @@ export default {
     tip.hidden = true;
     tip.style.position = 'fixed';
     tip.style.opacity = '0';
-    tip.textContent = content;
+    if (allowHtml) tip.innerHTML = content; else tip.textContent = content;
     const arrow = document.createElement('span');
     arrow.className = 'kt-tooltip__arrow';
     arrow.setAttribute('aria-hidden', 'true');
@@ -86,7 +89,10 @@ export default {
       if (anim) anim.cancel(); // may fire a lingering hide's oncancel — guarded by !visible
       tip.style.opacity = '1';
       if (!reduce && effect !== 'none') anim = tip.animate([fromState, toState], { duration: duration * 1000, easing: 'ease' });
-      window.addEventListener('scroll', position, true);
+      // Capture so ANY ancestor scroller repositions the tip (scroll doesn't
+      // bubble); passive because position() never calls preventDefault — keeps
+      // scrolling off the main-thread critical path (D-3 listener policy).
+      window.addEventListener('scroll', position, { capture: true, passive: true });
       window.addEventListener('resize', position);
     };
     const hide = () => {
@@ -131,6 +137,14 @@ export default {
       el,
       type: 'tooltip',
       show, hide,
+      // Live-update the tip text/markup in place — no teardown (audit B-5).
+      update(patch = {}) {
+        if (patch.content != null) {
+          const useHtml = patch.html != null ? patch.html === true : allowHtml;
+          if (useHtml) tip.innerHTML = String(patch.content); else tip.textContent = String(patch.content);
+        }
+        if (visible) position();
+      },
       pause() {}, resume() {},
       destroy() {
         clearTimeout(showTimer); clearTimeout(hideTimer);

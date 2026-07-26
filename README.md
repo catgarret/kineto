@@ -10,7 +10,7 @@
 
 English · [한국어](i18n/README.ko.md) · [日本語](i18n/README.jp.md) · [简体中文](i18n/README.zh-CN.md) · [繁體中文](i18n/README.zh-TW.md) · [Русский](i18n/README.ru.md) · [Italiano](i18n/README.it.md)
 
-[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
+[![CI](https://github.com/catgarret/kineto/actions/workflows/ci.yml/badge.svg)](https://github.com/catgarret/kineto/actions/workflows/ci.yml) [![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
 
 [Live demo](https://git.dongri.me/example/kineto) · [Module reference](docs/module-reference.md) · [AI prompt guide](AI-PROMPT-GUIDE.md) · [Feature contract](FEATURE_CONTRACT.md)
 
@@ -20,7 +20,7 @@ English · [한국어](i18n/README.ko.md) · [日本語](i18n/README.jp.md) · [
 
 > **Kineto** — the name comes from *kinetic* (from the Greek *kínēsis*, “motion”). A fitting name for a library that is all about motion on the web.
 
-Kineto is an interactive web motion effects library with live controls and copy-ready code — 51 modules for motion, media, scroll, loaders, and text, with integrations for JavaScript, React, Vue, and jQuery. Attach effects with a single `data-kt-*` attribute or drive them precisely through a JavaScript API. The core has no required dependencies, and on unsupported browsers or low-end devices the effects switch off while the content stays intact.
+Kineto is an interactive web motion effects library with live controls and copy-ready code — 50 modules for motion, media, scroll, loaders, and text, with integrations for JavaScript, React, Vue, and jQuery. Attach effects with a single `data-kt-*` attribute or drive them precisely through a JavaScript API. There is nothing to install by hand: the motion engines it can use (GSAP, Lenis) are never bundled — Kineto loads them from the CDN on demand only when a scroll/scrub effect needs one (or uses a copy already on your page), so a page of CSS-based effects ships zero engine code. On unsupported browsers or low-end devices the effects switch off while the content stays intact.
 
 > Building with an AI coding tool (Cursor, Claude, etc.)? See the [AI prompt guide](AI-PROMPT-GUIDE.md) — it includes a ready-to-paste instruction that tells the assistant to reach for Kineto modules first for motion and interaction.
 
@@ -28,7 +28,7 @@ Kineto is an interactive web motion effects library with live controls and copy-
 
 ## Highlights
 
-Every effect is tunable in the [live demo](https://git.dongri.me/example/kineto): adjust the options, hit Apply, and copy the resulting HTML or JavaScript.
+Every effect is tunable in the [live demo](https://git.dongri.me/example/kineto): adjust the options for an immediate preview, then copy the resulting HTML or JavaScript.
 
 **Progressive Print** — `lazy` images resolve in like an inkjet print, line by line, low to high resolution.
 
@@ -50,7 +50,7 @@ Every effect is tunable in the [live demo](https://git.dongri.me/example/kineto)
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/lightbox.gif" width="620" alt="Lightbox">
 
-See the [full module list](#modules) below for all 51 modules.
+See the [full module list](#modules) below for all 50 modules.
 
 ## Installation
 
@@ -110,9 +110,26 @@ Full-screen effects — the loader, page reveal and page transition — cover th
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 ```
 
-## Optional dependencies
+## Motion engines (GSAP, Lenis) — loaded on demand, not bundled
 
-The core runs on its own. If GSAP + ScrollTrigger (scroll scrubbing) or Lenis (smooth scroll) are present on the page, Kineto detects and uses them automatically; otherwise it falls back to standard APIs.
+Kineto does **not** bundle GSAP or Lenis. They are third-party engines with their own licences and release cadence, so shipping copies inside Kineto would mean redistributing them and pinning their versions. Instead Kineto loads an engine only when an effect actually needs one, and only if the page doesn't already have it:
+
+1. **Already on the page** — if you (or your bundler) expose `window.gsap` / `window.Lenis`, Kineto detects and uses that instance. Nothing extra is fetched, and there's never a duplicate-GSAP conflict.
+2. **Otherwise, fetched on demand** — the first time a GSAP-backed effect (reveal, scroll-scrub, sticky, text…) initialises, Kineto injects the official GSAP + ScrollTrigger `<script>` from jsDelivr. Smooth scroll does the same with Lenis when you call `enableSmooth()`. A page that uses only CSS-based effects never loads GSAP at all.
+
+If the CDN is blocked or offline, those effects fall back to native behaviour instead of erroring. Every non-GSAP effect (cursor, media, most UI, CSS-timeline scroll) works with no engine at all.
+
+You stay in control of the source — pin an exact version, self-host, or point at an internal mirror:
+
+```js
+Kineto.setEngineSource({
+  gsap: 'https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js',
+  scrollTrigger: 'https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js',
+  lenis: 'https://cdn.jsdelivr.net/npm/lenis@1.1.0/dist/lenis.min.js'
+});
+```
+
+Prefer to manage them yourself? Add the `<script>` tags (or `npm install gsap lenis` as optional peers and set the globals) before Kineto initialises, and it will use those instead of fetching anything:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
@@ -167,7 +184,6 @@ Kineto.disableSmooth();
 | `scrollSequence` | `data-kt-scroll-sequence` | Image-sequence scrubbing |
 | `scrollShadows` | `data-kt-scroll-shadows` | CSS edge shadows on scroll containers |
 | `scrollVelocity` | `data-kt-scroll-velocity` | Scroll speed / direction response |
-| `shuffle` | `data-kt-shuffle` | Character shuffle decode |
 | `slider` | `data-kt-slider` | Slide and coverflow |
 | `stickyHeader` | `data-kt-sticky-header` | Shrinking / cover-to-fixed sticky header |
 | `stickyStack` | `data-kt-sticky-stack` | Sticky stack (vertical / horizontal / floating) |
@@ -212,7 +228,8 @@ Latest Chrome, Edge, Firefox, and Safari (desktop and mobile). With `prefers-red
 ```bash
 npm install
 npm run build   # emits dist/
-npm run verify  # lint, build, tests, contract checks
+npm run ci      # lint, build, Node/Chromium tests, contract and package checks
+npm run verify  # full CI suite plus dependency security audit
 ```
 
 ## License

@@ -41,10 +41,16 @@ export default {
     let targetVelocity = baseVelocity;
     let hovered = false;
     let currentVelocity = baseVelocity;
-    let position = direction < 0 ? 0 : -(group.offsetWidth || 0);
+    // Cache the group width (reading offsetWidth every frame forces a layout
+    // flush on the continuous loop); re-measure only on resize.
+    let groupWidth = group.offsetWidth || 0;
+    let position = direction < 0 ? 0 : -groupWidth;
     let alive = true;
     let rafId = null;
     let previousTime = performance.now();
+    const measureWidth = () => { groupWidth = group.offsetWidth || 0; };
+    const marqueeResizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measureWidth) : null;
+    marqueeResizeObserver?.observe(group);
 
     const setX = (value) => {
       if (gsap) gsap.set(groups, { x: value });
@@ -55,7 +61,7 @@ export default {
       if (!alive) return;
       const delta = Math.min(0.05, Math.max(0, (time - previousTime) / 1000));
       previousTime = time;
-      const width = group.offsetWidth;
+      const width = groupWidth;
       if (width > 0) {
         currentVelocity += (targetVelocity - currentVelocity) * Math.min(1, delta * 8);
         position += currentVelocity * delta;
@@ -119,6 +125,7 @@ export default {
         alive = false;
         if (rafId != null) cancelAnimationFrame(rafId);
         if (skewRaf != null) cancelAnimationFrame(skewRaf);
+        marqueeResizeObserver?.disconnect();
         velocityTrigger?.kill();
         el.removeEventListener('pointerenter', onEnter);
         el.removeEventListener('pointerleave', onLeave);

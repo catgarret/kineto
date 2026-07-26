@@ -1,4 +1,4 @@
-import { segmentText } from '../utils.js';
+import { cssEase, segmentText } from '../utils.js';
 
 /*
  * Text transition rebuilt around a single live node: the visible text is
@@ -194,7 +194,7 @@ export default {
           const player = animate(span, dissolve ? dissolveFrames(true) : effect.enter, {
             duration,
             delay: dissolve ? Math.random() * duration * 0.5 : order[spanIndex] * Math.min(stagger, 900 / Math.max(1, spans.length)),
-            easing: dissolve ? `steps(${2 + Math.floor(Math.random() * 3)}, end)` : (typeof opts.ease === 'string' && opts.ease.includes('(') ? opts.ease : 'cubic-bezier(.22,.8,.3,1)')
+            easing: dissolve ? `steps(${2 + Math.floor(Math.random() * 3)}, end)` : (opts.ease ? cssEase(opts.ease) : 'cubic-bezier(.22,.8,.3,1)')
           });
           player.finished.then(() => {
             finished += 1;

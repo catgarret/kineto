@@ -1,6 +1,7 @@
 node_modules/
 **/node_modules/
 tests/.smoke/
+tests/browser/shots/
 tests/framework-qa/node_modules/
 tests/framework-qa/dist-iife/
 *.tgz
@@ -13,9 +14,6 @@ tests/framework-qa/dist-iife/
 # 로컬 전용 배포 가이드 (GitHub/npm에 올리지 않음)
 PUBLISH-GUIDE.md
 VSCODE-GUIDE.md
-
-# tests는 저장소에서 제외(로컬 유지)
-tests/
 
 # FUSE mount temp files (deleted-while-open artifacts)
 .fuse_hidden*

@@ -1,6 +1,40 @@
 import Kineto from '../core.js';
+import { cssEase } from '../utils.js';
 
 let activeInstance = null;
+
+// Built-in overlay transition. `effect` picks a covered-state shape; the overlay
+// animates INTO the covered state during leave, then OUT after the new page
+// renders — so you get a styled transition without writing CSS. `effect:'none'`
+// (default) keeps the CSS-driven behaviour (animate your own `.transition-*`).
+const COVER = {
+  fade: { pre: 'opacity:0', in: 'opacity:1', out: 'opacity:0' },
+  slide: { pre: 'transform:translateX(100%)', in: 'transform:translateX(0)', out: 'transform:translateX(-100%)' },
+  cover: { pre: 'transform:translateY(100%)', in: 'transform:translateY(0)', out: 'transform:translateY(-100%)' },
+  curtain: { pre: 'clip-path:inset(0 50% 0 50%)', in: 'clip-path:inset(0 0 0 0)', out: 'clip-path:inset(0 0 0 100%)' },
+  circle: { pre: 'clip-path:circle(0% at 50% 50%)', in: 'clip-path:circle(75% at 50% 50%)', out: 'clip-path:circle(0% at 50% 50%)' },
+  wipe: { pre: 'clip-path:polygon(0 0,0 0,-30% 100%,-30% 100%)', in: 'clip-path:polygon(0 0,130% 0,100% 100%,-30% 100%)', out: 'clip-path:polygon(130% 0,130% 0,100% 100%,100% 100%)' },
+  split: { pre: 'clip-path:inset(50% 0 50% 0)', in: 'clip-path:inset(0 0 0 0)', out: 'clip-path:inset(100% 0 0 0)' },
+  blinds: { pre: 'clip-path:inset(0 0 100% 0)', in: 'clip-path:inset(0 0 0 0)', out: 'clip-path:inset(100% 0 0 0)' }
+};
+function makeOverlay(opts) {
+  const effect = String(opts.effect || 'none');
+  if (effect === 'none' || effect === 'css' || !COVER[effect]) return null;
+  const spec = COVER[effect];
+  const dur = Math.max(0.05, Number(opts.duration ?? 0.5));
+  const ease = opts.ease ? cssEase(opts.ease) : 'cubic-bezier(.76,0,.24,1)';
+  const color = opts.color || '#101318';
+  const color2 = opts.color2 || color;
+  const bg = effect === 'curtain' ? `linear-gradient(90deg,${color} 50%,${color2} 50%)`
+    : effect === 'blinds' ? `repeating-linear-gradient(0deg,${color} 0,${color} 12.5%,${color2} 12.5%,${color2} 25%)`
+      : color2 !== color ? `linear-gradient(135deg,${color},${color2})` : color;
+  const el = document.createElement('div');
+  el.setAttribute('aria-hidden', 'true');
+  el.style.cssText = `position:fixed;inset:0;z-index:2147483000;pointer-events:none;background:${bg};transition:all ${dur}s ${ease};${spec.pre}`;
+  document.body.appendChild(el);
+  const step = (css) => new Promise((resolve) => { requestAnimationFrame(() => { el.style.cssText = `position:fixed;inset:0;z-index:2147483000;pointer-events:none;background:${bg};transition:all ${dur}s ${ease};${css}`; setTimeout(resolve, dur * 1000 + 30); }); });
+  return { coverIn: () => step(spec.in), coverOut: () => step(spec.out), remove: () => el.remove() };
+}
 
 function maxTransitionMs(el) {
   const style = getComputedStyle(el);
@@ -101,9 +135,13 @@ export default {
       html.classList.remove('kt-is-entering');
       opts.onLeave?.(url);
 
-      const [htmlText] = await Promise.all([fetchPage(url), waitForLeave()]);
-      if (destroyed) return;
+      // Built-in overlay effect (opts.effect) OR the CSS-driven leave wait.
+      const overlay = makeOverlay(opts);
+      const leave = overlay ? overlay.coverIn() : waitForLeave();
+      const [htmlText] = await Promise.all([fetchPage(url), leave]);
+      if (destroyed) { overlay?.remove(); return; }
       const rendered = htmlText && renderPage(htmlText, url, popState);
+      if (overlay) { await overlay.coverOut(); overlay.remove(); }
       navigating = false;
       if (!rendered) window.location.assign(url);
     };

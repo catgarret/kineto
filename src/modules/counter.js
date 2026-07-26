@@ -224,7 +224,6 @@ export default {
       el.style.gap = `${Math.max(0, Number(opts.gap ?? 3))}px`;
       appendAffix(el, prefix, 'kt-counter-prefix');
 
-      const tile = opts.tile !== false;
       const tileColor = opts.tileColor || '#191b20';
       const tileText = opts.tileTextColor || '#f6f7fb';
       const radius = Math.max(0, Number(opts.tileRadius ?? 6));
@@ -232,11 +231,8 @@ export default {
       const flip = flipVisuals(opts);
       const cells = [];
 
-      // Bare cells still need opaque flaps, otherwise the folding half would
-      // overlap the digit behind it. Defaults to the page canvas color.
-      const bareBackground = opts.bareBackground || 'Canvas';
-      const halfStyle = (top) => `position:absolute;left:0;right:0;height:50%;overflow:hidden;${top ? 'top:0;border-radius:' + (tile ? `${radius}px ${radius}px 0 0` : '0') : 'bottom:0;border-radius:' + (tile ? `0 0 ${radius}px ${radius}px` : '0')};background:${tile ? tileColor : bareBackground};backface-visibility:hidden;`;
-      const glyphStyle = (top) => `position:absolute;left:0;width:100%;height:${cellHeight};line-height:${cellHeight};text-align:center;${top ? 'top:0' : 'bottom:0'};color:${tile ? tileText : 'inherit'};`;
+      const halfStyle = (top) => `position:absolute;left:0;right:0;height:50%;overflow:hidden;${top ? `top:0;border-radius:${radius}px ${radius}px 0 0` : `bottom:0;border-radius:0 0 ${radius}px ${radius}px`};background:${tileColor};backface-visibility:hidden;`;
+      const glyphStyle = (top) => `position:absolute;left:0;width:100%;height:${cellHeight};line-height:${cellHeight};text-align:center;${top ? 'top:0' : 'bottom:0'};color:${tileText};`;
       const buildHalf = (top, hinged) => {
         const half = document.createElement('span');
         half.setAttribute('aria-hidden', 'true');
@@ -261,7 +257,7 @@ export default {
           const separator = document.createElement('span');
           separator.className = 'kt-counter-separator';
           separator.textContent = char;
-          if (tile) separator.style.opacity = '.7';
+          separator.style.opacity = '.7';
           el.appendChild(separator);
           continue;
         }
@@ -269,20 +265,18 @@ export default {
         flipDigitIndex += 1;
         const cell = document.createElement('span');
         cell.className = 'kt-counter-flip-cell';
-        cell.style.cssText = `display:inline-block;position:relative;width:${tile ? '1.34ch' : '1.12ch'};height:${cellHeight};perspective:340px;${(tile && flip.hasShadow) ? `filter:${flip.shadow};` : ''}`;
+        cell.style.cssText = `display:inline-block;position:relative;width:1.34ch;height:${cellHeight};perspective:340px;${flip.hasShadow ? `filter:${flip.shadow};` : ''}`;
         const topStatic = buildHalf(true, false);     // shows the NEXT digit
         const bottomStatic = buildHalf(false, false); // shows the CURRENT digit
         const topFlap = buildHalf(true, true);        // current digit, folds down
         const bottomFlap = buildHalf(false, true);    // next digit, unfolds
         bottomFlap.half.style.transform = 'rotateX(90deg)';
         cell.append(topStatic.half, bottomStatic.half, topFlap.half, bottomFlap.half);
-        if (tile) {
-          const seam = document.createElement('span');
-          seam.className = 'kt-counter-seam';
-          seam.setAttribute('aria-hidden', 'true');
-          seam.style.cssText = `position:absolute;left:0;right:0;top:50%;height:1px;margin-top:-0.5px;background:${flip.seam};z-index:4;pointer-events:none;`;
-          cell.appendChild(seam);
-        }
+        const seam = document.createElement('span');
+        seam.className = 'kt-counter-seam';
+        seam.setAttribute('aria-hidden', 'true');
+        seam.style.cssText = `position:absolute;left:0;right:0;top:50%;height:1px;margin-top:-0.5px;background:${flip.seam};z-index:4;pointer-events:none;`;
+        cell.appendChild(seam);
         el.appendChild(cell);
         cells.push({ topStatic, bottomStatic, topFlap, bottomFlap, target: Number(char), start: startDigit });
       }
@@ -296,6 +290,8 @@ export default {
         timers.add(id);
       };
       const setCell = (cell, value) => {
+        cell.topStatic.half.style.visibility = 'visible';
+        cell.bottomStatic.half.style.visibility = 'visible';
         cell.topStatic.glyph.textContent = String(value);
         cell.bottomStatic.glyph.textContent = String(value);
         cell.topFlap.glyph.textContent = String(value);
@@ -303,7 +299,7 @@ export default {
         cell.topFlap.half.style.transform = 'rotateX(0deg)';
         cell.bottomFlap.half.style.transform = 'rotateX(90deg)';
       };
-      const shade = (frames) => (tile ? frames.withFilter : frames.plain);
+      const shade = (frames) => frames.withFilter;
       const flipStep = (cell, current, next, flipMs, up = true) => {
         const half = Math.max(34, flipMs / 2);
         if (up) {
@@ -314,6 +310,7 @@ export default {
           cell.bottomFlap.glyph.textContent = String(next);
           cell.topFlap.half.style.transform = 'rotateX(0deg)';
           cell.bottomFlap.half.style.transform = 'rotateX(90deg)';
+          cell.bottomStatic.half.style.visibility = 'hidden';
           const downFrames = shade({
             withFilter: [{ transform: 'rotateX(0deg)', filter: 'brightness(1)' }, { transform: 'rotateX(-90deg)', filter: 'brightness(.6)' }],
             plain: [{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-90deg)' }]
@@ -325,7 +322,10 @@ export default {
           cell.topFlap.half.animate(downFrames, { duration: half, easing: 'cubic-bezier(.55,0,.85,.5)', fill: 'forwards' });
           later(() => {
             cell.bottomFlap.half.animate(upFrames, { duration: half, easing: 'cubic-bezier(.15,.6,.3,1.15)', fill: 'forwards' });
-            later(() => { cell.bottomStatic.glyph.textContent = String(next); }, half);
+            later(() => {
+              cell.bottomStatic.glyph.textContent = String(next);
+              cell.bottomStatic.half.style.visibility = 'visible';
+            }, half);
           }, half);
         } else {
           // Counting down: bottom half (current) folds up, top half (next) unfolds down.
@@ -335,6 +335,7 @@ export default {
           cell.topFlap.glyph.textContent = String(next);
           cell.bottomFlap.half.style.transform = 'rotateX(0deg)';
           cell.topFlap.half.style.transform = 'rotateX(-90deg)';
+          cell.topStatic.half.style.visibility = 'hidden';
           const foldUp = shade({
             withFilter: [{ transform: 'rotateX(0deg)', filter: 'brightness(1)' }, { transform: 'rotateX(90deg)', filter: 'brightness(.6)' }],
             plain: [{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(90deg)' }]
@@ -346,7 +347,10 @@ export default {
           cell.bottomFlap.half.animate(foldUp, { duration: half, easing: 'cubic-bezier(.55,0,.85,.5)', fill: 'forwards' });
           later(() => {
             cell.topFlap.half.animate(unfoldDown, { duration: half, easing: 'cubic-bezier(.15,.6,.3,1.15)', fill: 'forwards' });
-            later(() => { cell.topStatic.glyph.textContent = String(next); }, half);
+            later(() => {
+              cell.topStatic.glyph.textContent = String(next);
+              cell.topStatic.half.style.visibility = 'visible';
+            }, half);
           }, half);
         }
       };
@@ -453,17 +457,15 @@ export default {
       // half-fold mechanic as the flip counter, driven by time updates.
       const flipVis = flipVisuals(opts);
       const flipConfig = {
-        tile: opts.tile !== false,
         tileColor: opts.tileColor || '#191b20',
         tileText: opts.tileTextColor || '#f6f7fb',
-        radius: Math.max(0, Number(opts.tileRadius ?? 6)),
-        bareBackground: opts.bareBackground || 'Canvas'
+        radius: Math.max(0, Number(opts.tileRadius ?? 6))
       };
       const makeFlipDigit = (char) => {
         const f = flipConfig;
         const cellHeight = '1.24em';
-        const halfStyle = (top) => `position:absolute;left:0;right:0;height:50%;overflow:hidden;${top ? 'top:0;border-radius:' + (f.tile ? `${f.radius}px ${f.radius}px 0 0` : '0') : 'bottom:0;border-radius:' + (f.tile ? `0 0 ${f.radius}px ${f.radius}px` : '0')};background:${f.tile ? f.tileColor : f.bareBackground};backface-visibility:hidden;`;
-        const glyphStyle = (top) => `position:absolute;left:0;width:100%;height:${cellHeight};line-height:${cellHeight};text-align:center;${top ? 'top:0' : 'bottom:0'};color:${f.tile ? f.tileText : 'inherit'};`;
+        const halfStyle = (top) => `position:absolute;left:0;right:0;height:50%;overflow:hidden;${top ? `top:0;border-radius:${f.radius}px ${f.radius}px 0 0` : `bottom:0;border-radius:0 0 ${f.radius}px ${f.radius}px`};background:${f.tileColor};backface-visibility:hidden;`;
+        const glyphStyle = (top) => `position:absolute;left:0;width:100%;height:${cellHeight};line-height:${cellHeight};text-align:center;${top ? 'top:0' : 'bottom:0'};color:${f.tileText};`;
         const buildHalf = (top, hinged) => {
           const half = document.createElement('span');
           half.setAttribute('aria-hidden', 'true');
@@ -478,7 +480,7 @@ export default {
         };
         const cell = document.createElement('span');
         cell.className = 'kt-counter-digit kt-counter-clock-digit kt-counter-flip-cell';
-        cell.style.cssText = `display:inline-block;position:relative;width:${f.tile ? '1.34ch' : '1.12ch'};height:1.24em;perspective:340px;${f.tile ? `${flipVis.hasShadow ? `filter:${flipVis.shadow};` : ''}margin:0 1px;` : ''}`;
+        cell.style.cssText = `display:inline-block;position:relative;width:1.34ch;height:1.24em;perspective:340px;${flipVis.hasShadow ? `filter:${flipVis.shadow};` : ''}margin:0 1px;`;
         const parts = {
           topStatic: buildHalf(true, false),
           bottomStatic: buildHalf(false, false),
@@ -487,13 +489,11 @@ export default {
         };
         parts.bottomFlap.half.style.transform = 'rotateX(90deg)';
         cell.append(parts.topStatic.half, parts.bottomStatic.half, parts.topFlap.half, parts.bottomFlap.half);
-        if (f.tile) {
-          const seam = document.createElement('span');
-          seam.className = 'kt-counter-seam';
-          seam.setAttribute('aria-hidden', 'true');
-          seam.style.cssText = `position:absolute;left:0;right:0;top:50%;height:1px;margin-top:-0.5px;background:${flipVis.seam};z-index:4;pointer-events:none;`;
-          cell.appendChild(seam);
-        }
+        const seam = document.createElement('span');
+        seam.className = 'kt-counter-seam';
+        seam.setAttribute('aria-hidden', 'true');
+        seam.style.cssText = `position:absolute;left:0;right:0;top:50%;height:1px;margin-top:-0.5px;background:${flipVis.seam};z-index:4;pointer-events:none;`;
+        cell.appendChild(seam);
         return { viewport: cell, parts, value: char };
       };
       const flipTo = (cell, nextChar) => {
@@ -511,17 +511,16 @@ export default {
         c.bottomFlap.glyph.textContent = nextChar;
         c.topFlap.half.style.transform = 'rotateX(0deg)';
         c.bottomFlap.half.style.transform = 'rotateX(90deg)';
-        const tiled = flipConfig.tile;
-        const downFrames = tiled
-          ? [{ transform: 'rotateX(0deg)', filter: 'brightness(1)' }, { transform: 'rotateX(-90deg)', filter: 'brightness(.6)' }]
-          : [{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-90deg)' }];
-        const upFrames = tiled
-          ? [{ transform: 'rotateX(90deg)', filter: 'brightness(.6)' }, { transform: 'rotateX(0deg)', filter: 'brightness(1)' }]
-          : [{ transform: 'rotateX(90deg)' }, { transform: 'rotateX(0deg)' }];
+        c.bottomStatic.half.style.visibility = 'hidden';
+        const downFrames = [{ transform: 'rotateX(0deg)', filter: 'brightness(1)' }, { transform: 'rotateX(-90deg)', filter: 'brightness(.6)' }];
+        const upFrames = [{ transform: 'rotateX(90deg)', filter: 'brightness(.6)' }, { transform: 'rotateX(0deg)', filter: 'brightness(1)' }];
         c.topFlap.half.animate(downFrames, { duration: half, easing: 'cubic-bezier(.55,0,.85,.5)', fill: 'forwards' });
         setTimeout(() => {
           c.bottomFlap.half.animate(upFrames, { duration: half, easing: 'cubic-bezier(.15,.6,.3,1.15)', fill: 'forwards' });
-          setTimeout(() => { c.bottomStatic.glyph.textContent = nextChar; }, half);
+          setTimeout(() => {
+            c.bottomStatic.glyph.textContent = nextChar;
+            c.bottomStatic.half.style.visibility = 'visible';
+          }, half);
         }, half);
       };
 

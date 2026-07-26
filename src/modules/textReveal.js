@@ -1,4 +1,4 @@
-import { G, hangulFrames, observeOnce, segmentText, snapshotAttributes, scramblePainter } from '../utils.js';
+import { G, gsapEaseName, hangulFrames, observeOnce, segmentText, snapshotAttributes, scramblePainter } from '../utils.js';
 
 export default {
   create(el, opts) {
@@ -102,13 +102,13 @@ export default {
           opacity: 1,
           duration: Number(opts.duration ?? 0.8),
           stagger: Number(opts.stagger ?? 0.04),
-          ease: opts.ease || 'elastic.out(1, 0.4)',
+          ease: opts.ease ? gsapEaseName(opts.ease) : 'elastic.out(1, 0.4)',
           delay,
           onComplete: complete
         }));
       } else {
         spans.forEach((span, index) => later(() => {
-          span.style.transition = 'opacity .4s ease, transform .4s ease';
+          span.style.transition = 'opacity .4s var(--kt-ease-ui, ease), transform .4s var(--kt-ease-ui, ease)';
           span.style.opacity = '1';
           span.style.transform = 'none';
           if (index === spans.length - 1) complete();
@@ -142,13 +142,13 @@ export default {
           opacity: 1,
           duration: Number(opts.duration ?? 0.6),
           stagger: Number(opts.stagger ?? 0.05),
-          ease: opts.ease || 'power3.out',
+          ease: opts.ease ? gsapEaseName(opts.ease) : 'power3.out',
           delay,
           onComplete: complete
         }));
       } else {
         spans.forEach((span, index) => later(() => {
-          span.style.transition = 'opacity .5s ease, transform .5s ease';
+          span.style.transition = 'opacity .5s var(--kt-ease-ui, ease), transform .5s var(--kt-ease-ui, ease)';
           span.style.opacity = '1';
           span.style.transform = 'translateY(0)';
           if (index === spans.length - 1) complete();
@@ -271,6 +271,48 @@ export default {
       }
     };
 
+    // ── Shuffle: every character scrambles at once, then the word resolves
+    // left→right (merged from the former standalone `shuffle` module). ────────
+    const renderShuffle = () => {
+      const charset = String(opts.chars || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*');
+      const scramblePaint = scramblePainter({ rainbow: opts.rainbow, rainbowColors: opts.rainbowColors, scrambleFade: opts.scrambleFade });
+      const shuffleSpeed = Math.max(12, Number(opts.speed ?? 34));
+      const revealRate = Math.max(1, Number(opts.revealRate ?? 2));
+      const graphemes = segmentText(text);
+      const cells = graphemes.map((char) => {
+        if (/^\s$/.test(char)) { el.appendChild(document.createTextNode(char)); return null; }
+        const span = addSpan(char, { textAlign: 'center' });
+        el.appendChild(span);
+        return span;
+      });
+      // Lock each cell to its final width so scrambled glyphs never reflow lines.
+      cells.forEach((span) => { if (span) span.style.width = `${Math.ceil(span.getBoundingClientRect().width * 100) / 100}px`; });
+      let revealed = 0;
+      let tick = 0;
+      const paintFrame = () => {
+        cells.forEach((span, i) => {
+          if (!span) return;
+          if (i < revealed) { span.textContent = graphemes[i]; scramblePaint?.clear(span); }
+          else { span.textContent = charset[Math.floor(Math.random() * charset.length)] || graphemes[i]; scramblePaint?.paint(span); }
+        });
+      };
+      const step = () => {
+        if (!alive) return;
+        paintFrame();
+        tick += 1;
+        if (tick % revealRate === 0) revealed += 1;
+        if (revealed >= graphemes.length) {
+          cells.forEach((span, i) => { if (span) { span.textContent = graphemes[i]; scramblePaint?.clear(span); } });
+          complete();
+          if (opts.loop === true) later(() => { revealed = 0; tick = 0; step(); }, Math.max(200, Number(opts.hold ?? 1400)));
+          return;
+        }
+        later(step, shuffleSpeed);
+      };
+      paintFrame();
+      later(step, delay * 1000);
+    };
+
     const start = () => {
       if (started || !alive) return;
       started = true;
@@ -278,6 +320,7 @@ export default {
       else if (mode === 'bounce') renderBounce();
       else if (mode === 'decode') renderDecode();
       else if (mode === 'flicker') renderFlicker();
+      else if (mode === 'shuffle') renderShuffle();
       else renderStream();
     };
 

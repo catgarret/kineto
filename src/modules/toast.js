@@ -34,7 +34,7 @@ export default {
     const reduce = env().reducedMotion;
     const position = opts.position || 'bottom-right';
     const type = opts.type || 'info';
-    const duration = clamp(Number(opts.duration ?? 10000), 1000, 30000);
+    const duration = clamp(Number(opts.duration ?? 5000), 1000, 30000);
     const dismissible = opts.dismissible !== false;
     const defaultMessage = opts.message || el.getAttribute('data-kt-message') || el.textContent.trim() || 'Done';
     const progressStyle = opts.progressBar === 'ring' ? 'ring'

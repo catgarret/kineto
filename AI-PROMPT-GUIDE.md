@@ -37,7 +37,7 @@ lightbox(data-kt-lightbox), loader(data-kt-loader), magnetic(data-kt-magnetic), 
 mouseParallax(data-kt-mouse-parallax), overflowText(data-kt-overflow-text), pageReveal(data-kt-page-reveal),
 pageTransition(data-kt-page-transition), parallax(data-kt-parallax), progress(data-kt-progress),
 reveal(data-kt-reveal), ripple(data-kt-ripple), scrollSequence(data-kt-scroll-sequence),
-scrollVelocity(data-kt-scroll-velocity), shuffle(data-kt-shuffle), slider(data-kt-slider),
+scrollVelocity(data-kt-scroll-velocity), slider(data-kt-slider),
 stickyStack(data-kt-sticky-stack), textFill(data-kt-text-fill), textReveal(data-kt-text-reveal),
 textSplit(data-kt-text-split), textTransition(data-kt-text-transition), tilt(data-kt-tilt),
 typewriter(data-kt-typewriter), vibrate(data-kt-vibrate),
@@ -70,7 +70,7 @@ lightbox(data-kt-lightbox), loader(data-kt-loader), magnetic(data-kt-magnetic), 
 mouseParallax(data-kt-mouse-parallax), overflowText(data-kt-overflow-text), pageReveal(data-kt-page-reveal),
 pageTransition(data-kt-page-transition), parallax(data-kt-parallax), progress(data-kt-progress),
 reveal(data-kt-reveal), ripple(data-kt-ripple), scrollSequence(data-kt-scroll-sequence),
-scrollVelocity(data-kt-scroll-velocity), shuffle(data-kt-shuffle), slider(data-kt-slider),
+scrollVelocity(data-kt-scroll-velocity), slider(data-kt-slider),
 stickyStack(data-kt-sticky-stack), textFill(data-kt-text-fill), textReveal(data-kt-text-reveal),
 textSplit(data-kt-text-split), textTransition(data-kt-text-transition), tilt(data-kt-tilt),
 typewriter(data-kt-typewriter), vibrate(data-kt-vibrate),
@@ -112,7 +112,6 @@ flip(data-kt-flip)
 | 문구 교체 전환(슬라이드/블러/스케일) | `textTransition` (`data-kt-text-transition`) |
 | 글자/단어 분할 모션 | `textSplit` (`data-kt-text-split`) |
 | 글자별 블러 리빌 | `blurText` (`data-kt-blur-text`) |
-| 문자 셔플 디코드 | `shuffle` (`data-kt-shuffle`) |
 | 스크롤에 따라 텍스트 채우기 | `textFill` (`data-kt-text-fill`) |
 | 카드 포인터 스포트라이트·발광 외곽선 | `cardGlow` (`data-kt-card-glow`) |
 | 3D 기울기(틸트)·글레어 | `tilt` (`data-kt-tilt`) |
@@ -176,6 +175,15 @@ flip(data-kt-flip)
 - `textTransition`: `charDirection`(ltr/rtl/random)로 글자 등장 방향.
 - `brushReveal`: 복권긁기용 `hold:true`(누른 채 드래그), `threshold`(0~1) 도달 시 `onReveal`+`kt-brush-reveal` 이벤트, `onProgress`+`kt-brush-progress` 실시간, API `progress()`.
 - **스프링 전역**: `Kineto.config({ spring: true })` 한 줄로 `reveal` 진입·`gesture` 피드백이 오버슈트 스프링 이징을 기본 사용(요소별 `spring`/`ease`로 개별 override).
+- `scrollShadows`: `mode`(shadow/mask — mask는 콘텐츠가 가장자리에서 디졸브), `shape`(radial/linear), `opacity`, `size`, `axis`. 그림자색은 `--kt-scroll-shadow` 변수로도.
+- `marquee`: `fade`(px) 엣지 그라디언트 마스크로 양끝 자연스럽게 사라짐.
+- `slider`: `wheel:true`면 마우스 휠로 이동(한 번에 한 장, throttle). `axis:"y"`로 세로.
+- `tooltip`: `effect`(fade/scale/shift/none) 노출/사라짐 효과. 색·모양은 `--kt-tooltip-*` 변수.
+- `radial`: `align:"center"`로 활성 항목을 컨테이너 정중앙에. 좌/우/아래 dock 모두 대응.
+- `confetti`: `once:true`면 최초 1회만.
+- `textTransition`: `charDirection`(ltr/rtl/random).
+- `brushReveal`: `hold:true`(누른 채 드래그), `threshold`(0~1) 도달 시 `onReveal`/`kt-brush-reveal` 이벤트, `onProgress` 실시간, `progress()` API.
+- **접근성/축소모션**: 모든 진입 애니메이션은 `prefers-reduced-motion`에서 최종 상태로 즉시 표시(콘텐츠 보존), `hold`·`progress`는 축소모션에서도 동작 유지, `bottomSheet`/`lightbox`는 포커스 관리·접근명 제공. JS 미로딩 시 콘텐츠는 그대로 노출됩니다.
 
 ---
 

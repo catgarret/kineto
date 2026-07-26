@@ -1,4 +1,15 @@
 import { getGSAP, getScrollTrigger } from './runtime.js';
+import { toCSS as easingToCSS, gsapEase as easingGsap } from './easings.js';
+
+// Resolve any easing token (CSS keyword, easings.net name, 'elastic-out',
+// 'bounce-in-out', 'spring', {spring:{…}}, or a raw cubic-bezier/linear string)
+// to a valid CSS <easing-function>. Passes unknown values through unchanged, so
+// it is safe to wrap module `opts.ease` that historically held raw CSS strings.
+export const cssEase = easingToCSS;
+
+// Same idea for GSAP-driven tweens: map a token ('elastic-out', 'sine-in', …)
+// to the matching GSAP ease name; unknown/GSAP-native values pass through.
+export const gsapEaseName = easingGsap;
 
 // Global motion defaults, set via Kineto.config({ spring: true }). Modules read
 // these as the fallback when a per-instance option isn't given, so a single

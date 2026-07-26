@@ -30,7 +30,7 @@ function createManager() {
     const style = document.createElement('style');
     style.id = 'kt-lightbox-style';
     style.textContent = `
-      .kt-lightbox button{transition:background-color .18s ease,border-color .18s ease,transform .18s ease,opacity .18s ease;}
+      .kt-lightbox button{transition:background-color .18s var(--kt-ease-ui, ease),border-color .18s var(--kt-ease-ui, ease),transform .18s var(--kt-ease-ui, ease),opacity .18s var(--kt-ease-ui, ease);}
       .kt-lightbox .kt-lightbox-toolbar button:hover:not(:disabled){background:rgba(255,255,255,.16)!important;border-color:rgba(255,255,255,.3)!important;}
       .kt-lightbox .kt-lightbox-toolbar button:disabled{opacity:.32;cursor:default;}
       .kt-lightbox .kt-lightbox-prev:hover,.kt-lightbox .kt-lightbox-next:hover{background:rgba(255,255,255,.14)!important;transform:translateY(-50%) scale(1.06);}
@@ -81,7 +81,7 @@ function createManager() {
   const downloadButton = createButton('kt-lightbox-download', 'Download', '');
   const closeButton = createButton('kt-lightbox-close', 'Close viewer', '×');
   [zoomOut, zoomReset, zoomIn, shareButton, downloadButton, closeButton].forEach((button) => {
-    button.style.cssText = 'min-width:34px;height:34px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:9px;background:var(--kt-lightbox-button-bg,transparent);color:var(--kt-lightbox-button-color,white);font:600 15px/1 sans-serif;cursor:pointer;transition:background-color .15s ease;';
+    button.style.cssText = 'min-width:34px;height:34px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:9px;background:var(--kt-lightbox-button-bg,transparent);color:var(--kt-lightbox-button-color,white);font:600 15px/1 sans-serif;cursor:pointer;transition:background-color .15s var(--kt-ease-ui, ease);';
   });
   // A hairline divider separates the zoom segment from share / close.
   const divider = document.createElement('span');
@@ -131,7 +131,7 @@ function createManager() {
   // bottom bar keeps only the metadata, floated up from the screen edge.
   const textInfo = document.createElement('div');
   textInfo.className = 'kt-lightbox-caption';
-  textInfo.style.cssText = 'max-width:min(860px,92vw);text-align:center;flex:0 0 auto;transition:opacity .25s ease;';
+  textInfo.style.cssText = 'max-width:min(860px,92vw);text-align:center;flex:0 0 auto;transition:opacity .25s var(--kt-ease-ui, ease);';
   const title = document.createElement('strong');
   title.className = 'kt-lightbox-title';
   title.style.cssText = 'display:block;font:650 15px/1.4 sans-serif;';
@@ -198,6 +198,9 @@ function createManager() {
   const buildFilmstrip = () => {
     const show = activeEntry?.thumbnails === true && activeList.length > 1;
     filmstrip.hidden = !show;
+    // Reserve extra vertical room for the filmstrip so the caption (which sits
+    // right under the picture) never collides with the image or the thumbnails.
+    image.style.maxHeight = show ? 'calc(100vh - 320px)' : 'calc(100vh - 230px)';
     if (!show) { filmstrip.innerHTML = ''; return; }
     filmstrip.innerHTML = '';
     activeList.forEach((item, i) => {
@@ -205,7 +208,7 @@ function createManager() {
       thumb.type = 'button';
       thumb.className = 'kt-lightbox-thumb' + (i === activeIndex ? ' kt-active' : '');
       thumb.setAttribute('aria-label', `${i + 1}`);
-      thumb.style.cssText = `flex:0 0 auto;width:64px;height:44px;border-radius:6px;overflow:hidden;padding:0;cursor:pointer;background:#111;border:2px solid ${i === activeIndex ? 'var(--kt-lightbox-accent,#ff5b1c)' : 'transparent'};opacity:${i === activeIndex ? '1' : '.55'};transition:opacity .16s ease,border-color .16s ease;`;
+      thumb.style.cssText = `flex:0 0 auto;width:64px;height:44px;border-radius:6px;overflow:hidden;padding:0;cursor:pointer;background:#111;border:2px solid ${i === activeIndex ? 'var(--kt-lightbox-accent,#ff5b1c)' : 'transparent'};opacity:${i === activeIndex ? '1' : '.55'};transition:opacity .16s var(--kt-ease-ui, ease),border-color .16s var(--kt-ease-ui, ease);`;
       const ti = document.createElement('img');
       ti.src = item.thumb; ti.alt = item.alt || ''; ti.loading = 'lazy';
       ti.style.cssText = 'width:100%;height:100%;object-fit:cover;';
@@ -433,8 +436,21 @@ function createManager() {
 
   const onKeyDown = (event) => {
     if (root.hidden) return;
-    if (event.key === 'Escape') close();
-    else if (event.key === 'ArrowLeft' && activeList.length > 1) render(activeIndex - 1);
+    if (event.key === 'Escape') { close(); return; }
+    // Focus trap: keep Tab within the modal so keyboard focus can't wander to
+    // the background page while the lightbox is open.
+    if (event.key === 'Tab') {
+      const focusables = [...shell.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])')]
+        .filter((node) => !node.hidden && node.offsetParent !== null);
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || !shell.contains(active))) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && (active === last || !shell.contains(active))) { event.preventDefault(); first.focus(); }
+      return;
+    }
+    if (event.key === 'ArrowLeft' && activeList.length > 1) render(activeIndex - 1);
     else if (event.key === 'ArrowRight' && activeList.length > 1) render(activeIndex + 1);
     else if (event.key === '+' || event.key === '=') setScale(scale + Number(activeEntry?.zoomStep ?? 0.5));
     else if (event.key === '-') setScale(scale - Number(activeEntry?.zoomStep ?? 0.5));

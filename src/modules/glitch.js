@@ -22,6 +22,14 @@ export default {
     const preset = type === 'digital' ? 'noise' : type;
     const intensity = clamp(Number(opts.intensity ?? 1), 0.1, 3);
     const speed = Math.max(0.1, Number(opts.speed ?? 1));
+    // Frequency controls how often a burst recurs without changing its playback
+    // speed. Randomness scales every stochastic choice: 0 produces a stable,
+    // repeatable midpoint pattern; 1 preserves the full organic variation.
+    const frequency = clamp(Number(opts.frequency ?? 1), 0.1, 4);
+    const randomness = clamp(Number(opts.randomness ?? 1), 0, 1);
+    const random = () => 0.5 + (Math.random() - 0.5) * randomness;
+    const repeatDelay = (milliseconds) => milliseconds / frequency;
+    const cadence = speed * frequency;
     const loop = opts.loop !== false;
     const trigger = opts.trigger || 'auto';
 
@@ -52,12 +60,12 @@ export default {
           + `background:repeating-linear-gradient(0deg,rgba(0,0,0,${sl}) 0,rgba(0,0,0,${sl}) 1px,transparent 1px,transparent 3px),`
           + `repeating-linear-gradient(90deg,rgba(255,40,40,${gr}) 0,rgba(255,40,40,${gr}) 1px,rgba(40,255,90,${gr}) 1px,rgba(40,255,90,${gr}) 2px,rgba(60,120,255,${gr}) 2px,rgba(60,120,255,${gr}) 3px);`
           + `box-shadow:inset 0 0 ${isVcr ? 70 : 110}px rgba(0,0,0,${isVcr ? 0.45 : 0.4}),inset 0 0 20px rgba(0,0,0,.28);`
-          + `animation:kt-crt-flicker ${(isVcr ? 2.2 : 3.4) / speed}s ease-in-out infinite;`;
+          + `animation:${randomness > 0 ? `kt-crt-flicker ${(isVcr ? 2.2 : 3.4) / cadence}s ease-in-out infinite` : 'none'};`;
         // Soft bright scan band drifting down slowly (CRT refresh sweep).
         const roll = document.createElement('div');
         roll.style.cssText = `position:absolute;left:0;right:0;height:${isVcr ? 22 : 34}%;pointer-events:none;`
           + `background:linear-gradient(to bottom,transparent,rgba(255,255,255,${isVcr ? 0.04 : 0.07}) 45%,rgba(255,255,255,${isVcr ? 0.08 : 0.11}) 55%,transparent);`
-          + `filter:blur(1px);animation:kt-crt-roll ${(isVcr ? 4.5 : 8) / speed}s linear infinite;`;
+          + `filter:blur(1px);animation:kt-crt-roll ${(isVcr ? 4.5 : 8) / cadence}s linear infinite;`;
         overlay.appendChild(roll);
         // Subtle CRT phosphor bloom / color lift on the picture itself.
         imageEl.style.filter = `${oImgFilter ? oImgFilter + ' ' : ''}saturate(${isVcr ? 1.18 : 1.08}) contrast(1.06) brightness(1.02)`;
@@ -67,17 +75,17 @@ export default {
           // Analogue VCR noise (SVG fractal turbulence), a jumping tracking band,
           // chromatic bleed and a slight picture jitter — the tape look.
           noise = document.createElement('div');
-          noise.style.cssText = "position:absolute;inset:-20%;pointer-events:none;opacity:.08;mix-blend-mode:overlay;"
+          noise.style.cssText = `position:absolute;inset:-20%;pointer-events:none;opacity:${0.08 * randomness * intensity};mix-blend-mode:overlay;`
             + "background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\");"
-            + `animation:kt-vcr-noise ${0.5 / speed}s steps(3,end) infinite;`;
+            + `animation:kt-vcr-noise ${0.5 / cadence}s steps(3,end) infinite;`;
           overlay.appendChild(noise);
           track = document.createElement('div');
           track.style.cssText = 'position:absolute;left:0;right:0;height:20%;pointer-events:none;'
             + 'background:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.16) 38%,rgba(0,0,0,.32) 50%,rgba(0,0,0,.16) 62%,transparent 100%);mix-blend-mode:multiply;filter:blur(2px);'
-            + `animation:kt-vcr-track ${3.2 / speed}s linear infinite;`;
+            + `animation:kt-vcr-track ${3.2 / cadence}s linear infinite;`;
           overlay.appendChild(track);
           imageEl.style.filter += ' drop-shadow(1.2px 0 0 rgba(255,0,60,.4)) drop-shadow(-1.2px 0 0 rgba(0,180,255,.4))';
-          imageEl.style.animation = `kt-vcr-jitter ${7 / speed}s steps(1,end) infinite`;
+          imageEl.style.animation = randomness > 0 ? `kt-vcr-jitter ${7 / cadence}s steps(1,end) infinite` : 'none';
         }
         host.appendChild(overlay);
         const setPlay = (s) => { [overlay, roll, noise, track].forEach((n) => { if (n) n.style.animationPlayState = s; }); if (isVcr) imageEl.style.animationPlayState = s; };
@@ -101,8 +109,9 @@ export default {
     // ── Ambient image glitch (독립 상시 효과, 레이지 로딩과 무관) ──────────
     // A canvas overlay bursts slice displacements / blackout flashes over a
     // live <img> at random intervals, then goes transparent again.
-    if (preset === 'image' || preset === 'reveal') {
+    if (preset === 'image' || preset === 'reveal' || preset === 'datamosh') {
       const revealMode = preset === 'reveal';
+      const datamoshMode = preset === 'datamosh';
       const imageEl = el.tagName === 'IMG' ? el : el.querySelector?.('img');
       if (!imageEl) return null;
       const host = el.tagName === 'IMG' ? el.parentElement : el;
@@ -115,12 +124,14 @@ export default {
       canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:inherit;z-index:2;opacity:0;';
       host.appendChild(canvas);
       const context = canvas.getContext('2d', { alpha: false });
+      const macroCanvas = document.createElement('canvas');
+      const macroContext = macroCanvas.getContext('2d', { alpha: false });
       const slices = Math.max(2, Math.round(Number(opts.sliceCount ?? 7)));
       let imgAlive = true;
       let imgRaf = null;
       const imgTimers = new Set();
       const imgLater = (fn, ms) => {
-        const id = setTimeout(() => { imgTimers.delete(id); if (imgAlive) fn(); }, ms / speed);
+        const id = setTimeout(() => { imgTimers.delete(id); if (imgAlive) fn(); }, ms);
         imgTimers.add(id);
       };
       const syncCanvas = () => {
@@ -141,10 +152,83 @@ export default {
         const sy = (imageEl.naturalHeight - sh) / 2;
         const power = amp * intensity;
         context.filter = 'none';
+        context.imageSmoothingEnabled = true;
         context.fillStyle = '#000';
         context.fillRect(0, 0, w, h);
-        if (Math.random() < power * 0.12) return; // blackout flash
-        // Chromatic ghost passes so the burst reads even on flat artwork.
+        if (!datamoshMode && random() < power * 0.12) return; // blackout flash
+        if (datamoshMode) {
+          context.drawImage(imageEl, sx, sy, sw, sh, 0, 0, w, h);
+          // Build a deliberately low-resolution source once per frame. Regions
+          // copied from it keep crisp square pixels when scaled back up.
+          const pixelSize = Math.max(8, Math.round(18 / Math.max(0.55, intensity)));
+          const coarseWidth = Math.max(2, Math.ceil(w / pixelSize));
+          const coarseHeight = Math.max(2, Math.ceil(h / pixelSize));
+          if (macroCanvas.width !== coarseWidth || macroCanvas.height !== coarseHeight) {
+            macroCanvas.width = coarseWidth;
+            macroCanvas.height = coarseHeight;
+          }
+          macroContext.imageSmoothingEnabled = true;
+          macroContext.drawImage(imageEl, sx, sy, sw, sh, 0, 0, coarseWidth, coarseHeight);
+          const grid = pixelSize;
+          const blocks = Math.max(10, Math.round(slices * 3.2));
+          context.imageSmoothingEnabled = false;
+          for (let index = 0; index < blocks; index += 1) {
+            const sourceX = Math.floor(random() * Math.max(1, coarseWidth - 3));
+            const sourceY = Math.floor(random() * Math.max(1, coarseHeight - 2));
+            const sourceWidth = Math.max(1, Math.min(coarseWidth - sourceX, 2 + Math.floor(random() * 8)));
+            const sourceHeight = Math.max(1, Math.min(coarseHeight - sourceY, 1 + Math.floor(random() * 4)));
+            const blockWidth = sourceWidth * grid;
+            const blockHeight = sourceHeight * grid;
+            const baseX = sourceX * grid;
+            const baseY = sourceY * grid;
+            const shiftX = Math.round((random() - 0.5) * 7 * power) * grid;
+            const shiftY = random() < 0.22 ? Math.round((random() - 0.5) * 2) * grid : 0;
+            context.globalAlpha = 0.76 + random() * 0.24;
+            context.drawImage(
+              macroCanvas,
+              sourceX, sourceY, sourceWidth, sourceHeight,
+              baseX + shiftX, baseY + shiftY, blockWidth, blockHeight
+            );
+            if (random() < 0.18) {
+              context.globalCompositeOperation = 'screen';
+              context.fillStyle = random() > 0.5 ? 'rgba(0,225,255,.16)' : 'rgba(255,30,100,.14)';
+              context.fillRect(baseX + shiftX, baseY + shiftY, blockWidth, blockHeight);
+              context.globalCompositeOperation = 'source-over';
+            }
+          }
+          context.globalAlpha = 1;
+          // Live analogue/digital noise: changing pixel speckles, short dropout
+          // bars and CRT scan rows. This is redrawn on every animation frame, so
+          // it reads as a failing low-resolution monitor rather than a static
+          // texture placed over the image.
+          const noiseUnit = Math.max(2, Math.round(grid / 4));
+          const noiseCount = Math.max(40, Math.round((w * h) / 1800));
+          const noiseColors = ['#050505', '#f5f5f5', '#10e8d2', '#f32183', '#5d72ff'];
+          context.globalCompositeOperation = 'source-over';
+          for (let index = 0; index < noiseCount; index += 1) {
+            const nx = Math.floor(random() * w / noiseUnit) * noiseUnit;
+            const ny = Math.floor(random() * h / noiseUnit) * noiseUnit;
+            const nw = noiseUnit * (1 + Math.floor(random() * 4));
+            const nh = noiseUnit * (1 + Math.floor(random() * 2));
+            context.globalAlpha = 0.08 + random() * 0.28 * Math.min(1.2, power);
+            context.fillStyle = noiseColors[Math.floor(random() * noiseColors.length)];
+            context.fillRect(nx, ny, nw, nh);
+          }
+          context.globalAlpha = 0.22 * Math.min(1.2, power);
+          for (let index = 0; index < 2 + Math.round(intensity); index += 1) {
+            const lineY = Math.floor(random() * h / noiseUnit) * noiseUnit;
+            context.fillStyle = random() > 0.55 ? '#050505' : noiseColors[2 + Math.floor(random() * 3)];
+            context.fillRect(0, lineY, w * (0.22 + random() * 0.78), noiseUnit);
+          }
+          context.globalAlpha = 0.1;
+          context.fillStyle = '#000';
+          for (let y = 0; y < h; y += 4) context.fillRect(0, y, w, 1);
+          context.globalAlpha = 1;
+          context.imageSmoothingEnabled = true;
+          return;
+        }
+        // Image Ambient stays a fine chromatic slice treatment. It intentionally
+        // avoids square blocks so it cannot be mistaken for Datamosh.
         if ('filter' in context) {
           context.globalCompositeOperation = 'screen';
           context.globalAlpha = 0.55;
@@ -159,13 +243,12 @@ export default {
         for (let index = 0; index < slices; index += 1) {
           const bandY = Math.floor((index / slices) * h);
           const bandH = Math.ceil(h / slices);
-          const shifted = Math.random() < 0.55;
-          const offset = shifted ? Math.round((Math.random() - 0.5) * w * 0.16 * power) : 0;
-          if (shifted && Math.random() < 0.28 && 'filter' in context) context.filter = `invert(1) brightness(${1 + power * 0.3})`;
+          const shifted = random() < 0.55;
+          const offset = shifted ? Math.round((random() - 0.5) * w * 0.16 * power) : 0;
+          if (shifted && random() < 0.28 && 'filter' in context) context.filter = `invert(1) brightness(${1 + power * 0.3})`;
           context.drawImage(imageEl, sx, sy + (bandY / h) * sh, sw, (bandH / h) * sh, offset, bandY, w, bandH);
           context.filter = 'none';
         }
-        // Faint scanlines while glitching.
         context.globalAlpha = 0.18 * power;
         context.fillStyle = '#000';
         for (let y = 0; y < h; y += 4) context.fillRect(0, y, w, 1);
@@ -179,21 +262,23 @@ export default {
         if (!imgAlive) return;
         const burstDuration = revealMode
           ? Math.max(200, Number(opts.duration ?? 1.15) * 1000) / speed
-          : (140 + Math.random() * 260) / speed;
+          : datamoshMode
+            ? Math.max(220, Number(opts.duration ?? 0.48) * 1000) / speed
+            : (140 + random() * 260) / speed;
         const started = performance.now();
         canvas.style.opacity = '1';
         syncCanvas();
         const frame = (time) => {
           if (!imgAlive) return;
           const progress = Math.min(1, (time - started) / burstDuration);
-          drawImageGlitch(revealMode ? (1 - progress) : (1 - progress * 0.5));
+          drawImageGlitch(revealMode ? (1 - progress) : datamoshMode ? (0.35 + Math.sin(progress * Math.PI) * 0.8) : (1 - progress * 0.5));
           if (progress < 1) imgRaf = requestAnimationFrame(frame);
           else if (revealMode) {
             imageEl.style.opacity = '1';
             canvas.style.opacity = '0';
           } else {
             canvas.style.opacity = '0';
-            if (loop) imgLater(imageBurst, 700 + Math.random() * 1800);
+            if (loop) imgLater(imageBurst, repeatDelay(datamoshMode ? 900 + random() * 2100 : 700 + random() * 1800));
           }
         };
         imgRaf = requestAnimationFrame(frame);
@@ -211,7 +296,8 @@ export default {
         host.addEventListener('pointerenter', imgHoverEnter);
         host.addEventListener('pointerleave', imgHoverLeave);
       } else {
-        imgLater(imageBurst, 400);
+        const rawDelay = Number(opts.delay ?? 0.4);
+        imgLater(imageBurst, rawDelay <= 10 ? rawDelay * 1000 : rawDelay);
       }
       return {
         el,
@@ -263,30 +349,37 @@ export default {
     el.style.display = 'inline-block';
 
     const base = document.createElement('span');
-    base.textContent = text;
-    base.style.cssText = 'position:relative;z-index:2;display:inline-block;will-change:transform;';
+    // Keep the source glyphs and every RGB duplicate on the exact same text
+    // box. Layers live inside this box so host padding can never offset them.
+    base.style.cssText = 'position:relative;z-index:2;display:block;white-space:inherit;font:inherit;letter-spacing:inherit;text-align:inherit;will-change:transform;';
     base.setAttribute('aria-hidden', 'true');
+    const source = document.createElement('span');
+    source.textContent = text;
+    source.style.cssText = 'position:relative;display:block;white-space:inherit;font:inherit;letter-spacing:inherit;text-align:inherit;will-change:transform;';
+    base.appendChild(source);
     el.appendChild(base);
 
     const layers = colors.slice(0, 3).map((color, index) => {
       const layer = document.createElement('span');
       layer.textContent = text;
       layer.setAttribute('aria-hidden', 'true');
-      layer.style.cssText = `position:absolute;inset:0;z-index:${3 + index};opacity:0;pointer-events:none;color:${color};mix-blend-mode:${blend};will-change:transform,clip-path;`;
-      el.appendChild(layer);
+      layer.style.cssText = `position:absolute;inset:0;z-index:${3 + index};display:block;white-space:inherit;font:inherit;letter-spacing:inherit;text-align:inherit;transform-origin:0 0;opacity:0;pointer-events:none;color:${color};mix-blend-mode:${blend};will-change:transform,clip-path;`;
+      base.appendChild(layer);
       return layer;
     });
 
     let scanline = null;
     const timers = new Set();
     const running = new Set();
+    const pixelBits = new Set();
+    const pixelRafs = new Set();
     let alive = true;
 
     const later = (callback, ms) => {
       const id = setTimeout(() => {
         timers.delete(id);
         if (alive) callback();
-      }, Math.max(0, ms) / speed);
+      }, Math.max(0, ms));
       timers.add(id);
       return id;
     };
@@ -301,43 +394,52 @@ export default {
       timers.clear();
       running.forEach((player) => player.cancel());
       running.clear();
-      base.textContent = text;
+      pixelRafs.forEach(cancelAnimationFrame);
+      pixelRafs.clear();
+      pixelBits.forEach((node) => node.remove());
+      pixelBits.clear();
+      source.textContent = text;
       layers.forEach((layer) => { layer.style.opacity = '0'; });
     };
 
     // ── RGB slice burst (original three colored duplicates) ────────────────
     const rgbBurst = () => {
       if (!alive) return;
-      const duration = (170 + Math.random() * 280) / speed;
+      const configured = Number(opts.duration);
+      const duration = (Number.isFinite(configured) ? Math.max(0.05, configured) * 1000 : 170 + random() * 280) / speed;
       const sliceOf = () => {
-        const top = Math.round(Math.random() * 82);
-        const height = Math.round(4 + Math.random() * 20 * intensity);
+        const top = Math.round(random() * 82);
+        const height = Math.round(4 + random() * 20 * intensity);
         return `inset(${top}% 0 ${Math.max(0, 100 - top - height)}% 0)`;
       };
-      const offsetX = (Math.random() - 0.5) * 18 * intensity;
-      const offsetY = (Math.random() - 0.5) * 5 * intensity;
+      const offsetX = (random() - 0.5) * 18 * intensity;
+      const offsetY = (random() - 0.5) * 5 * intensity;
       const steps = Math.max(2, Math.round(3 + intensity));
+      const directions = [-1, 0, 1];
       layers.forEach((layer, index) => {
-        const direction = index === 1 ? -0.6 : index === 2 ? 0.45 : 1;
+        // Symmetric chromatic displacement keeps the RGB composite centred on
+        // the source text instead of making the whole effect lean to one side.
+        const direction = directions[index] ?? 0;
         animate(layer, [
           { opacity: 0.9, clipPath: sliceOf(), webkitClipPath: sliceOf(), transform: `translate(${offsetX * direction}px,${offsetY * direction}px)` },
           { opacity: 0.85, clipPath: sliceOf(), webkitClipPath: sliceOf(), transform: `translate(${-offsetX * direction * 0.6}px,${-offsetY * direction}px)`, offset: 0.5 },
           { opacity: 0, clipPath: 'inset(0 0 0 0)', webkitClipPath: 'inset(0 0 0 0)', transform: 'translate(0,0)' }
         ], { duration, delay: index * 18, easing: `steps(${steps}, end)`, fill: 'forwards' });
       });
-      animate(base, [
+      animate(source, [
         { transform: 'skewX(0deg)' },
-        { transform: `skewX(${1.8 * intensity}deg) translateX(${offsetX * 0.2}px)`, offset: 0.33 },
+        { transform: `skewX(${1.8 * intensity}deg)`, offset: 0.33 },
         { transform: `skewX(${-1.4 * intensity}deg)`, offset: 0.66 },
         { transform: 'skewX(0deg)' }
       ], { duration, easing: `steps(${steps}, end)` });
-      if (loop) later(rgbBurst, 520 + Math.random() * 1400);
+      if (loop) later(rgbBurst, repeatDelay(520 + random() * 1400));
     };
 
     // ── Digital noise scramble ──────────────────────────────────────────────
     const noiseBurst = () => {
       if (!alive) return;
-      const duration = (320 + Math.random() * 320) / speed;
+      const configured = Number(opts.duration);
+      const duration = (Number.isFinite(configured) ? Math.max(0.05, configured) * 1000 : 320 + random() * 320) / speed;
       const frameMs = 40 / speed;
       const totalFrames = Math.max(3, Math.round(duration / frameMs));
       let frame = 0;
@@ -345,19 +447,109 @@ export default {
         if (!alive) return;
         frame += 1;
         const progress = frame / totalFrames;
-        base.textContent = Array.from(text, (char) => {
+        source.textContent = Array.from(text, (char) => {
           if (/^\s$/.test(char)) return char;
-          return Math.random() > progress * (1.35 - Math.min(0.9, 0.3 * intensity))
-            ? NOISE_CHARS[Math.floor(Math.random() * NOISE_CHARS.length)]
+          return random() > progress * (1.35 - Math.min(0.9, 0.3 * intensity))
+            ? NOISE_CHARS[Math.floor(random() * NOISE_CHARS.length)]
             : char;
         }).join('');
         if (frame < totalFrames) later(tick, frameMs);
         else {
-          base.textContent = text;
-          if (loop) later(noiseBurst, 620 + Math.random() * 1100);
+          source.textContent = text;
+          if (loop) later(noiseBurst, repeatDelay(620 + random() * 1100));
         }
       };
       tick();
+    };
+
+    // ── Pixel shift: square glyph fragments on a visible pixel grid ─────────
+    const pixelBurst = () => {
+      if (!alive) return;
+      const duration = Math.max(180, Number(opts.duration ?? 0.42) * 1000) / speed;
+      const steps = Math.max(4, Math.round(5 + intensity * 2));
+      animate(source, [
+        { transform: 'translate(0,0)', filter: 'none' },
+        { transform: `translate(${Math.round(2 * intensity)}px,0)`, filter: 'contrast(1.3)', offset: .18 },
+        { transform: `translate(${Math.round(-3 * intensity)}px,${Math.round(1 * intensity)}px)`, filter: 'contrast(1.55)', offset: .52 },
+        { transform: 'translate(0,0)', filter: 'none' }
+      ], { duration, easing: `steps(${steps}, end)` });
+
+      const rect = base.getBoundingClientRect();
+      const unit = Math.max(4, Math.round(Math.min(rect.height || 24, 40) / 7));
+      const columns = Math.max(1, Math.ceil(rect.width / unit));
+      const rows = Math.max(1, Math.ceil(rect.height / unit));
+      const bitCount = Math.min(columns * rows, Math.max(14, Math.round(18 + intensity * 8)));
+      for (let index = 0; index < bitCount; index += 1) {
+        const bit = document.createElement('span');
+        const col = Math.floor(random() * columns);
+        const row = Math.floor(random() * rows);
+        const widthUnits = 1 + Math.floor(random() * 3);
+        const heightUnits = 1 + Math.floor(random() * 2);
+        const left = col * unit;
+        const top = row * unit;
+        const width = Math.min(rect.width - left, widthUnits * unit);
+        const height = Math.min(rect.height - top, heightUnits * unit);
+        const right = Math.max(0, rect.width - left - width);
+        const bottom = Math.max(0, rect.height - top - height);
+        bit.textContent = text;
+        bit.setAttribute('aria-hidden', 'true');
+        bit.style.cssText = 'position:absolute;z-index:8;inset:0;display:block;white-space:inherit;'
+          + 'font:inherit;letter-spacing:inherit;text-align:inherit;color:inherit;pointer-events:none;'
+          + `clip-path:inset(${top}px ${right}px ${bottom}px ${left}px);`;
+        base.appendChild(bit);
+        pixelBits.add(bit);
+        const shiftX = Math.round((random() - .5) * 7 * intensity) * unit;
+        const shiftY = random() < .35 ? Math.round((random() - .5) * 3) * unit : 0;
+        const player = animate(bit, [
+          { opacity: 0, transform: 'translate(0,0)' },
+          { opacity: 1, transform: `translate(${shiftX}px,${shiftY}px)`, offset: .18 },
+          { opacity: .92, transform: `translate(${-shiftX * .45}px,${-shiftY}px)`, offset: .62 },
+          { opacity: 0, transform: 'translate(0,0)' }
+        ], { duration: duration * (.55 + random() * .45), delay: random() * 70, easing: `steps(${steps}, end)`, fill: 'forwards' });
+        player.finished.catch(() => {}).finally(() => { bit.remove(); pixelBits.delete(bit); });
+      }
+      const noise = document.createElement('canvas');
+      const noiseWidth = Math.max(1, Math.round(rect.width));
+      const noiseHeight = Math.max(1, Math.round(rect.height));
+      noise.width = noiseWidth;
+      noise.height = noiseHeight;
+      noise.setAttribute('aria-hidden', 'true');
+      noise.style.cssText = 'position:absolute;inset:0;z-index:7;width:100%;height:100%;'
+        + `pointer-events:none;image-rendering:pixelated;mix-blend-mode:${dark ? 'screen' : 'multiply'};`;
+      base.appendChild(noise);
+      pixelBits.add(noise);
+      const noiseContext = noise.getContext('2d');
+      const noiseStarted = performance.now();
+      let noiseRaf = null;
+      const drawNoise = (time) => {
+        pixelRafs.delete(noiseRaf);
+        if (!alive || !noise.isConnected || time - noiseStarted >= duration) {
+          noise.remove();
+          pixelBits.delete(noise);
+          return;
+        }
+        noiseContext.clearRect(0, 0, noiseWidth, noiseHeight);
+        const noiseColors = dark
+          ? ['#ffffff', '#00f5d4', '#ff2d95', '#6c7dff', '#050505']
+          : ['#111111', '#00a98f', '#e60065', '#3155df', '#ffffff'];
+        const count = Math.max(18, Math.round((noiseWidth * noiseHeight) / 260));
+        for (let index = 0; index < count; index += 1) {
+          const nx = Math.floor(random() * columns) * unit;
+          const ny = Math.floor(random() * rows) * unit;
+          noiseContext.globalAlpha = 0.15 + random() * 0.55;
+          noiseContext.fillStyle = noiseColors[Math.floor(random() * noiseColors.length)];
+          noiseContext.fillRect(nx, ny, unit * (1 + Math.floor(random() * 3)), unit);
+        }
+        noiseContext.globalAlpha = 0.28;
+        noiseContext.fillStyle = noiseColors[Math.floor(random() * noiseColors.length)];
+        noiseContext.fillRect(0, Math.floor(random() * rows) * unit, noiseWidth, Math.max(1, Math.round(unit / 2)));
+        noiseContext.globalAlpha = 1;
+        noiseRaf = requestAnimationFrame(drawNoise);
+        pixelRafs.add(noiseRaf);
+      };
+      noiseRaf = requestAnimationFrame(drawNoise);
+      pixelRafs.add(noiseRaf);
+      if (loop) later(pixelBurst, repeatDelay(700 + random() * 1700));
     };
 
     // ── CRT analog jitter with scanlines ────────────────────────────────────
@@ -366,11 +558,12 @@ export default {
       if (!scanline) {
         scanline = document.createElement('span');
         scanline.setAttribute('aria-hidden', 'true');
-        scanline.style.cssText = `position:absolute;inset:0;z-index:6;pointer-events:none;border-radius:inherit;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,${0.13 * intensity}) 2px,rgba(0,0,0,${0.13 * intensity}) 4px);opacity:0;transition:opacity .2s ease;`;
+        scanline.style.cssText = `position:absolute;inset:0;z-index:6;pointer-events:none;border-radius:inherit;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,${0.13 * intensity}) 2px,rgba(0,0,0,${0.13 * intensity}) 4px);opacity:0;transition:opacity .2s var(--kt-ease-ui, ease);`;
         el.appendChild(scanline);
       }
       scanline.style.opacity = '1';
-      const duration = (900 + Math.random() * 700) / speed;
+      const configured = Number(opts.duration);
+      const duration = (Number.isFinite(configured) ? Math.max(0.05, configured) * 1000 : 900 + random() * 700) / speed;
       const jitter = 4 * intensity;
       animate(el, [
         { opacity: 1, filter: 'none', transform: 'none' },
@@ -385,12 +578,13 @@ export default {
       ], { duration, easing: 'linear' });
       later(() => {
         if (scanline) scanline.style.opacity = '0';
-        if (loop && alive) later(crtBurst, 900 + Math.random() * 1500);
+        if (loop && alive) later(crtBurst, repeatDelay(900 + random() * 1500));
       }, duration);
     };
 
     const burst = () => {
       if (preset === 'noise') noiseBurst();
+      else if (preset === 'pixel') pixelBurst();
       else if (preset === 'crt') crtBurst();
       else rgbBurst();
     };
@@ -409,7 +603,7 @@ export default {
       }, { threshold: 0.4 });
       observer.observe(el);
     } else {
-      const rawDelay = Number(opts.delay ?? (preset === 'noise' ? 0.7 : 0.35));
+      const rawDelay = Number(opts.delay ?? (preset === 'noise' ? 0.7 : preset === 'pixel' ? 0.5 : 0.35));
       later(burst, rawDelay <= 10 ? rawDelay * 1000 : rawDelay);
     }
 
@@ -435,6 +629,8 @@ export default {
       }
     };
   },
+  // Low-perf devices show the plain content without the per-frame glitch canvas.
+  fallback(el) { return this.reduced(el); },
   reduced(el) {
     const restore = snapshotAttributes(el, ['aria-label']);
     return { el, type: 'glitch', pause() {}, resume() {}, destroy: restore };

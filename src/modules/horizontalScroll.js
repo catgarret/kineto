@@ -10,6 +10,9 @@ import { clamp, lerp } from '../utils.js';
 export default {
   create(el, opts = {}) {
     const heightCss = opts.height || '100vh';
+    // A shorter pinned stage should sit in the visual centre of the viewport.
+    // `top` remains configurable for layouts that need a custom safe area.
+    const topCss = opts.top || `calc((100svh - ${heightCss}) / 2)`;
     const smooth = opts.smooth === true ? 0.12 : (typeof opts.smooth === 'number' ? clamp(opts.smooth, 0.02, 1) : 0);
 
     // Wrap: <el(stage, tall)> → sticky viewport → track(holds original kids).
@@ -17,19 +20,34 @@ export default {
     if (!parent) return null;
     const originalChildren = Array.from(el.childNodes);
     const prevStyle = el.getAttribute('style');
-    const prevPosition = el.style.position;
+    const authoredTrack = el.children.length === 1
+      && el.firstElementChild?.classList.contains('hscroll-track')
+      ? el.firstElementChild
+      : null;
 
     const viewport = document.createElement('div');
     viewport.className = 'kt-hscroll-viewport';
-    const track = document.createElement('div');
-    track.className = 'kt-hscroll-track';
-    originalChildren.forEach((node) => track.appendChild(node));
+    const track = authoredTrack || document.createElement('div');
+    const prevTrackStyle = track.getAttribute('style');
+    if (!authoredTrack) {
+      track.className = 'kt-hscroll-track';
+      originalChildren.forEach((node) => track.appendChild(node));
+    }
     viewport.appendChild(track);
     el.appendChild(viewport);
 
     el.classList.add('kt-hscroll');
-    viewport.style.cssText = `position:sticky;top:0;height:${heightCss};overflow:hidden;display:flex;align-items:center;`;
-    track.style.cssText = 'display:flex;flex:0 0 auto;will-change:transform;';
+    el.style.position = 'relative';
+    el.style.width = '100%';
+    el.style.maxWidth = '100%';
+    el.style.minWidth = '0';
+    el.style.boxSizing = 'border-box';
+    viewport.style.cssText = `position:sticky;top:${topCss};width:100%;max-width:100%;min-width:0;height:${heightCss};overflow:hidden;display:flex;align-items:center;box-sizing:border-box;`;
+    track.style.display = 'flex';
+    track.style.flex = '0 0 auto';
+    track.style.width = 'max-content';
+    track.style.minWidth = 'max-content';
+    track.style.willChange = 'transform';
 
     let maxX = 0;
     let targetX = 0;
@@ -49,7 +67,8 @@ export default {
       const rect = el.getBoundingClientRect();
       const vpHeight = viewport.clientHeight;
       const travel = el.offsetHeight - vpHeight;
-      const scrolled = clamp(-rect.top, 0, travel);
+      const stickyTop = Number.parseFloat(getComputedStyle(viewport).top) || 0;
+      const scrolled = clamp(stickyTop - rect.top, 0, travel);
       const t = travel > 0 ? scrolled / travel : 0;
       targetX = t * maxX;
     };
@@ -71,7 +90,6 @@ export default {
     const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { ticking = false; tick(); }); } };
     const onResize = () => { measure(); tick(); };
 
-    el.style.position = prevPosition || 'relative';
     running = true;
     measure();
     tick();
@@ -86,8 +104,13 @@ export default {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
       resizeObserver?.disconnect();
-      const kids = Array.from(track.childNodes);
-      kids.forEach((node) => el.insertBefore(node, viewport));
+      if (authoredTrack) {
+        el.insertBefore(track, viewport);
+        if (prevTrackStyle == null) track.removeAttribute('style'); else track.setAttribute('style', prevTrackStyle);
+      } else {
+        const kids = Array.from(track.childNodes);
+        kids.forEach((node) => el.insertBefore(node, viewport));
+      }
       viewport.remove();
       el.classList.remove('kt-hscroll');
       if (prevStyle == null) el.removeAttribute('style'); else el.setAttribute('style', prevStyle);

@@ -132,6 +132,8 @@ export default {
     };
   },
   // Reduced motion: the celebration is decorative — do nothing.
+  // Confetti is purely decorative — low-perf devices simply don't fire it.
+  fallback(el) { return this.reduced(el); },
   reduced(el) {
     return { el, type: 'confetti', fire() {}, replay() {}, pause() {}, resume() {}, destroy() {} };
   }

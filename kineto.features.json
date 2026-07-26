@@ -1,8 +1,8 @@
 {
   "$schema": "./kineto.features.schema.json",
   "contractVersion": "1.3.0",
-  "libraryVersion": "0.8.42",
-  "moduleCount": 51,
+  "libraryVersion": "0.8.43",
+  "moduleCount": 50,
   "modules": [
     {
       "name": "ambientMedia",
@@ -143,7 +143,6 @@
         "clock"
       ],
       "publicOptions": [
-        "bareBackground",
         "blink",
         "blinkSeparators",
         "clockSeparator",
@@ -183,7 +182,6 @@
         "start",
         "style",
         "suffix",
-        "tile",
         "tileColor",
         "tileRadius",
         "tileTextColor",
@@ -248,6 +246,7 @@
         "crosshairSize",
         "dot",
         "dotColor",
+        "dotShadow",
         "dotSize",
         "ease",
         "follower",
@@ -266,6 +265,7 @@
         "hoverLabel",
         "hoverScale",
         "hoverSelector",
+        "hoverShadow",
         "hoverSrc",
         "hoverTemplate",
         "html",
@@ -348,10 +348,13 @@
       "defaultVariant": "rgb",
       "variants": [
         "rgb",
+        "pixel",
         "noise",
         "crt",
         "digital",
         "image",
+        "datamosh",
+        "reveal",
         "vcr"
       ],
       "publicOptions": [
@@ -359,9 +362,11 @@
         "colors",
         "delay",
         "duration",
+        "frequency",
         "intensity",
         "loop",
         "preset",
+        "randomness",
         "sliceCount",
         "speed",
         "trigger",
@@ -385,6 +390,7 @@
       "publicOptions": [
         "animated",
         "aspectRatio",
+        "autoplay",
         "blur",
         "crossOrigin",
         "delay",
@@ -405,8 +411,10 @@
         "height",
         "holdDuration",
         "keepFrame",
+        "loop",
         "maxDpr",
         "minDuration",
+        "muted",
         "nativeLazy",
         "noise",
         "noiseBlend",
@@ -419,9 +427,13 @@
         "onError",
         "onLoad",
         "onProgress",
+        "onReveal",
+        "once",
         "pixelEnd",
         "pixelStart",
         "pixelStepCount",
+        "playsinline",
+        "preload",
         "preset",
         "renderFps",
         "rootMargin",
@@ -637,8 +649,10 @@
         "force",
         "gap",
         "holdDuration",
+        "hoverTarget",
         "items",
         "jitter",
+        "loopOnHover",
         "maskDirection",
         "maskDuration",
         "maskEase",
@@ -652,6 +666,8 @@
         "preset",
         "repeat",
         "restartDelay",
+        "restoreDirection",
+        "restoreOnLeave",
         "role",
         "rollDirection",
         "rollDuration",
@@ -659,7 +675,8 @@
         "text",
         "threshold",
         "title",
-        "transitionDirection"
+        "transitionDirection",
+        "trigger"
       ]
     },
     {
@@ -673,6 +690,11 @@
         "wipe",
         "blinds",
         "diagonal",
+        "checker",
+        "strips",
+        "shutter",
+        "columns",
+        "zoom",
         "fade"
       ],
       "publicOptions": [
@@ -701,7 +723,12 @@
       "publicOptions": [
         "animationSelector",
         "cache",
+        "color",
+        "color2",
         "container",
+        "duration",
+        "ease",
+        "effect",
         "executeScripts",
         "linkSelector",
         "minDuration",
@@ -803,6 +830,7 @@
         "ease",
         "end",
         "enterClass",
+        "enterEase",
         "leaveClass",
         "onClassChange",
         "onComplete",
@@ -811,6 +839,7 @@
         "onLeave",
         "onLeaveBack",
         "once",
+        "order",
         "preset",
         "removeClassOnLeave",
         "rootMargin",
@@ -907,38 +936,21 @@
       ]
     },
     {
-      "name": "shuffle",
-      "attribute": "data-kt-shuffle",
-      "defaultVariant": "decode",
-      "variants": [
-        "decode"
-      ],
-      "publicOptions": [
-        "chars",
-        "onComplete",
-        "rainbow",
-        "rainbowColors",
-        "revealRate",
-        "rootMargin",
-        "scrambleFade",
-        "speed",
-        "text",
-        "threshold"
-      ]
-    },
-    {
       "name": "slider",
       "attribute": "data-kt-slider",
       "defaultVariant": "slide",
       "variants": [
         "slide",
-        "coverflow"
+        "coverflow",
+        "fade",
+        "dissolve"
       ],
       "publicOptions": [
         "align",
         "autoplay",
         "axis",
         "depth",
+        "dots",
         "duration",
         "effect",
         "gap",
@@ -950,11 +962,14 @@
         "nextSelector",
         "onChange",
         "opacityStep",
+        "pauseButton",
         "pauseOnHover",
         "perView",
         "perspective",
         "preset",
         "prevSelector",
+        "progress",
+        "progressType",
         "rotate",
         "scaleStep",
         "smoothing",
@@ -1043,7 +1058,8 @@
         "bounce",
         "hangul",
         "decode",
-        "flicker"
+        "flicker",
+        "shuffle"
       ],
       "publicOptions": [
         "chars",
@@ -1059,6 +1075,7 @@
         "preset",
         "rainbow",
         "rainbowColors",
+        "revealRate",
         "rootMargin",
         "scrambleFade",
         "speed",
@@ -1239,6 +1256,7 @@
         "panel"
       ],
       "publicOptions": [
+        "activeClass",
         "arrowPosition",
         "blur",
         "duration",
@@ -1315,6 +1333,8 @@
         "dismissible",
         "duration",
         "handle",
+        "label",
+        "resizable",
         "trigger"
       ]
     },
@@ -1327,6 +1347,7 @@
       ],
       "publicOptions": [
         "activation",
+        "activeClass",
         "duration",
         "effect",
         "indicator",
@@ -1347,6 +1368,7 @@
       ],
       "publicOptions": [
         "activeAngle",
+        "activeClass",
         "align",
         "autoplay",
         "controls",
@@ -1390,9 +1412,11 @@
       "publicOptions": [
         "duration",
         "ease",
+        "hoverEase",
         "hoverScale",
         "lift",
         "origin",
+        "pressEase",
         "tapScale"
       ]
     },
@@ -1424,6 +1448,7 @@
         "duration",
         "effect",
         "hideDelay",
+        "html",
         "interactive",
         "offset",
         "placement",
@@ -1475,10 +1500,12 @@
         "axis",
         "color",
         "mode",
+        "onChange",
         "opacity",
         "shadow",
         "shape",
-        "size"
+        "size",
+        "transition"
       ]
     },
     {
@@ -1507,12 +1534,15 @@
       ],
       "publicOptions": [
         "height",
-        "smooth"
+        "smooth",
+        "top"
       ]
     }
   ],
   "coreProperties": [
     "version",
+    "easings",
+    "prefersReducedMotion",
     "env",
     "performance",
     "registry",
@@ -1522,6 +1552,9 @@
     "core"
   ],
   "coreApi": [
+    "easing",
+    "easingFn",
+    "setReducedMotion",
     "config",
     "setAnimationEngine",
     "enableSmooth",
@@ -1541,7 +1574,10 @@
     "destroy",
     "pause",
     "resume",
-    "refresh"
+    "refresh",
+    "setEngineSource",
+    "getEngineSource",
+    "updateModule"
   ],
   "compatibilityApi": [
     "core.initModules",

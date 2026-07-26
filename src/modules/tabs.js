@@ -18,6 +18,8 @@ export default {
     const duration = Math.max(0, Number(opts.duration ?? 0.28));
     const showIndicator = opts.indicator !== false;
     const effect = opts.effect || 'fade';
+    // `activeClass` hooks your OWN class on the active tab (alongside `.kt-active`).
+    const stateClass = (opts.activeClass || '').trim();
     // Tab-marker (the moving pill / underline itself) motion, independent of the
     // panel `effect`: 'slide' glides it, 'none' snaps it instantly, 'fade' blinks
     // it out at the old tab and in at the new one.
@@ -121,6 +123,7 @@ export default {
         tab.setAttribute('aria-selected', on ? 'true' : 'false');
         tab.setAttribute('tabindex', on ? '0' : '-1');
         tab.classList.toggle('kt-active', on);
+        if (stateClass) tab.classList.toggle(stateClass, on);
         const panel = panels[i];
         if (!panel) return;
         if (on) {
@@ -169,7 +172,8 @@ export default {
     select(active, false);
     const onResize = () => moveIndicator();
     window.addEventListener('resize', onResize);
-    requestAnimationFrame(moveIndicator);
+    // Keep the handle so destroy() can cancel a still-pending first paint (no leak).
+    const initRaf = requestAnimationFrame(moveIndicator);
 
     return {
       el,
@@ -178,6 +182,7 @@ export default {
       pause() {},
       resume() {},
       destroy() {
+        cancelAnimationFrame(initRaf);
         window.removeEventListener('resize', onResize);
         tabs.forEach((tab) => { tab.removeEventListener('click', onClick); tab.removeEventListener('keydown', onKey); tab.removeAttribute('data-kt-label'); });
         indicator?.remove();

@@ -127,7 +127,7 @@ Kineto.disableSmooth();
 | `ripple` | `data-kt-ripple` | Ripple al clic |
 | `scrollSequence` | `data-kt-scroll-sequence` | Scrub di sequenze di immagini |
 | `scrollVelocity` | `data-kt-scroll-velocity` | Risposta a velocità/direzione di scroll |
-| `shuffle` | `data-kt-shuffle` | Decodifica con mescolamento caratteri |
+| `textReveal (shuffle)` | `data-kt-text-reveal="shuffle"` | Decodifica con mescolamento caratteri |
 | `slider` | `data-kt-slider` | Slide e coverflow |
 | `stickyStack` | `data-kt-sticky-stack` | Stack sticky (verticale/orizzontale/flottante) |
 | `textFill` | `data-kt-text-fill` | Riempimento testo guidato dallo scroll |
@@ -167,7 +167,8 @@ Chrome, Edge, Firefox e Safari più recenti (desktop e mobile). Con `prefers-red
 ```bash
 npm install
 npm run build   # genera dist/
-npm run verify  # lint, build, test, controlli del contratto
+npm run ci      # lint, build, test Node/Chromium, contratto e pacchetto
+npm run verify  # suite CI completa + audit di sicurezza delle dipendenze
 ```
 
 ## Licenza

@@ -1,4 +1,4 @@
-import { env } from '../utils.js';
+import { cssEase } from '../utils.js';
 
 // Accordion — animates native <details>/<summary> open & close with a springy
 // height morph and a blur-in on the content, keeping the browser's built-in
@@ -10,7 +10,7 @@ export default {
     if (!items.length) return null;
 
     const duration = Math.max(0.05, Number(opts.duration ?? 0.4));
-    const ease = opts.ease || 'cubic-bezier(.22,.8,.3,1)';
+    const ease = opts.ease ? cssEase(opts.ease) : 'cubic-bezier(.22,.8,.3,1)';
     const single = opts.single === true;
     const blur = Math.max(0, Number(opts.blur ?? 6));
     // Reveal effect for the panel content: 'blur' (blur+fade+height, default),
@@ -20,6 +20,10 @@ export default {
     const openBlur = effect === 'blur' ? blur : 0;
     // Arrow side is a CSS hook: `left` puts the chevron before the label.
     const arrowPosition = opts.arrowPosition === 'left' ? 'left' : 'right';
+    // `activeClass` lets you hook your OWN class on the open item (added
+    // alongside the built-in `.kt-open`, so the default styling still works).
+    const activeClass = (opts.activeClass || '').trim();
+    const openClasses = activeClass ? ['kt-open', activeClass] : ['kt-open'];
     el.classList.add('kt-accordion');
     el.classList.toggle('kt-accordion--arrow-left', arrowPosition === 'left');
     const entries = [];
@@ -36,13 +40,13 @@ export default {
       // open item, so the arrow / colours / effects can be themed purely in CSS
       // (see the default chevron in kineto.css, override via CSS vars or selectors).
       summary.classList.add('kt-accordion-summary');
-      if (details.open) details.classList.add('kt-open');
+      if (details.open) details.classList.add(...openClasses);
       let anim = null;
       const stop = () => { if (anim) { anim.cancel(); anim = null; } };
       const openIt = () => {
         stop();
         details.open = true;
-        details.classList.add('kt-open');
+        details.classList.add(...openClasses);
         const target = panel.scrollHeight;
         anim = panel.animate(
           [{ height: '0px', opacity: openOpacity, filter: `blur(${openBlur}px)` }, { height: `${target}px`, opacity: 1, filter: 'blur(0px)' }],
@@ -52,7 +56,7 @@ export default {
       };
       const closeIt = () => {
         stop();
-        details.classList.remove('kt-open'); // arrow rotates back during the close
+        details.classList.remove(...openClasses); // arrow rotates back during the close
         const start = panel.scrollHeight;
         anim = panel.animate(
           [{ height: `${start}px`, opacity: 1, filter: 'blur(0px)' }, { height: '0px', opacity: openOpacity, filter: `blur(${openBlur}px)` }],
@@ -74,7 +78,7 @@ export default {
           stop();
           summary.removeEventListener('click', onClick);
           summary.classList.remove('kt-accordion-summary');
-          details.classList.remove('kt-open');
+          details.classList.remove(...openClasses);
           Array.from(panel.childNodes).forEach((node) => details.insertBefore(node, panel));
           panel.remove();
         }

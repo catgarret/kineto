@@ -127,7 +127,7 @@ Kineto.disableSmooth();
 | `ripple` | `data-kt-ripple` | 點擊漣漪 |
 | `scrollSequence` | `data-kt-scroll-sequence` | 圖片序列 scrub |
 | `scrollVelocity` | `data-kt-scroll-velocity` | 回應捲動速度/方向 |
-| `shuffle` | `data-kt-shuffle` | 字元亂序解碼 |
+| `textReveal (shuffle)` | `data-kt-text-reveal="shuffle"` | 字元亂序解碼 |
 | `slider` | `data-kt-slider` | 幻燈片與 coverflow |
 | `stickyStack` | `data-kt-sticky-stack` | 黏性堆疊（縱向/橫向/浮動） |
 | `textFill` | `data-kt-text-fill` | 捲動驅動的文字填充 |
@@ -167,7 +167,8 @@ $('.card').kineto('reveal', { preset: 'fade-up' });
 ```bash
 npm install
 npm run build   # 產生 dist/
-npm run verify  # lint、建置、測試、契約檢查
+npm run ci      # lint、建置、Node/Chromium 測試、契約與套件檢查
+npm run verify  # 完整 CI 檢查 + 相依套件安全稽核
 ```
 
 ## 授權

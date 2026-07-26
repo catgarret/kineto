@@ -26,7 +26,7 @@ export default {
     const fill = document.createElement('span');
     fill.className = 'kt-hold-fill';
     fill.setAttribute('aria-hidden', 'true');
-    fill.style.cssText = `position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);background:${color};mix-blend-mode:${blend};pointer-events:none;border-radius:inherit;z-index:0;`;
+    fill.style.cssText = `position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);background:${color};mix-blend-mode:${blend};pointer-events:none;border-radius:0;z-index:0;`;
     el.insertBefore(fill, el.firstChild);
 
     let rafId = null;
@@ -128,7 +128,7 @@ export default {
       el,
       type: 'hold',
       progress: () => progress,
-      reset() { confirmed = false; el.classList.remove('kt-hold-confirmed'); el.removeAttribute('aria-pressed'); cancelRaf(); lastT = 0; fill.style.transition = 'transform .2s ease'; setProgress(0); },
+      reset() { confirmed = false; el.classList.remove('kt-hold-confirmed'); el.removeAttribute('aria-pressed'); cancelRaf(); lastT = 0; fill.style.transition = 'transform .2s var(--kt-ease-ui, ease)'; setProgress(0); },
       pause() {},
       resume() {},
       destroy() {
@@ -146,5 +146,32 @@ export default {
         el.removeAttribute('aria-pressed');
       }
     };
+  },
+
+  // Reduced motion: no fill sweep, but the control must still WORK — a plain
+  // click confirms (fires the cancelable event + onComplete + the action), so
+  // reduced-motion users aren't left with a dead button.
+  reduced(el, opts = {}) {
+    if (!/^(a|button)$/i.test(el.tagName) && !el.hasAttribute('tabindex')) el.tabIndex = 0;
+    const runAction = () => {
+      if (opts.submit === false) return;
+      const targetSel = opts.action || el.getAttribute('data-kt-hold-action');
+      if (targetSel) { document.querySelector(targetSel)?.click?.(); return; }
+      if (el.tagName === 'A' && el.getAttribute('href')) { window.location.href = el.href; return; }
+      const form = el.closest?.('form');
+      const wantsSubmit = opts.submit === true || el.type === 'submit' || el.getAttribute('data-kt-hold-submit') != null;
+      if (form && wantsSubmit) { if (typeof form.requestSubmit === 'function') form.requestSubmit(el.type === 'submit' ? el : undefined); else form.submit(); }
+    };
+    let done = false;
+    const onClick = () => {
+      if (done) return; done = true;
+      el.classList.add('kt-hold-confirmed');
+      let proceed = true;
+      try { proceed = el.dispatchEvent(new CustomEvent('kt-hold-confirm', { bubbles: true, cancelable: true })); } catch (_error) { /* older */ }
+      opts.onComplete?.(el);
+      if (proceed) runAction();
+    };
+    el.addEventListener('click', onClick);
+    return { el, type: 'hold', pause() {}, resume() {}, destroy() { el.removeEventListener('click', onClick); el.classList.remove('kt-hold-confirmed'); } };
   }
 };

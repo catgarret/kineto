@@ -10,14 +10,15 @@ import { clamp, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
 
 function progressReader(opts) {
   const target = opts.target || 'page';
+  let cached = null; // cache the element instead of querySelector every frame
   return () => {
     if (target === 'page') {
       const max = document.documentElement.scrollHeight - window.innerHeight;
       return max > 0 ? clamp(window.scrollY / max, 0, 1) : 0;
     }
-    const targetEl = document.querySelector(target);
-    if (!targetEl) return 0;
-    const rect = targetEl.getBoundingClientRect();
+    if (!cached || !cached.isConnected) cached = document.querySelector(target);
+    if (!cached) return 0;
+    const rect = cached.getBoundingClientRect();
     return clamp((window.innerHeight - rect.top) / (window.innerHeight + rect.height), 0, 1);
   };
 }
@@ -29,6 +30,10 @@ function cornerStyle(position, offset) {
 
 export default {
   create(el, opts) {
+    // `data-kt-progress` is also Slider's boolean autoplay-progress option.
+    // On a slider root it configures Slider; it must not additionally mount the
+    // standalone reading-progress module and scale the entire carousel to zero.
+    if (el.hasAttribute('data-kt-slider') && /^(?:|true|false)$/i.test(el.getAttribute('data-kt-progress') || '')) return null;
     const ui = opts.ui || '';
     const smoothing = clamp(Number(opts.smoothing ?? 0), 0, 0.95);
     const showAfter = Math.max(0, Number(opts.showAfter ?? 0));
@@ -40,14 +45,20 @@ export default {
     let apply = null;
     const created = [];
 
+    let lastY = -1;
     const tick = () => {
       if (!alive) return;
       const raw = getProgress();
       shown = smoothing > 0 ? shown + (raw - shown) * (1 - smoothing) : raw;
       apply?.(shown, raw);
       opts.onUpdate?.(shown, el);
+      // Idle the rAF once nothing is scrolling AND the smoothed value has caught
+      // up — a scroll/resize re-wakes it. Avoids a permanent per-frame loop.
+      if (window.scrollY === lastY && Math.abs(raw - shown) < 0.0006) { rafId = null; return; }
+      lastY = window.scrollY;
       rafId = requestAnimationFrame(tick);
     };
+    const wake = () => { if (alive && rafId == null) { lastY = -1; rafId = requestAnimationFrame(tick); } };
 
     const visibility = (node, raw) => {
       if (!showAfter && !hideAtEnd) return;
@@ -70,8 +81,8 @@ export default {
       track.className = 'kt-progress-bar';
       track.setAttribute('aria-hidden', 'true');
       track.style.cssText = attach === 'fixed'
-        ? `position:fixed;left:0;right:0;${positionSide}:0;height:${thickness}px;z-index:${Number(opts.zIndex ?? 1002)};background:${opts.trackColor || 'var(--kt-progress-track,transparent)'};border-radius:${radius}px;transition:opacity .25s ease;`
-        : `position:relative;width:100%;height:${thickness}px;background:${opts.trackColor || 'var(--kt-progress-track,rgba(128,128,128,.18))'};border-radius:${radius}px;overflow:hidden;transition:opacity .25s ease;`;
+        ? `position:fixed;left:0;right:0;${positionSide}:0;height:${thickness}px;z-index:${Number(opts.zIndex ?? 1002)};background:${opts.trackColor || 'var(--kt-progress-track,transparent)'};border-radius:${radius}px;transition:opacity .25s var(--kt-ease-ui, ease);`
+        : `position:relative;width:100%;height:${thickness}px;background:${opts.trackColor || 'var(--kt-progress-track,rgba(128,128,128,.18))'};border-radius:${radius}px;overflow:hidden;transition:opacity .25s var(--kt-ease-ui, ease);`;
       const fill = document.createElement('div');
       fill.className = 'kt-progress-bar-fill';
       fill.style.cssText = `width:100%;height:100%;background:${fillBackground};border-radius:inherit;transform:scaleX(0);transform-origin:left center;will-change:transform;`;
@@ -100,7 +111,7 @@ export default {
       } else {
         root.setAttribute('aria-hidden', 'true');
       }
-      root.style.cssText = `${attach === 'fixed' ? `position:fixed;${cornerStyle(opts.position, Math.max(0, Number(opts.offset ?? 18)))}z-index:${Number(opts.zIndex ?? 1200)};` : 'position:relative;'}width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;border:0;padding:0;background:var(--kt-progress-ring-bg,transparent);border-radius:50%;${clickToTop ? 'cursor:pointer;' : ''}transition:opacity .25s ease;color:inherit;`;
+      root.style.cssText = `${attach === 'fixed' ? `position:fixed;${cornerStyle(opts.position, Math.max(0, Number(opts.offset ?? 18)))}z-index:${Number(opts.zIndex ?? 1200)};` : 'position:relative;'}width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;border:0;padding:0;background:var(--kt-progress-ring-bg,transparent);border-radius:50%;${clickToTop ? 'cursor:pointer;' : ''}transition:opacity .25s var(--kt-ease-ui, ease);color:inherit;`;
       root.innerHTML = `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" aria-hidden="true" style="position:absolute;inset:0;transform:rotate(-90deg);">`
         + `<circle class="kt-progress-ring-track" cx="${size / 2}" cy="${size / 2}" r="${ringRadius}" fill="none" stroke="${trackColor}" stroke-width="${stroke}"/>`
         + `<circle class="kt-progress-ring-fill" cx="${size / 2}" cy="${size / 2}" r="${ringRadius}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}"/>`
@@ -142,19 +153,27 @@ export default {
     }
 
     rafId = requestAnimationFrame(tick);
+    window.addEventListener('scroll', wake, { passive: true });
+    window.addEventListener('resize', wake, { passive: true });
 
     return {
       el,
       type: 'progress',
-      pause: () => { alive = false; if (rafId != null) cancelAnimationFrame(rafId); },
-      resume: () => { if (!alive) { alive = true; rafId = requestAnimationFrame(tick); } },
+      pause: () => { alive = false; if (rafId != null) cancelAnimationFrame(rafId); rafId = null; },
+      resume: () => { if (!alive) { alive = true; wake(); } },
       destroy: () => {
         alive = false;
         if (rafId != null) cancelAnimationFrame(rafId);
+        window.removeEventListener('scroll', wake);
+        window.removeEventListener('resize', wake);
         created.forEach((node) => node.remove());
         restoreAttributes?.();
         restore?.();
       }
     };
-  }
+  },
+
+  // Reduced motion: the indicator must still WORK (a progress bar / back-to-top
+  // is a control, not decoration) — just build it without the smoothing lerp.
+  reduced(el, opts = {}) { return this.create(el, { ...opts, smoothing: 0 }); }
 };

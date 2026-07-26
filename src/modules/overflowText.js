@@ -31,7 +31,7 @@ function oppositeClip(direction) {
 }
 
 // Small positional nudge along the mask direction so the wipe reads as
-// movement instead of a hard shutter (Toss-style soft directional swap).
+// movement instead of a hard shutter (soft directional swap).
 function nudge(direction, amount = '0.3em') {
   if (direction === 'bottom-to-top') return `translate3d(0,-${amount},0)`;
   if (direction === 'left-to-right') return `translate3d(${amount},0,0)`;
@@ -77,6 +77,14 @@ export default {
     const maskDirection = normalizeMaskDirection(opts.maskDirection || opts.transitionDirection);
     const maskDuration = number(opts.maskDuration, 260, 20);
     const pauseOnHover = opts.pauseOnHover !== false;
+    // GNB-style hover trigger: with `trigger:'hover'` the rolling swap advances
+    // once each time the pointer enters (or the item gains focus) instead of on
+    // a timer. Duplicate the label (items:['MENU','MENU']) for a clean vertical
+    // swap-in-place. `hoverTarget` (a selector) lets a parent link drive it.
+    const hoverTrigger = opts.trigger === 'hover';
+    let hoverAdvance = null;
+    let hoverLeaveHandler = null;
+    let hoverTarget = null;
     const originalHTML = el.innerHTML;
     const originalStyle = el.getAttribute('style');
     const originalTitle = el.getAttribute('title');
@@ -213,9 +221,115 @@ export default {
         activeIndex = nextIndex;
         el.setAttribute('aria-label', plainText(items[activeIndex]));
         opts.onChange?.(activeIndex, items[activeIndex], el);
-        schedule(advance, hold);
+        if (!hoverTrigger) schedule(advance, hold);
       };
-      if (items.length > 1) schedule(advance, number(opts.delay, hold));
+      if (hoverTrigger) {
+        hoverTarget = opts.hoverTarget ? (el.closest(opts.hoverTarget) || el.parentElement || el) : el;
+        // DEFAULT: a two-state slide — hover rolls the label up ONCE to reveal the
+        // next item; leaving slides it back DOWN to the original. `restoreOnLeave`
+        // (default true) controls the return. `loopOnHover` opts into a continuous
+        // marquee-style roll while hovered (the roll doesn't stop after one step).
+        const restoreOnLeave = opts.restoreOnLeave !== false;
+        const loopOnHover = opts.loopOnHover === true;
+        // restoreDirection: 'reverse' (default) slides back DOWN to the original;
+        // 'continue' keeps rolling UP (same direction) and wraps to the original.
+        const continueRoll = opts.restoreDirection === 'continue' || opts.restoreDirection === 'forward';
+        const ease = opts.easing || 'cubic-bezier(.22,.8,.25,1)';
+        const homeTf = 'translate3d(0,0,0)';
+        const upTf = 'translate3d(0,-1.35em,0)';
+        let continueResetTimer = null;
+        const resetToHome = () => {
+          track.style.transition = 'none';
+          if (track.firstElementChild) track.firstElementChild.innerHTML = items[0];
+          if (track.lastElementChild) track.lastElementChild.innerHTML = items[1 % items.length];
+          activeIndex = 0;
+          track.style.transform = homeTf;
+          el.setAttribute('aria-label', plainText(items[0]));
+        };
+        // loopOnHover: a horizontal, infinitely-scrolling marquee of the label
+        // (like `mode:'loop'`) while hovered — NOT the vertical roll. Restored to
+        // the static label on leave.
+        let marqueeAnim = null;
+        const startMarquee = () => {
+          if (marqueeAnim) return;
+          const boxW = Math.round(rollViewport.getBoundingClientRect().width || el.getBoundingClientRect().width || 120);
+          const label = items.map(plainText).join(' ');
+          el.innerHTML = '';
+          const vp = document.createElement('span');
+          vp.style.cssText = `display:inline-block;overflow:hidden;white-space:nowrap;vertical-align:bottom;width:${boxW}px;max-width:${boxW}px;`;
+          const inner = document.createElement('span');
+          inner.style.cssText = 'display:inline-flex;white-space:nowrap;will-change:transform;';
+          const a = document.createElement('span'); a.textContent = label + '  ';
+          const b = document.createElement('span'); b.setAttribute('aria-hidden', 'true'); b.textContent = label + '  ';
+          inner.append(a, b);
+          vp.appendChild(inner);
+          el.appendChild(vp);
+          const w = a.getBoundingClientRect().width || 200;
+          const pxPerSec = Math.max(20, number(opts.speed, 60));
+          marqueeAnim = inner.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${-w}px)` }],
+            { duration: Math.max(600, w / pxPerSec * 1000), iterations: Infinity, easing: 'linear' });
+        };
+        const stopMarquee = () => {
+          if (!marqueeAnim) return;
+          marqueeAnim.cancel(); marqueeAnim = null;
+          el.innerHTML = '';
+          el.appendChild(rollViewport);
+          resetToHome();
+        };
+        // continue mode uses a 3-segment stack [item0, item1, item0] so leaving
+        // always rolls UP to the original and the reset (to the identical top
+        // item0) is invisible. reverse mode uses a simple 2-state up/down slide.
+        const upTf2 = 'translate3d(0,-2.7em,0)';
+        if (continueRoll && track.children.length < 3 && track.firstElementChild) {
+          const clone0 = track.firstElementChild.cloneNode(true);
+          clone0.innerHTML = items[0];
+          track.appendChild(clone0);
+        }
+        hoverAdvance = () => {
+          if (destroyed) return;
+          if (loopOnHover) { startMarquee(); return; }
+          clearTimeout(continueResetTimer);
+          if (continueRoll) {
+            track.style.transition = 'none'; track.style.transform = homeTf; void track.offsetHeight;
+            track.style.transition = `transform ${rollDuration}ms ${ease}`;
+            track.style.transform = upTf;            // item0 -> item1
+            el.setAttribute('aria-label', plainText(items[1 % items.length]));
+            opts.onChange?.(1 % items.length, items[1 % items.length], el);
+            return;
+          }
+          resetToHome(); void track.offsetHeight;   // reverse: start from home
+          track.style.transition = `transform ${rollDuration}ms ${ease}`;
+          track.style.transform = upTf;
+          el.setAttribute('aria-label', plainText(items[1 % items.length]));
+          opts.onChange?.(1 % items.length, items[1 % items.length], el);
+        };
+        hoverLeaveHandler = () => {
+          if (destroyed) return;
+          if (loopOnHover) { if (restoreOnLeave) stopMarquee(); return; }
+          if (!restoreOnLeave) return;
+          if (continueRoll) {
+            track.style.transition = `transform ${rollDuration}ms ${ease}`;
+            track.style.transform = upTf2;           // item1 -> item0 (third seg)
+            el.setAttribute('aria-label', plainText(items[0]));
+            opts.onChange?.(0, items[0], el);
+            clearTimeout(continueResetTimer);
+            continueResetTimer = setTimeout(() => {
+              if (destroyed) return;
+              track.style.transition = 'none';
+              track.style.transform = homeTf;        // seg0 (item0) — identical, invisible
+            }, rollDuration + 60);
+            return;
+          }
+          track.style.transition = `transform ${rollDuration}ms ${ease}`;
+          track.style.transform = homeTf;
+          el.setAttribute('aria-label', plainText(items[0]));
+          opts.onChange?.(0, items[0], el);
+        };
+        hoverTarget.addEventListener('pointerenter', hoverAdvance);
+        hoverTarget.addEventListener('focusin', hoverAdvance);
+        hoverTarget.addEventListener('pointerleave', hoverLeaveHandler);
+        hoverTarget.addEventListener('focusout', hoverLeaveHandler);
+      } else if (items.length > 1) schedule(advance, number(opts.delay, hold));
     };
 
     // Item scene transitions: cycle discrete items with fade / dissolve / flip /
@@ -727,7 +841,7 @@ export default {
         schedule(callback, 220);
       }
     };
-    if (pauseOnHover) {
+    if (pauseOnHover && !hoverTrigger) {
       el.addEventListener('pointerenter', onHoverIn);
       el.addEventListener('pointerleave', onHoverOut);
     }
@@ -751,6 +865,8 @@ export default {
         resizeObserver?.disconnect();
         el.removeEventListener('pointerenter', onHoverIn);
         el.removeEventListener('pointerleave', onHoverOut);
+        if (hoverTarget && hoverAdvance) { hoverTarget.removeEventListener('pointerenter', hoverAdvance); hoverTarget.removeEventListener('focusin', hoverAdvance); }
+        if (hoverTarget && hoverLeaveHandler) { hoverTarget.removeEventListener('pointerleave', hoverLeaveHandler); hoverTarget.removeEventListener('focusout', hoverLeaveHandler); }
         if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);
         if (originalTitle == null) el.removeAttribute('title'); else el.setAttribute('title', originalTitle);
         if (originalAria == null) el.removeAttribute('aria-label'); else el.setAttribute('aria-label', originalAria);

@@ -5,14 +5,14 @@
 ### npm package / local tarball
 
 ```bash
-npm install kineto
+npm install @dong-gri/kineto
 # 또는
-npm install ./kineto-0.8.0.tgz
+npm install ./dong-gri-kineto-0.8.43.tgz
 ```
 
 ```js
-import Kineto from 'kineto';
-import 'kineto/style.css';
+import Kineto from '@dong-gri/kineto';
+import '@dong-gri/kineto/style.css';
 
 Kineto.autoInit();
 ```
@@ -27,7 +27,7 @@ Kineto.autoInit();
 </script>
 ```
 
-UMD bundle은 필요한 runtime dependency를 포함하므로 GSAP·Lenis를 같은 페이지에 중복 로드하지 않습니다.
+GSAP·Lenis는 UMD bundle에 포함하지 않습니다. 필요한 모듈에서만 설정된 CDN으로 불러오며, 페이지에 이미 같은 전역 객체가 있으면 기존 객체를 재사용합니다.
 
 ## 2. 첫 인터랙션
 
@@ -48,7 +48,7 @@ instance?.destroy();
 
 ## 3. 자동 초기화
 
-`Kineto.autoInit()`은 등록된 **32개 모듈**의 활성화 속성을 스캔합니다. import만으로 자동 실행되지는 않습니다.
+`Kineto.autoInit()`은 등록된 **50개 모듈**의 활성화 속성을 스캔합니다. import만으로 자동 실행되지는 않습니다.
 
 ```js
 Kineto.scan(document.querySelector('#new-section'));
@@ -115,8 +115,8 @@ Kineto.config({
   debug: false
 });
 
-Kineto.replay('.title', 'shuffle');
-Kineto.destroyModule('.title', 'shuffle');
+Kineto.replay('.title', 'textReveal');
+Kineto.destroyModule('.title', 'textReveal');
 Kineto.destroy('#route-container');
 Kineto.destroy();
 ```

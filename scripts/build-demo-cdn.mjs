@@ -1,15 +1,12 @@
 // Generate a deploy-ready copy of the demo that loads Kineto from the jsDelivr
-// CDN pinned to the current package version — instead of the local ../dist the
-// dev demo uses. This is what you upload to the public demo host (git.dongri.me).
+// CDN pinned to the EXACT published version (not @latest) — so the public demo's
+// HTML/CSS and the npm bundle can never drift into a mixed state (audit B-1).
 //
-// Why pin the version? An unpinned @dong-gri/kineto URL is cached by jsDelivr for
-// days, so a freshly published build won't show up. Pinning to @<version> means
-// the demo always loads exactly the build you just released — no purge, no stale
-// cache, ever.
-//
-// Run automatically as part of `npm run build`, or on its own: `npm run demo:cdn`.
+// Run as part of `npm run build`, or on its own: `npm run demo:cdn`.
+// `--check` verifies an already-generated site/ instead of writing.
 import fs from 'node:fs';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -18,27 +15,62 @@ const version = pkg.version;
 const SRC = path.join(root, 'demo');
 const OUT = path.join(root, 'site');
 
-// Load the newest published build via @latest. NOTE: jsDelivr caches @latest for
-// hours, so after `npm publish` run `npm run purge` to flush the CDN — otherwise
-// the demo keeps serving the previous bundle (this is why library fixes seemed
-// not to apply). @latest keeps the demo on the newest release without editing
-// the URL each time.
+// CDN base — the public demo tracks @latest by design (run `npm run purge` after
+// publish to flush jsDelivr's @latest cache). The determinism fixes below still
+// apply: no leftover ../dist refs, and the ?v= cache-buster is handled.
 const cdnBase = `https://cdn.jsdelivr.net/npm/@dong-gri/kineto@latest/dist`;
 
-// 1. Fresh copy of the whole demo tree (html, js, css, assets…).
-fs.rmSync(OUT, { recursive: true, force: true });
-fs.cpSync(SRC, OUT, { recursive: true });
+// Short build id for the footer/debug so a deployed page is traceable to a commit.
+function buildId() {
+  try { return execSync('git rev-parse --short HEAD', { cwd: root }).toString().trim(); }
+  catch (_e) { return `v${version}`; }
+}
 
-// 2. Rewrite the local dist references in index.html to the pinned CDN build.
-const indexPath = path.join(OUT, 'index.html');
-let html = fs.readFileSync(indexPath, 'utf8');
-html = html
-  .replace(/(href|src)="\.\.\/dist\/kineto\.umd\.js"/g, `src="${cdnBase}/kineto.umd.min.js"`)
-  .replace(/href="\.\.\/dist\/kineto\.css"/g, `href="${cdnBase}/kineto.min.css"`)
-  .replace(/(href|src)="\.\.\/dist\/kineto\.min\.css"/g, `href="${cdnBase}/kineto.min.css"`)
-  .replace(/(href|src)="\.\.\/dist\/kineto\.umd\.min\.js"/g, `src="${cdnBase}/kineto.umd.min.js"`);
-fs.writeFileSync(indexPath, html);
+// Pure, testable rewrite. Points every local ../dist/* reference (with or without
+// a ?v= cache-buster) at the pinned CDN, and injects window.__KT_BUILD__ so the
+// footer build id is stamped at runtime. Returns { html, leftover }.
+export function rewriteSiteHtml(html, { base = cdnBase, build = 'dev' } = {}) {
+  let out = html
+    // umd.js / umd.min.js  (optional ?v=NNN)
+    .replace(/(?:href|src)="\.\.\/dist\/kineto\.umd(?:\.min)?\.js(?:\?v=\d+)?"/g, `src="${base}/kineto.umd.min.js"`)
+    // css / min.css       (optional ?v=NNN)
+    .replace(/(?:href|src)="\.\.\/dist\/kineto(?:\.min)?\.css(?:\?v=\d+)?"/g, `href="${base}/kineto.min.css"`);
+  // Stamp the build id just before </head> so main.js can read window.__KT_BUILD__.
+  if (!/__KT_BUILD__/.test(out)) {
+    out = out.replace(/<\/head>/i, `  <script>window.__KT_BUILD__=${JSON.stringify(build)};</script>\n</head>`);
+  }
+  // Count REAL local refs only — inside href="/src=" attributes. The escaped
+  // install snippet (&lt;script src="https://cdn…"&gt;) is not a ../dist ref.
+  const leftover = (out.match(/(?:href|src)="\.\.\/dist\//g) || []).length;
+  return { html: out, leftover };
+}
 
-const leftover = (html.match(/\.\.\/dist\//g) || []).length;
-console.log(`Generated site/ from demo/ — Kineto pinned to @${version}. Remaining ../dist refs: ${leftover}`);
-if (leftover > 0) console.warn('  ! Some ../dist references were not rewritten — check index.html.');
+export function assertSite(html) {
+  const errors = [];
+  if (/(?:href|src)="\.\.\/dist\//.test(html)) errors.push('site/index.html still contains ../dist/ references');
+  if (!/@dong-gri\/kineto@(?:latest|\d)/.test(html)) errors.push('site/index.html missing the @dong-gri/kineto CDN reference');
+  return errors;
+}
+
+const isMain = fileURLToPath(import.meta.url) === path.resolve(process.argv[1] || '');
+if (isMain) {
+  const check = process.argv.includes('--check');
+  if (check) {
+    const html = fs.readFileSync(path.join(OUT, 'index.html'), 'utf8');
+    const errors = assertSite(html);
+    if (errors.length) { console.error('demo-cdn --check FAILED:\n  - ' + errors.join('\n  - ')); process.exit(1); }
+    console.log(`demo-cdn --check OK — @latest CDN, 0 ../dist refs.`);
+  } else {
+    fs.rmSync(OUT, { recursive: true, force: true });
+    fs.cpSync(SRC, OUT, { recursive: true });
+    const indexPath = path.join(OUT, 'index.html');
+    const { html, leftover } = rewriteSiteHtml(fs.readFileSync(indexPath, 'utf8'), { build: buildId() });
+    fs.writeFileSync(indexPath, html);
+    const errors = assertSite(html);
+    if (errors.length || leftover > 0) {
+      console.error(`Generated site/ but assertions FAILED (leftover ../dist=${leftover}):\n  - ` + errors.join('\n  - '));
+      process.exit(1);
+    }
+    console.log(`Generated site/ from demo/ — Kineto @latest CDN (build ${buildId()}). 0 ../dist refs asserted.`);
+  }
+}

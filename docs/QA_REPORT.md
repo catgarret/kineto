@@ -1,74 +1,44 @@
-# Kineto v0.8.0 QA Report
+# Kineto v0.8.43 QA Report
 
-검증일: 2026-07-18  
-대상: Kineto v0.8.0 reconstructed complete source
+검증일: 2026-07-26
+대상: npm 배포 후보 전체 소스
 
-## 결과 요약
+## 자동 검증
 
 | 영역 | 결과 | 세부 내용 |
 |---|---|---|
-| Lint | 통과 | ESLint: source, tests, playground |
-| Build | 통과 | ESM 152.5 kB, UMD 251.9 kB, CSS 1.5 kB |
-| Utility / SSR | 통과 | SSR import와 utility 회귀 검사 |
-| Feature contract | 통과 | 32 modules, 20 Core APIs |
+| Lint | 통과 | source, tests, playground |
+| Build | 통과 | ESM, UMD, minified JS/CSS |
+| Feature contract | 통과 | 50 modules, 26 Core APIs |
 | Owner requirements | 통과 | 46 locked requirements |
-| Generated docs | 통과 | `docs/module-reference.md` 동기화 |
+| Docs / options parity | 통과 | 생성 문서와 설정 필드 계약 동기화 |
 | Package surface | 통과 | ESM, CommonJS, CSS, React/Vue/jQuery entry |
-| Security audit | 통과 | 알려진 npm 취약점 0 |
-| Tarball | 통과 | 73 files, unpacked 약 975 kB |
-| Tarball install | 통과 | 새 프로젝트에서 실제 설치 후 import 검사 |
-| Framework bundle | 통과 | React 19, Vue 3.5, jQuery 3.7 production build |
-| Chromium functional assertions | 통과* | 58 playgrounds, 32-module lifecycle/UMD, animated media continuity |
+| Lifecycle | 통과 | 이벤트·rAF·Observer 해제 및 reduced-motion 재적용 |
+| Bundle budget | 통과 | gzip: ESM 100.4 kB, UMD 88.8 kB, CSS 4.5 kB |
 
-`*` Chromium 기능 assertion은 현재 구현에서 성공 출력을 확인했습니다. 이후 문서·패키지·테스트 종료 처리만 변경했습니다. 반복 실행으로 컨테이너의 Chromium 런처가 소진되어 최종 패키징 직후 같은 묶음을 새 Chromium으로 다시 실행하지는 못했습니다.
+## 실제 브라우저 회귀 항목
 
-## Chromium에서 확인한 동작
+- Slider 자동재생, hover/manual pause, 남은 시간 유지
+- Slider progress ring/bar 전환과 독립 Progress 모듈의 속성 충돌 방지
+- 설정 그룹의 1열 전체폭, 2열 가변 높이 배치, 접힘 높이 재계산
+- Cover Reveal gallery의 3개 레이어와 random direction
+- Cursor 요소별 라벨·색 capsule
+- Reveal order, Counter, Loader, Toast와 모듈 lifecycle
+- 모바일 헤더, 사이트맵, 하단 탐색과 맨 위로 버튼의 안전 간격
+- 데모의 정적 inline style/script/style block 0건 및 50개 모듈 탐색 일치
 
-- 58개 Live Settings playground
-- 옵션 변경, Apply/Replay, Reset, HTML/JavaScript code sync 및 Copy
-- Counter Pop의 final-value-only 착지
-- Skeleton shimmer/pulse placeholder
-- Progressive Print/Dissolve의 changing fine noise
-- MP3 Rewind/Page 4방향 mask 및 Rolling
-- Card spotlight, surface reflection, luminous border
-- Text Transition 및 Original RGB Glitch
-- Reveal 4방향/class-only hook
-- ScrollVelocity spring on/off 및 Vertical Sticky Stack
-- Coverflow 1-step 이동, Cursor, Loader progress, Smooth toggle
-- full-viewport Lightbox, group navigation, zoom/pan/minimap/custom UI
-- GIF·animated WebP·APNG가 원본, Ambient clone, Lightbox에서 계속 재생
-- MP4 재생 유지와 Ambient video frame sampling
-- 32개 모듈 lifecycle 종료 후 active instance 0
-- UMD global version 0.8.0 및 32개 registry
+## 패키지 확인
 
-## 실제 tarball 설치 결과
+배포 전 `npm pack --dry-run`으로 92개 파일, 압축 1.0 MB의 패키지 구성을
+검사하고, ESM, CommonJS, CSS 및 adapter entry를 별도 package surface
+테스트로 확인합니다. 현재 패키지명은 `@dong-gri/kineto`, 버전은
+`0.8.43`입니다.
 
-설치 파일: `kineto-0.8.0.tgz`
+## 별도 실기기 확인 권장
 
-```json
-{
-  "version": "0.8.0",
-  "modules": 32,
-  "namedModules": 32,
-  "react": true,
-  "vue": true,
-  "jquery": true,
-  "css": true
-}
-```
-
-CommonJS 검사:
-
-```json
-{"version":"0.8.0","modules":32}
-```
-
-## 검증하지 못한 환경
-
-- Firefox
 - Safari / WebKit
-- 실제 iOS Safari
-- 실제 Android Chrome 및 터치·진동 동작
-- 실제 기기 장시간 메모리 프로파일링
+- 실제 iOS Safari와 Android Chrome의 터치·진동
+- 장시간 탭 유지 시 메모리와 배터리 사용량
 
-외부 iframe 영상은 same-origin pixel access가 불가능하므로 `ambientSrc` 또는 `source`로 지정한 썸네일을 사용합니다.
+외부 iframe 영상은 same-origin 픽셀 접근이 불가능하므로
+`ambientSrc` 또는 `source`로 지정한 이미지를 사용합니다.

@@ -1,4 +1,4 @@
-import { env, motionDefaults } from '../utils.js';
+import { cssEase, env, motionDefaults } from '../utils.js';
 
 // Gesture — Motion-style whileHover / whileTap feedback. The element springs up
 // (and optionally lifts) on hover/focus and presses down on pointer/keydown,
@@ -14,7 +14,11 @@ export default {
     const lift = Number(opts.lift ?? 0);
     const duration = Math.max(0, Number(opts.duration ?? 0.22));
     // Global `Kineto.config({spring:true})` bumps the default overshoot.
-    const ease = opts.ease || (motionDefaults.spring ? 'cubic-bezier(.34,1.8,.5,1)' : 'cubic-bezier(.34,1.56,.64,1)');
+    const ease = opts.ease ? cssEase(opts.ease) : (motionDefaults.spring ? 'cubic-bezier(.34,1.8,.5,1)' : 'cubic-bezier(.34,1.56,.64,1)');
+    // Phase-specific easing (audit C-3 / J-3): `hoverEase` shapes the hover
+    // grow/settle, `pressEase` the press-down; both fall back to `ease`.
+    const hoverEase = opts.hoverEase ? cssEase(opts.hoverEase) : ease;
+    const pressEase = opts.pressEase ? cssEase(opts.pressEase) : ease;
     // Where the scale/press grows from (center | top | bottom | left | right |
     // any CSS transform-origin value).
     const origin = opts.origin || 'center';
@@ -32,6 +36,7 @@ export default {
     const apply = () => {
       const scale = pressed ? tapScale : (hovered ? hoverScale : 1);
       const y = hovered && !pressed ? -lift : 0;
+      el.style.transition = `transform ${duration}s ${pressed ? pressEase : hoverEase}`;
       el.style.transform = `translateY(${y}px) scale(${scale})`;
     };
 

@@ -65,6 +65,7 @@ function coverMap(sourceWidth, sourceHeight, boxWidth, boxHeight) {
 function ensureWrapper(el, opts) {
   let wrapper = el.parentElement;
   let created = false;
+  const elementRadius = getComputedStyle(el).borderRadius;
   const originalWrapperStyle = wrapper?.getAttribute('style') ?? null;
   if (!wrapper?.classList.contains('kt-lazy-wrap')) {
     wrapper = document.createElement('span');
@@ -78,6 +79,10 @@ function ensureWrapper(el, opts) {
   wrapper.style.overflow = 'hidden';
   wrapper.style.display = opts.display || 'block';
   wrapper.style.lineHeight = '0';
+  // Keep rounded media rounded during skeleton/print/dissolve. The generated
+  // wrapper is the clipping box while lazy layers are active, so leaving the
+  // radius only on the original image briefly exposes square corners.
+  if (elementRadius && elementRadius !== '0px') wrapper.style.borderRadius = elementRadius;
   // The wrapper must occupy the same box as the image it replaces: fill the
   // parent when the parent already defines a box (fixes skeleton showing as a
   // thin bar inside aspect-ratio stages), otherwise fall back to aspect-ratio.
@@ -116,7 +121,7 @@ function createLiveImage(src, el, opts = {}) {
   if (srcset) image.srcset = srcset;
   if (sizes) image.sizes = sizes;
   image.src = src;
-  image.style.cssText = `display:block;width:100%;height:100%;object-fit:${opts.objectFit || 'cover'};object-position:${opts.objectPosition || '50% 50%'};`;
+  image.style.cssText = `display:block;width:100%;height:100%;object-fit:${opts.objectFit || 'cover'};object-position:${opts.objectPosition || '50% 50%'};border-radius:inherit;`;
   return image;
 }
 
@@ -180,8 +185,85 @@ function preload(src, el, opts) {
   });
 }
 
+// Lazy scroll-reveal for a <video>. Source(s) held in data-src / <source data-src>
+// until near the viewport; on reveal we attach them, load, fade in over
+// `duration`, and (when muted) autoplay. `once:false` re-arms on each entry and
+// pauses on exit — handy for section hero loops.
+function createVideoReveal(el, opts = {}) {
+  const original = { style: el.getAttribute('style'), src: el.getAttribute('src'), preload: el.getAttribute('preload') };
+  const sources = Array.from(el.querySelectorAll('source'));
+  const directSrc = opts.src || el.dataset.src || el.getAttribute('data-src') || '';
+  const duration = Math.max(0, Number(opts.duration ?? 0.6)) * 1000;
+  const ease = opts.ease || 'cubic-bezier(.22,.8,.3,1)';
+  const once = opts.once !== false;
+  const autoplay = opts.autoplay !== false;
+  const muted = opts.muted !== false;
+
+  if (muted) { el.muted = true; el.setAttribute('muted', ''); }
+  if (opts.loop !== false) { el.loop = true; }
+  if (opts.playsinline !== false) el.setAttribute('playsinline', '');
+  el.preload = opts.preload || 'none';
+  el.style.opacity = '0';
+  el.style.transition = `opacity ${duration}ms ${ease}`;
+  el.style.willChange = 'opacity';
+
+  let loaded = false;
+  let destroyed = false;
+  let observer = null;
+
+  const attachSources = () => {
+    if (loaded) return;
+    loaded = true;
+    let any = false;
+    sources.forEach((s) => { const ds = s.dataset.src || s.getAttribute('data-src'); if (ds) { s.src = ds; any = true; } });
+    if (directSrc) { el.src = directSrc; any = true; }
+    if (any) el.load();
+  };
+  const play = () => {
+    if (destroyed) return;
+    el.style.opacity = '1';
+    if (autoplay) { const p = el.play?.(); if (p && typeof p.catch === 'function') p.catch(() => {}); }
+    opts.onReveal?.(el);
+  };
+  const reveal = () => { attachSources(); if (el.readyState >= 2) play(); else el.addEventListener('loadeddata', play, { once: true }); };
+
+  if (once) {
+    observer = observeOnce(el, reveal, { threshold: Number(opts.threshold ?? 0.15), rootMargin: opts.rootMargin || '200px 0px' });
+  } else if (typeof IntersectionObserver !== 'undefined') {
+    observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => { if (entry.isIntersecting) reveal(); else if (loaded) el.pause?.(); });
+    }, { threshold: Number(opts.threshold ?? 0.15), rootMargin: opts.rootMargin || '0px' });
+    observer.observe(el);
+  } else { reveal(); }
+
+  return {
+    el,
+    type: 'lazy',
+    get animatedMedia() { return true; },
+    replay() { loaded = false; el.style.opacity = '0'; reveal(); },
+    pause() { el.pause?.(); },
+    resume() { if (loaded && autoplay) { const p = el.play?.(); if (p && typeof p.catch === 'function') p.catch(() => {}); } },
+    destroy() {
+      destroyed = true;
+      observer?.disconnect?.();
+      el.pause?.();
+      el.removeEventListener('loadeddata', play);
+      const restore = (name, value) => value == null ? el.removeAttribute(name) : el.setAttribute(name, value);
+      restore('style', original.style);
+      restore('src', original.src);
+      restore('preload', original.preload);
+    }
+  };
+}
+
 export default {
   create(el, opts = {}) {
+    // Scroll video reveal: a <video> stays unloaded until it nears the viewport,
+    // then its source is attached, it loads, fades in, and (muted) autoplays —
+    // the "lazy video" pattern. Kept as a fully isolated branch so it never
+    // touches the well-tested <img> pixel/blur pipeline below.
+    if (el.tagName === 'VIDEO') return createVideoReveal(el, opts);
+
     const requested = opts.preset || opts.effect || 'fade';
     // zoom was a near-duplicate of blur-up; keep the API alive but route it.
     const effect = requested === 'noise' ? 'dissolve' : requested === 'zoom' ? 'blur-up' : requested;

@@ -7,7 +7,6 @@ import counterModule from './modules/counter.js';
 import lazyModule from './modules/lazy.js';
 import textSplitModule from './modules/textSplit.js';
 import blurTextModule from './modules/blurText.js';
-import shuffleModule from './modules/shuffle.js';
 import typewriterModule from './modules/typewriter.js';
 import textRevealModule from './modules/textReveal.js';
 import textTransitionModule from './modules/textTransition.js';
@@ -60,7 +59,6 @@ const moduleEntries = {
   lazy: lazyModule,
   textSplit: textSplitModule,
   blurText: blurTextModule,
-  shuffle: shuffleModule,
   typewriter: typewriterModule,
   textReveal: textRevealModule,
   textTransition: textTransitionModule,
@@ -117,7 +115,6 @@ export const counter = call('counter');
 export const lazy = call('lazy');
 export const textSplit = call('textSplit');
 export const blurText = call('blurText');
-export const shuffle = call('shuffle');
 export const typewriter = call('typewriter');
 export const textReveal = call('textReveal');
 export const textTransition = call('textTransition');

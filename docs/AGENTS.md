@@ -11,14 +11,14 @@
 
 ## 범위 잠금
 
-- 현재 공개 범위는 정확히 **32개 모듈**입니다.
+- 현재 공개 범위는 정확히 **50개 모듈**입니다.
 - 소유자의 명시적 요청 없이 모듈·variant·option·기본값·활성화 속성·return shape·public method를 삭제하거나 재해석하지 않습니다.
 - 기능 분류 역시 계약입니다. 예: `circular`/`bar`는 Loader, `slide-up`/`wipe`는 viewport Reveal, `ripple`은 Button Feedback입니다.
 - `kineto.features.json`이나 `kineto.requirements.json`을 실패한 구현에 맞춰 낮추지 않습니다.
 - 계약된 옵션은 `opts.optionName`으로 접근합니다. bracket access와 option destructuring은 계약 검사 우회를 막기 위해 금지합니다.
 - 관련 없는 모듈을 함께 리팩터링하지 않습니다.
 - 데모를 축약해 버그를 숨기지 않습니다. 데모는 QA 표면입니다.
-- 각 조절 가능한 데모의 Live Settings, Replay, Reset, HTML/JS 코드 동기화, Copy 기능을 삭제하거나 정적 코드 블록으로 축소하지 않습니다.
+- 각 조절 가능한 데모의 실시간 설정, Replay, Reset, HTML/JS 코드 동기화, Copy 기능을 삭제하거나 정적 코드 블록으로 축소하지 않습니다.
 
 ## 작업 순서
 
@@ -27,7 +27,7 @@
 3. 가능하면 실패하는 테스트를 먼저 추가합니다.
 4. 요구사항을 만족하는 최소 구현 변경을 합니다.
 5. 모듈 문서, 전체 데모, changelog를 갱신합니다.
-6. `npm run verify`를 실행합니다.
+6. `npm run ci`를 실행합니다.
 7. 실제 배포 tarball을 별도 프로젝트에 설치해 adapter/lifecycle을 검증합니다.
 8. 통과한 브라우저와 검증하지 못한 환경을 구분해 보고합니다.
 
@@ -44,7 +44,7 @@
 ## 완료 기준
 
 ```bash
-npm run verify
+npm run ci
 ```
 
-이 명령이 통과하고, 실제 데모에서 요구된 시각 동작이 확인되며, 반복 생성·재생·파괴 후 active instance가 0이어야 완료입니다.
+이 명령이 통과하고, 실제 데모에서 요구된 시각 동작이 확인되며, 반복 생성·재생·파괴 후 active instance가 0이어야 완료입니다. 배포 전에는 `npm run verify`로 의존성 보안 감사까지 확인합니다.

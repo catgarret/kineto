@@ -127,7 +127,7 @@ Kineto.disableSmooth();
 | `ripple` | `data-kt-ripple` | Рябь по клику |
 | `scrollSequence` | `data-kt-scroll-sequence` | Скраб последовательности кадров |
 | `scrollVelocity` | `data-kt-scroll-velocity` | Реакция на скорость/направление скролла |
-| `shuffle` | `data-kt-shuffle` | Декодирование перемешиванием символов |
+| `textReveal (shuffle)` | `data-kt-text-reveal="shuffle"` | Декодирование перемешиванием символов |
 | `slider` | `data-kt-slider` | Слайдер и coverflow |
 | `stickyStack` | `data-kt-sticky-stack` | Липкий стек (вертикальный/горизонтальный/плавающий) |
 | `textFill` | `data-kt-text-fill` | Заливка текста при скролле |
@@ -167,7 +167,8 @@ $('.card').kineto('reveal', { preset: 'fade-up' });
 ```bash
 npm install
 npm run build   # создаёт dist/
-npm run verify  # линт, сборка, тесты, проверки контракта
+npm run ci      # линт, сборка, тесты Node/Chromium, контракт и пакет
+npm run verify  # полный CI + аудит безопасности зависимостей
 ```
 
 ## Лицензия

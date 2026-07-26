@@ -1,6 +1,6 @@
 # Kineto Documentation
 
-Kineto v0.8.0의 공개 API와 소유자 의도를 기준으로 정리한 문서입니다.
+Kineto v0.8.43의 공개 API와 소유자 의도를 기준으로 정리한 문서입니다.
 
 ## 시작하기
 
@@ -11,7 +11,7 @@ Kineto v0.8.0의 공개 API와 소유자 의도를 기준으로 정리한 문서
 
 ## API와 기능
 
-- [계약에서 자동 생성된 32개 Module Reference](module-reference.md)
+- [계약에서 자동 생성된 50개 Module Reference](module-reference.md)
 - [기능 계약](../FEATURE_CONTRACT.md)
 - [46개 소유자 요구사항](../OWNER_REQUIREMENTS.md)
 - [전체 라이브 데모](../demo/index.html)

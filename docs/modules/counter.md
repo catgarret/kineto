@@ -1,6 +1,6 @@
 # counter
 
-숫자를 네 가지 방식으로 표시합니다. `circular`는 Counter가 아니라 [Loader](loader.md)입니다.
+숫자 애니메이션과 실시간 시계를 여섯 가지 방식으로 표시합니다. `circular`는 Counter가 아니라 [Loader](loader.md)입니다.
 
 | 모드 | 동작 | 기본 |
 |---|---|---|
@@ -8,6 +8,8 @@
 | `plain` | 실제 수치가 시작값에서 목표값까지 연속 증가 |  |
 | `digit` | 위치 이동 없이 각 숫자가 0–9 글리프로 교체 |  |
 | `pop` | **count-up 없이 최종 포맷 문자열**이 큰 상태에서 자릿수별로 정착 |  |
+| `flip` | 숫자 상·하단이 분리되어 전광판처럼 접힘 |  |
+| `clock` | 실시간 시계·카운트다운·경과 시간 |  |
 
 ## HTML
 
@@ -16,6 +18,8 @@
 <span data-kt-counter="plain" data-kt-to="2389540" data-kt-format=",">0</span>
 <span data-kt-counter="digit" data-kt-to="126540" data-kt-format="," data-kt-loops="2">0</span>
 <span data-kt-counter="pop" data-kt-to="98760" data-kt-format="," data-kt-pop-scale="1.9">98,760</span>
+<span data-kt-counter="flip" data-kt-to="365">0</span>
+<span data-kt-counter="clock" data-kt-clock-style="flip" data-kt-seconds="true"></span>
 ```
 
 ## Pop 동작 계약
@@ -26,7 +30,7 @@
 
 | 옵션 | 기본값 | 설명 |
 |---|---:|---|
-| `mode` / `preset` / `style` | `slot` | 네 모드 |
+| `mode` / `preset` / `style` | `slot` | 여섯 모드 |
 | `from` | `0` | `plain` 시작값 |
 | `to` | 요소 숫자 텍스트 | 목표값 |
 | `duration` | `2` | 전체 재생 시간 기준 |
@@ -41,12 +45,16 @@
 | `popScale` | `1.8` | Pop 시작 크기 |
 | `popDuration` | 자동 | 글자 하나의 착지 시간 |
 | `lineHeight` | 계산값 | Slot 한 칸 높이 |
+| `tileColor` / `tileTextColor` | 모드 기본값 | Flip 타일과 숫자 색 |
+| `clockStyle` | `roll` | `roll`, `fade`, `instant`, `flip` |
+| `seconds` / `hour12` | 모드 기본값 | 초 표시와 12시간제 |
+| `until` / `since` | 없음 | 카운트다운 목표 또는 경과 시간 기준 |
 | `start` | `top 85%` | ScrollTrigger 시작. `false`면 즉시 |
 | `once` | `true` | 재진입 재생 정책 |
 
 ## 보장
 
-- 네 모드 모두 콤마/locale 그룹핑을 지원합니다.
+- 수치 모드는 콤마/locale 그룹핑을 지원합니다.
 - `digit`와 `pop`은 세로 reel을 만들지 않습니다.
 - `pop`은 최종 문자열을 다른 숫자로 바꾸지 않습니다.
 - `destroy()`는 원래 HTML, style, ARIA를 복원합니다.

@@ -20,6 +20,17 @@ export default {
     el.classList.add('kt-sheet');
     el.setAttribute('role', 'dialog');
     el.setAttribute('aria-modal', 'true');
+    // A dialog needs an accessible name: honour an existing label, else derive
+    // one from a heading inside the sheet, else a sensible default.
+    if (!el.hasAttribute('aria-label') && !el.hasAttribute('aria-labelledby')) {
+      const heading = el.querySelector('h1,h2,h3,h4,[data-kt-sheet-title]');
+      if (heading) {
+        if (!heading.id) heading.id = `kt-sheet-title-${Math.random().toString(36).slice(2, 7)}`;
+        el.setAttribute('aria-labelledby', heading.id);
+      } else {
+        el.setAttribute('aria-label', opts.label || 'Sheet');
+      }
+    }
     el.hidden = true;
 
     let backdrop = null;
@@ -88,12 +99,31 @@ export default {
     // inside the sheet, so a var on the sheet would never reach it).
     if (backdrop) backdrop.style.setProperty('--kt-sheet-backdrop-opacity', String(backdropOpacity));
 
-    // Drag-to-dismiss on the handle (pointer).
-    if (handle && dismissible) {
-      let startY = 0; let dragging = false;
-      const down = (e) => { dragging = true; startY = e.clientY; el.style.transition = 'none'; handle.setPointerCapture?.(e.pointerId); };
-      const move = (e) => { if (!dragging) return; const dy = Math.max(0, e.clientY - startY); el.style.transform = `translateY(${dy}px)`; };
-      const up = (e) => { if (!dragging) return; dragging = false; el.style.transition = ''; const dy = Math.max(0, e.clientY - startY); el.style.transform = ''; if (dy > 90) doClose(); };
+    // Handle drag. Default = drag-to-dismiss. With `resizable:true`, dragging the
+    // handle resizes the sheet's height (up = taller, down = shorter, clamped);
+    // dismissal then happens only via backdrop / Esc / close so the two don't fight.
+    const resizable = opts.resizable === true;
+    const resetSize = () => { el.style.height = ''; el.style.maxHeight = ''; };
+    let onHandleDbl = null;
+    if (handle && resizable) {
+      handle.style.cursor = 'ns-resize'; handle.style.touchAction = 'none'; el.classList.add('kt-sheet--resizable');
+      handle.title = handle.title || '드래그: 높이 조절 · 더블클릭: 초기화';
+      onHandleDbl = () => resetSize();
+      handle.addEventListener('dblclick', onHandleDbl);
+    }
+    if (handle && (dismissible || resizable)) {
+      let startY = 0; let startH = 0; let dragging = false;
+      const down = (e) => { dragging = true; startY = e.clientY; startH = el.getBoundingClientRect().height; el.style.transition = 'none'; handle.setPointerCapture?.(e.pointerId); };
+      const move = (e) => {
+        if (!dragging) return;
+        const dy = e.clientY - startY;
+        if (resizable) { const h = Math.min(Math.round((typeof window !== 'undefined' ? window.innerHeight : 800) * 0.95), Math.max(140, Math.round(startH - dy))); el.style.height = `${h}px`; el.style.maxHeight = '95vh'; }
+        else { el.style.transform = `translateY(${Math.max(0, dy)}px)`; }
+      };
+      const up = (e) => {
+        if (!dragging) return; dragging = false; el.style.transition = '';
+        if (!resizable) { const dy = Math.max(0, e.clientY - startY); el.style.transform = ''; if (dismissible && dy > 90) doClose(); }
+      };
       handle.addEventListener('pointerdown', down);
       handle.addEventListener('pointermove', move);
       handle.addEventListener('pointerup', up);
@@ -110,12 +140,15 @@ export default {
       type: 'bottomSheet',
       open: doOpen,
       close: doClose,
+      // Clear a drag-resized height, returning the sheet to its CSS default size.
+      resetSize,
       pause() {},
       resume() {},
       destroy() {
         doClose();
         document.removeEventListener('keydown', onKey, true);
         triggers.forEach((t) => t.removeEventListener('click', onTrig));
+        if (handle && onHandleDbl) handle.removeEventListener('dblclick', onHandleDbl);
         if (backdrop) backdrop.remove();
         if (handle) handle.remove();
         el.classList.remove('kt-sheet', 'kt-open');

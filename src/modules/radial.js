@@ -27,6 +27,8 @@ export default {
     const loop = opts.loop !== false;
     const drag = opts.drag !== false;
     const useControls = opts.controls !== false;
+    // `activeClass` hooks your OWN class on the focused item (with `.kt-active`).
+    const stateClass = (opts.activeClass || '').trim();
 
     el.classList.add('kt-radial', `kt-radial--${position}`);
     el.style.setProperty('--kt-radial-radius', `${radius}px`);
@@ -77,11 +79,13 @@ export default {
         // orbits its centre to radius·(cosθ,sinθ), upright.
         item.style.transform = `rotate(${angle}deg) translate(${radius}px) rotate(${-angle}deg) translate(-50%, -50%)`;
         // Fade items out toward the arc edges so a wrapping/leaving item never
-        // lingers as a translucent ghost (teleport skips the fade transition).
-        item.style.opacity = String(Math.max(0, 1 - Math.abs(offset) * 0.42));
+        // lingers as a translucent ghost: the active item and its two neighbours
+        // are solid, anything further out fades fully to 0 (no edge remnants).
+        item.style.opacity = String(Math.max(0, 1 - Math.max(0, Math.abs(offset) - 1)));
         const on = i === active;
         item.classList.toggle('kt-active', on);
         item.classList.toggle('active-item', on);
+        if (stateClass) item.classList.toggle(stateClass, on);
         if (on) item.setAttribute('aria-current', 'true'); else item.removeAttribute('aria-current');
         item.style.zIndex = String(100 - Math.abs(offset));
       });
@@ -181,11 +185,21 @@ export default {
         el.removeEventListener('mouseleave', startAuto);
         prevBtn?.removeEventListener('click', prev);
         nextBtn?.removeEventListener('click', next);
-        items.forEach((item) => { item.style.transform = ''; item.style.transition = ''; item.classList.remove('kt-active', 'active-item'); el.appendChild(item); });
+        items.forEach((item) => {
+          // Fully restore each item: clear inline transform/opacity/transition,
+          // remove the kt-radial-item class (so its `will-change:transform` from
+          // the stylesheet doesn't linger) and the active markers, then re-home it.
+          item.style.transform = ''; item.style.transition = ''; item.style.opacity = ''; item.style.zIndex = ''; item.style.cursor = '';
+          item.classList.remove('kt-radial-item', 'kt-active', 'active-item');
+          if (stateClass) item.classList.remove(stateClass);
+          item.removeAttribute('aria-current');
+          el.appendChild(item);
+        });
         hub.remove();
         live.remove();
         if (builtControls) controls.remove();
         el.classList.remove('kt-radial', `kt-radial--${position}`);
+        el.style.removeProperty('--kt-radial-radius');
         el.removeAttribute('role'); el.removeAttribute('aria-roledescription');
       }
     };

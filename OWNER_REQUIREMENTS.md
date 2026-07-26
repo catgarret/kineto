@@ -4,7 +4,7 @@
 
 ## 현재 계약
 
-- 라이브러리 버전: `0.8.0`
+- 라이브러리 버전: `0.8.43`
 - 요구사항 계약 버전: `3.0.0`
 - 고정 요구사항: **46개**
 - 변경 정책: 소유자의 명시적 승인 없이 요구사항을 제거하거나 의미를 바꿀 수 없습니다.
@@ -35,7 +35,7 @@
 | `MK-LAZY-004` | `lazy` | Progressive print scan | Print starts as blurred image plus fine noise and resolves sharply in a configurable scan direction without square mosaic blocks or neon scan lines. |
 | `MK-LAZY-005` | `lazy` | Dissolve reveal | Dissolve removes global fine noise and blur across the whole image until the original is sharp, without directional wipe or simple opacity-only fade. |
 | `MK-REVEAL-001` | `reveal` | Content entrance classification | Slide-up and wipe are reveal presets triggered by viewport entrance and are not lazy image-loading presets. |
-| `MK-TEXT-001` | `shuffle` | Working shuffle decode | Shuffle visibly randomizes unresolved characters, resolves to the exact target text and can replay. |
+| `MK-TEXT-001` | `textReveal` | Working shuffle (text reveal variant) | The shuffle variant visibly randomizes unresolved characters, resolves to the exact target text and can replay. |
 | `MK-TEXT-002` | `textTransition` | Working text transition | Text transition measures a stable container, cycles visible items, exposes index and next, and can replay to the first item. |
 | `MK-GLITCH-001` | `glitch` | Original RGB slice glitch | The default RGB glitch preserves the original three colored duplicate layers and intermittent horizontal slice bursts. |
 | `MK-BUTTON-001` | `ripple` | Android-style click ripple | Clicking a button creates a circular Material-style ripple from the pointer location and cleans it up after animation. |

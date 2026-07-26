@@ -153,7 +153,7 @@ Kineto.disableSmooth();
 | `ripple` | `data-kt-ripple` | 클릭 리플 |
 | `scrollSequence` | `data-kt-scroll-sequence` | 이미지 시퀀스 스크럽 |
 | `scrollVelocity` | `data-kt-scroll-velocity` | 스크롤 속도·방향 반응 |
-| `shuffle` | `data-kt-shuffle` | 문자 셔플 디코드 |
+| `textReveal (shuffle)` | `data-kt-text-reveal="shuffle"` | 문자 셔플 디코드 |
 | `slider` | `data-kt-slider` | 슬라이드·커버플로우 |
 | `stickyStack` | `data-kt-sticky-stack` | 스티키 스택(세로·가로·플로팅) |
 | `textFill` | `data-kt-text-fill` | 스크롤 텍스트 채움 |
@@ -193,7 +193,8 @@ Chrome, Edge, Firefox, Safari(데스크톱·모바일)의 최신 버전을 지�
 ```bash
 npm install
 npm run build   # dist/ 생성
-npm run verify  # lint · build · 테스트 · 계약 검증
+npm run ci      # lint · build · Node/Chromium 테스트 · 계약/패키지 검증
+npm run verify  # 전체 CI 검증 + 의존성 보안 감사
 ```
 
 ## 라이선스

@@ -36,6 +36,20 @@ function isScopedElement(el, opts) {
   return el.clientWidth > 4 && el.clientHeight > 4;
 }
 
+function readableTextColor(background, fallback = '#fff') {
+  if (!background || background === 'transparent' || background === 'currentColor') return fallback;
+  const probe = document.createElement('span');
+  probe.style.color = background;
+  probe.style.display = 'none';
+  document.body.appendChild(probe);
+  const match = getComputedStyle(probe).color.match(/[\d.]+/g);
+  probe.remove();
+  if (!match || match.length < 3) return fallback;
+  const [r, g, b] = match.slice(0, 3).map(Number);
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return luminance > 0.58 ? '#101318' : '#fff';
+}
+
 export default {
   create(el, opts = {}) {
     const touchDevice = window.matchMedia?.('(hover: none), (pointer: coarse)').matches || navigator.maxTouchPoints > 0;
@@ -75,7 +89,7 @@ export default {
     const cursor = document.createElement('div');
     cursor.className = `kt-cursor kt-cursor-${type}${opts.className ? ` ${opts.className}` : ''}`;
     cursor.setAttribute('aria-hidden', 'true');
-    cursor.style.cssText = `position:fixed;top:0;left:0;z-index:${zIndex};pointer-events:none;opacity:0;color:${color};mix-blend-mode:${mixBlendMode};transition:opacity .18s ease;`;
+    cursor.style.cssText = `position:fixed;top:0;left:0;z-index:${zIndex};pointer-events:none;opacity:0;color:${color};mix-blend-mode:${mixBlendMode};transition:opacity .18s var(--kt-ease-ui, ease);`;
 
     // The dot snaps to the pointer, the follower eases behind. Multi-element
     // types (trail/orbit/snake/sparkle) keep their own state in `chain`.
@@ -91,13 +105,17 @@ export default {
       dot = document.createElement('span');
       dot.className = 'kt-cursor-dot';
       dot.dataset.baseSize = String(size);
-      dot.style.cssText = `position:fixed;left:0;top:0;width:${size}px;height:${size}px;border-radius:50%;background:${opts.dotColor || color};will-change:transform;transform:translate3d(-100px,-100px,0) translate(-50%,-50%);transition:width .22s cubic-bezier(.3,.7,.35,1.25),height .22s cubic-bezier(.3,.7,.35,1.25),opacity .18s ease;`;
+      dot.style.cssText = `position:fixed;left:0;top:0;width:${size}px;height:${size}px;border-radius:999px;background:${opts.dotColor || color};box-shadow:${opts.dotShadow || '0 1px 4px rgba(0,0,0,.2)'};will-change:transform;transform:translate3d(-100px,-100px,0) translate(-50%,-50%);transition:width .22s cubic-bezier(.3,.7,.35,1.15),height .22s cubic-bezier(.3,.7,.35,1.15),background-color .18s ease,box-shadow .18s ease,opacity .18s var(--kt-ease-ui, ease);`;
       cursor.appendChild(dot);
     };
     const addFollower = (shape = 'circle') => {
       follower = document.createElement('span');
       follower.className = 'kt-cursor-follower';
-      follower.style.cssText = `position:fixed;left:0;top:0;width:${followerSize}px;height:${followerSize}px;border:${Math.max(0, Number(opts.borderWidth ?? 1))}px solid ${borderColor};border-radius:${shape === 'square' ? (opts.radius || '8px') : '50%'};background:${background};box-shadow:${opts.shadow || 'none'};will-change:transform;transform:translate3d(-100px,-100px,0) translate(-50%,-50%) scale(1);transition:background-color .2s ease,border-color .2s ease;backdrop-filter:${opts.backdropFilter || 'none'};`;
+      const baseRadius = shape === 'square' ? (opts.radius || '8px') : '50%';
+      follower.dataset.baseWidth = String(followerSize);
+      follower.dataset.baseHeight = String(followerSize);
+      follower.dataset.baseRadius = String(baseRadius);
+      follower.style.cssText = `position:fixed;left:0;top:0;width:${followerSize}px;height:${followerSize}px;border:${Math.max(0, Number(opts.borderWidth ?? 1))}px solid ${borderColor};border-radius:${baseRadius};background:${background};box-shadow:${opts.shadow || 'none'};will-change:transform,width,height;transform:translate3d(-100px,-100px,0) translate(-50%,-50%) scale(1);transition:width .26s cubic-bezier(.2,.8,.2,1),height .26s cubic-bezier(.2,.8,.2,1),border-radius .26s cubic-bezier(.2,.8,.2,1),background-color .2s var(--kt-ease-ui, ease),border-color .2s var(--kt-ease-ui, ease),box-shadow .2s var(--kt-ease-ui, ease);backdrop-filter:${opts.backdropFilter || 'none'};`;
       cursor.appendChild(follower);
     };
     const addSingle = (html) => {
@@ -220,12 +238,15 @@ export default {
     }
 
     if (opts.label !== false && (dot || follower || single)) {
-      // The label sits centered inside the grown hover dot (reference look)
-      // instead of hanging below the ring where it collided with the outline.
+      // The label stays inside the pointer shape. With hoverEffect="pill" the
+      // follower itself morphs from a ring into a compact, readable capsule.
       label = document.createElement('span');
       label.className = 'kt-cursor-label';
-      label.style.cssText = `position:absolute;inset:0;display:flex;align-items:center;justify-content:center;white-space:nowrap;font:800 ${Number(opts.labelSize ?? 9)}px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:${opts.labelColor || '#fff'};opacity:0;transition:opacity .18s ease;pointer-events:none;`;
-      (dot || follower || single).appendChild(label);
+      label.style.cssText = `position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 13px;white-space:nowrap;font:750 ${Number(opts.labelSize ?? 9)}px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:${opts.labelColor || '#fff'};opacity:0;transform:scale(.82);transition:opacity .16s var(--kt-ease-ui, ease),transform .24s cubic-bezier(.2,.8,.2,1),color .18s var(--kt-ease-ui, ease);pointer-events:none;`;
+      const labelHost = opts.hoverEffect === 'pill' && follower
+        ? follower
+        : (dot || follower || single);
+      labelHost.appendChild(label);
     }
     document.body.appendChild(cursor);
 
@@ -262,19 +283,53 @@ export default {
         if (type === 'custom' && opts.hoverTemplate) { if (single.dataset.baseHtml == null) single.dataset.baseHtml = single.innerHTML; single.innerHTML = opts.hoverTemplate; }
       }
       const text = target.getAttribute('data-kt-cursor-label') || opts.hoverLabel || '';
-      if (label) { label.textContent = text; label.style.opacity = text ? '1' : '0'; }
+      if (label) {
+        label.textContent = text;
+        label.style.opacity = text ? '1' : '0';
+        label.style.transform = text ? 'scale(1)' : 'scale(.82)';
+      }
       if (follower) {
-        follower.style.backgroundColor = target.getAttribute('data-kt-cursor-background') || opts.hoverBackground || background;
-        follower.style.borderColor = target.getAttribute('data-kt-cursor-color') || opts.hoverColor || borderColor;
+        const targetColor = target.getAttribute('data-kt-cursor-color') || opts.hoverColor || borderColor;
+        const targetBackground = target.getAttribute('data-kt-cursor-background')
+          || opts.hoverBackground
+          || (text ? targetColor : background);
+        follower.style.backgroundColor = hoverEffect === 'dot' ? background : targetBackground;
+        follower.style.borderColor = targetColor;
+        follower.style.boxShadow = text && hoverEffect !== 'dot'
+          ? (opts.hoverShadow || '0 10px 30px rgba(0,0,0,.18), inset 0 0 0 1px rgba(255,255,255,.18)')
+          : (opts.shadow || '0 0 0 1px rgba(255,255,255,.45),0 4px 16px rgba(0,0,0,.16)');
+        if (hoverEffect === 'pill' && text) {
+          const pillHeight = Math.max(26, Number(opts.hoverDotSize ?? 38));
+          // Short labels such as PLAY/OPEN must still read as a capsule. A
+          // square follower looks like a broken circle once text is inserted.
+          const pillWidth = Math.max(pillHeight + 14, label.scrollWidth + 2);
+          follower.style.width = `${pillWidth}px`;
+          follower.style.height = `${pillHeight}px`;
+          follower.style.borderRadius = `${pillHeight / 2}px`;
+        }
+        if (label && text) {
+          label.style.color = target.getAttribute('data-kt-cursor-label-color')
+            || opts.labelColor
+            || readableTextColor(targetBackground);
+        }
       }
       if (dot) {
         if (opts.hideDotOnHover === true) dot.style.opacity = '0';
         else if (hoverEffect === 'dot') {
-          // Grow enough to comfortably contain the label text, if any.
-          const grow = label && text ? Math.max(hoverDotSize, label.scrollWidth + 18) : hoverDotSize;
+          // A compact pill keeps labels legible without turning the cursor into
+          // an oversized circle. Target colors remain readable on either theme.
+          const targetColor = target.getAttribute('data-kt-cursor-color') || opts.hoverColor || color;
+          const grow = label && text ? Math.max(hoverDotSize + 14, label.scrollWidth + 18) : hoverDotSize;
           dot.style.width = `${grow}px`;
-          dot.style.height = `${grow}px`;
+          dot.style.height = `${hoverDotSize}px`;
+          dot.style.backgroundColor = target.getAttribute('data-kt-cursor-background') || opts.hoverBackground || targetColor;
+          dot.style.boxShadow = opts.hoverShadow || '0 8px 24px rgba(0,0,0,.2),inset 0 0 0 1px rgba(255,255,255,.22)';
           dot.style.opacity = String(opts.hoverDotOpacity ?? 0.94);
+          if (label && text) {
+            label.style.color = target.getAttribute('data-kt-cursor-label-color')
+              || opts.labelColor
+              || readableTextColor(dot.style.backgroundColor);
+          }
         }
       }
       opts.onEnter?.(target, cursor);
@@ -289,13 +344,26 @@ export default {
         if (img && img.dataset.baseSrc) img.src = img.dataset.baseSrc;
         if (type === 'custom' && single.dataset.baseHtml != null) single.innerHTML = single.dataset.baseHtml;
       }
-      if (label) label.style.opacity = '0';
-      if (follower) { follower.style.backgroundColor = background; follower.style.borderColor = borderColor; }
+      if (label) {
+        label.style.opacity = '0';
+        label.style.transform = 'scale(.82)';
+        label.style.color = opts.labelColor || '#fff';
+      }
+      if (follower) {
+        follower.style.width = `${follower.dataset.baseWidth || followerSize}px`;
+        follower.style.height = `${follower.dataset.baseHeight || followerSize}px`;
+        follower.style.borderRadius = follower.dataset.baseRadius || '50%';
+        follower.style.backgroundColor = background;
+        follower.style.borderColor = borderColor;
+        follower.style.boxShadow = opts.shadow || 'none';
+      }
       if (dot) {
         dot.style.opacity = '1';
         const base = dot.dataset.baseSize || dotSize;
         dot.style.width = `${base}px`;
         dot.style.height = `${base}px`;
+        dot.style.backgroundColor = opts.dotColor || color;
+        dot.style.boxShadow = opts.dotShadow || '0 1px 4px rgba(0,0,0,.2)';
       }
       opts.onLeave?.(previous, cursor);
     };

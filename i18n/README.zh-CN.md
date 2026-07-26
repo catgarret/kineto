@@ -127,7 +127,7 @@ Kineto.disableSmooth();
 | `ripple` | `data-kt-ripple` | 点击涟漪 |
 | `scrollSequence` | `data-kt-scroll-sequence` | 图片序列 scrub |
 | `scrollVelocity` | `data-kt-scroll-velocity` | 响应滚动速度/方向 |
-| `shuffle` | `data-kt-shuffle` | 字符乱序解码 |
+| `textReveal (shuffle)` | `data-kt-text-reveal="shuffle"` | 字符乱序解码 |
 | `slider` | `data-kt-slider` | 幻灯片与 coverflow |
 | `stickyStack` | `data-kt-sticky-stack` | 粘性堆叠（纵向/横向/浮动） |
 | `textFill` | `data-kt-text-fill` | 滚动驱动的文字填充 |
@@ -167,7 +167,8 @@ $('.card').kineto('reveal', { preset: 'fade-up' });
 ```bash
 npm install
 npm run build   # 生成 dist/
-npm run verify  # lint、构建、测试、契约校验
+npm run ci      # lint、构建、Node/Chromium 测试、契约与包校验
+npm run verify  # 完整 CI 校验 + 依赖安全审计
 ```
 
 ## 许可

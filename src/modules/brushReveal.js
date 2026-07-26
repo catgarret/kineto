@@ -268,5 +268,8 @@ export default {
       }
     };
   },
+  // Low-perf / reduced: skip the canvas brushing and show the revealed image
+  // as-is (the element already contains it) — audit D-2.
+  fallback() {},
   reduced() {}
 };

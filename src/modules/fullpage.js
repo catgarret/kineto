@@ -160,7 +160,7 @@ export default {
         dot.type = 'button';
         dot.className = 'kt-fullpage-dot';
         dot.setAttribute('aria-label', `Go to section ${dotIndex + 1}`);
-        dot.style.cssText = 'width:8px;height:8px;border-radius:50%;border:0;padding:0;cursor:pointer;background:var(--kt-fullpage-dot,currentColor);opacity:.45;transition:transform .25s ease,opacity .25s ease;';
+        dot.style.cssText = 'width:8px;height:8px;border-radius:50%;border:0;padding:0;cursor:pointer;background:var(--kt-fullpage-dot,currentColor);opacity:.45;transition:transform .25s var(--kt-ease-ui, ease),opacity .25s var(--kt-ease-ui, ease);';
         dot.addEventListener('click', () => go(dotIndex));
         dotsWrap.appendChild(dot);
         return dot;
@@ -179,6 +179,10 @@ export default {
       if (target === index && !immediate) return;
       const from = index;
       index = target;
+      // A section that was previously visited (or restored by the browser)
+      // must always enter from its beginning. Otherwise one wheel step can land
+      // halfway down a long second page, which looks like the document jumped.
+      if (target !== from && sections[target]) sections[target].scrollTop = 0;
       opts.onLeave?.(from, index, sections[from]);
       if (useSnap) {
         sections[index].scrollIntoView(horizontal

@@ -159,6 +159,9 @@ export default {
     };
   },
 
+  // Low-performance devices get the same static first-frame as reduced-motion —
+  // no canvas, no per-frame decode (audit D-2).
+  fallback(el, opts) { return this.reduced(el, opts); },
   reduced(el, opts) {
     const first = Array.isArray(opts.urls)
       ? opts.urls[0]

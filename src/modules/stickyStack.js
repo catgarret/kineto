@@ -25,6 +25,8 @@ export default {
     const originalElStyle = el.getAttribute('style');
     const originalChildStyles = children.map((child) => child.getAttribute('style'));
     const animations = [];
+    let fallbackCleanup = null;
+    let fallbackPaused = false;
 
     if (mode === 'vertical') {
       // align:'center' (default) keeps the pinned card vertically centered in
@@ -74,36 +76,91 @@ export default {
         });
       }
     } else if (mode === 'horizontal') {
-      if (!gsap || !scrollTrigger) return null;
       const gap = Math.max(0, Number(opts.gap ?? 24));
       const panelWidth = opts.panelWidth || '100%';
-      el.style.display = 'flex';
-      el.style.flexWrap = 'nowrap';
-      el.style.gap = `${gap}px`;
-      el.style.overflow = 'hidden';
-      el.style.width = '100%';
-      children.forEach((child) => { child.style.flex = `0 0 ${panelWidth}`; });
-      const distance = () => Math.max(0, el.scrollWidth - el.clientWidth);
-      const tween = gsap.to(el, {
-        '--kt-horizontal-progress': 1,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: el,
-          pin: opts.pin !== false,
-          pinSpacing: opts.pinSpacing !== false,
-          scrub: Number(opts.scrub ?? 1),
-          start: opts.start || ((opts.align || 'center') === 'center' ? 'center center' : 'top top'),
-          end: () => opts.end || `+=${Math.max(window.innerWidth, distance())}`,
-          invalidateOnRefresh: true,
-          snap: opts.snap === true ? 1 / Math.max(1, children.length - 1) : false,
-          onUpdate: (self) => {
-            const x = -distance() * self.progress;
-            children.forEach((child) => { child.style.transform = `translate3d(${x}px,0,0)`; });
-            opts.onProgress?.(self.progress, el);
+      if (gsap && scrollTrigger) {
+        el.style.display = 'flex';
+        el.style.flexWrap = 'nowrap';
+        el.style.gap = `${gap}px`;
+        el.style.overflow = 'hidden';
+        el.style.width = '100%';
+        children.forEach((child) => { child.style.flex = `0 0 ${panelWidth}`; });
+        const distance = () => Math.max(0, el.scrollWidth - el.clientWidth);
+        const tween = gsap.to(el, {
+          '--kt-horizontal-progress': 1,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: el,
+            pin: opts.pin !== false,
+            pinSpacing: opts.pinSpacing !== false,
+            scrub: Number(opts.scrub ?? 1),
+            start: opts.start || ((opts.align || 'center') === 'center' ? 'center center' : 'top top'),
+            end: () => opts.end || `+=${Math.max(window.innerWidth, distance())}`,
+            invalidateOnRefresh: true,
+            snap: opts.snap === true ? 1 / Math.max(1, children.length - 1) : false,
+            onUpdate: (self) => {
+              const x = -distance() * self.progress;
+              children.forEach((child) => { child.style.transform = `translate3d(${x}px,0,0)`; });
+              opts.onProgress?.(self.progress, el);
+            }
           }
-        }
-      });
-      animations.push(tween);
+        });
+        animations.push(tween);
+      } else {
+        const viewport = document.createElement('div');
+        const track = document.createElement('div');
+        viewport.className = 'kt-sticky-horizontal-viewport';
+        track.className = 'kt-sticky-horizontal-track';
+        viewport.style.cssText = 'position:sticky;top:15svh;width:100%;max-width:100%;min-width:0;height:70svh;overflow:hidden;box-sizing:border-box;';
+        track.style.cssText = `display:flex;align-items:stretch;gap:${gap}px;width:max-content;min-width:max-content;height:100%;will-change:transform;`;
+        children.forEach((child) => {
+          child.style.flex = `0 0 ${panelWidth}`;
+          track.appendChild(child);
+        });
+        viewport.appendChild(track);
+        el.appendChild(viewport);
+        el.style.position = 'relative';
+        el.style.width = '100%';
+        el.style.maxWidth = '100%';
+        el.style.minWidth = '0';
+        el.style.height = 'auto';
+        el.style.overflow = 'visible';
+        let distance = 0;
+        let raf = 0;
+        const update = () => {
+          raf = 0;
+          if (fallbackPaused) return;
+          const rect = el.getBoundingClientRect();
+          const top = Number.parseFloat(getComputedStyle(viewport).top) || 0;
+          const travel = Math.max(1, el.offsetHeight - viewport.offsetHeight);
+          const progress = Math.min(1, Math.max(0, (top - rect.top) / travel));
+          track.style.transform = `translate3d(${-distance * progress}px,0,0)`;
+          el.style.setProperty('--kt-horizontal-progress', String(progress));
+          opts.onProgress?.(progress, el);
+        };
+        const requestUpdate = () => { if (!raf) raf = requestAnimationFrame(update); };
+        const measure = () => {
+          if (panelWidth === '100%') {
+            children.forEach((child) => { child.style.flexBasis = `${viewport.clientWidth}px`; });
+          }
+          distance = Math.max(0, track.scrollWidth - viewport.clientWidth);
+          el.style.minHeight = `calc(70svh + ${distance}px)`;
+          requestUpdate();
+        };
+        window.addEventListener('scroll', requestUpdate, { passive: true });
+        window.addEventListener('resize', measure, { passive: true });
+        const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+        observer?.observe(track);
+        measure();
+        fallbackCleanup = () => {
+          if (raf) cancelAnimationFrame(raf);
+          window.removeEventListener('scroll', requestUpdate);
+          window.removeEventListener('resize', measure);
+          observer?.disconnect();
+          children.forEach((child) => el.insertBefore(child, viewport));
+          viewport.remove();
+        };
+      }
     } else if (mode === 'zindex') {
       if (!gsap || !scrollTrigger) return null;
       el.style.position = 'relative';
@@ -124,57 +181,138 @@ export default {
         ));
       });
     } else if (mode === 'floating') {
-      if (!gsap || !scrollTrigger) return null;
       const effect = opts.effect || 'fade-up';
       const overlap = Math.min(0.9, Math.max(0, Number(opts.overlap ?? 0.25)));
       const itemDuration = Math.max(0.1, Number(opts.itemDuration ?? 1));
-      el.style.position = 'relative';
-      el.style.minHeight = opts.minHeight || '70vh';
-      el.style.perspective = `${Number(opts.perspective ?? 1200)}px`;
-      children.forEach((child, index) => {
-        child.style.position = 'absolute';
-        child.style.inset = '0';
-        child.style.display = 'flex';
-        child.style.alignItems = 'center';
-        child.style.justifyContent = 'center';
-        child.style.zIndex = String(index + 1);
-        child.style.transformStyle = 'preserve-3d';
-      });
-      const timeline = gsap.timeline({
-        scrollTrigger: {
-          trigger: el,
-          pin: opts.pin !== false,
-          pinSpacing: opts.pinSpacing !== false,
-          scrub: Number(opts.scrub ?? 1),
-          start: opts.start || ((opts.align || 'center') === 'center' ? 'center center' : 'top top'),
-          end: opts.end || `+=${Math.max(1, children.length) * Number(opts.scrollLength ?? 80)}%`,
-          anticipatePin: 1
-        }
-      });
-      children.forEach((child, index) => {
-        const at = index * itemDuration * (1 - overlap);
-        timeline.fromTo(child, floatingFrom(effect, opts), {
-          autoAlpha: 1, x: 0, y: 0, z: 0, rotate: 0, rotateX: 0, scale: 1, filter: 'blur(0px)',
-          duration: itemDuration, ease: opts.ease || 'power2.out'
-        }, at);
-        if (index < children.length - 1) timeline.to(child, {
-          autoAlpha: Number(opts.previousOpacity ?? 0.18),
-          scale: Number(opts.previousScale ?? 0.88),
-          y: Number(opts.previousY ?? -40),
-          filter: opts.fadePrevious === false ? 'blur(0px)' : `blur(${Number(opts.previousBlur ?? 8)}px)`,
-          duration: itemDuration, ease: opts.ease || 'power2.inOut'
-        }, at + itemDuration * (1 - overlap));
-      });
-      animations.push(timeline);
+      // An auto-width element can be measured as 0 while ScrollTrigger creates
+      // its pin spacer during a large demo-page layout pass. Pin an explicit
+      // container width so the sequence never collapses to a zero-width line.
+      el.style.width = '100%';
+      el.style.maxWidth = '100%';
+      el.style.minWidth = '0';
+      el.style.boxSizing = 'border-box';
+      if (gsap && scrollTrigger) {
+        el.style.position = 'relative';
+        el.style.minHeight = opts.minHeight || '70vh';
+        el.style.perspective = `${Number(opts.perspective ?? 1200)}px`;
+        children.forEach((child, index) => {
+          child.style.position = 'absolute';
+          child.style.inset = '0';
+          child.style.display = 'flex';
+          child.style.alignItems = 'center';
+          child.style.justifyContent = 'center';
+          child.style.zIndex = String(index + 1);
+          child.style.transformStyle = 'preserve-3d';
+        });
+        const timeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: el,
+            pin: opts.pin !== false,
+            pinSpacing: opts.pinSpacing !== false,
+            scrub: Number(opts.scrub ?? 1),
+            start: opts.start || ((opts.align || 'center') === 'center' ? 'center center' : 'top top'),
+            end: opts.end || `+=${Math.max(1, children.length) * Number(opts.scrollLength ?? 80)}%`,
+            anticipatePin: 1
+          }
+        });
+        children.forEach((child, index) => {
+          const at = index * itemDuration * (1 - overlap);
+          timeline.fromTo(child, floatingFrom(effect, opts), {
+            autoAlpha: 1, x: 0, y: 0, z: 0, rotate: 0, rotateX: 0, scale: 1, filter: 'blur(0px)',
+            duration: itemDuration, ease: opts.ease || 'power2.out'
+          }, at);
+          if (index < children.length - 1) timeline.to(child, {
+            autoAlpha: Number(opts.previousOpacity ?? 0.18),
+            scale: Number(opts.previousScale ?? 0.88),
+            y: Number(opts.previousY ?? -40),
+            filter: opts.fadePrevious === false ? 'blur(0px)' : `blur(${Number(opts.previousBlur ?? 8)}px)`,
+            duration: itemDuration, ease: opts.ease || 'power2.inOut'
+          }, at + itemDuration * (1 - overlap));
+        });
+        animations.push(timeline);
+      } else {
+        const stageHeight = opts.minHeight || '70svh';
+        const scrollLength = Math.max(20, Number(opts.scrollLength ?? 80));
+        const distance = Number(opts.distance ?? 80);
+        const previousOpacity = Number(opts.previousOpacity ?? 0.18);
+        const previousScale = Number(opts.previousScale ?? 0.88);
+        const previousY = Number(opts.previousY ?? -40);
+        const previousBlur = opts.fadePrevious === false ? 0 : Number(opts.previousBlur ?? 8);
+        const viewport = document.createElement('div');
+        viewport.className = 'kt-floating-viewport';
+        const computed = getComputedStyle(el);
+        viewport.style.cssText = `position:sticky;top:calc((100svh - ${stageHeight}) / 2);width:100%;height:${stageHeight};overflow:hidden;border-radius:inherit;background:${computed.background};color:${computed.color};perspective:${Number(opts.perspective ?? 1200)}px;`;
+        children.forEach((child, index) => {
+          child.style.position = 'absolute';
+          child.style.inset = '0';
+          child.style.display = 'flex';
+          child.style.alignItems = 'center';
+          child.style.justifyContent = 'center';
+          child.style.zIndex = String(index + 1);
+          child.style.transformStyle = 'preserve-3d';
+          viewport.appendChild(child);
+        });
+        el.appendChild(viewport);
+        el.style.position = 'relative';
+        el.style.height = 'auto';
+        el.style.minHeight = `calc(${stageHeight} + ${Math.max(1, children.length - 1) * scrollLength}vh)`;
+        el.style.overflow = 'visible';
+        el.style.background = 'transparent';
+        let raf = 0;
+        const update = () => {
+          raf = 0;
+          if (fallbackPaused) return;
+          const rect = el.getBoundingClientRect();
+          const top = Number.parseFloat(getComputedStyle(viewport).top) || 0;
+          const travel = Math.max(1, el.offsetHeight - viewport.offsetHeight);
+          const progress = Math.min(1, Math.max(0, (top - rect.top) / travel));
+          const phase = progress * Math.max(1, children.length - 1);
+          children.forEach((child, index) => {
+            const delta = index - phase;
+            const incoming = Math.min(1, Math.max(0, delta));
+            const outgoing = Math.min(1, Math.max(0, -delta));
+            let x = 0;
+            let y = incoming * distance + outgoing * previousY;
+            let rotate = 0;
+            let rotateX = 0;
+            let z = 0;
+            if (effect === 'slide-left') { x = -incoming * distance; y = outgoing * previousY; }
+            if (effect === 'slide-right') { x = incoming * distance; y = outgoing * previousY; }
+            if (effect === 'rotate') rotate = incoming * Number(opts.rotate ?? 6);
+            if (effect === 'depth') { z = -incoming * 240; rotateX = incoming * Number(opts.rotate ?? 6); }
+            const scale = 1 - incoming * (1 - Number(opts.scaleFrom ?? 0.82)) - outgoing * (1 - previousScale);
+            child.style.opacity = String((1 - incoming) * (1 - outgoing * (1 - previousOpacity)));
+            child.style.filter = `blur(${outgoing * previousBlur + (effect === 'blur' ? incoming * Number(opts.blur ?? 18) : 0)}px)`;
+            child.style.transform = `translate3d(${x}px,${y}px,${z}px) rotate(${rotate}deg) rotateX(${rotateX}deg) scale(${scale})`;
+          });
+          opts.onProgress?.(progress, el);
+        };
+        const requestUpdate = () => { if (!raf) raf = requestAnimationFrame(update); };
+        window.addEventListener('scroll', requestUpdate, { passive: true });
+        window.addEventListener('resize', requestUpdate, { passive: true });
+        requestUpdate();
+        fallbackCleanup = () => {
+          if (raf) cancelAnimationFrame(raf);
+          window.removeEventListener('scroll', requestUpdate);
+          window.removeEventListener('resize', requestUpdate);
+          children.forEach((child) => el.insertBefore(child, viewport));
+          viewport.remove();
+        };
+      }
     }
 
     return {
       el,
       type: 'stickyStack',
-      pause() { animations.forEach((animation) => animation.pause?.()); },
-      resume() { animations.forEach((animation) => animation.resume?.()); },
+      pause() { fallbackPaused = true; animations.forEach((animation) => animation.pause?.()); },
+      resume() {
+        fallbackPaused = false;
+        animations.forEach((animation) => animation.resume?.());
+        window.dispatchEvent(new Event('scroll'));
+      },
       destroy() {
         animations.forEach((animation) => { animation.scrollTrigger?.kill?.(); animation.kill?.(); });
+        fallbackCleanup?.();
         if (originalElStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalElStyle);
         children.forEach((child, index) => {
           const style = originalChildStyles[index];

@@ -135,6 +135,26 @@ export default {
         last = play(slat, [{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { delay: delay + index * stagger });
       }
       last?.finished.then(done).catch(done);
+    } else if (effect === 'columns') {
+      // Editorial columns peel upward/downward in alternating directions.
+      const count = Math.max(3, Math.round(Number(opts.count ?? 6)));
+      const stagger = Math.max(0, Number(opts.stagger ?? 0.055)) * 1000;
+      let last = null;
+      for (let index = 0; index < count; index += 1) {
+        const column = layer(`top:0;height:100%;left:${(index / count) * 100}%;width:${100 / count + 0.1}%;background:${index % 2 ? color2 : color};`);
+        last = play(column, [
+          { transform: 'translateY(0)' },
+          { transform: `translateY(${index % 2 ? '102%' : '-102%'})` }
+        ], { duration: Math.max(220, duration * 0.74), delay: delay + index * stagger });
+      }
+      last?.finished.then(done).catch(done);
+    } else if (effect === 'zoom') {
+      // A full cover pushes toward the viewer while fading away.
+      const overlay = layer(`inset:0;background:radial-gradient(circle at 50% 45%,${color2},${color});`);
+      play(overlay, [
+        { transform: 'scale(1)', opacity: 1, filter: 'blur(0px)' },
+        { transform: 'scale(1.22)', opacity: 0, filter: 'blur(12px)' }
+      ], { easing: 'cubic-bezier(.22,.8,.3,1)' }).finished.then(done).catch(done);
     } else {
       // curtain (default): the cover peels away in the chosen direction with a
       // soft secondary panel trailing behind for depth.

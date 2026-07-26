@@ -6,7 +6,10 @@ const browserGlobals = {
   DeviceOrientationEvent: 'readonly', fetch: 'readonly', setTimeout: 'readonly', clearTimeout: 'readonly',
   setInterval: 'readonly', clearInterval: 'readonly', console: 'readonly', Map: 'readonly', WeakMap: 'readonly',
   URL: 'readonly', AbortController: 'readonly', history: 'readonly', performance: 'readonly',
-  Intl: 'readonly', Symbol: 'readonly'
+  Intl: 'readonly', Symbol: 'readonly',
+  // DOM event constructors, observers and browser objects used across modules.
+  Event: 'readonly', CustomEvent: 'readonly', MutationObserver: 'readonly',
+  localStorage: 'readonly', location: 'readonly', matchMedia: 'readonly'
 };
 
 const baseRules = {

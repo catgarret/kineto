@@ -1,6 +1,6 @@
 {
   "requirementsVersion": "3.0.0",
-  "libraryVersion": "0.8.42",
+  "libraryVersion": "0.8.43",
   "owner": "dongri.me",
   "changePolicy": "Requirements may only be removed or semantically changed with explicit owner approval.",
   "requirements": [
@@ -84,9 +84,9 @@
     },
     {
       "id": "MK-TEXT-001",
-      "module": "shuffle",
-      "title": "Working shuffle decode",
-      "acceptance": "Shuffle visibly randomizes unresolved characters, resolves to the exact target text and can replay."
+      "module": "textReveal",
+      "title": "Working shuffle (text reveal variant)",
+      "acceptance": "The shuffle variant visibly randomizes unresolved characters, resolves to the exact target text and can replay."
     },
     {
       "id": "MK-TEXT-002",
