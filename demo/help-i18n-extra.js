@@ -255,12 +255,37 @@
     }
   };
 
+  const loaderControls = {
+    ko: {
+      direction: '반복 모션의 진행 방향입니다.', motionDuration: '반복 한 주기의 시간(초)입니다.', linecap: '원형 진행선 끝 모양입니다.', indeterminate: '완료 시점을 모를 때 진행률 숫자 없이 반복합니다.', radius: '바 또는 터미널 표면의 모서리 반경(px)입니다.', glow: '로더 주변 후광을 표시합니다.', glowColor: '후광 색입니다. HEX·RGB·RGBA·HSL을 지원합니다.', glowSize: '후광이 퍼지는 크기(px)입니다.', spinnerStyle: '스피너의 회전 구조입니다.', dotStyle: '점이 반응하는 방식입니다.', dotCount: '표시할 점 또는 스포크 수입니다.', dotSize: '점 하나의 크기(px)입니다.', dotGap: '점 사이 간격(px)입니다.', text: '시머 또는 터미널에 표시할 문구입니다.', textSize: '시머 문구 크기(px)입니다.', baseColor: '빛이 지나가기 전 기본 글자색입니다.', highlightColor: '지나가는 빛 또는 보조 링 색입니다.', spread: '시머 하이라이트 폭(%)입니다.', fontFamily: '사용할 CSS font-family 값입니다.', terminalStyle: 'CLI 로딩 표시 방식입니다.', terminalPrompt: '명령 앞에 붙는 프롬프트입니다.', terminalLines: 'steps에서 순서대로 표시할 문구를 |로 구분합니다.', cursorChar: 'cursor에서 점멸할 문자입니다.', terminalBackground: '터미널 표면 배경색입니다.', terminalBorderColor: '터미널 표면 테두리색입니다.'
+    },
+    en: {
+      direction: 'Direction of the repeating motion.', motionDuration: 'Duration of one motion cycle in seconds.', linecap: 'Shape of the circular progress line ends.', indeterminate: 'Loop without a numeric value when completion time is unknown.', radius: 'Corner radius of the bar or terminal surface.', glow: 'Show a glow around the loader.', glowColor: 'Glow color; HEX, RGB, RGBA and HSL are accepted.', glowSize: 'Glow spread in pixels.', spinnerStyle: 'Rotational structure of the spinner.', dotStyle: 'How the dots animate.', dotCount: 'Number of dots or spokes.', dotSize: 'Size of each dot in pixels.', dotGap: 'Gap between dots in pixels.', text: 'Text shown by shimmer or terminal loaders.', textSize: 'Shimmer text size in pixels.', baseColor: 'Base text color before the highlight passes.', highlightColor: 'Moving highlight or secondary ring color.', spread: 'Width of the shimmer highlight.', fontFamily: 'CSS font-family value.', terminalStyle: 'CLI loading presentation.', terminalPrompt: 'Prompt shown before a command.', terminalLines: 'Separate step messages with |.', cursorChar: 'Blinking character in cursor mode.', terminalBackground: 'Terminal surface background.', terminalBorderColor: 'Terminal surface border color.'
+    },
+    ja: {
+      direction: '繰り返しモーションの方向です。', motionDuration: '1周期の時間(秒)です。', linecap: '円形進行線の端の形です。', indeterminate: '完了時刻が不明な場合、数値なしで繰り返します。', radius: 'バーまたはターミナルの角丸(px)です。', glow: 'ローダー周囲の光を表示します。', glowColor: '光の色です。HEX・RGB・RGBA・HSLに対応します。', glowSize: '光の広がり(px)です。', spinnerStyle: 'スピナーの回転構造です。', dotStyle: '点の動き方です。', dotCount: '点またはスポークの数です。', dotSize: '点の大きさ(px)です。', dotGap: '点の間隔(px)です。', text: 'シマーまたはターミナルの文言です。', textSize: 'シマー文字サイズ(px)です。', baseColor: '光が通る前の基本文字色です。', highlightColor: '移動する光または補助リングの色です。', spread: 'シマー光の幅です。', fontFamily: 'CSS font-family値です。', terminalStyle: 'CLIローディングの表示方式です。', terminalPrompt: 'コマンド前のプロンプトです。', terminalLines: 'stepsの文言を|で区切ります。', cursorChar: 'cursorで点滅する文字です。', terminalBackground: 'ターミナル表面の背景色です。', terminalBorderColor: 'ターミナル表面の枠線色です。'
+    },
+    'zh-CN': {
+      direction: '循环动画的方向。', motionDuration: '一次动画循环的时长（秒）。', linecap: '圆形进度线的端点形状。', indeterminate: '完成时间未知时，不显示数值并循环。', radius: '进度条或终端表面的圆角(px)。', glow: '显示加载器周围的光晕。', glowColor: '光晕颜色，支持 HEX、RGB、RGBA 和 HSL。', glowSize: '光晕扩散大小(px)。', spinnerStyle: '旋转加载器的结构。', dotStyle: '圆点的动画方式。', dotCount: '圆点或辐条数量。', dotSize: '单个圆点大小(px)。', dotGap: '圆点间距(px)。', text: '微光或终端加载器显示的文字。', textSize: '微光文字大小(px)。', baseColor: '高光经过前的基础文字颜色。', highlightColor: '移动高光或辅助圆环颜色。', spread: '微光高亮宽度。', fontFamily: 'CSS font-family 值。', terminalStyle: 'CLI 加载显示方式。', terminalPrompt: '命令前显示的提示符。', terminalLines: '用 | 分隔 steps 文本。', cursorChar: 'cursor 模式中闪烁的字符。', terminalBackground: '终端表面背景色。', terminalBorderColor: '终端表面边框色。'
+    },
+    'zh-TW': {
+      direction: '循環動畫的方向。', motionDuration: '一次動畫循環的時長（秒）。', linecap: '圓形進度線的端點形狀。', indeterminate: '完成時間未知時，不顯示數值並循環。', radius: '進度列或終端表面的圓角(px)。', glow: '顯示載入器周圍的光暈。', glowColor: '光暈顏色，支援 HEX、RGB、RGBA 和 HSL。', glowSize: '光暈擴散大小(px)。', spinnerStyle: '旋轉載入器的結構。', dotStyle: '圓點的動畫方式。', dotCount: '圓點或輻條數量。', dotSize: '單個圓點大小(px)。', dotGap: '圓點間距(px)。', text: '微光或終端載入器顯示的文字。', textSize: '微光文字大小(px)。', baseColor: '高光經過前的基礎文字顏色。', highlightColor: '移動高光或輔助圓環顏色。', spread: '微光高亮寬度。', fontFamily: 'CSS font-family 值。', terminalStyle: 'CLI 載入顯示方式。', terminalPrompt: '命令前顯示的提示字元。', terminalLines: '用 | 分隔 steps 文字。', cursorChar: 'cursor 模式中閃爍的字元。', terminalBackground: '終端表面背景色。', terminalBorderColor: '終端表面邊框色。'
+    },
+    ru: {
+      direction: 'Направление повторяющегося движения.', motionDuration: 'Длительность одного цикла в секундах.', linecap: 'Форма концов круговой линии.', indeterminate: 'Цикл без числа, когда время завершения неизвестно.', radius: 'Радиус углов полосы или терминала.', glow: 'Показывать свечение вокруг индикатора.', glowColor: 'Цвет свечения: HEX, RGB, RGBA или HSL.', glowSize: 'Размер свечения в пикселях.', spinnerStyle: 'Структура вращающегося индикатора.', dotStyle: 'Способ анимации точек.', dotCount: 'Количество точек или лучей.', dotSize: 'Размер точки в пикселях.', dotGap: 'Интервал между точками.', text: 'Текст шиммера или терминала.', textSize: 'Размер текста шиммера.', baseColor: 'Основной цвет текста до блика.', highlightColor: 'Цвет движущегося блика или второго кольца.', spread: 'Ширина блика шиммера.', fontFamily: 'Значение CSS font-family.', terminalStyle: 'Вид CLI-индикатора.', terminalPrompt: 'Приглашение перед командой.', terminalLines: 'Разделяйте строки steps символом |.', cursorChar: 'Мигающий символ режима cursor.', terminalBackground: 'Фон поверхности терминала.', terminalBorderColor: 'Цвет рамки терминала.'
+    },
+    it: {
+      direction: 'Direzione del movimento ripetuto.', motionDuration: 'Durata di un ciclo in secondi.', linecap: 'Forma delle estremità del progresso circolare.', indeterminate: 'Ripete senza valore quando la fine è ignota.', radius: 'Raggio degli angoli della barra o del terminale.', glow: 'Mostra il bagliore intorno al loader.', glowColor: 'Colore del bagliore: HEX, RGB, RGBA o HSL.', glowSize: 'Estensione del bagliore in pixel.', spinnerStyle: 'Struttura rotante dello spinner.', dotStyle: 'Modalità di animazione dei punti.', dotCount: 'Numero di punti o raggi.', dotSize: 'Dimensione di ogni punto in pixel.', dotGap: 'Spazio tra i punti.', text: 'Testo dello shimmer o del terminale.', textSize: 'Dimensione del testo shimmer.', baseColor: 'Colore base prima del passaggio della luce.', highlightColor: 'Colore della luce o dell’anello secondario.', spread: 'Larghezza della luce shimmer.', fontFamily: 'Valore CSS font-family.', terminalStyle: 'Presentazione del loader CLI.', terminalPrompt: 'Prompt prima del comando.', terminalLines: 'Separa le righe steps con |.', cursorChar: 'Carattere lampeggiante in cursor.', terminalBackground: 'Sfondo del terminale.', terminalBorderColor: 'Colore del bordo del terminale.'
+    }
+  };
+
   Object.entries(copy).forEach(([locale, values]) => {
     if (!sets[locale]) return;
     sets[locale].scrollShadows = { ...(sets[locale].scrollShadows || {}), ...values };
     sets[locale].coverReveal = { ...(sets[locale].coverReveal || {}), ...coverRevealColors[locale] };
     sets[locale].cursor = { ...(sets[locale].cursor || {}), hoverShadow: hoverShadow[locale] };
     sets[locale].glitch = { ...(sets[locale].glitch || {}), ...glitchControls[locale] };
+    sets[locale].loader = { ...(sets[locale].loader || {}), ...loaderControls[locale] };
     const shadow = interactiveShadow[locale];
     sets[locale].cardGlow = {
       ...(sets[locale].cardGlow || {}),

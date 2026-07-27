@@ -290,6 +290,8 @@
     .slider-nav--next::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M9 5l7 7-7 7'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M9 5l7 7-7 7'/%3E%3C/svg%3E")}
     .slider-nav:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));color:var(--accent);transform:translateY(-1px)}
     .loader-preview{min-height:220px}
+    .kt-demo-loader-overlay{position:fixed;inset:0;z-index:10010;background:var(--bg);color:var(--text)}
+    .kt-demo-loader-overlay[data-loader-type="terminal"]{background:#090b0a;color:#a9f7bb}
     /* 데모 스테이지와 옵션 서머리를 한 덩어리로 결합 */
     .card:has(.kt-playground) .demo-stage,.card:has(.kt-playground) .fullpage-demo,.card:has(.kt-playground) .reveal-demo-card,.card:has(.kt-playground) .lightbox-grid{border-bottom-left-radius:0;border-bottom-right-radius:0}
     .card:has(.demo-stage) .kt-playground,.card:has(.demo-stage) .replay-row+.kt-playground,.card:has(.fullpage-demo) .kt-playground,.card:has(.reveal-demo-card) .kt-playground{margin-top:0;border-top-left-radius:0;border-top-right-radius:0;border-top:0}

@@ -98,6 +98,85 @@ const check = (n, c, d) => { console.log(`  [${c ? 'PASS' : 'FAIL'}] ${n}${d ? '
   await ctx.close();
 }
 
+// ---- 4. Rich built-in variants render, expose lifecycle, and remain extensible ----
+{
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+  await page.setContent(HTML, { waitUntil: 'load' });
+  await page.waitForFunction(() => !!window.Kineto);
+  const r = await page.evaluate(async () => {
+    const variants = [
+      ['slot', {}, '.kt-loader-counter'],
+      ['circular', {}, '.kt-loader-circular'],
+      ['bar', { indeterminate: true }, '.kt-loader-bar.is-indeterminate'],
+      ['spinner', { spinnerStyle: 'comet' }, '.kt-loader-spinner--comet'],
+      ['spinner', { spinnerStyle: 'dual' }, '.kt-loader-spinner--dual'],
+      ['spinner', { spinnerStyle: 'spokes', dotCount: 12 }, '.kt-loader-spinner--spokes .kt-loader-spinner__spoke'],
+      ['spinner', { spinnerStyle: 'orbit' }, '.kt-loader-spinner--orbit'],
+      ['dots', { dotStyle: 'wave', dotCount: 5 }, '.kt-loader-dots--wave .kt-loader-dot'],
+      ['shimmer', { text: 'Loading' }, '.kt-loader-shimmer__text'],
+      ['shimmer-wave', { text: 'Loading' }, '.kt-loader-shimmer-wave__char'],
+      ['terminal', { terminalStyle: 'cursor' }, '.kt-loader-terminal__cursor'],
+      ['terminal', { terminalStyle: 'dots' }, '.kt-loader-terminal__dot'],
+      ['terminal', { terminalStyle: 'steps', terminalLines: ['one','two'] }, '.kt-loader-terminal__line'],
+      ['terminal', { terminalStyle: 'meter' }, '.kt-loader-terminal__meter']
+    ];
+    const rendered = [];
+    for (const [type, options, selector] of variants) {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+      const instance = window.Kineto.loader(el, { type, source: 'manual', hideScrollbar: false, ...options });
+      rendered.push({
+        type,
+        selector,
+        exists: Boolean(el.querySelector(selector)),
+        role: el.getAttribute('role'),
+        indeterminate: el.getAttribute('aria-valuenow') == null
+      });
+      instance.destroy();
+      el.remove();
+    }
+
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const events = [];
+    ['statechange','show','hide','cancel'].forEach((name) => {
+      host.addEventListener(`kt-loader-${name}`, () => events.push(name));
+    });
+    const states = [];
+    const lifecycle = window.Kineto.loader(host, {
+      type: 'bar',
+      source: 'manual',
+      hideScrollbar: false,
+      onStateChange: (next) => states.push(next)
+    });
+    const hidden = lifecycle.hide('test');
+    const shown = lifecycle.show();
+    const cancelled = lifecycle.cancel('test-cancel');
+    const result = await lifecycle.finished;
+    lifecycle.destroy();
+    return {
+      rendered,
+      hidden,
+      shown,
+      cancelled,
+      result: { status: result.status, reason: result.reason },
+      events,
+      states,
+      progressVar: host.style.getPropertyValue('--kt-loader-progress')
+    };
+  });
+  const missing = r.rendered.filter((item) => !item.exists);
+  console.log('  variants/lifecycle:', JSON.stringify(r));
+  check('all rich loader variants render their public class hooks', missing.length === 0, JSON.stringify(missing));
+  check('all loader variants expose the progressbar role', r.rendered.every((item) => item.role === 'progressbar'));
+  check('show()/hide()/cancel() report successful state changes', r.hidden && r.shown && r.cancelled);
+  check('finished resolves cancellation reason', r.result.status === 'cancelled' && r.result.reason === 'test-cancel', JSON.stringify(r.result));
+  check('loader lifecycle emits DOM events', ['hide','show','cancel'].every((name) => r.events.includes(name)), r.events.join(','));
+  check('loader lifecycle invokes onStateChange', ['running','hidden','cancelled'].every((name) => r.states.includes(name)), r.states.join(','));
+  await ctx.close();
+}
+
 await browser.close();
 server.close();
 console.log(`\n===== CORE RESULT: ${pass} passed, ${fail} failed =====`);

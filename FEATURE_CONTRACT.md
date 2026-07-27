@@ -56,4 +56,4 @@
 npm run ci
 ```
 
-이 명령은 lint, ESM/UMD 빌드, 공개 surface, 46개 소유자 요구사항, 생성 문서, Chromium lifecycle, 애니메이션 미디어 연속성, 131개 플레이그라운드, package surface와 tarball 내용을 검사합니다. 배포 전 `npm run verify`를 실행하면 의존성 보안 감사도 추가됩니다. 빌드 성공만으로는 완료가 아닙니다.
+이 명령은 lint, ESM/UMD 빌드, 공개 surface, 48개 소유자 요구사항, 생성 문서, Chromium lifecycle, 애니메이션 미디어 연속성, 플레이그라운드, package surface와 tarball 내용을 검사합니다. 배포 전 `npm run verify`를 실행하면 의존성 보안 감사도 추가됩니다. 빌드 성공만으로는 완료가 아닙니다.

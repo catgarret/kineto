@@ -5,8 +5,8 @@
 ## 현재 계약
 
 - 라이브러리 버전: `0.8.43`
-- 요구사항 계약 버전: `3.0.0`
-- 고정 요구사항: **46개**
+- 요구사항 계약 버전: `3.1.0`
+- 고정 요구사항: **48개**
 - 변경 정책: 소유자의 명시적 승인 없이 요구사항을 제거하거나 의미를 바꿀 수 없습니다.
 
 ## 변경 원칙
@@ -67,6 +67,8 @@
 | `MK-MEDIA-006` | `ambientMedia` | Image and video ambient glow | Ambient glow supports live image clones and sampled video frames with configurable blur, opacity, saturation and brightness. |
 | `MK-CURSOR-001` | `cursor` | Custom cursor system | Cursor supports dot, ring, blob, crosshair, image and custom templates with hover, press, label, color, size and smoothing options. |
 | `MK-LOADER-003` | `loader` | Real progress sources | Loader accepts manual updates and can track window load, selected resources, promises and streamed fetch progress. |
+| `MK-LOADER-004` | `loader` | Rich indeterminate loader system | Loader provides customizable spinner, dots, text shimmer, shimmer wave and multiple terminal styles without including a wandering-eyes effect. |
+| `MK-LOADER-005` | `loader` | Extensible loader lifecycle | Loader exposes progress, completion, failure, cancellation, show and hide state through instance APIs, callbacks, DOM events, a finished promise, CSS variables and custom renderer hooks. |
 | `MK-SMOOTH-001` | `core` | Optional Lenis smooth scrolling | Smooth scrolling is disabled or enabled explicitly and exposes runtime enable, disable, toggle and scrollTo APIs. |
 
 ## 검증

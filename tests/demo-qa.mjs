@@ -222,6 +222,29 @@ try {
   assert.deepEqual(panelSweep.failures,[],`settings trigger/demo disappeared after live edit: ${panelSweep.failures.join(', ')}`);
   assert.ok(panelSweep.after<=panelSweep.baseline+2,`live-edit sweep leaked instances: ${panelSweep.baseline} -> ${panelSweep.after}`);
 
+  const loaderVisibility=await page.evaluate(async()=>{
+    const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));
+    const button=document.querySelector('[data-loader-type="spinner"][data-loader-spinner-style="comet"]');
+    const panel=button?.closest('.card')?.querySelector(':scope > .kt-playground');
+    const body=panel?.__buildBody?.();
+    const type=body?.querySelector('[data-option="preset"]');
+    const terminalStyle=body?.querySelector('[data-option="terminalStyle"]');
+    if(!type||!terminalStyle)return {found:false};
+    const visible=(key)=>!body.querySelector(`[data-option="${key}"]`)?.closest('.kt-playground__field')?.hidden;
+    type.value='terminal';
+    type.dispatchEvent(new window.Event('change',{bubbles:true}));
+    await sleep(180);
+    const terminalOnly=visible('terminalStyle')&&!visible('spinnerStyle')&&!visible('dotCount');
+    terminalStyle.value='steps';
+    terminalStyle.dispatchEvent(new window.Event('change',{bubbles:true}));
+    await sleep(180);
+    const stepsOnly=visible('terminalLines')&&!visible('cursorChar');
+    return {found:true,terminalOnly,stepsOnly};
+  });
+  assert.equal(loaderVisibility.found,true,'rich Loader settings fixture was not found');
+  assert.equal(loaderVisibility.terminalOnly,true,'Loader type switch left unsupported spinner controls visible');
+  assert.equal(loaderVisibility.stepsOnly,true,'Terminal steps did not expose only its supported line controls');
+
   const coverRevealSweep=await page.evaluate(async()=>{
     const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));
     const gallery=document.querySelector('.cover-gallery-card');
@@ -606,7 +629,7 @@ try {
   await smokePage.close();
   await page.close();
   await runAnimatedMediaQa(browser, root);
-  console.log(`Demo QA OK: ${surface.panels} playgrounds, lifecycle/UMD smoke, and animated media continuity; 46 owner requirements represented.`);
+  console.log(`Demo QA OK: ${surface.panels} playgrounds, lifecycle/UMD smoke, and animated media continuity; 48 owner requirements represented.`);
   passed = true;
 } finally {
   killBrowserServer(browserServer);

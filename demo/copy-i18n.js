@@ -239,6 +239,18 @@ window.KINETO_COPY_I18N = {
     }
   },
   "cards": {
+    "꼬리와 후광이 흐르는 원형 스피너입니다.": ["A circular spinner with a flowing tail and glow.","尾と光が流れる円形スピナーです。","带有流动尾迹和光晕的圆形加载器。","帶有流動尾跡和光暈的圓形載入器。","Круговой спиннер с движущимся хвостом и свечением.","Uno spinner circolare con scia e bagliore."],
+    "두 개의 링이 반대 속도로 회전합니다.": ["Two rings rotate at contrasting speeds.","2本のリングが異なる速度で回転します。","两个圆环以不同速度旋转。","兩個圓環以不同速度旋轉。","Два кольца вращаются с разной скоростью.","Due anelli ruotano a velocità diverse."],
+    "단계별로 밝아지는 방사형 스피너입니다.": ["A radial spinner whose spokes brighten in sequence.","放射状の線が順番に明るくなるスピナーです。","辐条依次亮起的放射状加载器。","輻條依次亮起的放射狀載入器。","Радиальный спиннер с последовательным свечением лучей.","Uno spinner radiale con raggi che si illuminano in sequenza."],
+    "궤도를 따라 빛나는 점이 회전합니다.": ["A glowing point rotates along an orbit.","光る点が軌道に沿って回転します。","发光点沿轨道旋转。","發光點沿軌道旋轉。","Светящаяся точка вращается по орбите.","Un punto luminoso ruota lungo un'orbita."],
+    "점이 차례로 반응하는 가벼운 로더입니다.": ["A lightweight loader with sequentially animated dots.","点が順番に反応する軽量ローダーです。","圆点依次响应的轻量加载器。","圓點依次回應的輕量載入器。","Лёгкий индикатор с последовательной анимацией точек.","Un loader leggero con punti animati in sequenza."],
+    "진행 방향을 오가는 후광 바입니다.": ["A glowing bar that travels back and forth.","光が往復するプログレスバーです。","光晕来回移动的进度条。","光暈來回移動的進度列。","Светящаяся полоса, движущаяся туда и обратно.","Una barra luminosa che scorre avanti e indietro."],
+    "텍스트 표면을 부드러운 빛이 통과합니다.": ["A soft light passes across the text.","柔らかな光がテキストの表面を通過します。","柔和的光线掠过文字表面。","柔和的光線掠過文字表面。","Мягкий свет проходит по поверхности текста.","Una luce morbida attraversa il testo."],
+    "글자마다 빛과 높낮이가 이어집니다.": ["Light and vertical motion travel character by character.","光と上下の動きが文字ごとに続きます。","光线和上下运动逐字传递。","光線和上下移動逐字傳遞。","Свет и вертикальное движение переходят от буквы к букве.","Luce e movimento verticale scorrono tra i caratteri."],
+    "명령 프롬프트와 블록 커서를 표시합니다.": ["Shows a command prompt with a block cursor.","コマンドプロンプトとブロックカーソルを表示します。","显示命令提示符和块状光标。","顯示命令提示字元和區塊游標。","Показывает командную строку и блочный курсор.","Mostra un prompt dei comandi con cursore a blocco."],
+    "CLI 문장 뒤의 점을 순서대로 점멸합니다.": ["Blinks dots in sequence after a CLI message.","CLIメッセージの後ろで点が順番に点滅します。","CLI 文本后的圆点依次闪烁。","CLI 文字後的圓點依次閃爍。","Точки после строки CLI мигают по очереди.","Fa lampeggiare in sequenza i punti dopo un messaggio CLI."],
+    "여러 작업 단계를 차례로 출력합니다.": ["Prints multiple task steps in sequence.","複数の処理段階を順番に出力します。","依次输出多个任务步骤。","依次輸出多個工作步驟。","Последовательно выводит этапы выполнения.","Mostra più fasi di lavoro in sequenza."],
+    "실제 진행률을 ASCII 막대로 갱신합니다.": ["Updates an ASCII bar with the actual progress.","実際の進捗をASCIIバーで更新します。","使用实际进度更新 ASCII 进度条。","使用實際進度更新 ASCII 進度列。","Обновляет ASCII-полосу по фактическому прогрессу.","Aggiorna una barra ASCII con l'avanzamento reale."],
     "숫자가 위아래로 굴러가며 바뀝니다.": [
       "The numbers change by rolling up and down.",
       "上下にロールすると数字が変わります。",

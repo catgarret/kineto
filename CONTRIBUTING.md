@@ -2,7 +2,7 @@
 
 ## 시작 전
 
-`OWNER_REQUIREMENTS.md`, `FEATURE_CONTRACT.md`, `docs/AGENTS.md`, 영향을 받는 테스트를 먼저 읽습니다. 현재 공개 범위는 **50개 모듈·26개 Core API·46개 소유자 요구사항**이며, 기능명뿐 아니라 카테고리·variant 의미·공개 option·시각 동작도 계약입니다.
+`OWNER_REQUIREMENTS.md`, `FEATURE_CONTRACT.md`, `docs/AGENTS.md`, 영향을 받는 테스트를 먼저 읽습니다. 현재 공개 범위는 **50개 모듈·26개 Core API·48개 소유자 요구사항**이며, 기능명뿐 아니라 카테고리·variant 의미·공개 option·시각 동작도 계약입니다.
 
 ## 변경 원칙
 
@@ -36,7 +36,7 @@
 npm run ci
 ```
 
-`ci`는 lint, ESM/UMD build, 50개 모듈·26개 Core API, 46개 요구사항, 생성 문서, Chromium 기능/lifecycle, animated media, 131개 플레이그라운드, package surface와 tarball 내용을 확인합니다. 배포 전 `npm run verify`를 실행하면 같은 전체 검사에 의존성 보안 감사까지 추가됩니다.
+`ci`는 lint, ESM/UMD build, 50개 모듈·26개 Core API, 48개 요구사항, 생성 문서, Chromium 기능/lifecycle, animated media, 플레이그라운드, package surface와 tarball 내용을 확인합니다. 배포 전 `npm run verify`를 실행하면 같은 전체 검사에 의존성 보안 감사까지 추가됩니다.
 
 ## Pull request 설명에 포함할 내용
 

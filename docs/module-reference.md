@@ -93,8 +93,8 @@
 
 - Attribute: `data-kt-loader`
 - Default variant: `bar`
-- Variants: `slot`, `circular`, `bar`
-- Public options: `ariaLabel`, `barHeight`, `barWidth`, `className`, `color`, `completeHold`, `completeOnError`, `duration`, `exit`, `exitDirection`, `exitDuration`, `expectedResources`, `fetch`, `fetchOptions`, `fill`, `fillColor`, `hideScrollbar`, `label`, `labelBlend`, `labelColor`, `manualDuration`, `minDuration`, `onComplete`, `onError`, `onProgress`, `percent`, `preset`, `progress`, `progressSource`, `promise`, `promiseCeiling`, `promiseStart`, `renderUI`, `resourceSelector`, `resources`, `showPercent`, `size`, `smoothing`, `source`, `stroke`, `trackColor`, `transition`, `type`, `url`
+- Variants: `slot`, `circular`, `bar`, `spinner`, `dots`, `shimmer`, `shimmer-wave`, `terminal`
+- Public options: `announce`, `ariaLabel`, `barHeight`, `barWidth`, `baseColor`, `className`, `color`, `completeHold`, `completeOnError`, `cursorChar`, `direction`, `dotCount`, `dotGap`, `dotSize`, `dotStyle`, `duration`, `exit`, `exitDirection`, `exitDuration`, `expectedResources`, `fetch`, `fetchOptions`, `fill`, `fillColor`, `fontFamily`, `glow`, `glowColor`, `glowSize`, `hideScrollbar`, `highlightColor`, `indeterminate`, `label`, `labelBlend`, `labelColor`, `linecap`, `manualDuration`, `minDuration`, `motionDuration`, `onCancel`, `onComplete`, `onError`, `onHide`, `onProgress`, `onShow`, `onStart`, `onStateChange`, `percent`, `preset`, `progress`, `progressSource`, `promise`, `promiseCeiling`, `promiseStart`, `radius`, `renderUI`, `resourceSelector`, `resources`, `showPercent`, `size`, `smoothing`, `source`, `spinnerStyle`, `spread`, `stroke`, `terminalBackground`, `terminalBorderColor`, `terminalLines`, `terminalPrompt`, `terminalStyle`, `text`, `textSize`, `trackColor`, `transition`, `type`, `url`
 
 ## magnetic
 

@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### English
+
+- Expanded Loader with comet, dual-ring, spokes and orbit spinners; pulse, bounce and wave dots; indeterminate glow bars; text shimmer and shimmer-wave; and four terminal/CLI styles.
+- Added loader lifecycle control through `show()`, `hide()`, `cancel()`, `fail()`, `finished`, callbacks and `kt-loader-*` events.
+- Added granular loader options and CSS tokens for size, stroke, speed, direction, glow, typography, radius, terminal surface and progress-driven custom UI.
+- Added a larger loader demo set, preset-aware settings, Korean documentation and regression coverage. Wandering Eyes is intentionally excluded.
+
+### 한국어
+
+- 코멧·듀얼 링·스포크·오빗 스피너, 점 로더, 후광 바, 텍스트 시머, CLI 로더를 추가했습니다.
+- `show()`, `hide()`, `cancel()`, `fail()`, `finished`, 콜백과 이벤트로 로딩 수명주기를 제어할 수 있습니다.
+- 크기·두께·속도·방향·후광·글꼴·반경·터미널 표면을 옵션과 CSS 토큰으로 세밀하게 조절할 수 있습니다.
+- 프리셋별 설정 노출, 데모, 문서와 회귀 테스트를 갱신했습니다. Wandering Eyes는 포함하지 않습니다.
+
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
 ## [Unreleased]

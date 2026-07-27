@@ -10,7 +10,7 @@
 | Lint | 통과 | source, tests, 모든 demo 스크립트 |
 | Build | 통과 | ESM, UMD, minified JS/CSS |
 | Feature contract | 통과 | 50 modules, 26 Core APIs |
-| Owner requirements | 통과 | 46 locked requirements |
+| Owner requirements | 통과 | 48 locked requirements |
 | Docs / options parity | 통과 | 생성 문서와 설정 필드 계약 동기화 |
 | Package surface | 통과 | ESM, CommonJS, CSS, React/Vue/jQuery entry |
 | Lifecycle | 통과 | 이벤트·rAF·Observer 해제 및 reduced-motion 재적용 |

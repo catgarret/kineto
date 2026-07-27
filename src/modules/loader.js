@@ -35,6 +35,19 @@ function releaseScrollLock() {
   }
 }
 
+function toList(value, fallback = []) {
+  if (Array.isArray(value)) return value.map(String).filter(Boolean);
+  if (typeof value === 'string') return value.split('|').map((item) => item.trim()).filter(Boolean);
+  return fallback;
+}
+
+function createNode(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text != null) node.textContent = String(text);
+  return node;
+}
+
 function createProgressUI(el, type, opts) {
   // Bring-your-own visuals: `renderUI(el, opts)` may return { root?, render }
   // and completely replaces the built-in DOM. Built-in visuals are plain,
@@ -43,20 +56,45 @@ function createProgressUI(el, type, opts) {
   if (typeof opts.renderUI === 'function') {
     const custom = opts.renderUI(el, opts) || {};
     if (custom.root) el.appendChild(custom.root);
-    return { root: custom.root || el, render: custom.render || (() => {}) };
+    return {
+      root: custom.root || el,
+      render: custom.render || (() => {}),
+      setState: custom.setState || (() => {}),
+      destroy: custom.destroy || (() => {})
+    };
   }
   const color = opts.color || 'var(--kt-loader-color,currentColor)';
   const trackColor = opts.trackColor || 'rgba(127,127,127,.18)';
   const showPercent = opts.showPercent !== false;
+  const indeterminate = opts.indeterminate === true
+    || ['spinner', 'dots', 'shimmer', 'shimmer-wave', 'terminal'].includes(type);
+  const motionDuration = Math.max(0.2, Number(opts.motionDuration ?? 1.1));
+  const direction = opts.direction === 'reverse' || opts.direction === 'rtl' ? -1 : 1;
+  el.style.setProperty('--kt-loader-color', color);
+  el.style.setProperty('--kt-loader-track-color', trackColor);
+  el.style.setProperty('--kt-loader-highlight-color', opts.highlightColor || opts.glowColor || '#ffffff');
+  el.style.setProperty('--kt-loader-glow-color', opts.glowColor || opts.color || 'currentColor');
+  el.style.setProperty('--kt-loader-base-color', opts.baseColor || 'color-mix(in srgb, currentColor 32%, transparent)');
+  if (opts.fontFamily) el.style.setProperty('--kt-loader-font-family', opts.fontFamily);
+  el.style.setProperty('--kt-loader-text-size', typeof opts.textSize === 'number' ? `${opts.textSize}px` : (opts.textSize || 'clamp(1rem,2.5vw,1.35rem)'));
+  const defaultRadius = type === 'terminal' ? '12px' : '999px';
+  el.style.setProperty('--kt-loader-radius', typeof opts.radius === 'number' ? `${opts.radius}px` : (opts.radius || defaultRadius));
+  el.style.setProperty('--kt-loader-terminal-bg', opts.terminalBackground || 'color-mix(in srgb, #070a08 92%, transparent)');
+  el.style.setProperty('--kt-loader-terminal-border', opts.terminalBorderColor || 'color-mix(in srgb, currentColor 24%, transparent)');
+  el.style.setProperty('--kt-loader-motion-duration', `${motionDuration}s`);
+  el.style.setProperty('--kt-loader-fast-duration', `${motionDuration * 0.72}s`);
+  el.style.setProperty('--kt-loader-terminal-duration', `${motionDuration * 3.2}s`);
+  el.style.setProperty('--kt-loader-direction', String(direction));
+  el.style.setProperty('--kt-loader-glow-size', `${Math.max(0, Number(opts.glowSize ?? 18))}px`);
+  el.style.setProperty('--kt-loader-spread', `${clamp(Number(opts.spread ?? 24), 2, 80)}%`);
   let valueEl = null;
   let progressEl = null;
+  let terminalMeter = null;
   let root = null;
 
   if (type === 'slot') {
-    root = document.createElement('div');
-    root.className = 'kt-loader-counter';
-    root.style.cssText = 'position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(2.5rem,8vw,5rem);font-weight:850;font-variant-numeric:tabular-nums;color:var(--kt-loader-color,currentColor);';
-    valueEl = document.createElement('span');
+    root = createNode('div', 'kt-loader-ui kt-loader-counter');
+    valueEl = createNode('span', 'kt-loader-value');
     valueEl.textContent = '0%';
     root.appendChild(valueEl);
   } else if (type === 'circular') {
@@ -64,23 +102,138 @@ function createProgressUI(el, type, opts) {
     const stroke = Math.max(1, Number(opts.stroke ?? 8));
     const radius = (size - stroke) / 2;
     const circumference = 2 * Math.PI * radius;
-    root = document.createElement('div');
-    root.className = 'kt-loader-circular';
-    root.style.cssText = `position:absolute;left:50%;top:50%;width:${size}px;height:${size}px;transform:translate(-50%,-50%);`;
-    root.innerHTML = `<svg aria-hidden="true" viewBox="0 0 ${size} ${size}" style="display:block;width:100%;height:100%;transform:rotate(-90deg)"><circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke="${trackColor}" stroke-width="${stroke}"></circle><circle class="kt-loader-circular-progress" cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}"></circle></svg><span class="kt-loader-value" style="position:absolute;inset:0;display:${showPercent ? 'grid' : 'none'};place-items:center;font-weight:800;font-variant-numeric:tabular-nums">0%</span>`;
-    progressEl = root.querySelector('.kt-loader-circular-progress');
-    valueEl = root.querySelector('.kt-loader-value');
+    root = createNode('div', `kt-loader-ui kt-loader-circular${indeterminate ? ' is-indeterminate' : ''}`);
+    root.style.setProperty('--kt-loader-size', `${size}px`);
+    root.style.setProperty('--kt-loader-stroke', `${stroke}px`);
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
+    const track = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    track.classList.add('kt-loader-circular-track');
+    const progressCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    progressCircle.classList.add('kt-loader-circular-progress');
+    [track, progressCircle].forEach((circle) => {
+      circle.setAttribute('cx', String(size / 2));
+      circle.setAttribute('cy', String(size / 2));
+      circle.setAttribute('r', String(radius));
+      circle.setAttribute('fill', 'none');
+      circle.setAttribute('stroke-width', String(stroke));
+    });
+    progressCircle.setAttribute('stroke-linecap', opts.linecap || 'round');
+    progressCircle.setAttribute('stroke-dasharray', String(circumference));
+    progressCircle.setAttribute('stroke-dashoffset', String(circumference));
+    svg.append(track, progressCircle);
+    valueEl = createNode('span', 'kt-loader-value', '0%');
+    valueEl.hidden = !showPercent;
+    root.append(svg, valueEl);
+    progressEl = progressCircle;
     progressEl.dataset.circumference = String(circumference);
   } else if (type === 'bar') {
     const width = opts.barWidth || 'min(68vw,420px)';
     const height = Math.max(2, Number(opts.barHeight ?? 5));
-    root = document.createElement('div');
-    root.className = 'kt-loader-bar';
-    root.style.cssText = `position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:${typeof width === 'number' ? `${width}px` : width};display:grid;gap:12px;`;
-    const label = opts.label ? `<span class="kt-loader-label" style="font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;opacity:.65">${String(opts.label)}</span>` : '';
-    root.innerHTML = `${label}<span class="kt-loader-bar-track" style="display:block;position:relative;height:${height}px;border-radius:999px;overflow:hidden;background:${trackColor}"><span class="kt-loader-bar-progress" style="display:block;width:100%;height:100%;transform:scaleX(0);transform-origin:left;background:${color};border-radius:inherit"></span></span><span class="kt-loader-value" style="display:${showPercent ? 'block' : 'none'};text-align:right;font-variant-numeric:tabular-nums;font-weight:700">0%</span>`;
-    progressEl = root.querySelector('.kt-loader-bar-progress');
-    valueEl = root.querySelector('.kt-loader-value');
+    root = createNode('div', `kt-loader-ui kt-loader-bar${indeterminate ? ' is-indeterminate' : ''}`);
+    root.style.setProperty('--kt-loader-bar-width', typeof width === 'number' ? `${width}px` : width);
+    root.style.setProperty('--kt-loader-bar-height', `${height}px`);
+    if (opts.label) root.appendChild(createNode('span', 'kt-loader-label', opts.label));
+    const track = createNode('span', 'kt-loader-bar-track');
+    progressEl = createNode('span', 'kt-loader-bar-progress');
+    if (opts.glow !== false) progressEl.classList.add('has-glow');
+    track.appendChild(progressEl);
+    valueEl = createNode('span', 'kt-loader-value', '0%');
+    valueEl.hidden = !showPercent || indeterminate;
+    root.append(track, valueEl);
+  } else if (type === 'spinner') {
+    const style = ['ring', 'comet', 'dual', 'spokes', 'orbit'].includes(opts.spinnerStyle)
+      ? opts.spinnerStyle : 'comet';
+    const size = Math.max(20, Number(opts.size ?? 56));
+    const stroke = Math.max(1, Number(opts.stroke ?? 4));
+    root = createNode('div', `kt-loader-ui kt-loader-spinner kt-loader-spinner--${style}`);
+    root.style.setProperty('--kt-loader-size', `${size}px`);
+    root.style.setProperty('--kt-loader-stroke', `${stroke}px`);
+    if (style === 'spokes') {
+      const count = Math.round(clamp(Number(opts.dotCount ?? 12), 6, 16));
+      for (let index = 0; index < count; index += 1) {
+        const spoke = createNode('span', 'kt-loader-spinner__spoke');
+        spoke.style.setProperty('--kt-loader-index', String(index));
+        spoke.style.setProperty('--kt-loader-count', String(count));
+        spoke.style.animationDelay = `${-(motionDuration / count) * index}s`;
+        root.appendChild(spoke);
+      }
+    } else {
+      root.appendChild(createNode('span', 'kt-loader-spinner__ring'));
+      if (style === 'dual') root.appendChild(createNode('span', 'kt-loader-spinner__ring kt-loader-spinner__ring--inner'));
+      if (style === 'orbit') root.appendChild(createNode('span', 'kt-loader-spinner__orbit'));
+    }
+    if (opts.label) root.appendChild(createNode('span', 'kt-loader-label', opts.label));
+  } else if (type === 'dots') {
+    const style = ['pulse', 'bounce', 'wave'].includes(opts.dotStyle) ? opts.dotStyle : 'wave';
+    const count = Math.round(clamp(Number(opts.dotCount ?? 3), 3, 8));
+    root = createNode('div', `kt-loader-ui kt-loader-dots kt-loader-dots--${style}`);
+    root.style.setProperty('--kt-loader-dot-size', `${Math.max(2, Number(opts.dotSize ?? 9))}px`);
+    root.style.setProperty('--kt-loader-dot-gap', `${Math.max(0, Number(opts.dotGap ?? 7))}px`);
+    for (let index = 0; index < count; index += 1) {
+      const dot = createNode('span', 'kt-loader-dot');
+      dot.style.setProperty('--kt-loader-index', String(index));
+      dot.style.animationDelay = `${(index * motionDuration) / 7}s`;
+      root.appendChild(dot);
+    }
+    if (opts.label) root.appendChild(createNode('span', 'kt-loader-label', opts.label));
+  } else if (type === 'shimmer' || type === 'shimmer-wave') {
+    const text = String(opts.text || opts.label || 'Loading');
+    root = createNode('div', `kt-loader-ui kt-loader-${type}`);
+    if (type === 'shimmer') {
+      root.appendChild(createNode('span', 'kt-loader-shimmer__text', text));
+    } else {
+      const line = createNode('span', 'kt-loader-shimmer-wave__text');
+      Array.from(text).forEach((character, index) => {
+        const char = createNode('span', 'kt-loader-shimmer-wave__char', character === ' ' ? '\u00a0' : character);
+        char.style.setProperty('--kt-loader-index', String(index));
+        char.style.animationDelay = `${index * 42}ms`;
+        line.appendChild(char);
+      });
+      root.appendChild(line);
+    }
+  } else if (type === 'terminal') {
+    const style = ['cursor', 'dots', 'steps', 'meter'].includes(opts.terminalStyle)
+      ? opts.terminalStyle : 'cursor';
+    const lines = toList(opts.terminalLines, ['Resolving dependencies', 'Building assets', 'Running checks']);
+    root = createNode('div', `kt-loader-ui kt-loader-terminal kt-loader-terminal--${style}`);
+    const output = createNode('div', 'kt-loader-terminal__output');
+    if (style === 'steps') {
+      lines.forEach((line, index) => {
+        const row = createNode('span', 'kt-loader-terminal__line');
+        row.style.setProperty('--kt-loader-index', String(index));
+        row.style.animationDelay = `${index * motionDuration * 0.62}s`;
+        row.append(
+          createNode('b', 'kt-loader-terminal__prompt', opts.terminalPrompt || '$'),
+          document.createTextNode(` ${line}`)
+        );
+        output.appendChild(row);
+      });
+    } else {
+      const line = createNode('span', 'kt-loader-terminal__line');
+      line.append(
+        createNode('b', 'kt-loader-terminal__prompt', opts.terminalPrompt || '$'),
+        document.createTextNode(` ${opts.text || opts.label || 'Loading'}`)
+      );
+      if (style === 'dots') {
+        const dots = createNode('span', 'kt-loader-terminal__dots');
+        for (let index = 0; index < 3; index += 1) {
+          const dot = createNode('i', 'kt-loader-terminal__dot', '.');
+          dot.style.setProperty('--kt-loader-index', String(index));
+          dot.style.animationDelay = `${index * 140}ms`;
+          dots.appendChild(dot);
+        }
+        line.appendChild(dots);
+      } else if (style === 'meter') {
+        terminalMeter = createNode('span', 'kt-loader-terminal__meter', '[░░░░░░░░░░] 0%');
+        line.append(document.createTextNode(' '), terminalMeter);
+      } else {
+        line.appendChild(createNode('i', 'kt-loader-terminal__cursor', opts.cursorChar || '█'));
+      }
+      output.appendChild(line);
+    }
+    root.appendChild(output);
   }
   // Optional page-fill: the overlay background fills with the accent color
   // like a giant progress bar (fill: 'up' | 'down' | 'left' | 'right').
@@ -97,6 +250,8 @@ function createProgressUI(el, type, opts) {
     el.insertBefore(fillEl, el.firstChild);
   }
   if (root) {
+    if (direction < 0) root.classList.add('is-reverse');
+    if (opts.glow !== false && ['bar', 'spinner', 'shimmer', 'shimmer-wave'].includes(type)) root.classList.add('has-glow');
     root.setAttribute('aria-hidden', 'true');
     el.appendChild(root);
     // Keep the percentage readable over the fill: recolor and/or blend it.
@@ -106,14 +261,22 @@ function createProgressUI(el, type, opts) {
   const render = (value) => {
     const progress = clamp(Number(value) || 0, 0, 100);
     if (valueEl) valueEl.textContent = `${Math.round(progress)}%`;
-    if (type === 'bar' && progressEl) progressEl.style.transform = `scaleX(${progress / 100})`;
+    if (type === 'bar' && progressEl && !indeterminate) progressEl.style.transform = `scaleX(${progress / 100})`;
     if (type === 'circular' && progressEl) {
       const circumference = Number(progressEl.dataset.circumference || 0);
       progressEl.style.strokeDashoffset = String(circumference * (1 - progress / 100));
     }
+    if (terminalMeter) {
+      const cells = 10;
+      const filled = Math.round(progress / 100 * cells);
+      terminalMeter.textContent = `[${'█'.repeat(filled)}${'░'.repeat(cells - filled)}] ${Math.round(progress)}%`;
+    }
     if (fillEl) fillEl.style.transform = `${fillEl.dataset.axis}(${progress / 100})`;
   };
-  return { root, fillEl, render };
+  const setState = (state) => {
+    if (root) root.dataset.state = state;
+  };
+  return { root, fillEl, render, setState, destroy() {} };
 }
 
 function collectPageResources(opts) {
@@ -132,7 +295,13 @@ export default {
       style: el.getAttribute('style'),
       class: el.getAttribute('class'),
       aria: el.getAttribute('aria-label'),
-      role: el.getAttribute('role')
+      role: el.getAttribute('role'),
+      busy: el.getAttribute('aria-busy'),
+      live: el.getAttribute('aria-live'),
+      valueMin: el.getAttribute('aria-valuemin'),
+      valueMax: el.getAttribute('aria-valuemax'),
+      valueNow: el.getAttribute('aria-valuenow'),
+      hidden: el.hidden
     };
     if (opts.className) el.classList.add(...String(opts.className).split(/\s+/).filter(Boolean));
     const progressUI = createProgressUI(el, type, opts);
@@ -144,6 +313,11 @@ export default {
     let rafId = null;
     let loadHandler = null;
     let performanceObserver = null;
+    let state = 'idle';
+    let outcome = 'completed';
+    let finishResolve;
+    let finishSettled = false;
+    const finished = new Promise((resolve) => { finishResolve = resolve; });
     const cleanupFunctions = [];
     // Track every timeout so destroy() can cancel the minDuration wait, the
     // completeHold delay and the exit timer — none were cancellable before.
@@ -156,20 +330,61 @@ export default {
     // guarantees this instance releases the shared lock exactly once.
     let holdsLock = false;
     const releaseLock = () => { if (holdsLock) { holdsLock = false; releaseScrollLock(); } };
+    const acquireLock = () => {
+      if (hideScrollbar && !holdsLock) {
+        acquireScrollLock();
+        holdsLock = true;
+      }
+    };
+    const emit = (name, detail = {}) => {
+      try {
+        el.dispatchEvent(new CustomEvent(`kt-loader-${name}`, {
+          bubbles: true,
+          detail: { loader: el, state, progress: displayed, ...detail }
+        }));
+      } catch (_error) { /* older browser */ }
+    };
+    const setState = (next, detail = {}) => {
+      if (state === next) return;
+      const previous = state;
+      state = next;
+      el.dataset.ktLoaderState = next;
+      progressUI.setState?.(next);
+      opts.onStateChange?.(next, previous, el, detail);
+      emit('statechange', { previous, ...detail });
+    };
+    const settle = (status, detail = {}) => {
+      if (finishSettled) return;
+      finishSettled = true;
+      finishResolve?.({ status, progress: displayed, el, ...detail });
+    };
 
-    el.setAttribute('role', 'status');
+    el.setAttribute('role', 'progressbar');
     el.setAttribute('aria-label', opts.ariaLabel || 'Loading');
-    if (hideScrollbar) { acquireScrollLock(); holdsLock = true; }
+    el.setAttribute('aria-live', opts.announce === false ? 'off' : 'polite');
+    el.setAttribute('aria-busy', 'true');
+    const indeterminate = opts.indeterminate === true
+      || ['spinner', 'dots', 'shimmer', 'shimmer-wave', 'terminal'].includes(type);
+    if (!indeterminate) {
+      el.setAttribute('aria-valuemin', '0');
+      el.setAttribute('aria-valuemax', '100');
+    }
+    acquireLock();
+    setState('running');
+    opts.onStart?.(el);
+    emit('start');
 
     const render = () => {
       progressUI.render(displayed);
-      el.setAttribute('aria-valuenow', String(Math.round(displayed)));
+      if (indeterminate) el.removeAttribute('aria-valuenow');
+      else el.setAttribute('aria-valuenow', String(Math.round(displayed)));
       // Headless API: stream progress to CSS variables so a fully custom loader
       // can be built with `renderUI` OR pure CSS (no JS): --kt-loader-progress
       // is 0..1, --kt-loader-percent is 0..100. onProgress(value, el) also fires.
       el.style.setProperty('--kt-loader-progress', (displayed / 100).toFixed(4));
       el.style.setProperty('--kt-loader-percent', String(Math.round(displayed)));
       opts.onProgress?.(displayed, el);
+      emit('progress', { value: displayed });
     };
     const animate = () => {
       rafId = null;
@@ -227,13 +442,22 @@ export default {
       } else el.style.opacity = '0';
       later(() => {
         el.style.display = 'none';
+        el.hidden = true;
+        el.setAttribute('aria-busy', 'false');
         releaseLock();
+        setState(outcome);
         opts.onComplete?.(el);
+        opts.onHide?.(el, outcome);
+        emit('complete', { outcome });
+        emit('hide', { reason: outcome });
+        settle(outcome);
       }, duration * 1000 + 20);
     };
-    const complete = () => {
+    const complete = (status = 'completed') => {
       if (completed || destroyed) return;
       completed = true;
+      outcome = status;
+      setState('completing', { outcome });
       progress = 100;
       const wait = Math.max(0, minDuration - (performance.now() - startedAt));
       later(() => {
@@ -249,6 +473,63 @@ export default {
       wake();
       if (progress >= 100) complete();
     };
+    const show = () => {
+      if (destroyed || completed) return false;
+      el.hidden = false;
+      el.style.display = '';
+      el.style.opacity = '';
+      el.style.transform = '';
+      el.style.clipPath = '';
+      el.style.webkitClipPath = '';
+      el.setAttribute('aria-busy', 'true');
+      acquireLock();
+      setState(paused ? 'paused' : 'running');
+      opts.onShow?.(el);
+      emit('show');
+      return true;
+    };
+    const hide = (reason = 'manual') => {
+      if (destroyed) return false;
+      el.style.display = 'none';
+      el.hidden = true;
+      el.setAttribute('aria-busy', 'false');
+      releaseLock();
+      setState('hidden', { reason });
+      opts.onHide?.(el, reason);
+      emit('hide', { reason });
+      return true;
+    };
+    const cancel = (reason = 'cancelled') => {
+      if (destroyed || completed) return false;
+      completed = true;
+      if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
+      timeouts.forEach((id) => clearTimeout(id));
+      timeouts.clear();
+      el.style.display = 'none';
+      el.hidden = true;
+      el.setAttribute('aria-busy', 'false');
+      releaseLock();
+      setState('cancelled', { reason });
+      opts.onCancel?.(reason, el);
+      opts.onHide?.(el, reason);
+      emit('cancel', { reason });
+      emit('hide', { reason });
+      settle('cancelled', { reason });
+      return true;
+    };
+    const fail = (error) => {
+      if (destroyed || completed) return false;
+      opts.onError?.(error, el);
+      setState('error', { error });
+      emit('error', { error });
+      if (opts.completeOnError !== false) complete('error');
+      else {
+        el.setAttribute('aria-busy', 'false');
+        releaseLock();
+        settle('error', { error });
+      }
+      return true;
+    };
 
     const trackPromise = (promise) => {
       if (!promise?.then) return promise;
@@ -259,7 +540,7 @@ export default {
         setProgress(fake);
       }, 120);
       cleanupFunctions.push(() => clearInterval(interval));
-      return Promise.resolve(promise).then((value) => { clearInterval(interval); complete(); return value; }, (error) => { clearInterval(interval); opts.onError?.(error, el); if (opts.completeOnError !== false) complete(); throw error; });
+      return Promise.resolve(promise).then((value) => { clearInterval(interval); complete(); return value; }, (error) => { clearInterval(interval); fail(error); throw error; });
     };
 
     const trackFetch = async (input, init) => {
@@ -299,7 +580,7 @@ export default {
     } else if (source === 'promise' && opts.promise) {
       trackPromise(opts.promise);
     } else if (source === 'fetch' && (opts.url || opts.fetch)) {
-      trackFetch(opts.url || opts.fetch, opts.fetchOptions).catch((error) => { opts.onError?.(error, el); if (opts.completeOnError !== false) complete(); });
+      trackFetch(opts.url || opts.fetch, opts.fetchOptions).catch((error) => { fail(error); });
     } else if (source === 'resources') {
       const resources = collectPageResources(opts);
       if (!resources.length) complete();
@@ -335,19 +616,37 @@ export default {
     }
     render();
 
-    return {
+    const instance = {
       el,
       type: 'loader',
       get progress() { return displayed; },
+      get state() { return state; },
+      get finished() { return finished; },
       setProgress,
       complete,
+      show,
+      hide,
+      cancel,
+      fail,
       trackPromise,
       trackFetch,
-      pause() { paused = true; },
-      resume() { paused = false; },
+      pause() {
+        if (destroyed || completed) return;
+        paused = true;
+        el.classList.add('is-paused');
+        setState('paused');
+      },
+      resume() {
+        if (destroyed || completed) return;
+        paused = false;
+        el.classList.remove('is-paused');
+        setState('running');
+        wake();
+      },
       destroy() {
         if (destroyed) return; // idempotent — safe to call repeatedly
         destroyed = true;
+        setState('destroyed');
         timeouts.forEach((id) => clearTimeout(id));
         timeouts.clear();
         if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
@@ -360,15 +659,24 @@ export default {
         // Only remove UI we created — never the host element itself (a custom
         // renderUI with no root falls back to `el`). Also remove the page-fill
         // overlay so it doesn't accumulate across recreate.
+        progressUI.destroy?.();
         if (progressUI.root && progressUI.root !== el) progressUI.root.remove();
         progressUI.fillEl?.remove();
         if (original.style == null) el.removeAttribute('style'); else el.setAttribute('style', original.style);
         if (original.aria == null) el.removeAttribute('aria-label'); else el.setAttribute('aria-label', original.aria);
         if (original.role == null) el.removeAttribute('role'); else el.setAttribute('role', original.role);
         if (original.class == null) el.removeAttribute('class'); else el.setAttribute('class', original.class);
-        el.removeAttribute('aria-valuenow');
+        if (original.busy == null) el.removeAttribute('aria-busy'); else el.setAttribute('aria-busy', original.busy);
+        if (original.live == null) el.removeAttribute('aria-live'); else el.setAttribute('aria-live', original.live);
+        if (original.valueMin == null) el.removeAttribute('aria-valuemin'); else el.setAttribute('aria-valuemin', original.valueMin);
+        if (original.valueMax == null) el.removeAttribute('aria-valuemax'); else el.setAttribute('aria-valuemax', original.valueMax);
+        if (original.valueNow == null) el.removeAttribute('aria-valuenow'); else el.setAttribute('aria-valuenow', original.valueNow);
+        el.hidden = original.hidden;
+        delete el.dataset.ktLoaderState;
+        settle('destroyed');
       }
     };
+    return instance;
   },
   // Low-perf devices skip the loader entirely (same as reduced) so the page
   // isn't held behind an animation it can't render smoothly (audit D-2 / D-6).
@@ -379,13 +687,59 @@ export default {
     // Even when the loader is skipped, onComplete must still fire exactly once
     // (async) so callers gating page reveal / cleanup on it aren't left hanging.
     let done = false;
-    const id = setTimeout(() => { done = true; opts.onComplete?.(el); }, 0);
+    let destroyed = false;
+    let state = 'completing';
+    let resolveFinished;
+    const finished = new Promise((resolve) => { resolveFinished = resolve; });
+    const id = setTimeout(() => {
+      done = true;
+      state = 'completed';
+      opts.onComplete?.(el);
+      opts.onStateChange?.('completed', 'completing', el);
+      resolveFinished?.({ status: 'completed', progress: 100, el });
+    }, 0);
     return {
       el,
       type: 'loader',
+      get progress() { return 100; },
+      get state() { return state; },
+      get finished() { return finished; },
+      setProgress() {},
+      complete() {},
+      trackPromise(promise) { return promise; },
+      trackFetch(input, init) { return fetch(input, init); },
+      show() { return false; },
+      hide() { return true; },
+      cancel(reason = 'cancelled') {
+        if (done || destroyed) return false;
+        clearTimeout(id);
+        done = true;
+        state = 'cancelled';
+        opts.onCancel?.(reason, el);
+        resolveFinished?.({ status: 'cancelled', progress: 100, el, reason });
+        return true;
+      },
+      fail(error) {
+        if (done || destroyed) return false;
+        clearTimeout(id);
+        done = true;
+        state = 'error';
+        opts.onError?.(error, el);
+        resolveFinished?.({ status: 'error', progress: 100, el, error });
+        return true;
+      },
       pause() {},
       resume() {},
-      destroy() { if (!done) clearTimeout(id); el.style.display = original; }
+      destroy() {
+        if (destroyed) return;
+        destroyed = true;
+        if (!done) {
+          clearTimeout(id);
+          resolveFinished?.({ status: 'destroyed', progress: 100, el });
+        }
+        state = 'destroyed';
+        el.style.display = original;
+      }
     };
   }
 };
