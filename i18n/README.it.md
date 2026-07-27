@@ -16,9 +16,7 @@ Un toolkit di interazioni web guidato da attributi HTML o da un'API JavaScript
 
 ---
 
-> **Kineto** — il nome deriva da *kinetic* (dal greco *kínēsis*, “movimento”). Un nome adatto a una libreria dedicata al movimento sul web.
-
-Kineto è una libreria di 45 moduli di interazione — movimento, media, scroll, loader e testo — che colleghi con un solo attributo `data-kt-*` o controlli con precisione tramite un'API JavaScript. Il core non ha dipendenze obbligatorie e, su browser non supportati o dispositivi datati, gli effetti si disattivano mentre il contenuto resta intatto.
+Kineto è una libreria di 50 moduli di interazione — movimento, media, scroll, loader e testo — che colleghi con un solo attributo `data-kt-*` o controlli con precisione tramite un'API JavaScript. Il core non ha dipendenze obbligatorie e, su browser non supportati o dispositivi datati, gli effetti si disattivano mentre il contenuto resta intatto.
 
 > Lavori con strumenti di coding AI (Cursor, Claude, ecc.)? Vedi la [guida ai prompt AI](../AI-PROMPT-GUIDE.md): contiene un'istruzione pronta da incollare che indica all'assistente di usare prima i moduli Kineto per movimento e interazioni.
 
@@ -82,9 +80,12 @@ Gli effetti a schermo intero (loader, page reveal, page transition) coprono l'in
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 ```
 
-## Dipendenze opzionali
+## motore di movimento
 
-Il core funziona da solo. Se nella pagina sono presenti GSAP + ScrollTrigger (scrub allo scroll) o Lenis (smooth scroll), Kineto li rileva e li usa automaticamente; altrimenti ricade sulle API standard.
+Kineto non include GSAP e Lenis nel suo pacchetto.
+L'effetto richiesto verrà caricato dal CDN la prima volta che lo utilizzi e, se esiste già
+un'istanza sulla pagina, verrà utilizzata.
+Se una CDN non è disponibile, mantieni il contenuto statico e torna al comportamento standard.
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
@@ -103,40 +104,56 @@ Kineto.disableSmooth();
 
 | Modulo | Attributo di attivazione | Scopo |
 |---|---|---|
-| `ambientMedia` | `data-kt-ambient-media` | Luce ambientale dai media |
-| `blurText` | `data-kt-blur-text` | Comparsa sfocata lettera per lettera |
-| `brushReveal` | `data-kt-brush-reveal` | Rivelazione a pennello col puntatore |
-| `cardGlow` | `data-kt-card-glow` | Faretto, riflesso di superficie, bordo luminoso |
-| `counter` | `data-kt-counter` | Conteggio, flip, orologio, conto alla rovescia |
-| `cssScroll` | `data-kt-css-scroll` | Collegato a variabili CSS / animation timeline |
-| `cursor` | `data-kt-cursor` | Undici preset di cursore |
-| `fullpage` | `data-kt-fullpage` | Paginazione a schermo intero (x / y / asse misto) |
-| `glitch` | `data-kt-glitch` | Slice RGB e comparsa glitch |
-| `lazy` | `data-kt-lazy` | Effetti di caricamento immagini (skeleton, pixelate, print, dissolve) |
-| `lightbox` | `data-kt-lightbox` | Viewer a schermo intero, gruppi, zoom, minimappa |
-| `loader` | `data-kt-loader` | Loader legato al progresso reale |
-| `magnetic` | `data-kt-magnetic` | Risposta magnetica al puntatore |
-| `marquee` | `data-kt-marquee` | Marquee continuo |
-| `mouseParallax` | `data-kt-mouse-parallax` | Parallasse da puntatore / giroscopio |
-| `overflowText` | `data-kt-overflow-text` | Otto modi di gestire il testo in eccesso |
-| `pageReveal` | `data-kt-page-reveal` | Overlay di ingresso pagina |
-| `pageTransition` | `data-kt-page-transition` | Transizioni tra pagine della stessa origine |
-| `parallax` | `data-kt-parallax` | Parallasse allo scroll |
-| `progress` | `data-kt-progress` | Barra/anello di avanzamento lettura |
-| `reveal` | `data-kt-reveal` | Comparsa all'ingresso in viewport |
-| `ripple` | `data-kt-ripple` | Ripple al clic |
-| `scrollSequence` | `data-kt-scroll-sequence` | Scrub di sequenze di immagini |
-| `scrollVelocity` | `data-kt-scroll-velocity` | Risposta a velocità/direzione di scroll |
-| `textReveal (shuffle)` | `data-kt-text-reveal="shuffle"` | Decodifica con mescolamento caratteri |
-| `slider` | `data-kt-slider` | Slide e coverflow |
-| `stickyStack` | `data-kt-sticky-stack` | Stack sticky (verticale/orizzontale/flottante) |
-| `textFill` | `data-kt-text-fill` | Riempimento testo guidato dallo scroll |
-| `textReveal` | `data-kt-text-reveal` | Comparsa del testo (incl. composizione hangul) |
-| `textSplit` | `data-kt-text-split` | Movimento per lettere/parole |
-| `textTransition` | `data-kt-text-transition` | Transizioni di sostituzione testo |
-| `tilt` | `data-kt-tilt` | Inclinazione 3D e riflesso |
-| `typewriter` | `data-kt-typewriter` | Effetto macchina da scrivere |
-| `vibrate` | `data-kt-vibrate` | Feedback aptico di vibrazione |
+| `ambientMedia` | `data-kt-ambient-media` | Luce ambientale estratta dai media |
+| `blurText` | `data-kt-blur-text` | Sfoca la voce per lettera |
+| `brushReveal` | `data-kt-brush-reveal` | Maschera pennello puntatore |
+| `cardGlow` | `data-kt-card-glow` | Faretto puntatore/riflesso/luce esterna |
+| `counter` | `data-kt-counter` | Conteggio dei numeri, rotazione, orologio, conto alla rovescia |
+| `cssScroll` | `data-kt-css-scroll` | Integrazione di variabili CSS/sequenza temporale di scorrimento |
+| `cursor` | `data-kt-cursor` | 11 cursori personalizzati |
+| `fullpage` | `data-kt-fullpage` | Pagina intera asse verticale/orizzontale/misto |
+| `glitch` | `data-kt-glitch` | Problema relativo alla porzione/pixel RGB |
+| `lazy` | `data-kt-lazy` | Scheletro·Pixel·Stampa·Dissolvi caricamento |
+| `lightbox` | `data-kt-lightbox` | Visualizzatore a schermo intero Gruppo/Zoom/Minimappa |
+| `loader` | `data-kt-loader` | Caricatore collegato al progresso reale |
+| `magnetic` | `data-kt-magnetic` | reazione del magnete puntatore |
+| `marquee` | `data-kt-marquee` | tendone continuo |
+| `mouseParallax` | `data-kt-mouse-parallax` | Parallasse puntatore/giroscopio |
+| `overflowText` | `data-kt-overflow-text` | Gestione del testo in eccesso |
+| `pageReveal` | `data-kt-page-reveal` | Sovrapposizione dell'immissione della pagina |
+| `pageTransition` | `data-kt-page-transition` | Conversione di pagine della stessa origine |
+| `parallax` | `data-kt-parallax` | parallasse dello scorrimento |
+| `progress` | `data-kt-progress` | Lettura della barra di avanzamento e dell'anello |
+| `reveal` | `data-kt-reveal` | Rivela voce di scorrimento |
+| `ripple` | `data-kt-ripple` | fare clic su ondulazione |
+| `scrollSequence` | `data-kt-scroll-sequence` | Scrub sequenza di immagini |
+| `scrollVelocity` | `data-kt-scroll-velocity` | Risposta di velocità/direzione di scorrimento |
+| `slider` | `data-kt-slider` | Diapositiva·Coverflow·Dissolvenza |
+| `stickyStack` | `data-kt-sticky-stack` | Pila adesiva verticale, orizzontale e mobile |
+| `textFill` | `data-kt-text-fill` | riempimento del testo scorrevole |
+| `textReveal` | `data-kt-text-reveal` | Shuffle, decodifica, rivelazione combinazione Hangul |
+| `textSplit` | `data-kt-text-split` | Movimento di segmentazione di lettere/parole |
+| `textTransition` | `data-kt-text-transition` | Sostituzione di frasi |
+| `tilt` | `data-kt-tilt` | Inclinazione 3D, abbagliamento, ombra |
+| `typewriter` | `data-kt-typewriter` | Digitazione combinata coreana |
+| `vibrate` | `data-kt-vibrate` | Feedback di vibrazione tattile |
+| `confetti` | `data-kt-confetti` | Effetto coriandoli clic/entrata |
+| `accordion` | `data-kt-accordion` | dettagli secondo la fisarmonica per supportare l'accessibilità |
+| `hold` | `data-kt-hold` | Indicatore di conferma pressione prolungata/colpi multipli |
+| `megaMenu` | `data-kt-mega-menu` | Menu mega tastiera/ARIA |
+| `toast` | `data-kt-toast` | Notifica del brindisi sullo stato |
+| `bottomSheet` | `data-kt-bottom-sheet` | Il foglio inferiore supporta il blocco della messa a fuoco |
+| `tabs` | `data-kt-tabs` | Controllo scheda/segmento WAI-ARIA |
+| `radial` | `data-kt-radial` | carosello circolare |
+| `coverReveal` | `data-kt-cover-reveal` | rivelazione della copertina a colori |
+| `gesture` | `data-kt-gesture` | Feedback al passaggio del mouse/spinta della molla |
+| `drag` | `data-kt-drag` | Inerzia, confine, resistenza allo snapback |
+| `tooltip` | `data-kt-tooltip` | Posiziona la descrizione comando di correzione automatica |
+| `switch` | `data-kt-switch` | Interruttori di accessibilità utilizzati nei moduli |
+| `flip` | `data-kt-flip` | Ordina/Aggiungi/Elimina conversione FLIP |
+| `scrollShadows` | `data-kt-scroll-shadows` | ombra del bordo di scorrimento |
+| `stickyHeader` | `data-kt-sticky-header` | Testata fissa pieghevole/con copertura |
+| `horizontalScroll` | `data-kt-horizontal-scroll` | Corretto lo scorrimento orizzontale |
 
 Per varianti e opzioni complete di ogni modulo, vedi il [riferimento moduli](../docs/module-reference.md) e `kineto.features.json`.
 
@@ -173,4 +190,4 @@ npm run verify  # suite CI completa + audit di sicurezza delle dipendenze
 
 ## Licenza
 
-MIT © [dongri.me](https://dongri.me) · Realizzato con AI vibe-coding.
+MIT © [dongri.me](https://dongri.me)

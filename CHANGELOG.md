@@ -6,11 +6,20 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
 
 ### English
 
-<!-- Add matching English release bullets here. -->
+- **Copy and localization audit**: rewrote Korean demo copy into concise,
+  consistent two-line card descriptions; completed static English, Japanese,
+  Simplified Chinese, Traditional Chinese, Russian, and Italian translations;
+  and synchronized all seven READMEs with the current 50-module contract.
+  Browser and structural tests now prevent missing translations, stale module
+  tables, and card copy that exceeds two visible lines.
 
 ### 한국어
 
-<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- **문구·번역 정비**: 국문 데모 문구를 짧고 일관된 두 줄 카드 설명으로
+  다시 쓰고, 영문·일문·중문 간체·중문 번체·러시아어·이탈리아어 정적
+  번역을 완성했습니다. 7개 README도 현재 50개 모듈 계약에 맞췄으며,
+  번역 누락·오래된 모듈 표·두 줄을 넘는 카드 문구를 브라우저 및 구조
+  테스트로 방지합니다.
 
 ## [0.8.43]
 

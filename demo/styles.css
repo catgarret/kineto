@@ -225,7 +225,11 @@
     .module-block-body.grid>.card>h3{
       min-height:1.65em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
     }
-    .module-block-body.grid>.card>p{
+    .card>p,
+    .scroll-demo-unit>p,
+    .hscroll-demo-unit>p,
+    .sticky-stack-unit>p,
+    .reveal-demo-card>p{
       display:-webkit-box;min-height:3.3em;max-height:3.3em;overflow:hidden;
       -webkit-box-orient:vertical;-webkit-line-clamp:2
     }

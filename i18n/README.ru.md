@@ -16,9 +16,7 @@
 
 ---
 
-> **Kineto** — название происходит от *kinetic* (от греческого *kínēsis* — «движение»). Подходящее имя для библиотеки, посвящённой движению в вебе.
-
-Kineto — библиотека из 45 интерактивных модулей (движение, медиа, скролл, лоадер, текст), которые подключаются одним атрибутом `data-kt-*` или точно управляются через JavaScript API. Ядро не имеет обязательных зависимостей; в неподдерживаемых браузерах и на слабых устройствах эффекты отключаются, а контент остаётся нетронутым.
+Kineto — библиотека из 50 интерактивных модулей (движение, медиа, скролл, лоадер, текст), которые подключаются одним атрибутом `data-kt-*` или точно управляются через JavaScript API. Ядро не имеет обязательных зависимостей; в неподдерживаемых браузерах и на слабых устройствах эффекты отключаются, а контент остаётся нетронутым.
 
 > Работаете с ИИ-инструментами (Cursor, Claude и т. п.)? Смотрите [руководство по промтам для ИИ](../AI-PROMPT-GUIDE.md) — там есть готовая инструкция, которая велит ассистенту в первую очередь использовать модули Kineto для движения и интеракций.
 
@@ -82,9 +80,12 @@ const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 ```
 
-## Необязательные зависимости
+## двигатель движения
 
-Ядро работает самостоятельно. Если на странице есть GSAP + ScrollTrigger (scrub при скролле) или Lenis (плавный скролл), Kineto сам их обнаружит и задействует; иначе используется откат на стандартные API.
+Kineto не включает в свой комплект GSAP и Lenis.
+Требуемый эффект будет загружен из CDN при первом его использовании, и если экземпляр уже
+существует на странице, он будет использован.
+Если CDN недоступен, сохраните статический контент и вернитесь к стандартному поведению.
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
@@ -103,40 +104,56 @@ Kineto.disableSmooth();
 
 | Модуль | Атрибут активации | Назначение |
 |---|---|---|
-| `ambientMedia` | `data-kt-ambient-media` | Окружающее свечение от медиа |
-| `blurText` | `data-kt-blur-text` | Проявление по буквам с размытием |
-| `brushReveal` | `data-kt-brush-reveal` | Проявление маской-кистью по курсору |
-| `cardGlow` | `data-kt-card-glow` | Прожектор, блик поверхности, светящаяся рамка |
-| `counter` | `data-kt-counter` | Счётчик, флип, часы, обратный отсчёт |
-| `cssScroll` | `data-kt-css-scroll` | Привязка к CSS-переменным / animation timeline |
-| `cursor` | `data-kt-cursor` | Одиннадцать пресетов курсора |
-| `fullpage` | `data-kt-fullpage` | Постраничная прокрутка (x / y / смешанная ось) |
-| `glitch` | `data-kt-glitch` | RGB-срез и глитч-проявление |
-| `lazy` | `data-kt-lazy` | Эффекты загрузки изображений (skeleton, pixelate, print, dissolve) |
-| `lightbox` | `data-kt-lightbox` | Полноэкранный просмотрщик, группы, зум, миникарта |
-| `loader` | `data-kt-loader` | Лоадер, привязанный к реальному прогрессу |
-| `magnetic` | `data-kt-magnetic` | Магнитная реакция на курсор |
-| `marquee` | `data-kt-marquee` | Непрерывная бегущая строка |
-| `mouseParallax` | `data-kt-mouse-parallax` | Параллакс по курсору / гироскопу |
-| `overflowText` | `data-kt-overflow-text` | Восемь способов обработки переполнения текста |
-| `pageReveal` | `data-kt-page-reveal` | Оверлей входа на страницу |
-| `pageTransition` | `data-kt-page-transition` | Переходы между страницами одного источника |
-| `parallax` | `data-kt-parallax` | Параллакс при скролле |
-| `progress` | `data-kt-progress` | Индикатор чтения (полоса/кольцо) |
-| `reveal` | `data-kt-reveal` | Проявление при скролле |
-| `ripple` | `data-kt-ripple` | Рябь по клику |
-| `scrollSequence` | `data-kt-scroll-sequence` | Скраб последовательности кадров |
-| `scrollVelocity` | `data-kt-scroll-velocity` | Реакция на скорость/направление скролла |
-| `textReveal (shuffle)` | `data-kt-text-reveal="shuffle"` | Декодирование перемешиванием символов |
-| `slider` | `data-kt-slider` | Слайдер и coverflow |
-| `stickyStack` | `data-kt-sticky-stack` | Липкий стек (вертикальный/горизонтальный/плавающий) |
-| `textFill` | `data-kt-text-fill` | Заливка текста при скролле |
-| `textReveal` | `data-kt-text-reveal` | Проявление текста (в т. ч. хангыль) |
-| `textSplit` | `data-kt-text-split` | Движение по буквам/словам |
-| `textTransition` | `data-kt-text-transition` | Переходы при смене текста |
-| `tilt` | `data-kt-tilt` | 3D-наклон и блик |
-| `typewriter` | `data-kt-typewriter` | Эффект печатной машинки |
-| `vibrate` | `data-kt-vibrate` | Тактильная вибро-отдача |
+| `ambientMedia` | `data-kt-ambient-media` | Окружающий свет, извлеченный из носителя |
+| `blurText` | `data-kt-blur-text` | Размытие записи по букве |
+| `brushReveal` | `data-kt-brush-reveal` | Маска кисти-указателя |
+| `cardGlow` | `data-kt-card-glow` | Указатель прожектора/отражение/внешний свет |
+| `counter` | `data-kt-counter` | Подсчет чисел, переворот, часы, обратный отсчет |
+| `cssScroll` | `data-kt-css-scroll` | Интеграция переменных CSS/прокрутки временной шкалы |
+| `cursor` | `data-kt-cursor` | 11 пользовательских курсоров |
+| `fullpage` | `data-kt-fullpage` | Полная страница по вертикальной/горизонтальной/смешанной оси |
+| `glitch` | `data-kt-glitch` | Сбой фрагмента/пикселя RGB |
+| `lazy` | `data-kt-lazy` | Скелет·Пиксель·Печать·Растворение загрузки |
+| `lightbox` | `data-kt-lightbox` | Полноэкранный просмотр группы/масштаба/миникарты |
+| `loader` | `data-kt-loader` | Загрузчик, связанный с реальным прогрессом |
+| `magnetic` | `data-kt-magnetic` | реакция магнита указателя |
+| `marquee` | `data-kt-marquee` | непрерывный шатер |
+| `mouseParallax` | `data-kt-mouse-parallax` | Указатель/гироскопический параллакс |
+| `overflowText` | `data-kt-overflow-text` | Обработка переполненного текста |
+| `pageReveal` | `data-kt-page-reveal` | Наложение записи на странице |
+| `pageTransition` | `data-kt-page-transition` | Преобразование страниц из одного источника |
+| `parallax` | `data-kt-parallax` | прокрутка параллакса |
+| `progress` | `data-kt-progress` | Чтение индикатора выполнения и кольца |
+| `reveal` | `data-kt-reveal` | Прокрутка записи |
+| `ripple` | `data-kt-ripple` | нажмите пульсацию |
+| `scrollSequence` | `data-kt-scroll-sequence` | Очистить последовательность изображений |
+| `scrollVelocity` | `data-kt-scroll-velocity` | Реакция скорости/направления прокрутки |
+| `slider` | `data-kt-slider` | Слайд·Покрытие·Растворение |
+| `stickyStack` | `data-kt-sticky-stack` | Вертикальная, горизонтальная, плавающая стопка липких материалов |
+| `textFill` | `data-kt-text-fill` | прокрутка текста, заливка |
+| `textReveal` | `data-kt-text-reveal` | Перемешать, декодировать, показать комбинацию хангыль |
+| `textSplit` | `data-kt-text-split` | Движение сегментации букв/слов |
+| `textTransition` | `data-kt-text-transition` | Замена фраз |
+| `tilt` | `data-kt-tilt` | 3D наклон, блики, тени |
+| `typewriter` | `data-kt-typewriter` | Комбинированный набор текста на корейском языке |
+| `vibrate` | `data-kt-vibrate` | Тактильная вибрационная обратная связь |
+| `confetti` | `data-kt-confetti` | Эффект конфетти щелчка/входа |
+| `accordion` | `data-kt-accordion` | детали аккордеона для обеспечения доступности |
+| `hold` | `data-kt-hold` | Индикатор подтверждения длительного нажатия/множественных нажатий |
+| `megaMenu` | `data-kt-mega-menu` | Клавиатура/Мегаменю ARIA |
+| `toast` | `data-kt-toast` | Всплывающее уведомление о статусе |
+| `bottomSheet` | `data-kt-bottom-sheet` | Нижний лист поддерживает блокировку фокуса |
+| `tabs` | `data-kt-tabs` | Управление вкладками/сегментами WAI-ARIA |
+| `radial` | `data-kt-radial` | круглая карусель |
+| `coverReveal` | `data-kt-cover-reveal` | цветная обложка раскрывается |
+| `gesture` | `data-kt-gesture` | Наведите/нажмите пружинную обратную связь |
+| `drag` | `data-kt-drag` | Инерция, граница, обратное сопротивление |
+| `tooltip` | `data-kt-tooltip` | Подсказка по автокоррекции положения |
+| `switch` | `data-kt-switch` | Переключатели доступности, используемые в формах |
+| `flip` | `data-kt-flip` | Сортировать/Добавить/Удалить преобразование FLIP |
+| `scrollShadows` | `data-kt-scroll-shadows` | тень от края прокрутки |
+| `stickyHeader` | `data-kt-sticky-header` | Фиксированный коллектор складного/крышного типа |
+| `horizontalScroll` | `data-kt-horizontal-scroll` | Исправлена ​​горизонтальная прокрутка |
 
 Варианты и полный список опций каждого модуля — в [справочнике модулей](../docs/module-reference.md) и `kineto.features.json`.
 
@@ -173,4 +190,4 @@ npm run verify  # полный CI + аудит безопасности зави
 
 ## Лицензия
 
-MIT © [dongri.me](https://dongri.me) · Создано с помощью AI vibe-coding.
+MIT © [dongri.me](https://dongri.me)

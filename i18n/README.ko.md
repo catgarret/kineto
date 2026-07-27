@@ -4,7 +4,8 @@
 
 # Kineto
 
-**실시간으로 조절하고 코드를 그대로 복사해 쓰는 웹 모션 라이브러리 — 바닐라 JS · React · Vue · jQuery 지원.**
+**옵션을 실시간으로 조절하고 완성된 코드를 복사하는 웹 모션
+라이브러리입니다.**
 
 [English](../README.md) · 한국어 · [日本語](README.jp.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [Italiano](README.it.md)
 
@@ -16,39 +17,49 @@
 
 ---
 
-> **Kineto** — 이름은 “운동·움직임”을 뜻하는 그리스어 *kínēsis*(키네시스)에서 유래한 *kinetic*(키네틱)에서 따왔습니다. 웹의 모션을 다루는 라이브러리에 어울리는 이름입니다.
+Kineto는 모션·미디어·스크롤·텍스트·UI를 다루는 50개 모듈을
+제공합니다.
+`data-kt-*` 속성 하나로 적용하거나 JavaScript API로 세밀하게
+제어할 수 있습니다.
+지원하지 않는 환경에서는 효과만 끄고 콘텐츠는 그대로 표시합니다.
 
-Kineto은 45개의 인터랙션 모듈(모션·미디어·스크롤·로더·텍스트)을 `data-kt-*` 속성 하나로 붙이거나 JavaScript API로 세밀하게 제어할 수 있는 라이브러리입니다. 코어는 외부 의존성이 없으며, 미지원 브라우저나 저사양 기기에서는 효과만 비활성화되고 콘텐츠는 그대로 유지됩니다.
-
-> AI 코딩 도구(Cursor, Claude 등)로 작업한다면 [AI 프롬프트 가이드](../AI-PROMPT-GUIDE.md)를 참고하세요. 모션·인터랙션을 Kineto 모듈로 우선 적용하도록 지시하는, 그대로 붙여넣는 프롬프트가 들어 있습니다.
+> AI 코딩 도구를 사용한다면 [AI 프롬프트 가이드](../AI-PROMPT-GUIDE.md)의
+> 지침을 바로 붙여 넣어 사용할 수 있습니다.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/kineto.gif" width="620" alt="Kineto Preview">
 
 ## 대표 기능
 
-모든 효과는 [라이브 데모](https://git.dongri.me/example/kineto)에서 옵션을 바꿔 Apply를 누르면 바로 확인하고, 결과 HTML·JavaScript를 복사해 쓸 수 있습니다.
+모든 효과는 [라이브 데모](https://git.dongri.me/example/kineto)에서
+바로 조절할 수 있습니다.
+완성된 HTML·JavaScript 코드도 함께 복사할 수 있습니다.
 
-**Progressive Print** — `lazy`. 잉크젯 인쇄처럼 줄 단위로, 저해상도에서 고해상도로 이미지가 차오릅니다.
+**Progressive Print** — 블러와 미세 노이즈가 걷히며 이미지가
+선명해집니다.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/print.gif" width="620" alt="Progressive Print">
 
-**Card Spotlight & Reflection** — `cardGlow`. 포인터를 따라가는 스포트라이트·표면 광택·발광 외곽선.
+**Card Glow** — 포인터를 따라 스포트라이트·표면 반사·외곽광이
+움직입니다.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/cardglow.gif" width="620" alt="Card Spotlight and Reflection">
 
-**Text Transition** — `textTransition`. 슬라이드·블러·스케일로 문구를 전환합니다.
+**Text Transition** — 슬라이드·블러·디졸브·시머로 문구를
+전환합니다.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/texttransition.gif" width="620" alt="Text Transition">
 
-**ScrollVelocity** — `scrollVelocity`. 스크롤 속도·방향에 따라 요소를 스큐·스케일·이동합니다.
+**Scroll Velocity** — 스크롤 속도와 방향에 따라 요소를
+이동·회전·변형합니다.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/scrollvelocity.gif" width="620" alt="ScrollVelocity">
 
-**Lightbox** — `lightbox`. 그룹·확대·미니맵을 갖춘 전체화면 이미지 뷰어.
+**Lightbox** — 그룹 이동·확대·미니맵을 지원하는 전체 화면 이미지
+뷰어입니다.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/lightbox.gif" width="620" alt="Lightbox">
 
-전체 45개 모듈은 아래 [모듈 목록](#모듈)을 참고하세요.
+전체 50개 모듈은 아래 [모듈 목록](#모듈)을 참고하세요.
 
 ## 설치
 
@@ -65,7 +76,7 @@ import '@dong-gri/kineto/style.css';
 Kineto.autoInit();
 ```
 
-### CDN (설치 없이 script 태그)
+### CDN (빌드 도구 없음)
 
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.min.css">
@@ -100,17 +111,22 @@ Kineto.reveal('.card', { preset: 'fade-up', stagger: 0.06 });
 const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true });
 ```
 
-### iOS 엣지투엣지 (노치·홈바)
+### iOS 전체 화면
 
-전체화면 효과(로더·페이지 리빌·페이지 트랜지션)는 화면 전체를 덮습니다. 아이폰 노치와 홈바 아래까지 자연스럽게 이어지도록(색이 어긋난 띠가 생기지 않도록) viewport 메타에 `viewport-fit=cover`를 추가하세요:
+로더와 페이지 전환을 노치와 홈 바까지 채우려면 viewport 메타에
+`viewport-fit=cover`를 추가하세요.
 
 ```html
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 ```
 
-## 선택적 의존성
+## 모션 엔진
 
-코어는 단독으로 동작합니다. 아래 라이브러리가 페이지에 있으면 자동으로 감지해 스크롤 스크럽(GSAP + ScrollTrigger)과 스무스 스크롤(Lenis)에 활용하고, 없으면 표준 API로 폴백합니다.
+Kineto는 GSAP과 Lenis를 번들에 포함하지 않습니다.
+필요한 효과를 처음 사용할 때 CDN에서 불러오며, 페이지에 이미 있는
+인스턴스가 있으면 그대로 사용합니다.
+CDN을 사용할 수 없으면 정적 콘텐츠를 유지하고 표준 동작으로
+대체합니다.
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
@@ -129,22 +145,22 @@ Kineto.disableSmooth();
 
 | 모듈 | 활성화 속성 | 용도 |
 |---|---|---|
-| `ambientMedia` | `data-kt-ambient-media` | 미디어 주변광(Ambient Glow) |
-| `blurText` | `data-kt-blur-text` | 글자별 블러 리빌 |
-| `brushReveal` | `data-kt-brush-reveal` | 포인터 브러시 마스크 리빌 |
-| `cardGlow` | `data-kt-card-glow` | 포인터 스포트라이트·표면 반사·발광 외곽선 |
+| `ambientMedia` | `data-kt-ambient-media` | 미디어에서 추출한 주변광 |
+| `blurText` | `data-kt-blur-text` | 글자별 블러 진입 |
+| `brushReveal` | `data-kt-brush-reveal` | 포인터 브러시 마스크 |
+| `cardGlow` | `data-kt-card-glow` | 포인터 스포트라이트·반사·외곽광 |
 | `counter` | `data-kt-counter` | 숫자 카운트·플립·시계·카운트다운 |
-| `cssScroll` | `data-kt-css-scroll` | CSS 변수·애니메이션 타임라인 스크롤 연동 |
-| `cursor` | `data-kt-cursor` | 커스텀 커서 11종 |
-| `fullpage` | `data-kt-fullpage` | 풀페이지 섹션 페이징(세로·가로·혼합축) |
-| `glitch` | `data-kt-glitch` | RGB 슬라이스·글리치 리빌 |
-| `lazy` | `data-kt-lazy` | 이미지 로딩 연출(스켈레톤·픽셀·프린트·디졸브) |
-| `lightbox` | `data-kt-lightbox` | 전체화면 뷰어·그룹·확대·미니맵 |
+| `cssScroll` | `data-kt-css-scroll` | CSS 변수·스크롤 타임라인 연동 |
+| `cursor` | `data-kt-cursor` | 11가지 커스텀 커서 |
+| `fullpage` | `data-kt-fullpage` | 세로·가로·혼합축 풀페이지 |
+| `glitch` | `data-kt-glitch` | RGB 슬라이스·픽셀 글리치 |
+| `lazy` | `data-kt-lazy` | 스켈레톤·픽셀·프린트·디졸브 로딩 |
+| `lightbox` | `data-kt-lightbox` | 그룹·확대·미니맵 전체 화면 뷰어 |
 | `loader` | `data-kt-loader` | 실제 진행률 연동 로더 |
 | `magnetic` | `data-kt-magnetic` | 포인터 자석 반응 |
-| `marquee` | `data-kt-marquee` | 무한 흐름 텍스트 |
+| `marquee` | `data-kt-marquee` | 연속 마퀴 |
 | `mouseParallax` | `data-kt-mouse-parallax` | 포인터·자이로 패럴럭스 |
-| `overflowText` | `data-kt-overflow-text` | 넘치는 텍스트 처리 8종 |
+| `overflowText` | `data-kt-overflow-text` | 넘치는 텍스트 처리 |
 | `pageReveal` | `data-kt-page-reveal` | 페이지 진입 오버레이 |
 | `pageTransition` | `data-kt-page-transition` | 동일 출처 페이지 전환 |
 | `parallax` | `data-kt-parallax` | 스크롤 패럴럭스 |
@@ -153,16 +169,32 @@ Kineto.disableSmooth();
 | `ripple` | `data-kt-ripple` | 클릭 리플 |
 | `scrollSequence` | `data-kt-scroll-sequence` | 이미지 시퀀스 스크럽 |
 | `scrollVelocity` | `data-kt-scroll-velocity` | 스크롤 속도·방향 반응 |
-| `textReveal (shuffle)` | `data-kt-text-reveal="shuffle"` | 문자 셔플 디코드 |
-| `slider` | `data-kt-slider` | 슬라이드·커버플로우 |
-| `stickyStack` | `data-kt-sticky-stack` | 스티키 스택(세로·가로·플로팅) |
-| `textFill` | `data-kt-text-fill` | 스크롤 텍스트 채움 |
-| `textReveal` | `data-kt-text-reveal` | 텍스트 리빌(한글 조합 포함) |
+| `slider` | `data-kt-slider` | 슬라이드·커버플로우·디졸브 |
+| `stickyStack` | `data-kt-sticky-stack` | 세로·가로·플로팅 스티키 스택 |
+| `textFill` | `data-kt-text-fill` | 스크롤 텍스트 채우기 |
+| `textReveal` | `data-kt-text-reveal` | 셔플·디코드·한글 조합 리빌 |
 | `textSplit` | `data-kt-text-split` | 글자·단어 분할 모션 |
-| `textTransition` | `data-kt-text-transition` | 텍스트 교체 전환 |
-| `tilt` | `data-kt-tilt` | 3D 틸트·글레어 |
-| `typewriter` | `data-kt-typewriter` | 타이핑 효과 |
+| `textTransition` | `data-kt-text-transition` | 문구 교체 전환 |
+| `tilt` | `data-kt-tilt` | 3D 틸트·글레어·그림자 |
+| `typewriter` | `data-kt-typewriter` | 한글 조합 타이핑 |
 | `vibrate` | `data-kt-vibrate` | 햅틱 진동 피드백 |
+| `confetti` | `data-kt-confetti` | 클릭·진입 색종이 효과 |
+| `accordion` | `data-kt-accordion` | 접근성을 지원하는 details 아코디언 |
+| `hold` | `data-kt-hold` | 길게 누르기·연타 확인 게이지 |
+| `megaMenu` | `data-kt-mega-menu` | 키보드·ARIA 메가 메뉴 |
+| `toast` | `data-kt-toast` | 상태 토스트 알림 |
+| `bottomSheet` | `data-kt-bottom-sheet` | 포커스 고정을 지원하는 바텀 시트 |
+| `tabs` | `data-kt-tabs` | WAI-ARIA 탭·세그먼트 컨트롤 |
+| `radial` | `data-kt-radial` | 원형 캐러셀 |
+| `coverReveal` | `data-kt-cover-reveal` | 색상 커버 리빌 |
+| `gesture` | `data-kt-gesture` | 호버·누름 스프링 피드백 |
+| `drag` | `data-kt-drag` | 관성·경계·스냅백 드래그 |
+| `tooltip` | `data-kt-tooltip` | 위치 자동 보정 툴팁 |
+| `switch` | `data-kt-switch` | 폼에서 사용하는 접근성 스위치 |
+| `flip` | `data-kt-flip` | 정렬·추가·삭제 FLIP 전환 |
+| `scrollShadows` | `data-kt-scroll-shadows` | 스크롤 가장자리 그림자 |
+| `stickyHeader` | `data-kt-sticky-header` | 축소·커버형 고정 헤더 |
+| `horizontalScroll` | `data-kt-horizontal-scroll` | 고정형 가로 스크롤 |
 
 각 모듈의 variant와 옵션 전체 목록은 [모듈 레퍼런스](../docs/module-reference.md)와 `kineto.features.json`을 참고하세요.
 
@@ -186,7 +218,9 @@ $('.card').kineto('reveal', { preset: 'fade-up' });
 
 ## 브라우저 지원
 
-Chrome, Edge, Firefox, Safari(데스크톱·모바일)의 최신 버전을 지원합니다. `prefers-reduced-motion`을 켜면 모든 모듈이 애니메이션 없이 최종 상태로 렌더링되며, 미지원 환경에서는 효과가 정적 콘텐츠로 자동 축소됩니다.
+최신 Chrome·Edge·Firefox·Safari의 데스크톱과 모바일 버전을
+지원합니다.
+동작 줄이기 설정에서는 애니메이션 없이 최종 상태를 표시합니다.
 
 ## 빌드
 
@@ -199,4 +233,4 @@ npm run verify  # 전체 CI 검증 + 의존성 보안 감사
 
 ## 라이선스
 
-MIT © [dongri.me](https://dongri.me) · AI 바이브코딩으로 만들었습니다.
+MIT © [dongri.me](https://dongri.me)

@@ -16,9 +16,7 @@
 
 ---
 
-> **Kineto** — 名称取自 *kinetic*（源自希腊语 *kínēsis*，意为“运动”）。用于网页动效的库，名副其实。
-
-Kineto 是一个包含 45 个交互模块（动效、媒体、滚动、加载器、文本）的库，你可以用一个 `data-kt-*` 属性直接挂载，或通过 JavaScript API 精细控制。核心无任何必需依赖；在不支持的浏览器或低端设备上，效果会自动关闭而内容保持完整。
+Kineto 是一个包含 50 个交互模块（动效、媒体、滚动、加载器、文本）的库，你可以用一个 `data-kt-*` 属性直接挂载，或通过 JavaScript API 精细控制。核心无任何必需依赖；在不支持的浏览器或低端设备上，效果会自动关闭而内容保持完整。
 
 > 使用 AI 编程工具（Cursor、Claude 等）？请参阅 [AI 提示词指南](../AI-PROMPT-GUIDE.md)——其中包含可直接粘贴的指令，让助手在处理动效与交互时优先使用 Kineto 模块。
 
@@ -82,9 +80,11 @@ const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 ```
 
-## 可选依赖
+## 运动引擎
 
-核心可独立运行。如果页面中存在 GSAP + ScrollTrigger（滚动 scrub）或 Lenis（平滑滚动），Kineto 会自动检测并使用；否则回退到标准 API。
+Kineto 的捆绑包中不包括 GSAP 和 Lenis。
+第一次使用时会从CDN加载所需的效果，如果页面上已经存在实例，则会使用该效果。
+如果 CDN 不可用，请保留静态内容并回退到标准行为。
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
@@ -103,40 +103,56 @@ Kineto.disableSmooth();
 
 | 模块 | 激活属性 | 用途 |
 |---|---|---|
-| `ambientMedia` | `data-kt-ambient-media` | 媒体环境光 |
-| `blurText` | `data-kt-blur-text` | 逐字模糊显现 |
-| `brushReveal` | `data-kt-brush-reveal` | 指针笔刷遮罩显现 |
-| `cardGlow` | `data-kt-card-glow` | 指针聚光、表面反射、发光边框 |
-| `counter` | `data-kt-counter` | 数字计数、翻牌、时钟、倒计时 |
-| `cssScroll` | `data-kt-css-scroll` | 绑定 CSS 变量/动画时间线 |
-| `cursor` | `data-kt-cursor` | 11 种自定义光标 |
-| `fullpage` | `data-kt-fullpage` | 整页分页（纵向/横向/混合轴） |
-| `glitch` | `data-kt-glitch` | RGB 切片与故障显现 |
-| `lazy` | `data-kt-lazy` | 图片加载效果（骨架/像素/打印/溶解） |
-| `lightbox` | `data-kt-lightbox` | 全屏查看器、分组、缩放、小地图 |
-| `loader` | `data-kt-loader` | 绑定真实进度的加载器 |
-| `magnetic` | `data-kt-magnetic` | 磁吸指针反应 |
-| `marquee` | `data-kt-marquee` | 连续跑马灯 |
+| `ambientMedia` | `data-kt-ambient-media` | 从介质中提取的环境光 |
+| `blurText` | `data-kt-blur-text` | 按字母模糊条目 |
+| `brushReveal` | `data-kt-brush-reveal` | 指针刷蒙版 |
+| `cardGlow` | `data-kt-card-glow` | 指针聚光灯/反射光/外部光 |
+| `counter` | `data-kt-counter` | 计数、翻转、时钟、倒计时 |
+| `cssScroll` | `data-kt-css-scroll` | CSS 变量/滚动时间轴集成 |
+| `cursor` | `data-kt-cursor` | 11个自定义光标 |
+| `fullpage` | `data-kt-fullpage` | 垂直/水平/混合轴整页 |
+| `glitch` | `data-kt-glitch` | RGB 切片/像素故障 |
+| `lazy` | `data-kt-lazy` | 骨架·像素·打印·溶解加载 |
+| `lightbox` | `data-kt-lightbox` | 分组/缩放/小地图全屏查看器 |
+| `loader` | `data-kt-loader` | 真实进度链接加载程序 |
+| `magnetic` | `data-kt-magnetic` | 指针磁铁反应 |
+| `marquee` | `data-kt-marquee` | 连续字幕 |
 | `mouseParallax` | `data-kt-mouse-parallax` | 指针/陀螺仪视差 |
-| `overflowText` | `data-kt-overflow-text` | 处理溢出文本的八种方式 |
-| `pageReveal` | `data-kt-page-reveal` | 页面进入遮罩 |
-| `pageTransition` | `data-kt-page-transition` | 同源页面切换 |
+| `overflowText` | `data-kt-overflow-text` | 处理溢出的文本 |
+| `pageReveal` | `data-kt-page-reveal` | 页面条目覆盖 |
+| `pageTransition` | `data-kt-page-transition` | 同源页面转换 |
 | `parallax` | `data-kt-parallax` | 滚动视差 |
-| `progress` | `data-kt-progress` | 阅读进度条/环 |
-| `reveal` | `data-kt-reveal` | 滚动进入显现 |
-| `ripple` | `data-kt-ripple` | 点击涟漪 |
-| `scrollSequence` | `data-kt-scroll-sequence` | 图片序列 scrub |
-| `scrollVelocity` | `data-kt-scroll-velocity` | 响应滚动速度/方向 |
-| `textReveal (shuffle)` | `data-kt-text-reveal="shuffle"` | 字符乱序解码 |
-| `slider` | `data-kt-slider` | 幻灯片与 coverflow |
-| `stickyStack` | `data-kt-sticky-stack` | 粘性堆叠（纵向/横向/浮动） |
-| `textFill` | `data-kt-text-fill` | 滚动驱动的文字填充 |
-| `textReveal` | `data-kt-text-reveal` | 文字显现（含韩文组合） |
-| `textSplit` | `data-kt-text-split` | 字符/单词拆分动效 |
-| `textTransition` | `data-kt-text-transition` | 文字替换过渡 |
-| `tilt` | `data-kt-tilt` | 3D 倾斜与光泽 |
-| `typewriter` | `data-kt-typewriter` | 打字效果 |
+| `progress` | `data-kt-progress` | 阅读进度条和圆环 |
+| `reveal` | `data-kt-reveal` | 滚动条目显示 |
+| `ripple` | `data-kt-ripple` | 点击波纹 |
+| `scrollSequence` | `data-kt-scroll-sequence` | 擦洗图像序列 |
+| `scrollVelocity` | `data-kt-scroll-velocity` | 滚动速度/方向响应 |
+| `slider` | `data-kt-slider` | 幻灯片·覆盖·溶解 |
+| `stickyStack` | `data-kt-sticky-stack` | 垂直、水平、浮动粘性堆栈 |
+| `textFill` | `data-kt-text-fill` | 滚动文本填充 |
+| `textReveal` | `data-kt-text-reveal` | 随机播放、解码、韩文组合显示 |
+| `textSplit` | `data-kt-text-split` | 字母/分词运动 |
+| `textTransition` | `data-kt-text-transition` | 替换短语 |
+| `tilt` | `data-kt-tilt` | 3D 倾斜、眩光、阴影 |
+| `typewriter` | `data-kt-typewriter` | 韩文组合打字 |
 | `vibrate` | `data-kt-vibrate` | 触觉振动反馈 |
+| `confetti` | `data-kt-confetti` | 单击/输入五彩纸屑效果 |
+| `accordion` | `data-kt-accordion` | 细节手风琴以支持可访问性 |
+| `hold` | `data-kt-hold` | 长按/多次点击确认计 |
+| `megaMenu` | `data-kt-mega-menu` | 键盘/ARIA 超级菜单 |
+| `toast` | `data-kt-toast` | 状态 toast 通知 |
+| `bottomSheet` | `data-kt-bottom-sheet` | 底板支持焦点锁定 |
+| `tabs` | `data-kt-tabs` | WAI-ARIA 选项卡/段控制 |
+| `radial` | `data-kt-radial` | 圆形转盘 |
+| `coverReveal` | `data-kt-cover-reveal` | 彩色封面揭晓 |
+| `gesture` | `data-kt-gesture` | 悬停/推弹簧反馈 |
+| `drag` | `data-kt-drag` | 惯性、边界、回弹阻力 |
+| `tooltip` | `data-kt-tooltip` | 位置自动校正工具提示 |
+| `switch` | `data-kt-switch` | 表单中使用的辅助开关 |
+| `flip` | `data-kt-flip` | 排序/添加/删除 FLIP 转换 |
+| `scrollShadows` | `data-kt-scroll-shadows` | 滚动边缘阴影 |
+| `stickyHeader` | `data-kt-sticky-header` | 折叠式/盖式固定头 |
+| `horizontalScroll` | `data-kt-horizontal-scroll` | 固定水平滚动 |
 
 各模块的 variant 与完整选项列表请见 [模块参考](../docs/module-reference.md) 与 `kineto.features.json`。
 
@@ -173,4 +189,4 @@ npm run verify  # 完整 CI 校验 + 依赖安全审计
 
 ## 许可
 
-MIT © [dongri.me](https://dongri.me) · 使用 AI 氛围编程（vibe coding）打造。
+MIT © [dongri.me](https://dongri.me)

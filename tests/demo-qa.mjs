@@ -63,6 +63,7 @@ try {
   await page.addScriptTag({path:resolve(root,'demo/help-i18n.js')});
   await page.addScriptTag({path:resolve(root,'demo/help-i18n-extra.js')});
   await page.addScriptTag({path:resolve(root,'demo/playground.js')});
+  await page.addScriptTag({path:resolve(root,'demo/copy-i18n.js')});
   await page.addScriptTag({content:inlineScript});
   // The demo defers module init behind the intro loader (full-load gate);
   // wait until the modules are actually running before asserting.
@@ -85,6 +86,41 @@ try {
   assert.equal(surface.codeBlocks,0,'playground bodies should stay lazy until opened'); assert.equal(surface.notice,1);
   assert.deepEqual(surface.optionContract,Object.fromEntries(contract.modules.map((module)=>[module.name,module.publicOptions])));
   assert.equal(surface.shadowHelp,true,'Tilt/Card Glow shadow help must be translated in every demo locale');
+
+  const localizedCopy=await page.evaluate(async()=>{
+    const select=document.getElementById('lang');
+    const languages=['ko','en','ja','zh-CN','zh-TW','ru','it'];
+    const result={};
+    for(const language of languages){
+      select.value=language;
+      select.dispatchEvent(new window.Event('change',{bubbles:true}));
+      await new Promise((resolve)=>window.requestAnimationFrame(
+        ()=>window.requestAnimationFrame(resolve)
+      ));
+      const descriptions=[...document.querySelectorAll([
+        'main .card > p',
+        'main .scroll-demo-unit > p',
+        'main .hscroll-demo-unit > p',
+        'main .sticky-stack-unit > p',
+        'main .reveal-demo-card > p'
+      ].join(','))];
+      result[language]={
+        count:descriptions.length,
+        twoLines:descriptions.every((node)=>{
+          const style=getComputedStyle(node);
+          const lineHeight=Number.parseFloat(style.lineHeight);
+          return node.clientHeight<=lineHeight*2.05;
+        })
+      };
+    }
+    select.value='ko';
+    select.dispatchEvent(new window.Event('change',{bubbles:true}));
+    return result;
+  });
+  assert.ok(
+    Object.values(localizedCopy).every(({count,twoLines})=>count>=126&&twoLines),
+    `localized card copy exceeded two lines: ${JSON.stringify(localizedCopy)}`
+  );
 
   const missing=await page.evaluate(()=>Array.from(document.querySelectorAll('.card')).filter((card)=>
     card.querySelector('[data-kt-counter],[data-kt-lazy],[data-kt-overflow-text],[data-kt-text-split],[data-kt-typewriter],[data-kt-text-reveal],[data-kt-text-transition],[data-kt-glitch],[data-kt-text-fill],[data-kt-reveal],[data-kt-scroll-velocity],[data-kt-slider],[data-kt-ambient-media],[data-kt-lightbox],[data-kt-card-glow],[data-kt-tilt],[data-kt-cursor],[data-kt-magnetic],[data-kt-ripple],[data-kt-vibrate],[data-kt-mouse-parallax],[data-loader-type]') && !card.querySelector(':scope > .kt-playground')).length);

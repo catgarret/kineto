@@ -16,9 +16,7 @@ HTML属性または JavaScript API で制御するWebインタラクションツ
 
 ---
 
-> **Kineto** — 名前は「運動・動き」を意味するギリシャ語 *kínēsis* に由来する *kinetic* から取りました。ウェブのモーションを扱うライブラリにふさわしい名前です。
-
-Kineto は、モーション・メディア・スクロール・ローダー・テキストにわたる45個のインタラクションモジュールを、`data-kt-*` 属性ひとつで付与するか、JavaScript API で細かく制御できるライブラリです。コアに必須の依存はなく、非対応ブラウザや低スペック端末では効果だけが無効化され、コンテンツはそのまま保たれます。
+Kineto は、モーション・メディア・スクロール・ローダー・テキストにわたる50個のインタラクションモジュールを、`data-kt-*` 属性ひとつで付与するか、JavaScript API で細かく制御できるライブラリです。コアに必須の依存はなく、非対応ブラウザや低スペック端末では効果だけが無効化され、コンテンツはそのまま保たれます。
 
 > AIコーディングツール（Cursor、Claude など）で作業する場合は [AIプロンプトガイド](../AI-PROMPT-GUIDE.md) を参照してください。モーションとインタラクションに Kineto のモジュールを優先的に使わせる、貼り付けるだけの指示文が入っています。
 
@@ -82,9 +80,11 @@ const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 ```
 
-## オプションの依存関係
+## モーションエンジン
 
-コアは単体で動作します。GSAP + ScrollTrigger（スクロールスクラブ）や Lenis（スムーススクロール）がページにあれば自動検出して活用し、なければ標準APIにフォールバックします。
+KinetoはGSAPとLenisをバンドルに含めません。
+必要なエフェクトを初めて使用するときにCDNから呼び出され、ページにすでに存在するインスタンスがある場合はそのまま使用します。
+CDNが利用できない場合は、静的コンテンツを維持し、標準の動作に置き換えます。
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
@@ -103,40 +103,56 @@ Kineto.disableSmooth();
 
 | モジュール | 有効化属性 | 用途 |
 |---|---|---|
-| `ambientMedia` | `data-kt-ambient-media` | メディアの環境光 |
-| `blurText` | `data-kt-blur-text` | 文字ごとのブラーリビール |
-| `brushReveal` | `data-kt-brush-reveal` | ポインターのブラシマスク |
-| `cardGlow` | `data-kt-card-glow` | スポットライト・表面反射・発光ボーダー |
-| `counter` | `data-kt-counter` | カウント・フリップ・時計・カウントダウン |
-| `cssScroll` | `data-kt-css-scroll` | CSS変数・アニメーションタイムライン連動 |
-| `cursor` | `data-kt-cursor` | カスタムカーソル11種 |
-| `fullpage` | `data-kt-fullpage` | フルページ送り（縦・横・混合軸） |
-| `glitch` | `data-kt-glitch` | RGBスライス・グリッチリビール |
-| `lazy` | `data-kt-lazy` | 画像ロード演出（スケルトン・ピクセル・プリント・ディゾルブ） |
-| `lightbox` | `data-kt-lightbox` | 全画面ビューア・グループ・ズーム・ミニマップ |
-| `loader` | `data-kt-loader` | 実進捗と連動するローダー |
-| `magnetic` | `data-kt-magnetic` | マグネットポインター |
-| `marquee` | `data-kt-marquee` | 連続マーキー |
-| `mouseParallax` | `data-kt-mouse-parallax` | ポインター・ジャイロのパララックス |
-| `overflowText` | `data-kt-overflow-text` | あふれるテキストの処理8種 |
-| `pageReveal` | `data-kt-page-reveal` | ページ進入オーバーレイ |
-| `pageTransition` | `data-kt-page-transition` | 同一オリジンのページ遷移 |
+| `ambientMedia` | `data-kt-ambient-media` | メディアから抽出した周辺光 |
+| `blurText` | `data-kt-blur-text` | 文字によるぼかし |
+| `brushReveal` | `data-kt-brush-reveal` | ポインターブラシマスク |
+| `cardGlow` | `data-kt-card-glow` | ポインタスポットライト・反射・外郭光 |
+| `counter` | `data-kt-counter` | 数字カウント・フリップ・時計・カウントダウン |
+| `cssScroll` | `data-kt-css-scroll` | CSS変数・スクロールタイムライン連動 |
+| `cursor` | `data-kt-cursor` | 11のカスタムカーソル |
+| `fullpage` | `data-kt-fullpage` | 縦・横・混合軸 フルページ |
+| `glitch` | `data-kt-glitch` | RGBスライス・ピクセルグリッチ |
+| `lazy` | `data-kt-lazy` | スケルトン・ピクセル・プリント・ディゾルブローディング |
+| `lightbox` | `data-kt-lightbox` | グループ・拡大・ミニマップ全画面ビューア |
+| `loader` | `data-kt-loader` | 実際の進行状況連動ローダー |
+| `magnetic` | `data-kt-magnetic` | ポインタマグネット反応 |
+| `marquee` | `data-kt-marquee` | 連続マーキ |
+| `mouseParallax` | `data-kt-mouse-parallax` | ポインター・ジャイロパララックス |
+| `overflowText` | `data-kt-overflow-text` | あふれるテキスト処理 |
+| `pageReveal` | `data-kt-page-reveal` | ページエントリオーバーレイ |
+| `pageTransition` | `data-kt-page-transition` | 同じソースページを切り替える |
 | `parallax` | `data-kt-parallax` | スクロールパララックス |
-| `progress` | `data-kt-progress` | 読み込み進捗バー・リング |
-| `reveal` | `data-kt-reveal` | スクロール進入リビール |
+| `progress` | `data-kt-progress` | 読み取り進行状況バー・リング |
+| `reveal` | `data-kt-reveal` | スクロールエントリリビル |
 | `ripple` | `data-kt-ripple` | クリックリップル |
-| `scrollSequence` | `data-kt-scroll-sequence` | 画像シーケンスのスクラブ |
-| `scrollVelocity` | `data-kt-scroll-velocity` | スクロール速度・方向への反応 |
-| `textReveal (shuffle)` | `data-kt-text-reveal="shuffle"` | 文字シャッフルデコード |
-| `slider` | `data-kt-slider` | スライド・カバーフロー |
-| `stickyStack` | `data-kt-sticky-stack` | スティッキースタック（縦・横・フローティング） |
-| `textFill` | `data-kt-text-fill` | スクロール連動のテキスト塗り |
-| `textReveal` | `data-kt-text-reveal` | テキストリビール（ハングル合成対応） |
+| `scrollSequence` | `data-kt-scroll-sequence` | 画像シーケンススクラブ |
+| `scrollVelocity` | `data-kt-scroll-velocity` | スクロール速度・方向反応 |
+| `slider` | `data-kt-slider` | スライド・カバーフロー・ディゾルブ |
+| `stickyStack` | `data-kt-sticky-stack` | 縦・横・フローティングスティッキースタック |
+| `textFill` | `data-kt-text-fill` | スクロールテキストの塗りつぶし |
+| `textReveal` | `data-kt-text-reveal` | シャッフル・デコード・ハングル組み合わせリビル |
 | `textSplit` | `data-kt-text-split` | 文字・単語分割モーション |
-| `textTransition` | `data-kt-text-transition` | テキスト差し替え遷移 |
-| `tilt` | `data-kt-tilt` | 3Dチルト・グレア |
-| `typewriter` | `data-kt-typewriter` | タイピング効果 |
-| `vibrate` | `data-kt-vibrate` | ハプティック振動フィードバック |
+| `textTransition` | `data-kt-text-transition` | フレーズ交換の切り替え |
+| `tilt` | `data-kt-tilt` | 3Dチルト・グレア・シャドウ |
+| `typewriter` | `data-kt-typewriter` | ハングル組み合わせタイピング |
+| `vibrate` | `data-kt-vibrate` | 触覚振動フィードバック |
+| `confetti` | `data-kt-confetti` | クリック・進入紙吹雪効果 |
+| `accordion` | `data-kt-accordion` | アクセシビリティをサポートする details アコーディオン |
+| `hold` | `data-kt-hold` | 長押し・連打確認ゲージ |
+| `megaMenu` | `data-kt-mega-menu` | キーボード・ARIAメガメニュー |
+| `toast` | `data-kt-toast` | ステータストースト通知 |
+| `bottomSheet` | `data-kt-bottom-sheet` | フォーカス固定をサポートするボトムシート |
+| `tabs` | `data-kt-tabs` | WAI-ARIAタップ・セグメントコントロール |
+| `radial` | `data-kt-radial` | 円形カルーセル |
+| `coverReveal` | `data-kt-cover-reveal` | カラーカバーリビル |
+| `gesture` | `data-kt-gesture` | ホバー・押しばねフィードバック |
+| `drag` | `data-kt-drag` | 慣性・境界・スナップバックドラッグ |
+| `tooltip` | `data-kt-tooltip` | 位置自動補正ツールチップ |
+| `switch` | `data-kt-switch` | フォームで使用されるアクセシビリティスイッチ |
+| `flip` | `data-kt-flip` | 整列・追加・削除 FLIP切り替え |
+| `scrollShadows` | `data-kt-scroll-shadows` | スクロールエッジシャドウ |
+| `stickyHeader` | `data-kt-sticky-header` | 縮小・カバー型固定ヘッダ |
+| `horizontalScroll` | `data-kt-horizontal-scroll` | 固定型水平スクロール |
 
 各モジュールの variant とオプション一覧は [モジュールリファレンス](../docs/module-reference.md) と `kineto.features.json` を参照してください。
 
@@ -173,4 +189,4 @@ npm run verify  # CI全体 + 依存関係のセキュリティ監査
 
 ## ライセンス
 
-MIT © [dongri.me](https://dongri.me) · AI バイブコーディングで作りました。
+MIT © [dongri.me](https://dongri.me)

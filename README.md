@@ -4,9 +4,7 @@
 
 # Kineto
 
-**Interactive web motion effects with live controls and copy-ready code — for Vanilla JavaScript, React, Vue, and jQuery.**
-
-실시간으로 조절하고 코드를 그대로 복사해 쓰는 웹 모션 라이브러리 — 바닐라 JS · React · Vue · jQuery 지원.
+**A web motion library with live controls and copy-ready code.**
 
 English · [한국어](i18n/README.ko.md) · [日本語](i18n/README.jp.md) · [简体中文](i18n/README.zh-CN.md) · [繁體中文](i18n/README.zh-TW.md) · [Русский](i18n/README.ru.md) · [Italiano](i18n/README.it.md)
 
@@ -18,35 +16,40 @@ English · [한국어](i18n/README.ko.md) · [日本語](i18n/README.jp.md) · [
 
 ---
 
-> **Kineto** — the name comes from *kinetic* (from the Greek *kínēsis*, “motion”). A fitting name for a library that is all about motion on the web.
+Kineto provides 50 modules for motion, media, scroll, text, and UI.
+Use a single `data-kt-*` attribute or control the same feature through the
+JavaScript API.
+Unsupported environments disable the effect while keeping the content intact.
 
-Kineto is an interactive web motion effects library with live controls and copy-ready code — 50 modules for motion, media, scroll, loaders, and text, with integrations for JavaScript, React, Vue, and jQuery. Attach effects with a single `data-kt-*` attribute or drive them precisely through a JavaScript API. There is nothing to install by hand: the motion engines it can use (GSAP, Lenis) are never bundled — Kineto loads them from the CDN on demand only when a scroll/scrub effect needs one (or uses a copy already on your page), so a page of CSS-based effects ships zero engine code. On unsupported browsers or low-end devices the effects switch off while the content stays intact.
-
-> Building with an AI coding tool (Cursor, Claude, etc.)? See the [AI prompt guide](AI-PROMPT-GUIDE.md) — it includes a ready-to-paste instruction that tells the assistant to reach for Kineto modules first for motion and interaction.
+> Using an AI coding tool? The [AI prompt guide](AI-PROMPT-GUIDE.md) includes
+> ready-to-paste project instructions.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/kineto.gif" width="620" alt="Kineto Preview">
 
 ## Highlights
 
-Every effect is tunable in the [live demo](https://git.dongri.me/example/kineto): adjust the options for an immediate preview, then copy the resulting HTML or JavaScript.
+Tune every effect in the [live demo](https://git.dongri.me/example/kineto),
+then copy the resulting HTML or JavaScript.
 
-**Progressive Print** — `lazy` images resolve in like an inkjet print, line by line, low to high resolution.
+**Progressive Print** — Blur and fine noise clear as the image sharpens.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/print.gif" width="620" alt="Progressive Print">
 
-**Card Spotlight & Reflection** — `cardGlow` tracks the pointer with a spotlight, surface sheen, and a luminous border.
+**Card Glow** — A spotlight, surface reflection, and border glow follow the
+pointer.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/cardglow.gif" width="620" alt="Card Spotlight and Reflection">
 
-**Text Transition** — `textTransition` swaps phrases with slide, blur, or scale transitions.
+**Text Transition** — Swap phrases with slide, blur, dissolve, or shimmer.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/texttransition.gif" width="620" alt="Text Transition">
 
-**ScrollVelocity** — `scrollVelocity` skews, scales, and shifts elements in response to scroll speed and direction.
+**Scroll Velocity** — Move, rotate, or transform elements with scroll speed and
+direction.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/scrollvelocity.gif" width="620" alt="ScrollVelocity">
 
-**Lightbox** — `lightbox` is a full-screen image viewer with groups, zoom, and a minimap.
+**Lightbox** — A full-screen viewer with groups, zoom, pan, and a minimap.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/lightbox.gif" width="620" alt="Lightbox">
 
@@ -104,22 +107,23 @@ const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true 
 
 ### iOS edge-to-edge (notch & home bar)
 
-Full-screen effects — the loader, page reveal and page transition — cover the whole viewport. So they extend under the iPhone notch and home bar instead of leaving a mismatched strip, add `viewport-fit=cover` to your viewport meta:
+Add `viewport-fit=cover` so loaders and page transitions extend beneath the
+iPhone notch and home bar.
 
 ```html
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 ```
 
-## Motion engines (GSAP, Lenis) — loaded on demand, not bundled
+## Motion engines
 
-Kineto does **not** bundle GSAP or Lenis. They are third-party engines with their own licences and release cadence, so shipping copies inside Kineto would mean redistributing them and pinning their versions. Instead Kineto loads an engine only when an effect actually needs one, and only if the page doesn't already have it:
+Kineto does not bundle GSAP or Lenis.
+It loads an engine from the CDN only when an effect needs one.
+If the page already exposes `window.gsap` or `window.Lenis`, Kineto reuses that
+instance.
 
-1. **Already on the page** — if you (or your bundler) expose `window.gsap` / `window.Lenis`, Kineto detects and uses that instance. Nothing extra is fetched, and there's never a duplicate-GSAP conflict.
-2. **Otherwise, fetched on demand** — the first time a GSAP-backed effect (reveal, scroll-scrub, sticky, text…) initialises, Kineto injects the official GSAP + ScrollTrigger `<script>` from jsDelivr. Smooth scroll does the same with Lenis when you call `enableSmooth()`. A page that uses only CSS-based effects never loads GSAP at all.
-
-If the CDN is blocked or offline, those effects fall back to native behaviour instead of erroring. Every non-GSAP effect (cursor, media, most UI, CSS-timeline scroll) works with no engine at all.
-
-You stay in control of the source — pin an exact version, self-host, or point at an internal mirror:
+When the CDN is unavailable, the content remains visible and supported effects
+fall back to native behavior.
+You can also pin a version, self-host, or use an internal mirror.
 
 ```js
 Kineto.setEngineSource({
@@ -129,7 +133,7 @@ Kineto.setEngineSource({
 });
 ```
 
-Prefer to manage them yourself? Add the `<script>` tags (or `npm install gsap lenis` as optional peers and set the globals) before Kineto initialises, and it will use those instead of fetching anything:
+To manage the engines yourself, load them before Kineto initializes.
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
@@ -234,4 +238,4 @@ npm run verify  # full CI suite plus dependency security audit
 
 ## License
 
-MIT © [dongri.me](https://dongri.me) · Built with AI vibe-coding.
+MIT © [dongri.me](https://dongri.me)
