@@ -95,8 +95,40 @@ fullpageEl.remove();
 
 const sliderModule = (await import('../src/modules/slider.js')).default;
 const coverRevealModule = (await import('../src/modules/coverReveal.js')).default;
+const flipModule = (await import('../src/modules/flip.js')).default;
 const cardGlowModule = (await import('../src/modules/cardGlow.js')).default;
 const tiltModule = (await import('../src/modules/tilt.js')).default;
+
+// FLIP uses both X and Y deltas, so the same transaction supports a multi-row
+// grid instead of only shuffling one horizontal strip.
+const flipGrid = document.createElement('div');
+const flipItems = Array.from({ length: 6 }, (_value, index) => {
+  const item = document.createElement('span');
+  item.textContent = String(index);
+  flipGrid.appendChild(item);
+  return item;
+});
+document.body.appendChild(flipGrid);
+let flipLayout = 0;
+const flipFrames = [];
+flipItems.forEach((item, index) => {
+  item.getBoundingClientRect = () => {
+    const order = flipLayout === 0 ? index : (index + 3) % 6;
+    const left = (order % 3) * 60;
+    const top = Math.floor(order / 3) * 60;
+    return { left, top, width: 46, height: 46, right: left + 46, bottom: top + 46 };
+  };
+  item.animate = (frames) => {
+    flipFrames.push(frames);
+    return { finished: Promise.resolve(), cancel() {} };
+  };
+});
+const flip = flipModule.create(flipGrid, { duration: 0.2, watch: false });
+flipLayout = 1;
+flip.play();
+assert.ok(flipFrames.some((frames) => /translate\([^,]+px, -?60px\)/.test(frames[0].transform)), 'multi-row FLIP must animate a vertical delta');
+flip.destroy();
+flipGrid.remove();
 
 // Tilt and Card Glow shadows must coexist with each other and with a card's
 // original box-shadow. Each module owns only its CSS-variable channel.
@@ -238,6 +270,44 @@ for (const direction of ['left', 'right', 'up', 'down', 'random']) {
   assert.equal(target.textContent, 'Cover reveal line one and line two', `${direction}: destroy did not restore the original text`);
   target.remove();
 }
+
+const paletteTarget = document.createElement('div');
+paletteTarget.textContent = 'Palette cover';
+document.body.appendChild(paletteTarget);
+const paletteCover = coverRevealModule.create(paletteTarget, {
+  colorMode: 'palette',
+  colors: 'rgba(255, 0, 0, .5), #00ff00, hsl(220 80% 55%)',
+  layers: 3,
+  duration: 0.05,
+  stagger: 0,
+  waitForImage: false
+});
+const palettePanels = [...paletteTarget.closest('.kt-cover-wrap').querySelectorAll('[aria-hidden="true"]')];
+assert.equal(palettePanels.length, 3, 'palette mode must create every requested layer');
+assert.equal(new Set(palettePanels.map((panel) => panel.style.background)).size, 3, 'palette mode must distribute palette colors across layers');
+paletteCover.destroy();
+paletteTarget.remove();
+
+const autoSurface = document.createElement('div');
+autoSurface.style.backgroundColor = 'rgb(30, 80, 140)';
+const autoTarget = document.createElement('div');
+autoTarget.textContent = 'Automatic harmonious cover';
+autoSurface.appendChild(autoTarget);
+document.body.appendChild(autoSurface);
+const autoCover = coverRevealModule.create(autoTarget, {
+  colorMode: 'auto',
+  layers: 3,
+  duration: 0.05,
+  stagger: 0,
+  waitForImage: false
+});
+assert.ok(
+  [...autoTarget.closest('.kt-cover-wrap').querySelectorAll('[aria-hidden="true"]')]
+    .every((panel) => panel.style.background.length > 0),
+  'auto mode must create a CSS color palette from the image or surrounding surface'
+);
+autoCover.destroy();
+autoSurface.remove();
 
 // A slider's `data-kt-progress` option must not also activate the standalone
 // Progress module on the same element. This attribute-name collision used to

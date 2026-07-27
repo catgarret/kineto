@@ -1,19 +1,120 @@
 import { clamp, cssEase, env } from '../utils.js';
 
+const COLOR_MODES = new Set(['single', 'pair', 'palette', 'auto']);
+
+const paletteTokens = (value) => {
+  if (Array.isArray(value)) return value.map(String).map((item) => item.trim()).filter(Boolean);
+  const text = String(value || '').trim();
+  if (!text) return [];
+  if (text.includes('|')) return text.split('|').map((item) => item.trim()).filter(Boolean);
+  const tokens = [];
+  let depth = 0;
+  let start = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    if (char === '(') depth += 1;
+    else if (char === ')') depth = Math.max(0, depth - 1);
+    else if (char === ',' && depth === 0) {
+      tokens.push(text.slice(start, index).trim());
+      start = index + 1;
+    }
+  }
+  tokens.push(text.slice(start).trim());
+  return tokens.filter(Boolean);
+};
+
+const cssRgb = (value) => {
+  const text = String(value || '').trim();
+  const rgb = text.match(/^rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/i);
+  if (rgb) return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+  const hex = text.match(/^#([\da-f]{3}|[\da-f]{6})$/i)?.[1];
+  if (!hex) return null;
+  const full = hex.length === 3 ? hex.split('').map((part) => part + part).join('') : hex;
+  return [0, 2, 4].map((index) => Number.parseInt(full.slice(index, index + 2), 16));
+};
+
+const rgbToHsl = ([red, green, blue]) => {
+  const r = red / 255; const g = green / 255; const b = blue / 255;
+  const max = Math.max(r, g, b); const min = Math.min(r, g, b);
+  const light = (max + min) / 2;
+  if (max === min) return [0, 0, light * 100];
+  const delta = max - min;
+  const saturation = delta / (1 - Math.abs(2 * light - 1));
+  let hue = max === r ? ((g - b) / delta) % 6 : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
+  hue = (hue * 60 + 360) % 360;
+  return [hue, saturation * 100, light * 100];
+};
+
+const sampledImageRgb = (root) => {
+  const image = root?.tagName === 'IMG' ? root : root?.querySelector?.('img');
+  if (!image || !image.complete || !image.naturalWidth) return null;
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 12; canvas.height = 12;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) return null;
+    context.drawImage(image, 0, 0, 12, 12);
+    const pixels = context.getImageData(0, 0, 12, 12).data;
+    let red = 0; let green = 0; let blue = 0; let weight = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      const alpha = pixels[index + 3] / 255;
+      if (alpha < 0.08) continue;
+      red += pixels[index] * alpha;
+      green += pixels[index + 1] * alpha;
+      blue += pixels[index + 2] * alpha;
+      weight += alpha;
+    }
+    return weight ? [red / weight, green / weight, blue / weight] : null;
+  } catch (_error) {
+    // Cross-origin images may taint the canvas. The surrounding surface below
+    // is the safe fallback, so auto colour never blocks the reveal.
+    return null;
+  }
+};
+
+const surroundingRgb = (root) => {
+  let node = root?.parentElement;
+  while (node) {
+    const value = getComputedStyle(node).backgroundColor;
+    const alpha = Number(value.match(/rgba?\([^/]*[,/]\s*([\d.]+)\s*\)$/)?.[1] ?? 1);
+    const rgb = cssRgb(value);
+    if (rgb && alpha > 0.05) return rgb;
+    node = node.parentElement;
+  }
+  return null;
+};
+
+const harmoniousPalette = (root) => {
+  const [hue, saturation, light] = rgbToHsl(sampledImageRgb(root) || surroundingRgb(root) || [255, 91, 28]);
+  const sat = clamp(saturation < 18 ? 64 : saturation, 48, 82);
+  const lit = clamp(light < 18 ? 45 : light > 82 ? 56 : light, 36, 66);
+  const drift = Math.round(Math.random() * 16 - 8);
+  return [
+    `hsl(${Math.round(hue)} ${Math.round(sat)}% ${Math.round(lit)}%)`,
+    `hsl(${Math.round((hue + 28 + drift + 360) % 360)} ${Math.round(clamp(sat + 7, 48, 88))}% ${Math.round(clamp(lit + 7, 38, 72))}%)`,
+    `hsl(${Math.round((hue - 34 + drift + 360) % 360)} ${Math.round(clamp(sat - 4, 44, 80))}% ${Math.round(clamp(lit - 6, 32, 64))}%)`
+  ];
+};
+
 // Cover reveal — coloured panel(s) cover the target and sweep away when it
 // scrolls into view. Two modes:
 //   • block (default): covers the whole element — good for images/cards.
 //   • lines (`lines:true`): splits text into its rendered lines and covers each
 //     line to its own width, revealing them one after another (staggered) —
 //     the cover hugs the text, not the surrounding box.
-// Options: color / color2 (panel colours), direction, duration, delay, ease,
-// layers (1–3), stagger (ms between layers, and between lines), threshold.
+// Options: colorMode (single/pair/palette/auto), color / color2 / colors,
+// direction, duration, delay, ease, layers (1–3), stagger (ms between layers,
+// and between lines), threshold.
 // Reduced motion reveals instantly with no panels.
 export default {
   create(el, opts = {}) {
     const reduce = env().reducedMotion;
     const color = opts.color || '#ff5b1c';
     const color2 = opts.color2 || '#12141a';
+    const colorMode = COLOR_MODES.has(opts.colorMode)
+      ? opts.colorMode
+      : (paletteTokens(opts.colors).length ? 'palette' : 'pair');
+    const specifiedPalette = paletteTokens(opts.colors);
     const requestedDirection = ['left', 'right', 'up', 'down', 'random'].includes(opts.direction) ? opts.direction : 'right';
     const duration = Math.max(0.05, Number(opts.duration ?? 0.7));
     const delay = Math.max(0, Number(opts.delay ?? 0));
@@ -35,23 +136,46 @@ export default {
     let unwrap = null;
     let alive = true;
 
+    const colorsFor = (container) => {
+      if (colorMode === 'single') return [color];
+      if (colorMode === 'pair') return [color, color2];
+      if (colorMode === 'palette') return specifiedPalette.length ? specifiedPalette : [color, color2];
+      return harmoniousPalette(el || container);
+    };
+
+    const paintPanels = (cover) => {
+      const palette = colorsFor(cover.container);
+      const offset = colorMode === 'pair' ? 0 : Math.floor(Math.random() * palette.length);
+      cover.panels.forEach((panel, index) => {
+        const panelColor = colorMode === 'pair'
+          ? (layers > 1 && index === layers - 1 ? palette[1] : palette[0])
+          : palette[(offset + index) % palette.length];
+        panel.style.background = panelColor;
+      });
+    };
+
+    const appendPanels = (cover) => {
+      cover.panels = [];
+      for (let index = 0; index < layers; index += 1) {
+        const panel = document.createElement('span');
+        panel.setAttribute('aria-hidden', 'true');
+        panel.style.cssText = `position:absolute;inset:0;z-index:${20 + index};transform:translate(0,0);transition:transform ${duration}s ${ease};pointer-events:none;will-change:transform;`;
+        cover.container.appendChild(panel);
+        cover.panels.push(panel);
+      }
+      paintPanels(cover);
+    };
+
     // Add cover panels over a container and return a play() for it.
     const coverOf = (container) => {
       const restorePosition = container.style.position;
       const restoreOverflow = container.style.overflow;
       if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
       container.style.overflow = 'hidden';
-      const panels = [];
-      for (let i = 0; i < layers; i += 1) {
-        const c = layers > 1 && i === layers - 1 ? color2 : color;
-        const panel = document.createElement('span');
-        panel.setAttribute('aria-hidden', 'true');
-        panel.style.cssText = `position:absolute;inset:0;background:${c};z-index:${20 + i};transform:translate(0,0);transition:transform ${duration}s ${ease};pointer-events:none;will-change:transform;`;
-        container.appendChild(panel);
-        panels.push(panel);
-      }
-      covers.push({ container, panels, restorePosition, restoreOverflow });
-      return panels;
+      const cover = { container, panels: [], restorePosition, restoreOverflow };
+      appendPanels(cover);
+      covers.push(cover);
+      return cover.panels;
     };
 
     let linesText = null; // original text — restored on destroy (lines mode)
@@ -150,6 +274,7 @@ export default {
           fired = true;
           img.removeEventListener('load', kick);
           img.removeEventListener('error', kick);
+          if (colorMode === 'auto') covers.forEach(paintPanels);
           play();
         };
         try { if (img.decode) img.decode().then(kick, kick); } catch (_e) { /* ignore */ }
@@ -157,6 +282,7 @@ export default {
         img.addEventListener('error', kick, { once: true });
         timers.push(setTimeout(kick, 4000)); // safety: never hang
       } else {
+        if (colorMode === 'auto') covers.forEach(paintPanels);
         play();
       }
     };
@@ -206,14 +332,7 @@ export default {
           // fires (live settings and gallery shuffle both do this). Remove those
           // panels first; otherwise every replay stacks another opaque layer set.
           cover.panels.forEach((panel) => panel.remove());
-          cover.panels = [];
-          for (let i = 0; i < layers; i += 1) {
-            const c = layers > 1 && i === layers - 1 ? color2 : color;
-            const panel = document.createElement('span');
-            panel.setAttribute('aria-hidden', 'true');
-            panel.style.cssText = `position:absolute;inset:0;background:${c};z-index:${20 + i};transform:translate(0,0);transition:transform ${duration}s ${ease};pointer-events:none;`;
-            cover.container.appendChild(panel); cover.panels.push(panel);
-          }
+          appendPanels(cover);
         });
         requestAnimationFrame(play);
       },

@@ -76,6 +76,7 @@ try {
     optionContract:window.KinetoPlayground.publicOptions,
     shadowHelp:Object.values(window.MK_HELP_I18N||{}).every((locale)=>
       locale.cardGlow?.shadowCss&&locale.tilt?.tiltShadowCss
+      &&locale.coverReveal?.colorMode&&locale.coverReveal?.colors
     )
   }));
   assert.equal(surface.version,contract.libraryVersion);
@@ -173,8 +174,10 @@ try {
     const body=panel?.__buildBody?.();
     const layers=body?.querySelector('[data-module="coverReveal"][data-option="layers"]');
     const direction=body?.querySelector('[data-module="coverReveal"][data-option="direction"]');
+    const colorMode=body?.querySelector('[data-module="coverReveal"][data-option="colorMode"]');
+    const colors=body?.querySelector('[data-module="coverReveal"][data-option="colors"]');
     const targets=[...gallery?.querySelectorAll('[data-kt-cover-reveal]')||[]];
-    if(!layers||!direction||!targets.length)return {found:false};
+    if(!layers||!direction||!colorMode||!colors||!targets.length)return {found:false};
     layers.value='3';
     layers.dispatchEvent(new window.Event('input',{bubbles:true}));
     await sleep(220);
@@ -190,11 +193,34 @@ try {
         && target.closest('.kt-cover-wrap')
       ));
     }
+    const colorModes={};
+    for(const value of ['single','pair','palette','auto']){
+      colorMode.value=value;
+      colorMode.dispatchEvent(new window.Event('change',{bubbles:true}));
+      await sleep(180);
+      colorModes[value]=targets.every((target)=>target.dataset.ktColorMode===value&&Boolean(
+        window.Kineto.getInstance(target,'coverReveal')
+        &&target.closest('.kt-cover-wrap')
+      ));
+    }
+    colorMode.value='palette';
+    colorMode.dispatchEvent(new window.Event('change',{bubbles:true}));
+    colors.value='rgba(255, 91, 28, .55), #ac7bef, hsl(205 80% 52%)';
+    colors.dispatchEvent(new window.Event('change',{bubbles:true}));
+    await sleep(220);
+    const fields={
+      palette:!colors.closest('.kt-playground__field').hidden,
+      single:body.querySelector('[data-option="color"]')?.closest('.kt-playground__field').hidden,
+      pair:body.querySelector('[data-option="color2"]')?.closest('.kt-playground__field').hidden
+    };
     await sleep(1600);
     return {
       found:true,
       layers:targets.every((target)=>target.dataset.ktLayers==='3'),
       modes,
+      colorModes,
+      paletteValue:targets.every((target)=>target.dataset.ktColors===colors.value),
+      fields,
       images:targets.every((target)=>target.querySelector('img')?.getBoundingClientRect().width>20),
       invalidLinesField:body.querySelector('[data-module="coverReveal"][data-option="lines"]')!==null
     };
@@ -202,8 +228,70 @@ try {
   assert.equal(coverRevealSweep.found,true,'Cover Reveal gallery settings were not found');
   assert.equal(coverRevealSweep.layers,true,'Cover Reveal did not retain the three-layer setting');
   assert.ok(Object.values(coverRevealSweep.modes).every(Boolean),`Cover Reveal direction rebuild failed: ${JSON.stringify(coverRevealSweep.modes)}`);
+  assert.ok(Object.values(coverRevealSweep.colorModes).every(Boolean),`Cover Reveal color mode rebuild failed: ${JSON.stringify(coverRevealSweep.colorModes)}`);
+  assert.equal(coverRevealSweep.paletteValue,true,'Cover Reveal palette did not retain CSS color values');
+  assert.deepEqual(coverRevealSweep.fields,{palette:true,single:true,pair:true},'Cover Reveal must show only controls supported by the selected color mode');
   assert.equal(coverRevealSweep.images,true,'Cover Reveal gallery images disappeared after option changes');
   assert.equal(coverRevealSweep.invalidLinesField,false,'image Cover Reveal must not expose the text-only per-line option');
+
+  const demoPolish=await page.evaluate(async()=>{
+    const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));
+    const flip=[...document.querySelectorAll('#flip-grid .flip-chip')];
+    const flipRows=new Set(flip.map((item)=>Math.round(item.getBoundingClientRect().top)));
+    const accordion=document.querySelector('[data-kt-accordion] details.kt-open, [data-kt-accordion] details[open]');
+    const note=accordion?.querySelector('.u-note');
+    const confettiPath=document.querySelector('.confetti-complete svg path');
+    const hoverCard=[...document.querySelectorAll('.card')].find((card)=>card.querySelector('h3')?.textContent.trim()==='Hover Roll');
+    const hoverPanel=hoverCard?.querySelector(':scope > .kt-playground');
+    const hoverBody=hoverPanel?.__buildBody?.();
+    const hoverPreset=hoverBody?.querySelector('[data-module="overflowText"][data-option="preset"]')?.closest('.kt-playground__field');
+    const scrollTarget=document.querySelector('[data-kt-scroll-shadows]');
+    const scrollCard=scrollTarget?.closest('.card');
+    const scrollPanel=scrollCard?.querySelector(':scope > .kt-playground');
+    const scrollBody=scrollPanel?.__buildBody?.();
+    scrollPanel.open=true;
+    scrollPanel.dispatchEvent(new window.Event('toggle'));
+    await sleep(100);
+    const shadowInput=scrollBody?.querySelector('[data-module="scrollShadows"][data-option="shadow"]');
+    const coverInput=scrollBody?.querySelector('[data-module="scrollShadows"][data-option="color"]');
+    shadowInput.value='rgba(12, 24, 48, 0.37)';
+    shadowInput.dispatchEvent(new window.Event('input',{bubbles:true}));
+    await sleep(180);
+    const help=shadowInput.closest('.kt-playground__field')?.querySelector('.kt-help');
+    const sheet=document.querySelector('.kt-drawer-sheet');
+    const scrollBefore=sheet.scrollTop;
+    help?.focus();
+    await sleep(100);
+    const tooltip=document.querySelector('.kt-tooltip.kt-playground-help:not([hidden])');
+    const tipRect=tooltip?.getBoundingClientRect();
+    const tooltipStable=Boolean(
+      tooltip&&['top','bottom'].includes(tooltip.dataset.placement)
+      &&tipRect.top>=0&&tipRect.bottom<=window.innerHeight
+      &&Math.abs(sheet.scrollTop-scrollBefore)<2
+    );
+    scrollPanel.open=false;
+    scrollPanel.dispatchEvent(new window.Event('toggle'));
+    return {
+      flipRows:flipRows.size,
+      accordionBottom:note?getComputedStyle(note).marginBottom:null,
+      accordionPaddingBottom:note?getComputedStyle(note).paddingBottom:null,
+      confettiSvg:confettiPath?.getAttribute('d')?.startsWith('M9.9997')||false,
+      hoverPresetHidden:Boolean(hoverPreset?.hidden),
+      scrollCoverHidden:coverInput==null,
+      rgbaPreserved:scrollTarget.dataset.ktShadow==='rgba(12, 24, 48, 0.37)'&&Boolean(Kineto.getInstance(scrollTarget,'scrollShadows')),
+      colorControl:shadowInput?.type==='text'&&shadowInput.classList.contains('kt-color-value'),
+      tooltipStable
+    };
+  });
+  assert.ok(demoPolish.flipRows>=3,`FLIP demo must visibly prove multi-row support, got ${demoPolish.flipRows} rows`);
+  assert.equal(demoPolish.accordionBottom,'0px','open accordion note must not have bottom margin');
+  assert.equal(demoPolish.accordionPaddingBottom,'0px','open accordion note must not retain the extra bottom gap');
+  assert.equal(demoPolish.confettiSvg,true,'Confetti completion mark must use the requested SVG');
+  assert.equal(demoPolish.hoverPresetHidden,true,'Hover Roll must hide unsupported mode switching');
+  assert.equal(demoPolish.scrollCoverHidden,true,'Scroll Shadows settings must not expose the inferred cover color');
+  assert.equal(demoPolish.rgbaPreserved,true,'Scroll Shadows must preserve and apply an RGBA shadow color');
+  assert.equal(demoPolish.colorControl,true,'color settings must use the shared CSS color control');
+  assert.equal(demoPolish.tooltipStable,true,'settings help tooltip must auto-place without changing sheet scroll');
 
   const functional=await page.evaluate(async()=>{
     const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));

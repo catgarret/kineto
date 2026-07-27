@@ -1412,6 +1412,8 @@
       "publicOptions": [
         "color",
         "color2",
+        "colorMode",
+        "colors",
         "delay",
         "direction",
         "duration",

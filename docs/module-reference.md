@@ -304,7 +304,7 @@
 - Attribute: `data-kt-cover-reveal`
 - Default variant: `block`
 - Variants: `block`
-- Public options: `color`, `color2`, `delay`, `direction`, `duration`, `ease`, `layers`, `lines`, `onComplete`, `stagger`, `threshold`, `waitForImage`
+- Public options: `color`, `color2`, `colorMode`, `colors`, `delay`, `direction`, `duration`, `ease`, `layers`, `lines`, `onComplete`, `stagger`, `threshold`, `waitForImage`
 
 ## gesture
 

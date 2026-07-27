@@ -40,7 +40,6 @@ shadows.refresh();
 | `size` | number | `44` | 가장자리 효과의 길이(px) |
 | `transition` | number | `180` | mask 모드의 전환 시간(ms) |
 | `opacity` | number | `1` | shadow 모드의 불투명도 |
-| `color` | string | 요소 배경색 | 그림자를 가리는 덮개 색 |
 | `shadow` | string | `rgba(0,0,0,.24)` | 그림자 색 |
 | `onChange` | function | — | 시작·끝 상태가 바뀔 때 호출 |
 
@@ -60,5 +59,7 @@ CSS 변수:
 - `--kt-scroll-shadow-size`
 - `--kt-scroll-shadow-shade`
 - `--kt-scroll-shadow-progress`
+
+그림자를 가리는 커버색은 요소의 계산된 배경색을 자동으로 사용합니다. 별도 테마가 필요하면 설정창 옵션 대신 `--kt-scroll-shadow-cover` CSS 변수로 명시할 수 있습니다. `shadow`와 `--kt-scroll-shadow`는 HEX, RGB, RGBA, HSL, HSLA 등 유효한 CSS 색상값을 그대로 받습니다.
 
 `destroy()`는 인라인 배경·마스크·overflow와 상태 클래스, 이벤트 리스너를 정리합니다.

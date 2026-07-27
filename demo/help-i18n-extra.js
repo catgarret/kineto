@@ -85,6 +85,37 @@
     it: 'Ombra dietro l’etichetta del cursore sopra un elemento interattivo.'
   };
 
+  const coverRevealColors = {
+    ko: {
+      colorMode: 'single은 한 색, pair는 두 색 조합, palette는 지정 목록 안에서 무작위 선택, auto는 이미지나 주변 배경과 어울리는 색을 만듭니다.',
+      colors: 'palette 모드에서 사용할 CSS 색상 목록입니다. 쉼표 또는 |로 구분합니다.'
+    },
+    en: {
+      colorMode: 'single uses one color, pair combines two, palette samples your list, and auto derives a harmonious set from the image or surrounding surface.',
+      colors: 'CSS color list used by palette mode. Separate values with commas or |.'
+    },
+    ja: {
+      colorMode: 'singleは1色、pairは2色、paletteは指定リストから選択、autoは画像や周辺背景に合う色を生成します。',
+      colors: 'paletteモードで使うCSSカラー一覧。カンマまたは|で区切ります。'
+    },
+    'zh-CN': {
+      colorMode: 'single 使用单色，pair 组合两色，palette 从指定列表选择，auto 根据图片或周围背景生成协调配色。',
+      colors: 'palette 模式使用的 CSS 颜色列表，以逗号或 | 分隔。'
+    },
+    'zh-TW': {
+      colorMode: 'single 使用單色，pair 組合兩色，palette 從指定清單選擇，auto 依圖片或周圍背景產生協調配色。',
+      colors: 'palette 模式使用的 CSS 顏色清單，以逗號或 | 分隔。'
+    },
+    ru: {
+      colorMode: 'single использует один цвет, pair — два, palette выбирает из списка, auto строит гармоничную палитру по изображению или фону.',
+      colors: 'Список CSS-цветов для режима palette, разделённый запятыми или |.'
+    },
+    it: {
+      colorMode: 'single usa un colore, pair ne combina due, palette sceglie dalla lista e auto ricava colori armonici dall’immagine o dallo sfondo.',
+      colors: 'Elenco di colori CSS per la modalità palette, separati da virgole o |.'
+    }
+  };
+
   const glitchControls = {
     ko: {
       intensity: '이동량·노이즈·블록의 세기입니다.',
@@ -227,6 +258,7 @@
   Object.entries(copy).forEach(([locale, values]) => {
     if (!sets[locale]) return;
     sets[locale].scrollShadows = { ...(sets[locale].scrollShadows || {}), ...values };
+    sets[locale].coverReveal = { ...(sets[locale].coverReveal || {}), ...coverRevealColors[locale] };
     sets[locale].cursor = { ...(sets[locale].cursor || {}), hoverShadow: hoverShadow[locale] };
     sets[locale].glitch = { ...(sets[locale].glitch || {}), ...glitchControls[locale] };
     const shadow = interactiveShadow[locale];

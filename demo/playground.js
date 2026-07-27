@@ -22,7 +22,7 @@
     (ACTIVATION_OPTION_OWNERS[module] || []).some((owner) => element.hasAttribute(MODULE_ATTRIBUTES[owner] || `data-kt-${dash(owner)}`))
   );
 
-  const PUBLIC_OPTIONS = {"accordion":["activeClass","arrowPosition","blur","duration","ease","effect","single"],"ambientMedia":["allowOverflow","ambientSrc","ambientSrcset","blur","brightness","color","fallbackColor","hideOnPause","inset","opacity","radius","sampleFps","sampleHeight","sampleWidth","saturation","scale","source","src"],"blurText":["duration","ease","onComplete","once","stagger","start"],"bottomSheet":["backdrop","backdropOpacity","dismissible","duration","handle","label","resizable","trigger"],"brushReveal":["blur","crossOrigin","fade","hold","maxDpr","onError","onProgress","onReveal","opacity","persist","radius","revealSrc","softness","src","threshold"],"cardGlow":["alwaysOn","blendMode","blur","borderBlur","borderColor","borderColor2","borderGlow","borderInset","borderOpacity","borderRadius","borderWidth","color","color1","color2","cycleDuration","disableOnMobile","duration","ease","follow","halo","intensity","luminousBorder","mode","opacity","preset","radius","reflection","sensitivity","shadow","shadowBlur","shadowColor","shadowCss","shadowFollow","shadowHoverOnly","shadowInset","shadowOpacity","shadowSpread","shadowX","shadowY","smoothing","speed","spread","surface","surfaceBlend","surfaceBlur","surfaceColor","surfaceColor2","surfaceGradient","surfaceInset","surfaceOpacity","surfaceSize"],"confetti":["colors","count","duration","gravity","once","scalar","spread","trigger","zIndex"],"counter":["blink","blinkSeparators","clockSeparator","clockStyle","comma","daysLabel","decimals","delay","duration","ease","format","from","gap","grouping","hour12","lineHeight","locale","loops","mode","onComplete","once","popAlign","popDuration","popScale","prefix","preset","rollDirection","rollDuration","seamColor","seconds","separator","separatorColor","shadow","showDays","since","stagger","start","style","suffix","tileColor","tileRadius","tileTextColor","to","until"],"coverReveal":["color","color2","delay","direction","duration","ease","layers","lines","onComplete","stagger","threshold","waitForImage"],"cssScroll":["axis","cssAnimation","end","onUpdate","property","rangeEnd","rangeStart","start","timeline"],"cursor":["backdropFilter","background","blur","borderColor","borderWidth","className","clickImage","clickImageDuration","clickImageSize","clickSprite","clickSpriteDuration","clickSpriteFrames","clickSpriteHeight","clickSpriteWidth","color","crosshairSize","dot","dotColor","dotShadow","dotSize","ease","follower","followerSize","full","global","height","hiddenSelector","hideDotOnHover","hoverBackground","hoverClass","hoverColor","hoverDotOpacity","hoverDotSize","hoverEffect","hoverLabel","hoverScale","hoverSelector","hoverShadow","hoverSrc","hoverTemplate","html","label","labelColor","labelSize","mixBlendMode","onEnter","onLeave","opacity","orbitHoverScale","orbitRadius","orbitSpeed","orbitSquash","orbitText","preset","pressScale","radius","rotate","rotateDuration","rotateText","shadow","shape","smoothing","snakeGap","snakeMinScale","snakeScaleEase","snakeText","sparkleColor","sparkleColor2","sparkleDuration","sparkleSize","sparkleSymbols","sparkleThrottle","speed","spring","src","template","text","textColor","trailColor","trailCount","trailSize","type","width","zIndex"],"drag":["axis","bounds","handle","inertia","snapBack"],"flip":["duration","ease","item","stagger","watch"],"fullpage":["autoAdvance","axis","dots","drag","duration","ease","height","initial","keyboard","loop","mode","onChange","onLeave","sectionSelector","threshold","touch","wheel"],"gesture":["duration","ease","hoverEase","hoverScale","lift","origin","pressEase","tapScale"],"glitch":["blendMode","colors","delay","duration","frequency","intensity","loop","preset","randomness","sliceCount","speed","trigger","type"],"hold":["action","blend","color","decay","duration","mode","onComplete","step","submit"],"horizontalScroll":["height","smooth","top"],"lazy":["animated","aspectRatio","autoplay","blur","crossOrigin","delay","direction","display","duration","ease","edgeOpacity","edgeWidth","effect","fadeDuration","fallbackSrc","feather","flickerBackground","frame","frameColor","glitchStrength","height","holdDuration","keepFrame","loop","maxDpr","minDuration","muted","nativeLazy","noise","noiseBlend","noiseContrast","noiseFps","noiseHeight","noiseWidth","objectFit","objectPosition","onError","onLoad","onProgress","onReveal","once","pixelEnd","pixelStart","pixelStepCount","playsinline","preload","preset","renderFps","rootMargin","rotate","sizes","skeletonAngle","skeletonColor","skeletonHighlight","skeletonIcon","skeletonSpeed","skeletonVariant","sliceCount","src","srcset","startScale","stepCount","stepDuration","steps","threshold","variant"],"lightbox":["alt","backdropBlur","backdropColor","backdropOpacity","caption","className","closeOnBackdrop","cursor","description","doubleClickZoom","download","duration","exif","group","info","lazyEffect","lazyOptions","lightboxDuration","maxZoom","metadata","minZoom","minimap","onChange","onClose","onLoad","onOpen","radius","renderUI","share","src","thumbnails","title","toolbar","transition","uiTemplate","wheelStep","zoom","zoomStep"],"loader":["ariaLabel","barHeight","barWidth","className","color","completeHold","completeOnError","duration","exit","exitDirection","exitDuration","expectedResources","fetch","fetchOptions","fill","fillColor","hideScrollbar","label","labelBlend","labelColor","manualDuration","minDuration","onComplete","onError","onProgress","percent","preset","progress","progressSource","promise","promiseCeiling","promiseStart","renderUI","resourceSelector","resources","showPercent","size","smoothing","source","stroke","trackColor","transition","type","url"],"magnetic":["ease","radius","strength"],"marquee":["clones","direction","fade","pauseOnHover","reverseOnScrollUp","scrollAcceleration","skew","speed"],"megaMenu":["closeDelay","duration","indicator","layout","openDelay","trigger"],"mouseParallax":["compassRange","ease","global","gyro","maxX","maxY","mode","preset","rotateOffset","sensitivity","smoothing","speed"],"overflowText":["ariaLive","crossfade","delay","direction","dissolveDuration","easing","ellipsis","endPause","flipDirection","flipDuration","force","gap","holdDuration","hoverTarget","items","jitter","loopOnHover","maskDirection","maskDuration","maskEase","mode","onChange","onPage","pageDuration","pageOverlap","pauseOnHover","perspective","preset","repeat","restartDelay","restoreDirection","restoreOnLeave","role","rollDirection","rollDuration","speed","text","threshold","title","transitionDirection","trigger"],"pageReveal":["angle","axis","color","color2","count","delay","direction","duration","ease","effect","onComplete","preset","stagger"],"pageTransition":["animationSelector","cache","color","color2","container","duration","ease","effect","executeScripts","linkSelector","minDuration","onClick","onEnter","onError","onLeave","scrollTop"],"parallax":["axis","distance","end","onUpdate","scrub","speed","start"],"progress":["attach","clickToTop","color","color2","hideAtEnd","label","offset","onUpdate","position","property","radius","showAfter","showPercent","size","smoothing","stroke","target","thickness","trackColor","ui","zIndex"],"radial":["activeAngle","activeClass","align","autoplay","controls","drag","duration","loop","position","radius","step"],"reveal":["activeClass","classOnly","clockDirection","delay","direction","duration","ease","end","enterClass","enterEase","leaveClass","onClassChange","onComplete","onEnter","onEnterBack","onLeave","onLeaveBack","once","order","preset","removeClassOnLeave","rootMargin","spring","stagger","start","startAngle","threshold"],"ripple":["centered","color","disableInReducedMotion","duration","easing","opacity","scale","unbounded"],"scrollSequence":["crossOrigin","end","extension","fit","frames","height","maxDpr","onError","onFrame","padding","preloadRadius","scrollLength","scrub","start","top","urlPrefix","urls","vhPerFrame"],"scrollShadows":["axis","color","mode","onChange","opacity","shadow","shape","size","transition"],"scrollVelocity":["axis","damping","decay","distance","effect","elastic","end","global","mass","maxBlur","maxRotate","maxScale","maxSkew","mode","onDirection","onUpdate","preset","response","reverse","smoothing","spring","start","stiffness","velocityDivisor"],"slider":["align","autoplay","axis","depth","dots","duration","effect","gap","initial","label","loop","minOpacity","minScale","nextSelector","onChange","opacityStep","pauseButton","pauseOnHover","perView","perspective","preset","prevSelector","progress","progressType","rotate","scaleStep","smoothing","spacing","speed","wheel"],"stickyHeader":["activeClass","distance","offset","onChange","shadow","shrink"],"stickyStack":["align","blur","bottomSpace","distance","ease","effect","end","fadePrevious","gap","itemDuration","itemHeight","minHeight","mode","offset","offsetTop","offsetY","onProgress","overlap","panelWidth","perspective","pin","pinSpacing","preset","previousBlur","previousOpacity","previousScale","previousY","reverseZ","rotate","scaleFrom","scalePrevious","scrollLength","scrub","snap","start","top","transformOrigin","transitionStartOffset","type"],"switch":["checked","duration","offColor","onChange","onColor","size","thumbColor"],"tabs":["activation","activeClass","duration","effect","indicator","indicatorMotion","onChange","orientation"],"textFill":["baseColor","end","fillColor","onUpdate","scrub","start"],"textReveal":["chars","delay","duration","ease","flickerCount","flickerLoop","hold","loop","mode","onComplete","preset","rainbow","rainbowColors","revealRate","rootMargin","scrambleFade","speed","stagger","text","threshold"],"textSplit":["animation","by","delay","duration","ease","hold","onComplete","onSwap","once","pause","perspective","preset","stagger","start","swapEase","swapOut","texts"],"textTransition":["ariaLive","baseColor","blur","charDirection","charMode","duration","ease","effect","endScale","hold","jitter","loop","minHeight","onChange","onComplete","pause","preset","shimColor","shimSpeed","stagger","startScale","texts"],"tilt":["axis","disableOnMobile","ease","glare","glareBlur","glareColor","glareOpacity","glareRadius","gyro","max","maxX","maxY","perspective","reset","reverse","scale","sensitivity","smoothing","tiltShadow","tiltShadowBlur","tiltShadowColor","tiltShadowCss","tiltShadowFollow","tiltShadowHoverOnly","tiltShadowInset","tiltShadowOpacity","tiltShadowSpread","tiltShadowX","tiltShadowY"],"toast":["barColor","dismissible","duration","icon","max","message","position","progressBar","type"],"tooltip":["content","delay","duration","effect","hideDelay","html","interactive","offset","placement","trigger"],"typewriter":["caret","caretChar","compose","eraseSpeed","hangul","loop","onComplete","pauseAfter","strings","typeSpeed"],"vibrate":["haptic","pattern","preset","threshold","trigger"]};
+  const PUBLIC_OPTIONS = {"accordion":["activeClass","arrowPosition","blur","duration","ease","effect","single"],"ambientMedia":["allowOverflow","ambientSrc","ambientSrcset","blur","brightness","color","fallbackColor","hideOnPause","inset","opacity","radius","sampleFps","sampleHeight","sampleWidth","saturation","scale","source","src"],"blurText":["duration","ease","onComplete","once","stagger","start"],"bottomSheet":["backdrop","backdropOpacity","dismissible","duration","handle","label","resizable","trigger"],"brushReveal":["blur","crossOrigin","fade","hold","maxDpr","onError","onProgress","onReveal","opacity","persist","radius","revealSrc","softness","src","threshold"],"cardGlow":["alwaysOn","blendMode","blur","borderBlur","borderColor","borderColor2","borderGlow","borderInset","borderOpacity","borderRadius","borderWidth","color","color1","color2","cycleDuration","disableOnMobile","duration","ease","follow","halo","intensity","luminousBorder","mode","opacity","preset","radius","reflection","sensitivity","shadow","shadowBlur","shadowColor","shadowCss","shadowFollow","shadowHoverOnly","shadowInset","shadowOpacity","shadowSpread","shadowX","shadowY","smoothing","speed","spread","surface","surfaceBlend","surfaceBlur","surfaceColor","surfaceColor2","surfaceGradient","surfaceInset","surfaceOpacity","surfaceSize"],"confetti":["colors","count","duration","gravity","once","scalar","spread","trigger","zIndex"],"counter":["blink","blinkSeparators","clockSeparator","clockStyle","comma","daysLabel","decimals","delay","duration","ease","format","from","gap","grouping","hour12","lineHeight","locale","loops","mode","onComplete","once","popAlign","popDuration","popScale","prefix","preset","rollDirection","rollDuration","seamColor","seconds","separator","separatorColor","shadow","showDays","since","stagger","start","style","suffix","tileColor","tileRadius","tileTextColor","to","until"],"coverReveal":["color","color2","colorMode","colors","delay","direction","duration","ease","layers","lines","onComplete","stagger","threshold","waitForImage"],"cssScroll":["axis","cssAnimation","end","onUpdate","property","rangeEnd","rangeStart","start","timeline"],"cursor":["backdropFilter","background","blur","borderColor","borderWidth","className","clickImage","clickImageDuration","clickImageSize","clickSprite","clickSpriteDuration","clickSpriteFrames","clickSpriteHeight","clickSpriteWidth","color","crosshairSize","dot","dotColor","dotShadow","dotSize","ease","follower","followerSize","full","global","height","hiddenSelector","hideDotOnHover","hoverBackground","hoverClass","hoverColor","hoverDotOpacity","hoverDotSize","hoverEffect","hoverLabel","hoverScale","hoverSelector","hoverShadow","hoverSrc","hoverTemplate","html","label","labelColor","labelSize","mixBlendMode","onEnter","onLeave","opacity","orbitHoverScale","orbitRadius","orbitSpeed","orbitSquash","orbitText","preset","pressScale","radius","rotate","rotateDuration","rotateText","shadow","shape","smoothing","snakeGap","snakeMinScale","snakeScaleEase","snakeText","sparkleColor","sparkleColor2","sparkleDuration","sparkleSize","sparkleSymbols","sparkleThrottle","speed","spring","src","template","text","textColor","trailColor","trailCount","trailSize","type","width","zIndex"],"drag":["axis","bounds","handle","inertia","snapBack"],"flip":["duration","ease","item","stagger","watch"],"fullpage":["autoAdvance","axis","dots","drag","duration","ease","height","initial","keyboard","loop","mode","onChange","onLeave","sectionSelector","threshold","touch","wheel"],"gesture":["duration","ease","hoverEase","hoverScale","lift","origin","pressEase","tapScale"],"glitch":["blendMode","colors","delay","duration","frequency","intensity","loop","preset","randomness","sliceCount","speed","trigger","type"],"hold":["action","blend","color","decay","duration","mode","onComplete","step","submit"],"horizontalScroll":["height","smooth","top"],"lazy":["animated","aspectRatio","autoplay","blur","crossOrigin","delay","direction","display","duration","ease","edgeOpacity","edgeWidth","effect","fadeDuration","fallbackSrc","feather","flickerBackground","frame","frameColor","glitchStrength","height","holdDuration","keepFrame","loop","maxDpr","minDuration","muted","nativeLazy","noise","noiseBlend","noiseContrast","noiseFps","noiseHeight","noiseWidth","objectFit","objectPosition","onError","onLoad","onProgress","onReveal","once","pixelEnd","pixelStart","pixelStepCount","playsinline","preload","preset","renderFps","rootMargin","rotate","sizes","skeletonAngle","skeletonColor","skeletonHighlight","skeletonIcon","skeletonSpeed","skeletonVariant","sliceCount","src","srcset","startScale","stepCount","stepDuration","steps","threshold","variant"],"lightbox":["alt","backdropBlur","backdropColor","backdropOpacity","caption","className","closeOnBackdrop","cursor","description","doubleClickZoom","download","duration","exif","group","info","lazyEffect","lazyOptions","lightboxDuration","maxZoom","metadata","minZoom","minimap","onChange","onClose","onLoad","onOpen","radius","renderUI","share","src","thumbnails","title","toolbar","transition","uiTemplate","wheelStep","zoom","zoomStep"],"loader":["ariaLabel","barHeight","barWidth","className","color","completeHold","completeOnError","duration","exit","exitDirection","exitDuration","expectedResources","fetch","fetchOptions","fill","fillColor","hideScrollbar","label","labelBlend","labelColor","manualDuration","minDuration","onComplete","onError","onProgress","percent","preset","progress","progressSource","promise","promiseCeiling","promiseStart","renderUI","resourceSelector","resources","showPercent","size","smoothing","source","stroke","trackColor","transition","type","url"],"magnetic":["ease","radius","strength"],"marquee":["clones","direction","fade","pauseOnHover","reverseOnScrollUp","scrollAcceleration","skew","speed"],"megaMenu":["closeDelay","duration","indicator","layout","openDelay","trigger"],"mouseParallax":["compassRange","ease","global","gyro","maxX","maxY","mode","preset","rotateOffset","sensitivity","smoothing","speed"],"overflowText":["ariaLive","crossfade","delay","direction","dissolveDuration","easing","ellipsis","endPause","flipDirection","flipDuration","force","gap","holdDuration","hoverTarget","items","jitter","loopOnHover","maskDirection","maskDuration","maskEase","mode","onChange","onPage","pageDuration","pageOverlap","pauseOnHover","perspective","preset","repeat","restartDelay","restoreDirection","restoreOnLeave","role","rollDirection","rollDuration","speed","text","threshold","title","transitionDirection","trigger"],"pageReveal":["angle","axis","color","color2","count","delay","direction","duration","ease","effect","onComplete","preset","stagger"],"pageTransition":["animationSelector","cache","color","color2","container","duration","ease","effect","executeScripts","linkSelector","minDuration","onClick","onEnter","onError","onLeave","scrollTop"],"parallax":["axis","distance","end","onUpdate","scrub","speed","start"],"progress":["attach","clickToTop","color","color2","hideAtEnd","label","offset","onUpdate","position","property","radius","showAfter","showPercent","size","smoothing","stroke","target","thickness","trackColor","ui","zIndex"],"radial":["activeAngle","activeClass","align","autoplay","controls","drag","duration","loop","position","radius","step"],"reveal":["activeClass","classOnly","clockDirection","delay","direction","duration","ease","end","enterClass","enterEase","leaveClass","onClassChange","onComplete","onEnter","onEnterBack","onLeave","onLeaveBack","once","order","preset","removeClassOnLeave","rootMargin","spring","stagger","start","startAngle","threshold"],"ripple":["centered","color","disableInReducedMotion","duration","easing","opacity","scale","unbounded"],"scrollSequence":["crossOrigin","end","extension","fit","frames","height","maxDpr","onError","onFrame","padding","preloadRadius","scrollLength","scrub","start","top","urlPrefix","urls","vhPerFrame"],"scrollShadows":["axis","color","mode","onChange","opacity","shadow","shape","size","transition"],"scrollVelocity":["axis","damping","decay","distance","effect","elastic","end","global","mass","maxBlur","maxRotate","maxScale","maxSkew","mode","onDirection","onUpdate","preset","response","reverse","smoothing","spring","start","stiffness","velocityDivisor"],"slider":["align","autoplay","axis","depth","dots","duration","effect","gap","initial","label","loop","minOpacity","minScale","nextSelector","onChange","opacityStep","pauseButton","pauseOnHover","perView","perspective","preset","prevSelector","progress","progressType","rotate","scaleStep","smoothing","spacing","speed","wheel"],"stickyHeader":["activeClass","distance","offset","onChange","shadow","shrink"],"stickyStack":["align","blur","bottomSpace","distance","ease","effect","end","fadePrevious","gap","itemDuration","itemHeight","minHeight","mode","offset","offsetTop","offsetY","onProgress","overlap","panelWidth","perspective","pin","pinSpacing","preset","previousBlur","previousOpacity","previousScale","previousY","reverseZ","rotate","scaleFrom","scalePrevious","scrollLength","scrub","snap","start","top","transformOrigin","transitionStartOffset","type"],"switch":["checked","duration","offColor","onChange","onColor","size","thumbColor"],"tabs":["activation","activeClass","duration","effect","indicator","indicatorMotion","onChange","orientation"],"textFill":["baseColor","end","fillColor","onUpdate","scrub","start"],"textReveal":["chars","delay","duration","ease","flickerCount","flickerLoop","hold","loop","mode","onComplete","preset","rainbow","rainbowColors","revealRate","rootMargin","scrambleFade","speed","stagger","text","threshold"],"textSplit":["animation","by","delay","duration","ease","hold","onComplete","onSwap","once","pause","perspective","preset","stagger","start","swapEase","swapOut","texts"],"textTransition":["ariaLive","baseColor","blur","charDirection","charMode","duration","ease","effect","endScale","hold","jitter","loop","minHeight","onChange","onComplete","pause","preset","shimColor","shimSpeed","stagger","startScale","texts"],"tilt":["axis","disableOnMobile","ease","glare","glareBlur","glareColor","glareOpacity","glareRadius","gyro","max","maxX","maxY","perspective","reset","reverse","scale","sensitivity","smoothing","tiltShadow","tiltShadowBlur","tiltShadowColor","tiltShadowCss","tiltShadowFollow","tiltShadowHoverOnly","tiltShadowInset","tiltShadowOpacity","tiltShadowSpread","tiltShadowX","tiltShadowY"],"toast":["barColor","dismissible","duration","icon","max","message","position","progressBar","type"],"tooltip":["content","delay","duration","effect","hideDelay","html","interactive","offset","placement","trigger"],"typewriter":["caret","caretChar","compose","eraseSpeed","hangul","loop","onComplete","pauseAfter","strings","typeSpeed"],"vibrate":["haptic","pattern","preset","threshold","trigger"]};
 
   const FIELDS = {
     counter: [
@@ -117,7 +117,8 @@
     stickyStack:{gap:20,scrub:.8,snap:true,effect:'depth',overlap:.35,previousOpacity:.12,previousScale:.9,previousBlur:8,scrollLength:90},
     slider:{loop:'infinite',gap:18,perView:1.35,speed:.55,autoplay:0,dots:false,progress:false,progressType:'bar',pauseButton:false,rotate:42,depth:130,minScale:.82},ambientMedia:{blur:48,inset:-28,opacity:.78,sampleInterval:700},
     lightbox:{duration:.18,backdropOpacity:.82,backdropBlur:20,radius:14,closeOnImage:false,toolbar:true,info:true,minimap:true,closeOnBackdrop:true},marquee:{direction:'left',speed:70,pauseOnHover:true,reverseOnScrollUp:true,scrollAcceleration:.35},
-    parallax:{axis:'y',speed:-.18,distance:100,scrub:1},brushReveal:{radius:80,softness:.55,fade:.045,persist:false,blur:0},scrollSequence:{fit:'cover',scrollLength:'400vh',scrub:1,preloadRadius:3},blurText:{duration:.8,stagger:.025,once:true}
+    parallax:{axis:'y',speed:-.18,distance:100,scrub:1},brushReveal:{radius:80,softness:.55,fade:.045,persist:false,blur:0},scrollSequence:{fit:'cover',scrollLength:'400vh',scrub:1,preloadRadius:3},blurText:{duration:.8,stagger:.025,once:true},
+    scrollShadows:{mode:'shadow',shape:'radial',axis:'vertical',size:44,transition:180,opacity:1,shadow:'rgba(0, 0, 0, 0.24)'}
   };
 
 
@@ -148,7 +149,7 @@ counter: {
       startScale:(o)=>(o.preset)==='blur-up'
     },
     overflowText: {
-      speed:(o)=>['loop','bounce','rewind','once','scroll-fade'].includes(o.preset||'loop'),
+      preset:(o)=>o.trigger!=='hover',
       gap:(o)=>(o.preset||'loop')==='loop',
       endPause:(o)=>['bounce','rewind','scroll-fade'].includes(o.preset),
       restartDelay:(o)=>['bounce','rewind','page','flip','dissolve','page-roll','fade'].includes(o.preset),
@@ -161,6 +162,7 @@ counter: {
       items:(o)=>(o.preset)==='rolling',
       // Hover-trigger options only make sense when trigger:'hover'; pause-on-hover
       // is meaningless for a hover-triggered effect, so hide it there.
+      speed:(o)=>o.trigger==='hover' ? o.loopOnHover===true : ['loop','bounce','rewind','once','scroll-fade'].includes(o.preset||'loop'),
       pauseOnHover:(o)=>o.trigger!=='hover',
       restoreOnLeave:(o)=>o.trigger==='hover',
       restoreDirection:(o)=>o.trigger==='hover'&&o.restoreOnLeave!==false,
@@ -242,7 +244,9 @@ counter: {
       scrollLength:(o)=>['floating','horizontal'].includes(o.preset)
     },
     coverReveal: {
-      color2:(o)=>Number(o.layers || 2) > 1,
+      color:(o)=>['single','pair'].includes(o.colorMode || 'pair'),
+      color2:(o)=>(o.colorMode || 'pair') === 'pair' && Number(o.layers || 2) > 1,
+      colors:(o)=>(o.colorMode || 'pair') === 'palette',
       waitForImage:(o)=>o.lines !== true
     },
     scrollShadows: {
@@ -250,7 +254,7 @@ counter: {
       shape:(o)=>(o.mode||'shadow')==='shadow',
       opacity:(o)=>(o.mode||'shadow')==='shadow',
       shadow:(o)=>(o.mode||'shadow')==='shadow',
-      color:()=>true
+      color:()=>false
     },
     lightbox: {
       zoomStep:(o)=>Number(o.maxZoom || 1) > Number(o.minZoom || 1),
@@ -296,7 +300,7 @@ counter: {
     bottomSheet: [['backdrop','Backdrop','checkbox'],['backdropOpacity','Backdrop opacity','range',0,1,0.05],['dismissible','Dismissible','checkbox'],['handle','Drag handle','checkbox'],['resizable','Resizable (drag handle)','checkbox'],['duration','Duration (s)','range',0.1,0.8,0.02]],
     tabs: [['activation','Activation','select',['automatic','manual']],['orientation','Orientation','select',['horizontal','vertical']],['effect','Panel effect','select',['fade','slide','blur','cross','none']],['indicatorMotion','Marker motion','select',['slide','none','fade']],['indicator','Indicator','checkbox'],['duration','Duration (s)','range',0,0.6,0.02],['activeClass','Active class','text']],
     radial: [['position','Dock','select',['bottom','top','left','right']],['align','Align','select',['center','edge']],['radius','Radius','range',80,900,10],['step','Angle step','range',6,60,1],['activeAngle','Active angle','range',-180,180,5],['duration','Duration (s)','range',0,1.5,0.05],['loop','Loop','checkbox'],['drag','Drag','checkbox'],['controls','Controls','checkbox'],['autoplay','Autoplay (ms)','range',0,6000,250],['activeClass','Active class','text']],
-    coverReveal: [['lines','Per-line (text)','checkbox'],['color','Panel color','color'],['color2','Panel color 2','color'],['direction','Direction','select',['right','left','up','down','random']],['duration','Duration (s)','range',0.2,2,0.05],['delay','Delay (ms)','range',0,2000,50],['layers','Layers','range',1,3,1],['stagger','Stagger (ms)','range',0,400,10],['waitForImage','Wait for image','checkbox']],
+    coverReveal: [['lines','Per-line (text)','checkbox'],['colorMode','Color mode','select',['single','pair','palette','auto']],['color','Panel color','color'],['color2','Panel color 2','color'],['colors','Color palette','text'],['direction','Direction','select',['right','left','up','down','random']],['duration','Duration (s)','range',0.2,2,0.05],['delay','Delay (ms)','range',0,2000,50],['layers','Layers','range',1,3,1],['stagger','Stagger (ms)','range',0,400,10],['waitForImage','Wait for image','checkbox']],
     gesture: [['hoverScale','Hover scale','range',1,1.4,0.01],['tapScale','Tap scale','range',0.7,1,0.01],['lift','Lift (px)','range',0,20,1],['origin','Origin','select',['center','top','bottom','left','right']],['duration','Duration (s)','range',0,0.6,0.02]],
     drag: [['axis','Axis','select',['both','x','y']],['bounds','Bounds','select',['','parent']],['snapBack','Snap back','checkbox'],['inertia','Inertia','checkbox']],
     tooltip: [['content','Content','text'],['placement','Placement','select',['top','bottom','left','right']],['effect','Show/hide','select',['fade','scale','shift','none']],['trigger','Trigger','select',['hover','focus','click','manual']],['delay','Show delay (ms)','range',0,800,20],['hideDelay','Hide delay (ms)','range',0,800,20],['offset','Offset (px)','range',0,24,1],['duration','Fade (s)','range',0,0.5,0.02],['html','HTML content','checkbox'],['interactive','Interactive (hover into)','checkbox']],
@@ -309,7 +313,7 @@ counter: {
     accordion:{single:false,effect:'blur',duration:.4,blur:6,arrowPosition:'right'},
     megaMenu:{trigger:'hover',layout:'dropdown',indicator:'none',openDelay:60,closeDelay:180,duration:.24},
     radial:{position:'bottom',align:'center',radius:260,step:26,activeAngle:-90,duration:.6,loop:true,drag:true,controls:true,autoplay:0},
-    coverReveal:{color:'#ff5b1c',color2:'#12141a',direction:'right',duration:.7,delay:0,layers:2,stagger:120,lines:false,waitForImage:true},
+    coverReveal:{colorMode:'pair',color:'#ff5b1c',color2:'#12141a',colors:'#ff5b1c,#ac7bef,#2791ef,#e5b322',direction:'right',duration:.7,delay:0,layers:2,stagger:120,lines:false,waitForImage:true},
     gesture:{hoverScale:1.04,tapScale:.96,lift:0,origin:'center',duration:.22},
     drag:{axis:'both',bounds:'',snapBack:false,inertia:true},
     tooltip:{placement:'top',effect:'fade',trigger:'hover',delay:120,hideDelay:80,offset:8,duration:.16,interactive:false},
@@ -332,7 +336,7 @@ counter: {
     scrollShadows: 'data-kt-scroll-shadows', stickyHeader: 'data-kt-sticky-header', horizontalScroll: 'data-kt-horizontal-scroll'
   });
   Object.assign(FIELDS, {
-    scrollShadows: [['mode','Mode','select',['shadow','mask']],['shape','Shape','select',['radial','linear']],['axis','Axis','select',['vertical','horizontal']],['size','Edge size (px)','range',12,80,2],['transition','Edge transition (ms)','range',0,600,20],['opacity','Shadow opacity','range',0,1,0.05],['shadow','Shadow color','text'],['color','Cover color','text']],
+    scrollShadows: [['mode','Mode','select',['shadow','mask']],['shape','Shape','select',['radial','linear']],['axis','Axis','select',['vertical','horizontal']],['size','Edge size (px)','range',12,80,2],['transition','Edge transition (ms)','range',0,600,20],['opacity','Shadow opacity','range',0,1,0.05],['shadow','Shadow color','color']],
     stickyHeader: [['shrink','Shrink','checkbox'],['shadow','Shadow','checkbox'],['activeClass','Stuck class','text'],['offset','Stuck offset (px)','range',0,120,2],['distance','Progress distance (px)','range',20,400,10]],
     horizontalScroll: [['height','Stage height','text'],['top','Pin top','text'],['smooth','Smooth','checkbox']]
   });
@@ -609,9 +613,9 @@ counter: {
     confetti: '클릭/뷰 색종이 버스트.', hold: '길게 눌러 확정 게이지.', toast: '상태 알림 토스트.', pageReveal: '페이지 진입 오버레이.', pageTransition: '동일 출처 페이지 전환.', vibrate: '햅틱 진동 피드백.', brushReveal: '포인터 브러시 리빌/복권긁기.'
   };
   // Promote every `ease` / `easing` text field to the rich easing picker, and
-  // every SINGLE-colour option to the colour control (swatch + hex) so colour
-  // inputs are consistent everywhere. Palettes (plural `…colors` / comma lists)
-  // stay plain text — a single picker can't represent a multi-colour list.
+  // every SINGLE-colour option to the shared colour control (visual picker +
+  // lossless CSS value supporting HEX/RGB/RGBA/HSL/HSLA). Palettes (plural
+  // `…colors` / comma lists) stay plain text because they contain many values.
   Object.values(FIELDS).forEach((defs) => {
     if (!Array.isArray(defs)) return;
     defs.forEach((def) => {
@@ -636,20 +640,47 @@ counter: {
   const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const normalizeColor = (value, fallback = '#ff5b1c') => {
     const text = String(value || '').trim();
-    if (/^#[0-9a-f]{6}$/i.test(text)) return text;
-    const rgb = text.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+    const hex = text.match(/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i)?.[1];
+    if (hex) {
+      const full = hex.length === 3 ? hex.split('').map((part) => part + part).join('') : hex.slice(0, 6);
+      return `#${full}`;
+    }
+    const rgb = text.match(/rgba?\(\s*(\d+(?:\.\d+)?)\s*[, ]\s*(\d+(?:\.\d+)?)\s*[, ]\s*(\d+(?:\.\d+)?)/i);
     if (!rgb) return fallback;
-    return `#${rgb.slice(1,4).map((channel) => Number(channel).toString(16).padStart(2,'0')).join('')}`;
+    return `#${rgb.slice(1,4).map((channel) => Math.round(Math.max(0, Math.min(255, Number(channel)))).toString(16).padStart(2,'0')).join('')}`;
+  };
+  const validCssColor = (value) => {
+    const text = String(value || '').trim();
+    if (!text) return false;
+    if (window.CSS?.supports) return CSS.supports('color', text);
+    return /^#[\da-f]{3,8}$/i.test(text) || /^(?:rgb|hsl)a?\([^)]*\)$/i.test(text);
   };
 
-  // Build a simple swatch + hex input around a native color input (no recent-
-  // color history — it confused more than it helped).
+  // The text field is the source of truth because native colour inputs cannot
+  // preserve alpha. The swatch remains a quick visual picker while HEX, RGB,
+  // RGBA, HSL, HSLA and CSS variables survive unchanged in generated code.
   const buildColorControl = (input, apply) => {
     const wrap = document.createElement('div'); wrap.className = 'kt-color-row';
-    const hex = document.createElement('input'); hex.type = 'text'; hex.className = 'kt-color-hex'; hex.value = input.value; hex.setAttribute('aria-label', 'HEX'); hex.spellcheck = false;
-    input.addEventListener('change', () => { hex.value = input.value; });
-    hex.addEventListener('input', () => { const v = hex.value.trim(); if (/^#[0-9a-f]{6}$/i.test(v)) { input.value = v; apply(); } });
-    wrap.append(input, hex);
+    const picker = document.createElement('input');
+    picker.type = 'color';
+    picker.className = 'kt-color-picker';
+    picker.value = normalizeColor(input.value);
+    picker.setAttribute('aria-label', '색상 선택');
+    input.classList.add('kt-color-value');
+    input.setAttribute('aria-label', 'CSS 색상 값: HEX, RGB, RGBA, HSL 또는 HSLA');
+    input.spellcheck = false;
+    picker.addEventListener('input', () => {
+      input.value = picker.value;
+      input.removeAttribute('aria-invalid');
+      apply();
+    });
+    input.addEventListener('input', () => {
+      const value = input.value.trim();
+      const valid = validCssColor(value);
+      input.setAttribute('aria-invalid', String(!valid));
+      if (valid) picker.value = normalizeColor(value, picker.value);
+    });
+    wrap.append(picker, input);
     return wrap;
   };
 
@@ -1153,23 +1184,34 @@ counter: {
       help.type = 'button';
       help.className = 'kt-help';
       help.setAttribute('aria-label', `${label} 설명`);
-      help.setAttribute('aria-expanded', 'false');
       help.dataset.tip = tip;
       help.textContent = '?';
-      const pop = document.createElement('span');
-      pop.className = 'kt-help-pop'; pop.setAttribute('role', 'tooltip'); pop.id = `${fieldId}-tip`;
-      pop.textContent = tip; pop.hidden = true;
-      help.setAttribute('aria-describedby', pop.id);
-      // Click/tap toggles the popover (hover still works via CSS) so touch users
-      // can read help too. Escape or an outside click closes it.
-      help.addEventListener('click', (e) => {
-        e.preventDefault();
-        const open = pop.hidden;
-        document.querySelectorAll('.kt-help-pop:not([hidden])').forEach((p) => { p.hidden = true; p.previousElementSibling?.setAttribute?.('aria-expanded', 'false'); });
-        pop.hidden = !open; help.setAttribute('aria-expanded', String(open));
-      });
-      help.addEventListener('keydown', (e) => { if (e.key === 'Escape') { pop.hidden = true; help.setAttribute('aria-expanded', 'false'); } });
-      capRow.append(help, pop);
+      capRow.append(help);
+      // Reuse Kineto's fixed-position Tooltip module instead of inserting a
+      // popover into the settings grid. Create it only on first use so lazily
+      // rendered setting panels do not allocate hundreds of dormant instances.
+      const ensureHelpTooltip = () => {
+        if (help.__ktHelpTooltip) return help.__ktHelpTooltip;
+        const created = window.Kineto?.tooltip?.(help, {
+          content: help.dataset.tip,
+          placement: 'top',
+          trigger: 'hover',
+          delay: 70,
+          hideDelay: 50,
+          offset: 9,
+          effect: 'shift'
+        });
+        const instance = Array.isArray(created) ? created[0] : created;
+        if (!instance) return null;
+        help.__ktHelpTooltip = instance;
+        status.__ktHelpTooltips ||= [];
+        status.__ktHelpTooltips.push(instance);
+        const tipId = (help.getAttribute('aria-describedby') || '').split(/\s+/).find((id) => id.startsWith('kt-tooltip-'));
+        document.getElementById(tipId)?.classList.add('kt-playground-help');
+        return instance;
+      };
+      help.addEventListener('pointerenter', () => ensureHelpTooltip()?.show?.());
+      help.addEventListener('focus', () => ensureHelpTooltip()?.show?.());
       wrapper.dataset.tip = tip;
     }
     let input;
@@ -1217,14 +1259,14 @@ counter: {
       easingEditor = document.createElement('div');
       easingEditor.className = 'kt-ease-editor';
     } else {
-      input = document.createElement('input'); input.type = type;
+      input = document.createElement('input'); input.type = type === 'color' ? 'text' : type;
       if (type === 'range') { input.min = a; input.max = b; input.step = c; }
     }
     input.dataset.option = key;
     input.dataset.module = descriptor.module;
     const value = optionValue(descriptor, key);
     if (type === 'checkbox') input.checked = Boolean(value);
-    else if (type === 'color') input.value = normalizeColor(value);
+    else if (type === 'color') input.value = String(value || '#ff5b1c');
     else if (type === 'easing') input.value = (value == null ? '' : String(value));
     else input.value = value;
     const valueLabel = document.createElement('small');
@@ -1255,7 +1297,7 @@ counter: {
           updateCode(host, descriptors);
           status.textContent = `적용됨 · 활성 인스턴스 ${window.Kineto.instanceCount}개`;
         }
-      }, type === 'range' ? 80 : 0));
+      }, type === 'range' || type === 'color' ? 80 : 0));
     };
     // Reflect an easing value into the static preview, the custom input and the
     // interactive drag editor (which only shows for cubic-bezier values).
@@ -1277,8 +1319,9 @@ counter: {
       if (!bezierCtl) bezierCtl = mountBezierEditor(easingEditor, val, emitEase);
       else if (easingBezier(val)) bezierCtl.set(val);
     };
-    input.addEventListener(type === 'range' ? 'input' : 'change', () => {
+    input.addEventListener(type === 'range' || type === 'color' ? 'input' : 'change', () => {
       const next = type === 'checkbox' ? input.checked : input.value;
+      if (type === 'color' && !validCssColor(next)) return;
       if (showValue) valueLabel.textContent = type === 'checkbox' ? (input.checked ? 'on' : 'off') : input.value;
       if (descriptor.kind === 'loader' || descriptor.kind === 'pageReveal' || descriptor.kind === 'pageTransition') descriptor.options[descriptor.kind === 'loader' && key === 'preset' ? 'type' : key] = type === 'checkbox' ? next : (type === 'number' || type === 'range' ? Number(next) : next);
       else setOption(descriptor, key, next, type);
@@ -1294,7 +1337,6 @@ counter: {
         const next = easingCustom.value.trim();
         setOption(descriptor, key, next, 'text');
         syncEase(next);
-        updateCode(host, descriptors);
         schedule();
       });
     }
@@ -1308,7 +1350,7 @@ counter: {
       wrapper.append(capRow, input, easingCustom, easingEditor, valueLabel);
       if (easingEditor) syncEase(input.value);
     }
-    else if (type === 'color') { wrapper.append(capRow, buildColorControl(input, () => input.dispatchEvent(new Event('change'))), valueLabel); }
+    else if (type === 'color') { wrapper.append(capRow, buildColorControl(input, () => input.dispatchEvent(new Event('input'))), valueLabel); }
     else { wrapper.append(capRow, input, valueLabel); }
     return wrapper;
   }
@@ -1696,6 +1738,9 @@ counter: {
   function rebuildPanel(host, descriptors, message = '', keepOpen = false) {
     const previous = host.querySelector(':scope > .kt-playground');
     const wasOpen = keepOpen || previous?.open;
+    previous?.__mkBody?.querySelector('.kt-playground__status')?.__ktHelpTooltips?.forEach?.((instance) => {
+      if (instance?.el) window.Kineto?.destroyModule?.(instance.el, 'tooltip');
+    });
     previous?.__mkBody?.remove();
     previous?.remove();
     const panel = panelFor(host, descriptors);
@@ -1842,9 +1887,10 @@ counter: {
         if (tip == null) return;
         field.dataset.tip = tip;
         const help = field.querySelector('.kt-help');
-        if (help) { help.dataset.tip = tip; }
-        const pop = field.querySelector('.kt-help-pop');
-        if (pop) pop.textContent = tip;
+        if (help) {
+          help.dataset.tip = tip;
+          help.__ktHelpTooltip?.update?.({ content: tip });
+        }
       });
     }, capture, mount, updateCode, publicOptions: PUBLIC_OPTIONS,
     // Exposed for the options-sync test: the settings-field definitions after all
