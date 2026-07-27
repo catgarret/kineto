@@ -13,13 +13,23 @@ export default {
     if (!track) return null;
     const slides = Array.from(track.children);
     if (!slides.length) return null;
+    const emit = (name, detail) => {
+      const EventCtor = el.ownerDocument?.defaultView?.CustomEvent || globalThis.CustomEvent;
+      if (EventCtor) el.dispatchEvent(new EventCtor(name, { detail }));
+    };
 
-    const effect = opts.effect || opts.preset || 'slide';
+    const effect = String(opts.effect || opts.preset || 'slide').toLowerCase();
     const coverflow = effect === 'coverflow';
-    // fade/dissolve: slides stack in place and cross-fade by distance from active.
-    const fade = effect === 'fade' || effect === 'dissolve';
+    const fade = effect === 'fade';
+    const dissolve = effect === 'dissolve';
+    const wipe = effect === 'wipe';
+    const flip = effect === 'flip';
+    const cube = effect === 'cube';
+    const cards = effect === 'cards';
+    const creative = effect === 'creative';
+    const stacked = fade || dissolve || wipe || flip || cube || cards || creative;
     const gap = Math.max(0, Number(opts.gap ?? (coverflow ? 22 : 0)));
-    const perView = fade ? 1 : clamp(Number(opts.perView ?? (coverflow ? 1.35 : 1)), 1, slides.length);
+    const perView = stacked ? 1 : clamp(Number(opts.perView ?? (coverflow ? 1.35 : 1)), 1, slides.length);
     // The active slide is centered by default in both effects; align:'left'
     // restores the classic left-edge slide alignment.
     const centered = coverflow || (opts.align || 'center') !== 'left';
@@ -41,6 +51,11 @@ export default {
     const minOpacity = clamp(Number(opts.minOpacity ?? 0.25), 0, 1);
     // axis:'y' pages vertically (slides stack top→bottom, drag/keys follow).
     const vertical = opts.axis === 'y';
+    const effectIntensity = clamp(Number(opts.effectIntensity ?? 1), 0, 3);
+    const effectDirection = String(opts.effectDirection || (vertical ? 'up' : 'left')).toLowerCase();
+    const allowDrag = opts.drag !== false;
+    const allowTouch = opts.touch !== false;
+    const allowKeyboard = opts.keyboard !== false;
 
     const original = {
       wrap: wrap.getAttribute('style'), track: track.getAttribute('style'),
@@ -66,6 +81,7 @@ export default {
     let paused = false;
     let alive = true;
     let pauseButton = null;
+    let enabled = opts.enabled !== false;
     // Assigned once the progress bar is set up (below); no-op until then so the
     // autoplay start() can call it without a temporal-dead-zone hazard.
     let resetProgressSafe = () => {};
@@ -77,7 +93,9 @@ export default {
     wrap.style.overflow = 'hidden';
     wrap.style.touchAction = vertical ? 'pan-x' : 'pan-y';
     wrap.style.position = 'relative';
-    if (coverflow) wrap.style.perspective = `${Number(opts.perspective ?? 1100)}px`;
+    if (coverflow || flip || cube || cards || creative) wrap.style.perspective = `${Number(opts.perspective ?? 1100)}px`;
+    el.dataset.ktSliderEffect = effect;
+    el.classList.add(`kt-slider--${effect}`);
     track.style.display = 'block';
     track.style.position = 'relative';
     track.style.width = '100%';
@@ -116,14 +134,76 @@ export default {
     };
 
     const render = () => {
-      if (fade) {
-        // Stack every slide and cross-fade by distance from the active position.
+      if (stacked) {
+        // Stack scene effects in one plane. Fade remains a clean cross-fade;
+        // dissolve adds a noisy blur/scale transition; wipe, flip, cube, cards
+        // and creative each get a genuinely distinct transform.
         slides.forEach((slide, slideIndex) => {
           const distance = seamless ? wrapDelta(slideIndex - position) : slideIndex - position;
           const absolute = Math.abs(distance);
-          slide.style.transform = 'translate3d(0,0,0)';
-          slide.style.opacity = String(clamp(1 - absolute, 0, 1));
-          slide.style.zIndex = String(absolute < 0.5 ? 2 : 1);
+          const visible = clamp(1 - absolute, 0, 1);
+          const mix = clamp(1 - Math.abs(visible * 2 - 1), 0, 1);
+          slide.style.setProperty('--kt-slider-slide-distance', String(distance));
+          slide.style.setProperty('--kt-slider-slide-progress', String(visible));
+          slide.style.setProperty('--kt-slider-transition-mix', String(mix));
+          slide.style.filter = '';
+          slide.style.clipPath = '';
+          slide.style.backfaceVisibility = '';
+          if (fade) {
+            slide.style.transform = 'translate3d(0,0,0)';
+            slide.style.opacity = String(visible);
+          } else if (dissolve) {
+            const blur = absolute * 14 * effectIntensity;
+            const scale = 1 + absolute * 0.045 * effectIntensity;
+            slide.style.transform = `translate3d(0,0,0) scale(${scale})`;
+            slide.style.filter = `blur(${blur}px) saturate(${Math.max(0.72, 1 - absolute * 0.18)})`;
+            slide.style.opacity = String(Math.pow(visible, 0.78));
+          } else if (wipe) {
+            const hidden = (1 - visible) * 100;
+            const travelDirection = Math.sign(target - position) || 1;
+            const incoming = Math.sign(distance) === travelDirection;
+            const clips = {
+              left: `inset(0 ${hidden}% 0 0)`,
+              right: `inset(0 0 0 ${hidden}%)`,
+              up: `inset(0 0 ${hidden}% 0)`,
+              down: `inset(${hidden}% 0 0 0)`
+            };
+            slide.style.transform = 'translate3d(0,0,0)';
+            slide.style.clipPath = incoming ? (clips[effectDirection] || clips.left) : 'inset(0)';
+            slide.style.opacity = absolute < 1 ? '1' : '0';
+          } else if (flip) {
+            const angle = clamp(distance * -180 * effectIntensity, -180, 180);
+            slide.style.transform = `translate3d(0,0,${-absolute * 40}px) rotate${vertical ? 'X' : 'Y'}(${angle}deg)`;
+            slide.style.backfaceVisibility = 'hidden';
+            slide.style.opacity = String(visible);
+          } else if (cube) {
+            const angle = clamp(distance * -90 * effectIntensity, -100, 100);
+            const shift = distance * 50;
+            slide.style.transformOrigin = vertical
+              ? (distance > 0 ? '50% 100%' : '50% 0%')
+              : (distance > 0 ? '100% 50%' : '0% 50%');
+            slide.style.transform = vertical
+              ? `translate3d(0,${shift}%,${-absolute * 80}px) rotateX(${angle}deg)`
+              : `translate3d(${shift}%,0,${-absolute * 80}px) rotateY(${angle}deg)`;
+            slide.style.backfaceVisibility = 'hidden';
+            slide.style.opacity = String(visible);
+          } else if (cards) {
+            const x = distance * 7 * effectIntensity;
+            const y = absolute * 8 * effectIntensity;
+            const rotateZ = distance * 4 * effectIntensity;
+            const scale = Math.max(0.82, 1 - absolute * 0.055 * effectIntensity);
+            slide.style.transform = `translate3d(${x}%,${y}px,${-absolute * 70}px) rotateZ(${rotateZ}deg) scale(${scale})`;
+            slide.style.opacity = String(Math.max(0, 1 - absolute * 0.45));
+          } else {
+            const x = distance * 34 * effectIntensity;
+            const y = distance * -7 * effectIntensity;
+            const rotateZ = distance * -5 * effectIntensity;
+            const scale = Math.max(0.78, 1 - absolute * 0.12 * effectIntensity);
+            slide.style.transform = `translate3d(${x}%,${y}%,${-absolute * 150}px) rotateZ(${rotateZ}deg) scale(${scale})`;
+            slide.style.filter = `blur(${absolute * 4 * effectIntensity}px)`;
+            slide.style.opacity = String(visible);
+          }
+          slide.style.zIndex = String(wipe && Math.sign(distance) === (Math.sign(target - position) || 1) ? 3 : (absolute < 0.5 ? 2 : 1));
           slide.style.pointerEvents = absolute < 0.5 ? '' : 'none';
         });
         return;
@@ -188,9 +268,17 @@ export default {
     // In loop mode the continuous target just keeps climbing/falling forever, so
     // the spring never has to unwind the whole track to wrap around.
     const settle = (raw) => {
+      if (!enabled) return;
       target = seamless ? raw : clamp(raw, 0, maxIndex);
       const nextIndex = seamless ? normalize(target) : clamp(Math.round(target), 0, maxIndex);
-      if (nextIndex !== index) { index = nextIndex; syncState(); }
+      if (nextIndex !== index) {
+        const previousIndex = index;
+        opts.onBeforeChange?.(nextIndex, previousIndex, el);
+        emit('kt-slider-before-change', { index: nextIndex, previousIndex, slide: slides[nextIndex] });
+        index = nextIndex;
+        syncState();
+        emit('kt-slider-change', { index, previousIndex, slide: slides[index] });
+      }
       wake();
     };
     const goTo = (value) => {
@@ -236,7 +324,9 @@ export default {
     };
 
     const onDown = (event) => {
+      if (!enabled) return;
       if (event.pointerType === 'mouse' && event.button !== 0) return;
+      if (event.pointerType === 'mouse' ? !allowDrag : !allowTouch) return;
       dragging = true;
       pointerId = event.pointerId;
       dragStartX = vertical ? event.clientY : event.clientX;
@@ -276,6 +366,7 @@ export default {
       start();
     };
     const onKey = (event) => {
+      if (!enabled || !allowKeyboard) return;
       const forwardKey = vertical ? 'ArrowDown' : 'ArrowRight';
       const backKey = vertical ? 'ArrowUp' : 'ArrowLeft';
       if (event.key === forwardKey) { event.preventDefault(); next(); }
@@ -303,6 +394,7 @@ export default {
     const wheelNav = opts.wheel === true;
     let wheelLock = 0;
     const onWheel = (event) => {
+      if (!enabled) return;
       const delta = Math.abs(event.deltaX) >= Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
       if (Math.abs(delta) < 6) return;
       event.preventDefault();
@@ -428,16 +520,27 @@ export default {
     syncState();
     start();
     startProgressLoop();
+    opts.onInit?.(el);
+    emit('kt-slider-init', { index, slide: slides[index] });
 
     return {
       el,
       type: 'slider',
       get index() { return index; },
+      get slides() { return slides.slice(); },
       next,
       prev,
+      slideNext: next,
+      slidePrev: prev,
       goTo(value) { goTo(Number(value)); },
+      slideTo(value) { goTo(Number(value)); },
       replay() { goTo(0); },
       get paused() { return paused; },
+      get enabled() { return enabled; },
+      get isBeginning() { return !seamless && index === 0; },
+      get isEnd() { return !seamless && index === maxIndex; },
+      enable() { enabled = true; wrap.removeAttribute('aria-disabled'); },
+      disable() { enabled = false; stop(); wrap.setAttribute('aria-disabled', 'true'); },
       pause() { paused = true; stop(); syncPauseButton(); },
       resume() { paused = false; start(); syncPauseButton(); },
       destroy() {
@@ -456,7 +559,9 @@ export default {
         const restore = (node, name, value) => value == null ? node.removeAttribute(name) : node.setAttribute(name, value);
         restore(wrap, 'style', original.wrap); restore(track, 'style', original.track); restore(wrap, 'role', original.wrapRole); restore(wrap, 'aria-label', original.wrapLabel); restore(wrap, 'tabindex', original.wrapTab);
         slides.forEach((slide, slideIndex) => { const state = original.slides[slideIndex]; restore(slide, 'style', state.style); restore(slide, 'role', state.role); restore(slide, 'aria-hidden', state.hidden); restore(slide, 'aria-label', state.label); slide.classList.remove('is-active'); });
+        el.classList.remove(`kt-slider--${effect}`);
         delete el.dataset.ktSliderIndex;
+        delete el.dataset.ktSliderEffect;
       }
     };
   },

@@ -224,26 +224,63 @@ try {
 
   const loaderVisibility=await page.evaluate(async()=>{
     const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));
-    const button=document.querySelector('[data-loader-type="spinner"][data-loader-spinner-style="comet"]');
-    const panel=button?.closest('.card')?.querySelector(':scope > .kt-playground');
+    const indicator=document.querySelector('[data-kt-loading-indicator="spinner"][data-kt-spinner-style="comet"]');
+    const panel=indicator?.closest('.card')?.querySelector(':scope > .kt-playground');
     const body=panel?.__buildBody?.();
-    const type=body?.querySelector('[data-option="preset"]');
+    const type=body?.querySelector('[data-module="loadingIndicator"][data-option="preset"]');
     const terminalStyle=body?.querySelector('[data-option="terminalStyle"]');
     if(!type||!terminalStyle)return {found:false};
     const visible=(key)=>!body.querySelector(`[data-option="${key}"]`)?.closest('.kt-playground__field')?.hidden;
     type.value='terminal';
     type.dispatchEvent(new window.Event('change',{bubbles:true}));
     await sleep(180);
-    const terminalOnly=visible('terminalStyle')&&!visible('spinnerStyle')&&!visible('dotCount');
-    terminalStyle.value='steps';
+    const terminalOnly=visible('terminalStyle')&&!visible('spinnerStyle')&&!visible('barWidth');
+    terminalStyle.value='blocks';
     terminalStyle.dispatchEvent(new window.Event('change',{bubbles:true}));
     await sleep(180);
-    const stepsOnly=visible('terminalLines')&&!visible('cursorChar');
-    return {found:true,terminalOnly,stepsOnly};
+    const blocksOnly=visible('dotCount')&&!visible('cursorChar');
+    return {found:true,terminalOnly,blocksOnly};
   });
-  assert.equal(loaderVisibility.found,true,'rich Loader settings fixture was not found');
-  assert.equal(loaderVisibility.terminalOnly,true,'Loader type switch left unsupported spinner controls visible');
-  assert.equal(loaderVisibility.stepsOnly,true,'Terminal steps did not expose only its supported line controls');
+  assert.equal(loaderVisibility.found,true,'Loading Indicator settings fixture was not found');
+  assert.equal(loaderVisibility.terminalOnly,true,'Loading Indicator type switch left unsupported spinner controls visible');
+  assert.equal(loaderVisibility.blocksOnly,true,'Terminal blocks did not expose only its supported count controls');
+
+  const settingsGrid=await page.evaluate(async()=>{
+    const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));
+    const target=document.querySelector('[data-kt-text-transition]');
+    const panel=target?.closest('.card')?.querySelector(':scope > .kt-playground');
+    if(!panel)return {found:false};
+    panel.open=true;
+    panel.dispatchEvent(new window.Event('toggle'));
+    await sleep(220);
+    const body=panel.__mkBody||panel.__buildBody?.();
+    const groups=[...body?.querySelectorAll('.kt-playground__groups > .kt-playground__group')||[]];
+    if(groups.length<4)return {found:false,count:groups.length};
+    groups.forEach((group)=>group.classList.contains('is-collapsed')&&group.querySelector('.kt-playground__legend')?.click());
+    groups.slice(0,3).forEach((group)=>group.querySelector('.kt-playground__legend')?.click());
+    await sleep(120);
+    const rects=groups.map((group)=>group.getBoundingClientRect());
+    const overlap=rects.some((rect,index)=>rects.some((other,otherIndex)=>(
+      otherIndex>index&&rect.width&&other.width
+      &&rect.left<other.right&&rect.right>other.left&&rect.top<other.bottom&&rect.bottom>other.top
+    )));
+    const full=(group)=>getComputedStyle(group).gridColumnEnd==='-1'||group.classList.contains('is-full-row');
+    const result={
+      found:true,
+      firstPair:Math.abs(rects[0].top-rects[1].top)<2,
+      unpairedCollapsedFull:full(groups[2]),
+      expandedFull:full(groups[3]),
+      overlap
+    };
+    panel.open=false;
+    panel.dispatchEvent(new window.Event('toggle'));
+    return result;
+  });
+  assert.equal(settingsGrid.found,true,'Text Transition settings grid fixture was not found');
+  assert.equal(settingsGrid.firstPair,true,'first two collapsed setting groups must share one row');
+  assert.equal(settingsGrid.unpairedCollapsedFull,true,'unpaired collapsed setting group must span the full row');
+  assert.equal(settingsGrid.expandedFull,true,'single expanded setting group must span the full row');
+  assert.equal(settingsGrid.overlap,false,'setting groups must never overlap');
 
   const coverRevealSweep=await page.evaluate(async()=>{
     const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));
@@ -363,7 +400,7 @@ try {
   });
   assert.ok(demoPolish.flipRows>=3,`FLIP demo must visibly prove multi-row support, got ${demoPolish.flipRows} rows`);
   assert.equal(demoPolish.accordionBottom,'0px','open accordion note must not have bottom margin');
-  assert.equal(demoPolish.accordionPaddingBottom,'0px','open accordion note must not retain the extra bottom gap');
+  assert.equal(demoPolish.accordionPaddingBottom,'14px','open accordion note must match its 14px top padding');
   assert.equal(demoPolish.confettiSvg,true,'Confetti completion mark must use the requested SVG');
   assert.equal(demoPolish.hoverPresetHidden,true,'Hover Roll must hide unsupported mode switching');
   assert.equal(demoPolish.scrollCoverHidden,true,'Scroll Shadows settings must not expose the inferred cover color');

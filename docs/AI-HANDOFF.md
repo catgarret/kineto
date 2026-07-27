@@ -9,7 +9,7 @@ on one vendor's chat context.
 - Package: `@dong-gri/kineto`
 - Current source version: `0.8.43`
 - Latest npm version at the time this workflow was added: `0.8.42`
-- Public surface: 50 modules and 26 Core APIs
+- Public surface: 51 modules and 26 Core APIs
 - Primary branch: `main`
 - Remote: `https://github.com/catgarret/kineto`
 

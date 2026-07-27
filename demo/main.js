@@ -150,7 +150,7 @@
       'Pointer':['cursor','tilt','cardGlow','magnetic','ripple','vibrate','mouseParallax','gesture','drag'],
       'Components':['accordion','megaMenu','tabs','bottomSheet','tooltip','switch','flip'],
       'Feedback':['confetti','hold','toast'],
-      'System':['loader','pageReveal','pageTransition']
+      'System':['loader','loadingIndicator','pageReveal','pageTransition']
     };
     // Modules whose data-kt-* attribute isn't inside a demo section (button-
     // triggered / body-level) map to their section by id instead.
@@ -254,7 +254,7 @@
         cursor:'커스텀 커서 프리셋.',tilt:'포인터 추종 3D 틸트 + 글레어.',cardGlow:'표면 반사·외곽 광택 글로우.',magnetic:'포인터로 끌려오는 자석 버튼.',ripple:'클릭 지점에서 퍼지는 리플.',vibrate:'햅틱 진동 패턴.',mouseParallax:'마우스·자이로 시차 이동.',gesture:'hover·press 스프링 제스처.',drag:'관성·경계·키보드 드래그.',
         accordion:'접근성 details 아코디언.',megaMenu:'GNB 드롭다운·메가메뉴.',tabs:'WAI-ARIA 탭·세그먼트.',bottomSheet:'드래그 바텀시트.',tooltip:'자동 배치 툴팁.',switch:'폼 연동 토글 스위치.',flip:'레이아웃 변화 FLIP 애니메이션.',
         confetti:'클릭·뷰 색종이 버스트.',hold:'길게 눌러 확정하는 게이지.',toast:'상태 알림 토스트.',
-        loader:'실제 진행률과 연결된 로딩 화면.',pageReveal:'페이지 진입 오버레이.',pageTransition:'동일 출처 페이지 전환.'
+        loader:'실제 진행률과 연결된 전체 화면 로더.',loadingIndicator:'콘텐츠 안에 놓는 스피너·바·텍스트 인디케이터.',pageReveal:'페이지 진입 오버레이.',pageTransition:'동일 출처 페이지 전환.'
       };
       // Left nav — straight from MODULE_GROUPS order. href points at the block id.
       host.innerHTML=Object.entries(MODULE_GROUPS)
@@ -495,7 +495,7 @@
       const normalizeCount=(value)=>{
         if(Array.isArray(value))return value.map(normalizeCount);
         if(value&&typeof value==='object'){Object.keys(value).forEach(key=>{value[key]=normalizeCount(value[key]);});return value;}
-        return typeof value==='string'?value.replace(/\b(?:34|51)\b/g,String(moduleCount)):value;
+        return typeof value==='string'?value.replace(/\b(?:34|50|51)\b/g,String(moduleCount)):value;
       };
       Object.values(LANGS).forEach(normalizeCount);
       const KO={};

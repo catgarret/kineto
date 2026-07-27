@@ -8,7 +8,9 @@
       shape: '그림자의 번짐 형태입니다.',
       axis: '스크롤 방향입니다.',
       size: '가장자리 효과가 차지하는 길이(px)입니다.',
-      transition: 'mask가 나타나고 사라지는 전환 시간(ms)입니다.',
+      transitionMode: 'smooth는 마스크 가장자리를 보간하고, instant는 즉시 바꿉니다.',
+      transitionDuration: '마스크 가장자리가 바뀌는 시간(초)입니다.',
+      ease: '마스크 전환의 가속과 감속 곡선입니다.',
       opacity: '그림자 불투명도입니다.',
       shadow: '그림자 색상입니다. CSS 변수 --kt-scroll-shadow로도 바꿀 수 있습니다.',
       color: '그림자를 가리는 컨테이너 배경색입니다.'
@@ -18,7 +20,9 @@
       shape: 'Shadow falloff shape.',
       axis: 'Scroll direction.',
       size: 'Length of the edge treatment in pixels.',
-      transition: 'Time for a mask edge to appear or retract, in milliseconds.',
+      transitionMode: 'Smooth interpolates mask edges; instant changes them immediately.',
+      transitionDuration: 'Mask edge transition duration in seconds.',
+      ease: 'Acceleration curve of the mask transition.',
       opacity: 'Shadow opacity.',
       shadow: 'Shadow color. You can also set --kt-scroll-shadow in CSS.',
       color: 'Container background color used to cover the shadow.'
@@ -28,7 +32,9 @@
       shape: '影の広がり方です。',
       axis: 'スクロール方向です。',
       size: '端の効果が占める長さ(px)です。',
-      transition: 'maskが現れたり引っ込んだりする時間(ms)です。',
+      transitionMode: 'smoothはマスク端を補間し、instantは即座に切り替えます。',
+      transitionDuration: 'マスク端の切り替え時間(秒)です。',
+      ease: 'マスク切り替えのイージングです。',
       opacity: '影の不透明度です。',
       shadow: '影の色。CSS変数--kt-scroll-shadowでも変更できます。',
       color: '影を覆うコンテナの背景色です。'
@@ -38,7 +44,9 @@
       shape: '阴影的扩散形状。',
       axis: '滚动方向。',
       size: '边缘效果占用的长度(px)。',
-      transition: 'mask 出现或收回的时间(ms)。',
+      transitionMode: 'smooth 对遮罩边缘进行插值，instant 立即切换。',
+      transitionDuration: '遮罩边缘切换时长（秒）。',
+      ease: '遮罩切换的缓动曲线。',
       opacity: '阴影不透明度。',
       shadow: '阴影颜色，也可通过 CSS 变量 --kt-scroll-shadow 设置。',
       color: '用于覆盖阴影的容器背景色。'
@@ -48,7 +56,9 @@
       shape: '陰影的擴散形狀。',
       axis: '捲動方向。',
       size: '邊緣效果所占的長度(px)。',
-      transition: 'mask 出現或收回的時間(ms)。',
+      transitionMode: 'smooth 會補間遮罩邊緣，instant 會立即切換。',
+      transitionDuration: '遮罩邊緣切換時間（秒）。',
+      ease: '遮罩切換的緩動曲線。',
       opacity: '陰影不透明度。',
       shadow: '陰影顏色，也可透過 CSS 變數 --kt-scroll-shadow 設定。',
       color: '用來覆蓋陰影的容器背景色。'
@@ -58,7 +68,9 @@
       shape: 'Форма затухания тени.',
       axis: 'Направление прокрутки.',
       size: 'Длина эффекта у края в пикселях.',
-      transition: 'Время появления и скрытия маски в миллисекундах.',
+      transitionMode: 'Smooth интерполирует край маски, instant меняет его сразу.',
+      transitionDuration: 'Длительность перехода края маски в секундах.',
+      ease: 'Кривая ускорения перехода маски.',
       opacity: 'Непрозрачность тени.',
       shadow: 'Цвет тени. Также доступна CSS-переменная --kt-scroll-shadow.',
       color: 'Фон контейнера, перекрывающий тень.'
@@ -68,7 +80,9 @@
       shape: 'Forma della diffusione dell’ombra.',
       axis: 'Direzione di scorrimento.',
       size: 'Lunghezza dell’effetto sul bordo in pixel.',
-      transition: 'Tempo di comparsa o rientro della maschera in millisecondi.',
+      transitionMode: 'Smooth interpola il bordo della maschera; instant lo cambia subito.',
+      transitionDuration: 'Durata della transizione del bordo, in secondi.',
+      ease: 'Curva di accelerazione della transizione.',
       opacity: 'Opacità dell’ombra.',
       shadow: 'Colore dell’ombra. Puoi usare anche la variabile CSS --kt-scroll-shadow.',
       color: 'Sfondo del contenitore usato per coprire l’ombra.'
@@ -279,13 +293,131 @@
     }
   };
 
+  const sliderControls = {
+    ko: {
+      preset: '전환 효과입니다. fade는 단순 교차, dissolve는 입자·블러, wipe는 방향 마스크이며 coverflow·flip·cube·cards·creative는 서로 다른 3D 구성을 사용합니다.',
+      effectDirection: 'wipe가 열리는 방향입니다.',
+      effectIntensity: '디졸브·와이프·3D 효과의 이동, 회전, 블러 강도입니다.',
+      drag: '마우스나 펜으로 끌어 슬라이드를 이동합니다.',
+      touch: '터치 스와이프를 허용합니다.',
+      keyboard: '포커스된 슬라이더에서 방향키·Home·End를 사용합니다.'
+    },
+    en: {
+      preset: 'Transition effect. Fade crossfades; dissolve adds grain and blur; wipe uses a directional mask; coverflow, flip, cube, cards and creative use distinct 3D scenes.',
+      effectDirection: 'Direction in which the wipe opens.',
+      effectIntensity: 'Movement, rotation and blur strength for dissolve, wipe and 3D effects.',
+      drag: 'Allow mouse or pen dragging.',
+      touch: 'Allow touch swiping.',
+      keyboard: 'Use arrow, Home and End keys while the slider is focused.'
+    },
+    ja: {
+      preset: '切り替え効果。fadeは交差、dissolveは粒子とぼかし、wipeは方向マスク、その他は異なる3D構成です。',
+      effectDirection: 'wipeが開く方向です。', effectIntensity: 'ディゾルブ・ワイプ・3D効果の移動、回転、ぼかしの強さです。',
+      drag: 'マウスまたはペンのドラッグを許可します。', touch: 'タッチスワイプを許可します。', keyboard: 'フォーカス中に矢印・Home・Endキーを使います。'
+    },
+    'zh-CN': {
+      preset: '切换效果：fade 交叉淡入，dissolve 添加颗粒和模糊，wipe 使用方向遮罩，其他模式使用不同的 3D 场景。',
+      effectDirection: 'wipe 展开的方向。', effectIntensity: '溶解、擦除和 3D 效果的移动、旋转与模糊强度。',
+      drag: '允许鼠标或手写笔拖动。', touch: '允许触摸滑动。', keyboard: '聚焦时使用方向键、Home 和 End。'
+    },
+    'zh-TW': {
+      preset: '切換效果：fade 交叉淡入，dissolve 加入顆粒與模糊，wipe 使用方向遮罩，其他模式使用不同的 3D 場景。',
+      effectDirection: 'wipe 展開的方向。', effectIntensity: '溶解、擦除與 3D 效果的移動、旋轉及模糊強度。',
+      drag: '允許滑鼠或手寫筆拖曳。', touch: '允許觸控滑動。', keyboard: '聚焦時使用方向鍵、Home 與 End。'
+    },
+    ru: {
+      preset: 'Эффект перехода: fade — кроссфейд, dissolve — зерно и размытие, wipe — направленная маска, остальные режимы используют разные 3D-сцены.',
+      effectDirection: 'Направление раскрытия wipe.', effectIntensity: 'Сила движения, вращения и размытия эффектов.',
+      drag: 'Разрешить перетаскивание мышью или пером.', touch: 'Разрешить свайпы.', keyboard: 'Использовать стрелки, Home и End в фокусе.'
+    },
+    it: {
+      preset: 'Effetto di transizione: fade incrocia, dissolve aggiunge grana e sfocatura, wipe usa una maschera direzionale; gli altri usano scene 3D distinte.',
+      effectDirection: 'Direzione di apertura del wipe.', effectIntensity: 'Intensità di movimento, rotazione e sfocatura degli effetti.',
+      drag: 'Consenti il trascinamento con mouse o penna.', touch: 'Consenti lo scorrimento touch.', keyboard: 'Usa frecce, Home e Fine quando lo slider è attivo.'
+    }
+  };
+
+  const bottomSheetControls = {
+    ko: {
+      resizeArea: 'handle은 상단 막대에서만, header는 지정한 헤더 영역에서 높이를 조절합니다. 본문 텍스트는 선택할 수 있습니다.',
+      minHeight: '드래그로 줄일 수 있는 최소 높이(px)입니다.',
+      maxHeight: '드래그로 늘릴 수 있는 최대 높이(px)입니다.'
+    },
+    en: {
+      resizeArea: 'Handle uses the top grip; header uses the authored header while body text remains selectable.',
+      minHeight: 'Minimum drag-resized height in pixels.', maxHeight: 'Maximum drag-resized height in pixels.'
+    },
+    ja: {
+      resizeArea: 'handleは上部グリップ、headerは指定ヘッダーで調整します。本文は選択できます。',
+      minHeight: 'ドラッグ時の最小高さ(px)です。', maxHeight: 'ドラッグ時の最大高さ(px)です。'
+    },
+    'zh-CN': {
+      resizeArea: 'handle 使用顶部把手；header 使用指定标题区，正文仍可选择。',
+      minHeight: '拖动调整的最小高度(px)。', maxHeight: '拖动调整的最大高度(px)。'
+    },
+    'zh-TW': {
+      resizeArea: 'handle 使用頂部把手；header 使用指定標題區，內文仍可選取。',
+      minHeight: '拖曳調整的最小高度(px)。', maxHeight: '拖曳調整的最大高度(px)。'
+    },
+    ru: {
+      resizeArea: 'Handle использует верхнюю ручку, header — заданный заголовок; текст остаётся выделяемым.',
+      minHeight: 'Минимальная высота после перетаскивания.', maxHeight: 'Максимальная высота после перетаскивания.'
+    },
+    it: {
+      resizeArea: 'Handle usa la maniglia; header usa l’intestazione e lascia selezionabile il testo.',
+      minHeight: 'Altezza minima durante il trascinamento.', maxHeight: 'Altezza massima durante il trascinamento.'
+    }
+  };
+
+  const horizontalScrollControls = {
+    ko: {
+      height: '고정되는 데모 뷰포트 높이입니다. 70svh, 520px처럼 입력합니다.',
+      top: '고정 중 화면 위쪽에서 띄울 거리입니다. 비우면 스테이지를 수직 중앙에 맞춥니다.',
+      smooth: '세로 스크롤 값을 가로 이동에 부드럽게 보간합니다. 끄면 스크롤 위치와 즉시 맞춥니다.'
+    },
+    en: {
+      height: 'Height of the pinned demo viewport, such as 70svh or 520px.',
+      top: 'Distance from the viewport top while pinned. Leave blank to center the stage vertically.',
+      smooth: 'Interpolates horizontal movement behind page scroll. Off follows the scroll position exactly.'
+    },
+    ja: {
+      height: '固定されるデモ領域の高さ。70svh、520pxのように指定します。',
+      top: '固定中の上端距離。空欄ならステージを縦中央に配置します。',
+      smooth: '縦スクロールから横移動を補間します。オフでは位置を即時同期します。'
+    },
+    'zh-CN': {
+      height: '固定演示视口的高度，例如 70svh 或 520px。',
+      top: '固定时距视口顶部的距离。留空则垂直居中。',
+      smooth: '平滑插值横向移动；关闭后与滚动位置立即同步。'
+    },
+    'zh-TW': {
+      height: '固定展示視口的高度，例如 70svh 或 520px。',
+      top: '固定時距視口頂部的距離。留空則垂直置中。',
+      smooth: '平滑補間橫向移動；關閉後與捲動位置立即同步。'
+    },
+    ru: {
+      height: 'Высота закреплённой области, например 70svh или 520px.',
+      top: 'Отступ от верха экрана. Пустое значение центрирует сцену по вертикали.',
+      smooth: 'Сглаживает горизонтальное движение; выключение точно синхронизирует его с прокруткой.'
+    },
+    it: {
+      height: 'Altezza dell’area fissata, ad esempio 70svh o 520px.',
+      top: 'Distanza dall’alto durante il pin. Vuoto centra la scena verticalmente.',
+      smooth: 'Interpola il movimento orizzontale; disattivato segue subito lo scorrimento.'
+    }
+  };
+
   Object.entries(copy).forEach(([locale, values]) => {
     if (!sets[locale]) return;
     sets[locale].scrollShadows = { ...(sets[locale].scrollShadows || {}), ...values };
     sets[locale].coverReveal = { ...(sets[locale].coverReveal || {}), ...coverRevealColors[locale] };
     sets[locale].cursor = { ...(sets[locale].cursor || {}), hoverShadow: hoverShadow[locale] };
     sets[locale].glitch = { ...(sets[locale].glitch || {}), ...glitchControls[locale] };
-    sets[locale].loader = { ...(sets[locale].loader || {}), ...loaderControls[locale] };
+    sets[locale].loader = { ...(sets[locale].loader || {}), linecap: loaderControls[locale].linecap, radius: loaderControls[locale].radius };
+    sets[locale].loadingIndicator = { ...(sets[locale].loadingIndicator || {}), ...loaderControls[locale] };
+    sets[locale].slider = { ...(sets[locale].slider || {}), ...sliderControls[locale] };
+    sets[locale].bottomSheet = { ...(sets[locale].bottomSheet || {}), ...bottomSheetControls[locale] };
+    sets[locale].horizontalScroll = { ...(sets[locale].horizontalScroll || {}), ...horizontalScrollControls[locale] };
     const shadow = interactiveShadow[locale];
     sets[locale].cardGlow = {
       ...(sets[locale].cardGlow || {}),

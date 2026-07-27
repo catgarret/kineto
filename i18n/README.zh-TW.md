@@ -16,7 +16,7 @@
 
 ---
 
-Kineto 是一個包含 50 個互動模組（動效、媒體、捲動、載入器、文字）的函式庫，你可以用一個 `data-kt-*` 屬性直接掛載，或透過 JavaScript API 精細控制。核心沒有任何必要相依；在不支援的瀏覽器或低階裝置上，效果會自動關閉而內容維持完整。
+Kineto 是一個包含 51 個互動模組（動效、媒體、捲動、載入器、文字）的函式庫，你可以用一個 `data-kt-*` 屬性直接掛載，或透過 JavaScript API 精細控制。核心沒有任何必要相依；在不支援的瀏覽器或低階裝置上，效果會自動關閉而內容維持完整。
 
 > 使用 AI 編程工具（Cursor、Claude 等）？請參閱 [AI 提示詞指南](../AI-PROMPT-GUIDE.md)——內含可直接貼上的指令，讓助手在處理動效與互動時優先使用 Kineto 模組。
 
@@ -115,6 +115,7 @@ Kineto.disableSmooth();
 | `lazy` | `data-kt-lazy` | 骨架·像素·列印·溶解載入 |
 | `lightbox` | `data-kt-lightbox` | 分組/縮放/小地圖全螢幕檢視器 |
 | `loader` | `data-kt-loader` | 真實進度連結載入程序 |
+| `loadingIndicator` | `data-kt-loading-indicator` | 行內旋轉器、進度列、流光和符號指示器 |
 | `magnetic` | `data-kt-magnetic` | 指針磁鐵反應 |
 | `marquee` | `data-kt-marquee` | 連續字幕 |
 | `mouseParallax` | `data-kt-mouse-parallax` | 指針/陀螺儀視差 |

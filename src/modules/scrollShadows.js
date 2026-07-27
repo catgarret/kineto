@@ -1,4 +1,16 @@
 import { snapshotInlineStyles } from '../utils.js';
+import { cubicBezierFn, fn as easingFunction } from '../easings.js';
+
+function resolveEase(value) {
+  const token = String(value || 'cubic-out').trim();
+  const match = token.match(/^cubic-bezier\(\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\)$/i);
+  if (match) return cubicBezierFn(...match.slice(1).map(Number));
+  if (token === 'ease') return cubicBezierFn(.25, .1, .25, 1);
+  if (token === 'ease-in') return cubicBezierFn(.42, 0, 1, 1);
+  if (token === 'ease-out') return cubicBezierFn(0, 0, .58, 1);
+  if (token === 'ease-in-out') return cubicBezierFn(.42, 0, .58, 1);
+  return easingFunction(token);
+}
 
 /*
  * Scroll shadows / edge fade for a scroll container. Two modes:
@@ -18,7 +30,13 @@ export default {
     const size = Math.max(4, Number(opts.size ?? 44));
     const mode = opts.mode === 'mask' ? 'mask' : 'shadow';
     const horizontal = axis === 'horizontal';
-    const transition = Math.max(0, Number(opts.transition ?? 180));
+    const transitionMode = opts.transitionMode === 'instant' ? 'instant' : 'smooth';
+    // `transition` (milliseconds) is retained for backward compatibility.
+    const legacyDuration = Number(opts.transition);
+    const transitionDuration = transitionMode === 'instant'
+      ? 0
+      : Math.max(0, Number(opts.transitionDuration ?? (Number.isFinite(legacyDuration) ? legacyDuration / 1000 : 0.18))) * 1000;
+    const ease = resolveEase(opts.ease || 'cubic-out');
     let lastState = null;
     const readState = () => {
       const position = horizontal ? el.scrollLeft : el.scrollTop;
@@ -62,37 +80,59 @@ export default {
       let currentEnd = null;
       let targetStart = 0;
       let targetEnd = 0;
-      const paint = () => {
-        frame = null;
-        const pos = horizontal ? el.scrollLeft : el.scrollTop;
-        const max = horizontal ? el.scrollWidth - el.clientWidth : el.scrollHeight - el.clientHeight;
-        // Ramp the fade proportionally over the first/last `size` px of travel so
-        // it grows in and out smoothly instead of snapping on/off.
-        targetStart = Math.max(0, Math.min(size, pos));
-        targetEnd = Math.max(0, Math.min(size, max - pos));
-        if (currentStart == null || transition === 0) {
-          currentStart = targetStart;
-          currentEnd = targetEnd;
-        } else {
-          const smoothing = Math.min(1, 32 / transition);
-          currentStart += (targetStart - currentStart) * smoothing;
-          currentEnd += (targetEnd - currentEnd) * smoothing;
-        }
+      let fromStart = 0;
+      let fromEnd = 0;
+      let animationStart = 0;
+      const applyMask = () => {
         const value = `linear-gradient(${dir}, transparent 0, #000 ${currentStart.toFixed(2)}px, #000 calc(100% - ${currentEnd.toFixed(2)}px), transparent 100%)`;
         el.style.maskImage = value;
         el.style.webkitMaskImage = value;
         publishState();
-        if (Math.abs(targetStart - currentStart) > 0.1 || Math.abs(targetEnd - currentEnd) > 0.1) frame = requestAnimationFrame(paint);
       };
-      const onScroll = () => { if (frame == null) frame = requestAnimationFrame(paint); };
-      paint();
+      const paint = (time = performance.now()) => {
+        frame = null;
+        if (currentStart == null || transitionDuration === 0) {
+          currentStart = targetStart;
+          currentEnd = targetEnd;
+          applyMask();
+          return;
+        }
+        const elapsed = Math.max(0, time - animationStart);
+        const progress = Math.min(1, elapsed / transitionDuration);
+        const eased = ease(progress);
+        currentStart = fromStart + (targetStart - fromStart) * eased;
+        currentEnd = fromEnd + (targetEnd - fromEnd) * eased;
+        applyMask();
+        if (progress < 1) frame = requestAnimationFrame(paint);
+      };
+      const updateTargets = (immediate = false) => {
+        const pos = horizontal ? el.scrollLeft : el.scrollTop;
+        const max = horizontal ? el.scrollWidth - el.clientWidth : el.scrollHeight - el.clientHeight;
+        // Ramp the fade proportionally over the first/last `size` px of travel so
+        // it grows in and out smoothly instead of snapping on/off.
+        const nextStart = Math.max(0, Math.min(size, pos));
+        const nextEnd = Math.max(0, Math.min(size, max - pos));
+        if (currentStart == null || immediate || transitionDuration === 0) {
+          currentStart = nextStart;
+          currentEnd = nextEnd;
+        }
+        fromStart = currentStart;
+        fromEnd = currentEnd;
+        targetStart = nextStart;
+        targetEnd = nextEnd;
+        animationStart = performance.now();
+        if (frame != null) cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(paint);
+      };
+      const onScroll = () => updateTargets(false);
+      updateTargets(true);
       el.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', onScroll, { passive: true });
       return {
         el,
         type: 'scrollShadows',
         get state() { return readState(); },
-        refresh() { paint(); return readState(); },
+        refresh() { updateTargets(true); return readState(); },
         pause() {}, resume() {},
         destroy() {
           if (frame != null) cancelAnimationFrame(frame);

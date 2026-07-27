@@ -16,7 +16,7 @@ English · [한국어](i18n/README.ko.md) · [日本語](i18n/README.jp.md) · [
 
 ---
 
-Kineto provides 50 modules for motion, media, scroll, text, and UI.
+Kineto provides 51 modules for motion, media, scroll, text, and UI.
 Use a single `data-kt-*` attribute or control the same feature through the
 JavaScript API.
 Unsupported environments disable the effect while keeping the content intact.
@@ -53,7 +53,7 @@ direction.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/lightbox.gif" width="620" alt="Lightbox">
 
-See the [full module list](#modules) below for all 50 modules.
+See the [full module list](#modules) below for all 51 modules.
 
 ## Installation
 
@@ -173,6 +173,7 @@ Kineto.disableSmooth();
 | `lazy` | `data-kt-lazy` | Image load effects (skeleton, pixelate, print, dissolve) |
 | `lightbox` | `data-kt-lightbox` | Full-screen viewer, groups, zoom, minimap, filmstrip |
 | `loader` | `data-kt-loader` | Loader bound to real progress sources |
+| `loadingIndicator` | `data-kt-loading-indicator` | Inline spinner, bar, shimmer, and symbol indicators |
 | `magnetic` | `data-kt-magnetic` | Magnetic pointer response |
 | `marquee` | `data-kt-marquee` | Continuous marquee |
 | `megaMenu` | `data-kt-mega-menu` | GNB dropdown / mega menu (keyboard + aria) |

@@ -20,12 +20,12 @@ const dist = path.join(root, 'dist');
 // ceilings reflect Kineto's own code only. A re-bundled engine (~125 KB) would
 // blow past them.
 const BUDGETS = {
-  'kineto.js': { raw: 410, gz: 106 },
-  'kineto.min.js': { raw: 325, gz: 95 },
-  'kineto.umd.js': { raw: 330, gz: 95 },
-  'kineto.umd.min.js': { raw: 330, gz: 95 },
-  // Loader's built-in visual presets are deliberately CSS-first. The shipped
-  // CSS remains 6.2 KB gzip; keep the new ceiling close enough to catch bloat.
+  'kineto.js': { raw: 420, gz: 108 },
+  'kineto.min.js': { raw: 330, gz: 96 },
+  'kineto.umd.js': { raw: 330, gz: 96 },
+  'kineto.umd.min.js': { raw: 330, gz: 96 },
+  // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
+  // and CSS ceilings close to the 51-module build so future bloat still fails.
   'kineto.css': { raw: 31, gz: 6.5 },
   'kineto.min.css': { raw: 31, gz: 6.5 }
 };

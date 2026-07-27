@@ -98,40 +98,57 @@ const check = (n, c, d) => { console.log(`  [${c ? 'PASS' : 'FAIL'}] ${n}${d ? '
   await ctx.close();
 }
 
-// ---- 4. Rich built-in variants render, expose lifecycle, and remain extensible ----
+// ---- 4. Full-page Loader and inline Loading Indicator stay separate ----
 {
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
   await page.setContent(HTML, { waitUntil: 'load' });
   await page.waitForFunction(() => !!window.Kineto);
   const r = await page.evaluate(async () => {
-    const variants = [
+    const loaderVariants = [
       ['slot', {}, '.kt-loader-counter'],
       ['circular', {}, '.kt-loader-circular'],
-      ['bar', { indeterminate: true }, '.kt-loader-bar.is-indeterminate'],
-      ['spinner', { spinnerStyle: 'comet' }, '.kt-loader-spinner--comet'],
-      ['spinner', { spinnerStyle: 'dual' }, '.kt-loader-spinner--dual'],
-      ['spinner', { spinnerStyle: 'spokes', dotCount: 12 }, '.kt-loader-spinner--spokes .kt-loader-spinner__spoke'],
-      ['spinner', { spinnerStyle: 'orbit' }, '.kt-loader-spinner--orbit'],
-      ['dots', { dotStyle: 'wave', dotCount: 5 }, '.kt-loader-dots--wave .kt-loader-dot'],
-      ['shimmer', { text: 'Loading' }, '.kt-loader-shimmer__text'],
-      ['shimmer-wave', { text: 'Loading' }, '.kt-loader-shimmer-wave__char'],
-      ['terminal', { terminalStyle: 'cursor' }, '.kt-loader-terminal__cursor'],
-      ['terminal', { terminalStyle: 'dots' }, '.kt-loader-terminal__dot'],
-      ['terminal', { terminalStyle: 'steps', terminalLines: ['one','two'] }, '.kt-loader-terminal__line'],
-      ['terminal', { terminalStyle: 'meter' }, '.kt-loader-terminal__meter']
+      ['bar', {}, '.kt-loader-bar-progress']
     ];
-    const rendered = [];
-    for (const [type, options, selector] of variants) {
+    const indicatorVariants = [
+      ['spinner', { spinnerStyle: 'comet' }, '.kt-loading-spinner--comet'],
+      ['spinner', { spinnerStyle: 'dual' }, '.kt-loading-spinner--dual'],
+      ['spinner', { spinnerStyle: 'spokes', dotCount: 12 }, '.kt-loading-spinner--spokes .kt-loading-spinner__spoke'],
+      ['spinner', { spinnerStyle: 'orbit' }, '.kt-loading-spinner--orbit'],
+      ['dots', { dotStyle: 'wave', dotCount: 5 }, '.kt-loading-dots--wave .kt-loading-dot'],
+      ['bar', { indeterminate: true }, '.kt-loading--bar.is-indeterminate'],
+      ['shimmer', { text: 'Loading' }, '.kt-loading-shimmer__text'],
+      ['shimmer-wave', { text: 'Loading' }, '.kt-loading-shimmer-wave__char'],
+      ['terminal', { terminalStyle: 'cursor' }, '.kt-loading-terminal__cursor'],
+      ['terminal', { terminalStyle: 'dots' }, '.kt-loading-terminal__dot'],
+      ['terminal', { terminalStyle: 'blocks' }, '.kt-loading-terminal__block'],
+      ['terminal', { terminalStyle: 'meter', progress: 40 }, '.kt-loading-terminal__meter']
+    ];
+    const loaders = [];
+    for (const [type, options, selector] of loaderVariants) {
       const el = document.createElement('div');
       document.body.appendChild(el);
       const instance = window.Kineto.loader(el, { type, source: 'manual', hideScrollbar: false, ...options });
-      rendered.push({
+      loaders.push({
+        type,
+        selector,
+        exists: Boolean(el.querySelector(selector)),
+        role: el.getAttribute('role')
+      });
+      instance.destroy();
+      el.remove();
+    }
+    const indicators = [];
+    for (const [type, options, selector] of indicatorVariants) {
+      const el = document.createElement('span');
+      document.body.appendChild(el);
+      const instance = window.Kineto.loadingIndicator(el, { type, hideOnComplete: false, ...options });
+      indicators.push({
         type,
         selector,
         exists: Boolean(el.querySelector(selector)),
         role: el.getAttribute('role'),
-        indeterminate: el.getAttribute('aria-valuenow') == null
+        terminalHasWords: type === 'terminal' && /[A-Za-z가-힣]/.test(el.textContent)
       });
       instance.destroy();
       el.remove();
@@ -156,7 +173,8 @@ const check = (n, c, d) => { console.log(`  [${c ? 'PASS' : 'FAIL'}] ${n}${d ? '
     const result = await lifecycle.finished;
     lifecycle.destroy();
     return {
-      rendered,
+      loaders,
+      indicators,
       hidden,
       shown,
       cancelled,
@@ -166,10 +184,13 @@ const check = (n, c, d) => { console.log(`  [${c ? 'PASS' : 'FAIL'}] ${n}${d ? '
       progressVar: host.style.getPropertyValue('--kt-loader-progress')
     };
   });
-  const missing = r.rendered.filter((item) => !item.exists);
+  const missingLoaders = r.loaders.filter((item) => !item.exists);
+  const missingIndicators = r.indicators.filter((item) => !item.exists);
   console.log('  variants/lifecycle:', JSON.stringify(r));
-  check('all rich loader variants render their public class hooks', missing.length === 0, JSON.stringify(missing));
-  check('all loader variants expose the progressbar role', r.rendered.every((item) => item.role === 'progressbar'));
+  check('full-page Loader renders only its three public modes', missingLoaders.length === 0, JSON.stringify(missingLoaders));
+  check('inline Loading Indicator variants render public class hooks', missingIndicators.length === 0, JSON.stringify(missingIndicators));
+  check('all loading UIs expose the progressbar role', [...r.loaders, ...r.indicators].every((item) => item.role === 'progressbar'));
+  check('terminal indicators contain symbols only', r.indicators.every((item) => !item.terminalHasWords));
   check('show()/hide()/cancel() report successful state changes', r.hidden && r.shown && r.cancelled);
   check('finished resolves cancellation reason', r.result.status === 'cancelled' && r.result.reason === 'test-cancel', JSON.stringify(r.result));
   check('loader lifecycle emits DOM events', ['hide','show','cancel'].every((name) => r.events.includes(name)), r.events.join(','));

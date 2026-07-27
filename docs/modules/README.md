@@ -1,6 +1,6 @@
 # Module Catalog
 
-공개 모듈은 정확히 **50개**입니다. 각 모듈은 `Kineto.<name>(target, options)`와 대응하는 `data-kt-*` 활성화 속성을 제공합니다. 전체 옵션·변형은 [module-reference.md](../module-reference.md)와 `kineto.features.json`을 참고하세요.
+공개 모듈은 정확히 **51개**입니다. 각 모듈은 `Kineto.<name>(target, options)`와 대응하는 `data-kt-*` 활성화 속성을 제공합니다. 전체 옵션·변형은 [module-reference.md](../module-reference.md)와 `kineto.features.json`을 참고하세요.
 
 | 모듈 | 속성 | 핵심 역할 |
 |---|---|---|
@@ -19,6 +19,7 @@
 | `marquee` | `data-kt-marquee` | loop/hover/scroll response |
 | `overflowText` | `data-kt-overflow-text` | loop/bounce/rewind/once/page/rolling |
 | `loader` | `data-kt-loader` | overlay/slot/circular/bar loading UI |
+| `loadingIndicator` | `data-kt-loading-indicator` | inline spinner/bar/shimmer/terminal indicators |
 | `tilt` | `data-kt-tilt` | 3D tilt/glare |
 | `cursor` | `data-kt-cursor` | custom pointer |
 | `textFill` | `data-kt-text-fill` | scroll fill |

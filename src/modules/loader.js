@@ -35,12 +35,6 @@ function releaseScrollLock() {
   }
 }
 
-function toList(value, fallback = []) {
-  if (Array.isArray(value)) return value.map(String).filter(Boolean);
-  if (typeof value === 'string') return value.split('|').map((item) => item.trim()).filter(Boolean);
-  return fallback;
-}
-
 function createNode(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -66,30 +60,11 @@ function createProgressUI(el, type, opts) {
   const color = opts.color || 'var(--kt-loader-color,currentColor)';
   const trackColor = opts.trackColor || 'rgba(127,127,127,.18)';
   const showPercent = opts.showPercent !== false;
-  const indeterminate = opts.indeterminate === true
-    || ['spinner', 'dots', 'shimmer', 'shimmer-wave', 'terminal'].includes(type);
-  const motionDuration = Math.max(0.2, Number(opts.motionDuration ?? 1.1));
-  const direction = opts.direction === 'reverse' || opts.direction === 'rtl' ? -1 : 1;
   el.style.setProperty('--kt-loader-color', color);
   el.style.setProperty('--kt-loader-track-color', trackColor);
-  el.style.setProperty('--kt-loader-highlight-color', opts.highlightColor || opts.glowColor || '#ffffff');
-  el.style.setProperty('--kt-loader-glow-color', opts.glowColor || opts.color || 'currentColor');
-  el.style.setProperty('--kt-loader-base-color', opts.baseColor || 'color-mix(in srgb, currentColor 32%, transparent)');
-  if (opts.fontFamily) el.style.setProperty('--kt-loader-font-family', opts.fontFamily);
-  el.style.setProperty('--kt-loader-text-size', typeof opts.textSize === 'number' ? `${opts.textSize}px` : (opts.textSize || 'clamp(1rem,2.5vw,1.35rem)'));
-  const defaultRadius = type === 'terminal' ? '12px' : '999px';
-  el.style.setProperty('--kt-loader-radius', typeof opts.radius === 'number' ? `${opts.radius}px` : (opts.radius || defaultRadius));
-  el.style.setProperty('--kt-loader-terminal-bg', opts.terminalBackground || 'color-mix(in srgb, #070a08 92%, transparent)');
-  el.style.setProperty('--kt-loader-terminal-border', opts.terminalBorderColor || 'color-mix(in srgb, currentColor 24%, transparent)');
-  el.style.setProperty('--kt-loader-motion-duration', `${motionDuration}s`);
-  el.style.setProperty('--kt-loader-fast-duration', `${motionDuration * 0.72}s`);
-  el.style.setProperty('--kt-loader-terminal-duration', `${motionDuration * 3.2}s`);
-  el.style.setProperty('--kt-loader-direction', String(direction));
-  el.style.setProperty('--kt-loader-glow-size', `${Math.max(0, Number(opts.glowSize ?? 18))}px`);
-  el.style.setProperty('--kt-loader-spread', `${clamp(Number(opts.spread ?? 24), 2, 80)}%`);
+  el.style.setProperty('--kt-loader-radius', typeof opts.radius === 'number' ? `${opts.radius}px` : (opts.radius || '999px'));
   let valueEl = null;
   let progressEl = null;
-  let terminalMeter = null;
   let root = null;
 
   if (type === 'slot') {
@@ -102,7 +77,7 @@ function createProgressUI(el, type, opts) {
     const stroke = Math.max(1, Number(opts.stroke ?? 8));
     const radius = (size - stroke) / 2;
     const circumference = 2 * Math.PI * radius;
-    root = createNode('div', `kt-loader-ui kt-loader-circular${indeterminate ? ' is-indeterminate' : ''}`);
+    root = createNode('div', 'kt-loader-ui kt-loader-circular');
     root.style.setProperty('--kt-loader-size', `${size}px`);
     root.style.setProperty('--kt-loader-stroke', `${stroke}px`);
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -131,109 +106,16 @@ function createProgressUI(el, type, opts) {
   } else if (type === 'bar') {
     const width = opts.barWidth || 'min(68vw,420px)';
     const height = Math.max(2, Number(opts.barHeight ?? 5));
-    root = createNode('div', `kt-loader-ui kt-loader-bar${indeterminate ? ' is-indeterminate' : ''}`);
+    root = createNode('div', 'kt-loader-ui kt-loader-bar');
     root.style.setProperty('--kt-loader-bar-width', typeof width === 'number' ? `${width}px` : width);
     root.style.setProperty('--kt-loader-bar-height', `${height}px`);
     if (opts.label) root.appendChild(createNode('span', 'kt-loader-label', opts.label));
     const track = createNode('span', 'kt-loader-bar-track');
     progressEl = createNode('span', 'kt-loader-bar-progress');
-    if (opts.glow !== false) progressEl.classList.add('has-glow');
     track.appendChild(progressEl);
     valueEl = createNode('span', 'kt-loader-value', '0%');
-    valueEl.hidden = !showPercent || indeterminate;
+    valueEl.hidden = !showPercent;
     root.append(track, valueEl);
-  } else if (type === 'spinner') {
-    const style = ['ring', 'comet', 'dual', 'spokes', 'orbit'].includes(opts.spinnerStyle)
-      ? opts.spinnerStyle : 'comet';
-    const size = Math.max(20, Number(opts.size ?? 56));
-    const stroke = Math.max(1, Number(opts.stroke ?? 4));
-    root = createNode('div', `kt-loader-ui kt-loader-spinner kt-loader-spinner--${style}`);
-    root.style.setProperty('--kt-loader-size', `${size}px`);
-    root.style.setProperty('--kt-loader-stroke', `${stroke}px`);
-    if (style === 'spokes') {
-      const count = Math.round(clamp(Number(opts.dotCount ?? 12), 6, 16));
-      for (let index = 0; index < count; index += 1) {
-        const spoke = createNode('span', 'kt-loader-spinner__spoke');
-        spoke.style.setProperty('--kt-loader-index', String(index));
-        spoke.style.setProperty('--kt-loader-count', String(count));
-        spoke.style.animationDelay = `${-(motionDuration / count) * index}s`;
-        root.appendChild(spoke);
-      }
-    } else {
-      root.appendChild(createNode('span', 'kt-loader-spinner__ring'));
-      if (style === 'dual') root.appendChild(createNode('span', 'kt-loader-spinner__ring kt-loader-spinner__ring--inner'));
-      if (style === 'orbit') root.appendChild(createNode('span', 'kt-loader-spinner__orbit'));
-    }
-    if (opts.label) root.appendChild(createNode('span', 'kt-loader-label', opts.label));
-  } else if (type === 'dots') {
-    const style = ['pulse', 'bounce', 'wave'].includes(opts.dotStyle) ? opts.dotStyle : 'wave';
-    const count = Math.round(clamp(Number(opts.dotCount ?? 3), 3, 8));
-    root = createNode('div', `kt-loader-ui kt-loader-dots kt-loader-dots--${style}`);
-    root.style.setProperty('--kt-loader-dot-size', `${Math.max(2, Number(opts.dotSize ?? 9))}px`);
-    root.style.setProperty('--kt-loader-dot-gap', `${Math.max(0, Number(opts.dotGap ?? 7))}px`);
-    for (let index = 0; index < count; index += 1) {
-      const dot = createNode('span', 'kt-loader-dot');
-      dot.style.setProperty('--kt-loader-index', String(index));
-      dot.style.animationDelay = `${(index * motionDuration) / 7}s`;
-      root.appendChild(dot);
-    }
-    if (opts.label) root.appendChild(createNode('span', 'kt-loader-label', opts.label));
-  } else if (type === 'shimmer' || type === 'shimmer-wave') {
-    const text = String(opts.text || opts.label || 'Loading');
-    root = createNode('div', `kt-loader-ui kt-loader-${type}`);
-    if (type === 'shimmer') {
-      root.appendChild(createNode('span', 'kt-loader-shimmer__text', text));
-    } else {
-      const line = createNode('span', 'kt-loader-shimmer-wave__text');
-      Array.from(text).forEach((character, index) => {
-        const char = createNode('span', 'kt-loader-shimmer-wave__char', character === ' ' ? '\u00a0' : character);
-        char.style.setProperty('--kt-loader-index', String(index));
-        char.style.animationDelay = `${index * 42}ms`;
-        line.appendChild(char);
-      });
-      root.appendChild(line);
-    }
-  } else if (type === 'terminal') {
-    const style = ['cursor', 'dots', 'steps', 'meter'].includes(opts.terminalStyle)
-      ? opts.terminalStyle : 'cursor';
-    const lines = toList(opts.terminalLines, ['Resolving dependencies', 'Building assets', 'Running checks']);
-    root = createNode('div', `kt-loader-ui kt-loader-terminal kt-loader-terminal--${style}`);
-    const output = createNode('div', 'kt-loader-terminal__output');
-    if (style === 'steps') {
-      lines.forEach((line, index) => {
-        const row = createNode('span', 'kt-loader-terminal__line');
-        row.style.setProperty('--kt-loader-index', String(index));
-        row.style.animationDelay = `${index * motionDuration * 0.62}s`;
-        row.append(
-          createNode('b', 'kt-loader-terminal__prompt', opts.terminalPrompt || '$'),
-          document.createTextNode(` ${line}`)
-        );
-        output.appendChild(row);
-      });
-    } else {
-      const line = createNode('span', 'kt-loader-terminal__line');
-      line.append(
-        createNode('b', 'kt-loader-terminal__prompt', opts.terminalPrompt || '$'),
-        document.createTextNode(` ${opts.text || opts.label || 'Loading'}`)
-      );
-      if (style === 'dots') {
-        const dots = createNode('span', 'kt-loader-terminal__dots');
-        for (let index = 0; index < 3; index += 1) {
-          const dot = createNode('i', 'kt-loader-terminal__dot', '.');
-          dot.style.setProperty('--kt-loader-index', String(index));
-          dot.style.animationDelay = `${index * 140}ms`;
-          dots.appendChild(dot);
-        }
-        line.appendChild(dots);
-      } else if (style === 'meter') {
-        terminalMeter = createNode('span', 'kt-loader-terminal__meter', '[░░░░░░░░░░] 0%');
-        line.append(document.createTextNode(' '), terminalMeter);
-      } else {
-        line.appendChild(createNode('i', 'kt-loader-terminal__cursor', opts.cursorChar || '█'));
-      }
-      output.appendChild(line);
-    }
-    root.appendChild(output);
   }
   // Optional page-fill: the overlay background fills with the accent color
   // like a giant progress bar (fill: 'up' | 'down' | 'left' | 'right').
@@ -250,8 +132,6 @@ function createProgressUI(el, type, opts) {
     el.insertBefore(fillEl, el.firstChild);
   }
   if (root) {
-    if (direction < 0) root.classList.add('is-reverse');
-    if (opts.glow !== false && ['bar', 'spinner', 'shimmer', 'shimmer-wave'].includes(type)) root.classList.add('has-glow');
     root.setAttribute('aria-hidden', 'true');
     el.appendChild(root);
     // Keep the percentage readable over the fill: recolor and/or blend it.
@@ -261,15 +141,10 @@ function createProgressUI(el, type, opts) {
   const render = (value) => {
     const progress = clamp(Number(value) || 0, 0, 100);
     if (valueEl) valueEl.textContent = `${Math.round(progress)}%`;
-    if (type === 'bar' && progressEl && !indeterminate) progressEl.style.transform = `scaleX(${progress / 100})`;
+    if (type === 'bar' && progressEl) progressEl.style.transform = `scaleX(${progress / 100})`;
     if (type === 'circular' && progressEl) {
       const circumference = Number(progressEl.dataset.circumference || 0);
       progressEl.style.strokeDashoffset = String(circumference * (1 - progress / 100));
-    }
-    if (terminalMeter) {
-      const cells = 10;
-      const filled = Math.round(progress / 100 * cells);
-      terminalMeter.textContent = `[${'█'.repeat(filled)}${'░'.repeat(cells - filled)}] ${Math.round(progress)}%`;
     }
     if (fillEl) fillEl.style.transform = `${fillEl.dataset.axis}(${progress / 100})`;
   };
@@ -287,7 +162,8 @@ function collectPageResources(opts) {
 
 export default {
   create(el, opts = {}) {
-    const type = opts.type || opts.preset || 'bar';
+    const requestedType = opts.type || opts.preset || 'bar';
+    const type = ['slot', 'circular', 'bar'].includes(requestedType) ? requestedType : 'bar';
     const source = opts.source || opts.progressSource || 'window';
     const minDuration = Math.max(0, Number(opts.minDuration ?? 0));
     const hideScrollbar = opts.hideScrollbar !== false;
@@ -363,12 +239,8 @@ export default {
     el.setAttribute('aria-label', opts.ariaLabel || 'Loading');
     el.setAttribute('aria-live', opts.announce === false ? 'off' : 'polite');
     el.setAttribute('aria-busy', 'true');
-    const indeterminate = opts.indeterminate === true
-      || ['spinner', 'dots', 'shimmer', 'shimmer-wave', 'terminal'].includes(type);
-    if (!indeterminate) {
-      el.setAttribute('aria-valuemin', '0');
-      el.setAttribute('aria-valuemax', '100');
-    }
+    el.setAttribute('aria-valuemin', '0');
+    el.setAttribute('aria-valuemax', '100');
     acquireLock();
     setState('running');
     opts.onStart?.(el);
@@ -376,8 +248,7 @@ export default {
 
     const render = () => {
       progressUI.render(displayed);
-      if (indeterminate) el.removeAttribute('aria-valuenow');
-      else el.setAttribute('aria-valuenow', String(Math.round(displayed)));
+      el.setAttribute('aria-valuenow', String(Math.round(displayed)));
       // Headless API: stream progress to CSS variables so a fully custom loader
       // can be built with `renderUI` OR pure CSS (no JS): --kt-loader-progress
       // is 0..1, --kt-loader-percent is 0..100. onProgress(value, el) also fires.

@@ -67,8 +67,8 @@
 | `MK-MEDIA-006` | `ambientMedia` | Image and video ambient glow | Ambient glow supports live image clones and sampled video frames with configurable blur, opacity, saturation and brightness. |
 | `MK-CURSOR-001` | `cursor` | Custom cursor system | Cursor supports dot, ring, blob, crosshair, image and custom templates with hover, press, label, color, size and smoothing options. |
 | `MK-LOADER-003` | `loader` | Real progress sources | Loader accepts manual updates and can track window load, selected resources, promises and streamed fetch progress. |
-| `MK-LOADER-004` | `loader` | Rich indeterminate loader system | Loader provides customizable spinner, dots, text shimmer, shimmer wave and multiple terminal styles without including a wandering-eyes effect. |
-| `MK-LOADER-005` | `loader` | Extensible loader lifecycle | Loader exposes progress, completion, failure, cancellation, show and hide state through instance APIs, callbacks, DOM events, a finished promise, CSS variables and custom renderer hooks. |
+| `MK-LOADER-004` | `loadingIndicator` | Rich inline loading indicator system | Loading Indicator provides customizable spinner, dots, bars, text shimmer, shimmer wave and symbol-only terminal styles without forcing a full-page overlay or including a wandering-eyes effect. |
+| `MK-LOADER-005` | `loadingIndicator` | Extensible loading indicator lifecycle | Loading Indicator exposes progress, completion, failure, show and hide state through instance APIs, callbacks, DOM events, a finished promise, CSS variables and custom renderer hooks. |
 | `MK-SMOOTH-001` | `core` | Optional Lenis smooth scrolling | Smooth scrolling is disabled or enabled explicitly and exposes runtime enable, disable, toggle and scrollTo APIs. |
 
 ## 검증

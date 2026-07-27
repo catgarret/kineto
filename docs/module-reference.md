@@ -5,7 +5,7 @@
 - Library: 0.8.43
 - Feature contract: 1.3.0
 - Behavior contract: 1.2.0
-- Public modules: 50
+- Public modules: 51
 - Root properties: `version`, `easings`, `prefersReducedMotion`, `env`, `performance`, `registry`, `instanceCount`, `smoothEnabled`, `lenis`, `core`
 - Core methods: `easing()`, `easingFn()`, `setReducedMotion()`, `config()`, `setAnimationEngine()`, `enableSmooth()`, `disableSmooth()`, `toggleSmooth()`, `scrollTo()`, `register()`, `unregister()`, `create()`, `scan()`, `init()`, `initModules()`, `autoInit()`, `getInstance()`, `destroyModule()`, `replay()`, `destroy()`, `pause()`, `resume()`, `refresh()`, `setEngineSource()`, `getEngineSource()`, `updateModule()`
 - Additional named exports: `modules`
@@ -93,8 +93,15 @@
 
 - Attribute: `data-kt-loader`
 - Default variant: `bar`
-- Variants: `slot`, `circular`, `bar`, `spinner`, `dots`, `shimmer`, `shimmer-wave`, `terminal`
-- Public options: `announce`, `ariaLabel`, `barHeight`, `barWidth`, `baseColor`, `className`, `color`, `completeHold`, `completeOnError`, `cursorChar`, `direction`, `dotCount`, `dotGap`, `dotSize`, `dotStyle`, `duration`, `exit`, `exitDirection`, `exitDuration`, `expectedResources`, `fetch`, `fetchOptions`, `fill`, `fillColor`, `fontFamily`, `glow`, `glowColor`, `glowSize`, `hideScrollbar`, `highlightColor`, `indeterminate`, `label`, `labelBlend`, `labelColor`, `linecap`, `manualDuration`, `minDuration`, `motionDuration`, `onCancel`, `onComplete`, `onError`, `onHide`, `onProgress`, `onShow`, `onStart`, `onStateChange`, `percent`, `preset`, `progress`, `progressSource`, `promise`, `promiseCeiling`, `promiseStart`, `radius`, `renderUI`, `resourceSelector`, `resources`, `showPercent`, `size`, `smoothing`, `source`, `spinnerStyle`, `spread`, `stroke`, `terminalBackground`, `terminalBorderColor`, `terminalLines`, `terminalPrompt`, `terminalStyle`, `text`, `textSize`, `trackColor`, `transition`, `type`, `url`
+- Variants: `slot`, `circular`, `bar`
+- Public options: `announce`, `ariaLabel`, `barHeight`, `barWidth`, `className`, `color`, `completeHold`, `completeOnError`, `duration`, `exit`, `exitDirection`, `exitDuration`, `expectedResources`, `fetch`, `fetchOptions`, `fill`, `fillColor`, `hideScrollbar`, `label`, `labelBlend`, `labelColor`, `linecap`, `manualDuration`, `minDuration`, `onCancel`, `onComplete`, `onError`, `onHide`, `onProgress`, `onShow`, `onStart`, `onStateChange`, `percent`, `preset`, `progress`, `progressSource`, `promise`, `promiseCeiling`, `promiseStart`, `radius`, `renderUI`, `resourceSelector`, `resources`, `showPercent`, `size`, `smoothing`, `source`, `stroke`, `trackColor`, `transition`, `type`, `url`
+
+## loadingIndicator
+
+- Attribute: `data-kt-loading-indicator`
+- Default variant: `spinner`
+- Variants: `spinner`, `dots`, `bar`, `shimmer`, `shimmer-wave`, `terminal`
+- Public options: `ariaLabel`, `autoComplete`, `barHeight`, `barWidth`, `baseColor`, `className`, `color`, `completeHold`, `completeOnError`, `cursorChar`, `direction`, `dotCount`, `dotGap`, `dotSize`, `dotStyle`, `exitDuration`, `fontFamily`, `glow`, `glowColor`, `glowSize`, `hideOnComplete`, `highlightColor`, `indeterminate`, `label`, `motionDuration`, `onComplete`, `onError`, `onHide`, `onProgress`, `onShow`, `onStart`, `onStateChange`, `preset`, `progress`, `renderUI`, `size`, `spinnerStyle`, `spread`, `stroke`, `terminalStyle`, `text`, `textSize`, `trackColor`, `type`
 
 ## magnetic
 
@@ -184,8 +191,8 @@
 
 - Attribute: `data-kt-slider`
 - Default variant: `slide`
-- Variants: `slide`, `coverflow`, `fade`, `dissolve`
-- Public options: `align`, `autoplay`, `axis`, `depth`, `dots`, `duration`, `effect`, `gap`, `initial`, `label`, `loop`, `minOpacity`, `minScale`, `nextSelector`, `onChange`, `opacityStep`, `pauseButton`, `pauseOnHover`, `perView`, `perspective`, `preset`, `prevSelector`, `progress`, `progressType`, `rotate`, `scaleStep`, `smoothing`, `spacing`, `speed`, `wheel`
+- Variants: `slide`, `fade`, `dissolve`, `wipe`, `coverflow`, `flip`, `cube`, `cards`, `creative`
+- Public options: `align`, `autoplay`, `axis`, `depth`, `dots`, `drag`, `duration`, `effect`, `effectDirection`, `effectIntensity`, `enabled`, `gap`, `initial`, `keyboard`, `label`, `loop`, `minOpacity`, `minScale`, `nextSelector`, `onBeforeChange`, `onChange`, `onInit`, `opacityStep`, `pauseButton`, `pauseOnHover`, `perView`, `perspective`, `preset`, `prevSelector`, `progress`, `progressType`, `rotate`, `scaleStep`, `smoothing`, `spacing`, `speed`, `touch`, `wheel`
 
 ## stickyStack
 
@@ -283,7 +290,7 @@
 - Attribute: `data-kt-bottom-sheet`
 - Default variant: `sheet`
 - Variants: `sheet`
-- Public options: `backdrop`, `backdropOpacity`, `dismissible`, `duration`, `handle`, `label`, `resizable`, `trigger`
+- Public options: `backdrop`, `backdropOpacity`, `dismissible`, `duration`, `handle`, `label`, `maxHeight`, `minHeight`, `onResize`, `resizable`, `resizeArea`, `trigger`
 
 ## tabs
 
@@ -346,7 +353,7 @@
 - Attribute: `data-kt-scroll-shadows`
 - Default variant: `vertical`
 - Variants: `vertical`, `horizontal`, `mask`
-- Public options: `axis`, `color`, `mode`, `onChange`, `opacity`, `shadow`, `shape`, `size`, `transition`
+- Public options: `axis`, `color`, `ease`, `mode`, `onChange`, `opacity`, `shadow`, `shape`, `size`, `transition`, `transitionDuration`, `transitionMode`
 
 ## stickyHeader
 

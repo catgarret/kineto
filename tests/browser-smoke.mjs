@@ -56,7 +56,7 @@ try {
     modules: Object.keys(window.Kineto?.registry || {}).length,
     autoInit: typeof window.Kineto?.autoInit
   }));
-  assert.deepEqual(umd, { version: '0.8.43', modules: 50, autoInit: 'function' }, 'UMD global surface is invalid');
+  assert.deepEqual(umd, { version: '0.8.43', modules: 51, autoInit: 'function' }, 'UMD global surface is invalid');
   assert.deepEqual(runtimeErrors, [], `UMD runtime errors:
 ${runtimeErrors.join('\n')}`);
   console.log(`Browser smoke OK: ${Object.keys(result.results).length} modules exercised in Chromium; UMD global verified.`);

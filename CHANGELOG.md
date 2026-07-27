@@ -4,17 +4,21 @@
 
 ### English
 
-- Expanded Loader with comet, dual-ring, spokes and orbit spinners; pulse, bounce and wave dots; indeterminate glow bars; text shimmer and shimmer-wave; and four terminal/CLI styles.
-- Added loader lifecycle control through `show()`, `hide()`, `cancel()`, `fail()`, `finished`, callbacks and `kt-loader-*` events.
-- Added granular loader options and CSS tokens for size, stroke, speed, direction, glow, typography, radius, terminal surface and progress-driven custom UI.
-- Added a larger loader demo set, preset-aware settings, Korean documentation and regression coverage. Wandering Eyes is intentionally excluded.
+- Added a separate inline Loading Indicator module with comet, dual-ring, spokes and orbit spinners; dots; indeterminate glow bars; text shimmer; and four symbol-only terminal styles.
+- Kept Loader focused on full-page slot, circular and bar overlays while Loading Indicator remains in normal document flow.
+- Added indicator lifecycle control through `show()`, `hide()`, `complete()`, `trackPromise()`, `finished`, callbacks, `kt-loading-indicator-*` events and custom renderer hooks.
+- Added granular CSS tokens and preset-aware settings. Wandering Eyes is intentionally excluded.
+- Replaced measured settings-panel masonry with deterministic two-column grid flow. A single or unpaired last group now spans the full row without overlap.
+- Limited Bottom Sheet resizing to its handle or header so body text remains selectable.
 
 ### 한국어
 
-- 코멧·듀얼 링·스포크·오빗 스피너, 점 로더, 후광 바, 텍스트 시머, CLI 로더를 추가했습니다.
-- `show()`, `hide()`, `cancel()`, `fail()`, `finished`, 콜백과 이벤트로 로딩 수명주기를 제어할 수 있습니다.
-- 크기·두께·속도·방향·후광·글꼴·반경·터미널 표면을 옵션과 CSS 토큰으로 세밀하게 조절할 수 있습니다.
-- 프리셋별 설정 노출, 데모, 문서와 회귀 테스트를 갱신했습니다. Wandering Eyes는 포함하지 않습니다.
+- 코멧·듀얼 링·스포크·오빗 스피너, 점, 후광 바, 텍스트 시머, 기호형 터미널 표시를 별도 인라인 Loading Indicator 모듈로 추가했습니다.
+- Loader는 전체 화면 Slot·Circular·Bar 오버레이만 담당하고, Loading Indicator는 일반 콘텐츠 흐름 안에서 동작합니다.
+- `show()`, `hide()`, `complete()`, `trackPromise()`, `finished`, 콜백, 이벤트와 사용자 렌더러로 수명주기를 제어할 수 있습니다.
+- 크기·두께·속도·방향·후광·글꼴을 옵션과 CSS 토큰으로 조절합니다. Wandering Eyes는 포함하지 않습니다.
+- 설정창의 높이 측정형 배치를 제거했습니다. 하나만 남거나 홀수로 남은 마지막 그룹은 겹치지 않고 전체 폭을 사용합니다.
+- 바텀시트는 그립이나 헤더에서만 높이를 조절해 본문 텍스트 선택을 방해하지 않습니다.
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
@@ -25,7 +29,7 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
 - **Copy and localization audit**: rewrote Korean demo copy into concise,
   consistent two-line card descriptions; completed static English, Japanese,
   Simplified Chinese, Traditional Chinese, Russian, and Italian translations;
-  and synchronized all seven READMEs with the current 50-module contract.
+  and synchronized all seven READMEs with the then-current 50-module contract.
   Browser and structural tests now prevent missing translations, stale module
   tables, and card copy that exceeds two visible lines.
 - **Localization follow-through**: translated the settings drawer chrome,

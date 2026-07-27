@@ -276,15 +276,15 @@
     },
     {
       "id": "MK-LOADER-004",
-      "module": "loader",
-      "title": "Rich indeterminate loader system",
-      "acceptance": "Loader provides customizable spinner, dots, text shimmer, shimmer wave and multiple terminal styles without including a wandering-eyes effect."
+      "module": "loadingIndicator",
+      "title": "Rich inline loading indicator system",
+      "acceptance": "Loading Indicator provides customizable spinner, dots, bars, text shimmer, shimmer wave and symbol-only terminal styles without forcing a full-page overlay or including a wandering-eyes effect."
     },
     {
       "id": "MK-LOADER-005",
-      "module": "loader",
-      "title": "Extensible loader lifecycle",
-      "acceptance": "Loader exposes progress, completion, failure, cancellation, show and hide state through instance APIs, callbacks, DOM events, a finished promise, CSS variables and custom renderer hooks."
+      "module": "loadingIndicator",
+      "title": "Extensible loading indicator lifecycle",
+      "acceptance": "Loading Indicator exposes progress, completion, failure, show and hide state through instance APIs, callbacks, DOM events, a finished promise, CSS variables and custom renderer hooks."
     },
     {
       "id": "MK-SMOOTH-001",

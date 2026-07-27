@@ -9,6 +9,10 @@ import { clamp, env } from '../utils.js';
 // to the keyboard while open. Imperative: `instance.open()` / `instance.close()`.
 export default {
   create(el, opts = {}) {
+    const emit = (name, detail) => {
+      const EventCtor = el.ownerDocument?.defaultView?.CustomEvent || globalThis.CustomEvent;
+      if (EventCtor) el.dispatchEvent(new EventCtor(name, { detail }));
+    };
     const reduce = env().reducedMotion;
     const duration = Math.max(0.05, Number(opts.duration ?? 0.34));
     const useBackdrop = opts.backdrop !== false;
@@ -99,36 +103,74 @@ export default {
     // inside the sheet, so a var on the sheet would never reach it).
     if (backdrop) backdrop.style.setProperty('--kt-sheet-backdrop-opacity', String(backdropOpacity));
 
-    // Handle drag. Default = drag-to-dismiss. With `resizable:true`, dragging the
-    // handle resizes the sheet's height (up = taller, down = shorter, clamped);
-    // dismissal then happens only via backdrop / Esc / close so the two don't fight.
+    // Drag behaviour. Default keeps the familiar handle-only drag-to-dismiss.
+    // `resizable:true` turns vertical drag into live height resizing. The
+    // default handle remains available, while resizeArea:"header" uses an
+    // authored `[data-kt-sheet-header]`, `<header>` or `.kt-sheet__header`.
+    // The content body is never a drag surface, so text stays selectable.
     const resizable = opts.resizable === true;
+    const resizeArea = opts.resizeArea === 'header' ? 'header' : 'handle';
+    const minHeight = Math.max(120, Number(opts.minHeight ?? 140));
     const resetSize = () => { el.style.height = ''; el.style.maxHeight = ''; };
     let onHandleDbl = null;
+    let dragBinding = null;
     if (handle && resizable) {
       handle.style.cursor = 'ns-resize'; handle.style.touchAction = 'none'; el.classList.add('kt-sheet--resizable');
       handle.title = handle.title || '드래그: 높이 조절 · 더블클릭: 초기화';
-      onHandleDbl = () => resetSize();
-      handle.addEventListener('dblclick', onHandleDbl);
     }
-    if (handle && (dismissible || resizable)) {
-      let startY = 0; let startH = 0; let dragging = false;
-      const down = (e) => { dragging = true; startY = e.clientY; startH = el.getBoundingClientRect().height; el.style.transition = 'none'; handle.setPointerCapture?.(e.pointerId); };
+    if (resizable) {
+      el.classList.add(`kt-sheet--resize-${resizeArea}`);
+      el.dataset.ktSheetResizeArea = resizeArea;
+    }
+    const authoredHeader = el.querySelector('[data-kt-sheet-header],.kt-sheet__header,header');
+    const dragSurface = resizable && resizeArea === 'header' ? (authoredHeader || handle) : handle;
+    if (dragSurface && (dismissible || resizable)) {
+      let startY = 0; let startH = 0; let dragging = false; let moved = false; let lastTapAt = 0;
+      const interactive = 'button,a,input,select,textarea,label,[contenteditable="true"],[data-kt-sheet-no-resize]';
+      const down = (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        if (e.target.closest?.(interactive)) return;
+        dragging = true; moved = false; startY = e.clientY; startH = el.getBoundingClientRect().height;
+        el.style.transition = 'none';
+        el.classList.add('kt-sheet--dragging');
+        dragSurface.setPointerCapture?.(e.pointerId);
+      };
       const move = (e) => {
         if (!dragging) return;
         const dy = e.clientY - startY;
-        if (resizable) { const h = Math.min(Math.round((typeof window !== 'undefined' ? window.innerHeight : 800) * 0.95), Math.max(140, Math.round(startH - dy))); el.style.height = `${h}px`; el.style.maxHeight = '95vh'; }
+        if (Math.abs(dy) > 3) moved = true;
+        if (resizable) {
+          const viewportMax = Math.round((typeof window !== 'undefined' ? window.innerHeight : 800) * 0.95);
+          const configuredMax = Number(opts.maxHeight);
+          const maxHeight = Number.isFinite(configuredMax) && configuredMax > 0 ? Math.min(viewportMax, configuredMax) : viewportMax;
+          const h = Math.min(maxHeight, Math.max(minHeight, Math.round(startH - dy)));
+          el.style.height = `${h}px`; el.style.maxHeight = `${maxHeight}px`;
+          opts.onResize?.(h, el);
+          emit('kt-sheet-resize', { height: h, source: resizeArea });
+        }
         else { el.style.transform = `translateY(${Math.max(0, dy)}px)`; }
       };
       const up = (e) => {
-        if (!dragging) return; dragging = false; el.style.transition = '';
+        if (!dragging) return; dragging = false; el.style.transition = ''; el.classList.remove('kt-sheet--dragging');
         if (!resizable) { const dy = Math.max(0, e.clientY - startY); el.style.transform = ''; if (dismissible && dy > 90) doClose(); }
+        else if (!moved) {
+          const now = Date.now();
+          if (now - lastTapAt < 320) resetSize();
+          lastTapAt = now;
+        }
       };
-      handle.addEventListener('pointerdown', down);
-      handle.addEventListener('pointermove', move);
-      handle.addEventListener('pointerup', up);
-      handle.addEventListener('pointercancel', up);
-      handle._kt = { down, move, up };
+      dragSurface.addEventListener('pointerdown', down);
+      dragSurface.addEventListener('pointermove', move);
+      dragSurface.addEventListener('pointerup', up);
+      dragSurface.addEventListener('pointercancel', up);
+      dragBinding = { surface: dragSurface, down, move, up };
+      if (resizable) {
+        onHandleDbl = (event) => {
+          if (event.target.closest?.(interactive)) return;
+          resetSize();
+        };
+        dragSurface.addEventListener('dblclick', onHandleDbl);
+      }
     }
 
     const triggers = el.id ? Array.from(document.querySelectorAll(triggerSel)).filter((t) => (t.getAttribute('data-kt-sheet-trigger') || t.getAttribute('href') || '') === `#${el.id}` || opts.trigger) : [];
@@ -148,10 +190,18 @@ export default {
         doClose();
         document.removeEventListener('keydown', onKey, true);
         triggers.forEach((t) => t.removeEventListener('click', onTrig));
-        if (handle && onHandleDbl) handle.removeEventListener('dblclick', onHandleDbl);
+        if (dragBinding) {
+          const { surface, down, move, up } = dragBinding;
+          surface.removeEventListener('pointerdown', down);
+          surface.removeEventListener('pointermove', move);
+          surface.removeEventListener('pointerup', up);
+          surface.removeEventListener('pointercancel', up);
+          if (onHandleDbl) surface.removeEventListener('dblclick', onHandleDbl);
+        }
         if (backdrop) backdrop.remove();
         if (handle) handle.remove();
-        el.classList.remove('kt-sheet', 'kt-open');
+        el.classList.remove('kt-sheet', 'kt-open', 'kt-sheet--resizable', 'kt-sheet--resize-handle', 'kt-sheet--resize-header', 'kt-sheet--dragging');
+        delete el.dataset.ktSheetResizeArea;
         el.removeAttribute('role'); el.removeAttribute('aria-modal'); el.hidden = false;
       }
     };

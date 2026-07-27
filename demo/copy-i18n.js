@@ -17,9 +17,9 @@ window.KINETO_COPY_I18N = {
       "components": "UI components with keyboard and screen-reader support.<br>Includes accordions, mega menus, tabs, sheets, tooltips, and switches.",
       "buttons-feedback": "Feedback for input and status changes.<br>Includes confetti, hold, toast, and vibration effects.",
       "loading": "Motion applied across the page.<br>Includes loaders, page reveals, and page transitions.",
-      "module-index": "The 50 public modules in the current release.",
+      "module-index": "The 51 public modules in the current release.",
       "_hero": [
-        "Explore 50 motion modules on one page.",
+        "Explore 51 motion modules on one page.",
         "Tune the options, then copy the finished HTML and JavaScript."
       ],
       "_chips": [
@@ -55,9 +55,9 @@ window.KINETO_COPY_I18N = {
       "components": "キーボードとスクリーンリーダーをサポートするUIです。<br>アコーディオン・メガメニュー・タブ・ボトムシート・ツールチップ・スイッチを提供します。",
       "buttons-feedback": "入力結果と状態を通知するモジュールです。<br>紙吹雪・長押し・トースト・振動効果を提供します。",
       "loading": "ページ全体に適用するモジュールです。<br>ローディング・画面進入・ページ切り替え効果を提供します。",
-      "module-index": "現在配布に含まれている50のパブリックモジュールです。",
+      "module-index": "現在配布に含まれている51のパブリックモジュールです。",
       "_hero": [
-        "50のモーションモジュールを1ページで見てください。",
+        "51のモーションモジュールを1ページで見てください。",
         "オプションを調整し、完成したHTML・JavaScriptコードをコピーできます。"
       ],
       "_chips": [
@@ -83,7 +83,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "コア単独動作",
-      "_footerBrand": "HTMLプロパティとJavaScript APIとして使用するWebモーションライブラリ。<br>50個のモジュールで必要な機能のみを選択して使用できます。"
+      "_footerBrand": "HTMLプロパティとJavaScript APIとして使用するWebモーションライブラリ。<br>51個のモジュールで必要な機能のみを選択して使用できます。"
     },
     "zh-CN": {
       "counter": "这是一个移动数字和字母的模块。<br>提供计数器、溢出、分割、打字和故障。",
@@ -93,9 +93,9 @@ window.KINETO_COPY_I18N = {
       "components": "此 UI 支持键盘和屏幕阅读器。<br>它提供了手风琴、大型菜单、选项卡、底部工作表、工具提示和开关。",
       "buttons-feedback": "这是一个报告输入结果和状态的模块。<br>提供五彩纸屑、长按、吐司和振动效果。",
       "loading": "该模块适用于整个页面。<br>提供加载、入屏、页面切换效果。",
-      "module-index": "当前发行版中包含 50 个公共模块。",
+      "module-index": "当前发行版中包含 51 个公共模块。",
       "_hero": [
-        "在一页上探索 50 个运动模块。",
+        "在一页上探索 51 个运动模块。",
         "您可以调整选项并复制完整的 HTML 和 JavaScript 代码。"
       ],
       "_chips": [
@@ -121,7 +121,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "核心独立运营",
-      "_footerBrand": "它是一个用作 HTML 属性和 JavaScript API 的 Web 动作库。<br>您可以从 50 个模块中仅选择和使用您需要的功能。"
+      "_footerBrand": "它是一个用作 HTML 属性和 JavaScript API 的 Web 动作库。<br>您可以从 51 个模块中仅选择和使用您需要的功能。"
     },
     "zh-TW": {
       "counter": "這是一個移動數字和字母的模組。<br>提供計數器、溢出、分割、打字和故障。",
@@ -131,9 +131,9 @@ window.KINETO_COPY_I18N = {
       "components": "此 UI 支援鍵盤和螢幕閱讀器。<br>它提供了手風琴、大型菜單、選項卡、底部工作表、工具提示和開關。",
       "buttons-feedback": "這是一個報告輸入結果和狀態的模組。<br>提供五彩紙屑、長按、吐司和振動效果。",
       "loading": "此模組適用於整個頁面。<br>提供載入、入屏、頁面切換效果。",
-      "module-index": "目前發行版中包含 50 個公共模組。",
+      "module-index": "目前發行版中包含 51 個公共模組。",
       "_hero": [
-        "在一頁上探索 50 個運動模組。",
+        "在一頁上探索 51 個運動模組。",
         "您可以調整選項並複製完整的 HTML 和 JavaScript 程式碼。"
       ],
       "_chips": [
@@ -159,7 +159,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "核心獨立營運",
-      "_footerBrand": "它是一個用作 HTML 屬性和 JavaScript API 的 Web 動作庫。<br>您可以從 50 個模組中僅選擇和使用您需要的功能。"
+      "_footerBrand": "它是一個用作 HTML 屬性和 JavaScript API 的 Web 動作庫。<br>您可以從 51 個模組中僅選擇和使用您需要的功能。"
     },
     "ru": {
       "counter": "Это модуль, который перемещает цифры и буквы.<br>Обеспечивает счетчик, переполнение, разделение, ввод текста и сбои.",
@@ -169,9 +169,9 @@ window.KINETO_COPY_I18N = {
       "components": "Этот пользовательский интерфейс поддерживает программы чтения с клавиатуры и экрана.<br>Он предоставляет аккордеон, мегаменю, вкладку, нижний лист, всплывающую подсказку и переключатель.",
       "buttons-feedback": "Это модуль, который сообщает о результатах ввода и состоянии.<br>Обеспечивает эффекты конфетти, длительного нажатия, тоста и вибрации.",
       "loading": "Этот модуль применяется ко всей странице.<br>Обеспечивает эффекты загрузки, входа на экран и перехода между страницами.",
-      "module-index": "В текущий дистрибутив включено 50 общедоступных модулей.",
+      "module-index": "В текущий дистрибутив включён 51 общедоступный модуль.",
       "_hero": [
-        "Изучите 50 модулей движения на одной странице.",
+        "Изучите 51 модуль движения на одной странице.",
         "Вы можете настроить параметры и скопировать готовый код HTML и JavaScript."
       ],
       "_chips": [
@@ -197,7 +197,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "Независимая работа ядра",
-      "_footerBrand": "Это библиотека веб-движений, используемая в качестве атрибута HTML и API JavaScript.<br>Из 50 модулей вы можете выбрать и использовать только нужные вам функции."
+      "_footerBrand": "Это библиотека веб-анимации для HTML-атрибутов и JavaScript API.<br>Из 51 модуля можно выбрать только нужные функции."
     },
     "it": {
       "counter": "Questo è un modulo che muove numeri e lettere.<br>Fornisce contatore, overflow, suddivisione, digitazione e problemi tecnici.",
@@ -207,9 +207,9 @@ window.KINETO_COPY_I18N = {
       "components": "Questa interfaccia utente supporta tastiera e lettori di schermo.<br>Fornisce fisarmonica, mega menu, scheda, foglio inferiore, descrizione comando e interruttore.",
       "buttons-feedback": "Questo è un modulo che riporta i risultati e lo stato degli input.<br>Fornisce effetti di coriandoli, pressione prolungata, toast e vibrazione.",
       "loading": "Questo modulo si applica all'intera pagina.<br>Fornisce effetti di caricamento, immissione sullo schermo e transizione della pagina.",
-      "module-index": "Ci sono 50 moduli pubblici inclusi nella distribuzione attuale.",
+      "module-index": "La versione attuale include 51 moduli pubblici.",
       "_hero": [
-        "Esplora 50 moduli di movimento in una pagina.",
+        "Esplora 51 moduli di movimento in una pagina.",
         "Puoi modificare le opzioni e copiare il codice HTML e JavaScript completato."
       ],
       "_chips": [
@@ -235,22 +235,34 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "Funzionamento indipendente dal nucleo",
-      "_footerBrand": "È una libreria di movimento web utilizzata come attributo HTML e API JavaScript.<br>Puoi selezionare e utilizzare solo le funzioni di cui hai bisogno tra 50 moduli."
+      "_footerBrand": "Una libreria di motion per attributi HTML e API JavaScript.<br>Scegli solo le funzioni necessarie tra 51 moduli."
     }
   },
   "cards": {
-    "꼬리와 후광이 흐르는 원형 스피너입니다.": ["A circular spinner with a flowing tail and glow.","尾と光が流れる円形スピナーです。","带有流动尾迹和光晕的圆形加载器。","帶有流動尾跡和光暈的圓形載入器。","Круговой спиннер с движущимся хвостом и свечением.","Uno spinner circolare con scia e bagliore."],
-    "두 개의 링이 반대 속도로 회전합니다.": ["Two rings rotate at contrasting speeds.","2本のリングが異なる速度で回転します。","两个圆环以不同速度旋转。","兩個圓環以不同速度旋轉。","Два кольца вращаются с разной скоростью.","Due anelli ruotano a velocità diverse."],
+    "Spinner — Comet": ["Spinner — Comet","スピナー — コメット","旋转器 — 彗尾","旋轉器 — 彗尾","Спиннер — комета","Spinner — cometa"],
+    "Spinner — Dual ring": ["Spinner — Dual ring","スピナー — デュアルリング","旋转器 — 双环","旋轉器 — 雙環","Спиннер — два кольца","Spinner — doppio anello"],
+    "Spinner — Spokes": ["Spinner — Spokes","スピナー — スポーク","旋转器 — 辐条","旋轉器 — 輻條","Спиннер — лучи","Spinner — raggi"],
+    "Spinner — Orbit": ["Spinner — Orbit","スピナー — オービット","旋转器 — 轨道","旋轉器 — 軌道","Спиннер — орбита","Spinner — orbita"],
+    "Loading dots — Wave": ["Loading dots — Wave","ローディングドット — ウェーブ","加载圆点 — 波浪","載入圓點 — 波浪","Точки загрузки — волна","Punti di caricamento — onda"],
+    "Progress bar — Glow": ["Progress bar — Glow","プログレスバー — グロー","进度条 — 光晕","進度列 — 光暈","Индикатор — свечение","Barra di avanzamento — bagliore"],
+    "Text Shimmer": ["Text Shimmer","テキストシマー","文字流光","文字流光","Мерцание текста","Riflesso testo"],
+    "Text Shimmer — Wave": ["Text Shimmer — Wave","テキストシマー — ウェーブ","文字流光 — 波浪","文字流光 — 波浪","Мерцание текста — волна","Riflesso testo — onda"],
+    "Terminal — Cursor": ["Terminal — Cursor","ターミナル — カーソル","终端 — 光标","終端 — 游標","Терминал — курсор","Terminale — cursore"],
+    "Terminal — Dots": ["Terminal — Dots","ターミナル — ドット","终端 — 圆点","終端 — 圓點","Терминал — точки","Terminale — punti"],
+    "Terminal — Blocks": ["Terminal — Blocks","ターミナル — ブロック","终端 — 方块","終端 — 方塊","Терминал — блоки","Terminale — blocchi"],
+    "Terminal — Meter": ["Terminal — Meter","ターミナル — メーター","终端 — 进度计","終端 — 進度計","Терминал — шкала","Terminale — indicatore"],
+    "꼬리와 후광이 흐르는 인라인 스피너입니다.": ["An inline spinner with a flowing tail and glow.","尾と光が流れるインラインスピナーです。","带有流动尾迹和光晕的内联加载器。","帶有流動尾跡和光暈的行內載入器。","Встроенный спиннер с движущимся хвостом и свечением.","Uno spinner inline con scia e bagliore."],
+    "반대 방향으로 도는 두 개의 링입니다.": ["Two rings rotate in opposite directions.","2本のリングが逆方向に回転します。","两个圆环反向旋转。","兩個圓環反向旋轉。","Два кольца вращаются в противоположных направлениях.","Due anelli ruotano in direzioni opposte."],
     "단계별로 밝아지는 방사형 스피너입니다.": ["A radial spinner whose spokes brighten in sequence.","放射状の線が順番に明るくなるスピナーです。","辐条依次亮起的放射状加载器。","輻條依次亮起的放射狀載入器。","Радиальный спиннер с последовательным свечением лучей.","Uno spinner radiale con raggi che si illuminano in sequenza."],
     "궤도를 따라 빛나는 점이 회전합니다.": ["A glowing point rotates along an orbit.","光る点が軌道に沿って回転します。","发光点沿轨道旋转。","發光點沿軌道旋轉。","Светящаяся точка вращается по орбите.","Un punto luminoso ruota lungo un'orbita."],
-    "점이 차례로 반응하는 가벼운 로더입니다.": ["A lightweight loader with sequentially animated dots.","点が順番に反応する軽量ローダーです。","圆点依次响应的轻量加载器。","圓點依次回應的輕量載入器。","Лёгкий индикатор с последовательной анимацией точек.","Un loader leggero con punti animati in sequenza."],
-    "진행 방향을 오가는 후광 바입니다.": ["A glowing bar that travels back and forth.","光が往復するプログレスバーです。","光晕来回移动的进度条。","光暈來回移動的進度列。","Светящаяся полоса, движущаяся туда и обратно.","Una barra luminosa che scorre avanti e indietro."],
+    "점이 차례로 반응하는 가벼운 인디케이터입니다.": ["A lightweight indicator with sequentially animated dots.","点が順番に反応する軽量インジケーターです。","圆点依次响应的轻量指示器。","圓點依次回應的輕量指示器。","Лёгкий индикатор с последовательной анимацией точек.","Un indicatore leggero con punti animati in sequenza."],
+    "진행 방향을 오가는 인라인 후광 바입니다.": ["An inline glow bar that travels back and forth.","光が往復するインラインバーです。","来回移动的内联光晕条。","來回移動的行內光暈列。","Встроенная светящаяся полоса, движущаяся туда и обратно.","Una barra luminosa inline che scorre avanti e indietro."],
     "텍스트 표면을 부드러운 빛이 통과합니다.": ["A soft light passes across the text.","柔らかな光がテキストの表面を通過します。","柔和的光线掠过文字表面。","柔和的光線掠過文字表面。","Мягкий свет проходит по поверхности текста.","Una luce morbida attraversa il testo."],
     "글자마다 빛과 높낮이가 이어집니다.": ["Light and vertical motion travel character by character.","光と上下の動きが文字ごとに続きます。","光线和上下运动逐字传递。","光線和上下移動逐字傳遞。","Свет и вертикальное движение переходят от буквы к букве.","Luce e movimento verticale scorrono tra i caratteri."],
-    "명령 프롬프트와 블록 커서를 표시합니다.": ["Shows a command prompt with a block cursor.","コマンドプロンプトとブロックカーソルを表示します。","显示命令提示符和块状光标。","顯示命令提示字元和區塊游標。","Показывает командную строку и блочный курсор.","Mostra un prompt dei comandi con cursore a blocco."],
-    "CLI 문장 뒤의 점을 순서대로 점멸합니다.": ["Blinks dots in sequence after a CLI message.","CLIメッセージの後ろで点が順番に点滅します。","CLI 文本后的圆点依次闪烁。","CLI 文字後的圓點依次閃爍。","Точки после строки CLI мигают по очереди.","Fa lampeggiare in sequenza i punti dopo un messaggio CLI."],
-    "여러 작업 단계를 차례로 출력합니다.": ["Prints multiple task steps in sequence.","複数の処理段階を順番に出力します。","依次输出多个任务步骤。","依次輸出多個工作步驟。","Последовательно выводит этапы выполнения.","Mostra più fasi di lavoro in sequenza."],
-    "실제 진행률을 ASCII 막대로 갱신합니다.": ["Updates an ASCII bar with the actual progress.","実際の進捗をASCIIバーで更新します。","使用实际进度更新 ASCII 进度条。","使用實際進度更新 ASCII 進度列。","Обновляет ASCII-полосу по фактическому прогрессу.","Aggiorna una barra ASCII con l'avanzamento reale."],
+    "문구와 분리해 쓰는 블록 커서입니다.": ["A block cursor used separately from the label.","文言と分けて使うブロックカーソルです。","与文案分开使用的块状光标。","與文案分開使用的區塊游標。","Блочный курсор, используемый отдельно от подписи.","Un cursore a blocco separato dal testo."],
+    "필요한 문구 뒤에 붙이는 점 인디케이터입니다.": ["A dots indicator placed after your own label.","任意の文言の後ろに置く点インジケーターです。","放在自定义文案后的圆点指示器。","放在自訂文案後的圓點指示器。","Индикатор из точек после собственного текста.","Un indicatore a punti da inserire dopo il testo."],
+    "작은 블록이 순서대로 점등되는 표시입니다.": ["Small blocks light up in sequence.","小さなブロックが順番に点灯します。","小方块依次亮起。","小方塊依次亮起。","Небольшие блоки загораются по очереди.","Piccoli blocchi si illuminano in sequenza."],
+    "진행률을 블록 막대로만 표시합니다.": ["Shows progress using only a block meter.","進捗をブロックメーターだけで表示します。","仅用块状进度条显示进度。","僅用區塊進度列顯示進度。","Показывает прогресс только блочной шкалой.","Mostra l'avanzamento solo con una barra a blocchi."],
     "숫자가 위아래로 굴러가며 바뀝니다.": [
       "The numbers change by rolling up and down.",
       "上下にロールすると数字が変わります。",
@@ -627,13 +639,13 @@ window.KINETO_COPY_I18N = {
       "Центрирует активный слайд с предварительным просмотром размеров с обеих сторон.",
       "Centra la diapositiva attiva con anteprime dimensionali su entrambi i lati."
     ],
-    "위치 이동 없이 장면을 부드럽게 교차합니다.": [
-      "Crossfades scenes smoothly without positional movement.",
-      "位置を移動することなくシーンをスムーズにクロスフェードします。",
-      "平滑地交叉淡入淡出场景，无需位置移动。",
-      "平滑地交叉淡入淡出場景，無需位置移動。",
-      "Плавное плавное плавное плавное плавное плавное плавное плавное плавное затухание сцен без позиционных перемещений.",
-      "Dissolvenza incrociata delle scene in modo fluido senza movimento posizionale."
+    "미세한 입자와 블러로 장면을 부드럽게 전환합니다.": [
+      "Transitions scenes with fine grain and a soft blur.",
+      "細かな粒子とぼかしでシーンを滑らかに切り替えます。",
+      "使用细腻颗粒和柔和模糊切换场景。",
+      "使用細緻顆粒與柔和模糊切換場景。",
+      "Плавно меняет сцены с мелким зерном и мягким размытием.",
+      "Cambia scena con grana fine e una sfocatura morbida."
     ],
     "세 모듈을 함께 써도 GIF 재생을 유지합니다.": [
       "Keeps GIF playback running when three modules share one image.",
@@ -1051,13 +1063,13 @@ window.KINETO_COPY_I18N = {
       "Поддерживаются вкладки WAI-ARIA и клавиши со стрелками, «Домой» и «Конец».",
       "Sono supportati la scheda WAI-ARIA e i tasti freccia, Home e Fine."
     ],
-    "백드롭과 함께 화면 아래에서 시트를 엽니다.": [
-      "Opens a sheet from the bottom with a backdrop.",
-      "背景付きのシートを下から開きます。",
-      "从底部打开带有背景的工作表。",
-      "從底部打開帶有背景的工作表。",
-      "Открывает лист снизу с задником.",
-      "Apre un foglio dal basso con uno sfondo."
+    "헤더를 끌어 높이를 조절하고 백드롭과 함께 닫습니다.": [
+      "Drag the header to resize, then dismiss it with the backdrop.",
+      "ヘッダーをドラッグして高さを調整し、背景を押して閉じます。",
+      "拖动标题栏调整高度，并通过背景层关闭。",
+      "拖曳標題列調整高度，並透過背景層關閉。",
+      "Потяните заголовок, чтобы изменить высоту; фон закрывает панель.",
+      "Trascina l’intestazione per ridimensionare; lo sfondo chiude il pannello."
     ],
     "위치를 자동 보정하며 호버·포커스·클릭으로 엽니다.": [
       "It automatically corrects the position and opens by hovering, focusing, or clicking.",

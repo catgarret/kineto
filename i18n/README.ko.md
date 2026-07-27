@@ -17,7 +17,7 @@
 
 ---
 
-Kineto는 모션·미디어·스크롤·텍스트·UI를 다루는 50개 모듈을
+Kineto는 모션·미디어·스크롤·텍스트·UI를 다루는 51개 모듈을
 제공합니다.
 `data-kt-*` 속성 하나로 적용하거나 JavaScript API로 세밀하게
 제어할 수 있습니다.
@@ -59,7 +59,7 @@ Kineto는 모션·미디어·스크롤·텍스트·UI를 다루는 50개 모듈�
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/lightbox.gif" width="620" alt="Lightbox">
 
-전체 50개 모듈은 아래 [모듈 목록](#모듈)을 참고하세요.
+전체 51개 모듈은 아래 [모듈 목록](#모듈)을 참고하세요.
 
 ## 설치
 
@@ -157,6 +157,7 @@ Kineto.disableSmooth();
 | `lazy` | `data-kt-lazy` | 스켈레톤·픽셀·프린트·디졸브 로딩 |
 | `lightbox` | `data-kt-lightbox` | 그룹·확대·미니맵 전체 화면 뷰어 |
 | `loader` | `data-kt-loader` | 실제 진행률 연동 로더 |
+| `loadingIndicator` | `data-kt-loading-indicator` | 인라인 스피너·바·시머·기호 인디케이터 |
 | `magnetic` | `data-kt-magnetic` | 포인터 자석 반응 |
 | `marquee` | `data-kt-marquee` | 연속 마퀴 |
 | `mouseParallax` | `data-kt-mouse-parallax` | 포인터·자이로 패럴럭스 |

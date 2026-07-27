@@ -14,6 +14,7 @@ import magneticModule from './modules/magnetic.js';
 import marqueeModule from './modules/marquee.js';
 import overflowTextModule from './modules/overflowText.js';
 import loaderModule from './modules/loader.js';
+import loadingIndicatorModule from './modules/loadingIndicator.js';
 import tiltModule from './modules/tilt.js';
 import cursorModule from './modules/cursor.js';
 import textFillModule from './modules/textFill.js';
@@ -66,6 +67,7 @@ const moduleEntries = {
   marquee: marqueeModule,
   overflowText: overflowTextModule,
   loader: loaderModule,
+  loadingIndicator: loadingIndicatorModule,
   tilt: tiltModule,
   cursor: cursorModule,
   textFill: textFillModule,
@@ -122,6 +124,7 @@ export const magnetic = call('magnetic');
 export const marquee = call('marquee');
 export const overflowText = call('overflowText');
 export const loader = call('loader');
+export const loadingIndicator = call('loadingIndicator');
 export const tilt = call('tilt');
 export const cursor = call('cursor');
 export const textFill = call('textFill');

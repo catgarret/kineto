@@ -9,13 +9,13 @@ const demo = (await read('../demo/index.html')) + (await read('../demo/main.js')
 const playground = await read('../demo/playground.js');
 const playgroundI18n = await read('../demo/playground-i18n.js');
 const source = Object.fromEntries(await Promise.all([
-  'counter','loader','lazy','reveal','textReveal','textTransition','glitch','ripple','overflowText','lightbox','slider','ambientMedia','cardGlow','cursor','scrollVelocity','stickyStack'
+  'counter','loader','loadingIndicator','lazy','reveal','textReveal','textTransition','glitch','ripple','overflowText','lightbox','slider','ambientMedia','cardGlow','cursor','scrollVelocity','stickyStack'
 ].map(async (name) => [name, await read(`../src/modules/${name}.js`)])));
 
 assert.equal(requirements.libraryVersion, packageJson.version);
 assert.equal(requirements.requirements.length, 48, 'all 48 owner requirements must remain locked');
 assert.equal(new Set(requirements.requirements.map(({ id }) => id)).size, 48, 'requirement IDs must be unique');
-assert.equal(features.moduleCount, 50);
+assert.equal(features.moduleCount, 51);
 const module = (name) => features.modules.find((entry) => entry.name === name);
 
 assert.deepEqual(module('counter').variants, ['slot','plain','digit','pop','flip','clock']);
@@ -24,16 +24,20 @@ assert.ok(module('overflowText').variants.includes('rolling'));
 assert.ok(module('reveal').variants.includes('slide-down') && module('reveal').variants.includes('class'));
 assert.ok(module('cursor').variants.includes('custom'));
 assert.ok(module('slider').variants.includes('coverflow'));
-assert.deepEqual(module('loader').variants, ['slot','circular','bar','spinner','dots','shimmer','shimmer-wave','terminal']);
+assert.deepEqual(module('loader').variants, ['slot','circular','bar']);
+assert.deepEqual(module('loadingIndicator').variants, ['spinner','dots','bar','shimmer','shimmer-wave','terminal']);
 
 assert.match(source.counter, /Pop is not a count-up mode/);
 assert.match(source.loader, /source === 'resources'/);
 assert.match(source.loader, /trackPromise/);
 assert.match(source.loader, /trackFetch/);
-assert.match(source.loader, /kt-loader-shimmer/);
-assert.match(source.loader, /kt-loader-terminal/);
 assert.match(source.loader, /get finished\(\)/);
 assert.match(source.loader, /kt-loader-\$\{name\}/);
+assert.match(source.loadingIndicator, /kt-loading-shimmer/);
+assert.match(source.loadingIndicator, /kt-loading-terminal/);
+assert.match(source.loadingIndicator, /trackPromise/);
+assert.match(source.loadingIndicator, /get finished\(\)/);
+assert.match(source.loadingIndicator, /kt-loading-indicator-\$\{name\}/);
 assert.match(source.lazy, /kt-lazy-skeleton/);
 assert.match(source.lazy, /Math\.random\(\)/);
 assert.match(source.lazy, /effect === 'print' \|\| effect === 'dissolve'/);

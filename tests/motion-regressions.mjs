@@ -94,6 +94,8 @@ fullpage.destroy();
 fullpageEl.remove();
 
 const sliderModule = (await import('../src/modules/slider.js')).default;
+const bottomSheetModule = (await import('../src/modules/bottomSheet.js')).default;
+const loadingIndicatorModule = (await import('../src/modules/loadingIndicator.js')).default;
 const coverRevealModule = (await import('../src/modules/coverReveal.js')).default;
 const flipModule = (await import('../src/modules/flip.js')).default;
 const cardGlowModule = (await import('../src/modules/cardGlow.js')).default;
@@ -246,6 +248,93 @@ assert.notEqual(
 );
 hoverInstance.destroy();
 
+// Slider effects must be visually distinct instead of aliasing every scene
+// transition to fade. The generated transforms/filters remain class- and
+// CSS-variable-addressable for product overrides.
+const effectExpectations = {
+  fade: (slide) => slide.style.filter === '' && slide.style.transform.includes('translate3d'),
+  dissolve: (slide) => slide.style.filter.includes('blur('),
+  wipe: (slide) => slide.style.clipPath.includes('inset('),
+  flip: (slide) => slide.style.transform.includes('rotateY('),
+  cube: (slide) => slide.style.transform.includes('rotateY('),
+  cards: (slide) => slide.style.transform.includes('rotateZ('),
+  creative: (slide) => slide.style.transform.includes('rotateZ('),
+  coverflow: (slide) => slide.style.transform.includes('rotateY(')
+};
+for (const [effect, check] of Object.entries(effectExpectations)) {
+  const effectInstance = sliderModule.create(sliderEl, { effect, loop: 'rewind' });
+  assert.equal(sliderEl.dataset.ktSliderEffect, effect, `${effect}: effect state hook missing`);
+  assert.ok(check(sliderEl.querySelectorAll('.kt-slide')[1]), `${effect}: renderer did not produce a distinct scene treatment`);
+  effectInstance.destroy();
+}
+
+const sliderEvents = [];
+sliderEl.addEventListener('kt-slider-change', (event) => sliderEvents.push(event.detail.index));
+const apiInstance = sliderModule.create(sliderEl, { effect: 'slide', loop: 'rewind' });
+assert.equal(typeof apiInstance.slideNext, 'function');
+assert.equal(typeof apiInstance.slideTo, 'function');
+apiInstance.slideNext();
+assert.deepEqual(sliderEvents, [1], 'slider change event must expose the next index');
+apiInstance.disable();
+apiInstance.slideNext();
+assert.equal(apiInstance.index, 1, 'disabled slider must ignore navigation');
+apiInstance.enable();
+apiInstance.slideTo(2);
+assert.equal(apiInstance.isEnd, true);
+apiInstance.destroy();
+
+// Resizable Bottom Sheet keeps resizing on its header so body text remains
+// selectable. Double click on the same header restores automatic height.
+const sheetEl = document.createElement('section');
+sheetEl.innerHTML = '<header data-kt-sheet-header><h3>Sheet</h3></header><p>Selectable body text</p><button>Action</button>';
+document.body.appendChild(sheetEl);
+sheetEl.getBoundingClientRect = () => ({ left: 0, top: 300, right: 400, bottom: 600, width: 400, height: 300 });
+const resizeEvents = [];
+sheetEl.addEventListener('kt-sheet-resize', (event) => resizeEvents.push(event.detail));
+const sheetInstance = bottomSheetModule.create(sheetEl, {
+  resizable: true,
+  resizeArea: 'header',
+  minHeight: 160,
+  maxHeight: 700
+});
+const sheetHeader = sheetEl.querySelector('header');
+sheetHeader.dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, clientY: 500, button: 0 }));
+sheetHeader.dispatchEvent(new window.MouseEvent('pointermove', { bubbles: true, clientY: 400, button: 0 }));
+sheetHeader.dispatchEvent(new window.MouseEvent('pointerup', { bubbles: true, clientY: 400, button: 0 }));
+assert.equal(sheetEl.style.height, '400px');
+assert.deepEqual(resizeEvents.at(-1), { height: 400, source: 'header' });
+const heightAfterHeaderDrag = sheetEl.style.height;
+sheetEl.querySelector('p').dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, clientY: 400, button: 0 }));
+sheetEl.dispatchEvent(new window.MouseEvent('pointermove', { bubbles: true, clientY: 320, button: 0 }));
+sheetEl.dispatchEvent(new window.MouseEvent('pointerup', { bubbles: true, clientY: 320, button: 0 }));
+assert.equal(sheetEl.style.height, heightAfterHeaderDrag, 'body pointer gestures must not resize the sheet');
+sheetHeader.dispatchEvent(new window.MouseEvent('dblclick', { bubbles: true, button: 0 }));
+assert.equal(sheetEl.style.height, '', 'double click must restore automatic sheet height');
+sheetInstance.destroy();
+sheetEl.remove();
+
+// Loading Indicator is intentionally inline and terminal presets render only
+// symbols. Product copy remains outside the library-owned indicator.
+const indicatorHost = document.createElement('span');
+document.body.appendChild(indicatorHost);
+const indicatorEvents = [];
+indicatorHost.addEventListener('kt-loading-indicator-progress', (event) => indicatorEvents.push(event.detail.progress));
+const indicator = loadingIndicatorModule.create(indicatorHost, {
+  type: 'terminal',
+  terminalStyle: 'meter',
+  progress: 35,
+  hideOnComplete: false
+});
+assert.equal(indicatorHost.querySelector('.kt-loading--terminal')?.textContent.includes('Loading'), false);
+assert.equal(indicatorHost.getAttribute('role'), 'progressbar');
+indicator.setProgress(64);
+assert.equal(indicator.progress, 64);
+assert.ok(indicatorEvents.includes(64), 'inline indicator must emit progress events');
+indicator.complete();
+await indicator.finished;
+indicator.destroy();
+indicatorHost.remove();
+
 // Cover Reveal option combinations that previously left an opaque black panel
 // or destroyed the target after a live settings rebuild.
 for (const direction of ['left', 'right', 'up', 'down', 'random']) {
@@ -327,4 +416,4 @@ Kineto.unregister('slider');
 Kineto.unregister('progress');
 dom.window.close();
 
-console.log('Motion regressions OK — reveal order; fullpage handoff; composable interaction shadows; Cover Reveal combinations; slider pause/progress and activation collisions.');
+console.log('Motion regressions OK — reveal order; fullpage handoff; composable interaction shadows; Bottom Sheet header resizing; inline loading indicators; Cover Reveal combinations; slider pause/progress and activation collisions.');

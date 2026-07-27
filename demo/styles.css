@@ -23,7 +23,7 @@
     .u-panel{border:1px solid var(--line);border-radius:10px;background:var(--panel2);overflow:hidden}
     .u-panel.kt-open>.u-note,.u-panel[open]>.u-note,
     .u-panel.kt-open>.kt-accordion-panel>.u-note,
-    .u-panel[open]>.kt-accordion-panel>.u-note{margin-bottom:0;padding-bottom:0}
+    .u-panel[open]>.kt-accordion-panel>.u-note{margin:0;padding-block:14px}
     .u-avatar{width:88px;height:88px;object-fit:cover;border-radius:50%;box-shadow:0 6px 18px rgba(0,0,0,.3)}
     .u-media-cover{width:100%;height:100%;object-fit:cover;display:block}
     .u-media-cover-r{width:100%;height:100%;object-fit:cover;border-radius:14px;display:block}
@@ -291,7 +291,9 @@
     .slider-nav:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));color:var(--accent);transform:translateY(-1px)}
     .loader-preview{min-height:220px}
     .kt-demo-loader-overlay{position:fixed;inset:0;z-index:10010;background:var(--bg);color:var(--text)}
-    .kt-demo-loader-overlay[data-loader-type="terminal"]{background:#090b0a;color:#a9f7bb}
+    .loading-preview-line{display:inline-flex;align-items:center;gap:12px;font-weight:700;color:var(--text)}
+    .loading-preview-stack{display:grid;justify-items:start;gap:12px;width:min(76%,320px);font-weight:700;color:var(--text)}
+    .loading-preview-line--terminal{font-family:var(--font-mono,ui-monospace,monospace)}
     /* 데모 스테이지와 옵션 서머리를 한 덩어리로 결합 */
     .card:has(.kt-playground) .demo-stage,.card:has(.kt-playground) .fullpage-demo,.card:has(.kt-playground) .reveal-demo-card,.card:has(.kt-playground) .lightbox-grid{border-bottom-left-radius:0;border-bottom-right-radius:0}
     .card:has(.demo-stage) .kt-playground,.card:has(.demo-stage) .replay-row+.kt-playground,.card:has(.fullpage-demo) .kt-playground,.card:has(.reveal-demo-card) .kt-playground{margin-top:0;border-top-left-radius:0;border-top-right-radius:0;border-top:0}
@@ -762,6 +764,7 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 #mod-slider .module-block-body{grid-template-columns:repeat(2,minmax(0,1fr))}
 #mod-slider .module-block-body>.card{height:100%}
 #mod-slider .slider-demo{height:clamp(230px,31vw,320px);padding:0;border-radius:var(--r-stage);background:var(--panel2)}
+#mod-slider .card:first-child .slider-demo{background:transparent}
 #mod-slider .slider-demo>.kt-slider-wrap,#mod-slider .slider-demo .kt-slider-track{width:100%;height:100%}
 #mod-slider .slider-demo .kt-slide{height:100%}
 #mod-slider .slider-demo .kt-slide{min-height:0;overflow:hidden}

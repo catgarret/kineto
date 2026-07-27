@@ -9,7 +9,7 @@
 |---|---|---|
 | Lint | 통과 | source, tests, 모든 demo 스크립트 |
 | Build | 통과 | ESM, UMD, minified JS/CSS |
-| Feature contract | 통과 | 50 modules, 26 Core APIs |
+| Feature contract | 통과 | 51 modules, 26 Core APIs |
 | Owner requirements | 통과 | 48 locked requirements |
 | Docs / options parity | 통과 | 생성 문서와 설정 필드 계약 동기화 |
 | Package surface | 통과 | ESM, CommonJS, CSS, React/Vue/jQuery entry |
@@ -25,7 +25,7 @@
 - Cursor 요소별 라벨·색 capsule
 - Reveal order, Counter, Loader, Toast와 모듈 lifecycle
 - 모바일 헤더, 사이트맵, 하단 탐색과 맨 위로 버튼의 안전 간격
-- 데모의 정적 inline style/script/style block 0건 및 50개 모듈 탐색 일치
+- 데모의 정적 inline style/script/style block 0건 및 51개 모듈 탐색 일치
 - 7개 언어의 카드·모듈 색인·설정창 UI 및 359개 옵션 도움말 번역 일치
 
 ## 패키지 확인

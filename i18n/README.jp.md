@@ -16,7 +16,7 @@ HTML属性または JavaScript API で制御するWebインタラクションツ
 
 ---
 
-Kineto は、モーション・メディア・スクロール・ローダー・テキストにわたる50個のインタラクションモジュールを、`data-kt-*` 属性ひとつで付与するか、JavaScript API で細かく制御できるライブラリです。コアに必須の依存はなく、非対応ブラウザや低スペック端末では効果だけが無効化され、コンテンツはそのまま保たれます。
+Kineto は、モーション・メディア・スクロール・ローダー・テキストにわたる51個のインタラクションモジュールを、`data-kt-*` 属性ひとつで付与するか、JavaScript API で細かく制御できるライブラリです。コアに必須の依存はなく、非対応ブラウザや低スペック端末では効果だけが無効化され、コンテンツはそのまま保たれます。
 
 > AIコーディングツール（Cursor、Claude など）で作業する場合は [AIプロンプトガイド](../AI-PROMPT-GUIDE.md) を参照してください。モーションとインタラクションに Kineto のモジュールを優先的に使わせる、貼り付けるだけの指示文が入っています。
 
@@ -115,6 +115,7 @@ Kineto.disableSmooth();
 | `lazy` | `data-kt-lazy` | スケルトン・ピクセル・プリント・ディゾルブローディング |
 | `lightbox` | `data-kt-lightbox` | グループ・拡大・ミニマップ全画面ビューア |
 | `loader` | `data-kt-loader` | 実際の進行状況連動ローダー |
+| `loadingIndicator` | `data-kt-loading-indicator` | インラインのスピナー・バー・シマー・記号インジケーター |
 | `magnetic` | `data-kt-magnetic` | ポインタマグネット反応 |
 | `marquee` | `data-kt-marquee` | 連続マーキ |
 | `mouseParallax` | `data-kt-mouse-parallax` | ポインター・ジャイロパララックス |

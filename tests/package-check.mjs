@@ -25,14 +25,14 @@ assert.equal(packageJson.exports['./package.json'], './package.json');
 
 const esm = await import('@dong-gri/kineto');
 assert.equal(esm.default.version, packageJson.version);
-assert.equal(Object.keys(esm.default.registry).length, 50);
+assert.equal(Object.keys(esm.default.registry).length, 51);
 assert.equal(typeof esm.lazy, 'function');
 assert.equal(typeof esm.scrollSequence, 'function');
 
 const require = createRequire(import.meta.url);
 const commonJs = require('@dong-gri/kineto');
 assert.equal(commonJs.version, packageJson.version);
-assert.equal(Object.keys(commonJs.registry).length, 50);
+assert.equal(Object.keys(commonJs.registry).length, 51);
 assert.equal(typeof commonJs.autoInit, 'function');
 
 for (const adapter of ['react', 'vue', 'jquery']) {

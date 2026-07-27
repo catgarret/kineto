@@ -17,11 +17,13 @@
 /* Live preview: a dot travels the current curve on a loop so timing is felt. */
 .kt-bz-preview{position:relative;flex:1 1 120px;min-width:110px;height:14px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);overflow:hidden}
 .kt-bz-dot{position:absolute;top:50%;left:0;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
-.kt-bz-tools{display:flex;align-items:center;gap:8px;flex:1 1 100%;flex-wrap:wrap}
-.kt-bz-btn{min-height:30px;padding:5px 11px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);font:600 12px/1 var(--font-sans);cursor:pointer}
+.kt-bz-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;gap:8px;width:100%;margin-top:6px}
+.kt-bz-btn{width:100%;min-height:32px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);font:650 12px/1 var(--font-sans);cursor:pointer;white-space:nowrap}
+.kt-bz-copy{border-color:var(--accent);background:var(--accent);color:#fff}
 .kt-bz-btn:hover{border-color:var(--accent);color:var(--accent)}
+.kt-bz-copy:hover{background:color-mix(in srgb,var(--accent) 88%,#000);color:#fff}
 .kt-bz-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.kt-bz-status{font:600 11px/1.3 var(--font-mono);color:var(--accent);min-height:14px}
+.kt-bz-status{grid-column:1/-1;font:600 11px/1.3 var(--font-mono);color:var(--accent);min-height:14px}
 /* Spring / steps dedicated editors */
 .kt-sp-grid{display:grid;gap:8px;width:100%}
 .kt-sp-row{display:grid;grid-template-columns:70px 1fr 40px;align-items:center;gap:8px;font:600 11px/1 var(--font-mono);color:var(--muted)}
@@ -100,11 +102,14 @@
   box-shadow:0 -22px 64px rgba(10,14,22,.24);display:flex;flex-direction:column;pointer-events:none}
 .kt-drawer-sheet.is-open{transform:translate(-50%,0);pointer-events:auto}
 /* Draggable resize grip over the top handle bar (desktop). */
-.kt-drawer-grip{position:relative;flex:0 0 auto;height:18px;width:100%;touch-action:none;z-index:5}
-@media(pointer:fine){.kt-drawer-grip{cursor:ns-resize}}
+.kt-drawer-grip{position:relative;flex:0 0 auto;height:32px;width:100%;touch-action:none;z-index:5;cursor:ns-resize}
+.kt-drawer-sheet[data-resize-area="header"] .kt-playground__drawer-head,
+.kt-drawer-sheet[data-resize-area="header"] .kt-drawer-grip{cursor:ns-resize}
+.kt-drawer-sheet[data-resize-area="header"] .kt-playground__drawer-head :is(button,a,input,select,textarea,label,[contenteditable="true"],[data-no-sheet-resize]){cursor:auto}
+.kt-drawer-sheet.is-resizing{user-select:none;-webkit-user-select:none;transition:none}
 .kt-drawer-grip:hover~*  .kt-playground__drawer-head,.kt-drawer-grip:focus-visible{outline:none}
 .kt-drawer-grip:focus-visible{outline:2px solid var(--accent);outline-offset:-3px;border-radius:8px}
-.kt-drawer-sheet::before{content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);width:42px;height:4px;border-radius:99px;background:color-mix(in srgb,var(--muted) 34%,transparent);z-index:4}
+.kt-drawer-sheet::before{content:"";position:absolute;top:13px;left:50%;transform:translateX(-50%);width:48px;height:5px;border-radius:99px;background:color-mix(in srgb,var(--muted) 34%,transparent);z-index:4}
 
 /* Body = fixed head + a single scrolling area (the groups / code view). The
    header never scrolls; only the content below it does. */
@@ -116,10 +121,6 @@
 .kt-playground__viewstage>.kt-playground__groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-content:start;align-items:start;overflow-y:auto;overflow-x:hidden;padding:18px 22px 24px}
 .kt-playground__viewstage>.kt-playground__groups>.kt-playground__group{flex:0 0 auto;align-self:start}
 .kt-playground__viewstage>.kt-playground__groups>.kt-playground__group:only-child,.kt-playground__viewstage>.kt-playground__groups>.kt-playground__group.is-full-row{grid-column:1/-1}
-/* Variable-height groups use a measured two-column masonry grid. JS keeps DOM
-   order intact and only assigns grid coordinates, so keyboard/read order stays
-   predictable while short groups fill the space beside a tall easing editor. */
-.kt-playground__viewstage>.kt-playground__groups.is-masonry{grid-auto-rows:1px;row-gap:0}
 .kt-playground__viewstage>.kt-playground__code{display:flex;flex-direction:column;margin:0;overflow:hidden}
 .kt-playground__viewstage>.kt-playground__view.is-active{opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
 .kt-playground__viewstage>.kt-playground__code>.kt-playground__code-head{flex:0 0 auto}
@@ -219,6 +220,7 @@
 .kt-drawer-sheet .kt-ease-field .kt-bz-num input{width:100%;min-width:0;box-sizing:border-box}
 .kt-drawer-sheet .kt-ease-field .kt-bz-preview{grid-area:scrub;width:100%;flex:none}
 .kt-drawer-sheet .kt-ease-field .kt-bz-tools{grid-area:tools;flex:none}
+.kt-drawer-sheet .kt-playground__controls:has(.kt-ease-field){padding-bottom:7px}
 .kt-drawer-sheet .kt-ease-field>.kt-playground__value{display:none}
 /* Non-bezier value (keyword / GSAP ease) — the editor is empty, so collapse to a
    single column with just the preset + custom input. */
