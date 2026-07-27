@@ -61,6 +61,7 @@ try {
   await page.addStyleTag({path:resolve(root,'dist/kineto.css')});
   await page.addScriptTag({path:resolve(root,'dist/kineto.umd.js')});
   await page.addScriptTag({path:resolve(root,'demo/help-i18n.js')});
+  await page.addScriptTag({path:resolve(root,'demo/help-i18n-extra.js')});
   await page.addScriptTag({path:resolve(root,'demo/playground.js')});
   await page.addScriptTag({content:inlineScript});
   // The demo defers module init behind the intro loader (full-load gate);
@@ -72,17 +73,51 @@ try {
     version:Kineto.version, modules:Object.keys(Kineto.registry).length, chips:document.querySelectorAll('#module-list .mod-index-item').length,
     categories:document.querySelectorAll('[data-demo]').length, panels:document.querySelectorAll('.kt-playground').length,
     codeBlocks:document.querySelectorAll('.kt-playground__code').length, notice:document.querySelectorAll('.hero-meta').length,
-    optionContract:window.KinetoPlayground.publicOptions
+    optionContract:window.KinetoPlayground.publicOptions,
+    shadowHelp:Object.values(window.MK_HELP_I18N||{}).every((locale)=>
+      locale.cardGlow?.shadowCss&&locale.tilt?.tiltShadowCss
+    )
   }));
   assert.equal(surface.version,contract.libraryVersion);
   assert.ok(surface.modules>=contract.moduleCount,`registry entries ${surface.modules}`); assert.equal(surface.chips,contract.moduleCount); assert.ok(surface.categories>=6,`categories ${surface.categories}`);
   assert.ok(surface.panels>=55,`expected at least 55 playground panels, got ${surface.panels}`);
   assert.equal(surface.codeBlocks,0,'playground bodies should stay lazy until opened'); assert.equal(surface.notice,1);
   assert.deepEqual(surface.optionContract,Object.fromEntries(contract.modules.map((module)=>[module.name,module.publicOptions])));
+  assert.equal(surface.shadowHelp,true,'Tilt/Card Glow shadow help must be translated in every demo locale');
 
   const missing=await page.evaluate(()=>Array.from(document.querySelectorAll('.card')).filter((card)=>
     card.querySelector('[data-kt-counter],[data-kt-lazy],[data-kt-overflow-text],[data-kt-text-split],[data-kt-typewriter],[data-kt-text-reveal],[data-kt-text-transition],[data-kt-glitch],[data-kt-text-fill],[data-kt-reveal],[data-kt-scroll-velocity],[data-kt-slider],[data-kt-ambient-media],[data-kt-lightbox],[data-kt-card-glow],[data-kt-tilt],[data-kt-cursor],[data-kt-magnetic],[data-kt-ripple],[data-kt-vibrate],[data-kt-mouse-parallax],[data-loader-type]') && !card.querySelector(':scope > .kt-playground')).length);
   assert.equal(missing,0,'an adjustable demo card is missing its playground');
+
+  const shadowSettings=await page.evaluate(async()=>{
+    const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));
+    const glowCard=document.querySelector('[data-demo-module="cardGlow"]');
+    const glowPanel=glowCard?.querySelector(':scope > .kt-playground');
+    const glowBody=glowPanel?.__buildBody?.();
+    const glowToggle=glowBody?.querySelector('[data-option="shadow"]');
+    if(!glowToggle)return {found:false};
+    glowToggle.checked=true;
+    glowToggle.dispatchEvent(new window.Event('change',{bubbles:true}));
+    await sleep(180);
+    const glowTarget=glowCard.matches('[data-kt-card-glow]')?glowCard:glowCard.querySelector('[data-kt-card-glow]');
+    const glowFields=['shadowColor','shadowOpacity','shadowBlur','shadowSpread','shadowX','shadowY','shadowFollow','shadowHoverOnly','shadowInset','shadowCss'];
+    const glowVisible=glowFields.every((key)=>!glowBody.querySelector(`[data-option="${key}"]`)?.closest('.kt-playground__field')?.hidden);
+    const glowLive=Boolean(
+      Kineto.getInstance(glowTarget,'cardGlow')
+      && glowTarget.style.getPropertyValue('--kt-card-glow-shadow-runtime')
+      && glowCard.querySelector(':scope > .kt-playground')===glowPanel
+    );
+    const tiltCard=document.querySelector('[data-demo-module="tilt"]');
+    const tiltPanel=tiltCard?.querySelector(':scope > .kt-playground');
+    const tiltBody=tiltPanel?.__buildBody?.();
+    const tiltFields=['tiltShadow','tiltShadowColor','tiltShadowOpacity','tiltShadowBlur','tiltShadowSpread','tiltShadowX','tiltShadowY','tiltShadowFollow','tiltShadowHoverOnly','tiltShadowInset','tiltShadowCss'];
+    const tiltSurface=tiltFields.every((key)=>Boolean(tiltBody?.querySelector(`[data-option="${key}"]`)));
+    return {found:true,glowVisible,glowLive,tiltSurface};
+  });
+  assert.equal(shadowSettings.found,true,'Card Glow shadow settings were not found');
+  assert.equal(shadowSettings.glowVisible,true,'enabling Card Glow shadow must reveal all dependent controls');
+  assert.equal(shadowSettings.glowLive,true,'Card Glow shadow setting must update live without losing its panel or instance');
+  assert.equal(shadowSettings.tiltSurface,true,'Tilt must expose its complete shadow controls');
 
   const pop=page.locator('#counter .card').filter({has:page.getByRole('heading',{name:'Pop',exact:true})});
   await pop.locator('.kt-playground').evaluate((el)=>{el.open=true;});
@@ -191,6 +226,27 @@ try {
     // Card surface + border.
     const surfaceCard=Array.from(document.querySelectorAll('[data-kt-card-glow]')).find((el)=>el.dataset.ktSurface==='true');
     result.card=Boolean(surfaceCard?.querySelector('.kt-card-glow-surface')&&surfaceCard?.querySelector('.kt-card-glow-border'));
+    // Tilt/Card Glow shadows compose with one another and the author's base
+    // shadow. CSS can replace either module channel without touching the other.
+    const shadowHost=document.createElement('div');
+    shadowHost.style.cssText='position:fixed;left:20px;top:20px;width:180px;height:100px;box-shadow:0 1px 3px rgb(0 0 0 / 20%);';
+    document.body.appendChild(shadowHost);
+    const baseShadow=getComputedStyle(shadowHost).boxShadow;
+    const glowShadow=Kineto.cardGlow(shadowHost,{shadow:true,shadowColor:'#172033',shadowOpacity:.34,shadowBlur:40,shadowSpread:-12,shadowY:16,shadowFollow:18});
+    const tiltShadow=Kineto.tilt(shadowHost,{glare:false,tiltShadow:true,tiltShadowColor:'#311827',tiltShadowOpacity:.3,tiltShadowBlur:30,tiltShadowY:12,tiltShadowFollow:1.2});
+    await sleep(50);
+    const composed=getComputedStyle(shadowHost).boxShadow;
+    shadowHost.style.setProperty('--kt-tilt-shadow','3px 5px 9px rgb(10 20 30 / 40%)');
+    const overridden=getComputedStyle(shadowHost).boxShadow;
+    glowShadow.destroy();
+    const tiltSurvives=shadowHost.classList.contains('kt-interactive-shadow')&&getComputedStyle(shadowHost).boxShadow!=='none';
+    tiltShadow.destroy();
+    result.shadowComposed=composed!=='none';
+    result.shadowCssOverride=overridden!==composed&&overridden.includes('3px 5px 9px');
+    result.shadowCoexists=tiltSurvives;
+    result.shadowCleanup=!shadowHost.classList.contains('kt-interactive-shadow');
+    result.shadowRestoresBase=getComputedStyle(shadowHost).boxShadow===baseShadow;
+    shadowHost.remove();
     // Text transition and RGB glitch.
     const transition=document.querySelector('[data-kt-text-transition]'); const ti=Kineto.getInstance(transition,'textTransition'); const before=ti.index; ti.next(); await sleep(1050); result.transition=ti.index!==before;
     const glitch=document.querySelector('[data-kt-glitch="rgb"]'); result.glitch=glitch.querySelectorAll('span').length>=5;

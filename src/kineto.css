@@ -7,6 +7,13 @@
   --kt-ease-ui: ease;
 }
 
+.kt-interactive-shadow {
+  box-shadow:
+    var(--kt-tilt-shadow, var(--kt-tilt-shadow-runtime, 0 0 0 transparent)),
+    var(--kt-card-glow-shadow, var(--kt-card-glow-shadow-runtime, 0 0 0 transparent)),
+    var(--kt-shadow-base, var(--kt-shadow-base-runtime, 0 0 0 transparent));
+}
+
 @property --kt-angle {
   syntax: "<angle>";
   initial-value: 0deg;

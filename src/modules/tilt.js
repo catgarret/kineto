@@ -1,4 +1,5 @@
 import { clamp, ensureGyroPermission, lerp, snapshotInlineStyles } from '../utils.js';
+import { createInteractiveShadow } from '../interactiveShadow.js';
 
 export default {
   create(el, opts) {
@@ -25,6 +26,17 @@ export default {
     const glareOpacity = clamp(Number(opts.glareOpacity ?? 0.32), 0, 1);
     const glareColor = opts.glareColor || 'rgba(255,255,255,.85)';
     const glareBlur = Math.max(0, Number(opts.glareBlur ?? 8));
+    const shadowCss = opts.tiltShadowCss || '';
+    const shadowEnabled = opts.tiltShadow === true || Boolean(String(shadowCss).trim());
+    const shadowColor = opts.tiltShadowColor || '#111827';
+    const shadowOpacity = clamp(Number(opts.tiltShadowOpacity ?? 0.28), 0, 1);
+    const shadowBlur = Math.max(0, Number(opts.tiltShadowBlur ?? 34));
+    const shadowSpread = Number(opts.tiltShadowSpread ?? -8);
+    const shadowX = Number(opts.tiltShadowX ?? 0);
+    const shadowY = Number(opts.tiltShadowY ?? 14);
+    const shadowFollow = Math.max(0, Number(opts.tiltShadowFollow ?? 1.1));
+    const shadowHoverOnly = opts.tiltShadowHoverOnly === true;
+    const shadowInset = opts.tiltShadowInset === true;
     const restore = snapshotInlineStyles(el, ['transform', 'transformStyle', 'willChange', 'position']);
     if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
     el.style.transformStyle = 'preserve-3d';
@@ -43,6 +55,18 @@ export default {
     let glare = null;
     let glareX = 50;
     let glareY = 50;
+    const shadow = createInteractiveShadow(el, 'tilt', {
+      enabled: shadowEnabled,
+      color: shadowColor,
+      opacity: shadowOpacity,
+      blur: shadowBlur,
+      spread: shadowSpread,
+      x: shadowX,
+      y: shadowY,
+      inset: shadowInset,
+      css: shadowCss,
+      active: shadowEnabled && !shadowHoverOnly
+    });
 
     if (glareEnabled) {
       glareWrap = document.createElement('span');
@@ -62,6 +86,11 @@ export default {
       currentY = lerp(currentY, targetY, smoothing);
       currentScale = lerp(currentScale, targetScale, smoothing);
       el.style.transform = `perspective(${perspective}px) rotateX(${currentX}deg) rotateY(${currentY}deg) scale3d(${currentScale},${currentScale},${currentScale})`;
+      shadow.update(
+        shadowX - currentY * shadowFollow,
+        shadowY + currentX * shadowFollow,
+        !shadowHoverOnly || hovering
+      );
       if (glare) glare.style.transform = `translate3d(${glareX}%,${glareY}%,0)`;
       const moving = Math.abs(currentX - targetX) > 0.02 || Math.abs(currentY - targetY) > 0.02 || Math.abs(currentScale - targetScale) > 0.002;
       if (hovering || moving) rafId = requestAnimationFrame(tick);
@@ -134,6 +163,7 @@ export default {
         el.removeEventListener('pointerleave', onLeave);
         if (gyroHandler) window.removeEventListener('deviceorientation', gyroHandler);
         glareWrap?.remove();
+        shadow.destroy();
         restore();
       }
     };

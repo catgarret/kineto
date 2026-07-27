@@ -38,7 +38,7 @@
 - Attribute: `data-kt-card-glow`
 - Default variant: `spotlight`
 - Variants: `spotlight`, `pointer`, `border`, `comet`, `aurora`, `shine`
-- Public options: `alwaysOn`, `blendMode`, `blur`, `borderBlur`, `borderColor`, `borderColor2`, `borderGlow`, `borderInset`, `borderOpacity`, `borderRadius`, `borderWidth`, `color`, `color1`, `color2`, `cycleDuration`, `disableOnMobile`, `duration`, `ease`, `follow`, `halo`, `intensity`, `luminousBorder`, `mode`, `opacity`, `preset`, `radius`, `reflection`, `sensitivity`, `smoothing`, `speed`, `spread`, `surface`, `surfaceBlend`, `surfaceBlur`, `surfaceColor`, `surfaceColor2`, `surfaceGradient`, `surfaceInset`, `surfaceOpacity`, `surfaceSize`
+- Public options: `alwaysOn`, `blendMode`, `blur`, `borderBlur`, `borderColor`, `borderColor2`, `borderGlow`, `borderInset`, `borderOpacity`, `borderRadius`, `borderWidth`, `color`, `color1`, `color2`, `cycleDuration`, `disableOnMobile`, `duration`, `ease`, `follow`, `halo`, `intensity`, `luminousBorder`, `mode`, `opacity`, `preset`, `radius`, `reflection`, `sensitivity`, `shadow`, `shadowBlur`, `shadowColor`, `shadowCss`, `shadowFollow`, `shadowHoverOnly`, `shadowInset`, `shadowOpacity`, `shadowSpread`, `shadowX`, `shadowY`, `smoothing`, `speed`, `spread`, `surface`, `surfaceBlend`, `surfaceBlur`, `surfaceColor`, `surfaceColor2`, `surfaceGradient`, `surfaceInset`, `surfaceOpacity`, `surfaceSize`
 
 ## counter
 
@@ -227,7 +227,7 @@
 - Attribute: `data-kt-tilt`
 - Default variant: `tilt-glare`
 - Variants: `tilt-glare`, `tilt`, `x-only`, `y-only`, `reverse`
-- Public options: `axis`, `disableOnMobile`, `ease`, `glare`, `glareBlur`, `glareColor`, `glareOpacity`, `glareRadius`, `gyro`, `max`, `maxX`, `maxY`, `perspective`, `reset`, `reverse`, `scale`, `sensitivity`, `smoothing`
+- Public options: `axis`, `disableOnMobile`, `ease`, `glare`, `glareBlur`, `glareColor`, `glareOpacity`, `glareRadius`, `gyro`, `max`, `maxX`, `maxY`, `perspective`, `reset`, `reverse`, `scale`, `sensitivity`, `smoothing`, `tiltShadow`, `tiltShadowBlur`, `tiltShadowColor`, `tiltShadowCss`, `tiltShadowFollow`, `tiltShadowHoverOnly`, `tiltShadowInset`, `tiltShadowOpacity`, `tiltShadowSpread`, `tiltShadowX`, `tiltShadowY`
 
 ## typewriter
 

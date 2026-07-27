@@ -95,6 +95,51 @@ fullpageEl.remove();
 
 const sliderModule = (await import('../src/modules/slider.js')).default;
 const coverRevealModule = (await import('../src/modules/coverReveal.js')).default;
+const cardGlowModule = (await import('../src/modules/cardGlow.js')).default;
+const tiltModule = (await import('../src/modules/tilt.js')).default;
+
+// Tilt and Card Glow shadows must coexist with each other and with a card's
+// original box-shadow. Each module owns only its CSS-variable channel.
+const shadowCard = document.createElement('div');
+shadowCard.style.boxShadow = '0 1px 3px rgb(0 0 0 / 20%)';
+document.body.appendChild(shadowCard);
+Object.defineProperty(shadowCard, 'clientWidth', { configurable: true, value: 240 });
+Object.defineProperty(shadowCard, 'clientHeight', { configurable: true, value: 140 });
+shadowCard.getBoundingClientRect = () => ({ left: 0, top: 0, width: 240, height: 140, right: 240, bottom: 140 });
+const glowShadow = cardGlowModule.create(shadowCard, {
+  shadow: true,
+  shadowColor: '#172033',
+  shadowOpacity: 0.36,
+  shadowBlur: 40,
+  shadowSpread: -12,
+  shadowX: 2,
+  shadowY: 16,
+  shadowFollow: 20
+});
+const tiltShadow = tiltModule.create(shadowCard, {
+  glare: false,
+  tiltShadow: true,
+  tiltShadowColor: '#311827',
+  tiltShadowOpacity: 0.3,
+  tiltShadowBlur: 28,
+  tiltShadowSpread: -6,
+  tiltShadowX: -2,
+  tiltShadowY: 12,
+  tiltShadowFollow: 1.4
+});
+assert.ok(shadowCard.classList.contains('kt-interactive-shadow'), 'interactive shadow host class missing');
+assert.match(shadowCard.style.getPropertyValue('--kt-card-glow-shadow-runtime'), /color-mix/);
+assert.match(shadowCard.style.getPropertyValue('--kt-tilt-shadow-runtime'), /color-mix/);
+assert.match(shadowCard.style.getPropertyValue('--kt-shadow-base-runtime'), /0 1px 3px/);
+glowShadow.destroy();
+assert.ok(shadowCard.classList.contains('kt-interactive-shadow'), 'destroying Card Glow must preserve Tilt shadow');
+assert.equal(shadowCard.style.getPropertyValue('--kt-card-glow-shadow-runtime'), '');
+assert.match(shadowCard.style.getPropertyValue('--kt-tilt-shadow-runtime'), /color-mix/);
+tiltShadow.destroy();
+assert.ok(!shadowCard.classList.contains('kt-interactive-shadow'), 'last shadow module must clean up host class');
+assert.equal(shadowCard.style.boxShadow, '0 1px 3px rgb(0 0 0 / 20%)', 'original box-shadow must be preserved');
+shadowCard.remove();
+
 const sliderEl = document.querySelector('#slider');
 const instance = sliderModule.create(sliderEl, {
   preset: 'fade',
@@ -212,4 +257,4 @@ Kineto.unregister('slider');
 Kineto.unregister('progress');
 dom.window.close();
 
-console.log('Motion regressions OK — reveal order; fullpage gesture handoff; Cover Reveal combinations; slider pause/progress, CSS hooks, and activation collisions.');
+console.log('Motion regressions OK — reveal order; fullpage handoff; composable interaction shadows; Cover Reveal combinations; slider pause/progress and activation collisions.');

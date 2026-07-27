@@ -130,10 +130,133 @@
     }
   };
 
+  const interactiveShadow = {
+    ko: {
+      enabled: '그림자를 켭니다. 기존 box-shadow와 다른 모듈의 그림자를 덮지 않고 합성합니다.',
+      color: '그림자 색입니다. CSS의 모듈별 shadow color 변수로도 바꿀 수 있습니다.',
+      opacity: '그림자 불투명도입니다.',
+      blur: '그림자 번짐 반경(px)입니다.',
+      spread: '그림자 크기 보정(px)입니다. 음수면 안쪽으로 조여집니다.',
+      x: '기본 가로 이동 거리(px)입니다.',
+      y: '기본 세로 이동 거리(px)입니다.',
+      follow: '포인터 또는 기울기 방향을 따라 움직이는 정도입니다.',
+      hoverOnly: '포인터가 올라왔을 때만 그림자를 표시합니다.',
+      inset: '바깥 그림자 대신 카드 안쪽 그림자로 표시합니다.',
+      css: '완성된 CSS box-shadow 값을 직접 지정합니다. 비워두면 위 옵션을 조합합니다.'
+    },
+    en: {
+      enabled: 'Enable a shadow channel that composes with existing and other module shadows.',
+      color: 'Shadow color. It can also be overridden with the module CSS variable.',
+      opacity: 'Shadow opacity.',
+      blur: 'Shadow blur radius in pixels.',
+      spread: 'Shadow spread in pixels. Negative values tighten the shadow.',
+      x: 'Base horizontal offset in pixels.',
+      y: 'Base vertical offset in pixels.',
+      follow: 'How strongly the shadow follows the pointer or tilt direction.',
+      hoverOnly: 'Show the shadow only while the element is hovered.',
+      inset: 'Render an inner shadow instead of an outer shadow.',
+      css: 'A complete CSS box-shadow value. Leave blank to compose the controls above.'
+    },
+    ja: {
+      enabled: '既存の影や他モジュールの影と合成されるシャドウを有効にします。',
+      color: '影の色。モジュール別CSS変数でも変更できます。',
+      opacity: '影の不透明度です。',
+      blur: '影のぼかし半径(px)です。',
+      spread: '影の広がり(px)。負の値で内側に締まります。',
+      x: '基本の横オフセット(px)です。',
+      y: '基本の縦オフセット(px)です。',
+      follow: 'ポインターまたは傾きに影が追従する強さです。',
+      hoverOnly: 'ホバー中だけ影を表示します。',
+      inset: '外側ではなく内側の影にします。',
+      css: '完成したCSS box-shadow値。空欄なら上の設定を合成します。'
+    },
+    'zh-CN': {
+      enabled: '启用可与现有阴影及其他模块阴影叠加的阴影通道。',
+      color: '阴影颜色，也可通过模块 CSS 变量覆盖。',
+      opacity: '阴影不透明度。',
+      blur: '阴影模糊半径(px)。',
+      spread: '阴影扩展(px)，负值会收紧阴影。',
+      x: '基础水平偏移(px)。',
+      y: '基础垂直偏移(px)。',
+      follow: '阴影跟随指针或倾斜方向的程度。',
+      hoverOnly: '仅在悬停时显示阴影。',
+      inset: '使用内阴影代替外阴影。',
+      css: '完整的 CSS box-shadow 值。留空则组合以上选项。'
+    },
+    'zh-TW': {
+      enabled: '啟用可與既有陰影及其他模組陰影疊加的陰影通道。',
+      color: '陰影顏色，也可透過模組 CSS 變數覆寫。',
+      opacity: '陰影不透明度。',
+      blur: '陰影模糊半徑(px)。',
+      spread: '陰影擴張(px)，負值會收緊陰影。',
+      x: '基礎水平位移(px)。',
+      y: '基礎垂直位移(px)。',
+      follow: '陰影跟隨游標或傾斜方向的程度。',
+      hoverOnly: '僅在懸停時顯示陰影。',
+      inset: '使用內陰影取代外陰影。',
+      css: '完整的 CSS box-shadow 值。留空則組合以上選項。'
+    },
+    ru: {
+      enabled: 'Включает тень, которая сочетается с исходной тенью и тенями других модулей.',
+      color: 'Цвет тени; его также можно переопределить CSS-переменной модуля.',
+      opacity: 'Непрозрачность тени.',
+      blur: 'Радиус размытия тени в пикселях.',
+      spread: 'Расширение тени в пикселях; отрицательное значение сжимает её.',
+      x: 'Базовое смещение по горизонтали в пикселях.',
+      y: 'Базовое смещение по вертикали в пикселях.',
+      follow: 'Насколько тень следует за указателем или наклоном.',
+      hoverOnly: 'Показывать тень только при наведении.',
+      inset: 'Использовать внутреннюю тень вместо внешней.',
+      css: 'Полное значение CSS box-shadow. Оставьте пустым для сборки из настроек выше.'
+    },
+    it: {
+      enabled: 'Attiva un’ombra che si combina con quella esistente e con le ombre degli altri moduli.',
+      color: 'Colore dell’ombra, modificabile anche con la variabile CSS del modulo.',
+      opacity: 'Opacità dell’ombra.',
+      blur: 'Raggio di sfocatura dell’ombra in pixel.',
+      spread: 'Espansione dell’ombra in pixel; un valore negativo la restringe.',
+      x: 'Spostamento orizzontale di base in pixel.',
+      y: 'Spostamento verticale di base in pixel.',
+      follow: 'Quanto l’ombra segue il puntatore o l’inclinazione.',
+      hoverOnly: 'Mostra l’ombra solo durante il passaggio del puntatore.',
+      inset: 'Usa un’ombra interna invece di una esterna.',
+      css: 'Valore CSS box-shadow completo. Lascia vuoto per combinare i controlli sopra.'
+    }
+  };
+
   Object.entries(copy).forEach(([locale, values]) => {
     if (!sets[locale]) return;
     sets[locale].scrollShadows = { ...(sets[locale].scrollShadows || {}), ...values };
     sets[locale].cursor = { ...(sets[locale].cursor || {}), hoverShadow: hoverShadow[locale] };
     sets[locale].glitch = { ...(sets[locale].glitch || {}), ...glitchControls[locale] };
+    const shadow = interactiveShadow[locale];
+    sets[locale].cardGlow = {
+      ...(sets[locale].cardGlow || {}),
+      shadow: shadow.enabled,
+      shadowColor: shadow.color,
+      shadowOpacity: shadow.opacity,
+      shadowBlur: shadow.blur,
+      shadowSpread: shadow.spread,
+      shadowX: shadow.x,
+      shadowY: shadow.y,
+      shadowFollow: shadow.follow,
+      shadowHoverOnly: shadow.hoverOnly,
+      shadowInset: shadow.inset,
+      shadowCss: shadow.css
+    };
+    sets[locale].tilt = {
+      ...(sets[locale].tilt || {}),
+      tiltShadow: shadow.enabled,
+      tiltShadowColor: shadow.color,
+      tiltShadowOpacity: shadow.opacity,
+      tiltShadowBlur: shadow.blur,
+      tiltShadowSpread: shadow.spread,
+      tiltShadowX: shadow.x,
+      tiltShadowY: shadow.y,
+      tiltShadowFollow: shadow.follow,
+      tiltShadowHoverOnly: shadow.hoverOnly,
+      tiltShadowInset: shadow.inset,
+      tiltShadowCss: shadow.css
+    };
   });
 })();

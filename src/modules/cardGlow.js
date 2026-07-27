@@ -1,4 +1,5 @@
-import { clamp, lerp } from '../utils.js';
+import { clamp, lerp, snapshotInlineStyles } from '../utils.js';
+import { createInteractiveShadow } from '../interactiveShadow.js';
 
 function bool(value, fallback = false) {
   if (value == null) return fallback;
@@ -10,8 +11,8 @@ export default {
     // Optional: skip entirely on touch devices (gyro/hover effects off).
     if (opts.disableOnMobile === true && typeof window !== 'undefined' && window.matchMedia?.('(hover: none), (pointer: coarse)').matches) return null;
     const mode = opts.mode || opts.preset || 'spotlight';
-    const originalStyle = el.getAttribute('style');
     const computed = getComputedStyle(el);
+    const restore = snapshotInlineStyles(el, ['position', 'zIndex', 'overflow', 'isolation']);
     if (computed.position === 'static') el.style.position = 'relative';
     // Aurora is an outer halo that must be able to leak outside the card.
     if (mode === 'aurora' || mode === 'comet') {
@@ -30,6 +31,29 @@ export default {
     const smoothing = clamp(Number(opts.smoothing ?? opts.speed ?? 0.16), 0.01, 1);
     const color = opts.color || opts.color1 || 'rgba(120,150,255,.58)';
     const color2 = opts.color2 || 'rgba(148,255,226,.34)';
+    const shadowCss = opts.shadowCss || '';
+    const shadowEnabled = bool(opts.shadow, false) || Boolean(String(shadowCss).trim());
+    const shadowColor = opts.shadowColor || '#111827';
+    const shadowOpacity = clamp(Number(opts.shadowOpacity ?? 0.24), 0, 1);
+    const shadowBlur = Math.max(0, Number(opts.shadowBlur ?? 32));
+    const shadowSpread = Number(opts.shadowSpread ?? -10);
+    const shadowX = Number(opts.shadowX ?? 0);
+    const shadowY = Number(opts.shadowY ?? 12);
+    const shadowFollow = Math.max(0, Number(opts.shadowFollow ?? 12));
+    const shadowHoverOnly = opts.shadowHoverOnly === true;
+    const shadowInset = opts.shadowInset === true;
+    const shadow = createInteractiveShadow(el, 'card-glow', {
+      enabled: shadowEnabled,
+      color: shadowColor,
+      opacity: shadowOpacity,
+      blur: shadowBlur,
+      spread: shadowSpread,
+      x: shadowX,
+      y: shadowY,
+      inset: shadowInset,
+      css: shadowCss,
+      active: shadowEnabled && !shadowHoverOnly
+    });
 
     const root = document.createElement('span');
     root.className = `kt-card-glow kt-card-glow-${mode}`;
@@ -125,6 +149,11 @@ export default {
       const height = Math.max(1, el.clientHeight);
       const xPercent = clamp(currentX / width * 100, 0, 100);
       const yPercent = clamp(currentY / height * 100, 0, 100);
+      shadow.update(
+        shadowX + (xPercent - 50) / 50 * shadowFollow,
+        shadowY + (yPercent - 50) / 50 * shadowFollow,
+        !shadowHoverOnly || hovering
+      );
       root.style.setProperty('--kt-x', `${xPercent}%`);
       root.style.setProperty('--kt-y', `${yPercent}%`);
       if (mode === 'spotlight' || mode === 'pointer' || mode === 'border') {
@@ -151,6 +180,7 @@ export default {
     const onEnter = (event) => {
       hovering = true;
       root.style.opacity = '1';
+      shadow.update(shadowX, shadowY, true);
       setPointer(event);
       if (mode === 'shine') {
         spotlight.animate([
@@ -165,6 +195,7 @@ export default {
       targetX = el.clientWidth / 2;
       targetY = el.clientHeight / 2;
       root.style.opacity = bool(opts.alwaysOn, mode === 'aurora' || mode === 'comet') ? String(opacity) : '0';
+      shadow.update(shadowX, shadowY, !shadowHoverOnly);
       requestRender();
     };
 
@@ -174,6 +205,7 @@ export default {
     const onPress = (event) => {
       hovering = true;
       root.style.opacity = '1';
+      shadow.update(shadowX, shadowY, true);
       setPointer(event);
       root.animate([
         { filter: 'brightness(1)' },
@@ -214,7 +246,8 @@ export default {
         el.removeEventListener('pointerdown', onPress);
         root.remove();
         promotedChildren.forEach((child) => { child.style.position = ''; });
-        if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);
+        shadow.destroy();
+        restore();
       }
     };
   },
