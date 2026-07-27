@@ -2,6 +2,26 @@
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
 
+## [Unreleased]
+
+### English
+
+- Added repository-wide Codex/Claude handoff rules so implementation work ends
+  with synchronized documentation, bilingual changelog notes, integrated QA,
+  and a scoped Git commit.
+- Added release preparation and shipping commands plus a tag-triggered GitHub
+  Actions workflow that verifies the package, publishes to npm with provenance,
+  and creates a GitHub Release with English notes followed by Korean notes.
+
+### 한국어
+
+- Codex와 Claude가 구현 작업 후 문서·영문/국문 변경 기록·통합 QA를
+  동기화하고 작업 범위만 Git 커밋하도록 저장소 공통 인수인계 규칙을
+  추가했습니다.
+- 버전 준비·배포 명령과 태그 기반 GitHub Actions를 추가했습니다. 전체
+  검증 후 npm provenance 배포와 영문 다음 국문 순서의 GitHub Release
+  생성을 자동으로 처리합니다.
+
 ## [0.8.43]
 
 - **Cover Reveal colour system**: supports a fixed colour, a two-colour layer pair, random selection within a user palette, or an automatically derived harmonious palette. Gallery cards now use the same public options shown in the playground.
@@ -329,7 +349,7 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
 - **Fix: framework adapters resolve the scoped package.** The React, Vue, and jQuery adapters imported the core as `kineto`; after the rename to `@dong-gri/kineto` that no longer resolved, breaking adapter users on 0.8.0. They now import `@dong-gri/kineto`.
 - Removed a stray duplicated `demo/kineto/` directory from the package.
 
-## [Unreleased]
+## [0.8.0 development archive]
 
 ### Added / Changed (release prep)
 

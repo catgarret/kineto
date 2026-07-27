@@ -1,0 +1,70 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  publish:
+    name: Verify · npm · GitHub Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+          registry-url: https://registry.npmjs.org
+
+      - name: Use npm with Trusted Publishing support
+        run: npm install --global npm@11
+
+      - name: Validate tag, versions, changelog, and bilingual notes
+        run: npm run release:check -- "$GITHUB_REF_NAME"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run full release verification
+        run: npm run verify
+
+      - name: Pack release artifact
+        run: npm pack
+
+      - name: Publish package with provenance
+        shell: bash
+        run: |
+          PACKAGE_NAME="$(node -p "require('./package.json').name")"
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          if npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version >/dev/null 2>&1; then
+            echo "${PACKAGE_NAME}@${PACKAGE_VERSION} is already published; skipping npm publish."
+          else
+            npm publish --access public --provenance
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Kineto ${{ github.ref_name }}"
+          body_path: ".github/release-notes/${{ github.ref_name }}.md"
+          files: "*.tgz"
+          generate_release_notes: false
