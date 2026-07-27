@@ -13,8 +13,16 @@ vm.runInNewContext(
   fs.readFileSync(path.join(root, 'demo/copy-i18n.js'), 'utf8'),
   context
 );
+for (const file of ['help-i18n.js', 'help-i18n-extra.js', 'playground-i18n.js']) {
+  vm.runInNewContext(
+    fs.readFileSync(path.join(root, 'demo', file), 'utf8'),
+    context
+  );
+}
 
 const copy = context.window.KINETO_COPY_I18N;
+const help = context.window.MK_HELP_I18N;
+const playgroundUi = context.window.KINETO_PLAYGROUND_I18N;
 const languages = ['en', 'ja', 'zh-CN', 'zh-TW', 'ru', 'it'];
 const clean = (value) => value.replace(/\s+/g, ' ').trim();
 const descriptions = [...new Set(
@@ -23,7 +31,8 @@ const descriptions = [...new Set(
     'main .scroll-demo-unit > p',
     'main .hscroll-demo-unit > p',
     'main .sticky-stack-unit > p',
-    'main .reveal-demo-card > p'
+    'main .reveal-demo-card > p',
+    'main .glow-demo > div > p'
   ].join(','))]
     .filter((node) => /[가-힣]/.test(node.textContent))
     .map((node) => clean(node.textContent))
@@ -35,7 +44,7 @@ const titles = [...new Set(
 )];
 
 assert.deepEqual([...copy.languages], languages);
-assert.equal(descriptions.length, 126);
+assert.equal(descriptions.length, 129);
 assert.equal(titles.length, 16);
 
 for (const [label, values, dictionary] of [
@@ -78,6 +87,39 @@ for (const language of languages) {
   }
 }
 
+const flattenHelp = (locale) => Object.fromEntries(
+  Object.entries(locale).flatMap(([module, options]) =>
+    Object.entries(options).map(([option, value]) => [`${module}.${option}`, value])
+  )
+);
+const koreanHelpKeys = Object.keys(flattenHelp(help.ko)).sort();
+for (const language of ['ko', ...languages]) {
+  const localized = flattenHelp(help[language]);
+  assert.deepEqual(
+    Object.keys(localized).sort(),
+    koreanHelpKeys,
+    `${language} option-help translations are incomplete`
+  );
+  assert.ok(
+    Object.values(localized).every((value) => typeof value === 'string' && value.trim()),
+    `${language} option-help translations contain an empty value`
+  );
+  assert.deepEqual(
+    Object.keys(playgroundUi[language]).sort(),
+    Object.keys(playgroundUi.ko).sort(),
+    `${language} playground chrome translations are incomplete`
+  );
+}
+for (const language of ['ja', 'zh-CN', 'zh-TW', 'ru', 'it']) {
+  for (const option of ['separatorColor', 'seamColor', 'shadow']) {
+    assert.notEqual(
+      help[language].counter[option],
+      help.en.counter[option],
+      `${language} counter.${option} still falls back to English`
+    );
+  }
+}
+
 const featureNames = JSON.parse(
   fs.readFileSync(path.join(root, 'kineto.features.json'), 'utf8')
 ).modules.map((module) => module.name).sort();
@@ -107,5 +149,6 @@ for (const file of readmes) {
 
 console.log(
   `copy-i18n OK — ${descriptions.length} card descriptions, `
-  + `${titles.length} titles, ${readmes.length} synchronized READMEs.`
+  + `${titles.length} titles, ${koreanHelpKeys.length} option-help strings, `
+  + `${readmes.length} synchronized READMEs.`
 );

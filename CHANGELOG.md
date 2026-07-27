@@ -12,6 +12,12 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
   and synchronized all seven READMEs with the current 50-module contract.
   Browser and structural tests now prevent missing translations, stale module
   tables, and card copy that exceeds two visible lines.
+- **Localization follow-through**: translated the settings drawer chrome,
+  easing editor, module summaries, and every option-help entry across all seven
+  demo languages. QA now compares all 359 help keys per locale, checks every
+  demo script with ESLint, and rejects Korean text left behind after a language
+  change. Stale package metrics and awkward Korean particles in the maintenance
+  docs were corrected as part of the audit.
 
 ### 한국어
 
@@ -20,6 +26,11 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
   번역을 완성했습니다. 7개 README도 현재 50개 모듈 계약에 맞췄으며,
   번역 누락·오래된 모듈 표·두 줄을 넘는 카드 문구를 브라우저 및 구조
   테스트로 방지합니다.
+- **번역 후속 정비**: 설정창 UI, 이징 편집기, 모듈 설명, 옵션 도움말
+  전체를 7개 데모 언어로 맞췄습니다. 이제 언어별 359개 도움말 키를
+  비교하고 모든 데모 스크립트를 ESLint로 검사하며, 언어 변경 뒤 남는
+  한국어를 브라우저 테스트에서 감지합니다. 오래된 패키지 수치와
+  유지보수 문서의 어색한 조사도 함께 고쳤습니다.
 
 ## [0.8.43]
 

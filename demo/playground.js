@@ -269,6 +269,30 @@ counter: {
   // Friendly Korean explanations shown in the (?) tooltip of each option.
   let HELP_LANG = 'ko';
   const HELP_SETS = (typeof window !== 'undefined' && window.MK_HELP_I18N) || { ko: {}, en: {} };
+  const UI_SETS = (typeof window !== 'undefined' && window.KINETO_PLAYGROUND_I18N) || { ko: {}, en: {} };
+  let UI_LANG = 'ko';
+  const ui = (key) => UI_SETS[UI_LANG]?.[key] ?? UI_SETS.en?.[key] ?? UI_SETS.ko?.[key] ?? key;
+  const localize = (element, key, attribute = 'textContent') => {
+    if (!element) return element;
+    element.dataset.pgI18n = key;
+    element.dataset.pgI18nAttribute = attribute;
+    if (attribute === 'textContent') element.textContent = ui(key);
+    else element.setAttribute(attribute, ui(key));
+    return element;
+  };
+  const refreshUi = (root = document) => {
+    root.querySelectorAll('[data-pg-i18n]').forEach((element) => {
+      const value = ui(element.dataset.pgI18n);
+      const attribute = element.dataset.pgI18nAttribute || 'textContent';
+      const prefix = element.dataset.pgI18nPrefix;
+      if (attribute === 'textContent') element.textContent = prefix ? `${prefix} · ${value}` : value;
+      else element.setAttribute(attribute, value);
+    });
+    root.querySelectorAll('[data-pg-i18n-title]').forEach((element) => {
+      element.title = ui(element.dataset.pgI18nTitle);
+    });
+    root.querySelectorAll('[data-pg-drawer-sub]').forEach((element) => element.__ktRefreshLocale?.());
+  };
   const HELP = new Proxy({}, {
     get(_t, moduleName) {
       const lang = HELP_SETS[HELP_LANG] ? HELP_LANG : (HELP_SETS.en ? 'en' : 'ko');
@@ -451,9 +475,9 @@ counter: {
     </div>
     <div class="kt-bz-preview" aria-hidden="true"><span class="kt-bz-dot"></span></div>
     <div class="kt-bz-tools">
-      <button type="button" class="kt-bz-btn kt-bz-reset" title="처음 값으로 되돌립니다">초기화</button>
-      <button type="button" class="kt-bz-btn kt-bz-copy" title="cubic-bezier() CSS 값을 복사합니다">CSS 복사</button>
-      <button type="button" class="kt-bz-btn kt-bz-save" title="현재 곡선을 이름 붙여 저장합니다">토큰 저장</button>
+      <button type="button" class="kt-bz-btn kt-bz-reset"></button>
+      <button type="button" class="kt-bz-btn kt-bz-copy"></button>
+      <button type="button" class="kt-bz-btn kt-bz-save"></button>
       <span class="kt-bz-status" role="status" aria-live="polite"></span>
     </div>`;
     const svg = host.querySelector('.kt-bz-svg');
@@ -463,6 +487,13 @@ counter: {
     const nums = [...host.querySelectorAll('.kt-bz-nums input')];
     const dot = host.querySelector('.kt-bz-dot');
     const status = host.querySelector('.kt-bz-status');
+    const resetControl = localize(host.querySelector('.kt-bz-reset'), 'reset');
+    const copyControl = localize(host.querySelector('.kt-bz-copy'), 'easeCopyCss');
+    const saveControl = localize(host.querySelector('.kt-bz-save'), 'easeSaveToken');
+    [[resetControl, 'easeResetTitle'], [copyControl, 'easeCopyTitle'], [saveControl, 'easeSaveTitle']].forEach(([element, key]) => {
+      element.dataset.pgI18nTitle = key;
+      element.title = ui(key);
+    });
     const initialPts = (easingBezier(initial) || [0.25, 0.1, 0.25, 1]).slice();
     // Live preview: a dot travels left→right using the CURRENT curve, on a loop,
     // so you feel the timing (J-3 "실시간 preview" / duration과 함께 반복 비교).
@@ -522,25 +553,30 @@ counter: {
     const resetBtn = host.querySelector('.kt-bz-reset');
     const copyBtn = host.querySelector('.kt-bz-copy');
     const say = (msg) => { if (status) { status.textContent = msg; clearTimeout(status.__t); status.__t = setTimeout(() => { status.textContent = ''; }, 1600); } };
-    resetBtn?.addEventListener('click', () => { pts = initialPts.slice(); render(true); say('처음 값으로 되돌렸습니다'); });
+    resetBtn?.addEventListener('click', () => { pts = initialPts.slice(); render(true); say(ui('easeResetDone')); });
     copyBtn?.addEventListener('click', async () => {
       const css = fmtBezier(pts);
       try { await navigator.clipboard.writeText(css); } catch (_e) { const t = document.createElement('textarea'); t.value = css; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch (_err) { /* ignore */ } t.remove(); }
-      say(`복사됨: ${css}`);
+      say(`${ui('easeCopied')}: ${css}`);
     });
     const saveBtn = host.querySelector('.kt-bz-save');
     saveBtn?.addEventListener('click', () => {
-      let name = ''; try { name = (window.prompt('저장할 이름', 'my-ease') || '').trim(); } catch (_e) { name = `ease-${Date.now().toString(36)}`; }
+      let name = ''; try { name = (window.prompt(ui('easeSavePrompt'), 'my-ease') || '').trim(); } catch (_e) { name = `ease-${Date.now().toString(36)}`; }
       if (!name) return;
       saveEasing(name, fmtBezier(pts));
       // Reflect the new token in every open easing select immediately.
       document.querySelectorAll('.kt-ease-select').forEach((sel) => {
-        if (sel.querySelector(`optgroup[label="저장한 토큰"] option[value="${fmtBezier(pts)}"]`)) return;
-        let og = sel.querySelector('optgroup[label="저장한 토큰"]');
-        if (!og) { og = document.createElement('optgroup'); og.label = '저장한 토큰'; sel.insertBefore(og, sel.firstChild); }
+        if (sel.querySelector(`optgroup[data-saved-easings] option[value="${fmtBezier(pts)}"]`)) return;
+        let og = sel.querySelector('optgroup[data-saved-easings]');
+        if (!og) {
+          og = document.createElement('optgroup');
+          og.dataset.savedEasings = 'true';
+          localize(og, 'easeSavedGroup', 'label');
+          sel.insertBefore(og, sel.firstChild);
+        }
         const o = document.createElement('option'); o.value = fmtBezier(pts); o.textContent = name; og.appendChild(o);
       });
-      say(`저장됨: ${name}`);
+      say(`${ui('easeSaved')}: ${name}`);
     });
     render(false);
     return { set(value) { const b = easingBezier(value); if (b) { pts = b.slice(); render(false); } }, destroy() { previewAnim?.cancel(); } };
@@ -562,7 +598,13 @@ counter: {
     pageReveal: 'ease', pageTransition: 'ease'
   };
   const GROUP_ORDER = ['Motion', 'Trigger', 'Look', 'Behavior', 'Advanced'];
-  const GROUP_LABELS = { Motion: '모션 · 타이밍', Trigger: '트리거 · 범위', Look: '외형', Behavior: '동작', Advanced: '고급 · API' };
+  const GROUP_I18N_KEYS = {
+    Motion: 'groupMotion',
+    Trigger: 'groupTrigger',
+    Look: 'groupLook',
+    Behavior: 'groupBehavior',
+    Advanced: 'groupAdvanced'
+  };
   const G_MOTION = new Set(['duration', 'delay', 'stagger', 'ease', 'easing', 'speed', 'smoothing', 'spring', 'stiffness', 'damping', 'mass', 'velocity', 'scrub', 'rollDuration', 'popDuration', 'exitDuration', 'minDuration', 'fadeDuration', 'dissolveDuration', 'flipDuration', 'pageDuration', 'pageOverlap', 'itemDuration', 'holdDuration', 'clickImageDuration', 'clickSpriteDuration', 'sparkleDuration', 'rotateDuration', 'cycleDuration', 'manualDuration', 'lightboxDuration', 'maskDuration', 'swapEase', 'maskEase', 'snakeScaleEase', 'completeHold', 'endPause', 'pause', 'pauseAfter', 'typeSpeed', 'eraseSpeed', 'revealRate', 'scrollAcceleration', 'decay', 'elastic', 'response', 'velocityDivisor', 'transitionStartOffset', 'orbitSpeed', 'sparkleThrottle', 'shimSpeed', 'skeletonSpeed', 'noiseFps', 'renderFps', 'sampleFps', 'stepDuration']);
   const G_TRIGGER = new Set(['trigger', 'start', 'end', 'threshold', 'rootMargin', 'once', 'loop', 'autoplay', 'pauseOnHover', 'activation', 'openDelay', 'closeDelay', 'wheel', 'drag', 'keyboard', 'touch', 'reverseOnScrollUp', 'initial', 'snap', 'pin', 'repeat', 'restartDelay', 'since', 'until', 'hold', 'flickerLoop', 'preloadRadius', 'rangeStart', 'rangeEnd', 'scrollLength', 'vhPerFrame', 'force', 'watch', 'reset', 'dismissible', 'closeOnBackdrop', 'clickToTop']);
   const G_LOOK = /(colou?r|blur|radius|opacity|shadow|scale|gradient|glare|halo|spread|intensity|surface|border|fill|width|height|thickness|stroke|size|perspective|skew|rotate|tile|inset|brightness|saturation|feather|noise|blend|font|glow|reflection|luminous|edge|shape|skeleton|frame|track|seam|caret|dot|trail|crosshair|sparkle|bare|background|shim)/i;
@@ -665,9 +707,9 @@ counter: {
     picker.type = 'color';
     picker.className = 'kt-color-picker';
     picker.value = normalizeColor(input.value);
-    picker.setAttribute('aria-label', '색상 선택');
+    localize(picker, 'chooseColor', 'aria-label');
     input.classList.add('kt-color-value');
-    input.setAttribute('aria-label', 'CSS 색상 값: HEX, RGB, RGBA, HSL 또는 HSLA');
+    localize(input, 'colorValue', 'aria-label');
     input.spellcheck = false;
     picker.addEventListener('input', () => {
       input.value = picker.value;
@@ -1231,7 +1273,9 @@ counter: {
       // reuse across modules (audit C-2 / J-3 "이름을 붙여 저장").
       const saved = savedEasings();
       if (saved.length) {
-        const og = document.createElement('optgroup'); og.label = '저장한 토큰';
+        const og = document.createElement('optgroup');
+        og.dataset.savedEasings = 'true';
+        localize(og, 'easeSavedGroup', 'label');
         saved.forEach(([name, val]) => { known.add(val); const o = document.createElement('option'); o.value = val; o.textContent = name; og.appendChild(o); });
         input.appendChild(og);
       }
@@ -1360,7 +1404,8 @@ counter: {
     details.className = 'kt-playground';
     const summary = document.createElement('summary');
     const moduleNames = descriptors.map((item) => item.module === 'loader' ? 'Loader' : labelize(item.module)).join(' + ');
-    summary.innerHTML = `<span class="kt-playground__summary-copy"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" focusable="false"><path d="M5.33409 4.54491C6.3494 3.63637 7.55145 2.9322 8.87555 2.49707C9.60856 3.4128 10.7358 3.99928 12 3.99928C13.2642 3.99928 14.3914 3.4128 15.1245 2.49707C16.4486 2.9322 17.6506 3.63637 18.6659 4.54491C18.2405 5.637 18.2966 6.90531 18.9282 7.99928C19.5602 9.09388 20.6314 9.77679 21.7906 9.95392C21.9279 10.6142 22 11.2983 22 11.9993C22 12.7002 21.9279 13.3844 21.7906 14.0446C20.6314 14.2218 19.5602 14.9047 18.9282 15.9993C18.2966 17.0932 18.2405 18.3616 18.6659 19.4536C17.6506 20.3622 16.4486 21.0664 15.1245 21.5015C14.3914 20.5858 13.2642 19.9993 12 19.9993C10.7358 19.9993 9.60856 20.5858 8.87555 21.5015C7.55145 21.0664 6.3494 20.3622 5.33409 19.4536C5.75952 18.3616 5.7034 17.0932 5.0718 15.9993C4.43983 14.9047 3.36862 14.2218 2.20935 14.0446C2.07212 13.3844 2 12.7002 2 11.9993C2 11.2983 2.07212 10.6142 2.20935 9.95392C3.36862 9.77679 4.43983 9.09388 5.0718 7.99928C5.7034 6.90531 5.75952 5.637 5.33409 4.54491ZM13.5 14.5974C14.9349 13.7689 15.4265 11.9342 14.5981 10.4993C13.7696 9.0644 11.9349 8.57277 10.5 9.4012C9.06512 10.2296 8.5735 12.0644 9.40192 13.4993C10.2304 14.9342 12.0651 15.4258 13.5 14.5974Z"/></svg>설정 · 코드</span><span class="kt-playground__summary-name">${escapeHtml(moduleNames)}</span>`;
+    summary.innerHTML = `<span class="kt-playground__summary-copy"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" focusable="false"><path d="M5.33409 4.54491C6.3494 3.63637 7.55145 2.9322 8.87555 2.49707C9.60856 3.4128 10.7358 3.99928 12 3.99928C13.2642 3.99928 14.3914 3.4128 15.1245 2.49707C16.4486 2.9322 17.6506 3.63637 18.6659 4.54491C18.2405 5.637 18.2966 6.90531 18.9282 7.99928C19.5602 9.09388 20.6314 9.77679 21.7906 9.95392C21.9279 10.6142 22 11.2983 22 11.9993C22 12.7002 21.9279 13.3844 21.7906 14.0446C20.6314 14.2218 19.5602 14.9047 18.9282 15.9993C18.2966 17.0932 18.2405 18.3616 18.6659 19.4536C17.6506 20.3622 16.4486 21.0664 15.1245 21.5015C14.3914 20.5858 13.2642 19.9993 12 19.9993C10.7358 19.9993 9.60856 20.5858 8.87555 21.5015C7.55145 21.0664 6.3494 20.3622 5.33409 19.4536C5.75952 18.3616 5.7034 17.0932 5.0718 15.9993C4.43983 14.9047 3.36862 14.2218 2.20935 14.0446C2.07212 13.3844 2 12.7002 2 11.9993C2 11.2983 2.07212 10.6142 2.20935 9.95392C3.36862 9.77679 4.43983 9.09388 5.0718 7.99928C5.7034 6.90531 5.75952 5.637 5.33409 4.54491ZM13.5 14.5974C14.9349 13.7689 15.4265 11.9342 14.5981 10.4993C13.7696 9.0644 11.9349 8.57277 10.5 9.4012C9.06512 10.2296 8.5735 12.0644 9.40192 13.4993C10.2304 14.9342 12.0651 15.4258 13.5 14.5974Z"/></svg><span class="kt-playground__summary-label"></span></span><span class="kt-playground__summary-name">${escapeHtml(moduleNames)}</span>`;
+    localize(summary.querySelector('.kt-playground__summary-label'), 'summary');
     // Dogfood: if the module name is wider than its slot, Kineto's own
     // overflowText scrolls it (bounce, pause on hover) instead of truncating —
     // also covers longer translated strings.
@@ -1425,7 +1470,11 @@ counter: {
         const legend = document.createElement('button'); legend.type = 'button'; legend.className = 'kt-playground__legend';
         legend.setAttribute('aria-expanded', 'true');
         const legendLabel = document.createElement('span'); legendLabel.className = 'kt-playground__legend-text';
-        legendLabel.textContent = multi ? `${labelize(descriptor.module)} · ${GROUP_LABELS[groupName]}` : GROUP_LABELS[groupName];
+        localize(legendLabel, GROUP_I18N_KEYS[groupName]);
+        if (multi) {
+          legendLabel.dataset.pgI18nPrefix = labelize(descriptor.module);
+          legendLabel.textContent = `${legendLabel.dataset.pgI18nPrefix} · ${ui(GROUP_I18N_KEYS[groupName])}`;
+        }
         legend.appendChild(legendLabel);
         legend.addEventListener('click', () => {
           const collapsed = fieldset.classList.toggle('is-collapsed');
@@ -1451,14 +1500,16 @@ counter: {
     syncGroupLayout(groups);
 
     const toolbar = document.createElement('div'); toolbar.className = 'kt-playground__toolbar';
-    const replayButton = document.createElement('button'); replayButton.type = 'button'; replayButton.className = 'is-primary'; replayButton.textContent = descriptors.some((item) => item.kind === 'loader') ? '실행' : '다시 재생';
-    const resetButton = document.createElement('button'); resetButton.type = 'button'; resetButton.textContent = '초기화';
-    replayButton.addEventListener('click', () => { replay(host, descriptors, status); window.ktToast?.('다시 재생했습니다'); });
-    resetButton.addEventListener('click', () => { reset(host, descriptors); window.ktToast?.('기본값으로 되돌렸습니다'); });
+    const replayButton = document.createElement('button'); replayButton.type = 'button'; replayButton.className = 'is-primary'; localize(replayButton, descriptors.some((item) => item.kind === 'loader') ? 'run' : 'replay');
+    const resetButton = document.createElement('button'); resetButton.type = 'button'; localize(resetButton, 'reset');
+    replayButton.addEventListener('click', () => { replay(host, descriptors, status); window.ktToast?.(ui('replayDone')); });
+    resetButton.addEventListener('click', () => { reset(host, descriptors); window.ktToast?.(ui('resetDone')); });
     toolbar.append(replayButton, resetButton);
 
     const codeWrap = document.createElement('div'); codeWrap.className = 'kt-playground__code';
-    codeWrap.innerHTML = `<div class="kt-playground__code-head"><div class="kt-playground__tabs"><button type="button" class="kt-playground__tab is-active" data-code-tab="html">HTML</button><button type="button" class="kt-playground__tab" data-code-tab="js">JS</button><button type="button" class="kt-playground__tab" data-code-tab="css">CSS vars</button></div><div class="kt-playground__code-actions"><button type="button" class="kt-playground__wrap" aria-pressed="false">자동 줄바꿈</button><button type="button" class="kt-playground__copy">코드 복사</button></div></div><pre class="kt-playground__pre line-numbers"><code></code></pre>`;
+    codeWrap.innerHTML = '<div class="kt-playground__code-head"><div class="kt-playground__tabs"><button type="button" class="kt-playground__tab is-active" data-code-tab="html">HTML</button><button type="button" class="kt-playground__tab" data-code-tab="js">JS</button><button type="button" class="kt-playground__tab" data-code-tab="css">CSS vars</button></div><div class="kt-playground__code-actions"><button type="button" class="kt-playground__wrap" aria-pressed="false"></button><button type="button" class="kt-playground__copy"></button></div></div><pre class="kt-playground__pre line-numbers"><code></code></pre>';
+    localize(codeWrap.querySelector('.kt-playground__wrap'), 'wrap');
+    localize(codeWrap.querySelector('.kt-playground__copy'), 'copyCode');
     codeWrap.querySelectorAll('[data-code-tab]').forEach((tab) => tab.addEventListener('click', () => {
       codeWrap.querySelectorAll('[data-code-tab]').forEach((item) => item.classList.toggle('is-active', item === tab));
       updateCode(host, descriptors);
@@ -1472,9 +1523,9 @@ counter: {
       } catch (_error) {
         const textarea = document.createElement('textarea'); textarea.value = text; document.body.appendChild(textarea); textarea.select(); document.execCommand('copy'); textarea.remove();
       }
-      copyButton.textContent = 'Copied'; status.textContent = `${active.toUpperCase()} copied`;
-      window.ktToast?.('복사되었습니다');
-      setTimeout(() => { copyButton.textContent = 'Copy'; }, 1000);
+      copyButton.textContent = ui('copied'); status.textContent = `${active.toUpperCase()} ${ui('copied')}`;
+      window.ktToast?.(ui('copyDone'));
+      setTimeout(() => { copyButton.textContent = ui('copyCode'); }, 1000);
     });
     codeWrap.querySelector('.kt-playground__wrap').addEventListener('click', (event) => {
       const button = event.currentTarget;
@@ -1497,24 +1548,29 @@ counter: {
     drawerTitle.textContent = moduleNames;
     const drawerSub = document.createElement('span');
     drawerSub.className = 'kt-playground__drawer-sub';
-    const descLine = descriptors.map((d) => MODULE_DESC[d.module]).filter(Boolean).join(' ');
-    // Strip a trailing period from the module description so it reads
-    // "…분할 모션 · 옵션을 바꾸면 위 예제에 바로 반영됩니다." (one clean sentence).
-    const descClean = descLine.replace(/\s*[.。]\s*$/, '');
-    drawerSub.textContent = descClean ? `${descClean} · 옵션을 바꾸면 위 예제에 바로 반영됩니다.` : '옵션을 바꾸면 위 예제에 바로 반영됩니다.';
+    drawerSub.dataset.pgDrawerSub = 'true';
+    drawerSub.__ktRefreshLocale = () => {
+      const ownerDescription = host.closest('.card, .scroll-demo-unit, .hscroll-demo-unit')?.querySelector(':scope > p')?.textContent?.trim();
+      const fallback = descriptors.map((descriptor) => MODULE_DESC[descriptor.module]).filter(Boolean).join(' ');
+      const descClean = (ownerDescription || fallback).replace(/\s*[.。]\s*$/, '');
+      drawerSub.textContent = descClean ? `${descClean} · ${ui('liveHint')}` : ui('liveHint');
+    };
+    drawerSub.__ktRefreshLocale();
     headText.append(drawerTitle, drawerSub);
     // 설정 ↔ 코드 view toggle in the head — the code is one click away instead
     // of a scroll to the bottom (replaces the old option-search field).
     const viewTabs = document.createElement('div'); viewTabs.className = 'kt-playground__viewtabs';
     viewTabs.setAttribute('role', 'tablist');
-    viewTabs.innerHTML = '<button type="button" class="kt-vt is-active" data-view="settings" role="tab" aria-selected="true">설정</button><button type="button" class="kt-vt" data-view="code" role="tab" aria-selected="false">코드</button>';
+    viewTabs.innerHTML = '<button type="button" class="kt-vt is-active" data-view="settings" role="tab" aria-selected="true"></button><button type="button" class="kt-vt" data-view="code" role="tab" aria-selected="false"></button>';
+    localize(viewTabs.querySelector('[data-view="settings"]'), 'settings');
+    localize(viewTabs.querySelector('[data-view="code"]'), 'code');
 
     const headActions = document.createElement('div');
     headActions.className = 'kt-playground__head-actions';
     const closeButton = document.createElement('button');
     closeButton.type = 'button';
     closeButton.className = 'kt-playground__close';
-    closeButton.setAttribute('aria-label', '옵션 닫기');
+    localize(closeButton, 'closeOptions', 'aria-label');
     // Inline SVG (not an icon font) so the close control never renders as an
     // empty square if the icon CDN fails (audit B-8 / E-4).
     closeButton.innerHTML = '<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" focusable="false"><path d="M5 5l10 10M15 5L5 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
@@ -1620,11 +1676,11 @@ counter: {
     // trap keyboard focus inside the dialog and let the backdrop close on click.
     sheet.setAttribute('role', 'dialog');
     sheet.setAttribute('aria-modal', 'true');
-    sheet.setAttribute('aria-label', '옵션 설정');
+    localize(sheet, 'options', 'aria-label');
     // Draggable grip (desktop): grab the top handle to resize the drawer height —
     // useful once a panel has many options. Persisted; keyboard ↑/↓ also work.
     const grip = document.createElement('div');
-    grip.className = 'kt-drawer-grip'; grip.setAttribute('role', 'separator'); grip.setAttribute('aria-orientation', 'horizontal'); grip.setAttribute('aria-label', '설정창 높이 조절 (드래그 또는 ↑/↓)'); grip.tabIndex = 0;
+    grip.className = 'kt-drawer-grip'; grip.setAttribute('role', 'separator'); grip.setAttribute('aria-orientation', 'horizontal'); localize(grip, 'resize', 'aria-label'); grip.tabIndex = 0;
     let sheetH = null; try { sheetH = parseInt(localStorage.getItem('kt-drawer-h') || '', 10) || null; } catch (_) {}
     const applySheetH = () => { if (!sheetH) return; const h = Math.min(Math.max(sheetH, 240), Math.round(window.innerHeight * 0.92)); sheet.style.height = h + 'px'; sheet.style.maxHeight = '92vh'; };
     grip.addEventListener('pointerdown', (e) => {
@@ -1636,7 +1692,7 @@ counter: {
     grip.addEventListener('keydown', (e) => { if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return; e.preventDefault(); sheetH = (sheetH || Math.round(window.innerHeight * 0.5)) + (e.key === 'ArrowUp' ? 40 : -40); applySheetH(); try { localStorage.setItem('kt-drawer-h', String(sheetH)); } catch (_) {} });
     // Double-click the grip to reset to the default height.
     grip.addEventListener('dblclick', () => { sheetH = null; sheet.style.height = ''; sheet.style.maxHeight = ''; try { localStorage.removeItem('kt-drawer-h'); } catch (_) {} });
-    grip.title = '드래그: 높이 조절 · 더블클릭: 초기화';
+    localize(grip, 'resizeTitle', 'title');
     sheet.appendChild(grip);
     document.body.append(backdrop, sheet);
     const focusables = () => [...sheet.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter((el) => el.offsetParent !== null || el === document.activeElement);
@@ -1760,8 +1816,9 @@ counter: {
     const proxy = document.createElement('button');
     proxy.type = 'button';
     proxy.className = 'kt-hscroll-settings';
-    proxy.setAttribute('aria-label', 'Horizontal Scroll 설정 열기');
-    proxy.innerHTML = '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M8.2 2.4h3.6l.5 2a6.2 6.2 0 0 1 1.3.8l2-.6 1.8 3.1-1.5 1.4a6.1 6.1 0 0 1 0 1.8l1.5 1.4-1.8 3.1-2-.6a6.2 6.2 0 0 1-1.3.8l-.5 2H8.2l-.5-2a6.2 6.2 0 0 1-1.3-.8l-2 .6-1.8-3.1 1.5-1.4a6.1 6.1 0 0 1 0-1.8L2.6 7.7l1.8-3.1 2 .6a6.2 6.2 0 0 1 1.3-.8l.5-2Z" fill="none" stroke="currentColor" stroke-width="1.35"/><circle cx="10" cy="10" r="2.3" fill="none" stroke="currentColor" stroke-width="1.35"/></svg><span>설정</span>';
+    localize(proxy, 'openSettings', 'aria-label');
+    proxy.innerHTML = '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M8.2 2.4h3.6l.5 2a6.2 6.2 0 0 1 1.3.8l2-.6 1.8 3.1-1.5 1.4a6.1 6.1 0 0 1 0 1.8l1.5 1.4-1.8 3.1-2-.6a6.2 6.2 0 0 1-1.3.8l-.5 2H8.2l-.5-2a6.2 6.2 0 0 1-1.3-.8l-2 .6-1.8-3.1 1.5-1.4a6.1 6.1 0 0 1 0-1.8L2.6 7.7l1.8-3.1 2 .6a6.2 6.2 0 0 1 1.3-.8l.5-2Z" fill="none" stroke="currentColor" stroke-width="1.35"/><circle cx="10" cy="10" r="2.3" fill="none" stroke="currentColor" stroke-width="1.35"/></svg><span></span>';
+    localize(proxy.querySelector('span'), 'settings');
     proxy.addEventListener('click', () => {
       const panel = controlHost.querySelector('.kt-playground');
       if (panel) panel.open = true;
@@ -1879,7 +1936,12 @@ counter: {
   }
 
   window.KinetoPlayground = {
-    setHelpLang(lang){ HELP_LANG = lang; },
+    setHelpLang(lang){
+      HELP_LANG = HELP_SETS[lang] ? lang : 'en';
+      UI_LANG = UI_SETS[lang] ? lang : 'en';
+      refreshUi();
+    },
+    refreshLocale(){ refreshUi(); },
     // Re-point every already-rendered tooltip to the current language.
     refreshHelp(){
       document.querySelectorAll('.kt-playground__field[data-module][data-key]').forEach((field) => {

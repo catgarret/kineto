@@ -1246,6 +1246,30 @@ window.KINETO_COPY_I18N = {
       "連接到 ScrollTrigger 回退或 CSS 動畫時間軸。",
       "Подключается к резервному варианту ScrollTrigger или временной шкале CSS-анимации.",
       "Si connette a un fallback ScrollTrigger o a una sequenza temporale di animazione CSS."
+    ],
+    "표면 반사·외곽 광택·그림자를 각각 조절합니다.": [
+      "Controls surface reflection, edge glow, and shadow independently.",
+      "表面反射・エッジの光・影を個別に調整します。",
+      "分别控制表面反射、边缘发光和阴影。",
+      "分別控制表面反射、邊緣發光與陰影。",
+      "Отдельно настраивает отражение, свечение края и тень.",
+      "Regola separatamente riflesso, bagliore del bordo e ombra."
+    ],
+    "카드 바깥으로 새어 나오는 회전 conic 글로우 — 오리지널 효과 복원.": [
+      "Rotates a conic glow beyond the card edge.",
+      "カードの外側に円錐グローを回転させます。",
+      "在卡片边缘外旋转锥形光晕。",
+      "在卡片邊緣外旋轉錐形光暈。",
+      "Вращает коническое свечение за краем карточки.",
+      "Ruota un bagliore conico oltre il bordo della scheda."
+    ],
+    "외곽선을 따라 흐르는 그라디언트 광선 — 오리지널 보더 글로우.": [
+      "Runs a gradient beam along the card outline.",
+      "カードの輪郭に沿ってグラデーション光を流します。",
+      "让渐变光束沿卡片轮廓流动。",
+      "讓漸層光束沿卡片輪廓流動。",
+      "Проводит градиентный луч по контуру карточки.",
+      "Fa scorrere un raggio sfumato lungo il contorno della scheda."
     ]
   },
   "titles": {

@@ -2,7 +2,10 @@
 
 ## 1. 설계 목표
 
-Kineto은 애니메이션 엔진을 새로 만드는 프로젝트가 아니다. 디자이너가 HTML 속성으로 시작하고, 개발자가 같은 기능을 JavaScript로 제어할 수 있도록 GSAP, ScrollTrigger, Lenis, 브라우저 API를 일관된 인터페이스로 묶는다.
+Kineto는 새 애니메이션 엔진을 만들지 않습니다. 디자이너는 HTML
+속성으로 시작하고, 개발자는 같은 기능을 JavaScript로 제어합니다.
+GSAP, ScrollTrigger, Lenis와 브라우저 API는 하나의 인터페이스로
+연결합니다.
 
 핵심 목표는 다음 네 가지다.
 

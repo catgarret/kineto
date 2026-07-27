@@ -521,7 +521,8 @@
         'main .scroll-demo-unit > p',
         'main .hscroll-demo-unit > p',
         'main .sticky-stack-unit > p',
-        'main .reveal-demo-card > p'
+        'main .reveal-demo-card > p',
+        'main .glow-demo > div > p'
       ].join(','))]
         .filter(node=>/[가-힣]/.test(node.textContent))
         .map(node=>({node,ko:node.innerHTML,key:cleanCopy(node.textContent)}));
@@ -570,6 +571,24 @@
           if(kind==='placeholder')node.placeholder=value;
           else node.textContent=value;
         });
+        document.querySelectorAll('[data-module-block] .module-block-sub').forEach((subtitle)=>{
+          const block=subtitle.closest('[data-module-block]');
+          if(!subtitle.dataset.koSub)subtitle.dataset.koSub=subtitle.textContent;
+          const localizedDescription=block?.querySelector('.card > p, .glow-demo > div > p, .scroll-demo-unit > p, .hscroll-demo-unit > p, .sticky-stack-unit > p')?.textContent?.trim();
+          subtitle.textContent=dict?(localizedDescription||subtitle.dataset.koSub):subtitle.dataset.koSub;
+        });
+        document.querySelectorAll('.mod-index-item[data-module]').forEach((button)=>{
+          const subtitle=button.querySelector('.mii-sub');
+          if(!subtitle)return;
+          if(!button.dataset.koSub)button.dataset.koSub=subtitle.textContent;
+          const block=document.getElementById(`mod-${button.dataset.module}`);
+          const localizedDescription=block?.querySelector('.card > p, .glow-demo > div > p, .scroll-demo-unit > p, .hscroll-demo-unit > p, .sticky-stack-unit > p')?.textContent?.trim();
+          subtitle.textContent=dict?(localizedDescription||button.dataset.koSub):button.dataset.koSub;
+          button.title=window.KINETO_PLAYGROUND_I18N?.[lang]?.demoLink
+            ||window.KINETO_PLAYGROUND_I18N?.ko?.demoLink
+            ||'데모로 이동';
+        });
+        window.KinetoPlayground?.refreshLocale?.();
       };
       let saved='ko';
       try{saved=localStorage.getItem('kt-lang')||'ko';}catch(_){}

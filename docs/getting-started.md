@@ -83,7 +83,8 @@ GIF·APNG·animated WebP는 Lazy, Ambient, Lightbox 조합에서도 살아 있�
 >...</section>
 ```
 
-Kineto은 viewport 감지만 담당하고 실제 디자인은 CSS class로 제어할 수 있습니다.
+Kineto는 viewport 진입만 감지하고, 실제 디자인은 CSS 클래스로 제어할
+수 있습니다.
 
 ## 6. Loader 진행률
 

@@ -62,6 +62,7 @@ try {
   await page.addScriptTag({path:resolve(root,'dist/kineto.umd.js')});
   await page.addScriptTag({path:resolve(root,'demo/help-i18n.js')});
   await page.addScriptTag({path:resolve(root,'demo/help-i18n-extra.js')});
+  await page.addScriptTag({path:resolve(root,'demo/playground-i18n.js')});
   await page.addScriptTag({path:resolve(root,'demo/playground.js')});
   await page.addScriptTag({path:resolve(root,'demo/copy-i18n.js')});
   await page.addScriptTag({content:inlineScript});
@@ -91,6 +92,7 @@ try {
     const select=document.getElementById('lang');
     const languages=['ko','en','ja','zh-CN','zh-TW','ru','it'];
     const result={};
+    document.querySelector('.card > .kt-playground')?.__buildBody?.();
     for(const language of languages){
       select.value=language;
       select.dispatchEvent(new window.Event('change',{bubbles:true}));
@@ -102,7 +104,8 @@ try {
         'main .scroll-demo-unit > p',
         'main .hscroll-demo-unit > p',
         'main .sticky-stack-unit > p',
-        'main .reveal-demo-card > p'
+        'main .reveal-demo-card > p',
+        'main .glow-demo > div > p'
       ].join(','))];
       result[language]={
         count:descriptions.length,
@@ -110,7 +113,21 @@ try {
           const style=getComputedStyle(node);
           const lineHeight=Number.parseFloat(style.lineHeight);
           return node.clientHeight<=lineHeight*2.05;
-        })
+        }),
+        summary:document.querySelector('.kt-playground__summary-label')?.textContent
+          ===window.KINETO_PLAYGROUND_I18N[language].summary,
+        drawerChrome:[
+          ...document.querySelectorAll('.kt-playground__legend-text,.kt-playground__toolbar button,.kt-playground__viewtabs button,.kt-bz-btn')
+        ].every((node)=>(
+          (!/[가-힣]/.test(node.textContent)&&!/[가-힣]/.test(node.title))
+          ||language==='ko'
+        )),
+        moduleIndexKorean:language==='ko'?[]:[...document.querySelectorAll('.mod-index-item .mii-sub')]
+          .filter((node)=>/[가-힣]/.test(node.textContent))
+          .map((node)=>node.closest('.mod-index-item')?.dataset.module),
+        moduleBlockKorean:language==='ko'?[]:[...document.querySelectorAll('[data-module-block] .module-block-sub')]
+          .filter((node)=>/[가-힣]/.test(node.textContent))
+          .map((node)=>node.closest('[data-module-block]')?.dataset.moduleBlock)
       };
     }
     select.value='ko';
@@ -118,8 +135,10 @@ try {
     return result;
   });
   assert.ok(
-    Object.values(localizedCopy).every(({count,twoLines})=>count>=126&&twoLines),
-    `localized card copy exceeded two lines: ${JSON.stringify(localizedCopy)}`
+    Object.values(localizedCopy).every(({count,twoLines,summary,drawerChrome,moduleIndexKorean,moduleBlockKorean})=>
+      count>=129&&twoLines&&summary&&drawerChrome&&moduleIndexKorean.length===0&&moduleBlockKorean.length===0
+    ),
+    `localized demo copy or controls are incomplete: ${JSON.stringify(localizedCopy)}`
   );
 
   const missing=await page.evaluate(()=>Array.from(document.querySelectorAll('.card')).filter((card)=>

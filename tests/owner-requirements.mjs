@@ -7,6 +7,7 @@ const features = JSON.parse(await read('../kineto.features.json'));
 const packageJson = JSON.parse(await read('../package.json'));
 const demo = (await read('../demo/index.html')) + (await read('../demo/main.js')) + (await read('../demo/styles.css'));
 const playground = await read('../demo/playground.js');
+const playgroundI18n = await read('../demo/playground-i18n.js');
 const source = Object.fromEntries(await Promise.all([
   'counter','loader','lazy','reveal','textReveal','textTransition','glitch','ripple','overflowText','lightbox','slider','ambientMedia','cardGlow','cursor','scrollVelocity','stickyStack'
 ].map(async (name) => [name, await read(`../src/modules/${name}.js`)])));
@@ -58,7 +59,8 @@ for (const marker of ['data-demo="counter"','data-demo="loader"','data-demo="laz
 for (const marker of ['Skeleton — Pulse','Rolling Ticker','SURFACE + EDGE','Class Hook','motion-demo.gif','motion-demo.webp','motion-demo.png','Lightbox Viewer','Ring + Dot']) assert.match(demo, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 assert.match(demo, /KinetoPlayground\.capture/);
 assert.match(demo, /KinetoPlayground\.mount/);
-assert.match(playground, /설정 · 코드/);
+assert.match(playground, /kt-playground__summary-label/);
+assert.match(playgroundI18n, /설정 · 코드/);
 assert.match(playground, /navigator\.clipboard\.writeText/);
 assert.match(playground, /function reset\(/);
 assert.match(playground, /function replay\(/);
