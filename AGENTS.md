@@ -52,7 +52,7 @@ For a release:
    - `npm run release:prepare -- major`
 4. Review generated versions, `CHANGELOG.md`, build artifacts, and
    `.github/release-notes/v<version>.md`.
-5. Run `npm run verify`.
+5. Confirm `npm run test:package-size` passes, then run `npm run verify`.
 6. Commit the release preparation as `release: prepare v<version>`.
 7. Run `npm run release:ship -- v<version>` only after explicit release
    authorization. This pushes `main` and the annotated tag.

@@ -34,6 +34,7 @@ At this handoff, the most recent completed work includes:
 - Cover Reveal single/pair/palette/automatic colour modes;
 - CSS colour inputs that preserve HEX, RGB(A), HSL(A), and custom properties;
 - full CI, browser, lifecycle, package, and bundle-budget coverage.
+- a runtime-only npm allowlist with an enforced release tarball size budget.
 
 Always verify this summary against Git history because later commits supersede
 it.

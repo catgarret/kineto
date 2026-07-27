@@ -16,7 +16,11 @@ const required = [
 for (const path of required) await access(new URL(`../${path}`, import.meta.url));
 
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-assert.equal(packageJson.exports['./style.css'], './dist/kineto.css');
+assert.equal(packageJson.module, './dist/kineto.min.js');
+assert.equal(packageJson.browser, './dist/kineto.umd.cjs');
+assert.equal(packageJson.exports['.'].import, './dist/kineto.min.js');
+assert.equal(packageJson.exports['.'].require, './dist/kineto.umd.cjs');
+assert.equal(packageJson.exports['./style.css'], './dist/kineto.min.css');
 assert.equal(packageJson.exports['./package.json'], './package.json');
 
 const esm = await import('@dong-gri/kineto');

@@ -6,24 +6,21 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
 
 ### English
 
-- Added repository-wide Codex/Claude handoff rules so implementation work ends
-  with synchronized documentation, bilingual changelog notes, integrated QA,
-  and a scoped Git commit.
-- Added release preparation and shipping commands plus a tag-triggered GitHub
-  Actions workflow that verifies the package, publishes to npm with provenance,
-  and creates a GitHub Release with English notes followed by Korean notes.
+<!-- Add matching English release bullets here. -->
 
 ### 한국어
 
-- Codex와 Claude가 구현 작업 후 문서·영문/국문 변경 기록·통합 QA를
-  동기화하고 작업 범위만 Git 커밋하도록 저장소 공통 인수인계 규칙을
-  추가했습니다.
-- 버전 준비·배포 명령과 태그 기반 GitHub Actions를 추가했습니다. 전체
-  검증 후 npm provenance 배포와 영문 다음 국문 순서의 GitHub Release
-  생성을 자동으로 처리합니다.
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.43]
 
+- **Automated releases and AI handoff**: added repository-wide Codex/Claude
+  completion rules, bilingual release notes, version preparation, tag shipping,
+  npm Trusted Publishing, and GitHub Release automation.
+- **Lean distribution**: reduced the npm/GitHub Release tarball from about
+  1.06 MB to 293 KB by publishing only minimized runtime entry points. CI now
+  enforces packed/unpacked/file-count budgets and installs the real tarball to
+  verify ESM, CommonJS, and CSS exports.
 - **Cover Reveal colour system**: supports a fixed colour, a two-colour layer pair, random selection within a user palette, or an automatically derived harmonious palette. Gallery cards now use the same public options shown in the playground.
 - **Colour controls**: playground colour values preserve HEX, RGB(A), HSL(A), and CSS custom-property input while retaining a native colour swatch. Scroll Shadows exposes the useful shadow colour control with an RGBA default and infers its cover colour from the surface/CSS variable.
 - **Playground polish**: contextual help uses Kineto's viewport-aware fixed tooltip without changing sheet scroll height; Ease controls are more compact; invalid Hover Roll mode choices are hidden; the footer, multi-row FLIP example, accordion spacing, and Confetti completion icon were refined.

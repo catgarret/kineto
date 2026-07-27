@@ -34,6 +34,9 @@ This command:
 - moves bilingual Unreleased notes into the new dated changelog section;
 - writes `.github/release-notes/v<version>.md`;
 - regenerates contract documentation and distributable builds.
+- checks that the npm/GitHub Release tarball contains only minimized runtime
+  entry points and remains within its compressed, unpacked, and file-count
+  budgets.
 
 Review the result, then run:
 
@@ -61,6 +64,22 @@ pushes the tag. The tag starts `.github/workflows/release.yml`, which:
 
 The publish step is idempotent: a workflow retry detects an already published
 version and skips the duplicate npm publish.
+
+## Release package policy
+
+The Git repository intentionally keeps full sources, demos, tests, translations,
+and QA documents. They are not copied into the npm tarball. The published
+package contains the minimized ESM, CommonJS, browser UMD and CSS entry points,
+framework adapters, README, licence, package metadata, and logo.
+
+Run the package-only budget check with:
+
+```bash
+npm run test:package-size
+```
+
+Do not widen the npm `files` allowlist for development convenience. Link to the
+GitHub documentation or demo instead.
 
 ## Existing prepared version
 

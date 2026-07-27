@@ -37,42 +37,31 @@
     "access": "public"
   },
   "main": "./dist/kineto.umd.cjs",
-  "module": "./dist/kineto.js",
+  "module": "./dist/kineto.min.js",
   "browser": "./dist/kineto.umd.cjs",
   "unpkg": "./dist/kineto.umd.min.js",
   "jsdelivr": "./dist/kineto.umd.min.js",
   "exports": {
     ".": {
-      "import": "./dist/kineto.js",
+      "import": "./dist/kineto.min.js",
       "require": "./dist/kineto.umd.cjs",
-      "default": "./dist/kineto.js"
+      "default": "./dist/kineto.min.js"
     },
     "./min": "./dist/kineto.min.js",
     "./umd": "./dist/kineto.umd.min.js",
     "./react": "./src/adapters/react.js",
     "./vue": "./src/adapters/vue.js",
     "./jquery": "./src/adapters/jquery.js",
-    "./style.css": "./dist/kineto.css",
+    "./style.css": "./dist/kineto.min.css",
     "./package.json": "./package.json"
   },
   "files": [
-    "dist",
+    "dist/kineto.min.js",
+    "dist/kineto.umd.cjs",
+    "dist/kineto.umd.min.js",
+    "dist/kineto.min.css",
     "src/adapters",
-    "demo",
-    "docs",
-    "!**/.fuse_hidden*",
-    "!**/.DS_Store",
-    "assets/logo.svg",
-    "FEATURE_CONTRACT.md",
-    "kineto.features.json",
-    "kineto.features.schema.json",
-    "OWNER_REQUIREMENTS.md",
-    "kineto.requirements.json",
-    "AI-PROMPT-GUIDE.md",
-    "CHANGELOG.md",
-    "README.md",
-    "LICENSE",
-    "CONTRIBUTING.md"
+    "assets/logo.svg"
   ],
   "sideEffects": [
     "**/*.css"
@@ -100,7 +89,7 @@
     "test:size": "node scripts/bundle-size.mjs --check",
     "size": "node scripts/bundle-size.mjs",
     "size:md": "node scripts/bundle-size.mjs --md",
-    "test:node": "npm run test:utils && npm run test:contract && npm run test:requirements && npm run test:docs && npm run test:package && npm run test:parity && npm run test:structure && npm run test:lazy && npm run test:options && npm run test:easings && npm run test:reduced && npm run test:update && npm run test:audit && npm run test:leak && npm run test:perf && npm run test:deps && npm run test:engine && npm run test:regressions && npm run test:site && npm run test:release && npm run test:size",
+    "test:node": "npm run test:utils && npm run test:contract && npm run test:requirements && npm run test:docs && npm run test:package && npm run test:package-size && npm run test:package-tarball && npm run test:parity && npm run test:structure && npm run test:lazy && npm run test:options && npm run test:easings && npm run test:reduced && npm run test:update && npm run test:audit && npm run test:leak && npm run test:perf && npm run test:deps && npm run test:engine && npm run test:regressions && npm run test:site && npm run test:release && npm run test:size",
     "test:all": "npm run lint && npm run build && npm run test:node && npm run test:demo && npm run test:browser && npm pack --dry-run",
     "ci": "npm run test:all",
     "verify": "npm run test:all && npm audit --audit-level=low",
@@ -121,6 +110,8 @@
     "test:audit": "node tests/audit-extra.mjs",
     "test:site": "node tests/site-deploy.mjs",
     "test:release": "node tests/release-automation.mjs",
+    "test:package-size": "node scripts/package-size.mjs --check",
+    "test:package-tarball": "node tests/package-tarball.mjs",
     "release:prepare": "node scripts/prepare-release.mjs",
     "release:check": "node scripts/check-release.mjs",
     "release:ship": "node scripts/ship-release.mjs"
