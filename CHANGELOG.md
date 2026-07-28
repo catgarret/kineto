@@ -4,6 +4,7 @@
 
 ### English
 
+- Overhauled Loading Indicator visuals (dual ring, orbit, spokes rotation, stretch/squeeze bar) and rebuilt Terminal Meter with true text characters for strict A11y compliance. Deployed automatic conditional option visibility across all 51 modules in the Playground.
 - Added real progress support for Terminal Meter & Blocks, expanded ASCII/Unicode spinner frame presets (including braille-bounce, corners, squares, boxes), fixed light mode text shimmer looping, upgraded Orbit and Dual ring spinners, and implemented a smart auto-responsive Tetris-like grid layout for settings controls.
 - Polished Loading Indicator visuals and behavior: removed default shadows, rebuilt equal-size dual rings, fixed spokes and reverse playback, refined orbit and Glow motion, made light-theme shimmer visible with a seamless loop, animated Terminal Meter, and added ASCII, Braille, arrow, line, circle and custom-frame terminal presets.
 - Added `transformOrigin` to transform-driven loading variants and synchronized the playground, feature contract, documentation, localization and regression coverage.
@@ -19,6 +20,7 @@
 
 ### 한국어
 
+- Loading Indicator 비주얼 퀄리티를 향상(듀얼 링, 궤도, 살 회전, 스트레치/스퀴즈 모션 추가)하고, 접근성 향상을 위해 터미널 미터를 텍스트 기반으로 새로 구현했습니다. 플레이그라운드의 전체 51개 모듈에 대해 비활성 옵션을 자동으로 숨기는 의존성 로직을 적용했습니다.
 - Terminal Meter 및 Blocks에 실제 진행률(setProgress) 연동을 추가하고, braille-bounce·corners·squares·boxes 등 유니코드 스피너 프리셋을 확장했습니다. 라이트 모드 시머 루프 및 Orbit·Dual ring 스피너를 개선하였으며, 설정창 항목 수 및 아코디언 상태에 따라 빈 공간 없이 자동 정렬되는 반응형 테트리스 그리드를 구축했습니다.
 - Loading Indicator의 기본 그림자를 제거하고 동일 크기 듀얼 링, 스포크·역방향 재생, 오빗, Glow 진행 모션, 라이트 모드 시머의 자연스러운 루프, 움직이는 Terminal Meter를 정비했습니다. ASCII·Braille·화살표·라인·원형·사용자 프레임 터미널 프리셋도 추가했습니다.
 - transform 기반 로딩 타입에 `transformOrigin`을 추가하고 설정창, 기능 계약, 문서, 번역, 회귀 테스트를 동기화했습니다.

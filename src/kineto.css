@@ -59,7 +59,11 @@
   100% { opacity:0; transform:translateY(120%); }
 }
 /* Continuous CRT / VCR overlay. */
-@keyframes kt-crt-roll { 0% { transform:translateY(-140%); } 100% { transform:translateY(320%); } }
+@keyframes kt-loading-bar {
+  0% { transform: translateX(-100%) scaleX(0.1); }
+  50% { transform: translateX(50%) scaleX(2.5); }
+  100% { transform: translateX(200%) scaleX(0.1); }
+}
 /* Gentle, mostly-on flicker (subtle brightness wobble, not a harsh strobe). */
 @keyframes kt-crt-flicker { 0%,100% { opacity:1; } 7% { opacity:.94; } 8% { opacity:1; } 43% { opacity:.97; } 44% { opacity:.9; } 45% { opacity:1; } 72% { opacity:.96; } 73% { opacity:1; } }
 @keyframes kt-vcr-noise { 0% { background-position:0 0; } 100% { background-position:60px 40px; } }
@@ -202,11 +206,13 @@
 .kt-loading-spinner__ring{position:absolute;inset:0;box-sizing:border-box;border:var(--kt-loading-stroke) solid var(--kt-loading-track-color);border-top-color:var(--kt-loading-color);border-radius:50%;transform-origin:var(--kt-loading-transform-origin,center);animation:kt-loading-spin var(--kt-loading-motion-duration) linear infinite}
 .kt-loading-spinner--ring .kt-loading-spinner__ring{border-right-color:var(--kt-loading-color)}
 .kt-loading-spinner--comet .kt-loading-spinner__ring{border-color:transparent;border-top-color:var(--kt-loading-color)}
-.kt-loading-spinner--dual .kt-loading-spinner__ring{inset:0;border-color:transparent;border-top-color:var(--kt-loading-color);border-right-color:var(--kt-loading-color)}
-.kt-loading-spinner--dual .kt-loading-spinner__ring--inner{inset:0;border-color:transparent;border-bottom-color:var(--kt-loading-highlight-color,currentColor);border-left-color:var(--kt-loading-highlight-color,currentColor);animation-direction:reverse;animation-duration:var(--kt-loading-fast-duration)}
-.kt-loading-spinner--orbit .kt-loading-spinner__ring{inset:0;border-width:var(--kt-loading-stroke);border-color:var(--kt-loading-track-color);animation:none}
+.kt-loading-spinner--dual .kt-loading-spinner__ring{inset:0;border-width:calc(var(--kt-loading-stroke) * 0.8);border-color:var(--kt-loading-track-color);border-top-color:var(--kt-loading-color);border-bottom-color:var(--kt-loading-color)}
+.kt-loading-spinner--dual .kt-loading-spinner__ring--inner{inset:calc(var(--kt-loading-stroke) * 1.5);border-width:calc(var(--kt-loading-stroke) * 0.8);border-color:var(--kt-loading-track-color);border-left-color:var(--kt-loading-highlight-color,currentColor);border-right-color:var(--kt-loading-highlight-color,currentColor);animation-direction:reverse;animation-duration:var(--kt-loading-fast-duration)}
+.kt-loading-spinner--orbit .kt-loading-spinner__ring{inset:0;border-width:max(1px, calc(var(--kt-loading-stroke) * 0.4));border-color:color-mix(in srgb, var(--kt-loading-track-color) 40%, transparent);animation:none}
 .kt-loading-spinner__orbit{position:absolute;inset:0;border-radius:50%;transform-origin:var(--kt-loading-transform-origin,center);animation:kt-loading-spin var(--kt-loading-motion-duration) linear infinite}
-.kt-loading-spinner__orbit-particle{position:absolute;top:calc(var(--kt-loading-stroke) * -.35);left:50%;width:calc(var(--kt-loading-stroke) * 1.7);height:calc(var(--kt-loading-stroke) * 1.7);border-radius:50%;background:var(--kt-loading-color);transform:translateX(-50%);box-shadow:0 0 calc(var(--kt-loading-stroke) * 2) var(--kt-loading-highlight-color,var(--kt-loading-color))}
+.kt-loading-spinner__orbit-particle{position:absolute;top:calc(var(--kt-loading-stroke) * -0.6);left:50%;width:calc(var(--kt-loading-stroke) * 2.2);height:calc(var(--kt-loading-stroke) * 2.2);border-radius:50%;background:var(--kt-loading-color);transform:translateX(-50%);box-shadow:0 0 calc(var(--kt-loading-stroke) * 3) var(--kt-loading-highlight-color,var(--kt-loading-color)), 0 0 calc(var(--kt-loading-stroke) * 6) var(--kt-loading-highlight-color,var(--kt-loading-color))}
+.kt-loading-spinner__orbit::after{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg, transparent 70%, color-mix(in srgb, var(--kt-loading-color) 40%, transparent) 100%);transform:scale(1.05);mask:radial-gradient(farthest-side, transparent calc(100% - var(--kt-loading-stroke)), black calc(100% - var(--kt-loading-stroke) + 1px));-webkit-mask:radial-gradient(farthest-side, transparent calc(100% - var(--kt-loading-stroke)), black calc(100% - var(--kt-loading-stroke) + 1px))}
+.kt-loading-spinner--spokes.is-rotating{animation:kt-loading-spin calc(var(--kt-loading-motion-duration) * 3) linear infinite}
 .kt-loading-spinner__spoke{position:absolute;top:8%;left:50%;width:var(--kt-loading-stroke);margin-left:calc(var(--kt-loading-stroke) * -.5);height:24%;border-radius:99px;background:currentColor;opacity:.16;transform:rotate(var(--kt-loading-angle,calc(360deg / var(--kt-loading-count) * var(--kt-loading-index))));transform-origin:center calc(var(--kt-loading-size) * .42);animation:kt-loading-spoke var(--kt-loading-motion-duration) linear infinite}
 .kt-loading.has-glow :is(.kt-loading-spinner__ring,.kt-loading-spinner__orbit){filter:drop-shadow(0 0 var(--kt-loading-glow-size) color-mix(in srgb,var(--kt-loading-glow-color) 72%,transparent))}
 .kt-loading.is-reverse :is(.kt-loading-spinner__ring,.kt-loading-spinner__orbit){animation-name:kt-loading-spin-reverse}
@@ -216,7 +222,7 @@
 .kt-loading--bar{width:var(--kt-loading-bar-width);max-width:100%;margin:0 auto}
 .kt-loading-bar__track{position:relative;display:block;width:100%;height:var(--kt-loading-bar-height);overflow:hidden;border-radius:999px;background:var(--kt-loading-track-color);box-shadow:none}
 .kt-loading-bar__progress{display:block;width:100%;height:100%;border-radius:inherit;background:var(--kt-loading-color);transform:scaleX(0);transform-origin:var(--kt-loading-transform-origin,left);will-change:transform}
-.kt-loading--bar.is-indeterminate .kt-loading-bar__progress{width:34%;animation:kt-loading-bar var(--kt-loading-motion-duration) linear infinite;transform-origin:var(--kt-loading-transform-origin,center);will-change:transform}
+.kt-loading--bar.is-indeterminate .kt-loading-bar__progress{width:34%;animation:kt-loading-bar var(--kt-loading-motion-duration) ease-in-out infinite;transform-origin:var(--kt-loading-transform-origin,center);will-change:transform}
 .kt-loading--bar.is-reverse .kt-loading-bar__progress{animation-direction:reverse}
 .kt-loading--bar.has-glow .kt-loading-bar__progress{box-shadow:0 0 var(--kt-loading-glow-size) color-mix(in srgb,var(--kt-loading-glow-color) 72%,transparent)}
 .kt-loading--shimmer,.kt-loading--shimmer-wave{font:720 var(--kt-loading-text-size)/1.25 var(--kt-loading-font-family,inherit);letter-spacing:-.015em}

@@ -4,6 +4,7 @@ function node(tag, className, text) {
   const element = document.createElement(tag);
   if (className) element.className = className;
   if (text != null) element.textContent = String(text);
+  element.setAttribute('aria-hidden', 'true');
   return element;
 }
 
@@ -34,7 +35,7 @@ function buildIndicator(host, type, opts) {
 
   const root = node('span', `kt-loading kt-loading--${type}`);
   let progressNode = null;
-  let meterCells = [];
+  let meterNode = null;
   let blockCells = [];
   let frameNode = null;
   let frameTimer = null;
@@ -64,6 +65,7 @@ function buildIndicator(host, type, opts) {
     const style = variant(opts.spinnerStyle, ['ring', 'comet', 'dual', 'spokes', 'orbit'], 'comet');
     root.classList.add(`kt-loading-spinner--${style}`);
     if (style === 'spokes') {
+      if (opts.rotateSpokes) root.classList.add('is-rotating');
       const count = Math.round(clamp(Number(opts.dotCount ?? 12), 6, 16));
       for (let index = 0; index < count; index += 1) {
         const spoke = node('i', 'kt-loading-spinner__spoke');
@@ -108,6 +110,7 @@ function buildIndicator(host, type, opts) {
     if (type === 'shimmer') {
       const shimmerText = node('span', 'kt-loading-shimmer__text', text);
       shimmerText.dataset.text = text;
+      if (reversed) shimmerText.classList.add('is-reverse');
       root.appendChild(shimmerText);
     } else {
       const line = node('span', 'kt-loading-shimmer-wave__text');
@@ -144,19 +147,34 @@ function buildIndicator(host, type, opts) {
         blockCells.push(block);
       }
     } else if (style === 'meter') {
-      const meter = node('span', 'kt-loading-terminal__meter');
-      if (opts.indeterminate === false) meter.classList.add('is-determinate');
-      meter.append('[');
-      meterCells = Array.from({ length: 10 }, (_, index) => {
-        const cell = node('i', 'kt-loading-terminal__cell', '░');
-        cell.style.setProperty('--kt-loading-index', String(index));
-        const order = reversed ? 9 - index : index;
-        cell.style.setProperty('--kt-loading-delay', `${-(Number(opts.motionDuration ?? 1.1) / 10) * order}s`);
-        meter.appendChild(cell);
-        return cell;
-      });
-      meter.append(']');
-      root.appendChild(meter);
+      meterNode = node('span', 'kt-loading-terminal__meter');
+      if (opts.indeterminate === false) meterNode.classList.add('is-determinate');
+      
+      const count = Math.round(clamp(Number(opts.dotCount ?? 10), 5, 40));
+      const emptyChar = opts.emptyChar || '░';
+      const fillChar = opts.fillChar || '█';
+      meterNode.dataset.count = count;
+      meterNode.dataset.emptyChar = emptyChar;
+      meterNode.dataset.fillChar = fillChar;
+      
+      if (opts.indeterminate !== false) {
+        const fillCount = Math.max(1, Math.floor(count * 0.3));
+        for (let i = 0; i <= count + fillCount; i++) {
+          let str = '';
+          for (let j = 0; j < count; j++) {
+            if (j >= i - fillCount && j < i) str += fillChar;
+            else str += emptyChar;
+          }
+          frames.push(`[${str}]`);
+        }
+        const backFrames = frames.slice(1, -1).reverse();
+        frames = frames.concat(backFrames);
+        frameNode = meterNode;
+        scheduleFrames();
+      } else {
+        meterNode.textContent = `[${emptyChar.repeat(count)}]`;
+      }
+      root.appendChild(meterNode);
     } else if (style === 'cursor') {
       root.appendChild(node('i', 'kt-loading-terminal__cursor', opts.cursorChar || '█'));
     } else {
@@ -167,7 +185,7 @@ function buildIndicator(host, type, opts) {
     }
   }
 
-  if (reversed) root.classList.add('is-reverse');
+  if (reversed && type !== 'shimmer') root.classList.add('is-reverse');
   if (opts.glow === true) root.classList.add('has-glow');
   root.setAttribute('aria-hidden', 'true');
   host.appendChild(root);
@@ -179,13 +197,12 @@ function buildIndicator(host, type, opts) {
       if (progressNode && !root.classList.contains('is-indeterminate')) {
         progressNode.style.transform = `scaleX(${progress / 100})`;
       }
-      if (meterCells.length) {
-        const filled = Math.round((progress / 100) * meterCells.length);
-        meterCells.forEach((cell, index) => {
-          const active = index < filled;
-          cell.classList.toggle('is-filled', active);
-          cell.textContent = active ? '█' : '░';
-        });
+      if (meterNode && root.querySelector('.is-determinate')) {
+        const count = Number(meterNode.dataset.count);
+        const empty = meterNode.dataset.emptyChar;
+        const fill = meterNode.dataset.fillChar;
+        const filled = Math.round((progress / 100) * count);
+        meterNode.textContent = `[${fill.repeat(filled)}${empty.repeat(count - filled)}]`;
       }
       if (blockCells.length && opts.indeterminate === false) {
         const filled = Math.round((progress / 100) * blockCells.length);
