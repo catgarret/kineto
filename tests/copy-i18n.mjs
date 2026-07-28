@@ -44,7 +44,7 @@ const titles = [...new Set(
 )];
 
 assert.deepEqual([...copy.languages], languages);
-assert.equal(descriptions.length, 141);
+assert.equal(descriptions.length, 142);
 assert.equal(titles.length, 16);
 
 for (const [label, values, dictionary] of [

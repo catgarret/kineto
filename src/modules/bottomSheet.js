@@ -112,8 +112,7 @@ export default {
     const resizeArea = opts.resizeArea === 'header' ? 'header' : 'handle';
     const minHeight = Math.max(120, Number(opts.minHeight ?? 140));
     const resetSize = () => { el.style.height = ''; el.style.maxHeight = ''; };
-    let onHandleDbl = null;
-    let dragBinding = null;
+    const dragBindings = [];
     if (handle && resizable) {
       handle.style.cursor = 'ns-resize'; handle.style.touchAction = 'none'; el.classList.add('kt-sheet--resizable');
       handle.title = handle.title || '드래그: 높이 조절 · 더블클릭: 초기화';
@@ -123,10 +122,17 @@ export default {
       el.dataset.ktSheetResizeArea = resizeArea;
     }
     const authoredHeader = el.querySelector('[data-kt-sheet-header],.kt-sheet__header,header');
-    const dragSurface = resizable && resizeArea === 'header' ? (authoredHeader || handle) : handle;
-    if (dragSurface && (dismissible || resizable)) {
+    const surfaces = resizable && resizeArea === 'header'
+      ? [handle, authoredHeader].filter((surface, index, list) => surface && list.indexOf(surface) === index)
+      : [handle].filter(Boolean);
+    const interactive = 'button,a,input,select,textarea,label,[contenteditable="true"],[data-kt-sheet-no-resize]';
+    surfaces.forEach((dragSurface) => {
       let startY = 0; let startH = 0; let dragging = false; let moved = false; let lastTapAt = 0;
-      const interactive = 'button,a,input,select,textarea,label,[contenteditable="true"],[data-kt-sheet-no-resize]';
+      const source = dragSurface === handle ? 'handle' : 'header';
+      if (resizable) {
+        dragSurface.style.cursor = 'ns-resize';
+        dragSurface.style.touchAction = 'none';
+      }
       const down = (e) => {
         if (e.pointerType === 'mouse' && e.button !== 0) return;
         if (e.target.closest?.(interactive)) return;
@@ -146,7 +152,7 @@ export default {
           const h = Math.min(maxHeight, Math.max(minHeight, Math.round(startH - dy)));
           el.style.height = `${h}px`; el.style.maxHeight = `${maxHeight}px`;
           opts.onResize?.(h, el);
-          emit('kt-sheet-resize', { height: h, source: resizeArea });
+          emit('kt-sheet-resize', { height: h, source });
         }
         else { el.style.transform = `translateY(${Math.max(0, dy)}px)`; }
       };
@@ -159,19 +165,17 @@ export default {
           lastTapAt = now;
         }
       };
+      const dblclick = resizable ? (event) => {
+        if (event.target.closest?.(interactive)) return;
+        resetSize();
+      } : null;
       dragSurface.addEventListener('pointerdown', down);
       dragSurface.addEventListener('pointermove', move);
       dragSurface.addEventListener('pointerup', up);
       dragSurface.addEventListener('pointercancel', up);
-      dragBinding = { surface: dragSurface, down, move, up };
-      if (resizable) {
-        onHandleDbl = (event) => {
-          if (event.target.closest?.(interactive)) return;
-          resetSize();
-        };
-        dragSurface.addEventListener('dblclick', onHandleDbl);
-      }
-    }
+      if (dblclick) dragSurface.addEventListener('dblclick', dblclick);
+      dragBindings.push({ surface: dragSurface, down, move, up, dblclick });
+    });
 
     const triggers = el.id ? Array.from(document.querySelectorAll(triggerSel)).filter((t) => (t.getAttribute('data-kt-sheet-trigger') || t.getAttribute('href') || '') === `#${el.id}` || opts.trigger) : [];
     const onTrig = (e) => { e.preventDefault(); doOpen(); };
@@ -190,14 +194,13 @@ export default {
         doClose();
         document.removeEventListener('keydown', onKey, true);
         triggers.forEach((t) => t.removeEventListener('click', onTrig));
-        if (dragBinding) {
-          const { surface, down, move, up } = dragBinding;
+        dragBindings.forEach(({ surface, down, move, up, dblclick }) => {
           surface.removeEventListener('pointerdown', down);
           surface.removeEventListener('pointermove', move);
           surface.removeEventListener('pointerup', up);
           surface.removeEventListener('pointercancel', up);
-          if (onHandleDbl) surface.removeEventListener('dblclick', onHandleDbl);
-        }
+          if (dblclick) surface.removeEventListener('dblclick', dblclick);
+        });
         if (backdrop) backdrop.remove();
         if (handle) handle.remove();
         el.classList.remove('kt-sheet', 'kt-open', 'kt-sheet--resizable', 'kt-sheet--resize-handle', 'kt-sheet--resize-header', 'kt-sheet--dragging');

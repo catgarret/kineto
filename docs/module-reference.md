@@ -101,7 +101,7 @@
 - Attribute: `data-kt-loading-indicator`
 - Default variant: `spinner`
 - Variants: `spinner`, `dots`, `bar`, `shimmer`, `shimmer-wave`, `terminal`
-- Public options: `ariaLabel`, `autoComplete`, `barHeight`, `barWidth`, `baseColor`, `className`, `color`, `completeHold`, `completeOnError`, `cursorChar`, `direction`, `dotCount`, `dotGap`, `dotSize`, `dotStyle`, `exitDuration`, `fontFamily`, `glow`, `glowColor`, `glowSize`, `hideOnComplete`, `highlightColor`, `indeterminate`, `label`, `motionDuration`, `onComplete`, `onError`, `onHide`, `onProgress`, `onShow`, `onStart`, `onStateChange`, `preset`, `progress`, `renderUI`, `size`, `spinnerStyle`, `spread`, `stroke`, `terminalStyle`, `text`, `textSize`, `trackColor`, `type`
+- Public options: `ariaLabel`, `autoComplete`, `barHeight`, `barWidth`, `baseColor`, `className`, `color`, `completeHold`, `completeOnError`, `cursorChar`, `direction`, `dotCount`, `dotGap`, `dotSize`, `dotStyle`, `exitDuration`, `fontFamily`, `frameInterval`, `frames`, `glow`, `glowColor`, `glowSize`, `hideOnComplete`, `highlightColor`, `indeterminate`, `label`, `motionDuration`, `onComplete`, `onError`, `onHide`, `onProgress`, `onShow`, `onStart`, `onStateChange`, `preset`, `progress`, `renderUI`, `size`, `spinnerStyle`, `spread`, `stroke`, `terminalStyle`, `text`, `textSize`, `transformOrigin`, `trackColor`, `type`
 
 ## magnetic
 

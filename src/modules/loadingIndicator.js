@@ -11,6 +11,15 @@ function variant(value, allowed, fallback) {
   return allowed.includes(value) ? value : fallback;
 }
 
+const TERMINAL_FRAME_PRESETS = Object.freeze({
+  ascii: '|/-\\', pulse: '.oO°Oo', quadrant: '◐◓◑◒',
+  braille: '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏', 'braille-dot': '⠁⠂⠄⡀⢀⠠⠐⠈', 'braille-bounce': '⠁⠂⠄⠂',
+  arrow: '←↖↑↗→↘↓↙', line: '▁▃▅▆▇█▇▆▅▃', circle: '◴◷◶◵',
+  corners: '◜◝◞◟', squares: '▖▘▝▗', boxes: '◰◳◲◱'
+});
+
+const TERMINAL_STYLES = ['cursor', 'dots', 'blocks', 'meter', ...Object.keys(TERMINAL_FRAME_PRESETS)];
+
 function buildIndicator(host, type, opts) {
   if (typeof opts.renderUI === 'function') {
     const custom = opts.renderUI(host, opts) || {};
@@ -25,7 +34,31 @@ function buildIndicator(host, type, opts) {
 
   const root = node('span', `kt-loading kt-loading--${type}`);
   let progressNode = null;
-  let meterNode = null;
+  let meterCells = [];
+  let blockCells = [];
+  let frameNode = null;
+  let frameTimer = null;
+  let frameIndex = 0;
+  let framePaused = false;
+  let frames = [];
+  const timerHost = host.ownerDocument?.defaultView || globalThis;
+  const reversed = opts.direction === 'reverse' || opts.direction === 'rtl';
+
+  const stopFrames = () => {
+    if (frameTimer != null) timerHost.clearTimeout(frameTimer);
+    frameTimer = null;
+  };
+  const scheduleFrames = () => {
+    stopFrames();
+    if (framePaused || !frameNode || frames.length < 2) return;
+    const interval = Math.max(40, Number(opts.frameInterval ?? (Number(opts.motionDuration ?? 1.1) * 1000 / 12)));
+    frameTimer = timerHost.setTimeout(() => {
+      const step = reversed ? -1 : 1;
+      frameIndex = (frameIndex + step + frames.length) % frames.length;
+      frameNode.textContent = frames[frameIndex];
+      scheduleFrames();
+    }, interval);
+  };
 
   if (type === 'spinner') {
     const style = variant(opts.spinnerStyle, ['ring', 'comet', 'dual', 'spokes', 'orbit'], 'comet');
@@ -34,15 +67,24 @@ function buildIndicator(host, type, opts) {
       const count = Math.round(clamp(Number(opts.dotCount ?? 12), 6, 16));
       for (let index = 0; index < count; index += 1) {
         const spoke = node('i', 'kt-loading-spinner__spoke');
+        const angle = (360 / count) * index;
+        spoke.style.setProperty('--kt-loading-angle', `${angle}deg`);
         spoke.style.setProperty('--kt-loading-index', String(index));
         spoke.style.setProperty('--kt-loading-count', String(count));
-        spoke.style.animationDelay = `${-(Number(opts.motionDuration ?? 1.1) / count) * index}s`;
+        const order = reversed ? count - 1 - index : index;
+        spoke.style.animationDelay = `${-(Number(opts.motionDuration ?? 1.1) / count) * order}s`;
         root.appendChild(spoke);
       }
     } else {
       root.appendChild(node('i', 'kt-loading-spinner__ring'));
-      if (style === 'dual') root.appendChild(node('i', 'kt-loading-spinner__ring kt-loading-spinner__ring--inner'));
-      if (style === 'orbit') root.appendChild(node('i', 'kt-loading-spinner__orbit'));
+      if (style === 'dual') {
+        root.appendChild(node('i', 'kt-loading-spinner__ring kt-loading-spinner__ring--inner'));
+      }
+      if (style === 'orbit') {
+        const orbit = node('i', 'kt-loading-spinner__orbit');
+        orbit.appendChild(node('i', 'kt-loading-spinner__orbit-particle'));
+        root.appendChild(orbit);
+      }
     }
   } else if (type === 'dots') {
     const style = variant(opts.dotStyle, ['pulse', 'bounce', 'wave'], 'wave');
@@ -51,7 +93,8 @@ function buildIndicator(host, type, opts) {
     for (let index = 0; index < count; index += 1) {
       const dot = node('i', 'kt-loading-dot');
       dot.style.setProperty('--kt-loading-index', String(index));
-      dot.style.animationDelay = `${index * 110}ms`;
+      const order = reversed ? count - 1 - index : index;
+      dot.style.animationDelay = `${order * 110}ms`;
       root.appendChild(dot);
     }
   } else if (type === 'bar') {
@@ -63,25 +106,31 @@ function buildIndicator(host, type, opts) {
   } else if (type === 'shimmer' || type === 'shimmer-wave') {
     const text = String(opts.text || opts.label || 'Loading');
     if (type === 'shimmer') {
-      root.appendChild(node('span', 'kt-loading-shimmer__text', text));
+      const shimmerText = node('span', 'kt-loading-shimmer__text', text);
+      shimmerText.dataset.text = text;
+      root.appendChild(shimmerText);
     } else {
       const line = node('span', 'kt-loading-shimmer-wave__text');
       Array.from(text).forEach((character, index) => {
         const char = node('i', 'kt-loading-shimmer-wave__char', character === ' ' ? '\u00a0' : character);
         char.style.setProperty('--kt-loading-index', String(index));
-        char.style.animationDelay = `${index * 42}ms`;
+        const order = reversed ? text.length - 1 - index : index;
+        char.style.animationDelay = `${order * 42}ms`;
         line.appendChild(char);
       });
       root.appendChild(line);
     }
   } else {
-    const style = variant(opts.terminalStyle, ['cursor', 'dots', 'blocks', 'meter'], 'cursor');
+    const requestedStyle = variant(opts.terminalStyle, TERMINAL_STYLES, 'cursor');
+    const customFrames = Array.isArray(opts.frames) ? opts.frames.map(String).filter(Boolean) : [];
+    const style = customFrames.length ? 'custom' : requestedStyle;
     root.classList.add(`kt-loading-terminal--${style}`);
     if (style === 'dots') {
       for (let index = 0; index < 3; index += 1) {
         const dot = node('i', 'kt-loading-terminal__dot', '.');
         dot.style.setProperty('--kt-loading-index', String(index));
-        dot.style.animationDelay = `${index * 140}ms`;
+        const order = reversed ? 2 - index : index;
+        dot.style.animationDelay = `${order * 140}ms`;
         root.appendChild(dot);
       }
     } else if (style === 'blocks') {
@@ -89,19 +138,37 @@ function buildIndicator(host, type, opts) {
       for (let index = 0; index < count; index += 1) {
         const block = node('i', 'kt-loading-terminal__block', '■');
         block.style.setProperty('--kt-loading-index', String(index));
-        block.style.animationDelay = `${index * 120}ms`;
+        const order = reversed ? count - 1 - index : index;
+        block.style.animationDelay = `${order * 120}ms`;
         root.appendChild(block);
+        blockCells.push(block);
       }
     } else if (style === 'meter') {
-      meterNode = node('span', 'kt-loading-terminal__meter', '[░░░░░░░░░░]');
-      root.appendChild(meterNode);
-    } else {
+      const meter = node('span', 'kt-loading-terminal__meter');
+      if (opts.indeterminate === false) meter.classList.add('is-determinate');
+      meter.append('[');
+      meterCells = Array.from({ length: 10 }, (_, index) => {
+        const cell = node('i', 'kt-loading-terminal__cell', '░');
+        cell.style.setProperty('--kt-loading-index', String(index));
+        const order = reversed ? 9 - index : index;
+        cell.style.setProperty('--kt-loading-delay', `${-(Number(opts.motionDuration ?? 1.1) / 10) * order}s`);
+        meter.appendChild(cell);
+        return cell;
+      });
+      meter.append(']');
+      root.appendChild(meter);
+    } else if (style === 'cursor') {
       root.appendChild(node('i', 'kt-loading-terminal__cursor', opts.cursorChar || '█'));
+    } else {
+      frames = customFrames.length ? customFrames : Array.from(TERMINAL_FRAME_PRESETS[requestedStyle] || TERMINAL_FRAME_PRESETS.ascii);
+      frameNode = node('i', 'kt-loading-terminal__frame', frames[0]);
+      root.appendChild(frameNode);
+      scheduleFrames();
     }
   }
 
-  if (opts.direction === 'reverse' || opts.direction === 'rtl') root.classList.add('is-reverse');
-  if (opts.glow !== false) root.classList.add('has-glow');
+  if (reversed) root.classList.add('is-reverse');
+  if (opts.glow === true) root.classList.add('has-glow');
   root.setAttribute('aria-hidden', 'true');
   host.appendChild(root);
 
@@ -112,15 +179,30 @@ function buildIndicator(host, type, opts) {
       if (progressNode && !root.classList.contains('is-indeterminate')) {
         progressNode.style.transform = `scaleX(${progress / 100})`;
       }
-      if (meterNode) {
-        const filled = Math.round(progress / 10);
-        meterNode.textContent = `[${'█'.repeat(filled)}${'░'.repeat(10 - filled)}]`;
+      if (meterCells.length) {
+        const filled = Math.round((progress / 100) * meterCells.length);
+        meterCells.forEach((cell, index) => {
+          const active = index < filled;
+          cell.classList.toggle('is-filled', active);
+          cell.textContent = active ? '█' : '░';
+        });
+      }
+      if (blockCells.length && opts.indeterminate === false) {
+        const filled = Math.round((progress / 100) * blockCells.length);
+        blockCells.forEach((block, index) => {
+          const active = index < filled;
+          block.classList.toggle('is-filled', active);
+          block.style.opacity = active ? '1' : '0.25';
+        });
       }
     },
     setState(state) {
       root.dataset.state = state;
+      framePaused = state !== 'running';
+      if (framePaused) stopFrames(); else scheduleFrames();
     },
     destroy() {
+      stopFrames();
       root.remove();
     }
   };
@@ -141,7 +223,7 @@ export default {
       hidden: el.hidden
     };
     const duration = Math.max(0.2, Number(opts.motionDuration ?? 1.1));
-    const terminalStyle = variant(opts.terminalStyle, ['cursor', 'dots', 'blocks', 'meter'], 'cursor');
+    const terminalStyle = variant(opts.terminalStyle, TERMINAL_STYLES, 'cursor');
     const determinate = (type === 'bar' && opts.indeterminate === false) || (type === 'terminal' && terminalStyle === 'meter');
     const color = opts.color || 'currentColor';
 
@@ -149,7 +231,7 @@ export default {
     if (opts.className) el.classList.add(...String(opts.className).split(/\s+/).filter(Boolean));
     el.style.setProperty('--kt-loading-color', color);
     el.style.setProperty('--kt-loading-track-color', opts.trackColor || 'rgba(127,127,127,.18)');
-    el.style.setProperty('--kt-loading-highlight-color', opts.highlightColor || opts.glowColor || '#fff');
+    el.style.setProperty('--kt-loading-highlight-color', opts.highlightColor || opts.glowColor || 'currentColor');
     el.style.setProperty('--kt-loading-base-color', opts.baseColor || 'color-mix(in srgb,currentColor 32%,transparent)');
     el.style.setProperty('--kt-loading-size', `${Math.max(18, Number(opts.size ?? 48))}px`);
     el.style.setProperty('--kt-loading-stroke', `${Math.max(1, Number(opts.stroke ?? 4))}px`);
@@ -163,6 +245,7 @@ export default {
     el.style.setProperty('--kt-loading-glow-size', `${Math.max(0, Number(opts.glowSize ?? 16))}px`);
     el.style.setProperty('--kt-loading-text-size', typeof opts.textSize === 'number' ? `${opts.textSize}px` : (opts.textSize || '1rem'));
     el.style.setProperty('--kt-loading-spread', `${clamp(Number(opts.spread ?? 24), 2, 80)}%`);
+    if (opts.transformOrigin) el.style.setProperty('--kt-loading-transform-origin', String(opts.transformOrigin));
     if (opts.fontFamily) el.style.setProperty('--kt-loading-font-family', opts.fontFamily);
 
     const ui = buildIndicator(el, type, opts);

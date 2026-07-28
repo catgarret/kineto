@@ -64,11 +64,19 @@ export default {
 
       let closed = false;
       const removeNow = () => toast.remove();
+      const stopProgressAnimation = () => {
+        if (!barAnim) return;
+        // WAAPI animations without a fill mode snap back to their authored
+        // first frame when cancelled. Preserve the current/final visual state
+        // before the toast exit so a depleted ring never flashes full again.
+        try { barAnim.commitStyles?.(); } catch (_) {}
+        barAnim.cancel();
+      };
       const dismiss = () => {
         if (closed) return;
         closed = true;
         clearTimeout(timerId);
-        if (barAnim) barAnim.cancel();
+        stopProgressAnimation();
         if (reduce || !toast.animate) { removeNow(); return; }
         const out = toast.animate(
           [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(6px) scale(.98)' }],
@@ -121,7 +129,7 @@ export default {
           ring.appendChild(ic);
         }
         toast.insertBefore(ring, toast.firstChild);
-        barAnim = ring.querySelector('.kt-toast__ring-fill').animate([{ strokeDashoffset: 0 }, { strokeDashoffset: C }], { duration: remaining, easing: 'linear' });
+        barAnim = ring.querySelector('.kt-toast__ring-fill').animate([{ strokeDashoffset: 0 }, { strokeDashoffset: C }], { duration: remaining, easing: 'linear', fill: 'forwards' });
       } else {
         if (iconHtml) {
           const icon = document.createElement('span');
@@ -135,7 +143,7 @@ export default {
           bar.className = 'kt-toast__bar';
           bar.setAttribute('aria-hidden', 'true');
           toast.appendChild(bar);
-          barAnim = bar.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: remaining, easing: 'linear' });
+          barAnim = bar.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: remaining, easing: 'linear', fill: 'forwards' });
         } else if (progressStyle === 'fill' && !reduce && toast.animate) {
           // The whole toast box fills like a progress bar: a tinted layer sweeps
           // across behind the content over the lifetime.

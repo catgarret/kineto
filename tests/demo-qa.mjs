@@ -499,9 +499,9 @@ try {
   });
   for(const [key,value] of Object.entries(functional)) assert.ok(value,`${key} demo behavior failed`);
 
-  // The settings drawer is content-aware: collapsed title bars stay compact,
-  // and the only remaining expanded group consumes the full row without
-  // overlapping another group.
+  // The settings drawer is fluid: three or more categories share the same
+  // responsive grid instead of forcing an odd final card across the full row.
+  // Collapsed title bars must remain compact and cards must never overlap.
   const drawerLayout=await page.evaluate(async()=>{
     const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));
     const panels=[...document.querySelectorAll('.card > .kt-playground')];
@@ -528,9 +528,7 @@ try {
     const result={
       found:true,
       expanded:expanded.length,
-      full:expanded.length===1&&getComputedStyle(expanded[0]).gridColumnEnd==='-1',
-      collapsedTailFull:collapsed.length%2===0
-        || getComputedStyle(collapsed.at(-1)).gridColumnEnd==='-1',
+      forcedFull:groups.length>1&&groups.some((group)=>getComputedStyle(group).gridColumnEnd==='-1'),
       compact:collapsed.every((group)=>group.querySelector('.kt-playground__controls')?.offsetHeight===0&&group.offsetHeight<80),
       overlap
     };
@@ -540,8 +538,7 @@ try {
   });
   assert.equal(drawerLayout.found,true,'no multi-group settings panel available for layout QA');
   assert.equal(drawerLayout.expanded,1,'settings layout QA must leave exactly one expanded group');
-  assert.equal(drawerLayout.full,true,'the only expanded settings group must span the full drawer width');
-  assert.equal(drawerLayout.collapsedTailFull,true,'an unpaired collapsed settings group must span the full row');
+  assert.equal(drawerLayout.forcedFull,false,'multi-group settings cards must not be forced across the full drawer width');
   assert.equal(drawerLayout.compact,true,'collapsed settings groups must not retain empty body height');
   assert.equal(drawerLayout.overlap,false,'settings groups overlap after collapsing');
 

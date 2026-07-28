@@ -610,6 +610,8 @@
         "dotStyle",
         "exitDuration",
         "fontFamily",
+        "frameInterval",
+        "frames",
         "glow",
         "glowColor",
         "glowSize",
@@ -635,6 +637,7 @@
         "terminalStyle",
         "text",
         "textSize",
+        "transformOrigin",
         "trackColor",
         "type"
       ]

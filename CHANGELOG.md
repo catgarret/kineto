@@ -4,6 +4,12 @@
 
 ### English
 
+- Added real progress support for Terminal Meter & Blocks, expanded ASCII/Unicode spinner frame presets (including braille-bounce, corners, squares, boxes), fixed light mode text shimmer looping, upgraded Orbit and Dual ring spinners, and implemented a smart auto-responsive Tetris-like grid layout for settings controls.
+- Polished Loading Indicator visuals and behavior: removed default shadows, rebuilt equal-size dual rings, fixed spokes and reverse playback, refined orbit and Glow motion, made light-theme shimmer visible with a seamless loop, animated Terminal Meter, and added ASCII, Braille, arrow, line, circle and custom-frame terminal presets.
+- Added `transformOrigin` to transform-driven loading variants and synchronized the playground, feature contract, documentation, localization and regression coverage.
+- Restored the Cover Reveal line-demo display type, compacted the settings drawer with a draggable visible grip and groups-only scrolling, and cleared stale persisted drawer heights.
+- Bottom Sheet header resizing now keeps the original top grip active as a second drag surface, with exact border-box height tracking. Toast countdown rings retain their depleted state through the exit animation instead of flashing full.
+- Audited v0.8.43 for release readiness and documented the remaining 127-byte ESM gzip budget blocker plus the required macOS verification and shipping sequence.
 - Added a separate inline Loading Indicator module with comet, dual-ring, spokes and orbit spinners; dots; indeterminate glow bars; text shimmer; and four symbol-only terminal styles.
 - Kept Loader focused on full-page slot, circular and bar overlays while Loading Indicator remains in normal document flow.
 - Added indicator lifecycle control through `show()`, `hide()`, `complete()`, `trackPromise()`, `finished`, callbacks, `kt-loading-indicator-*` events and custom renderer hooks.
@@ -13,6 +19,12 @@
 
 ### 한국어
 
+- Terminal Meter 및 Blocks에 실제 진행률(setProgress) 연동을 추가하고, braille-bounce·corners·squares·boxes 등 유니코드 스피너 프리셋을 확장했습니다. 라이트 모드 시머 루프 및 Orbit·Dual ring 스피너를 개선하였으며, 설정창 항목 수 및 아코디언 상태에 따라 빈 공간 없이 자동 정렬되는 반응형 테트리스 그리드를 구축했습니다.
+- Loading Indicator의 기본 그림자를 제거하고 동일 크기 듀얼 링, 스포크·역방향 재생, 오빗, Glow 진행 모션, 라이트 모드 시머의 자연스러운 루프, 움직이는 Terminal Meter를 정비했습니다. ASCII·Braille·화살표·라인·원형·사용자 프레임 터미널 프리셋도 추가했습니다.
+- transform 기반 로딩 타입에 `transformOrigin`을 추가하고 설정창, 기능 계약, 문서, 번역, 회귀 테스트를 동기화했습니다.
+- Cover Reveal 줄 단위 데모의 큰 타이포를 복구하고, 설정창을 더 낮고 촘촘하게 정리했습니다. 보이는 회색 그립으로 높이를 조절할 수 있고 설정 그룹만 스크롤하며, 오래 저장된 높이값은 제거합니다.
+- 바텀시트의 헤더 조절 모드에서도 기존 상단 그립을 함께 사용할 수 있도록 했고 `border-box` 기준으로 정확히 높이가 바뀝니다. Toast 카운트다운 링은 닫히기 직전 다시 차오르지 않고 소진 상태를 유지합니다.
+- v0.8.43 배포 준비 상태를 점검하고 ESM gzip 예산 127바이트 초과 문제와 macOS 최종 검증·배포 절차를 문서화했습니다.
 - 코멧·듀얼 링·스포크·오빗 스피너, 점, 후광 바, 텍스트 시머, 기호형 터미널 표시를 별도 인라인 Loading Indicator 모듈로 추가했습니다.
 - Loader는 전체 화면 Slot·Circular·Bar 오버레이만 담당하고, Loading Indicator는 일반 콘텐츠 흐름 안에서 동작합니다.
 - `show()`, `hide()`, `complete()`, `trackPromise()`, `finished`, 콜백, 이벤트와 사용자 렌더러로 수명주기를 제어할 수 있습니다.
@@ -26,6 +38,7 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
 
 ### English
 
+- **Loading and feedback polish**: rebuilt Loading Indicator visuals and terminal presets, added `transformOrigin`, fixed reverse playback, seamless shimmer, Glow motion and Terminal Meter animation; restored the Cover Reveal line-demo type scale; made the settings drawer compact and reliably draggable; kept both Bottom Sheet grip and header resize surfaces active; and prevented Toast countdown rings from flashing full during exit.
 - **Copy and localization audit**: rewrote Korean demo copy into concise,
   consistent two-line card descriptions; completed static English, Japanese,
   Simplified Chinese, Traditional Chinese, Russian, and Italian translations;
@@ -41,6 +54,7 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
 
 ### 한국어
 
+- **로딩·피드백 정비**: Loading Indicator의 시각 품질과 터미널 프리셋을 개선하고 `transformOrigin`, 역방향 재생, 자연스러운 시머·Glow·Meter 모션을 보완했습니다. Cover Reveal 줄 단위 데모 타이포를 복구하고 설정창 높이·그립·스크롤을 정리했으며, Bottom Sheet의 그립과 헤더를 모두 드래그할 수 있게 하고 Toast 링의 종료 직전 재충전 현상을 막았습니다.
 - **문구·번역 정비**: 국문 데모 문구를 짧고 일관된 두 줄 카드 설명으로
   다시 쓰고, 영문·일문·중문 간체·중문 번체·러시아어·이탈리아어 정적
   번역을 완성했습니다. 7개 README도 현재 50개 모듈 계약에 맞췄으며,

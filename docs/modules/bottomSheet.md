@@ -20,7 +20,7 @@
 
 - `resizable:true`: 드래그로 높이를 조절합니다.
 - `resizeArea:'handle'`: 상단 그립에서만 조절합니다.
-- `resizeArea:'header'`: `[data-kt-sheet-header]`, `<header>` 또는 `.kt-sheet__header`에서 조절합니다.
+- `resizeArea:'header'`: 기본 상단 그립은 그대로 유지하며, `[data-kt-sheet-header]`, `<header>` 또는 `.kt-sheet__header`에서도 조절합니다.
 
 본문은 드래그 영역으로 사용하지 않으므로 텍스트 선택과 복사가 그대로 동작합니다.
 - `minHeight`, `maxHeight`: 드래그 범위를 픽셀로 제한합니다.
@@ -48,4 +48,4 @@ sheet.resetSize();
 
 높이가 바뀌면 `kt-sheet-resize` 이벤트가 발생합니다. `detail`에는 `height`와 `source`가 들어갑니다.
 
-상단 그립은 30px 높이의 포인터 영역을 사용하고, 실제 막대는 작게 유지합니다. 색상, 너비, 모서리, 백드롭은 `--kt-sheet-*` CSS 변수로 변경할 수 있습니다.
+상단 그립은 30px 높이의 포인터 영역을 사용하고, 실제 막대는 작게 유지합니다. `resizeArea:'header'`에서도 그립과 헤더를 모두 사용할 수 있습니다. 색상, 너비, 모서리, 백드롭은 `--kt-sheet-*` CSS 변수로 변경할 수 있습니다.

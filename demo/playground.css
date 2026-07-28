@@ -103,13 +103,13 @@
 .kt-drawer-sheet.is-open{transform:translate(-50%,0);pointer-events:auto}
 /* Draggable resize grip over the top handle bar (desktop). */
 .kt-drawer-grip{position:relative;flex:0 0 auto;height:32px;width:100%;touch-action:none;z-index:5;cursor:ns-resize}
+.kt-drawer-grip::before{content:"";position:absolute;top:13px;left:50%;transform:translateX(-50%);width:48px;height:5px;border-radius:99px;background:color-mix(in srgb,var(--muted) 34%,transparent)}
 .kt-drawer-sheet[data-resize-area="header"] .kt-playground__drawer-head,
 .kt-drawer-sheet[data-resize-area="header"] .kt-drawer-grip{cursor:ns-resize}
 .kt-drawer-sheet[data-resize-area="header"] .kt-playground__drawer-head :is(button,a,input,select,textarea,label,[contenteditable="true"],[data-no-sheet-resize]){cursor:auto}
 .kt-drawer-sheet.is-resizing{user-select:none;-webkit-user-select:none;transition:none}
 .kt-drawer-grip:hover~*  .kt-playground__drawer-head,.kt-drawer-grip:focus-visible{outline:none}
 .kt-drawer-grip:focus-visible{outline:2px solid var(--accent);outline-offset:-3px;border-radius:8px}
-.kt-drawer-sheet::before{content:"";position:absolute;top:13px;left:50%;transform:translateX(-50%);width:48px;height:5px;border-radius:99px;background:color-mix(in srgb,var(--muted) 34%,transparent);z-index:4}
 
 /* Body = fixed head + a single scrolling area (the groups / code view). The
    header never scrolls; only the content below it does. */
@@ -118,8 +118,9 @@
 /* Both views share one fixed stage, so switching never resizes the sheet. */
 .kt-playground__viewstage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:color-mix(in srgb,var(--panel2) 38%,var(--panel))}
 .kt-playground__viewstage>.kt-playground__view{position:absolute;inset:0;min-height:0;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,visibility 0s linear .18s}
-.kt-playground__viewstage>.kt-playground__groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-content:start;align-items:start;overflow-y:auto;overflow-x:hidden;padding:18px 22px 24px}
-.kt-playground__viewstage>.kt-playground__groups>.kt-playground__group{flex:0 0 auto;align-self:start}
+.kt-playground__viewstage>.kt-playground__groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-flow:dense;gap:12px;align-content:start;align-items:start;overflow-y:auto;overflow-x:hidden;padding:18px 22px 24px}
+.kt-playground__viewstage>.kt-playground__groups>.kt-playground__group{min-width:0;flex:0 0 auto;align-self:start}
+.kt-playground__viewstage>.kt-playground__groups>.kt-playground__group:not(.is-full-row){grid-column:auto!important}
 .kt-playground__viewstage>.kt-playground__groups>.kt-playground__group:only-child,.kt-playground__viewstage>.kt-playground__groups>.kt-playground__group.is-full-row{grid-column:1/-1}
 .kt-playground__viewstage>.kt-playground__code{display:flex;flex-direction:column;margin:0;overflow:hidden}
 .kt-playground__viewstage>.kt-playground__view.is-active{opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
@@ -155,12 +156,12 @@
 
 /* Controls — product-style: each group is a quiet card; fields put the
    label and its value on one row with the control beneath. */
-.kt-drawer-sheet .kt-playground__groups{gap:16px}
-.kt-drawer-sheet .kt-playground__group{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px 18px}
+.kt-drawer-sheet .kt-playground__groups{gap:10px;grid-auto-flow:dense}
+.kt-drawer-sheet .kt-playground__group{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:0 14px}
 .kt-drawer-sheet .kt-playground__group+.kt-playground__group{border-top:1px solid var(--line)}
 /* Group header = a clean, full-width accordion bar (native <button>): accent
    dot, title, chevron, with a hairline under it. Click folds the controls. */
-.kt-drawer-sheet .kt-playground__legend{box-sizing:border-box;-webkit-appearance:none;appearance:none;display:flex;align-items:center;gap:9px;width:100%;font-family:inherit;font-size:11.5px;font-weight:700;letter-spacing:.01em;text-transform:none;color:var(--text);background:transparent;border:0;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent);cursor:pointer;user-select:none;text-align:left;padding:13px 2px;margin:0}
+.kt-drawer-sheet .kt-playground__legend{box-sizing:border-box;-webkit-appearance:none;appearance:none;display:flex;align-items:center;gap:9px;width:100%;font-family:inherit;font-size:11.5px;font-weight:700;letter-spacing:.01em;text-transform:none;color:var(--text);background:transparent;border:0;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent);cursor:pointer;user-select:none;text-align:left;padding:11px 2px;margin:0}
 .kt-playground__legend-text{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .kt-drawer-sheet .kt-playground__legend:hover{color:var(--accent)}
 .kt-drawer-sheet .kt-playground__legend:hover::before{background:var(--accent)}
@@ -168,16 +169,20 @@
 .kt-drawer-sheet .kt-playground__legend::after{content:"";width:13px;height:13px;margin-left:8px;flex:0 0 auto;opacity:.5;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/10px 6px no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/10px 6px no-repeat;transition:transform .2s ease}
 .kt-playground__group.is-collapsed .kt-playground__legend::after{transform:rotate(-90deg)}
 /* Collapse = hide the controls outright (no reserved empty space). */
-.kt-drawer-sheet .kt-playground__controls{padding:14px 0 16px}
+.kt-drawer-sheet .kt-playground__controls{padding:12px 0 14px}
 .kt-playground__group.is-collapsed .kt-playground__controls{display:none}
 .kt-playground__group.is-collapsed .kt-playground__legend{border-bottom-color:transparent}
 @media(prefers-reduced-motion:reduce){.kt-drawer-sheet .kt-playground__legend::after{transition:none}}
-/* auto-FILL (not auto-fit): a lone visible field keeps a single ~240px column
-   instead of stretching across the whole row (audit: sparse groups). */
-.kt-drawer-sheet .kt-playground__controls{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px 18px;justify-content:start}
-/* A field control never grows absurdly wide (sliders/selects readable, not a
-   full-width bar in a one-field group). */
-.kt-drawer-sheet .kt-playground__field>input,.kt-drawer-sheet .kt-playground__field>select,.kt-drawer-sheet .kt-playground__field>textarea,.kt-drawer-sheet .kt-playground__field>.kt-color-row{max-width:420px}
+/* Smart responsive grid layout based on visible control field count */
+.kt-drawer-sheet .kt-playground__controls{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px 18px;justify-content:start}
+.kt-drawer-sheet .kt-playground__controls[data-visible-count="1"]{grid-template-columns:1fr}
+.kt-drawer-sheet .kt-playground__controls[data-visible-count="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.kt-drawer-sheet .kt-playground__controls[data-visible-count="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+.kt-drawer-sheet .kt-playground__controls[data-visible-count="4"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:700px){.kt-drawer-sheet .kt-playground__controls[data-visible-count="3"]{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.kt-drawer-sheet .kt-playground__controls,.kt-drawer-sheet .kt-playground__controls[data-visible-count]{grid-template-columns:1fr!important}}
+/* A field control expands to fill available grid space */
+.kt-drawer-sheet .kt-playground__field>input,.kt-drawer-sheet .kt-playground__field>select,.kt-drawer-sheet .kt-playground__field>textarea,.kt-drawer-sheet .kt-playground__field>.kt-color-row{width:100%}
 .kt-drawer-sheet .kt-playground__field{grid-template-columns:1fr auto;grid-template-areas:"label val" "input input";gap:7px 8px;align-items:center}
 /* The caption row (label + optional help button) sits in the "label" cell. */
 .kt-drawer-sheet .kt-playground__field>.kt-field-cap{grid-area:label;min-width:0}
@@ -319,3 +324,16 @@
 .kt-playground__pre::-webkit-scrollbar-track{background:transparent;margin:4px}
 .kt-playground__pre::-webkit-scrollbar-thumb{background:rgba(207,233,227,.24);border-radius:99px;border:2px solid transparent;background-clip:padding-box;min-height:32px}
 .kt-playground__pre:hover::-webkit-scrollbar-thumb{background:rgba(207,233,227,.42)}
+
+/* Desktop drawer density: keep more of the live demo visible while the content
+   itself scrolls inside the settings/code stage. */
+@media(min-width:721px){
+  .kt-drawer-grip{height:24px}
+  .kt-drawer-grip::before{top:9px}
+  .kt-playground__drawer-head{padding:11px 20px 10px;gap:12px}
+  .kt-playground__viewstage>.kt-playground__groups{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px;padding:12px 16px 16px}
+  .kt-drawer-sheet.kt-density-compact .kt-playground__group,.kt-drawer-sheet .kt-playground__group{padding:0 12px}
+  .kt-drawer-sheet .kt-playground__legend{padding:9px 2px}
+  .kt-drawer-sheet.kt-density-compact .kt-playground__controls,.kt-drawer-sheet .kt-playground__controls{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px 14px;padding:10px 0 12px}
+  .kt-drawer-sheet .kt-playground__field{gap:5px 8px}
+}

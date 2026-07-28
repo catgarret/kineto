@@ -298,6 +298,7 @@ const sheetInstance = bottomSheetModule.create(sheetEl, {
   maxHeight: 700
 });
 const sheetHeader = sheetEl.querySelector('header');
+const sheetHandle = sheetEl.querySelector('.kt-sheet__handle');
 sheetHeader.dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, clientY: 500, button: 0 }));
 sheetHeader.dispatchEvent(new window.MouseEvent('pointermove', { bubbles: true, clientY: 400, button: 0 }));
 sheetHeader.dispatchEvent(new window.MouseEvent('pointerup', { bubbles: true, clientY: 400, button: 0 }));
@@ -308,6 +309,11 @@ sheetEl.querySelector('p').dispatchEvent(new window.MouseEvent('pointerdown', { 
 sheetEl.dispatchEvent(new window.MouseEvent('pointermove', { bubbles: true, clientY: 320, button: 0 }));
 sheetEl.dispatchEvent(new window.MouseEvent('pointerup', { bubbles: true, clientY: 320, button: 0 }));
 assert.equal(sheetEl.style.height, heightAfterHeaderDrag, 'body pointer gestures must not resize the sheet');
+sheetHandle.dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, clientY: 500, button: 0 }));
+sheetHandle.dispatchEvent(new window.MouseEvent('pointermove', { bubbles: true, clientY: 450, button: 0 }));
+sheetHandle.dispatchEvent(new window.MouseEvent('pointerup', { bubbles: true, clientY: 450, button: 0 }));
+assert.equal(sheetEl.style.height, '350px', 'the visible top handle must remain a resize surface in header mode');
+assert.deepEqual(resizeEvents.at(-1), { height: 350, source: 'handle' });
 sheetHeader.dispatchEvent(new window.MouseEvent('dblclick', { bubbles: true, button: 0 }));
 assert.equal(sheetEl.style.height, '', 'double click must restore automatic sheet height');
 sheetInstance.destroy();
@@ -327,13 +333,41 @@ const indicator = loadingIndicatorModule.create(indicatorHost, {
 });
 assert.equal(indicatorHost.querySelector('.kt-loading--terminal')?.textContent.includes('Loading'), false);
 assert.equal(indicatorHost.getAttribute('role'), 'progressbar');
+assert.equal(indicatorHost.querySelectorAll('.kt-loading-terminal__cell').length, 10, 'terminal meter must render individual animated cells');
 indicator.setProgress(64);
 assert.equal(indicator.progress, 64);
+assert.equal(indicatorHost.querySelectorAll('.kt-loading-terminal__cell.is-filled').length, 6, 'terminal meter must reflect progress in filled cells');
 assert.ok(indicatorEvents.includes(64), 'inline indicator must emit progress events');
 indicator.complete();
 await indicator.finished;
 indicator.destroy();
 indicatorHost.remove();
+
+const frameHost = document.createElement('span');
+document.body.appendChild(frameHost);
+const frameIndicator = loadingIndicatorModule.create(frameHost, {
+  type: 'terminal',
+  terminalStyle: 'braille',
+  frameInterval: 40
+});
+const firstFrame = frameHost.querySelector('.kt-loading-terminal__frame')?.textContent;
+await new Promise((resolve) => setTimeout(resolve, 55));
+const secondFrame = frameHost.querySelector('.kt-loading-terminal__frame')?.textContent;
+assert.notEqual(secondFrame, firstFrame, 'terminal frame spinner must advance through its preset');
+frameIndicator.pause();
+const pausedFrame = frameHost.querySelector('.kt-loading-terminal__frame')?.textContent;
+await new Promise((resolve) => setTimeout(resolve, 55));
+assert.equal(frameHost.querySelector('.kt-loading-terminal__frame')?.textContent, pausedFrame, 'paused terminal frame spinner must stop its timer');
+frameIndicator.destroy();
+frameHost.remove();
+
+const dualHost = document.createElement('span');
+document.body.appendChild(dualHost);
+const dualIndicator = loadingIndicatorModule.create(dualHost, { type: 'spinner', spinnerStyle: 'dual' });
+assert.equal(dualHost.querySelectorAll('.kt-loading-spinner__ring').length, 2, 'dual spinner must render two overlapping rings');
+assert.equal(dualHost.querySelector('.kt-loading')?.classList.contains('has-glow'), false, 'loading indicators must not enable glow by default');
+dualIndicator.destroy();
+dualHost.remove();
 
 // Cover Reveal option combinations that previously left an opaque black panel
 // or destroyed the target after a live settings rebuild.
