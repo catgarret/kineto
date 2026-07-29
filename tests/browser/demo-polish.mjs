@@ -120,8 +120,16 @@ try {
   );
 
   await page.setViewportSize({width:390,height:844});
-  await solutionTrigger.hover();
-  await page.waitForTimeout(260);
+  // Resizing while the pointer is already over this trigger does not emit a new
+  // pointerenter in headless Chromium. Open it explicitly so this assertion
+  // tests the responsive panel, not browser pointer bookkeeping.
+  if (await solutionTrigger.getAttribute('aria-expanded') !== 'true') {
+    await solutionTrigger.click();
+  }
+  await page.waitForFunction(
+    () => document.querySelector('[data-kt-mega-menu] [aria-expanded="true"]') !== null
+  );
+  await page.waitForTimeout(120);
   const mobileMega = await solutionTrigger.evaluate((trigger) => {
     const menu = trigger.closest('[data-kt-mega-menu]');
     const topList = menu.querySelector(':scope > ul');
