@@ -991,12 +991,6 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
       }
       .mega-menu-panel .kt-menu-mega>.kt-menu-panel a{white-space:normal}
     }
-    @media(max-width:520px){
-      .mega-menu-panel .kt-menu-mega>.kt-menu-panel>div{
-        grid-template-columns:repeat(2,minmax(0,1fr))!important;
-      }
-    }
-
 /* Demo-only +/− accordion indicator: compact, unboxed and readable. */
 .accordion-plus .kt-accordion-summary::after,
 .accordion-plus summary::after{content:"+"!important;display:grid!important;place-items:center;width:22px!important;height:22px!important;flex:0 0 22px!important;margin-left:auto;border:0!important;border-radius:0!important;background:transparent!important;color:var(--text);font:400 19px/1 var(--font-sans);-webkit-mask:none!important;mask:none!important;transform:none!important;transition:color .2s ease!important}
@@ -1258,3 +1252,11 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
        Applied by measurement, not nth-child arithmetic: a `.card.full` earlier in
        the grid consumes a whole row, which shifts every count-based guess. */
     .module-block-body.grid>.card.is-row-filler{grid-column:1/-1}
+
+    /* Keep this mobile override after the generated demo utility rules so the
+       three-column source grid cannot win the cascade in release Chromium. */
+    @media(max-width:520px){
+      .mega-menu-stage .mega-menu-panel .kt-menu-mega>.kt-menu-panel>div{
+        grid-template-columns:repeat(2,minmax(0,1fr))!important;
+      }
+    }
