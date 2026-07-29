@@ -2,7 +2,7 @@
 /* Interactive cubic-bezier editor (easing fields) */
 .kt-ease-editor{display:contents}
 .kt-ease-editor[hidden]{display:none}
-.kt-bz-svg{width:132px;height:132px;flex:0 0 auto;background:var(--panel2);border:1px solid var(--line);border-radius:10px;touch-action:none;overflow:visible}
+.kt-bz-svg{width:132px;height:132px;flex:0 0 auto;background:var(--panel2);border:1px solid var(--line);border-radius:10px;touch-action:none}
 .kt-bz-grid{stroke:color-mix(in srgb,var(--muted) 40%,transparent);stroke-width:1;stroke-dasharray:2 3}
 .kt-bz-guide{stroke:color-mix(in srgb,var(--accent) 45%,transparent);stroke-width:1.5}
 .kt-bz-curve{fill:none;stroke:var(--accent);stroke-width:2.5}

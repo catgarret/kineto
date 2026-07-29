@@ -671,6 +671,10 @@
     // a small graph floating in dead space. 9 is just over the handle radius, and
     // `.kt-bz-svg{overflow:visible}` covers the remainder, so the curve now uses
     // 88% of the box instead of 79%.
+    // pad keeps the r=7 handles inside the box. 16 wasted 10.7% a side and the plot
+    // read as a small chart in dead space; 0 pushed the handles and corner anchors
+    // outside the rounded border, which looked broken. 9 is the smallest value that
+    // still contains the handle stroke.
     const W = 150, H = 150, pad = 9;
     const ix = (t) => pad + t * (W - pad * 2);
     const iy = (t) => (H - pad) - t * (H - pad * 2);

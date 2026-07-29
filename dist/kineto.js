@@ -7417,20 +7417,25 @@ var cr = {
 			});
 			i?.finished.then(g).catch(g);
 		} else if (n === "zoom") {
-			let e = (e) => m(`background:${a};${e}`), t = e("left:0;right:0;top:0;height:50%;transform-origin:top;"), n = e("left:0;right:0;bottom:0;height:50%;transform-origin:bottom;"), i = e(`top:0;bottom:0;left:0;width:50%;transform-origin:left;background:${o};`), s = e(`top:0;bottom:0;right:0;width:50%;transform-origin:right;background:${o};`), c = "cubic-bezier(.22,.8,.3,1)", l = r * 1.25;
-			h(t, [{ transform: "scaleY(1)" }, { transform: "scaleY(0)" }], {
-				duration: l,
-				easing: c
-			}), h(n, [{ transform: "scaleY(1)" }, { transform: "scaleY(0)" }], {
-				duration: l,
-				easing: c
-			}), h(i, [{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
-				duration: l,
-				easing: c
+			let t = (e) => m(`background:${a};${e}`), n = t("left:0;right:0;top:0;height:50%;transform-origin:top;"), i = t("left:0;right:0;bottom:0;height:50%;transform-origin:bottom;"), s = t(`top:0;bottom:0;left:0;width:50%;transform-origin:left;background:${o};`), c = t(`top:0;bottom:0;right:0;width:50%;transform-origin:right;background:${o};`), l = "cubic-bezier(.22,.8,.3,1)", d = r * 1.25;
+			h(n, [{ transform: "scaleY(1)" }, { transform: "scaleY(0)" }], {
+				duration: d,
+				easing: l
+			}), h(i, [{ transform: "scaleY(1)" }, { transform: "scaleY(0)" }], {
+				duration: d,
+				easing: l
 			}), h(s, [{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
-				duration: l,
-				easing: c
-			}).finished.then(g).catch(g);
+				duration: d,
+				easing: l
+			}), h(c, [{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
+				duration: d,
+				easing: l
+			});
+			let f = (e === document.documentElement ? document.body : e).animate([{ transform: "scale(1.1)" }, { transform: "scale(1)" }], {
+				duration: d,
+				easing: l
+			});
+			u.add(f), f.finished.catch(() => {}).finally(() => u.delete(f)), f.finished.then(g).catch(g);
 		} else if (n === "iris") {
 			let e = m(`inset:0;background:${o};`), t = m("inset:0;"), n = (e) => `circle(${e} at 50% 50%)`;
 			h(t, [{ clipPath: n("150%") }, { clipPath: n("0%") }]), h(e, [

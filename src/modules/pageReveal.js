@@ -182,8 +182,21 @@ export default {
       play(top, [{ transform: 'scaleY(1)' }, { transform: 'scaleY(0)' }], { duration: grow, easing: ease });
       play(bottom, [{ transform: 'scaleY(1)' }, { transform: 'scaleY(0)' }], { duration: grow, easing: ease });
       play(left, [{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: grow, easing: ease });
-      play(right, [{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: grow, easing: ease })
-        .finished.then(done).catch(done);
+      play(right, [{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: grow, easing: ease });
+      // The content BEHIND the mask settles from 1.1 to 1 as the frame opens, so the
+      // page appears to fall back into place rather than just being uncovered. This
+      // is what makes the effect read as a zoom rather than a frame wipe.
+      // `fill` is deliberately left at its default (none) on this one: the host is
+      // the page itself, so the transform must evaporate the moment it finishes —
+      // a forwards fill would leave a stacking/containing-block change behind.
+      const host = el === document.documentElement ? document.body : el;
+      const zoomBack = host.animate(
+        [{ transform: 'scale(1.1)' }, { transform: 'scale(1)' }],
+        { duration: grow, easing: ease }
+      );
+      players.add(zoomBack);
+      zoomBack.finished.catch(() => {}).finally(() => players.delete(zoomBack));
+      zoomBack.finished.then(done).catch(done);
     } else if (effect === 'iris') {
       // A hard-edged aperture opens from the centre outwards. `clip-path`
       // clips what stays VISIBLE, so the cover is animated as a circle that
