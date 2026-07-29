@@ -577,10 +577,22 @@ try {
     const easeRect=rect(ease); const graphRect=rect(graph);
     const durationRect=rect(duration); const staggerRect=rect(stagger);
     const gap=Number.parseFloat(getComputedStyle(controls).columnGap)||0;
+    const viewBox=graph?.viewBox?.baseVal;
+    const graphMarks=[...graph.querySelectorAll('.kt-bz-handle,.kt-bz-anchor')].map(rect);
+    const graphRatio=graphRect.width/graphRect.height;
+    const viewBoxRatio=viewBox.width/viewBox.height;
     const result={
       found:Boolean(ease&&graph&&duration&&stagger&&close),
       easeTrackFit:Math.abs(easeRect.width-(durationRect.width+staggerRect.width+gap))<=3,
-      graphSquare:Math.abs(graphRect.width-graphRect.height)<=1,
+      graphWidthFit:Math.abs(graphRect.right-easeRect.right)<=2,
+      graphFixedHeight:Math.abs(graphRect.height-190)<=2,
+      graphWide:graphRect.width>graphRect.height,
+      graphViewBoxFit:Math.abs(graphRatio-viewBoxRatio)<=0.02,
+      graphMarksRound:graphMarks.every((mark)=>Math.abs(mark.width-mark.height)<=0.5),
+      graphMarksContained:graphMarks.every((mark)=>
+        mark.left>=graphRect.left-1&&mark.right<=graphRect.right+1&&
+        mark.top>=graphRect.top-1&&mark.bottom<=graphRect.bottom+1
+      ),
       closeBackground:getComputedStyle(close).backgroundColor
     };
     blurPanel.open=false;
@@ -604,7 +616,12 @@ try {
   });
   assert.equal(drawerVisuals.found,true,'Blur Text ease editor visual QA fixture was not found');
   assert.equal(drawerVisuals.easeTrackFit,true,'ease editor does not fill its two allocated grid tracks');
-  assert.equal(drawerVisuals.graphSquare,true,'ease graph must remain square');
+  assert.equal(drawerVisuals.graphWidthFit,true,'ease graph does not fill its available grid track');
+  assert.equal(drawerVisuals.graphFixedHeight,true,'ease graph must retain its fixed height');
+  assert.equal(drawerVisuals.graphWide,true,'ease graph should allow a wide rectangular layout');
+  assert.equal(drawerVisuals.graphViewBoxFit,true,'ease graph viewBox must match the rendered box ratio');
+  assert.equal(drawerVisuals.graphMarksRound,true,'ease graph handles and anchors must remain circular');
+  assert.equal(drawerVisuals.graphMarksContained,true,'ease graph handles and anchors must not be clipped');
   assert.ok(
     drawerVisuals.closeBackground==='rgba(0, 0, 0, 0)'||drawerVisuals.closeBackground==='transparent',
     `settings close button still has a background: ${drawerVisuals.closeBackground}`
