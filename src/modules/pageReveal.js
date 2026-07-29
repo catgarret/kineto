@@ -16,6 +16,9 @@ export default {
     const layers = [];
     const players = new Set();
     const timers = new Set();
+    // Effects that touch the host element itself (rather than only their own
+    // covers) register their undo here so both `done` and `destroy` restore it.
+    const cleanups = [];
     let finished = false;
 
     const later = (callback, ms) => {
@@ -23,11 +26,16 @@ export default {
       timers.add(id);
       return id;
     };
-    const layer = (styles) => {
+    // `parent` defaults to <body>, but any effect that transforms the page itself
+    // MUST mount its covers outside the transformed element: a transform makes
+    // the element a containing block for `position:fixed` descendants, so a
+    // cover parked in <body> would inherit the page's own scale and slide around
+    // with it instead of staying pinned to the viewport.
+    const layer = (styles, parent) => {
       const node = document.createElement('div');
       node.setAttribute('aria-hidden', 'true');
       node.style.cssText = `position:fixed;z-index:99997;pointer-events:none;background:${color};${styles}`;
-      document.body.appendChild(node);
+      (parent || document.body).appendChild(node);
       layers.push(node);
       return node;
     };
@@ -41,6 +49,7 @@ export default {
       if (finished) return;
       finished = true;
       layers.forEach((node) => node.remove());
+      cleanups.forEach((undo) => { try { undo(); } catch (_e) { /* already gone */ } });
       opts.onComplete?.();
     };
 
@@ -157,46 +166,49 @@ export default {
       }
       last?.finished.then(done).catch(done);
     } else if (effect === 'zoom') {
-      // A rectangular mask that GROWS from the exact centre of the viewport.
+      // The page grows back to 100% from the exact CENTRE OF THE VIEWPORT while
+      // the cover cross-fades away. Two earlier attempts were wrong for reasons
+      // worth recording, because both looked broken in very specific ways:
       //
-      // A single `clip-path: inset()` on one cover cannot do this — inset keeps the
-      // middle and trims the edges, so the page would open from the edges inward,
-      // which is the opposite of the reference (measured: the old version animated
-      // `inset(0) -> inset(50%)`, i.e. the cover shrank toward the centre).
-      // Four solid panels leave a real hole in the middle instead, and all four
-      // retreat together so the hole grows as a rectangle. Same construction as
-      // `center-slit`, but both axes open at once rather than in sequence.
+      // 1. Four retreating bands leaving a rectangular hole. That is a frame
+      //    wipe, not a zoom (the idea survives as `center-slit` / `iris`).
+      // 2. A literal port of reveal.js (`scale(.2)` -> `scale(1)` on the page,
+      //    `scale(16)` on the cover). reveal.js scales a viewport-sized <section>;
+      //    here the host is <body>, whose box is the whole DOCUMENT. So
+      //    `transform-origin` defaulted to 50% of the full page height — often
+      //    thousands of pixels below the fold — and the content visibly swung up
+      //    from the bottom. The cover was mounted inside that same transformed
+      //    <body>, which turned it into a scaled child instead of a fixed
+      //    overlay, and `scale(16)` on it made the scrollbar flicker.
       //
-      // Each panel also scales slightly past its edge, which is what gives the
-      // "zoom" read — the frame pushes out of the viewport instead of merely
-      // sliding away. `iris` covers the round variant of this idea.
-      const band = (styles) => layer(`background:${color};${styles}`);
-      const top = band('left:0;right:0;top:0;height:50%;transform-origin:top;');
-      const bottom = band('left:0;right:0;bottom:0;height:50%;transform-origin:bottom;');
-      const left = band(`top:0;bottom:0;left:0;width:50%;transform-origin:left;background:${color2};`);
-      const right = band(`top:0;bottom:0;right:0;width:50%;transform-origin:right;background:${color2};`);
-      // The side panels sit under the top/bottom pair, so they carry color2 and
-      // read as a thin frame while the rectangle opens.
-      const ease = 'cubic-bezier(.22,.8,.3,1)';
-      const grow = duration * 1.25;
-      play(top, [{ transform: 'scaleY(1)' }, { transform: 'scaleY(0)' }], { duration: grow, easing: ease });
-      play(bottom, [{ transform: 'scaleY(1)' }, { transform: 'scaleY(0)' }], { duration: grow, easing: ease });
-      play(left, [{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: grow, easing: ease });
-      play(right, [{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: grow, easing: ease });
-      // The content BEHIND the mask settles from 1.1 to 1 as the frame opens, so the
-      // page appears to fall back into place rather than just being uncovered. This
-      // is what makes the effect read as a zoom rather than a frame wipe.
-      // `fill` is deliberately left at its default (none) on this one: the host is
-      // the page itself, so the transform must evaporate the moment it finishes —
-      // a forwards fill would leave a stacking/containing-block change behind.
+      // The fixes are the two lines below: mount the cover on <html> (untouched
+      // by the transform) and pin `transform-origin` to the geometric centre of
+      // the VIEWPORT expressed in the host's own coordinates.
       const host = el === document.documentElement ? document.body : el;
-      const zoomBack = host.animate(
-        [{ transform: 'scale(1.1)' }, { transform: 'scale(1)' }],
-        { duration: grow, easing: ease }
-      );
-      players.add(zoomBack);
-      zoomBack.finished.catch(() => {}).finally(() => players.delete(zoomBack));
-      zoomBack.finished.then(done).catch(done);
+      const overlay = layer('inset:0;will-change:opacity;', document.documentElement);
+      const hostRect = host.getBoundingClientRect();
+      const originX = window.innerWidth / 2 - hostRect.left;
+      const originY = window.innerHeight / 2 - hostRect.top;
+      host.style.transformOrigin = `${originX}px ${originY}px`;
+      // Scaling UP toward 1 can never add scrollable overflow, so there is no
+      // scrollbar to flicker and no need to lock the page.
+      const startScale = 0.72;
+      const zoomEase = typeof opts.ease === 'string' && opts.ease ? easing : 'cubic-bezier(.22,1,.36,1)';
+      play(overlay, [{ opacity: 1 }, { opacity: 0 }], { duration, easing: zoomEase });
+      // `fill` stays at its default (none) so the transform — and the containing
+      // block it creates for fixed/sticky descendants — evaporates the instant
+      // the animation ends. The explicit origin is cleared in the same breath.
+      const zoomIn = host.animate([
+        { transform: `scale(${startScale})`, opacity: 0 },
+        { transform: 'scale(1)', opacity: 1 }
+      ], { duration, delay, easing: zoomEase });
+      players.add(zoomIn);
+      zoomIn.finished.catch(() => {}).finally(() => players.delete(zoomIn));
+      // Clearing the origin belongs in `done`, not in a second promise chain off
+      // the same animation: two independent chains have no ordering guarantee, so
+      // the property could still be set when `onComplete` fired.
+      cleanups.push(() => host.style.removeProperty('transform-origin'));
+      zoomIn.finished.then(done).catch(done);
     } else if (effect === 'iris') {
       // A hard-edged aperture opens from the centre outwards. `clip-path`
       // clips what stays VISIBLE, so the cover is animated as a circle that
@@ -391,6 +403,7 @@ export default {
         timers.forEach(clearTimeout);
         timers.clear();
         layers.forEach((node) => node.remove());
+        cleanups.forEach((undo) => { try { undo(); } catch (_e) { /* already gone */ } });
       }
     };
   },

@@ -7337,15 +7337,15 @@ var cr = {
 	reduced() {}
 }, lr = (e, t, n) => Math.min(n, Math.max(t, Number.isFinite(e) ? e : t)), ur = {
 	create(e, t) {
-		let n = t.effect || t.preset || "curtain", r = Math.max(.1, Number(t.duration ?? .9)) * 1e3, i = typeof t.ease == "string" && (t.ease.includes("(") || t.ease.startsWith("ease") || t.ease === "linear") ? t.ease : "cubic-bezier(.76,0,.24,1)", a = t.color || "#0a0908", o = t.color2 || a, s = Math.max(0, Number(t.delay ?? 0)) * 1e3, c = t.direction || "up", l = [], u = /* @__PURE__ */ new Set(), d = /* @__PURE__ */ new Set(), f = !1, p = (e, t) => {
+		let n = t.effect || t.preset || "curtain", r = Math.max(.1, Number(t.duration ?? .9)) * 1e3, i = typeof t.ease == "string" && (t.ease.includes("(") || t.ease.startsWith("ease") || t.ease === "linear") ? t.ease : "cubic-bezier(.76,0,.24,1)", a = t.color || "#0a0908", o = t.color2 || a, s = Math.max(0, Number(t.delay ?? 0)) * 1e3, c = t.direction || "up", l = [], u = /* @__PURE__ */ new Set(), d = /* @__PURE__ */ new Set(), f = [], p = !1, m = (e, t) => {
 			let n = setTimeout(() => {
 				d.delete(n), e();
 			}, t);
 			return d.add(n), n;
-		}, m = (e) => {
-			let t = document.createElement("div");
-			return t.setAttribute("aria-hidden", "true"), t.style.cssText = `position:fixed;z-index:99997;pointer-events:none;background:${a};${e}`, document.body.appendChild(t), l.push(t), t;
-		}, h = (e, t, n) => {
+		}, h = (e, t) => {
+			let n = document.createElement("div");
+			return n.setAttribute("aria-hidden", "true"), n.style.cssText = `position:fixed;z-index:99997;pointer-events:none;background:${a};${e}`, (t || document.body).appendChild(n), l.push(n), n;
+		}, g = (e, t, n) => {
 			let a = e.animate(t, {
 				duration: r,
 				delay: s,
@@ -7354,38 +7354,42 @@ var cr = {
 				...n
 			});
 			return u.add(a), a.finished.catch(() => {}).finally(() => u.delete(a)), a;
-		}, g = () => {
-			f || (f = !0, l.forEach((e) => e.remove()), t.onComplete?.());
+		}, _ = () => {
+			p || (p = !0, l.forEach((e) => e.remove()), f.forEach((e) => {
+				try {
+					e();
+				} catch {}
+			}), t.onComplete?.());
 		};
 		if (n === "split") if (c === "left" || c === "right" || t.axis === "x") {
-			let e = m("left:0;top:0;width:50%;height:100%;"), t = m(`right:0;top:0;width:50%;height:100%;background:${o};`);
-			h(e, [{ transform: "translateX(0)" }, { transform: "translateX(-100%)" }]), h(t, [{ transform: "translateX(0)" }, { transform: "translateX(100%)" }]).finished.then(g).catch(g);
+			let e = h("left:0;top:0;width:50%;height:100%;"), t = h(`right:0;top:0;width:50%;height:100%;background:${o};`);
+			g(e, [{ transform: "translateX(0)" }, { transform: "translateX(-100%)" }]), g(t, [{ transform: "translateX(0)" }, { transform: "translateX(100%)" }]).finished.then(_).catch(_);
 		} else {
-			let e = m("left:0;top:0;width:100%;height:50%;"), t = m(`left:0;bottom:0;width:100%;height:50%;background:${o};`);
-			h(e, [{ transform: "translateY(0)" }, { transform: "translateY(-100%)" }]), h(t, [{ transform: "translateY(0)" }, { transform: "translateY(100%)" }]).finished.then(g).catch(g);
+			let e = h("left:0;top:0;width:100%;height:50%;"), t = h(`left:0;bottom:0;width:100%;height:50%;background:${o};`);
+			g(e, [{ transform: "translateY(0)" }, { transform: "translateY(-100%)" }]), g(t, [{ transform: "translateY(0)" }, { transform: "translateY(100%)" }]).finished.then(_).catch(_);
 		}
 		else if (n === "blinds") {
 			let e = Math.max(3, Math.round(Number(t.count ?? 6))), n = Math.max(0, Number(t.stagger ?? .07)) * 1e3, r = null;
-			for (let t = 0; t < e; t += 1) r = h(m(`top:0;height:100%;left:${t / e * 100}%;width:${100 / e + .1}%;background:${t % 2 ? o : a};transform-origin:top;`), [{ transform: "scaleY(1)" }, { transform: "scaleY(0)" }], { delay: s + t * n });
-			r?.finished.then(g).catch(g);
+			for (let t = 0; t < e; t += 1) r = g(h(`top:0;height:100%;left:${t / e * 100}%;width:${100 / e + .1}%;background:${t % 2 ? o : a};transform-origin:top;`), [{ transform: "scaleY(1)" }, { transform: "scaleY(0)" }], { delay: s + t * n });
+			r?.finished.then(_).catch(_);
 		} else if (n === "diagonal") {
-			let e = Number(t.angle ?? -14), n = c === "left" ? "-120%" : "120%", i = (e) => m(`top:50%;left:50%;width:260vmax;height:260vmax;margin:-130vmax 0 0 -130vmax;background:${e};will-change:transform;`), l = i(o);
-			h(i(a), [{ transform: `rotate(${e}deg) translateX(0)` }, { transform: `rotate(${e}deg) translateX(${n})` }]), h(l, [{ transform: `rotate(${e}deg) translateX(0)` }, { transform: `rotate(${e}deg) translateX(${n})` }], { delay: s + r * .14 }).finished.then(g).catch(g);
-		} else if (n === "circle") h(m("width:200vmax;height:200vmax;top:50%;left:50%;margin:-100vmax 0 0 -100vmax;border-radius:50%;"), [{ transform: "scale(1)" }, { transform: "scale(0)" }]).finished.then(g).catch(g);
+			let e = Number(t.angle ?? -14), n = c === "left" ? "-120%" : "120%", i = (e) => h(`top:50%;left:50%;width:260vmax;height:260vmax;margin:-130vmax 0 0 -130vmax;background:${e};will-change:transform;`), l = i(o);
+			g(i(a), [{ transform: `rotate(${e}deg) translateX(0)` }, { transform: `rotate(${e}deg) translateX(${n})` }]), g(l, [{ transform: `rotate(${e}deg) translateX(0)` }, { transform: `rotate(${e}deg) translateX(${n})` }], { delay: s + r * .14 }).finished.then(_).catch(_);
+		} else if (n === "circle") g(h("width:200vmax;height:200vmax;top:50%;left:50%;margin:-100vmax 0 0 -100vmax;border-radius:50%;"), [{ transform: "scale(1)" }, { transform: "scale(0)" }]).finished.then(_).catch(_);
 		else if (n === "wipe") {
-			let e = m("inset:0;"), t = c === "left" ? "left" : c === "up" ? "top" : c === "down" ? "bottom" : "right";
+			let e = h("inset:0;"), t = c === "left" ? "left" : c === "up" ? "top" : c === "down" ? "bottom" : "right";
 			e.style.transformOrigin = t;
 			let n = t === "left" || t === "right" ? "scaleX" : "scaleY";
-			h(e, [{ transform: `${n}(1)` }, { transform: `${n}(0)` }]).finished.then(g).catch(g);
-		} else if (n === "fade") h(m("inset:0;"), [{ opacity: 1 }, { opacity: 0 }], {
+			g(e, [{ transform: `${n}(1)` }, { transform: `${n}(0)` }]).finished.then(_).catch(_);
+		} else if (n === "fade") g(h("inset:0;"), [{ opacity: 1 }, { opacity: 0 }], {
 			duration: r * 1.45,
 			easing: "ease"
-		}).finished.then(g).catch(g);
+		}).finished.then(_).catch(_);
 		else if (n === "checker") {
 			let e = Math.max(2, Math.round(Number(t.count ?? 8))), n = Math.max(2, Math.round(e * (window.innerHeight / Math.max(1, window.innerWidth)))), i = e * n, c = Array.from({ length: i }, (e, t) => t).sort(() => Math.random() - .5), l = Math.max(0, Number(t.stagger ?? .012)) * 1e3, u = null;
 			c.forEach((t, i) => {
-				let c = t % e, d = Math.floor(t / e), f = m(`left:${c / e * 100}%;top:${d / n * 100}%;width:${100 / e + .1}%;height:${100 / n + .1}%;background:${(c + d) % 2 ? o : a};`);
-				u = h(f, [{
+				let c = t % e, d = Math.floor(t / e), f = h(`left:${c / e * 100}%;top:${d / n * 100}%;width:${100 / e + .1}%;height:${100 / n + .1}%;background:${(c + d) % 2 ? o : a};`);
+				u = g(f, [{
 					transform: "scale(1)",
 					opacity: 1
 				}, {
@@ -7395,63 +7399,63 @@ var cr = {
 					duration: Math.max(160, r * .45),
 					delay: s + i * l
 				});
-			}), u?.finished.then(g).catch(g);
+			}), u?.finished.then(_).catch(_);
 		} else if (n === "strips") {
 			let e = Math.max(3, Math.round(Number(t.count ?? 9))), n = Array.from({ length: e }, (e, t) => t).sort(() => Math.random() - .5), i = Math.max(0, Number(t.stagger ?? .05)) * 1e3, l = c !== "down", u = null;
 			n.forEach((t, n) => {
-				let c = m(`top:0;height:100%;left:${t / e * 100}%;width:${100 / e + .1}%;background:${t % 2 ? o : a};`);
-				u = h(c, [{ transform: "translateY(0)" }, { transform: `translateY(${l ? "-102%" : "102%"})` }], {
+				let c = h(`top:0;height:100%;left:${t / e * 100}%;width:${100 / e + .1}%;background:${t % 2 ? o : a};`);
+				u = g(c, [{ transform: "translateY(0)" }, { transform: `translateY(${l ? "-102%" : "102%"})` }], {
 					duration: Math.max(200, r * .7),
 					delay: s + n * i
 				});
-			}), u?.finished.then(g).catch(g);
+			}), u?.finished.then(_).catch(_);
 		} else if (n === "shutter") {
 			let e = Math.max(3, Math.round(Number(t.count ?? 6))), n = Math.max(0, Number(t.stagger ?? .06)) * 1e3, r = null;
-			for (let t = 0; t < e; t += 1) r = h(m(`left:0;width:100%;top:${t / e * 100}%;height:${100 / e + .1}%;background:${t % 2 ? o : a};transform-origin:${t % 2 ? "right" : "left"} center;`), [{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], { delay: s + t * n });
-			r?.finished.then(g).catch(g);
+			for (let t = 0; t < e; t += 1) r = g(h(`left:0;width:100%;top:${t / e * 100}%;height:${100 / e + .1}%;background:${t % 2 ? o : a};transform-origin:${t % 2 ? "right" : "left"} center;`), [{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], { delay: s + t * n });
+			r?.finished.then(_).catch(_);
 		} else if (n === "columns") {
 			let e = Math.max(3, Math.round(Number(t.count ?? 6))), n = Math.max(0, Number(t.stagger ?? .055)) * 1e3, i = null;
-			for (let t = 0; t < e; t += 1) i = h(m(`top:0;height:100%;left:${t / e * 100}%;width:${100 / e + .1}%;background:${t % 2 ? o : a};`), [{ transform: "translateY(0)" }, { transform: `translateY(${t % 2 ? "102%" : "-102%"})` }], {
+			for (let t = 0; t < e; t += 1) i = g(h(`top:0;height:100%;left:${t / e * 100}%;width:${100 / e + .1}%;background:${t % 2 ? o : a};`), [{ transform: "translateY(0)" }, { transform: `translateY(${t % 2 ? "102%" : "-102%"})` }], {
 				duration: Math.max(220, r * .74),
 				delay: s + t * n
 			});
-			i?.finished.then(g).catch(g);
+			i?.finished.then(_).catch(_);
 		} else if (n === "zoom") {
-			let t = (e) => m(`background:${a};${e}`), n = t("left:0;right:0;top:0;height:50%;transform-origin:top;"), i = t("left:0;right:0;bottom:0;height:50%;transform-origin:bottom;"), s = t(`top:0;bottom:0;left:0;width:50%;transform-origin:left;background:${o};`), c = t(`top:0;bottom:0;right:0;width:50%;transform-origin:right;background:${o};`), l = "cubic-bezier(.22,.8,.3,1)", d = r * 1.25;
-			h(n, [{ transform: "scaleY(1)" }, { transform: "scaleY(0)" }], {
-				duration: d,
-				easing: l
-			}), h(i, [{ transform: "scaleY(1)" }, { transform: "scaleY(0)" }], {
-				duration: d,
-				easing: l
-			}), h(s, [{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
-				duration: d,
-				easing: l
-			}), h(c, [{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
-				duration: d,
-				easing: l
+			let n = e === document.documentElement ? document.body : e, a = h("inset:0;will-change:opacity;", document.documentElement), o = n.getBoundingClientRect(), c = window.innerWidth / 2 - o.left, l = window.innerHeight / 2 - o.top;
+			n.style.transformOrigin = `${c}px ${l}px`;
+			let d = typeof t.ease == "string" && t.ease ? i : "cubic-bezier(.22,1,.36,1)";
+			g(a, [{ opacity: 1 }, { opacity: 0 }], {
+				duration: r,
+				easing: d
 			});
-			let f = (e === document.documentElement ? document.body : e).animate([{ transform: "scale(1.1)" }, { transform: "scale(1)" }], {
-				duration: d,
-				easing: l
+			let p = n.animate([{
+				transform: "scale(0.72)",
+				opacity: 0
+			}, {
+				transform: "scale(1)",
+				opacity: 1
+			}], {
+				duration: r,
+				delay: s,
+				easing: d
 			});
-			u.add(f), f.finished.catch(() => {}).finally(() => u.delete(f)), f.finished.then(g).catch(g);
+			u.add(p), p.finished.catch(() => {}).finally(() => u.delete(p)), f.push(() => n.style.removeProperty("transform-origin")), p.finished.then(_).catch(_);
 		} else if (n === "iris") {
-			let e = m(`inset:0;background:${o};`), t = m("inset:0;"), n = (e) => `circle(${e} at 50% 50%)`;
-			h(t, [{ clipPath: n("150%") }, { clipPath: n("0%") }]), h(e, [
+			let e = h(`inset:0;background:${o};`), t = h("inset:0;"), n = (e) => `circle(${e} at 50% 50%)`;
+			g(t, [{ clipPath: n("150%") }, { clipPath: n("0%") }]), g(e, [
 				{ clipPath: n("150%") },
 				{
 					clipPath: n("150%"),
 					offset: .18
 				},
 				{ clipPath: n("0%") }
-			], { duration: r * 1.3 }).finished.then(g).catch(g);
+			], { duration: r * 1.3 }).finished.then(_).catch(_);
 		} else if (n === "data-mosaic") {
 			let e = (Math.floor(Number(t.seed ?? 20260729)) || 1) >>> 0, n = () => {
 				e = e + 1831565813 >>> 0;
 				let t = e;
 				return t = Math.imul(t ^ t >>> 15, t | 1), t ^= t + Math.imul(t ^ t >>> 7, t | 61), ((t ^ t >>> 14) >>> 0) / 4294967296;
-			}, i = lr(Number(t.density ?? 1), .3, 2), o = Math.max(4, Number(t.tileMin ?? 10)), c = Math.max(o * 2, Number(t.tileMax ?? 96)), l = lr(Number(t.largeTileChance ?? .15), 0, 1), u = lr(Number(t.smallTileChance ?? .55), 0, 1), d = Math.max(0, Number(t.noiseDuration ?? .18)) * 1e3, f = Math.max(0, Number(t.cleanupDuration ?? .35)) * 1e3, h = Math.max(400, r * 1.45), _ = Math.max(120, h - d - f), v = window.innerWidth, y = window.innerHeight, b = Math.max(0, Number(t.overscan ?? 0)), x = m(`inset:${-b}px;background:${a};`), S = [], C = Math.ceil((v + b * 2) / c), w = Math.ceil((y + b * 2) / c), T = Math.max(1, C * w), E = lr(Math.round(lr(560 * i, 80, 1400)) / T, 1, 36), D = Math.max(1, Math.min(6, Math.round(c / o)));
+			}, i = lr(Number(t.density ?? 1), .3, 2), o = Math.max(4, Number(t.tileMin ?? 10)), c = Math.max(o * 2, Number(t.tileMax ?? 96)), l = lr(Number(t.largeTileChance ?? .15), 0, 1), u = lr(Number(t.smallTileChance ?? .55), 0, 1), d = Math.max(0, Number(t.noiseDuration ?? .18)) * 1e3, f = Math.max(0, Number(t.cleanupDuration ?? .35)) * 1e3, p = Math.max(400, r * 1.45), g = Math.max(120, p - d - f), v = window.innerWidth, y = window.innerHeight, b = Math.max(0, Number(t.overscan ?? 0)), x = h(`inset:${-b}px;background:${a};`), S = [], C = Math.ceil((v + b * 2) / c), w = Math.ceil((y + b * 2) / c), T = Math.max(1, C * w), E = lr(Math.round(lr(560 * i, 80, 1400)) / T, 1, 36), D = Math.max(1, Math.min(6, Math.round(c / o)));
 			for (let e = 0; e < w; e += 1) for (let t = 0; t < C; t += 1) {
 				let r = n(), i = Math.sqrt(E), a = r < u ? Math.min(D, Math.max(2, Math.round(i * 1.6))) : r < u + (1 - u - l) ? Math.min(D, Math.max(1, Math.round(i))) : 1, o = c / a;
 				for (let r = 0; r < a; r += 1) for (let i = 0; i < a; i += 1) S.push({
@@ -7463,17 +7467,17 @@ var cr = {
 				});
 			}
 			S.sort((e, t) => e.weight - t.weight);
-			let O = S.map((e) => m(`left:${e.x}px;top:${e.y}px;width:${Math.ceil(e.w)}px;height:${Math.ceil(e.h)}px;background:${a};`));
+			let O = S.map((e) => h(`left:${e.x}px;top:${e.y}px;width:${Math.ceil(e.w)}px;height:${Math.ceil(e.h)}px;background:${a};`));
 			O.forEach((e, t) => {
 				let n = t / Math.max(1, O.length - 1);
-				p(() => {
+				m(() => {
 					e.style.opacity = "0", e.style.transition = "opacity 90ms linear";
-				}, s + d + n * _);
-			}), p(() => {
+				}, s + d + n * g);
+			}), m(() => {
 				x.style.transition = `opacity ${Math.round(d)}ms steps(6,end)`, x.style.opacity = "0";
-			}, s + d * .35), p(g, s + d + _ + f);
+			}, s + d * .35), m(_, s + d + g + f);
 		} else if (n === "center-slit") {
-			let e = Math.max(8, Number(t.lineWidth ?? 160)), n = Math.max(.5, Number(t.lineHeight ?? 1)), r = Math.max(.05, Number(t.verticalDuration ?? .65)) * 1e3, i = Math.max(.05, Number(t.horizontalDuration ?? .6)) * 1e3, c = e / 2, l = n / 2, u = "cubic-bezier(.65,0,.35,1)", d = "cubic-bezier(.87,0,.13,1)", f = (e) => m(`background:${a};${e}`), p = f(`left:0;right:0;top:0;height:calc(50% - ${l}px);transform-origin:top;`), _ = f(`left:0;right:0;bottom:0;height:calc(50% - ${l}px);transform-origin:bottom;`), v = f(`top:0;bottom:0;left:0;width:calc(50% - ${c}px);transform-origin:left;background:${o};`), y = f(`top:0;bottom:0;right:0;width:calc(50% - ${c}px);transform-origin:right;background:${o};`), b = t.reverse === !0, x = [
+			let e = Math.max(8, Number(t.lineWidth ?? 160)), n = Math.max(.5, Number(t.lineHeight ?? 1)), r = Math.max(.05, Number(t.verticalDuration ?? .65)) * 1e3, i = Math.max(.05, Number(t.horizontalDuration ?? .6)) * 1e3, c = e / 2, l = n / 2, u = "cubic-bezier(.65,0,.35,1)", d = "cubic-bezier(.87,0,.13,1)", f = (e) => h(`background:${a};${e}`), p = f(`left:0;right:0;top:0;height:calc(50% - ${l}px);transform-origin:top;`), m = f(`left:0;right:0;bottom:0;height:calc(50% - ${l}px);transform-origin:bottom;`), v = f(`top:0;bottom:0;left:0;width:calc(50% - ${c}px);transform-origin:left;background:${o};`), y = f(`top:0;bottom:0;right:0;width:calc(50% - ${c}px);transform-origin:right;background:${o};`), b = t.reverse === !0, x = [
 				{
 					transform: "scaleY(1)",
 					offset: 0
@@ -7498,35 +7502,35 @@ var cr = {
 			};
 			if (b) {
 				let e = [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], t = [{ transform: "scaleY(0)" }, { transform: "scaleY(1)" }];
-				h(v, e, {
+				g(v, e, {
 					duration: i,
 					easing: d,
 					delay: s
-				}), h(y, e, {
+				}), g(y, e, {
 					duration: i,
 					easing: d,
 					delay: s
-				}), h(p, t, {
+				}), g(p, t, {
 					duration: r,
 					easing: u,
 					delay: s + i
-				}), h(_, t, {
+				}), g(m, t, {
 					duration: r,
 					easing: u,
 					delay: s + i
-				}).finished.then(g).catch(g);
-			} else h(p, x, C), h(_, x.map((e) => ({ ...e })), C), h(v, S, w), h(y, S.map((e) => ({ ...e })), w).finished.then(g).catch(g);
+				}).finished.then(_).catch(_);
+			} else g(p, x, C), g(m, x.map((e) => ({ ...e })), C), g(v, S, w), g(y, S.map((e) => ({ ...e })), w).finished.then(_).catch(_);
 		} else if (n === "flash") {
 			let e = {
 				up: "0,-100%",
 				down: "0,100%",
 				left: "-100%,0",
 				right: "100%,0"
-			}[c] || "0,-100%", t = "cubic-bezier(.165,.84,.44,1)", n = m(`inset:0;background:${o};`);
-			h(m("inset:0;"), [{ transform: "translate3d(0,0,0)" }, { transform: `translate3d(${e},0)` }], {
+			}[c] || "0,-100%", t = "cubic-bezier(.165,.84,.44,1)", n = h(`inset:0;background:${o};`);
+			g(h("inset:0;"), [{ transform: "translate3d(0,0,0)" }, { transform: `translate3d(${e},0)` }], {
 				duration: r * 1.05,
 				easing: t
-			}), h(n, [
+			}), g(n, [
 				{ transform: "translate3d(0,0,0)" },
 				{
 					transform: "translate3d(0,0,0)",
@@ -7536,20 +7540,24 @@ var cr = {
 			], {
 				duration: r * 1.35,
 				easing: t
-			}).finished.then(g).catch(g);
+			}).finished.then(_).catch(_);
 		} else {
-			let e = m(`inset:0;background:${o};`), t = m("inset:0;"), n = c === "down" ? "bottom" : c === "left" ? "left" : c === "right" ? "right" : "top";
+			let e = h(`inset:0;background:${o};`), t = h("inset:0;"), n = c === "down" ? "bottom" : c === "left" ? "left" : c === "right" ? "right" : "top";
 			t.style.transformOrigin = n, e.style.transformOrigin = n;
 			let i = n === "left" || n === "right" ? "scaleX" : "scaleY";
-			h(t, [{ transform: `${i}(1)` }, { transform: `${i}(0)` }]), h(e, [{ transform: `${i}(1)` }, { transform: `${i}(0)` }], { delay: s + r * .12 }).finished.then(g).catch(g);
+			g(t, [{ transform: `${i}(1)` }, { transform: `${i}(0)` }]), g(e, [{ transform: `${i}(1)` }, { transform: `${i}(0)` }], { delay: s + r * .12 }).finished.then(_).catch(_);
 		}
-		return p(g, s + r * 2 + 600), {
+		return m(_, s + r * 2 + 600), {
 			el: e,
 			type: "pageReveal",
 			pause: () => u.forEach((e) => e.pause()),
 			resume: () => u.forEach((e) => e.play()),
 			destroy: () => {
-				u.forEach((e) => e.cancel()), u.clear(), d.forEach(clearTimeout), d.clear(), l.forEach((e) => e.remove());
+				u.forEach((e) => e.cancel()), u.clear(), d.forEach(clearTimeout), d.clear(), l.forEach((e) => e.remove()), f.forEach((e) => {
+					try {
+						e();
+					} catch {}
+				});
 			}
 		};
 	},

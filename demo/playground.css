@@ -242,7 +242,11 @@
 .kt-drawer-sheet .kt-ease-field>.kt-field-cap{grid-area:cap;margin-bottom:0}
 .kt-drawer-sheet .kt-ease-field>.kt-ease-select{grid-area:select;width:100%;box-sizing:border-box;max-width:none}
 .kt-drawer-sheet .kt-ease-field>.kt-ease-custom{grid-area:custom;width:100%;box-sizing:border-box;max-width:none}
-.kt-drawer-sheet .kt-ease-field .kt-bz-svg{grid-area:graph;width:100%;height:auto;min-height:0;aspect-ratio:1;align-self:start}
+/* Fixed height, fluid width. `aspect-ratio:1` used to force the box square, so
+   using a wider column meant the plot grew in BOTH directions instead of just
+   stretching. The editor's viewBox now tracks the element's pixel box (see
+   fitViewBox in playground.js), so a non-square box is drawn correctly. */
+.kt-drawer-sheet .kt-ease-field .kt-bz-svg{grid-area:graph;width:100%;height:var(--kt-bz-h,190px);min-height:0;align-self:start}
 .kt-drawer-sheet .kt-ease-field .kt-bz-nums{grid-area:nums;align-self:start;width:100%;margin-bottom:2px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 14px}
 /* x1/y1/x2/y2 fill their cell evenly (fixed label column + input fills the rest)
    so both columns match and there's no empty space in the box. */
@@ -439,9 +443,13 @@
      otherwise this narrow layout silently lost the cascade and the numbers
      stayed crushed next to the graph. */
   .kt-drawer-sheet .kt-playground__field.kt-ease-field{grid-template-columns:minmax(0,1fr);grid-template-areas:"cap" "select" "custom" "graph" "nums" "scrub" "tools"}
-  /* Stacked layout: the curve fills the column but is capped so it can never
-     become a giant square. width (not max-height) keeps aspect-ratio honest. */
-  .kt-drawer-sheet .kt-playground__field.kt-ease-field .kt-bz-svg{min-height:132px;width:min(100%,200px);max-width:none;justify-self:start}
+  /* Stacked layout: the curve takes the FULL column width at the same height as
+     the side-by-side layout. The old `min(100%,200px)` cap left ~34% of the
+     column empty to the right of the plot (measured: 200px of graph in a 304px
+     column), which read as a small chart parked in dead space. Height is fixed
+     here too, so widening the column stretches the plot instead of inflating it
+     into a giant square. */
+  .kt-drawer-sheet .kt-playground__field.kt-ease-field .kt-bz-svg{height:var(--kt-bz-h,190px);min-height:0;width:100%;max-width:none;justify-self:stretch}
   .kt-drawer-sheet .kt-playground__field.kt-ease-field .kt-bz-nums{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @container (max-width: 250px){

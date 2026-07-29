@@ -666,27 +666,30 @@
   const saveEasing = (name, value) => { try { const all = JSON.parse(localStorage.getItem('kt-easings') || '{}'); all[name] = value; localStorage.setItem('kt-easings', JSON.stringify(all)); } catch (_e) { /* storage blocked */ } };
   const mountBezierEditor = (host, initial, onChange) => {
     let pts = (easingBezier(initial) || [0.25, 0.1, 0.25, 1]).slice();
-    // pad reserves room inside the viewBox so the r=7 handles do not clip at the
-    // corners. At 16 that ate 10.7% of the box on every side and the plot read as
-    // a small graph floating in dead space. 9 is just over the handle radius, and
-    // `.kt-bz-svg{overflow:visible}` covers the remainder, so the curve now uses
-    // 88% of the box instead of 79%.
-    // pad keeps the r=7 handles inside the box. 16 wasted 10.7% a side and the plot
-    // read as a small chart in dead space; 0 pushed the handles and corner anchors
-    // outside the rounded border, which looked broken. 9 is the smallest value that
-    // still contains the handle stroke.
-    const W = 150, H = 150, pad = 9;
+    // The plot box is NOT a fixed square. Earlier revisions pinned `W = H = 150`
+    // and let CSS scale the whole SVG, which meant the only way to use a wider
+    // column was to grow the box in both directions — the curve got physically
+    // bigger instead of just wider, and capping the width left dead space on the
+    // right instead. W/H now track the element's real pixel size (see the
+    // ResizeObserver below), so the drawing surface stretches and squashes with
+    // the column while the handles stay perfect circles at their authored radius.
+    //
+    // pad keeps the r=7 handles inside the rounded border. 16 wasted 10.7% a
+    // side; 0 pushed the handles and corner anchors outside the border. 9 is the
+    // smallest value that still contains the handle stroke.
+    const pad = 9;
+    let W = 150, H = 150;
     const ix = (t) => pad + t * (W - pad * 2);
     const iy = (t) => (H - pad) - t * (H - pad * 2);
     const xInv = (px) => clampNum((px - pad) / (W - pad * 2), 0, 1);
     const yInv = (py) => ((H - pad) - py) / (H - pad * 2);
     host.innerHTML = `<svg class="kt-bz-svg" viewBox="0 0 ${W} ${H}" role="group" aria-label="Cubic bezier editor">
-      <line class="kt-bz-grid" x1="${ix(0)}" y1="${iy(0)}" x2="${ix(1)}" y2="${iy(0)}"/>
-      <line class="kt-bz-grid" x1="${ix(0)}" y1="${iy(1)}" x2="${ix(1)}" y2="${iy(1)}"/>
+      <line class="kt-bz-grid" data-grid="0"/>
+      <line class="kt-bz-grid" data-grid="1"/>
       <line class="kt-bz-guide" data-g="1"/><line class="kt-bz-guide" data-g="2"/>
       <path class="kt-bz-curve"/>
-      <circle class="kt-bz-anchor" cx="${ix(0)}" cy="${iy(0)}" r="3"/>
-      <circle class="kt-bz-anchor" cx="${ix(1)}" cy="${iy(1)}" r="3"/>
+      <circle class="kt-bz-anchor" data-a="0" r="3"/>
+      <circle class="kt-bz-anchor" data-a="1" r="3"/>
       <circle class="kt-bz-handle" data-p="1" r="7" tabindex="0" role="slider" aria-label="Control point 1"/>
       <circle class="kt-bz-handle" data-p="2" r="7" tabindex="0" role="slider" aria-label="Control point 2"/>
     </svg>
@@ -704,6 +707,8 @@
     const curve = host.querySelector('.kt-bz-curve');
     const handles = [...host.querySelectorAll('.kt-bz-handle')];
     const guides = [host.querySelector('[data-g="1"]'), host.querySelector('[data-g="2"]')];
+    const gridLines = [...host.querySelectorAll('.kt-bz-grid')];
+    const anchors = [...host.querySelectorAll('.kt-bz-anchor')];
     const nums = [...host.querySelectorAll('.kt-bz-nums input')];
     const dot = host.querySelector('.kt-bz-dot');
     const status = host.querySelector('.kt-bz-status');
@@ -735,6 +740,16 @@
       } catch (_e) { /* invalid curve — skip preview */ }
     };
     const render = (emit) => {
+      // Grid and end anchors are laid out here rather than baked into the markup
+      // because W/H change with the column width.
+      gridLines.forEach((line, gi) => {
+        const y = iy(gi);
+        line.setAttribute('x1', ix(0)); line.setAttribute('y1', y);
+        line.setAttribute('x2', ix(1)); line.setAttribute('y2', y);
+      });
+      anchors.forEach((anchor, ai) => {
+        anchor.setAttribute('cx', ix(ai)); anchor.setAttribute('cy', iy(ai));
+      });
       curve.setAttribute('d', `M ${ix(0)} ${iy(0)} C ${ix(pts[0])} ${iy(pts[1])} ${ix(pts[2])} ${iy(pts[3])} ${ix(1)} ${iy(1)}`);
       handles[0].setAttribute('cx', ix(pts[0])); handles[0].setAttribute('cy', iy(pts[1]));
       handles[1].setAttribute('cx', ix(pts[2])); handles[1].setAttribute('cy', iy(pts[3]));
@@ -801,8 +816,33 @@
       });
       say(`${ui('easeSaved')}: ${name}`);
     });
+    // The viewBox tracks the element's real pixel box, so the plot always fills
+    // the column exactly — wider column, wider plot; narrower column, narrower
+    // plot — without the box growing in the other axis and without a fixed cap
+    // leaving dead space on the right. Keeping the viewBox at 1:1 with pixels
+    // also means stroke widths and handle radii stay at their authored size
+    // instead of being scaled by the SVG.
+    const fitViewBox = () => {
+      const w = Math.round(svg.clientWidth);
+      const h = Math.round(svg.clientHeight);
+      // A hidden panel measures 0; skip until it has a real box.
+      if (w < pad * 2 + 4 || h < pad * 2 + 4) return;
+      if (w === W && h === H) return;
+      W = w; H = h;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      render(false);
+    };
+    let ro = null;
+    if (typeof ResizeObserver === 'function') {
+      ro = new ResizeObserver(fitViewBox);
+      ro.observe(svg);
+    }
     render(false);
-    return { set(value) { const b = easingBezier(value); if (b) { pts = b.slice(); render(false); } }, destroy() { previewAnim?.cancel(); } };
+    fitViewBox();
+    return {
+      set(value) { const b = easingBezier(value); if (b) { pts = b.slice(); render(false); } },
+      destroy() { previewAnim?.cancel(); ro?.disconnect(); }
+    };
   };
   const clampNum = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
   // ── Role-based option grouping (audit B-4 / J-10) ──────────────────────────
