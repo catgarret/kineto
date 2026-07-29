@@ -120,22 +120,62 @@ try {
   );
 
   await page.setViewportSize({width:390,height:844});
+  // Exactly one visible trigger must match, or the assertions below could be
+  // reading a hidden duplicate from one of the other GNB tabs. Those tabs carry
+  // `hidden`, so their panels never lay out and `grid-template-columns` would
+  // come back as the *specified* value instead of the used one.
+  assert.equal(await solutionTrigger.count(), 1,
+    'exactly one visible 솔루션 trigger must match, otherwise the mobile assertions read a hidden duplicate');
   // Resizing while the pointer is already over this trigger does not emit a new
   // pointerenter in headless Chromium. Open it explicitly so this assertion
   // tests the responsive panel, not browser pointer bookkeeping.
   if (await solutionTrigger.getAttribute('aria-expanded') !== 'true') {
     await solutionTrigger.click();
   }
-  await page.waitForFunction(
-    () => document.querySelector('[data-kt-mega-menu] [aria-expanded="true"]') !== null
-  );
-  await page.waitForTimeout(120);
+  // `aria-expanded` flips before the panel has been laid out, and a fixed
+  // `waitForTimeout` is not a synchronisation primitive — on a slow CI runner it
+  // expires first. That is the whole failure: reading a panel that is still
+  // `hidden` returns rect 0x0, and `getComputedStyle` on a `display:none`
+  // element yields the COMPUTED value `repeat(2, minmax(0px, 1fr))` rather than
+  // the used value (measured: `149px 149px`). Splitting that on spaces counts 3, so
+  // the column assertion failed with a plausible-looking `3` while the CSS was
+  // correct all along. Wait for the specific panel AND its grid child to have a
+  // real box before measuring anything.
+  await solutionTrigger.evaluate((trigger) => new Promise((resolve, reject) => {
+    const deadline = performance.now() + 10000;
+    const check = () => {
+      const panel = trigger.closest('li').querySelector(':scope > .kt-menu-panel');
+      const grid = panel?.firstElementChild;
+      const pr = panel?.getBoundingClientRect();
+      const gr = grid?.getBoundingClientRect();
+      if (trigger.getAttribute('aria-expanded') === 'true'
+        && panel && !panel.hidden
+        && getComputedStyle(panel).display !== 'none'
+        && pr.width > 0 && pr.height > 0
+        && gr.width > 0 && gr.height > 0) { resolve(); return; }
+      if (performance.now() > deadline) {
+        reject(new Error(`mobile mega panel never laid out: ${JSON.stringify({
+          expanded: trigger.getAttribute('aria-expanded'),
+          hidden: panel?.hidden,
+          display: panel && getComputedStyle(panel).display,
+          panelRect: pr && [pr.width, pr.height],
+          gridRect: gr && [gr.width, gr.height]
+        })}`));
+        return;
+      }
+      requestAnimationFrame(check);
+    };
+    check();
+  }));
   const mobileMega = await solutionTrigger.evaluate((trigger) => {
     const menu = trigger.closest('[data-kt-mega-menu]');
     const topList = menu.querySelector(':scope > ul');
     const panel = trigger.closest('li').querySelector(':scope > .kt-menu-panel');
+    const grid = panel.firstElementChild;
     const rect = panel.getBoundingClientRect();
-    const columns = getComputedStyle(panel.firstElementChild).gridTemplateColumns.split(' ').length;
+    const gridRect = grid.getBoundingClientRect();
+    const rawColumns = getComputedStyle(grid).gridTemplateColumns;
+    const columns = rawColumns.split(' ').length;
     return {
       responsiveClass: menu.classList.contains('kt-menu--responsive-scroll'),
       topOverflowX: getComputedStyle(topList).overflowX,
@@ -147,9 +187,32 @@ try {
       viewportWidth: innerWidth,
       viewportHeight: innerHeight,
       columns,
+      // Kept in the payload so a future failure says WHY: a `repeat(...)` string
+      // here means the panel was not laid out, which is a synchronisation bug,
+      // not a stylesheet bug.
+      rawColumns,
+      expanded: trigger.getAttribute('aria-expanded'),
+      panelHidden: panel.hidden,
+      panelDisplay: getComputedStyle(panel).display,
+      gridWidth: gridRect.width,
+      gridHeight: gridRect.height,
       overflowY: getComputedStyle(panel).overflowY
     };
   });
+  // Read the state first, so the column assertion can never be satisfied or
+  // defeated by an unlaid-out panel again.
+  assert.equal(mobileMega.expanded, 'true',
+    `mobile mega trigger must still be expanded when measured: ${JSON.stringify(mobileMega)}`);
+  assert.equal(mobileMega.panelHidden, false,
+    `mobile mega panel must not be hidden when measured: ${JSON.stringify(mobileMega)}`);
+  assert.notEqual(mobileMega.panelDisplay, 'none',
+    `mobile mega panel must be displayed when measured: ${JSON.stringify(mobileMega)}`);
+  assert.ok(mobileMega.width > 0 && mobileMega.height > 0,
+    `mobile mega panel must have a real box when measured: ${JSON.stringify(mobileMega)}`);
+  assert.ok(mobileMega.gridWidth > 0 && mobileMega.gridHeight > 0,
+    `mobile mega grid must have a real box when measured: ${JSON.stringify(mobileMega)}`);
+  assert.ok(!/repeat\(/.test(mobileMega.rawColumns),
+    `grid-template-columns must be a resolved used value, not a specified one — an unlaid-out panel returns "repeat(...)" whose space-split length is misleading: ${JSON.stringify(mobileMega)}`);
   assert.ok(mobileMega.left >= -1 && mobileMega.right <= mobileMega.viewportWidth + 1,
     `mobile mega menu must remain inside the viewport: ${JSON.stringify(mobileMega)}`);
   assert.ok(mobileMega.height <= mobileMega.viewportHeight * .6 + 1,
