@@ -1,0 +1,1260 @@
+/* Kineto demo styles — split from index.html (see main.js for behavior) */
+    html.kt-preload [data-kt-reveal],html.kt-preload [data-kt-text-reveal],html.kt-preload [data-kt-blur-text],html.kt-preload [data-kt-text-split],html.kt-preload [data-kt-text-transition],html.kt-preload .reveal-demo-card{visibility:hidden!important}
+    :root{
+      --bg:#0d0e12; --panel:#15171c; --panel2:#1c1f26; --text:#f2f3f7; --muted:#8f97a6;
+      --line:#262a32; --accent:#ff5b1c; --accent2:#ffd166;
+      --shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 14px 40px rgba(0,0,0,.35);
+      --shadow-hover:0 1px 0 rgba(255,255,255,.05) inset, 0 22px 60px rgba(0,0,0,.5);
+      --r-card:14px; --r-stage:10px;
+      /* Spacing contract — a single limited scale (4·8·12·16·20·24·32·48·64)
+         so gaps/margins stop drifting to arbitrary one-off numbers (audit E-1). */
+      --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-12:48px; --sp-16:64px;
+      --font-sans:"Wanted Sans Variable","Wanted Sans",Pretendard,Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+      --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    }
+    /* Demo utility classes — replace the most-repeated inline styles with named
+       tokens so spacing/appearance stay on the scale (audit E-1). */
+    .u-mb-3{margin:0 0 var(--sp-3)}
+    .u-section-head{margin:88px 0 var(--sp-5)}
+    .u-lead-muted{font-size:1.4rem;color:var(--muted)}
+    .u-note{margin:0;padding:14px;color:var(--muted);font-size:14px}
+    .u-note-2{padding:16px 4px 4px;color:var(--muted);font-size:14px}
+    .u-card-title{font-weight:700;padding:var(--sp-3) 14px}
+    .u-panel{border:1px solid var(--line);border-radius:10px;background:var(--panel2);overflow:hidden}
+    .u-panel.kt-open>.u-note,.u-panel[open]>.u-note,
+    .u-panel.kt-open>.kt-accordion-panel>.u-note,
+    .u-panel[open]>.kt-accordion-panel>.u-note{margin:0;padding-block:14px}
+    .u-avatar{width:88px;height:88px;object-fit:cover;border-radius:50%;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+    .u-media-cover{width:100%;height:100%;object-fit:cover;display:block}
+    .u-media-cover-r{width:100%;height:100%;object-fit:cover;border-radius:14px;display:block}
+    .u-fill{width:100%;height:100%}
+    .u-p0{padding:0}
+    .u-amber{color:#ffd166}
+    .u-link-plain{text-decoration:none;color:inherit}
+    html.light{
+      --bg:#f6f5f2; --panel:#ffffff; --panel2:#edecea; --text:#16130f; --muted:#6f6a61;
+      --line:#e4e1da; --accent:#e14e12; --accent2:#c99516;
+      --shadow:0 1px 2px rgba(28,22,12,.05), 0 12px 34px rgba(28,22,12,.07);
+      --shadow-hover:0 2px 4px rgba(28,22,12,.06), 0 20px 50px rgba(28,22,12,.11);
+    }
+    *{box-sizing:border-box}
+    /* Reserve the scrollbar's space always, so toggling overflow:hidden (intro
+       lock, sitemap, lightbox) doesn't change the page width and jolt the layout. */
+    /* Base bg on <html> too, so iOS safe-area / overscroll regions (notch, home
+       bar) show the page colour instead of white. */
+    html{scroll-behavior:auto;overflow-anchor:none;overflow-x:clip;background:var(--bg)}
+    /* Reserve scrollbar space only where there's a classic scrollbar (desktop).
+       On touch (overlay scrollbars) it's unneeded and can jitter scrolling. */
+    @media(pointer:fine){html{scrollbar-gutter:stable}}
+    body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 var(--font-sans);overflow-anchor:none;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-x:clip;max-width:100%}
+    button,a{font:inherit}
+    ::selection{background:color-mix(in srgb,var(--accent) 24%,transparent)}
+
+    .top-progress{position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));transform-origin:left;z-index:2}
+    :root{--kt-progress-color:var(--accent)}
+    .kt-progress-ring{--kt-progress-ring-bg:color-mix(in srgb,var(--panel) 82%,transparent);backdrop-filter:blur(10px)}
+    /* Only the FLOATING ring (appended straight to <body>) gets lifted above the
+       bottom bar — scoping to body> keeps this off the in-card static demo ring,
+       which is position:relative and would otherwise be shoved up ~78px. */
+    @media(max-width:1080px){body>.kt-progress-ring{bottom:calc(112px + env(safe-area-inset-bottom))!important}}
+    .site-header{position:fixed;z-index:1000;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:calc(13px + env(safe-area-inset-top)) max(26px,env(safe-area-inset-right)) 13px max(26px,env(safe-area-inset-left));background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent);color:var(--text)}
+    /* buttons don't inherit color by default (they use the black system
+       ButtonText), so the brand text went invisible in dark mode — force it. */
+    .brand{font-weight:900;letter-spacing:-.04em;display:inline-flex;align-items:center;gap:9px;background:none;border:0;padding:0;cursor:pointer;font-family:inherit;color:var(--text)}
+    .brand-mark{width:20px;height:20px;flex:0 0 auto;border-radius:6px;display:block}
+    .header-actions{display:flex;gap:8px;align-items:center}
+    .theme-switch{position:relative;display:inline-flex;align-items:center;justify-content:space-between;width:58px;height:30px;padding:0 7px;border:1px solid var(--line);border-radius:99px;background:var(--panel2);cursor:pointer;transition:border-color .18s ease,background-color .18s ease}
+    .theme-switch svg,.theme-switch i{font-size:15px;line-height:1;position:relative;z-index:1;transition:color .18s ease,opacity .18s ease}
+    /* 무채색: 현재 모드 쪽 아이콘만 진하게. 다크=달, 라이트=해 */
+    .theme-switch .ts-sun{color:var(--muted);opacity:.45}
+    .theme-switch .ts-moon{color:var(--text);opacity:1}
+    html.light .theme-switch .ts-sun{color:var(--text);opacity:1}
+    html.light .theme-switch .ts-moon{color:var(--muted);opacity:.45}
+    .ts-knob{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:color-mix(in srgb,var(--text) 30%,var(--panel));border:1px solid color-mix(in srgb,var(--text) 22%,var(--line));box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .22s cubic-bezier(.3,.7,.3,1);transform:translateX(28px)}
+    html.light .theme-switch .ts-knob{transform:translateX(0)}
+    /* Light mode: the sliding knob (over the sun) goes white — the track stays
+       its original grey. */
+    html.light .theme-switch .ts-knob{background:#fff;border-color:color-mix(in srgb,var(--text) 14%,var(--line))}
+    .theme-switch:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+    a.btn{text-decoration:none;display:inline-flex;align-items:center;gap:7px}
+    .btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:9px 14px;border-radius:10px;cursor:pointer;font-weight:600;font-size:13.5px;transition:border-color .16s ease,background-color .16s ease,transform .16s ease}
+    .btn:hover{border-color:color-mix(in srgb,var(--accent) 60%,var(--line))}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+    .btn.primary:hover{filter:brightness(1.06)}
+    select.btn{appearance:none;-webkit-appearance:none;padding-right:32px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%238f97a6' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");background-repeat:no-repeat;background-position:right 12px center}
+
+    .hero{min-height:100svh;display:grid;place-items:center;padding:110px 24px 90px;position:relative;overflow:hidden}
+    .hero::before{content:"";position:absolute;width:72vw;height:72vw;max-width:860px;max-height:860px;border-radius:50%;background:radial-gradient(circle,var(--accent) 0,transparent 62%);opacity:.1;filter:blur(24px)}
+    .hero::after{content:"";position:absolute;inset:auto 0 0 0;height:180px;background:linear-gradient(transparent,var(--bg))}
+    .hero-inner{position:relative;text-align:center;width:100%;max-width:940px;min-width:0}
+    .eyebrow{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border:1px solid var(--line);border-radius:99px;color:var(--muted);background:var(--panel);font-size:12.5px;font-weight:600;letter-spacing:.01em}
+    .eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent2)}
+    h1{font-size:clamp(3rem,7vw,6.2rem);line-height:.9;letter-spacing:-.075em;margin:30px 0 22px}
+    .hero-title{background:linear-gradient(105deg,var(--text) 0%,var(--text) 34%,var(--accent) 47%,#ffd166 53%,var(--text) 66%,var(--text) 100%);background-size:230% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:kt-hero-flow 5.2s linear infinite;filter:drop-shadow(0 0 30px color-mix(in srgb,var(--accent) 28%,transparent))}
+    @keyframes kt-hero-flow{from{background-position:215% 0}to{background-position:-15% 0}}
+    @media(prefers-reduced-motion:reduce){.hero-title{animation:none}}
+    .lead{font-size:clamp(1rem,2.2vw,1.3rem);color:var(--muted);max-width:720px;margin:0 auto;line-height:1.7;word-break:keep-all;text-wrap:pretty}
+    .lead-line{display:block}
+    .hero-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:38px}
+    .hero-chips{list-style:none;display:flex;justify-content:center;flex-wrap:wrap;gap:9px;margin:20px 0 0;padding:0}
+    .hero-chips li{position:relative;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:color-mix(in srgb,var(--panel) 78%,transparent);color:var(--muted);font:600 11.5px/1 var(--font-sans);letter-spacing:.01em;word-break:keep-all;cursor:help;transition:color .15s ease,border-color .15s ease}
+    .hero-chips li:hover,.hero-chips li:focus-visible{color:var(--text);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+    .hero-chips li[data-tip]:hover::after,.hero-chips li[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;left:50%;top:calc(100% + 10px);transform:translateX(-50%);width:max-content;max-width:250px;padding:10px 13px;border-radius:10px;background:#101318;border:1px solid #2b313d;color:#dfe5ef;font:500 11.5px/1.6 var(--font-sans);letter-spacing:0;white-space:normal;word-break:keep-all;white-space:pre-line;text-align:center;z-index:80;box-shadow:0 14px 34px rgba(0,0,0,.45);pointer-events:none}
+    .hero-chips li[data-tip]:hover::before,.hero-chips li[data-tip]:focus-visible::before{content:"";position:absolute;left:50%;top:calc(100% + 6px);width:9px;height:9px;transform:translateX(-50%) rotate(45deg);background:#101318;border-left:1px solid #2b313d;border-top:1px solid #2b313d;z-index:81;pointer-events:none}
+    .hero-meta{margin-top:50px}
+    .hero-support{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin:0 0 16px;color:var(--muted);font:600 12px/1 var(--font-mono);letter-spacing:.01em}
+    .hero-support svg{opacity:.7}
+    .hero-support i{font-size:14px;opacity:.75;color:var(--accent)}
+    .hero-support em{font-style:normal;color:color-mix(in srgb,var(--muted) 70%,transparent)}
+    .hero-sep{width:3px;height:3px;border-radius:50%;background:var(--line);margin:0 4px}
+    .install-box{max-width:min(640px,100%);margin:0 auto;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--panel) 88%,transparent);overflow:hidden;text-align:left}
+    .install-row{display:flex;align-items:center;gap:10px;padding:10px 12px}
+    .install-row[hidden]{display:none}
+    .install-row+.install-row{border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+    .install-tag{flex:0 0 auto;min-width:38px;text-align:center;font:600 9.5px/1 var(--font-mono);letter-spacing:.1em;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));border-radius:6px;padding:5px 9px}
+    .install-row code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 11.5px/1.4 var(--font-mono);color:var(--muted)}
+    .copy-chip{flex:0 0 auto;border:1px solid var(--line);background:var(--panel2);color:var(--muted);border-radius:7px;padding:5px 10px;font:600 10.5px/1 var(--font-mono);cursor:pointer;transition:color .15s ease,border-color .15s ease}
+    .copy-chip:hover{color:var(--accent);border-color:var(--accent)}
+    .install-row.is-soon code{opacity:.5}
+    .install-extras{gap:14px}
+    .extra-toggle{display:inline-flex;align-items:center;gap:7px;font:600 11.5px/1 var(--font-sans);color:var(--muted);cursor:pointer;user-select:none}
+    .extra-toggle input{appearance:none;-webkit-appearance:none;position:relative;width:30px;height:17px;margin:0;border-radius:99px;border:1px solid var(--line);background:var(--panel2);cursor:pointer;transition:background-color .18s ease,border-color .18s ease}
+    .extra-toggle input::after{content:"";position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:var(--muted);transition:transform .18s ease,background-color .18s ease}
+    .extra-toggle input:checked{background:color-mix(in srgb,var(--accent) 30%,var(--panel2));border-color:var(--accent)}
+    .extra-toggle input:checked::after{transform:translateX(13px);background:var(--accent)}
+    .extra-toggle:hover{color:var(--text)}
+    .soon-badge{flex:0 0 auto;font:600 10px/1 var(--font-mono);color:color-mix(in srgb,var(--muted) 75%,transparent);border:1px dashed var(--line);border-radius:99px;padding:5px 9px}
+
+    .container{width:min(1200px,calc(100% - 40px));margin:auto}
+    /* ── sidebar layout ─────────────────────────────────────────────── */
+    .layout{--nav-w:206px;display:grid;grid-template-columns:var(--nav-w) minmax(0,1fr);align-items:start}
+    .side-nav{position:sticky;top:56px;height:calc(100vh - 56px);overflow:hidden;padding:26px 10px 26px 18px}
+    .layout>main{border-left:1px solid var(--line)}
+    .side-label{margin:0 0 12px;padding-left:10px;font:600 8px/1 var(--font-mono);letter-spacing:.18em;text-transform:uppercase;color:var(--muted);opacity:.7}
+    .side-nav-inner{display:flex;flex-direction:column;gap:2px}
+    .side-nav a{display:flex;align-items:center;gap:9px;padding:6px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:12px;font-weight:600;transition:color .14s ease,background-color .14s ease}
+    .side-nav a i{font:700 10px/1 var(--font-mono);font-style:normal;color:color-mix(in srgb,var(--muted) 65%,transparent);min-width:18px;transition:color .14s ease}
+    .nav-ref{display:flex;align-items:center;gap:9px;padding:6px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:12px;font-weight:600;transition:color .14s,background-color .14s}
+    .nav-ref:hover{color:var(--text);background:color-mix(in srgb,var(--accent) 7%,transparent)}
+    .nav-ref::before{content:"";width:14px;height:14px;flex:0 0 auto;background:var(--accent);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 4H21V6H8V4ZM3 3.5H6V6.5H3V3.5ZM3 10.5H6V13.5H3V10.5ZM3 17.5H6V20.5H3V17.5ZM8 11H21V13H8V11ZM8 18H21V20H8V18Z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 4H21V6H8V4ZM3 3.5H6V6.5H3V3.5ZM3 10.5H6V13.5H3V10.5ZM3 17.5H6V20.5H3V17.5ZM8 11H21V13H8V11ZM8 18H21V20H8V18Z'/%3E%3C/svg%3E") center/contain no-repeat}
+    .side-nav a:hover{color:var(--text);background:color-mix(in srgb,var(--accent) 7%,transparent)}
+    .side-nav a.active{color:var(--text);background:color-mix(in srgb,var(--accent) 12%,transparent)}
+    .side-nav a.active i{color:var(--accent)}
+    /* Search box */
+    .side-nav-inner{display:flex;flex-direction:column;height:100%;gap:10px;min-height:0}
+    .side-nav-scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:2px 4px 2px 0;scrollbar-width:thin}
+    .nav-search{flex:0 0 auto;display:flex;align-items:center;gap:8px;margin:0 2px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+    .nav-search i{font-size:13px;color:var(--muted)}
+    .nav-search input{flex:1;min-width:0;border:0;background:transparent;color:var(--text);font-size:12.5px;outline:none}
+    .nav-search input::placeholder{color:var(--muted)}
+    /* Kill the browser's native (blue) search clear/decoration glyphs. */
+    .nav-search input[type=search]::-webkit-search-cancel-button,
+    .nav-search input[type=search]::-webkit-search-decoration{-webkit-appearance:none;appearance:none;display:none}
+    .nav-search-kbd{font:600 10px/1 var(--font-mono);color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:3px 5px}
+    .nav-search:focus-within{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+    /* Categories */
+    .side-nav-modules{display:flex;flex-direction:column;gap:4px}
+    .nav-cat[hidden]{display:none}
+    .nav-cat-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;border:0;background:transparent;cursor:pointer;color:var(--muted);font:700 9px/1 var(--font-mono);letter-spacing:.16em;text-transform:uppercase;border-radius:8px}
+    .nav-cat-head:hover{color:var(--text)}
+    .nav-cat-head i{font-size:11px;transition:transform .2s ease}
+    .nav-cat.collapsed .nav-cat-head i{transform:rotate(-90deg)}
+    .nav-cat-list{display:flex;flex-direction:column;gap:1px;overflow:hidden}
+    .nav-cat.collapsed .nav-cat-list{display:none}
+    .nav-mod{display:block;padding:6px 10px;border-radius:7px;color:var(--muted);text-decoration:none;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .14s ease,background-color .14s ease}
+    .nav-mod[hidden]{display:none}
+    .nav-mod:hover{color:var(--text);background:color-mix(in srgb,var(--accent) 7%,transparent)}
+    .nav-mod.active{color:var(--text);background:color-mix(in srgb,var(--accent) 13%,transparent)}
+    .nav-empty{padding:10px;color:var(--muted);font-size:12px;text-align:center}
+    main{min-width:0}
+    main .container{width:min(1120px,calc(100% - 56px))}
+    @media(max-width:1080px){
+      .layout{display:block}
+      /* Nav moves to a bottom bar, so the footer reclaims the full width.
+         Doubled class: this rule sits ABOVE the base .footer declaration, so
+         at equal specificity the later 206px would otherwise win and the
+         footer stayed indented off-screen on phones. */
+      .footer.footer{--nav-w:0px}
+      body{padding-bottom:66px}
+      .side-nav{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;z-index:1200;border-right:0;border-top:1px solid var(--line);background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:8px 10px calc(8px + env(safe-area-inset-bottom));overflow-x:auto;overflow-y:hidden}
+      .side-label{display:none}
+      .side-nav-inner{flex-direction:column;gap:6px;width:100%}
+      .side-nav a{white-space:nowrap;padding:7px 11px}
+      /* Bottom bar: hide category heads, lay modules out as one horizontal row. */
+      .nav-search{margin:0}
+      .side-nav-scroll{overflow-x:auto;overflow-y:hidden;-webkit-mask-image:none;mask-image:none;padding:0}
+      .side-nav-modules{flex-direction:row;overflow-x:auto;gap:6px;width:100%;scrollbar-width:none}
+      .side-nav-modules::-webkit-scrollbar{display:none}
+      .nav-cat{display:contents}
+      .nav-cat-head{display:none}
+      .nav-cat-list{flex-direction:row;gap:6px}
+      .nav-cat.collapsed .nav-cat-list{display:flex}
+      .nav-cat-list,.nav-mod{flex:0 0 auto}
+      .nav-mod{width:max-content;min-width:44px;white-space:nowrap;border:1px solid var(--line);overflow:visible;text-overflow:clip}
+      .nav-mod code{display:none}
+    }
+
+    main{counter-reset:sec}
+    .section{padding:88px 0 72px;border-top:1px solid var(--line);counter-increment:sec}
+    /* The sticky header floats over the page, so a scroll target has to keep
+       clear of it — otherwise the group title lands underneath the bar. */
+    .section-head{display:block;max-width:760px;margin-bottom:34px;scroll-margin-top:96px}
+    .section h2{font-size:clamp(2rem,4vw,3.4rem);line-height:1.02;letter-spacing:-.05em;margin:0;position:relative}
+    .section h2::before{content:counter(sec,decimal-leading-zero);display:block;font:600 16px/1 var(--font-mono);letter-spacing:.08em;color:var(--accent);margin-bottom:12px;opacity:.9}
+    .section-copy{color:var(--muted);margin:14px 0 0;font-size:14px;line-height:1.75;word-break:keep-all;text-wrap:pretty}
+
+    /* 한 섹션당 최대 3단. auto-fit 트랙 바닥값을 '컨테이너 1/3'로 잡아 3칸을
+       넘지 않게 하고(빈 트랙은 auto-fit이 접음), 카드 수에 따라 자동 대응한다:
+       1개→100%, 2개→50/50, 3개→1:1:1, 4개 이상→3단으로 줄바꿈. */
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(max(260px,calc((100% - 32px)/3)),1fr));gap:var(--sp-4);align-items:stretch}
+    .counter-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+    .counter-grid>.card{grid-column:span 2}
+    .counter-grid>.card:nth-last-child(-n+2){grid-column:span 3}
+    .card{grid-column:auto;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-card);padding:22px;box-shadow:var(--shadow);min-width:0;transition:box-shadow .25s ease,border-color .25s ease}
+    .card:hover{box-shadow:var(--shadow-hover);border-color:color-mix(in srgb,var(--accent) 22%,var(--line))}
+    .grid .card.wide,.grid .card.full{grid-column:auto}
+    /* Inside a per-module grid the wide/full variants regain meaning: a `full`
+       demo (radial, fullpage, text-fill…) spans the whole module row so wide
+       canvases aren't squeezed into one third. auto-fit already gives a lone
+       card 100%, so `wide` needs no special span. */
+    .module-block-body.grid > .card.full{grid-column:1 / -1}
+    /* A module grid gets more air than the generic .grid: with sub-group
+       labels above them, 16px made neighbouring cards look glued together. */
+    .module-block-body.grid{gap:22px}
+    /* Dense pack for large sets of small previews: 4 columns on a wide
+       screen, never below ~200px so nothing clips. */
+    .module-block-body.grid.module-block-body--dense{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+    .module-block-body--dense .card{padding:14px}
+    .module-block-body--dense .card>h3{font-size:12.5px;margin-bottom:2px}
+    .module-block-body--dense .loader-preview--frame{min-height:96px;padding:14px 12px;font-size:1.05rem}
+    @media(max-width:640px){.module-block-body.grid.module-block-body--dense{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+    @media(max-width:640px){
+      /* Compound terminal indicators carry a label/status/meter as one
+         non-wrapping unit. Give those demo cards the full mobile row and scale
+         only the preview type so every glyph remains visible. Library defaults
+         and consumer markup are unchanged. */
+      .module-block-body--dense>.card:has(
+        [data-kt-terminal-style="spinner-label"],
+        [data-kt-terminal-style="quad-dots-label"],
+        [data-kt-terminal-style="spinner-elapsed"],
+        [data-kt-terminal-style="spinner-step"],
+        [data-kt-terminal-style="spinner-meter"]
+      ){grid-column:1/-1}
+      .module-block-body--dense .loader-preview--frame:has(
+        [data-kt-terminal-style="spinner-label"],
+        [data-kt-terminal-style="quad-dots-label"],
+        [data-kt-terminal-style="spinner-elapsed"],
+        [data-kt-terminal-style="spinner-step"],
+        [data-kt-terminal-style="spinner-meter"]
+      ){font-size:clamp(.72rem,3.4vw,.9rem)}
+    }
+    @media(max-width:640px){.module-block-body.grid{gap:16px}}
+    /* Standalone cards / grids that sit directly in a section (not inside a .grid)
+       don't get the grid gap — give consecutive blocks the same 16px rhythm so
+       full-width cards like "Scroll text fill" + "Direction responsive" aren't glued together. */
+    .section>.card+.card,.section>.grid+.card,.section>.card+.grid,.section>.card+h3,.section>.grid+h3{margin-top:16px}
+    .card .demo-stage{flex:1 1 auto}
+    .card .replay-row{margin-top:14px}
+    .card>.kt-playground{margin-top:auto}
+    .card .replay-row+.kt-playground{margin-top:14px}
+    .card h3{margin:0 0 6px;font-size:15px;letter-spacing:-.01em;font-weight:700}
+    .card p{margin:0 0 14px;color:var(--muted);font-size:12.5px;line-height:1.65;word-break:keep-all;text-wrap:pretty}
+    .module-block-body.grid>.card>h3{
+      min-height:1.65em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+    }
+    .card>p,
+    .scroll-demo-unit>p,
+    .hscroll-demo-unit>p,
+    .sticky-stack-unit>p,
+    .reveal-demo-card>p{
+      display:-webkit-box;min-height:3.3em;max-height:3.3em;overflow:hidden;
+      -webkit-box-orient:vertical;-webkit-line-clamp:2
+    }
+
+    .demo-stage{border-radius:var(--r-stage);background:var(--panel2);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line) 55%,transparent);min-height:150px;padding:24px;display:grid;place-items:center;overflow:hidden;position:relative}
+    html.light .demo-stage{background:#f6f6f6}
+    .demo-stage.tall{min-height:260px}
+    /* Horizontal button row inside a stage (the default grid stacks them). */
+    .demo-stage--btns{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;align-content:center}
+    .demo-stage--btns .demo-hint{flex:1 1 100%;margin:6px 0 0;text-align:center;color:var(--muted);font-size:12.5px}
+    .code{margin-top:14px;padding:12px 14px;border-radius:10px;background:#101318;color:#9fe7d5;font:12px/1.5 var(--font-mono);overflow:auto}
+    .replay-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+    .page-effect-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:min(100%,720px);margin-inline:auto}
+    .page-effect-grid .btn{width:100%;justify-content:center}
+    @media(max-width:700px){.page-effect-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(max-width:440px){.page-effect-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .big-text{font-size:clamp(2rem,5vw,4rem);font-weight:900;line-height:1;letter-spacing:-.055em}
+    .counter-value{font-size:clamp(1.9rem,4.2vw,3.6rem);font-weight:900;letter-spacing:-.05em;font-variant-numeric:tabular-nums;max-width:100%;text-align:center;justify-content:center}
+    @supports (container-type:inline-size){
+      #counter .demo-stage{container-type:inline-size}
+      #counter .counter-value{font-size:clamp(1.2rem,9.5cqw,3.4rem)}
+    }
+    .media-card .demo-stage{padding:0;aspect-ratio:4/3}
+    .media-card img{width:100%;height:100%;object-fit:cover}
+
+    /* Touch-device notice for pointer-only demos (cursor, magnetic). */
+    .mk-na{position:relative}
+    .mk-na-overlay{position:absolute;inset:0;z-index:20;display:grid;place-items:center;text-align:center;white-space:pre-line;padding:18px;background:color-mix(in srgb,var(--panel) 74%,transparent);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);color:var(--muted);font:600 12.5px/1.55 var(--font-sans);border-radius:inherit;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line) 55%,transparent)}
+    .overflow-display{width:100%;max-width:340px;padding:14px 18px;border-radius:10px;background:#101318;color:#ffd166;font:700 17px/1.25 var(--font-mono);border:1px solid #2b333f;box-shadow:inset 0 0 0 2px #0b0d10,inset 0 12px 24px rgba(0,0,0,.35)}
+
+    .glow-demo{min-height:290px;padding:0;text-align:center;display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(150deg,#171a21,#232833);color:#fff;border:1px solid var(--line)}
+    .glow-demo>*{position:relative;z-index:1}
+    /* Demo label fills the upper area (centered); the playground panel is pinned
+       to the bottom like every other card, instead of floating in the middle. */
+    .glow-demo>div{flex:1;display:grid;gap:12px;place-items:center;align-content:center;padding:50px;width:100%}
+    .glow-demo>div h3{margin:0}
+    .glow-demo>div p{margin:0}
+    /* 글로우 카드의 옵션 패널: 카드 패딩(50px)을 뚫고 넓게, 좌측 정렬 + 여유 자간 */
+    .glow-demo>.kt-playground{width:100%;max-width:none;margin:0;text-align:left}
+    .glow-demo .kt-playground>summary{letter-spacing:.015em;padding:9px 16px}
+    .glow-demo p{color:#9aa5bb}
+    .magnetic-zone{padding:60px}
+    .magnetic-button{padding:20px 34px;border:0;border-radius:99px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer}
+    .marquee-line{width:100%;padding:0;font-size:2rem;font-weight:900;letter-spacing:-.03em;color:color-mix(in srgb,var(--text) 82%,transparent);display:flex;align-items:center;min-height:1.4em}
+    .marquee-line span{padding-right:36px}
+
+    .slider-demo{width:100%;overflow:hidden;padding:18px 0}
+    /* Coverflow's active-slide drop-shadow spills past the slide on all four
+       sides, and `overflow:hidden` above cut it off. clip-path with a negative
+       inset keeps a clipping box (so neighbouring slides still disappear at the
+       edges) while leaving room for the shadow — plain `overflow:visible` would
+       let the whole track bleed across the card. */
+    /* The module puts `kt-slider--active-shadow` on the SLIDER element, which in
+       this demo IS `.slider-demo` — so it has to be matched with a compound
+       selector, not `:has()` on a descendant. Both forms are listed because a
+       nested `[data-kt-slider]` is also legal markup. */
+    .slider-demo.kt-slider--active-shadow,
+    .slider-demo:has(>.kt-slider--active-shadow){overflow:clip;overflow-clip-margin:36px}
+    .slider-demo--dissolve{height:clamp(230px,31vw,320px);padding:0;border-radius:var(--r-stage);background:var(--panel2)}
+    .slider-demo--dissolve>.kt-slider-wrap,.slider-demo--dissolve .kt-slider-track,.slider-demo--dissolve .kt-slide{height:100%}
+    .slider-demo--dissolve .kt-slide{min-height:0}
+    .slider-demo--dissolve .kt-slider-wrap,.slider-demo--dissolve .kt-slider-track,.slider-demo--dissolve .kt-slide{width:100%!important}
+    .slider-demo--dissolve .kt-slide{position:relative;border-radius:0;background:var(--panel2);overflow:hidden}
+    .slider-demo--dissolve .kt-slide img{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover}
+    .slider-controls{display:flex;justify-content:center;gap:8px;margin-top:12px}
+    .slider-nav{width:38px;height:38px;display:grid;place-items:center;padding:0;border:1px solid var(--line);border-radius:50%;background:var(--panel);color:var(--text);cursor:pointer;box-shadow:var(--shadow);transition:border-color .16s ease,color .16s ease,transform .16s ease}
+    .slider-nav::before{content:"";width:42%;height:42%;background:currentColor;-webkit-mask:no-repeat center/contain;mask:no-repeat center/contain}
+    .slider-nav--prev::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M15 5l-7 7 7 7'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M15 5l-7 7 7 7'/%3E%3C/svg%3E")}
+    .slider-nav--next::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M9 5l7 7-7 7'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M9 5l7 7-7 7'/%3E%3C/svg%3E")}
+    .slider-nav:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));color:var(--accent);transform:translateY(-1px)}
+    #loading .demo-stage{box-shadow:none;border:1px solid var(--line)}
+    .loader-preview{min-height:220px;padding:32px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+    .loader-preview--frame{min-height:132px;padding:22px 18px;font-size:1.2rem}
+    .loading-preview-copy{display:grid;justify-items:start;gap:2px;text-align:left}
+    .loading-preview-copy b{font:700 14px/1.2 var(--font-sans)}
+    .loading-preview-copy i{font:600 12px/1 var(--font-mono,ui-monospace,monospace);font-style:normal;color:var(--muted)}
+    .kt-demo-loader-overlay{position:fixed;inset:0;z-index:10010;background:var(--bg);color:var(--text)}
+    .loading-preview-line{display:inline-flex;align-items:center;justify-content:center;gap:12px;font-weight:700;color:var(--text)}
+    .loading-preview-stack{display:grid;justify-items:center;align-content:center;gap:12px;width:min(100%,320px);margin-inline:auto;font-weight:700;color:var(--text);text-align:center}
+    .loading-preview-line--terminal{font-family:var(--font-mono,ui-monospace,monospace)}
+    /* Demo-only spacing. The library exposes these as CSS variables, so tuning
+       the preview never changes what an app gets by default. */
+    /* The compound spinner reserves a slot AND the nested frame reserves its
+       own min-width, so a narrow braille glyph sat inside two nested pads.
+       Trim both — the library keeps its roomier defaults. */
+    /* Cursor presets print "label▉" as one text run, so tracking is the only
+       lever for breathing room between the label and the caret. */
+    /* "[##########] 100%" needs far more room than a one-glyph spinner, so
+       this preset takes two grid tracks instead of being clipped. */
+    /* Cursor presets print "label▉" as one run of text, so the only lever for
+       breathing room is tracking. */
+    /* 데모 스테이지와 옵션 서머리를 한 덩어리로 결합 */
+    .card:has(.kt-playground) .demo-stage,.card:has(.kt-playground) .fullpage-demo,.card:has(.kt-playground) .reveal-demo-card,.card:has(.kt-playground) .lightbox-grid{border-bottom-left-radius:0;border-bottom-right-radius:0}
+    .card:has(.demo-stage) .kt-playground,.card:has(.demo-stage) .replay-row+.kt-playground,.card:has(.fullpage-demo) .kt-playground,.card:has(.reveal-demo-card) .kt-playground{margin-top:0;border-top-left-radius:0;border-top-right-radius:0;border-top:0}
+    /* The thumbnail grid and its settings belong to one unit. */
+    .card:has(.lightbox-grid) .kt-playground{margin-top:0;border-top:0;border-top-left-radius:0;border-top-right-radius:0}
+    .card:has(.kt-playground) .lightbox-grid{border-bottom-left-radius:0;border-bottom-right-radius:0}
+    /* Prev/Next 같은 실제 버튼 줄이 스테이지와 패널 사이에 남아 있는 카드는
+       결합하지 않고 원래의 분리된 패널로 되돌린다(간격 확보). */
+    .card:has(.replay-row:not(:empty)) .demo-stage,.card:has(.slider-controls) .demo-stage,.card:has(.replay-row:not(:empty)) .reveal-demo-card{border-bottom-left-radius:var(--r-stage);border-bottom-right-radius:var(--r-stage)}
+    .card:has(.replay-row:not(:empty)) .kt-playground,.card:has(.demo-stage) .replay-row:not(:empty)+.kt-playground,.card:has(.demo-stage):has(.replay-row:not(:empty)) .kt-playground,.card:has(.demo-stage):has(.slider-controls) .kt-playground{margin-top:16px;border-top:1px solid var(--line);border-top-left-radius:14px;border-top-right-radius:14px}
+    .card:has(.slider-controls)>.kt-playground{margin-top:16px}
+    .slider-controls{margin-top:14px}
+    .loader-demo-button{min-width:150px}
+    .feedback-button{position:relative;touch-action:manipulation;padding:18px 28px;border:0;border-radius:12px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer}
+    .custom-inview{opacity:.35;filter:blur(8px);transition:opacity .55s ease,filter .55s ease}
+    .custom-inview.is-inview{opacity:1;filter:none}
+    .reveal-demo-card{min-height:260px;display:grid;place-items:center;background:linear-gradient(150deg,var(--accent),#7e2f10);color:#fff;border-radius:var(--r-stage);font-weight:800}
+
+    /* Text modules now live in the Text category (#counter). Keep their headline
+       demos at a moderate size (base .big-text clamp is much larger). */
+    #counter .big-text,#text-effects .big-text{font-size:clamp(1.3rem,2.4vw,2rem);padding:0 .14em}
+    .kt-lightbox-image{box-shadow:0 24px 80px rgba(0,0,0,.35)}
+    dialog::backdrop{background:transparent}
+    .kt-slide{min-height:220px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(150deg,var(--accent),#8a3512);color:#fff;font-size:2rem;font-weight:900}
+    .kt-slide:nth-child(2){background:linear-gradient(150deg,#e08a2f,#7a4410)}
+    .kt-slide:nth-child(3){background:linear-gradient(150deg,#c2551f,#5f230c)}
+    .lightbox-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,minmax(0,1fr));width:100%;height:auto;aspect-ratio:4/3;gap:8px;padding:8px;border-radius:var(--r-stage);background:var(--panel2);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line) 55%,transparent);overflow:hidden}
+    .lightbox-grid img{display:block;width:100%;height:100%;object-fit:cover;border-radius:12px;cursor:zoom-in;transition:transform .25s ease,box-shadow .25s ease}
+    .lightbox-grid img:hover{transform:scale(1.015);box-shadow:0 14px 40px rgba(18,22,33,.18)}
+    @media(max-width:850px){.lightbox-grid{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,minmax(0,1fr))}.lightbox-grid img{height:100%;aspect-ratio:auto}}
+
+    .scroll-word{font-size:clamp(2.5rem,9vw,7rem);font-weight:950;white-space:nowrap;letter-spacing:-.06em}
+    .stack-vertical{width:min(100%,960px);margin-inline:auto}
+    .stack-vertical>article{width:100%;min-height:170px;border-radius:var(--r-card);padding:28px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);margin-bottom:18px}
+    /* svh (small viewport) so the pinned deck fits even while the mobile URL bar
+       is showing — otherwise scrolling down clips the bottom of the panels. */
+    .horizontal-scroll{height:70vh;height:70svh}
+    .horizontal-scroll>article{min-height:65vh;min-height:65svh;border-radius:20px;padding:40px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;font-size:clamp(2rem,6vw,5rem);font-weight:900}
+    .floating-scroll{height:70vh;border-radius:24px;background:#0f131a;color:#fff;overflow:hidden}
+    .floating-scroll>article{padding:50px;text-align:center}
+    .floating-scroll h3{font-size:clamp(2.4rem,7vw,6rem);margin:0;letter-spacing:-.06em}
+    .tilt-demo-card{width:min(100%,420px);height:clamp(160px,22vw,220px);border-radius:18px;background:linear-gradient(135deg,#6a5cff,#00d4ff);display:grid;place-items:center;color:#fff;font-weight:800;font-size:1.3rem}
+    /* Page Transition — in-place conceptual preview: two mock screens + an
+       overlay cover that plays curtain/fade/slide/circle between them. */
+    .pt-preview{position:relative;overflow:hidden;min-height:220px;padding:0;display:block;border-radius:var(--r-stage);--pt-c1:#101318;--pt-c2:#1e2a4a;--pt-dur:.42s;--pt-ease:cubic-bezier(.76,0,.24,1)}
+        /* The floating effect-chip row sits over the bottom of this screen, so true
+       geometric centring READ as too low. Reserve the row's height as bottom
+       padding and centre inside what is left — the content then looks centred in
+       the visible area rather than in the box. A token, so the responsive rules
+       can change the reserve without touching this rule. */
+    .pt-screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding-bottom:var(--pt-chip-reserve,52px);box-sizing:border-box;font:800 clamp(1.2rem,2.4vw,1.8rem) var(--font-sans);color:#fff}
+    .pt-screen[hidden]{display:none}
+    .pt-a{background:linear-gradient(135deg,#ff5b1c,#ff9a3c)}
+    .pt-b{background:linear-gradient(135deg,#1e2a4a,#5b3fa0)}
+    .pt-tag{font:700 11px/1 var(--font-mono);letter-spacing:.12em;opacity:.85;padding:4px 9px;border:1px solid rgba(255,255,255,.5);border-radius:99px}
+    .pt-cover{position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--pt-c1);opacity:0}
+    /* Effect picker: a segmented-tabs control floating at the preview's
+       bottom-right (single select), legible over the gradient via blur. */
+    .pt-fx-row{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;z-index:6;display:inline-flex;flex-wrap:wrap;justify-content:center;gap:2px;margin:0;max-width:calc(100% - 24px);padding:3px;border:1px solid rgba(255,255,255,.28);border-radius:12px;background:rgba(20,22,28,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 6px 20px rgba(0,0,0,.25)}
+    .pt-fx-row::before{content:"";position:absolute;left:0;top:0;width:var(--pt-tab-w,0);height:var(--pt-tab-h,0);border-radius:8px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transform:translate(var(--pt-tab-x,0),var(--pt-tab-y,0));opacity:0;transition:transform .28s cubic-bezier(.22,.8,.3,1),width .28s ease,height .28s ease,opacity .15s ease}
+    .pt-fx-row.has-indicator::before{opacity:1}
+    .pt-fx-row.is-first-selection::before{transition:opacity .15s ease}
+    @media(max-width:860px){
+      .pt-fx-row{
+        left:12px;right:12px;transform:none;max-width:none;justify-content:flex-start;
+        flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;
+        scroll-snap-type:inline proximity;scroll-padding-inline:3px;
+        overscroll-behavior-inline:contain;scrollbar-width:none;
+        -webkit-overflow-scrolling:touch;touch-action:pan-x;
+      }
+      .pt-fx-row::-webkit-scrollbar{display:none}
+      /* Scroll hint. `scrollShadows` mounted fine here but reported kt-at-start AND
+         kt-at-end at the same time on a scrollable row, so no fade appeared. This
+         is the pure-CSS version instead: two `local` covers ride ON the content and
+         hide the shadow when that edge is at its limit, two `scroll` shadows stay
+         with the box. No measurement, nothing to keep in sync. The row sits on a
+         warm overlay, so the covers use its own tint rather than --panel. */
+      .pt-fx-row{
+        background-image:
+          linear-gradient(to right, rgba(90,52,30,.92) 30%, rgba(90,52,30,0)),
+          linear-gradient(to left,  rgba(90,52,30,.92) 30%, rgba(90,52,30,0)),
+          radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.34), transparent),
+          radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.34), transparent);
+        background-repeat:no-repeat;
+        background-size:30px 100%, 30px 100%, 12px 100%, 12px 100%;
+        background-position:left center, right center, left center, right center;
+        background-attachment:local, local, scroll, scroll;
+      }
+      .pt-fx-row .btn{flex:0 0 auto;scroll-snap-align:center}
+      .pt-fx-row .btn{padding:6px 9px;font-size:11.5px}
+      /* One scrolling line with smaller chips — less to reserve. */
+      .pt-preview{--pt-chip-reserve:52px}
+    }
+    .pt-fx-row .btn{position:relative;z-index:1;border:0;background:transparent;color:rgba(255,255,255,.82);padding:6px 11px;border-radius:8px;font-size:12px;font-weight:650;box-shadow:none}
+    .pt-fx-row .btn:hover{color:#fff;background:rgba(255,255,255,.14)}
+    .pt-fx-row .btn.is-active{background:transparent;color:#101318;box-shadow:none}
+    /* Every effect uses the same tunable vars (colour/duration/ease) so the
+       settings panel drives the preview live. */
+    .pt-preview .pt-cover.is-in,.pt-preview .pt-cover.is-out{transition:all var(--pt-dur) var(--pt-ease)}
+    .pt-preview[data-fx="fade"] .pt-cover.is-in{opacity:1}
+    .pt-preview[data-fx="fade"] .pt-cover.is-out{opacity:0}
+    .pt-preview[data-fx="slide"] .pt-cover{background:linear-gradient(135deg,var(--pt-c1),var(--pt-c2));transform:translateX(100%);opacity:1}
+    .pt-preview[data-fx="slide"] .pt-cover.is-in{transform:translateX(0)}
+    .pt-preview[data-fx="slide"] .pt-cover.is-out{transform:translateX(-100%)}
+    .pt-preview[data-fx="cover"] .pt-cover{background:linear-gradient(135deg,var(--pt-c1),var(--pt-c2));transform:translateY(100%);opacity:1}
+    .pt-preview[data-fx="cover"] .pt-cover.is-in{transform:translateY(0)}
+    .pt-preview[data-fx="cover"] .pt-cover.is-out{transform:translateY(-100%)}
+    .pt-preview[data-fx="curtain"] .pt-cover{background:linear-gradient(90deg,var(--pt-c1) 50%,var(--pt-c2) 50%);clip-path:inset(0 50% 0 50%);opacity:1}
+    .pt-preview[data-fx="curtain"] .pt-cover.is-in{clip-path:inset(0 0 0 0)}
+    .pt-preview[data-fx="curtain"] .pt-cover.is-out{clip-path:inset(0 0 0 100%)}
+    .pt-preview[data-fx="circle"] .pt-cover{background:radial-gradient(circle,var(--pt-c2),var(--pt-c1));clip-path:circle(0% at 50% 50%);opacity:1}
+    .pt-preview[data-fx="circle"] .pt-cover.is-in{clip-path:circle(75% at 50% 50%)}
+    .pt-preview[data-fx="circle"] .pt-cover.is-out{clip-path:circle(0% at 50% 50%)}
+    .pt-preview[data-fx="wipe"] .pt-cover{background:linear-gradient(135deg,var(--pt-c1),var(--pt-c2));clip-path:polygon(0 0,0 0,-30% 100%,-30% 100%);opacity:1}
+    .pt-preview[data-fx="wipe"] .pt-cover.is-in{clip-path:polygon(0 0,130% 0,100% 100%,-30% 100%)}
+    .pt-preview[data-fx="wipe"] .pt-cover.is-out{clip-path:polygon(130% 0,130% 0,100% 100%,100% 100%)}
+    .pt-preview[data-fx="blinds"] .pt-cover{background:repeating-linear-gradient(0deg,var(--pt-c1) 0,var(--pt-c1) 12.5%,var(--pt-c2) 12.5%,var(--pt-c2) 25%);clip-path:inset(0 0 100% 0);opacity:1}
+    .pt-preview[data-fx="blinds"] .pt-cover.is-in{clip-path:inset(0 0 0 0)}
+    .pt-preview[data-fx="blinds"] .pt-cover.is-out{clip-path:inset(100% 0 0 0)}
+    .pt-preview[data-fx="split"] .pt-cover{background:linear-gradient(180deg,var(--pt-c1) 50%,var(--pt-c2) 50%);clip-path:inset(50% 0 50% 0);opacity:1}
+    .pt-preview[data-fx="split"] .pt-cover.is-in{clip-path:inset(0 0 0 0)}
+    .pt-preview[data-fx="split"] .pt-cover.is-out{clip-path:inset(100% 0 0 0)}
+    @media(prefers-reduced-motion:reduce){.pt-preview .pt-cover{transition:none!important}}
+    .ambient-wrap{isolation:isolate;position:relative;width:min(100%,600px);aspect-ratio:16/9;border-radius:16px}
+    .ambient-wrap iframe{width:100%;height:100%;border:0;border-radius:inherit;background:linear-gradient(135deg,#26335a,#7c4fa8)}
+    .sequence{height:78vh;background:#111;border-radius:22px}
+    .css-scroll-card{--scroll-progress:0;transform:translateX(calc((var(--scroll-progress) - .5)*80px)) rotate(calc((var(--scroll-progress) - .5)*5deg));opacity:calc(.35 + var(--scroll-progress)*.65)}
+
+    .module-index{display:grid;gap:28px}
+    /* Lighter, less "boxed" look: category label as a quiet section header above
+       its cards (no per-group border/background). */
+    .module-group{display:block;padding:0;border:0;background:none}
+    .module-group-label,.module-subgroup{
+      display:flex;align-items:center;gap:12px;
+      margin:0 0 14px;padding:0;border:0;
+      font:700 10.5px/1 var(--font-mono);
+      letter-spacing:.14em;text-transform:uppercase;
+      color:color-mix(in srgb,var(--muted) 85%,transparent);
+      white-space:nowrap;
+    }
+    .module-group-label::after,.module-subgroup::after{
+      content:"";flex:1 1 auto;height:1px;min-width:24px;
+      background:linear-gradient(90deg,var(--line),color-mix(in srgb,var(--line) 15%,transparent));
+    }
+    .module-group-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+    .mod-index-item{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;padding:9px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;cursor:pointer;transition:border-color .15s ease,background-color .15s ease}
+    .mod-index-item:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line));background:color-mix(in srgb,var(--accent) 6%,var(--panel2))}
+    .mod-index-item:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    .mii-name{font:700 13px/1.25 var(--font-sans);color:var(--text)}
+    .mod-index-item:hover .mii-name{color:var(--accent)}
+    .mii-sub{font:500 11.5px/1.4 var(--font-sans);color:var(--muted);word-break:keep-all}
+    @media(max-width:520px){.module-group{grid-template-columns:1fr}.module-group-chips{grid-template-columns:1fr}}
+    .footer{--nav-w:206px;padding:clamp(42px,6vw,72px) max(26px,env(safe-area-inset-right)) max(44px,env(safe-area-inset-bottom)) calc(max(26px,env(safe-area-inset-left)) + var(--nav-w));color:var(--muted);font-size:13px;border-top:1px solid var(--line);background:linear-gradient(180deg,color-mix(in srgb,var(--panel2) 28%,transparent),transparent 52%);margin-top:0}
+    .footer>.container{width:min(1120px,calc(100% - 56px));max-width:none;margin:0 auto}
+    .footer-grid{display:grid;grid-template-columns:minmax(260px,1.7fr) minmax(160px,.7fr) minmax(270px,1fr);gap:clamp(28px,5vw,72px);align-items:start}
+    .footer-logo{display:inline-flex;align-items:center;gap:10px;color:var(--text);text-decoration:none}
+    .footer-logo svg{display:block;width:30px;height:30px;flex:0 0 auto}
+    .footer-brand strong{display:block;color:var(--text);font-size:18px;letter-spacing:-.035em}
+    .footer-brand p{margin:16px 0 0;line-height:1.75;word-break:keep-all;text-wrap:pretty;max-width:470px}
+    .footer-label{margin:2px 0 14px;font:700 10px/1 var(--font-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+    .footer-col a{color:var(--muted);text-decoration:none}
+    .footer-links>div{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+    .footer-links a{display:inline-flex;align-items:center;gap:5px;padding:2px 0;font-size:13px;font-weight:600;transition:color .16s ease}
+    .footer-links a span{font-size:10px}
+    .footer-col a:hover,.footer-fine a:hover{color:var(--text)}
+    .footer-author{display:inline-flex!important;align-items:baseline;gap:7px;white-space:nowrap}
+    .footer-author span{font-size:11px;color:var(--muted)}
+    .footer-author strong{font-size:14px;color:var(--text)}
+    /* No box. The meta reads as one typographic line — label small and muted,
+       value in text colour, thin rules between the pairs. */
+    .footer-stats{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:0;row-gap:10px;margin:18px 0 2px}
+    /* Trailing divider, not leading: a leading rule became an orphan bar at
+       the start of a wrapped row. */
+    .footer-stats>div{display:flex;align-items:baseline;gap:7px;padding-right:14px;margin-right:14px;border-right:1px solid var(--line)}
+    .footer-stats>div:last-child{padding-right:0;margin-right:0;border-right:0}
+    .footer-stats dt{margin:0;font:600 9px/1 var(--font-mono);letter-spacing:.11em;text-transform:uppercase;color:color-mix(in srgb,var(--muted) 78%,transparent);white-space:nowrap}
+    .footer-stats dd{margin:0;font:700 13px/1 var(--font-mono);color:var(--text);white-space:nowrap}
+    .footer-stat-build dd{color:var(--muted);font-weight:600}
+    @media(max-width:520px){.footer-stats>div{padding-right:10px;margin-right:10px}}
+    .footer code{font:600 10.5px/1 var(--font-mono);color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));background:color-mix(in srgb,var(--accent) 6%,transparent);border-radius:7px;padding:6px 9px;display:inline-block;white-space:nowrap}
+    .footer-fine-copy{display:block;line-height:1.85}
+    .footer-fine-copy small{font-size:11.5px;color:color-mix(in srgb,var(--muted) 66%,transparent)}
+    .footer-fine{margin-top:clamp(30px,5vw,48px);padding-top:18px;border-top:1px solid var(--line);font-size:11.5px;color:color-mix(in srgb,var(--muted) 78%,transparent);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .footer-fine a{color:inherit;text-decoration:none;font-weight:700;white-space:nowrap}
+    @media(max-width:820px){
+      .footer-grid{grid-template-columns:minmax(0,1.4fr) minmax(150px,.6fr)}
+      .footer-build{grid-column:1/-1}
+      .footer-stats{max-width:360px}
+    }
+    @media(max-width:540px){
+      .footer{padding-inline:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right))}
+      .footer-grid{grid-template-columns:1fr;gap:30px}
+      .footer-build{grid-column:auto}
+      .footer-brand p br{display:none}
+      .footer-stats{max-width:none}
+      .footer-fine{align-items:flex-start;flex-direction:column}
+      .footer-fine-copy{line-height:1.7}
+    }
+
+    @media(max-width:850px){
+      .card,.card.wide{grid-column:auto}
+      .counter-grid>.card,.counter-grid>.card:nth-last-child(-n+2){grid-column:span 3}
+      .site-header{padding-inline:16px}
+      .grid{gap:14px}
+      .glow-demo>div{padding:30px}
+      .section{padding:80px 0 60px}
+    }
+    /* Below ~560px the 330px min column no longer fits, so drop to a single
+       fluid column — otherwise the grid forces horizontal overflow and cards
+       (and their content, e.g. the overflow-text bar) get clipped at the edge. */
+    @media(max-width:560px){
+      .grid{grid-template-columns:1fr}
+      .counter-grid>.card,.counter-grid>.card:nth-last-child(-n+2){grid-column:1/-1}
+    }
+    .fullpage-demo{height:360px;border-radius:var(--r-stage);background:var(--panel2);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line) 55%,transparent)}
+    .fp-slide{display:grid;place-items:center;gap:6px;align-content:center;font:800 clamp(1.4rem,2.6vw,2.2rem)/1.1 var(--font-sans);letter-spacing:-.03em}
+    .fp-slide:nth-child(even){background:color-mix(in srgb,var(--accent) 6%,transparent)}
+    .fp-slide--long{align-content:start;justify-items:center;padding:26px 22px;gap:12px;text-align:center}
+    .fp-slide__title{font-size:clamp(1.2rem,2.4vw,1.8rem)}
+    .fp-slide .fp-slide__copy{max-width:520px;max-height:none;color:var(--muted);font-size:14px;line-height:1.9;margin:0}
+    .fp-slide--arrival{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+    .fp-index{font:600 11px/1 var(--font-mono);color:var(--accent);letter-spacing:.14em}
+    /* Fullpage + normal-scroll coexistence demo. */
+    .fp-scroll-host{height:clamp(300px,40vh,420px);overflow-y:auto;border-radius:var(--r-stage) var(--r-stage) 0 0;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line) 55%,transparent);overscroll-behavior:contain;background:color-mix(in srgb,var(--accent) 5%,var(--panel));scrollbar-width:none;-ms-overflow-style:none}
+    .fp-scroll-host::-webkit-scrollbar{width:0;height:0;display:none}
+    .fp-scroll-host .fullpage-demo{height:100%;min-height:100%;border-radius:var(--r-stage) var(--r-stage) 0 0;box-shadow:none}
+    .fp-normal{display:flex;flex-direction:column;gap:6px;padding:28px;background:color-mix(in srgb,var(--accent) 6%,var(--panel))}
+    .fp-normal strong{font-size:13px;font-weight:800;letter-spacing:-.01em}
+    .fp-normal span{font-size:13px;line-height:1.65;color:var(--muted)}
+    .fp-foot{padding:22px 28px 28px;font:700 12px/1.4 var(--font-sans);color:var(--muted);background:color-mix(in srgb,var(--accent) 10%,var(--panel));border-top:1px solid color-mix(in srgb,var(--accent) 14%,var(--line))}
+    /* Toast */
+    /* Demo-only helper toast (window.ktToast). Renamed off .kt-toast to avoid
+       colliding with the library's own .kt-toast — the global opacity:0 here was
+       overriding the real Toast module after its entrance animation finished. */
+    .demo-toast-host{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:2147483200;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+    .demo-toast{max-width:min(480px,92vw);padding:13px 20px;border-radius:12px;background:color-mix(in srgb,var(--text) 92%,transparent);color:var(--bg);font:600 13px/1.55 var(--font-sans);box-shadow:0 12px 34px rgba(10,14,22,.3);opacity:0;transform:translateY(10px);transition:opacity .28s ease,transform .28s ease;text-align:center;word-break:keep-all}
+    .demo-toast.is-in{opacity:1;transform:translateY(0)}
+    /* Intro loader: oversized, airy percentage — the whole first screen.
+       The canvas colour lives here as a token so main.js can read it instead of
+       hard-coding #efe9de in a cssText string (no inline styles in the demo). */
+    :root{--intro-bg:#efe9de;--intro-fg:#14110d}
+    /* width:100vw (not inset:0) so the overlay also covers the reserved
+       scrollbar-gutter strip — otherwise that ~15px column shows the page
+       background as a mismatched off-white band during the intro. */
+    .intro-loader{position:fixed;top:0;left:0;width:100vw;height:100dvh;z-index:10020;background:var(--intro-bg);color:var(--intro-fg)}
+    /* Root state while the intro is up: lock scrolling (the page would scroll
+       behind the overlay and lazy images would shift the layout), release the
+       scrollbar gutter, and paint <html> itself so no off-white band shows. */
+    html.is-intro{overflow:hidden;scrollbar-gutter:auto;background:var(--intro-bg)}
+    /* Modal scroll lock (sitemap overlay). A class, so opening and closing is
+       one add/remove instead of snapshotting and restoring an inline value. */
+    html.is-locked{overflow:hidden}
+    .intro-loader .kt-loader-counter{font-family:var(--font-sans)!important;font-weight:100!important;font-size:clamp(5rem,22vw,14rem)!important;line-height:.9;font-variation-settings:"wght" 100;letter-spacing:-.045em;font-variant-numeric:tabular-nums;z-index:2}
+    .intro-loader .kt-loader-wordmark{position:absolute;top:clamp(28px,7vh,64px);left:50%;transform:translateX(-50%);z-index:3;font:600 clamp(11px,1.4vw,13px)/1 var(--font-mono);letter-spacing:.42em;text-indent:.42em;color:#14110d;text-transform:uppercase;opacity:.75}
+    /* floating TOP */
+    .to-top{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));z-index:1200;width:40px;height:40px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--panel) 82%,transparent);backdrop-filter:blur(10px);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .2s ease,transform .2s ease,color .15s ease,border-color .15s ease}
+    .to-top.show{opacity:1;transform:none;pointer-events:auto}
+    .to-top:hover{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+    @media(max-width:1080px){.to-top{bottom:calc(112px + env(safe-area-inset-bottom))}}
+    /* 커스텀 커서가 라이트박스 딤드 위에서 묻히지 않게 — difference 블렌드 */
+    body:has(#kt-lightbox:not([hidden])) .kt-cursor{mix-blend-mode:difference!important}
+
+/* First-visit fade-in: the whole page eases in the moment the preload veil
+   lifts, while the individual entrance choreography plays underneath. */
+/* body가 아니라 콘텐츠 컨테이너만 — 로더 오버레이(body 직속)는 베일 밖에서
+   항상 보인다. */
+@media (prefers-reduced-motion: no-preference){
+  .site-header,.layout,.footer{transition:opacity .65s ease}
+  html.kt-preload .site-header,html.kt-preload .layout,html.kt-preload .footer{opacity:0}
+}
+
+/* Phosphor icons in the demo chrome */
+.replay-fab i{font-size:15px;line-height:1;display:block}
+.replay-fab svg{display:block;width:16px;height:16px;fill:currentColor}
+.btn i,.copy-chip i{font-size:14px;line-height:1;vertical-align:-2px;margin-right:5px}
+
+/* Mobile performance: backdrop-filter blur is repainted on every scroll and is
+   the biggest cause of jank/crashes on Android. Drop it on small screens and
+   use a more opaque solid background instead. */
+@media (max-width:1080px){
+  .site-header{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:color-mix(in srgb,var(--bg) 82%,transparent)}
+  .side-nav{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:color-mix(in srgb,var(--bg) 86%,transparent)}
+  .to-top{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:color-mix(in srgb,var(--panel) 88%,transparent)}
+  body>.kt-progress-ring{backdrop-filter:blur(8px)!important}
+}
+
+/* Header icon button + Module Index sitemap overlay */
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;line-height:0}
+.icon-btn i{font-size:16px;line-height:1;margin:0;vertical-align:0}
+.sitemap-overlay{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:24px;background:color-mix(in srgb,var(--bg) 36%,rgba(0,0,0,.55));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .24s ease}
+/* Critical: the class sets display:grid which would otherwise beat [hidden]'s
+   display:none, leaving an invisible full-screen overlay that eats every click. */
+.sitemap-overlay[hidden]{display:none}
+.sitemap-overlay.is-open{opacity:1}
+/* Wider on desktop/tablet: 680px forced two cramped columns even on a big
+   screen, which is the least useful shape for a 50-item index. */
+.sitemap-panel{width:min(1180px,calc(100vw - 48px));max-height:calc(100dvh - 56px);display:flex;flex-direction:column;overflow:hidden;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-hover);transform:translateY(10px);transition:transform .24s cubic-bezier(.2,.8,.3,1)}
+.sitemap-overlay.is-open .sitemap-panel{transform:none}
+.sitemap-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--line);background:var(--panel)}
+.sitemap-head strong{font-weight:850;letter-spacing:-.02em}
+.sitemap-close{width:32px;height:32px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.sitemap-close:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+/* Only the grid scrolls (head stays put); overscroll-contain stops the page
+   behind from scrolling when the pointer is over the list. */
+.sitemap-grid{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:18px}
+@media(max-width:1100px){.sitemap-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:820px){.sitemap-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sitemap-grid a{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:var(--panel2);color:var(--text);text-decoration:none;transition:border-color .15s ease,background-color .15s ease,transform .15s ease}
+.sitemap-grid a:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));transform:translateY(-1px)}
+.sitemap-grid a i{font:700 11px/1.6 var(--font-mono);color:var(--accent);font-style:normal;flex:0 0 auto}
+.sitemap-grid .sm-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.sitemap-grid .sm-txt b{font-weight:700;font-size:13.5px}
+.sitemap-grid .sm-txt small{font-weight:500;font-size:11.5px;color:var(--muted);line-height:1.45;word-break:keep-all}
+@media(max-width:520px){
+  .site-header{gap:8px;padding:calc(10px + env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) 10px max(10px,env(safe-area-inset-left))}
+  .brand{min-width:0;flex:0 1 auto;gap:6px;font-size:13px;white-space:nowrap}
+  .brand-mark{width:18px;height:18px}
+  .header-actions{flex:0 0 auto;gap:4px;min-width:0}
+  .header-actions .icon-btn{width:32px;height:32px}
+  .header-actions .theme-switch{width:50px;height:28px;padding-inline:5px}
+  .header-actions .ts-knob{top:3px;width:20px;height:20px;transform:translateX(24px)}
+  html.light .header-actions .ts-knob{transform:translateX(0)}
+  .header-actions #lang{width:78px;min-width:0;height:32px;padding:5px 22px 5px 8px;font-size:11.5px}
+  /* `place-items:stretch` + a fixed 56px top padding left the panel top-aligned
+     with a dead band above it. Centre it like the desktop overlay does and let the
+     panel size to its content, capped by the viewport, so short lists sit in the
+     middle and long ones still scroll inside. */
+  .sitemap-overlay{place-items:center;padding:max(12px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
+  .sitemap-panel{width:100%;max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));border-radius:14px}
+  .sitemap-grid{grid-template-columns:1fr;padding:12px}
+  .sitemap-grid a{padding:10px 11px}
+}
+
+/* Radial carousel — emphasise the active item (active gets .kt-active). */
+.kt-radial-item img { width:112px!important; height:112px!important; transition: transform .45s cubic-bezier(.22,.8,.3,1), opacity .45s ease, box-shadow .45s ease; }
+/* Clearer active↔inactive size difference: inactive shrink, active grow. */
+.kt-radial-item:not(.kt-active) img { opacity: .6; transform: scale(.78); }
+.kt-radial-item.kt-active img { transform: scale(1.25); box-shadow: 0 16px 36px rgba(0,0,0,.5); }
+
+/* Segmented tabs demo: white active pill in light theme, light overlay in dark. */
+.kt-tabs--segment { --kt-seg-active: rgba(255,255,255,.14); --kt-seg-bg: rgba(255,255,255,.06); }
+html.light .kt-tabs--segment { --kt-seg-active: #ffffff; --kt-seg-bg: rgba(0,0,0,.05); }
+
+/* FLIP demo chips */
+.flip-chip { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent, #ff5b1c), #ffd166); color: #1a1a1a; font-weight: 800; }
+.confetti-complete{display:inline-flex;align-items:center;gap:8px}
+.confetti-complete svg{display:block;width:1.15em;height:1.15em;fill:currentColor;flex:0 0 auto}
+
+
+/* Horizontal-scroll gallery cards (distinct from stickyStack full panels) */
+.hs-card{flex:0 0 clamp(230px,30vw,380px);height:min(46vh,380px);display:grid;place-items:center;border-radius:22px;font:800 clamp(2.4rem,6vw,5rem)/1 var(--font-sans);box-shadow:0 14px 32px rgba(0,0,0,.28)}
+.hscroll-demo-unit{width:100%;min-width:0;padding:clamp(18px,2.5vw,28px);border:1px solid var(--line);border-radius:var(--r-card);background:var(--panel)}
+.hscroll-demo-unit>h3{margin:0 0 7px}
+.hscroll-demo-unit>p{max-width:72ch;margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.65}
+
+/* Easing editor (playground) — preset picker + live cubic-bezier curve */
+.kt-ease-row{display:flex;align-items:center;gap:10px}
+.kt-ease-select{flex:1;min-width:0}
+.kt-ease-preview{flex:0 0 auto}
+.ek-svg{display:block;width:132px;height:44px;border:1px solid var(--line);border-radius:8px;background:color-mix(in srgb,var(--panel2) 60%,transparent)}
+.ek-curve{fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round}
+.ek-grid{stroke:color-mix(in srgb,var(--muted) 35%,transparent);stroke-width:1;stroke-dasharray:2 3}
+.ek-dot{fill:var(--accent)}
+.ek-note{fill:var(--muted);font:500 9px var(--font-mono);text-anchor:middle}
+
+/* Demo scroll boxes (sticky-header / cover-fixed): header contrasts with body */
+.demo-scrollbox{width:100%;max-height:260px;overflow:auto;border-radius:var(--r-stage);border:1px solid var(--line);overscroll-behavior:contain}
+.demo-sticky-head{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;background:var(--panel);border-bottom:1px solid var(--line);font-weight:800;font-size:17px}
+.demo-sticky-head.kt-stuck{padding-top:12px;padding-bottom:12px}
+.demo-sticky-head .k-badge{font:600 10px/1 var(--font-mono);color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:5px 7px}
+.demo-scroll-body{padding:18px 20px;line-height:2.4;color:var(--muted);background:var(--panel2)}
+
+/* Cover card → fixed header (scrubbed by stickyHeader's --kt-header-progress) */
+.cover-fixed-header{position:sticky;top:0;z-index:20;height:200px;overflow:visible;contain:layout;
+  --cff-height:calc(200px - 136px * var(--kt-header-progress,0))}
+.cover-fixed-header::before{content:"";position:absolute;left:0;right:0;top:0;height:var(--cff-height);z-index:0;background:var(--panel);
+  border-bottom:1px solid color-mix(in srgb,var(--line) calc(100% * var(--kt-header-progress,0)),transparent);
+  box-shadow:0 10px 30px -20px rgba(0,0,0,calc(.6 * var(--kt-header-progress,0)))}
+.cover-fixed-header .cff-title{position:absolute;left:50%;top:calc(var(--cff-height) / 2);transform:translate(-50%,-50%);
+  z-index:1;
+  font-weight:900;letter-spacing:-.045em;line-height:1;font-size:calc(2.4rem - 1.15rem * var(--kt-header-progress,0));
+  background:linear-gradient(100deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.cover-fixed-header .cff-sub{position:absolute;left:0;right:0;top:150px;text-align:center;font-size:13px;font-weight:600;color:var(--muted);
+  z-index:1;opacity:calc(1 - var(--kt-header-progress,0) * 1.6);transform:translateY(calc(-90px * var(--kt-header-progress,0)));pointer-events:none}
+
+/* Glued playground under the glow-demo card: drop its own radius so it doesn't
+   double-line against the card's rounded corners. */
+.glow-demo>.kt-playground{border-radius:0}
+.glow-demo{border-bottom-left-radius:var(--r-card);border-bottom-right-radius:var(--r-card)}
+
+/* Radial controls: match the demo's button look (library default differs). */
+.demo-stage .kt-radial-controls{z-index:5}
+.demo-stage .kt-radial-controls button{width:38px;height:38px;background:var(--panel);border:1px solid var(--line);color:var(--text);box-shadow:var(--shadow)}
+.demo-stage .kt-radial-controls button:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));color:var(--accent)}
+
+/* Cards: bottom-align the demo area so a long description above doesn't leave
+   the demo floating at the top (keeps demos aligned across a grid row). */
+.card>.demo-stage{margin-top:auto}
+/* Fullpage demos: a consistent fixed height, centred content — no bottom-align
+   (that left large top gaps when the description was short). */
+.card>.fullpage-demo{height:clamp(300px,40vh,420px)}
+.fp-slide{align-content:center}
+
+/* Accordion demo: subtle title background (gentle contrast, not stark white),
+   and square off the bottom corners when open so it joins the body. */
+.demo-stage [data-kt-accordion] details>summary{background:color-mix(in srgb,var(--panel2) 84%,var(--text) 5%);border-radius:10px}
+.demo-stage [data-kt-accordion] details.kt-open>summary,
+.demo-stage [data-kt-accordion] details[open]>summary{border-bottom-left-radius:0;border-bottom-right-radius:0}
+.kt-ease-custom{width:100%;font:500 11px/1 var(--font-mono)}
+
+/* Scroll-demo mock content (meaningful, not bare number lists) */
+.demo-list>div{padding:12px 16px;border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent);font-size:14px;color:var(--text)}
+.demo-list>div:last-child{border-bottom:0}
+.demo-rows>div{display:flex;flex-direction:column;gap:2px;padding:11px 16px;border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+.demo-rows>div:last-child{border-bottom:0}
+.demo-rows b{font-size:13px}
+.demo-rows span{font-size:12.5px;color:var(--muted)}
+/* Horizontal-scroll inner track */
+.hscroll-track{display:flex;gap:20px;padding:40px clamp(48px,5vw,64px);height:100%;align-items:center;box-sizing:border-box}
+    /* The pinned viewport is structural only. Padding on the track gives card
+       shadows real breathing room while overflow still masks off-screen cards. */
+    .hscroll-demo .kt-hscroll-viewport{background:transparent;border:0;border-radius:0;box-shadow:none}
+    .kt-hscroll-settings{position:absolute;right:14px;bottom:14px;z-index:30;display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:8px 12px;border:1px solid color-mix(in srgb,var(--line) 74%,transparent);border-radius:999px;background:color-mix(in srgb,var(--panel) 84%,transparent);color:var(--text);box-shadow:0 8px 24px rgba(10,14,22,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);cursor:pointer;font:750 12px/1 var(--font-sans);transition:transform .16s ease,border-color .16s ease,background-color .16s ease}
+    .kt-hscroll-settings:hover{transform:translateY(-1px);border-color:var(--accent);background:var(--panel)}
+    .kt-hscroll-settings:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Per-module sub-heading inside a category section */
+.mod-subhead{margin:34px 0 4px;font-size:clamp(1.1rem,2vw,1.45rem);font-weight:800;letter-spacing:-.02em;color:var(--text);scroll-margin-top:78px}
+    /* Manifest-driven per-module blocks (title + subtitle + demo grid) */
+    .module-blocks{display:block}
+    .module-block{margin:0 0 44px;scroll-margin-top:82px}
+    .module-block:last-child{margin-bottom:0}
+    .module-block-title{margin:0 0 4px;font-size:clamp(1.05rem,1.9vw,1.4rem);font-weight:800;letter-spacing:-.02em;color:var(--text)}
+    .module-block-sub{margin:0 0 16px;color:var(--muted);font-size:14px;line-height:1.5;max-width:72ch}
+    /* Default module body: a full-width stack (no forced grid). Full-width and
+       special demos live here so they never get squeezed into a 3-col cell. */
+    .module-block-body{margin:0}
+    .module-block-body--stack{display:flex;flex-direction:column;gap:var(--sp-4)}
+    .module-block-body--stack>*{width:100%;min-width:0}
+    /* Restore the three layout weights inside a module grid: a normal card
+       fills one column, `.card.wide` spans two (a wider feature cell), and
+       `.card.full` spans the whole row. On a two-column grid `span 2` naturally
+       becomes full width. */
+    .module-block-body.grid>.card.full{grid-column:1 / -1}
+    .module-block-body.grid>.card.wide{grid-column:span 2}
+.mod-subhead:first-child,.grid>.mod-subhead:first-child{margin-top:0}
+
+/* ── Apple-style thin overlay scrollbars ─────────────────────────────────────
+   Applied ONLY to inner scroll areas: left nav, in-demo scroll boxes, sitemap.
+   The whole-page scrollbar is intentionally left as the browser default. */
+.side-nav-scroll,.demo-scrollbox,.sitemap-grid{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--muted) 42%,transparent) transparent}
+.side-nav-scroll::-webkit-scrollbar,.demo-scrollbox::-webkit-scrollbar,.sitemap-grid::-webkit-scrollbar{width:9px;height:9px}
+.side-nav-scroll::-webkit-scrollbar-track,.demo-scrollbox::-webkit-scrollbar-track,.sitemap-grid::-webkit-scrollbar-track{background:transparent;margin:4px}
+.side-nav-scroll::-webkit-scrollbar-thumb,.demo-scrollbox::-webkit-scrollbar-thumb,.sitemap-grid::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--muted) 36%,transparent);border-radius:99px;border:2px solid transparent;background-clip:padding-box;min-height:32px}
+.side-nav-scroll:hover::-webkit-scrollbar-thumb,.demo-scrollbox:hover::-webkit-scrollbar-thumb,.sitemap-grid:hover::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--muted) 58%,transparent)}
+.side-nav-scroll::-webkit-scrollbar-thumb:active,.demo-scrollbox::-webkit-scrollbar-thumb:active,.sitemap-grid::-webkit-scrollbar-thumb:active{background:color-mix(in srgb,var(--accent) 60%,var(--muted))}
+
+/* Module Index — separated sticky footer at the bottom of the left nav so it no
+   longer blends into the module category hierarchy above it. */
+.side-nav-foot{flex:0 0 auto;border-top:1px solid var(--line);padding:8px 0 2px;margin-top:2px}
+/* Plain link (no box) below the divider — just distinct enough via the divider. */
+.nav-index{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:650;font-size:12.5px;transition:color .14s,background-color .14s}
+.nav-index svg{width:15px;height:15px;flex:0 0 auto}
+.nav-index:hover{color:var(--text);background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.nav-index:hover svg{color:var(--accent)}
+.nav-index:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:1080px){.side-nav-foot{display:none}}
+
+/* Text Split demos now sit 3-up in a card grid — shrink the demo text so it fits
+   the narrower cards without overflowing. */
+#mod-textSplit .big-text{font-size:clamp(1.3rem,2.2vw,1.9rem);letter-spacing:-.04em}
+
+/* Cursor demos: the "MOVE HERE" label should stay centered and modestly sized
+   (not the oversized, left-aligned global .big-text). */
+#mod-cursor .demo-stage{display:grid;place-items:center;text-align:center}
+#mod-cursor .demo-stage .big-text{font-size:clamp(.86rem,1.25vw,1.05rem);letter-spacing:.09em;text-align:center;line-height:1.1}
+
+/* Element-level cursor overrides: keep the original compact example UI. */
+.cursor-custom-stage{padding:16px}
+.cursor-target-list{width:min(100%,420px);display:flex;flex-direction:column;gap:7px}
+.cursor-target{width:100%;min-width:0;display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font:inherit;text-align:left;cursor:pointer;transition:border-color .18s ease,background-color .18s ease,transform .18s ease}
+.cursor-target:hover{transform:translateX(2px);border-color:color-mix(in srgb,var(--accent) 45%,var(--line));background:color-mix(in srgb,var(--accent) 5%,var(--panel))}
+.cursor-target:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cursor-target__icon{width:42px;height:42px;display:grid;place-items:center;border-radius:10px;background:var(--panel2);color:var(--accent);font-size:16px}
+.cursor-target__icon--play{background:color-mix(in srgb,#38d996 14%,var(--panel2));color:#26ad74}
+.cursor-target__copy{min-width:0;display:flex;flex-direction:column;gap:4px}
+.cursor-target__copy strong,.cursor-target__copy small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cursor-target__copy strong{font-size:14px;line-height:1.1;letter-spacing:-.015em}
+.cursor-target__copy small{color:var(--muted);font:500 11px/1.2 var(--font-sans)}
+.cursor-target__action{color:var(--muted);font:700 10px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase}
+.smooth-toggle-demo{width:min(100%,360px);margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--text);font-weight:750}
+.smooth-switch{display:flex;align-items:center;gap:9px;cursor:pointer}
+.smooth-switch input{position:absolute;inline-size:1px;block-size:1px;opacity:0;pointer-events:none}
+.smooth-switch>span{position:relative;width:44px;height:26px;border-radius:999px;background:color-mix(in srgb,var(--muted) 24%,var(--panel2));box-shadow:inset 0 0 0 1px var(--line);transition:background-color .2s ease,box-shadow .2s ease}
+.smooth-switch>span::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 7px rgba(0,0,0,.22);transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+.smooth-switch input:checked+span{background:var(--accent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 82%,#000)}
+.smooth-switch input:checked+span::after{transform:translateX(18px)}
+.smooth-switch input:focus-visible+span{outline:2px solid var(--accent);outline-offset:3px}
+.smooth-switch strong{min-width:28px;color:var(--muted);font:700 11px/1 var(--font-mono)}
+
+/* Floating replay button (bottom corner of a demo-stage). Shared by Flip's
+   shuffle and List Reveal's replay — bottom-right by default, --left variant. */
+.replay-fab{position:absolute;right:14px;bottom:14px;z-index:6;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:50%;background:color-mix(in srgb,var(--panel) 86%,transparent);color:var(--text);cursor:pointer;box-shadow:0 4px 14px rgba(10,14,22,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:border-color .15s ease,color .15s ease,transform .15s ease}
+.replay-fab:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
+.replay-fab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.replay-fab--left{left:14px;right:auto}
+/* List Reveal — proper row cards instead of bare text. */
+.reveal-list-stage{min-height:260px;padding:16px 18px}
+.reveal-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;width:100%}
+.reveal-list li{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--line);border-radius:11px;background:var(--panel);font:650 13.5px/1.2 var(--font-sans)}
+.reveal-list li b{font:800 12px/1 var(--font-mono);color:var(--accent);flex:0 0 auto;min-width:20px}
+.demo-shuffle-title{font-size:clamp(1rem,1.65vw,1.5rem)!important;line-height:1!important;letter-spacing:-.05em!important;text-align:center;white-space:nowrap}
+
+/* Staggered coloured shutters over a compact portfolio grid. */
+.cover-gallery-stage{min-height:420px;padding:10px;align-items:stretch}
+.cover-gallery{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:7px}
+.cover-gallery>.kt-cover-wrap,.cover-gallery>[data-kt-cover-reveal]{width:100%;height:100%;min-width:0;min-height:0;border-radius:5px;overflow:hidden}
+.cover-gallery>.kt-cover-wrap>[data-kt-cover-reveal]{width:100%;height:100%}
+.cover-gallery img{display:block;width:100%;height:100%;object-fit:cover}
+@media(max-width:700px){.cover-gallery-stage{min-height:520px}.cover-gallery{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr))}}
+
+/* Settings are visually glued directly under pinned/scroll stages. */
+/* `margin-top:24px` was for the days these units sat loose in a section. Inside
+   a module block the block's own body gap already spaces them, so the margin
+   stacked on top and left a 96px hole under the description. */
+.scroll-demo-unit{width:100%;min-width:0;margin-top:0;padding:clamp(18px,2.5vw,28px);border:1px solid var(--line);border-radius:var(--r-card);background:var(--panel)}
+.scroll-demo-unit>h3{margin:0 0 7px;font-size:15px}
+.scroll-demo-unit>p{max-width:72ch;margin:0 0 18px;color:var(--muted);font-size:13px;line-height:1.65}
+.demo-stage--pinned{display:block;min-height:0;padding:0;overflow:visible;background:transparent;box-shadow:none}
+html.light .demo-stage--pinned{background:transparent}
+.scroll-demo-unit:has(.kt-playground) .demo-stage--pinned,.hscroll-demo-unit:has(.kt-playground) .demo-stage--pinned{border-bottom-left-radius:0;border-bottom-right-radius:0}
+.demo-stage--pinned>.kt-playground-host{margin:0}
+.demo-stage--pinned>.kt-playground-host>.kt-playground{margin-top:0;border-top:0;border-top-left-radius:0;border-top-right-radius:0}
+/* Same story as .scroll-demo-unit: an 80px top margin from when this sat loose
+   in a section. Inside a module block it just opens a hole under the title. */
+.scroll-sequence-unit{margin-top:0}
+.hscroll-demo-unit .demo-stage--pinned{border-radius:16px}
+.sticky-stack-unit .sticky-vertical-stage{padding:clamp(14px,2vw,22px);overflow:visible;background:var(--panel2);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line) 55%,transparent)}
+html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
+.mega-menu-stage{min-height:220px;display:grid;place-items:center;align-content:center;overflow:visible;padding:16px;border-bottom-left-radius:0;border-bottom-right-radius:0}
+.mega-menu-stage{grid-template-columns:minmax(0,1fr);justify-items:stretch}
+.mega-menu-stage .mega-menu-panel{width:100%;min-width:0;max-width:100%;place-items:center}
+    /* A per-item `data-kt-menu-trigger="click"` override is invisible next to the
+       hover items, so the trigger says so inline. Muted and smaller so it reads as
+       a caption on the label, not as part of the menu name. */
+    .mega-menu-hint{font-weight:600;font-size:10.5px;letter-spacing:0;color:var(--muted);opacity:.8;margin-left:2px}
+    .mega-menu-hint::before{content:"·";margin-right:3px;opacity:.6}
+    /* A plain top-level link: no panel, so the module adds no chevron. Matched to
+       the trigger buttons so the bar stays even. */
+    .mega-menu-plain>a{display:inline-flex;align-items:center;text-decoration:none;color:inherit}
+    /* The bar used ~40% of a 1074px stage, which read as a floating pill rather
+       than a GNB. Stretch it (capped so it stays a nav, not a full-bleed header)
+       and let the triggers breathe. Scoped to this demo — the shared nav class is
+       used by other cards. */
+    .mega-menu-panel>[data-kt-mega-menu]{width:100%;max-width:min(100%,820px);margin:0 auto}
+    .mega-menu-panel>[data-kt-mega-menu]>ul{gap:6px}
+    .mega-menu-panel>[data-kt-mega-menu]>ul>li>.btn,
+    .mega-menu-panel>[data-kt-mega-menu]>ul>li>a.btn{padding-inline:16px}
+    /* An opened mega panel must not spill out of the preview box. */
+    /* nowrap at EVERY width, not just under 900px: "Lightbox · Slider" was
+       breaking onto two lines even on desktop. The columns size to their content
+       and the panel is capped at the viewport, so a long label widens the column
+       instead of wrapping. */
+    .mega-menu-panel .kt-menu-panel{max-width:calc(100vw - 96px)}
+    .mega-menu-panel .kt-menu-panel a{white-space:nowrap}
+    /* `.mega-menu-panel` sets place-items:center for the nav bar itself, which the
+       panel's grid was inheriting — the submenu columns came out centred while
+       every other dropdown is left-aligned. */
+    .mega-menu-panel .kt-menu-panel{text-align:left;justify-items:start}
+    .mega-menu-panel .kt-menu-panel>div{justify-items:start}
+    .mega-menu-panel .kt-menu-panel ul{text-align:left}
+    .mega-menu-panel .kt-menu-panel>div{grid-auto-columns:max-content}
+    @media(max-width:900px){
+      /* The bar was fixed at 820px and ran straight out of the card on a phone.
+         Scroll it horizontally instead of clipping, and drop the inline hint to
+         its own line so the trigger label stays readable. */
+      .mega-menu-panel>[data-kt-mega-menu]{max-width:100%}
+      /* NOT overflow-x:auto here. A scroll container clips its absolutely
+         positioned descendants, so the dropdown / mega panels were trapped inside
+         the bar and only their shadow showed. Wrapping to a second line keeps the
+         popups free and still fits a phone. */
+      .mega-menu-panel>[data-kt-mega-menu].kt-menu--responsive-wrap>ul{
+        flex-wrap:wrap;justify-content:center;row-gap:4px
+      }
+      .mega-menu-panel>[data-kt-mega-menu].kt-menu--responsive-scroll>ul{
+        flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;
+        /* Scroll hint. Without it there is nothing to say more items exist off
+           screen. Four background layers pinned with `background-attachment`:
+           the two `local` covers sit ON the content and hide the shadow when that
+           edge is at its limit, the two `scroll` shadows stay with the box. Pure
+           CSS, so it needs no measurement and cannot go stale — the classic
+           Roman Komarov scrolling-shadow trick. `mask-image` cannot do this
+           because it has no scroll-aware equivalent. */
+        background:
+          linear-gradient(to right, var(--panel) 30%, transparent) left center,
+          linear-gradient(to left,  var(--panel) 30%, transparent) right center,
+          radial-gradient(farthest-side at 0 50%, color-mix(in srgb,var(--text) 20%,transparent), transparent) left center,
+          radial-gradient(farthest-side at 100% 50%, color-mix(in srgb,var(--text) 20%,transparent), transparent) right center;
+        background-repeat:no-repeat;
+        background-size:34px 100%, 34px 100%, 13px 100%, 13px 100%;
+        background-attachment:local, local, scroll, scroll;
+        scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x;
+        scroll-snap-type:inline proximity;overscroll-behavior-inline:contain
+      }
+      .mega-menu-panel>[data-kt-mega-menu].kt-menu--responsive-scroll>ul::-webkit-scrollbar{display:none}
+      .mega-menu-panel>[data-kt-mega-menu].kt-menu--responsive-scroll>ul>li{scroll-snap-align:center}
+      .mega-menu-panel>[data-kt-mega-menu]>ul>li{flex:0 0 auto}
+      .mega-menu-panel>[data-kt-mega-menu]>ul>li>.btn,
+      .mega-menu-panel>[data-kt-mega-menu]>ul>li>a.btn{padding-inline:11px;white-space:nowrap}
+      .mega-menu-hint{display:none}
+      /* min-width:0 let the panel shrink to the trigger and every label wrapped
+         ("빠른 시작" over two lines). Size it to the CONTENT instead and only cap
+         it at the viewport, so it stays on one line until it genuinely cannot. */
+      .mega-menu-panel .kt-menu-panel{width:max-content;min-width:0;max-width:calc(100vw - 48px);box-sizing:border-box}
+      .mega-menu-panel .kt-menu-panel a{white-space:nowrap}
+      /* Keep the panel inside the viewport when its trigger sits near the edge. */
+      .mega-menu-panel>[data-kt-mega-menu]>ul>li{position:relative}
+      /* Mega panels belong to the whole nav bar, not the trigger cell. The
+         generic relative rule above previously overrode `.kt-menu-mega` and
+         collapsed this panel into one tall, off-screen column on phones. */
+      .mega-menu-panel>[data-kt-mega-menu]>ul>li.kt-menu-mega{position:static}
+      .mega-menu-panel .kt-menu-mega>.kt-menu-panel{
+        width:100%;max-width:100%;max-height:min(60vh,440px);
+        overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;
+      }
+      .mega-menu-panel .kt-menu-mega>.kt-menu-panel>div{
+        grid-template-columns:repeat(3,minmax(0,1fr))!important;
+        grid-auto-columns:auto;gap:10px 16px;width:100%;
+      }
+      .mega-menu-panel .kt-menu-mega>.kt-menu-panel a{white-space:normal}
+    }
+    @media(max-width:520px){
+      .mega-menu-panel .kt-menu-mega>.kt-menu-panel>div{
+        grid-template-columns:repeat(2,minmax(0,1fr))!important;
+      }
+    }
+
+/* Demo-only +/− accordion indicator: compact, unboxed and readable. */
+.accordion-plus .kt-accordion-summary::after,
+.accordion-plus summary::after{content:"+"!important;display:grid!important;place-items:center;width:22px!important;height:22px!important;flex:0 0 22px!important;margin-left:auto;border:0!important;border-radius:0!important;background:transparent!important;color:var(--text);font:400 19px/1 var(--font-sans);-webkit-mask:none!important;mask:none!important;transform:none!important;transition:color .2s ease!important}
+.accordion-plus details[open]>summary::after,
+.accordion-plus details.kt-open>summary::after{content:"−"!important;background:transparent!important;color:var(--accent)}
+
+/* The two slider examples are a deliberate 50/50 comparison on desktop. */
+#mod-slider .module-block-body{grid-template-columns:repeat(2,minmax(0,1fr))}
+#mod-slider .module-block-body>.card{height:100%}
+#mod-slider .slider-demo{height:clamp(230px,31vw,320px);padding:0;border-radius:var(--r-stage);background:var(--panel2)}
+#mod-slider .card:first-child .slider-demo{background:transparent}
+/* Keep the 36px shadow allowance inside the card instead of extending the
+   transformed side slides through the card edge. */
+#mod-slider .card:first-child .slider-demo{width:calc(100% - 72px);margin-inline:auto}
+@media(max-width:600px){#mod-slider .card:first-child .slider-demo{width:calc(100% - 32px)}}
+#mod-slider .slider-demo>.kt-slider-wrap,#mod-slider .slider-demo .kt-slider-track{width:100%;height:100%}
+#mod-slider .slider-demo .kt-slide{height:100%}
+#mod-slider .slider-demo .kt-slide{min-height:0;overflow:hidden}
+/* The active slide must not clip its own drop-shadow. The image keeps its own
+   rounding, so nothing bleeds. */
+#mod-slider .slider-demo.kt-slider--active-shadow .kt-slide.is-active,
+#mod-slider .slider-demo .kt-slider--active-shadow .kt-slide.is-active{overflow:visible}
+#mod-slider .slider-demo .kt-slide img{display:block;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover}
+#mod-slider .slider-controls{margin-top:12px}
+#mod-cardGlow .module-block-body{grid-template-columns:repeat(6,minmax(0,1fr))}
+#mod-cardGlow .module-block-body>.card{grid-column:span 2}
+#mod-cardGlow .module-block-body>.card:nth-last-child(-n+2){grid-column:span 3}
+#mod-counter .module-block-body{grid-template-columns:repeat(6,minmax(0,1fr))}
+#mod-counter .module-block-body>.card{grid-column:span 2}
+#mod-counter .module-block-body>.card:nth-last-child(-n+2){grid-column:span 3}
+#mod-glitch .module-block-body{grid-template-columns:repeat(6,minmax(0,1fr))}
+#mod-glitch .module-block-body>.card:nth-child(-n+2){grid-column:span 3}
+#mod-glitch .module-block-body>.card:nth-child(n+3){grid-column:span 2}
+#mod-accordion .module-block-body{grid-template-columns:repeat(2,minmax(0,1fr))}
+#mod-accordion .module-block-body.grid>.card.wide{grid-column:auto}
+#mod-tabs .module-block-body{grid-template-columns:repeat(2,minmax(0,1fr))}
+#mod-tabs .module-block-body.grid>.card.wide{grid-column:auto}
+#mod-coverReveal .module-block-body{grid-template-columns:repeat(2,minmax(0,1fr))}
+#mod-fullpage .card>.fullpage-demo,#mod-fullpage .card>.fp-scroll-host{height:clamp(340px,42vw,420px);margin-top:auto}
+@media(max-width:760px){
+  #mod-slider .module-block-body,#mod-cardGlow .module-block-body,#mod-counter .module-block-body,#mod-glitch .module-block-body,#mod-accordion .module-block-body,#mod-tabs .module-block-body,#mod-coverReveal .module-block-body{grid-template-columns:1fr}
+  #mod-cardGlow .module-block-body>.card,#mod-cardGlow .module-block-body>.card:nth-last-child(-n+2){grid-column:auto}
+  #mod-counter .module-block-body>.card,#mod-counter .module-block-body>.card:nth-last-child(-n+2),#mod-glitch .module-block-body>.card:nth-child(n){grid-column:auto}
+}
+
+.horizontal-scroll .kt-sticky-horizontal-viewport{border-radius:20px}
+.horizontal-scroll .kt-sticky-horizontal-track>article{height:100%;min-height:0;border-radius:20px;padding:40px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;font-size:clamp(2rem,6vw,5rem);font-weight:900}
+.kt-floating-viewport>article{padding:50px;text-align:center}
+.cursor-demo-template{padding:4px 10px;border-radius:99px;background:#ff5b1c;color:#fff;font:700 11px/1 var(--font-sans)}
+.cursor-demo-template--hover{padding:5px 12px;background:#111}
+
+
+/* Static demo presentation extracted from index.html. Keep behavior-owned runtime styles in JS. */
+.demo-css-c81542d9{font-size:clamp(1.6rem,3.4vw,3rem)}
+.demo-css-f8f979be{white-space:normal}
+.demo-css-cb15544e{color:#ff5b1c}
+.demo-css-43a6602b{color:#7dffb2;font-style:normal;font-size:.75em}
+.demo-css-d98f4354{color:#ff8484;font-style:normal;font-size:.75em}
+.demo-css-bdc75b77{color:#8ea4c8;font-style:normal;font-size:.75em}
+.demo-css-bf427e3c{display:flex;justify-content:center;align-items:center}
+.demo-css-66dd090c{display:flex;gap:34px;flex-wrap:wrap;justify-content:center;padding:6px 2px;font:700 1.2rem var(--font-sans);letter-spacing:-.01em}
+.demo-css-a805525b{color:var(--accent)}
+.demo-css-b74bf9af{padding:14px 0;overflow:hidden}
+.demo-css-4931fa4c{font-size:clamp(1.3rem,2.6vw,2.1rem);font-weight:800}
+.demo-css-94c7ef00{font-size:clamp(1.4rem,3vw,2.4rem);font-family:var(--font-mono)}
+.demo-css-8023d119{font-size:clamp(1.3rem,2.6vw,2.1rem);letter-spacing:.12em}
+.demo-css-11f48d49{padding:0;min-height:220px;align-items:stretch}
+.demo-css-3fc0df0b{width:100%;height:100%;object-fit:cover;border-radius:16px}
+.demo-css-adc847d6{padding:0;aspect-ratio:auto;height:clamp(240px,34vw,360px);width:100%;overflow:hidden}
+.demo-css-a61468e1{height:300px;padding:0;overflow:hidden}
+.demo-css-681e47c8{border-bottom-left-radius:0;border-bottom-right-radius:0}
+.demo-css-07c24c3d{min-height:150px;overflow:hidden;display:grid;place-items:center}
+.demo-css-ec89346f{font:800 2.2rem var(--font-sans);letter-spacing:-.02em;color:var(--accent)}
+.demo-css-4fa8f8ef{padding:0;min-height:240px;align-items:stretch}
+.demo-css-4745f49b{min-height:280px;padding:28px;align-content:center}
+.card .demo-css-0a735447{margin:0;font-size:clamp(2rem,4.8vw,3.8rem);font-weight:850;line-height:1.16;letter-spacing:-.045em;max-width:15ch;text-wrap:balance}
+.demo-css-1b0f4999{margin-top:16px}
+.demo-css-fd2f1aa6{margin-top:26px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.demo-css-b193c219{max-height:196px;background:var(--panel2)}
+.demo-css-936545a0{max-height:220px}
+.demo-css-11696618{margin:0}
+.demo-css-dd78ab77{background:linear-gradient(150deg,#ff5b1c,#ffd166);color:#1a1a1a}
+.demo-css-0a12f67b{background:linear-gradient(150deg,#6a5cff,#00d4ff);color:#fff}
+.demo-css-4b0b7b5d{background:linear-gradient(150deg,#12141a,#3a3f4b);color:#fff}
+.demo-css-cba2ba75{background:linear-gradient(150deg,#0f9d58,#a8ff78);color:#0c1b12}
+.demo-css-4ed5db78{background:linear-gradient(150deg,#e8407a,#ffb199);color:#fff}
+.demo-css-df7aa314{background:linear-gradient(150deg,#00b3a4,#c2f5e9);color:#093f0b}
+.demo-css-d5017604{background:linear-gradient(150deg,#7a5cff,#e0c3fc);color:#1a1330}
+.demo-css-e1b82943{background:linear-gradient(150deg,#334155,#94a3b8);color:#fff}
+.demo-css-a62abd4b{margin-top:26px;grid-template-columns:1fr}
+.demo-css-85778c4c{min-height:120px;align-content:center}
+.demo-css-24d308c0{margin-top:26px}
+.demo-css-245fe1d4{align-content:center}
+.demo-css-0466783d{width:100%}
+.demo-css-e7a305a6{--read:0;width:100%;height:22px;border-radius:99px;background:var(--panel2);position:relative;overflow:hidden}
+.demo-css-2e0e6f0f{position:absolute;inset:0;transform-origin:left center;transform:scaleX(var(--read));background:linear-gradient(90deg,#ff5b1c,#ffd166)}
+.demo-css-ee10dad9{position:absolute;inset:0;display:grid;place-items:center;font:700 12px var(--font-mono);color:var(--text);mix-blend-mode:difference}
+.demo-css-bf841e36{min-height:150px}
+.demo-css-7e8049de{position:absolute;inset:0;display:grid;place-items:center}
+.demo-css-35953bc4{display:block;align-content:start;padding:14px}
+.demo-css-99cd8eab{width:100%;display:flex;flex-direction:column;gap:8px}
+.demo-css-ab2aef3a{position:relative;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:6px}
+.demo-css-f24aa405{display:flex;gap:4px;margin:0;padding:0}
+.demo-css-a043110b{background:transparent;border:0}
+.demo-css-3a4984f3{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);min-width:220px;box-shadow:0 18px 40px rgba(0,0,0,.28)}
+.demo-css-33ec9414{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.demo-css-58f5da0f{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);min-width:200px;box-shadow:0 18px 40px rgba(0,0,0,.28)}
+.demo-css-f6aa136f{padding:22px;border:1px solid var(--line);border-radius:12px;background:var(--panel);box-shadow:0 18px 40px rgba(0,0,0,.28);min-width:560px}
+.demo-css-215cecac{display:grid;grid-template-columns:repeat(3,minmax(150px,1fr));gap:24px}
+.demo-css-c7066e18{font:700 12px var(--font-mono);color:var(--accent);margin:0 0 8px}
+.demo-css-5075c6c3{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:14px}
+.demo-css-9afc2115{padding:16px 2px;color:var(--muted);font-size:14px}
+.demo-css-a152d27a{--kt-sheet-bg:var(--panel);--kt-sheet-fg:var(--text)}
+.demo-css-df671843{margin:0 0 8px}
+.demo-css-d691acec{color:var(--muted);font-size:14px;margin:0}
+.demo-css-01f7712f{display:flex;gap:8px;margin-top:14px}
+.demo-css-dea29d3f{color:var(--accent);text-decoration:underline}
+.demo-css-2149cc93{display:grid;place-items:center}
+.demo-css-64087613{display:grid;grid-template-columns:repeat(4,46px);gap:10px;justify-content:center}
+@media(max-width:420px){.demo-css-64087613{grid-template-columns:repeat(3,46px)}}
+.demo-css-64fab3b8{font:800 clamp(1.1rem,2.4vw,1.6rem) var(--font-mono)}
+.demo-css-9162a245{align-self:center}
+.demo-css-f502fa86{min-height:170px;position:relative;overflow:hidden}
+.demo-css-b24675b4{width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,#ff5b1c,#ffd166);display:grid;place-items:center;color:#fff;font-weight:800;cursor:grab;user-select:none}
+.demo-css-c13831b4{display:flex;flex-wrap:wrap;gap:8px;align-content:center;justify-content:center}
+.demo-css-755b1a34{width:150px;height:150px;border:1px solid var(--line);border-radius:50%;position:relative;display:grid;place-items:center;background:var(--panel)}
+.demo-css-aefd82d2{position:absolute;top:8px;font:800 10px var(--font-mono);color:var(--accent)}
+.demo-css-7ce83176{position:absolute;bottom:8px;font:700 10px var(--font-mono);color:var(--muted)}
+.demo-css-16f5d51c{position:absolute;left:10px;font:700 10px var(--font-mono);color:var(--muted)}
+.demo-css-b66dec2c{position:absolute;right:10px;font:700 10px var(--font-mono);color:var(--muted)}
+.demo-css-d65b26d6{width:96px;height:96px;position:relative}
+
+
+    /* Frame-spinner preview cards: trim the nested pads the library reserves
+       for standalone spinners so the glyph sits close to its label. */
+    .loader-preview--frame{--kt-terminal-compound-gap:.18em;--kt-terminal-status-width:6ch;--kt-terminal-spinner-slot:1em;--kt-terminal-frame-min-width:1em}
+    .loader-preview--frame :is([data-kt-terminal-style="block-cursor"],[data-kt-terminal-style="dot-cursor"]){--kt-loading-letter-spacing:.14em}
+    /* No per-preset ch override here: the module publishes the exact reservation
+       from its own cell count (see --kt-terminal-status-width in the compound mount). */
+    /* Spacing only — the look is shared with .module-group-label above. */
+    .module-subgroup{margin:32px 0 14px}
+    .module-subgroup:first-of-type{margin-top:4px}
+    @media(max-width:640px){.module-subgroup{margin:24px 0 12px;letter-spacing:.1em}}
+
+    /* Tabbed examples inside one card. Quiet segmented control so it reads as a
+       switch between two variants, not as primary navigation. */
+    /* Floating switch, centred at the top of the preview box. */
+    .demo-stage--tabbed{position:relative;padding-top:64px}
+    /* Solid, higher-contrast container: on a grey preview box a translucent
+       strip made the selected tab almost impossible to pick out. */
+    .demo-tabs{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:2;
+      display:inline-flex;gap:3px;padding:3px;border:1px solid var(--line);border-radius:11px;
+      background:var(--panel);box-shadow:0 1px 3px rgba(20,26,40,.08)}
+    .demo-tabhosts{display:block}
+    /* The settings bar belongs to the preview above it — any gap made it read
+       as a separate block. */
+    .demo-tabhosts>.kt-playground-host{margin:0}
+    .demo-stage--tabbed{margin-bottom:0}
+    .demo-tabhosts>.kt-playground-host[hidden]{display:none}
+    .demo-tab{border:0;background:transparent;color:var(--muted);padding:6px 12px;border-radius:7px;cursor:pointer;font:650 12px/1 var(--font-sans);white-space:nowrap;transition:background-color .15s ease,color .15s ease}
+    .demo-tab:hover{color:var(--text)}
+    .demo-tab[aria-selected="true"]{background:var(--accent);color:#fff;font-weight:750;box-shadow:0 1px 4px color-mix(in srgb,var(--accent) 35%,transparent)}
+    .demo-tab[aria-selected="true"]:hover{color:#fff}
+    .demo-tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    .demo-tabpanel[hidden]{display:none}
+
+    /* ── Tabs card ──────────────────────────────────────────────────────────
+       The two panels used to each carry their OWN nested .demo-stage, so the
+       card drew a grey inset box inside the grey inset box, with both paddings.
+       Panels now sit straight in the stage, the same shape .mega-menu-panel uses.
+
+       Width had to be pinned as well: .demo-stage is `display:grid;
+       place-items:center`, which sizes its item to content — so every inner tab
+       whose copy was a different length resized the whole component. Fixing the
+       set width means switching tabs changes only the copy. */
+    /* padding-inline/-bottom only: the `padding` shorthand would wipe out the
+       64px top reservation `.demo-stage--tabbed` makes for the floating
+       Underline/Segmented switch, and the switch landed on top of the tablist. */
+    /* grid-template-columns + justify-items:stretch matter: .demo-stage is
+       `place-items:center`, which sizes its grid item to MAX-CONTENT, so a
+       `width:100%` panel resolved against that max-content width and the
+       component grew past the stage (316px inside a 258px stage at 390px). */
+    .tabs-demo-stage{align-content:center;padding-inline:22px;padding-bottom:22px;grid-template-columns:minmax(0,1fr);justify-items:stretch}
+    .tabs-demo-panel{min-width:0;max-width:100%}
+    .tabs-demo-panel{width:100%;place-items:center}
+    /* One shared max-width for both variants, so switching Underline <-> Segmented
+       does not resize the card either. Wider than the old 440px: the stage is far
+       roomier than the component was using on desktop. */
+    .tabs-demo-set{width:100%;max-width:min(100%,680px);margin:0 auto}
+    .tabs-demo-tablist{display:flex}
+    /* flex:1 on the triggers keeps the row — and the underline indicator — from
+       reflowing as labels change. Segmented already worked because it was doing
+       exactly this. */
+    .tabs-demo-tablist>button{flex:1;min-width:0}
+    .tabs-demo-tablist--underline{gap:2px;border-bottom:1px solid var(--line)}
+    /* `:not([hidden])` matters: a bare `display:flex` is an author rule and beat
+       the UA stylesheet's `[hidden]{display:none}`, so all three inner panels
+       showed at once. */
+    .tabs-demo-body{padding:16px 2px;color:var(--muted);font-size:14px;min-height:3.2em}
+    .tabs-demo-body:not([hidden]){display:flex;align-items:center}
+    @media(max-width:720px){
+      /* Again padding-inline/-bottom only — a `padding` shorthand here reset the
+         top reservation and the floating switch landed on the tablist. */
+      .tabs-demo-stage{padding-inline:14px;padding-bottom:16px}
+      .tabs-demo-body{font-size:13.5px;min-height:4.4em}
+      .tabs-demo-tablist>button{padding-inline:4px;font-size:12.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    }
+
+    /* Explicit column counts for modules whose previews are small enough to sit
+       tighter than the default 3-up. Each still keeps a sane minimum so nothing
+       clips, and a `.card.full` inside still claims a whole row. */
+    /* Twelve real tracks, not 3 or 4. A card spans 12/columns, so an INCOMPLETE
+       last row can be split evenly whatever it holds: 12/1=12, 12/2=6, 12/3=4,
+       12/4=3 are all whole numbers. With a literal 3-track grid two leftover
+       cards could not share the row — `span 1.5` does not exist — which is why
+       the third cell kept showing up empty. */
+    .module-block-body--cols-3.grid,
+    .module-block-body--cols-4.grid{grid-template-columns:repeat(12,minmax(0,1fr))}
+    .module-block-body--cols-3.grid{--kt-card-span:4}
+    .module-block-body--cols-4.grid{--kt-card-span:3}
+    .module-block-body--cols-3.grid>.card,
+    .module-block-body--cols-4.grid>.card{grid-column:span var(--kt-card-span)}
+    .module-block-body--cols-3.grid>.card.wide,
+    .module-block-body--cols-4.grid>.card.wide{grid-column:span calc(var(--kt-card-span) * 2)}
+    .module-block-body--cols-3.grid>.card.full,
+    .module-block-body--cols-4.grid>.card.full{grid-column:1/-1}
+    /* Leftover cards in the last row share it equally. The class is set by
+       measurement in main.js — a `.card.full` earlier in the grid eats a whole
+       row, so nth-child arithmetic gets the row boundaries wrong. */
+    .module-block-body.grid>.card.is-last-row-1{grid-column:1/-1}
+    .module-block-body--cols-3.grid>.card.is-last-row-2,
+    .module-block-body--cols-4.grid>.card.is-last-row-2{grid-column:span 6}
+    .module-block-body--cols-3.grid>.card.is-last-row-3,
+    .module-block-body--cols-4.grid>.card.is-last-row-3{grid-column:span 4}
+    .module-block-body--cols-4.grid>.card.is-last-row-4{grid-column:span 3}
+    @media(max-width:1180px){
+      .module-block-body--cols-4.grid{--kt-card-span:4}
+      .module-block-body--cols-4.grid>.card.is-last-row-4{grid-column:span 4}
+    }
+    @media(max-width:900px){
+      .module-block-body--cols-3.grid,.module-block-body--cols-4.grid{--kt-card-span:6}
+      .module-block-body--cols-3.grid>.card.is-last-row-3,
+      .module-block-body--cols-4.grid>.card.is-last-row-3,
+      .module-block-body--cols-4.grid>.card.is-last-row-4{grid-column:span 6}
+    }
+    @media(max-width:600px){
+      .module-block-body--cols-3.grid,.module-block-body--cols-4.grid{--kt-card-span:12}
+      .module-block-body--cols-3.grid>.card.wide,
+      .module-block-body--cols-4.grid>.card.wide{grid-column:span 12}
+    }
+    /* Text-heavy demos need their type scaled down to survive a narrower cell. */
+    .module-block-body--cols-3 #mod-textSplit .big-text,
+    .module-block-body--cols-3 .demo-stage .big-text{font-size:clamp(1.1rem,2.1vw,1.7rem)}
+    .module-block-body--cols-3 .overflow-display{font-size:clamp(.82rem,1.5vw,1rem)}
+    .module-block-body--cols-3 .sv-demo,.module-block-body--cols-3 .sv-line{font-size:clamp(1rem,2vw,1.6rem)}
+    .module-block-body--cols-4 .demo-stage{min-height:150px}
+
+    /* A lone card in the final row stretches instead of leaving dead cells.
+       Applied by measurement, not nth-child arithmetic: a `.card.full` earlier in
+       the grid consumes a whole row, which shifts every count-based guess. */
+    .module-block-body.grid>.card.is-row-filler{grid-column:1/-1}

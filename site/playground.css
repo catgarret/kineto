@@ -1,0 +1,457 @@
+.kt-playground{margin-top:18px;color:var(--text);width:100%;justify-self:stretch;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--panel) 92%,var(--panel2));overflow:hidden;box-shadow:none}.kt-playground[open]{box-shadow:0 16px 45px rgba(20,26,40,.08)}.kt-playground>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:2px;padding:9px 12px;cursor:pointer;font-weight:650;font-size:12.5px;user-select:none;border-radius:inherit;transition:background-color .15s ease}.kt-playground>summary::-webkit-details-marker{display:none}.kt-playground>summary::after{content:"＋";width:18px;text-align:center;flex:0 0 18px;font-size:15px;line-height:1;color:var(--muted)}.kt-playground[open]>summary::after{content:"−"}.kt-playground__summary-copy{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.kt-playground__summary-copy svg{flex:0 0 auto}.kt-playground>summary>span:last-child{margin-left:auto;text-align:right;color:var(--muted);font-weight:600;font-size:11.5px;white-space:nowrap}.kt-playground__badge{display:inline-flex;align-items:center;padding:3px 7px;border-radius:99px;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);font-size:11px;letter-spacing:.02em}.kt-playground__body{border-top:1px solid var(--line);padding:14px}.kt-playground__groups{display:grid;gap:16px}.kt-playground__group{border:0;margin:0;padding:0}.kt-playground__legend{font-weight:850;margin:0 0 10px}.kt-playground__controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.kt-playground__field{display:grid;gap:6px;align-content:start}.kt-playground__field>span{font-size:12px;font-weight:700;color:var(--muted)}.kt-playground__field input,.kt-playground__field select,.kt-playground__field textarea{width:100%;min-height:38px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--text);padding:8px 10px;font:13px/1.25 var(--font-mono,ui-monospace,monospace)}.kt-playground__field select{appearance:none;-webkit-appearance:none;padding-right:30px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%238f97a6' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");background-repeat:no-repeat;background-position:right 11px center}.kt-playground__field input[type="range"]{padding:0}.kt-playground__field input[type="color"]{padding:4px;height:38px}.kt-playground__check{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center;gap:8px!important;min-height:38px;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--panel)}.kt-playground__check input{width:auto;min-height:0}.kt-playground__value{font-size:11px;color:var(--accent);font-variant-numeric:tabular-nums}.kt-playground__toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.kt-playground__toolbar button{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:8px 11px;border-radius:9px;cursor:pointer;font-size:12px;font-weight:750}.kt-playground__toolbar button:hover{border-color:var(--accent)}.kt-playground__toolbar .is-primary{background:var(--accent);color:#fff;border-color:var(--accent)}.kt-playground__code{margin-top:14px;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#101318}.kt-playground__code-head{display:flex;align-items:center;justify-content:space-between;background:#171b22;border-bottom:1px solid #272d37}.kt-playground__tabs{display:flex}.kt-playground__tab,.kt-playground__copy{border:0;background:transparent;color:#9aa6b7;padding:9px 12px;cursor:pointer;font-size:12px}.kt-playground__tab.is-active{color:#fff;background:#222833}.kt-playground__copy{color:#9fe7d5}.kt-playground__pre{margin:0;padding:14px;max-height:260px;overflow:auto;color:#cfe9e3;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;word-break:break-word}.kt-playground__status{min-height:18px;margin-top:8px;color:var(--muted);font-size:11px}.kt-playground__status[data-error="1"]{color:#ff6b57;font-weight:650}.kt-playground-host{margin:6px 0 22px;width:100%;max-width:none}.kt-playground-host--above{margin:0 0 14px}.kt-playground-host--above .kt-playground{margin-top:0}
+/* Interactive cubic-bezier editor (easing fields) */
+.kt-ease-editor{display:contents}
+.kt-ease-editor[hidden]{display:none}
+.kt-bz-svg{width:132px;height:132px;flex:0 0 auto;background:var(--panel2);border:1px solid var(--line);border-radius:10px;touch-action:none}
+.kt-bz-grid{stroke:color-mix(in srgb,var(--muted) 40%,transparent);stroke-width:1;stroke-dasharray:2 3}
+.kt-bz-guide{stroke:color-mix(in srgb,var(--accent) 45%,transparent);stroke-width:1.5}
+.kt-bz-curve{fill:none;stroke:var(--accent);stroke-width:2.5}
+.kt-bz-anchor{fill:var(--muted)}
+.kt-bz-handle{fill:#fff;stroke:var(--accent);stroke-width:2.5;cursor:grab}
+.kt-bz-handle:active{cursor:grabbing}
+.kt-bz-handle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.kt-bz-nums{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px}
+.kt-bz-num{display:flex;align-items:center;gap:6px;font:600 11px/1 var(--font-mono);color:var(--muted)}
+.kt-bz-num input{width:62px;min-height:30px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);padding:5px 7px;font:12px/1 var(--font-mono)}
+.kt-bz-num input:focus{outline:0;border-color:var(--accent)}
+/* Live preview: a dot travels the current curve on a loop so timing is felt. */
+/* Reduced motion parks the dot at the end of the track — a class, so JS
+   never writes an inline offset. */
+.kt-bz-dot.is-static{left:100%}
+.kt-bz-preview{position:relative;flex:1 1 120px;min-width:110px;height:14px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);overflow:hidden}
+.kt-bz-dot{position:absolute;top:50%;left:0;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.kt-bz-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;gap:8px;width:100%;margin-top:6px}
+.kt-bz-btn{width:100%;min-height:32px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);font:650 12px/1 var(--font-sans);cursor:pointer;white-space:nowrap}
+.kt-bz-copy{border-color:var(--accent);background:var(--accent);color:#fff}
+.kt-bz-btn:hover{border-color:var(--accent);color:var(--accent)}
+.kt-bz-copy:hover{background:color-mix(in srgb,var(--accent) 88%,#000);color:#fff}
+.kt-bz-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* No min-height: an empty status reserved a 14px band, so every ease field sat
+   ~18px taller at the bottom than any other field in the same grid. */
+.kt-bz-status{grid-column:1/-1;font:600 11px/1.3 var(--font-mono);color:var(--accent)}
+.kt-bz-status:empty{display:none}
+/* Spring / steps dedicated editors */
+.kt-sp-grid{display:grid;gap:8px;width:100%}
+.kt-sp-row{display:grid;grid-template-columns:70px 1fr 40px;align-items:center;gap:8px;font:600 11px/1 var(--font-mono);color:var(--muted)}
+.kt-sp-row input[type="range"]{width:100%}
+.kt-sp-row select{min-height:28px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);padding:3px 6px;font:12px/1 var(--font-mono)}
+.kt-sp-row b{color:var(--accent);text-align:right;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.kt-bz-dot{animation:none!important}}
+/* Option search in the drawer head + role-group filtering */
+.kt-playground__search{display:flex;align-items:center;gap:7px;flex:1 1 200px;max-width:280px;padding:0 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--muted)}
+.kt-playground__search input{flex:1;min-width:0;border:0;background:transparent;color:var(--text);font:13px/1 var(--font-sans);padding:9px 0;outline:0}
+.kt-search-hidden{display:none!important}
+/* Gear + label only need to align; the summary keeps its original base styling. */
+.kt-playground__summary-copy{display:inline-flex;align-items:center;gap:6px}
+/* Density toggle */
+.kt-playground__density{border:1px solid var(--line);background:var(--panel2);color:var(--muted);border-radius:9px;padding:7px 11px;cursor:pointer;font:650 12px/1 var(--font-sans);flex:0 0 auto}
+.kt-playground__density:hover{border-color:var(--accent);color:var(--text)}
+.kt-drawer-sheet.kt-density-compact .kt-playground__groups{gap:10px}
+/* Each role group reads as a soft, quiet section card (no heavy border). */
+.kt-drawer-sheet.kt-density-compact .kt-playground__group{padding:0 16px;border:1px solid color-mix(in srgb,var(--line) 70%,transparent);border-radius:12px;background:color-mix(in srgb,var(--panel2) 45%,transparent)}
+/* Hide a whole group when every field in it is hidden (unsupported combo) — no
+   empty section taking up scroll space. Reverts automatically when a field
+   becomes visible again (audit: WHEN visibility rules). */
+.kt-drawer-sheet .kt-playground__group[hidden],.kt-drawer-sheet .kt-playground__group:not(:has(.kt-playground__field:not([hidden]))){display:none!important}
+/* Subtle hover on inputs so the panel feels responsive. */
+.kt-drawer-sheet .kt-playground__field input:hover:not(:focus):not([type="range"]),.kt-drawer-sheet .kt-playground__field select:hover:not(:focus),.kt-drawer-sheet .kt-playground__field textarea:hover:not(:focus){border-color:color-mix(in srgb,var(--accent) 38%,var(--line))}
+.kt-drawer-sheet.kt-density-compact .kt-playground__legend{margin:4px 0 0}
+/* Collapsed group = header only, zero trailing space. */
+.kt-playground__group.is-collapsed{height:auto;min-height:0;padding-bottom:0}
+.kt-playground__group.is-collapsed .kt-playground__legend{margin-bottom:0;padding-bottom:13px}
+.kt-drawer-sheet.kt-density-compact .kt-playground__controls{gap:11px 16px}
+.kt-drawer-sheet.kt-density-compact .kt-playground__field{gap:6px 8px}
+.kt-drawer-sheet.kt-density-compact .kt-playground__field .kt-field-cap label{font-size:12px}
+/* Exclude the toggle switch (check) input — it has its own fixed 40×23 size and
+   forcing min-height/padding on it distorts the track + thumb. */
+/* Inputs, selects, textareas and the toggle-switch pill all share ONE height so
+   a row of mixed controls lines up. */
+.kt-drawer-sheet.kt-density-compact .kt-playground__field:not(.kt-playground__check) input:not([type="range"]):not([type="color"]),.kt-drawer-sheet.kt-density-compact .kt-playground__field select,.kt-drawer-sheet.kt-density-compact .kt-playground__field textarea{min-height:36px;padding:7px 11px;border-radius:9px;font-size:12.5px}
+.kt-drawer-sheet.kt-density-compact .kt-playground__field input[type="color"]{min-height:36px}
+.kt-drawer-sheet.kt-density-compact .kt-playground__check{min-height:0;padding:0}
+.kt-drawer-sheet.kt-density-compact .kt-playground__check input{min-height:23px;padding:0}
+.kt-drawer-sheet.kt-density-compact .kt-playground__viewstage>.kt-playground__groups{padding:16px 20px 22px}
+/* Color control: native swatch + free-form CSS colour value. The text value is
+   intentionally not forced to HEX so RGB/RGBA/HSL/HSLA and var() keep alpha. */
+.kt-color-row{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;width:100%}
+.kt-color-row>.kt-color-picker{flex:0 0 auto;width:44px;height:36px;padding:3px;border:1px solid var(--line);border-radius:9px;background:var(--panel);cursor:pointer}
+.kt-color-value{flex:1 1 auto;min-width:0;min-height:36px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text);padding:6px 10px;font:12.5px/1 var(--font-mono)}
+.kt-color-value:focus{outline:0;border-color:var(--accent)}
+.kt-color-value[aria-invalid="true"]{border-color:#dc4c4c;box-shadow:0 0 0 3px color-mix(in srgb,#dc4c4c 14%,transparent)}
+.kt-color-recent{display:flex;gap:5px;flex:0 0 auto}
+.kt-color-chip{width:20px;height:20px;padding:0;border:1px solid color-mix(in srgb,var(--text) 22%,transparent);border-radius:6px;cursor:pointer;transition:transform .12s ease}
+.kt-color-chip:hover{transform:scale(1.12)}
+.kt-color-chip:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+@media(max-width:700px){.kt-playground__search{order:3;flex-basis:100%;max-width:none}}.playground-notice{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:24px auto 0;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--panel);max-width:760px;text-align:left}.playground-notice strong{display:block}.playground-notice span{display:block;color:var(--muted);font-size:13px}.playground-notice code{white-space:nowrap;color:var(--accent)}@media(max-width:700px){.kt-playground__controls{grid-template-columns:1fr 1fr}.playground-notice{align-items:flex-start;flex-direction:column}}@media(max-width:460px){.kt-playground__controls{grid-template-columns:1fr}}
+/* Cards stretch to equal row heights; the options drawer never affects layout. */
+
+/* option help tooltips */
+.kt-playground__field{position:relative}
+.kt-field-cap{display:inline-flex;align-items:center;gap:5px;position:relative}
+.kt-help{width:15px;height:15px;margin-left:0;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--muted);font:800 9px/1 ui-monospace,monospace;cursor:help;padding:0;vertical-align:1px}
+.kt-help:hover,.kt-help:focus-visible{color:var(--accent);border-color:var(--accent)}
+.kt-tooltip.kt-playground-help{z-index:2147483000;max-width:min(280px,calc(100vw - 24px));padding:10px 12px;border:1px solid #2b313d;box-shadow:0 14px 34px rgba(0,0,0,.45);font:500 11.5px/1.6 Inter,ui-sans-serif,system-ui,sans-serif}
+.kt-playground__field > span{overflow:visible}
+
+/* ── Options: wide floating bottom dock + dim & blur (example stays crisp) ──
+   The backdrop dims AND blurs the page behind it. The edited card is spotlit at
+   z-1120 (ABOVE the backdrop), so its live example is not behind the blur and
+   stays sharp; the dock itself is solid so nothing shows blurred through it. */
+.kt-drawer-backdrop{position:fixed;inset:0;z-index:2147481000;background:color-mix(in srgb,var(--bg) 40%,transparent);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);opacity:0;pointer-events:none;transition:opacity .3s ease}
+.kt-drawer-backdrop.is-open{opacity:1;pointer-events:auto}
+/* Spotlight: lift the edited card above the dim, crisp and framed. */
+.kt-fp-spotlight{position:relative;z-index:2147481500;box-shadow:0 24px 70px rgba(10,14,22,.28),0 0 0 1px color-mix(in srgb,var(--accent) 45%,transparent)!important;border-radius:var(--r-card)}
+
+/* Height follows the active view's content between a floor and a ceiling, so
+   switching 설정 ↔ 코드 (and a long vs. short snippet) resizes the sheet. */
+.kt-drawer-sheet{position:fixed;left:50%;bottom:0;z-index:2147482000;width:min(1400px,97vw);height:var(--kt-drawer-h,min(50vh,580px));min-height:0;max-height:var(--kt-drawer-max,78vh);
+  transform:translate(-50%,calc(100% + 30px));transition:transform .34s cubic-bezier(.22,.9,.28,1),height .3s cubic-bezier(.4,0,.2,1);
+  background:var(--panel);border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;overflow:hidden;
+  box-shadow:0 -22px 64px rgba(10,14,22,.24);display:flex;flex-direction:column;pointer-events:none}
+.kt-drawer-sheet.is-open{transform:translate(-50%,0);pointer-events:auto}
+/* Draggable resize grip over the top handle bar (desktop). */
+.kt-drawer-grip{position:relative;flex:0 0 auto;height:32px;width:100%;touch-action:none;z-index:5;cursor:ns-resize}
+.kt-drawer-grip::before{content:"";position:absolute;top:13px;left:50%;transform:translateX(-50%);width:48px;height:5px;border-radius:99px;background:color-mix(in srgb,var(--muted) 34%,transparent)}
+.kt-drawer-sheet[data-resize-area="header"] .kt-playground__drawer-head,
+.kt-drawer-sheet[data-resize-area="header"] .kt-drawer-grip{cursor:ns-resize}
+.kt-drawer-sheet[data-resize-area="header"] .kt-playground__drawer-head :is(button,a,input,select,textarea,label,[contenteditable="true"],[data-no-sheet-resize]){cursor:auto}
+.kt-drawer-sheet.is-resizing{user-select:none;-webkit-user-select:none;transition:none;cursor:ns-resize}
+/* The header is a drag surface, so say so to the pointer and keep the browser
+   from claiming the gesture for text selection. */
+/* `touch-action:none` also suppressed the browser's own selection gesture, and
+   the header is text you should be able to copy. Only the grip needs to own
+   the touch gesture outright. */
+.kt-drawer-sheet .kt-playground__drawer-head{cursor:ns-resize;user-select:text;-webkit-user-select:text}
+.kt-drawer-sheet .kt-drawer-grip{touch-action:none}
+.kt-drawer-sheet .kt-playground__drawer-head :is(button,a,select,input,label){cursor:auto}
+.kt-drawer-sheet.is-resizing *{cursor:ns-resize!important}
+.kt-drawer-grip:hover~*  .kt-playground__drawer-head,.kt-drawer-grip:focus-visible{outline:none}
+.kt-drawer-grip:focus-visible{outline:2px solid var(--accent);outline-offset:-3px;border-radius:8px}
+
+/* Body = fixed head + a single scrolling area (the groups / code view). The
+   header never scrolls; only the content below it does. */
+.kt-playground__body.is-portal{flex:1;min-height:0;display:flex;flex-direction:column;padding:0;border:0;background:transparent;overflow:hidden}
+.kt-playground__body[hidden]{display:none}
+/* Both views share one fixed stage, so switching never resizes the sheet. */
+.kt-playground__viewstage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:color-mix(in srgb,var(--panel2) 38%,var(--panel))}
+/* Inactive view is taken out of flow; the ACTIVE one stays in flow so the sheet
+   height follows whichever view is showing (settings OR code). */
+.kt-playground__viewstage>.kt-playground__view{position:absolute;inset:0;min-height:0;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,visibility 0s linear .18s}
+
+/* Tetris packing: a responsive grid whose rows are a small unit; JS gives each
+   group a row-span from its measured height, so a short group never leaves a
+   hole beside a tall one and folding just re-packs (grid items never overlap). */
+/* True masonry: JS distributes groups into real column elements, so a short
+   group always sits directly under the one above it (CSS grid could only
+   place items in row bands, which left 400-600px holes). */
+.kt-playground__viewstage>.kt-playground__groups{display:flex;align-items:flex-start;gap:12px;overflow-y:auto;overflow-x:hidden;padding:18px 22px 24px}
+.kt-playground__masonry-col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:12px}
+.kt-playground__viewstage>.kt-playground__groups>.kt-playground__group{min-width:0;align-self:start}
+.kt-playground__viewstage>.kt-playground__groups>.kt-playground__group:only-child,.kt-playground__viewstage>.kt-playground__groups>.kt-playground__group.is-full-row{grid-column:1/-1}
+.kt-playground__viewstage>.kt-playground__code{display:flex;flex-direction:column;margin:0;overflow:hidden}
+.kt-playground__viewstage>.kt-playground__view.is-active{opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
+.kt-playground__viewstage>.kt-playground__code>.kt-playground__code-head{flex:0 0 auto}
+.kt-playground__viewstage>.kt-playground__code>.kt-playground__pre{flex:1 1 auto;min-height:0;max-height:none;overflow:auto;position:relative}
+/* Line-numbered code aligns only with pre (not pre-wrap); long lines scroll. */
+.kt-playground__pre.line-numbers{white-space:pre}
+.kt-playground__pre.is-wrapped{white-space:pre-wrap!important;overflow-wrap:anywhere;word-break:break-word}
+/* Smaller, tighter code text. !important to win over Prism's theme rules. */
+.kt-drawer-sheet .kt-playground__pre,.kt-drawer-sheet .kt-playground__pre code[class*="language-"],.kt-drawer-sheet .kt-playground__pre code{font-size:11px!important;line-height:1.5!important}
+/* Status = a screen-reader-only live region. Visible feedback (Applied /
+   reverted / copied) goes through toasts instead, so it takes no visual space. */
+.kt-playground__body.is-portal>.kt-playground__status{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+@media(prefers-reduced-motion:reduce){.kt-playground__track,.kt-playground__viewstage>.kt-playground__view{transition:none}}
+
+/* Fixed head: title + subtitle on the left, view-tabs + actions on the right. */
+.kt-playground__drawer-head{flex:0 0 auto;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0;padding:15px 22px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
+/* 설정 ↔ 코드 segmented toggle. The selection crossfades in place. */
+.kt-playground__viewtabs{position:relative;display:inline-flex;flex:0 0 auto;border:1px solid var(--line);border-radius:10px;background:var(--panel2);padding:3px;gap:0}
+.kt-playground__viewtabs::before{content:none}
+.kt-vt{position:relative;z-index:1;flex:1 1 0;text-align:center;border:0;background:transparent;color:var(--muted);font:700 12px/1 var(--font-sans);padding:7px 16px;border-radius:8px;cursor:pointer;transition:color .18s ease,background-color .18s ease,box-shadow .18s ease}
+.kt-vt.is-active{color:var(--text);background:var(--panel);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.kt-vt:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.kt-playground__drawer-heading{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1 1 0}
+.kt-playground__drawer-heading strong{font-size:16px;font-weight:800;letter-spacing:-.015em}
+.kt-playground__drawer-sub{font-size:12px;color:var(--muted)}
+.kt-playground__head-actions{display:flex;align-items:center;gap:10px;flex:1 1 0;justify-content:flex-end}
+.kt-playground__viewtabs{margin:0 auto}
+.kt-playground__head-actions .kt-playground__toolbar{margin:0}
+.kt-playground__close{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--muted);cursor:pointer;font-size:15px;flex:0 0 auto;transition:color .15s ease,border-color .15s ease}
+.kt-playground__close:hover{color:var(--text);border-color:var(--accent);background:transparent}
+.kt-playground[open]>summary{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+
+/* Controls — product-style: each group is a quiet card; fields put the
+   label and its value on one row with the control beneath. */
+.kt-drawer-sheet .kt-playground__groups{gap:10px;grid-auto-flow:dense}
+.kt-drawer-sheet .kt-playground__group{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:0 14px}
+.kt-drawer-sheet .kt-playground__group+.kt-playground__group{border-top:1px solid var(--line)}
+/* Group header = a clean, full-width accordion bar (native <button>): accent
+   dot, title, chevron, with a hairline under it. Click folds the controls. */
+.kt-drawer-sheet .kt-playground__legend{box-sizing:border-box;-webkit-appearance:none;appearance:none;display:flex;align-items:center;gap:9px;width:100%;font-family:inherit;font-size:11.5px;font-weight:700;letter-spacing:.01em;text-transform:none;color:var(--text);background:transparent;border:0;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent);cursor:pointer;user-select:none;text-align:left;padding:11px 2px;margin:0}
+.kt-playground__legend-text{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kt-drawer-sheet .kt-playground__legend:hover{color:var(--accent)}
+.kt-drawer-sheet .kt-playground__legend:hover::before{background:var(--accent)}
+.kt-drawer-sheet .kt-playground__legend:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.kt-drawer-sheet .kt-playground__legend::after{content:"";width:13px;height:13px;margin-left:8px;flex:0 0 auto;opacity:.5;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/10px 6px no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/10px 6px no-repeat;transition:transform .2s ease}
+.kt-playground__group.is-collapsed .kt-playground__legend::after{transform:rotate(-90deg)}
+/* Collapse = hide the controls outright (no reserved empty space). */
+.kt-drawer-sheet .kt-playground__controls{padding:12px 0 14px}
+.kt-playground__group.is-collapsed .kt-playground__controls{display:none}
+.kt-playground__group.is-collapsed .kt-playground__legend{border-bottom-color:transparent}
+@media(prefers-reduced-motion:reduce){.kt-drawer-sheet .kt-playground__legend::after{transition:none}}
+/* Smart responsive grid layout based on visible control field count */
+.kt-drawer-sheet .kt-playground__controls{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px 18px;justify-content:start}
+.kt-drawer-sheet .kt-playground__controls[data-visible-count="1"]{grid-template-columns:1fr}
+.kt-drawer-sheet .kt-playground__controls[data-visible-count="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.kt-drawer-sheet .kt-playground__controls[data-visible-count="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+.kt-drawer-sheet .kt-playground__controls[data-visible-count="4"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:700px){.kt-drawer-sheet .kt-playground__controls[data-visible-count="3"]{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.kt-drawer-sheet .kt-playground__controls,.kt-drawer-sheet .kt-playground__controls[data-visible-count]{grid-template-columns:1fr!important}}
+/* A field control expands to fill available grid space */
+.kt-drawer-sheet .kt-playground__field>input,.kt-drawer-sheet .kt-playground__field>select,.kt-drawer-sheet .kt-playground__field>textarea,.kt-drawer-sheet .kt-playground__field>.kt-color-row{width:100%}
+.kt-drawer-sheet .kt-playground__field{grid-template-columns:1fr auto;grid-template-areas:"label val" "input input";gap:7px 8px;align-items:center}
+/* The caption row (label + optional help button) sits in the "label" cell. */
+.kt-drawer-sheet .kt-playground__field>.kt-field-cap{grid-area:label;min-width:0}
+.kt-drawer-sheet .kt-playground__field .kt-field-cap label{font-size:12.5px;font-weight:600;color:var(--text);line-height:1.3;cursor:pointer}
+.kt-drawer-sheet .kt-playground__field>input,.kt-drawer-sheet .kt-playground__field>select,.kt-drawer-sheet .kt-playground__field>textarea,.kt-drawer-sheet .kt-playground__field>.kt-color-row{grid-area:input}
+/* Ease field — one grid: left column = preset select + cubic-bezier() input +
+   x1/y1/x2/y2, right column = graph (spans those rows) + scrubber, tools below.
+   The editor is display:contents so its svg/nums/scrub/tools join this grid. */
+.kt-drawer-sheet .kt-playground__field.kt-ease-field{
+  /* Occupy ~2 columns and flow into the empty space next to Speed / Start pause
+     instead of hogging a full row (which left a big void on the right and made
+     the drawer taller than it needed to be). */
+  grid-column:span 2;
+  width:100%;
+  min-width:0;
+  align-self:start;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(132px,34%);
+  grid-template-areas:
+    "cap    cap"
+    "select graph"
+    "custom graph"
+    "nums   graph"
+    "scrub  scrub"
+    "tools  tools";
+  row-gap:4px;
+  column-gap:14px;
+  align-items:start;
+  max-width:none;
+}
+.kt-drawer-sheet .kt-ease-field>.kt-field-cap{grid-area:cap;margin-bottom:0}
+.kt-drawer-sheet .kt-ease-field>.kt-ease-select{grid-area:select;width:100%;box-sizing:border-box;max-width:none}
+.kt-drawer-sheet .kt-ease-field>.kt-ease-custom{grid-area:custom;width:100%;box-sizing:border-box;max-width:none}
+/* Fixed height, fluid width. `aspect-ratio:1` used to force the box square, so
+   using a wider column meant the plot grew in BOTH directions instead of just
+   stretching. The editor's viewBox now tracks the element's pixel box (see
+   fitViewBox in playground.js), so a non-square box is drawn correctly. */
+.kt-drawer-sheet .kt-ease-field .kt-bz-svg{grid-area:graph;width:100%;height:var(--kt-bz-h,190px);min-height:0;align-self:start}
+.kt-drawer-sheet .kt-ease-field .kt-bz-nums{grid-area:nums;align-self:start;width:100%;margin-bottom:2px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 14px}
+/* x1/y1/x2/y2 fill their cell evenly (fixed label column + input fills the rest)
+   so both columns match and there's no empty space in the box. */
+.kt-drawer-sheet .kt-ease-field .kt-bz-num{display:grid;grid-template-columns:18px minmax(46px,1fr);align-items:center;gap:6px}
+.kt-drawer-sheet .kt-ease-field .kt-bz-num>span{width:18px;font-size:11px}
+.kt-drawer-sheet .kt-ease-field .kt-bz-num input{width:100%;min-width:0;box-sizing:border-box;padding-inline:8px;text-align:center;font-size:12.5px}
+/* The scrub track is a separate idea from the x/y inputs above it, so give it
+   real breathing room and a caption-height gap instead of butting up. */
+.kt-drawer-sheet .kt-ease-field .kt-bz-preview{grid-area:scrub;width:100%;flex:none;margin:12px 0 4px;height:16px;border-radius:999px}
+.kt-drawer-sheet .kt-ease-field .kt-bz-dot{width:16px;height:16px;margin:-8px 0 0 -8px}
+.kt-drawer-sheet .kt-ease-field .kt-bz-tools{margin-top:10px}
+.kt-drawer-sheet .kt-ease-field .kt-bz-tools{grid-area:tools;flex:none}
+.kt-drawer-sheet .kt-playground__controls:has(.kt-ease-field){padding-bottom:7px}
+.kt-drawer-sheet .kt-ease-field>.kt-playground__value{display:none}
+/* Non-bezier value (keyword / GSAP ease) — the editor is empty, so collapse to a
+   single column with just the preset + custom input. */
+.kt-drawer-sheet .kt-ease-field:has(.kt-ease-editor[hidden]){
+  grid-template-columns:1fr;
+  grid-template-areas:"cap" "select" "custom";
+  max-width:none;
+}
+.kt-drawer-sheet .kt-playground__value{grid-area:val;justify-self:end;margin:0;font-weight:700;font-size:11px;color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);padding:2px 7px;border-radius:6px;font-variant-numeric:tabular-nums}
+.kt-drawer-sheet .kt-playground__field input,.kt-drawer-sheet .kt-playground__field select,.kt-drawer-sheet .kt-playground__field textarea{min-height:40px;border-radius:10px;background-color:var(--panel2)}
+/* background-color (not the background shorthand) so the select's dropdown-arrow
+   background-image survives, and keep room on the right for it. */
+.kt-drawer-sheet .kt-playground__field select{padding-right:34px;background-position:right 13px center}
+.kt-drawer-sheet .kt-playground__field input:focus,.kt-drawer-sheet .kt-playground__field select:focus,.kt-drawer-sheet .kt-playground__field textarea:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent);background-color:var(--panel)}
+.kt-drawer-sheet .kt-playground__field input[type="range"]{min-height:0;background:transparent;padding:0}
+.kt-drawer-sheet .kt-playground__field input[type="color"]{min-height:40px;padding:4px}
+/* Toggle switch for booleans */
+/* Switch field = same stacked layout as every other field: label on top, the
+   toggle on the control row below (no inline pill box). */
+.kt-drawer-sheet .kt-playground__check{display:grid!important;grid-template-columns:1fr auto!important;grid-template-areas:"label val" "input input"!important;align-items:center;gap:6px 8px!important;background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;min-height:0!important}
+.kt-drawer-sheet .kt-playground__check>.kt-field-cap{grid-area:label;order:0;flex:none;min-width:0}
+.kt-drawer-sheet .kt-playground__check .kt-field-cap label{font-size:12.5px;font-weight:600;color:var(--text);cursor:pointer}
+.kt-drawer-sheet .kt-playground__check .kt-playground__value{display:none}
+.kt-drawer-sheet .kt-playground__check input{grid-area:input;justify-self:start;order:0;appearance:none;-webkit-appearance:none;width:40px;height:23px;min-height:0;border:0;border-radius:99px;background:color-mix(in srgb,var(--muted) 40%,transparent);position:relative;cursor:pointer;transition:background .2s ease;flex:0 0 auto}
+.kt-drawer-sheet .kt-playground__check input:checked{background:var(--accent)}
+.kt-drawer-sheet .kt-playground__check input::after{content:"";position:absolute;top:2.5px;left:2.5px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s ease}
+.kt-drawer-sheet .kt-playground__check input:checked::after{transform:translateX(17px)}
+.kt-drawer-sheet .kt-playground__check input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Toolbar buttons in the head read as pill actions. */
+.kt-playground__head-actions .kt-playground__toolbar button{padding:9px 15px;border-radius:10px}
+.kt-playground__code-actions{display:flex;align-items:center}
+.kt-playground__wrap{border:0;border-left:1px solid #272d37;background:transparent;color:#9aa6b7;padding:9px 12px;cursor:pointer;font-size:12px}
+.kt-playground__wrap:hover,.kt-playground__wrap.is-active{color:#fff;background:#222833}
+
+/* Collapsible code preview — tucked away so the panel isn't a wall of code. */
+.kt-playground__codebox{margin-top:18px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel2)}
+.kt-playground__codebox>summary{list-style:none;cursor:pointer;padding:13px 16px;font-size:12.5px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.kt-playground__codebox>summary::-webkit-details-marker{display:none}
+.kt-playground__codebox>summary::after{content:"▾";margin-left:auto;color:var(--muted);transition:transform .2s ease}
+.kt-playground__codebox[open]>summary::after{transform:rotate(180deg)}
+.kt-drawer-sheet .kt-playground__code{margin:0;border:0;border-top:1px solid var(--line);border-radius:0}
+.kt-drawer-sheet .kt-playground__pre{max-height:200px}
+
+@media(max-width:720px){
+  /* One column on a narrow drawer. This needs three classes: an identical
+     2-class selector sits further down the file (outside any query) and would
+     otherwise win on source order, leaving single fields at half width beside
+     empty space while the 2-column ease field looked correct. */
+  .kt-drawer-sheet .kt-playground__viewstage .kt-playground__controls{grid-template-columns:minmax(0,1fr)}
+  /* With one column the ease field must not still claim two. */
+  .kt-drawer-sheet .kt-playground__viewstage .kt-playground__field.kt-ease-field{grid-column:auto}
+
+  /* Two rows on a phone: the heading owns row 1, the view toggle and the actions
+     share row 2. Every selector here is prefixed with `.kt-drawer-sheet` on
+     purpose — the un-prefixed `.kt-playground__drawer-head` I used first was one
+     class less specific than the `.kt-drawer-sheet .kt-playground__drawer-head`
+     rule outside this query, so the media query silently lost the cascade:
+     `order` stayed 0 on all three children and `align-items` stayed `center`. */
+  /* justify-content:flex-start matters — the base rule uses space-between, which
+     re-centred the toggle whenever it wrapped onto a row of its own. */
+  .kt-drawer-sheet .kt-playground__drawer-head{padding:12px 14px 10px;gap:8px 10px;flex-wrap:wrap;align-items:flex-start;justify-content:flex-start}
+  /* The toggle carries a 1px border + 3px padding that the buttons do not, so
+     their box centres sat 2.2px apart. align-items:center on both puts them on a
+     shared centre line rather than a shared top edge. */
+  .kt-drawer-sheet .kt-playground__drawer-head>.kt-playground__viewtabs,
+  .kt-drawer-sheet .kt-playground__drawer-head>.kt-playground__head-actions{align-self:center}
+  .kt-drawer-sheet .kt-playground__drawer-head>.kt-playground__drawer-heading{order:1;flex:1 1 100%;min-width:0}
+  /* Row 2 splits: the 설정/코드 toggle sits left, 다시 재생 / 초기화 / 닫기 stay right.
+     `margin-right:auto` on the toggle does the split without a spacer element. */
+  /* margin-left:0 explicitly — a `margin-inline:auto` further up was surviving my
+     `margin-right:auto` and keeping the toggle off the left edge. */
+  .kt-drawer-sheet .kt-playground__drawer-head>.kt-playground__viewtabs{order:2;flex:0 1 auto;min-width:0;margin-left:0;margin-right:auto}
+  /* Row 2 must stay ONE line: the toggle and the actions were wrapping onto
+     separate rows because together they exceeded the width. A shared wrapper is
+     not available (they are siblings of the heading), so instead both are allowed
+     to shrink — `flex:0 1 auto; min-width:0` on each, tighter button padding, and
+     the toggle's own buttons free to compress. */
+  .kt-drawer-sheet .kt-playground__viewtabs .kt-vt{padding-inline:10px;min-width:0}
+  .kt-drawer-sheet .kt-playground__drawer-head>.kt-playground__head-actions{order:3;flex:0 1 auto;min-width:0;flex-wrap:nowrap;gap:6px;justify-content:flex-end;margin-left:auto;align-items:center}
+  .kt-drawer-sheet .kt-playground__head-actions .kt-playground__toolbar{gap:6px;flex-wrap:nowrap}
+  .kt-drawer-sheet .kt-playground__head-actions .kt-playground__toolbar button{padding-inline:10px;font-size:11.5px}
+  .kt-drawer-sheet .kt-playground__drawer-heading strong{font-size:15px}
+  .kt-drawer-sheet .kt-playground__drawer-heading p,
+  .kt-drawer-sheet .kt-playground__drawer-heading small{font-size:12px;line-height:1.45}
+  .kt-drawer-sheet .kt-playground__head-actions .kt-playground__toolbar{flex:0 1 auto;flex-wrap:nowrap;margin-top:0}
+  .kt-drawer-sheet .kt-playground__head-actions .kt-playground__toolbar button{flex:0 1 auto;min-height:36px;white-space:nowrap}
+
+  .kt-drawer-sheet{width:100vw;height:var(--kt-drawer-h,min(76dvh,680px));max-height:var(--kt-drawer-max,76dvh);border-radius:20px 20px 0 0}
+  .kt-playground__drawer-head{flex-wrap:wrap}
+  /* width:auto, not 100% — a full-width basis made the actions claim a row of
+     their own, so the 설정/코드 toggle and 다시 재생/초기화/닫기 could never share a
+     line no matter what flex values they had. */
+  .kt-playground__head-actions{width:auto;justify-content:flex-end}
+  .kt-drawer-sheet .kt-playground__controls{grid-template-columns:1fr 1fr}
+  /* Column direction makes flex-basis control HEIGHT, so the masonry column
+     fell back to shrink-to-fit width (~134px on a phone). Stretch it. */
+  .kt-playground__viewstage>.kt-playground__groups{flex-direction:column}
+  .kt-playground__masonry-col{width:100%;flex:0 0 auto;align-self:stretch}
+  .kt-playground__viewstage>.kt-playground__groups>.kt-playground__group{grid-column:auto}
+}
+/* Narrow phones (iPhone-width): single-column controls, tighter gutters so the
+   sheet content isn't cramped or clipped, and let the header actions wrap. */
+@media(max-width:480px){
+  .kt-drawer-sheet{height:82dvh;max-height:82dvh}
+  .kt-playground__viewstage>.kt-playground__groups{padding:14px 16px 18px}
+  .kt-drawer-sheet .kt-playground__group{padding:14px 14px 16px}
+  .kt-playground__pre,.kt-drawer-sheet .kt-playground__pre{max-height:160px}
+}
+
+/* floating replay icon over the demo stage */
+.replay-fab{position:absolute;right:10px;bottom:10px;left:auto;z-index:6;width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:10px;background:color-mix(in srgb,var(--panel) 82%,transparent);backdrop-filter:blur(8px);color:var(--muted);font-size:15px;line-height:1;opacity:.8;transition:opacity .15s ease,color .15s ease,border-color .15s ease}
+.replay-fab:hover{opacity:1;color:var(--accent);border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+.reveal-demo-card{position:relative}
+.replay-row:empty{display:none}
+
+@keyframes kt-drawer-in{from{transform:translateX(26px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* in-place field visibility (no rebuild flicker) */
+.kt-playground__field[hidden],.kt-playground__check[hidden]{display:none!important}
+
+/* controls use the accent color, not the UA blue */
+.kt-playground__field input,.kt-playground__check input,.extra-toggle input{accent-color:var(--accent)}
+
+.kt-playground__note{margin:0 0 12px;padding:11px 13px;border-radius:10px;background:color-mix(in srgb,var(--accent) 8%,var(--panel2));border:1px solid color-mix(in srgb,var(--accent) 20%,var(--line));color:var(--muted);font:400 12px/1.65 var(--font-sans);word-break:keep-all}
+/* Summary: constrain the module-name span so long / translated names overflow
+   their box → our own overflowText scrolls them instead of getting clipped. */
+.kt-playground>summary>.kt-playground__summary-copy{flex:0 0 auto;min-width:0}
+/* overflowText now mounts on every label (it decides for itself whether to roll),
+   and its viewport/track wrappers are inline-block — which sits on the text
+   baseline and pushed the label off-centre against the gear on the left and the
+   + on the right. Centre it explicitly. */
+.kt-playground>summary>.kt-playground__summary-name{flex:0 1 auto;min-width:0;max-width:58%;overflow:hidden;white-space:nowrap;display:inline-flex;align-items:center;align-self:center;line-height:1}
+.kt-playground>summary>.kt-playground__summary-name>*{display:inline-flex;align-items:center}
+
+/* Apple-style thin scrollbars for the settings drawer list + code block only. */
+.kt-playground__viewstage>.kt-playground__groups{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--muted) 42%,transparent) transparent}
+.kt-playground__viewstage>.kt-playground__groups::-webkit-scrollbar{width:9px;height:9px}
+.kt-playground__viewstage>.kt-playground__groups::-webkit-scrollbar-track{background:transparent;margin:4px}
+.kt-playground__viewstage>.kt-playground__groups::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--muted) 36%,transparent);border-radius:99px;border:2px solid transparent;background-clip:padding-box;min-height:32px}
+.kt-playground__viewstage>.kt-playground__groups:hover::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--muted) 58%,transparent)}
+.kt-playground__pre{scrollbar-width:thin;scrollbar-color:rgba(207,233,227,.28) transparent}
+.kt-playground__pre::-webkit-scrollbar{width:9px;height:9px}
+.kt-playground__pre::-webkit-scrollbar-track{background:transparent;margin:4px}
+.kt-playground__pre::-webkit-scrollbar-thumb{background:rgba(207,233,227,.24);border-radius:99px;border:2px solid transparent;background-clip:padding-box;min-height:32px}
+.kt-playground__pre:hover::-webkit-scrollbar-thumb{background:rgba(207,233,227,.42)}
+
+/* Desktop drawer density: keep more of the live demo visible while the content
+   itself scrolls inside the settings/code stage. */
+@media(min-width:721px){
+  .kt-drawer-grip{height:24px}
+  .kt-drawer-grip::before{top:9px}
+  .kt-playground__drawer-head{padding:11px 20px 10px;gap:12px}
+  .kt-playground__viewstage>.kt-playground__groups{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px;padding:12px 16px 16px}
+  .kt-drawer-sheet.kt-density-compact .kt-playground__group,.kt-drawer-sheet .kt-playground__group{padding:0 12px}
+  .kt-drawer-sheet .kt-playground__legend{padding:9px 2px}
+  .kt-drawer-sheet.kt-density-compact .kt-playground__controls,.kt-drawer-sheet .kt-playground__controls{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px 14px;padding:10px 0 12px}
+  .kt-drawer-sheet .kt-playground__field{gap:5px 8px}
+}
+
+/* ── Drawer field safety: never let a label collide with its value pill, and
+   keep the ease editor usable inside a narrow masonry column. ─────────────── */
+.kt-drawer-sheet .kt-playground__field>.kt-field-cap{min-width:0;overflow:hidden}
+.kt-drawer-sheet .kt-playground__field .kt-field-cap label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kt-drawer-sheet .kt-playground__value{white-space:nowrap;flex:0 0 auto}
+.kt-drawer-sheet .kt-playground__controls{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kt-drawer-sheet .kt-ease-field{min-width:0}
+.kt-drawer-sheet .kt-ease-field .kt-bz-nums{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+
+/* The ease editor must react to its own COLUMN width, not the viewport — in a
+   4-column drawer each column is narrow even on a 2500px screen. */
+.kt-drawer-sheet .kt-playground__controls{container-type:inline-size}
+/* 330px, not 430px: a 420px-wide controls container was matching this query, so
+   the field stacked and `aspect-ratio:1; width:100%` inflated the curve to a
+   420x420 square — the ease field measured 709.6px tall against 49.6px for every
+   other field. The side-by-side layout works comfortably down to ~330px
+   (graph min 132px + 14px gap + select). */
+@container (max-width: 330px){
+  /* Same specificity as the base rule (.kt-drawer-sheet .kt-playground__field.kt-ease-field),
+     otherwise this narrow layout silently lost the cascade and the numbers
+     stayed crushed next to the graph. */
+  .kt-drawer-sheet .kt-playground__field.kt-ease-field{grid-template-columns:minmax(0,1fr);grid-template-areas:"cap" "select" "custom" "graph" "nums" "scrub" "tools"}
+  /* Stacked layout: the curve takes the FULL column width at the same height as
+     the side-by-side layout. The old `min(100%,200px)` cap left ~34% of the
+     column empty to the right of the plot (measured: 200px of graph in a 304px
+     column), which read as a small chart parked in dead space. Height is fixed
+     here too, so widening the column stretches the plot instead of inflating it
+     into a giant square. */
+  .kt-drawer-sheet .kt-playground__field.kt-ease-field .kt-bz-svg{height:var(--kt-bz-h,190px);min-height:0;width:100%;max-width:none;justify-self:stretch}
+  .kt-drawer-sheet .kt-playground__field.kt-ease-field .kt-bz-nums{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@container (max-width: 250px){
+  .kt-drawer-sheet .kt-bz-tools{grid-template-columns:minmax(0,1fr)}
+}

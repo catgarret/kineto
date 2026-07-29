@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="768" height="96" viewBox="0 0 768 96">
+  <g fill="none" stroke="#ff5b1c" stroke-linecap="round">
+    <g transform="translate(48,48)"><circle r="6" fill="#ff5b1c" stroke="none"/></g>
+    <g transform="translate(144,48)"><circle r="12" stroke-width="5" opacity=".95"/><circle r="3" fill="#ffd166" stroke="none"/></g>
+    <g transform="translate(240,48)"><circle r="19" stroke-width="4" opacity=".9"/><g stroke="#ffd166" stroke-width="4"><line x1="0" y1="-24" x2="0" y2="-30"/><line x1="0" y1="24" x2="0" y2="30"/><line x1="-24" y1="0" x2="-30" y2="0"/><line x1="24" y1="0" x2="30" y2="0"/></g></g>
+    <g transform="translate(336,48)"><circle r="26" stroke-width="3" opacity=".75"/><g stroke="#ffd166" stroke-width="3.5" opacity=".9"><line x1="0" y1="-30" x2="0" y2="-38"/><line x1="0" y1="30" x2="0" y2="38"/><line x1="-30" y1="0" x2="-38" y2="0"/><line x1="30" y1="0" x2="38" y2="0"/><line x1="-21" y1="-21" x2="-27" y2="-27"/><line x1="21" y1="21" x2="27" y2="27"/><line x1="-21" y1="21" x2="-27" y2="27"/><line x1="21" y1="-21" x2="27" y2="-27"/></g></g>
+    <g transform="translate(432,48)"><circle r="32" stroke-width="2.5" opacity=".55"/><g stroke="#ffd166" stroke-width="3" opacity=".7"><line x1="0" y1="-36" x2="0" y2="-42"/><line x1="0" y1="36" x2="0" y2="42"/><line x1="-36" y1="0" x2="-42" y2="0"/><line x1="36" y1="0" x2="42" y2="0"/><line x1="-25" y1="-25" x2="-30" y2="-30"/><line x1="25" y1="25" x2="30" y2="30"/><line x1="-25" y1="25" x2="-30" y2="30"/><line x1="25" y1="-25" x2="30" y2="-30"/></g></g>
+    <g transform="translate(528,48)"><circle r="37" stroke-width="2" opacity=".4"/><g stroke="#ffd166" stroke-width="2.5" opacity=".5"><line x1="0" y1="-40" x2="0" y2="-44"/><line x1="0" y1="40" x2="0" y2="44"/><line x1="-40" y1="0" x2="-44" y2="0"/><line x1="40" y1="0" x2="44" y2="0"/></g></g>
+    <g transform="translate(624,48)"><circle r="41" stroke-width="1.5" opacity=".22"/></g>
+    <g transform="translate(720,48)"><circle r="44" stroke-width="1" opacity=".08"/></g>
+  </g>
+</svg>

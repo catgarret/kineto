@@ -19,5 +19,5 @@ VSCODE-GUIDE.md
 .fuse_hidden*
 **/.fuse_hidden*
 
-# Generated CDN demo (run: npm run demo:cdn) — deploy this folder to the public demo host
-site/
+# Generated CDN demo (run: npm run demo:cdn). Keep it tracked so GitHub Pages
+# can publish the standalone @latest CDN build from /site.
