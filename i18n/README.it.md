@@ -8,7 +8,7 @@ Un toolkit di interazioni web guidato da attributi HTML o da un'API JavaScript
 
 [한국어](README.ko.md) · [English](../README.md) · [日本語](README.jp.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · Italiano
 
-[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](../LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
+<p><a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="../LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
 [Demo dal vivo](https://git.dongri.me/example/kineto) · [Riferimento moduli](../docs/module-reference.md) · [Contratto delle funzionalità](../FEATURE_CONTRACT.md)
 
@@ -129,7 +129,8 @@ Kineto.disableSmooth();
 | `ripple` | `data-kt-ripple` | fare clic su ondulazione |
 | `scrollSequence` | `data-kt-scroll-sequence` | Scrub sequenza di immagini |
 | `scrollVelocity` | `data-kt-scroll-velocity` | Risposta di velocità/direzione di scorrimento |
-| `slider` | `data-kt-slider` | Diapositiva·Coverflow·Dissolvenza |
+| `slider` | `data-kt-slider` | Slide, coverflow, pile e carosello radiale |
+| `radial` | `data-kt-radial` | Punto di ingresso compatibile per il carosello radiale |
 | `stickyStack` | `data-kt-sticky-stack` | Pila adesiva verticale, orizzontale e mobile |
 | `textFill` | `data-kt-text-fill` | riempimento del testo scorrevole |
 | `textReveal` | `data-kt-text-reveal` | Shuffle, decodifica, rivelazione combinazione Hangul |
@@ -145,7 +146,6 @@ Kineto.disableSmooth();
 | `toast` | `data-kt-toast` | Notifica del brindisi sullo stato |
 | `bottomSheet` | `data-kt-bottom-sheet` | Il foglio inferiore supporta il blocco della messa a fuoco |
 | `tabs` | `data-kt-tabs` | Controllo scheda/segmento WAI-ARIA |
-| `radial` | `data-kt-radial` | carosello circolare |
 | `coverReveal` | `data-kt-cover-reveal` | rivelazione della copertina a colori |
 | `gesture` | `data-kt-gesture` | Feedback al passaggio del mouse/spinta della molla |
 | `drag` | `data-kt-drag` | Inerzia, confine, resistenza allo snapback |

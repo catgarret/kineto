@@ -26,7 +26,7 @@
 | `stickyStack` | `data-kt-sticky-stack` | vertical/horizontal/zindex/floating |
 | `scrollVelocity` | `data-kt-scroll-velocity` | direction/speed response |
 | `progress` | `data-kt-progress` | page/element progress |
-| `slider` | `data-kt-slider` | slide/coverflow controls |
+| `slider` | `data-kt-slider` | slide/coverflow controls (incl. radial) |
 | `ambientMedia` | `data-kt-ambient-media` | image clone / video-sampled ambient glow |
 | `pageReveal` | `data-kt-page-reveal` | page entrance overlay |
 | `glitch` | `data-kt-glitch` | RGB slice/digital glitch |
@@ -47,7 +47,6 @@
 | `bottomSheet` | `data-kt-bottom-sheet` | draggable bottom sheet |
 | `tooltip` | `data-kt-tooltip` | accessible auto-placed tooltip |
 | `switch` | `data-kt-switch` | accessible toggle switch |
-| `radial` | `data-kt-radial` | radial (wheel) carousel |
 | `coverReveal` | `data-kt-cover-reveal` | color cover wipe reveal |
 | `confetti` | `data-kt-confetti` | click / view confetti burst |
 | `hold` | `data-kt-hold` | hold / mash-to-confirm gauge |
@@ -62,5 +61,7 @@
 - Lazy는 이미지 로드/노출 효과입니다. `slide-up`과 `wipe`는 viewport Reveal입니다.
 - Card Interaction은 Card Glow/Tilt, Pointer & Button Feedback은 Magnetic/Ripple/Vibrate/Mouse Parallax입니다.
 - 데모는 모든 공개 모듈과 핵심 variant를 확인하는 QA 표면입니다.
+- Mega Menu의 `responsive`는 좁은 화면에서 `wrap`(가운데 줄바꿈),
+  `scroll`(한 줄 스와이프), `custom`(애플리케이션 CSS 위임)을 선택합니다.
 
 정확한 variant와 공개 option은 [`../module-reference.md`](../module-reference.md), 삭제·재해석 금지 동작은 [`../../OWNER_REQUIREMENTS.md`](../../OWNER_REQUIREMENTS.md)를 확인합니다.

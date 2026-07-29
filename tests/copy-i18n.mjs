@@ -44,7 +44,12 @@ const titles = [...new Set(
 )];
 
 assert.deepEqual([...copy.languages], languages);
-assert.equal(descriptions.length, 142);
+for (const key of ['내려받는 중', '{value}% 완료']) {
+  assert.equal(copy.ui[key]?.length, languages.length, `missing localized demo UI: ${key}`);
+}
+// Two tabbed pairs replace four descriptions with two; Wave and Film Grain add
+// two dedicated Lazy examples.
+assert.equal(descriptions.length, 139);
 assert.equal(titles.length, 16);
 
 for (const [label, values, dictionary] of [

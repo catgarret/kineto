@@ -9,3 +9,13 @@ try {
 }
 window.Prism = window.Prism || {};
 window.Prism.manual = true;
+
+// Async webfont CSS without an inline handler: the stylesheet ships as
+// media="print" so it never blocks first paint, and is promoted to media="all"
+// once loaded. This used to be `onload="this.media='all'"` in index.html — an
+// inline event handler, which the demo forbids (and which a strict CSP blocks).
+for (const link of document.querySelectorAll('link[data-kt-async-css]')) {
+  const promote = () => { link.media = 'all'; };
+  if (link.sheet) promote();
+  else link.addEventListener('load', promote, { once: true });
+}

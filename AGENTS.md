@@ -34,6 +34,12 @@ Unless the user explicitly asks for read-only analysis or says not to commit:
    commit. Never include unrelated dirty-worktree files.
 7. Report the commit hash, checks run, and any environment not verified.
 
+If the agent cannot use Git directly, replace steps 6–7 with a concrete,
+copy-paste terminal block for the user. It must run verification, show status,
+stage only the task's exact files, and use the actual conventional commit
+message. Do not leave placeholders. Keep release/publish commands in a separate
+block and include them only after explicit owner approval.
+
 Use `fix:`, `feat:`, `docs:`, `test:`, `refactor:`, `perf:`, `build:`,
 `ci:`, or `release:` prefixes. Do not push ordinary work unless the user asks.
 

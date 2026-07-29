@@ -5,6 +5,11 @@
       document.documentElement.classList.remove('kt-preload');
       throw new Error('Kineto failed to load');
     }
+    // The demo ships WITH smooth scrolling on — it is one of the library's
+    // features, so the default page should show it. The Smooth Scroll card
+    // lets a visitor switch it off and feel the difference immediately.
+    // Respect prefers-reduced-motion: never hijack scrolling for those users.
+    const wantsSmooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
     try{ Kineto.config({smooth:false}); }catch(_){}
     // B-2: when the page opens with a #mod-… deep link, don't let the scroll
     // observer clear the hash before the initial restore scroll runs. Unlocked
@@ -22,9 +27,37 @@
       const build=(typeof window!=='undefined'&&window.__KT_BUILD__)?String(window.__KT_BUILD__):'dev';
       if(version) document.querySelectorAll('[data-kt-version]').forEach(n=>{n.textContent=version;});
       document.querySelectorAll('[data-kt-module-count]').forEach(n=>{n.textContent=String(count);});
-      document.querySelectorAll('[data-kt-build]').forEach(n=>{n.textContent='build '+build;});
+      document.querySelectorAll('[data-kt-build]').forEach(n=>{n.textContent=build;});
     })();
     KinetoPlayground.capture(document);
+    // Card convention: a title plus up to two lines of description. Keep preset
+    // names as stable API identifiers, but describe each renderer in the Korean
+    // source language so the normal copy-i18n pass can translate it.
+    (()=>{
+      let presets=[];
+      try{ presets=Kineto.listTerminalFramePresets?.()||[]; }catch(_){ }
+      if(!presets.length)return;
+      const byId=new Map(presets.map(p=>[p.id,p]));
+      const descriptions={
+        'text-frame':'문자를 한 칸씩 바꾸는 가벼운 터미널 스피너입니다.',
+        'multiline-frame':'여러 문자 프레임을 순서대로 바꾸는 터미널 스피너입니다.',
+        'matrix-frame':'여러 점의 밝기와 위치를 바꾸는 터미널 스피너입니다.',
+        'marquee-frame':'고정 폭 트랙 안에서 기호가 이동하는 터미널 스피너입니다.',
+        'cursor-frame':'문구 뒤의 커서로 진행 상태를 표시합니다.',
+        'compound-frame':'스피너와 상태 정보를 한 줄에 조합합니다.'
+      };
+      document.querySelectorAll('.loader-preview--frame [data-kt-terminal-style]').forEach((node)=>{
+        const card=node.closest('article.card');
+        if(!card||card.querySelector(':scope > p'))return;
+        const preset=byId.get(node.getAttribute('data-kt-terminal-style'));
+        const description=descriptions[preset?.renderer];
+        if(!description)return;
+        const p=document.createElement('p');
+        p.textContent=description;
+        card.querySelector(':scope > h3')?.insertAdjacentElement('afterend',p);
+      });
+    })();
+
     // Deterministic startup: every effect waits for the FULL page load
     // (window 'load'), covered by a slot intro loader — so the entrance
     // choreography plays in the intended order on any connection speed.
@@ -81,33 +114,24 @@
         return;
       }
       const overlay=document.createElement('div');
+      // Geometry and the light brand canvas live in `.intro-loader` in
+      // styles.css — no inline style strings anywhere in the demo.
       overlay.className='intro-loader';
-      // Light brand canvas so the black percentage reads before + during the fill.
-      // width:100vw (not just inset:0) so the overlay also covers the reserved
-      // scrollbar-gutter strip on the right — otherwise that ~15px column shows
-      // the page background as a mismatched off-white band during the intro.
-      overlay.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100dvh;z-index:10020;background:#efe9de;color:#14110d;';
+      const introBg=getComputedStyle(document.documentElement).getPropertyValue('--intro-bg').trim()||'#efe9de';
       const wordmark=document.createElement('span');
       wordmark.className='kt-loader-wordmark';
       wordmark.textContent='Kineto';
       overlay.appendChild(wordmark);
       document.body.appendChild(overlay);
-      // Lock scrolling at the root while the intro is up: otherwise the page
-      // scrolls behind the overlay and lazy images loading in shift the layout,
-      // so releasing the intro leaves the scroll position jumping around.
-      const introScrollLock = document.documentElement.style.overflow;
-      const introGutterLock = document.documentElement.style.scrollbarGutter;
-      document.documentElement.style.overflow = 'hidden';
-      // Release the reserved scrollbar-gutter so no empty strip shows on the right.
-      document.documentElement.style.scrollbarGutter = 'auto';
-      // Paint the <html> itself (incl. the reserved scrollbar-gutter strip) the
-      // intro colour, so no off-white band shows on the right during loading.
-      const introHtmlBg = document.documentElement.style.background;
-      document.documentElement.style.background = '#efe9de';
+      // One root class drives the whole intro state (scroll lock, released
+      // scrollbar-gutter, painted <html>) — see `html.is-intro` in styles.css.
+      // Doing it in CSS keeps the three concerns in one place and leaves nothing
+      // to restore by hand except removing the class.
+      document.documentElement.classList.add('is-intro');
       // Match the iOS status-bar / home-bar tint to the intro canvas so the notch
       // and home-bar areas blend with the loader while it fills.
       const introTcMeta = document.getElementById('theme-color-meta');
-      introTcMeta?.setAttribute('content', '#efe9de');
+      introTcMeta?.setAttribute('content', introBg);
       // Fast/file loads can already be complete when this script runs —
       // resolve immediately then, otherwise the loader would never finish
       // (and skipping it entirely meant no intro at all).
@@ -115,7 +139,7 @@
         ? Promise.resolve()
         : new Promise(resolve=>window.addEventListener('load',resolve,{once:true}));
       let finished=false;
-      const finishIntro=()=>{ if(finished)return; finished=true; if(overlay.parentNode)overlay.remove(); document.documentElement.style.overflow=introScrollLock; document.documentElement.style.scrollbarGutter=introGutterLock; document.documentElement.style.background=introHtmlBg; introTcMeta?.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#0d0e12'); startModules(); };
+      const finishIntro=()=>{ if(finished)return; finished=true; if(overlay.parentNode)overlay.remove(); document.documentElement.classList.remove('is-intro'); introTcMeta?.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#0d0e12'); startModules(); };
       try{
         Kineto.loader(overlay,{
           type:'slot',
@@ -145,7 +169,7 @@
     })();
     const MODULE_GROUPS={
       'Text':['textSplit','blurText','typewriter','textReveal','textTransition','textFill','overflowText','glitch','counter'],
-      'Media':['lazy','lightbox','slider','ambientMedia','brushReveal','scrollSequence','marquee','radial','coverReveal'],
+      'Media':['lazy','lightbox','slider','ambientMedia','brushReveal','scrollSequence','marquee','coverReveal'],
       'Scroll':['parallax','reveal','stickyStack','scrollVelocity','cssScroll','scrollShadows','stickyHeader','horizontalScroll','progress','fullpage'],
       'Pointer':['cursor','tilt','cardGlow','magnetic','ripple','vibrate','mouseParallax','gesture','drag'],
       'Components':['accordion','megaMenu','tabs','bottomSheet','tooltip','switch','flip'],
@@ -245,7 +269,7 @@
       // data-module-block + id="mod-<name>" + a title (identical to the nav
       // label) + a subtitle, and owns its demo(s) explicitly.
       // ─────────────────────────────────────────────────────────────────────
-      const LABEL_OVERRIDE={cssScroll:'CSS Scroll'};
+      const LABEL_OVERRIDE={cssScroll:'CSS Scroll',loader:'Loader'};
       const labelOf=(n)=>LABEL_OVERRIDE[n]||labelize(n);
       const SUBS={
         textSplit:'문장을 글자·단어 단위로 쪼개 3D로 등장·교체.',blurText:'흐림에서 또렷하게, 스태거로 등장.',shuffle:'랜덤 글리프로 흩뿌린 뒤 확정.',typewriter:'타이핑·한글 자모 조합·캐럿.',textReveal:'글자별 점멸 후 확정되는 등장.',textTransition:'문장을 글자 단위로 교체.',textFill:'스크롤 진행률로 글자에 색이 차오름.',overflowText:'컨테이너보다 긴 텍스트의 여덟 가지 순환.',glitch:'RGB 분리·픽셀 시프트·데이터모시.',counter:'카운트업·플립·시계·카운트다운.',
@@ -326,6 +350,86 @@
         // a `.card.full` still spans a full row inside the grid. Only standalone
         // demos (scroll-sequence / sticky-stack / horizontal-scroll, which aren't
         // `.card`) or single-card modules stack full width.
+        // Sub-grouping: [label, test] pairs, evaluated in order. Anything that
+        // matches nothing lands in the trailing "기타" bucket.
+        const SUBGROUPS={
+          loadingIndicator:[
+            ['스피너', u=>u.querySelector('[data-kt-loading-indicator="spinner"]')],
+            ['도트', u=>u.querySelector('[data-kt-loading-indicator="dots"]')],
+            ['진행 바', u=>u.querySelector('[data-kt-loading-indicator="bar"]')],
+            ['텍스트', u=>u.querySelector('[data-kt-loading-indicator="shimmer"],[data-kt-loading-indicator="shimmer-wave"]')],
+            ['터미널 · 미터/커서', u=>u.querySelector('[data-kt-terminal-style="meter"],[data-kt-terminal-style="cursor"],[data-kt-terminal-style="dots"],[data-kt-terminal-style="blocks"]')],
+            ['터미널 · 프레임 스피너', u=>u.querySelector('[data-kt-loading-indicator="terminal"]')]
+          ]
+        };
+        const groupUnits=(list,rules)=>{
+          const used=new Set();
+          const out=rules.map(([label,test])=>{
+            const units=list.filter(u=>!used.has(u)&&test(u));
+            units.forEach(u=>used.add(u));
+            return [label,units];
+          }).filter(([,units])=>units.length);
+          const rest=list.filter(u=>!used.has(u));
+          if(rest.length) out.push(['기타',rest]);
+          return out;
+        };
+        // Per-module / per-sub-group column counts. Some modules have small
+        // previews that waste a 3-up row (lazy, cursor) and some have text
+        // demos that only need a font tweak to fit three across.
+        const MODULE_COLS={lazy:4,cursor:3,textReveal:3,textSplit:3,overflowText:3,scrollVelocity:3,progress:3,fullpage:3};
+        const SUBGROUP_COLS={'터미널 · 미터/커서':3};
+        const applyCols=(body,count)=>{
+          if(!count||!body.classList.contains('grid'))return;
+          body.classList.add('module-block-body--cols-'+count);
+        };
+        // If the final row holds a single card, let it claim the row. Measured
+        // rather than counted: a `.card.full` earlier in the grid takes a whole
+        // row on its own, so any nth-child guess is wrong.
+        // Any incomplete last row is split evenly between the cards left in it —
+        // one card takes the row, two take 50/50, three take a third each. The
+        // grid is 12 tracks wide precisely so those fractions are whole spans.
+        // Measured, not counted: a `.card.full` earlier in the grid claims a whole
+        // row and shifts every nth-child guess.
+        const LAST_ROW_CLASSES=['is-last-row-1','is-last-row-2','is-last-row-3','is-last-row-4'];
+        const markLoneLastCard=(body)=>{
+          const cards=[...body.children].filter(c=>c.classList.contains('card'));
+          cards.forEach(c=>c.classList.remove('is-row-filler',...LAST_ROW_CLASSES));
+          if(!cards.length)return;
+          if(cards.length===1){
+            cards[0].classList.add('is-last-row-1');
+            return;
+          }
+          // Group by row using the measured top edge, then re-measure once the
+          // classes are off so a previous pass cannot bias the grouping.
+          const rows=new Map();
+          cards.forEach(c=>{const top=Math.round(c.getBoundingClientRect().top);
+            if(!rows.has(top))rows.set(top,[]);
+            rows.get(top).push(c);});
+          const tops=[...rows.keys()].sort((a,b)=>a-b);
+          if(tops.length<2)return;
+          const last=rows.get(tops[tops.length-1]);
+          const widest=Math.max(1,...[...rows.values()]
+            .filter(row=>!row.some(card=>card.classList.contains('full')))
+            .map(row=>row.length));
+          // A full last row needs no help.
+          if(last.length>=widest||last.length>LAST_ROW_CLASSES.length)return;
+          const cls=LAST_ROW_CLASSES[last.length-1];
+          last.forEach(c=>c.classList.add(cls));
+        };
+        const rebalanceRows=()=>{
+          document.querySelectorAll('.module-block-body.grid').forEach(markLoneLastCard);
+        };
+        const rowBalanceObserver='ResizeObserver' in window
+          ? new ResizeObserver((entries)=>entries.forEach(({target})=>markLoneLastCard(target)))
+          : null;
+        let rowBalanceFrame=0;
+        // ResizeObserver already reports only grids whose width changed. Avoid a
+        // second full-page measurement pass on every resize — the Loading
+        // Indicator gallery alone contains 40+ animated cards.
+        if(!rowBalanceObserver) window.addEventListener('resize',()=>{
+          if(rowBalanceFrame)cancelAnimationFrame(rowBalanceFrame);
+          rowBalanceFrame=requestAnimationFrame(()=>{rowBalanceFrame=0;rebalanceRows();});
+        });
         const layoutFor=(list)=>{
           const hasStandalone=list.some(u=>!u.classList.contains('card'));
           const cards=list.filter(u=>u.classList.contains('card')).length;
@@ -340,17 +444,45 @@
             const list=byOwner[n]||[];
             const block=document.createElement('section');
             block.className='module-block'; block.id='mod-'+n; block.setAttribute('data-module-block',n);
-            block.style.scrollMarginTop='78px';
+            // scroll-margin-top lives in `.module-block` (styles.css). It used to
+            // be written inline as 78px here, which silently overrode the 82px in
+            // CSS — two sources of truth disagreeing by 4px.
             const h=document.createElement('h3'); h.className='module-block-title'; h.textContent=labelOf(n);
             const p=document.createElement('p'); p.className='module-block-sub'; p.textContent=SUBS[n]||'';
-            const body=document.createElement('div'); body.className=layoutFor(list);
-            list.forEach(u=>body.appendChild(u));
-            block.append(h,p,body); wrap.appendChild(block);
+            block.append(h,p);
+            // Some modules ship far too many demos for one flat grid (Loading
+            // Indicator alone has 40+). Those declare a sub-grouping so the
+            // block reads as a few short, labelled sets instead of one wall.
+            const groups=SUBGROUPS[n]?groupUnits(list,SUBGROUPS[n]):null;
+            if(groups&&groups.length>1){
+              groups.forEach(([label,units])=>{
+                const sh=document.createElement('h4');
+                sh.className='module-subgroup'; sh.textContent=label;
+                const sb=document.createElement('div'); sb.className=layoutFor(units);
+                // A long set of tiny previews (the 35 frame spinners) would run
+                // for a dozen rows at the default 3-up. Pack those denser.
+                if(units.length>=12) sb.classList.add('module-block-body--dense');
+                applyCols(sb,SUBGROUP_COLS[label]||MODULE_COLS[n]);
+                units.forEach(u=>sb.appendChild(u));
+                block.append(sh,sb);
+              });
+            } else {
+              const body=document.createElement('div'); body.className=layoutFor(list);
+              applyCols(body,MODULE_COLS[n]);
+              list.forEach(u=>body.appendChild(u));
+              block.append(body);
+            }
+            wrap.appendChild(block);
           });
           wraps[cat]=wrap;
         });
         // Phase 2: append the rebuilt blocks and remove ONLY leftover containers
         // that hold no surviving unit — an orphan (and its wrapper) is preserved.
+        requestAnimationFrame(()=>requestAnimationFrame(()=>{
+          rebalanceRows();
+          rowBalanceObserver?.disconnect();
+          document.querySelectorAll('.module-block-body.grid').forEach(body=>rowBalanceObserver?.observe(body));
+        }));
         Object.entries(CAT_SECTION).forEach(([cat,secId])=>{
           const sec=document.getElementById(secId); if(!sec||!wraps[cat])return;
           const head=sec.querySelector('.section-head');
@@ -458,12 +590,42 @@
     // A second binding here previously fired Kineto.loader a second time per
     // click → two overlays, and its hideScrollbar-default:true instance locked
     // <html>/<body> overflow so the sticky side-nav collapsed and the page froze.
-    document.getElementById('smooth-toggle')?.addEventListener('change',(event)=>{
+    const smoothToggle=document.getElementById('smooth-toggle');
+    const syncSmoothLabel=(on)=>{
+      const label=smoothToggle?.closest('.smooth-switch')?.querySelector('strong');
+      if(label)label.textContent=on?'켜짐':'꺼짐';
+    };
+    // Turn it on for real so the switch's checked state is honest. Lenis and the
+    // hero's one-flick snap both want the wheel event, and Lenis wins — which
+    // killed the snap. So smooth scrolling stays off WHILE the hero is on screen
+    // and switches on the moment the visitor is past it (and back off if they
+    // return to the top). The switch still overrides this manually.
+    let smoothManual=false;
+    const smoothWanted=()=>smoothToggle?smoothToggle.checked:wantsSmooth;
+    const heroEl=document.querySelector('.hero');
+    const pastHero=()=>!heroEl||window.scrollY>heroEl.offsetHeight-120;
+    let smoothOn=false;
+    const syncSmoothForScroll=()=>{
+      if(smoothManual)return;
+      const shouldRun=smoothWanted()&&pastHero();
+      if(shouldRun===smoothOn)return;
+      smoothOn=shouldRun;
+      try{ shouldRun?Kineto.enableSmooth({duration:1.05}):Kineto.disableSmooth(); }catch(_){}
+    };
+    if(smoothToggle){
+      smoothToggle.checked=wantsSmooth;
+      syncSmoothLabel(wantsSmooth);
+    }
+    window.addEventListener('scroll',syncSmoothForScroll,{passive:true});
+    syncSmoothForScroll();
+    smoothToggle?.addEventListener('change',(event)=>{
       const checked=event.currentTarget.checked;
+      // An explicit choice wins over the hero heuristic from here on.
+      smoothManual=true;
+      smoothOn=checked;
       if(checked)Kineto.enableSmooth({duration:1.05});
       else Kineto.disableSmooth();
-      const label=event.currentTarget.closest('.smooth-switch')?.querySelector('strong');
-      if(label)label.textContent=checked?'켜짐':'꺼짐';
+      syncSmoothLabel(checked);
     });
     document.querySelectorAll('[data-slider-action]').forEach(button=>button.addEventListener('click',()=>{
       const slider=button.closest('.card').querySelector('[data-kt-slider]');
@@ -537,7 +699,12 @@
         {node:navSearch,key:'모듈 검색…',kind:'placeholder'},
         {node:navEmpty,key:'검색 결과가 없습니다.',kind:'text'},
         {node:exploreLink,key:'모듈 보기',kind:'text'},
-        {node:backToTop,key:'맨 위로',kind:'text'}
+        {node:backToTop,key:'맨 위로',kind:'text'},
+        ...[...document.querySelectorAll('[data-demo-i18n]')].map((node)=>({
+          node,
+          key:node.dataset.demoI18n,
+          kind:node.hasAttribute('data-kt-progress-output')?'progress-template':'text'
+        }))
       ].filter(item=>item.node);
       const apply=(lang)=>{
         document.documentElement.lang=lang;
@@ -569,7 +736,11 @@
           const translated=dict&&UI_I18N[key]?UI_I18N[key][LANG_IDX[lang]]:null;
           const value=dict?(translated||key):key;
           if(kind==='placeholder')node.placeholder=value;
-          else node.textContent=value;
+          else if(kind==='progress-template'){
+            const progress=node.dataset.ktProgressValue||node.textContent.match(/\d+(?:\.\d+)?/)?.[0]||'0';
+            node.dataset.ktProgressTemplate=value;
+            node.textContent=value.replaceAll('{value}',progress).replaceAll('{progress}',progress);
+          } else node.textContent=value;
         });
         document.querySelectorAll('[data-module-block] .module-block-sub').forEach((subtitle)=>{
           const block=subtitle.closest('[data-module-block]');
@@ -634,6 +805,10 @@
       const target=document.getElementById('mod-textSplit')||document.querySelector('main [data-module-block]');
       if(!hero||!target)return;
       const firstModule=(target.id||'').replace(/^mod-/,'')||'textSplit';
+      // Land on the group's intro ("Text" + its description), not on the first
+      // module card — snapping past the heading hid it behind the header and the
+      // section read as starting at Text Split.
+      const landing=document.querySelector('main .section-head')||target;
       let snapping=false,lastAt=0,consumed=false;
       const inHero=()=>window.scrollY<hero.offsetHeight-120;
       // Only snap once the hero's own content is fully scrolled into view — if the
@@ -642,7 +817,7 @@
       const heroFullySeen=()=>window.scrollY+window.innerHeight>=hero.offsetHeight-4;
       const snap=()=>{
         snapping=true;
-        target.scrollIntoView({behavior:'smooth',block:'start'});
+        landing.scrollIntoView({behavior:'smooth',block:'start'});
         try{history.replaceState({ktModule:firstModule},'','#mod-'+firstModule);}catch(_){/* file:// */}
         setTimeout(()=>{snapping=false;},900);
       };
@@ -704,10 +879,21 @@
       const list=document.getElementById('list-reveal-demo'); if(!list)return;
       Kineto.getInstance(list,'reveal')?.replay?.();
     });
-    document.getElementById('cover-gallery-replay')?.addEventListener('click',()=>{
+    document.getElementById('cover-gallery-replay')?.addEventListener('click',async ()=>{
       const gallery=document.getElementById('cover-gallery-demo'); if(!gallery)return;
+      const tiles=[...gallery.querySelectorAll('[data-kt-cover-reveal]')];
+      const instances=tiles.map((tile)=>Kineto.getInstance(tile,'coverReveal')).filter(Boolean);
+      // Honour the option: `watch` on = vanish -> reorder -> re-enter, `watch`
+      // off = the plain FLIP move where tiles slide to their new slots. Ignoring
+      // it made both settings look identical.
+      const watching=tiles.some((tile)=>tile.getAttribute('data-kt-watch')==='true');
+      if(watching&&instances.length&&typeof instances[0].exit==='function'){
+        await Promise.all(instances.map((instance)=>instance.exit()));
+        Kineto.getInstance(gallery,'flip')?.shuffle?.();
+        instances.forEach((instance)=>instance.replay());
+        return;
+      }
       Kineto.getInstance(gallery,'flip')?.shuffle?.();
-      gallery.querySelectorAll('[data-kt-cover-reveal]').forEach((tile)=>Kineto.replay(tile,'coverReveal'));
     });
     // Page Transition demo preview lives here (not as an inline script in the
     // HTML) so the demo markup stays declarative and the interaction is covered
@@ -738,6 +924,12 @@
         const effect=button.dataset.ptPreview;
         buttons.forEach((other)=>other.classList.toggle('is-active',other===button));
         moveIndicator(button);
+        if(row.scrollWidth>row.clientWidth){
+          row.scrollTo({
+            left:button.offsetLeft-(row.clientWidth-button.offsetWidth)/2,
+            behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'
+          });
+        }
         if(window.KinetoPlayground?.setPageTransitionEffect)window.KinetoPlayground.setPageTransitionEffect(effect);
         const incoming=toB?screenB:screenA;
         const outgoing=toB?screenA:screenB;
@@ -766,6 +958,30 @@
       instance?.shuffle?.();
     });
     KinetoPlayground.mount(document);
+
+    // Links inside a preview box are part of the DEMO, not site navigation. The
+    // menu entries, mega-menu submenus and 'release notes' style items all pointed
+    // at real section anchors, so clicking one threw the reader hundreds of cards
+    // away from what they were looking at. They are inert now — same as the
+    // Gesture / ripple / Magnetic previews, which never navigated either.
+    //
+    // Scoped to `.demo-stage` and delegated, so future demo previews inherit it
+    // with no extra markup. A preview that genuinely needs to navigate opts out
+    // with `data-demo-navigate`.
+    // Capture phase + stopImmediatePropagation: preventDefault alone was not
+    // enough. The demo's own anchor router and the smooth-scroll handler both
+    // listen further up and do their own scrolling, so a bubbling listener still
+    // let the page jump (measured: a 'release notes' click moved 558px, a
+    // mega-menu submenu click moved 15,500px). Killing the event before anyone
+    // else sees it is the only way to make these links truly inert.
+    document.addEventListener('click', (event) => {
+      const link = event.target instanceof Element
+        ? event.target.closest('.demo-stage a[href^="#"]')
+        : null;
+      if (!link || link.hasAttribute('data-demo-navigate')) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }, true);
 
     // Reusable toast — window.ktToast(msg, {duration}). Multi-line via '\n',
     // always centered. Use it anywhere: copy, apply, reset, unsupported hints…
@@ -821,21 +1037,21 @@
           }).join('')+'</div></div>';
         document.body.appendChild(overlay);
         let previousFocus=null;
-        let previousOverflow='';
         let inertState=[];
         const focusables=()=>[...overlay.querySelectorAll('a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(el=>!el.hidden);
         const open=()=>{
           previousFocus=document.activeElement;
-          previousOverflow=document.documentElement.style.overflow;
+          // Scroll lock is a root class (`html.is-locked`), not an inline style —
+          // see styles.css. Nothing to snapshot or restore by hand.
           inertState=[...document.body.children].filter(el=>el!==overlay).map(el=>[el,el.inert]);
           inertState.forEach(([el])=>{el.inert=true;});
           overlay.hidden=false;
-          document.documentElement.style.overflow='hidden';
+          document.documentElement.classList.add('is-locked');
           requestAnimationFrame(()=>{overlay.classList.add('is-open');overlay.querySelector('.sitemap-close')?.focus();});
         };
         const close=()=>{
           overlay.classList.remove('is-open');
-          document.documentElement.style.overflow=previousOverflow;
+          document.documentElement.classList.remove('is-locked');
           inertState.forEach(([el,wasInert])=>{el.inert=wasInert;});
           setTimeout(()=>{overlay.hidden=true;previousFocus?.focus?.();},260);
         };

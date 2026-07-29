@@ -1,4 +1,4 @@
-import { clamp, lerp, snapshotInlineStyles } from '../utils.js';
+import { clamp, env, lerp, snapshotInlineStyles } from '../utils.js';
 
 /*
  * Single-engine slider: one continuous position value drives every slide
@@ -8,6 +8,209 @@ import { clamp, lerp, snapshotInlineStyles } from '../utils.js';
  */
 export default {
   create(el, opts = {}) {
+    // `radial` is a genuinely different layout — items orbit a hub instead of
+    // travelling along a track — so it gets its own engine rather than being
+    // bent onto the linear one. The public `radial` module remains as a
+    // compatibility adapter while the slider preset reuses this implementation.
+    const radialMode = (opts.effect || opts.preset) === 'radial';
+    if (radialMode) {
+      const reduce = env().reducedMotion;
+      const items = (() => {
+        const marked = Array.from(el.querySelectorAll(':scope > .kt-radial-item'));
+        if (marked.length) return marked;
+        return Array.from(el.children).filter((c) => c.nodeType === 1 && !c.matches('.kt-radial-controls, button'));
+      })();
+      if (items.length < 2) return null;
+
+      const radius = Math.max(40, Number(opts.radius ?? 260));
+      const step = Number(opts.step ?? 26);
+      const position = ['bottom', 'top', 'left', 'right'].includes(opts.position) ? opts.position : 'bottom';
+      // Focal angle points AWAY from the docked edge, into the visible area:
+      // bottom → up, top → down, left → right, right → left.
+      const presetAngle = { bottom: -90, top: 90, left: 0, right: 180 }[position];
+      const activeAngle = opts.activeAngle != null ? Number(opts.activeAngle) : presetAngle;
+      const duration = Math.max(0, Number(opts.duration ?? 0.6));
+      const loop = opts.loop !== false && opts.loop !== 'off';
+      const drag = opts.drag !== false;
+      const useControls = opts.controls !== false;
+      // `activeClass` hooks your OWN class on the focused item (with `.kt-active`).
+      const stateClass = (opts.activeClass || '').trim();
+
+      el.classList.add('kt-radial', `kt-radial--${position}`);
+      el.style.setProperty('--kt-radial-radius', `${radius}px`);
+      el.setAttribute('role', 'group');
+      el.setAttribute('aria-roledescription', 'carousel');
+
+      // Rotation hub: a zero-size point the preset positions at an edge; items
+      // orbit around it so only the focal arc shows.
+      const hub = document.createElement('div');
+      hub.className = 'kt-radial-hub';
+      el.appendChild(hub);
+      items.forEach((item) => { item.classList.add('kt-radial-item'); hub.appendChild(item); });
+
+      // `align:"center"` places the hub so the ACTIVE item lands at the container's
+      // centre (instead of being clipped at the docked edge), for every dock/angle.
+      // `align:"edge"` (default) keeps the hub on the docked edge (CSS class).
+      if (opts.align === 'center') {
+        const a = activeAngle * Math.PI / 180;
+        hub.style.left = `calc(50% - ${(Math.cos(a) * radius).toFixed(1)}px)`;
+        hub.style.top = `calc(50% - ${(Math.sin(a) * radius).toFixed(1)}px)`;
+      }
+
+      let active = Math.floor(items.length / 2);
+
+      const live = document.createElement('div');
+      live.className = 'kt-radial-live';
+      live.setAttribute('aria-live', 'polite');
+      live.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);';
+      el.appendChild(live);
+
+      const n = items.length;
+      const layout = () => {
+        items.forEach((item, i) => {
+          let offset = i - active;
+          if (loop) { // shortest way around
+            offset = ((offset % n) + n) % n;
+            if (offset > n / 2) offset -= n;
+          }
+          // When an item wraps to the opposite side, jump instantly (no transition)
+          // so it doesn't sweep across the visible arc.
+          const prevOffset = item._ktOffset;
+          const teleport = prevOffset !== undefined && Math.abs(offset - prevOffset) > n / 2;
+          item._ktOffset = offset;
+          const angle = activeAngle + offset * step;
+          item.style.transition = (reduce || duration === 0 || teleport) ? 'none' : `transform ${duration}s cubic-bezier(.22,.8,.3,1), opacity ${duration}s ease`;
+          // transform-origin is the hub point (0,0); the inner translate(-50%,-50%)
+          // (applied FIRST) centers the item there, then rotate·translate·rotate
+          // orbits its centre to radius·(cosθ,sinθ), upright.
+          item.style.transform = `rotate(${angle}deg) translate(${radius}px) rotate(${-angle}deg) translate(-50%, -50%)`;
+          // Fade items out toward the arc edges so a wrapping/leaving item never
+          // lingers as a translucent ghost: the active item and its two neighbours
+          // are solid, anything further out fades fully to 0 (no edge remnants).
+          item.style.opacity = String(Math.max(0, 1 - Math.max(0, Math.abs(offset) - 1)));
+          const on = i === active;
+          item.classList.toggle('kt-active', on);
+          item.classList.toggle('active-item', on);
+          if (stateClass) item.classList.toggle(stateClass, on);
+          if (on) item.setAttribute('aria-current', 'true'); else item.removeAttribute('aria-current');
+          item.style.zIndex = String(100 - Math.abs(offset));
+        });
+        live.textContent = `${active + 1} / ${items.length}`;
+      };
+
+      const go = (index) => {
+        if (loop) active = ((index % items.length) + items.length) % items.length;
+        else active = clamp(index, 0, items.length - 1);
+        layout();
+      };
+      const next = () => go(active + 1);
+      const prev = () => go(active - 1);
+
+      items.forEach((item, i) => {
+        item.style.cursor = 'pointer';
+        item.addEventListener('click', () => go(i));
+        if (!item.hasAttribute('tabindex')) item.tabIndex = -1;
+      });
+
+      // Controls: reuse an existing .kt-radial-controls block or build one.
+      let controls = el.querySelector('.kt-radial-controls');
+      let prevBtn = null; let nextBtn = null; let builtControls = false;
+      if (useControls) {
+        if (!controls) {
+          controls = document.createElement('div');
+          controls.className = 'kt-radial-controls';
+          controls.innerHTML = '<button type="button" class="kt-radial-prev" aria-label="Previous"></button><button type="button" class="kt-radial-next" aria-label="Next"></button>';
+          el.appendChild(controls);
+          builtControls = true;
+        }
+        prevBtn = controls.querySelector('.kt-radial-prev, [data-kt-radial-prev]');
+        nextBtn = controls.querySelector('.kt-radial-next, [data-kt-radial-next]');
+        prevBtn?.addEventListener('click', prev);
+        nextBtn?.addEventListener('click', next);
+      }
+
+      const onKey = (event) => {
+        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') { event.preventDefault(); next(); }
+        else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') { event.preventDefault(); prev(); }
+      };
+      if (!el.hasAttribute('tabindex')) el.tabIndex = 0;
+      el.addEventListener('keydown', onKey);
+
+      // Drag to spin (a full `step` of drag advances one item).
+      let dragState = null;
+      const dragAxisH = position === 'bottom' || position === 'top';
+      // Don't start a drag on the control buttons, and DON'T capture the pointer
+      // (capturing stole clicks from the prev/next buttons — hence "had to click
+      // repeatedly"). Only spin once the drag actually passes a small threshold.
+      const onDown = (e) => {
+        if (!drag || e.target.closest('.kt-radial-controls, button')) return;
+        dragState = { x: e.clientX, y: e.clientY, start: active, moved: false };
+      };
+      const onMove = (e) => {
+        if (!dragState) return;
+        const delta = dragAxisH ? e.clientX - dragState.x : e.clientY - dragState.y;
+        if (Math.abs(delta) <= 6) return; // ignore micro-moves (taps/clicks)
+        dragState.moved = true;
+        go(dragState.start + Math.round(-delta / 60));
+      };
+      const onUp = () => { dragState = null; };
+      if (drag) {
+        el.addEventListener('pointerdown', onDown);
+        el.addEventListener('pointermove', onMove);
+        el.addEventListener('pointerup', onUp);
+        el.addEventListener('pointercancel', onUp);
+      }
+
+      // Autoplay (pauses on hover / when tab hidden).
+      const autoplay = Math.max(0, Number(opts.autoplay ?? 0));
+      let timer = null;
+      const startAuto = () => { if (autoplay && !reduce) { stopAuto(); timer = setInterval(next, autoplay); } };
+      const stopAuto = () => { if (timer) { clearInterval(timer); timer = null; } };
+      if (autoplay) {
+        el.addEventListener('mouseenter', stopAuto);
+        el.addEventListener('mouseleave', startAuto);
+        startAuto();
+      }
+
+      layout();
+
+      return {
+        el,
+        type: 'slider',
+        effect: 'radial',
+        next, prev, go,
+        pause: stopAuto,
+        resume: startAuto,
+        destroy() {
+          stopAuto();
+          el.removeEventListener('keydown', onKey);
+          el.removeEventListener('pointerdown', onDown);
+          el.removeEventListener('pointermove', onMove);
+          el.removeEventListener('pointerup', onUp);
+          el.removeEventListener('pointercancel', onUp);
+          el.removeEventListener('mouseenter', stopAuto);
+          el.removeEventListener('mouseleave', startAuto);
+          prevBtn?.removeEventListener('click', prev);
+          nextBtn?.removeEventListener('click', next);
+          items.forEach((item) => {
+            // Fully restore each item: clear inline transform/opacity/transition,
+            // remove the kt-radial-item class (so its `will-change:transform` from
+            // the stylesheet doesn't linger) and the active markers, then re-home it.
+            item.style.transform = ''; item.style.transition = ''; item.style.opacity = ''; item.style.zIndex = ''; item.style.cursor = '';
+            item.classList.remove('kt-radial-item', 'kt-active', 'active-item');
+            if (stateClass) item.classList.remove(stateClass);
+            item.removeAttribute('aria-current');
+            el.appendChild(item);
+          });
+          hub.remove();
+          live.remove();
+          if (builtControls) controls.remove();
+          el.classList.remove('kt-radial', `kt-radial--${position}`);
+          el.style.removeProperty('--kt-radial-radius');
+          el.removeAttribute('role'); el.removeAttribute('aria-roledescription');
+        }
+      };
+    }
     const wrap = el.querySelector('.kt-slider-wrap') || el;
     const track = wrap.querySelector('.kt-slider-track') || el.firstElementChild;
     if (!track) return null;
@@ -28,8 +231,29 @@ export default {
     const cards = effect === 'cards';
     const creative = effect === 'creative';
     const stacked = fade || dissolve || wipe || flip || cube || cards || creative;
+    const activeShadow = coverflow && opts.activeShadow === true;
+    const activeShadowOpacity = clamp(Number(opts.activeShadowOpacity ?? 0.28), 0, 1);
+    const originalActiveShadowOpacity = el.style.getPropertyValue('--kt-slide-active-shadow-opacity');
     const gap = Math.max(0, Number(opts.gap ?? (coverflow ? 22 : 0)));
-    const perView = stacked ? 1 : clamp(Number(opts.perView ?? (coverflow ? 1.35 : 1)), 1, slides.length);
+    // `breakpoints` mirrors Swiper: {"640":{"perView":2},"1024":{"perView":3}} —
+    // the widest entry at or below the viewport wins. Accepts an object or a
+    // JSON string so it can be authored as a data attribute.
+    const breakpointPerView = (() => {
+      let table = opts.breakpoints;
+      if (typeof table === 'string') { try { table = JSON.parse(table); } catch (_e) { table = null; } }
+      if (!table || typeof table !== 'object') return null;
+      const width = typeof window !== 'undefined' ? window.innerWidth : 0;
+      let best = null; let bestKey = -1;
+      Object.entries(table).forEach(([key, value]) => {
+        const min = Number(key);
+        if (Number.isFinite(min) && width >= min && min > bestKey) { bestKey = min; best = value; }
+      });
+      const resolved = Number(best?.perView ?? best?.slidesPerView);
+      return Number.isFinite(resolved) ? resolved : null;
+    })();
+    const perView = stacked ? 1 : clamp(Number(breakpointPerView ?? opts.perView ?? (coverflow ? 1.35 : 1)), 1, slides.length);
+    // How many slides one next()/prev() advances (Swiper's slidesPerGroup).
+    const perGroup = Math.max(1, Math.round(Number(opts.perGroup ?? 1)));
     // The active slide is centered by default in both effects; align:'left'
     // restores the classic left-edge slide alignment.
     const centered = coverflow || (opts.align || 'center') !== 'left';
@@ -90,12 +314,22 @@ export default {
     wrap.setAttribute('aria-roledescription', 'carousel');
     wrap.setAttribute('aria-label', opts.label || 'Carousel');
     if (!wrap.hasAttribute('tabindex')) wrap.tabIndex = 0;
-    wrap.style.overflow = 'hidden';
+    // `clip` instead of `hidden` when the active-slide shadow is on: both clip, but
+    // only `clip` honours `overflow-clip-margin`, which is what lets the shadow
+    // escape the wrapper. Written inline because this line already owns the
+    // property — a stylesheet rule could never win against it.
+    wrap.style.overflow = activeShadow ? 'clip' : 'hidden';
+    if (activeShadow) wrap.style.overflowClipMargin = 'var(--kt-slide-active-shadow-room, 40px)';
+    else wrap.style.removeProperty('overflow-clip-margin');
     wrap.style.touchAction = vertical ? 'pan-x' : 'pan-y';
     wrap.style.position = 'relative';
     if (coverflow || flip || cube || cards || creative) wrap.style.perspective = `${Number(opts.perspective ?? 1100)}px`;
     el.dataset.ktSliderEffect = effect;
     el.classList.add(`kt-slider--${effect}`);
+    el.classList.toggle('kt-slider--active-shadow', activeShadow);
+    if (activeShadow) {
+      el.style.setProperty('--kt-slide-active-shadow-opacity', `${Number((activeShadowOpacity * 100).toFixed(2))}%`);
+    }
     track.style.display = 'block';
     track.style.position = 'relative';
     track.style.width = '100%';
@@ -113,10 +347,13 @@ export default {
       } else {
         slide.style.width = `calc(${slideWidthPercent}% - ${(gap * (perView - 1)) / perView}px)`;
         slide.style.minWidth = '0';
-        if (slideIndex !== 0) slide.style.height = '100%';
+        // Every slide but the first is absolutely positioned, so it needs a
+        // height to fill the viewport — EXCEPT under autoHeight, where the whole
+        // point is that each slide keeps its own height and the viewport follows.
+        if (slideIndex !== 0 && opts.autoHeight !== true) slide.style.height = '100%';
       }
       slide.style.transformOrigin = '50% 50%';
-      slide.style.willChange = 'transform,opacity';
+      slide.style.willChange = activeShadow ? 'transform,opacity,filter' : 'transform,opacity';
       slide.style.transition = 'none';
       slide.setAttribute('role', 'group');
       slide.setAttribute('aria-roledescription', 'slide');
@@ -241,6 +478,8 @@ export default {
       });
       el.dataset.ktSliderIndex = String(index);
       updateDots();
+      applyAutoHeight();
+      syncPartners(index);
       opts.onChange?.(index, slides[index], el);
     };
 
@@ -286,15 +525,84 @@ export default {
       else settle(value);
     };
     const next = () => {
-      if (seamless) return settle(Math.round(target) + 1);
+      if (seamless) return settle(Math.round(target) + perGroup);
       if (loopMode === 'rewind' && index >= maxIndex) return goTo(0);
-      return goTo(index + 1);
+      return goTo(Math.min(maxIndex, index + perGroup));
     };
     const prev = () => {
-      if (seamless) return settle(Math.round(target) - 1);
+      if (seamless) return settle(Math.round(target) - perGroup);
       if (loopMode === 'rewind' && index <= 0) return goTo(maxIndex);
-      return goTo(index - 1);
+      return goTo(Math.max(0, index - perGroup));
     };
+
+    // `sync` links two or more sliders — the Swiper "thumbs gallery" / slick
+    // "asNavFor" pattern. Point a main slider at its thumbnail strip (or the
+    // other way round) and moving either moves the other. Guarded against the
+    // obvious infinite ping-pong: a programmatic sync never re-broadcasts.
+    const syncTargets = (() => {
+      const raw = opts.sync;
+      if (!raw) return [];
+      const list = Array.isArray(raw) ? raw : [raw];
+      return list.map((entry) => (typeof entry === 'string' ? document.querySelector(entry) : entry)).filter(Boolean);
+    })();
+    let syncing = false;
+    const syncPartners = (nextIndex) => {
+      if (!syncTargets.length || syncing) return;
+      syncTargets.forEach((target) => {
+        const partner = target.__ktSlider;
+        if (!partner || partner.el === el) return;
+        partner.syncTo(nextIndex);
+      });
+    };
+    // Clicking a thumbnail should drive the main slider even when
+    // slideToClickedSlide is off — that is the whole point of a thumbs strip.
+    const syncOnClick = opts.sync ? true : opts.slideToClickedSlide === true;
+
+    // Swiper parity: show the drag affordance, and let a click on a neighbouring
+    // slide bring it to the front instead of only the arrows doing so.
+    const clickHandlers = [];
+    if (opts.grabCursor === true) {
+      el.style.cursor = 'grab';
+      el.addEventListener('pointerdown', () => { el.style.cursor = 'grabbing'; });
+      el.addEventListener('pointerup', () => { el.style.cursor = 'grab'; });
+    }
+    if (syncOnClick) {
+      slides.forEach((slide, slideIndex) => {
+        const onClick = (event) => {
+          if (event.target.closest?.('a,button,input,select,textarea')) return;
+          if (slideIndex === index) return;
+          goTo(slideIndex);
+        };
+        slide.addEventListener('click', onClick);
+        clickHandlers.push({ slide, onClick });
+      });
+    }
+
+    // `autoHeight` lets the viewport follow the ACTIVE slide instead of being as
+    // tall as the tallest one. Slides are absolutely-positioned in the stacked
+    // effects, so this measures the slide itself and drives the wrap's height.
+    const autoHeight = opts.autoHeight === true;
+    let autoHeightResize = null;
+    const applyAutoHeight = () => {
+      if (!autoHeight) return;
+      const slide = slides[index];
+      if (!slide) return;
+      const height = Math.round(slide.scrollHeight || slide.getBoundingClientRect().height);
+      if (!height) return;
+      wrap.style.transition = `height ${Math.max(0.05, Number(opts.duration ?? 0.6))}s cubic-bezier(.22,.8,.3,1)`;
+      wrap.style.height = `${height}px`;
+    };
+    if (autoHeight) {
+      wrap.style.overflow = wrap.style.overflow || (activeShadow ? 'clip' : 'hidden');
+      // The track is a flex row, so its children stretch to the wrap's height.
+      // Once the wrap is given a height that feedback loop pins every slide to
+      // the FIRST slide's height and the measurement can never change. Letting
+      // slides keep their natural height breaks the loop.
+      track.style.alignItems = 'flex-start';
+      autoHeightResize = () => applyAutoHeight();
+      window.addEventListener('resize', autoHeightResize);
+      requestAnimationFrame(applyAutoHeight);
+    }
 
     const stop = (preserve = true) => {
       if (timer != null && preserve) {
@@ -523,11 +831,17 @@ export default {
     opts.onInit?.(el);
     emit('kt-slider-init', { index, slide: slides[index] });
 
-    return {
+    const api = {
       el,
       type: 'slider',
       get index() { return index; },
       get slides() { return slides.slice(); },
+      // Move without broadcasting back, so two linked sliders settle instead of
+      // bouncing the index between each other forever.
+      syncTo(value) {
+        syncing = true;
+        try { goTo(Number(value)); } finally { syncing = false; }
+      },
       next,
       prev,
       slideNext: next,
@@ -559,11 +873,23 @@ export default {
         const restore = (node, name, value) => value == null ? node.removeAttribute(name) : node.setAttribute(name, value);
         restore(wrap, 'style', original.wrap); restore(track, 'style', original.track); restore(wrap, 'role', original.wrapRole); restore(wrap, 'aria-label', original.wrapLabel); restore(wrap, 'tabindex', original.wrapTab);
         slides.forEach((slide, slideIndex) => { const state = original.slides[slideIndex]; restore(slide, 'style', state.style); restore(slide, 'role', state.role); restore(slide, 'aria-hidden', state.hidden); restore(slide, 'aria-label', state.label); slide.classList.remove('is-active'); });
-        el.classList.remove(`kt-slider--${effect}`);
+        clickHandlers.forEach(({ slide, onClick }) => slide.removeEventListener('click', onClick));
+        if (autoHeightResize) window.removeEventListener('resize', autoHeightResize);
+        wrap.style.removeProperty('height');
+        track.style.removeProperty('align-items');
+        el.style.removeProperty('cursor');
+        el.classList.remove(`kt-slider--${effect}`, 'kt-slider--active-shadow');
+        if (originalActiveShadowOpacity) el.style.setProperty('--kt-slide-active-shadow-opacity', originalActiveShadowOpacity);
+        else el.style.removeProperty('--kt-slide-active-shadow-opacity');
         delete el.dataset.ktSliderIndex;
         delete el.dataset.ktSliderEffect;
+        delete el.__ktSlider;
       }
     };
+    // Partners find each other through the element, so `sync` can point at a
+    // plain selector without the caller holding instance references.
+    el.__ktSlider = api;
+    return api;
   },
   reduced(el) {
     const restore = snapshotInlineStyles(el, ['overflowX', 'scrollSnapType']);

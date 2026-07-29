@@ -179,16 +179,17 @@
   to { transform:translate3d(294.1176%,0,0); }
 }
 @keyframes kt-loading-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  /* The highlight tile is WIDER than the box (background-size:200%), and for
+     percentage positions the offset is (boxW - imageW) * pct — a negative span.
+     So a RISING percentage slides the image LEFT. Counting DOWN is what makes
+     the highlight travel left -> right, which is what `normal` must look like;
+     `.is-reverse` then flips it to right -> left. */
+  from { background-position: 200% 0; }
+  to { background-position: 0 0; }
 }
 @keyframes kt-loading-spoke {
   0%,100% { opacity:.16; }
   42% { opacity:1; }
-}
-@keyframes kt-loading-meter-scan {
-  0%,100% { opacity:.35; }
-  50% { opacity:1; color:var(--kt-loading-color); }
 }
 @keyframes kt-loading-wave {
   0%,65%,100% { color:var(--kt-loading-base-color, currentColor);transform:translateY(0); }
@@ -205,17 +206,77 @@
 .kt-loading--spinner{width:var(--kt-loading-size);height:var(--kt-loading-size)}
 .kt-loading-spinner__ring{position:absolute;inset:0;box-sizing:border-box;border:var(--kt-loading-stroke) solid var(--kt-loading-track-color);border-top-color:var(--kt-loading-color);border-radius:50%;transform-origin:var(--kt-loading-transform-origin,center);animation:kt-loading-spin var(--kt-loading-motion-duration) linear infinite}
 .kt-loading-spinner--ring .kt-loading-spinner__ring{border-right-color:var(--kt-loading-color)}
-.kt-loading-spinner--comet .kt-loading-spinner__ring{border-color:transparent;border-top-color:var(--kt-loading-color)}
-.kt-loading-spinner--dual .kt-loading-spinner__ring{inset:0;border-width:calc(var(--kt-loading-stroke) * 0.8);border-color:var(--kt-loading-track-color);border-top-color:var(--kt-loading-color);border-bottom-color:var(--kt-loading-color)}
-.kt-loading-spinner--dual .kt-loading-spinner__ring--inner{inset:calc(var(--kt-loading-stroke) * 1.5);border-width:calc(var(--kt-loading-stroke) * 0.8);border-color:var(--kt-loading-track-color);border-left-color:var(--kt-loading-highlight-color,currentColor);border-right-color:var(--kt-loading-highlight-color,currentColor);animation-direction:reverse;animation-duration:var(--kt-loading-fast-duration)}
-.kt-loading-spinner--orbit .kt-loading-spinner__ring{inset:0;border-width:max(1px, calc(var(--kt-loading-stroke) * 0.4));border-color:color-mix(in srgb, var(--kt-loading-track-color) 40%, transparent);animation:none}
-.kt-loading-spinner__orbit{position:absolute;inset:0;border-radius:50%;transform-origin:var(--kt-loading-transform-origin,center);animation:kt-loading-spin var(--kt-loading-motion-duration) linear infinite}
-.kt-loading-spinner__orbit-particle{position:absolute;top:calc(var(--kt-loading-stroke) * -0.6);left:50%;width:calc(var(--kt-loading-stroke) * 2.2);height:calc(var(--kt-loading-stroke) * 2.2);border-radius:50%;background:var(--kt-loading-color);transform:translateX(-50%);box-shadow:0 0 calc(var(--kt-loading-stroke) * 3) var(--kt-loading-highlight-color,var(--kt-loading-color)), 0 0 calc(var(--kt-loading-stroke) * 6) var(--kt-loading-highlight-color,var(--kt-loading-color))}
-.kt-loading-spinner__orbit::after{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg, transparent 70%, color-mix(in srgb, var(--kt-loading-color) 40%, transparent) 100%);transform:scale(1.05);mask:radial-gradient(farthest-side, transparent calc(100% - var(--kt-loading-stroke)), black calc(100% - var(--kt-loading-stroke) + 1px));-webkit-mask:radial-gradient(farthest-side, transparent calc(100% - var(--kt-loading-stroke)), black calc(100% - var(--kt-loading-stroke) + 1px))}
+
+/* ── SVG arc spinner (one engine for every arc spinner) ─────────────────
+   Adobe-Spectrum-style progress circle: an optional track ring plus an arc.
+   mode-grow  = arc stretches/shrinks while the whole svg rotates
+   mode-spin  = fixed-length arc, rotation only
+   mode-fill  = determinate; JS sets the dasharray from progress (no rotation) */
+.kt-loading-spinner__svg{width:100%;height:100%;display:block;overflow:visible;animation:kt-loading-spin var(--kt-loading-motion-duration) linear infinite;transform-origin:center}
+.kt-loading-spinner__track{fill:none;stroke:var(--kt-loading-track-color);stroke-width:var(--kt-loading-stroke)}
+.kt-loading-spinner__arc{fill:none;stroke:var(--kt-loading-color);stroke-width:var(--kt-loading-stroke);stroke-linecap:round;transform-origin:center}
+.kt-loading-spinner--mode-spin .kt-loading-spinner__arc{stroke-dasharray:32 126}
+.kt-loading-spinner--mode-grow .kt-loading-spinner__svg{animation-duration:calc(var(--kt-loading-motion-duration) * 1.61)}
+/* linear on the arc: the easing already lives in the sampled keyframe spacing,
+   so a timing function here would ease an eased curve twice. The rotation is a
+   separate, constant-speed animation (1.61x = 1.776s measured per turn) — easing
+   the rotation too would make the whole spinner surge once per cycle. */
+.kt-loading-spinner--mode-grow .kt-loading-spinner__arc{animation:kt-loading-arc calc(var(--kt-loading-motion-duration) * 1.23) linear infinite}
+.kt-loading-spinner--mode-fill .kt-loading-spinner__svg{animation:none;transform:rotate(-90deg)}
+.kt-loading-spinner--mode-fill .kt-loading-spinner__arc{stroke-dasharray:0 126;transition:stroke-dasharray .25s var(--kt-ease-ui, ease)}
+.kt-loading.is-reverse .kt-loading-spinner__svg{animation-name:kt-loading-spin-reverse}
+.kt-loading.has-glow .kt-loading-spinner__arc{filter:drop-shadow(0 0 var(--kt-loading-glow-size) color-mix(in srgb,var(--kt-loading-glow-color) 72%,transparent))}
+/* Measured from the reference capture (circle.mp4, 60fps, 323 frames), not guessed.
+   Findings that drove this rewrite:
+     - arc-length cycle = 81 frames = 1.35s (autocorrelation r=0.995)
+     - phase-averaged length runs 24deg -> 273deg -> 24deg with no plateau
+     - the GROW and SHRINK curves are the same shape to within 0.004, which means
+       the reference is not animating "length" at all: it moves the leading edge
+       with one easing, then the trailing edge with the SAME easing half a cycle
+       later. Length is just the gap between them.
+     - fitting that easing gives cubic-bezier(.514,0,.229,.919) — SSE 0.00047,
+       against 0.0686 for Material's standard (.4,0,.2,1). Using the familiar
+       curve would have been visibly wrong at the start of the grow.
+   So the keyframes below are SAMPLED from that closed form every 2% (27ms, ~1.6
+   frames at 60fps) rather than hand-placed. Dense sampling is what removes the
+   choppiness: the old version had four keyframes whose dashoffset did not track
+   the length change, so the arc appeared to stall and then jump.
+   The seam is exact — 0% and 100% carry identical dasharray, and dashoffset
+   advances by exactly one circumference per cycle, so the loop is invisible. */
+@keyframes kt-loading-arc{
+  0%{stroke-dasharray:27.95 97.72;stroke-dashoffset:39.70}
+  4%{stroke-dasharray:20.08 105.59;stroke-dashoffset:31.83}
+  8%{stroke-dasharray:14.32 111.34;stroke-dashoffset:25.44}
+  12%{stroke-dasharray:10.51 115.15;stroke-dashoffset:20.21}
+  16%{stroke-dasharray:8.60 117.07;stroke-dashoffset:15.90}
+  20%{stroke-dasharray:8.69 116.98;stroke-dashoffset:12.34}
+  24%{stroke-dasharray:11.06 114.61;stroke-dashoffset:9.40}
+  28%{stroke-dasharray:16.15 109.51;stroke-dashoffset:6.97}
+  32%{stroke-dasharray:24.45 101.21;stroke-dashoffset:4.97}
+  36%{stroke-dasharray:35.84 89.82;stroke-dashoffset:3.35}
+  40%{stroke-dasharray:48.75 76.91;stroke-dashoffset:2.06}
+  44%{stroke-dasharray:60.93 64.73;stroke-dashoffset:1.05}
+  48%{stroke-dasharray:71.27 54.39;stroke-dashoffset:0.29}
+  52%{stroke-dasharray:79.94 45.72;stroke-dashoffset:-0.06}
+  56%{stroke-dasharray:86.72 38.94;stroke-dashoffset:-0.58}
+  60%{stroke-dasharray:91.49 34.17;stroke-dashoffset:-1.74}
+  64%{stroke-dasharray:94.36 31.30;stroke-dashoffset:-3.71}
+  68%{stroke-dasharray:95.29 30.37;stroke-dashoffset:-6.72}
+  72%{stroke-dasharray:94.11 31.55;stroke-dashoffset:-11.10}
+  76%{stroke-dasharray:90.44 35.22;stroke-dashoffset:-17.33}
+  80%{stroke-dasharray:83.79 41.87;stroke-dashoffset:-25.97}
+  84%{stroke-dasharray:73.86 51.81;stroke-dashoffset:-37.40}
+  88%{stroke-dasharray:61.42 64.25;stroke-dashoffset:-50.89}
+  92%{stroke-dasharray:48.64 77.03;stroke-dashoffset:-64.41}
+  96%{stroke-dasharray:37.33 88.34;stroke-dashoffset:-76.24}
+  100%{stroke-dasharray:27.95 97.72;stroke-dashoffset:-85.96}
+}
+
+
 .kt-loading-spinner--spokes.is-rotating{animation:kt-loading-spin calc(var(--kt-loading-motion-duration) * 3) linear infinite}
 .kt-loading-spinner__spoke{position:absolute;top:8%;left:50%;width:var(--kt-loading-stroke);margin-left:calc(var(--kt-loading-stroke) * -.5);height:24%;border-radius:99px;background:currentColor;opacity:.16;transform:rotate(var(--kt-loading-angle,calc(360deg / var(--kt-loading-count) * var(--kt-loading-index))));transform-origin:center calc(var(--kt-loading-size) * .42);animation:kt-loading-spoke var(--kt-loading-motion-duration) linear infinite}
-.kt-loading.has-glow :is(.kt-loading-spinner__ring,.kt-loading-spinner__orbit){filter:drop-shadow(0 0 var(--kt-loading-glow-size) color-mix(in srgb,var(--kt-loading-glow-color) 72%,transparent))}
-.kt-loading.is-reverse :is(.kt-loading-spinner__ring,.kt-loading-spinner__orbit){animation-name:kt-loading-spin-reverse}
+.kt-loading.has-glow .kt-loading-spinner__ring{filter:drop-shadow(0 0 var(--kt-loading-glow-size) color-mix(in srgb,var(--kt-loading-glow-color) 72%,transparent))}
+.kt-loading.is-reverse .kt-loading-spinner__ring{animation-name:kt-loading-spin-reverse}
 .kt-loading--dots{display:inline-flex;align-items:center;gap:var(--kt-loading-dot-gap)}
 .kt-loading-dot{width:var(--kt-loading-dot-size);height:var(--kt-loading-dot-size);border-radius:50%;background:currentColor;transform-origin:var(--kt-loading-transform-origin,center);animation:kt-loading-pulse var(--kt-loading-motion-duration) ease-in-out infinite}
 .kt-loading-dots--bounce .kt-loading-dot{animation-timing-function:cubic-bezier(.3,.7,.35,1.35)}
@@ -223,25 +284,169 @@
 .kt-loading-bar__track{position:relative;display:block;width:100%;height:var(--kt-loading-bar-height);overflow:hidden;border-radius:999px;background:var(--kt-loading-track-color);box-shadow:none}
 .kt-loading-bar__progress{display:block;width:100%;height:100%;border-radius:inherit;background:var(--kt-loading-color);transform:scaleX(0);transform-origin:var(--kt-loading-transform-origin,left);will-change:transform}
 .kt-loading--bar.is-indeterminate .kt-loading-bar__progress{width:34%;animation:kt-loading-bar var(--kt-loading-motion-duration) ease-in-out infinite;transform-origin:var(--kt-loading-transform-origin,center);will-change:transform}
+.kt-loading--bar.is-indeterminate.is-bar-grow .kt-loading-bar__progress{width:100%;transform-origin:left;animation:kt-loading-bar-grow calc(var(--kt-loading-motion-duration) * 0.91) linear infinite}
+/* Measured from the reference capture (prograss bar.mp4, 60fps, 255 frames).
+   Findings:
+     - full cycle = 98 frames = 1.633s
+     - leading edge reaches 100% in 34 frames (0.567s, 34.7% of the cycle)
+     - trailing edge does not move for the first 11 frames (0.183s), then takes
+       51 frames (0.850s, 52% of the cycle) to catch up
+     - a second, shorter pass enters from the left at 51% of the cycle
+   The old four keyframes introduced `translate3d(18%)` out of nowhere at 64%,
+   which is where the visible jump came from: position appeared while the bar was
+   still only scaling. Both edges are now sampled every 2% straight from the
+   measurement, so leading and trailing move independently at every frame and the
+   loop ends on the same empty state it starts from (0% / 98% / 100% identical).
+   transform-origin never changes. */
+/* Measured from the reference capture (prograss bar.mp4, 60fps). One PRIMARY pass
+   per cycle: 60 frames = 1.0s, sampled every 2.5% straight from the measurement.
+   Two things were wrong before:
+     - the old four keyframes introduced `translate3d(18%)` out of nowhere at 64%,
+       so position appeared while the bar was still only scaling;
+     - my first rewrite tried to fit the reference's primary AND secondary pass
+       into one element. At the handoff the trailing edge measured 78.4% -> 9.8%
+       in a single 33ms step, i.e. the band swept backwards across the whole
+       track — that was the bounce at the loop point.
+   Both edges are now verified strictly monotonic (0 backwards steps), the band
+   dies collapsed at the RIGHT edge and is reborn zero-width at the left, so the
+   seam is invisible. Reproducing the overlapping secondary bar needs a second
+   element in loadingIndicator.js; a single clean pass has no bounce.
+   transform-origin never changes. */
+/* Built from the measured RATIOS of prograss bar.mp4 plus MDC's own primary-bar
+   curves, not from the raw frames. The capture's first visible frame already had
+   a 17.8%-wide band (earlier frames of that pass were cut), so sampling it
+   directly made the bar pop into view. Both MDC curves start flat (y1 ~ 0), which
+   is the gentle entrance the capture could not supply.
+     leading edge : cubic-bezier(0.5, 0, 0.701732, 0.495819) over 54.9% of the cycle
+     trailing edge: cubic-bezier(0.334731, 0.12482, 0.785844, 1) from 17.7%, span 82.3%
+   (34.7% / 11.2% / 52.0% of the measured 1.633s cycle, rescaled to a single 1.0s pass.)
+   Width grows 0 -> 0.3 -> 1.0 -> 2.4 -> 4.5% over the first 13%, so it eases in,
+   then stretches to 54.8% before the trailing edge closes it. Both edges are
+   monotonic, the band dies collapsed at the right and is reborn zero-width at the
+   left, and transform-origin never changes. */
+@keyframes kt-loading-bar-grow{
+    0.0%{transform:translate3d(0.00%,0,0) scaleX(0.0001)}
+    3.33%{transform:translate3d(0.00%,0,0) scaleX(0.0025)}
+    6.67%{transform:translate3d(0.00%,0,0) scaleX(0.0105)}
+    10.0%{transform:translate3d(0.00%,0,0) scaleX(0.0245)}
+    13.33%{transform:translate3d(0.00%,0,0) scaleX(0.0452)}
+    16.67%{transform:translate3d(0.00%,0,0) scaleX(0.0733)}
+    20.0%{transform:translate3d(1.20%,0,0) scaleX(0.0978)}
+    23.33%{transform:translate3d(3.45%,0,0) scaleX(0.1207)}
+    26.67%{transform:translate3d(6.23%,0,0) scaleX(0.1481)}
+    30.0%{transform:translate3d(9.46%,0,0) scaleX(0.1812)}
+    33.33%{transform:translate3d(13.08%,0,0) scaleX(0.2207)}
+    36.67%{transform:translate3d(17.04%,0,0) scaleX(0.2668)}
+    40.0%{transform:translate3d(21.28%,0,0) scaleX(0.3188)}
+    43.33%{transform:translate3d(25.77%,0,0) scaleX(0.3752)}
+    46.67%{transform:translate3d(30.47%,0,0) scaleX(0.4338)}
+    50.0%{transform:translate3d(35.34%,0,0) scaleX(0.4921)}
+    53.33%{transform:translate3d(40.35%,0,0) scaleX(0.5478)}
+    56.67%{transform:translate3d(45.46%,0,0) scaleX(0.5454)}
+    60.0%{transform:translate3d(50.65%,0,0) scaleX(0.4935)}
+    63.33%{transform:translate3d(55.88%,0,0) scaleX(0.4412)}
+    66.67%{transform:translate3d(61.11%,0,0) scaleX(0.3889)}
+    70.0%{transform:translate3d(66.31%,0,0) scaleX(0.3369)}
+    73.33%{transform:translate3d(71.43%,0,0) scaleX(0.2857)}
+    76.67%{transform:translate3d(76.43%,0,0) scaleX(0.2357)}
+    80.0%{transform:translate3d(81.24%,0,0) scaleX(0.1876)}
+    83.33%{transform:translate3d(85.81%,0,0) scaleX(0.1419)}
+    86.67%{transform:translate3d(90.02%,0,0) scaleX(0.0998)}
+    90.0%{transform:translate3d(93.78%,0,0) scaleX(0.0622)}
+    93.33%{transform:translate3d(96.89%,0,0) scaleX(0.0311)}
+    96.67%{transform:translate3d(99.11%,0,0) scaleX(0.0089)}
+    100.0%{transform:translate3d(100.00%,0,0) scaleX(0.0001)}
+}
+
+
+
+
+
+/* Clip-path moves the leading and trailing edges independently, avoiding the
+   tiny velocity jumps that transform+scale can show on low-refresh displays.
+   Browsers without inset() keep the smooth transform fallback above. */
+@supports (clip-path:inset(0)){
+  .kt-loading--bar.is-indeterminate.is-bar-grow .kt-loading-bar__progress{transform:none;clip-path:inset(0 100% 0 0 round 999px);will-change:clip-path}
+  /* Same sampled edges, expressed as independent left/right insets. */
+  /* Same sampled edges as independent left/right insets. */
+  @keyframes kt-loading-bar-grow{
+    0.0%{clip-path:inset(0 100.00% 0 0.00% round 999px)}
+    3.33%{clip-path:inset(0 99.75% 0 0.00% round 999px)}
+    6.67%{clip-path:inset(0 98.95% 0 0.00% round 999px)}
+    10.0%{clip-path:inset(0 97.55% 0 0.00% round 999px)}
+    13.33%{clip-path:inset(0 95.48% 0 0.00% round 999px)}
+    16.67%{clip-path:inset(0 92.67% 0 0.00% round 999px)}
+    20.0%{clip-path:inset(0 89.02% 0 1.20% round 999px)}
+    23.33%{clip-path:inset(0 84.48% 0 3.45% round 999px)}
+    26.67%{clip-path:inset(0 78.96% 0 6.23% round 999px)}
+    30.0%{clip-path:inset(0 72.42% 0 9.46% round 999px)}
+    33.33%{clip-path:inset(0 64.85% 0 13.08% round 999px)}
+    36.67%{clip-path:inset(0 56.28% 0 17.04% round 999px)}
+    40.0%{clip-path:inset(0 46.84% 0 21.28% round 999px)}
+    43.33%{clip-path:inset(0 36.71% 0 25.77% round 999px)}
+    46.67%{clip-path:inset(0 26.15% 0 30.47% round 999px)}
+    50.0%{clip-path:inset(0 15.45% 0 35.34% round 999px)}
+    53.33%{clip-path:inset(0 4.87% 0 40.35% round 999px)}
+    56.67%{clip-path:inset(0 0.00% 0 45.46% round 999px)}
+    60.0%{clip-path:inset(0 0.00% 0 50.65% round 999px)}
+    63.33%{clip-path:inset(0 0.00% 0 55.88% round 999px)}
+    66.67%{clip-path:inset(0 0.00% 0 61.11% round 999px)}
+    70.0%{clip-path:inset(0 0.00% 0 66.31% round 999px)}
+    73.33%{clip-path:inset(0 0.00% 0 71.43% round 999px)}
+    76.67%{clip-path:inset(0 0.00% 0 76.43% round 999px)}
+    80.0%{clip-path:inset(0 0.00% 0 81.24% round 999px)}
+    83.33%{clip-path:inset(0 0.00% 0 85.81% round 999px)}
+    86.67%{clip-path:inset(0 0.00% 0 90.02% round 999px)}
+    90.0%{clip-path:inset(0 0.00% 0 93.78% round 999px)}
+    93.33%{clip-path:inset(0 0.00% 0 96.89% round 999px)}
+    96.67%{clip-path:inset(0 0.00% 0 99.11% round 999px)}
+    100.0%{clip-path:inset(0 0.00% 0 100.00% round 999px)}
+  }
+
+
+
+
+
+}
 .kt-loading--bar.is-reverse .kt-loading-bar__progress{animation-direction:reverse}
-.kt-loading--bar.has-glow .kt-loading-bar__progress{box-shadow:0 0 var(--kt-loading-glow-size) color-mix(in srgb,var(--kt-loading-glow-color) 72%,transparent)}
+.kt-loading--bar.has-glow .kt-loading-bar__track{filter:drop-shadow(0 0 calc(var(--kt-loading-glow-size) * .45) color-mix(in srgb,var(--kt-loading-glow-color) 72%,transparent)) drop-shadow(0 0 calc(var(--kt-loading-glow-size) * 1.15) color-mix(in srgb,var(--kt-loading-glow-color) 34%,transparent))}
 .kt-loading--shimmer,.kt-loading--shimmer-wave{font:720 var(--kt-loading-text-size)/1.25 var(--kt-loading-font-family,inherit);letter-spacing:-.015em}
-.kt-loading-shimmer__text{position:relative;display:inline-block;color:var(--kt-loading-base-color,currentColor);opacity:.85}
-.kt-loading-shimmer__text::after{content:attr(data-text);position:absolute;inset:0;pointer-events:none;color:transparent;-webkit-text-fill-color:transparent;background-image:linear-gradient(90deg,transparent 0%,var(--kt-loading-highlight-color,currentColor) 45%,var(--kt-loading-highlight-color,currentColor) 55%,transparent 100%);background-size:200% 100%;background-repeat:no-repeat;background-position:-200% 0;-webkit-background-clip:text;background-clip:text;animation:kt-loading-shimmer var(--kt-loading-motion-duration) linear infinite}
+.kt-loading-shimmer__text{position:relative;display:inline-block;color:color-mix(in srgb,var(--kt-loading-base-color,currentColor) 34%,transparent)}
+.kt-loading-shimmer__text::after{content:attr(data-text);position:absolute;inset:0;pointer-events:none;color:transparent;-webkit-text-fill-color:transparent;background-image:linear-gradient(90deg,transparent 0%,transparent 30%,var(--kt-loading-highlight-color,var(--kt-loading-color,currentColor)) 48%,var(--kt-loading-highlight-color,var(--kt-loading-color,currentColor)) 52%,transparent 70%,transparent 100%);background-size:200% 100%;background-repeat:repeat-x;background-position:0 0;-webkit-background-clip:text;background-clip:text;animation:kt-loading-shimmer var(--kt-loading-motion-duration) linear infinite}
 .kt-loading--shimmer.has-glow .kt-loading-shimmer__text::after{filter:drop-shadow(0 0 var(--kt-loading-glow-size) color-mix(in srgb,var(--kt-loading-glow-color) 22%,transparent))}
 .kt-loading-shimmer-wave__text{display:inline-flex}
 .kt-loading-shimmer-wave__char{display:inline-block;font-style:normal;color:var(--kt-loading-base-color,currentColor);transform-origin:var(--kt-loading-transform-origin,center);animation:kt-loading-wave var(--kt-loading-motion-duration) ease-in-out infinite}
-.kt-loading.is-reverse .kt-loading-shimmer__text::after{animation-direction:reverse}
-.kt-loading--terminal{display:inline-flex;align-items:center;color:var(--kt-loading-color);font:650 var(--kt-loading-text-size)/1 var(--kt-loading-font-family,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace)}
-.kt-loading-terminal__cursor,.kt-loading-terminal__dot,.kt-loading-terminal__block,.kt-loading-terminal__frame,.kt-loading-terminal__cell{font-style:normal}
+.kt-loading-shimmer__text.is-reverse::after{animation-direction:reverse}
+.kt-loading--terminal{display:inline-flex;align-items:center;justify-content:center;color:var(--kt-loading-color);font:650 var(--kt-loading-text-size)/1.35 var(--kt-loading-font-family,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace)}
+.kt-loading-terminal__cursor,.kt-loading-terminal__dot,.kt-loading-terminal__block,.kt-loading-terminal__frame,.kt-loading-terminal__cell,.kt-loading-terminal__bracket,.kt-loading-terminal__compound-label,.kt-loading-terminal__compound-status{font-style:normal}
 .kt-loading-terminal__cursor{transform-origin:var(--kt-loading-transform-origin,center);animation:kt-loading-blink var(--kt-loading-fast-duration) steps(1,end) infinite}
 .kt-loading-terminal__dot{transform-origin:var(--kt-loading-transform-origin,center);animation:kt-loading-terminal-dot var(--kt-loading-motion-duration) linear infinite}
 .kt-loading-terminal__block{margin-inline:.08em;transform-origin:var(--kt-loading-transform-origin,center);animation:kt-loading-block var(--kt-loading-motion-duration) ease-in-out infinite}
-.kt-loading-terminal__meter{display:inline-flex;align-items:center;font-variant-numeric:tabular-nums;letter-spacing:.04em}
-.kt-loading-terminal__meter:not(.is-determinate) .kt-loading-terminal__cell{animation:kt-loading-meter-scan var(--kt-loading-motion-duration) ease-in-out infinite;animation-delay:var(--kt-loading-delay,0s)}
+.kt-loading-terminal__meter{display:inline-flex;align-items:center;flex-wrap:nowrap;white-space:nowrap;max-width:100%;font-variant-numeric:tabular-nums;letter-spacing:.04em}
 .kt-loading-terminal__cell{min-width:.62em;color:color-mix(in srgb,var(--kt-loading-color) 28%,transparent);text-align:center}
 .kt-loading-terminal__cell.is-filled{color:var(--kt-loading-color);transform-origin:var(--kt-loading-transform-origin,center)}
-.kt-loading-terminal__frame{display:inline-block;min-width:1.35em;text-align:center}
+.kt-loading-terminal--typing-cursor,.kt-loading-terminal--ellipsis-typing,.kt-loading-terminal--command-prompt,.kt-loading-terminal--dot-cursor,.kt-loading-terminal--block-cursor{justify-content:flex-start}
+.kt-loading-terminal--typing-cursor .kt-loading-terminal__frame,.kt-loading-terminal--ellipsis-typing .kt-loading-terminal__frame,.kt-loading-terminal--command-prompt .kt-loading-terminal__frame,.kt-loading-terminal--dot-cursor .kt-loading-terminal__frame,.kt-loading-terminal--block-cursor .kt-loading-terminal__frame{text-align:left}
+.kt-loading-terminal__frame--cursor{display:inline-flex;align-items:baseline;white-space:pre}
+.kt-loading-terminal__caret{font-style:normal;transition:opacity 90ms linear}
+.kt-loading-terminal__frame{display:inline-block;min-width:var(--kt-terminal-frame-min-width,1.35em);text-align:center;white-space:pre;line-height:var(--kt-loading-line-height,1.35);font-weight:var(--kt-loading-font-weight,650);letter-spacing:var(--kt-loading-letter-spacing,normal)}
+.kt-loading-terminal__frame--multiline{display:inline-block;white-space:pre;min-width:2.5em;min-height:calc(var(--kt-loading-line-height,1.35) * 1em);text-align:left;vertical-align:middle;font-variant-numeric:tabular-nums}
+.kt-loading--terminal.is-fixed-width,.kt-loading-indicator.is-terminal-fixed-width .kt-loading--terminal{min-width:var(--kt-terminal-viewport-width,4ch)}
+/* The 4ch reservation keeps a standalone frame spinner from jittering as its
+   glyph changes width. Inside a compound it just padded a one-glyph spinner
+   out to four characters, leaving a gap before the label. */
+.kt-loading-terminal__compound-spinner .kt-loading--terminal.is-fixed-width{min-width:0}
+.kt-loading--terminal.is-fixed-width:has(.kt-loading-terminal__compound){min-width:0}
+.terminal-spinner--quad-dots{display:grid;grid-template-columns:repeat(2,var(--kt-terminal-dot-size,4px));grid-template-rows:repeat(2,var(--kt-terminal-dot-size,4px));gap:var(--kt-terminal-dot-gap,4px);width:calc(var(--kt-terminal-dot-size,4px) * 2 + var(--kt-terminal-dot-gap,4px));height:calc(var(--kt-terminal-dot-size,4px) * 2 + var(--kt-terminal-dot-gap,4px))}
+.kt-loading-terminal__quad-dot,.quad-dot{border-radius:50%;background:var(--kt-loading-color,currentColor);opacity:.12;transition:opacity var(--kt-terminal-dot-transition,160ms) linear}
+.kt-loading-terminal__quad-dot.is-square,.quad-dot.is-square{border-radius:1px}
+.kt-loading-terminal__compound{display:inline-flex;align-items:center;justify-content:center;gap:var(--kt-terminal-compound-gap,.45em);flex-wrap:nowrap;white-space:nowrap;font-variant-numeric:tabular-nums}
+.kt-loading-terminal__compound-spinner{display:inline-flex;min-width:var(--kt-terminal-spinner-slot,1.35em);justify-content:center}
+.kt-loading-terminal__compound-label{min-width:4ch;white-space:nowrap}
+.kt-loading-terminal__compound-status:empty{display:none}
+.kt-loading-terminal__compound-label:empty{display:none}
+.kt-loading-terminal__compound-status{min-width:var(--kt-terminal-status-width,7ch);color:var(--kt-loading-secondary-color,var(--kt-loading-highlight-color,currentColor));opacity:.92;white-space:pre}
+.kt-loading-terminal__bracket{color:color-mix(in srgb,var(--kt-loading-color) 72%,transparent)}
 .kt-loading--terminal.has-glow{text-shadow:0 0 var(--kt-loading-glow-size) color-mix(in srgb,var(--kt-loading-glow-color) 56%,transparent)}
 
 @media (prefers-reduced-motion: reduce) {
@@ -282,11 +487,25 @@
   display: block;
   line-height: 0;
 }
+.kt-lazy-wave-canvas,
+.kt-lazy-grain-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 
 .kt-slider-wrap {
   position: relative;
   overflow: hidden;
   touch-action: pan-y;
+}
+
+/* Coverflow's active-slide drop-shadow spills past the slide, and the wrapper's
+   own `overflow:hidden` cut it off — the demo could not fix this from outside
+   because the clip happens INSIDE the module's markup.
+   `overflow:clip` still clips (neighbouring slides disappear at the edges as
+   before) but `overflow-clip-margin` grants the shadow room. The margin is a
+   token so a product can widen it for a heavier shadow. */
+.kt-slider--active-shadow > .kt-slider-wrap,
+.kt-slider--active-shadow .kt-slider-wrap {
+  overflow: clip;
+  overflow-clip-margin: var(--kt-slide-active-shadow-room, 40px);
 }
 
 .kt-slider-track {
@@ -323,6 +542,22 @@
 .kt-slider--cards .kt-slide,
 .kt-slider--creative .kt-slide {
   transform-style: preserve-3d;
+}
+
+/* Optional Coverflow depth cue. It is off by default for compatibility.
+   `drop-shadow` follows the rotated slide silhouette; `box-shadow` would lie
+   flat on the 3D plane. Both tokens remain available to product CSS. */
+.kt-slider--coverflow.kt-slider--active-shadow .kt-slide.is-active {
+  filter: drop-shadow(
+    var(--kt-slide-active-shadow-x, 0)
+    var(--kt-slide-active-shadow-y, 18px)
+    var(--kt-slide-active-shadow-blur, 24px)
+    color-mix(
+      in srgb,
+      var(--kt-slide-active-shadow-color, #090b12) var(--kt-slide-active-shadow-opacity, 28%),
+      transparent
+    )
+  );
 }
 
 .kt-slider-dots {
@@ -597,6 +832,36 @@ html.kt-preload [data-kt-text-transition] {
   transition: transform .25s cubic-bezier(.22,.8,.3,1);
 }
 .kt-menu--ind-plus .kt-menu-trigger[aria-expanded="true"]::after { transform: rotate(135deg); }
+/* Responsive top-level item flow is opt-in. `wrap` keeps every item visible;
+   `scroll` preserves one row with touch momentum. Scroll-mode panels are placed
+   against the viewport by the module while open so the scroller cannot clip
+   them. `custom` (the JS default) adds no layout rules. */
+@media (max-width: 720px) {
+  .kt-menu--responsive-wrap > ul {
+    display: flex; flex-wrap: wrap; justify-content: center;
+  }
+  .kt-menu--responsive-scroll > ul {
+    display: flex; flex-wrap: nowrap; justify-content: flex-start;
+    overflow-x: auto; overflow-y: hidden;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: inline proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .kt-menu--responsive-scroll > ul::-webkit-scrollbar { display: none; }
+  .kt-menu--responsive-scroll > ul > li {
+    flex: 0 0 auto; scroll-snap-align: start;
+  }
+  .kt-menu--responsive-scroll .kt-menu-panel {
+    position: fixed;
+    inset: var(--kt-menu-panel-top, 72px) 12px auto;
+    width: auto;
+    max-width: none;
+    max-height: min(480px, 60dvh, calc(100dvh - var(--kt-menu-panel-top, 72px) - 12px));
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .kt-menu-trigger::after { transition: none; }
 }
@@ -849,3 +1114,27 @@ html.kt-preload [data-kt-text-transition] {
 /* Lightbox filmstrip (thumbnails:true on grouped images). */
 .kt-lightbox-filmstrip::-webkit-scrollbar { display: none; }
 .kt-lightbox-filmstrip .kt-lightbox-thumb:hover { opacity: 1 !important; }
+
+/* ── Structure that used to be baked into innerHTML as style="…" ─────────────
+   These declarations are geometry, not theme: they never vary per instance, so
+   keeping them here (instead of in a template string) means a consumer can
+   override them from their own stylesheet, and no inline style outranks the
+   cascade. Per-instance numbers still arrive as attributes/custom properties. */
+.kt-progress-ring-svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.kt-lazy-skeleton-icon{position:absolute;left:50%;top:50%;width:15%;max-width:64px;min-width:28px;aspect-ratio:1;transform:translate(-50%,-50%);opacity:.32}
+.kt-lazy-skeleton-icon svg{width:100%;height:100%}
+/* Crosshair cursor: full-viewport hairlines, or a short cross sized by
+   --kt-cursor-cross (set per instance from the `crosshairSize` option). */
+.kt-cursor-hair{background:currentColor;opacity:.4}
+.kt-cursor-hair--vp-x{position:fixed;left:0;right:0;top:0;height:1px}
+.kt-cursor-hair--vp-y{position:fixed;top:0;bottom:0;left:0;width:1px}
+.kt-cursor-hair--x{position:absolute;width:var(--kt-cursor-cross,20px);height:1px;left:calc(var(--kt-cursor-cross,20px) / -2);top:0}
+.kt-cursor-hair--y{position:absolute;width:1px;height:var(--kt-cursor-cross,20px);left:0;top:calc(var(--kt-cursor-cross,20px) / -2)}
+/* Rotating circular text ring. Size, speed and colour come in as custom
+   properties; the keyframes are shared instead of one @keyframes per instance. */
+.kt-cursor-textring{position:absolute;left:calc(var(--kt-cursor-textring,96px) / -2);top:calc(var(--kt-cursor-textring,96px) / -2);transform-origin:center;animation:kt-cursor-textring-spin var(--kt-cursor-textring-dur,7s) linear infinite}
+.kt-cursor-textring text{fill:var(--kt-cursor-textring-fill,currentColor);font:700 var(--kt-cursor-textring-size,11px) ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase}
+@keyframes kt-cursor-textring-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.kt-cursor-textring{animation:none}}
+/* Image cursor: dimensions and rotation are per-instance custom properties. */
+.kt-cursor-image{display:block;width:var(--kt-cursor-w,36px);height:var(--kt-cursor-h,36px);transform:translate(-50%,-50%) rotate(var(--kt-cursor-rotate,0deg));object-fit:contain}

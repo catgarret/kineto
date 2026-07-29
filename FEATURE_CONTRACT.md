@@ -9,7 +9,7 @@
 - 동작 계약 버전: `1.2.0`
 - 공개 모듈: 정확히 **51개**
 - Core public property: **10개**
-- Core API: **26개**
+- Core API: **27개**
 - compatibility API: **9개**
 - additional named export: `modules`
 

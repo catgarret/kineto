@@ -170,8 +170,15 @@ export default {
 
     tabs.forEach((tab) => { tab.addEventListener('click', onClick); tab.addEventListener('keydown', onKey); });
     select(active, false);
-    const onResize = () => moveIndicator();
-    window.addEventListener('resize', onResize);
+    // A tab set can be initialized inside a hidden tab/card. In that state every
+    // offset is 0, so the active text is bold but the pill/underline has no
+    // geometry. ResizeObserver fires when the ancestor becomes visible and
+    // places the indicator without requiring a window resize or user click.
+    const indicatorObserver = indicator && typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(moveIndicator)
+      : null;
+    indicatorObserver?.observe(list);
+    if (!indicatorObserver) window.addEventListener('resize', moveIndicator);
     // Keep the handle so destroy() can cancel a still-pending first paint (no leak).
     const initRaf = requestAnimationFrame(moveIndicator);
 
@@ -183,7 +190,8 @@ export default {
       resume() {},
       destroy() {
         cancelAnimationFrame(initRaf);
-        window.removeEventListener('resize', onResize);
+        if (!indicatorObserver) window.removeEventListener('resize', moveIndicator);
+        indicatorObserver?.disconnect();
         tabs.forEach((tab) => { tab.removeEventListener('click', onClick); tab.removeEventListener('keydown', onKey); tab.removeAttribute('data-kt-label'); });
         indicator?.remove();
         el.classList.remove('kt-tabs', `kt-tabs--${orientation}`, 'kt-tabs--ind-none', 'kt-tabs--instant');

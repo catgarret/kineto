@@ -7,8 +7,8 @@
 - Behavior contract: 1.2.0
 - Public modules: 51
 - Root properties: `version`, `easings`, `prefersReducedMotion`, `env`, `performance`, `registry`, `instanceCount`, `smoothEnabled`, `lenis`, `core`
-- Core methods: `easing()`, `easingFn()`, `setReducedMotion()`, `config()`, `setAnimationEngine()`, `enableSmooth()`, `disableSmooth()`, `toggleSmooth()`, `scrollTo()`, `register()`, `unregister()`, `create()`, `scan()`, `init()`, `initModules()`, `autoInit()`, `getInstance()`, `destroyModule()`, `replay()`, `destroy()`, `pause()`, `resume()`, `refresh()`, `setEngineSource()`, `getEngineSource()`, `updateModule()`
-- Additional named exports: `modules`
+- Core methods: `autoInit()`, `config()`, `create()`, `destroy()`, `destroyModule()`, `disableSmooth()`, `easing()`, `easingFn()`, `enableSmooth()`, `getEngineSource()`, `getInstance()`, `init()`, `initModules()`, `listTerminalFramePresets()`, `pause()`, `refresh()`, `register()`, `replay()`, `resume()`, `scan()`, `scrollTo()`, `setAnimationEngine()`, `setEngineSource()`, `setReducedMotion()`, `toggleSmooth()`, `unregister()`, `updateModule()`
+- Additional named exports: `modules`, `listTerminalFramePresets`
 
 각 모듈의 이름, 활성화 속성, 기본 모드, 허용 모드, 공개 옵션은 patch/minor 릴리스에서 임의로 변경할 수 없습니다.
 
@@ -72,15 +72,15 @@
 
 - Attribute: `data-kt-glitch`
 - Default variant: `rgb`
-- Variants: `rgb`, `pixel`, `noise`, `crt`, `digital`, `image`, `datamosh`, `reveal`, `vcr`
-- Public options: `blendMode`, `colors`, `delay`, `duration`, `frequency`, `intensity`, `loop`, `preset`, `randomness`, `sliceCount`, `speed`, `trigger`, `type`
+- Variants: `rgb`, `pixel`, `noise`, `crt`, `digital`, `image`, `datamosh`, `reveal`, `vcr`, `rgb-slice-burst`
+- Public options: `artifactCount`, `artifactMaxSize`, `artifactMinSize`, `blendMode`, `burstDurationMax`, `burstDurationMin`, `channelOffset`, `colors`, `delay`, `duration`, `frequency`, `intensity`, `intervalMax`, `intervalMin`, `loop`, `maxSliceOffset`, `preset`, `randomness`, `seed`, `sliceCount`, `sliceCountMax`, `sliceCountMin`, `speed`, `trigger`, `type`
 
 ## lazy
 
 - Attribute: `data-kt-lazy`
 - Default variant: `fade`
-- Variants: `fade`, `blur-up`, `skeleton`, `pixelate`, `print`, `dissolve`, `flicker`, `polaroid`
-- Public options: `animated`, `aspectRatio`, `autoplay`, `blur`, `crossOrigin`, `delay`, `direction`, `display`, `duration`, `ease`, `edgeOpacity`, `edgeWidth`, `effect`, `fadeDuration`, `fallbackSrc`, `feather`, `flickerBackground`, `frame`, `frameColor`, `glitchStrength`, `height`, `holdDuration`, `keepFrame`, `loop`, `maxDpr`, `minDuration`, `muted`, `nativeLazy`, `noise`, `noiseBlend`, `noiseContrast`, `noiseFps`, `noiseHeight`, `noiseWidth`, `objectFit`, `objectPosition`, `onError`, `onLoad`, `onProgress`, `onReveal`, `once`, `pixelEnd`, `pixelStart`, `pixelStepCount`, `playsinline`, `preload`, `preset`, `renderFps`, `rootMargin`, `rotate`, `sizes`, `skeletonAngle`, `skeletonColor`, `skeletonHighlight`, `skeletonIcon`, `skeletonSpeed`, `skeletonVariant`, `sliceCount`, `src`, `srcset`, `startScale`, `stepCount`, `stepDuration`, `steps`, `threshold`, `variant`
+- Variants: `fade`, `blur-up`, `wave`, `grain`, `skeleton`, `pixelate`, `print`, `dissolve`, `flicker`, `polaroid`, `crt`, `data-mosaic`, `rgb-slice-burst`
+- Public options: `animated`, `aspectRatio`, `autoplay`, `blur`, `colors`, `crossOrigin`, `delay`, `direction`, `display`, `duration`, `ease`, `edgeOpacity`, `edgeWidth`, `effect`, `fadeDuration`, `fallbackSrc`, `feather`, `flickerBackground`, `frame`, `frameColor`, `grain`, `glitchStrength`, `height`, `holdDuration`, `keepFrame`, `loop`, `maxDpr`, `minDuration`, `muted`, `nativeLazy`, `noise`, `noiseBlend`, `noiseContrast`, `noiseFps`, `noiseHeight`, `noiseWidth`, `objectFit`, `objectPosition`, `onError`, `onLoad`, `onProgress`, `onReveal`, `once`, `pixelEnd`, `pixelStart`, `pixelStepCount`, `playsinline`, `preload`, `preset`, `renderFps`, `rootMargin`, `rotate`, `seed`, `sizes`, `skeletonAngle`, `skeletonColor`, `skeletonHighlight`, `skeletonIcon`, `skeletonSpeed`, `skeletonVariant`, `sliceCount`, `src`, `srcset`, `startScale`, `stepCount`, `stepDuration`, `steps`, `threshold`, `tileMax`, `tileMin`, `variant`, `waveAmplitude`, `waveFrequency`, `waveSliceHeight`, `waveSpeed`
 
 ## lightbox
 
@@ -94,14 +94,14 @@
 - Attribute: `data-kt-loader`
 - Default variant: `bar`
 - Variants: `slot`, `circular`, `bar`
-- Public options: `announce`, `ariaLabel`, `barHeight`, `barWidth`, `className`, `color`, `completeHold`, `completeOnError`, `duration`, `exit`, `exitDirection`, `exitDuration`, `expectedResources`, `fetch`, `fetchOptions`, `fill`, `fillColor`, `hideScrollbar`, `label`, `labelBlend`, `labelColor`, `linecap`, `manualDuration`, `minDuration`, `onCancel`, `onComplete`, `onError`, `onHide`, `onProgress`, `onShow`, `onStart`, `onStateChange`, `percent`, `preset`, `progress`, `progressSource`, `promise`, `promiseCeiling`, `promiseStart`, `radius`, `renderUI`, `resourceSelector`, `resources`, `showPercent`, `size`, `smoothing`, `source`, `stroke`, `trackColor`, `transition`, `type`, `url`
+- Public options: `announce`, `ariaLabel`, `barHeight`, `barWidth`, `className`, `color`, `completeHold`, `completeOnError`, `duration`, `exit`, `exitDirection`, `exitDuration`, `expectedResources`, `fetch`, `fetchOptions`, `fill`, `fillColor`, `hideScrollbar`, `label`, `labelBlend`, `labelColor`, `linecap`, `manualDuration`, `minDuration`, `onCancel`, `onComplete`, `onError`, `onHide`, `onProgress`, `onShow`, `onStart`, `onStateChange`, `percent`, `preset`, `progress`, `progressOutput`, `progressScope`, `progressTemplate`, `progressSource`, `promise`, `promiseCeiling`, `promiseStart`, `radius`, `renderUI`, `resourceSelector`, `resources`, `revealEffect`, `showPercent`, `size`, `smoothing`, `source`, `stroke`, `trackColor`, `transition`, `type`, `url`
 
 ## loadingIndicator
 
 - Attribute: `data-kt-loading-indicator`
 - Default variant: `spinner`
 - Variants: `spinner`, `dots`, `bar`, `shimmer`, `shimmer-wave`, `terminal`
-- Public options: `ariaLabel`, `autoComplete`, `barHeight`, `barWidth`, `baseColor`, `className`, `color`, `completeHold`, `completeOnError`, `cursorChar`, `direction`, `dotCount`, `dotGap`, `dotSize`, `dotStyle`, `emptyChar`, `exitDuration`, `fillChar`, `fontFamily`, `frameInterval`, `frames`, `glow`, `glowColor`, `glowSize`, `hideOnComplete`, `highlightColor`, `indeterminate`, `label`, `motionDuration`, `onComplete`, `onError`, `onHide`, `onProgress`, `onShow`, `onStart`, `onStateChange`, `preset`, `progress`, `renderUI`, `rotateSpokes`, `size`, `spinnerStyle`, `spread`, `stroke`, `terminalStyle`, `text`, `textSize`, `transformOrigin`, `trackColor`, `type`
+- Public options: `ariaLabel`, `asciiOnly`, `autoComplete`, `barHeight`, `barMode`, `barWidth`, `baseColor`, `className`, `color`, `completeHold`, `completeOnError`, `cursorChar`, `direction`, `dotCount`, `dotGap`, `dotSize`, `dotStyle`, `emptyChar`, `exitDuration`, `fillChar`, `fixedWidth`, `fontFamily`, `fontWeight`, `frameInterval`, `frames`, `glow`, `glowColor`, `glowSize`, `hideOnComplete`, `highlightColor`, `indeterminate`, `label`, `letterSpacing`, `lineHeight`, `motionDuration`, `onComplete`, `onError`, `onHide`, `onProgress`, `onShow`, `onStart`, `onStateChange`, `preset`, `progress`, `progressOutput`, `progressScope`, `progressSource`, `progressTemplate`, `renderUI`, `rotateSpokes`, `secondaryColor`, `showLabel`, `showSpinner`, `showStatus`, `size`, `spinnerMode`, `spinnerStyle`, `spread`, `stepTotal`, `stroke`, `terminalStyle`, `text`, `textSize`, `track`, `trackColor`, `transformOrigin`, `type`, `viewportWidth`
 
 ## magnetic
 
@@ -135,8 +135,8 @@
 
 - Attribute: `data-kt-page-reveal`
 - Default variant: `curtain`
-- Variants: `curtain`, `split`, `circle`, `wipe`, `blinds`, `diagonal`, `checker`, `strips`, `shutter`, `columns`, `zoom`, `fade`
-- Public options: `angle`, `axis`, `color`, `color2`, `count`, `delay`, `direction`, `duration`, `ease`, `effect`, `onComplete`, `preset`, `stagger`
+- Variants: `curtain`, `split`, `circle`, `wipe`, `blinds`, `diagonal`, `checker`, `strips`, `shutter`, `columns`, `fade`, `zoom`, `iris`, `flash`, `center-slit`, `data-mosaic`
+- Public options: `angle`, `axis`, `cleanupDuration`, `color`, `color2`, `count`, `delay`, `density`, `direction`, `duration`, `ease`, `effect`, `horizontalDuration`, `largeTileChance`, `lineHeight`, `lineWidth`, `noiseDuration`, `onComplete`, `overscan`, `preset`, `reverse`, `seed`, `smallTileChance`, `stagger`, `tileMax`, `tileMin`, `verticalDuration`
 
 ## pageTransition
 
@@ -166,6 +166,13 @@
 - Variants: `fade`, `fade-up`, `fade-down`, `fade-left`, `fade-right`, `slide-up`, `slide-down`, `slide-left`, `slide-right`, `zoom`, `zoom-in`, `zoom-out`, `blur`, `rise`, `soft`, `flip`, `flip-x`, `flip-y`, `rotate`, `mask`, `wipe`, `class`, `clock`
 - Public options: `activeClass`, `classOnly`, `clockDirection`, `delay`, `direction`, `duration`, `ease`, `end`, `enterClass`, `enterEase`, `leaveClass`, `onClassChange`, `onComplete`, `onEnter`, `onEnterBack`, `onLeave`, `onLeaveBack`, `once`, `order`, `preset`, `removeClassOnLeave`, `rootMargin`, `spring`, `stagger`, `start`, `startAngle`, `threshold`
 
+## radial
+
+- Attribute: `data-kt-radial`
+- Default variant: `bottom`
+- Variants: `bottom`, `top`, `left`, `right`
+- Public options: `activeAngle`, `activeClass`, `align`, `autoplay`, `controls`, `drag`, `duration`, `loop`, `position`, `radius`, `step`
+
 ## ripple
 
 - Attribute: `data-kt-ripple`
@@ -191,8 +198,8 @@
 
 - Attribute: `data-kt-slider`
 - Default variant: `slide`
-- Variants: `slide`, `fade`, `dissolve`, `wipe`, `coverflow`, `flip`, `cube`, `cards`, `creative`
-- Public options: `align`, `autoplay`, `axis`, `depth`, `dots`, `drag`, `duration`, `effect`, `effectDirection`, `effectIntensity`, `enabled`, `gap`, `initial`, `keyboard`, `label`, `loop`, `minOpacity`, `minScale`, `nextSelector`, `onBeforeChange`, `onChange`, `onInit`, `opacityStep`, `pauseButton`, `pauseOnHover`, `perView`, `perspective`, `preset`, `prevSelector`, `progress`, `progressType`, `rotate`, `scaleStep`, `smoothing`, `spacing`, `speed`, `touch`, `wheel`
+- Variants: `slide`, `fade`, `dissolve`, `wipe`, `coverflow`, `flip`, `cube`, `cards`, `creative`, `radial`
+- Public options: `activeAngle`, `activeClass`, `activeShadow`, `activeShadowOpacity`, `align`, `autoHeight`, `autoplay`, `axis`, `breakpoints`, `controls`, `depth`, `dots`, `drag`, `duration`, `effect`, `effectDirection`, `effectIntensity`, `enabled`, `gap`, `grabCursor`, `initial`, `keyboard`, `label`, `loop`, `minOpacity`, `minScale`, `nextSelector`, `onBeforeChange`, `onChange`, `onInit`, `opacityStep`, `pauseButton`, `pauseOnHover`, `perGroup`, `perView`, `perspective`, `position`, `preset`, `prevSelector`, `progress`, `progressType`, `radius`, `rotate`, `scaleStep`, `slideToClickedSlide`, `smoothing`, `spacing`, `speed`, `step`, `sync`, `touch`, `wheel`
 
 ## stickyStack
 
@@ -276,7 +283,7 @@
 - Attribute: `data-kt-mega-menu`
 - Default variant: `dropdown`
 - Variants: `dropdown`, `mega`
-- Public options: `closeDelay`, `duration`, `indicator`, `layout`, `openDelay`, `trigger`
+- Public options: `closeDelay`, `duration`, `indicator`, `layout`, `openDelay`, `responsive`, `trigger`
 
 ## toast
 
@@ -290,7 +297,7 @@
 - Attribute: `data-kt-bottom-sheet`
 - Default variant: `sheet`
 - Variants: `sheet`
-- Public options: `backdrop`, `backdropOpacity`, `dismissible`, `duration`, `handle`, `label`, `maxHeight`, `minHeight`, `onResize`, `resizable`, `resizeArea`, `trigger`
+- Public options: `autoHeight`, `backdrop`, `backdropOpacity`, `dismissible`, `duration`, `handle`, `label`, `maxHeight`, `minHeight`, `onResize`, `resizable`, `resizeArea`, `trigger`
 
 ## tabs
 
@@ -299,19 +306,12 @@
 - Variants: `line`
 - Public options: `activation`, `activeClass`, `duration`, `effect`, `indicator`, `indicatorMotion`, `onChange`, `orientation`
 
-## radial
-
-- Attribute: `data-kt-radial`
-- Default variant: `bottom`
-- Variants: `bottom`, `top`, `left`, `right`
-- Public options: `activeAngle`, `activeClass`, `align`, `autoplay`, `controls`, `drag`, `duration`, `loop`, `position`, `radius`, `step`
-
 ## coverReveal
 
 - Attribute: `data-kt-cover-reveal`
 - Default variant: `block`
 - Variants: `block`
-- Public options: `color`, `color2`, `colorMode`, `colors`, `delay`, `direction`, `duration`, `ease`, `layers`, `lines`, `onComplete`, `stagger`, `threshold`, `waitForImage`
+- Public options: `color`, `color2`, `colorMode`, `colors`, `delay`, `direction`, `duration`, `ease`, `layers`, `lines`, `mask`, `maskDirection`, `onComplete`, `stagger`, `threshold`, `waitForImage`, `watch`
 
 ## gesture
 
@@ -345,8 +345,8 @@
 
 - Attribute: `data-kt-flip`
 - Default variant: `layout`
-- Variants: `layout`
-- Public options: `duration`, `ease`, `item`, `stagger`, `watch`
+- Variants: `layout`, `slide`, `fade`, `fade-slide`, `scale`
+- Public options: `duration`, `ease`, `item`, `mode`, `stagger`, `watch`
 
 ## scrollShadows
 

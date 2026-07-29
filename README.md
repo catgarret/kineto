@@ -8,7 +8,7 @@
 
 English · [한국어](i18n/README.ko.md) · [日本語](i18n/README.jp.md) · [简体中文](i18n/README.zh-CN.md) · [繁體中文](i18n/README.zh-TW.md) · [Русский](i18n/README.ru.md) · [Italiano](i18n/README.it.md)
 
-[![CI](https://github.com/catgarret/kineto/actions/workflows/ci.yml/badge.svg)](https://github.com/catgarret/kineto/actions/workflows/ci.yml) [![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
+<p><a href="https://github.com/catgarret/kineto/actions/workflows/ci.yml"><img src="https://github.com/catgarret/kineto/actions/workflows/ci.yml/badge.svg" alt="CI" height="20"></a>&nbsp;&nbsp;<a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
 [Live demo](https://git.dongri.me/example/kineto) · [Module reference](docs/module-reference.md) · [AI prompt guide](AI-PROMPT-GUIDE.md) · [Feature contract](FEATURE_CONTRACT.md)
 
@@ -22,7 +22,8 @@ JavaScript API.
 Unsupported environments disable the effect while keeping the content intact.
 
 > Using an AI coding tool? The [AI prompt guide](AI-PROMPT-GUIDE.md) includes
-> ready-to-paste project instructions.
+> canonical English project instructions and a Korean usage guide. Agents
+> modifying this repository must also follow [the AI handoff](docs/AI-HANDOFF.md).
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/kineto.gif" width="620" alt="Kineto Preview">
 
@@ -183,13 +184,13 @@ Kineto.disableSmooth();
 | `pageTransition` | `data-kt-page-transition` | Same-origin page transitions |
 | `parallax` | `data-kt-parallax` | Scroll parallax |
 | `progress` | `data-kt-progress` | Reading progress bar / ring |
-| `radial` | `data-kt-radial` | Radial (wheel) carousel |
 | `reveal` | `data-kt-reveal` | Scroll-entry reveal |
 | `ripple` | `data-kt-ripple` | Click ripple |
 | `scrollSequence` | `data-kt-scroll-sequence` | Image-sequence scrubbing |
 | `scrollShadows` | `data-kt-scroll-shadows` | CSS edge shadows on scroll containers |
 | `scrollVelocity` | `data-kt-scroll-velocity` | Scroll speed / direction response |
-| `slider` | `data-kt-slider` | Slide and coverflow |
+| `slider` | `data-kt-slider` | Slide, coverflow, stacked, and radial carousel effects |
+| `radial` | `data-kt-radial` | Backward-compatible radial carousel entry point |
 | `stickyHeader` | `data-kt-sticky-header` | Shrinking / cover-to-fixed sticky header |
 | `stickyStack` | `data-kt-sticky-stack` | Sticky stack (vertical / horizontal / floating) |
 | `switch` | `data-kt-switch` | Accessible toggle switch (form-usable) |

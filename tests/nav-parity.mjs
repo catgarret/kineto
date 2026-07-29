@@ -5,7 +5,7 @@
 //   rightOrder = [...main [data-module-block]].map(el => el.dataset.moduleBlock)
 //   expect(rightOrder).toEqual(leftOrder)          // same order, by construction
 //   expect(new Set(leftOrder).size).toBe(len)      // no duplicates
-//   expect(leftOrder.length).toBe(registry 51)     // every module present
+//   grouped compatibility modules may share their engine's section
 //   each nav href="#mod-X" resolves to exactly one element with that id
 //   each nav label === its module block title; every block has a subtitle
 //
@@ -21,6 +21,7 @@ const mainJs = fs.readFileSync(path.join(root, 'demo/main.js'), 'utf8');
 const helpJs = fs.readFileSync(path.join(root, 'demo/help-i18n.js'), 'utf8');
 const REGISTRY = fs.readdirSync(path.join(root, 'src/modules'))
   .filter((f) => f.endsWith('.js')).map((f) => f.replace('.js', ''));
+const GROUPED_MODULES = { radial: 'slider' };
 
 // Drop the page's own <script> tags (external bundle + demo scripts); we inject
 // controlled stubs + main.js ourselves so nothing depends on network fetches.
@@ -57,9 +58,16 @@ ok(leftOrder.length > 0, 'nav produced no links (builder did not run)');
 ok(arrEq(leftOrder, rightOrder), 'leftOrder !== rightOrder');
 ok(new Set(leftOrder).size === leftOrder.length, 'duplicate module in nav');
 ok(new Set(rightOrder).size === rightOrder.length, 'duplicate module block');
-ok(leftOrder.length === REGISTRY.length, `nav count ${leftOrder.length} !== registry ${REGISTRY.length}`);
-const missing = REGISTRY.filter((m) => !leftOrder.includes(m));
+ok(leftOrder.length + Object.keys(GROUPED_MODULES).length === REGISTRY.length, `nav/group count ${leftOrder.length} + ${Object.keys(GROUPED_MODULES).length} !== registry ${REGISTRY.length}`);
+const missing = REGISTRY.filter((m) => !leftOrder.includes(m) && !GROUPED_MODULES[m]);
 ok(missing.length === 0, 'modules missing from nav: ' + missing.join(', '));
+for (const [moduleName, hostModule] of Object.entries(GROUPED_MODULES)) {
+  ok(REGISTRY.includes(moduleName), `grouped module ${moduleName} is not registered`);
+  ok(leftOrder.includes(hostModule), `group host ${hostModule} is missing for ${moduleName}`);
+  if (moduleName === 'radial') {
+    ok(!!doc.querySelector('#mod-slider [data-kt-slider="radial"]'), 'radial compatibility demo is missing from the slider section');
+  }
+}
 for (const a of doc.querySelectorAll('#side-nav-modules .nav-mod')) {
   const href = a.getAttribute('href') || '';
   ok(href === `#mod-${a.dataset.module}`, `bad href ${href} for ${a.dataset.module}`);
@@ -79,4 +87,4 @@ console.log('LEFT  (nav):   ', JSON.stringify(leftOrder));
 console.log('RIGHT (blocks):', JSON.stringify(rightOrder));
 console.log('equal:', arrEq(leftOrder, rightOrder), '| count:', leftOrder.length, '| registry:', REGISTRY.length);
 if (fails.length) { console.error('\nFAILED:\n - ' + fails.join('\n - ')); process.exit(1); }
-console.log('\nnav-parity OK — left order == right order, ' + leftOrder.length + ' modules, all checks passed.');
+console.log(`\nnav-parity OK — ${leftOrder.length} sections represent ${REGISTRY.length} modules, all checks passed.`);

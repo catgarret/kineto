@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import revealModule, { staggerDelays } from '../src/modules/reveal.js';
 import fullpageModule from '../src/modules/fullpage.js';
+import megaMenuModule from '../src/modules/megaMenu.js';
+import scrollShadowsModule from '../src/modules/scrollShadows.js';
 
 const rounded = (values) => values.map((value) => Number(value.toFixed(3)));
 assert.deepEqual(rounded(staggerDelays(5, 0.1, 'start')), [0, 0.1, 0.2, 0.3, 0.4]);
@@ -38,6 +40,22 @@ Object.assign(globalThis, {
   cancelAnimationFrame: window.cancelAnimationFrame.bind(window)
 });
 Object.defineProperty(globalThis, 'navigator', { configurable: true, value: window.navigator });
+
+const responsiveMenuHost = document.createElement('nav');
+responsiveMenuHost.innerHTML = '<ul><li><button>Menu</button><div class="kt-menu-panel"><a href="#">Item</a></div></li></ul>';
+document.body.appendChild(responsiveMenuHost);
+const responsiveMenu = megaMenuModule.create(responsiveMenuHost, { responsive: 'scroll' });
+assert.ok(responsiveMenuHost.classList.contains('kt-menu--responsive-scroll'), 'Mega Menu scroll mode class missing');
+responsiveMenu.destroy();
+assert.ok(!responsiveMenuHost.classList.contains('kt-menu--responsive-scroll'), 'Mega Menu responsive class must clean up');
+responsiveMenuHost.remove();
+
+const horizontalMask = document.createElement('div');
+document.body.appendChild(horizontalMask);
+const horizontalMaskInstance = scrollShadowsModule.create(horizontalMask, { axis: 'x', mode: 'mask' });
+assert.equal(horizontalMaskInstance.state.axis, 'horizontal', 'Scroll Shadows must accept the public x-axis alias');
+horizontalMaskInstance.destroy();
+horizontalMask.remove();
 
 // Clock reveal on a staggered list must mask each item independently. Masking
 // the <ul> itself turns the whole list into one large clock wipe.
@@ -100,6 +118,66 @@ const coverRevealModule = (await import('../src/modules/coverReveal.js')).defaul
 const flipModule = (await import('../src/modules/flip.js')).default;
 const cardGlowModule = (await import('../src/modules/cardGlow.js')).default;
 const tiltModule = (await import('../src/modules/tilt.js')).default;
+
+// Determinate indicators update nearby copy and can subscribe to Loader's
+// existing progress event without a new cross-module dependency.
+const progressScope = document.createElement('div');
+progressScope.setAttribute('data-kt-progress-scope', '');
+progressScope.innerHTML = `
+  <div id="progress-source"></div>
+  <span id="progress-indicator"></span>
+  <output data-kt-progress-output data-kt-progress-template="{value}% 완료">0% 완료</output>
+`;
+document.body.appendChild(progressScope);
+const progressIndicator = loadingIndicatorModule.create(
+  progressScope.querySelector('#progress-indicator'),
+  { type: 'spinner', spinnerStyle: 'comet', spinnerMode: 'fill', autoComplete: false }
+);
+progressIndicator.setProgress(100);
+assert.equal(progressScope.querySelector('[data-kt-progress-output]').textContent, '100% 완료');
+progressIndicator.bindProgress(progressScope.querySelector('#progress-source'));
+progressScope.querySelector('#progress-source').dispatchEvent(new window.CustomEvent('kt-loader-progress', {
+  detail: { value: 37 }
+}));
+assert.equal(progressIndicator.progress, 37);
+assert.equal(progressScope.querySelector('[data-kt-progress-output]').textContent, '37% 완료');
+progressIndicator.destroy();
+assert.equal(progressScope.querySelector('[data-kt-progress-output]').textContent, '0% 완료');
+progressScope.remove();
+
+// Multiple progress producers may intentionally share one visible output.
+// Destroying one producer must not restore stale copy while another owns it.
+const sharedProgressScope = document.createElement('div');
+sharedProgressScope.setAttribute('data-kt-progress-scope', '');
+sharedProgressScope.innerHTML = `
+  <span class="shared-indicator"></span>
+  <span class="shared-indicator"></span>
+  <output data-kt-progress-output>Waiting</output>
+`;
+document.body.appendChild(sharedProgressScope);
+const sharedIndicators = [...sharedProgressScope.querySelectorAll('.shared-indicator')].map((host) => (
+  loadingIndicatorModule.create(host, {
+    type: 'spinner',
+    spinnerStyle: 'comet',
+    spinnerMode: 'fill',
+    autoComplete: false
+  })
+));
+sharedIndicators[0].setProgress(24);
+sharedIndicators[1].setProgress(63);
+sharedIndicators[0].destroy();
+assert.equal(
+  sharedProgressScope.querySelector('[data-kt-progress-output]').textContent,
+  '63%',
+  'destroying one shared producer must preserve the live output'
+);
+sharedIndicators[1].destroy();
+assert.equal(
+  sharedProgressScope.querySelector('[data-kt-progress-output]').textContent,
+  'Waiting',
+  'the last shared producer must restore the original output'
+);
+sharedProgressScope.remove();
 
 // FLIP uses both X and Y deltas, so the same transaction supports a multi-row
 // grid instead of only shuffling one horizontal strip.
@@ -248,6 +326,22 @@ assert.notEqual(
 );
 hoverInstance.destroy();
 
+// Only the existing, low-coupling composition API is supported: paired
+// sliders share an index without recursively broadcasting the same change.
+const syncEl = document.createElement('div');
+syncEl.id = 'slider-sync';
+syncEl.innerHTML = sliderEl.innerHTML;
+document.body.appendChild(syncEl);
+const mainSync = sliderModule.create(sliderEl, { preset: 'slide', sync: '#slider-sync' });
+const peerSync = sliderModule.create(syncEl, { preset: 'slide', sync: '#slider' });
+mainSync.goTo(2);
+assert.equal(peerSync.index, 2, 'slider.sync must propagate the active index to its peer');
+peerSync.goTo(1);
+assert.equal(mainSync.index, 1, 'two-way slider.sync must not recurse or lose the peer update');
+mainSync.destroy();
+peerSync.destroy();
+syncEl.remove();
+
 // Slider effects must be visually distinct instead of aliasing every scene
 // transition to fade. The generated transforms/filters remain class- and
 // CSS-variable-addressable for product overrides.
@@ -267,6 +361,18 @@ for (const [effect, check] of Object.entries(effectExpectations)) {
   assert.ok(check(sliderEl.querySelectorAll('.kt-slide')[1]), `${effect}: renderer did not produce a distinct scene treatment`);
   effectInstance.destroy();
 }
+
+const coverflowShadow = sliderModule.create(sliderEl, {
+  effect: 'coverflow',
+  activeShadow: true,
+  activeShadowOpacity: 0.36
+});
+assert.ok(sliderEl.classList.contains('kt-slider--active-shadow'), 'Coverflow active shadow hook missing');
+assert.equal(sliderEl.style.getPropertyValue('--kt-slide-active-shadow-opacity'), '36%');
+assert.ok(sliderEl.querySelector('.kt-slide.is-active'), 'Coverflow active shadow requires an active slide hook');
+coverflowShadow.destroy();
+assert.ok(!sliderEl.classList.contains('kt-slider--active-shadow'), 'Coverflow active shadow hook must clean up');
+assert.equal(sliderEl.style.getPropertyValue('--kt-slide-active-shadow-opacity'), '');
 
 const sliderEvents = [];
 sliderEl.addEventListener('kt-slider-change', (event) => sliderEvents.push(event.detail.index));
@@ -343,6 +449,24 @@ await indicator.finished;
 indicator.destroy();
 indicatorHost.remove();
 
+const promiseHost = document.createElement('span');
+document.body.appendChild(promiseHost);
+const promiseIndicator = loadingIndicatorModule.create(promiseHost, {
+  type: 'spinner',
+  completeHold: 0,
+  exitDuration: 0,
+  hideOnComplete: false
+});
+assert.equal(
+  await promiseIndicator.trackPromise(Promise.resolve('ready')),
+  'ready',
+  'trackPromise must preserve the resolved value'
+);
+await promiseIndicator.finished;
+assert.equal(promiseIndicator.state, 'completed', 'trackPromise must settle the indicator lifecycle');
+promiseIndicator.destroy();
+promiseHost.remove();
+
 const frameHost = document.createElement('span');
 document.body.appendChild(frameHost);
 const frameIndicator = loadingIndicatorModule.create(frameHost, {
@@ -361,10 +485,43 @@ assert.equal(frameHost.querySelector('.kt-loading-terminal__frame')?.textContent
 frameIndicator.destroy();
 frameHost.remove();
 
+const scannerHost = document.createElement('span');
+document.body.appendChild(scannerHost);
+const scannerIndicator = loadingIndicatorModule.create(scannerHost, {
+  type: 'terminal',
+  terminalStyle: 'scanner',
+  frameInterval: 40
+});
+const scannerFirst = scannerHost.querySelector('.kt-loading-terminal__frame')?.textContent;
+await new Promise((resolve) => setTimeout(resolve, 55));
+const scannerSecond = scannerHost.querySelector('.kt-loading-terminal__frame')?.textContent;
+assert.notEqual(scannerSecond, scannerFirst, 'indeterminate Scanner must animate when no progress is authored');
+scannerIndicator.setProgress(60);
+const scannerDeterminate = scannerHost.querySelector('.kt-loading-terminal__frame')?.textContent;
+await new Promise((resolve) => setTimeout(resolve, 55));
+assert.equal(
+  scannerHost.querySelector('.kt-loading-terminal__frame')?.textContent,
+  scannerDeterminate,
+  'Scanner must stop on the requested determinate progress'
+);
+scannerIndicator.destroy();
+scannerHost.remove();
+
 const dualHost = document.createElement('span');
 document.body.appendChild(dualHost);
-const dualIndicator = loadingIndicatorModule.create(dualHost, { type: 'spinner', spinnerStyle: 'dual' });
-assert.equal(dualHost.querySelectorAll('.kt-loading-spinner__ring').length, 2, 'dual spinner must render two overlapping rings');
+// `dual` was folded into comet: the same arc engine with `track` and
+// `spinnerMode` options, so there is one spinner instead of three.
+const dualIndicator = loadingIndicatorModule.create(dualHost, { type: 'spinner', spinnerStyle: 'comet', spinnerMode: 'grow', track: true });
+// Dual ring is an Adobe-Spectrum-style progress circle: ONE svg holding a track
+// circle and a same-size arc drawn on top (not a small ring nested in a big one).
+assert.ok(dualHost.querySelector('.kt-loading-spinner__svg'), 'arc spinner must render the SVG arc engine');
+assert.equal(dualHost.querySelectorAll('.kt-loading-spinner__track').length, 1, 'track:true must render a track circle');
+assert.equal(dualHost.querySelectorAll('.kt-loading-spinner__arc').length, 1, 'arc spinner must render one arc over the track');
+assert.equal(
+  dualHost.querySelector('.kt-loading-spinner__track')?.getAttribute('r'),
+  dualHost.querySelector('.kt-loading-spinner__arc')?.getAttribute('r'),
+  'track and arc must be the same size (overlapping, not nested)'
+);
 assert.equal(dualHost.querySelector('.kt-loading')?.classList.contains('has-glow'), false, 'loading indicators must not enable glow by default');
 dualIndicator.destroy();
 dualHost.remove();
@@ -408,6 +565,10 @@ const paletteCover = coverRevealModule.create(paletteTarget, {
 const palettePanels = [...paletteTarget.closest('.kt-cover-wrap').querySelectorAll('[aria-hidden="true"]')];
 assert.equal(palettePanels.length, 3, 'palette mode must create every requested layer');
 assert.equal(new Set(palettePanels.map((panel) => panel.style.background)).size, 3, 'palette mode must distribute palette colors across layers');
+await paletteCover.refresh((target) => {
+  target.dataset.refreshProof = 'ready';
+});
+assert.equal(paletteTarget.dataset.refreshProof, 'ready', 'Cover Reveal refresh must run the caller update before replay');
 paletteCover.destroy();
 paletteTarget.remove();
 
@@ -450,4 +611,4 @@ Kineto.unregister('slider');
 Kineto.unregister('progress');
 dom.window.close();
 
-console.log('Motion regressions OK — reveal order; fullpage handoff; composable interaction shadows; Bottom Sheet header resizing; inline loading indicators; Cover Reveal combinations; slider pause/progress and activation collisions.');
+console.log('Motion regressions OK — reveal order; fullpage handoff; bounded composition APIs; interaction shadows; Bottom Sheet resizing; loading indicators; Cover Reveal combinations; slider progress and activation collisions.');

@@ -10,7 +10,7 @@ Kineto는 `dongri.me`의 픽셀 모자이크 실험에서 시작한 인터랙션
 
 - 버전: `0.8.43`
 - 공개 모듈: 51개
-- Core API: 26개
+- Core API: 27개
 - 소유자 고정 요구사항: 48개
 - 라이브 플레이그라운드: 131개
 - Smooth Scroll: 기본 비활성화, Lenis runtime API로 선택 사용
@@ -31,6 +31,8 @@ Kineto는 `dongri.me`의 픽셀 모자이크 실험에서 시작한 인터랙션
 - Circular와 Bar는 Counter가 아니라 Loader입니다.
 - Skeleton은 별도 shimmer/pulse placeholder이며 Blur-up과 구조적으로 다릅니다.
 - Pixelate, Print, Dissolve는 GIF·APNG·animated WebP를 첫 프레임 Canvas로 굳히지 않습니다.
+- Lazy Wave와 Film Grain은 FPS·DPR 제한을 지키며, 모션 축소 환경에서는
+  원본 이미지를 즉시 표시합니다.
 - Progressive Print는 전체 blur+dynamic fine noise 상태에서 방향성 mask로 선명해집니다.
 - Dissolve는 방향성 mask 없이 전체 blur와 dynamic noise가 제거됩니다.
 - Overflow Rewind와 Page는 상하좌우 mask 방향을 지원하고, Rolling은 실시간 검색어식 항목 전환을 제공합니다.
@@ -41,6 +43,8 @@ Kineto는 `dongri.me`의 픽셀 모자이크 실험에서 시작한 인터랙션
 - Lightbox는 전체 viewport를 덮고 그룹 이동, 정보, zoom/pan, minimap, custom UI, Lazy 조합을 제공합니다.
 - Ambient는 영상 frame sampling과 살아 있는 이미지 clone을 지원합니다.
 - Loader는 manual/window/resources/promise/fetch 진행률 소스를 받습니다.
+- Loader와 Loading Indicator는 진행률 이벤트·CSS 변수·출력 바인딩을
+  공유하며, Indicator는 `bindProgress()`로 Loader를 구독할 수 있습니다.
 - Smooth Scroll은 명시적으로 켜고 끌 수 있어야 합니다.
 
 ## 개발 규칙

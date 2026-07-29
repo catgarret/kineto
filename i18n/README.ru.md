@@ -8,7 +8,7 @@
 
 [한국어](README.ko.md) · [English](../README.md) · [日本語](README.jp.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · Русский · [Italiano](README.it.md)
 
-[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](../LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
+<p><a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="../LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
 [Живое демо](https://git.dongri.me/example/kineto) · [Справочник модулей](../docs/module-reference.md) · [Контракт возможностей](../FEATURE_CONTRACT.md)
 
@@ -129,7 +129,8 @@ Kineto.disableSmooth();
 | `ripple` | `data-kt-ripple` | нажмите пульсацию |
 | `scrollSequence` | `data-kt-scroll-sequence` | Очистить последовательность изображений |
 | `scrollVelocity` | `data-kt-scroll-velocity` | Реакция скорости/направления прокрутки |
-| `slider` | `data-kt-slider` | Слайд·Покрытие·Растворение |
+| `slider` | `data-kt-slider` | Слайды, coverflow, стопки и радиальная карусель |
+| `radial` | `data-kt-radial` | Совместимая точка входа радиальной карусели |
 | `stickyStack` | `data-kt-sticky-stack` | Вертикальная, горизонтальная, плавающая стопка липких материалов |
 | `textFill` | `data-kt-text-fill` | прокрутка текста, заливка |
 | `textReveal` | `data-kt-text-reveal` | Перемешать, декодировать, показать комбинацию хангыль |
@@ -145,7 +146,6 @@ Kineto.disableSmooth();
 | `toast` | `data-kt-toast` | Всплывающее уведомление о статусе |
 | `bottomSheet` | `data-kt-bottom-sheet` | Нижний лист поддерживает блокировку фокуса |
 | `tabs` | `data-kt-tabs` | Управление вкладками/сегментами WAI-ARIA |
-| `radial` | `data-kt-radial` | круглая карусель |
 | `coverReveal` | `data-kt-cover-reveal` | цветная обложка раскрывается |
 | `gesture` | `data-kt-gesture` | Наведите/нажмите пружинную обратную связь |
 | `drag` | `data-kt-drag` | Инерция, граница, обратное сопротивление |

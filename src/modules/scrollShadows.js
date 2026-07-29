@@ -26,7 +26,7 @@ function resolveEase(value) {
  */
 export default {
   create(el, opts = {}) {
-    const axis = opts.axis === 'horizontal' ? 'horizontal' : 'vertical';
+    const axis = opts.axis === 'horizontal' || opts.axis === 'x' ? 'horizontal' : 'vertical';
     const size = Math.max(4, Number(opts.size ?? 44));
     const mode = opts.mode === 'mask' ? 'mask' : 'shadow';
     const horizontal = axis === 'horizontal';

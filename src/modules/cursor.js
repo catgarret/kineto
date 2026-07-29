@@ -139,7 +139,7 @@ export default {
     if (type === 'crosshair') {
       // Reference feel: full-viewport hairlines plus a center dot.
       if (opts.full !== false) {
-        addSingle(`<span style="position:fixed;left:0;right:0;top:0;height:1px;background:currentColor;opacity:.4"></span><span style="position:fixed;top:0;bottom:0;left:0;width:1px;background:currentColor;opacity:.4"></span>`);
+        addSingle('<span class="kt-cursor-hair kt-cursor-hair--vp-x"></span><span class="kt-cursor-hair kt-cursor-hair--vp-y"></span>');
         single.dataset.crosshairFull = 'true';
         // A transformed/will-change parent would become the containing block
         // for the fixed hairlines and collapse them to a 0×0 box.
@@ -148,14 +148,18 @@ export default {
         addDot(Math.max(4, dotSize));
       } else {
         const size = Math.max(8, Number(opts.crosshairSize ?? 20));
-        addSingle(`<span style="position:absolute;width:${size}px;height:1px;background:currentColor;left:${-size / 2}px;top:0"></span><span style="position:absolute;width:1px;height:${size}px;background:currentColor;left:0;top:${-size / 2}px"></span>`);
+        addSingle('<span class="kt-cursor-hair kt-cursor-hair--x"></span><span class="kt-cursor-hair kt-cursor-hair--y"></span>');
+        single.style.setProperty('--kt-cursor-cross', `${size}px`);
       }
     } else if (type === 'image' && opts.src) {
       addSingle('');
       const image = document.createElement('img');
       image.src = opts.src;
       image.alt = '';
-      image.style.cssText = `display:block;width:${Number(opts.width ?? 36)}px;height:${Number(opts.height ?? 36)}px;transform:translate(-50%,-50%) rotate(${Number(opts.rotate ?? 0)}deg);object-fit:contain;`;
+      image.className = 'kt-cursor-image';
+      image.style.setProperty('--kt-cursor-w', `${Number(opts.width ?? 36)}px`);
+      image.style.setProperty('--kt-cursor-h', `${Number(opts.height ?? 36)}px`);
+      image.style.setProperty('--kt-cursor-rotate', `${Number(opts.rotate ?? 0)}deg`);
       single.appendChild(image);
     } else if (type === 'custom') {
       const template = opts.template || opts.html || (el !== document.body && el !== document.documentElement && !scoped ? el.innerHTML : '');
@@ -165,12 +169,17 @@ export default {
       // Rotating circular text ring (SVG textPath) that follows the pointer.
       const ringSize = Math.max(40, followerSize * 2.4);
       const ringText = opts.rotateText || opts.text || 'KINETO · KINETO · ';
+      // The path still needs a unique id for <textPath href>, but the animation
+      // is now the shared `kt-cursor-textring-spin` keyframes in kineto.css instead
+      // of a per-instance @keyframes block injected into <head>.
       const uid = `kt-cur-txt-${Math.random().toString(36).slice(2, 7)}`;
-      injectedStyle = document.createElement('style');
-      injectedStyle.textContent = `@keyframes ${uid} { to { transform: rotate(360deg); } }`;
-      document.head.appendChild(injectedStyle);
-      const radius = ringSize / 2 - Math.max(8, Number(opts.labelSize ?? 11));
-      addSingle(`<svg width="${ringSize}" height="${ringSize}" viewBox="0 0 ${ringSize} ${ringSize}" style="position:absolute;left:${-ringSize / 2}px;top:${-ringSize / 2}px;animation:${uid} ${Math.max(2, Number(opts.rotateDuration ?? 7))}s linear infinite;transform-origin:center;"><defs><path id="${uid}-p" d="M ${ringSize / 2},${ringSize / 2 - radius} a ${radius},${radius} 0 1,1 -0.01,0 Z"></path></defs><text style="fill:${opts.textColor || color};font: 700 ${Number(opts.labelSize ?? 11)}px ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase;"><textPath href="#${uid}-p">${String(ringText)}</textPath></text></svg>`);
+      const labelSize = Math.max(8, Number(opts.labelSize ?? 11));
+      const radius = ringSize / 2 - labelSize;
+      addSingle(`<svg class="kt-cursor-textring" width="${ringSize}" height="${ringSize}" viewBox="0 0 ${ringSize} ${ringSize}"><defs><path id="${uid}-p" d="M ${ringSize / 2},${ringSize / 2 - radius} a ${radius},${radius} 0 1,1 -0.01,0 Z"></path></defs><text><textPath href="#${uid}-p">${String(ringText)}</textPath></text></svg>`);
+      single.style.setProperty('--kt-cursor-textring', `${ringSize}px`);
+      single.style.setProperty('--kt-cursor-textring-dur', `${Math.max(2, Number(opts.rotateDuration ?? 7))}s`);
+      single.style.setProperty('--kt-cursor-textring-fill', String(opts.textColor || color));
+      single.style.setProperty('--kt-cursor-textring-size', `${Number(opts.labelSize ?? 11)}px`);
       if (opts.dot !== false) addDot(Math.max(3, dotSize - 2));
     } else if (type === 'trail') {
       // Elastic dot tail.

@@ -8,7 +8,7 @@
 
 [한국어](README.ko.md) · [English](../README.md) · [日本語](README.jp.md) · [简体中文](README.zh-CN.md) · 繁體中文 · [Русский](README.ru.md) · [Italiano](README.it.md)
 
-[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](../LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
+<p><a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="../LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
 [線上示範](https://git.dongri.me/example/kineto) · [模組參考](../docs/module-reference.md) · [功能契約](../FEATURE_CONTRACT.md)
 
@@ -128,7 +128,8 @@ Kineto.disableSmooth();
 | `ripple` | `data-kt-ripple` | 點選波紋 |
 | `scrollSequence` | `data-kt-scroll-sequence` | 擦洗影像序列 |
 | `scrollVelocity` | `data-kt-scroll-velocity` | 滾動速度/方向響應 |
-| `slider` | `data-kt-slider` | 幻燈片·覆蓋·溶解 |
+| `slider` | `data-kt-slider` | 滑動、Coverflow、堆疊與圓形輪播 |
+| `radial` | `data-kt-radial` | 相容舊版的圓形輪播入口 |
 | `stickyStack` | `data-kt-sticky-stack` | 垂直、水平、浮動黏性堆疊 |
 | `textFill` | `data-kt-text-fill` | 滾動文字填充 |
 | `textReveal` | `data-kt-text-reveal` | 隨機播放、解碼、韓文組合顯示 |
@@ -144,7 +145,6 @@ Kineto.disableSmooth();
 | `toast` | `data-kt-toast` | 狀態 toast 通知 |
 | `bottomSheet` | `data-kt-bottom-sheet` | 底板支援焦點鎖定 |
 | `tabs` | `data-kt-tabs` | WAI-ARIA 選項卡/段控制 |
-| `radial` | `data-kt-radial` | 圓形轉盤 |
 | `coverReveal` | `data-kt-cover-reveal` | 彩色封面揭曉 |
 | `gesture` | `data-kt-gesture` | 懸停/推彈簧反饋 |
 | `drag` | `data-kt-drag` | 慣性、邊界、回彈阻力 |

@@ -1,4 +1,13 @@
-import { clamp } from '../utils.js';
+import { clamp, createProgressOutputs } from '../utils.js';
+import {
+  getTerminalFramePreset,
+  TERMINAL_FRAME_LEGACY_PRESETS,
+  TERMINAL_FRAME_PRESET_IDS
+} from './loadingIndicator/terminalFramePresets.js';
+import {
+  mountLegacyCharFrames,
+  mountTerminalFrameSpinner
+} from './loadingIndicator/terminalFrameRuntime.js';
 
 function node(tag, className, text) {
   const element = document.createElement(tag);
@@ -13,13 +22,14 @@ function variant(value, allowed, fallback) {
 }
 
 const TERMINAL_FRAME_PRESETS = Object.freeze({
-  ascii: '|/-\\', pulse: '.oO°Oo', quadrant: '◐◓◑◒',
-  braille: '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏', 'braille-dot': '⠁⠂⠄⡀⢀⠠⠐⠈', 'braille-bounce': '⠁⠂⠄⠂',
-  arrow: '←↖↑↗→↘↓↙', line: '▁▃▅▆▇█▇▆▅▃', circle: '◴◷◶◵',
-  corners: '◜◝◞◟', squares: '▖▘▝▗', boxes: '◰◳◲◱'
+  ...TERMINAL_FRAME_LEGACY_PRESETS
 });
 
-const TERMINAL_STYLES = ['cursor', 'dots', 'blocks', 'meter', ...Object.keys(TERMINAL_FRAME_PRESETS)];
+const TERMINAL_STYLES = [
+  'cursor', 'dots', 'blocks', 'meter',
+  ...TERMINAL_FRAME_PRESET_IDS,
+  ...Object.keys(TERMINAL_FRAME_PRESETS)
+];
 
 function buildIndicator(host, type, opts) {
   if (typeof opts.renderUI === 'function') {
@@ -35,18 +45,25 @@ function buildIndicator(host, type, opts) {
 
   const root = node('span', `kt-loading kt-loading--${type}`);
   let progressNode = null;
+  let spinnerArc = null;
   let meterNode = null;
+  let meterTimer = null;
   let blockCells = [];
   let frameNode = null;
   let frameTimer = null;
   let frameIndex = 0;
   let framePaused = false;
+  let initialFrameRender = true;
   let frames = [];
+  let frameRuntime = null;
   const timerHost = host.ownerDocument?.defaultView || globalThis;
   const reversed = opts.direction === 'reverse' || opts.direction === 'rtl';
 
   const stopFrames = () => {
-    if (frameTimer != null) timerHost.clearTimeout(frameTimer);
+    if (frameTimer != null) {
+      timerHost.clearTimeout(frameTimer);
+      timerHost.clearInterval(frameTimer);
+    }
     frameTimer = null;
   };
   const scheduleFrames = () => {
@@ -62,7 +79,10 @@ function buildIndicator(host, type, opts) {
   };
 
   if (type === 'spinner') {
-    const style = variant(opts.spinnerStyle, ['ring', 'comet', 'dual', 'spokes', 'orbit'], 'comet');
+    // `dual` and `orbit` are gone: the comet spinner now covers both through
+    // options (`track` for the rail, `spinnerMode:'grow'` for the stretching
+    // arc), so there is one arc spinner instead of three near-duplicates.
+    const style = variant(opts.spinnerStyle, ['ring', 'comet', 'spokes'], 'comet');
     root.classList.add(`kt-loading-spinner--${style}`);
     if (style === 'spokes') {
       if (opts.rotateSpokes) root.classList.add('is-rotating');
@@ -73,19 +93,45 @@ function buildIndicator(host, type, opts) {
         spoke.style.setProperty('--kt-loading-angle', `${angle}deg`);
         spoke.style.setProperty('--kt-loading-index', String(index));
         spoke.style.setProperty('--kt-loading-count', String(count));
+        // Peak time is (0.42 * D - delay) mod D, so a SMALLER negative delay
+        // peaks sooner. `order = index` therefore lights spoke 0 (top) first and
+        // sweeps clockwise — rightwards across the top, i.e. left -> right.
+        // `reverse` inverts the order and sweeps anticlockwise.
         const order = reversed ? count - 1 - index : index;
         spoke.style.animationDelay = `${-(Number(opts.motionDuration ?? 1.1) / count) * order}s`;
         root.appendChild(spoke);
       }
-    } else {
+    } else if (style === 'ring') {
       root.appendChild(node('i', 'kt-loading-spinner__ring'));
-      if (style === 'dual') {
-        root.appendChild(node('i', 'kt-loading-spinner__ring kt-loading-spinner__ring--inner'));
-      }
-      if (style === 'orbit') {
-        const orbit = node('i', 'kt-loading-spinner__orbit');
-        orbit.appendChild(node('i', 'kt-loading-spinner__orbit-particle'));
-        root.appendChild(orbit);
+    } else {
+      // ONE SVG arc engine (Adobe-Spectrum-style progress circle): an optional
+      // track circle plus an arc that rotates.
+      //   mode 'grow' — arc stretches and shrinks while rotating
+      //   mode 'spin' — a fixed-length arc just rotates (default)
+      //   mode 'fill' — determinate: the arc length follows `progress`
+      // `track:true` adds the grey backing rail.
+      const mode = variant(opts.spinnerMode, ['grow', 'spin', 'fill'], 'spin');
+      const showTrack = opts.track === true;
+      root.classList.add(`kt-loading-spinner--mode-${mode}`);
+      if (showTrack) root.classList.add('has-track');
+      const NS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('viewBox', '0 0 48 48');
+      svg.setAttribute('class', 'kt-loading-spinner__svg');
+      svg.setAttribute('aria-hidden', 'true');
+      const circle = (cls) => {
+        const c = document.createElementNS(NS, 'circle');
+        c.setAttribute('cx', '24'); c.setAttribute('cy', '24'); c.setAttribute('r', '20');
+        c.setAttribute('class', cls);
+        return c;
+      };
+      if (showTrack) svg.appendChild(circle('kt-loading-spinner__track'));
+      spinnerArc = circle('kt-loading-spinner__arc');
+      svg.appendChild(spinnerArc);
+      root.appendChild(svg);
+      if (mode === 'fill') {
+        // Determinate: no self-rotation, the arc length IS the progress.
+        root.classList.add('is-determinate-arc');
       }
     }
   } else if (type === 'dots') {
@@ -104,7 +150,12 @@ function buildIndicator(host, type, opts) {
     progressNode = node('i', 'kt-loading-bar__progress');
     track.appendChild(progressNode);
     root.appendChild(track);
-    if (opts.indeterminate !== false) root.classList.add('is-indeterminate');
+    if (opts.indeterminate !== false) {
+      root.classList.add('is-indeterminate');
+      // barMode: 'slide' (constant-width block travels) or 'grow' (the bar
+      // stretches and shrinks as it crosses, like a Windows/Material bar).
+      root.classList.add(`is-bar-${variant(opts.barMode, ['slide', 'grow'], 'slide')}`);
+    }
   } else if (type === 'shimmer' || type === 'shimmer-wave') {
     const text = String(opts.text || opts.label || 'Loading');
     if (type === 'shimmer') {
@@ -148,7 +199,6 @@ function buildIndicator(host, type, opts) {
       }
     } else if (style === 'meter') {
       meterNode = node('span', 'kt-loading-terminal__meter');
-      if (opts.indeterminate === false) meterNode.classList.add('is-determinate');
       
       const count = Math.round(clamp(Number(opts.dotCount ?? 10), 5, 40));
       const emptyChar = opts.emptyChar || '░';
@@ -156,32 +206,86 @@ function buildIndicator(host, type, opts) {
       meterNode.dataset.count = count;
       meterNode.dataset.emptyChar = emptyChar;
       meterNode.dataset.fillChar = fillChar;
-      
-      if (opts.indeterminate !== false) {
-        const fillCount = Math.max(1, Math.floor(count * 0.3));
-        for (let i = 0; i <= count + fillCount; i++) {
-          let str = '';
-          for (let j = 0; j < count; j++) {
-            if (j >= i - fillCount && j < i) str += fillChar;
-            else str += emptyChar;
-          }
-          frames.push(`[${str}]`);
-        }
-        const backFrames = frames.slice(1, -1).reverse();
-        frames = frames.concat(backFrames);
-        frameNode = meterNode;
-        scheduleFrames();
+
+      // A terminal meter is drawn with real block characters in individual cells
+      // for BOTH modes, the way a shell progress bar looks:
+      //   indeterminate → a filled window slides across and wraps
+      //                   [██████░░░░] → [░██████░░░] → … → [██░░░░████]
+      //   determinate   → cells fill left→right from the real progress value
+      //                   [░░░░░░░░░░] → [███░░░░░░░] → [██████████]
+      // Per-cell nodes (not whole-string frame swaps) keep the width fixed and
+      // let setProgress()/the API update it without rebuilding the DOM.
+      meterNode.appendChild(node('i', 'kt-loading-terminal__bracket', '['));
+      const meterCells = [];
+      for (let index = 0; index < count; index += 1) {
+        const cell = node('i', 'kt-loading-terminal__cell', emptyChar);
+        cell.style.setProperty('--kt-loading-index', String(index));
+        meterNode.appendChild(cell);
+        meterCells.push(cell);
+      }
+      meterNode.appendChild(node('i', 'kt-loading-terminal__bracket', ']'));
+      const paintCells = (isFilled) => {
+        meterCells.forEach((cell, index) => {
+          const active = Boolean(isFilled(index));
+          cell.textContent = active ? fillChar : emptyChar;
+          cell.classList.toggle('is-filled', active);
+        });
+      };
+      if (opts.indeterminate !== true) {
+        // Default: real progress meter driven by setProgress()/the progress option.
+        // `spread` is an explicit override — say "light 4 cells" directly instead
+        // of back-solving a percentage.
+        meterNode.classList.add('is-determinate');
+        if (opts.spread != null && opts.spread !== '') {
+          const lit = Math.round(clamp(Number(opts.spread), 0, count));
+          meterNode.dataset.lit = String(lit);
+          paintCells((index) => index < lit);
+        } else paintCells(() => false);
       } else {
-        meterNode.textContent = `[${emptyChar.repeat(count)}]`;
+        // Sliding window. `dotCount` is the track length, `spread` is how many
+        // cells travel — both are independently configurable. No fading: a real
+        // terminal just moves solid blocks along the track.
+        const windowSize = Math.round(clamp(Number(opts.spread ?? 0) || Math.max(1, Math.round(count * 0.3)), 1, count));
+        let offset = 0;
+        const stepMs = Math.max(40, Number(opts.frameInterval ?? (Number(opts.motionDuration ?? 1.1) * 1000 / count)));
+        paintCells((index) => ((index - offset + count * 2) % count) < windowSize);
+        meterTimer = timerHost.setInterval(() => {
+          if (framePaused) return;
+          offset = (offset + (reversed ? -1 : 1) + count) % count;
+          paintCells((index) => ((index - offset + count * 2) % count) < windowSize);
+        }, stepMs);
       }
       root.appendChild(meterNode);
     } else if (style === 'cursor') {
       root.appendChild(node('i', 'kt-loading-terminal__cursor', opts.cursorChar || '█'));
     } else {
-      frames = customFrames.length ? customFrames : Array.from(TERMINAL_FRAME_PRESETS[requestedStyle] || TERMINAL_FRAME_PRESETS.ascii);
-      frameNode = node('i', 'kt-loading-terminal__frame', frames[0]);
-      root.appendChild(frameNode);
-      scheduleFrames();
+      const framePreset = customFrames.length ? null : getTerminalFramePreset(requestedStyle);
+      if (framePreset) {
+        // Forward the compound part-toggles explicitly. The frame runtime is a
+        // separate file, and the behaviour contract only sees options this module
+        // reads — so naming them here is what makes them public and settable.
+        frameRuntime = mountTerminalFrameSpinner(root, framePreset, {
+          ...opts,
+          showSpinner: opts.showSpinner,
+          showLabel: opts.showLabel,
+          showStatus: opts.showStatus,
+          stepTotal: opts.stepTotal
+        });
+      } else if (customFrames.length) {
+        frames = customFrames;
+        frameNode = node('i', 'kt-loading-terminal__frame', frames[0]);
+        root.classList.add('kt-loading-terminal--custom');
+        root.appendChild(frameNode);
+        scheduleFrames();
+      } else if (TERMINAL_FRAME_PRESETS[requestedStyle]) {
+        frameRuntime = mountLegacyCharFrames(root, requestedStyle, opts);
+      } else {
+        frames = Array.from(TERMINAL_FRAME_PRESETS.ascii || '|/-\\');
+        frameNode = node('i', 'kt-loading-terminal__frame', frames[0]);
+        root.classList.add('kt-loading-terminal--ascii');
+        root.appendChild(frameNode);
+        scheduleFrames();
+      }
     }
   }
 
@@ -197,12 +301,32 @@ function buildIndicator(host, type, opts) {
       if (progressNode && !root.classList.contains('is-indeterminate')) {
         progressNode.style.transform = `scaleX(${progress / 100})`;
       }
-      if (meterNode && root.querySelector('.is-determinate')) {
+      // The public instance renders once during creation to publish ARIA/CSS
+      // progress. Scanner without an authored progress value is indeterminate;
+      // forwarding that synthetic initial 0 used to collapse it to one frame
+      // and freeze the demo. A later setProgress(0) is still an intentional
+      // determinate update and therefore renders normally.
+      const skipInitialScannerProgress = initialFrameRender
+        && root.classList.contains('kt-loading-terminal--scanner')
+        && (opts.progress == null || opts.progress === '')
+        && opts.indeterminate !== false;
+      initialFrameRender = false;
+      if (!skipInitialScannerProgress) frameRuntime?.render?.(progress);
+      if (spinnerArc && root.classList.contains('is-determinate-arc')) {
+        const C = 125.66;
+        spinnerArc.style.strokeDasharray = `${(C * progress / 100).toFixed(2)} ${C}`;
+      }
+      if (meterNode && meterNode.classList.contains('is-determinate') && meterNode.dataset.lit == null) {
         const count = Number(meterNode.dataset.count);
         const empty = meterNode.dataset.emptyChar;
         const fill = meterNode.dataset.fillChar;
         const filled = Math.round((progress / 100) * count);
-        meterNode.textContent = `[${fill.repeat(filled)}${empty.repeat(count - filled)}]`;
+        const cells = meterNode.querySelectorAll('.kt-loading-terminal__cell');
+        cells.forEach((cell, index) => {
+          const active = index < filled;
+          cell.textContent = active ? fill : empty;
+          cell.classList.toggle('is-filled', active);
+        });
       }
       if (blockCells.length && opts.indeterminate === false) {
         const filled = Math.round((progress / 100) * blockCells.length);
@@ -216,11 +340,20 @@ function buildIndicator(host, type, opts) {
     setState(state) {
       root.dataset.state = state;
       framePaused = state !== 'running';
-      if (framePaused) stopFrames(); else scheduleFrames();
+      if (frameRuntime) frameRuntime.setState(state);
+      else if (framePaused) stopFrames(); else scheduleFrames();
     },
     destroy() {
       stopFrames();
+      if (meterTimer != null) { timerHost.clearInterval(meterTimer); meterTimer = null; }
+      frameRuntime?.destroy?.();
       root.remove();
+    },
+    restartFrames() {
+      frameIndex = 0;
+      if (frameNode && frames[0] != null) frameNode.textContent = frames[0];
+      frameRuntime?.restart?.();
+      if (!frameRuntime && !framePaused) scheduleFrames();
     }
   };
 }
@@ -241,7 +374,12 @@ export default {
     };
     const duration = Math.max(0.2, Number(opts.motionDuration ?? 1.1));
     const terminalStyle = variant(opts.terminalStyle, TERMINAL_STYLES, 'cursor');
-    const determinate = (type === 'bar' && opts.indeterminate === false) || (type === 'terminal' && terminalStyle === 'meter');
+    const determinate = (type === 'bar' && opts.indeterminate === false)
+      || (type === 'spinner' && opts.spinnerStyle === 'comet' && opts.spinnerMode === 'fill')
+      || (type === 'terminal' && (
+        terminalStyle === 'meter'
+        || terminalStyle === 'scanner' && opts.indeterminate !== true && opts.progress != null
+      ));
     const color = opts.color || 'currentColor';
 
     el.classList.add('kt-loading-indicator');
@@ -264,13 +402,29 @@ export default {
     el.style.setProperty('--kt-loading-spread', `${clamp(Number(opts.spread ?? 24), 2, 80)}%`);
     if (opts.transformOrigin) el.style.setProperty('--kt-loading-transform-origin', String(opts.transformOrigin));
     if (opts.fontFamily) el.style.setProperty('--kt-loading-font-family', opts.fontFamily);
+    if (opts.fontWeight) el.style.setProperty('--kt-loading-font-weight', String(opts.fontWeight));
+    if (opts.letterSpacing != null) el.style.setProperty('--kt-loading-letter-spacing', String(opts.letterSpacing));
+    if (opts.lineHeight != null) el.style.setProperty('--kt-loading-line-height', String(opts.lineHeight));
+    if (opts.fixedWidth) el.classList.add('is-terminal-fixed-width');
+    if (opts.asciiOnly) el.classList.add('is-ascii-only');
+    if (opts.viewportWidth != null) el.style.setProperty('--kt-terminal-viewport-width', `${Math.max(4, Number(opts.viewportWidth))}ch`);
+    if (opts.secondaryColor || opts.highlightColor) {
+      el.style.setProperty('--kt-loading-secondary-color', opts.secondaryColor || opts.highlightColor);
+    }
 
     const ui = buildIndicator(el, type, opts);
+    const progressOutputs = createProgressOutputs(el, {
+      ...opts,
+      progressOutput: opts.progressOutput,
+      progressScope: opts.progressScope,
+      progressTemplate: opts.progressTemplate
+    });
     const EventCtor = el.ownerDocument?.defaultView?.CustomEvent || globalThis.CustomEvent;
     let progress = clamp(Number(opts.progress ?? 0), 0, 100);
     let state = 'running';
     let destroyed = false;
     let completionTimer = null;
+    const progressSubscriptions = [];
     let finishResolve;
     let finishSettled = false;
     const finished = new Promise((resolve) => { finishResolve = resolve; });
@@ -287,6 +441,7 @@ export default {
       state = next;
       el.dataset.ktLoadingState = next;
       ui.setState?.(next);
+      progressOutputs.update(progress, next);
       opts.onStateChange?.(next, previous, el);
       emit('statechange', { previous });
     };
@@ -295,6 +450,7 @@ export default {
       el.style.setProperty('--kt-loading-progress', (progress / 100).toFixed(4));
       el.style.setProperty('--kt-loading-percent', String(Math.round(progress)));
       if (determinate) el.setAttribute('aria-valuenow', String(Math.round(progress)));
+      progressOutputs.update(progress, state);
       opts.onProgress?.(progress, el);
       emit('progress', { value: progress });
     };
@@ -361,6 +517,26 @@ export default {
         }
       );
     };
+    const bindProgress = (source) => {
+      const target = typeof source === 'string'
+        ? el.ownerDocument.querySelector(source)
+        : (source?.el || source);
+      if (!target?.addEventListener) return () => {};
+      const onProgress = (event) => setProgress(event.detail?.value ?? event.detail?.progress ?? 0);
+      const onComplete = () => complete();
+      const bindings = [
+        ['kt-loader-progress', onProgress],
+        ['kt-loading-indicator-progress', onProgress],
+        ['kt-loader-complete', onComplete],
+        ['kt-loading-indicator-complete', onComplete]
+      ];
+      bindings.forEach(([name, listener]) => target.addEventListener(name, listener));
+      const unsubscribe = () => bindings.forEach(([name, listener]) => target.removeEventListener(name, listener));
+      progressSubscriptions.push(unsubscribe);
+      const initial = source?.progress ?? target.getAttribute?.('aria-valuenow');
+      if (Number.isFinite(Number(initial))) setProgress(initial);
+      return unsubscribe;
+    };
 
     el.setAttribute('role', determinate ? 'progressbar' : 'status');
     el.setAttribute('aria-label', opts.ariaLabel || 'Loading');
@@ -370,6 +546,7 @@ export default {
       el.setAttribute('aria-valuemax', '100');
     }
     render();
+    if (opts.progressSource) bindProgress(opts.progressSource);
     opts.onStart?.(el);
     emit('start');
 
@@ -380,6 +557,7 @@ export default {
       get state() { return state; },
       get finished() { return finished; },
       setProgress,
+      bindProgress,
       start: show,
       show,
       hide,
@@ -396,11 +574,18 @@ export default {
         el.classList.remove('is-paused');
         setState('running');
       },
+      restart() {
+        if (destroyed) return;
+        ui.restartFrames?.();
+        setState('running');
+      },
       destroy() {
         if (destroyed) return;
         destroyed = true;
         if (completionTimer) clearTimeout(completionTimer);
+        progressSubscriptions.splice(0).forEach((unsubscribe) => unsubscribe());
         ui.destroy?.();
+        progressOutputs.destroy();
         if (original.style == null) el.removeAttribute('style'); else el.setAttribute('style', original.style);
         if (original.className == null) el.removeAttribute('class'); else el.setAttribute('class', original.className);
         if (original.role == null) el.removeAttribute('role'); else el.setAttribute('role', original.role);

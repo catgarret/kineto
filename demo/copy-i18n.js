@@ -239,6 +239,64 @@ window.KINETO_COPY_I18N = {
     }
   },
   "cards": {
+    "문자를 한 칸씩 바꾸는 가벼운 터미널 스피너입니다.": [
+      "A lightweight terminal spinner that cycles one character at a time.",
+      "文字を1つずつ切り替える軽量なターミナルスピナーです。",
+      "逐个切换字符的轻量终端旋转指示器。",
+      "逐個切換字元的輕量終端旋轉指示器。",
+      "Лёгкий терминальный индикатор, меняющий по одному символу.",
+      "Spinner da terminale leggero che cambia un carattere alla volta."
+    ],
+    "여러 문자 프레임을 순서대로 바꾸는 터미널 스피너입니다.": [
+      "A terminal spinner that cycles through multi-character frames.",
+      "複数文字のフレームを順に切り替えるターミナルスピナーです。",
+      "依次切换多字符帧的终端旋转指示器。",
+      "依序切換多字元影格的終端旋轉指示器。",
+      "Терминальный индикатор, перебирающий многосимвольные кадры.",
+      "Spinner da terminale che scorre fotogrammi composti da più caratteri."
+    ],
+    "여러 점의 밝기와 위치를 바꾸는 터미널 스피너입니다.": [
+      "A terminal spinner that varies the brightness and position of several dots.",
+      "複数の点の明るさと位置を変えるターミナルスピナーです。",
+      "改变多个点的亮度和位置的终端旋转指示器。",
+      "改變多個點的亮度與位置的終端旋轉指示器。",
+      "Терминальный индикатор, меняющий яркость и положение точек.",
+      "Spinner da terminale che varia luminosità e posizione di più punti."
+    ],
+    "고정 폭 트랙 안에서 기호가 이동하는 터미널 스피너입니다.": [
+      "A terminal spinner whose symbol moves along a fixed-width track.",
+      "固定幅のトラック内を記号が移動するターミナルスピナーです。",
+      "符号在固定宽度轨道中移动的终端旋转指示器。",
+      "符號在固定寬度軌道中移動的終端旋轉指示器。",
+      "Терминальный индикатор с символом, движущимся по фиксированному треку.",
+      "Spinner da terminale con un simbolo che scorre su una traccia a larghezza fissa."
+    ],
+    "문구 뒤의 커서로 진행 상태를 표시합니다.": [
+      "Shows progress with a cursor after the label.",
+      "文言の後ろのカーソルで進行状態を示します。",
+      "使用文本后的光标显示进度状态。",
+      "使用文字後的游標顯示進度狀態。",
+      "Показывает ход выполнения курсором после текста.",
+      "Mostra l'avanzamento con un cursore dopo il testo."
+    ],
+    "스피너와 상태 정보를 한 줄에 조합합니다.": [
+      "Combines a spinner and status information on one line.",
+      "スピナーと状態情報を1行にまとめます。",
+      "在一行中组合旋转指示器和状态信息。",
+      "在一行中組合旋轉指示器與狀態資訊。",
+      "Объединяет индикатор и сведения о состоянии в одной строке.",
+      "Combina spinner e informazioni di stato su una riga."
+    ],
+    "형태별 설정을 따로 바꾸고 키보드·Esc 동작을 비교합니다.": [
+      "Tune each menu type separately and compare keyboard and Esc behavior.",
+      "メニュー形式ごとに設定を変え、キーボードと Esc の動作を比較できます。",
+      "可分别调整各菜单类型，并比较键盘与 Esc 键操作。",
+      "可分別調整各選單類型，並比較鍵盤與 Esc 鍵操作。",
+      "Настраивайте каждый тип меню отдельно и сравнивайте работу клавиатуры и Esc.",
+      "Regola separatamente ogni tipo di menu e confronta il comportamento da tastiera e con Esc."
+    ],
+    "텍스트를 빛이 통과합니다 · wave는 글자별 높낮이까지 이어집니다.": ["Light sweeps across the text surface — the wave mode carries height through each glyph as well.", "光がテキスト表面を走ります — wave モードでは文字ごとに高さも連なります。", "光线扫过文字表面——wave 模式还会让每个字的高低起伏相连。", "光線掃過文字表面——wave 模式還會讓每個字的高低起伏相連。", "Свет проходит по поверхности текста; режим wave добавляет и волну по высоте каждой буквы.", "Una luce attraversa la superficie del testo; la modalità wave porta anche l’altezza attraverso ogni glifo."],
+    "WAI-ARIA 탭·키보드 지원 · 클래스 하나로 슬라이딩 필 인디케이터.": ["WAI-ARIA tabs with arrow keys, Home and End — one class turns the indicator into a sliding pill.", "WAI-ARIA タブと方向キー・Home・End に対応 — クラス 1 つでインジケーターをスライディングピルに変えられます。", "支持 WAI-ARIA 标签与方向键、Home、End——一个类即可把指示器变成滑动胶囊。", "支援 WAI-ARIA 標籤與方向鍵、Home、End——一個類別即可把指示器變成滑動膠囊。", "Табы WAI-ARIA со стрелками, Home и End; один класс превращает индикатор в скользящую капсулу.", "Tab WAI-ARIA con frecce, Home e End; una sola classe trasforma l’indicatore in una pillola scorrevole."],
     "Spinner — Comet": ["Spinner — Comet","スピナー — コメット","旋转器 — 彗尾","旋轉器 — 彗尾","Спиннер — комета","Spinner — cometa"],
     "Spinner — Dual ring": ["Spinner — Dual ring","スピナー — デュアルリング","旋转器 — 双环","旋轉器 — 雙環","Спиннер — два кольца","Spinner — doppio anello"],
     "Spinner — Spokes": ["Spinner — Spokes","スピナー — スポーク","旋转器 — 辐条","旋轉器 — 輻條","Спиннер — лучи","Spinner — raggi"],
@@ -252,11 +310,12 @@ window.KINETO_COPY_I18N = {
     "Terminal — Blocks": ["Terminal — Blocks","ターミナル — ブロック","终端 — 方块","終端 — 方塊","Терминал — блоки","Terminale — blocchi"],
     "Terminal — Meter": ["Terminal — Meter","ターミナル — メーター","终端 — 进度计","終端 — 進度計","Терминал — шкала","Terminale — indicatore"],
     "Terminal — Frame spinners": ["Terminal — Frame spinners","ターミナル — フレームスピナー","终端 — 帧动画旋转器","終端 — 影格動畫旋轉器","Терминал — покадровые спиннеры","Terminale — spinner a fotogrammi"],
-    "가벼운 원호가 빠르게 회전하는 인라인 스피너입니다.": ["A lightweight arc rotates quickly as an inline spinner.","軽量な円弧が素早く回転するインラインスピナーです。","轻量圆弧快速旋转的内联加载器。","輕量圓弧快速旋轉的行內載入器。","Лёгкая дуга быстро вращается во встроенном спиннере.","Un arco leggero ruota rapidamente come spinner inline."],
+    "원호 하나로 회전·신축·차오르기를 모두 처리합니다 · 레일과 모드는 설정에서 바꿉니다.": ["A lightweight arc rotates quickly as an inline spinner.","軽量な円弧が素早く回転するインラインスピナーです。","轻量圆弧快速旋转的内联加载器。","輕量圓弧快速旋轉的行內載入器。","Лёгкая дуга быстро вращается во встроенном спиннере.","Un arco leggero ruota rapidamente come spinner inline."],
     "같은 크기의 두 링이 겹쳐 반대 방향으로 회전합니다.": ["Two equal-size rings overlap and rotate in opposite directions.","同じ大きさの2本のリングが重なり、逆方向に回転します。","两个同尺寸圆环重叠并反向旋转。","兩個同尺寸圓環重疊並反向旋轉。","Два кольца одинакового размера наложены и вращаются в разные стороны.","Due anelli della stessa dimensione si sovrappongono e ruotano in direzioni opposte."],
     "고정된 방사형 막대가 순서대로 밝아집니다.": ["Fixed radial spokes brighten in sequence.","固定された放射状の線が順番に明るくなります。","固定辐条依次变亮。","固定輻條依次變亮。","Неподвижные радиальные лучи поочерёдно становятся ярче.","I raggi radiali fissi si illuminano in sequenza."],
     "정교한 궤도와 원호가 하나의 축으로 회전합니다.": ["A refined orbit and arc rotate around one axis.","精密な軌道と円弧がひとつの軸を中心に回転します。","精细轨道与圆弧绕同一轴旋转。","精細軌道與圓弧繞同一軸旋轉。","Точная орбита и дуга вращаются вокруг одной оси.","Un'orbita e un arco raffinati ruotano attorno allo stesso asse."],
-    "트랙 밖에서 밖까지 일정한 속도로 끊김 없이 통과합니다.": ["A glow bar crosses the full track at a steady speed without a visible reset.","トラックの外から外まで一定速度で途切れずに通過します。","光晕条以恒定速度从轨道外侧连续穿过另一侧。","光暈列以固定速度從軌道外側連續穿過另一側。","Светящаяся полоса с постоянной скоростью непрерывно проходит через всю дорожку.","Una barra luminosa attraversa l’intera traccia a velocità costante senza stacchi visibili."],
+    "트랙 밖에서 밖까지 일정한 속도로 끊김 없이 통과합니다 · 글로우는 설정에서 켭니다.": ["A glow bar crosses the full track at a steady speed without a visible reset.","トラックの外から外まで一定速度で途切れずに通過します。","光晕条以恒定速度从轨道外侧连续穿过另一侧。","光暈列以固定速度從軌道外側連續穿過另一側。","Светящаяся полоса с постоянной скоростью непрерывно проходит через всю дорожку.","Una barra luminosa attraversa l’intera traccia a velocità costante senza stacchi visibili."],
+    "블록 문자 진행 막대 — 흐르는(불확정) 모드와 실제 진행률 모드.": ["Block-character progress bar — flowing (indeterminate) and real-progress modes.","ブロック文字の進捗バー — 流れる（不確定）モードと実進捗モード。","块字符进度条 — 流动（不确定）模式与真实进度模式。","區塊字元進度列 — 流動（不確定）模式與真實進度模式。","Индикатор из блочных символов — бегущий (неопределённый) и реальный прогресс.","Barra di avanzamento a blocchi — modalità scorrevole (indeterminata) e progresso reale."],
     "진행률 블록 위로 스캔 모션이 연속해서 흐릅니다.": ["A continuous scan motion travels across the progress blocks.","進捗ブロック上をスキャンモーションが連続して流れます。","扫描动效持续掠过进度块。","掃描動效持續掠過進度區塊。","По блокам прогресса непрерывно проходит сканирующее движение.","Un movimento di scansione continuo attraversa i blocchi di avanzamento."],
     "ASCII·Braille·화살표·선·원형 유니코드 프레임을 기본 프리셋으로 제공합니다.": ["Built-in presets include ASCII, Braille, arrow, line, and circular Unicode frames.","ASCII・Braille・矢印・ライン・円形Unicodeフレームを標準プリセットで提供します。","内置 ASCII、Braille、箭头、线条和圆形 Unicode 帧预设。","內建 ASCII、Braille、箭頭、線條和圓形 Unicode 影格預設。","Встроены пресеты кадров ASCII, Braille, стрелок, линий и круговых Unicode-символов.","Include preset integrati con frame ASCII, Braille, frecce, linee e simboli Unicode circolari."],
     "꼬리와 후광이 흐르는 인라인 스피너입니다.": ["An inline spinner with a flowing tail and glow.","尾と光が流れるインラインスピナーです。","带有流动尾迹和光晕的内联加载器。","帶有流動尾跡和光暈的行內載入器。","Встроенный спиннер с движущимся хвостом и свечением.","Uno spinner inline con scia e bagliore."],
@@ -567,6 +626,22 @@ window.KINETO_COPY_I18N = {
       "Равномерно растворяет шум и размытие, чтобы раскрыть исходное изображение.",
       "Risolve il rumore e la sfocatura in modo uniforme per rivelare l'immagine originale."
     ],
+    "물결 왜곡과 입자가 잦아들며 이미지를 드러냅니다.": [
+      "Wave distortion and grain settle to reveal the image.",
+      "波の歪みと粒子が静まり、画像が現れます。",
+      "波纹失真和颗粒逐渐平息，显现图像。",
+      "波紋失真與顆粒逐漸平息，顯現影像。",
+      "Волновое искажение и зерно затихают, открывая изображение.",
+      "La distorsione a onda e la grana si attenuano rivelando l’immagine."
+    ],
+    "필름 입자가 사라지며 원본 색과 질감을 복원합니다.": [
+      "Film grain fades to restore the original color and texture.",
+      "フィルム粒子が消え、元の色と質感が戻ります。",
+      "胶片颗粒消退，恢复原始色彩和质感。",
+      "底片顆粒消退，恢復原始色彩與質感。",
+      "Плёночное зерно исчезает, возвращая исходный цвет и фактуру.",
+      "La grana svanisce e ripristina colore e trama originali."
+    ],
     "이미지 대신 시머 플레이스홀더를 먼저 표시합니다.": [
       "Displays the shimmer placeholder first instead of the image.",
       "画像の代わりにシマー プレースホルダーを最初に表示します。",
@@ -855,13 +930,13 @@ window.KINETO_COPY_I18N = {
       "Сложите карточки друг на друга.",
       "Impila le carte una sopra l'altra."
     ],
-    "스크롤할 내용이 남은 가장자리에 그림자를 표시합니다.": [
-      "Shows shadows on edges that still have content to scroll.",
-      "スクロールするコンテンツがまだあるエッジに影を表示します。",
-      "在仍有内容滚动的边缘显示阴影。",
-      "在仍有內容滾動的邊緣顯示陰影。",
-      "Показывает тени на краях, на которых еще есть контент для прокрутки.",
-      "Mostra le ombre sui bordi che presentano ancora contenuto da scorrere."
+    "스크롤할 내용이 남은 가장자리를 흐리게 페이드합니다.": [
+      "Fades edges that still have content to scroll.",
+      "スクロールできる内容が残る端をフェードさせます。",
+      "淡化仍有内容可滚动的边缘。",
+      "淡化仍有內容可捲動的邊緣。",
+      "Плавно затемняет края, за которыми остаётся содержимое.",
+      "Sfuma i bordi quando resta altro contenuto da scorrere."
     ],
     "스크롤하면 헤더가 작아지고 그림자가 생깁니다.": [
       "Shrinks the header and adds a shadow while scrolling.",
@@ -879,7 +954,7 @@ window.KINETO_COPY_I18N = {
       "Сложите большую крышку в тонкий фиксированный заголовок.",
       "Piega la copertina grande in una sottile intestazione fissa."
     ],
-    "페이지 전체의 관성 스크롤을 스위치로 켜고 끕니다.": [
+    "이 데모는 관성 스크롤이 켜진 상태입니다 · 스위치로 끄고 바로 비교해 보세요.": [
       "Turn page-wide inertial scrolling on and off with the switch.",
       "スイッチを使用して、ページ全体の慣性スクロールをオンまたはオフにします。",
       "使用开关打开和关闭全页惯性滚动。",
@@ -1466,6 +1541,22 @@ window.KINETO_COPY_I18N = {
       "頂部",
       "вершина",
       "superiore"
+    ],
+    "내려받는 중": [
+      "Downloading",
+      "ダウンロード中",
+      "下载中",
+      "下載中",
+      "Загрузка",
+      "Download in corso"
+    ],
+    "{value}% 완료": [
+      "{value}% complete",
+      "{value}% 完了",
+      "已完成 {value}%",
+      "已完成 {value}%",
+      "Готово на {value}%",
+      "{value}% completato"
     ]
   }
 };

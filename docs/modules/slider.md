@@ -15,6 +15,7 @@
 | `cube` | 면이 회전하는 큐브 전환 |
 | `cards` | 카드를 겹쳐 넘기는 전환 |
 | `creative` | 깊이, 회전, 블러를 조합한 장면 전환 |
+| `radial` | 항목을 원형 궤도에 배치하는 캐러셀 |
 
 ```html
 <div class="my-slider" data-kt-slider="dissolve" data-kt-loop="rewind">
@@ -29,6 +30,17 @@
 ```
 
 `drag`, `touch`, `keyboard`, `wheel`은 입력 수단별로 끌 수 있습니다. `loop`는 `off`, `infinite`, `rewind`를 지원합니다.
+
+트랙 효과는 `.kt-slider-track`이 필요합니다. `radial`은 활성 요소 바로
+아래에 항목이 두 개 이상 있어야 합니다. 설정 데모는 현재 마크업에서
+실행할 수 없는 효과를 선택 목록에서 숨깁니다.
+
+기존 `data-kt-radial`과 `Kineto.radial()`은 공개 호환 진입점으로
+유지되며 내부에서 같은 원형 엔진을 사용합니다.
+
+Coverflow에서 `activeShadow:true`를 켜면 활성 슬라이드의 회전된 실루엣을
+따라 `drop-shadow`가 표시됩니다. 기본값은 기존 화면을 유지하도록
+`false`이며 `activeShadowOpacity`의 기본값은 `0.28`입니다.
 
 ## 자동 재생과 진행 UI
 
@@ -71,6 +83,10 @@ slider.enable();
 
 DOM 이벤트는 `kt-slider-init`, `kt-slider-before-change`, `kt-slider-change`입니다. 콜백은 `onInit`, `onBeforeChange`, `onChange`를 지원합니다.
 
+두 슬라이더를 연결할 때는 `sync`에 상대 슬라이더의 selector나 요소를
+전달합니다. 어느 쪽에서 이동해도 상대 인덱스가 갱신되며 내부
+`syncTo()`는 재전파를 막아 순환 호출을 만들지 않습니다.
+
 ## CSS 확장
 
 ```css
@@ -87,6 +103,11 @@ DOM 이벤트는 `kt-slider-init`, `kt-slider-before-change`, `kt-slider-change`
   --kt-slider-progress-inset: 16px;
   --kt-slider-dissolve-noise: .16;
   --kt-slider-dissolve-blend: soft-light;
+  --kt-slide-active-shadow-color: #111827;
+  --kt-slide-active-shadow-opacity: 22%;
+  --kt-slide-active-shadow-x: 0;
+  --kt-slide-active-shadow-y: 20px;
+  --kt-slide-active-shadow-blur: 28px;
 }
 
 .my-slider .kt-slider-dot.is-active {

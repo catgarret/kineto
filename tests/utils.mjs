@@ -26,6 +26,11 @@ assert.deepEqual(readOpts(mockElement, 'reveal'), {
   once: false,
   options: { debug: true }
 });
+assert.deepEqual(
+  readOpts({ dataset: { ktRadial: 'top', ktRadius: '280' } }, 'radial'),
+  { position: 'top', radius: 280 },
+  'radial activation values must preserve the legacy position option'
+);
 
 assert.equal(Kineto.env.ssr, true);
 assert.doesNotThrow(() => Kineto.scan());

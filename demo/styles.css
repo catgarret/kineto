@@ -128,7 +128,7 @@
 
     .container{width:min(1200px,calc(100% - 40px));margin:auto}
     /* ── sidebar layout ─────────────────────────────────────────────── */
-    .layout{display:grid;grid-template-columns:206px minmax(0,1fr);align-items:start}
+    .layout{--nav-w:206px;display:grid;grid-template-columns:var(--nav-w) minmax(0,1fr);align-items:start}
     .side-nav{position:sticky;top:56px;height:calc(100vh - 56px);overflow:hidden;padding:26px 10px 26px 18px}
     .layout>main{border-left:1px solid var(--line)}
     .side-label{margin:0 0 12px;padding-left:10px;font:600 8px/1 var(--font-mono);letter-spacing:.18em;text-transform:uppercase;color:var(--muted);opacity:.7}
@@ -171,6 +171,11 @@
     main .container{width:min(1120px,calc(100% - 56px))}
     @media(max-width:1080px){
       .layout{display:block}
+      /* Nav moves to a bottom bar, so the footer reclaims the full width.
+         Doubled class: this rule sits ABOVE the base .footer declaration, so
+         at equal specificity the later 206px would otherwise win and the
+         footer stayed indented off-screen on phones. */
+      .footer.footer{--nav-w:0px}
       body{padding-bottom:66px}
       .side-nav{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;z-index:1200;border-right:0;border-top:1px solid var(--line);background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:8px 10px calc(8px + env(safe-area-inset-bottom));overflow-x:auto;overflow-y:hidden}
       .side-label{display:none}
@@ -192,7 +197,9 @@
 
     main{counter-reset:sec}
     .section{padding:88px 0 72px;border-top:1px solid var(--line);counter-increment:sec}
-    .section-head{display:block;max-width:760px;margin-bottom:34px}
+    /* The sticky header floats over the page, so a scroll target has to keep
+       clear of it — otherwise the group title lands underneath the bar. */
+    .section-head{display:block;max-width:760px;margin-bottom:34px;scroll-margin-top:96px}
     .section h2{font-size:clamp(2rem,4vw,3.4rem);line-height:1.02;letter-spacing:-.05em;margin:0;position:relative}
     .section h2::before{content:counter(sec,decimal-leading-zero);display:block;font:600 16px/1 var(--font-mono);letter-spacing:.08em;color:var(--accent);margin-bottom:12px;opacity:.9}
     .section-copy{color:var(--muted);margin:14px 0 0;font-size:14px;line-height:1.75;word-break:keep-all;text-wrap:pretty}
@@ -212,6 +219,37 @@
        canvases aren't squeezed into one third. auto-fit already gives a lone
        card 100%, so `wide` needs no special span. */
     .module-block-body.grid > .card.full{grid-column:1 / -1}
+    /* A module grid gets more air than the generic .grid: with sub-group
+       labels above them, 16px made neighbouring cards look glued together. */
+    .module-block-body.grid{gap:22px}
+    /* Dense pack for large sets of small previews: 4 columns on a wide
+       screen, never below ~200px so nothing clips. */
+    .module-block-body.grid.module-block-body--dense{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+    .module-block-body--dense .card{padding:14px}
+    .module-block-body--dense .card>h3{font-size:12.5px;margin-bottom:2px}
+    .module-block-body--dense .loader-preview--frame{min-height:96px;padding:14px 12px;font-size:1.05rem}
+    @media(max-width:640px){.module-block-body.grid.module-block-body--dense{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+    @media(max-width:640px){
+      /* Compound terminal indicators carry a label/status/meter as one
+         non-wrapping unit. Give those demo cards the full mobile row and scale
+         only the preview type so every glyph remains visible. Library defaults
+         and consumer markup are unchanged. */
+      .module-block-body--dense>.card:has(
+        [data-kt-terminal-style="spinner-label"],
+        [data-kt-terminal-style="quad-dots-label"],
+        [data-kt-terminal-style="spinner-elapsed"],
+        [data-kt-terminal-style="spinner-step"],
+        [data-kt-terminal-style="spinner-meter"]
+      ){grid-column:1/-1}
+      .module-block-body--dense .loader-preview--frame:has(
+        [data-kt-terminal-style="spinner-label"],
+        [data-kt-terminal-style="quad-dots-label"],
+        [data-kt-terminal-style="spinner-elapsed"],
+        [data-kt-terminal-style="spinner-step"],
+        [data-kt-terminal-style="spinner-meter"]
+      ){font-size:clamp(.72rem,3.4vw,.9rem)}
+    }
+    @media(max-width:640px){.module-block-body.grid{gap:16px}}
     /* Standalone cards / grids that sit directly in a section (not inside a .grid)
        don't get the grid gap — give consecutive blocks the same 16px rhythm so
        full-width cards like "Scroll text fill" + "Direction responsive" aren't glued together. */
@@ -277,6 +315,17 @@
     .marquee-line span{padding-right:36px}
 
     .slider-demo{width:100%;overflow:hidden;padding:18px 0}
+    /* Coverflow's active-slide drop-shadow spills past the slide on all four
+       sides, and `overflow:hidden` above cut it off. clip-path with a negative
+       inset keeps a clipping box (so neighbouring slides still disappear at the
+       edges) while leaving room for the shadow — plain `overflow:visible` would
+       let the whole track bleed across the card. */
+    /* The module puts `kt-slider--active-shadow` on the SLIDER element, which in
+       this demo IS `.slider-demo` — so it has to be matched with a compound
+       selector, not `:has()` on a descendant. Both forms are listed because a
+       nested `[data-kt-slider]` is also legal markup. */
+    .slider-demo.kt-slider--active-shadow,
+    .slider-demo:has(>.kt-slider--active-shadow){overflow:clip;overflow-clip-margin:36px}
     .slider-demo--dissolve{height:clamp(230px,31vw,320px);padding:0;border-radius:var(--r-stage);background:var(--panel2)}
     .slider-demo--dissolve>.kt-slider-wrap,.slider-demo--dissolve .kt-slider-track,.slider-demo--dissolve .kt-slide{height:100%}
     .slider-demo--dissolve .kt-slide{min-height:0}
@@ -290,16 +339,26 @@
     .slider-nav--next::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M9 5l7 7-7 7'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M9 5l7 7-7 7'/%3E%3C/svg%3E")}
     .slider-nav:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));color:var(--accent);transform:translateY(-1px)}
     #loading .demo-stage{box-shadow:none;border:1px solid var(--line)}
-    .loader-preview{min-height:220px;padding:32px 24px;display:flex;align-items:center;justify-content:center;text-align:center}
+    .loader-preview{min-height:220px;padding:32px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+    .loader-preview--frame{min-height:132px;padding:22px 18px;font-size:1.2rem}
+    .loading-preview-copy{display:grid;justify-items:start;gap:2px;text-align:left}
+    .loading-preview-copy b{font:700 14px/1.2 var(--font-sans)}
+    .loading-preview-copy i{font:600 12px/1 var(--font-mono,ui-monospace,monospace);font-style:normal;color:var(--muted)}
     .kt-demo-loader-overlay{position:fixed;inset:0;z-index:10010;background:var(--bg);color:var(--text)}
     .loading-preview-line{display:inline-flex;align-items:center;justify-content:center;gap:12px;font-weight:700;color:var(--text)}
     .loading-preview-stack{display:grid;justify-items:center;align-content:center;gap:12px;width:min(100%,320px);margin-inline:auto;font-weight:700;color:var(--text);text-align:center}
     .loading-preview-line--terminal{font-family:var(--font-mono,ui-monospace,monospace)}
-    .loading-frame-card{grid-column:1/-1!important}
-    .loading-frame-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:min(100%,760px)}
-    .loading-frame-item{min-height:72px;padding:12px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;border:1px solid var(--line);border-radius:10px;text-align:left;font-family:var(--font-mono,ui-monospace,monospace)}
-    .loading-frame-item b{font:650 11px/1.3 var(--font-sans);color:var(--muted)}
-    .loading-frame-item .kt-loading-indicator{font-size:1.35rem}
+    /* Demo-only spacing. The library exposes these as CSS variables, so tuning
+       the preview never changes what an app gets by default. */
+    /* The compound spinner reserves a slot AND the nested frame reserves its
+       own min-width, so a narrow braille glyph sat inside two nested pads.
+       Trim both — the library keeps its roomier defaults. */
+    /* Cursor presets print "label▉" as one text run, so tracking is the only
+       lever for breathing room between the label and the caret. */
+    /* "[##########] 100%" needs far more room than a one-glyph spinner, so
+       this preset takes two grid tracks instead of being clipped. */
+    /* Cursor presets print "label▉" as one run of text, so the only lever for
+       breathing room is tracking. */
     /* 데모 스테이지와 옵션 서머리를 한 덩어리로 결합 */
     .card:has(.kt-playground) .demo-stage,.card:has(.kt-playground) .fullpage-demo,.card:has(.kt-playground) .reveal-demo-card,.card:has(.kt-playground) .lightbox-grid{border-bottom-left-radius:0;border-bottom-right-radius:0}
     .card:has(.demo-stage) .kt-playground,.card:has(.demo-stage) .replay-row+.kt-playground,.card:has(.fullpage-demo) .kt-playground,.card:has(.reveal-demo-card) .kt-playground{margin-top:0;border-top-left-radius:0;border-top-right-radius:0;border-top:0}
@@ -345,7 +404,12 @@
     /* Page Transition — in-place conceptual preview: two mock screens + an
        overlay cover that plays curtain/fade/slide/circle between them. */
     .pt-preview{position:relative;overflow:hidden;min-height:220px;padding:0;display:block;border-radius:var(--r-stage);--pt-c1:#101318;--pt-c2:#1e2a4a;--pt-dur:.42s;--pt-ease:cubic-bezier(.76,0,.24,1)}
-    .pt-screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font:800 clamp(1.2rem,2.4vw,1.8rem) var(--font-sans);color:#fff}
+        /* The floating effect-chip row sits over the bottom of this screen, so true
+       geometric centring READ as too low. Reserve the row's height as bottom
+       padding and centre inside what is left — the content then looks centred in
+       the visible area rather than in the box. A token, so the responsive rules
+       can change the reserve without touching this rule. */
+    .pt-screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding-bottom:var(--pt-chip-reserve,52px);box-sizing:border-box;font:800 clamp(1.2rem,2.4vw,1.8rem) var(--font-sans);color:#fff}
     .pt-screen[hidden]{display:none}
     .pt-a{background:linear-gradient(135deg,#ff5b1c,#ff9a3c)}
     .pt-b{background:linear-gradient(135deg,#1e2a4a,#5b3fa0)}
@@ -353,10 +417,41 @@
     .pt-cover{position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--pt-c1);opacity:0}
     /* Effect picker: a segmented-tabs control floating at the preview's
        bottom-right (single select), legible over the gradient via blur. */
-    .pt-fx-row{position:absolute;right:12px;bottom:12px;z-index:6;display:inline-flex;flex-wrap:wrap;justify-content:flex-end;gap:2px;margin:0;max-width:calc(100% - 24px);padding:3px;border:1px solid rgba(255,255,255,.28);border-radius:12px;background:rgba(20,22,28,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 6px 20px rgba(0,0,0,.25)}
+    .pt-fx-row{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;z-index:6;display:inline-flex;flex-wrap:wrap;justify-content:center;gap:2px;margin:0;max-width:calc(100% - 24px);padding:3px;border:1px solid rgba(255,255,255,.28);border-radius:12px;background:rgba(20,22,28,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 6px 20px rgba(0,0,0,.25)}
     .pt-fx-row::before{content:"";position:absolute;left:0;top:0;width:var(--pt-tab-w,0);height:var(--pt-tab-h,0);border-radius:8px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transform:translate(var(--pt-tab-x,0),var(--pt-tab-y,0));opacity:0;transition:transform .28s cubic-bezier(.22,.8,.3,1),width .28s ease,height .28s ease,opacity .15s ease}
     .pt-fx-row.has-indicator::before{opacity:1}
     .pt-fx-row.is-first-selection::before{transition:opacity .15s ease}
+    @media(max-width:860px){
+      .pt-fx-row{
+        left:12px;right:12px;transform:none;max-width:none;justify-content:flex-start;
+        flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;
+        scroll-snap-type:inline proximity;scroll-padding-inline:3px;
+        overscroll-behavior-inline:contain;scrollbar-width:none;
+        -webkit-overflow-scrolling:touch;touch-action:pan-x;
+      }
+      .pt-fx-row::-webkit-scrollbar{display:none}
+      /* Scroll hint. `scrollShadows` mounted fine here but reported kt-at-start AND
+         kt-at-end at the same time on a scrollable row, so no fade appeared. This
+         is the pure-CSS version instead: two `local` covers ride ON the content and
+         hide the shadow when that edge is at its limit, two `scroll` shadows stay
+         with the box. No measurement, nothing to keep in sync. The row sits on a
+         warm overlay, so the covers use its own tint rather than --panel. */
+      .pt-fx-row{
+        background-image:
+          linear-gradient(to right, rgba(90,52,30,.92) 30%, rgba(90,52,30,0)),
+          linear-gradient(to left,  rgba(90,52,30,.92) 30%, rgba(90,52,30,0)),
+          radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.34), transparent),
+          radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.34), transparent);
+        background-repeat:no-repeat;
+        background-size:30px 100%, 30px 100%, 12px 100%, 12px 100%;
+        background-position:left center, right center, left center, right center;
+        background-attachment:local, local, scroll, scroll;
+      }
+      .pt-fx-row .btn{flex:0 0 auto;scroll-snap-align:center}
+      .pt-fx-row .btn{padding:6px 9px;font-size:11.5px}
+      /* One scrolling line with smaller chips — less to reserve. */
+      .pt-preview{--pt-chip-reserve:52px}
+    }
     .pt-fx-row .btn{position:relative;z-index:1;border:0;background:transparent;color:rgba(255,255,255,.82);padding:6px 11px;border-radius:8px;font-size:12px;font-weight:650;box-shadow:none}
     .pt-fx-row .btn:hover{color:#fff;background:rgba(255,255,255,.14)}
     .pt-fx-row .btn.is-active{background:transparent;color:#101318;box-shadow:none}
@@ -396,8 +491,18 @@
     /* Lighter, less "boxed" look: category label as a quiet section header above
        its cards (no per-group border/background). */
     .module-group{display:block;padding:0;border:0;background:none}
-    .module-group-label{margin:0 0 12px;padding-bottom:9px;font:800 13px/1 var(--font-sans);letter-spacing:-.01em;text-transform:none;color:var(--text);border-bottom:1px solid var(--line)}
-    .module-group-label::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:8px;vertical-align:middle}
+    .module-group-label,.module-subgroup{
+      display:flex;align-items:center;gap:12px;
+      margin:0 0 14px;padding:0;border:0;
+      font:700 10.5px/1 var(--font-mono);
+      letter-spacing:.14em;text-transform:uppercase;
+      color:color-mix(in srgb,var(--muted) 85%,transparent);
+      white-space:nowrap;
+    }
+    .module-group-label::after,.module-subgroup::after{
+      content:"";flex:1 1 auto;height:1px;min-width:24px;
+      background:linear-gradient(90deg,var(--line),color-mix(in srgb,var(--line) 15%,transparent));
+    }
     .module-group-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
     .mod-index-item{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;padding:9px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;cursor:pointer;transition:border-color .15s ease,background-color .15s ease}
     .mod-index-item:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line));background:color-mix(in srgb,var(--accent) 6%,var(--panel2))}
@@ -406,8 +511,8 @@
     .mod-index-item:hover .mii-name{color:var(--accent)}
     .mii-sub{font:500 11.5px/1.4 var(--font-sans);color:var(--muted);word-break:keep-all}
     @media(max-width:520px){.module-group{grid-template-columns:1fr}.module-group-chips{grid-template-columns:1fr}}
-    .footer{padding:clamp(42px,6vw,72px) max(26px,env(safe-area-inset-right)) max(44px,env(safe-area-inset-bottom)) max(26px,env(safe-area-inset-left));color:var(--muted);font-size:13px;border-top:1px solid var(--line);background:linear-gradient(180deg,color-mix(in srgb,var(--panel2) 28%,transparent),transparent 52%);margin-top:0}
-    .footer>.container{width:min(1180px,100%);max-width:none;margin:0 auto}
+    .footer{--nav-w:206px;padding:clamp(42px,6vw,72px) max(26px,env(safe-area-inset-right)) max(44px,env(safe-area-inset-bottom)) calc(max(26px,env(safe-area-inset-left)) + var(--nav-w));color:var(--muted);font-size:13px;border-top:1px solid var(--line);background:linear-gradient(180deg,color-mix(in srgb,var(--panel2) 28%,transparent),transparent 52%);margin-top:0}
+    .footer>.container{width:min(1120px,calc(100% - 56px));max-width:none;margin:0 auto}
     .footer-grid{display:grid;grid-template-columns:minmax(260px,1.7fr) minmax(160px,.7fr) minmax(270px,1fr);gap:clamp(28px,5vw,72px);align-items:start}
     .footer-logo{display:inline-flex;align-items:center;gap:10px;color:var(--text);text-decoration:none}
     .footer-logo svg{display:block;width:30px;height:30px;flex:0 0 auto}
@@ -422,12 +527,20 @@
     .footer-author{display:inline-flex!important;align-items:baseline;gap:7px;white-space:nowrap}
     .footer-author span{font-size:11px;color:var(--muted)}
     .footer-author strong{font-size:14px;color:var(--text)}
-    .footer-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:15px 0 10px;max-width:270px}
-    .footer-stats>span{min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:color-mix(in srgb,var(--panel) 68%,transparent)}
-    .footer-stats small,.footer-stats strong{display:block;white-space:nowrap}
-    .footer-stats small{font:600 9px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-    .footer-stats strong{margin-top:6px;font:700 13px/1 var(--font-mono);color:var(--text)}
+    /* No box. The meta reads as one typographic line — label small and muted,
+       value in text colour, thin rules between the pairs. */
+    .footer-stats{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:0;row-gap:10px;margin:18px 0 2px}
+    /* Trailing divider, not leading: a leading rule became an orphan bar at
+       the start of a wrapped row. */
+    .footer-stats>div{display:flex;align-items:baseline;gap:7px;padding-right:14px;margin-right:14px;border-right:1px solid var(--line)}
+    .footer-stats>div:last-child{padding-right:0;margin-right:0;border-right:0}
+    .footer-stats dt{margin:0;font:600 9px/1 var(--font-mono);letter-spacing:.11em;text-transform:uppercase;color:color-mix(in srgb,var(--muted) 78%,transparent);white-space:nowrap}
+    .footer-stats dd{margin:0;font:700 13px/1 var(--font-mono);color:var(--text);white-space:nowrap}
+    .footer-stat-build dd{color:var(--muted);font-weight:600}
+    @media(max-width:520px){.footer-stats>div{padding-right:10px;margin-right:10px}}
     .footer code{font:600 10.5px/1 var(--font-mono);color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));background:color-mix(in srgb,var(--accent) 6%,transparent);border-radius:7px;padding:6px 9px;display:inline-block;white-space:nowrap}
+    .footer-fine-copy{display:block;line-height:1.85}
+    .footer-fine-copy small{font-size:11.5px;color:color-mix(in srgb,var(--muted) 66%,transparent)}
     .footer-fine{margin-top:clamp(30px,5vw,48px);padding-top:18px;border-top:1px solid var(--line);font-size:11.5px;color:color-mix(in srgb,var(--muted) 78%,transparent);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
     .footer-fine a{color:inherit;text-decoration:none;font-weight:700;white-space:nowrap}
     @media(max-width:820px){
@@ -442,6 +555,7 @@
       .footer-brand p br{display:none}
       .footer-stats{max-width:none}
       .footer-fine{align-items:flex-start;flex-direction:column}
+      .footer-fine-copy{line-height:1.7}
     }
 
     @media(max-width:850px){
@@ -482,7 +596,21 @@
     .demo-toast-host{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:2147483200;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
     .demo-toast{max-width:min(480px,92vw);padding:13px 20px;border-radius:12px;background:color-mix(in srgb,var(--text) 92%,transparent);color:var(--bg);font:600 13px/1.55 var(--font-sans);box-shadow:0 12px 34px rgba(10,14,22,.3);opacity:0;transform:translateY(10px);transition:opacity .28s ease,transform .28s ease;text-align:center;word-break:keep-all}
     .demo-toast.is-in{opacity:1;transform:translateY(0)}
-    /* Intro loader: oversized, airy percentage — the whole first screen. */
+    /* Intro loader: oversized, airy percentage — the whole first screen.
+       The canvas colour lives here as a token so main.js can read it instead of
+       hard-coding #efe9de in a cssText string (no inline styles in the demo). */
+    :root{--intro-bg:#efe9de;--intro-fg:#14110d}
+    /* width:100vw (not inset:0) so the overlay also covers the reserved
+       scrollbar-gutter strip — otherwise that ~15px column shows the page
+       background as a mismatched off-white band during the intro. */
+    .intro-loader{position:fixed;top:0;left:0;width:100vw;height:100dvh;z-index:10020;background:var(--intro-bg);color:var(--intro-fg)}
+    /* Root state while the intro is up: lock scrolling (the page would scroll
+       behind the overlay and lazy images would shift the layout), release the
+       scrollbar gutter, and paint <html> itself so no off-white band shows. */
+    html.is-intro{overflow:hidden;scrollbar-gutter:auto;background:var(--intro-bg)}
+    /* Modal scroll lock (sitemap overlay). A class, so opening and closing is
+       one add/remove instead of snapshotting and restoring an inline value. */
+    html.is-locked{overflow:hidden}
     .intro-loader .kt-loader-counter{font-family:var(--font-sans)!important;font-weight:100!important;font-size:clamp(5rem,22vw,14rem)!important;line-height:.9;font-variation-settings:"wght" 100;letter-spacing:-.045em;font-variant-numeric:tabular-nums;z-index:2}
     .intro-loader .kt-loader-wordmark{position:absolute;top:clamp(28px,7vh,64px);left:50%;transform:translateX(-50%);z-index:3;font:600 clamp(11px,1.4vw,13px)/1 var(--font-mono);letter-spacing:.42em;text-indent:.42em;color:#14110d;text-transform:uppercase;opacity:.75}
     /* floating TOP */
@@ -525,7 +653,9 @@
    display:none, leaving an invisible full-screen overlay that eats every click. */
 .sitemap-overlay[hidden]{display:none}
 .sitemap-overlay.is-open{opacity:1}
-.sitemap-panel{width:min(680px,100%);max-height:calc(100dvh - 56px);display:flex;flex-direction:column;overflow:hidden;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-hover);transform:translateY(10px);transition:transform .24s cubic-bezier(.2,.8,.3,1)}
+/* Wider on desktop/tablet: 680px forced two cramped columns even on a big
+   screen, which is the least useful shape for a 50-item index. */
+.sitemap-panel{width:min(1180px,calc(100vw - 48px));max-height:calc(100dvh - 56px);display:flex;flex-direction:column;overflow:hidden;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-hover);transform:translateY(10px);transition:transform .24s cubic-bezier(.2,.8,.3,1)}
 .sitemap-overlay.is-open .sitemap-panel{transform:none}
 .sitemap-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--line);background:var(--panel)}
 .sitemap-head strong{font-weight:850;letter-spacing:-.02em}
@@ -533,7 +663,9 @@
 .sitemap-close:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
 /* Only the grid scrolls (head stays put); overscroll-contain stops the page
    behind from scrolling when the pointer is over the list. */
-.sitemap-grid{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;padding:16px}
+.sitemap-grid{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:18px}
+@media(max-width:1100px){.sitemap-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:820px){.sitemap-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .sitemap-grid a{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:var(--panel2);color:var(--text);text-decoration:none;transition:border-color .15s ease,background-color .15s ease,transform .15s ease}
 .sitemap-grid a:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));transform:translateY(-1px)}
 .sitemap-grid a i{font:700 11px/1.6 var(--font-mono);color:var(--accent);font-style:normal;flex:0 0 auto}
@@ -550,8 +682,12 @@
   .header-actions .ts-knob{top:3px;width:20px;height:20px;transform:translateX(24px)}
   html.light .header-actions .ts-knob{transform:translateX(0)}
   .header-actions #lang{width:78px;min-width:0;height:32px;padding:5px 22px 5px 8px;font-size:11.5px}
-  .sitemap-overlay{place-items:stretch;padding:calc(56px + env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
-  .sitemap-panel{width:100%;max-height:none;border-radius:14px}
+  /* `place-items:stretch` + a fixed 56px top padding left the panel top-aligned
+     with a dead band above it. Centre it like the desktop overlay does and let the
+     panel size to its content, capped by the viewport, so short lists sit in the
+     middle and long ones still scroll inside. */
+  .sitemap-overlay{place-items:center;padding:max(12px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
+  .sitemap-panel{width:100%;max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));border-radius:14px}
   .sitemap-grid{grid-template-columns:1fr;padding:12px}
   .sitemap-grid a{padding:10px 11px}
 }
@@ -746,7 +882,10 @@ html.light .kt-tabs--segment { --kt-seg-active: #ffffff; --kt-seg-bg: rgba(0,0,0
 @media(max-width:700px){.cover-gallery-stage{min-height:520px}.cover-gallery{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr))}}
 
 /* Settings are visually glued directly under pinned/scroll stages. */
-.scroll-demo-unit{width:100%;min-width:0;margin-top:24px;padding:clamp(18px,2.5vw,28px);border:1px solid var(--line);border-radius:var(--r-card);background:var(--panel)}
+/* `margin-top:24px` was for the days these units sat loose in a section. Inside
+   a module block the block's own body gap already spaces them, so the margin
+   stacked on top and left a 96px hole under the description. */
+.scroll-demo-unit{width:100%;min-width:0;margin-top:0;padding:clamp(18px,2.5vw,28px);border:1px solid var(--line);border-radius:var(--r-card);background:var(--panel)}
 .scroll-demo-unit>h3{margin:0 0 7px;font-size:15px}
 .scroll-demo-unit>p{max-width:72ch;margin:0 0 18px;color:var(--muted);font-size:13px;line-height:1.65}
 .demo-stage--pinned{display:block;min-height:0;padding:0;overflow:visible;background:transparent;box-shadow:none}
@@ -754,11 +893,109 @@ html.light .demo-stage--pinned{background:transparent}
 .scroll-demo-unit:has(.kt-playground) .demo-stage--pinned,.hscroll-demo-unit:has(.kt-playground) .demo-stage--pinned{border-bottom-left-radius:0;border-bottom-right-radius:0}
 .demo-stage--pinned>.kt-playground-host{margin:0}
 .demo-stage--pinned>.kt-playground-host>.kt-playground{margin-top:0;border-top:0;border-top-left-radius:0;border-top-right-radius:0}
-.scroll-sequence-unit{margin-top:80px}
+/* Same story as .scroll-demo-unit: an 80px top margin from when this sat loose
+   in a section. Inside a module block it just opens a hole under the title. */
+.scroll-sequence-unit{margin-top:0}
 .hscroll-demo-unit .demo-stage--pinned{border-radius:16px}
 .sticky-stack-unit .sticky-vertical-stage{padding:clamp(14px,2vw,22px);overflow:visible;background:var(--panel2);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line) 55%,transparent)}
 html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 .mega-menu-stage{min-height:220px;display:grid;place-items:center;align-content:center;overflow:visible;padding:16px;border-bottom-left-radius:0;border-bottom-right-radius:0}
+.mega-menu-stage{grid-template-columns:minmax(0,1fr);justify-items:stretch}
+.mega-menu-stage .mega-menu-panel{width:100%;min-width:0;max-width:100%;place-items:center}
+    /* A per-item `data-kt-menu-trigger="click"` override is invisible next to the
+       hover items, so the trigger says so inline. Muted and smaller so it reads as
+       a caption on the label, not as part of the menu name. */
+    .mega-menu-hint{font-weight:600;font-size:10.5px;letter-spacing:0;color:var(--muted);opacity:.8;margin-left:2px}
+    .mega-menu-hint::before{content:"·";margin-right:3px;opacity:.6}
+    /* A plain top-level link: no panel, so the module adds no chevron. Matched to
+       the trigger buttons so the bar stays even. */
+    .mega-menu-plain>a{display:inline-flex;align-items:center;text-decoration:none;color:inherit}
+    /* The bar used ~40% of a 1074px stage, which read as a floating pill rather
+       than a GNB. Stretch it (capped so it stays a nav, not a full-bleed header)
+       and let the triggers breathe. Scoped to this demo — the shared nav class is
+       used by other cards. */
+    .mega-menu-panel>[data-kt-mega-menu]{width:100%;max-width:min(100%,820px);margin:0 auto}
+    .mega-menu-panel>[data-kt-mega-menu]>ul{gap:6px}
+    .mega-menu-panel>[data-kt-mega-menu]>ul>li>.btn,
+    .mega-menu-panel>[data-kt-mega-menu]>ul>li>a.btn{padding-inline:16px}
+    /* An opened mega panel must not spill out of the preview box. */
+    /* nowrap at EVERY width, not just under 900px: "Lightbox · Slider" was
+       breaking onto two lines even on desktop. The columns size to their content
+       and the panel is capped at the viewport, so a long label widens the column
+       instead of wrapping. */
+    .mega-menu-panel .kt-menu-panel{max-width:calc(100vw - 96px)}
+    .mega-menu-panel .kt-menu-panel a{white-space:nowrap}
+    /* `.mega-menu-panel` sets place-items:center for the nav bar itself, which the
+       panel's grid was inheriting — the submenu columns came out centred while
+       every other dropdown is left-aligned. */
+    .mega-menu-panel .kt-menu-panel{text-align:left;justify-items:start}
+    .mega-menu-panel .kt-menu-panel>div{justify-items:start}
+    .mega-menu-panel .kt-menu-panel ul{text-align:left}
+    .mega-menu-panel .kt-menu-panel>div{grid-auto-columns:max-content}
+    @media(max-width:900px){
+      /* The bar was fixed at 820px and ran straight out of the card on a phone.
+         Scroll it horizontally instead of clipping, and drop the inline hint to
+         its own line so the trigger label stays readable. */
+      .mega-menu-panel>[data-kt-mega-menu]{max-width:100%}
+      /* NOT overflow-x:auto here. A scroll container clips its absolutely
+         positioned descendants, so the dropdown / mega panels were trapped inside
+         the bar and only their shadow showed. Wrapping to a second line keeps the
+         popups free and still fits a phone. */
+      .mega-menu-panel>[data-kt-mega-menu].kt-menu--responsive-wrap>ul{
+        flex-wrap:wrap;justify-content:center;row-gap:4px
+      }
+      .mega-menu-panel>[data-kt-mega-menu].kt-menu--responsive-scroll>ul{
+        flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;
+        /* Scroll hint. Without it there is nothing to say more items exist off
+           screen. Four background layers pinned with `background-attachment`:
+           the two `local` covers sit ON the content and hide the shadow when that
+           edge is at its limit, the two `scroll` shadows stay with the box. Pure
+           CSS, so it needs no measurement and cannot go stale — the classic
+           Roman Komarov scrolling-shadow trick. `mask-image` cannot do this
+           because it has no scroll-aware equivalent. */
+        background:
+          linear-gradient(to right, var(--panel) 30%, transparent) left center,
+          linear-gradient(to left,  var(--panel) 30%, transparent) right center,
+          radial-gradient(farthest-side at 0 50%, color-mix(in srgb,var(--text) 20%,transparent), transparent) left center,
+          radial-gradient(farthest-side at 100% 50%, color-mix(in srgb,var(--text) 20%,transparent), transparent) right center;
+        background-repeat:no-repeat;
+        background-size:34px 100%, 34px 100%, 13px 100%, 13px 100%;
+        background-attachment:local, local, scroll, scroll;
+        scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x;
+        scroll-snap-type:inline proximity;overscroll-behavior-inline:contain
+      }
+      .mega-menu-panel>[data-kt-mega-menu].kt-menu--responsive-scroll>ul::-webkit-scrollbar{display:none}
+      .mega-menu-panel>[data-kt-mega-menu].kt-menu--responsive-scroll>ul>li{scroll-snap-align:center}
+      .mega-menu-panel>[data-kt-mega-menu]>ul>li{flex:0 0 auto}
+      .mega-menu-panel>[data-kt-mega-menu]>ul>li>.btn,
+      .mega-menu-panel>[data-kt-mega-menu]>ul>li>a.btn{padding-inline:11px;white-space:nowrap}
+      .mega-menu-hint{display:none}
+      /* min-width:0 let the panel shrink to the trigger and every label wrapped
+         ("빠른 시작" over two lines). Size it to the CONTENT instead and only cap
+         it at the viewport, so it stays on one line until it genuinely cannot. */
+      .mega-menu-panel .kt-menu-panel{width:max-content;min-width:0;max-width:calc(100vw - 48px);box-sizing:border-box}
+      .mega-menu-panel .kt-menu-panel a{white-space:nowrap}
+      /* Keep the panel inside the viewport when its trigger sits near the edge. */
+      .mega-menu-panel>[data-kt-mega-menu]>ul>li{position:relative}
+      /* Mega panels belong to the whole nav bar, not the trigger cell. The
+         generic relative rule above previously overrode `.kt-menu-mega` and
+         collapsed this panel into one tall, off-screen column on phones. */
+      .mega-menu-panel>[data-kt-mega-menu]>ul>li.kt-menu-mega{position:static}
+      .mega-menu-panel .kt-menu-mega>.kt-menu-panel{
+        width:100%;max-width:100%;max-height:min(60vh,440px);
+        overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;
+      }
+      .mega-menu-panel .kt-menu-mega>.kt-menu-panel>div{
+        grid-template-columns:repeat(3,minmax(0,1fr))!important;
+        grid-auto-columns:auto;gap:10px 16px;width:100%;
+      }
+      .mega-menu-panel .kt-menu-mega>.kt-menu-panel a{white-space:normal}
+    }
+    @media(max-width:520px){
+      .mega-menu-panel .kt-menu-mega>.kt-menu-panel>div{
+        grid-template-columns:repeat(2,minmax(0,1fr))!important;
+      }
+    }
 
 /* Demo-only +/− accordion indicator: compact, unboxed and readable. */
 .accordion-plus .kt-accordion-summary::after,
@@ -771,9 +1008,17 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 #mod-slider .module-block-body>.card{height:100%}
 #mod-slider .slider-demo{height:clamp(230px,31vw,320px);padding:0;border-radius:var(--r-stage);background:var(--panel2)}
 #mod-slider .card:first-child .slider-demo{background:transparent}
+/* Keep the 36px shadow allowance inside the card instead of extending the
+   transformed side slides through the card edge. */
+#mod-slider .card:first-child .slider-demo{width:calc(100% - 72px);margin-inline:auto}
+@media(max-width:600px){#mod-slider .card:first-child .slider-demo{width:calc(100% - 32px)}}
 #mod-slider .slider-demo>.kt-slider-wrap,#mod-slider .slider-demo .kt-slider-track{width:100%;height:100%}
 #mod-slider .slider-demo .kt-slide{height:100%}
 #mod-slider .slider-demo .kt-slide{min-height:0;overflow:hidden}
+/* The active slide must not clip its own drop-shadow. The image keeps its own
+   rounding, so nothing bleeds. */
+#mod-slider .slider-demo.kt-slider--active-shadow .kt-slide.is-active,
+#mod-slider .slider-demo .kt-slider--active-shadow .kt-slide.is-active{overflow:visible}
 #mod-slider .slider-demo .kt-slide img{display:block;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover}
 #mod-slider .slider-controls{margin-top:12px}
 #mod-cardGlow .module-block-body{grid-template-columns:repeat(6,minmax(0,1fr))}
@@ -863,17 +1108,12 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 .demo-css-215cecac{display:grid;grid-template-columns:repeat(3,minmax(150px,1fr));gap:24px}
 .demo-css-c7066e18{font:700 12px var(--font-mono);color:var(--accent);margin:0 0 8px}
 .demo-css-5075c6c3{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:14px}
-.demo-css-ec56d60e{display:flex;gap:2px;border-bottom:1px solid var(--line)}
 .demo-css-9afc2115{padding:16px 2px;color:var(--muted);font-size:14px}
 .demo-css-a152d27a{--kt-sheet-bg:var(--panel);--kt-sheet-fg:var(--text)}
 .demo-css-df671843{margin:0 0 8px}
 .demo-css-d691acec{color:var(--muted);font-size:14px;margin:0}
 .demo-css-01f7712f{display:flex;gap:8px;margin-top:14px}
 .demo-css-dea29d3f{color:var(--accent);text-decoration:underline}
-.demo-css-8ceb8753{display:block;align-content:center;padding:16px}
-.demo-css-81db6dac{width:100%;max-width:440px;margin:0 auto}
-.demo-css-75816cae{display:flex}
-.demo-css-97445a8d{flex:1}
 .demo-css-2149cc93{display:grid;place-items:center}
 .demo-css-64087613{display:grid;grid-template-columns:repeat(4,46px);gap:10px;justify-content:center}
 @media(max-width:420px){.demo-css-64087613{grid-template-columns:repeat(3,46px)}}
@@ -889,5 +1129,132 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 .demo-css-b66dec2c{position:absolute;right:10px;font:700 10px var(--font-mono);color:var(--muted)}
 .demo-css-d65b26d6{width:96px;height:96px;position:relative}
 
-    @media(max-width:760px){.loading-frame-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:430px){.loading-frame-grid{grid-template-columns:1fr}}
+
+    /* Frame-spinner preview cards: trim the nested pads the library reserves
+       for standalone spinners so the glyph sits close to its label. */
+    .loader-preview--frame{--kt-terminal-compound-gap:.18em;--kt-terminal-status-width:6ch;--kt-terminal-spinner-slot:1em;--kt-terminal-frame-min-width:1em}
+    .loader-preview--frame :is([data-kt-terminal-style="block-cursor"],[data-kt-terminal-style="dot-cursor"]){--kt-loading-letter-spacing:.14em}
+    /* No per-preset ch override here: the module publishes the exact reservation
+       from its own cell count (see --kt-terminal-status-width in the compound mount). */
+    /* Spacing only — the look is shared with .module-group-label above. */
+    .module-subgroup{margin:32px 0 14px}
+    .module-subgroup:first-of-type{margin-top:4px}
+    @media(max-width:640px){.module-subgroup{margin:24px 0 12px;letter-spacing:.1em}}
+
+    /* Tabbed examples inside one card. Quiet segmented control so it reads as a
+       switch between two variants, not as primary navigation. */
+    /* Floating switch, centred at the top of the preview box. */
+    .demo-stage--tabbed{position:relative;padding-top:64px}
+    /* Solid, higher-contrast container: on a grey preview box a translucent
+       strip made the selected tab almost impossible to pick out. */
+    .demo-tabs{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:2;
+      display:inline-flex;gap:3px;padding:3px;border:1px solid var(--line);border-radius:11px;
+      background:var(--panel);box-shadow:0 1px 3px rgba(20,26,40,.08)}
+    .demo-tabhosts{display:block}
+    /* The settings bar belongs to the preview above it — any gap made it read
+       as a separate block. */
+    .demo-tabhosts>.kt-playground-host{margin:0}
+    .demo-stage--tabbed{margin-bottom:0}
+    .demo-tabhosts>.kt-playground-host[hidden]{display:none}
+    .demo-tab{border:0;background:transparent;color:var(--muted);padding:6px 12px;border-radius:7px;cursor:pointer;font:650 12px/1 var(--font-sans);white-space:nowrap;transition:background-color .15s ease,color .15s ease}
+    .demo-tab:hover{color:var(--text)}
+    .demo-tab[aria-selected="true"]{background:var(--accent);color:#fff;font-weight:750;box-shadow:0 1px 4px color-mix(in srgb,var(--accent) 35%,transparent)}
+    .demo-tab[aria-selected="true"]:hover{color:#fff}
+    .demo-tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    .demo-tabpanel[hidden]{display:none}
+
+    /* ── Tabs card ──────────────────────────────────────────────────────────
+       The two panels used to each carry their OWN nested .demo-stage, so the
+       card drew a grey inset box inside the grey inset box, with both paddings.
+       Panels now sit straight in the stage, the same shape .mega-menu-panel uses.
+
+       Width had to be pinned as well: .demo-stage is `display:grid;
+       place-items:center`, which sizes its item to content — so every inner tab
+       whose copy was a different length resized the whole component. Fixing the
+       set width means switching tabs changes only the copy. */
+    /* padding-inline/-bottom only: the `padding` shorthand would wipe out the
+       64px top reservation `.demo-stage--tabbed` makes for the floating
+       Underline/Segmented switch, and the switch landed on top of the tablist. */
+    /* grid-template-columns + justify-items:stretch matter: .demo-stage is
+       `place-items:center`, which sizes its grid item to MAX-CONTENT, so a
+       `width:100%` panel resolved against that max-content width and the
+       component grew past the stage (316px inside a 258px stage at 390px). */
+    .tabs-demo-stage{align-content:center;padding-inline:22px;padding-bottom:22px;grid-template-columns:minmax(0,1fr);justify-items:stretch}
+    .tabs-demo-panel{min-width:0;max-width:100%}
+    .tabs-demo-panel{width:100%;place-items:center}
+    /* One shared max-width for both variants, so switching Underline <-> Segmented
+       does not resize the card either. Wider than the old 440px: the stage is far
+       roomier than the component was using on desktop. */
+    .tabs-demo-set{width:100%;max-width:min(100%,680px);margin:0 auto}
+    .tabs-demo-tablist{display:flex}
+    /* flex:1 on the triggers keeps the row — and the underline indicator — from
+       reflowing as labels change. Segmented already worked because it was doing
+       exactly this. */
+    .tabs-demo-tablist>button{flex:1;min-width:0}
+    .tabs-demo-tablist--underline{gap:2px;border-bottom:1px solid var(--line)}
+    /* `:not([hidden])` matters: a bare `display:flex` is an author rule and beat
+       the UA stylesheet's `[hidden]{display:none}`, so all three inner panels
+       showed at once. */
+    .tabs-demo-body{padding:16px 2px;color:var(--muted);font-size:14px;min-height:3.2em}
+    .tabs-demo-body:not([hidden]){display:flex;align-items:center}
+    @media(max-width:720px){
+      /* Again padding-inline/-bottom only — a `padding` shorthand here reset the
+         top reservation and the floating switch landed on the tablist. */
+      .tabs-demo-stage{padding-inline:14px;padding-bottom:16px}
+      .tabs-demo-body{font-size:13.5px;min-height:4.4em}
+      .tabs-demo-tablist>button{padding-inline:4px;font-size:12.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    }
+
+    /* Explicit column counts for modules whose previews are small enough to sit
+       tighter than the default 3-up. Each still keeps a sane minimum so nothing
+       clips, and a `.card.full` inside still claims a whole row. */
+    /* Twelve real tracks, not 3 or 4. A card spans 12/columns, so an INCOMPLETE
+       last row can be split evenly whatever it holds: 12/1=12, 12/2=6, 12/3=4,
+       12/4=3 are all whole numbers. With a literal 3-track grid two leftover
+       cards could not share the row — `span 1.5` does not exist — which is why
+       the third cell kept showing up empty. */
+    .module-block-body--cols-3.grid,
+    .module-block-body--cols-4.grid{grid-template-columns:repeat(12,minmax(0,1fr))}
+    .module-block-body--cols-3.grid{--kt-card-span:4}
+    .module-block-body--cols-4.grid{--kt-card-span:3}
+    .module-block-body--cols-3.grid>.card,
+    .module-block-body--cols-4.grid>.card{grid-column:span var(--kt-card-span)}
+    .module-block-body--cols-3.grid>.card.wide,
+    .module-block-body--cols-4.grid>.card.wide{grid-column:span calc(var(--kt-card-span) * 2)}
+    .module-block-body--cols-3.grid>.card.full,
+    .module-block-body--cols-4.grid>.card.full{grid-column:1/-1}
+    /* Leftover cards in the last row share it equally. The class is set by
+       measurement in main.js — a `.card.full` earlier in the grid eats a whole
+       row, so nth-child arithmetic gets the row boundaries wrong. */
+    .module-block-body.grid>.card.is-last-row-1{grid-column:1/-1}
+    .module-block-body--cols-3.grid>.card.is-last-row-2,
+    .module-block-body--cols-4.grid>.card.is-last-row-2{grid-column:span 6}
+    .module-block-body--cols-3.grid>.card.is-last-row-3,
+    .module-block-body--cols-4.grid>.card.is-last-row-3{grid-column:span 4}
+    .module-block-body--cols-4.grid>.card.is-last-row-4{grid-column:span 3}
+    @media(max-width:1180px){
+      .module-block-body--cols-4.grid{--kt-card-span:4}
+      .module-block-body--cols-4.grid>.card.is-last-row-4{grid-column:span 4}
+    }
+    @media(max-width:900px){
+      .module-block-body--cols-3.grid,.module-block-body--cols-4.grid{--kt-card-span:6}
+      .module-block-body--cols-3.grid>.card.is-last-row-3,
+      .module-block-body--cols-4.grid>.card.is-last-row-3,
+      .module-block-body--cols-4.grid>.card.is-last-row-4{grid-column:span 6}
+    }
+    @media(max-width:600px){
+      .module-block-body--cols-3.grid,.module-block-body--cols-4.grid{--kt-card-span:12}
+      .module-block-body--cols-3.grid>.card.wide,
+      .module-block-body--cols-4.grid>.card.wide{grid-column:span 12}
+    }
+    /* Text-heavy demos need their type scaled down to survive a narrower cell. */
+    .module-block-body--cols-3 #mod-textSplit .big-text,
+    .module-block-body--cols-3 .demo-stage .big-text{font-size:clamp(1.1rem,2.1vw,1.7rem)}
+    .module-block-body--cols-3 .overflow-display{font-size:clamp(.82rem,1.5vw,1rem)}
+    .module-block-body--cols-3 .sv-demo,.module-block-body--cols-3 .sv-line{font-size:clamp(1rem,2vw,1.6rem)}
+    .module-block-body--cols-4 .demo-stage{min-height:150px}
+
+    /* A lone card in the final row stretches instead of leaving dead cells.
+       Applied by measurement, not nth-child arithmetic: a `.card.full` earlier in
+       the grid consumes a whole row, which shifts every count-based guess. */
+    .module-block-body.grid>.card.is-row-filler{grid-column:1/-1}

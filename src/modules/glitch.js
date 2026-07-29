@@ -1,4 +1,4 @@
-import { clamp, snapshotAttributes } from '../utils.js';
+import { clamp, env, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
 
 function backgroundIsDark(el) {
   let node = el;
@@ -32,6 +32,141 @@ export default {
     const cadence = speed * frequency;
     const loop = opts.loop !== false;
     const trigger = opts.trigger || 'auto';
+
+    // ── RGB Slice Burst: short, hard, seeded bursts with a clean recovery ─────
+    // Reference behaviour: the target is CLEAN most of the time, then a 60–180ms
+    // burst hits it — RGB channel separation, a few horizontal slices shoved
+    // sideways, and a couple of solid artifact blocks — then it returns to fully
+    // clean. Randomness is planned once per burst from a seed, not re-rolled every
+    // frame: per-frame Math.random() is what makes glitch look cheap.
+    if (preset === 'rgb-slice-burst') {
+      const seedBase = Math.floor(Number(opts.seed ?? 20260729)) || 1;
+      let seedState = seedBase >>> 0;
+      const rnd = () => {
+        seedState = (seedState + 0x6D2B79F5) >>> 0;
+        let t = seedState;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+      // `randomness` scales how far each planned value may stray from the
+      // midpoint: 0 gives a stable, repeatable burst, 1 the full spread. Without
+      // this the shared Randomness control was inert for this preset.
+      const between = (min, max) => {
+        const mid = (min + max) / 2;
+        return mid + (min + rnd() * (max - min) - mid) * randomness;
+      };
+      const palette = (Array.isArray(opts.colors) && opts.colors.length)
+        ? opts.colors
+        : ['#ff2e2e', '#00e07a', '#2b6bff', '#ff5b1c'];
+      const channelOffset = Math.max(0, Number(opts.channelOffset ?? 6)) * intensity;
+      const maxSliceOffset = Math.max(0, Number(opts.maxSliceOffset ?? 26)) * intensity;
+      const sliceMin = Math.max(1, Math.round(Number(opts.sliceCountMin ?? 3)));
+      const sliceMax = Math.max(sliceMin, Math.round(Number(opts.sliceCountMax ?? 7)));
+      const burstMin = Math.max(30, Number(opts.burstDurationMin ?? 60));
+      const burstMax = Math.max(burstMin, Number(opts.burstDurationMax ?? 180));
+      const gapMin = Math.max(80, Number(opts.intervalMin ?? 250));
+      const gapMax = Math.max(gapMin, Number(opts.intervalMax ?? 1200));
+      const artifactCount = Math.max(0, Math.round(Number(opts.artifactCount ?? 3)));
+      // Weighted presets, so no two bursts are built the same way but each one is
+      // still a deliberate combination rather than pure noise.
+      const RECIPES = [
+        { weight: 34, channel: 1, slices: 1, artifacts: 0.3, label: 'soft' },
+        { weight: 30, channel: 1.4, slices: 1.4, artifacts: 1, label: 'medium' },
+        { weight: 22, channel: 2.1, slices: 1.8, artifacts: 1.4, label: 'hard' },
+        { weight: 14, channel: 0.6, slices: 2.4, artifacts: 1.8, label: 'shred' }
+      ];
+      const totalWeight = RECIPES.reduce((sum, r) => sum + r.weight, 0);
+      const pickRecipe = () => {
+        let roll = rnd() * totalWeight;
+        for (const recipe of RECIPES) { roll -= recipe.weight; if (roll <= 0) return recipe; }
+        return RECIPES[0];
+      };
+
+      const host = el;
+      const restore = snapshotInlineStyles(host, ['position', 'isolation']);
+      if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+      host.style.isolation = 'isolate';
+      const stage = document.createElement('span');
+      stage.setAttribute('aria-hidden', 'true');
+      stage.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:0';
+      host.appendChild(stage);
+
+      const timers = new Set();
+      const after = (fn, ms) => { const id = setTimeout(() => { timers.delete(id); fn(); }, ms); timers.add(id); return id; };
+      let alive = true;
+      let paused = false;
+
+      const clear = () => { stage.textContent = ''; stage.style.opacity = '0'; };
+
+      const runBurst = () => {
+        if (!alive || paused) return;
+        const recipe = pickRecipe();
+        const length = between(burstMin, burstMax) / speed;
+        const rect = host.getBoundingClientRect();
+        const width = rect.width || 1;
+        const height = rect.height || 1;
+        stage.textContent = '';
+        stage.style.opacity = '1';
+        // 1) channel separation — two tinted copies of the box, offset apart
+        const chan = channelOffset * recipe.channel;
+        ['#ff0040', '#00ffd0'].forEach((tint, index) => {
+          const layer = document.createElement('span');
+          const dx = (index ? -1 : 1) * chan * between(0.6, 1);
+          layer.style.cssText = `position:absolute;inset:0;background:${tint};mix-blend-mode:screen;`
+            + `opacity:${(0.22 * recipe.channel).toFixed(2)};transform:translateX(${dx.toFixed(1)}px)`;
+          stage.appendChild(layer);
+        });
+        // 2) horizontal slices shoved sideways
+        const slices = Math.round(between(sliceMin, sliceMax) * recipe.slices);
+        for (let index = 0; index < slices; index += 1) {
+          const bandHeight = between(height * 0.02, height * 0.16);
+          const top = between(0, Math.max(0, height - bandHeight));
+          const shift = between(-maxSliceOffset, maxSliceOffset);
+          const band = document.createElement('span');
+          band.style.cssText = `position:absolute;left:0;right:0;top:${top.toFixed(1)}px;height:${bandHeight.toFixed(1)}px;`
+            + `background:${palette[Math.floor(rnd() * palette.length)]};mix-blend-mode:${opts.blendMode || 'screen'};`
+            + `opacity:${between(0.35, 0.85).toFixed(2)};transform:translateX(${shift.toFixed(1)}px)`;
+          stage.appendChild(band);
+        }
+        // 3) a few solid artifact blocks
+        const blocks = Math.round(artifactCount * recipe.artifacts);
+        for (let index = 0; index < blocks; index += 1) {
+          const w = between(Number(opts.artifactMinSize ?? 6), Number(opts.artifactMaxSize ?? 42));
+          const h = between(4, 16);
+          const block = document.createElement('span');
+          block.style.cssText = `position:absolute;left:${between(0, width - w).toFixed(1)}px;top:${between(0, height - h).toFixed(1)}px;`
+            + `width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;background:${palette[Math.floor(rnd() * palette.length)]}`;
+          stage.appendChild(block);
+        }
+        // Clean recovery, then schedule the next burst after a random quiet gap.
+        after(() => {
+          clear();
+          if (loop) after(runBurst, between(gapMin, gapMax) / cadence);
+        }, length);
+      };
+
+      if (env().reducedMotion) {
+        // No slicing for reduced motion — a barely-there chromatic flicker only.
+        return { el, type: 'glitch', preset, pause() {}, resume() {}, destroy() { stage.remove(); restore(); } };
+      }
+      after(runBurst, Math.max(0, Number(opts.delay ?? 0)) * 1000 + between(gapMin, gapMax) / cadence);
+
+      return {
+        el,
+        type: 'glitch',
+        preset,
+        fire: runBurst,
+        pause() { paused = true; clear(); },
+        resume() { paused = false; after(runBurst, between(gapMin, gapMax) / cadence); },
+        destroy() {
+          alive = false;
+          timers.forEach(clearTimeout);
+          stage.remove();
+          restore();
+        }
+      };
+    }
 
     // ── Continuous CRT / VCR overlay on an image (retro scanlines + roll bar) ──
     // `crt`/`vcr` on an <img> apply a persistent CSS overlay: 1px scanlines, a

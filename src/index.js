@@ -51,6 +51,7 @@ import flipModule from './modules/flip.js';
 import scrollShadowsModule from './modules/scrollShadows.js';
 import stickyHeaderModule from './modules/stickyHeader.js';
 import horizontalScrollModule from './modules/horizontalScroll.js';
+import { listTerminalFramePresets } from './modules/loadingIndicator/terminalFramePresets.js';
 
 const moduleEntries = {
   parallax: parallaxModule,
@@ -166,4 +167,11 @@ export const stickyHeader = call('stickyHeader');
 export const horizontalScroll = call('horizontalScroll');
 
 export { moduleEntries as modules };
+
+// Which options each terminal frame preset actually reads. Exposed so tooling
+// (and the playground) can hide settings a preset does not support instead of
+// keeping a hand-maintained duplicate of the same list.
+Kineto.listTerminalFramePresets = listTerminalFramePresets;
+export { listTerminalFramePresets };
+
 export default Kineto;

@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 
 const contract = JSON.parse(await readFile(new URL('../kineto.features.json', import.meta.url), 'utf8'));
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-const expectedContractKeys = ['$schema', 'additionalNamedExports', 'behaviorContractVersion', 'compatibilityApi', 'contractVersion', 'coreApi', 'coreProperties', 'criticalBehaviors', 'libraryVersion', 'moduleCount', 'modules'].sort();
+const expectedContractKeys = ['$schema', 'additionalNamedExports', 'behaviorContractVersion', 'compatibilityApi', 'contractVersion', 'coreApi', 'coreProperties', 'criticalBehaviors', 'libraryVersion', 'moduleCount', 'modules', 'variantCapabilities'].sort();
 assert.deepEqual(Object.keys(contract).sort(), expectedContractKeys, 'feature contract top-level shape drifted');
 const expectedModuleKeys = ['attribute', 'defaultVariant', 'name', 'publicOptions', 'variants'].sort();
 const dash = (value) => value.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
@@ -25,7 +25,13 @@ const moduleFiles = (await readdir(new URL('../src/modules/', import.meta.url)))
 assert.deepEqual(moduleFiles, contract.modules.map(({ name }) => name).sort(), 'src/modules contains an uncontracted file or is missing a contracted module');
 
 for (const moduleContract of contract.modules) {
-  assert.deepEqual(Object.keys(moduleContract).sort(), expectedModuleKeys, `${moduleContract.name} contract shape drifted`);
+  // `variantRequires` and `optionDefaults` are optional: the first is only for
+  // modules whose variants depend on a capability (an <img>, text, 2+ children),
+  // the second only for options the demo markup does not spell out and whose
+  // resting value the settings drawer therefore has to be told.
+  const OPTIONAL_KEYS = new Set(['variantRequires', 'optionDefaults', 'variantOptions']);
+  const shape = Object.keys(moduleContract).filter((key) => !OPTIONAL_KEYS.has(key)).sort();
+  assert.deepEqual(shape, expectedModuleKeys, `${moduleContract.name} contract shape drifted`);
   assert.equal(moduleContract.attribute, `data-kt-${dash(moduleContract.name)}`, `${moduleContract.name} activation attribute does not match its public name`);
   assert.ok(moduleContract.variants.includes(moduleContract.defaultVariant), `${moduleContract.name} defaultVariant must be listed in variants`);
   assert.equal(new Set(moduleContract.publicOptions).size, moduleContract.publicOptions.length, `${moduleContract.name} publicOptions must be unique`);

@@ -26,6 +26,38 @@ export default {
       items().forEach((item) => { firstRects.set(item, item.getBoundingClientRect()); seen.add(item); });
     };
 
+    // `mode` picks how a moved item gets to its new slot:
+    //   'slide'     — the classic FLIP glide from the old rect (default)
+    //   'fade'      — fades out where it was, fades in already in place
+    //   'fade-slide'— glides AND cross-fades, softening long jumps
+    //   'scale'     — shrinks away and pops back at the new position
+    // Anything other than 'slide' means the eye doesn't have to track a moving
+    // tile across the layout, which reads calmer on big reorders.
+    const mode = ['slide', 'fade', 'fade-slide', 'scale'].includes(opts.mode) ? opts.mode : 'slide';
+    const enterFrames = () => (mode === 'fade'
+      ? [{ opacity: 0 }, { opacity: 1 }]
+      : [{ opacity: 0, transform: 'scale(.92)' }, { opacity: 1, transform: 'none' }]);
+    const moveFrames = (dx, dy, sx, sy) => {
+      const from = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+      if (mode === 'fade') {
+        return [
+          { opacity: 1, offset: 0 },
+          { opacity: 0, offset: 0.42 },
+          { opacity: 0, transform: 'none', offset: 0.42 },
+          { opacity: 1, transform: 'none', offset: 1 }
+        ];
+      }
+      if (mode === 'fade-slide') return [{ transform: from, opacity: 0.15 }, { transform: 'none', opacity: 1 }];
+      if (mode === 'scale') {
+        return [
+          { transform: `${from}`, opacity: 1, offset: 0 },
+          { transform: `${from} scale(.86)`, opacity: 0.2, offset: 0.45 },
+          { transform: 'none', opacity: 1, offset: 1 }
+        ];
+      }
+      return [{ transform: from }, { transform: 'none' }];
+    };
+
     const play = () => {
       if (reduce || duration === 0) { record(); return; }
       let i = 0;
@@ -34,7 +66,7 @@ export default {
         const last = item.getBoundingClientRect();
         if (!first || !seen.has(item)) {
           // Newly added item: soft enter.
-          item.animate([{ opacity: 0, transform: 'scale(.92)' }, { opacity: 1, transform: 'none' }],
+          item.animate(enterFrames(),
             { duration: duration * 1000, easing: ease, delay: i * stagger * 1000 });
           i += 1;
           return;
@@ -44,10 +76,8 @@ export default {
         const sx = last.width ? first.width / last.width : 1;
         const sy = last.height ? first.height / last.height : 1;
         if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sx - 1) < 0.01 && Math.abs(sy - 1) < 0.01) return;
-        item.animate(
-          [{ transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` }, { transform: 'none' }],
-          { duration: duration * 1000, easing: ease, delay: i * stagger * 1000 }
-        );
+        item.animate(moveFrames(dx, dy, sx, sy),
+          { duration: duration * 1000, easing: ease, delay: i * stagger * 1000 });
         i += 1;
       });
       record();

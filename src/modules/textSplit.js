@@ -11,7 +11,13 @@ const ANIMATIONS = {
   scale: { from: { scale: 0.4, opacity: 0 }, to: { scale: 1, opacity: 1 } },
   blur: { from: { opacity: 0, filter: 'blur(10px)', y: 12 }, to: { opacity: 1, filter: 'blur(0px)', y: 0 } },
   'slide-up': { from: { y: '0.9em', opacity: 0 }, to: { y: 0, opacity: 1 } },
-  'slide-down': { from: { y: '-0.9em', opacity: 0 }, to: { y: 0, opacity: 1 } }
+  'slide-down': { from: { y: '-0.9em', opacity: 0 }, to: { y: 0, opacity: 1 } },
+  // anime.js home-page style: characters drift in horizontally rather than
+  // rising, so a headline resolves left-to-right instead of bottom-up.
+  drift: { from: { x: '0.55em', opacity: 0 }, to: { x: 0, opacity: 1 } },
+  // Same drift with a horizontal squash that settles — the trailing characters
+  // read as still catching up when the leading ones have landed.
+  squeeze: { from: { x: '0.4em', opacity: 0, scaleX: 0.28 }, to: { x: 0, opacity: 1, scaleX: 1 } }
 };
 
 const SWAP_OUT = {
@@ -21,7 +27,9 @@ const SWAP_OUT = {
   blur: { opacity: 0, filter: 'blur(8px)' },
   scale: { scale: 0.6, opacity: 0 },
   flip: { rotateX: 90, opacity: 0 },
-  spin: { rotateY: 95, opacity: 0 }
+  spin: { rotateY: 95, opacity: 0 },
+  drift: { x: '-0.45em', opacity: 0 },
+  squeeze: { x: '-0.35em', opacity: 0, scaleX: 0.28 }
 };
 
 function buildUnits(el, text, by, wrap) {

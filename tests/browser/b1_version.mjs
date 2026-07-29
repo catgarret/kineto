@@ -17,7 +17,10 @@ const r=await page.evaluate(()=>({
   headerVersions: [...document.querySelectorAll('.site-header [data-kt-version]')].map(n=>n.textContent),
   allVersions: [...document.querySelectorAll('[data-kt-version]')].map(n=>n.textContent),
   moduleCount: document.querySelector('[data-kt-module-count]')?.textContent,
+  // The footer meta strip now labels the value in a <dt>, so the value cell
+  // holds just the build id.
   build: document.querySelector('[data-kt-build]')?.textContent,
+  buildLabel: document.querySelector('[data-kt-build]')?.closest('div')?.querySelector('dt')?.textContent,
   has34: /\b34\b/.test(document.body.innerText)
 }));
 let pass=0,fail=0; const ck=(n,c,d)=>{console.log(`  [${c?'PASS':'FAIL'}] ${n}${d?' — '+d:''}`);c?pass++:fail++;};
@@ -26,7 +29,7 @@ ck('runtime version == package', r.runtime===pkg, `${r.runtime} vs ${pkg}`);
 ck('all displayed versions == runtime', r.allVersions.every(v=>v===r.runtime), JSON.stringify(r.allVersions));
 ck('module count == 51', r.moduleCount==='51', r.moduleCount);
 ck('no stale "34" in body text', r.has34===false);
-ck('build id stamped', /build\s+\S+/.test(r.build||''), r.build);
+ck('build id stamped', /^\S+$/.test((r.build||'').trim()) && /build/i.test(r.buildLabel||''), `${r.buildLabel}=${r.build}`);
 await browser.close(); server.close();
 console.log(`\n===== B-1 RUNTIME: ${pass} passed, ${fail} failed =====`);
 process.exit(fail?1:0);

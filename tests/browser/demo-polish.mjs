@@ -45,7 +45,154 @@ try {
   });
   assert.ok(cover.font>=32,`Cover Reveal demo text must retain display scale (${cover.font}px)`);
   assert.ok(cover.textHeight<cover.stageHeight,'Cover Reveal demo text must fit within its stage');
+  assert.equal(
+    await page.locator('[data-page-effect="zoom"]').count(),
+    1,
+    'the compatibility-preserved Page Reveal zoom preset must remain discoverable in the demo'
+  );
+  const segmentedDemoTab=page.locator('#mod-tabs .demo-tabs .demo-tab',{hasText:'Segmented'});
+  await segmentedDemoTab.click();
+  await page.waitForTimeout(80);
+  const initialSegmentIndicator=await page.evaluate(()=>{
+    const panel=document.querySelector('#mod-tabs .demo-tabpanel:not([hidden])');
+    const indicator=panel.querySelector('.kt-tabs__indicator');
+    const rect=indicator.getBoundingClientRect();
+    return {
+      width:rect.width,
+      height:rect.height,
+      background:getComputedStyle(indicator).backgroundColor
+    };
+  });
+  assert.ok(initialSegmentIndicator.width>20&&initialSegmentIndicator.height>20,
+    `a tab revealed after hidden initialization must place its active pill: ${JSON.stringify(initialSegmentIndicator)}`);
+  assert.notEqual(initialSegmentIndicator.background,'rgba(0, 0, 0, 0)',
+    'the initial segmented-tab pill must have a visible background');
 
+  const megaTabs = await page.evaluate(() => {
+    const card = document.querySelector('#mod-megaMenu .card[data-demo-tabs]');
+    const panels = [...card.querySelectorAll('.demo-tabpanel')];
+    const tabs = [...card.querySelectorAll(':scope .demo-tabs > .demo-tab')];
+    const hosts = [...card.querySelectorAll(':scope > .demo-tabhosts > .kt-playground-host')];
+    return {
+      labels: tabs.map((tab) => tab.textContent.trim()),
+      targetCounts: panels.map((panel) => panel.querySelectorAll('[data-kt-mega-menu]').length),
+      overviewItems: panels[0]?.querySelectorAll(':scope > nav > ul > li > button').length || 0,
+      settingsHosts: hosts.length,
+      settingsTargets: hosts.map((host) => host.dataset.settingsFor)
+    };
+  });
+  assert.deepEqual(megaTabs.labels,['전체','드롭다운','메가메뉴'],'GNB examples must be grouped into overview/dropdown/mega tabs');
+  assert.deepEqual(megaTabs.targetCounts,[1,1,1],'each GNB tab must own one independently initialized menu');
+  assert.equal(megaTabs.overviewItems,3,'the read-only overview must compare dropdown, click, and mega triggers');
+  assert.equal(megaTabs.settingsHosts,2,'overview must stay read-only while both detail tabs own settings');
+  assert.deepEqual(megaTabs.settingsTargets,['megaMenu','megaMenu'],'each GNB detail tab must own a Mega Menu settings panel');
+
+  await page.setViewportSize({width:700,height:807});
+  const solutionTrigger=page.locator('#mod-megaMenu .demo-tabpanel:not([hidden]) .kt-menu-trigger',{hasText:'솔루션'});
+  await solutionTrigger.hover();
+  await page.waitForTimeout(260);
+  assert.equal(
+    await solutionTrigger.getAttribute('aria-expanded'),
+    'true',
+    'wrapped medium-width mega-menu trigger must open on its first hover'
+  );
+  const scrollVelocityGrid = await page.evaluate(() => {
+    const grid = document.querySelector('#mod-scrollVelocity .module-block-body.grid');
+    const cards = [...grid.querySelectorAll(':scope > .card')];
+    const rows = new Map();
+    cards.forEach((card) => {
+      const rect = card.getBoundingClientRect();
+      const top = Math.round(rect.top);
+      if (!rows.has(top)) rows.set(top, []);
+      rows.get(top).push({ width: rect.width, className: card.className });
+    });
+    const last = [...rows.entries()].sort(([a], [b]) => a - b).at(-1)?.[1] || [];
+    return {
+      gridWidth: grid.getBoundingClientRect().width,
+      rows: [...rows.values()],
+      last
+    };
+  });
+  assert.equal(scrollVelocityGrid.last.length, 1, 'Scroll Velocity should expose its one-card final row at 700px');
+  assert.ok(
+    scrollVelocityGrid.last[0].width >= scrollVelocityGrid.gridWidth - 2,
+    `Scroll Velocity final card must fill the 700px row: ${JSON.stringify(scrollVelocityGrid)}`
+  );
+
+  await page.setViewportSize({width:390,height:844});
+  await solutionTrigger.hover();
+  await page.waitForTimeout(260);
+  const mobileMega = await solutionTrigger.evaluate((trigger) => {
+    const menu = trigger.closest('[data-kt-mega-menu]');
+    const topList = menu.querySelector(':scope > ul');
+    const panel = trigger.closest('li').querySelector(':scope > .kt-menu-panel');
+    const rect = panel.getBoundingClientRect();
+    const columns = getComputedStyle(panel.firstElementChild).gridTemplateColumns.split(' ').length;
+    return {
+      responsiveClass: menu.classList.contains('kt-menu--responsive-scroll'),
+      topOverflowX: getComputedStyle(topList).overflowX,
+      topWrap: getComputedStyle(topList).flexWrap,
+      left: rect.left,
+      right: rect.right,
+      width: rect.width,
+      height: rect.height,
+      viewportWidth: innerWidth,
+      viewportHeight: innerHeight,
+      columns,
+      overflowY: getComputedStyle(panel).overflowY
+    };
+  });
+  assert.ok(mobileMega.left >= -1 && mobileMega.right <= mobileMega.viewportWidth + 1,
+    `mobile mega menu must remain inside the viewport: ${JSON.stringify(mobileMega)}`);
+  assert.ok(mobileMega.height <= mobileMega.viewportHeight * .6 + 1,
+    `mobile mega menu must cap its height: ${JSON.stringify(mobileMega)}`);
+  assert.equal(mobileMega.columns, 2, `mobile mega menu should use a compact two-column layout: ${JSON.stringify(mobileMega)}`);
+  assert.equal(mobileMega.overflowY, 'auto', 'mobile mega menu should scroll internally only when needed');
+  assert.equal(mobileMega.responsiveClass, true, 'the demo should opt into the library scroll mode');
+  assert.equal(mobileMega.topOverflowX, 'auto', 'mobile top-level menu items should be swipeable');
+  assert.equal(mobileMega.topWrap, 'nowrap', 'mobile top-level menu items should stay on one row');
+
+  const splitEffect=page.locator('.pt-fx-row [data-pt-preview="split"]');
+  await splitEffect.click();
+  await page.waitForTimeout(320);
+  const mobilePageEffects=await page.evaluate(()=>{
+    const row=document.querySelector('.pt-fx-row');
+    const active=row.querySelector('.is-active').getBoundingClientRect();
+    const bounds=row.getBoundingClientRect();
+    return {
+      clientWidth:row.clientWidth,
+      scrollWidth:row.scrollWidth,
+      scrollLeft:row.scrollLeft,
+      overflowX:getComputedStyle(row).overflowX,
+      wrap:getComputedStyle(row).flexWrap,
+      activeInside:active.left>=bounds.left-1&&active.right<=bounds.right+1
+    };
+  });
+  assert.ok(mobilePageEffects.scrollWidth>mobilePageEffects.clientWidth,
+    `mobile Page Transition effects should form a swipeable row: ${JSON.stringify(mobilePageEffects)}`);
+  assert.equal(mobilePageEffects.overflowX,'auto');
+  assert.equal(mobilePageEffects.wrap,'nowrap');
+  assert.ok(mobilePageEffects.scrollLeft>0&&mobilePageEffects.activeInside,
+    `selecting a hidden Page Transition effect should reveal it: ${JSON.stringify(mobilePageEffects)}`);
+
+  const mobileCompounds=await page.evaluate(()=>[...document.querySelectorAll(
+    '.module-block-body--dense [data-kt-terminal-style^="spinner-"], .module-block-body--dense [data-kt-terminal-style="quad-dots-label"]'
+  )].map((indicator)=>{
+    const content=indicator.getBoundingClientRect();
+    const stage=indicator.closest('.demo-stage').getBoundingClientRect();
+    const card=indicator.closest('.card').getBoundingClientRect();
+    const grid=indicator.closest('.module-block-body--dense').getBoundingClientRect();
+    return {
+      style:indicator.getAttribute('data-kt-terminal-style'),
+      inside:content.left>=stage.left-1&&content.right<=stage.right+1,
+      fullRow:card.width>=grid.width-2
+    };
+  }));
+  assert.ok(mobileCompounds.length>=5,'compound loading demos must remain present on mobile');
+  assert.ok(mobileCompounds.every((item)=>item.inside),`compound loading text must fit its mobile stage: ${JSON.stringify(mobileCompounds)}`);
+  assert.ok(mobileCompounds.every((item)=>item.fullRow),`compound loading cards must use the full mobile row: ${JSON.stringify(mobileCompounds)}`);
+
+  await page.setViewportSize({width:1437,height:807});
   const summary=page.locator('[data-settings-for="loadingIndicator"]').first().locator('.kt-playground > summary');
   await summary.click();
   await page.waitForTimeout(350);
@@ -72,7 +219,7 @@ try {
     return {before,after:sheet.getBoundingClientRect().height};
   });
   assert.ok(Math.abs(resize.after-(resize.before+40))<.1,'the visible grey grip must resize the drawer');
-  console.log('Demo polish browser QA OK',JSON.stringify({cover,drawerBefore,resize}));
+  console.log('Demo polish browser QA OK',JSON.stringify({cover,initialSegmentIndicator,megaTabs,mobileMega,mobilePageEffects,mobileCompounds,drawerBefore,resize}));
 } finally {
   await browser.close();
 }

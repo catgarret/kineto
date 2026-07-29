@@ -11,6 +11,7 @@ import { JSDOM } from 'jsdom';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRY = fs.readdirSync(path.join(root, 'src/modules')).filter((f) => f.endsWith('.js')).map((f) => f.replace('.js', ''));
+const GROUPED_MODULES = { radial: 'slider' };
 const html = fs.readFileSync(path.join(root, 'demo/index.html'), 'utf8').replace(/<script[\s\S]*?<\/script>/gi, '');
 
 // Count top-level demo units the way buildContent does, so we can prove none are
@@ -42,10 +43,13 @@ ok(sourceDocument.querySelectorAll('style').length === 0, 'demo contains inline 
 
 // 1. Module Index
 const items = [...d.querySelectorAll('#module-list .mod-index-item')];
-ok(items.length === REGISTRY.length, `module-index has ${items.length} items, expected ${REGISTRY.length}`);
+ok(items.length + Object.keys(GROUPED_MODULES).length === REGISTRY.length, `module-index/group count ${items.length} + ${Object.keys(GROUPED_MODULES).length}, expected ${REGISTRY.length}`);
 ok(items.every((i) => i.querySelector('.mii-sub')?.textContent.trim()), 'some module-index items have no description');
 const idxModules = items.map((i) => i.dataset.module);
 ok(new Set(idxModules).size === idxModules.length, 'duplicate module in index');
+for (const [moduleName, hostModule] of Object.entries(GROUPED_MODULES)) {
+  ok(idxModules.includes(hostModule), `module-index group host ${hostModule} is missing for ${moduleName}`);
+}
 
 // 2. Settings triggers below demos (pinned ones especially)
 const toDash = (n) => n.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase());
@@ -97,4 +101,4 @@ for (const m of ['horizontalScroll', 'stickyStack', 'scrollSequence']) {
 console.log('demo units:', unitsBefore, '-> ', unitsAfter.length, '| orphans:', w.__ktDemoOrphans, '| loose:', loose.length);
 console.log('module-index items:', items.length, '| settings hosts:', d.querySelectorAll('[data-settings-for]').length);
 if (fails.length) { console.error('\nFAILED:\n - ' + fails.join('\n - ')); process.exit(1); }
-console.log('demo-structure OK — index count == registry, every settings trigger is below its demo.');
+console.log('demo-structure OK — index groups cover registry, every settings trigger is below its demo.');

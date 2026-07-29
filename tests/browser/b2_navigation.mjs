@@ -5,6 +5,9 @@ import http from 'node:http'; import fs from 'node:fs'; import path from 'node:p
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const CHROME = process.env.KT_CHROME || undefined;
 const MODULE_COUNT = JSON.parse(fs.readFileSync(path.join(root, 'kineto.features.json'), 'utf8')).moduleCount;
+// Radial remains a public compatibility module, but its demo is intentionally
+// grouped into the Slider block instead of duplicating the same carousel UI.
+const DEMO_BLOCK_COUNT = MODULE_COUNT - 1;
 const MIME={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.gif':'image/gif','.woff2':'font/woff2'};
 const server=http.createServer((q,s)=>{let p=decodeURIComponent(q.url.split('?')[0]);let fp=path.join(root,p);if(fp.endsWith('/'))fp=path.join(fp,'index.html');fs.readFile(fp,(e,b)=>{if(e){s.writeHead(404);s.end();return;}s.writeHead(200,{'content-type':MIME[path.extname(fp)]||'application/octet-stream'});s.end(b);});});
 await new Promise(r=>server.listen(0,r)); const PORT=server.address().port;
@@ -12,7 +15,7 @@ const browser=await chromium.launch({headless:true,...(CHROME?{executablePath:CH
 const page=await browser.newPage({viewport:{width:1280,height:900}});
 page.on('pageerror',e=>console.log('PAGEERROR:',e.message));
 await page.goto(`http://localhost:${PORT}/demo/index.html`,{waitUntil:'load'});
-await page.waitForFunction((expected)=>window.Kineto&&document.querySelectorAll('main [data-module-block]').length>=expected,MODULE_COUNT,{timeout:15000});
+await page.waitForFunction((expected)=>window.Kineto&&document.querySelectorAll('main [data-module-block]').length>=expected,DEMO_BLOCK_COUNT,{timeout:15000});
 await page.waitForTimeout(800);
 let pass=0,fail=0; const ck=(n,c,d)=>{console.log(`  [${c?'PASS':'FAIL'}] ${n}${d?' — '+d:''}`);c?pass++:fail++;};
 const hash=()=>page.evaluate(()=>location.hash);

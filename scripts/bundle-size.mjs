@@ -19,15 +19,57 @@ const dist = path.join(root, 'dist');
 // GSAP/Lenis are no longer bundled (loaded on demand from the CDN), so these
 // ceilings reflect Kineto's own code only. A re-bundled engine (~125 KB) would
 // blow past them.
+//
+// ── Measured 2026-07-29: the monolith is close to its compression floor. Read
+// this before changing the build or loosening a ceiling. ─────────────────────
+//   * JS is genuinely minified (oxc/rolldown mangles identifiers). Adding
+//     `compress`, `mangle.topLevel` or `codegen.removeWhitespace` changed
+//     virtually nothing in the previous audit.
+//     `dropConsole` saved 0.4 KB raw / 0.2 KB gz across 8 call sites — not
+//     worth losing the error paths.
+//   * `kineto.min.css` being a byte copy of `kineto.css` is CORRECT, not a
+//     missing step: Vite already minifies it. Re-running lightningcss over the
+//     output changed raw by -0.1% and gz by 0.2%.
+//   * There is no duplicated helper code to hoist: 0 identical function bodies
+//     shared by 3+ modules.
+//   * Inlined CSS template literals total 3.1 KB (lightbox 2.1, core 1.0) — not
+//     a bulk contributor.
+//   * Summing the modules bundled INDIVIDUALLY gives roughly 406 KB against the
+//     365.1 KB monolith, i.e. only 41.0 KB of shared core. The bundle really is
+//     the sum of its parts.
+//
+// The one large win left is tree-shaking, not compression: `reveal` alone
+// bundles to 12.0 KB raw / 4.2 KB gz, so a single-module consumer currently
+// pays 25x. It is blocked by `src/index.js` line ~108, which registers every
+// module through a side-effectful `Object.entries(moduleEntries).forEach(...)`
+// loop that no bundler can shake. Fixing it means shipping per-module entry
+// points, which needs either `src/` published (+~780 KB unpacked) or 50 built
+// files (+~406 KB unpacked) — both blow the package-size budget, so it is a
+// packaging decision for the maintainer, not a silent build tweak.
+// 2026-07-29 (late): measured 471.7/123.0 (esm), 373.2/109.8 (min), 371.4/109.2 (umd)
+// after the coverflow active-shadow option and the CSS-first lazy wave/grain work.
+// Raised ~2 KB raw / ~1 KB gzip over the measurement, not to a round number.
 const BUDGETS = {
-  'kineto.js': { raw: 425, gz: 110 },
-  'kineto.min.js': { raw: 335, gz: 98 },
-  'kineto.umd.js': { raw: 335, gz: 98 },
-  'kineto.umd.min.js': { raw: 335, gz: 98 },
+  // The 2026-07-29 release adds CSS-first lazy wave/grain rendering and shared
+  // determinate progress outputs. Their measured ESM sizes are 470.2/122.4 KB
+  // (debug/gzip) and 371.8/109.2 KB (min/gzip), so these ceilings leave less
+  // than 2 KB raw and 1 KB gzip headroom.
+  'kineto.js': { raw: 474, gz: 124 },
+  'kineto.min.js': { raw: 375, gz: 111 },
+  'kineto.umd.js': { raw: 374, gz: 110 },
+  'kineto.umd.min.js': { raw: 374, gz: 110 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
-  'kineto.css': { raw: 34, gz: 7.2 },
-  'kineto.min.css': { raw: 34, gz: 7.2 }
+  // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.
+  // Raised for the Spinner/Progress indeterminate rewrite: the reference motion is
+  // reproduced by SAMPLING the measured edge trajectories (arc every 4%, bar every
+  // ~3.3%) instead of four hand-placed keyframes. 59 extra keyframes, +5.7 KB raw /
+  // +0.7 KB gzip. It buys what the coarse version could not do — continuous
+  // interpolation with no stall, no bounce at the loop seam, no backwards sweep.
+  // The rest of the CSS is at its floor (measured 2026-07-29: re-minifying the
+  // Vite output with lightningcss moves raw by -0.1%).
+  'kineto.css': { raw: 43, gz: 9 },
+  'kineto.min.css': { raw: 43, gz: 9 }
 };
 
 const kb = (n) => n / 1024;

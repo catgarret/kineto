@@ -9,7 +9,7 @@
 
 [English](../README.md) · 한국어 · [日本語](README.jp.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [Italiano](README.it.md)
 
-[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](../LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
+<p><a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="../LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
 [라이브 데모](https://git.dongri.me/example/kineto) · [모듈 레퍼런스](../docs/module-reference.md) · [AI 프롬프트 가이드](../AI-PROMPT-GUIDE.md) · [기능 계약](../FEATURE_CONTRACT.md)
 
@@ -170,7 +170,8 @@ Kineto.disableSmooth();
 | `ripple` | `data-kt-ripple` | 클릭 리플 |
 | `scrollSequence` | `data-kt-scroll-sequence` | 이미지 시퀀스 스크럽 |
 | `scrollVelocity` | `data-kt-scroll-velocity` | 스크롤 속도·방향 반응 |
-| `slider` | `data-kt-slider` | 슬라이드·커버플로우·디졸브 |
+| `slider` | `data-kt-slider` | 슬라이드·커버플로우·스택·원형 캐러셀 |
+| `radial` | `data-kt-radial` | 기존 원형 캐러셀 호환 진입점 |
 | `stickyStack` | `data-kt-sticky-stack` | 세로·가로·플로팅 스티키 스택 |
 | `textFill` | `data-kt-text-fill` | 스크롤 텍스트 채우기 |
 | `textReveal` | `data-kt-text-reveal` | 셔플·디코드·한글 조합 리빌 |
@@ -186,7 +187,6 @@ Kineto.disableSmooth();
 | `toast` | `data-kt-toast` | 상태 토스트 알림 |
 | `bottomSheet` | `data-kt-bottom-sheet` | 포커스 고정을 지원하는 바텀 시트 |
 | `tabs` | `data-kt-tabs` | WAI-ARIA 탭·세그먼트 컨트롤 |
-| `radial` | `data-kt-radial` | 원형 캐러셀 |
 | `coverReveal` | `data-kt-cover-reveal` | 색상 커버 리빌 |
 | `gesture` | `data-kt-gesture` | 호버·누름 스프링 피드백 |
 | `drag` | `data-kt-drag` | 관성·경계·스냅백 드래그 |

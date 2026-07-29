@@ -1,4 +1,5 @@
 import { clamp, observeOnce } from '../utils.js';
+import { fn as easingFunction } from '../easings.js';
 
 const ANIMATED_EXTENSIONS = /\.(?:gif|apng|webp)(?:$|[?#])/i;
 
@@ -129,20 +130,26 @@ function createNoiseCanvas(wrapper, opts, zIndex = 4) {
   const canvas = document.createElement('canvas');
   canvas.className = 'kt-lazy-noise';
   canvas.setAttribute('aria-hidden', 'true');
-  canvas.width = Math.max(32, Number(opts.noiseWidth ?? 128));
-  canvas.height = Math.max(18, Number(opts.noiseHeight ?? 72));
-  canvas.style.cssText = `position:absolute;inset:0;width:100%;height:100%;z-index:${zIndex};pointer-events:none;mix-blend-mode:${opts.noiseBlend || 'soft-light'};opacity:0;border-radius:inherit;`;
+  // The canvas is stretched to 100% of the wrapper, so its PIXEL size is the grain
+  // size: 128x72 meant every noise pixel landed as a chunky block. 320x180 keeps
+  // the 16:9 ratio and makes the grain ~2.5x finer, which reads as film grain
+  // rather than a mosaic. Still overridable through noiseWidth / noiseHeight.
+  canvas.width = Math.max(32, Number(opts.noiseWidth ?? 320));
+  canvas.height = Math.max(18, Number(opts.noiseHeight ?? 180));
+  canvas.style.cssText = `position:absolute;inset:0;width:100%;height:100%;z-index:${zIndex};pointer-events:none;mix-blend-mode:${opts.noiseBlend || 'overlay'};opacity:0;border-radius:inherit;`;
   wrapper.appendChild(canvas);
   const context = canvas.getContext('2d', { alpha: true });
   let last = 0;
   let frames = 0;
-  const fps = clamp(Number(opts.noiseFps ?? 24), 4, 60);
+  const fps = clamp(Number(opts.noiseFps ?? 30), 4, 60);
   const interval = 1000 / fps;
   const draw = (time = performance.now()) => {
     if (!context || time - last < interval) return;
     last = time;
     const frame = context.createImageData(canvas.width, canvas.height);
-    const contrast = clamp(Number(opts.noiseContrast ?? 1), 0.1, 3);
+    // 0.72, not 1: at full contrast the grain went to pure black/white and looked
+    // harsh over the image. Lower amplitude keeps the texture but softens it.
+    const contrast = clamp(Number(opts.noiseContrast ?? 0.95), 0.1, 3);
     for (let index = 0; index < frame.data.length; index += 4) {
       const random = (Math.random() - 0.5) * 255 * contrast + 128;
       const value = clamp(Math.round(random), 0, 255);
@@ -349,8 +356,7 @@ export default {
         const icon = document.createElement('span');
         icon.className = 'kt-lazy-skeleton-icon';
         icon.setAttribute('aria-hidden', 'true');
-        icon.style.cssText = 'position:absolute;left:50%;top:50%;width:15%;max-width:64px;min-width:28px;aspect-ratio:1;transform:translate(-50%,-50%);opacity:.32;';
-        icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:100%;height:100%"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.8" cy="8.8" r="1.9"/><path d="m21 15.2-3.6-3.6a1.8 1.8 0 0 0-2.6 0L6 21"/></svg>';
+        icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.8" cy="8.8" r="1.9"/><path d="m21 15.2-3.6-3.6a1.8 1.8 0 0 0-2.6 0L6 21"/></svg>';
         layer.appendChild(icon);
       }
       layers.push(layer);
@@ -493,6 +499,177 @@ export default {
           layers.push(roll);
         }
         later(() => { el.style.animation = ''; el.style.willChange = ''; finish(); }, duration * 1000 + 160);
+        return;
+      }
+
+      // ── Data Mosaic / RGB Slice Burst, shared with Page Reveal and Glitch ────
+      // Both are tile/slice compositions over the loaded image rather than a
+      // filter on it, so they live here as their own branches instead of being
+      // squeezed into the blur/fade path.
+      if (effect === 'data-mosaic' || effect === 'rgb-slice-burst') {
+        const duration = Math.max(0.1, Number(opts.duration ?? 1.1));
+        el.src = src;
+        el.style.opacity = '1';
+        const layer = createLayer(wrapper, `kt-lazy-${effect}-layer`, 3);
+        layer.style.cssText += ';overflow:hidden';
+        const box = wrapper.getBoundingClientRect();
+        const width = box.width || el.naturalWidth || 300;
+        const height = box.height || el.naturalHeight || 200;
+        let seedState = (Math.floor(Number(opts.seed ?? 20260729)) || 1) >>> 0;
+        const rnd = () => {
+          seedState = (seedState + 0x6D2B79F5) >>> 0;
+          let t = seedState;
+          t = Math.imul(t ^ (t >>> 15), t | 1);
+          t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+        const between = (min, max) => min + rnd() * (max - min);
+        if (effect === 'data-mosaic') {
+          // A cover of tiles over the image that clears biggest-last, so the
+          // photo assembles out of noise instead of fading in.
+          const tileMax = Math.max(8, Number(opts.tileMax ?? 44));
+          const tileMin = Math.max(3, Number(opts.tileMin ?? 8));
+          const cover = String(opts.skeletonColor || '#0a0908');
+          const cols = Math.ceil(width / tileMax);
+          const rows = Math.ceil(height / tileMax);
+          const maxSplit = Math.max(1, Math.min(5, Math.round(tileMax / tileMin)));
+          const nodes = [];
+          for (let row = 0; row < rows; row += 1) {
+            for (let col = 0; col < cols; col += 1) {
+              const split = rnd() < 0.55 ? maxSplit : rnd() < 0.75 ? 2 : 1;
+              const size = tileMax / split;
+              for (let sy = 0; sy < split; sy += 1) {
+                for (let sx = 0; sx < split; sx += 1) {
+                  const tile = document.createElement('span');
+                  tile.style.cssText = `position:absolute;left:${col * tileMax + sx * size}px;top:${row * tileMax + sy * size}px;`
+                    + `width:${Math.ceil(size)}px;height:${Math.ceil(size)}px;background:${cover}`;
+                  layer.appendChild(tile);
+                  nodes.push({ tile, weight: rnd() * 0.72 + (size / tileMax) * 0.28 });
+                }
+              }
+            }
+          }
+          nodes.sort((a, b) => a.weight - b.weight);
+          nodes.forEach((entry, index) => {
+            const t = index / Math.max(1, nodes.length - 1);
+            later(() => {
+              entry.tile.style.transition = 'opacity 90ms linear';
+              entry.tile.style.opacity = '0';
+            }, t * duration * 1000);
+          });
+          later(() => { layer.remove(); finish(); }, duration * 1000 + 200);
+        } else {
+          // One burst as the image lands: channel split + a few shoved slices,
+          // then a clean frame. Deliberately a single burst, not a loop.
+          const palette = (Array.isArray(opts.colors) && opts.colors.length)
+            ? opts.colors : ['#ff2e2e', '#00e07a', '#2b6bff'];
+          const slices = Math.round(between(3, 7));
+          for (let index = 0; index < slices; index += 1) {
+            const bandHeight = between(height * 0.03, height * 0.18);
+            const band = document.createElement('span');
+            band.style.cssText = `position:absolute;left:0;right:0;top:${between(0, Math.max(0, height - bandHeight))}px;`
+              + `height:${bandHeight}px;background:${palette[Math.floor(rnd() * palette.length)]};`
+              + `mix-blend-mode:screen;opacity:${between(0.4, 0.85)};transform:translateX(${between(-26, 26)}px)`;
+            layer.appendChild(band);
+          }
+          later(() => {
+            layer.style.transition = 'opacity 120ms linear';
+            layer.style.opacity = '0';
+          }, Math.max(60, duration * 220));
+          later(() => { layer.remove(); finish(); }, duration * 1000 + 200);
+        }
+        return;
+      }
+
+      if (effect === 'wave' || effect === 'grain') {
+        el.src = src;
+        el.style.opacity = '1';
+        const duration = Math.max(120, durationMs(opts.duration, effect === 'wave' ? 1.35 : 1.1));
+        const delayMs = Math.max(0, Number(opts.delay ?? 60));
+        const maxDpr = clamp(Number(opts.maxDpr ?? 1.5), 0.5, 2);
+        const fps = clamp(Number(opts.renderFps ?? (effect === 'wave' ? 30 : 24)), 4, 60);
+        const interval = 1000 / fps;
+        const ease = easingFunction(opts.ease || 'cubic-out');
+        const grainOpacity = clamp(Number(opts.grain ?? opts.noise ?? (effect === 'wave' ? 0.13 : 0.3)), 0, 1);
+        const layer = createLayer(wrapper, `kt-lazy-${effect}-layer`, 3);
+        const canvas = document.createElement('canvas');
+        canvas.className = `kt-lazy-${effect}-canvas`;
+        layer.appendChild(canvas);
+        layers.push(layer);
+        const context = canvas.getContext('2d', { alpha: true, desynchronized: true });
+        noise = createNoiseCanvas(wrapper, opts, 4);
+        noise.canvas.classList.add('kt-lazy-grain-canvas');
+        let startTime = null;
+        let pausedAt = null;
+        let lastDraw = -Infinity;
+        let cssWidth = 0;
+        let cssHeight = 0;
+        let dpr = 1;
+
+        const sync = () => {
+          const box = wrapper.getBoundingClientRect();
+          cssWidth = Math.max(1, box.width);
+          cssHeight = Math.max(1, box.height);
+          dpr = clamp(window.devicePixelRatio || 1, 1, maxDpr);
+          const width = Math.max(1, Math.round(cssWidth * dpr));
+          const height = Math.max(1, Math.round(cssHeight * dpr));
+          if (canvas.width !== width || canvas.height !== height) {
+            canvas.width = width;
+            canvas.height = height;
+          }
+          context.setTransform(dpr, 0, 0, dpr, 0, 0);
+        };
+        const draw = (progress, time) => {
+          const drawable = el.complete && el.naturalWidth ? el : image;
+          if (!drawable.naturalWidth) return;
+          const map = coverMap(drawable.naturalWidth, drawable.naturalHeight, cssWidth, cssHeight);
+          context.clearRect(0, 0, cssWidth, cssHeight);
+          if (effect === 'grain') {
+            context.drawImage(drawable, map.sx, map.sy, map.sw, map.sh, 0, 0, cssWidth, cssHeight);
+          } else {
+            const amplitude = Math.max(0, Number(opts.waveAmplitude ?? 22)) * (1 - progress);
+            const frequency = Math.max(0.001, Number(opts.waveFrequency ?? 0.035));
+            const speed = Number(opts.waveSpeed ?? 0.012);
+            const sliceHeight = Math.max(1, Math.round(Number(opts.waveSliceHeight ?? 2)));
+            for (let y = 0; y < cssHeight; y += sliceHeight) {
+              const sourceY = map.sy + (y / cssHeight) * map.sh;
+              const sourceH = Math.max(1, (sliceHeight / cssHeight) * map.sh);
+              const offset = Math.sin(y * frequency + time * speed) * amplitude;
+              context.drawImage(
+                drawable,
+                map.sx, sourceY, map.sw, sourceH,
+                offset, y, cssWidth, sliceHeight
+              );
+            }
+          }
+        };
+        const frame = (time) => {
+          if (destroyed) return;
+          if (paused) {
+            if (pausedAt == null) pausedAt = time;
+            rafId = requestAnimationFrame(frame);
+            return;
+          }
+          if (pausedAt != null && startTime != null) {
+            startTime += time - pausedAt;
+            pausedAt = null;
+          }
+          if (startTime == null) startTime = time;
+          const raw = clamp((time - startTime) / duration, 0, 1);
+          const progress = clamp(ease(raw), 0, 1);
+          if (time - lastDraw >= interval || raw >= 1) {
+            sync();
+            draw(progress, time);
+            noise.draw(time);
+            noise.canvas.style.opacity = String(grainOpacity * Math.pow(1 - progress, 1.15));
+            layer.style.opacity = String(Math.max(0, 1 - progress));
+            opts.onProgress?.(raw, el);
+            lastDraw = time;
+          }
+          if (raw < 1) rafId = requestAnimationFrame(frame);
+          else finish();
+        };
+        later(() => { rafId = requestAnimationFrame(frame); }, delayMs);
         return;
       }
 
@@ -709,7 +886,7 @@ export default {
         const duration = Math.max(50, durationMs(opts.duration, effect === 'print' ? 2.2 : 1.55));
         const delay = Math.max(0, Number(opts.delay ?? 100));
         const blur = Math.max(0, Number(opts.blur ?? (effect === 'print' ? 16 : 16)));
-        const noiseOpacity = clamp(Number(opts.noise ?? (effect === 'print' ? 0.3 : 0.48)), 0, 1);
+        const noiseOpacity = clamp(Number(opts.noise ?? (effect === 'print' ? 0.3 : 0.68)), 0, 1);
         const direction = opts.direction || 'down';
         const feather = Number(opts.feather ?? (effect === 'print' ? 12 : 8));
         let startTime = null;
@@ -738,7 +915,7 @@ export default {
             sharp.style.webkitMaskImage = sharp.style.maskImage;
             noise.canvas.style.maskImage = maskFor(direction, scan, feather, true);
             noise.canvas.style.webkitMaskImage = noise.canvas.style.maskImage;
-            noise.canvas.style.opacity = String(noiseOpacity * (1 - raw * 0.5));
+            noise.canvas.style.opacity = String(noiseOpacity * (1 - Math.pow(raw, 1.6) * 0.85));
             const to = direction === 'up' ? 'to top' : direction === 'left' ? 'to left' : direction === 'right' ? 'to right' : 'to bottom';
             const p = clamp(scan * 100, 0, 100);
             const band = clamp(Number(opts.edgeWidth ?? 9), 2, 30);

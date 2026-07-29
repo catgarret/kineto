@@ -6,14 +6,14 @@
 
 | 값 | 표시 |
 |---|---|
-| `spinner` | `ring`, `comet`, `dual`, `spokes`, `orbit` |
+| `spinner` | `ring`, `comet`, `spokes`; `comet`은 `spin`, `grow`, `fill` 지원 |
 | `dots` | `pulse`, `bounce`, `wave` |
 | `bar` | 진행률 또는 왕복 바 |
 | `shimmer` | 텍스트 후광 |
 | `shimmer-wave` | 글자별 후광과 높낮이 |
 | `terminal` | `cursor`, `dots`, `blocks`, `meter`, ASCII·Braille·Unicode 프레임 스피너 |
 
-터미널 모드는 문구를 포함하지 않습니다. 필요한 라벨은 일반 HTML로 따로 작성합니다. 기본 프레임 프리셋은 `ascii`, `pulse`, `quadrant`, `braille`, `braille-dot`, `braille-bounce`, `arrow`, `line`, `circle`, `corners`, `squares`, `boxes`입니다.
+터미널 모드는 문구를 포함하지 않습니다. 필요한 라벨은 일반 HTML로 따로 작성합니다. 설정창의 프리셋 목록에서 지원되는 프레임만 제공하며, 선택한 프리셋이 사용하지 않는 옵션은 숨깁니다.
 
 ```html
 <span class="loading-line">
@@ -44,6 +44,10 @@ Kineto.loadingIndicator('.custom-terminal-spinner', {
 
 `frames`에 문자열 배열을 넘기면 내장 프리셋 대신 사용자 프레임을 순환합니다. `frameInterval`은 프레임 사이의 밀리초 간격이며 최소 40ms로 제한됩니다. 기본 후광은 꺼져 있고 `glow: true`일 때만 적용됩니다.
 
+`scanner`는 진행률이 없으면 계속 움직입니다. `progress` 또는
+`setProgress()`로 값을 전달하면 해당 위치에서 멈추는 실제 진행률
+표시로 전환됩니다.
+
 회전·이동·스케일 기반 표시에는 `transformOrigin`을 지정할 수 있습니다. CSS의 `transform-origin` 문법을 그대로 사용합니다.
 
 ```html
@@ -69,7 +73,24 @@ indicator.complete();
 await indicator.finished;
 ```
 
-`start()`/`show()`, `hide()`, `stop()`/`complete()`, `pause()`, `resume()`, `setProgress()`, `trackPromise()`, `destroy()`를 제공합니다. 상태는 `kt-loading-indicator-start`, `progress`, `statechange`, `show`, `hide`, `complete`, `error` 이벤트로도 전달됩니다.
+표시 문구도 같은 값으로 갱신하려면 범위를 묶고 출력 템플릿을
+지정합니다.
+
+```html
+<span data-kt-progress-scope>
+  <span data-kt-loading-indicator="spinner"
+        data-kt-spinner-mode="fill"
+        data-kt-progress="64"
+        data-kt-auto-complete="false"></span>
+  <output data-kt-progress-output
+          data-kt-progress-template="{value}% 완료">64% 완료</output>
+</span>
+```
+
+`start()`/`show()`, `hide()`, `stop()`/`complete()`, `pause()`, `resume()`,
+`setProgress()`, `bindProgress()`, `trackPromise()`, `destroy()`를 제공합니다.
+상태는 `kt-loading-indicator-start`, `progress`, `statechange`, `show`,
+`hide`, `complete`, `error` 이벤트로도 전달됩니다.
 
 ```js
 const indicator = Kineto.loadingIndicator('.request', {
@@ -78,6 +99,22 @@ const indicator = Kineto.loadingIndicator('.request', {
 
 await indicator.trackPromise(fetch('/api/data'));
 ```
+
+Loader나 다른 Loading Indicator의 실제 진행률을 공유할 수도 있습니다.
+
+```js
+const pageLoader = Kineto.loader('#page-loader', { source: 'resources' });
+const compact = Kineto.loadingIndicator('#header-progress', {
+  type: 'bar',
+  indeterminate: false
+});
+
+compact.bindProgress(pageLoader);
+```
+
+선언형 사용은 `data-kt-progress-source="#page-loader"`를 지정합니다.
+연결은 기존 진행률 DOM 이벤트만 구독하므로 두 모듈 사이에 순환
+의존성을 만들지 않습니다.
 
 ## CSS와 사용자 UI
 

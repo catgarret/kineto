@@ -266,7 +266,7 @@ const mobile = await page.evaluate(() => {
 });
 check('mobile page has no horizontal document overflow', mobile.documentWidth <= mobile.viewport + 1, `${mobile.documentWidth}/${mobile.viewport}`);
 check('mobile header controls stay inside and do not overlap', mobile.brandInside && mobile.actionsInside && !mobile.headerOverlap, JSON.stringify(mobile));
-check('mobile search and module chips stay readable', mobile.searchInside && mobile.chipCount === 51 && mobile.chipsReadable, JSON.stringify(mobile));
+check('mobile search and module chips stay readable', mobile.searchInside && mobile.chipCount === 50 && mobile.chipsReadable, JSON.stringify(mobile));
 check('mobile scroll-to-top ring clears module search', mobile.ringVisible && !mobile.ringSearchOverlap && Math.abs(mobile.ringBottom - 112) <= 3, JSON.stringify(mobile));
 
 await page.locator('#sitemap-btn').click();
@@ -284,7 +284,7 @@ const sitemap = await page.evaluate(() => {
     rawIds: [...grid?.querySelectorAll('.sm-txt b,.sm-txt small') || []].some((node) => /\bmod-[\w-]+/.test(node.textContent))
   };
 });
-check('mobile sitemap is a one-column, in-viewport list of all modules', sitemap.open && sitemap.inside && sitemap.columns === 1 && sitemap.links === 51 && !sitemap.rawIds, JSON.stringify(sitemap));
+check('mobile sitemap is a one-column, in-viewport list of all modules', sitemap.open && sitemap.inside && sitemap.columns === 1 && sitemap.links === 50 && !sitemap.rawIds, JSON.stringify(sitemap));
 await page.locator('.sitemap-close').click();
 
 await browser.close();

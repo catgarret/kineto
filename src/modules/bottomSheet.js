@@ -111,7 +111,44 @@ export default {
     const resizable = opts.resizable === true;
     const resizeArea = opts.resizeArea === 'header' ? 'header' : 'handle';
     const minHeight = Math.max(120, Number(opts.minHeight ?? 140));
-    const resetSize = () => { el.style.height = ''; el.style.maxHeight = ''; };
+    // `maxHeight` accepts a number (px), "60vh" or "60%". It caps both the drag
+    // resize and the auto-height mode; the default ceiling is half the viewport.
+    const resolveMaxHeight = () => {
+      const raw = opts.maxHeight;
+      const viewport = (typeof window !== 'undefined' ? window.innerHeight : 800);
+      if (raw == null || raw === '') return viewport * 0.5;
+      const text = String(raw).trim();
+      if (/vh$/i.test(text) || /%$/.test(text)) {
+        const ratio = parseFloat(text);
+        return Number.isFinite(ratio) ? viewport * (ratio / 100) : viewport * 0.5;
+      }
+      const px = parseFloat(text);
+      return Number.isFinite(px) && px > 0 ? px : viewport * 0.5;
+    };
+    // autoHeight: the sheet hugs its own content instead of a fixed CSS height,
+    // growing only until the maxHeight ceiling and then scrolling inside.
+    const autoHeight = opts.autoHeight === true;
+    const applyAutoHeight = () => {
+      if (!autoHeight) return;
+      el.style.height = 'auto';
+      el.style.maxHeight = `${Math.round(resolveMaxHeight())}px`;
+      el.style.overflowY = 'auto';
+    };
+    // `maxHeight` is a ceiling for the sheet in every mode, not just autoHeight
+    // and drag-resize: setting it alone used to do nothing at all.
+    const applyCeiling = () => {
+      if (autoHeight) { applyAutoHeight(); return; }
+      if (opts.maxHeight == null || opts.maxHeight === '') return;
+      el.style.maxHeight = `${Math.round(resolveMaxHeight())}px`;
+      el.style.overflowY = 'auto';
+    };
+    let autoHeightResize = null;
+    if (typeof window !== 'undefined') {
+      applyCeiling();
+      autoHeightResize = () => applyCeiling();
+      window.addEventListener('resize', autoHeightResize);
+    }
+    const resetSize = () => { el.style.height = ''; el.style.maxHeight = ''; if (autoHeight) applyAutoHeight(); };
     const dragBindings = [];
     if (handle && resizable) {
       handle.style.cursor = 'ns-resize'; handle.style.touchAction = 'none'; el.classList.add('kt-sheet--resizable');
@@ -133,22 +170,41 @@ export default {
         dragSurface.style.cursor = 'ns-resize';
         dragSurface.style.touchAction = 'none';
       }
+      let startX = 0; let armed = false;
       const down = (e) => {
         if (e.pointerType === 'mouse' && e.button !== 0) return;
         if (e.target.closest?.(interactive)) return;
-        dragging = true; moved = false; startY = e.clientY; startH = el.getBoundingClientRect().height;
-        el.style.transition = 'none';
-        el.classList.add('kt-sheet--dragging');
-        dragSurface.setPointerCapture?.(e.pointerId);
+        // Capture and preventDefault are deliberately deferred: taking the
+        // pointer on mousedown blocks text selection in the header. The gesture
+        // only becomes a drag once it is clearly vertical.
+        dragging = true; moved = false;
+        // The handle is a dedicated resize grip: arm at once. A header, which
+        // holds selectable text, stays ambiguous until the drag is vertical.
+        armed = dragSurface === handle;
+        if (armed) {
+          el.style.transition = 'none';
+          el.classList.add('kt-sheet--dragging');
+          try { dragSurface.setPointerCapture?.(e.pointerId); } catch (_err) { /* synthetic */ }
+        }
+        startY = e.clientY; startX = e.clientX;
+        startH = el.getBoundingClientRect().height;
       };
       const move = (e) => {
         if (!dragging) return;
         const dy = e.clientY - startY;
+        if (!armed) {
+          const sideways = Math.abs(e.clientX - startX);
+          if (Math.abs(dy) < 7 || Math.abs(dy) < sideways) return;
+          armed = true;
+          el.style.transition = 'none';
+          el.classList.add('kt-sheet--dragging');
+          try { dragSurface.setPointerCapture?.(e.pointerId); } catch (_err) { /* synthetic */ }
+          el.ownerDocument?.defaultView?.getSelection?.()?.removeAllRanges?.();
+        }
         if (Math.abs(dy) > 3) moved = true;
         if (resizable) {
           const viewportMax = Math.round((typeof window !== 'undefined' ? window.innerHeight : 800) * 0.95);
-          const configuredMax = Number(opts.maxHeight);
-          const maxHeight = Number.isFinite(configuredMax) && configuredMax > 0 ? Math.min(viewportMax, configuredMax) : viewportMax;
+          const maxHeight = Math.min(viewportMax, resolveMaxHeight());
           const h = Math.min(maxHeight, Math.max(minHeight, Math.round(startH - dy)));
           el.style.height = `${h}px`; el.style.maxHeight = `${maxHeight}px`;
           opts.onResize?.(h, el);
@@ -203,6 +259,8 @@ export default {
         });
         if (backdrop) backdrop.remove();
         if (handle) handle.remove();
+        if (autoHeightResize) window.removeEventListener('resize', autoHeightResize);
+        el.style.removeProperty('overflow-y');
         el.classList.remove('kt-sheet', 'kt-open', 'kt-sheet--resizable', 'kt-sheet--resize-handle', 'kt-sheet--resize-header', 'kt-sheet--dragging');
         delete el.dataset.ktSheetResizeArea;
         el.removeAttribute('role'); el.removeAttribute('aria-modal'); el.hidden = false;

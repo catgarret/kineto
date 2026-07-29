@@ -5,6 +5,7 @@ const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
 const requirements = JSON.parse(await read('../kineto.requirements.json'));
 const features = JSON.parse(await read('../kineto.features.json'));
 const packageJson = JSON.parse(await read('../package.json'));
+const aiPromptGuide = await read('../AI-PROMPT-GUIDE.md');
 const demo = (await read('../demo/index.html')) + (await read('../demo/main.js')) + (await read('../demo/styles.css'));
 const playground = await read('../demo/playground.js');
 const playgroundI18n = await read('../demo/playground-i18n.js');
@@ -16,10 +17,26 @@ assert.equal(requirements.libraryVersion, packageJson.version);
 assert.equal(requirements.requirements.length, 48, 'all 48 owner requirements must remain locked');
 assert.equal(new Set(requirements.requirements.map(({ id }) => id)).size, 48, 'requirement IDs must be unique');
 assert.equal(features.moduleCount, 51);
+assert.ok(
+  aiPromptGuide.indexOf('Canonical prompt for AI tools (English)')
+    < aiPromptGuide.indexOf('## 한국어 사용 안내'),
+  'AI prompt guide must keep the canonical English prompt before Korean guidance'
+);
+for (const marker of [
+  'kineto.features.json',
+  'data-kt-loading-indicator',
+  'bindProgress(source)',
+  'data-kt-lazy="wave"',
+  'data-kt-lazy="grain"',
+  'Other languages'
+]) {
+  assert.match(aiPromptGuide, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
+}
 const module = (name) => features.modules.find((entry) => entry.name === name);
 
 assert.deepEqual(module('counter').variants, ['slot','plain','digit','pop','flip','clock']);
-assert.deepEqual(module('lazy').variants, ['fade','blur-up','skeleton','pixelate','print','dissolve','flicker','polaroid']);
+// data-mosaic / rgb-slice-burst are shared with Page Reveal and Glitch.
+assert.deepEqual(module('lazy').variants, ['fade','blur-up','wave','grain','skeleton','pixelate','print','dissolve','flicker','polaroid','crt','data-mosaic','rgb-slice-burst']);
 assert.ok(module('overflowText').variants.includes('rolling'));
 assert.ok(module('reveal').variants.includes('slide-down') && module('reveal').variants.includes('class'));
 assert.ok(module('cursor').variants.includes('custom'));

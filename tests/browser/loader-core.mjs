@@ -111,18 +111,19 @@ const check = (n, c, d) => { console.log(`  [${c ? 'PASS' : 'FAIL'}] ${n}${d ? '
       ['bar', {}, '.kt-loader-bar-progress']
     ];
     const indicatorVariants = [
-      ['spinner', { spinnerStyle: 'comet' }, '.kt-loading-spinner--comet'],
-      ['spinner', { spinnerStyle: 'dual' }, '.kt-loading-spinner--dual'],
-      ['spinner', { spinnerStyle: 'spokes', dotCount: 12 }, '.kt-loading-spinner--spokes .kt-loading-spinner__spoke'],
-      ['spinner', { spinnerStyle: 'orbit' }, '.kt-loading-spinner--orbit'],
-      ['dots', { dotStyle: 'wave', dotCount: 5 }, '.kt-loading-dots--wave .kt-loading-dot'],
-      ['bar', { indeterminate: true }, '.kt-loading--bar.is-indeterminate'],
-      ['shimmer', { text: 'Loading' }, '.kt-loading-shimmer__text'],
-      ['shimmer-wave', { text: 'Loading' }, '.kt-loading-shimmer-wave__char'],
-      ['terminal', { terminalStyle: 'cursor' }, '.kt-loading-terminal__cursor'],
-      ['terminal', { terminalStyle: 'dots' }, '.kt-loading-terminal__dot'],
-      ['terminal', { terminalStyle: 'blocks' }, '.kt-loading-terminal__block'],
-      ['terminal', { terminalStyle: 'meter', progress: 40 }, '.kt-loading-terminal__meter']
+      ['spinner', { spinnerStyle: 'comet' }, '.kt-loading-spinner--comet', false],
+      // dual/orbit were folded into comet — same arc engine, driven by options.
+      ['spinner', { spinnerStyle: 'comet', spinnerMode: 'grow', track: true }, '.kt-loading-spinner--mode-grow .kt-loading-spinner__track', false],
+      ['spinner', { spinnerStyle: 'spokes', dotCount: 12 }, '.kt-loading-spinner--spokes .kt-loading-spinner__spoke', false],
+      ['spinner', { spinnerStyle: 'comet', spinnerMode: 'fill', progress: 40 }, '.kt-loading-spinner--mode-fill .kt-loading-spinner__arc', true],
+      ['dots', { dotStyle: 'wave', dotCount: 5 }, '.kt-loading-dots--wave .kt-loading-dot', false],
+      ['bar', { indeterminate: true }, '.kt-loading--bar.is-indeterminate', false],
+      ['shimmer', { text: 'Loading' }, '.kt-loading-shimmer__text', false],
+      ['shimmer-wave', { text: 'Loading' }, '.kt-loading-shimmer-wave__char', false],
+      ['terminal', { terminalStyle: 'cursor' }, '.kt-loading-terminal__cursor', false],
+      ['terminal', { terminalStyle: 'dots' }, '.kt-loading-terminal__dot', false],
+      ['terminal', { terminalStyle: 'blocks' }, '.kt-loading-terminal__block', false],
+      ['terminal', { terminalStyle: 'meter', progress: 40 }, '.kt-loading-terminal__meter', true]
     ];
     const loaders = [];
     for (const [type, options, selector] of loaderVariants) {
@@ -139,7 +140,7 @@ const check = (n, c, d) => { console.log(`  [${c ? 'PASS' : 'FAIL'}] ${n}${d ? '
       el.remove();
     }
     const indicators = [];
-    for (const [type, options, selector] of indicatorVariants) {
+    for (const [type, options, selector, determinate] of indicatorVariants) {
       const el = document.createElement('span');
       document.body.appendChild(el);
       const instance = window.Kineto.loadingIndicator(el, { type, hideOnComplete: false, ...options });
@@ -148,6 +149,7 @@ const check = (n, c, d) => { console.log(`  [${c ? 'PASS' : 'FAIL'}] ${n}${d ? '
         selector,
         exists: Boolean(el.querySelector(selector)),
         role: el.getAttribute('role'),
+        determinate,
         terminalHasWords: type === 'terminal' && /[A-Za-z가-힣]/.test(el.textContent)
       });
       instance.destroy();
@@ -189,7 +191,17 @@ const check = (n, c, d) => { console.log(`  [${c ? 'PASS' : 'FAIL'}] ${n}${d ? '
   console.log('  variants/lifecycle:', JSON.stringify(r));
   check('full-page Loader renders only its three public modes', missingLoaders.length === 0, JSON.stringify(missingLoaders));
   check('inline Loading Indicator variants render public class hooks', missingIndicators.length === 0, JSON.stringify(missingIndicators));
-  check('all loading UIs expose the progressbar role', [...r.loaders, ...r.indicators].every((item) => item.role === 'progressbar'));
+  // ARIA splits these two cases: a measurable value is a progressbar, while an
+  // indeterminate "still working" hint is a status live region. The full-page
+  // Loader always tracks progress; inline indicators only do when given one.
+  check('full-page Loader always exposes the progressbar role',
+    r.loaders.every((item) => item.role === 'progressbar'),
+    r.loaders.filter((item) => item.role !== 'progressbar').map((item) => item.type));
+  check('determinate inline indicators expose the progressbar role',
+    r.indicators.filter((item) => item.determinate).every((item) => item.role === 'progressbar'));
+  check('indeterminate inline indicators expose the status role',
+    r.indicators.filter((item) => !item.determinate).every((item) => item.role === 'status'),
+    r.indicators.filter((item) => !item.determinate && item.role !== 'status').map((item) => item.selector));
   check('terminal indicators contain symbols only', r.indicators.every((item) => !item.terminalHasWords));
   check('show()/hide()/cancel() report successful state changes', r.hidden && r.shown && r.cancelled);
   check('finished resolves cancellation reason', r.result.status === 'cancelled' && r.result.reason === 'test-cancel', JSON.stringify(r.result));

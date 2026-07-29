@@ -140,9 +140,109 @@ export function q(target, root = typeof document !== 'undefined' ? document : nu
   return [];
 }
 
+const progressOutputOwners = new WeakMap();
+
+// Keep visible progress copy in sync with Loader/LoadingIndicator without
+// coupling either module to a specific UI. Targets may be descendants of the
+// host, descendants of a nearest `[data-kt-progress-scope]`, or explicit
+// `progressOutput` elements/selectors. Templates use {value}/{progress}/{state}.
+export function createProgressOutputs(el, opts = {}) {
+  const doc = el?.ownerDocument;
+  if (!el || !doc) return { update() {}, destroy() {} };
+  let scope = null;
+  if (typeof opts.progressScope === 'string') {
+    try {
+      scope = el.closest(opts.progressScope) || doc.querySelector(opts.progressScope);
+    } catch (_error) { /* invalid optional selector: use the nearest default scope */ }
+  } else if (opts.progressScope?.querySelectorAll) {
+    scope = opts.progressScope;
+  }
+  scope ||= el.closest('[data-kt-progress-scope]') || el;
+
+  const targets = new Set(scope.querySelectorAll?.('[data-kt-progress-output]') || []);
+  const requested = opts.progressOutput;
+  if (typeof requested === 'string') {
+    let local = [];
+    try { local = [...(scope.querySelectorAll?.(requested) || [])]; } catch (_error) { /* invalid selector */ }
+    local.forEach((target) => targets.add(target));
+    if (!local.length) {
+      try { doc.querySelectorAll(requested).forEach((target) => targets.add(target)); } catch (_error) { /* invalid selector */ }
+    }
+  } else if (requested?.nodeType === 1) {
+    targets.add(requested);
+  } else if (requested && typeof requested[Symbol.iterator] === 'function') {
+    for (const target of requested) if (target?.nodeType === 1) targets.add(target);
+  }
+
+  const ownedTargets = [...targets].map((target) => {
+    let record = progressOutputOwners.get(target);
+    if (!record) {
+      record = {
+        owners: 0,
+        text: target.textContent,
+        value: 'value' in target ? target.value : undefined,
+        dataValue: target.getAttribute('data-kt-progress-value'),
+        state: target.getAttribute('data-kt-progress-state'),
+        progressVar: target.style.getPropertyValue('--kt-progress'),
+        percentVar: target.style.getPropertyValue('--kt-percent')
+      };
+      progressOutputOwners.set(target, record);
+    }
+    record.owners += 1;
+    return target;
+  });
+  let released = false;
+
+  return {
+    update(value, state = 'running') {
+      const progress = clamp(Number(value) || 0, 0, 100);
+      const rounded = Math.round(progress);
+      targets.forEach((target) => {
+        const template = target.dataset.ktProgressTemplate || opts.progressTemplate || '{value}%';
+        const output = String(template)
+          .replaceAll('{value}', String(rounded))
+          .replaceAll('{progress}', String(rounded))
+          .replaceAll('{state}', String(state));
+        if ('value' in target && /^(?:INPUT|OUTPUT|PROGRESS)$/.test(target.tagName)) {
+          target.value = target.tagName === 'PROGRESS' ? progress : output;
+        } else {
+          target.textContent = output;
+        }
+        target.dataset.ktProgressValue = String(rounded);
+        target.dataset.ktProgressState = String(state);
+        target.style.setProperty('--kt-progress', (progress / 100).toFixed(4));
+        target.style.setProperty('--kt-percent', String(rounded));
+      });
+    },
+    destroy() {
+      if (released) return;
+      released = true;
+      ownedTargets.forEach((target) => {
+        const record = progressOutputOwners.get(target);
+        if (!record || --record.owners > 0) return;
+        if (record.value !== undefined) target.value = record.value;
+        else target.textContent = record.text;
+        if (record.dataValue == null) target.removeAttribute('data-kt-progress-value');
+        else target.setAttribute('data-kt-progress-value', record.dataValue);
+        if (record.state == null) target.removeAttribute('data-kt-progress-state');
+        else target.setAttribute('data-kt-progress-state', record.state);
+        if (record.progressVar) target.style.setProperty('--kt-progress', record.progressVar);
+        else target.style.removeProperty('--kt-progress');
+        if (record.percentVar) target.style.setProperty('--kt-percent', record.percentVar);
+        else target.style.removeProperty('--kt-percent');
+        progressOutputOwners.delete(target);
+      });
+    }
+  };
+}
+
 export function readOpts(el, name) {
   const options = {};
   const activationKey = `kt${name[0].toUpperCase()}${name.slice(1)}`;
+  // Most activation values are presets. Radial's frozen public contract predates
+  // that convention and names the same concept `position`, so preserve the
+  // established API without making `preset` a second public option.
+  const activationOption = name === 'radial' ? 'position' : 'preset';
 
   for (const [key, rawValue] of Object.entries(el.dataset || {})) {
     if (!key.startsWith('kt')) continue;
@@ -152,7 +252,7 @@ export function readOpts(el, name) {
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
         Object.assign(options, parsed);
       } else if (parsed !== true && parsed !== '') {
-        options.preset = parsed;
+        options[activationOption] = parsed;
       }
       continue;
     }

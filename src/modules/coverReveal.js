@@ -238,11 +238,43 @@ export default {
     let played = false;
     let io = null;
     let initRaf = null;
+    // `mask:true` adds the lead-in the Plus X reference has: before the stacked
+    // panels peel off, the content itself is wiped in along the SAME direction,
+    // so the reveal reads as one continuous move instead of panels popping off a
+    // static image.
+    const maskLead = opts.mask === true;
+    const maskInsetFor = (direction) => ({
+      right: 'inset(0 0 0 100%)', left: 'inset(0 100% 0 0)',
+      down: 'inset(100% 0 0 0)', up: 'inset(0 0 100% 0)'
+    }[direction] || 'inset(0 0 0 100%)');
+    // The wipe followed the panel exit direction, so `direction:'random'` made it
+    // unpredictable with no way to pin it. `maskDirection` sets it explicitly;
+    // left unset it keeps following the panels.
+    const maskDirections = ['left', 'right', 'up', 'down'];
+    const maskDirectionOpt = maskDirections.includes(opts.maskDirection) ? opts.maskDirection : null;
+
     const play = () => {
       if (!alive || played) return;
       played = true;
-      const exitTransform = exitFor(pickDirection());
+      const moveDirection = pickDirection();
+      const exitTransform = exitFor(moveDirection);
+      if (maskLead) {
+        covers.forEach((cover) => {
+          const target = cover.container;
+          target.style.clipPath = maskInsetFor(maskDirectionOpt || moveDirection);
+          target.style.webkitClipPath = target.style.clipPath;
+          target.style.transition = `clip-path ${duration}s ${ease},-webkit-clip-path ${duration}s ${ease}`;
+        });
+      }
       void el.offsetWidth; // paint the covered start frame first
+      if (maskLead) {
+        requestAnimationFrame(() => {
+          covers.forEach((cover) => {
+            cover.container.style.clipPath = 'inset(0 0 0 0)';
+            cover.container.style.webkitClipPath = 'inset(0 0 0 0)';
+          });
+        });
+      }
       requestAnimationFrame(() => {
         covers.forEach((cover, lineIndex) => {
           const lineDelay = delay + (linesMode ? lineIndex * stagger : 0);
@@ -256,7 +288,14 @@ export default {
       const total = delay + totalLines * stagger + (layers - 1) * stagger + duration * 1000 + 80;
       timers.push(setTimeout(() => {
         if (!alive) return;
-        covers.forEach((cover) => cover.panels.forEach((panel) => panel.remove()));
+        covers.forEach((cover) => {
+          cover.panels.forEach((panel) => panel.remove());
+          if (maskLead) {
+            cover.container.style.removeProperty('clip-path');
+            cover.container.style.removeProperty('-webkit-clip-path');
+            cover.container.style.removeProperty('transition');
+          }
+        });
         opts.onComplete?.(el);
       }, total));
     };
@@ -320,7 +359,27 @@ export default {
       startPlay();
     }
 
-    return {
+    // `watch:true` re-runs the reveal whenever the content changes — items
+    // reordered, added or swapped out. The panels drop back over the element and
+    // sweep off again, so an updated list reads as "gone, then back" instead of
+    // silently mutating underneath the visitor.
+    let watcher = null;
+    let watchFrame = 0;
+    if (opts.watch === true && typeof MutationObserver !== 'undefined') {
+      watcher = new MutationObserver(() => {
+        if (!alive || reduce) return;
+        if (watchFrame) cancelAnimationFrame(watchFrame);
+        // Coalesce a burst of DOM writes into one reveal.
+        watchFrame = requestAnimationFrame(() => {
+          watchFrame = 0;
+          if (!alive) return;
+          api.replay();
+        });
+      });
+      watcher.observe(el, { childList: true, subtree: false, characterData: true });
+    }
+
+    const api = {
       el,
       type: 'coverReveal',
       replay() {
@@ -336,10 +395,38 @@ export default {
         });
         requestAnimationFrame(play);
       },
+      // Cover the content again WITHOUT revealing it — the "disappear" half of a
+      // list update. Pair it with replay() to get vanish -> re-enter, which is
+      // what a reordered or refreshed gallery needs; until now the only options
+      // were "slide to a new position" or "already visible, no entrance".
+      exit() {
+        if (reduce) return Promise.resolve();
+        played = false;
+        timers.forEach(clearTimeout); timers = [];
+        covers.forEach((cover) => {
+          cover.panels.forEach((panel) => panel.remove());
+          appendPanels(cover);
+          if (maskLead) {
+            cover.container.style.removeProperty('clip-path');
+            cover.container.style.removeProperty('-webkit-clip-path');
+            cover.container.style.removeProperty('transition');
+          }
+        });
+        // The panels start covering, so one frame is enough to be hidden.
+        return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+      },
+      // Vanish, let the caller reorder/replace content, then re-enter.
+      async refresh(update) {
+        await this.exit();
+        if (typeof update === 'function') await update(el);
+        this.replay();
+      },
       pause() {}, resume() {},
       destroy() {
         alive = false;
         io?.disconnect();
+        watcher?.disconnect();
+        if (watchFrame) cancelAnimationFrame(watchFrame);
         if (initRaf != null) cancelAnimationFrame(initRaf);
         timers.forEach(clearTimeout);
         covers.forEach((cover) => {
@@ -352,6 +439,7 @@ export default {
         if (linesText != null) el.textContent = linesText;
       }
     };
+    return api;
   },
   reduced(el, opts) { return this.create(el, opts); }
 };

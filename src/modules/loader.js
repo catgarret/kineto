@@ -1,4 +1,4 @@
-import { clamp } from '../utils.js';
+import { clamp, createProgressOutputs } from '../utils.js';
 
 // Reference-counted global scroll lock. Overlapping loaders used to each save
 // and restore <html>/<body> overflow independently, so a second loader would
@@ -181,6 +181,12 @@ export default {
     };
     if (opts.className) el.classList.add(...String(opts.className).split(/\s+/).filter(Boolean));
     const progressUI = createProgressUI(el, type, opts);
+    const progressOutputs = createProgressOutputs(el, {
+      ...opts,
+      progressOutput: opts.progressOutput,
+      progressScope: opts.progressScope,
+      progressTemplate: opts.progressTemplate
+    });
     let progress = clamp(Number(opts.progress ?? opts.percent ?? 0), 0, 100);
     let displayed = progress;
     let completed = false;
@@ -226,6 +232,7 @@ export default {
       state = next;
       el.dataset.ktLoaderState = next;
       progressUI.setState?.(next);
+      progressOutputs.update(displayed, next);
       opts.onStateChange?.(next, previous, el, detail);
       emit('statechange', { previous, ...detail });
     };
@@ -254,6 +261,7 @@ export default {
       // is 0..1, --kt-loader-percent is 0..100. onProgress(value, el) also fires.
       el.style.setProperty('--kt-loader-progress', (displayed / 100).toFixed(4));
       el.style.setProperty('--kt-loader-percent', String(Math.round(displayed)));
+      progressOutputs.update(displayed, state);
       opts.onProgress?.(displayed, el);
       emit('progress', { value: displayed });
     };
@@ -293,6 +301,42 @@ export default {
       // page revealed underneath already has a working sticky nav. A no-op for
       // hideScrollbar:false instances (they never held the lock).
       releaseLock();
+      // `revealEffect` plays one of Page Reveal's covers ON THE LOADER ITSELF.
+      // Spawning a second overlay on top was wrong: the loader you were looking
+      // at just vanished and an unrelated cover animated over the page. Here the
+      // loader IS the cover, so it is the thing that gets wiped away.
+      if (opts.revealEffect) {
+        const ease = 'cubic-bezier(.165,.84,.44,1)';
+        const shift = { up: '0,-100%', down: '0,100%', left: '-100%,0', right: '100%,0' }[exitDirection] || '0,-100%';
+        const insets = { up: '0 0 100% 0', down: '100% 0 0 0', left: '0 100% 0 0', right: '0 0 0 100%' };
+        const frames = {
+          flash: [{ transform: 'translate3d(0,0,0)' }, { transform: `translate3d(${shift},0)` }],
+          wipe: [{ clipPath: 'inset(0 0 0 0)' }, { clipPath: `inset(${insets[exitDirection]})` }],
+          curtain: [{ clipPath: 'inset(0 0 0 0)' }, { clipPath: `inset(${insets[exitDirection]})` }],
+          iris: [{ clipPath: 'circle(150% at 50% 50%)' }, { clipPath: 'circle(0% at 50% 50%)' }],
+          circle: [{ clipPath: 'circle(150% at 50% 50%)' }, { clipPath: 'circle(0% at 50% 50%)' }],
+          split: [{ clipPath: 'inset(0 0 0 0)' }, { clipPath: 'inset(0 50% 0 50%)' }],
+          blinds: [{ clipPath: 'inset(0 0 0 0)' }, { clipPath: `inset(${insets[exitDirection]})` }],
+          fade: [{ opacity: 1 }, { opacity: 0 }]
+        };
+        const keyframes = frames[opts.revealEffect] || frames.wipe;
+        el.style.willChange = 'clip-path, transform, opacity';
+        const player = el.animate(keyframes, {
+          duration: Math.max(120, duration * 1000),
+          easing: ease,
+          fill: 'forwards'
+        });
+        const settle = () => {
+          el.style.display = 'none';
+          el.hidden = true;
+          el.setAttribute('aria-busy', 'false');
+          el.style.removeProperty('will-change');
+          setState(outcome);
+          opts.onComplete?.(el);
+        };
+        player.finished.then(settle).catch(settle);
+        return;
+      }
       if (exitEffect === 'wipe' || exitEffect === 'mask') {
         // The transition needs a concrete start state — from `none` the mask
         // would snap instead of sweeping.
@@ -531,6 +575,7 @@ export default {
         // renderUI with no root falls back to `el`). Also remove the page-fill
         // overlay so it doesn't accumulate across recreate.
         progressUI.destroy?.();
+        progressOutputs.destroy();
         if (progressUI.root && progressUI.root !== el) progressUI.root.remove();
         progressUI.fillEl?.remove();
         if (original.style == null) el.removeAttribute('style'); else el.setAttribute('style', original.style);

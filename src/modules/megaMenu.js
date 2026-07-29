@@ -29,13 +29,19 @@ export default {
     const openDelay = Math.max(0, Number(opts.openDelay ?? 60));
     const closeDelay = Math.max(0, Number(opts.closeDelay ?? 180));
     const duration = Math.max(0.05, Number(opts.duration ?? 0.24));
+    const responsive = opts.responsive === 'scroll' || opts.responsive === 'custom'
+      ? opts.responsive
+      : 'wrap';
     // Optional open/close indicator icon on each trigger (like an accordion):
     // 'chevron' rotates, 'plus' turns into ×. State hook = aria-expanded.
     const indicator = ['chevron', 'plus'].includes(opts.indicator) ? opts.indicator : 'none';
 
-    el.classList.add('kt-menu', layout === 'mega' ? 'kt-menu--mega' : 'kt-menu--dropdown');
-    if (indicator !== 'none') el.classList.add(`kt-menu--ind-${indicator}`);
-
+    el.classList.add(
+      'kt-menu',
+      `kt-menu--${layout}`,
+      `kt-menu--responsive-${responsive}`,
+      `kt-menu--ind-${indicator}`
+    );
     const focusables = (panel) => Array.from(panel.querySelectorAll(
       'a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])'
     ));
@@ -46,6 +52,15 @@ export default {
     let closeTimer = null;
     let uid = 0;
 
+    const placeScrollablePanel = (entry) => {
+      if (responsive !== 'scroll' || window.innerWidth > 720) return;
+      const bottom = entry.trg.getBoundingClientRect().bottom + 6;
+      entry.panel.style.setProperty(
+        '--kt-menu-panel-top',
+        `${Math.max(12, Math.min(bottom, window.innerHeight - 172))}px`
+      );
+    };
+
     const doOpen = (entry) => {
       clearTimeout(closeTimer);
       if (openEntry === entry) return;
@@ -54,6 +69,7 @@ export default {
       entry.li.classList.add('kt-open');
       entry.trg.setAttribute('aria-expanded', 'true');
       entry.panel.hidden = false;
+      placeScrollablePanel(entry);
       if (entry.anim) { entry.anim.cancel(); entry.anim = null; }
       if (!reduce) {
         entry.anim = entry.panel.animate(
@@ -67,7 +83,10 @@ export default {
       if (!entry) return;
       entry.li.classList.remove('kt-open');
       entry.trg.setAttribute('aria-expanded', 'false');
-      const hide = () => { entry.panel.hidden = true; entry.anim = null; };
+      const hide = () => {
+        entry.panel.hidden = true;
+        entry.anim = null;
+      };
       if (entry.anim) { entry.anim.cancel(); entry.anim = null; }
       if (reduce || instant) hide();
       else {
@@ -100,7 +119,10 @@ export default {
       const zoneSel = li.getAttribute('data-kt-menu-open');
       const zones = zoneSel ? Array.from(document.querySelectorAll(zoneSel)) : [];
 
-      const entry = { li, panel, trg, anim: null, handlers: {} };
+      const entry = {
+        li, panel, trg, anim: null, handlers: {},
+        panelTop: panel.style.getPropertyValue('--kt-menu-panel-top')
+      };
       const index = () => entries.indexOf(entry);
 
       const onEnter = () => { clearTimeout(closeTimer); clearTimeout(openTimer); openTimer = setTimeout(() => doOpen(entry), openDelay); };
@@ -163,7 +185,12 @@ export default {
         clearTimeout(closeTimer);
         document.removeEventListener('pointerdown', onDocDown, true);
         document.removeEventListener('keydown', onDocKey);
-        el.classList.remove('kt-menu', 'kt-menu--mega', 'kt-menu--dropdown', 'kt-menu--ind-chevron', 'kt-menu--ind-plus');
+        el.classList.remove(
+          'kt-menu',
+          `kt-menu--${layout}`,
+          `kt-menu--responsive-${responsive}`,
+          `kt-menu--ind-${indicator}`
+        );
         entries.forEach((entry) => {
           const h = entry.handlers;
           entry.li.removeEventListener('mouseenter', h.onEnter);
@@ -175,6 +202,8 @@ export default {
           (h.zones || []).forEach((z) => { z.removeEventListener('mouseenter', h.onEnter); z.removeEventListener('mouseleave', h.onLeave); });
           entry.li.classList.remove('kt-open');
           entry.trg.classList.remove('kt-menu-trigger');
+          if (entry.panelTop) entry.panel.style.setProperty('--kt-menu-panel-top', entry.panelTop);
+          else entry.panel.style.removeProperty('--kt-menu-panel-top');
           entry.panel.hidden = false;
           entry.trg.removeAttribute('aria-haspopup');
           entry.trg.removeAttribute('aria-expanded');

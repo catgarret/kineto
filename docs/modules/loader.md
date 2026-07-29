@@ -45,6 +45,24 @@ await loader.finished;
 
 `hideScrollbar: false`로 스크롤 잠금을 끌 수 있습니다. 기본값은 `true`입니다.
 
+현재 값은 `loader.progress`, `aria-valuenow`,
+`--kt-loader-progress`(0–1), `--kt-loader-percent`(0–100),
+`kt-loader-progress` 이벤트의 `event.detail.value`로 읽습니다.
+완료는 `loader.finished` 또는 `kt-loader-complete`로 감지합니다.
+
+```html
+<div data-kt-progress-scope>
+  <div id="page-loader" data-kt-loader="bar"></div>
+  <output data-kt-progress-output
+          data-kt-progress-template="{value}%">0%</output>
+</div>
+```
+
+`window`은 브라우저의 페이지 완료 시점을, `resources`는 발견한
+리소스의 완료 개수를 추적합니다. 실제 전송 byte 비율이 필요하면
+`trackFetch()`를 사용하고 서버가 `Content-Length`를 제공해야 합니다.
+일반 Promise는 전체 크기를 알 수 없으므로 완료 전 수치는 추정값입니다.
+
 ## 확장
 
 `renderUI(el, opts)`에서 `{ root, render, setState, destroy }`를 반환하면 내장 표시를 교체할 수 있습니다. 런타임은 `--kt-loader-progress`(0–1)와 `--kt-loader-percent`(0–100)를 갱신합니다.

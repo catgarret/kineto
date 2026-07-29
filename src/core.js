@@ -28,7 +28,7 @@ const ACTIVATION_OPTION_OWNERS = {
   cursor: ['lightbox'],
   drag: ['fullpage', 'radial'],
   hold: ['textReveal', 'textSplit'],
-  progress: ['slider']
+  progress: ['slider', 'loadingIndicator']
 };
 function activationIsOwnedOption(el, name) {
   return (ACTIVATION_OPTION_OWNERS[name] || []).some((owner) => el.hasAttribute?.(`data-kt-${dash(owner)}`));

@@ -8,7 +8,7 @@ HTML属性または JavaScript API で制御するWebインタラクションツ
 
 [한국어](README.ko.md) · [English](../README.md) · 日本語 · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [Italiano](README.it.md)
 
-[![npm](https://img.shields.io/npm/v/@dong-gri/kineto.svg)](https://www.npmjs.com/package/@dong-gri/kineto) [![license](https://img.shields.io/npm/l/@dong-gri/kineto.svg)](../LICENSE) [![jsDelivr](https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg)](https://www.jsdelivr.com/package/npm/@dong-gri/kineto)
+<p><a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="../LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
 [ライブデモ](https://git.dongri.me/example/kineto) · [モジュールリファレンス](../docs/module-reference.md) · [AIプロンプトガイド](../AI-PROMPT-GUIDE.md) · [機能コントラクト](../FEATURE_CONTRACT.md)
 
@@ -128,7 +128,8 @@ Kineto.disableSmooth();
 | `ripple` | `data-kt-ripple` | クリックリップル |
 | `scrollSequence` | `data-kt-scroll-sequence` | 画像シーケンススクラブ |
 | `scrollVelocity` | `data-kt-scroll-velocity` | スクロール速度・方向反応 |
-| `slider` | `data-kt-slider` | スライド・カバーフロー・ディゾルブ |
+| `slider` | `data-kt-slider` | スライド・カバーフロー・スタック・円形カルーセル |
+| `radial` | `data-kt-radial` | 既存の円形カルーセル互換エントリ |
 | `stickyStack` | `data-kt-sticky-stack` | 縦・横・フローティングスティッキースタック |
 | `textFill` | `data-kt-text-fill` | スクロールテキストの塗りつぶし |
 | `textReveal` | `data-kt-text-reveal` | シャッフル・デコード・ハングル組み合わせリビル |
@@ -144,7 +145,6 @@ Kineto.disableSmooth();
 | `toast` | `data-kt-toast` | ステータストースト通知 |
 | `bottomSheet` | `data-kt-bottom-sheet` | フォーカス固定をサポートするボトムシート |
 | `tabs` | `data-kt-tabs` | WAI-ARIAタップ・セグメントコントロール |
-| `radial` | `data-kt-radial` | 円形カルーセル |
 | `coverReveal` | `data-kt-cover-reveal` | カラーカバーリビル |
 | `gesture` | `data-kt-gesture` | ホバー・押しばねフィードバック |
 | `drag` | `data-kt-drag` | 慣性・境界・スナップバックドラッグ |

@@ -1,5 +1,12 @@
 # Instructions for AI-assisted Kineto changes
 
+모든 AI가 읽는 정본은 [`AI-HANDOFF.md`](AI-HANDOFF.md)이며, 한국어
+사용 안내는 [`AI-HANDOFF.ko.md`](AI-HANDOFF.ko.md)입니다.
+외부 프로젝트에서 Kineto를 사용하게 하는 프롬프트는
+[`../AI-PROMPT-GUIDE.md`](../AI-PROMPT-GUIDE.md)의 영문 기준본을
+사용합니다. 저장소 작업 지침과 라이브러리 사용 지침을 서로 바꾸지
+않습니다.
+
 ## 반드시 먼저 읽을 문서
 
 1. `OWNER_REQUIREMENTS.md`
@@ -30,6 +37,9 @@
 6. `npm run ci`를 실행합니다.
 7. 실제 배포 tarball을 별도 프로젝트에 설치해 adapter/lifecycle을 검증합니다.
 8. 통과한 브라우저와 검증하지 못한 환경을 구분해 보고합니다.
+9. Git을 직접 사용할 수 없는 에이전트는 사용자가 그대로 복사해 실행할
+   수 있는 검증·선택적 스테이징·커밋 명령을 마지막에 제공합니다.
+   파일 경로나 커밋 메시지에 placeholder를 남기지 않습니다.
 
 ## 금지되는 지름길
 
@@ -48,3 +58,6 @@ npm run ci
 ```
 
 이 명령이 통과하고, 실제 데모에서 요구된 시각 동작이 확인되며, 반복 생성·재생·파괴 후 active instance가 0이어야 완료입니다. 배포 전에는 `npm run verify`로 의존성 보안 감사까지 확인합니다.
+
+배포는 구현 작업과 분리합니다. 소유자가 승인하기 전에는 tag, push,
+`npm publish`, GitHub Release 생성을 실행하지 않습니다.
