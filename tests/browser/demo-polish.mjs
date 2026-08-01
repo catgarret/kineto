@@ -61,15 +61,24 @@ try {
   await page.waitForTimeout(750);
   const zoomHeader = await page.evaluate(async () => {
     const header = document.querySelector('.site-header');
-    const surface = document.querySelector('.layout');
-    const instance = window.Kineto.pageReveal(surface, { effect: 'zoom', duration: 0.35, delay: 0 });
+    const beforeWidth = header.getBoundingClientRect().width;
+    document.querySelector('[data-page-effect="zoom"]').click();
     await new Promise((resolve) => setTimeout(resolve, 140));
     const style = getComputedStyle(header);
-    const during = { opacity: Number(style.opacity), transform: style.transform, height: header.getBoundingClientRect().height };
-    instance.destroy();
+    const during = {
+      opacity: Number(style.opacity),
+      transform: style.transform,
+      height: header.getBoundingClientRect().height,
+      width: header.getBoundingClientRect().width,
+      beforeWidth,
+      bodyTransform: getComputedStyle(document.body).transform
+    };
+    window.Kineto.destroyModule(document.body, 'pageReveal');
     return during;
   });
   assert.ok(zoomHeader.opacity > 0.99 && zoomHeader.height > 0, `Page Reveal zoom must keep the persistent header visible (${JSON.stringify(zoomHeader)})`);
+  assert.notEqual(zoomHeader.bodyTransform, 'none', `the real Zoom button must animate the whole demo page (${JSON.stringify(zoomHeader)})`);
+  assert.ok(zoomHeader.width < zoomHeader.beforeWidth, `the persistent header must zoom with the page instead of staying fixed (${JSON.stringify(zoomHeader)})`);
   const segmentedDemoTab=page.locator('#mod-tabs .demo-tabs .demo-tab',{hasText:'Segmented'});
   await segmentedDemoTab.click();
   await page.waitForTimeout(80);

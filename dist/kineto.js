@@ -7492,13 +7492,7 @@ var pr = {
 				duration: r,
 				easing: d
 			});
-			let p = n.animate([{
-				transform: "scale(0.72)",
-				opacity: 0
-			}, {
-				transform: "scale(1)",
-				opacity: 1
-			}], {
+			let p = n.animate([{ transform: "scale(0.72)" }, { transform: "scale(1)" }], {
 				duration: r,
 				delay: s,
 				easing: d

@@ -584,7 +584,8 @@
 
     const runPageReveal=(effect='curtain')=>{
       // pageReveal instances are one-shot: drop the previous record first so
-      // every button press runs a fresh reveal.
+      // every button press runs a fresh reveal. The whole page is the intended
+      // demo surface, including the persistent header.
       Kineto.destroyModule(document.body,'pageReveal');
       const panelOptions=window.KinetoPlayground?.pageRevealOptions?.()||{duration:.65,color:getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#ff5b1c',color2:'#101318'};
       Kineto.pageReveal(document.body,{...panelOptions,effect});

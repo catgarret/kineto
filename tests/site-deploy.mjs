@@ -44,9 +44,9 @@ const linkedDocs = [
 ];
 for (const relative of linkedDocs) {
   const source = fs.readFileSync(path.join(root, relative), 'utf8');
-  assert.ok(source.includes('https://kineto.dongri.me/'), `${relative} must use the canonical demo URL`);
+  assert.ok(source.includes('https://kineto.dongri.me'), `${relative} must use the canonical demo URL`);
   assert.doesNotMatch(source, /https:\/\/git\.dongri\.me\/example\/kineto/);
-  assert.doesNotMatch(source, /https:\/\/kineto\.dongri\.me(?!\/)/);
+  assert.doesNotMatch(source, /https:\/\/kineto\.dongri\.me\//);
 }
 
 console.log(`site-deploy OK — @latest CDN, canonical demo URL, 0 ../dist, runtime version(${version})/count/build hooks present, no stale files.`);

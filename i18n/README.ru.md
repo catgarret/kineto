@@ -10,7 +10,7 @@
 
 <p><a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="../LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
-[Живое демо](https://kineto.dongri.me/) · [Справочник модулей](../docs/module-reference.md) · [Контракт возможностей](../FEATURE_CONTRACT.md)
+[Живое демо](https://kineto.dongri.me) · [Справочник модулей](../docs/module-reference.md) · [Контракт возможностей](../FEATURE_CONTRACT.md)
 
 </div>
 
