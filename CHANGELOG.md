@@ -4,6 +4,16 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.44] - 2026-08-01
+
+### English
+
 - Added code-split `core` and `modules/*` package entry points so applications can register only the modules they use, with installed-tarball coverage and package-size budgets.
 - Reduced runtime and rendering overhead with disposable environment listeners, bounded and retryable engine loading, low-performance fallbacks, lazy demo images, and compatibility-safe replacements for newer JavaScript APIs.
 - Added Playwright Firefox and WebKit smoke jobs to GitHub Actions alongside the existing Chromium browser suite.
@@ -115,7 +125,6 @@
 - 터미널 Scanner 프리셋을 다시 만들었습니다. `direction:'reverse'`가 같은 프레임을 거꾸로 재생하는 대신 화살촉을 뒤집고(`[ ===> ]` ↔ `[ <=== ]`), `dotCount`로 트랙 길이를 정하며, 숫자 `progress`를 주면 아크·바·터미널 미터처럼 채워집니다. 복합 프리셋은 `compound.meterCount`로 더 짧은 미터를 요청할 수 있습니다.
 
 Kineto follows Semantic Versioning. Public scope is additionally governed by `FEATURE_CONTRACT.md`.
-
 ## [0.8.43]
 
 - **Automated releases and AI handoff**: added repository-wide Codex/Claude
