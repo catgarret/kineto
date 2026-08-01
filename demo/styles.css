@@ -322,17 +322,14 @@
     .marquee-line span{padding-right:36px}
 
     .slider-demo{width:100%;overflow:hidden;padding:18px 0}
-    /* Coverflow's active-slide drop-shadow spills past the slide on all four
-       sides, and `overflow:hidden` above cut it off. clip-path with a negative
-       inset keeps a clipping box (so neighbouring slides still disappear at the
-       edges) while leaving room for the shadow — plain `overflow:visible` would
-       let the whole track bleed across the card. */
+    /* The inner wrap may paint the active shadow, while this outer demo boundary
+       still clips off-screen previews so the track cannot bleed across cards. */
     /* The module puts `kt-slider--active-shadow` on the SLIDER element, which in
        this demo IS `.slider-demo` — so it has to be matched with a compound
        selector, not `:has()` on a descendant. Both forms are listed because a
        nested `[data-kt-slider]` is also legal markup. */
     .slider-demo.kt-slider--active-shadow,
-    .slider-demo:has(>.kt-slider--active-shadow){overflow:clip;overflow-clip-margin:36px}
+    .slider-demo:has(>.kt-slider--active-shadow){overflow:hidden}
     .slider-demo--dissolve{height:clamp(230px,31vw,320px);padding:0;border-radius:var(--r-stage);background:var(--panel2)}
     .slider-demo--dissolve>.kt-slider-wrap,.slider-demo--dissolve .kt-slider-track,.slider-demo--dissolve .kt-slide{height:100%}
     .slider-demo--dissolve .kt-slide{min-height:0}

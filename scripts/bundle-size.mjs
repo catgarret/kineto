@@ -58,9 +58,9 @@ const BUDGETS = {
   // consumer-facing gzip ceiling remains unchanged.
   // 2026-08-01: two-color image sampling, frame-rate-independent cursor
   // interpolation, and the full-circle radial layout add 1.4 KB raw / 0.4 KB
-  // gzip. These are measured feature costs; the ceilings retain <1 KB gzip
-  // headroom and still reject an accidental dependency.
-  'kineto.js': { raw: 477, gz: 124 },
+  // gzip. Image-derived palette ranking adds 46 bytes beyond the former gzip
+  // ceiling; 125 KB retains <1 KB headroom and still rejects dependency bloat.
+  'kineto.js': { raw: 477, gz: 125 },
   'kineto.min.js': { raw: 377, gz: 111 },
   'kineto.umd.js': { raw: 376, gz: 111 },
   'kineto.umd.min.js': { raw: 376, gz: 111 },

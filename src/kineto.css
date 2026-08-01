@@ -585,8 +585,11 @@
 .kt-slider-dot {
   -webkit-appearance: none;
   appearance: none;
-  flex: 0 0 var(--kt-slider-dot-size);
-  min-width: 0;
+  display: block;
+  box-sizing: border-box;
+  flex: none;
+  min-width: var(--kt-slider-dot-size);
+  max-width: var(--kt-slider-dot-size);
   min-height: 0;
   width: var(--kt-slider-dot-size);
   height: var(--kt-slider-dot-size);
@@ -596,8 +599,14 @@
   background: currentColor;
   opacity: var(--kt-slider-dot-opacity, .42);
   cursor: pointer;
-  transition: width .2s ease, opacity .2s ease, transform .2s ease;
+  font-size: 0;
+  line-height: 0;
+  overflow: hidden;
+  transition: opacity .2s ease, transform .2s ease;
 }
+
+.kt-slider-dot::before,
+.kt-slider-dot::after { content: none !important; }
 
 .kt-slider-dot:hover {
   opacity: .72;
@@ -605,7 +614,8 @@
 }
 
 .kt-slider-dot.is-active {
-  flex-basis: var(--kt-slider-dot-active-width);
+  min-width: var(--kt-slider-dot-active-width);
+  max-width: var(--kt-slider-dot-active-width);
   width: var(--kt-slider-dot-active-width);
   opacity: 1;
 }

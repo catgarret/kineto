@@ -337,13 +337,8 @@ export default {
     wrap.setAttribute('aria-roledescription', 'carousel');
     wrap.setAttribute('aria-label', opts.label || 'Carousel');
     if (!wrap.hasAttribute('tabindex')) wrap.tabIndex = 0;
-    // `clip` instead of `hidden` when the active-slide shadow is on: both clip, but
-    // only `clip` honours `overflow-clip-margin`, which is what lets the shadow
-    // escape the wrapper. Written inline because this line already owns the
-    // property — a stylesheet rule could never win against it.
-    wrap.style.overflow = activeShadow ? 'clip' : 'hidden';
-    if (activeShadow) wrap.style.overflowClipMargin = 'var(--kt-slide-active-shadow-room, 40px)';
-    else wrap.style.removeProperty('overflow-clip-margin');
+    wrap.style.overflow = activeShadow ? 'visible' : 'hidden';
+    wrap.style.removeProperty('overflow-clip-margin');
     wrap.style.touchAction = vertical ? 'pan-x' : 'pan-y';
     wrap.style.position = 'relative';
     if (coverflow || flip || cube || cards || creative) wrap.style.perspective = `${Number(opts.perspective ?? 1100)}px`;

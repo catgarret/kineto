@@ -66,8 +66,6 @@ const sampledImageRgb = (root) => {
     }
     return weight ? [red / weight, green / weight, blue / weight] : null;
   } catch (_error) {
-    // Cross-origin images may taint the canvas. The surrounding surface below
-    // is the safe fallback, so auto colour never blocks the reveal.
     return null;
   }
 };
@@ -82,23 +80,27 @@ const sampledImagePalette = (root) => {
     if (!context) return null;
     context.drawImage(image, 0, 0, 20, 20);
     const data = context.getImageData(0, 0, 20, 20).data;
-    const pixels = [];
+    const buckets = new Map();
     for (let index = 0; index < data.length; index += 4) {
       if (data[index + 3] < 32) continue;
-      pixels.push([data[index], data[index + 1], data[index + 2]]);
+      const red = data[index]; const green = data[index + 1]; const blue = data[index + 2];
+      const key = `${red >> 4}:${green >> 4}:${blue >> 4}`;
+      const bucket = buckets.get(key) || [0, 0, 0, 0];
+      bucket[0] += red; bucket[1] += green; bucket[2] += blue; bucket[3] += 1;
+      buckets.set(key, bucket);
     }
-    if (!pixels.length) return null;
-    let centers = [pixels[0], pixels[Math.floor(pixels.length * 0.67)]];
-    for (let pass = 0; pass < 5; pass += 1) {
-      const sums = [[0, 0, 0, 0], [0, 0, 0, 0]];
-      pixels.forEach((pixel) => {
-        const distance = centers.map((center) => ((pixel[0] - center[0]) ** 2) + ((pixel[1] - center[1]) ** 2) + ((pixel[2] - center[2]) ** 2));
-        const bucket = distance[0] <= distance[1] ? 0 : 1;
-        sums[bucket][0] += pixel[0]; sums[bucket][1] += pixel[1]; sums[bucket][2] += pixel[2]; sums[bucket][3] += 1;
-      });
-      centers = sums.map((sum, index) => sum[3] ? sum.slice(0, 3).map((value) => value / sum[3]) : centers[index]);
-    }
-    return centers.map((rgb) => `rgb(${rgb.map((value) => Math.round(value)).join(' ')})`);
+    const colors = [...buckets.values()].map(([red, green, blue, count]) => {
+      const rgb = [red / count, green / count, blue / count];
+      const chroma = Math.max(...rgb) - Math.min(...rgb);
+      return { rgb, score: count * (1 + chroma / 96) };
+    }).sort((a, b) => b.score - a.score);
+    if (!colors.length) return null;
+    const first = colors[0];
+    const distance = (a, b) => ((a[0] - b[0]) ** 2) + ((a[1] - b[1]) ** 2) + ((a[2] - b[2]) ** 2);
+    const second = colors.slice(1).sort((a, b) =>
+      (b.score * Math.sqrt(distance(b.rgb, first.rgb))) - (a.score * Math.sqrt(distance(a.rgb, first.rgb)))
+    )[0] || first;
+    return [first, second].map(({ rgb }) => `rgb(${rgb.map((value) => Math.round(value)).join(' ')})`);
   } catch (_error) { return null; }
 };
 
@@ -200,12 +202,12 @@ export default {
     };
 
     // Add cover panels over a container and return a play() for it.
-    const coverOf = (container) => {
+    const coverOf = (container, content = container) => {
       const restorePosition = container.style.position;
       const restoreOverflow = container.style.overflow;
       if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
       container.style.overflow = 'hidden';
-      const cover = { container, panels: [], restorePosition, restoreOverflow };
+      const cover = { container, content, panels: [], restorePosition, restoreOverflow };
       appendPanels(cover);
       covers.push(cover);
       return cover.panels;
@@ -226,7 +228,7 @@ export default {
       wrap.appendChild(el);
       observeTarget = wrap;
       unwrap = () => { if (wrap.parentNode) { wrap.parentNode.insertBefore(el, wrap); wrap.remove(); } };
-      coverOf(wrap);
+      coverOf(wrap, el);
     };
 
     function buildLines() {
@@ -258,9 +260,12 @@ export default {
         const line = document.createElement('span');
         line.className = 'kt-cover-line';
         line.style.cssText = 'position:relative;display:block;overflow:hidden;width:max-content;max-width:100%;';
-        line.textContent = group.map((s) => s.textContent).join(' ');
+        const content = document.createElement('span');
+        content.style.display = 'block';
+        content.textContent = group.map((s) => s.textContent).join(' ');
+        line.appendChild(content);
         el.appendChild(line);
-        coverOf(line);
+        coverOf(line, content);
       });
       return true;
     }
@@ -292,7 +297,7 @@ export default {
       const exitTransform = exitFor(moveDirection);
       if (maskLead) {
         covers.forEach((cover) => {
-          const target = cover.container;
+          const target = cover.content;
           target.style.clipPath = maskInsetFor(maskDirectionOpt || moveDirection);
           target.style.webkitClipPath = target.style.clipPath;
           target.style.transition = `clip-path ${duration}s ${ease},-webkit-clip-path ${duration}s ${ease}`;
@@ -302,8 +307,8 @@ export default {
       if (maskLead) {
         requestAnimationFrame(() => {
           covers.forEach((cover) => {
-            cover.container.style.clipPath = 'inset(0 0 0 0)';
-            cover.container.style.webkitClipPath = 'inset(0 0 0 0)';
+            cover.content.style.clipPath = 'inset(0 0 0 0)';
+            cover.content.style.webkitClipPath = 'inset(0 0 0 0)';
           });
         });
       }
@@ -323,9 +328,9 @@ export default {
         covers.forEach((cover) => {
           cover.panels.forEach((panel) => panel.remove());
           if (maskLead) {
-            cover.container.style.removeProperty('clip-path');
-            cover.container.style.removeProperty('-webkit-clip-path');
-            cover.container.style.removeProperty('transition');
+            cover.content.style.removeProperty('clip-path');
+            cover.content.style.removeProperty('-webkit-clip-path');
+            cover.content.style.removeProperty('transition');
           }
         });
         opts.onComplete?.(el);
@@ -439,9 +444,9 @@ export default {
           cover.panels.forEach((panel) => panel.remove());
           appendPanels(cover);
           if (maskLead) {
-            cover.container.style.removeProperty('clip-path');
-            cover.container.style.removeProperty('-webkit-clip-path');
-            cover.container.style.removeProperty('transition');
+            cover.content.style.removeProperty('clip-path');
+            cover.content.style.removeProperty('-webkit-clip-path');
+            cover.content.style.removeProperty('transition');
           }
         });
         // The panels start covering, so one frame is enough to be hidden.
@@ -463,6 +468,9 @@ export default {
         timers.forEach(clearTimeout);
         covers.forEach((cover) => {
           cover.panels.forEach((panel) => panel.remove());
+          cover.content.style.removeProperty('clip-path');
+          cover.content.style.removeProperty('-webkit-clip-path');
+          cover.content.style.removeProperty('transition');
           cover.container.style.overflow = cover.restoreOverflow;
           cover.container.style.position = cover.restorePosition;
         });

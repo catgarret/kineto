@@ -140,17 +140,39 @@ try {
     const images = [...document.querySelectorAll('.lightbox-grid img')].map((item) => item.getBoundingClientRect());
     const dots = [...document.querySelectorAll('.kt-slider-dot')].map((item) => {
       const box = item.getBoundingClientRect();
-      return { width:box.width, height:box.height, appearance:getComputedStyle(item).appearance };
+      return { width:box.width, height:box.height, appearance:getComputedStyle(item).appearance, before:getComputedStyle(item,'::before').content, after:getComputedStyle(item,'::after').content };
     });
+    const coverflow = document.querySelector('[data-kt-slider="coverflow"]');
     return {
       lightboxRows: [...new Set(images.map((box) => Math.round(box.top)))].length,
       lightboxInside: images.every((box) => box.width > 0 && box.height > 0),
-      dots
+      dots,
+      coverflowOverflow:getComputedStyle(coverflow).overflow
     };
   });
   assert.equal(webkitLayout.lightboxRows, 2, `Safari Lightbox thumbnails must form two non-overlapping rows (${JSON.stringify(webkitLayout)})`);
   assert.ok(webkitLayout.lightboxInside, `Safari Lightbox thumbnails must retain measurable grid cells (${JSON.stringify(webkitLayout)})`);
   assert.ok(webkitLayout.dots.length > 0 && webkitLayout.dots.every((dot) => dot.width >= 8 && dot.height === 8 && dot.appearance === 'none'), `Safari slider dots must not inherit native button appearance or collapse (${JSON.stringify(webkitLayout)})`);
+  assert.ok(webkitLayout.dots.every((dot) => dot.before === 'none' && dot.after === 'none'), `slider dots must not paint Safari pseudo-element artifacts (${JSON.stringify(webkitLayout)})`);
+  assert.equal(webkitLayout.coverflowOverflow, 'hidden', `Coverflow previews must be clipped at the demo boundary (${JSON.stringify(webkitLayout)})`);
+  const coverRevealModes = await page.evaluate(async () => {
+    const canvas=document.createElement('canvas'); canvas.width=40; canvas.height=20;
+    const context=canvas.getContext('2d'); context.fillStyle='#e3162a'; context.fillRect(0,0,28,20); context.fillStyle='#164ee3'; context.fillRect(28,0,12,20);
+    const image=new Image(); image.src=canvas.toDataURL(); await image.decode(); document.body.appendChild(image);
+    const auto=Kineto.coverReveal(image,{colorMode:'auto',layers:2,duration:10,delay:5000,waitForImage:true});
+    await new Promise(requestAnimationFrame);
+    const colors=[...image.closest('.kt-cover-wrap').querySelectorAll('[aria-hidden="true"]')].map((panel)=>getComputedStyle(panel).backgroundColor);
+    auto.destroy(); image.remove();
+    const host=document.createElement('div'); host.style.cssText='position:fixed;top:10px;left:10px'; const text=document.createElement('div'); text.textContent='content mask'; host.appendChild(text); document.body.appendChild(host);
+    const mask=Kineto.coverReveal(text,{mask:true,layers:2,color:'#f00',color2:'#0f0',duration:10,delay:5000,waitForImage:false});
+    await new Promise((resolve)=>setTimeout(resolve,80));
+    const wrap=text.closest('.kt-cover-wrap');
+    const result={colors,panels:wrap.querySelectorAll('[aria-hidden="true"]').length,wrapClip:wrap.style.clipPath,contentClip:text.style.clipPath};
+    mask.destroy(); host.remove();
+    return result;
+  });
+  assert.equal(new Set(coverRevealModes.colors).size, 2, `auto Cover Reveal must retain distinct colors extracted from the image (${JSON.stringify(coverRevealModes)})`);
+  assert.ok(coverRevealModes.panels === 1 && coverRevealModes.wrapClip === '' && coverRevealModes.contentClip !== '', `mask replacement must clip only content, never the colored panel wrapper (${JSON.stringify(coverRevealModes)})`);
   const radial = page.locator('[data-kt-slider="radial"]');
   await radial.locator('.kt-radial-next').click();
   await page.waitForTimeout(750);

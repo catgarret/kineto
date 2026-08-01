@@ -6992,7 +6992,7 @@ var lr = {
 				label: e.getAttribute("aria-label")
 			}))
 		}, K = G(Math.round(Number(t.initial ?? 0)), 0, w), ee = K, q = K, te = !1, ne = 0, re = 0, ie = 0, J = 0, ae = 0, oe = null, Y = null, se = null, ce = 0, le = O, ue = !1, de = !1, fe = !0, pe = null, me = t.enabled !== !1, he = () => {};
-		n.setAttribute("role", "region"), n.setAttribute("aria-roledescription", "carousel"), n.setAttribute("aria-label", t.label || "Carousel"), n.hasAttribute("tabindex") || (n.tabIndex = 0), n.style.overflow = g ? "clip" : "hidden", g ? n.style.overflowClipMargin = "var(--kt-slide-active-shadow-room, 40px)" : n.style.removeProperty("overflow-clip-margin"), n.style.touchAction = I ? "pan-x" : "pan-y", n.style.position = "relative", (s || d || f || p || m) && (n.style.perspective = `${Number(t.perspective ?? 1100)}px`), e.dataset.ktSliderEffect = o, e.classList.add(`kt-slider--${o}`), e.classList.toggle("kt-slider--active-shadow", g), g && e.style.setProperty("--kt-slide-active-shadow-opacity", `${Number((_ * 100).toFixed(2))}%`), r.style.display = "block", r.style.position = "relative", r.style.width = "100%", r.style.transformStyle = s ? "preserve-3d" : "flat";
+		n.setAttribute("role", "region"), n.setAttribute("aria-roledescription", "carousel"), n.setAttribute("aria-label", t.label || "Carousel"), n.hasAttribute("tabindex") || (n.tabIndex = 0), n.style.overflow = g ? "visible" : "hidden", n.style.removeProperty("overflow-clip-margin"), n.style.touchAction = I ? "pan-x" : "pan-y", n.style.position = "relative", (s || d || f || p || m) && (n.style.perspective = `${Number(t.perspective ?? 1100)}px`), e.dataset.ktSliderEffect = o, e.classList.add(`kt-slider--${o}`), e.classList.toggle("kt-slider--active-shadow", g), g && e.style.setProperty("--kt-slide-active-shadow-opacity", `${Number((_ * 100).toFixed(2))}%`), r.style.display = "block", r.style.position = "relative", r.style.width = "100%", r.style.transformStyle = s ? "preserve-3d" : "flat";
 		let ge = 100 / x;
 		i.forEach((e, n) => {
 			e.style.position = n === 0 ? "relative" : "absolute", e.style.top = "0", e.style.left = "0", I ? (e.style.width = "100%", e.style.height = `calc(${ge}% - ${y * (x - 1) / x}px)`, n !== 0 && (e.style.width = "100%")) : (e.style.width = `calc(${ge}% - ${y * (x - 1) / x}px)`, e.style.minWidth = "0", n !== 0 && t.autoHeight !== !0 && (e.style.height = "100%")), e.style.transformOrigin = "50% 50%", e.style.willChange = g ? "transform,opacity,filter" : "transform,opacity", e.style.transition = "none", e.setAttribute("role", "group"), e.setAttribute("aria-roledescription", "slide"), e.setAttribute("aria-label", `${n + 1} of ${i.length}`);
@@ -10474,32 +10474,31 @@ var ei = {
 		let n = e.getContext("2d", { willReadFrequently: !0 });
 		if (!n) return null;
 		n.drawImage(t, 0, 0, 20, 20);
-		let r = n.getImageData(0, 0, 20, 20).data, i = [];
-		for (let e = 0; e < r.length; e += 4) r[e + 3] < 32 || i.push([
-			r[e],
-			r[e + 1],
-			r[e + 2]
-		]);
-		if (!i.length) return null;
-		let a = [i[0], i[Math.floor(i.length * .67)]];
-		for (let e = 0; e < 5; e += 1) {
-			let e = [[
+		let r = n.getImageData(0, 0, 20, 20).data, i = /* @__PURE__ */ new Map();
+		for (let e = 0; e < r.length; e += 4) {
+			if (r[e + 3] < 32) continue;
+			let t = r[e], n = r[e + 1], a = r[e + 2], o = `${t >> 4}:${n >> 4}:${a >> 4}`, s = i.get(o) || [
 				0,
 				0,
 				0,
 				0
-			], [
-				0,
-				0,
-				0,
-				0
-			]];
-			i.forEach((t) => {
-				let n = a.map((e) => (t[0] - e[0]) ** 2 + (t[1] - e[1]) ** 2 + (t[2] - e[2]) ** 2), r = n[0] <= n[1] ? 0 : 1;
-				e[r][0] += t[0], e[r][1] += t[1], e[r][2] += t[2], e[r][3] += 1;
-			}), a = e.map((e, t) => e[3] ? e.slice(0, 3).map((t) => t / e[3]) : a[t]);
+			];
+			s[0] += t, s[1] += n, s[2] += a, s[3] += 1, i.set(o, s);
 		}
-		return a.map((e) => `rgb(${e.map((e) => Math.round(e)).join(" ")})`);
+		let a = [...i.values()].map(([e, t, n, r]) => {
+			let i = [
+				e / r,
+				t / r,
+				n / r
+			];
+			return {
+				rgb: i,
+				score: r * (1 + (Math.max(...i) - Math.min(...i)) / 96)
+			};
+		}).sort((e, t) => t.score - e.score);
+		if (!a.length) return null;
+		let o = a[0], s = (e, t) => (e[0] - t[0]) ** 2 + (e[1] - t[1]) ** 2 + (e[2] - t[2]) ** 2;
+		return [o, a.slice(1).sort((e, t) => t.score * Math.sqrt(s(t.rgb, o.rgb)) - e.score * Math.sqrt(s(e.rgb, o.rgb)))[0] || o].map(({ rgb: e }) => `rgb(${e.map((e) => Math.round(e)).join(" ")})`);
 	} catch {
 		return null;
 	}
@@ -10553,21 +10552,22 @@ var ei = {
 				n.setAttribute("aria-hidden", "true"), n.style.cssText = `position:absolute;inset:0;z-index:${20 + t};transform:translate(0,0);transition:transform ${c}s ${u};pointer-events:none;will-change:transform;`, e.container.appendChild(n), e.panels.push(n);
 			}
 			w(e);
-		}, E = (e) => {
-			let t = e.style.position, n = e.style.overflow;
+		}, E = (e, t = e) => {
+			let n = e.style.position, r = e.style.overflow;
 			getComputedStyle(e).position === "static" && (e.style.position = "relative"), e.style.overflow = "hidden";
-			let r = {
+			let i = {
 				container: e,
+				content: t,
 				panels: [],
-				restorePosition: t,
-				restoreOverflow: n
+				restorePosition: n,
+				restoreOverflow: r
 			};
-			return T(r), y.push(r), r.panels;
+			return T(i), y.push(i), i.panels;
 		}, D = null, O = () => {
 			let t = getComputedStyle(e), n = e.tagName === "IMG" || t.display.startsWith("inline"), r = document.createElement("div");
 			r.className = "kt-cover-wrap", r.style.cssText = `position:relative;overflow:hidden;display:${n ? "inline-block" : "block"};width:${n ? "auto" : "100%"};height:${n ? "auto" : "100%"};min-width:0;min-height:0;border-radius:${t.borderRadius};`, e.parentNode.insertBefore(r, e), r.appendChild(e), b = r, x = () => {
 				r.parentNode && (r.parentNode.insertBefore(e, r), r.remove());
-			}, E(r);
+			}, E(r, e);
 		};
 		function k() {
 			let t = e.textContent, n = t.split(/\s+/).filter((e) => e.length);
@@ -10582,7 +10582,9 @@ var ei = {
 				(o === null || Math.abs(t - o) > 3) && (a = [], i.push(a), o = t), a.push(e);
 			}), e.textContent = "", i.forEach((t) => {
 				let n = document.createElement("span");
-				n.className = "kt-cover-line", n.style.cssText = "position:relative;display:block;overflow:hidden;width:max-content;max-width:100%;", n.textContent = t.map((e) => e.textContent).join(" "), e.appendChild(n), E(n);
+				n.className = "kt-cover-line", n.style.cssText = "position:relative;display:block;overflow:hidden;width:max-content;max-width:100%;";
+				let r = document.createElement("span");
+				r.style.display = "block", r.textContent = t.map((e) => e.textContent).join(" "), n.appendChild(r), e.appendChild(n), E(n, r);
 			}), !0;
 		}
 		h && k() || O();
@@ -10601,11 +10603,11 @@ var ei = {
 			A = !0;
 			let n = g(), r = _(n);
 			f && y.forEach((e) => {
-				let t = e.container;
+				let t = e.content;
 				t.style.clipPath = N(P || n), t.style.webkitClipPath = t.style.clipPath, t.style.transition = `clip-path ${c}s ${u},-webkit-clip-path ${c}s ${u}`;
 			}), e.offsetWidth, f && requestAnimationFrame(() => {
 				y.forEach((e) => {
-					e.container.style.clipPath = "inset(0 0 0 0)", e.container.style.webkitClipPath = "inset(0 0 0 0)";
+					e.content.style.clipPath = "inset(0 0 0 0)", e.content.style.webkitClipPath = "inset(0 0 0 0)";
 				});
 			}), requestAnimationFrame(() => {
 				y.forEach((e, t) => {
@@ -10621,7 +10623,7 @@ var ei = {
 			let i = h ? Math.max(0, y.length - 1) : 0, a = l + i * m + Math.max(0, p - 1) * m + c * 1e3 + 80;
 			v.push(setTimeout(() => {
 				S && (y.forEach((e) => {
-					e.panels.forEach((e) => e.remove()), f && (e.container.style.removeProperty("clip-path"), e.container.style.removeProperty("-webkit-clip-path"), e.container.style.removeProperty("transition"));
+					e.panels.forEach((e) => e.remove()), f && (e.content.style.removeProperty("clip-path"), e.content.style.removeProperty("-webkit-clip-path"), e.content.style.removeProperty("transition"));
 				}), t.onComplete?.(e));
 			}, a));
 		}, I = t.waitForImage !== !1, R = h ? null : e.tagName === "IMG" ? e : e.querySelector && e.querySelector("img"), z = () => {
@@ -10669,7 +10671,7 @@ var ei = {
 			},
 			exit() {
 				return n ? Promise.resolve() : (A = !1, v.forEach(clearTimeout), v = [], y.forEach((e) => {
-					e.panels.forEach((e) => e.remove()), T(e), f && (e.container.style.removeProperty("clip-path"), e.container.style.removeProperty("-webkit-clip-path"), e.container.style.removeProperty("transition"));
+					e.panels.forEach((e) => e.remove()), T(e), f && (e.content.style.removeProperty("clip-path"), e.content.style.removeProperty("-webkit-clip-path"), e.content.style.removeProperty("transition"));
 				}), new Promise((e) => requestAnimationFrame(() => e())));
 			},
 			async refresh(t) {
@@ -10679,7 +10681,7 @@ var ei = {
 			resume() {},
 			destroy() {
 				S = !1, j?.disconnect(), B?.disconnect(), H && cancelAnimationFrame(H), M != null && cancelAnimationFrame(M), v.forEach(clearTimeout), y.forEach((e) => {
-					e.panels.forEach((e) => e.remove()), e.container.style.overflow = e.restoreOverflow, e.container.style.position = e.restorePosition;
+					e.panels.forEach((e) => e.remove()), e.content.style.removeProperty("clip-path"), e.content.style.removeProperty("-webkit-clip-path"), e.content.style.removeProperty("transition"), e.container.style.overflow = e.restoreOverflow, e.container.style.position = e.restorePosition;
 				}), x?.(), D != null && (e.textContent = D);
 			}
 		};

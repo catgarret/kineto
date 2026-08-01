@@ -667,6 +667,9 @@ const maskCover = coverRevealModule.create(maskTarget, {
 const maskPanels = [...maskTarget.closest('.kt-cover-wrap').querySelectorAll('[aria-hidden="true"]')];
 assert.equal(maskPanels.length, 1, 'mask mode must replace the final colored panel instead of adding another layer');
 assert.notEqual(maskPanels[0].style.background, 'rgb(0, 255, 0)', 'color2 must not be painted when a two-layer reveal uses the mask replacement');
+await new Promise((resolve) => setTimeout(resolve, 30));
+assert.equal(maskTarget.closest('.kt-cover-wrap').style.clipPath, '', 'mask mode must not clip or fragment the colored panel wrapper');
+assert.notEqual(maskTarget.style.clipPath, '', 'mask mode must apply its wipe to the actual content');
 maskCover.destroy();
 maskTarget.remove();
 
