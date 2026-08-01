@@ -276,6 +276,23 @@ assert.ok(
   'FLIP fade must disappear at the old slot before it moves invisibly and appears at the new slot'
 );
 sequentialFadeFlip.destroy();
+
+flipFrames.length = 0;
+flipItems.forEach((item) => { item.animate = (frames) => { flipFrames.push(frames); return { finished: new Promise(() => {}), cancel() {} }; }; });
+const previousPrototypeAnimate = window.HTMLElement.prototype.animate;
+window.HTMLElement.prototype.animate = function animate(frames) { flipFrames.push(frames); return { finished: new Promise(() => {}), cancel() {} }; };
+flipLayout = 0;
+const crossfadeFlip = flipModule.create(flipGrid, { duration: 0.2, mode: 'crossfade', watch: false });
+flipLayout = 1;
+crossfadeFlip.play();
+assert.ok(
+  document.body.querySelector('[aria-hidden="true"][style*="2147483646"]')
+    && flipFrames.some((frames) => frames.length === 2 && frames[0].opacity === 1 && frames[1].opacity === 0)
+    && flipFrames.some((frames) => frames.length === 2 && frames[0].opacity === 0 && frames[1].opacity === 1),
+  'FLIP crossfade must overlap an outgoing old-position visual clone with the incoming live item'
+);
+crossfadeFlip.destroy();
+window.HTMLElement.prototype.animate = previousPrototypeAnimate;
 flipGrid.remove();
 
 // Tilt and Card Glow shadows must coexist with each other and with a card's

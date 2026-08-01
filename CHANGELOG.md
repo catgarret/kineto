@@ -4,8 +4,8 @@
 
 ### English
 
+- Made FLIP `crossfade` simultaneously fade an old-position visual clone out and the live new-position item in, and fixed Reset for nested Cover Reveal + Flip demos without detaching the reveal targets.
 - Kept settings sections in their assigned masonry columns when ordinary option changes only alter fields inside an existing section.
-- Added a 250ms zero-opacity lead-in to Page Reveal Zoom while allowing its scale motion to begin immediately.
 - Made Cover Reveal `auto` extract a distinct, deterministic two-color palette per actual image element instead of relying on a gallery-level fallback; the Staggered Gallery now declares `auto` directly in its source markup.
 - Normalized cursor following and Page Reveal Zoom across Safari frame rates, fixed Safari Lightbox Grid and Slider dot layout, and tuned the demo's Safari scroll/hover timing.
 - Added diverse two-color image sampling to Cover Reveal, switched its image demos from a fixed palette to per-image `auto`, and made `mask:true` replace the final colored panel with an outer mask around each complete cover unit.
@@ -16,8 +16,8 @@
 
 ### 한국어
 
+- FLIP `crossfade`가 이전 위치의 시각 복제본을 Fade-out하는 동시에 새 위치의 실제 요소를 Fade-in하도록 구분하고, 중첩된 Cover Reveal + Flip 데모를 초기화해도 Reveal 대상이 분리되지 않도록 수정했습니다.
 - 일반 옵션 변경으로 기존 설정 섹션 안의 필드만 달라질 때 섹션 자체가 다른 masonry 열로 이동하지 않도록 위치를 고정했습니다.
-- Page Reveal Zoom의 확대는 즉시 시작하되 opacity는 처음 0.25초 동안 0으로 유지한 뒤 나타나도록 조정했습니다.
 - Cover Reveal `auto`가 갤러리 공통 fallback에 의존하지 않고 실제 이미지 요소마다 대표색 두 개를 결정론적으로 별도 추출하도록 수정했으며, Staggered Gallery 원본 마크업도 직접 `auto`를 선언하도록 변경했습니다.
 - Safari 프레임 속도에서도 커서 추종과 Page Reveal Zoom이 일관되도록 보정하고, Safari Lightbox Grid와 Slider 점 레이아웃 및 데모 스크롤·호버 타이밍을 수정했습니다.
 - Cover Reveal에 서로 구별되는 이미지 대표색 두 개 추출을 추가하고 이미지 데모를 고정 팔레트에서 이미지별 `auto`로 전환했으며, `mask:true`가 마지막 색상 패널을 각 커버 전체를 감싸는 최상위 마스크로 교체하도록 수정했습니다.

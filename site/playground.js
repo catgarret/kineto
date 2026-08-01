@@ -955,7 +955,7 @@
     });
   });
 
-  const state = { snapshots: new WeakMap(), timers: new WeakMap() };
+  const state = { snapshots: new WeakMap(), childOrders: new WeakMap(), timers: new WeakMap() };
   const dash = (value) => value.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
   const camel = (value) => value.replace(/-([a-z])/g, (_m, c) => c.toUpperCase());
   const labelize = (value) => value.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
@@ -1016,7 +1016,10 @@
   function capture(root = document) {
     Object.values(MODULE_ATTRIBUTES).forEach((attribute) => {
       root.querySelectorAll(`[${attribute}]`).forEach((element) => {
-        if (!state.snapshots.has(element)) state.snapshots.set(element, element.cloneNode(true));
+        if (!state.snapshots.has(element)) {
+          state.snapshots.set(element, element.cloneNode(true));
+          state.childOrders.set(element, [...element.children]);
+        }
       });
     });
   }
@@ -1132,6 +1135,13 @@
     Array.from(element.attributes).forEach((attribute) => element.removeAttribute(attribute.name));
     Array.from(snapshot.attributes).forEach((attribute) => element.setAttribute(attribute.name, attribute.value));
     if (!['IMG','INPUT','VIDEO','IFRAME','CANVAS'].includes(element.tagName)) element.innerHTML = snapshot.innerHTML;
+  }
+
+  function restoreAttributes(element) {
+    const snapshot = state.snapshots.get(element);
+    if (!snapshot) return;
+    Array.from(element.attributes).forEach((attribute) => element.removeAttribute(attribute.name));
+    Array.from(snapshot.attributes).forEach((attribute) => element.setAttribute(attribute.name, attribute.value));
   }
 
   function setOption(descriptor, key, value, type) {
@@ -1571,7 +1581,17 @@
       Object.assign(descriptor.options, descriptor.initialOptions);
     });
     elementDescriptors.forEach((descriptor) => descriptor.targets.forEach((target) => MK.destroyModule(target, descriptor.module)));
-    targets.forEach(restoreElement);
+    const nestedParents = targets.filter((target) => targets.some((other) => other !== target && target.contains(other)));
+    targets.filter((target) => !nestedParents.includes(target)).forEach(restoreElement);
+    nestedParents.forEach((target) => {
+      // Replacing an ancestor's innerHTML invalidates every descendant target
+      // held by its descriptors. Preserve those exact nodes, restore the
+      // ancestor's authored attributes, and put its original children back in
+      // their captured order (notably Cover Reveal items inside a Flip grid).
+      restoreAttributes(target);
+      const order = state.childOrders.get(target) || [];
+      order.forEach((child) => { if (child.parentNode === target) target.appendChild(child); });
+    });
     elementDescriptors.forEach((descriptor) => descriptor.targets.forEach((target) => {
       MK.create(descriptor.module, target, descriptorOptions({ ...descriptor, targets: [target] }));
     }));

@@ -124,8 +124,6 @@ try {
     await new Promise(requestAnimationFrame);
     const rootAnimations = document.documentElement.getAnimations().filter((animation) => animation.effect?.target === document.documentElement);
     rootAnimations.forEach((animation) => { animation.pause(); animation.currentTime = 140; });
-    const heldOpacity = Number(getComputedStyle(document.documentElement).opacity);
-    rootAnimations.forEach((animation) => { animation.currentTime = 320; });
     const style = getComputedStyle(header);
     const during = {
       opacity: Number(style.opacity),
@@ -136,14 +134,12 @@ try {
       bodyTransform: getComputedStyle(document.body).transform,
       rootTransform: getComputedStyle(document.documentElement).transform,
       rootOpacity: Number(getComputedStyle(document.documentElement).opacity),
-      heldOpacity,
       viewportCovers: [...document.documentElement.children].filter((node) => node.matches?.('div[aria-hidden="true"]') && node.style.zIndex === '99997').length
     };
     window.Kineto.destroyModule(document.body, 'pageReveal');
     return during;
   });
   assert.ok(zoomHeader.opacity > 0.99 && zoomHeader.height > 0, `Page Reveal zoom must keep the persistent header in the animated page layer (${JSON.stringify(zoomHeader)})`);
-  assert.ok(zoomHeader.heldOpacity < 0.01, `Page Reveal zoom opacity must remain at zero during its initial 250ms hold (${JSON.stringify(zoomHeader)})`);
   assert.ok(zoomHeader.rootOpacity > 0 && zoomHeader.rootOpacity < 1, `Page Reveal zoom must fade the whole page from opacity 0 to 1 while scaling (${JSON.stringify(zoomHeader)})`);
   assert.notEqual(zoomHeader.rootTransform, 'none', `the real Zoom button must animate the root viewport consistently across Safari and Chromium (${JSON.stringify(zoomHeader)})`);
   assert.ok(zoomHeader.width < zoomHeader.beforeWidth, `the persistent header must zoom with the page instead of staying fixed (${JSON.stringify(zoomHeader)})`);
@@ -231,6 +227,29 @@ try {
     else pairsBySource.set(entry.src,pair);
   });
   assert.ok(new Set(pairsBySource.values()).size>=4, `different gallery images must produce independently sampled two-color pairs (${JSON.stringify(galleryPalettes)})`);
+  const coverReset = await page.evaluate(async () => {
+    const gallery=document.getElementById('cover-gallery-demo');
+    const before=[...gallery.querySelectorAll('[data-kt-cover-reveal]')];
+    window.__ktCoverResetTargets=before;
+    const card=gallery.closest('.card');
+    card.querySelector('.kt-playground>summary')?.click();
+    await new Promise((resolve)=>setTimeout(resolve,250));
+    const body=[...document.querySelectorAll('.kt-drawer-sheet .kt-playground__body')].find((node)=>!node.hidden);
+    body?.querySelector('.kt-playground__toolbar button:last-child')?.click();
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+    const after=[...gallery.querySelectorAll('[data-kt-cover-reveal]')];
+    const result={
+      sameTargets:after.length===before.length&&after.every((target,index)=>target===before[index]),
+      coverInstances:after.filter((target)=>Kineto.getInstance(target,'coverReveal')).length,
+      coverWrappers:after.filter((target)=>target.closest('.kt-cover-wrap')).length,
+      flip:Boolean(Kineto.getInstance(gallery,'flip'))
+    };
+    document.querySelector('.kt-drawer-backdrop.is-open')?.click();
+    await new Promise((resolve)=>setTimeout(resolve,250));
+    return result;
+  });
+  assert.ok(coverReset.sameTargets&&coverReset.coverInstances===8&&coverReset.coverWrappers===8&&coverReset.flip, `Reset must preserve and recreate both nested Cover Reveal and Flip instances (${JSON.stringify(coverReset)})`);
   const radial = page.locator('[data-kt-slider="radial"]');
   const radialDefault = await radial.evaluate((host)=>{
     const boxes=[...host.querySelectorAll('.kt-radial-item')].filter((item)=>Number(getComputedStyle(item).opacity)>.99).map((item)=>item.querySelector('img').getBoundingClientRect());

@@ -60,10 +60,13 @@ const BUDGETS = {
   // interpolation, and the full-circle radial layout add 1.4 KB raw / 0.4 KB
   // gzip. Image-derived palette ranking adds 46 bytes beyond the former gzip
   // ceiling; 125 KB retains <1 KB headroom and still rejects dependency bloat.
-  'kineto.js': { raw: 478, gz: 125 },
-  'kineto.min.js': { raw: 378, gz: 111 },
-  'kineto.umd.js': { raw: 376, gz: 111 },
-  'kineto.umd.min.js': { raw: 376, gz: 111 },
+  // A real FLIP crossfade snapshots computed styles so the outgoing old-slot
+  // clone and incoming live item can overlap. Its bounded ~0.7 KB cost gets a
+  // 1 KB raw/gzip allowance without relaxing the dependency-bloat guard.
+  'kineto.js': { raw: 479, gz: 125 },
+  'kineto.min.js': { raw: 378, gz: 112 },
+  'kineto.umd.js': { raw: 377, gz: 111 },
+  'kineto.umd.min.js': { raw: 377, gz: 111 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

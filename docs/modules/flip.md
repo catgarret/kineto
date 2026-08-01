@@ -32,7 +32,7 @@ layout.sort((a, b) => Number(a.dataset.rank) - Number(b.dataset.rank));
 | `none` | 모션 없이 즉시 새 순서를 표시합니다. |
 | `slide` | 기존 위치에서 새 위치까지 이동합니다. 기본값입니다. |
 | `fade` | 원래 상태가 사라지고 짧은 공백 뒤 새 순서가 나타납니다. |
-| `crossfade` | 이전 상태와 새 상태가 끊김 없이 교차 전환됩니다. |
+| `crossfade` | 이전 위치의 시각 복제본이 사라지는 동시에 새 위치의 실제 요소가 나타납니다. 두 상태가 겹쳐 재생됩니다. |
 | `fade-slide` | 위치 이동과 페이드를 함께 적용합니다. |
 | `scale` | 원래 위치에서 작아진 뒤 새 위치에서 다시 커집니다. 불투명도 페이드는 사용하지 않습니다. |
 
@@ -44,4 +44,4 @@ layout.sort((a, b) => Number(a.dataset.rank) - Number(b.dataset.rank));
 
 `watch`는 외부 코드가 컨테이너의 직계 자식 DOM을 추가·삭제·재배치할 때 MutationObserver로 자동 재생할지를 정합니다. `watch:false`로 이 감지를 끌 수 있습니다. `shuffle()`, `sort()`, `reorder()`는 명시적으로 호출하는 인스턴스 메서드이므로 `watch` 값과 관계없이 선택한 `mode`로 재생됩니다.
 
-`destroy()`는 observer를 해제하며, 정렬 과정에서 자식을 복제하거나 다시 만들지 않습니다.
+`destroy()`는 observer와 재생 중인 임시 시각 복제본을 제거합니다. `crossfade`의 복제본은 전환 중 화면 표현에만 사용되며 원본 DOM의 이벤트·상태·정렬 대상은 기존 요소 그대로 유지됩니다.

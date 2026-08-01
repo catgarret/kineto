@@ -17,6 +17,27 @@ export default {
     const items = () => itemSelector
       ? Array.from(el.querySelectorAll(itemSelector))
       : Array.from(el.children);
+    const ghosts = new Set();
+
+    const visualClone = (item, rect) => {
+      const ghost = item.cloneNode(true);
+      ghost.removeAttribute('id');
+      ghost.querySelectorAll?.('[id]').forEach((node) => node.removeAttribute('id'));
+      const originals = [item, ...item.querySelectorAll('*')];
+      const copies = [ghost, ...ghost.querySelectorAll('*')];
+      originals.forEach((source, index) => {
+        const styles = getComputedStyle(source);
+        for (let i = 0; i < styles.length; i += 1) {
+          const property = styles[i];
+          copies[index]?.style.setProperty(property, styles.getPropertyValue(property), styles.getPropertyPriority(property));
+        }
+      });
+      ghost.setAttribute('aria-hidden', 'true');
+      ghost.style.cssText += `;position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;margin:0;transform:none;pointer-events:none;z-index:2147483646;`;
+      document.body.appendChild(ghost);
+      ghosts.add(ghost);
+      return ghost;
+    };
 
     let firstRects = new WeakMap();
     let seen = new WeakSet();
@@ -53,14 +74,6 @@ export default {
           { transform: 'none', opacity: 1, offset: 1 }
         ];
       }
-      if (mode === 'crossfade') {
-        return [
-          { opacity: 1, offset: 0 },
-          { opacity: 0, offset: 0.42 },
-          { opacity: 0, transform: 'none', offset: 0.42 },
-          { opacity: 1, transform: 'none', offset: 1 }
-        ];
-      }
       if (mode === 'fade-slide') return [{ transform: from, opacity: 0.15 }, { transform: 'none', opacity: 1 }];
       if (mode === 'scale') {
         return [
@@ -91,6 +104,15 @@ export default {
         const sx = last.width ? first.width / last.width : 1;
         const sy = last.height ? first.height / last.height : 1;
         if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sx - 1) < 0.01 && Math.abs(sy - 1) < 0.01) return;
+        if (mode === 'crossfade') {
+          const timing = { duration: duration * 1000, easing: ease, delay: i * stagger * 1000 };
+          const ghost = visualClone(item, first);
+          const outgoing = ghost.animate([{ opacity: 1 }, { opacity: 0 }], timing);
+          const incoming = item.animate([{ opacity: 0 }, { opacity: 1 }], timing);
+          Promise.allSettled([outgoing.finished, incoming.finished]).then(() => { ghosts.delete(ghost); ghost.remove(); });
+          i += 1;
+          return;
+        }
         item.animate(moveFrames(dx, dy, sx, sy),
           { duration: duration * 1000, easing: ease, delay: i * stagger * 1000 });
         i += 1;
@@ -182,7 +204,7 @@ export default {
       sort,
       pause() { observer?.disconnect(); },
       resume() { observe(); },
-      destroy() { observer?.disconnect(); observer = null; }
+      destroy() { observer?.disconnect(); observer = null; ghosts.forEach((ghost) => ghost.remove()); ghosts.clear(); }
     };
   },
   reduced(el, opts) { return this.create(el, opts); }

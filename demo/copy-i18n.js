@@ -903,13 +903,13 @@ window.KINETO_COPY_I18N = {
       "Создает отдельную обложку для каждой отображаемой линии и удаляет их по порядку.",
       "Crea una copertina separata per ogni linea renderizzata e le rimuove in ordine."
     ],
-    "팔레트의 색과 방향을 타일마다 다르게 적용합니다.": [
-      "Apply the color and direction of the palette differently to each tile.",
-      "パレットの色と方向をタイルごとに別々に適用します。",
-      "对每个图块应用不同的调色板颜色和方向。",
-      "對每個圖塊套用不同的調色板顏色和方向。",
-      "Примените цвет и направление палитры по-разному к каждой плитке.",
-      "Applica il colore e la direzione della tavolozza in modo diverso a ciascuna piastrella."
+    "각 이미지에서 대표색 두 개를 따로 추출하고 방향도 타일마다 다르게 적용합니다.": [
+      "Extracts two representative colors from each image and varies the direction per tile.",
+      "画像ごとに代表色を2色ずつ抽出し、方向もタイルごとに変えます。",
+      "从每张图像中分别提取两种代表色，并为每个图块设置不同方向。",
+      "從每張圖片中分別擷取兩種代表色，並為每個圖塊設定不同方向。",
+      "Из каждого изображения отдельно извлекаются два основных цвета, а направление меняется для каждой плитки.",
+      "Estrae separatamente due colori rappresentativi da ogni immagine e varia la direzione per ciascun riquadro."
     ],
     "스크롤 진행률에 맞춰 글자색을 채웁니다.": [
       "Fills the font color according to the scroll progress.",

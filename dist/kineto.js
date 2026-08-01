@@ -7501,13 +7501,20 @@ var pr = {
 			});
 			i?.finished.then(_).catch(_);
 		} else if (n === "zoom") {
-			let n = e === document.body || e === document.documentElement ? document.documentElement : e, r = n.getBoundingClientRect(), a = window.innerWidth / 2 - r.left, o = window.innerHeight / 2 - r.top;
-			n.style.transformOrigin = `${a}px ${o}px`, g(n, [{ transform: "scale(0.72)" }, { transform: "scale(1)" }], { easing: typeof t.ease == "string" && t.ease ? i : "cubic-bezier(.22,1,.36,1)" });
-			let c = g(n, [{ opacity: 0 }, { opacity: 1 }], {
-				delay: s + 250,
-				fill: "backwards"
+			let n = e === document.body || e === document.documentElement ? document.documentElement : e, a = n.getBoundingClientRect(), o = window.innerWidth / 2 - a.left, c = window.innerHeight / 2 - a.top;
+			n.style.transformOrigin = `${o}px ${c}px`;
+			let l = typeof t.ease == "string" && t.ease ? i : "cubic-bezier(.22,1,.36,1)", d = n.animate([{
+				transform: "scale(0.72)",
+				opacity: 0
+			}, {
+				transform: "scale(1)",
+				opacity: 1
+			}], {
+				duration: r,
+				delay: s,
+				easing: l
 			});
-			f.push(() => n.style.removeProperty("transform-origin")), c.finished.then(_).catch(_);
+			u.add(d), d.finished.catch(() => {}).finally(() => u.delete(d)), f.push(() => n.style.removeProperty("transform-origin")), d.finished.then(_).catch(_);
 		} else if (n === "iris") {
 			let e = h(`inset:0;background:${o};`), t = h("inset:0;"), n = (e) => `circle(${e} at 50% 50%)`;
 			g(t, [{ clipPath: n("150%") }, { clipPath: n("0%") }]), g(e, [
@@ -10955,26 +10962,37 @@ var ei = {
 	}
 }, mi = {
 	create(e, t = {}) {
-		let n = V().reducedMotion, r = Math.max(0, Number(t.duration ?? .4)), i = t.ease || "cubic-bezier(.22,.8,.3,1)", a = Math.max(0, Number(t.stagger ?? 0)), o = t.item || null, s = () => o ? Array.from(e.querySelectorAll(o)) : Array.from(e.children), c = /* @__PURE__ */ new WeakMap(), l = /* @__PURE__ */ new WeakSet(), u = () => {
-			c = /* @__PURE__ */ new WeakMap(), l = /* @__PURE__ */ new WeakSet(), s().forEach((e) => {
-				c.set(e, e.getBoundingClientRect()), l.add(e);
+		let n = V().reducedMotion, r = Math.max(0, Number(t.duration ?? .4)), i = t.ease || "cubic-bezier(.22,.8,.3,1)", a = Math.max(0, Number(t.stagger ?? 0)), o = t.item || null, s = () => o ? Array.from(e.querySelectorAll(o)) : Array.from(e.children), c = /* @__PURE__ */ new Set(), l = (e, t) => {
+			let n = e.cloneNode(!0);
+			n.removeAttribute("id"), n.querySelectorAll?.("[id]").forEach((e) => e.removeAttribute("id"));
+			let r = [e, ...e.querySelectorAll("*")], i = [n, ...n.querySelectorAll("*")];
+			return r.forEach((e, t) => {
+				let n = getComputedStyle(e);
+				for (let e = 0; e < n.length; e += 1) {
+					let r = n[e];
+					i[t]?.style.setProperty(r, n.getPropertyValue(r), n.getPropertyPriority(r));
+				}
+			}), n.setAttribute("aria-hidden", "true"), n.style.cssText += `;position:fixed;left:${t.left}px;top:${t.top}px;width:${t.width}px;height:${t.height}px;margin:0;transform:none;pointer-events:none;z-index:2147483646;`, document.body.appendChild(n), c.add(n), n;
+		}, u = /* @__PURE__ */ new WeakMap(), d = /* @__PURE__ */ new WeakSet(), f = () => {
+			u = /* @__PURE__ */ new WeakMap(), d = /* @__PURE__ */ new WeakSet(), s().forEach((e) => {
+				u.set(e, e.getBoundingClientRect()), d.add(e);
 			});
-		}, d = [
+		}, p = [
 			"none",
 			"slide",
 			"fade",
 			"crossfade",
 			"fade-slide",
 			"scale"
-		].includes(t.mode) ? t.mode : "slide", f = () => d === "fade" || d === "crossfade" ? [{ opacity: 0 }, { opacity: 1 }] : [{
+		].includes(t.mode) ? t.mode : "slide", m = () => p === "fade" || p === "crossfade" ? [{ opacity: 0 }, { opacity: 1 }] : [{
 			opacity: 0,
 			transform: "scale(.92)"
 		}, {
 			opacity: 1,
 			transform: "none"
-		}], p = (e, t, n, r) => {
+		}], h = (e, t, n, r) => {
 			let i = `translate(${e}px, ${t}px) scale(${n}, ${r})`;
-			return d === "fade" ? [
+			return p === "fade" ? [
 				{
 					transform: i,
 					opacity: 1,
@@ -10995,32 +11013,13 @@ var ei = {
 					opacity: 1,
 					offset: 1
 				}
-			] : d === "crossfade" ? [
-				{
-					opacity: 1,
-					offset: 0
-				},
-				{
-					opacity: 0,
-					offset: .42
-				},
-				{
-					opacity: 0,
-					transform: "none",
-					offset: .42
-				},
-				{
-					opacity: 1,
-					transform: "none",
-					offset: 1
-				}
-			] : d === "fade-slide" ? [{
+			] : p === "fade-slide" ? [{
 				transform: i,
 				opacity: .15
 			}, {
 				transform: "none",
 				opacity: 1
-			}] : d === "scale" ? [
+			}] : p === "scale" ? [
 				{
 					transform: i,
 					offset: 0
@@ -11038,60 +11037,73 @@ var ei = {
 					offset: 1
 				}
 			] : [{ transform: i }, { transform: "none" }];
-		}, m = () => {
-			if (n || r === 0 || d === "none") {
-				u();
+		}, g = () => {
+			if (n || r === 0 || p === "none") {
+				f();
 				return;
 			}
 			let e = 0;
 			s().forEach((t) => {
-				let n = c.get(t), o = t.getBoundingClientRect();
-				if (!n || !l.has(t)) {
-					t.animate(f(), {
+				let n = u.get(t), o = t.getBoundingClientRect();
+				if (!n || !d.has(t)) {
+					t.animate(m(), {
 						duration: r * 1e3,
 						easing: i,
 						delay: e * a * 1e3
 					}), e += 1;
 					return;
 				}
-				let s = n.left - o.left, u = n.top - o.top, d = o.width ? n.width / o.width : 1, m = o.height ? n.height / o.height : 1;
-				Math.abs(s) < 1 && Math.abs(u) < 1 && Math.abs(d - 1) < .01 && Math.abs(m - 1) < .01 || (t.animate(p(s, u, d, m), {
-					duration: r * 1e3,
-					easing: i,
-					delay: e * a * 1e3
-				}), e += 1);
-			}), u();
-		}, h = null, g = () => {
-			h && t.watch !== !1 && h.observe(e, {
+				let s = n.left - o.left, f = n.top - o.top, g = o.width ? n.width / o.width : 1, _ = o.height ? n.height / o.height : 1;
+				if (!(Math.abs(s) < 1 && Math.abs(f) < 1 && Math.abs(g - 1) < .01 && Math.abs(_ - 1) < .01)) {
+					if (p === "crossfade") {
+						let o = {
+							duration: r * 1e3,
+							easing: i,
+							delay: e * a * 1e3
+						}, s = l(t, n), u = s.animate([{ opacity: 1 }, { opacity: 0 }], o), d = t.animate([{ opacity: 0 }, { opacity: 1 }], o);
+						Promise.allSettled([u.finished, d.finished]).then(() => {
+							c.delete(s), s.remove();
+						}), e += 1;
+						return;
+					}
+					t.animate(h(s, f, g, _), {
+						duration: r * 1e3,
+						easing: i,
+						delay: e * a * 1e3
+					}), e += 1;
+				}
+			}), f();
+		}, _ = null, v = () => {
+			_ && t.watch !== !1 && _.observe(e, {
 				childList: !0,
 				subtree: !1
 			});
 		};
-		t.watch !== !1 && typeof MutationObserver < "u" && (h = new MutationObserver(() => m()), g()), u();
-		let _ = (t) => {
-			h?.disconnect(), u();
+		t.watch !== !1 && typeof MutationObserver < "u" && (_ = new MutationObserver(() => g()), v()), f();
+		let y = (t) => {
+			_?.disconnect(), f();
 			let n = document.createDocumentFragment();
 			return t.forEach((e) => n.appendChild(e)), e.appendChild(n), requestAnimationFrame(() => {
-				m(), g();
+				g(), v();
 			}), t;
 		};
 		return {
 			el: e,
 			type: "flip",
-			record: u,
-			play: m,
-			reorder: _,
+			record: f,
+			play: g,
+			reorder: y,
 			shuffle: () => {
 				let e = s();
 				for (let t = e.length - 1; t > 0; --t) {
 					let n = Math.floor(Math.random() * (t + 1));
 					[e[t], e[n]] = [e[n], e[t]];
 				}
-				return _(e);
+				return y(e);
 			},
 			sort: (e = "asc", t = {}) => {
 				let n = s();
-				if (typeof e == "function") return _(n.sort(e));
+				if (typeof e == "function") return y(n.sort(e));
 				let r = String(e || "asc").toLowerCase(), i = (t.order || (r === "desc" ? "desc" : "asc")) === "desc" ? -1 : 1, a = t.key || (r === "date" ? "date" : r === "category" ? "category" : ""), o = t.getValue || ((e) => a ? e.dataset?.[a] ?? e.getAttribute(`data-${a}`) ?? "" : e.textContent?.trim() || ""), c = Array.isArray(t.categoryOrder) ? t.categoryOrder : null, l = new Intl.Collator(t.locale, {
 					numeric: !0,
 					sensitivity: "base"
@@ -11104,16 +11116,16 @@ var ei = {
 						if (r !== o) return (r - o) * i;
 					}
 					return l.compare(String(n), String(a)) * i;
-				}), _(n);
+				}), y(n);
 			},
 			pause() {
-				h?.disconnect();
+				_?.disconnect();
 			},
 			resume() {
-				g();
+				v();
 			},
 			destroy() {
-				h?.disconnect(), h = null;
+				_?.disconnect(), _ = null, c.forEach((e) => e.remove()), c.clear();
 			}
 		};
 	},
