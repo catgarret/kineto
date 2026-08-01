@@ -126,12 +126,29 @@ try {
   // come back as the *specified* value instead of the used one.
   assert.equal(await solutionTrigger.count(), 1,
     'exactly one visible 솔루션 trigger must match, otherwise the mobile assertions read a hidden duplicate');
-  // Resizing while the pointer is already over this trigger does not emit a new
-  // pointerenter in headless Chromium. Open it explicitly so this assertion
-  // tests the responsive panel, not browser pointer bookkeeping.
-  if (await solutionTrigger.getAttribute('aria-expanded') !== 'true') {
-    await solutionTrigger.click();
-  }
+  // Re-enter after resizing to cancel any desktop hover-close timer. Then
+  // exercise a rapid close/reopen by click: narrow layouts must remain usable
+  // even when the environment still reports a fine, hoverable pointer.
+  await solutionTrigger.hover();
+  await solutionTrigger.evaluate((trigger) => new Promise((resolve, reject) => {
+    const deadline = performance.now() + 2000;
+    const check = () => {
+      if (trigger.getAttribute('aria-expanded') === 'true') { resolve(); return; }
+      if (performance.now() > deadline) { reject(new Error('mobile mega trigger did not open on hover')); return; }
+      requestAnimationFrame(check);
+    };
+    check();
+  }));
+  const mobileClickStates = await solutionTrigger.evaluate((trigger) => {
+    trigger.click();
+    const closed = trigger.getAttribute('aria-expanded');
+    trigger.click();
+    return { closed, reopened: trigger.getAttribute('aria-expanded') };
+  });
+  assert.equal(mobileClickStates.closed, 'false',
+    'mobile-width click must close a hover-opened menu');
+  assert.equal(mobileClickStates.reopened, 'true',
+    'mobile-width click must immediately reopen a closing menu');
   // `aria-expanded` flips before the panel has been laid out, and a fixed
   // `waitForTimeout` is not a synchronisation primitive — on a slow CI runner it
   // expires first. That is the whole failure: reading a panel that is still

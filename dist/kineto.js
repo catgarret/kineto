@@ -9806,7 +9806,7 @@ var Fr = {
 			let t = e.trg.getBoundingClientRect().bottom + 6;
 			e.panel.style.setProperty("--kt-menu-panel-top", `${Math.max(12, Math.min(t, window.innerHeight - 172))}px`);
 		}, y = (e) => {
-			clearTimeout(g), m !== e && (m && b(m, !0), m = e, e.li.classList.add("kt-open"), e.trg.setAttribute("aria-expanded", "true"), e.panel.hidden = !1, v(e), e.anim &&= (e.anim.cancel(), null), r || (e.anim = e.panel.animate([{
+			clearTimeout(g), m !== e && (m && b(m, !0), e.anim &&= (e.anim.oncancel = null, e.anim.cancel(), null), m = e, e.li.classList.add("kt-open"), e.trg.setAttribute("aria-expanded", "true"), e.panel.hidden = !1, v(e), r || (e.anim = e.panel.animate([{
 				opacity: 0,
 				transform: "translateY(-6px)"
 			}, {
@@ -9849,7 +9849,7 @@ var Fr = {
 			}, S = () => {
 				clearTimeout(h), clearTimeout(g), g = setTimeout(() => b(d), c);
 			}, C = (e) => {
-				e.preventDefault(), m === d ? b(d) : y(d);
+				D && i && window.innerWidth > 720 || (e.preventDefault(), m === d ? b(d) : y(d));
 			}, w = (e) => {
 				e.key === "ArrowDown" || e.key === "Enter" || e.key === " " ? (e.preventDefault(), y(d), f(t)[0]?.focus()) : e.key === "Escape" ? (b(d), n.focus()) : e.key === "ArrowRight" ? (e.preventDefault(), p[(v() + 1) % p.length].trg.focus()) : e.key === "ArrowLeft" && (e.preventDefault(), p[(v() - 1 + p.length) % p.length].trg.focus());
 			}, T = (e) => {
@@ -9867,7 +9867,7 @@ var Fr = {
 			}, E = (t) => {
 				e.contains(t.relatedTarget) || b(d);
 			}, D = o === "hover";
-			i && (D || u.length) && (e.addEventListener("mouseenter", x), e.addEventListener("mouseleave", S)), (!D || !i) && n.addEventListener("click", C), i && u.forEach((e) => {
+			i && (D || u.length) && (e.addEventListener("mouseenter", x), e.addEventListener("mouseleave", S)), n.addEventListener("click", C), i && u.forEach((e) => {
 				e.addEventListener("mouseenter", x), e.addEventListener("mouseleave", S);
 			}), n.addEventListener("keydown", w), t.addEventListener("keydown", T), e.addEventListener("focusout", E), d.handlers = {
 				onEnter: x,

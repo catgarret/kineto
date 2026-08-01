@@ -65,12 +65,19 @@ export default {
       clearTimeout(closeTimer);
       if (openEntry === entry) return;
       if (openEntry) doClose(openEntry, true);
+      // Cancel a pending close before making the panel visible. The close
+      // animation's oncancel handler hides the panel, so cancelling it after
+      // `hidden = false` would immediately undo a rapid reopen.
+      if (entry.anim) {
+        entry.anim.oncancel = null;
+        entry.anim.cancel();
+        entry.anim = null;
+      }
       openEntry = entry;
       entry.li.classList.add('kt-open');
       entry.trg.setAttribute('aria-expanded', 'true');
       entry.panel.hidden = false;
       placeScrollablePanel(entry);
-      if (entry.anim) { entry.anim.cancel(); entry.anim = null; }
       if (!reduce) {
         entry.anim = entry.panel.animate(
           [{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'translateY(0)' }],
@@ -127,7 +134,15 @@ export default {
 
       const onEnter = () => { clearTimeout(closeTimer); clearTimeout(openTimer); openTimer = setTimeout(() => doOpen(entry), openDelay); };
       const onLeave = () => { clearTimeout(openTimer); clearTimeout(closeTimer); closeTimer = setTimeout(() => doClose(entry), closeDelay); };
-      const onClick = (event) => { event.preventDefault(); (openEntry === entry) ? doClose(entry) : doOpen(entry); };
+      const onClick = (event) => {
+        // A viewport can become narrow while still reporting a fine, hoverable
+        // pointer (desktop resize, split-screen, or a tablet with a mouse).
+        // Keep normal desktop hover/navigation behaviour, but let responsive
+        // menus toggle by click at the same breakpoint used by the CSS.
+        if (hoverMode && canHover && window.innerWidth > 720) return;
+        event.preventDefault();
+        (openEntry === entry) ? doClose(entry) : doOpen(entry);
+      };
       const onKey = (event) => {
         if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
           event.preventDefault(); doOpen(entry); focusables(panel)[0]?.focus();
@@ -157,7 +172,7 @@ export default {
 
       const hoverMode = itemTrigger === 'hover';
       if (canHover && (hoverMode || zones.length)) { li.addEventListener('mouseenter', onEnter); li.addEventListener('mouseleave', onLeave); }
-      if (!hoverMode || !canHover) { trg.addEventListener('click', onClick); }
+      trg.addEventListener('click', onClick);
       if (canHover) zones.forEach((z) => { z.addEventListener('mouseenter', onEnter); z.addEventListener('mouseleave', onLeave); });
       trg.addEventListener('keydown', onKey);
       panel.addEventListener('keydown', onPanelKey);
