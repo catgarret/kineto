@@ -178,6 +178,9 @@ try {
   await page.waitForTimeout(750);
   const radialCenter = await radial.evaluate((host) => {
     const items = [...host.querySelectorAll('.kt-radial-item')];
+    const images = items.map((item) => item.querySelector('img'));
+    const imageRects = images.map((item) => item.getBoundingClientRect());
+    const stageRect = host.closest('.demo-stage').getBoundingClientRect();
     const controls = host.querySelector('.kt-radial-controls');
     const visible = items.filter((item) => {
       const box = item.getBoundingClientRect();
@@ -190,11 +193,17 @@ try {
       uniqueTransforms: new Set(items.map((item) => getComputedStyle(item).transform)).size,
       controlsZ: Number(getComputedStyle(controls).zIndex),
       hubZ: Number(getComputedStyle(host.querySelector('.kt-radial-hub')).zIndex),
-      maxItemZ: Math.max(...items.map((item) => Number(getComputedStyle(item).zIndex)))
+      maxItemZ: Math.max(...items.map((item) => Number(getComputedStyle(item).zIndex))),
+      radius:host.style.getPropertyValue('--kt-radial-radius'),
+      opaque:images.every((item)=>Number(getComputedStyle(item).opacity)===1),
+      inside:imageRects.every((box)=>box.top>=stageRect.top&&box.right<=stageRect.right&&box.bottom<=stageRect.bottom&&box.left>=stageRect.left),
+      minCenterDistance:Math.min(...imageRects.flatMap((box,index)=>imageRects.slice(index+1).map((other)=>Math.hypot((box.left+box.width/2)-(other.left+other.width/2),(box.top+box.height/2)-(other.top+other.height/2))))),
+      maxDiameter:Math.max(...imageRects.map((box)=>box.width))
     };
   });
   assert.ok(radialCenter.position && radialCenter.visible === radialCenter.total, `center Radial demo must show the complete wheel (${JSON.stringify(radialCenter)})`);
   assert.equal(radialCenter.uniqueTransforms, radialCenter.total, `center Radial must leave no overlapping transition ghosts (${JSON.stringify(radialCenter)})`);
+  assert.ok(radialCenter.opaque && radialCenter.inside && radialCenter.minCenterDistance > radialCenter.maxDiameter, `center Radial demo items must stay opaque, separated, and inside the stage (${JSON.stringify(radialCenter)})`);
   assert.ok(radialCenter.controlsZ > radialCenter.hubZ, `Radial paging controls must remain above the hub stacking context (${JSON.stringify(radialCenter)})`);
   const segmentedDemoTab=page.locator('#mod-tabs .demo-tabs .demo-tab',{hasText:'Segmented'});
   await segmentedDemoTab.click();

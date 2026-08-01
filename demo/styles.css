@@ -697,10 +697,10 @@
 }
 
 /* Radial carousel — emphasise the active item (active gets .kt-active). */
-.kt-radial-item img { width:112px!important; height:112px!important; transition: transform .45s cubic-bezier(.22,.8,.3,1), opacity .45s ease, box-shadow .45s ease; }
+.kt-radial-item img { width:82px!important; height:82px!important; transition:transform .45s cubic-bezier(.22,.8,.3,1),box-shadow .45s ease; }
 /* Clearer active↔inactive size difference: inactive shrink, active grow. */
-.kt-radial-item:not(.kt-active) img { opacity: .6; transform: scale(.78); }
-.kt-radial-item.kt-active img { transform: scale(1.25); box-shadow: 0 16px 36px rgba(0,0,0,.5); }
+.kt-radial-item:not(.kt-active) img { opacity:1; transform:scale(.92); }
+.kt-radial-item.kt-active img { opacity:1; transform:scale(1.12); box-shadow:0 12px 28px rgba(0,0,0,.36); }
 
 /* Segmented tabs demo: white active pill in light theme, light overlay in dark. */
 .kt-tabs--segment { --kt-seg-active: rgba(255,255,255,.14); --kt-seg-bg: rgba(255,255,255,.06); }
@@ -1064,7 +1064,7 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 .demo-css-11f48d49{padding:0;min-height:220px;align-items:stretch}
 .demo-css-3fc0df0b{width:100%;height:100%;object-fit:cover;border-radius:16px}
 .demo-css-adc847d6{padding:0;aspect-ratio:auto;height:clamp(240px,34vw,360px);width:100%;overflow:hidden}
-.demo-css-a61468e1{height:300px;padding:0;overflow:hidden}
+.demo-css-a61468e1{height:340px;padding:0;overflow:hidden}
 .demo-css-681e47c8{border-bottom-left-radius:0;border-bottom-right-radius:0}
 .demo-css-07c24c3d{min-height:150px;overflow:hidden;display:grid;place-items:center}
 .demo-css-ec89346f{font:800 2.2rem var(--font-sans);letter-spacing:-.02em;color:var(--accent)}
