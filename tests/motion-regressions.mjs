@@ -4,6 +4,7 @@ import revealModule, { staggerDelays } from '../src/modules/reveal.js';
 import fullpageModule from '../src/modules/fullpage.js';
 import megaMenuModule from '../src/modules/megaMenu.js';
 import scrollShadowsModule from '../src/modules/scrollShadows.js';
+import overflowTextModule from '../src/modules/overflowText.js';
 
 const rounded = (values) => values.map((value) => Number(value.toFixed(3)));
 assert.deepEqual(rounded(staggerDelays(5, 0.1, 'start')), [0, 0.1, 0.2, 0.3, 0.4]);
@@ -49,6 +50,25 @@ assert.ok(responsiveMenuHost.classList.contains('kt-menu--responsive-scroll'), '
 responsiveMenu.destroy();
 assert.ok(!responsiveMenuHost.classList.contains('kt-menu--responsive-scroll'), 'Mega Menu responsive class must clean up');
 responsiveMenuHost.remove();
+
+const hoverRoll = document.createElement('a');
+hoverRoll.innerHTML = '<span>WORK</span><span>프로젝트</span>';
+document.body.appendChild(hoverRoll);
+const hoverChanges = [];
+const hoverRollInstance = overflowTextModule.create(hoverRoll, {
+  mode: 'rolling',
+  trigger: 'hover',
+  onChange: (index) => hoverChanges.push(index)
+});
+hoverRoll.dispatchEvent(new window.Event('pointerenter'));
+hoverRoll.dispatchEvent(new window.FocusEvent('focusin'));
+assert.deepEqual(hoverChanges, [1], 'click focus must not restart an already-hovered roll');
+hoverRoll.dispatchEvent(new window.Event('pointerleave'));
+assert.deepEqual(hoverChanges, [1], 'pointer leave must not restore while the link still has focus');
+hoverRoll.dispatchEvent(new window.FocusEvent('focusout', { relatedTarget: null }));
+assert.deepEqual(hoverChanges, [1, 0], 'hover roll must restore after both pointer and focus leave');
+hoverRollInstance.destroy();
+hoverRoll.remove();
 
 const horizontalMask = document.createElement('div');
 document.body.appendChild(horizontalMask);

@@ -4,10 +4,12 @@
 
 ### English
 
+- Fixed Hover Roll links restarting on click when pointer hover and keyboard focus overlapped; the label now restores only after both states leave.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
+- Hover Roll 링크에서 포인터 호버와 키보드 포커스가 겹칠 때 클릭으로 모션이 재시작되던 문제를 수정했습니다. 이제 두 상태가 모두 해제된 뒤에만 원래 라벨로 돌아갑니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.44] - 2026-08-01

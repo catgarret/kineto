@@ -84,6 +84,8 @@ export default {
     const hoverTrigger = opts.trigger === 'hover';
     let hoverAdvance = null;
     let hoverLeaveHandler = null;
+    let hoverEnterHandler = null;
+    let hoverExitHandler = null;
     let hoverTarget = null;
     const originalHTML = el.innerHTML;
     const originalStyle = el.getAttribute('style');
@@ -225,10 +227,6 @@ export default {
       };
       if (hoverTrigger) {
         hoverTarget = opts.hoverTarget ? (el.closest(opts.hoverTarget) || el.parentElement || el) : el;
-        // DEFAULT: a two-state slide — hover rolls the label up ONCE to reveal the
-        // next item; leaving slides it back DOWN to the original. `restoreOnLeave`
-        // (default true) controls the return. `loopOnHover` opts into a continuous
-        // marquee-style roll while hovered (the roll doesn't stop after one step).
         const restoreOnLeave = opts.restoreOnLeave !== false;
         const loopOnHover = opts.loopOnHover === true;
         // restoreDirection: 'reverse' (default) slides back DOWN to the original;
@@ -237,6 +235,7 @@ export default {
         const ease = opts.easing || 'cubic-bezier(.22,.8,.25,1)';
         const homeTf = 'translate3d(0,0,0)';
         const upTf = 'translate3d(0,-1.35em,0)';
+        let hoverState = 0;
         let continueResetTimer = null;
         const resetToHome = () => {
           track.style.transition = 'none';
@@ -325,10 +324,19 @@ export default {
           el.setAttribute('aria-label', plainText(items[0]));
           opts.onChange?.(0, items[0], el);
         };
-        hoverTarget.addEventListener('pointerenter', hoverAdvance);
-        hoverTarget.addEventListener('focusin', hoverAdvance);
-        hoverTarget.addEventListener('pointerleave', hoverLeaveHandler);
-        hoverTarget.addEventListener('focusout', hoverLeaveHandler);
+        hoverEnterHandler = (event) => {
+          if (!hoverState) hoverAdvance();
+          hoverState |= event.type === 'pointerenter' ? 1 : 2;
+        };
+        hoverExitHandler = (event) => {
+          if (event.type === 'focusout' && hoverTarget.contains(event.relatedTarget)) return;
+          hoverState &= event.type === 'pointerleave' ? ~1 : ~2;
+          if (!hoverState) hoverLeaveHandler();
+        };
+        hoverTarget.addEventListener('pointerenter', hoverEnterHandler);
+        hoverTarget.addEventListener('focusin', hoverEnterHandler);
+        hoverTarget.addEventListener('pointerleave', hoverExitHandler);
+        hoverTarget.addEventListener('focusout', hoverExitHandler);
       } else if (items.length > 1) schedule(advance, number(opts.delay, hold));
     };
 
@@ -865,8 +873,8 @@ export default {
         resizeObserver?.disconnect();
         el.removeEventListener('pointerenter', onHoverIn);
         el.removeEventListener('pointerleave', onHoverOut);
-        if (hoverTarget && hoverAdvance) { hoverTarget.removeEventListener('pointerenter', hoverAdvance); hoverTarget.removeEventListener('focusin', hoverAdvance); }
-        if (hoverTarget && hoverLeaveHandler) { hoverTarget.removeEventListener('pointerleave', hoverLeaveHandler); hoverTarget.removeEventListener('focusout', hoverLeaveHandler); }
+        if (hoverTarget && hoverEnterHandler) { hoverTarget.removeEventListener('pointerenter', hoverEnterHandler); hoverTarget.removeEventListener('focusin', hoverEnterHandler); }
+        if (hoverTarget && hoverExitHandler) { hoverTarget.removeEventListener('pointerleave', hoverExitHandler); hoverTarget.removeEventListener('focusout', hoverExitHandler); }
         if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);
         if (originalTitle == null) el.removeAttribute('title'); else el.setAttribute('title', originalTitle);
         if (originalAria == null) el.removeAttribute('aria-label'); else el.setAttribute('aria-label', originalAria);

@@ -54,7 +54,9 @@ const BUDGETS = {
   // determinate progress outputs. Their measured ESM sizes are 470.2/122.4 KB
   // (debug/gzip) and 371.8/109.2 KB (min/gzip), so these ceilings leave less
   // than 2 KB raw and 1 KB gzip headroom.
-  'kineto.js': { raw: 474, gz: 124 },
+  // Hover/focus state coordination adds 0.2 KB to the readable ESM only; the
+  // consumer-facing gzip ceiling remains unchanged.
+  'kineto.js': { raw: 475, gz: 124 },
   'kineto.min.js': { raw: 375, gz: 111 },
   'kineto.umd.js': { raw: 374, gz: 110 },
   'kineto.umd.min.js': { raw: 374, gz: 110 },
