@@ -92,15 +92,18 @@ const sampledImagePalette = (root) => {
     const colors = [...buckets.values()].map(([red, green, blue, count]) => {
       const rgb = [red / count, green / count, blue / count];
       const chroma = Math.max(...rgb) - Math.min(...rgb);
-      return { rgb, score: count * (1 + chroma / 96) };
-    }).sort((a, b) => b.score - a.score);
+      const light = (Math.max(...rgb) + Math.min(...rgb)) / 2;
+      return { rgb, count, accent: chroma * 2 + Math.abs(light - 200) * 0.4 };
+    }).sort((a, b) => b.count - a.count).slice(0, 32);
     if (!colors.length) return null;
-    const first = colors[0];
     const distance = (a, b) => ((a[0] - b[0]) ** 2) + ((a[1] - b[1]) ** 2) + ((a[2] - b[2]) ** 2);
-    const second = colors.slice(1).sort((a, b) =>
-      (b.score * Math.sqrt(distance(b.rgb, first.rgb))) - (a.score * Math.sqrt(distance(a.rgb, first.rgb)))
-    )[0] || first;
-    return [first, second].map(({ rgb }) => `rgb(${rgb.map((value) => Math.round(value)).join(' ')})`);
+    let pair = [colors[0], colors[0]]; let pairScore = -1;
+    colors.forEach((first, index) => colors.slice(index + 1).forEach((second) => {
+      const score = Math.sqrt(first.count * second.count) * distance(first.rgb, second.rgb);
+      if (score > pairScore) { pair = [first, second]; pairScore = score; }
+    }));
+    pair.sort((a, b) => b.accent - a.accent);
+    return pair.map(({ rgb }) => `rgb(${rgb.map((value) => Math.round(value)).join(' ')})`);
   } catch (_error) { return null; }
 };
 

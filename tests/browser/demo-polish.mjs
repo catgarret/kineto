@@ -173,6 +173,21 @@ try {
   });
   assert.equal(new Set(coverRevealModes.colors).size, 2, `auto Cover Reveal must retain distinct colors extracted from the image (${JSON.stringify(coverRevealModes)})`);
   assert.ok(coverRevealModes.panels === 1 && coverRevealModes.wrapClip === '' && coverRevealModes.contentClip !== '', `mask replacement must clip only content, never the colored panel wrapper (${JSON.stringify(coverRevealModes)})`);
+  await page.locator('#cover-gallery-demo').scrollIntoViewIfNeeded();
+  await page.evaluate(() => document.querySelectorAll('#cover-gallery-demo img').forEach((image) => { image.loading='eager'; }));
+  await page.waitForFunction(() => [...document.querySelectorAll('#cover-gallery-demo img')].every((image)=>image.complete&&image.naturalWidth>0),null,{timeout:10000});
+  const galleryPalettes = await page.evaluate(async () => {
+    const targets=[...document.querySelectorAll('#cover-gallery-demo [data-kt-cover-reveal]')];
+    targets.forEach((target)=>Kineto.getInstance(target,'coverReveal')?.replay());
+    await new Promise(requestAnimationFrame);
+    return targets.map((target)=>({
+      mode:target.dataset.ktColorMode,
+      colors:target.dataset.ktColors||'',
+      panel:target.closest('.kt-cover-wrap')?.querySelector('[aria-hidden="true"]')?.style.background||''
+    }));
+  });
+  assert.ok(galleryPalettes.every((entry)=>entry.mode==='auto'&&!entry.colors&&entry.panel), `Cover Reveal gallery must use each image sampler by default (${JSON.stringify(galleryPalettes)})`);
+  assert.ok(new Set(galleryPalettes.map((entry)=>entry.panel)).size>=4, `gallery images must produce visibly varied first-panel colors (${JSON.stringify(galleryPalettes)})`);
   const radial = page.locator('[data-kt-slider="radial"]');
   await radial.locator('.kt-radial-next').click();
   await page.waitForTimeout(750);

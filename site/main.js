@@ -5,6 +5,17 @@
       document.documentElement.classList.remove('kt-preload');
       throw new Error('Kineto failed to load');
     }
+    // Image Cover Reveal examples demonstrate the real per-image sampler by
+    // default. This runs before autoInit on the live page; browser QA injects
+    // scripts after DOM ready, so recreate an already-started instance there.
+    document.querySelectorAll('[data-kt-cover-reveal]').forEach((target)=>{
+      if(!target.querySelector('img'))return;
+      target.setAttribute('data-kt-color-mode','auto');
+      target.removeAttribute('data-kt-colors');
+      if(Kineto.getInstance(target,'coverReveal')){
+        Kineto.updateModule(target,'coverReveal',{colorMode:'auto',colors:''});
+      }
+    });
     // The demo ships WITH smooth scrolling on — it is one of the library's
     // features, so the default page should show it. The Smooth Scroll card
     // lets a visitor switch it off and feel the difference immediately.

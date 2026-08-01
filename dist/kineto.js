@@ -10490,15 +10490,19 @@ var ei = {
 				e / r,
 				t / r,
 				n / r
-			];
+			], a = Math.max(...i) - Math.min(...i), o = (Math.max(...i) + Math.min(...i)) / 2;
 			return {
 				rgb: i,
-				score: r * (1 + (Math.max(...i) - Math.min(...i)) / 96)
+				count: r,
+				accent: a * 2 + Math.abs(o - 200) * .4
 			};
-		}).sort((e, t) => t.score - e.score);
+		}).sort((e, t) => t.count - e.count).slice(0, 32);
 		if (!a.length) return null;
-		let o = a[0], s = (e, t) => (e[0] - t[0]) ** 2 + (e[1] - t[1]) ** 2 + (e[2] - t[2]) ** 2;
-		return [o, a.slice(1).sort((e, t) => t.score * Math.sqrt(s(t.rgb, o.rgb)) - e.score * Math.sqrt(s(e.rgb, o.rgb)))[0] || o].map(({ rgb: e }) => `rgb(${e.map((e) => Math.round(e)).join(" ")})`);
+		let o = (e, t) => (e[0] - t[0]) ** 2 + (e[1] - t[1]) ** 2 + (e[2] - t[2]) ** 2, s = [a[0], a[0]], c = -1;
+		return a.forEach((e, t) => a.slice(t + 1).forEach((t) => {
+			let n = Math.sqrt(e.count * t.count) * o(e.rgb, t.rgb);
+			n > c && (s = [e, t], c = n);
+		})), s.sort((e, t) => t.accent - e.accent), s.map(({ rgb: e }) => `rgb(${e.map((e) => Math.round(e)).join(" ")})`);
 	} catch {
 		return null;
 	}

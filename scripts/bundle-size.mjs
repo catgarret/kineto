@@ -60,8 +60,8 @@ const BUDGETS = {
   // interpolation, and the full-circle radial layout add 1.4 KB raw / 0.4 KB
   // gzip. Image-derived palette ranking adds 46 bytes beyond the former gzip
   // ceiling; 125 KB retains <1 KB headroom and still rejects dependency bloat.
-  'kineto.js': { raw: 477, gz: 125 },
-  'kineto.min.js': { raw: 377, gz: 111 },
+  'kineto.js': { raw: 478, gz: 125 },
+  'kineto.min.js': { raw: 378, gz: 111 },
   'kineto.umd.js': { raw: 376, gz: 111 },
   'kineto.umd.min.js': { raw: 376, gz: 111 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS

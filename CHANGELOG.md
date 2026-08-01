@@ -5,13 +5,13 @@
 ### English
 
 - Normalized cursor following and Page Reveal Zoom across Safari frame rates, fixed Safari Lightbox Grid and Slider dot layout, and tuned the demo's Safari scroll/hover timing.
-- Added diverse two-color image sampling to Cover Reveal, made `mask:true` clip only the content while replacing the final colored panel, fixed Coverflow boundary/shadow sizing and Safari pagination artifacts, and added a complete-wheel Radial Slider layout with `position: 'center'` whose demo keeps its circles opaque, separated, and inside the stage.
+- Added diverse two-color image sampling to Cover Reveal, switched its image demos from a fixed palette to per-image `auto`, made `mask:true` clip only the content while replacing the final colored panel, fixed Coverflow boundary/shadow sizing and Safari pagination artifacts, and added a complete-wheel Radial Slider layout with `position: 'center'` whose demo keeps its circles opaque, separated, and inside the stage.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
 - Safari 프레임 속도에서도 커서 추종과 Page Reveal Zoom이 일관되도록 보정하고, Safari Lightbox Grid와 Slider 점 레이아웃 및 데모 스크롤·호버 타이밍을 수정했습니다.
-- Cover Reveal에 서로 구별되는 이미지 대표색 두 개 추출을 추가하고 `mask:true`가 색상 패널이 아닌 실제 콘텐츠만 마스킹하도록 수정했습니다. Coverflow 경계·그림자 크기와 Safari 페이지네이션 깨짐을 바로잡고, Radial Slider에 원 전체를 표시하는 `position: 'center'`를 추가했으며 데모 원이 반투명하게 겹치거나 무대 밖으로 잘리지 않도록 다듬었습니다.
+- Cover Reveal에 서로 구별되는 이미지 대표색 두 개 추출을 추가하고 이미지 데모를 고정 팔레트에서 이미지별 `auto`로 전환했으며, `mask:true`가 색상 패널이 아닌 실제 콘텐츠만 마스킹하도록 수정했습니다. Coverflow 경계·그림자 크기와 Safari 페이지네이션 깨짐을 바로잡고, Radial Slider에 원 전체를 표시하는 `position: 'center'`를 추가했으며 데모 원이 반투명하게 겹치거나 무대 밖으로 잘리지 않도록 다듬었습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.46] - 2026-08-01
