@@ -4,10 +4,12 @@
 
 ### English
 
+- Kept the active Radial Carousel item fixed when switching from `infinite` to `off`, and removed click-handler accumulation across recreations.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
+- Radial Carousel의 반복 모드를 `infinite`에서 `off`로 바꿔도 활성 항목 위치를 유지하고, 재생성할 때 클릭 핸들러가 누적되지 않도록 수정했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.45] - 2026-08-01

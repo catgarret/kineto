@@ -57,7 +57,10 @@ export default {
         hub.style.top = `calc(50% - ${(Math.sin(a) * radius).toFixed(1)}px)`;
       }
 
-      let active = Math.floor(items.length / 2);
+      const requestedIndex = Number(opts.initialIndex ?? opts.index);
+      let active = Number.isFinite(requestedIndex)
+        ? clamp(Math.round(requestedIndex), 0, items.length - 1)
+        : Math.floor(items.length / 2);
 
       const live = document.createElement('div');
       live.className = 'kt-radial-live';
@@ -106,11 +109,16 @@ export default {
       const next = () => go(active + 1);
       const prev = () => go(active - 1);
 
-      items.forEach((item, i) => {
+      items.forEach((item) => {
         item.style.cursor = 'pointer';
-        item.addEventListener('click', () => go(i));
         if (!item.hasAttribute('tabindex')) item.tabIndex = -1;
       });
+      const onItemClick = (event) => {
+        const item = event.target.closest('.kt-radial-item');
+        const index = items.indexOf(item);
+        if (index >= 0) go(index);
+      };
+      hub.addEventListener('click', onItemClick);
 
       // Controls: reuse an existing .kt-radial-controls block or build one.
       let controls = el.querySelector('.kt-radial-controls');
@@ -178,11 +186,13 @@ export default {
         el,
         type: 'slider',
         effect: 'radial',
+        get index() { return active; },
         next, prev, go,
         pause: stopAuto,
         resume: startAuto,
         destroy() {
           stopAuto();
+          hub.removeEventListener('click', onItemClick);
           el.removeEventListener('keydown', onKey);
           el.removeEventListener('pointerdown', onDown);
           el.removeEventListener('pointermove', onMove);

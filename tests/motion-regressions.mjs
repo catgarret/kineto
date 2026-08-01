@@ -139,6 +139,19 @@ const flipModule = (await import('../src/modules/flip.js')).default;
 const cardGlowModule = (await import('../src/modules/cardGlow.js')).default;
 const tiltModule = (await import('../src/modules/tilt.js')).default;
 
+const radialHost = document.createElement('div');
+radialHost.innerHTML = '<div>A</div><div>B</div><div>C</div><div>D</div><div>E</div>';
+document.body.appendChild(radialHost);
+const radialLoop = sliderModule.create(radialHost, { effect: 'radial', loop: 'infinite', controls: false });
+radialLoop.go(4);
+const retainedRadialIndex = radialLoop.index;
+radialLoop.destroy();
+const radialFinite = sliderModule.create(radialHost, { effect: 'radial', loop: 'off', controls: false, initialIndex: retainedRadialIndex });
+assert.equal(radialFinite.index, 4, 'disabling radial infinite mode must retain the active item');
+assert.equal(radialHost.querySelectorAll('.kt-active').length, 1, 'finite radial layout must keep one active item');
+radialFinite.destroy();
+radialHost.remove();
+
 // Determinate indicators update nearby copy and can subscribe to Loader's
 // existing progress event without a new cross-module dependency.
 const progressScope = document.createElement('div');

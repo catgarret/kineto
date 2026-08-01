@@ -1382,8 +1382,9 @@
       // destroy/recreate churn on a colour or label tweak (audit B-5). Only the
       // modules without update() fall through to the careful recreate below.
       const existing = MK.getInstance?.(target, descriptor.module);
-      if (existing && typeof existing.update === 'function' && MK.updateModule) {
-        if (MK.updateModule(target, descriptor.module, descriptorOptions({ ...descriptor, targets: [target] }))) return;
+      if (existing && MK.updateModule && (typeof existing.update === 'function' || existing.effect === 'radial')) {
+        const updated = MK.updateModule(target, descriptor.module, descriptorOptions({ ...descriptor, targets: [target] }));
+        if (updated || existing.effect === 'radial') return;
       }
       MK.destroyModule(target, descriptor.module);
       const snapshot = state.snapshots.get(target);

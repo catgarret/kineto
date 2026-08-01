@@ -57,7 +57,7 @@ const BUDGETS = {
   // Hover/focus state coordination adds 0.2 KB to the readable ESM only; the
   // consumer-facing gzip ceiling remains unchanged.
   'kineto.js': { raw: 475, gz: 124 },
-  'kineto.min.js': { raw: 375, gz: 111 },
+  'kineto.min.js': { raw: 376, gz: 111 },
   'kineto.umd.js': { raw: 374, gz: 110 },
   'kineto.umd.min.js': { raw: 374, gz: 110 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS

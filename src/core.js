@@ -615,6 +615,9 @@ const Kineto = {
         }
       }
       const opts = record ? { ...record.options, ...patch } : patch;
+      if (record?.instance?.effect === 'radial' && Number.isFinite(record.instance.index)) {
+        opts.initialIndex = record.instance.index;
+      }
       this.destroyModule(el, name);
       this.create(name, el, opts);
     });

@@ -1014,7 +1014,7 @@ var Z = {
 				...r.options,
 				...n
 			} : n;
-			this.destroyModule(e, t), this.create(t, e, a);
+			r?.instance?.effect === "radial" && Number.isFinite(r.instance.index) && (a.initialIndex = r.instance.index), this.destroyModule(e, t), this.create(t, e, a);
 		}), i > 0;
 	},
 	destroyModule(e, t) {
@@ -6874,64 +6874,72 @@ var lr = {
 				let e = c * Math.PI / 180;
 				m.style.left = `calc(50% - ${(Math.cos(e) * i).toFixed(1)}px)`, m.style.top = `calc(50% - ${(Math.sin(e) * i).toFixed(1)}px)`;
 			}
-			let h = Math.floor(r.length / 2), g = document.createElement("div");
-			g.className = "kt-radial-live", g.setAttribute("aria-live", "polite"), g.style.cssText = "position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);", e.appendChild(g);
-			let _ = r.length, v = () => {
+			let h = Number(t.initialIndex ?? t.index), g = Number.isFinite(h) ? U(Math.round(h), 0, r.length - 1) : Math.floor(r.length / 2), _ = document.createElement("div");
+			_.className = "kt-radial-live", _.setAttribute("aria-live", "polite"), _.style.cssText = "position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);", e.appendChild(_);
+			let v = r.length, y = () => {
 				r.forEach((e, t) => {
-					let r = t - h;
-					u && (r = (r % _ + _) % _, r > _ / 2 && (r -= _));
-					let o = e._ktOffset, s = o !== void 0 && Math.abs(r - o) > _ / 2;
+					let r = t - g;
+					u && (r = (r % v + v) % v, r > v / 2 && (r -= v));
+					let o = e._ktOffset, s = o !== void 0 && Math.abs(r - o) > v / 2;
 					e._ktOffset = r;
 					let d = c + r * a;
 					e.style.transition = n || l === 0 || s ? "none" : `transform ${l}s cubic-bezier(.22,.8,.3,1), opacity ${l}s ease`, e.style.transform = `rotate(${d}deg) translate(${i}px) rotate(${-d}deg) translate(-50%, -50%)`, e.style.opacity = String(Math.max(0, 1 - Math.max(0, Math.abs(r) - 1)));
-					let f = t === h;
+					let f = t === g;
 					e.classList.toggle("kt-active", f), e.classList.toggle("active-item", f), p && e.classList.toggle(p, f), f ? e.setAttribute("aria-current", "true") : e.removeAttribute("aria-current"), e.style.zIndex = String(100 - Math.abs(r));
-				}), g.textContent = `${h + 1} / ${r.length}`;
-			}, y = (e) => {
-				h = u ? (e % r.length + r.length) % r.length : U(e, 0, r.length - 1), v();
-			}, b = () => y(h + 1), x = () => y(h - 1);
-			r.forEach((e, t) => {
-				e.style.cursor = "pointer", e.addEventListener("click", () => y(t)), e.hasAttribute("tabindex") || (e.tabIndex = -1);
+				}), _.textContent = `${g + 1} / ${r.length}`;
+			}, b = (e) => {
+				g = u ? (e % r.length + r.length) % r.length : U(e, 0, r.length - 1), y();
+			}, x = () => b(g + 1), S = () => b(g - 1);
+			r.forEach((e) => {
+				e.style.cursor = "pointer", e.hasAttribute("tabindex") || (e.tabIndex = -1);
 			});
-			let S = e.querySelector(".kt-radial-controls"), C = null, w = null, T = !1;
-			f && (S || (S = document.createElement("div"), S.className = "kt-radial-controls", S.innerHTML = "<button type=\"button\" class=\"kt-radial-prev\" aria-label=\"Previous\"></button><button type=\"button\" class=\"kt-radial-next\" aria-label=\"Next\"></button>", e.appendChild(S), T = !0), C = S.querySelector(".kt-radial-prev, [data-kt-radial-prev]"), w = S.querySelector(".kt-radial-next, [data-kt-radial-next]"), C?.addEventListener("click", x), w?.addEventListener("click", b));
-			let E = (e) => {
-				e.key === "ArrowRight" || e.key === "ArrowDown" ? (e.preventDefault(), b()) : (e.key === "ArrowLeft" || e.key === "ArrowUp") && (e.preventDefault(), x());
+			let C = (e) => {
+				let t = e.target.closest(".kt-radial-item"), n = r.indexOf(t);
+				n >= 0 && b(n);
 			};
-			e.hasAttribute("tabindex") || (e.tabIndex = 0), e.addEventListener("keydown", E);
-			let D = null, O = o === "bottom" || o === "top", k = (e) => {
-				!d || e.target.closest(".kt-radial-controls, button") || (D = {
+			m.addEventListener("click", C);
+			let w = e.querySelector(".kt-radial-controls"), T = null, E = null, D = !1;
+			f && (w || (w = document.createElement("div"), w.className = "kt-radial-controls", w.innerHTML = "<button type=\"button\" class=\"kt-radial-prev\" aria-label=\"Previous\"></button><button type=\"button\" class=\"kt-radial-next\" aria-label=\"Next\"></button>", e.appendChild(w), D = !0), T = w.querySelector(".kt-radial-prev, [data-kt-radial-prev]"), E = w.querySelector(".kt-radial-next, [data-kt-radial-next]"), T?.addEventListener("click", S), E?.addEventListener("click", x));
+			let O = (e) => {
+				e.key === "ArrowRight" || e.key === "ArrowDown" ? (e.preventDefault(), x()) : (e.key === "ArrowLeft" || e.key === "ArrowUp") && (e.preventDefault(), S());
+			};
+			e.hasAttribute("tabindex") || (e.tabIndex = 0), e.addEventListener("keydown", O);
+			let k = null, A = o === "bottom" || o === "top", j = (e) => {
+				!d || e.target.closest(".kt-radial-controls, button") || (k = {
 					x: e.clientX,
 					y: e.clientY,
-					start: h,
+					start: g,
 					moved: !1
 				});
-			}, A = (e) => {
-				if (!D) return;
-				let t = O ? e.clientX - D.x : e.clientY - D.y;
-				Math.abs(t) <= 6 || (D.moved = !0, y(D.start + Math.round(-t / 60)));
-			}, j = () => {
-				D = null;
+			}, M = (e) => {
+				if (!k) return;
+				let t = A ? e.clientX - k.x : e.clientY - k.y;
+				Math.abs(t) <= 6 || (k.moved = !0, b(k.start + Math.round(-t / 60)));
+			}, N = () => {
+				k = null;
 			};
-			d && (e.addEventListener("pointerdown", k), e.addEventListener("pointermove", A), e.addEventListener("pointerup", j), e.addEventListener("pointercancel", j));
-			let M = Math.max(0, Number(t.autoplay ?? 0)), N = null, P = () => {
-				M && !n && (F(), N = setInterval(b, M));
-			}, F = () => {
-				N &&= (clearInterval(N), null);
+			d && (e.addEventListener("pointerdown", j), e.addEventListener("pointermove", M), e.addEventListener("pointerup", N), e.addEventListener("pointercancel", N));
+			let P = Math.max(0, Number(t.autoplay ?? 0)), F = null, I = () => {
+				P && !n && (L(), F = setInterval(x, P));
+			}, L = () => {
+				F &&= (clearInterval(F), null);
 			};
-			return M && (e.addEventListener("mouseenter", F), e.addEventListener("mouseleave", P), P()), v(), {
+			return P && (e.addEventListener("mouseenter", L), e.addEventListener("mouseleave", I), I()), y(), {
 				el: e,
 				type: "slider",
 				effect: "radial",
-				next: b,
-				prev: x,
-				go: y,
-				pause: F,
-				resume: P,
+				get index() {
+					return g;
+				},
+				next: x,
+				prev: S,
+				go: b,
+				pause: L,
+				resume: I,
 				destroy() {
-					F(), e.removeEventListener("keydown", E), e.removeEventListener("pointerdown", k), e.removeEventListener("pointermove", A), e.removeEventListener("pointerup", j), e.removeEventListener("pointercancel", j), e.removeEventListener("mouseenter", F), e.removeEventListener("mouseleave", P), C?.removeEventListener("click", x), w?.removeEventListener("click", b), r.forEach((t) => {
+					L(), m.removeEventListener("click", C), e.removeEventListener("keydown", O), e.removeEventListener("pointerdown", j), e.removeEventListener("pointermove", M), e.removeEventListener("pointerup", N), e.removeEventListener("pointercancel", N), e.removeEventListener("mouseenter", L), e.removeEventListener("mouseleave", I), T?.removeEventListener("click", S), E?.removeEventListener("click", x), r.forEach((t) => {
 						t.style.transform = "", t.style.transition = "", t.style.opacity = "", t.style.zIndex = "", t.style.cursor = "", t.classList.remove("kt-radial-item", "kt-active", "active-item"), p && t.classList.remove(p), t.removeAttribute("aria-current"), e.appendChild(t);
-					}), m.remove(), g.remove(), T && S.remove(), e.classList.remove("kt-radial", `kt-radial--${o}`), e.style.removeProperty("--kt-radial-radius"), e.removeAttribute("role"), e.removeAttribute("aria-roledescription");
+					}), m.remove(), _.remove(), D && w.remove(), e.classList.remove("kt-radial", `kt-radial--${o}`), e.style.removeProperty("--kt-radial-radius"), e.removeAttribute("role"), e.removeAttribute("aria-roledescription");
 				}
 			};
 		}

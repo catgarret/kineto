@@ -40,5 +40,14 @@ assert.equal(liveSwitch, false, 'a module without update() must report NO live u
 const sw2 = Kineto.getInstance(box, 'switch');
 assert.ok(sw2 && sw2 !== sw1, 'switch should have been recreated as a fresh instance');
 
+const radial = w.document.body.appendChild(w.document.createElement('div'));
+radial.innerHTML = '<div>A</div><div>B</div><div>C</div><div>D</div><div>E</div>';
+const radialLoop = Kineto.create('slider', radial, { effect: 'radial', loop: 'infinite', controls: false });
+radialLoop.go(4);
+Kineto.updateModule(radial, 'slider', { loop: 'off' });
+const radialFinite = Kineto.getInstance(radial, 'slider');
+assert.equal(radialFinite.index, 4, 'radial recreate must retain its active index when infinite mode is disabled');
+assert.equal(radial.querySelector('.kt-active')?.textContent, 'E', 'the retained radial item must remain visually active');
+
 console.log('update-model OK — update()-capable modules live-update in place; others fall back to recreate via updateModule().');
 process.exit(0);
