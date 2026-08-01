@@ -4,6 +4,16 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.46] - 2026-08-01
+
+### English
+
 - Kept the active Radial Carousel item fixed when switching from `infinite` to `off`, and removed click-handler accumulation across recreations.
 - Expanded Flip reorder modes with motionless `none`, renamed the previous dissolve to `crossfade`, made `fade` pause between outgoing and incoming layouts, and made `scale` visibly shrink and grow without an opacity fade. Documented that `watch` observes external direct-child DOM mutations while instance reorder methods always play explicitly.
 - Preserved the page scroll position across full-page Loader scroll locks, including overlapping Loader instances.
@@ -23,7 +33,6 @@
 - `main` CI 통과 후 별도 `catgarret.github.io/example/kineto`를 자동 배포하도록 구성하고, 요청한 jsDelivr `@latest` 런타임을 유지하면서 npm 발행 뒤 해당 별칭 캐시를 갱신하도록 했습니다.
 - 기존 별도 사이트 배포는 백업으로 유지하면서 Cloudflare Pages에서 직접 제공할 수 있도록 공식 라이브 데모 주소를 `kineto.dongri.me`로 변경했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
-
 ## [0.8.45] - 2026-08-01
 
 ### English

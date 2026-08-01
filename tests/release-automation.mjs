@@ -27,6 +27,8 @@ assert.match(demoWorkflow, /workflows:\s*\[CI\]/);
 assert.match(demoWorkflow, /workflow_run\.conclusion == 'success'/);
 assert.match(demoWorkflow, /repository:\s*catgarret\/catgarret\.github\.io/);
 assert.match(demoWorkflow, /secrets\.DEMO_SITE_TOKEN/);
+assert.match(demoWorkflow, /if: env\.DEMO_SITE_TOKEN != ''/);
+assert.doesNotMatch(demoWorkflow, /DEMO_SITE_TOKEN[\s\S]{0,300}exit 1/);
 assert.match(demoWorkflow, /rsync -a --delete site\/ public-site\/example\/kineto\//);
 assert.doesNotMatch(demoWorkflow, /configure-pages|deploy-pages/);
 

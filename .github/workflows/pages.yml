@@ -26,33 +26,35 @@ jobs:
       DEMO_SITE_TOKEN: ${{ secrets.DEMO_SITE_TOKEN }}
 
     steps:
-      - name: Require cross-repository deploy token
+      - name: Check cross-repository deploy token
         shell: bash
         run: |
           if [ -z "$DEMO_SITE_TOKEN" ]; then
-            echo "Repository secret DEMO_SITE_TOKEN is required."
-            echo "Grant it Contents: Read and write for catgarret/catgarret.github.io."
-            exit 1
+            echo "::notice::Demo sync skipped: add repository secret DEMO_SITE_TOKEN with Contents: Read and write for catgarret/catgarret.github.io."
           fi
 
       - name: Checkout verified Kineto source
+        if: env.DEMO_SITE_TOKEN != ''
         uses: actions/checkout@v6
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Set up Node.js
+        if: env.DEMO_SITE_TOKEN != ''
         uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
 
       - name: Build deployable demo
+        if: env.DEMO_SITE_TOKEN != ''
         run: |
           npm ci
           npm run build
           npm run test:site
 
       - name: Checkout public site repository
+        if: env.DEMO_SITE_TOKEN != ''
         uses: actions/checkout@v6
         with:
           repository: catgarret/catgarret.github.io
@@ -61,11 +63,13 @@ jobs:
           path: public-site
 
       - name: Replace example/kineto with generated site
+        if: env.DEMO_SITE_TOKEN != ''
         run: |
           mkdir -p public-site/example/kineto
           rsync -a --delete site/ public-site/example/kineto/
 
       - name: Commit and push when the demo changed
+        if: env.DEMO_SITE_TOKEN != ''
         working-directory: public-site
         shell: bash
         env:

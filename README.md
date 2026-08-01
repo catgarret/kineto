@@ -10,7 +10,7 @@ English · [한국어](i18n/README.ko.md) · [日本語](i18n/README.jp.md) · [
 
 <p><a href="https://github.com/catgarret/kineto/actions/workflows/ci.yml"><img src="https://github.com/catgarret/kineto/actions/workflows/ci.yml/badge.svg" alt="CI" height="20"></a>&nbsp;&nbsp;<a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
-[Live demo](https://kineto.dongri.me) · [Module reference](docs/module-reference.md) · [AI prompt guide](AI-PROMPT-GUIDE.md) · [Feature contract](FEATURE_CONTRACT.md)
+[Live demo](https://kineto.dongri.me/) · [Module reference](docs/module-reference.md) · [AI prompt guide](AI-PROMPT-GUIDE.md) · [Feature contract](FEATURE_CONTRACT.md)
 
 </div>
 
@@ -29,7 +29,7 @@ Unsupported environments disable the effect while keeping the content intact.
 
 ## Highlights
 
-Tune every effect in the [live demo](https://kineto.dongri.me),
+Tune every effect in the [live demo](https://kineto.dongri.me/),
 then copy the resulting HTML or JavaScript.
 
 **Progressive Print** — Blur and fine noise clear as the image sharpens.

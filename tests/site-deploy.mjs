@@ -36,4 +36,17 @@ const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: root, encoding: '
 const stale = tracked.filter((file) => /(^|\/)(?:\.fuse_hidden[^/]*|\.DS_Store)$/.test(file));
 assert.strictEqual(stale.length, 0, `stale files present: ${stale.join(', ')}`);
 
-console.log(`site-deploy OK — @latest CDN, 0 ../dist, runtime version(${version})/count/build hooks present, no stale files.`);
+// 5. Canonical live-demo links stay synchronized across package/docs/locales.
+const linkedDocs = [
+  'package.json', 'README.md', 'AI-PROMPT-GUIDE.md', 'docs/RELEASING.md',
+  'i18n/README.ko.md', 'i18n/README.jp.md', 'i18n/README.zh-CN.md',
+  'i18n/README.zh-TW.md', 'i18n/README.ru.md', 'i18n/README.it.md'
+];
+for (const relative of linkedDocs) {
+  const source = fs.readFileSync(path.join(root, relative), 'utf8');
+  assert.ok(source.includes('https://kineto.dongri.me/'), `${relative} must use the canonical demo URL`);
+  assert.doesNotMatch(source, /https:\/\/git\.dongri\.me\/example\/kineto/);
+  assert.doesNotMatch(source, /https:\/\/kineto\.dongri\.me(?!\/)/);
+}
+
+console.log(`site-deploy OK — @latest CDN, canonical demo URL, 0 ../dist, runtime version(${version})/count/build hooks present, no stale files.`);

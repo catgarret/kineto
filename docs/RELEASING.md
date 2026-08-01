@@ -26,7 +26,7 @@ replaces only `example/kineto`, and commits the result to the site's `master`
 branch. The demo intentionally loads `@dong-gri/kineto@latest`; the release
 workflow purges the jsDelivr latest aliases after npm publication.
 
-The canonical demo URL is `https://kineto.dongri.me`. It can be served directly
+The canonical demo URL is `https://kineto.dongri.me/`. It can be served directly
 with Cloudflare Pages; a Worker proxy is not required. Connect the Kineto GitHub
 repository to a Pages project with production branch `main`, build command
 `npm ci && npm run build`, and output directory `site`, then add
