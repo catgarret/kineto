@@ -4,6 +4,16 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.47] - 2026-08-02
+
+### English
+
 - Made FLIP `crossfade` simultaneously fade an old-position visual clone out and the live new-position item in, and fixed Reset for nested Cover Reveal + Flip demos without detaching the reveal targets.
 - Kept settings sections in their assigned masonry columns when ordinary option changes only alter fields inside an existing section.
 - Made Cover Reveal `auto` extract a distinct, deterministic two-color palette per actual image element instead of relying on a gallery-level fallback; the Staggered Gallery now declares `auto` directly in its source markup.
@@ -25,7 +35,6 @@
 - Staggered Gallery의 Cover Reveal Mask 기본값을 끄고 교체된 마지막 패널과 동일한 줄별 시간차로 마스크가 재생되도록 맞췄습니다. Radial 데모는 Bottom으로 시작하고 Center·도크 배치를 따로 조절하며, 모든 항목을 하나의 각도 값으로 회전시켜 끝 잔상을 없앴습니다. Coverflow는 클리핑 경계 안에 하단 그림자 여백을 확보했습니다.
 - FLIP `fade`가 이전 위치에서 완전히 사라진 뒤 짧은 공백을 거쳐 새 위치에서 나타나도록 구분하고, Page Reveal Zoom에는 확대와 함께 opacity 0→1 진입을 적용했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
-
 ## [0.8.46] - 2026-08-01
 
 ### English

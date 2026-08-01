@@ -1,6 +1,6 @@
-# Kineto v0.8.46 QA Report
+# Kineto v0.8.47 QA Report
 
-검증일: 2026-07-29
+검증일: 2026-08-02
 대상: npm 배포 후보 전체 소스
 
 ## 자동 검증
@@ -35,8 +35,8 @@
 ## 패키지 확인
 
 배포 전 실제 tarball을 별도 프로젝트에 설치해 ESM, CommonJS, CSS와
-adapter entry를 확인합니다. 현재 패키지는 11개 파일이며 압축 크기는
-342.7 KiB입니다. 패키지명은 `@dong-gri/kineto`, 버전은 `0.8.46`입니다.
+adapter entry를 확인합니다. 현재 패키지는 65개 파일이며 npm dry-run 기준
+압축 크기는 476.3 kB입니다. 패키지명은 `@dong-gri/kineto`, 버전은 `0.8.47`입니다.
 
 ## 별도 실기기 확인 권장
 
