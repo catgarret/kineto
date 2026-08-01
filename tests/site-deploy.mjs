@@ -1,6 +1,6 @@
-// B-1: deploy determinism. The generated site must pin the EXACT version, carry
-// no ../dist references, never use @latest, and expose runtime version/count
-// hooks so header/footer can't drift from Kineto.version.
+// The generated public site must use the requested @latest CDN alias, carry no
+// ../dist references, and expose runtime version/count hooks so header/footer
+// reflect the bundle that npm currently serves.
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -18,8 +18,7 @@ const m = core.match(/version:\s*'([^']+)'/);
 assert.ok(m, 'src/core.js has a version literal');
 assert.strictEqual(m[1], version, `Kineto.version (${m[1]}) must equal package.json version (${version})`);
 
-// 2. rewrite of the real demo produces a clean site with no ../dist leftovers
-//    (public demo intentionally tracks @latest — version pinning is out of scope)
+// 2. rewrite of the real demo produces a clean @latest site with no local refs
 const demoHtml = fs.readFileSync(path.join(root, 'demo/index.html'), 'utf8');
 const { html, leftover } = rewriteSiteHtml(demoHtml, { build: 'testhash' });
 assert.strictEqual(leftover, 0, 'site must have 0 ../dist references');

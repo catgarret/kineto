@@ -25,7 +25,7 @@
     "vanilla-js",
     "frontend"
   ],
-  "homepage": "https://git.dongri.me/example/kineto",
+  "homepage": "https://kineto.dongri.me",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/catgarret/kineto.git"

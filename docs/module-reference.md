@@ -199,7 +199,7 @@
 - Attribute: `data-kt-slider`
 - Default variant: `slide`
 - Variants: `slide`, `fade`, `dissolve`, `wipe`, `coverflow`, `flip`, `cube`, `cards`, `creative`, `radial`
-- Public options: `activeAngle`, `activeClass`, `activeShadow`, `activeShadowOpacity`, `align`, `autoHeight`, `autoplay`, `axis`, `breakpoints`, `controls`, `depth`, `dots`, `drag`, `duration`, `effect`, `effectDirection`, `effectIntensity`, `enabled`, `gap`, `grabCursor`, `initial`, `keyboard`, `label`, `loop`, `minOpacity`, `minScale`, `nextSelector`, `onBeforeChange`, `onChange`, `onInit`, `opacityStep`, `pauseButton`, `pauseOnHover`, `perGroup`, `perView`, `perspective`, `position`, `preset`, `prevSelector`, `progress`, `progressType`, `radius`, `rotate`, `scaleStep`, `slideToClickedSlide`, `smoothing`, `spacing`, `speed`, `step`, `sync`, `touch`, `wheel`
+- Public options: `activeAngle`, `activeClass`, `activeShadow`, `activeShadowOpacity`, `align`, `autoHeight`, `autoplay`, `axis`, `breakpoints`, `controls`, `depth`, `dots`, `drag`, `duration`, `effect`, `effectDirection`, `effectIntensity`, `enabled`, `gap`, `grabCursor`, `index`, `initial`, `initialIndex`, `keyboard`, `label`, `loop`, `minOpacity`, `minScale`, `nextSelector`, `onBeforeChange`, `onChange`, `onInit`, `opacityStep`, `pauseButton`, `pauseOnHover`, `perGroup`, `perView`, `perspective`, `position`, `preset`, `prevSelector`, `progress`, `progressType`, `radius`, `rotate`, `scaleStep`, `slideToClickedSlide`, `smoothing`, `spacing`, `speed`, `step`, `sync`, `touch`, `wheel`
 
 ## stickyStack
 
@@ -345,7 +345,7 @@
 
 - Attribute: `data-kt-flip`
 - Default variant: `layout`
-- Variants: `layout`, `slide`, `fade`, `fade-slide`, `scale`
+- Variants: `layout`, `none`, `slide`, `fade`, `crossfade`, `fade-slide`, `scale`
 - Public options: `duration`, `ease`, `item`, `mode`, `stagger`, `watch`
 
 ## scrollShadows

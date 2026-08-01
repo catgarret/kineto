@@ -1,34 +1,82 @@
-name: GitHub Pages
+name: Deploy demo site
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "site/**"
-      - ".github/workflows/pages.yml"
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: demo-site
   cancel-in-progress: true
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    name: Sync site to catgarret.github.io
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DEMO_SITE_TOKEN: ${{ secrets.DEMO_SITE_TOKEN }}
+
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/configure-pages@v6
-      - uses: actions/upload-pages-artifact@v4
+      - name: Require cross-repository deploy token
+        shell: bash
+        run: |
+          if [ -z "$DEMO_SITE_TOKEN" ]; then
+            echo "Repository secret DEMO_SITE_TOKEN is required."
+            echo "Grant it Contents: Read and write for catgarret/catgarret.github.io."
+            exit 1
+          fi
+
+      - name: Checkout verified Kineto source
+        uses: actions/checkout@v6
         with:
-          path: site
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build deployable demo
+        run: |
+          npm ci
+          npm run build
+          npm run test:site
+
+      - name: Checkout public site repository
+        uses: actions/checkout@v6
+        with:
+          repository: catgarret/catgarret.github.io
+          ref: master
+          token: ${{ secrets.DEMO_SITE_TOKEN }}
+          path: public-site
+
+      - name: Replace example/kineto with generated site
+        run: |
+          mkdir -p public-site/example/kineto
+          rsync -a --delete site/ public-site/example/kineto/
+
+      - name: Commit and push when the demo changed
+        working-directory: public-site
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          if [ -z "$(git status --porcelain -- example/kineto)" ]; then
+            echo "The deployed demo is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add example/kineto
+          git commit -m "deploy: update Kineto demo from ${SOURCE_SHA:0:7}"
+          git push origin master

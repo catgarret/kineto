@@ -97,6 +97,13 @@
     .lead{font-size:clamp(1rem,2.2vw,1.3rem);color:var(--muted);max-width:720px;margin:0 auto;line-height:1.7;word-break:keep-all;text-wrap:pretty}
     .lead-line{display:block}
     .hero-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:38px}
+    a.hero-github{gap:0}
+    .hero-github .ph-github-logo{font-size:16px}
+    .hero-badges{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin:18px 0 0;min-height:20px}
+    .hero-badges a{display:inline-flex;height:20px;border-radius:4px;transition:opacity .15s ease,transform .15s ease}
+    .hero-badges a:hover{opacity:.82;transform:translateY(-1px)}
+    .hero-badges a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+    .hero-badges img{display:block;width:auto;height:20px}
     .hero-chips{list-style:none;display:flex;justify-content:center;flex-wrap:wrap;gap:9px;margin:20px 0 0;padding:0}
     .hero-chips li{position:relative;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:color-mix(in srgb,var(--panel) 78%,transparent);color:var(--muted);font:600 11.5px/1 var(--font-sans);letter-spacing:.01em;word-break:keep-all;cursor:help;transition:color .15s ease,border-color .15s ease}
     .hero-chips li:hover,.hero-chips li:focus-visible{color:var(--text);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}

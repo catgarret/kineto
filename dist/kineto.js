@@ -4450,11 +4450,16 @@ function Yt() {
 	typeof document > "u" || (qt === 0 && (Jt = {
 		body: document.body.style.overflow,
 		root: document.documentElement.style.overflow,
-		gutter: document.documentElement.style.scrollbarGutter
+		gutter: document.documentElement.style.scrollbarGutter,
+		scroll: [window.scrollX, window.scrollY]
 	}, document.body.style.overflow = "hidden", document.documentElement.style.overflow = "hidden", document.documentElement.style.scrollbarGutter = "auto"), qt += 1);
 }
 function Xt() {
-	typeof document > "u" || qt === 0 || (--qt, qt === 0 && Jt && (document.body.style.overflow = Jt.body, document.documentElement.style.overflow = Jt.root, document.documentElement.style.scrollbarGutter = Jt.gutter, Jt = null));
+	if (!(typeof document > "u" || qt === 0) && (--qt, qt === 0 && Jt)) {
+		document.body.style.overflow = Jt.body, document.documentElement.style.overflow = Jt.root, document.documentElement.style.scrollbarGutter = Jt.gutter;
+		let e = document.scrollingElement || document.documentElement;
+		[e.scrollLeft, e.scrollTop] = Jt.scroll, Jt = null;
+	}
 }
 function Zt(e, t, n) {
 	let r = document.createElement(e);
@@ -4974,17 +4979,17 @@ var un = Object.freeze([
 	{
 		id: "braille-pulse",
 		name: "Braille Pulse",
-		description: "Braille blocks fill from the bottom, then drain back down.",
+		description: "Braille fill pulse",
 		renderer: "text-frame",
-		frames: [..."⡀⡄⡆⡇⣇⣧⣷⣿", ..."⣷⣧⣇⡇⡆⡄"],
-		defaultInterval: 72,
+		frames: [..."⠀⣀⣤⣶⣿⣿⣿⣶⣤⣀"],
+		defaultInterval: 140,
 		fixedWidth: !0,
 		supportedOptions: tn,
 		fallbackFrames: [
-			"|",
-			"/",
-			"-",
-			"\\"
+			".",
+			"o",
+			"O",
+			"o"
 		]
 	},
 	{
@@ -5033,22 +5038,22 @@ var un = Object.freeze([
 	{
 		id: "clock",
 		name: "Clock",
-		description: "The same quarter sweep, running anticlockwise.",
+		description: "Clock faces advance through 12, 3, 6 and 9.",
 		renderer: "text-frame",
 		frames: [
-			"◷",
-			"◶",
-			"◵",
-			"◴"
+			"🕛",
+			"🕒",
+			"🕕",
+			"🕘"
 		],
-		defaultInterval: 100,
+		defaultInterval: 240,
 		fixedWidth: !0,
 		supportedOptions: tn,
 		fallbackFrames: [
-			"o",
-			"O",
-			"o",
-			"."
+			"12",
+			"3 ",
+			"6 ",
+			"9 "
 		]
 	},
 	{
@@ -10904,11 +10909,13 @@ var ei = {
 				c.set(e, e.getBoundingClientRect()), l.add(e);
 			});
 		}, d = [
+			"none",
 			"slide",
 			"fade",
+			"crossfade",
 			"fade-slide",
 			"scale"
-		].includes(t.mode) ? t.mode : "slide", f = () => d === "fade" ? [{ opacity: 0 }, { opacity: 1 }] : [{
+		].includes(t.mode) ? t.mode : "slide", f = () => d === "fade" || d === "crossfade" ? [{ opacity: 0 }, { opacity: 1 }] : [{
 			opacity: 0,
 			transform: "scale(.92)"
 		}, {
@@ -10917,6 +10924,23 @@ var ei = {
 		}], p = (e, t, n, r) => {
 			let i = `translate(${e}px, ${t}px) scale(${n}, ${r})`;
 			return d === "fade" ? [
+				{
+					opacity: 1,
+					offset: 0
+				},
+				{
+					opacity: 0,
+					offset: .42
+				},
+				{
+					opacity: 0,
+					offset: .52
+				},
+				{
+					opacity: 1,
+					offset: 1
+				}
+			] : d === "crossfade" ? [
 				{
 					opacity: 1,
 					offset: 0
@@ -10943,23 +10967,24 @@ var ei = {
 				opacity: 1
 			}] : d === "scale" ? [
 				{
-					transform: `${i}`,
-					opacity: 1,
+					transform: i,
 					offset: 0
 				},
 				{
-					transform: `${i} scale(.86)`,
-					opacity: .2,
-					offset: .45
+					transform: `translate(${e}px, ${t}px) scale(.18)`,
+					offset: .46
+				},
+				{
+					transform: "scale(.18)",
+					offset: .54
 				},
 				{
 					transform: "none",
-					opacity: 1,
 					offset: 1
 				}
 			] : [{ transform: i }, { transform: "none" }];
 		}, m = () => {
-			if (n || r === 0) {
+			if (n || r === 0 || d === "none") {
 				u();
 				return;
 			}

@@ -11,7 +11,7 @@
 
 <p><a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="../LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
-[라이브 데모](https://git.dongri.me/example/kineto) · [모듈 레퍼런스](../docs/module-reference.md) · [AI 프롬프트 가이드](../AI-PROMPT-GUIDE.md) · [기능 계약](../FEATURE_CONTRACT.md)
+[라이브 데모](https://kineto.dongri.me) · [모듈 레퍼런스](../docs/module-reference.md) · [AI 프롬프트 가이드](../AI-PROMPT-GUIDE.md) · [기능 계약](../FEATURE_CONTRACT.md)
 
 </div>
 
@@ -30,7 +30,7 @@ Kineto는 모션·미디어·스크롤·텍스트·UI를 다루는 51개 모듈�
 
 ## 대표 기능
 
-모든 효과는 [라이브 데모](https://git.dongri.me/example/kineto)에서
+모든 효과는 [라이브 데모](https://kineto.dongri.me)에서
 바로 조절할 수 있습니다.
 완성된 HTML·JavaScript 코드도 함께 복사할 수 있습니다.
 

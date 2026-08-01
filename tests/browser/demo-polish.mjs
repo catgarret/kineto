@@ -38,6 +38,13 @@ try {
   await page.waitForFunction(()=>window.Kineto&&window.Kineto.instanceCount>30,null,{timeout:15000});
   await page.waitForTimeout(700);
 
+  const githubButton = await page.evaluate(() => {
+    const button = document.querySelector('.hero-github');
+    const icon = button.querySelector('.ph-github-logo');
+    return { gap: getComputedStyle(button).gap, iconSize: getComputedStyle(icon).fontSize };
+  });
+  assert.deepEqual(githubButton, { gap: '0px', iconSize: '16px' }, 'hero GitHub button must use its dedicated icon spacing');
+
   const cover = await page.evaluate(() => {
     const text=document.querySelector('.demo-css-0a735447');
     const stage=text.closest('.demo-stage');
@@ -50,6 +57,19 @@ try {
     1,
     'the compatibility-preserved Page Reveal zoom preset must remain discoverable in the demo'
   );
+  await page.waitForFunction(() => !document.documentElement.classList.contains('kt-preload'), null, { timeout: 10000 });
+  await page.waitForTimeout(750);
+  const zoomHeader = await page.evaluate(async () => {
+    const header = document.querySelector('.site-header');
+    const surface = document.querySelector('.layout');
+    const instance = window.Kineto.pageReveal(surface, { effect: 'zoom', duration: 0.35, delay: 0 });
+    await new Promise((resolve) => setTimeout(resolve, 140));
+    const style = getComputedStyle(header);
+    const during = { opacity: Number(style.opacity), transform: style.transform, height: header.getBoundingClientRect().height };
+    instance.destroy();
+    return during;
+  });
+  assert.ok(zoomHeader.opacity > 0.99 && zoomHeader.height > 0, `Page Reveal zoom must keep the persistent header visible (${JSON.stringify(zoomHeader)})`);
   const segmentedDemoTab=page.locator('#mod-tabs .demo-tabs .demo-tab',{hasText:'Segmented'});
   await segmentedDemoTab.click();
   await page.waitForTimeout(80);

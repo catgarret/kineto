@@ -17,6 +17,24 @@ The workflow requests `id-token: write`; no long-lived npm token is stored in
 the repository. GitHub Actions also needs `contents: write`, which is declared
 in the workflow.
 
+The public demo is maintained in the separate
+`catgarret/catgarret.github.io` repository. Create a fine-grained personal
+access token with access only to that repository and `Contents: Read and write`,
+then save it in the Kineto repository as the Actions secret
+`DEMO_SITE_TOKEN`. After `CI` succeeds on `main`, `pages.yml` rebuilds `site/`,
+replaces only `example/kineto`, and commits the result to the site's `master`
+branch. The demo intentionally loads `@dong-gri/kineto@latest`; the release
+workflow purges the jsDelivr latest aliases after npm publication.
+
+The canonical demo URL is `https://kineto.dongri.me`. It can be served directly
+with Cloudflare Pages; a Worker proxy is not required. Connect the Kineto GitHub
+repository to a Pages project with production branch `main`, build command
+`npm ci && npm run build`, and output directory `site`, then add
+`kineto.dongri.me` as the Pages custom domain. Keep the separate repository sync
+above as the origin/backup deployment. Do not add a `CNAME` file to
+`catgarret.github.io`, because that would change the custom domain for the whole
+personal Pages site rather than only `example/kineto`.
+
 ## Preparing a version
 
 Start from a clean `main` branch after all feature/fix commits are complete.

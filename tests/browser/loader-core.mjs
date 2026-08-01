@@ -83,6 +83,9 @@ const check = (n, c, d) => { console.log(`  [${c ? 'PASS' : 'FAIL'}] ${n}${d ? '
   await page.setContent(HTML, { waitUntil: 'load' });
   await page.waitForFunction(() => !!window.Kineto);
   const r = await page.evaluate(async () => {
+    document.body.style.minHeight = '3000px';
+    window.scrollTo(0, 640);
+    const scrollBefore = window.scrollY;
     const before = { body: document.body.style.overflow, html: document.documentElement.style.overflow };
     const mk = () => { const el = document.createElement('div'); el.style.cssText = 'position:fixed;inset:0'; document.body.appendChild(el); return window.Kineto.loader(el, { type: 'bar', minDuration: 100, duration: 0.15, completeHold: 40, hideScrollbar: true }); };
     const a = mk(); const b = mk();
@@ -90,11 +93,12 @@ const check = (n, c, d) => { console.log(`  [${c ? 'PASS' : 'FAIL'}] ${n}${d ? '
     a.complete(); b.complete();
     await new Promise((res) => setTimeout(res, 700));
     const after = { body: document.body.style.overflow, html: document.documentElement.style.overflow };
-    return { before, during, after };
+    return { before, during, after, scrollBefore, scrollAfter: window.scrollY };
   });
   console.log('  overlap lock:', JSON.stringify(r));
   check('two hideScrollbar loaders lock during', r.during.body === 'hidden' && r.during.html === 'hidden', JSON.stringify(r.during));
   check('overlapping loaders fully unlock after (no permanent lock)', r.after.body === r.before.body && r.after.html === r.before.html, `${JSON.stringify(r.before)} -> ${JSON.stringify(r.after)}`);
+  check('loader scroll lock preserves the opening position', Math.abs(r.scrollAfter - r.scrollBefore) < 2, `${r.scrollBefore} -> ${r.scrollAfter}`);
   await ctx.close();
 }
 

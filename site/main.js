@@ -46,11 +46,17 @@
         'cursor-frame':'문구 뒤의 커서로 진행 상태를 표시합니다.',
         'compound-frame':'스피너와 상태 정보를 한 줄에 조합합니다.'
       };
+      const presetDescriptions={
+        braille:'두 점이 셀 가장자리를 따라 회전하는 점자 스피너입니다.',
+        'braille-pulse':'점자 세로 막대가 차오르고 잠시 멈춘 뒤 비워집니다.',
+        circle:'부채꼴 문자가 시계 방향으로 회전합니다.',
+        clock:'시계 얼굴이 12시·3시·6시·9시 순서로 바뀝니다.'
+      };
       document.querySelectorAll('.loader-preview--frame [data-kt-terminal-style]').forEach((node)=>{
         const card=node.closest('article.card');
         if(!card||card.querySelector(':scope > p'))return;
         const preset=byId.get(node.getAttribute('data-kt-terminal-style'));
-        const description=descriptions[preset?.renderer];
+        const description=presetDescriptions[preset?.id]||descriptions[preset?.renderer];
         if(!description)return;
         const p=document.createElement('p');
         p.textContent=description;

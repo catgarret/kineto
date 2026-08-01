@@ -5,6 +5,7 @@ import fullpageModule from '../src/modules/fullpage.js';
 import megaMenuModule from '../src/modules/megaMenu.js';
 import scrollShadowsModule from '../src/modules/scrollShadows.js';
 import overflowTextModule from '../src/modules/overflowText.js';
+import { getTerminalFramePreset } from '../src/modules/loadingIndicator/terminalFramePresets.js';
 
 const rounded = (values) => values.map((value) => Number(value.toFixed(3)));
 assert.deepEqual(rounded(staggerDelays(5, 0.1, 'start')), [0, 0.1, 0.2, 0.3, 0.4]);
@@ -241,6 +242,27 @@ flipLayout = 1;
 flip.play();
 assert.ok(flipFrames.some((frames) => /translate\([^,]+px, -?60px\)/.test(frames[0].transform)), 'multi-row FLIP must animate a vertical delta');
 flip.destroy();
+
+// `none` keeps FLIP's record/reorder API useful while applying the new layout
+// immediately, without creating Web Animations.
+flipFrames.length = 0;
+flipLayout = 0;
+const instantFlip = flipModule.create(flipGrid, { duration: 0.2, mode: 'none', watch: false });
+flipLayout = 1;
+instantFlip.play();
+assert.equal(flipFrames.length, 0, 'FLIP mode none must update without animation');
+instantFlip.destroy();
+
+flipFrames.length = 0;
+flipLayout = 0;
+const scaleFlip = flipModule.create(flipGrid, { duration: 0.2, mode: 'scale', watch: false });
+flipLayout = 1;
+scaleFlip.play();
+assert.ok(
+  flipFrames.some((frames) => frames.some((frame) => /scale\(\.18\)/.test(frame.transform || '')) && frames.every((frame) => frame.opacity == null)),
+  'FLIP scale must visibly shrink and expand instead of degrading into a fade'
+);
+scaleFlip.destroy();
 flipGrid.remove();
 
 // Tilt and Card Glow shadows must coexist with each other and with a card's
@@ -502,6 +524,16 @@ promiseHost.remove();
 
 const frameHost = document.createElement('span');
 document.body.appendChild(frameHost);
+assert.deepEqual(
+  getTerminalFramePreset('braille-pulse').frames,
+  [...'⠀⣀⣤⣶⣿⣿⣿⣶⣤⣀'],
+  'Braille Pulse must fill both dot columns one horizontal row at a time'
+);
+assert.deepEqual(
+  getTerminalFramePreset('clock').frames,
+  ['🕛', '🕒', '🕕', '🕘'],
+  'Clock must use actual clock faces instead of reversing the Circle frames'
+);
 const frameIndicator = loadingIndicatorModule.create(frameHost, {
   type: 'terminal',
   terminalStyle: 'braille',

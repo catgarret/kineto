@@ -27,19 +27,29 @@ export default {
     };
 
     // `mode` picks how a moved item gets to its new slot:
+    //   'none'      — update the layout immediately, without motion
     //   'slide'     — the classic FLIP glide from the old rect (default)
-    //   'fade'      — fades out where it was, fades in already in place
+    //   'fade'      — fades out, pauses briefly, then fades in at the new slot
+    //   'crossfade' — the old and new layout dissolve through each other
     //   'fade-slide'— glides AND cross-fades, softening long jumps
     //   'scale'     — shrinks away and pops back at the new position
     // Anything other than 'slide' means the eye doesn't have to track a moving
     // tile across the layout, which reads calmer on big reorders.
-    const mode = ['slide', 'fade', 'fade-slide', 'scale'].includes(opts.mode) ? opts.mode : 'slide';
-    const enterFrames = () => (mode === 'fade'
+    const mode = ['none', 'slide', 'fade', 'crossfade', 'fade-slide', 'scale'].includes(opts.mode) ? opts.mode : 'slide';
+    const enterFrames = () => (mode === 'fade' || mode === 'crossfade'
       ? [{ opacity: 0 }, { opacity: 1 }]
       : [{ opacity: 0, transform: 'scale(.92)' }, { opacity: 1, transform: 'none' }]);
     const moveFrames = (dx, dy, sx, sy) => {
       const from = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
       if (mode === 'fade') {
+        return [
+          { opacity: 1, offset: 0 },
+          { opacity: 0, offset: 0.42 },
+          { opacity: 0, offset: 0.52 },
+          { opacity: 1, offset: 1 }
+        ];
+      }
+      if (mode === 'crossfade') {
         return [
           { opacity: 1, offset: 0 },
           { opacity: 0, offset: 0.42 },
@@ -50,16 +60,17 @@ export default {
       if (mode === 'fade-slide') return [{ transform: from, opacity: 0.15 }, { transform: 'none', opacity: 1 }];
       if (mode === 'scale') {
         return [
-          { transform: `${from}`, opacity: 1, offset: 0 },
-          { transform: `${from} scale(.86)`, opacity: 0.2, offset: 0.45 },
-          { transform: 'none', opacity: 1, offset: 1 }
+          { transform: from, offset: 0 },
+          { transform: `translate(${dx}px, ${dy}px) scale(.18)`, offset: 0.46 },
+          { transform: 'scale(.18)', offset: 0.54 },
+          { transform: 'none', offset: 1 }
         ];
       }
       return [{ transform: from }, { transform: 'none' }];
     };
 
     const play = () => {
-      if (reduce || duration === 0) { record(); return; }
+      if (reduce || duration === 0 || mode === 'none') { record(); return; }
       let i = 0;
       items().forEach((item) => {
         const first = firstRects.get(item);

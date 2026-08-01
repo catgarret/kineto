@@ -43,7 +43,7 @@ await loader.finished;
 
 `finished`는 종료 상태를 반환합니다. `complete()`, `fail(error)`, `cancel(reason)`, `show()`, `hide(reason)`, `pause()`, `resume()`, `destroy()`로 상태를 제어할 수 있습니다.
 
-`hideScrollbar: false`로 스크롤 잠금을 끌 수 있습니다. 기본값은 `true`입니다.
+`hideScrollbar: false`로 스크롤 잠금을 끌 수 있습니다. 기본값은 `true`입니다. 잠금을 사용하는 동안 브라우저가 루트 스크롤 영역을 일시적으로 접더라도, Loader가 끝나면 열기 직전의 가로·세로 스크롤 위치를 복원합니다. 겹쳐 실행된 Loader는 마지막 잠금이 해제될 때 한 번만 복원합니다.
 
 현재 값은 `loader.progress`, `aria-valuenow`,
 `--kt-loader-progress`(0–1), `--kt-loader-percent`(0–100),

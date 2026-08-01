@@ -270,4 +270,4 @@ authoritative if this summary and an installed release ever differ.
 [`docs/module-reference.md`](docs/module-reference.md)와
 [`kineto.features.json`](kineto.features.json)에서 확인해야 합니다.
 라이브 데모에서는 설정을 바꾼 뒤 생성된 HTML/JavaScript를 복사할 수
-있습니다: <https://git.dongri.me/example/kineto>
+있습니다: <https://kineto.dongri.me>

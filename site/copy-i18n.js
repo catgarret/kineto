@@ -239,6 +239,27 @@ window.KINETO_COPY_I18N = {
     }
   },
   "cards": {
+    "시계 얼굴이 12시·3시·6시·9시 순서로 바뀝니다.": ["Clock faces advance through 12, 3, 6, and 9 o’clock.","時計の文字盤が12時・3時・6時・9時の順に切り替わります。","时钟表盘依次切换为12点、3点、6点和9点。","時鐘表面依序切換為12點、3點、6點和9點。","Циферблат последовательно показывает 12, 3, 6 и 9 часов.","Il quadrante passa in sequenza dalle 12 alle 3, alle 6 e alle 9."],
+    "두 점이 셀 가장자리를 따라 회전하는 점자 스피너입니다.": ["A Braille spinner with two dots rotating around the cell edge.","2つの点がセルの縁を回転する点字スピナーです。","两个点沿单元格边缘旋转的盲文旋转指示器。","兩個點沿著儲存格邊緣旋轉的點字指示器。","Брайлевский индикатор: две точки вращаются по краю ячейки.","Spinner Braille con due punti che ruotano lungo il bordo della cella."],
+    "점자 세로 막대가 차오르고 잠시 멈춘 뒤 비워집니다.": ["A vertical Braille bar fills, pauses briefly, then drains.","点字の縦バーが満ち、少し止まってから空になります。","盲文竖条逐渐填满，短暂停留后再清空。","點字直條逐漸填滿，短暫停留後再清空。","Вертикальная брайлевская шкала заполняется, ненадолго замирает и опустошается.","Una barra Braille verticale si riempie, resta piena per un istante e si svuota."],
+    "부채꼴 문자가 시계 방향으로 회전합니다.": ["A quarter-disc glyph rotates clockwise.","扇形の文字が時計回りに回転します。","扇形字符顺时针旋转。","扇形字元順時針旋轉。","Секторный символ вращается по часовой стрелке.","Un glifo a settore ruota in senso orario."],
+    "부채꼴 문자가 반시계 방향으로 회전합니다.": ["A quarter-disc glyph rotates anticlockwise.","扇形の文字が反時計回りに回転します。","扇形字符逆时针旋转。","扇形字元逆時針旋轉。","Секторный символ вращается против часовой стрелки.","Un glifo a settore ruota in senso antiorario."],
+    "원을 따라 도는 선분으로 진행 상태를 표시합니다.": [
+      "Shows progress with a segment orbiting a circle.",
+      "円周を回る線分で進行状況を示します。",
+      "用沿圆周旋转的线段表示进度。",
+      "用沿圓周旋轉的線段顯示進度。",
+      "Показывает процесс сегментом, движущимся по кругу.",
+      "Mostra l’avanzamento con un segmento che ruota lungo un cerchio."
+    ],
+    "시계 방향으로 돌아가는 부채꼴 문자 스피너입니다.": [
+      "A character spinner whose clock-face wedges advance clockwise.",
+      "時計回りに進む扇形文字のスピナーです。",
+      "由扇形字符顺时针转动的旋转指示器。",
+      "由扇形字元順時針轉動的旋轉指示器。",
+      "Символьный индикатор с секторами, движущимися по часовой стрелке.",
+      "Spinner di caratteri a settori che avanza in senso orario."
+    ],
     "문자를 한 칸씩 바꾸는 가벼운 터미널 스피너입니다.": [
       "A lightweight terminal spinner that cycles one character at a time.",
       "文字を1つずつ切り替える軽量なターミナルスピナーです。",

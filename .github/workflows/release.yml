@@ -61,6 +61,9 @@ jobs:
             npm publish --access public --provenance
           fi
 
+      - name: Refresh jsDelivr latest aliases
+        run: npm run purge
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:

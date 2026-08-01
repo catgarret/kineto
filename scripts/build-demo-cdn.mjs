@@ -1,6 +1,6 @@
-// Generate a deploy-ready copy of the demo that loads Kineto from the jsDelivr
-// CDN pinned to the EXACT published version (not @latest) — so the public demo's
-// HTML/CSS and the npm bundle can never drift into a mixed state (audit B-1).
+// Generate a deploy-ready copy of the demo that loads Kineto from jsDelivr's
+// @latest alias. The displayed version is read from the loaded runtime, so it
+// intentionally follows the version that npm currently serves as latest.
 //
 // Run as part of `npm run build`, or on its own: `npm run demo:cdn`.
 // `--check` verifies an already-generated site/ instead of writing.

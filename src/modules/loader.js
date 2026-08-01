@@ -14,7 +14,8 @@ function acquireScrollLock() {
     scrollLockOriginal = {
       body: document.body.style.overflow,
       root: document.documentElement.style.overflow,
-      gutter: document.documentElement.style.scrollbarGutter
+      gutter: document.documentElement.style.scrollbarGutter,
+      scroll: [window.scrollX, window.scrollY]
     };
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
@@ -31,6 +32,11 @@ function releaseScrollLock() {
     document.body.style.overflow = scrollLockOriginal.body;
     document.documentElement.style.overflow = scrollLockOriginal.root;
     document.documentElement.style.scrollbarGutter = scrollLockOriginal.gutter;
+    // Some browsers temporarily collapse the root scrollport when both html
+    // and body become overflow:hidden. Preserve the position at which the
+    // full-page loader opened instead of revealing the page from top:0.
+    const root = document.scrollingElement || document.documentElement;
+    [root.scrollLeft, root.scrollTop] = scrollLockOriginal.scroll;
     scrollLockOriginal = null;
   }
 }
