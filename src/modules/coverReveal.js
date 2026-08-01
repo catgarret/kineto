@@ -178,12 +178,17 @@ export default {
       if (colorMode === 'single') return [color];
       if (colorMode === 'pair') return [color, color2];
       if (colorMode === 'palette') return specifiedPalette.length ? specifiedPalette : [color, color2];
-      return sampledImagePalette(el || container) || harmoniousPalette(el || container);
+      // Prefer this cover's own content. Falling back to the module root is
+      // useful for text/block covers, but must never make sibling image covers
+      // share the first image found in a list container.
+      return sampledImagePalette(container) || sampledImagePalette(el) || harmoniousPalette(container || el);
     };
 
     const paintPanels = (cover) => {
       const palette = colorsFor(cover.container);
-      const offset = colorMode === 'pair' ? 0 : Math.floor(Math.random() * palette.length);
+      // Authored palettes may intentionally rotate between replays. `auto` is
+      // image-derived and must remain deterministic for that exact image.
+      const offset = colorMode === 'palette' ? Math.floor(Math.random() * palette.length) : 0;
       cover.panels.forEach((panel, index) => {
         let panelColor = colorMode === 'pair'
           ? (layers > 1 && index === layers - 1 ? palette[1] : palette[0])

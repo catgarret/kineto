@@ -4,6 +4,7 @@
 
 ### English
 
+- Made Cover Reveal `auto` extract a distinct, deterministic two-color palette per actual image element instead of relying on a gallery-level fallback; the Staggered Gallery now declares `auto` directly in its source markup.
 - Normalized cursor following and Page Reveal Zoom across Safari frame rates, fixed Safari Lightbox Grid and Slider dot layout, and tuned the demo's Safari scroll/hover timing.
 - Added diverse two-color image sampling to Cover Reveal, switched its image demos from a fixed palette to per-image `auto`, and made `mask:true` replace the final colored panel with an outer mask around each complete cover unit.
 - Fixed Coverflow boundary/shadow sizing and Safari pagination artifacts, sealed Dissolve's rounded edges against inactive-slide color leakage, and added a complete-wheel Radial Slider layout with `position: 'center'` whose demo keeps its circles opaque, separated, and inside the stage.
@@ -13,6 +14,7 @@
 
 ### 한국어
 
+- Cover Reveal `auto`가 갤러리 공통 fallback에 의존하지 않고 실제 이미지 요소마다 대표색 두 개를 결정론적으로 별도 추출하도록 수정했으며, Staggered Gallery 원본 마크업도 직접 `auto`를 선언하도록 변경했습니다.
 - Safari 프레임 속도에서도 커서 추종과 Page Reveal Zoom이 일관되도록 보정하고, Safari Lightbox Grid와 Slider 점 레이아웃 및 데모 스크롤·호버 타이밍을 수정했습니다.
 - Cover Reveal에 서로 구별되는 이미지 대표색 두 개 추출을 추가하고 이미지 데모를 고정 팔레트에서 이미지별 `auto`로 전환했으며, `mask:true`가 마지막 색상 패널을 각 커버 전체를 감싸는 최상위 마스크로 교체하도록 수정했습니다.
 - Coverflow 경계·그림자 크기와 Safari 페이지네이션 깨짐을 바로잡고, Dissolve의 둥근 모서리에서 비활성 이미지 색이 새는 현상을 차단했습니다. Radial Slider에는 원 전체를 표시하는 `position: 'center'`를 추가하고 데모 원이 반투명하게 겹치거나 무대 밖으로 잘리지 않도록 다듬었습니다.

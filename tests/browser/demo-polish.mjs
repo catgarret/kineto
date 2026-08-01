@@ -9,7 +9,11 @@ html = html
   .replace(/<link rel="stylesheet" href="\.\.\/dist\/kineto\.css[^"]*">/, '')
   .replace(/<script src="\.\.\/dist\/kineto\.umd\.js[^"]*"><\/script>/, '')
   .replace(/<script src="\.\/(?:help-i18n|help-i18n-extra|playground-i18n|playground|copy-i18n|main)\.js[^"]*"><\/script>/g, '')
-  .replace('<head>', '<head><base href="http://kineto.local/demo/">');
+  .replace('<head>', '<head><base href="http://kineto.local/demo/">')
+  // setContent() keeps an opaque/about:blank document origin. Mark demo images
+  // as anonymous and return ACAO below so Canvas tests exercise real pixels
+  // instead of silently falling back to the surrounding page color.
+  .replace(/<img /g, '<img crossorigin="anonymous" ');
 const mime = { '.svg':'image/svg+xml','.png':'image/png','.gif':'image/gif','.webp':'image/webp','.js':'text/javascript','.css':'text/css' };
 const browserEngine = process.env.KT_BROWSER === 'webkit' ? webkit : chromium;
 const browser = await browserEngine.launch(browserEngine === chromium
@@ -21,7 +25,7 @@ try {
   await page.route('http://kineto.local/**', async (route) => {
     const url=new URL(route.request().url());
     const relative=decodeURIComponent(url.pathname).replace(/^\/demo\//,'');
-    try { const file=resolve(root,'demo',relative); await route.fulfill({status:200,body:await readFile(file),contentType:mime[extname(file)]||'application/octet-stream'}); }
+    try { const file=resolve(root,'demo',relative); await route.fulfill({status:200,body:await readFile(file),contentType:mime[extname(file)]||'application/octet-stream',headers:{'access-control-allow-origin':'*'}}); }
     catch { await route.fulfill({status:404,body:'Not found'}); }
   });
   await page.setContent(html,{waitUntil:'load'});
@@ -206,14 +210,21 @@ try {
     targets.forEach((target)=>Kineto.getInstance(target,'coverReveal')?.replay());
     await new Promise(requestAnimationFrame);
     return targets.map((target)=>({
+      src:target.querySelector('img')?.getAttribute('src')||'',
       mode:target.dataset.ktColorMode,
       mask:target.dataset.ktMask,
       colors:target.dataset.ktColors||'',
-      panel:target.closest('.kt-cover-wrap')?.querySelector('[aria-hidden="true"]')?.style.background||''
+      panels:[...target.closest('.kt-cover-wrap')?.querySelectorAll('[aria-hidden="true"]')||[]].map((panel)=>panel.style.background)
     }));
   });
-  assert.ok(galleryPalettes.every((entry)=>entry.mode==='auto'&&entry.mask==='false'&&!entry.colors&&entry.panel), `Cover Reveal gallery must use each image sampler with Mask off by default (${JSON.stringify(galleryPalettes)})`);
-  assert.ok(new Set(galleryPalettes.map((entry)=>entry.panel)).size>=4, `gallery images must produce visibly varied first-panel colors (${JSON.stringify(galleryPalettes)})`);
+  assert.ok(galleryPalettes.every((entry)=>entry.mode==='auto'&&entry.mask==='false'&&!entry.colors&&entry.panels.length===2&&entry.panels.every(Boolean)), `Cover Reveal gallery must extract two cover colors for every individual image with Mask off by default (${JSON.stringify(galleryPalettes)})`);
+  const pairsBySource=new Map();
+  galleryPalettes.forEach((entry)=>{
+    const pair=entry.panels.join('|');
+    if(pairsBySource.has(entry.src))assert.equal(pair,pairsBySource.get(entry.src),`the same source image must retain the same extracted pair (${entry.src})`);
+    else pairsBySource.set(entry.src,pair);
+  });
+  assert.ok(new Set(pairsBySource.values()).size>=4, `different gallery images must produce independently sampled two-color pairs (${JSON.stringify(galleryPalettes)})`);
   const radial = page.locator('[data-kt-slider="radial"]');
   const radialDefault = await radial.evaluate((host)=>{
     const boxes=[...host.querySelectorAll('.kt-radial-item')].filter((item)=>Number(getComputedStyle(item).opacity)>.99).map((item)=>item.querySelector('img').getBoundingClientRect());
