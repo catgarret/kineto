@@ -6331,7 +6331,6 @@
         "layers",
         "lines",
         "mask",
-        "maskColor",
         "maskDirection",
         "onComplete",
         "stagger",

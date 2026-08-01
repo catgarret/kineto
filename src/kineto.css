@@ -1050,14 +1050,14 @@ html.kt-preload [data-kt-text-transition] {
    the orbit transforms. Themeable via --kt-radial-radius (also set by the
    `radius` option). Only the focal arc shows (overflow clipped). */
 .kt-radial { position: relative; overflow: hidden; }
-.kt-radial-hub { position: absolute; width: 0; height: 0; }
+.kt-radial-hub { position: absolute; z-index:1; width: 0; height: 0; }
 .kt-radial--bottom .kt-radial-hub { left: 50%; top: 100%; }
 .kt-radial--top .kt-radial-hub { left: 50%; top: 0; }
 .kt-radial--left .kt-radial-hub { left: 0; top: 50%; }
 .kt-radial--right .kt-radial-hub { left: 100%; top: 50%; }
 .kt-radial--center .kt-radial-hub { left: 50%; top: 50%; }
 .kt-radial-item { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
-.kt-radial-controls { position: absolute; z-index: 200; display: flex; gap: 8px; }
+.kt-radial-controls { position: absolute; z-index: 2; display: flex; gap: 8px; }
 .kt-radial--bottom .kt-radial-controls { left: 50%; bottom: 20px; gap: 16px; transform: translateX(-50%); }
 .kt-radial--top .kt-radial-controls { left: 50%; top: 20px; gap: 16px; transform: translateX(-50%); }
 .kt-radial--left .kt-radial-controls, .kt-radial--right .kt-radial-controls { right: 12px; top: 50%; gap: 14px; transform: translateY(-50%); flex-direction: column; }

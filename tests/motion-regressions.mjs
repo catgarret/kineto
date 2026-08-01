@@ -658,19 +658,17 @@ assert.ok(
 autoCover.destroy();
 autoSurface.remove();
 
-const surfaceMaskHost = document.createElement('div');
-surfaceMaskHost.style.backgroundColor = 'rgb(12, 34, 56)';
-const surfaceMaskTarget = document.createElement('div');
-surfaceMaskTarget.textContent = 'Theme-safe mask';
-surfaceMaskHost.appendChild(surfaceMaskTarget);
-document.body.appendChild(surfaceMaskHost);
-const surfaceMask = coverRevealModule.create(surfaceMaskTarget, {
-  colorMode: 'pair', color: '#f00', color2: '#0f0', maskColor: 'surface', layers: 2, waitForImage: false
+const maskTarget = document.createElement('div');
+maskTarget.textContent = 'Colorless mask';
+document.body.appendChild(maskTarget);
+const maskCover = coverRevealModule.create(maskTarget, {
+  colorMode: 'pair', color: '#f00', color2: '#0f0', mask: true, layers: 2, waitForImage: false
 });
-const surfacePanels = [...surfaceMaskTarget.closest('.kt-cover-wrap').querySelectorAll('[aria-hidden="true"]')];
-assert.equal(surfacePanels.at(-1).style.background, 'rgb(12, 34, 56)', 'surface mask must read the live surrounding background instead of color2');
-surfaceMask.destroy();
-surfaceMaskHost.remove();
+const maskPanels = [...maskTarget.closest('.kt-cover-wrap').querySelectorAll('[aria-hidden="true"]')];
+assert.equal(maskPanels.length, 1, 'mask mode must replace the final colored panel instead of adding another layer');
+assert.notEqual(maskPanels[0].style.background, 'rgb(0, 255, 0)', 'color2 must not be painted when a two-layer reveal uses the mask replacement');
+maskCover.destroy();
+maskTarget.remove();
 
 const fullWheelHost = document.createElement('div');
 fullWheelHost.innerHTML = '<div>A</div><div>B</div><div>C</div><div>D</div>';

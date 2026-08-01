@@ -459,23 +459,20 @@
   });
 })();
 
-// Cover Reveal can use the live surrounding surface for its front panel. This
-// stays correct when the demo theme changes, unlike a hard-coded color2 value.
 (function () {
   const sets = window.MK_HELP_I18N;
   if (!sets) return;
-  const tips = {
-    ko: 'color2는 지정한 두 번째 색을 사용하고, surface는 현재 주변 배경색을 읽어 앞 패널을 마스크처럼 맞춥니다.',
-    en: 'color2 uses the specified second color; surface reads the current surrounding background so the front panel behaves like a theme-safe mask.',
-    ja: 'color2は指定した2色目を使い、surfaceは現在の周辺背景色を読み取って前面パネルをテーマ対応のマスクにします。',
-    'zh-CN': 'color2 使用指定的第二种颜色；surface 读取当前周围背景色，让前面板成为适配主题的遮罩。',
-    'zh-TW': 'color2 使用指定的第二種顏色；surface 讀取目前周圍背景色，讓前面板成為適配主題的遮罩。',
-    ru: 'color2 использует заданный второй цвет; surface считывает текущий фон вокруг элемента и превращает переднюю панель в маску, совместимую с темой.',
-    it: 'color2 usa il secondo colore impostato; surface legge lo sfondo circostante corrente e rende il pannello anteriore una maschera compatibile con il tema.'
+  const copy = {
+    ko: { mask: '마지막 색상 패널을 색 없는 콘텐츠 마스크로 대체합니다. layers가 2이면 color2는 사용하지 않습니다.', color2: '두 번째 패널 색입니다. Mask를 켜 마지막 패널이 마스크로 대체되면 사용되지 않습니다.' },
+    en: { mask: 'Replaces the final colored panel with a colorless content mask. With two layers, color2 is not used.', color2: 'Color of the second panel. It is unused when Mask replaces that final panel.' },
+    ja: { mask: '最後の色付きパネルを色のないコンテンツマスクに置き換えます。2レイヤーではcolor2を使いません。', color2: '2枚目のパネル色。Maskが最後のパネルを置き換える場合は使われません。' },
+    'zh-CN': { mask: '用无颜色的内容遮罩替代最后一个彩色面板。两层时不使用 color2。', color2: '第二个面板的颜色。Mask 替代最后面板时不会使用。' },
+    'zh-TW': { mask: '以無顏色的內容遮罩取代最後一個彩色面板。兩層時不使用 color2。', color2: '第二個面板的顏色。Mask 取代最後面板時不會使用。' },
+    ru: { mask: 'Заменяет последнюю цветную панель бесцветной маской контента. При двух слоях color2 не используется.', color2: 'Цвет второй панели. Не используется, когда Mask заменяет последнюю панель.' },
+    it: { mask: 'Sostituisce l’ultimo pannello colorato con una maschera del contenuto senza colore. Con due livelli color2 non viene usato.', color2: 'Colore del secondo pannello. Non viene usato quando Mask sostituisce il pannello finale.' }
   };
-  Object.entries(tips).forEach(([lang, tip]) => {
-    sets[lang] = sets[lang] || {};
-    sets[lang].coverReveal = { ...(sets[lang].coverReveal || {}), maskColor: tip };
+  Object.entries(copy).forEach(([lang, tips]) => {
+    sets[lang].coverReveal = { ...(sets[lang].coverReveal || {}), ...tips };
   });
 })();
 

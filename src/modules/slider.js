@@ -79,6 +79,7 @@ export default {
       el.appendChild(live);
 
       const n = items.length;
+      let laidOut = false;
       const layout = () => {
         items.forEach((item, i) => {
           let offset = i - active;
@@ -92,7 +93,7 @@ export default {
           const teleport = prevOffset !== undefined && Math.abs(offset - prevOffset) > n / 2;
           item._ktOffset = offset;
           const angle = activeAngle + offset * step;
-          item.style.transition = (reduce || duration === 0 || teleport) ? 'none' : `transform ${duration}s cubic-bezier(.22,.8,.3,1), opacity ${duration}s ease`;
+          item.style.transition = (reduce || duration === 0 || teleport || !laidOut) ? 'none' : `transform ${duration}s cubic-bezier(.22,.8,.3,1), opacity ${duration}s ease`;
           // transform-origin is the hub point (0,0); the inner translate(-50%,-50%)
           // (applied FIRST) centers the item there, then rotate·translate·rotate
           // orbits its centre to radius·(cosθ,sinθ), upright.
@@ -108,6 +109,7 @@ export default {
           if (on) item.setAttribute('aria-current', 'true'); else item.removeAttribute('aria-current');
           item.style.zIndex = String(100 - Math.abs(offset));
         });
+        laidOut = true;
         live.textContent = `${active + 1} / ${items.length}`;
       };
 
@@ -217,6 +219,7 @@ export default {
             // remove the kt-radial-item class (so its `will-change:transform` from
             // the stylesheet doesn't linger) and the active markers, then re-home it.
             item.style.transform = ''; item.style.transition = ''; item.style.opacity = ''; item.style.zIndex = ''; item.style.cursor = '';
+            delete item._ktOffset;
             item.classList.remove('kt-radial-item', 'kt-active', 'active-item');
             if (stateClass) item.classList.remove(stateClass);
             item.removeAttribute('aria-current');

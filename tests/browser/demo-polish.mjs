@@ -151,6 +151,29 @@ try {
   assert.equal(webkitLayout.lightboxRows, 2, `Safari Lightbox thumbnails must form two non-overlapping rows (${JSON.stringify(webkitLayout)})`);
   assert.ok(webkitLayout.lightboxInside, `Safari Lightbox thumbnails must retain measurable grid cells (${JSON.stringify(webkitLayout)})`);
   assert.ok(webkitLayout.dots.length > 0 && webkitLayout.dots.every((dot) => dot.width >= 8 && dot.height === 8 && dot.appearance === 'none'), `Safari slider dots must not inherit native button appearance or collapse (${JSON.stringify(webkitLayout)})`);
+  const radial = page.locator('[data-kt-slider="radial"]');
+  await radial.locator('.kt-radial-next').click();
+  await page.waitForTimeout(750);
+  const radialCenter = await radial.evaluate((host) => {
+    const items = [...host.querySelectorAll('.kt-radial-item')];
+    const controls = host.querySelector('.kt-radial-controls');
+    const visible = items.filter((item) => {
+      const box = item.getBoundingClientRect();
+      return Number(getComputedStyle(item).opacity) > 0.99 && box.width > 0 && box.height > 0;
+    });
+    return {
+      position: host.classList.contains('kt-radial--center'),
+      visible: visible.length,
+      total: items.length,
+      uniqueTransforms: new Set(items.map((item) => getComputedStyle(item).transform)).size,
+      controlsZ: Number(getComputedStyle(controls).zIndex),
+      hubZ: Number(getComputedStyle(host.querySelector('.kt-radial-hub')).zIndex),
+      maxItemZ: Math.max(...items.map((item) => Number(getComputedStyle(item).zIndex)))
+    };
+  });
+  assert.ok(radialCenter.position && radialCenter.visible === radialCenter.total, `center Radial demo must show the complete wheel (${JSON.stringify(radialCenter)})`);
+  assert.equal(radialCenter.uniqueTransforms, radialCenter.total, `center Radial must leave no overlapping transition ghosts (${JSON.stringify(radialCenter)})`);
+  assert.ok(radialCenter.controlsZ > radialCenter.hubZ, `Radial paging controls must remain above the hub stacking context (${JSON.stringify(radialCenter)})`);
   const segmentedDemoTab=page.locator('#mod-tabs .demo-tabs .demo-tab',{hasText:'Segmented'});
   await segmentedDemoTab.click();
   await page.waitForTimeout(80);

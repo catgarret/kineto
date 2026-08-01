@@ -150,6 +150,9 @@ export default {
     const delay = Math.max(0, Number(opts.delay ?? 0));
     const ease = opts.ease ? cssEase(opts.ease) : 'cubic-bezier(.77,0,.18,1)';
     const layers = clamp(Math.round(Number(opts.layers ?? 2)), 1, 3);
+    // In mask mode the final coloured panel is replaced by the content mask.
+    const maskLead = opts.mask === true;
+    const panelLayers = Math.max(0, layers - (maskLead ? 1 : 0));
     const stagger = Math.max(0, Number(opts.stagger ?? 120));
     const linesMode = opts.lines === true;
     const pickDirection = () => requestedDirection === 'random'
@@ -180,17 +183,13 @@ export default {
         let panelColor = colorMode === 'pair'
           ? (layers > 1 && index === layers - 1 ? palette[1] : palette[0])
           : palette[(offset + index) % palette.length];
-        if (opts.maskColor === 'surface' && index === cover.panels.length - 1) {
-          const surface = surroundingRgb(cover.container);
-          if (surface) panelColor = `rgb(${surface.map((value) => Math.round(value)).join(' ')})`;
-        }
         panel.style.background = panelColor;
       });
     };
 
     const appendPanels = (cover) => {
       cover.panels = [];
-      for (let index = 0; index < layers; index += 1) {
+      for (let index = 0; index < panelLayers; index += 1) {
         const panel = document.createElement('span');
         panel.setAttribute('aria-hidden', 'true');
         panel.style.cssText = `position:absolute;inset:0;z-index:${20 + index};transform:translate(0,0);transition:transform ${duration}s ${ease};pointer-events:none;will-change:transform;`;
@@ -276,7 +275,6 @@ export default {
     // panels peel off, the content itself is wiped in along the SAME direction,
     // so the reveal reads as one continuous move instead of panels popping off a
     // static image.
-    const maskLead = opts.mask === true;
     const maskInsetFor = (direction) => ({
       right: 'inset(0 0 0 100%)', left: 'inset(0 100% 0 0)',
       down: 'inset(100% 0 0 0)', up: 'inset(0 0 100% 0)'
@@ -313,13 +311,13 @@ export default {
         covers.forEach((cover, lineIndex) => {
           const lineDelay = delay + (linesMode ? lineIndex * stagger : 0);
           cover.panels.forEach((panel, i) => {
-            const order = layers - 1 - i;
+            const order = Math.max(0, panelLayers - 1 - i);
           timers.push(setTimeout(() => { if (alive) panel.style.transform = exitTransform; }, lineDelay + order * stagger));
           });
         });
       });
       const totalLines = linesMode ? Math.max(0, covers.length - 1) : 0;
-      const total = delay + totalLines * stagger + (layers - 1) * stagger + duration * 1000 + 80;
+      const total = delay + totalLines * stagger + Math.max(0, panelLayers - 1) * stagger + duration * 1000 + 80;
       timers.push(setTimeout(() => {
         if (!alive) return;
         covers.forEach((cover) => {
