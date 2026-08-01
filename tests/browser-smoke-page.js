@@ -101,7 +101,9 @@ async function runSmoke() {
 
   // Functional checks for the article's pixelate use case and key text/data flows.
   const functionalHost = document.createElement('div');
-  functionalHost.style.cssText = 'position:fixed;top:0;left:0;width:320px;min-height:200px;z-index:-1;';
+  // Keep functional fixtures paint-visible. Linux WebKit can suspend image
+  // loading and animation work for content fully occluded behind the page.
+  functionalHost.style.cssText = 'position:fixed;top:0;left:0;width:320px;min-height:200px;z-index:1;opacity:.01;pointer-events:none;';
   document.body.appendChild(functionalHost);
   const makeFunctional = (tag = 'div', text = '') => {
     const element = document.createElement(tag);
@@ -256,7 +258,20 @@ async function runSmoke() {
   if (reducedTypewriter.textContent !== 'Original') errors.push('reduced typewriter destroy did not restore original content');
   Kineto.config({ forceReducedMotion: false });
 
-  await new Promise((resolve) => setTimeout(resolve, 300));
+  const waitUntil = async (condition, timeout = 2000) => {
+    const started = performance.now();
+    while (!condition() && performance.now() - started < timeout) {
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+  };
+  await waitUntil(() => (
+    lazyLoaded
+    && pixelImage.complete
+    && rangedPixelImage.complete
+    && pixelProgress >= 3
+    && printImage.complete
+    && printImage.style.opacity === '1'
+  ), 3000);
   if (!lazyLoaded || !pixelImage.complete || !pixelImage.src.startsWith('data:image/svg+xml')) errors.push('lazy pixelate did not load its real image');
   if (hangulElement.textContent !== '강') errors.push(`hangul reveal did not settle to original text: ${hangulElement.textContent}`);
   if (plainCounter.textContent !== '42') errors.push(`plain counter did not reach target: ${plainCounter.textContent}`);
@@ -271,7 +286,7 @@ async function runSmoke() {
 
   const replayedCounter = Kineto.replay(plainCounter, 'counter', { mode: 'plain', to: 84, duration: 0.02, start: false });
   if (!replayedCounter) errors.push('counter replay with replacement options returned null');
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  await waitUntil(() => plainCounter.textContent === '84', 1000);
   if (plainCounter.textContent !== '84') errors.push(`replay replacement options were not applied: ${plainCounter.textContent}`);
   pixelInstance?.destroy();
   rangedPixelInstance?.destroy();
