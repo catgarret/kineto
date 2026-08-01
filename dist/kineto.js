@@ -7501,20 +7501,13 @@ var pr = {
 			});
 			i?.finished.then(_).catch(_);
 		} else if (n === "zoom") {
-			let n = e === document.body || e === document.documentElement ? document.documentElement : e, a = n.getBoundingClientRect(), o = window.innerWidth / 2 - a.left, c = window.innerHeight / 2 - a.top;
-			n.style.transformOrigin = `${o}px ${c}px`;
-			let l = typeof t.ease == "string" && t.ease ? i : "cubic-bezier(.22,1,.36,1)", d = n.animate([{
-				transform: "scale(0.72)",
-				opacity: 0
-			}, {
-				transform: "scale(1)",
-				opacity: 1
-			}], {
-				duration: r,
-				delay: s,
-				easing: l
+			let n = e === document.body || e === document.documentElement ? document.documentElement : e, r = n.getBoundingClientRect(), a = window.innerWidth / 2 - r.left, o = window.innerHeight / 2 - r.top;
+			n.style.transformOrigin = `${a}px ${o}px`, g(n, [{ transform: "scale(0.72)" }, { transform: "scale(1)" }], { easing: typeof t.ease == "string" && t.ease ? i : "cubic-bezier(.22,1,.36,1)" });
+			let c = g(n, [{ opacity: 0 }, { opacity: 1 }], {
+				delay: s + 250,
+				fill: "backwards"
 			});
-			u.add(d), d.finished.catch(() => {}).finally(() => u.delete(d)), f.push(() => n.style.removeProperty("transform-origin")), d.finished.then(_).catch(_);
+			f.push(() => n.style.removeProperty("transform-origin")), c.finished.then(_).catch(_);
 		} else if (n === "iris") {
 			let e = h(`inset:0;background:${o};`), t = h("inset:0;"), n = (e) => `circle(${e} at 50% 50%)`;
 			g(t, [{ clipPath: n("150%") }, { clipPath: n("0%") }]), g(e, [

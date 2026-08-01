@@ -1281,7 +1281,15 @@
   // the measurement width always matches the final render width.
   function packGroups(groupsRoot) {
     if (!groupsRoot) return;
-    const groups = [...groupsRoot.querySelectorAll('.kt-playground__group')];
+    // querySelectorAll() follows the CURRENT masonry column DOM. Using that
+    // order as the next input made every repack feed on its previous output,
+    // so a harmless toggle could move whole sections to different columns.
+    // Preserve the authored group order for the lifetime of this panel.
+    const discovered = [...groupsRoot.querySelectorAll('.kt-playground__group')];
+    const canonical = groupsRoot.__ktGroupOrder || [];
+    discovered.forEach((group) => { if (!canonical.includes(group)) canonical.push(group); });
+    const groups = canonical.filter((group) => group.isConnected);
+    groupsRoot.__ktGroupOrder = groups;
     if (!groups.length) return;
     const width = groupsRoot.clientWidth || groupsRoot.getBoundingClientRect().width;
     // Columns are only ever as many as there are groups, so 3 groups fill the row
@@ -1291,6 +1299,10 @@
     const visibleCount = groups.filter(isVisible).length || groups.length;
     const maxByWidth = Math.max(1, Math.min(4, Math.floor((width + 12) / 284)));
     const columnCount = Math.max(1, Math.min(maxByWidth, visibleCount));
+    const visibleSignature = groups.filter(isVisible).map((group) => group.dataset.group || '').join('\u0000');
+    const previousPack = groupsRoot.__ktPackState;
+    const keepColumns = previousPack?.columnCount === columnCount && previousPack.visibleSignature === visibleSignature;
+    const assignments = keepColumns ? previousPack.assignments : new Map();
     let columns = [...groupsRoot.querySelectorAll(':scope > .kt-playground__masonry-col')];
     if (columns.length !== columnCount) {
       columns.forEach((column) => column.remove());
@@ -1307,11 +1319,15 @@
       group.style.removeProperty('grid-row');
       group.style.removeProperty('grid-row-end');
       group.style.removeProperty('grid-column');
-      let target = 0;
-      for (let i = 1; i < columnCount; i += 1) if (heights[i] < heights[target]) target = i;
+      let target = keepColumns && assignments.has(group) ? assignments.get(group) : 0;
+      if (!keepColumns || !assignments.has(group)) {
+        for (let i = 1; i < columnCount; i += 1) if (heights[i] < heights[target]) target = i;
+        assignments.set(group, target);
+      }
       columns[target].appendChild(group);
       heights[target] += isVisible(group) ? group.getBoundingClientRect().height + 12 : 0;
     });
+    groupsRoot.__ktPackState = { columnCount, visibleSignature, assignments };
   }
 
 

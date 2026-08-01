@@ -204,17 +204,22 @@ export default {
       // `fill` stays at its default (none) so the transform — and the containing
       // block it creates for fixed/sticky descendants — evaporates the instant
       // the animation ends. The explicit origin is cleared in the same breath.
-      const zoomIn = host.animate([
-        { transform: `scale(${startScale})`, opacity: 0 },
-        { transform: 'scale(1)', opacity: 1 }
-      ], { duration, delay, easing: zoomEase });
-      players.add(zoomIn);
-      zoomIn.finished.catch(() => {}).finally(() => players.delete(zoomIn));
+      // Scale starts immediately, while opacity holds at zero for a restrained
+      // 250ms lead-in. Keeping them as separate players prevents that hold from
+      // also freezing the zoom motion.
+      play(host, [
+        { transform: `scale(${startScale})` },
+        { transform: 'scale(1)' }
+      ], { easing: zoomEase });
+      const fadeIn = play(host, [
+        { opacity: 0 },
+        { opacity: 1 }
+      ], { delay: delay + 250, fill: 'backwards' });
       // Clearing the origin belongs in `done`, not in a second promise chain off
       // the same animation: two independent chains have no ordering guarantee, so
       // the property could still be set when `onComplete` fired.
       cleanups.push(() => host.style.removeProperty('transform-origin'));
-      zoomIn.finished.then(done).catch(done);
+      fadeIn.finished.then(done).catch(done);
     } else if (effect === 'iris') {
       // A hard-edged aperture opens from the centre outwards. `clip-path`
       // clips what stays VISIBLE, so the cover is animated as a circle that

@@ -122,6 +122,15 @@ ck(
     && coverflowFields.activeShadowOpacityHidden===!coverflowFields.activeShadowChecked
 );
 ck('coverflow keeps Per view visible', coverflowFields.perViewHidden===false);
+const groupColumns=()=>pg.evaluate(()=>{
+  const sheet=document.querySelector('.kt-drawer-sheet');
+  const body=[...sheet.children].find((node)=>node.classList.contains('kt-playground__body')&&!node.hidden);
+  const columns=[...body.querySelectorAll('.kt-playground__masonry-col')];
+  return Object.fromEntries([...body.querySelectorAll('.kt-playground__group')]
+    .filter((group)=>group.offsetParent!==null)
+    .map((group)=>[group.dataset.group,columns.indexOf(group.parentElement)]));
+});
+const coverflowGroupColumnsBefore=await groupColumns();
 const shadowEnabled=await pg.evaluate(()=>{
   const sheet=document.querySelector('.kt-drawer-sheet');
   const body=[...sheet.children].find((node)=>node.classList.contains('kt-playground__body')&&!node.hidden);
@@ -131,6 +140,8 @@ const shadowEnabled=await pg.evaluate(()=>{
 });
 await pg.waitForTimeout(250);
 ck('coverflow reveals shadow opacity only after the shadow is enabled', shadowEnabled===true);
+const coverflowGroupColumnsAfter=await groupColumns();
+ck('changing an option does not move unchanged setting sections', JSON.stringify(coverflowGroupColumnsAfter)===JSON.stringify(coverflowGroupColumnsBefore), `${JSON.stringify(coverflowGroupColumnsBefore)} -> ${JSON.stringify(coverflowGroupColumnsAfter)}`);
 await pg.evaluate(()=>{
   const sheet=document.querySelector('.kt-drawer-sheet');
   const body=[...sheet.children].find((node)=>node.classList.contains('kt-playground__body')&&!node.hidden);

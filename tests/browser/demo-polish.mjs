@@ -121,7 +121,11 @@ try {
     const header = document.querySelector('.site-header');
     const beforeWidth = header.getBoundingClientRect().width;
     document.querySelector('[data-page-effect="zoom"]').click();
-    await new Promise((resolve) => setTimeout(resolve, 140));
+    await new Promise(requestAnimationFrame);
+    const rootAnimations = document.documentElement.getAnimations().filter((animation) => animation.effect?.target === document.documentElement);
+    rootAnimations.forEach((animation) => { animation.pause(); animation.currentTime = 140; });
+    const heldOpacity = Number(getComputedStyle(document.documentElement).opacity);
+    rootAnimations.forEach((animation) => { animation.currentTime = 320; });
     const style = getComputedStyle(header);
     const during = {
       opacity: Number(style.opacity),
@@ -132,12 +136,14 @@ try {
       bodyTransform: getComputedStyle(document.body).transform,
       rootTransform: getComputedStyle(document.documentElement).transform,
       rootOpacity: Number(getComputedStyle(document.documentElement).opacity),
+      heldOpacity,
       viewportCovers: [...document.documentElement.children].filter((node) => node.matches?.('div[aria-hidden="true"]') && node.style.zIndex === '99997').length
     };
     window.Kineto.destroyModule(document.body, 'pageReveal');
     return during;
   });
   assert.ok(zoomHeader.opacity > 0.99 && zoomHeader.height > 0, `Page Reveal zoom must keep the persistent header in the animated page layer (${JSON.stringify(zoomHeader)})`);
+  assert.ok(zoomHeader.heldOpacity < 0.01, `Page Reveal zoom opacity must remain at zero during its initial 250ms hold (${JSON.stringify(zoomHeader)})`);
   assert.ok(zoomHeader.rootOpacity > 0 && zoomHeader.rootOpacity < 1, `Page Reveal zoom must fade the whole page from opacity 0 to 1 while scaling (${JSON.stringify(zoomHeader)})`);
   assert.notEqual(zoomHeader.rootTransform, 'none', `the real Zoom button must animate the root viewport consistently across Safari and Chromium (${JSON.stringify(zoomHeader)})`);
   assert.ok(zoomHeader.width < zoomHeader.beforeWidth, `the persistent header must zoom with the page instead of staying fixed (${JSON.stringify(zoomHeader)})`);
