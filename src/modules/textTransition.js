@@ -294,5 +294,6 @@ export default {
         });
       }
     };
-  }
+  },
+  fallback(el, opts) { return this.reduced(el, opts); }
 };

@@ -66,8 +66,7 @@ const versionFiles = [
   'docs/getting-started.md',
   'docs/STABILIZATION_REPORT.md',
   'docs/CONTEXT.md',
-  'docs/AI-HANDOFF.md',
-  'tests/browser-smoke.mjs'
+  'docs/AI-HANDOFF.md'
 ];
 for (const relative of versionFiles) {
   const file = path.join(root, relative);

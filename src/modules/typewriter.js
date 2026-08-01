@@ -95,5 +95,6 @@ export default {
     const strings = Array.isArray(opts.strings) ? opts.strings : opts.strings != null ? [opts.strings] : [el.textContent];
     el.textContent = String(strings[0] ?? '');
     return { el, type: 'typewriter', pause() {}, resume() {}, destroy() { el.innerHTML = originalHTML; } };
-  }
+  },
+  fallback(el, opts) { return this.reduced(el, opts); }
 };

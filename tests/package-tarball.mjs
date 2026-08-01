@@ -39,6 +39,13 @@ try {
   ], { cwd: temp, encoding: 'utf8' }));
   assert.deepEqual(cjs, esm);
 
+  const modular = JSON.parse(execFileSync(process.execPath, [
+    '--input-type=module',
+    '--eval',
+    "import Kineto from '@dong-gri/kineto/core'; import slider from '@dong-gri/kineto/modules/slider'; const before=Object.keys(Kineto.registry).length; Kineto.register('slider',slider); console.log(JSON.stringify({before,after:Object.keys(Kineto.registry),api:typeof Kineto.slider}))"
+  ], { cwd: temp, encoding: 'utf8' }));
+  assert.deepEqual(modular, { before: 0, after: ['slider'], api: 'function' });
+
   const cssPath = execFileSync(process.execPath, [
     '--input-type=commonjs',
     '--eval',
@@ -46,7 +53,7 @@ try {
   ], { cwd: temp, encoding: 'utf8' }).trim();
   assert.ok(cssPath.endsWith('dist/kineto.min.css'));
 
-  console.log(`package-tarball OK — ${packed.size} bytes; ESM, CommonJS, and CSS exports install cleanly.`);
+  console.log(`package-tarball OK — ${packed.size} bytes; full ESM, modular ESM, CommonJS, and CSS exports install cleanly.`);
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }

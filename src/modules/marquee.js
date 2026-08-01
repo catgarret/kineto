@@ -139,5 +139,6 @@ export default {
     el.style.overflowX = 'auto';
     el.style.transform = 'none';
     return { el, type: 'marquee', pause() {}, resume() {}, destroy: restore };
-  }
+  },
+  fallback(el, opts) { return this.reduced(el, opts); }
 };

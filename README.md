@@ -225,6 +225,25 @@ installKineto(window.jQuery);
 $('.card').kineto('reveal', { preset: 'fade-up' });
 ```
 
+## Modular imports
+
+The default entry includes and registers all modules for zero-configuration use.
+For a smaller application bundle, import the core and only the modules you use:
+
+```js
+import Kineto from '@dong-gri/kineto/core';
+import sliderModule from '@dong-gri/kineto/modules/slider';
+import revealModule from '@dong-gri/kineto/modules/reveal';
+import '@dong-gri/kineto/style.css';
+
+Kineto.register('slider', sliderModule);
+Kineto.register('reveal', revealModule);
+Kineto.scan();
+```
+
+Module entries share code-split runtime chunks. Importing a module does not
+register the other modules or download their implementations.
+
 ## Browser support
 
 Latest Chrome, Edge, Firefox, and Safari (desktop and mobile). With `prefers-reduced-motion` enabled, every module renders its final state without animation; on unsupported environments the effects degrade to static content.

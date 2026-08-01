@@ -895,5 +895,6 @@ export default {
     const restore = snapshotInlineStyles(el, ['overflowX', 'scrollSnapType']);
     el.style.overflowX = 'auto'; el.style.scrollSnapType = 'x mandatory';
     return { el, type: 'slider', pause() {}, resume() {}, destroy: restore };
-  }
+  },
+  fallback(el, opts) { return this.reduced(el, opts); }
 };

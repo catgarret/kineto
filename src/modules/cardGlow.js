@@ -251,5 +251,6 @@ export default {
       }
     };
   },
+  fallback() {},
   reduced() {}
 };

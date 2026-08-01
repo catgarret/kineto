@@ -4,6 +4,9 @@
 
 ### English
 
+- Added code-split `core` and `modules/*` package entry points so applications can register only the modules they use, with installed-tarball coverage and package-size budgets.
+- Reduced runtime and rendering overhead with disposable environment listeners, bounded and retryable engine loading, low-performance fallbacks, lazy demo images, and compatibility-safe replacements for newer JavaScript APIs.
+- Added Playwright Firefox and WebKit smoke jobs to GitHub Actions alongside the existing Chromium browser suite.
 - Corrected Page Reveal `zoom` so its rectangular opening grows outward from the viewport centre instead of shrinking the cover inward.
 - Gated settings by the selected variant: Lazy wave controls appear only for `wave`, pixel-step controls only for `pixelate`, and grain controls only for `grain`; terminal presets likewise hide unsupported direction and origin fields.
 - Fixed Scroll Shadows to treat `axis:"x"` as horizontal, and contained Coverflow's active-slide shadow inside the demo card without clipping the intended shadow room.
@@ -57,6 +60,9 @@
 
 ### 한국어
 
+- 애플리케이션이 사용하는 모듈만 등록할 수 있도록 코드 분할된 `core` 및 `modules/*` 패키지 진입점을 추가하고, 설치된 tarball 검증과 패키지 용량 예산을 적용했습니다.
+- 해제 가능한 환경 감시자, 제한 시간·재시도 가능한 엔진 로딩, 저성능 환경 기능 축소, 데모 이미지 지연 로딩, 최신 JavaScript API의 호환성 안전 대체로 런타임·렌더링 비용을 줄였습니다.
+- 기존 Chromium 브라우저 스위트와 함께 Playwright Firefox·WebKit 스모크 검증을 GitHub Actions에 추가했습니다.
 - Page Reveal `zoom`의 사각형 노출이 커버를 중앙으로 줄이는 대신 화면 중앙에서 바깥쪽으로 커지도록 바로잡았습니다.
 - Lazy 설정은 선택한 효과에 필요한 항목만 표시합니다. Wave 조절값은 `wave`, 픽셀 단계는 `pixelate`, 입자값은 `grain`에서만 보입니다. 터미널 프리셋도 실제 지원 여부에 따라 방향·원점 옵션을 숨깁니다.
 - `axis:"x"` Scroll Shadows를 수평으로 해석하도록 고쳤고, Coverflow의 활성 그림자는 카드 밖으로 새지 않으면서 내부에서 잘리지 않도록 여백을 확보했습니다.

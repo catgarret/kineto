@@ -51,3 +51,37 @@ jobs:
             tests/.smoke/
           if-no-files-found: ignore
           retention-days: 7
+
+  cross-browser:
+    name: ${{ matrix.browser }} · browser smoke
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [firefox, webkit]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright ${{ matrix.browser }}
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Build distributions
+        run: npm run build
+
+      - name: Run cross-browser smoke
+        run: npm run test:browser:cross
+        env:
+          KT_BROWSER: ${{ matrix.browser }}

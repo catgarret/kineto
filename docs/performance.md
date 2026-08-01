@@ -23,6 +23,11 @@ Kineto.config({ performance: 'auto' });
 
 `low`에서 모듈이 `fallback()`을 제공하면 해당 구현을 사용합니다. fallback이 없는 모듈은 정상 구현을 사용할 수 있으므로, `low`가 모든 모션을 끈다는 뜻은 아닙니다.
 
+지속적인 RAF·타이머·큰 합성 레이어를 사용하는 Ambient Media, Card Glow,
+Marquee, Overflow Text, Slider, Text Transition, Typewriter는 `low`에서 정적
+콘텐츠 또는 네이티브 스크롤 형태로 축소됩니다. 원본 콘텐츠와 접근 가능한
+텍스트는 유지됩니다.
+
 ## 수동 설정
 
 ```js
@@ -36,6 +41,26 @@ Kineto.config({ forceReducedMotion: true });
 ## 탭 가시성
 
 탭이 숨겨지면 코어는 활성 인스턴스의 `pause()`를 호출하고, 다시 보이면 `resume()`을 호출합니다. 모듈은 자신이 소유한 RAF, tween, timer의 의미에 맞춰 대응합니다.
+
+마지막 인스턴스가 제거되면 코어의 `visibilitychange`, `prefers-reduced-motion`,
+Network Information 감시기도 해제됩니다. 이후 새 인스턴스가 만들어지면 다시
+설치되므로 SPA의 반복 mount/unmount에서 전역 리스너가 남지 않습니다.
+
+## 외부 애니메이션 엔진
+
+GSAP·ScrollTrigger·Lenis는 필요한 경우에만 비동기로 요청합니다. 기본 CDN
+주소는 재현 가능한 캐시와 갑작스러운 상위 버전 변경 방지를 위해 정확한
+버전으로 고정되어 있습니다. 요청은 12초 후 중단되어 정적 폴백 또는 네이티브
+스크롤로 계속 진행하며, 실패한 요청은 이후 재시도하거나 self-host 주소로
+교체할 수 있습니다.
+
+```js
+Kineto.setEngineSource({
+  gsap: '/vendor/gsap.min.js',
+  scrollTrigger: '/vendor/ScrollTrigger.min.js',
+  lenis: '/vendor/lenis.min.js'
+});
+```
 
 ## Canvas 모듈
 

@@ -14,13 +14,14 @@
 
 const win = typeof window !== 'undefined' ? window : undefined;
 const resolveDefault = (value) => value?.default || value?.gsap || value;
+const defer = (callback) => Promise.resolve().then(callback);
 
 // CDN sources — overridable via Kineto.setEngineSource() to pin an exact
 // version, self-host, or point at an internal mirror.
 const sources = {
-  gsap: 'https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js',
-  scrollTrigger: 'https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js',
-  lenis: 'https://cdn.jsdelivr.net/npm/lenis@1/dist/lenis.min.js'
+  gsap: 'https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js',
+  scrollTrigger: 'https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js',
+  lenis: 'https://cdn.jsdelivr.net/npm/lenis@1.3.25/dist/lenis.min.js'
 };
 
 let gsapInstance = (win && win.gsap) ? resolveDefault(win.gsap) : null;
@@ -29,7 +30,13 @@ let gsapPromise = null;
 let lenisPromise = null;
 
 export function setEngineSource(next = {}) {
+  const gsapChanged = ('gsap' in next && next.gsap !== sources.gsap)
+    || ('scrollTrigger' in next && next.scrollTrigger !== sources.scrollTrigger);
+  const lenisChanged = 'lenis' in next && next.lenis !== sources.lenis;
   Object.assign(sources, next);
+  // A failed request must not poison a later self-host/CDN override.
+  if (gsapChanged && !gsapReady()) gsapPromise = null;
+  if (lenisChanged && !(win && win.Lenis)) lenisPromise = null;
 }
 
 export function getEngineSource() {
@@ -70,23 +77,36 @@ export function gsapReady() {
   return Boolean(getGSAP()?.registerPlugin && getScrollTrigger());
 }
 
-function loadScript(src) {
+function loadScript(src, timeoutMs = 12000) {
   return new Promise((resolve, reject) => {
+    if (!src) { reject(new Error('Kineto: engine disabled')); return; }
     if (typeof document === 'undefined') { reject(new Error('Kineto: no document to load ' + src)); return; }
     // Reuse a matching tag if the page (or a previous call) already added it.
-    const existing = Array.from(document.getElementsByTagName('script')).find((s) => s.src === src);
+    const existing = Array.from(document.getElementsByTagName('script')).find((s) => s.src === src && s.dataset.ktFailed !== '1');
     if (existing) {
       if (existing.dataset.ktLoaded === '1') { resolve(); return; }
-      existing.addEventListener('load', () => resolve(), { once: true });
-      existing.addEventListener('error', () => reject(new Error('Kineto: failed to load ' + src)), { once: true });
+      let timer = null;
+      const cleanup = () => { clearTimeout(timer); existing.removeEventListener('load', onLoad); existing.removeEventListener('error', onError); };
+      const onLoad = () => { cleanup(); existing.dataset.ktLoaded = '1'; resolve(); };
+      const onError = () => { cleanup(); existing.dataset.ktFailed = '1'; reject(new Error('Kineto: load failed ' + src)); };
+      existing.addEventListener('load', onLoad, { once: true });
+      existing.addEventListener('error', onError, { once: true });
+      timer = setTimeout(() => { cleanup(); reject(new Error('Kineto: load timeout ' + src)); }, timeoutMs);
       return;
     }
     const script = document.createElement('script');
     script.src = src;
-    script.async = false; // preserve gsap-before-ScrollTrigger order
+    // ensureGSAP awaits GSAP before requesting ScrollTrigger, so downloads can
+    // stay async without sacrificing execution order.
+    script.async = true;
     script.dataset.ktEngine = '';
-    script.addEventListener('load', () => { script.dataset.ktLoaded = '1'; resolve(); }, { once: true });
-    script.addEventListener('error', () => reject(new Error('Kineto: failed to load ' + src)), { once: true });
+    let timer = null;
+    const cleanup = () => { clearTimeout(timer); script.removeEventListener('load', onLoad); script.removeEventListener('error', onError); };
+    const onLoad = () => { cleanup(); script.dataset.ktLoaded = '1'; resolve(); };
+    const onError = () => { cleanup(); script.remove(); reject(new Error('Kineto: load failed ' + src)); };
+    script.addEventListener('load', onLoad, { once: true });
+    script.addEventListener('error', onError, { once: true });
+    timer = setTimeout(() => { cleanup(); script.remove(); reject(new Error('Kineto: load timeout ' + src)); }, timeoutMs);
     (document.head || document.documentElement).appendChild(script);
   });
 }
@@ -105,7 +125,9 @@ export function ensureGSAP() {
     } catch (_error) {
       // CDN unreachable — leave engines null; scroll modules fall back.
     }
-    return getGSAP();
+    const result = getGSAP();
+    if (!gsapReady()) defer(() => { gsapPromise = null; });
+    return result;
   })();
   return gsapPromise;
 }
@@ -116,8 +138,13 @@ export function ensureLenis() {
   if (win && win.Lenis) return Promise.resolve(resolveDefault(win.Lenis));
   if (lenisPromise) return lenisPromise;
   lenisPromise = (async () => {
-    try { await loadScript(sources.lenis); } catch (_error) { return null; }
-    return (win && win.Lenis) ? resolveDefault(win.Lenis) : null;
+    try { await loadScript(sources.lenis); } catch (_error) {
+      defer(() => { lenisPromise = null; });
+      return null;
+    }
+    const result = (win && win.Lenis) ? resolveDefault(win.Lenis) : null;
+    if (!result) defer(() => { lenisPromise = null; });
+    return result;
   })();
   return lenisPromise;
 }

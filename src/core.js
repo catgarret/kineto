@@ -73,6 +73,8 @@ function reapplyReducedMotion() {
 }
 
 let rmWatched = false;
+let rmMediaQuery = null;
+let rmChangeHandler = null;
 function installReducedMotionWatch() {
   if (rmWatched || typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
   rmWatched = true;
@@ -85,6 +87,8 @@ function installReducedMotionWatch() {
   };
   if (mq.addEventListener) mq.addEventListener('change', onChange);
   else if (mq.addListener) mq.addListener(onChange);
+  rmMediaQuery = mq;
+  rmChangeHandler = onChange;
   installConnectionWatch();
 }
 
@@ -93,15 +97,20 @@ function installReducedMotionWatch() {
 // live rather than being sampled once (audit D-1). We refresh the cached env and
 // emit `kineto:environment` for views/instances that adapt to network quality.
 let connWatched = false;
+let watchedConnection = null;
+let connectionChangeHandler = null;
 function installConnectionWatch() {
   if (connWatched || typeof navigator === 'undefined') return;
   const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   if (!conn || typeof conn.addEventListener !== 'function') return;
   connWatched = true;
-  conn.addEventListener('change', () => {
+  const onChange = () => {
     cachedEnv = null; // re-derive perf/saveData on next read
     try { document.dispatchEvent(new CustomEvent('kineto:environment', { detail: { performance: Kineto.performance, saveData: !!conn.saveData, effectiveType: conn.effectiveType } })); } catch (_e) { /* older */ }
-  });
+  };
+  watchedConnection = conn;
+  connectionChangeHandler = onChange;
+  conn.addEventListener('change', onChange);
 }
 
 function debug(...args) {
@@ -293,6 +302,20 @@ function teardownCoreServices() {
   }
   domReadyHandler = null;
 
+  if (rmMediaQuery && rmChangeHandler) {
+    if (rmMediaQuery.removeEventListener) rmMediaQuery.removeEventListener('change', rmChangeHandler);
+    else rmMediaQuery.removeListener?.(rmChangeHandler);
+  }
+  rmMediaQuery = null;
+  rmChangeHandler = null;
+  rmWatched = false;
+  if (watchedConnection && connectionChangeHandler) {
+    watchedConnection.removeEventListener?.('change', connectionChangeHandler);
+  }
+  watchedConnection = null;
+  connectionChangeHandler = null;
+  connWatched = false;
+
   stopSmoothService();
   initialized = false;
   domReadyScheduled = false;
@@ -334,7 +357,8 @@ const Kineto = {
   easings: EASINGS,
 
   get env() {
-    if (!cachedEnv) { cachedEnv = env(); installReducedMotionWatch(); }
+    if (!cachedEnv) cachedEnv = env();
+    installReducedMotionWatch();
     return cachedEnv;
   },
 

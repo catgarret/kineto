@@ -19,17 +19,12 @@ const unpackedKb = result.unpackedSize / 1024;
 const check = process.argv.includes('--check');
 
 const BUDGET = {
-  // The packed tarball is the closest package-level proxy for registry traffic.
-  // Keep this tighter than the old 400 KB ceiling even as runtime features grow.
-  packedKb: 350,
-  // ESM, CommonJS and browser-UMD compatibility intentionally duplicate the
-  // runtime when unpacked. Wave/grain lazy variants and shared determinate
-  // progress brought the measured release to 1172.2 KB; keep only 7.8 KB of
-  // headroom here while the packed and per-artifact gzip budgets stay strict.
-  unpackedKb: 1200 /* 1180 -> 1200: measured 1182.9 KB after the 2026-07-29 additions
-     (CSS-first lazy wave/grain, coverflow active shadow, and the sampled
-     Spinner/Progress keyframes). Raised by ~17 KB, not by a round guess. */,
-  files: 16
+  // The modular graph adds 52 public entries but compresses shared code across
+  // the tarball. Measured after adding it: 460.3 KB packed / 1563.0 KB unpacked
+  // / 65 files. Keep less than 10 KB packed and 17 KB unpacked headroom.
+  packedKb: 470,
+  unpackedKb: 1580,
+  files: 68
 };
 
 console.log(`release package: ${packedKb.toFixed(1)} KB packed · ${unpackedKb.toFixed(1)} KB unpacked · ${files.length} files`);
@@ -54,6 +49,8 @@ const required = [
   'dist/kineto.min.js',
   'dist/kineto.umd.cjs',
   'dist/kineto.umd.min.js',
+  'dist/modular/core.js',
+  'dist/modular/modules/slider.js',
   'package.json',
   'README.md',
   'LICENSE'
@@ -66,4 +63,4 @@ if (check && failures.length) {
   console.error(`release package budget FAIL:\n- ${failures.join('\n- ')}`);
   process.exit(1);
 }
-if (check) console.log('release package budget OK — runtime-only allowlist is intact.');
+if (check) console.log('release package budget OK — full and modular runtime allowlists are intact.');

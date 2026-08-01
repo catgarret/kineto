@@ -200,9 +200,9 @@ export function createProgressOutputs(el, opts = {}) {
       targets.forEach((target) => {
         const template = target.dataset.ktProgressTemplate || opts.progressTemplate || '{value}%';
         const output = String(template)
-          .replaceAll('{value}', String(rounded))
-          .replaceAll('{progress}', String(rounded))
-          .replaceAll('{state}', String(state));
+          .split('{value}').join(String(rounded))
+          .split('{progress}').join(String(rounded))
+          .split('{state}').join(String(state));
         if ('value' in target && /^(?:INPUT|OUTPUT|PROGRESS)$/.test(target.tagName)) {
           target.value = target.tagName === 'PROGRESS' ? progress : output;
         } else {

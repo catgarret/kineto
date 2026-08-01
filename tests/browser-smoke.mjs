@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { build } from 'vite';
-import { chromium } from 'playwright';
+import { chromium, firefox, webkit } from 'playwright';
 import { killBrowserServer } from './browser-cleanup.mjs';
 
 const root = resolve(import.meta.dirname, '..');
+const contract = JSON.parse(await readFile(resolve(root, 'kineto.features.json'), 'utf8'));
 const outDir = resolve(import.meta.dirname, '.smoke');
 await mkdir(outDir, { recursive: true });
 await build({
@@ -29,10 +30,13 @@ let browserServer;
 let browser;
 let passed = false;
 try {
-  browserServer = await chromium.launchServer({
-    ...(process.env.MK_CHROMIUM ? { executablePath: process.env.MK_CHROMIUM } : {}),
+  const browserName = process.env.KT_BROWSER || 'chromium';
+  const browserType = { chromium, firefox, webkit }[browserName];
+  assert.ok(browserType, `Unsupported KT_BROWSER: ${browserName}`);
+  browserServer = await browserType.launchServer({
+    ...(browserName === 'chromium' && process.env.MK_CHROMIUM ? { executablePath: process.env.MK_CHROMIUM } : {}),
     headless: true,
-    args: ['--no-sandbox', '--disable-dev-shm-usage', '--allow-file-access-from-files']
+    ...(browserName === 'chromium' ? { args: ['--no-sandbox', '--disable-dev-shm-usage', '--allow-file-access-from-files'] } : {})
   });
   browser = await chromium.connect(browserServer.wsEndpoint());
   const page = await browser.newPage({ reducedMotion: 'no-preference' });
@@ -56,10 +60,10 @@ try {
     modules: Object.keys(window.Kineto?.registry || {}).length,
     autoInit: typeof window.Kineto?.autoInit
   }));
-  assert.deepEqual(umd, { version: '0.8.43', modules: 50, autoInit: 'function' }, 'UMD global surface is invalid');
+  assert.deepEqual(umd, { version: contract.libraryVersion, modules: contract.moduleCount, autoInit: 'function' }, 'UMD global surface is invalid');
   assert.deepEqual(runtimeErrors, [], `UMD runtime errors:
 ${runtimeErrors.join('\n')}`);
-  console.log(`Browser smoke OK: ${Object.keys(result.results).length} modules exercised in Chromium; UMD global verified.`);
+  console.log(`Browser smoke OK: ${Object.keys(result.results).length} modules exercised in ${browserName}; UMD global verified.`);
   passed = true;
 } finally {
   killBrowserServer(browserServer);

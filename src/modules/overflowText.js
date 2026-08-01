@@ -562,7 +562,7 @@ export default {
         const pageSize = Math.max(1, viewportWidth - number(opts.pageOverlap, 12));
         const positions = [0];
         for (let moved = pageSize; moved < overflow; moved += pageSize) positions.push(moved);
-        if (positions.at(-1) !== overflow) positions.push(overflow);
+        if (positions[positions.length - 1] !== overflow) positions.push(overflow);
         const rollDuration = number(opts.rollDuration, 420, 60);
         const pageHold = number(opts.pageDuration, 1200, 120);
         const rollDown = opts.rollDirection === 'down';
@@ -622,7 +622,7 @@ export default {
         const pageSize = Math.max(1, viewportWidth - number(opts.pageOverlap, 12));
         const positions = [0];
         for (let moved = pageSize; moved < overflow; moved += pageSize) positions.push(moved);
-        if (positions.at(-1) !== overflow) positions.push(overflow);
+        if (positions[positions.length - 1] !== overflow) positions.push(overflow);
         const dissolveMs = number(opts.dissolveDuration ?? opts.maskDuration, 460, 100);
         const jitterAmp = number(opts.jitter, 5, 0);
         track.style.display = 'inline-block';
@@ -688,7 +688,7 @@ export default {
         const pageSize = Math.max(1, viewportWidth - number(opts.pageOverlap, 12));
         const positions = [0];
         for (let moved = pageSize; moved < overflow; moved += pageSize) positions.push(moved);
-        if (positions.at(-1) !== overflow) positions.push(overflow);
+        if (positions[positions.length - 1] !== overflow) positions.push(overflow);
         const fadeMs = number(opts.maskDuration, 300, 10);
         const pageHold = number(opts.pageDuration, 1200, 120);
         let pageIndex = 0;
@@ -717,7 +717,7 @@ export default {
         const pageSize = Math.max(1, viewportWidth - number(opts.pageOverlap, 12));
         const positions = [0];
         for (let moved = pageSize; moved < overflow; moved += pageSize) positions.push(moved);
-        if (positions.at(-1) !== overflow) positions.push(overflow);
+        if (positions[positions.length - 1] !== overflow) positions.push(overflow);
         let pageIndex = 0;
         const pageHold = number(opts.pageDuration, 1200, 120);
         const flipMs = number(opts.flipDuration ?? opts.maskDuration, 300, 60);
@@ -755,7 +755,7 @@ export default {
         const pageSize = Math.max(1, viewportWidth - number(opts.pageOverlap, 12));
         const positions = [0];
         for (let moved = pageSize; moved < overflow; moved += pageSize) positions.push(moved);
-        if (positions.at(-1) !== overflow) positions.push(overflow);
+        if (positions[positions.length - 1] !== overflow) positions.push(overflow);
         let pageIndex = 0;
         const pageHold = number(opts.pageDuration, 1100, 120);
         const swapPage = async () => {
@@ -876,5 +876,6 @@ export default {
       }
     };
   },
+  fallback() {},
   reduced() {}
 };

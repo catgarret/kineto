@@ -222,5 +222,8 @@ export default {
 
     return instance;
   },
+  // Avoid the continuously sampled video canvas and large blurred compositor
+  // layer on constrained devices. The original media remains untouched.
+  fallback() {},
   reduced() {}
 };

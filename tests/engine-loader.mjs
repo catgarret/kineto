@@ -20,6 +20,11 @@ if (!w.Element.prototype.animate) w.Element.prototype.animate = () => ({ onfinis
 
 const { default: Kineto } = await import('../dist/kineto.js');
 
+const defaults = Kineto.getEngineSource();
+assert.match(defaults.gsap, /gsap@3\.15\.0/, 'default GSAP URL must be version-pinned for deterministic caching');
+assert.match(defaults.scrollTrigger, /gsap@3\.15\.0/, 'default ScrollTrigger URL must match the pinned GSAP version');
+assert.match(defaults.lenis, /lenis@1\.3\.25/, 'default Lenis URL must be version-pinned for deterministic caching');
+
 // A GSAP-backed effect (reveal) with no engine on the page → CDN inject.
 // A non-GSAP effect (switch) on the same page → must init immediately.
 w.document.body.innerHTML = '<div data-kt-reveal="fade">hi</div><button data-kt-switch></button>';
@@ -28,6 +33,7 @@ await new Promise((r) => setTimeout(r, 30));
 
 const scriptSrcs = Array.from(w.document.getElementsByTagName('script')).map((s) => s.src);
 assert.ok(scriptSrcs.some((s) => /cdn\.jsdelivr\.net\/npm\/gsap.*gsap\.min\.js/.test(s)), 'scanning a GSAP effect with no engine present must inject the GSAP CDN <script>');
+assert.ok(Array.from(w.document.querySelectorAll('script[data-kt-engine]')).every((script) => script.async), 'engine scripts must download asynchronously');
 assert.ok(Kineto.getInstance(w.document.querySelector('[data-kt-switch]'), 'switch'), 'a non-GSAP effect must initialise immediately, not wait on the engine fetch');
 
 // Consumer can repoint the engine source (version pin / self-host / mirror).
