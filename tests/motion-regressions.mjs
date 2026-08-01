@@ -263,6 +263,19 @@ assert.ok(
   'FLIP scale must visibly shrink and expand instead of degrading into a fade'
 );
 scaleFlip.destroy();
+
+flipFrames.length = 0;
+flipLayout = 0;
+const sequentialFadeFlip = flipModule.create(flipGrid, { duration: 0.2, mode: 'fade', watch: false });
+flipLayout = 1;
+sequentialFadeFlip.play();
+assert.ok(
+  flipFrames.every((frames) => frames[0].transform?.startsWith('translate(')
+    && frames[1].transform === frames[0].transform && frames[1].opacity === 0
+    && frames[2].transform === 'none' && frames[2].opacity === 0),
+  'FLIP fade must disappear at the old slot before it moves invisibly and appears at the new slot'
+);
+sequentialFadeFlip.destroy();
 flipGrid.remove();
 
 // Tilt and Card Glow shadows must coexist with each other and with a card's
@@ -668,8 +681,8 @@ const maskPanels = [...maskTarget.closest('.kt-cover-wrap').querySelectorAll('[a
 assert.equal(maskPanels.length, 1, 'mask mode must replace the final colored panel instead of adding another layer');
 assert.notEqual(maskPanels[0].style.background, 'rgb(0, 255, 0)', 'color2 must not be painted when a two-layer reveal uses the mask replacement');
 await new Promise((resolve) => setTimeout(resolve, 30));
-assert.equal(maskTarget.closest('.kt-cover-wrap').style.clipPath, '', 'mask mode must not clip or fragment the colored panel wrapper');
-assert.notEqual(maskTarget.style.clipPath, '', 'mask mode must apply its wipe to the actual content');
+assert.notEqual(maskTarget.closest('.kt-cover-wrap').style.clipPath, '', 'mask mode must clip the complete cover wrapper so content and panels reveal as one unit');
+assert.equal(maskTarget.style.clipPath, '', 'mask mode must not fragment the content child independently');
 maskCover.destroy();
 maskTarget.remove();
 

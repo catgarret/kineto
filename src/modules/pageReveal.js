@@ -205,8 +205,8 @@ export default {
       // block it creates for fixed/sticky descendants — evaporates the instant
       // the animation ends. The explicit origin is cleared in the same breath.
       const zoomIn = host.animate([
-        { transform: `scale(${startScale})` },
-        { transform: 'scale(1)' }
+        { transform: `scale(${startScale})`, opacity: 0 },
+        { transform: 'scale(1)', opacity: 1 }
       ], { duration, delay, easing: zoomEase });
       players.add(zoomIn);
       zoomIn.finished.catch(() => {}).finally(() => players.delete(zoomIn));

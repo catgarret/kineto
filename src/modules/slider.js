@@ -79,21 +79,18 @@ export default {
       el.appendChild(live);
 
       const n = items.length;
-      let laidOut = false;
-      const layout = () => {
+      let visualActive = active;
+      let targetActive = active;
+      let radialFrame = null;
+      const renderRadial = (positionValue) => {
         items.forEach((item, i) => {
-          let offset = i - active;
+          let offset = i - positionValue;
           if (loop) { // shortest way around
             offset = ((offset % n) + n) % n;
             if (offset > n / 2) offset -= n;
           }
-          // When an item wraps to the opposite side, jump instantly (no transition)
-          // so it doesn't sweep across the visible arc.
-          const prevOffset = item._ktOffset;
-          const teleport = prevOffset !== undefined && Math.abs(offset - prevOffset) > n / 2;
-          item._ktOffset = offset;
           const angle = activeAngle + offset * step;
-          item.style.transition = (reduce || duration === 0 || teleport || !laidOut) ? 'none' : `transform ${duration}s cubic-bezier(.22,.8,.3,1), opacity ${duration}s ease`;
+          item.style.transition = 'none';
           // transform-origin is the hub point (0,0); the inner translate(-50%,-50%)
           // (applied FIRST) centers the item there, then rotate·translate·rotate
           // orbits its centre to radius·(cosθ,sinθ), upright.
@@ -109,14 +106,38 @@ export default {
           if (on) item.setAttribute('aria-current', 'true'); else item.removeAttribute('aria-current');
           item.style.zIndex = String(100 - Math.abs(offset));
         });
-        laidOut = true;
         live.textContent = `${active + 1} / ${items.length}`;
       };
 
       const go = (index) => {
-        if (loop) active = ((index % items.length) + items.length) % items.length;
-        else active = clamp(index, 0, items.length - 1);
-        layout();
+        const previous = active;
+        const nextActive = loop
+          ? ((index % items.length) + items.length) % items.length
+          : clamp(index, 0, items.length - 1);
+        let delta = nextActive - previous;
+        if (loop) {
+          if (delta > n / 2) delta -= n;
+          else if (delta < -n / 2) delta += n;
+        }
+        active = nextActive;
+        targetActive += delta;
+        if (radialFrame) cancelAnimationFrame(radialFrame);
+        if (reduce || duration === 0) {
+          visualActive = targetActive;
+          renderRadial(visualActive);
+          return;
+        }
+        const from = visualActive;
+        const started = performance.now();
+        const tick = (time) => {
+          const progress = Math.min(1, (time - started) / (duration * 1000));
+          const eased = 1 - ((1 - progress) ** 3);
+          visualActive = from + (targetActive - from) * eased;
+          renderRadial(visualActive);
+          if (progress < 1) radialFrame = requestAnimationFrame(tick);
+          else radialFrame = null;
+        };
+        radialFrame = requestAnimationFrame(tick);
       };
       const next = () => go(active + 1);
       const prev = () => go(active - 1);
@@ -192,7 +213,7 @@ export default {
         startAuto();
       }
 
-      layout();
+      renderRadial(visualActive);
 
       return {
         el,
@@ -204,6 +225,7 @@ export default {
         resume: startAuto,
         destroy() {
           stopAuto();
+          if (radialFrame) cancelAnimationFrame(radialFrame);
           hub.removeEventListener('click', onItemClick);
           el.removeEventListener('keydown', onKey);
           el.removeEventListener('pointerdown', onDown);

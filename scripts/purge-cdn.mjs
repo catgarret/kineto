@@ -1,5 +1,5 @@
-// Flush the jsDelivr @latest cache after publishing, so the demo (which loads
-// @dong-gri/kineto@latest) picks up the new build immediately instead of waiting
+// Flush the jsDelivr unversioned cache after publishing, so the demo (which loads
+// @dong-gri/kineto) picks up the new build immediately instead of waiting
 // out jsDelivr's multi-hour cache. Run after `npm publish`: `npm run purge`.
 const files = [
   'kineto.umd.min.js',
@@ -12,7 +12,7 @@ const files = [
 
 let ok = 0;
 for (const file of files) {
-  const url = `https://purge.jsdelivr.net/npm/@dong-gri/kineto@latest/dist/${file}`;
+  const url = `https://purge.jsdelivr.net/npm/@dong-gri/kineto/dist/${file}`;
   try {
     const res = await fetch(url);
     console.log(`${res.ok ? '✓' : '·'} ${res.status}  ${file}`);
@@ -21,5 +21,5 @@ for (const file of files) {
     console.warn(`! failed  ${file}  — ${error.message}`);
   }
 }
-console.log(`\njsDelivr @latest purge: ${ok}/${files.length} files flushed.`);
+console.log(`\njsDelivr unversioned purge: ${ok}/${files.length} files flushed.`);
 console.log('The demo will now load the freshly published build (may take a few seconds to propagate).');

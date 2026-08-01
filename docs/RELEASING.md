@@ -23,7 +23,7 @@ access token with access only to that repository and `Contents: Read and write`,
 then save it in the Kineto repository as the Actions secret
 `DEMO_SITE_TOKEN`. After `CI` succeeds on `main`, `pages.yml` rebuilds `site/`,
 replaces only `example/kineto`, and commits the result to the site's `master`
-branch. The demo intentionally loads `@dong-gri/kineto@latest`; the release
+branch. The demo intentionally loads unversioned `@dong-gri/kineto`; the release
 workflow purges the jsDelivr latest aliases after npm publication.
 
 The canonical demo URL is `https://kineto.dongri.me`. It can be served directly

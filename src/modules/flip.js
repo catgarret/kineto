@@ -42,11 +42,15 @@ export default {
     const moveFrames = (dx, dy, sx, sy) => {
       const from = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
       if (mode === 'fade') {
+        // Keep the item at its OLD slot while it fades out. Only while fully
+        // transparent do we snap it to the new slot, hold for a very short
+        // beat, and fade it back in. This is deliberately sequential and is
+        // therefore visibly different from crossfade.
         return [
-          { opacity: 1, offset: 0 },
-          { opacity: 0, offset: 0.42 },
-          { opacity: 0, offset: 0.52 },
-          { opacity: 1, offset: 1 }
+          { transform: from, opacity: 1, offset: 0 },
+          { transform: from, opacity: 0, offset: 0.44 },
+          { transform: 'none', opacity: 0, offset: 0.56 },
+          { transform: 'none', opacity: 1, offset: 1 }
         ];
       }
       if (mode === 'crossfade') {

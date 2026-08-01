@@ -5,13 +5,19 @@
 ### English
 
 - Normalized cursor following and Page Reveal Zoom across Safari frame rates, fixed Safari Lightbox Grid and Slider dot layout, and tuned the demo's Safari scroll/hover timing.
-- Added diverse two-color image sampling to Cover Reveal, switched its image demos from a fixed palette to per-image `auto`, made `mask:true` clip only the content while replacing the final colored panel, fixed Coverflow boundary/shadow sizing and Safari pagination artifacts, and added a complete-wheel Radial Slider layout with `position: 'center'` whose demo keeps its circles opaque, separated, and inside the stage.
+- Added diverse two-color image sampling to Cover Reveal, switched its image demos from a fixed palette to per-image `auto`, and made `mask:true` replace the final colored panel with an outer mask around each complete cover unit.
+- Fixed Coverflow boundary/shadow sizing and Safari pagination artifacts, sealed Dissolve's rounded edges against inactive-slide color leakage, and added a complete-wheel Radial Slider layout with `position: 'center'` whose demo keeps its circles opaque, separated, and inside the stage.
+- Made Cover Reveal Mask opt-in in the staggered gallery and matched the replaced final panel's per-line timing. The Radial demo now opens at Bottom, uses separate center/docked geometry, and animates every item from one shared angular position; Coverflow reserves a clipped lower gutter for its active shadow.
+- Made FLIP `fade` visibly sequential at the old and new slots with a short transparent handoff, and combined Page Reveal Zoom's scale with an opacity 0→1 entrance.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
 - Safari 프레임 속도에서도 커서 추종과 Page Reveal Zoom이 일관되도록 보정하고, Safari Lightbox Grid와 Slider 점 레이아웃 및 데모 스크롤·호버 타이밍을 수정했습니다.
-- Cover Reveal에 서로 구별되는 이미지 대표색 두 개 추출을 추가하고 이미지 데모를 고정 팔레트에서 이미지별 `auto`로 전환했으며, `mask:true`가 색상 패널이 아닌 실제 콘텐츠만 마스킹하도록 수정했습니다. Coverflow 경계·그림자 크기와 Safari 페이지네이션 깨짐을 바로잡고, Radial Slider에 원 전체를 표시하는 `position: 'center'`를 추가했으며 데모 원이 반투명하게 겹치거나 무대 밖으로 잘리지 않도록 다듬었습니다.
+- Cover Reveal에 서로 구별되는 이미지 대표색 두 개 추출을 추가하고 이미지 데모를 고정 팔레트에서 이미지별 `auto`로 전환했으며, `mask:true`가 마지막 색상 패널을 각 커버 전체를 감싸는 최상위 마스크로 교체하도록 수정했습니다.
+- Coverflow 경계·그림자 크기와 Safari 페이지네이션 깨짐을 바로잡고, Dissolve의 둥근 모서리에서 비활성 이미지 색이 새는 현상을 차단했습니다. Radial Slider에는 원 전체를 표시하는 `position: 'center'`를 추가하고 데모 원이 반투명하게 겹치거나 무대 밖으로 잘리지 않도록 다듬었습니다.
+- Staggered Gallery의 Cover Reveal Mask 기본값을 끄고 교체된 마지막 패널과 동일한 줄별 시간차로 마스크가 재생되도록 맞췄습니다. Radial 데모는 Bottom으로 시작하고 Center·도크 배치를 따로 조절하며, 모든 항목을 하나의 각도 값으로 회전시켜 끝 잔상을 없앴습니다. Coverflow는 클리핑 경계 안에 하단 그림자 여백을 확보했습니다.
+- FLIP `fade`가 이전 위치에서 완전히 사라진 뒤 짧은 공백을 거쳐 새 위치에서 나타나도록 구분하고, Page Reveal Zoom에는 확대와 함께 opacity 0→1 진입을 적용했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.46] - 2026-08-01
@@ -25,7 +31,7 @@
 - Preserved the page scroll position across full-page Loader scroll locks, including overlapping Loader instances.
 - Differentiated terminal presets: Braille remains a rotating two-dot spinner, Braille Pulse now visibly fills, holds, and drains, while Circle and Clock are documented as clockwise and anticlockwise variants.
 - Added compact CI, npm version, license, and jsDelivr badges to the demo hero with keyboard focus styles and working external destinations.
-- Automated the separate `catgarret.github.io/example/kineto` deployment after successful `main` CI, retained the requested jsDelivr `@latest` runtime, and refreshes its aliases after npm publication.
+- Automated the separate `catgarret.github.io/example/kineto` deployment after successful `main` CI, retained a moving jsDelivr runtime route, and refreshes its cache after npm publication.
 - Changed the canonical live-demo URL to `kineto.dongri.me` for direct Cloudflare Pages hosting while retaining the existing separate-site deployment as a backup.
 <!-- Add matching English release bullets here. -->
 
@@ -38,7 +44,7 @@
 - 전체 화면 Loader가 스크롤을 잠갔다 해제해도 페이지 위치가 맨 위로 돌아가지 않도록 했으며, Loader가 겹쳐 실행되는 경우도 기존 위치를 보존합니다.
 - Braille은 두 점 회전형, Braille Pulse는 채움·유지·비움 게이지형으로 구분했습니다. Circle과 Clock은 각각 시계 방향·반시계 방향임을 데모와 문서에 명시했습니다.
 - 데모 첫 화면에 CI, npm 버전, 라이선스, jsDelivr 배지를 작은 상태 행으로 추가하고 키보드 포커스와 실제 외부 링크를 적용했습니다.
-- `main` CI 통과 후 별도 `catgarret.github.io/example/kineto`를 자동 배포하도록 구성하고, 요청한 jsDelivr `@latest` 런타임을 유지하면서 npm 발행 뒤 해당 별칭 캐시를 갱신하도록 했습니다.
+- `main` CI 통과 후 별도 `catgarret.github.io/example/kineto`를 자동 배포하도록 구성하고, jsDelivr 최신 런타임 경로를 유지하면서 npm 발행 뒤 해당 캐시를 갱신하도록 했습니다.
 - 기존 별도 사이트 배포는 백업으로 유지하면서 Cloudflare Pages에서 직접 제공할 수 있도록 공식 라이브 데모 주소를 `kineto.dongri.me`로 변경했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 ## [0.8.45] - 2026-08-01
@@ -380,11 +386,11 @@ Kineto follows Semantic Versioning. Public scope is additionally governed by `FE
 
 ## [0.8.22]
 
-- **Demo deploy — back to @latest + purge script**: the site loads the library from `@latest` again; run `npm run purge` after publishing to flush the jsDelivr cache so the newest build shows immediately.
+- **Demo deploy — moving alias + purge script**: the site used a moving version alias; run `npm run purge` after publishing to flush the jsDelivr cache so the newest build shows immediately.
 
 ## [0.8.21]
 
-- **Demo deploy — pin exact version (fixes stale fixes)**: the generated site now loads the library from `@<version>` instead of `@latest`. jsDelivr caches `@latest` for hours/days, so published library fixes (wipe, slider loop, counter…) kept serving an old bundle on the demo. Pinning the immutable exact version loads each release fresh, no purge needed.
+- **Demo deploy — pin exact version (fixes stale fixes)**: the generated site switched from a moving version alias to `@<version>`. jsDelivr can cache moving aliases for hours or days, so published library fixes (wipe, slider loop, counter…) kept serving an old bundle on the demo. Pinning the immutable exact version loads each release fresh, no purge needed.
 
 ## [0.8.20]
 

@@ -1,5 +1,5 @@
 // Generate a deploy-ready copy of the demo that loads Kineto from jsDelivr's
-// @latest alias. The displayed version is read from the loaded runtime, so it
+// unversioned package route. The displayed version is read from the loaded runtime, so it
 // intentionally follows the version that npm currently serves as latest.
 //
 // Run as part of `npm run build`, or on its own: `npm run demo:cdn`.
@@ -15,10 +15,10 @@ const version = pkg.version;
 const SRC = path.join(root, 'demo');
 const OUT = path.join(root, 'site');
 
-// CDN base — the public demo tracks @latest by design (run `npm run purge` after
-// publish to flush jsDelivr's @latest cache). The determinism fixes below still
+// CDN base — the public demo tracks the unversioned package route by design
+// (run `npm run purge` after publish to flush jsDelivr's moving cache). The determinism fixes below still
 // apply: no leftover ../dist refs, and the ?v= cache-buster is handled.
-const cdnBase = `https://cdn.jsdelivr.net/npm/@dong-gri/kineto@latest/dist`;
+const cdnBase = `https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist`;
 
 // Short build id for the footer/debug so a deployed page is traceable to a commit.
 function buildId() {
@@ -48,7 +48,8 @@ export function rewriteSiteHtml(html, { base = cdnBase, build = 'dev' } = {}) {
 export function assertSite(html) {
   const errors = [];
   if (/(?:href|src)="\.\.\/dist\//.test(html)) errors.push('site/index.html still contains ../dist/ references');
-  if (!/@dong-gri\/kineto@(?:latest|\d)/.test(html)) errors.push('site/index.html missing the @dong-gri/kineto CDN reference');
+  if (!/cdn\.jsdelivr\.net\/npm\/@dong-gri\/kineto\/dist/.test(html)) errors.push('site/index.html missing the unversioned @dong-gri/kineto CDN reference');
+  if (/@dong-gri\/kineto@[^/]+/.test(html)) errors.push('site/index.html still pins a CDN version alias');
   return errors;
 }
 
@@ -59,7 +60,7 @@ if (isMain) {
     const html = fs.readFileSync(path.join(OUT, 'index.html'), 'utf8');
     const errors = assertSite(html);
     if (errors.length) { console.error('demo-cdn --check FAILED:\n  - ' + errors.join('\n  - ')); process.exit(1); }
-    console.log(`demo-cdn --check OK — @latest CDN, 0 ../dist refs.`);
+    console.log(`demo-cdn --check OK — unversioned CDN, 0 ../dist refs.`);
   } else {
     fs.rmSync(OUT, { recursive: true, force: true });
     fs.cpSync(SRC, OUT, { recursive: true });
@@ -71,6 +72,6 @@ if (isMain) {
       console.error(`Generated site/ but assertions FAILED (leftover ../dist=${leftover}):\n  - ` + errors.join('\n  - '));
       process.exit(1);
     }
-    console.log(`Generated site/ from demo/ — Kineto @latest CDN (build ${buildId()}). 0 ../dist refs asserted.`);
+    console.log(`Generated site/ from demo/ — unversioned Kineto CDN (build ${buildId()}). 0 ../dist refs asserted.`);
   }
 }

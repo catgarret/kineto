@@ -210,7 +210,12 @@ export default {
       const restoreOverflow = container.style.overflow;
       if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
       container.style.overflow = 'hidden';
-      const cover = { container, content, panels: [], restorePosition, restoreOverflow };
+      const cover = {
+        container, content, panels: [], restorePosition, restoreOverflow,
+        restoreClipPath: container.style.clipPath,
+        restoreWebkitClipPath: container.style.webkitClipPath,
+        restoreTransition: container.style.transition
+      };
       appendPanels(cover);
       covers.push(cover);
       return cover.panels;
@@ -292,6 +297,11 @@ export default {
     // left unset it keeps following the panels.
     const maskDirections = ['left', 'right', 'up', 'down'];
     const maskDirectionOpt = maskDirections.includes(opts.maskDirection) ? opts.maskDirection : null;
+    const restoreMask = (cover) => {
+      cover.container.style.clipPath = cover.restoreClipPath;
+      cover.container.style.webkitClipPath = cover.restoreWebkitClipPath;
+      cover.container.style.transition = cover.restoreTransition;
+    };
 
     const play = () => {
       if (!alive || played) return;
@@ -300,41 +310,39 @@ export default {
       const exitTransform = exitFor(moveDirection);
       if (maskLead) {
         covers.forEach((cover) => {
-          const target = cover.content;
+          // The mask belongs to the outer cover container, not the text/image
+          // child. This clips the content and every remaining colour panel as
+          // one unit; in lines mode each line gets its own outer mask.
+          const target = cover.container;
           target.style.clipPath = maskInsetFor(maskDirectionOpt || moveDirection);
           target.style.webkitClipPath = target.style.clipPath;
           target.style.transition = `clip-path ${duration}s ${ease},-webkit-clip-path ${duration}s ${ease}`;
         });
       }
       void el.offsetWidth; // paint the covered start frame first
-      if (maskLead) {
-        requestAnimationFrame(() => {
-          covers.forEach((cover) => {
-            cover.content.style.clipPath = 'inset(0 0 0 0)';
-            cover.content.style.webkitClipPath = 'inset(0 0 0 0)';
-          });
-        });
-      }
       requestAnimationFrame(() => {
         covers.forEach((cover, lineIndex) => {
           const lineDelay = delay + (linesMode ? lineIndex * stagger : 0);
+          if (maskLead) {
+            timers.push(setTimeout(() => {
+              if (!alive) return;
+              cover.container.style.clipPath = 'inset(0 0 0 0)';
+              cover.container.style.webkitClipPath = 'inset(0 0 0 0)';
+            }, lineDelay));
+          }
           cover.panels.forEach((panel, i) => {
-            const order = Math.max(0, panelLayers - 1 - i);
-          timers.push(setTimeout(() => { if (alive) panel.style.transform = exitTransform; }, lineDelay + order * stagger));
+            const order = Math.max(0, layers - 1 - i);
+            timers.push(setTimeout(() => { if (alive) panel.style.transform = exitTransform; }, lineDelay + order * stagger));
           });
         });
       });
       const totalLines = linesMode ? Math.max(0, covers.length - 1) : 0;
-      const total = delay + totalLines * stagger + Math.max(0, panelLayers - 1) * stagger + duration * 1000 + 80;
+      const total = delay + totalLines * stagger + Math.max(0, layers - 1) * stagger + duration * 1000 + 80;
       timers.push(setTimeout(() => {
         if (!alive) return;
         covers.forEach((cover) => {
           cover.panels.forEach((panel) => panel.remove());
-          if (maskLead) {
-            cover.content.style.removeProperty('clip-path');
-            cover.content.style.removeProperty('-webkit-clip-path');
-            cover.content.style.removeProperty('transition');
-          }
+          if (maskLead) restoreMask(cover);
         });
         opts.onComplete?.(el);
       }, total));
@@ -446,11 +454,7 @@ export default {
         covers.forEach((cover) => {
           cover.panels.forEach((panel) => panel.remove());
           appendPanels(cover);
-          if (maskLead) {
-            cover.content.style.removeProperty('clip-path');
-            cover.content.style.removeProperty('-webkit-clip-path');
-            cover.content.style.removeProperty('transition');
-          }
+          if (maskLead) restoreMask(cover);
         });
         // The panels start covering, so one frame is enough to be hidden.
         return new Promise((resolve) => requestAnimationFrame(() => resolve()));
@@ -471,9 +475,7 @@ export default {
         timers.forEach(clearTimeout);
         covers.forEach((cover) => {
           cover.panels.forEach((panel) => panel.remove());
-          cover.content.style.removeProperty('clip-path');
-          cover.content.style.removeProperty('-webkit-clip-path');
-          cover.content.style.removeProperty('transition');
+          restoreMask(cover);
           cover.container.style.overflow = cover.restoreOverflow;
           cover.container.style.position = cover.restorePosition;
         });

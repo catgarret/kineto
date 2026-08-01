@@ -331,7 +331,7 @@
     .slider-demo.kt-slider--active-shadow,
     .slider-demo:has(>.kt-slider--active-shadow){overflow:hidden}
     .slider-demo--dissolve{height:clamp(230px,31vw,320px);padding:0;border-radius:var(--r-stage);background:var(--panel2)}
-    .slider-demo--dissolve>.kt-slider-wrap,.slider-demo--dissolve .kt-slider-track,.slider-demo--dissolve .kt-slide{height:100%}
+    .slider-demo--dissolve>.kt-slider-wrap,.slider-demo--dissolve .kt-slider-track,.slider-demo--dissolve .kt-slide{height:100%;border-radius:inherit;overflow:hidden;clip-path:inset(0 round var(--r-stage));-webkit-mask-image:-webkit-radial-gradient(white,black)}
     .slider-demo--dissolve .kt-slide{min-height:0}
     .slider-demo--dissolve .kt-slider-wrap,.slider-demo--dissolve .kt-slider-track,.slider-demo--dissolve .kt-slide{width:100%!important}
     .slider-demo--dissolve .kt-slide{position:relative;border-radius:0;background:var(--panel2);overflow:hidden}
@@ -697,10 +697,11 @@
 }
 
 /* Radial carousel — emphasise the active item (active gets .kt-active). */
-.kt-radial-item img { width:82px!important; height:82px!important; transition:transform .45s cubic-bezier(.22,.8,.3,1),box-shadow .45s ease; }
+.kt-radial-item img { width:76px!important; height:76px!important; transition:transform .45s cubic-bezier(.22,.8,.3,1),box-shadow .45s ease; }
 /* Clearer active↔inactive size difference: inactive shrink, active grow. */
 .kt-radial-item:not(.kt-active) img { opacity:1; transform:scale(.92); }
 .kt-radial-item.kt-active img { opacity:1; transform:scale(1.12); box-shadow:0 12px 28px rgba(0,0,0,.36); }
+.kt-radial--center .kt-radial-item img{width:82px!important;height:82px!important}
 
 /* Segmented tabs demo: white active pill in light theme, light overlay in dark. */
 .kt-tabs--segment { --kt-seg-active: rgba(255,255,255,.14); --kt-seg-bg: rgba(255,255,255,.06); }
@@ -1018,6 +1019,7 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 #mod-slider .slider-demo.kt-slider--active-shadow .kt-slide.is-active,
 #mod-slider .slider-demo .kt-slider--active-shadow .kt-slide.is-active{overflow:visible}
 #mod-slider .slider-demo .kt-slide img{display:block;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover}
+#mod-slider .slider-demo.kt-slider--active-shadow{box-sizing:content-box;padding-bottom:70px;margin-bottom:-70px}
 #mod-slider .slider-controls{margin-top:12px}
 #mod-cardGlow .module-block-body{grid-template-columns:repeat(6,minmax(0,1fr))}
 #mod-cardGlow .module-block-body>.card{grid-column:span 2}

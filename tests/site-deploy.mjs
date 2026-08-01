@@ -1,4 +1,4 @@
-// The generated public site must use the requested @latest CDN alias, carry no
+// The generated public site must use the unversioned CDN route, carry no
 // ../dist references, and expose runtime version/count hooks so header/footer
 // reflect the bundle that npm currently serves.
 import fs from 'node:fs';
@@ -18,11 +18,12 @@ const m = core.match(/version:\s*'([^']+)'/);
 assert.ok(m, 'src/core.js has a version literal');
 assert.strictEqual(m[1], version, `Kineto.version (${m[1]}) must equal package.json version (${version})`);
 
-// 2. rewrite of the real demo produces a clean @latest site with no local refs
+// 2. rewrite of the real demo produces a clean unversioned site with no local refs
 const demoHtml = fs.readFileSync(path.join(root, 'demo/index.html'), 'utf8');
 const { html, leftover } = rewriteSiteHtml(demoHtml, { build: 'testhash' });
 assert.strictEqual(leftover, 0, 'site must have 0 ../dist references');
-assert.ok(/@dong-gri\/kineto@latest/.test(html), 'site must reference the @latest CDN bundle');
+assert.ok(/cdn\.jsdelivr\.net\/npm\/@dong-gri\/kineto\/dist/.test(html), 'site must reference the unversioned current CDN bundle');
+assert.ok(!/@dong-gri\/kineto@[^/]+/.test(html), 'site must not pin a CDN version alias');
 assert.strictEqual(assertSite(html).length, 0, 'assertSite must pass on the rewritten html');
 
 // 3. header + footer expose runtime hooks (so they cannot drift), and no stale "34"
@@ -49,4 +50,4 @@ for (const relative of linkedDocs) {
   assert.doesNotMatch(source, /https:\/\/kineto\.dongri\.me\//);
 }
 
-console.log(`site-deploy OK — @latest CDN, canonical demo URL, 0 ../dist, runtime version(${version})/count/build hooks present, no stale files.`);
+console.log(`site-deploy OK — unversioned CDN, canonical demo URL, 0 ../dist, runtime version(${version})/count/build hooks present, no stale files.`);

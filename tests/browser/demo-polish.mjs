@@ -127,12 +127,14 @@ try {
       beforeWidth,
       bodyTransform: getComputedStyle(document.body).transform,
       rootTransform: getComputedStyle(document.documentElement).transform,
+      rootOpacity: Number(getComputedStyle(document.documentElement).opacity),
       viewportCovers: [...document.documentElement.children].filter((node) => node.matches?.('div[aria-hidden="true"]') && node.style.zIndex === '99997').length
     };
     window.Kineto.destroyModule(document.body, 'pageReveal');
     return during;
   });
-  assert.ok(zoomHeader.opacity > 0.99 && zoomHeader.height > 0, `Page Reveal zoom must keep the persistent header visible (${JSON.stringify(zoomHeader)})`);
+  assert.ok(zoomHeader.opacity > 0.99 && zoomHeader.height > 0, `Page Reveal zoom must keep the persistent header in the animated page layer (${JSON.stringify(zoomHeader)})`);
+  assert.ok(zoomHeader.rootOpacity > 0 && zoomHeader.rootOpacity < 1, `Page Reveal zoom must fade the whole page from opacity 0 to 1 while scaling (${JSON.stringify(zoomHeader)})`);
   assert.notEqual(zoomHeader.rootTransform, 'none', `the real Zoom button must animate the root viewport consistently across Safari and Chromium (${JSON.stringify(zoomHeader)})`);
   assert.ok(zoomHeader.width < zoomHeader.beforeWidth, `the persistent header must zoom with the page instead of staying fixed (${JSON.stringify(zoomHeader)})`);
   assert.equal(zoomHeader.viewportCovers, 0, `Zoom must not flash a full-viewport cover over the header (${JSON.stringify(zoomHeader)})`);
@@ -143,11 +145,18 @@ try {
       return { width:box.width, height:box.height, appearance:getComputedStyle(item).appearance, before:getComputedStyle(item,'::before').content, after:getComputedStyle(item,'::after').content };
     });
     const coverflow = document.querySelector('[data-kt-slider="coverflow"]');
+    const dissolve = document.querySelector('.slider-demo--dissolve');
+    const dissolveWrap = dissolve?.querySelector('.kt-slider-wrap');
+    const dissolveSlide = dissolve?.querySelector('.kt-slide');
     return {
       lightboxRows: [...new Set(images.map((box) => Math.round(box.top)))].length,
       lightboxInside: images.every((box) => box.width > 0 && box.height > 0),
       dots,
-      coverflowOverflow:getComputedStyle(coverflow).overflow
+      coverflowOverflow:getComputedStyle(coverflow).overflow,
+      coverflowPadding:getComputedStyle(coverflow).paddingBottom,
+      coverflowMargin:getComputedStyle(coverflow).marginBottom,
+      dissolveClip:dissolveWrap?getComputedStyle(dissolveWrap).clipPath:'',
+      dissolveSlideClip:dissolveSlide?getComputedStyle(dissolveSlide).clipPath:''
     };
   });
   assert.equal(webkitLayout.lightboxRows, 2, `Safari Lightbox thumbnails must form two non-overlapping rows (${JSON.stringify(webkitLayout)})`);
@@ -155,6 +164,8 @@ try {
   assert.ok(webkitLayout.dots.length > 0 && webkitLayout.dots.every((dot) => dot.width >= 8 && dot.height === 8 && dot.appearance === 'none'), `Safari slider dots must not inherit native button appearance or collapse (${JSON.stringify(webkitLayout)})`);
   assert.ok(webkitLayout.dots.every((dot) => dot.before === 'none' && dot.after === 'none'), `slider dots must not paint Safari pseudo-element artifacts (${JSON.stringify(webkitLayout)})`);
   assert.equal(webkitLayout.coverflowOverflow, 'hidden', `Coverflow previews must be clipped at the demo boundary (${JSON.stringify(webkitLayout)})`);
+  assert.ok(webkitLayout.coverflowPadding==='70px'&&webkitLayout.coverflowMargin==='-70px', `Coverflow must reserve a clipped lower shadow gutter without changing layout flow (${JSON.stringify(webkitLayout)})`);
+  assert.ok(webkitLayout.dissolveClip.includes('inset(0')&&webkitLayout.dissolveSlideClip.includes('inset(0'), `Dissolve must hard-clip both scene and slides so inactive colors cannot leak through rounded subpixels (${JSON.stringify(webkitLayout)})`);
   const coverRevealModes = await page.evaluate(async () => {
     const canvas=document.createElement('canvas'); canvas.width=40; canvas.height=20;
     const context=canvas.getContext('2d'); context.fillStyle='#e3162a'; context.fillRect(0,0,28,20); context.fillStyle='#164ee3'; context.fillRect(28,0,12,20);
@@ -172,7 +183,21 @@ try {
     return result;
   });
   assert.equal(new Set(coverRevealModes.colors).size, 2, `auto Cover Reveal must retain distinct colors extracted from the image (${JSON.stringify(coverRevealModes)})`);
-  assert.ok(coverRevealModes.panels === 1 && coverRevealModes.wrapClip === '' && coverRevealModes.contentClip !== '', `mask replacement must clip only content, never the colored panel wrapper (${JSON.stringify(coverRevealModes)})`);
+  assert.ok(coverRevealModes.panels === 1 && coverRevealModes.wrapClip !== '' && coverRevealModes.contentClip === '', `mask replacement must clip the complete wrapper above both content and colored panels (${JSON.stringify(coverRevealModes)})`);
+  const lineMaskTiming = await page.evaluate(async () => {
+    const host=document.createElement('div');host.style.cssText='position:fixed;top:40px;left:10px;width:120px';
+    const text=document.createElement('div');text.textContent='first row second row third row';host.appendChild(text);document.body.appendChild(host);
+    const instance=Kineto.coverReveal(text,{mask:true,lines:true,layers:2,color:'#f00',color2:'#0f0',duration:1,stagger:200,waitForImage:false});
+    await new Promise((resolve)=>setTimeout(resolve,80));
+    const lines=[...text.querySelectorAll('.kt-cover-line')];
+    const result=lines.map((line)=>({
+      clip:line.style.clipPath,
+      panel:line.querySelector('[aria-hidden="true"]')?.style.transform||''
+    }));
+    instance.destroy();host.remove();return result;
+  });
+  assert.ok(lineMaskTiming.length>1&&!lineMaskTiming[0].clip.includes('100')&&lineMaskTiming.slice(1).some((line)=>line.clip.includes('100')), `Mask must reveal each rendered line on its own stagger (${JSON.stringify(lineMaskTiming)})`);
+  assert.ok(lineMaskTiming.every((line)=>line.panel&&!line.panel.includes('101')), `the remaining color panel must keep the same later slot that color1 used before mask replacement (${JSON.stringify(lineMaskTiming)})`);
   await page.locator('#cover-gallery-demo').scrollIntoViewIfNeeded();
   await page.evaluate(() => document.querySelectorAll('#cover-gallery-demo img').forEach((image) => { image.loading='eager'; }));
   await page.waitForFunction(() => [...document.querySelectorAll('#cover-gallery-demo img')].every((image)=>image.complete&&image.naturalWidth>0),null,{timeout:10000});
@@ -182,15 +207,30 @@ try {
     await new Promise(requestAnimationFrame);
     return targets.map((target)=>({
       mode:target.dataset.ktColorMode,
+      mask:target.dataset.ktMask,
       colors:target.dataset.ktColors||'',
       panel:target.closest('.kt-cover-wrap')?.querySelector('[aria-hidden="true"]')?.style.background||''
     }));
   });
-  assert.ok(galleryPalettes.every((entry)=>entry.mode==='auto'&&!entry.colors&&entry.panel), `Cover Reveal gallery must use each image sampler by default (${JSON.stringify(galleryPalettes)})`);
+  assert.ok(galleryPalettes.every((entry)=>entry.mode==='auto'&&entry.mask==='false'&&!entry.colors&&entry.panel), `Cover Reveal gallery must use each image sampler with Mask off by default (${JSON.stringify(galleryPalettes)})`);
   assert.ok(new Set(galleryPalettes.map((entry)=>entry.panel)).size>=4, `gallery images must produce visibly varied first-panel colors (${JSON.stringify(galleryPalettes)})`);
   const radial = page.locator('[data-kt-slider="radial"]');
+  const radialDefault = await radial.evaluate((host)=>{
+    const boxes=[...host.querySelectorAll('.kt-radial-item')].filter((item)=>Number(getComputedStyle(item).opacity)>.99).map((item)=>item.querySelector('img').getBoundingClientRect());
+    const nearest=Math.min(...boxes.flatMap((box,index)=>boxes.slice(index+1).map((other)=>Math.hypot((box.left+box.width/2)-(other.left+other.width/2),(box.top+box.height/2)-(other.top+other.height/2)))));
+    return {bottom:host.classList.contains('kt-radial--bottom'),radius:host.style.getPropertyValue('--kt-radial-radius'),solid:boxes.length,nearest,maxDiameter:Math.max(...boxes.map((box)=>box.width))};
+  });
+  assert.ok(radialDefault.bottom&&radialDefault.radius==='180px'&&radialDefault.solid>=3&&radialDefault.nearest>radialDefault.maxDiameter,`Radial demo must open in the spacious Bottom layout (${JSON.stringify(radialDefault)})`);
+  await radial.evaluate((host)=>window.Kineto.updateModule(host,'slider',{position:'center',radius:96}));
   await radial.locator('.kt-radial-next').click();
-  await page.waitForTimeout(750);
+  await page.waitForTimeout(260);
+  const radialMotion = await radial.evaluate((host)=>{
+    const centers=[...host.querySelectorAll('.kt-radial-item img')].map((item)=>{const box=item.getBoundingClientRect();return{x:box.left+box.width/2,y:box.top+box.height/2};});
+    const nearest=centers.map((point,index)=>Math.min(...centers.filter((_,other)=>other!==index).map((other)=>Math.hypot(point.x-other.x,point.y-other.y))));
+    return {spread:Math.max(...nearest)-Math.min(...nearest),nearest};
+  });
+  assert.ok(radialMotion.spread<2,`center Radial must rotate as one evenly spaced wheel without endpoint remnants (${JSON.stringify(radialMotion)})`);
+  await page.waitForTimeout(500);
   const radialCenter = await radial.evaluate((host) => {
     const items = [...host.querySelectorAll('.kt-radial-item')];
     const images = items.map((item) => item.querySelector('img'));

@@ -120,13 +120,13 @@ Kineto.autoInit();
 
 ### CDN
 
-`@latest` is convenient for prototypes. Pin a tested version in production to
+The unversioned package URL is convenient for prototypes. Pin a tested version in production to
 make deployments reproducible.
 
 ```html
 <link rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@dong-gri/kineto@latest/dist/kineto.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@dong-gri/kineto@latest/dist/kineto.umd.min.js"></script>
+      href="https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.umd.min.js"></script>
 <script>
   Kineto.autoInit();
 </script>

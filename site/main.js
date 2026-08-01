@@ -10,10 +10,32 @@
     // scripts after DOM ready, so recreate an already-started instance there.
     document.querySelectorAll('[data-kt-cover-reveal]').forEach((target)=>{
       if(!target.querySelector('img'))return;
+      const gallery=Boolean(target.closest('#cover-gallery-demo'));
       target.setAttribute('data-kt-color-mode','auto');
       target.removeAttribute('data-kt-colors');
+      if(gallery)target.setAttribute('data-kt-mask','false');
       if(Kineto.getInstance(target,'coverReveal')){
-        Kineto.updateModule(target,'coverReveal',{colorMode:'auto',colors:''});
+        Kineto.updateModule(target,'coverReveal',{colorMode:'auto',colors:'',...(gallery?{mask:false}:{})});
+      }
+    });
+    const radialDemo=document.querySelector('[data-kt-slider="radial"]');
+    if(radialDemo){
+      radialDemo.setAttribute('data-kt-position','bottom');
+      radialDemo.setAttribute('data-kt-radius','180');
+      radialDemo.setAttribute('data-kt-step','34');
+      if(Kineto.getInstance(radialDemo,'slider')){
+        Kineto.updateModule(radialDemo,'slider',{position:'bottom',radius:180,step:34});
+      }
+    }
+    document.addEventListener('change',(event)=>{
+      const field=event.target.closest?.('.kt-playground__field[data-module="slider"][data-key="position"]');
+      if(!field||!radialDemo)return;
+      const scope=field.closest('.kt-drawer-sheet,.kt-playground__body,.kt-playground')||document;
+      const radius=event.target.value==='center'?96:180;
+      const radiusInput=scope.querySelector('.kt-playground__field[data-module="slider"][data-key="radius"] input[data-option]');
+      if(radiusInput&&Number(radiusInput.value)!==radius){
+        radiusInput.value=String(radius);
+        radiusInput.dispatchEvent(new Event('input',{bubbles:true}));
       }
     });
     // The demo ships WITH smooth scrolling on — it is one of the library's
