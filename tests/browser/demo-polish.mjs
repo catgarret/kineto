@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { chromium } from 'playwright';
+import { chromium, webkit } from 'playwright';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 
@@ -11,7 +11,10 @@ html = html
   .replace(/<script src="\.\/(?:help-i18n|help-i18n-extra|playground-i18n|playground|copy-i18n|main)\.js[^"]*"><\/script>/g, '')
   .replace('<head>', '<head><base href="http://kineto.local/demo/">');
 const mime = { '.svg':'image/svg+xml','.png':'image/png','.gif':'image/gif','.webp':'image/webp','.js':'text/javascript','.css':'text/css' };
-const browser = await chromium.launch({ headless:true, ...(process.env.KT_CHROME ? { executablePath:process.env.KT_CHROME } : {}), args:['--no-sandbox','--disable-setuid-sandbox','--disable-gpu'] });
+const browserEngine = process.env.KT_BROWSER === 'webkit' ? webkit : chromium;
+const browser = await browserEngine.launch(browserEngine === chromium
+  ? { headless:true, ...(process.env.KT_CHROME ? { executablePath:process.env.KT_CHROME } : {}), args:['--no-sandbox','--disable-setuid-sandbox','--disable-gpu'] }
+  : { headless:true });
 const page = await browser.newPage({ viewport:{ width:1437, height:807 } });
 try {
   await page.route(/fonts\.googleapis\.com|fonts\.gstatic\.com|cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net/, (route)=>route.fulfill({status:200,body:'',contentType:'text/css'}));
@@ -123,15 +126,31 @@ try {
       width: header.getBoundingClientRect().width,
       beforeWidth,
       bodyTransform: getComputedStyle(document.body).transform,
+      rootTransform: getComputedStyle(document.documentElement).transform,
       viewportCovers: [...document.documentElement.children].filter((node) => node.matches?.('div[aria-hidden="true"]') && node.style.zIndex === '99997').length
     };
     window.Kineto.destroyModule(document.body, 'pageReveal');
     return during;
   });
   assert.ok(zoomHeader.opacity > 0.99 && zoomHeader.height > 0, `Page Reveal zoom must keep the persistent header visible (${JSON.stringify(zoomHeader)})`);
-  assert.notEqual(zoomHeader.bodyTransform, 'none', `the real Zoom button must animate the whole demo page (${JSON.stringify(zoomHeader)})`);
+  assert.notEqual(zoomHeader.rootTransform, 'none', `the real Zoom button must animate the root viewport consistently across Safari and Chromium (${JSON.stringify(zoomHeader)})`);
   assert.ok(zoomHeader.width < zoomHeader.beforeWidth, `the persistent header must zoom with the page instead of staying fixed (${JSON.stringify(zoomHeader)})`);
   assert.equal(zoomHeader.viewportCovers, 0, `Zoom must not flash a full-viewport cover over the header (${JSON.stringify(zoomHeader)})`);
+  const webkitLayout = await page.evaluate(() => {
+    const images = [...document.querySelectorAll('.lightbox-grid img')].map((item) => item.getBoundingClientRect());
+    const dots = [...document.querySelectorAll('.kt-slider-dot')].map((item) => {
+      const box = item.getBoundingClientRect();
+      return { width:box.width, height:box.height, appearance:getComputedStyle(item).appearance };
+    });
+    return {
+      lightboxRows: [...new Set(images.map((box) => Math.round(box.top)))].length,
+      lightboxInside: images.every((box) => box.width > 0 && box.height > 0),
+      dots
+    };
+  });
+  assert.equal(webkitLayout.lightboxRows, 2, `Safari Lightbox thumbnails must form two non-overlapping rows (${JSON.stringify(webkitLayout)})`);
+  assert.ok(webkitLayout.lightboxInside, `Safari Lightbox thumbnails must retain measurable grid cells (${JSON.stringify(webkitLayout)})`);
+  assert.ok(webkitLayout.dots.length > 0 && webkitLayout.dots.every((dot) => dot.width >= 8 && dot.height === 8 && dot.appearance === 'none'), `Safari slider dots must not inherit native button appearance or collapse (${JSON.stringify(webkitLayout)})`);
   const segmentedDemoTab=page.locator('#mod-tabs .demo-tabs .demo-tab',{hasText:'Segmented'});
   await segmentedDemoTab.click();
   await page.waitForTimeout(80);

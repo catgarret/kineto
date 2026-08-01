@@ -56,10 +56,14 @@ const BUDGETS = {
   // than 2 KB raw and 1 KB gzip headroom.
   // Hover/focus state coordination adds 0.2 KB to the readable ESM only; the
   // consumer-facing gzip ceiling remains unchanged.
-  'kineto.js': { raw: 475, gz: 124 },
-  'kineto.min.js': { raw: 376, gz: 111 },
-  'kineto.umd.js': { raw: 374, gz: 110 },
-  'kineto.umd.min.js': { raw: 374, gz: 110 },
+  // 2026-08-01: two-color image sampling, frame-rate-independent cursor
+  // interpolation, and the full-circle radial layout add 1.4 KB raw / 0.4 KB
+  // gzip. These are measured feature costs; the ceilings retain <1 KB gzip
+  // headroom and still reject an accidental dependency.
+  'kineto.js': { raw: 477, gz: 124 },
+  'kineto.min.js': { raw: 377, gz: 111 },
+  'kineto.umd.js': { raw: 376, gz: 111 },
+  'kineto.umd.min.js': { raw: 376, gz: 111 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.
@@ -70,8 +74,8 @@ const BUDGETS = {
   // interpolation with no stall, no bounce at the loop seam, no backwards sweep.
   // The rest of the CSS is at its floor (measured 2026-07-29: re-minifying the
   // Vite output with lightningcss moves raw by -0.1%).
-  'kineto.css': { raw: 43, gz: 9 },
-  'kineto.min.css': { raw: 43, gz: 9 }
+  'kineto.css': { raw: 44, gz: 10 },
+  'kineto.min.css': { raw: 44, gz: 10 }
 };
 
 const kb = (n) => n / 1024;

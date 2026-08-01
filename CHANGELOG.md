@@ -4,10 +4,14 @@
 
 ### English
 
+- Normalized cursor following and Page Reveal Zoom across Safari frame rates, fixed Safari Lightbox Grid and Slider dot layout, and tuned the demo's Safari scroll/hover timing.
+- Added two-color image sampling and theme-aware `maskColor: 'surface'` to Cover Reveal, plus a complete-wheel Radial Slider layout with `position: 'center'`.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
+- Safari 프레임 속도에서도 커서 추종과 Page Reveal Zoom이 일관되도록 보정하고, Safari Lightbox Grid와 Slider 점 레이아웃 및 데모 스크롤·호버 타이밍을 수정했습니다.
+- Cover Reveal에 이미지 대표색 두 개 추출과 테마 대응 `maskColor: 'surface'`를 추가하고, Radial Slider에 원 전체를 표시하는 `position: 'center'`를 추가했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.46] - 2026-08-01

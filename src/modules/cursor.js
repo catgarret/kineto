@@ -487,10 +487,15 @@ export default {
     const onWindowOut = (event) => { if (!event.relatedTarget) setVisible(false); };
     const onScopeLeave = () => { insideScope = false; setVisible(false); if (hoverTarget) leaveTarget(); };
 
-    const render = () => {
+    let lastFrame = 0;
+    const frameEase = (amount, time) => 1 - ((1 - amount) ** Math.min(4, Math.max(0.25, time / 16.667)));
+    const render = (time = performance.now()) => {
       if (!alive) return;
-      x = lerp(x, mouseX, smoothing);
-      y = lerp(y, mouseY, smoothing);
+      const elapsed = lastFrame ? time - lastFrame : 16.667;
+      lastFrame = time;
+      const follow = frameEase(smoothing, elapsed);
+      x = lerp(x, mouseX, follow);
+      y = lerp(y, mouseY, follow);
       if (follower) follower.style.transform = `translate3d(${x}px,${y}px,0) translate(-50%,-50%) scale(${followerScale()})`;
       if (type === 'text' && single && !single.dataset.crosshairFull) {
         // The text ring keeps its size; only the inner dot reacts to hover.
@@ -499,7 +504,7 @@ export default {
       if (type === 'trail') {
         let leadX = mouseX;
         let leadY = mouseY;
-        const spring = chain.spring || 0.2;
+        const spring = frameEase(chain.spring || 0.2, elapsed);
         chain.nodes.forEach((node, index) => {
           chain.xs[index] = lerp(chain.xs[index], leadX, spring);
           chain.ys[index] = lerp(chain.ys[index], leadY, spring);
@@ -515,10 +520,10 @@ export default {
         // whole stack collapses into a 1–2px dot instead of a letter blob.
         let leadX = mouseX;
         let leadY = mouseY;
-        const spring = chain.spring || 0.35;
+        const spring = frameEase(chain.spring || 0.35, elapsed);
         const gap = chain.gap || 11;
         const minScale = chain.minScale ?? 0.42;
-        const scaleEase = chain.scaleEase ?? 0.08;
+        const scaleEase = frameEase(chain.scaleEase ?? 0.08, elapsed);
         chain.nodes.forEach((node, index) => {
           chain.xs[index] = lerp(chain.xs[index], leadX, spring);
           chain.ys[index] = lerp(chain.ys[index], leadY, spring);
@@ -535,9 +540,9 @@ export default {
         // Ellipse → circle bloom on hover, eased for smoothness. Pressing
         // contracts the ring by pressScale so a click on a target is felt.
         const orbitBase = (hoverTarget ? chain.orbitHoverRadius : chain.orbitRadius) * (pressed ? pressScale : 1);
-        chain.orbitCur = lerp(chain.orbitCur, orbitBase, pressed ? 0.28 : 0.12);
-        chain.squashCur = lerp(chain.squashCur, hoverTarget ? 1 : chain.squash, 0.12);
-        chain.angles = chain.angles.map((angle) => angle + chain.orbitSpeed);
+        chain.orbitCur = lerp(chain.orbitCur, orbitBase, frameEase(pressed ? 0.28 : 0.12, elapsed));
+        chain.squashCur = lerp(chain.squashCur, hoverTarget ? 1 : chain.squash, frameEase(0.12, elapsed));
+        chain.angles = chain.angles.map((angle) => angle + chain.orbitSpeed * elapsed / 16.667);
         chain.nodes.forEach((node, index) => {
           const ox = x + chain.orbitCur * Math.cos(chain.angles[index]);
           const oy = y + chain.orbitCur * Math.sin(chain.angles[index]) * chain.squashCur;
@@ -564,7 +569,7 @@ export default {
       show() { cursor.hidden = false; setVisible(true); },
       hide() { setVisible(false); },
       pause() { alive = false; if (rafId != null) cancelAnimationFrame(rafId); cursor.hidden = true; },
-      resume() { if (!alive) { alive = true; cursor.hidden = false; rafId = requestAnimationFrame(render); } },
+      resume() { if (!alive) { alive = true; lastFrame = 0; cursor.hidden = false; rafId = requestAnimationFrame(render); } },
       destroy() {
         alive = false;
         if (rafId != null) cancelAnimationFrame(rafId);

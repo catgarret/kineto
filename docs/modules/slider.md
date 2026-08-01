@@ -38,6 +38,10 @@
 기존 `data-kt-radial`과 `Kineto.radial()`은 공개 호환 진입점으로
 유지되며 내부에서 같은 원형 엔진을 사용합니다.
 
+Radial에서 `position:'center'`를 지정하면 허브를 중앙에 놓고 항목 간격을
+`360 / 항목 수`로 계산해 원 전체를 표시합니다. 기존 `top`, `right`,
+`bottom`, `left`는 컨테이너 가장자리에서 일부 원호만 보여주는 방식입니다.
+
 Coverflow에서 `activeShadow:true`를 켜면 활성 슬라이드의 회전된 실루엣을
 따라 `drop-shadow`가 표시됩니다. 기본값은 기존 화면을 유지하도록
 `false`이며 `activeShadowOpacity`의 기본값은 `0.28`입니다.

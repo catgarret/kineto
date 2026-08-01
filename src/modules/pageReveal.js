@@ -184,7 +184,10 @@ export default {
       // The fixes are the two lines below: mount the cover on <html> (untouched
       // by the transform) and pin `transform-origin` to the geometric centre of
       // the VIEWPORT expressed in the host's own coordinates.
-      const host = el === document.documentElement ? document.body : el;
+      // Safari treats a transformed <body> differently from Chromium when it
+      // contains fixed/sticky descendants. Animate the root viewport box for a
+      // page-level reveal so both engines include the header in the same layer.
+      const host = (el === document.body || el === document.documentElement) ? document.documentElement : el;
       const hostRect = host.getBoundingClientRect();
       const originX = window.innerWidth / 2 - hostRect.left;
       const originY = window.innerHeight / 2 - hostRect.top;

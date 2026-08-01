@@ -459,6 +459,26 @@
   });
 })();
 
+// Cover Reveal can use the live surrounding surface for its front panel. This
+// stays correct when the demo theme changes, unlike a hard-coded color2 value.
+(function () {
+  const sets = window.MK_HELP_I18N;
+  if (!sets) return;
+  const tips = {
+    ko: 'color2는 지정한 두 번째 색을 사용하고, surface는 현재 주변 배경색을 읽어 앞 패널을 마스크처럼 맞춥니다.',
+    en: 'color2 uses the specified second color; surface reads the current surrounding background so the front panel behaves like a theme-safe mask.',
+    ja: 'color2は指定した2色目を使い、surfaceは現在の周辺背景色を読み取って前面パネルをテーマ対応のマスクにします。',
+    'zh-CN': 'color2 使用指定的第二种颜色；surface 读取当前周围背景色，让前面板成为适配主题的遮罩。',
+    'zh-TW': 'color2 使用指定的第二種顏色；surface 讀取目前周圍背景色，讓前面板成為適配主題的遮罩。',
+    ru: 'color2 использует заданный второй цвет; surface считывает текущий фон вокруг элемента и превращает переднюю панель в маску, совместимую с темой.',
+    it: 'color2 usa il secondo colore impostato; surface legge lo sfondo circostante corrente e rende il pannello anteriore una maschera compatibile con il tema.'
+  };
+  Object.entries(tips).forEach(([lang, tip]) => {
+    sets[lang] = sets[lang] || {};
+    sets[lang].coverReveal = { ...(sets[lang].coverReveal || {}), maskColor: tip };
+  });
+})();
+
 // Responsive top-level Mega Menu flow.
 (() => {
   const sets = window.MK_HELP_I18N;

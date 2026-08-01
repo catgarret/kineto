@@ -393,7 +393,7 @@
     .kt-slide:nth-child(2){background:linear-gradient(150deg,#e08a2f,#7a4410)}
     .kt-slide:nth-child(3){background:linear-gradient(150deg,#c2551f,#5f230c)}
     .lightbox-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,minmax(0,1fr));width:100%;height:auto;aspect-ratio:4/3;gap:8px;padding:8px;border-radius:var(--r-stage);background:var(--panel2);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line) 55%,transparent);overflow:hidden}
-    .lightbox-grid img{display:block;width:100%;height:100%;object-fit:cover;border-radius:12px;cursor:zoom-in;transition:transform .25s ease,box-shadow .25s ease}
+    .lightbox-grid img{display:block;min-width:0;min-height:0;width:100%;height:100%;object-fit:cover;border-radius:12px;cursor:zoom-in;transition:transform .25s ease,box-shadow .25s ease}
     .lightbox-grid img:hover{transform:scale(1.015);box-shadow:0 14px 40px rgba(18,22,33,.18)}
     @media(max-width:850px){.lightbox-grid{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,minmax(0,1fr))}.lightbox-grid img{height:100%;aspect-ratio:auto}}
 

@@ -10,6 +10,14 @@
     // lets a visitor switch it off and feel the difference immediately.
     // Respect prefers-reduced-motion: never hijack scrolling for those users.
     const wantsSmooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    if (isSafari) {
+      // WebKit's native trackpad momentum already has a longer decay. A shorter
+      // Lenis duration avoids stacking two long easing tails, and a slightly
+      // longer hover roll compensates for WebKit's sharper transition finish.
+      document.querySelectorAll('[data-kt-overflow-text="rolling"][data-kt-trigger="hover"]')
+        .forEach((item) => item.setAttribute('data-kt-roll-duration', '380'));
+    }
     try{ Kineto.config({smooth:false}); }catch(_){}
     // B-2: when the page opens with a #mod-… deep link, don't let the scroll
     // observer clear the hash before the initial restore scroll runs. Unlocked
@@ -617,7 +625,7 @@
       const shouldRun=smoothWanted()&&pastHero();
       if(shouldRun===smoothOn)return;
       smoothOn=shouldRun;
-      try{ shouldRun?Kineto.enableSmooth({duration:1.05}):Kineto.disableSmooth(); }catch(_){}
+      try{ shouldRun?Kineto.enableSmooth({duration:isSafari?.72:1.05}):Kineto.disableSmooth(); }catch(_){}
     };
     if(smoothToggle){
       smoothToggle.checked=wantsSmooth;
@@ -630,7 +638,7 @@
       // An explicit choice wins over the hero heuristic from here on.
       smoothManual=true;
       smoothOn=checked;
-      if(checked)Kineto.enableSmooth({duration:1.05});
+      if(checked)Kineto.enableSmooth({duration:isSafari?.72:1.05});
       else Kineto.disableSmooth();
       syncSmoothLabel(checked);
     });

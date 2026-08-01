@@ -72,6 +72,36 @@ const sampledImageRgb = (root) => {
   }
 };
 
+const sampledImagePalette = (root) => {
+  const image = root?.tagName === 'IMG' ? root : root?.querySelector?.('img');
+  if (!image || !image.complete || !image.naturalWidth) return null;
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 20; canvas.height = 20;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) return null;
+    context.drawImage(image, 0, 0, 20, 20);
+    const data = context.getImageData(0, 0, 20, 20).data;
+    const pixels = [];
+    for (let index = 0; index < data.length; index += 4) {
+      if (data[index + 3] < 32) continue;
+      pixels.push([data[index], data[index + 1], data[index + 2]]);
+    }
+    if (!pixels.length) return null;
+    let centers = [pixels[0], pixels[Math.floor(pixels.length * 0.67)]];
+    for (let pass = 0; pass < 5; pass += 1) {
+      const sums = [[0, 0, 0, 0], [0, 0, 0, 0]];
+      pixels.forEach((pixel) => {
+        const distance = centers.map((center) => ((pixel[0] - center[0]) ** 2) + ((pixel[1] - center[1]) ** 2) + ((pixel[2] - center[2]) ** 2));
+        const bucket = distance[0] <= distance[1] ? 0 : 1;
+        sums[bucket][0] += pixel[0]; sums[bucket][1] += pixel[1]; sums[bucket][2] += pixel[2]; sums[bucket][3] += 1;
+      });
+      centers = sums.map((sum, index) => sum[3] ? sum.slice(0, 3).map((value) => value / sum[3]) : centers[index]);
+    }
+    return centers.map((rgb) => `rgb(${rgb.map((value) => Math.round(value)).join(' ')})`);
+  } catch (_error) { return null; }
+};
+
 const surroundingRgb = (root) => {
   let node = root?.parentElement;
   while (node) {
@@ -140,16 +170,20 @@ export default {
       if (colorMode === 'single') return [color];
       if (colorMode === 'pair') return [color, color2];
       if (colorMode === 'palette') return specifiedPalette.length ? specifiedPalette : [color, color2];
-      return harmoniousPalette(el || container);
+      return sampledImagePalette(el || container) || harmoniousPalette(el || container);
     };
 
     const paintPanels = (cover) => {
       const palette = colorsFor(cover.container);
       const offset = colorMode === 'pair' ? 0 : Math.floor(Math.random() * palette.length);
       cover.panels.forEach((panel, index) => {
-        const panelColor = colorMode === 'pair'
+        let panelColor = colorMode === 'pair'
           ? (layers > 1 && index === layers - 1 ? palette[1] : palette[0])
           : palette[(offset + index) % palette.length];
+        if (opts.maskColor === 'surface' && index === cover.panels.length - 1) {
+          const surface = surroundingRgb(cover.container);
+          if (surface) panelColor = `rgb(${surface.map((value) => Math.round(value)).join(' ')})`;
+        }
         panel.style.background = panelColor;
       });
     };

@@ -658,6 +658,29 @@ assert.ok(
 autoCover.destroy();
 autoSurface.remove();
 
+const surfaceMaskHost = document.createElement('div');
+surfaceMaskHost.style.backgroundColor = 'rgb(12, 34, 56)';
+const surfaceMaskTarget = document.createElement('div');
+surfaceMaskTarget.textContent = 'Theme-safe mask';
+surfaceMaskHost.appendChild(surfaceMaskTarget);
+document.body.appendChild(surfaceMaskHost);
+const surfaceMask = coverRevealModule.create(surfaceMaskTarget, {
+  colorMode: 'pair', color: '#f00', color2: '#0f0', maskColor: 'surface', layers: 2, waitForImage: false
+});
+const surfacePanels = [...surfaceMaskTarget.closest('.kt-cover-wrap').querySelectorAll('[aria-hidden="true"]')];
+assert.equal(surfacePanels.at(-1).style.background, 'rgb(12, 34, 56)', 'surface mask must read the live surrounding background instead of color2');
+surfaceMask.destroy();
+surfaceMaskHost.remove();
+
+const fullWheelHost = document.createElement('div');
+fullWheelHost.innerHTML = '<div>A</div><div>B</div><div>C</div><div>D</div>';
+document.body.appendChild(fullWheelHost);
+const fullWheel = sliderModule.create(fullWheelHost, { effect: 'radial', position: 'center', radius: 100, controls: false });
+assert.equal(fullWheelHost.querySelector('.kt-radial-hub').style.left, '50%', 'center radial must place its hub at the horizontal center');
+assert.ok([...fullWheelHost.querySelectorAll('.kt-radial-item')].every((item) => item.style.opacity === '1'), 'center radial must keep the complete wheel visible');
+fullWheel.destroy();
+fullWheelHost.remove();
+
 // A slider's `data-kt-progress` option must not also activate the standalone
 // Progress module on the same element. This attribute-name collision used to
 // make every settings update destroy the carousel DOM.

@@ -22,12 +22,19 @@ export default {
       })();
       if (items.length < 2) return null;
 
-      const radius = Math.max(40, Number(opts.radius ?? 260));
-      const step = Number(opts.step ?? 26);
-      const position = ['bottom', 'top', 'left', 'right'].includes(opts.position) ? opts.position : 'bottom';
+      const fullCircle = opts.position === 'center';
+      const requestedRadius = Math.max(40, Number(opts.radius ?? 260));
+      const itemExtent = Math.max(0, ...items.map((item) => Math.max(item.offsetWidth, item.offsetHeight)));
+      const availableDiameter = Math.min(el.clientWidth, el.clientHeight);
+      const fittedRadius = availableDiameter > itemExtent
+        ? Math.max(40, (availableDiameter - itemExtent - 16) / 2)
+        : requestedRadius;
+      const radius = fullCircle ? Math.min(requestedRadius, fittedRadius) : requestedRadius;
+      const step = fullCircle ? 360 / items.length : Number(opts.step ?? 26);
+      const position = ['bottom', 'top', 'left', 'right', 'center'].includes(opts.position) ? opts.position : 'bottom';
       // Focal angle points AWAY from the docked edge, into the visible area:
       // bottom → up, top → down, left → right, right → left.
-      const presetAngle = { bottom: -90, top: 90, left: 0, right: 180 }[position];
+      const presetAngle = { bottom: -90, top: 90, left: 0, right: 180, center: -90 }[position];
       const activeAngle = opts.activeAngle != null ? Number(opts.activeAngle) : presetAngle;
       const duration = Math.max(0, Number(opts.duration ?? 0.6));
       const loop = opts.loop !== false && opts.loop !== 'off';
@@ -51,7 +58,10 @@ export default {
       // `align:"center"` places the hub so the ACTIVE item lands at the container's
       // centre (instead of being clipped at the docked edge), for every dock/angle.
       // `align:"edge"` (default) keeps the hub on the docked edge (CSS class).
-      if (opts.align === 'center') {
+      if (fullCircle) {
+        hub.style.left = '50%';
+        hub.style.top = '50%';
+      } else if (opts.align === 'center') {
         const a = activeAngle * Math.PI / 180;
         hub.style.left = `calc(50% - ${(Math.cos(a) * radius).toFixed(1)}px)`;
         hub.style.top = `calc(50% - ${(Math.sin(a) * radius).toFixed(1)}px)`;
@@ -90,7 +100,7 @@ export default {
           // Fade items out toward the arc edges so a wrapping/leaving item never
           // lingers as a translucent ghost: the active item and its two neighbours
           // are solid, anything further out fades fully to 0 (no edge remnants).
-          item.style.opacity = String(Math.max(0, 1 - Math.max(0, Math.abs(offset) - 1)));
+          item.style.opacity = fullCircle ? '1' : String(Math.max(0, 1 - Math.max(0, Math.abs(offset) - 1)));
           const on = i === active;
           item.classList.toggle('kt-active', on);
           item.classList.toggle('active-item', on);

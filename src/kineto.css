@@ -583,6 +583,11 @@
 }
 
 .kt-slider-dot {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 0 0 var(--kt-slider-dot-size);
+  min-width: 0;
+  min-height: 0;
   width: var(--kt-slider-dot-size);
   height: var(--kt-slider-dot-size);
   padding: 0;
@@ -600,6 +605,7 @@
 }
 
 .kt-slider-dot.is-active {
+  flex-basis: var(--kt-slider-dot-active-width);
   width: var(--kt-slider-dot-active-width);
   opacity: 1;
 }
@@ -1049,11 +1055,13 @@ html.kt-preload [data-kt-text-transition] {
 .kt-radial--top .kt-radial-hub { left: 50%; top: 0; }
 .kt-radial--left .kt-radial-hub { left: 0; top: 50%; }
 .kt-radial--right .kt-radial-hub { left: 100%; top: 50%; }
+.kt-radial--center .kt-radial-hub { left: 50%; top: 50%; }
 .kt-radial-item { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
 .kt-radial-controls { position: absolute; z-index: 200; display: flex; gap: 8px; }
 .kt-radial--bottom .kt-radial-controls { left: 50%; bottom: 20px; gap: 16px; transform: translateX(-50%); }
 .kt-radial--top .kt-radial-controls { left: 50%; top: 20px; gap: 16px; transform: translateX(-50%); }
 .kt-radial--left .kt-radial-controls, .kt-radial--right .kt-radial-controls { right: 12px; top: 50%; gap: 14px; transform: translateY(-50%); flex-direction: column; }
+.kt-radial--center .kt-radial-controls { left:50%;bottom:12px;transform:translateX(-50%); }
 .kt-radial-controls button {
   width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
   border: 1px solid var(--kt-radial-btn-border, rgba(128,128,128,.4));
