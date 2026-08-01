@@ -19,6 +19,7 @@ body{margin:0;padding:32px;background:var(--bg);color:var(--text);font-family:va
 <article class="card"><h3>Spokes</h3><p>radial fade</p><div class="demo-stage loader-preview"><span id="spokes"></span></div></article>
 <article class="card"><h3>Fill arc</h3><p>determinate</p><div class="demo-stage loader-preview"><span id="orbit"></span></div></article>
 <article class="card"><h3>Glow bar</h3><p>centered</p><div class="demo-stage loader-preview"><span class="loading-preview-stack"><span>파일 준비</span><span id="bar"></span></span></div></article>
+<article class="card"><h3>Pingpong bar</h3><p>left-right loop</p><div class="demo-stage loader-preview"><span id="pingpong"></span></div></article>
 <article class="card"><h3>Shimmer</h3><p>light mode</p><div class="demo-stage loader-preview"><span id="shimmer"></span></div></article>
 <article class="card"><h3>Meter</h3><p>scan motion</p><div class="demo-stage loader-preview"><span class="loading-preview-stack"><span id="meter"></span><span id="meterLoop"></span></span></div></article>
 <article class="card loading-frame-card"><h3>Frames</h3><p>ASCII and Unicode</p><div class="demo-stage loader-preview"><div class="loading-frame-grid" id="frames"></div></div></article>
@@ -31,6 +32,7 @@ window.qa={
  spokes:create('spokes',{type:'spinner',spinnerStyle:'spokes',size:48,dotCount:12,direction:'reverse',transformOrigin:'50% 100%'}),
  orbit:create('orbit',{type:'spinner',spinnerStyle:'comet',spinnerMode:'fill',track:true,progress:40,size:48,color:'#6d8cff'}),
  bar:create('bar',{type:'bar',indeterminate:true,barWidth:240,glow:true,glowColor:'#ff8a5c',glowSize:20,motionDuration:1}),
+ pingpong:create('pingpong',{type:'bar',indeterminate:true,barMode:'pingpong',barWidth:240,motionDuration:1}),
  shimmer:create('shimmer',{type:'shimmer',text:'응답을 준비하는 중',highlightColor:'#ff5b1c',motionDuration:1.2}),
  meter:create('meter',{type:'terminal',terminalStyle:'meter',progress:64,motionDuration:.9,direction:'reverse'}),
  meterLoop:create('meterLoop',{type:'terminal',terminalStyle:'meter',indeterminate:true,motionDuration:.3})
@@ -89,6 +91,16 @@ try {
       const r=rect(progress), t=rect(track);
       barSamples.push({ratio,left:r.left,right:r.right,cx:r.cx,trackLeft:t.left,trackRight:t.right,trackCx:t.cx});
     }
+    const pingpongProgress=document.querySelector('#pingpong .kt-loading-bar__progress');
+    const pingpongAnimation=pingpongProgress.getAnimations()[0];
+    pingpongAnimation.pause();
+    const pingpongDuration=Number(pingpongAnimation.effect.getTiming().duration);
+    const pingpongSamples=[];
+    for(const ratio of [.001,.5,.999,1.5,1.999]){
+      pingpongAnimation.currentTime=pingpongDuration*ratio;
+      await frame();
+      pingpongSamples.push(rect(pingpongProgress).cx);
+    }
     const shimmer=document.querySelector('#shimmer .kt-loading-shimmer__text');
     const shimmerPseudo=css(shimmer,'::after');
     const shimmerRule=[...document.styleSheets].flatMap((sheet)=>{try{return [...sheet.cssRules]}catch{return []}}).find((rule)=>rule.name==='kt-loading-shimmer');
@@ -120,6 +132,7 @@ try {
       spokeCount:spokeEls.length,spokeUnique:new Set(spokeTransforms).size,spokeAnimations:spokeEls.map((el)=>css(el).animationName),spokeDelays:spokeEls.map((el)=>Number.parseFloat(css(el).animationDelay)),spokeOriginToken:spokeHost.style.getPropertyValue('--kt-loading-transform-origin'),
       fill:{determinate:!!fillRoot?.classList.contains('is-determinate-arc'),dash:fillArc?fillArc.style.strokeDasharray:'',animation:fillArc?css(fillArc).animationName:''},
       bar:{samples:barSamples,shadow:css(progress).boxShadow,trackFilter:css(track).filter,widthRatio:rect(progress).width/rect(track).width,timing:barAnimation.effect.getTiming().easing},
+      pingpong:{samples:pingpongSamples,name:css(pingpongProgress).animationName,direction:css(pingpongProgress).animationDirection},
       shimmer:{baseColor:css(shimmer).color,fill:css(shimmer).webkitTextFillColor,background:shimmerPseudo.backgroundImage,size:shimmerPseudo.backgroundSize,clip:shimmerPseudo.backgroundClip,animation:shimmerPseudo.animationName,keyframes:shimmerRule ? [...shimmerRule.cssRules].map((r)=>({key:r.keyText,pos:r.style.backgroundPosition})) : []},
       meter:{
         total:allCells.length,
@@ -154,6 +167,10 @@ try {
 // bar, and a clipped box-shadow on the bar was invisible.
   assert.notEqual(result.bar.trackFilter,'none','glow:true must produce a visible glow');
   assert.ok(result.bar.trackFilter.includes('drop-shadow'),`bar glow must survive the track clip (got ${result.bar.trackFilter})`); assert.equal(result.bar.timing,'linear');
+  assert.equal(result.pingpong.name,'kt-loading-bar-pingpong');
+  assert.equal(result.pingpong.direction,'alternate');
+  assert.ok(result.pingpong.samples[0]<result.pingpong.samples[1] && result.pingpong.samples[1]<result.pingpong.samples[2],`pingpong must travel left to right (${result.pingpong.samples})`);
+  assert.ok(result.pingpong.samples[2]>result.pingpong.samples[3] && result.pingpong.samples[3]>result.pingpong.samples[4],`pingpong must return right to left (${result.pingpong.samples})`);
   assert.equal(result.shimmer.size,'200% 100%'); assert.ok(result.shimmer.clip.includes('text')); assert.ok(result.shimmer.background.includes('linear-gradient')); assert.equal(result.shimmer.animation,'kt-loading-shimmer');
   assert.notEqual(result.shimmer.baseColor,'rgba(0, 0, 0, 0)','shimmer base text must remain visible in light mode');
   // Percentage background-position on an image WIDER than the box resolves to

@@ -64,6 +64,10 @@
   50% { transform: translateX(50%) scaleX(2.5); }
   100% { transform: translateX(200%) scaleX(0.1); }
 }
+@keyframes kt-loading-bar-pingpong {
+  from { transform:translateX(0); }
+  to { transform:translateX(194.12%); }
+}
 /* Gentle, mostly-on flicker (subtle brightness wobble, not a harsh strobe). */
 @keyframes kt-crt-flicker { 0%,100% { opacity:1; } 7% { opacity:.94; } 8% { opacity:1; } 43% { opacity:.97; } 44% { opacity:.9; } 45% { opacity:1; } 72% { opacity:.96; } 73% { opacity:1; } }
 @keyframes kt-vcr-noise { 0% { background-position:0 0; } 100% { background-position:60px 40px; } }
@@ -285,6 +289,7 @@
 .kt-loading-bar__progress{display:block;width:100%;height:100%;border-radius:inherit;background:var(--kt-loading-color);transform:scaleX(0);transform-origin:var(--kt-loading-transform-origin,left);will-change:transform}
 .kt-loading--bar.is-indeterminate .kt-loading-bar__progress{width:34%;animation:kt-loading-bar var(--kt-loading-motion-duration) ease-in-out infinite;transform-origin:var(--kt-loading-transform-origin,center);will-change:transform}
 .kt-loading--bar.is-indeterminate.is-bar-grow .kt-loading-bar__progress{width:100%;transform-origin:left;animation:kt-loading-bar-grow calc(var(--kt-loading-motion-duration) * 0.91) linear infinite}
+.kt-loading--bar.is-indeterminate.is-bar-pingpong .kt-loading-bar__progress{width:34%;animation:kt-loading-bar-pingpong var(--kt-loading-motion-duration) ease-in-out infinite alternate}
 /* Measured from the reference capture (prograss bar.mp4, 60fps, 255 frames).
    Findings:
      - full cycle = 98 frames = 1.633s
@@ -409,6 +414,7 @@
 
 }
 .kt-loading--bar.is-reverse .kt-loading-bar__progress{animation-direction:reverse}
+.kt-loading--bar.is-indeterminate.is-bar-pingpong .kt-loading-bar__progress{animation-direction:alternate}
 .kt-loading--bar.has-glow .kt-loading-bar__track{filter:drop-shadow(0 0 calc(var(--kt-loading-glow-size) * .45) color-mix(in srgb,var(--kt-loading-glow-color) 72%,transparent)) drop-shadow(0 0 calc(var(--kt-loading-glow-size) * 1.15) color-mix(in srgb,var(--kt-loading-glow-color) 34%,transparent))}
 .kt-loading--shimmer,.kt-loading--shimmer-wave{font:720 var(--kt-loading-text-size)/1.25 var(--kt-loading-font-family,inherit);letter-spacing:-.015em}
 .kt-loading-shimmer__text{position:relative;display:inline-block;color:color-mix(in srgb,var(--kt-loading-base-color,currentColor) 34%,transparent)}

@@ -185,7 +185,6 @@ export default {
       // by the transform) and pin `transform-origin` to the geometric centre of
       // the VIEWPORT expressed in the host's own coordinates.
       const host = el === document.documentElement ? document.body : el;
-      const overlay = layer('inset:0;will-change:opacity;', document.documentElement);
       const hostRect = host.getBoundingClientRect();
       const originX = window.innerWidth / 2 - hostRect.left;
       const originY = window.innerHeight / 2 - hostRect.top;
@@ -194,7 +193,11 @@ export default {
       // scrollbar to flicker and no need to lock the page.
       const startScale = 0.72;
       const zoomEase = typeof opts.ease === 'string' && opts.ease ? easing : 'cubic-bezier(.22,1,.36,1)';
-      play(overlay, [{ opacity: 1 }, { opacity: 0 }], { duration, easing: zoomEase });
+      // Unlike the cover-based presets, zoom keeps the page continuously
+      // visible. A full-viewport cover here briefly hid fixed/sticky chrome even
+      // after the host opacity fade was removed, which read as a header flash.
+      // Scaling the host is the complete visual effect; no duplicate cover is
+      // needed.
       // `fill` stays at its default (none) so the transform — and the containing
       // block it creates for fixed/sticky descendants — evaporates the instant
       // the animation ends. The explicit origin is cleared in the same breath.

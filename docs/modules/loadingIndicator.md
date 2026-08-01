@@ -8,10 +8,13 @@
 |---|---|
 | `spinner` | `ring`, `comet`, `spokes`; `comet`은 `spin`, `grow`, `fill` 지원 |
 | `dots` | `pulse`, `bounce`, `wave` |
-| `bar` | 진행률 또는 왕복 바 |
+| `bar` | 진행률 또는 단방향·신축·좌우 왕복 바 |
 | `shimmer` | 텍스트 후광 |
 | `shimmer-wave` | 글자별 후광과 높낮이 |
 | `terminal` | `cursor`, `dots`, `blocks`, `meter`, ASCII·Braille·Unicode 프레임 스피너 |
+
+무한 진행 바의 `barMode`는 `slide`(한 방향 횡단), `grow`(늘었다 줄며
+횡단), `pingpong`(일정한 폭으로 좌우 왕복)을 지원합니다.
 
 터미널 모드는 문구를 포함하지 않습니다. 필요한 라벨은 일반 HTML로 따로 작성합니다. 설정창의 프리셋 목록에서 지원되는 프레임만 제공하며, 선택한 프리셋이 사용하지 않는 옵션은 숨깁니다.
 

@@ -18,6 +18,29 @@
     hold: ['textReveal', 'textSplit'],
     progress: ['slider', 'loadingIndicator']
   };
+
+  // Specific copy remains the first choice. Some drawers, however, expose
+  // shared/special preview controls that are not part of a module's static
+  // field table. Never silently omit their help affordance: provide a useful,
+  // control-aware sentence in the active demo language.
+  const HELP_FALLBACKS = {
+    ko: { easing: '이 모션의 가속과 감속 곡선을 정합니다.', checkbox: '{label} 기능을 켜거나 끕니다.', select: '이 효과에서 사용할 {label} 방식을 선택합니다.', range: '이 효과에 적용할 {label} 값을 조절합니다.', color: '이 효과에 적용할 {label} 색상을 정합니다.', text: '이 효과에 전달할 {label} 값 또는 선택자를 입력합니다.', input: '이 효과에 적용할 {label} 값을 입력합니다.' },
+    en: { easing: 'Sets the acceleration and deceleration curve of this motion.', checkbox: 'Turns {label} on or off.', select: 'Selects the {label} behavior used by this effect.', range: 'Adjusts the {label} value used by this effect.', color: 'Sets the {label} color used by this effect.', text: 'Enters the {label} value or selector passed to this effect.', input: 'Enters the {label} value used by this effect.' },
+    ja: { easing: 'このモーションの加速・減速カーブを設定します。', checkbox: '{label}機能をオンまたはオフにします。', select: 'この効果で使う{label}の方式を選択します。', range: 'この効果に適用する{label}の値を調整します。', color: 'この効果に適用する{label}の色を設定します。', text: 'この効果に渡す{label}の値またはセレクターを入力します。', input: 'この効果に適用する{label}の値を入力します。' },
+    'zh-CN': { easing: '设置此动效的加速和减速曲线。', checkbox: '开启或关闭{label}功能。', select: '选择此效果使用的{label}方式。', range: '调整此效果使用的{label}数值。', color: '设置此效果使用的{label}颜色。', text: '输入传给此效果的{label}值或选择器。', input: '输入此效果使用的{label}值。' },
+    'zh-TW': { easing: '設定此動效的加速與減速曲線。', checkbox: '開啟或關閉{label}功能。', select: '選擇此效果使用的{label}方式。', range: '調整此效果使用的{label}數值。', color: '設定此效果使用的{label}顏色。', text: '輸入傳給此效果的{label}值或選擇器。', input: '輸入此效果使用的{label}值。' },
+    ru: { easing: 'Задаёт кривую ускорения и замедления анимации.', checkbox: 'Включает или выключает параметр {label}.', select: 'Выбирает режим {label} для этого эффекта.', range: 'Регулирует значение {label} для этого эффекта.', color: 'Задаёт цвет {label} для этого эффекта.', text: 'Вводит значение или селектор {label} для этого эффекта.', input: 'Вводит значение {label} для этого эффекта.' },
+    it: { easing: 'Imposta la curva di accelerazione e decelerazione del movimento.', checkbox: 'Attiva o disattiva {label}.', select: 'Seleziona il comportamento {label} usato dall’effetto.', range: 'Regola il valore {label} usato dall’effetto.', color: 'Imposta il colore {label} usato dall’effetto.', text: 'Inserisce il valore o selettore {label} passato all’effetto.', input: 'Inserisce il valore {label} usato dall’effetto.' }
+  };
+
+  function helpTip(moduleName, key, label, type) {
+    const specific = HELP[moduleName]?.[key]
+      || (moduleName === 'loader' ? HELP.pageReveal?.[key] : '');
+    if (specific) return specific;
+    const copy = HELP_FALLBACKS[HELP_LANG] || HELP_FALLBACKS.en;
+    const template = copy[type === 'easing' ? 'easing' : (copy[type] ? type : 'input')];
+    return template.replace('{label}', label);
+  }
   const activationIsOwnedOption = (element, module) => (
     (ACTIVATION_OPTION_OWNERS[module] || []).some((owner) => element.hasAttribute(MODULE_ATTRIBUTES[owner] || `data-kt-${dash(owner)}`))
   );
@@ -567,7 +590,7 @@
       ['preset','Type','select',['spinner','dots','bar','shimmer','shimmer-wave','terminal']],
       ['spinnerStyle','Spinner style','select',['ring','comet','spokes']],['spinnerMode','Arc mode','select',['grow','spin','fill']],['track','Show track','checkbox'],['rotateSpokes','Rotate whole spinner','checkbox'],['dotStyle','Dot style','select',['pulse','bounce','wave']],['terminalStyle','Terminal style','select',['cursor','dots','blocks','meter','line-slash','braille','braille-pulse','quarter-circle','circle','clock','arrow-orbit','triangle','box-corners','block-shade','growing-blocks','moon','diamond','pulse-dot','spark','binary','toggle-blocks','cross','asterisk','quad-dot-chase','quad-dot-pulse','bouncing-ball','bouncing-bar','scanner','snake','marquee','typing-cursor','ellipsis-typing','block-cursor','command-prompt','dot-cursor','spinner-label','quad-dots-label','spinner-elapsed','spinner-step','spinner-meter']],
       ['motionDuration','Motion duration (s)','range',0.2,4,0.05],['direction','Direction','select',['normal','reverse']],['transformOrigin','Origin','select',['center','left','right','top','bottom','top left','top right','bottom left','bottom right']],['size','Size','range',18,160,2],['stroke','Stroke','range',1,16,1],
-      ['barMode','Bar mode','select',['slide','grow']],['barWidth','Bar width','range',80,520,10],['barHeight','Bar height','range',2,24,1],['indeterminate','Indeterminate','checkbox'],['progress','Progress','range',0,100,1],['showSpinner','Show spinner glyph','checkbox'],['showLabel','Show label','checkbox'],['showStatus','Show status','checkbox'],['stepTotal','Step total','range',2,20,1],
+      ['barMode','Bar mode','select',['slide','grow','pingpong']],['barWidth','Bar width','range',80,520,10],['barHeight','Bar height','range',2,24,1],['indeterminate','Indeterminate','checkbox'],['progress','Progress','range',0,100,1],['showSpinner','Show spinner glyph','checkbox'],['showLabel','Show label','checkbox'],['showStatus','Show status','checkbox'],['stepTotal','Step total','range',2,20,1],
       ['dotCount','Dot count','range',3,16,1],['dotSize','Dot size','range',2,24,1],['dotGap','Dot gap','range',0,24,1],
       ['text','Text','text'],['textSize','Text size','range',12,72,1],['fontFamily','Font family','text'],['cursorChar','Cursor','text'],['frameInterval','Frame interval (ms)','range',40,320,4],
       ['progressSource','Progress source selector','text'],['progressOutput','Progress output selector','text'],['progressTemplate','Progress text template','text'],
@@ -1666,12 +1689,12 @@
     caption.setAttribute('for', fieldId);
     caption.textContent = label;
     capRow.appendChild(caption);
-    const tip = HELP[descriptor.module]?.[key];
+    const tip = helpTip(descriptor.module, key, label, type);
     if (tip) {
       const help = document.createElement('button');
       help.type = 'button';
       help.className = 'kt-help';
-      help.setAttribute('aria-label', `${label} 설명`);
+      help.setAttribute('aria-label', tip);
       help.dataset.tip = tip;
       help.textContent = '?';
       capRow.append(help);
@@ -1700,6 +1723,7 @@
       };
       help.addEventListener('pointerenter', () => ensureHelpTooltip()?.show?.());
       help.addEventListener('focus', () => ensureHelpTooltip()?.show?.());
+      help.addEventListener('click', () => ensureHelpTooltip()?.show?.());
       wrapper.dataset.tip = tip;
     }
     let input;
@@ -1977,6 +2001,8 @@
           const field = createField(descriptor, definition, host, descriptors, status);
           field.dataset.module = descriptor.module;
           field.dataset.key = definition[0];
+          field.dataset.label = definition[1];
+          field.dataset.type = definition[2];
           const rule = WHEN[descriptor.module]?.[definition[0]];
           try { field.hidden = !!rule && !rule(currentOptions); } catch (_e) { field.hidden = false; }
           controls.appendChild(field);
@@ -2569,8 +2595,7 @@
     // Re-point every already-rendered tooltip to the current language.
     refreshHelp(){
       document.querySelectorAll('.kt-playground__field[data-module][data-key]').forEach((field) => {
-        const tip = HELP[field.dataset.module]?.[field.dataset.key];
-        if (tip == null) return;
+        const tip = helpTip(field.dataset.module, field.dataset.key, field.dataset.label || field.dataset.key, field.dataset.type || 'input');
         field.dataset.tip = tip;
         const help = field.querySelector('.kt-help');
         if (help) {

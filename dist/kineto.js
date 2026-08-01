@@ -5850,7 +5850,11 @@ function Wn(e, t, n) {
 		}
 	} else if (t === "bar") {
 		let e = Bn("span", "kt-loading-bar__track");
-		i = Bn("i", "kt-loading-bar__progress"), e.appendChild(i), r.appendChild(e), n.indeterminate !== !1 && (r.classList.add("is-indeterminate"), r.classList.add(`is-bar-${Vn(n.barMode, ["slide", "grow"], "slide")}`));
+		i = Bn("i", "kt-loading-bar__progress"), e.appendChild(i), r.appendChild(e), n.indeterminate !== !1 && (r.classList.add("is-indeterminate"), r.classList.add(`is-bar-${Vn(n.barMode, [
+			"slide",
+			"grow",
+			"pingpong"
+		], "slide")}`));
 	} else if (t === "shimmer" || t === "shimmer-wave") {
 		let e = String(n.text || n.label || "Loading");
 		if (t === "shimmer") {
@@ -7485,19 +7489,14 @@ var pr = {
 			});
 			i?.finished.then(_).catch(_);
 		} else if (n === "zoom") {
-			let n = e === document.documentElement ? document.body : e, a = h("inset:0;will-change:opacity;", document.documentElement), o = n.getBoundingClientRect(), c = window.innerWidth / 2 - o.left, l = window.innerHeight / 2 - o.top;
-			n.style.transformOrigin = `${c}px ${l}px`;
-			let d = typeof t.ease == "string" && t.ease ? i : "cubic-bezier(.22,1,.36,1)";
-			g(a, [{ opacity: 1 }, { opacity: 0 }], {
-				duration: r,
-				easing: d
-			});
-			let p = n.animate([{ transform: "scale(0.72)" }, { transform: "scale(1)" }], {
+			let n = e === document.documentElement ? document.body : e, a = n.getBoundingClientRect(), o = window.innerWidth / 2 - a.left, c = window.innerHeight / 2 - a.top;
+			n.style.transformOrigin = `${o}px ${c}px`;
+			let l = typeof t.ease == "string" && t.ease ? i : "cubic-bezier(.22,1,.36,1)", d = n.animate([{ transform: "scale(0.72)" }, { transform: "scale(1)" }], {
 				duration: r,
 				delay: s,
-				easing: d
+				easing: l
 			});
-			u.add(p), p.finished.catch(() => {}).finally(() => u.delete(p)), f.push(() => n.style.removeProperty("transform-origin")), p.finished.then(_).catch(_);
+			u.add(d), d.finished.catch(() => {}).finally(() => u.delete(d)), f.push(() => n.style.removeProperty("transform-origin")), d.finished.then(_).catch(_);
 		} else if (n === "iris") {
 			let e = h(`inset:0;background:${o};`), t = h("inset:0;"), n = (e) => `circle(${e} at 50% 50%)`;
 			g(t, [{ clipPath: n("150%") }, { clipPath: n("0%") }]), g(e, [

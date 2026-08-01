@@ -152,9 +152,9 @@ function buildIndicator(host, type, opts) {
     root.appendChild(track);
     if (opts.indeterminate !== false) {
       root.classList.add('is-indeterminate');
-      // barMode: 'slide' (constant-width block travels) or 'grow' (the bar
-      // stretches and shrinks as it crosses, like a Windows/Material bar).
-      root.classList.add(`is-bar-${variant(opts.barMode, ['slide', 'grow'], 'slide')}`);
+      // barMode: 'slide' crosses once per loop, 'grow' stretches while crossing,
+      // and 'pingpong' keeps a constant-width block bouncing left ↔ right.
+      root.classList.add(`is-bar-${variant(opts.barMode, ['slide', 'grow', 'pingpong'], 'slide')}`);
     }
   } else if (type === 'shimmer' || type === 'shimmer-wave') {
     const text = String(opts.text || opts.label || 'Loading');

@@ -38,6 +38,57 @@ try {
   await page.waitForFunction(()=>window.Kineto&&window.Kineto.instanceCount>30,null,{timeout:15000});
   await page.waitForTimeout(700);
 
+  const helpAudit = await page.evaluate(async () => {
+    const panels = [...document.querySelectorAll('.kt-playground')];
+    const missing = [];
+    let fields = 0;
+    for (const panel of panels) {
+      const body = panel.__buildBody?.();
+      if (!body) continue;
+      for (const field of body.querySelectorAll('.kt-playground__field')) {
+        fields += 1;
+        const help = field.querySelector('.kt-help');
+        if (!help || !help.dataset.tip || help.getAttribute('aria-label') !== help.dataset.tip) {
+          missing.push({
+            field: `${field.dataset.module || '?'}:${field.dataset.key || '?'}`,
+            hasHelp: Boolean(help),
+            tip: help?.dataset.tip || '',
+            ariaLabel: help?.getAttribute('aria-label') || ''
+          });
+        }
+      }
+    }
+    const panel = panels.find((item) => item.__buildBody);
+    panel.open = true;
+    panel.dispatchEvent(new Event('toggle'));
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+    const help = Array.from(document.querySelectorAll('.kt-drawer-sheet.is-open .kt-help'))
+      .find((item) => {
+        const box = item.getBoundingClientRect();
+        return box.width > 0 && box.height > 0 && !item.closest('[hidden],.is-collapsed');
+      });
+    const rect = help?.getBoundingClientRect();
+    help?.click();
+    await new Promise((resolve) => setTimeout(resolve, 140));
+    const tooltip = document.querySelector('.kt-tooltip.kt-playground-help');
+    const result = {
+      fields,
+      missing,
+      width: rect?.width || 0,
+      height: rect?.height || 0,
+      tooltipVisible: Boolean(tooltip && getComputedStyle(tooltip).display !== 'none' && Number(getComputedStyle(tooltip).opacity) > 0),
+      tooltipText: tooltip?.textContent?.trim() || '',
+      expectedText: help?.dataset.tip || ''
+    };
+    panel.open = false;
+    return result;
+  });
+  assert.ok(helpAudit.fields >= 374, `all generated settings fields must be audited (${JSON.stringify(helpAudit)})`);
+  assert.deepEqual(helpAudit.missing, [], `every generated field needs one translated help button (${JSON.stringify(helpAudit.missing.slice(0, 20))})`);
+  assert.ok(helpAudit.width >= 14 && helpAudit.height >= 14, `help buttons must not shrink or clip (${JSON.stringify(helpAudit)})`);
+  assert.ok(helpAudit.tooltipVisible && helpAudit.tooltipText === helpAudit.expectedText, `clicking help must show its translated explanation (${JSON.stringify(helpAudit)})`);
+
   const githubButton = await page.evaluate(() => {
     const button = document.querySelector('.hero-github');
     const icon = button.querySelector('.ph-github-logo');
@@ -71,7 +122,8 @@ try {
       height: header.getBoundingClientRect().height,
       width: header.getBoundingClientRect().width,
       beforeWidth,
-      bodyTransform: getComputedStyle(document.body).transform
+      bodyTransform: getComputedStyle(document.body).transform,
+      viewportCovers: [...document.documentElement.children].filter((node) => node.matches?.('div[aria-hidden="true"]') && node.style.zIndex === '99997').length
     };
     window.Kineto.destroyModule(document.body, 'pageReveal');
     return during;
@@ -79,6 +131,7 @@ try {
   assert.ok(zoomHeader.opacity > 0.99 && zoomHeader.height > 0, `Page Reveal zoom must keep the persistent header visible (${JSON.stringify(zoomHeader)})`);
   assert.notEqual(zoomHeader.bodyTransform, 'none', `the real Zoom button must animate the whole demo page (${JSON.stringify(zoomHeader)})`);
   assert.ok(zoomHeader.width < zoomHeader.beforeWidth, `the persistent header must zoom with the page instead of staying fixed (${JSON.stringify(zoomHeader)})`);
+  assert.equal(zoomHeader.viewportCovers, 0, `Zoom must not flash a full-viewport cover over the header (${JSON.stringify(zoomHeader)})`);
   const segmentedDemoTab=page.locator('#mod-tabs .demo-tabs .demo-tab',{hasText:'Segmented'});
   await segmentedDemoTab.click();
   await page.waitForTimeout(80);
