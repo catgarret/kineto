@@ -93,11 +93,11 @@ function buildIndicator(host, type, opts) {
         spoke.style.setProperty('--kt-loading-angle', `${angle}deg`);
         spoke.style.setProperty('--kt-loading-index', String(index));
         spoke.style.setProperty('--kt-loading-count', String(count));
-        // Peak time is (0.42 * D - delay) mod D, so a SMALLER negative delay
-        // peaks sooner. `order = index` therefore lights spoke 0 (top) first and
-        // sweeps clockwise — rightwards across the top, i.e. left -> right.
-        // `reverse` inverts the order and sweeps anticlockwise.
-        const order = reversed ? count - 1 - index : index;
+        // CSS negative delays advance each spoke into its cycle. The visual
+        // sequence is therefore opposite to the numeric delay order: normal
+        // uses descending indices for the expected left -> right sweep, while
+        // reverse uses ascending indices for right -> left.
+        const order = reversed ? index : count - 1 - index;
         spoke.style.animationDelay = `${-(Number(opts.motionDuration ?? 1.1) / count) * order}s`;
         root.appendChild(spoke);
       }

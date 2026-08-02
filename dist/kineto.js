@@ -5818,7 +5818,7 @@ function Wn(e, t, n) {
 			for (let t = 0; t < e; t += 1) {
 				let i = Bn("i", "kt-loading-spinner__spoke"), a = 360 / e * t;
 				i.style.setProperty("--kt-loading-angle", `${a}deg`), i.style.setProperty("--kt-loading-index", String(t)), i.style.setProperty("--kt-loading-count", String(e));
-				let o = _ ? e - 1 - t : t;
+				let o = _ ? t : e - 1 - t;
 				i.style.animationDelay = `${-(Number(n.motionDuration ?? 1.1) / e) * o}s`, r.appendChild(i);
 			}
 		} else if (e === "ring") r.appendChild(Bn("i", "kt-loading-spinner__ring"));

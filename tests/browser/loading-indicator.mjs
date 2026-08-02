@@ -17,6 +17,7 @@ body{margin:0;padding:32px;background:var(--bg);color:var(--text);font-family:va
 </style></head><body><section id="loading"><div class="grid">
 <article class="card"><h3>Grow arc</h3><p>track + arc</p><div class="demo-stage loader-preview"><span id="dual"></span></div></article>
 <article class="card"><h3>Spokes</h3><p>radial fade</p><div class="demo-stage loader-preview"><span id="spokes"></span></div></article>
+<article class="card"><h3>Spokes normal</h3><p>radial fade</p><div class="demo-stage loader-preview"><span id="spokes-normal"></span></div></article>
 <article class="card"><h3>Fill arc</h3><p>determinate</p><div class="demo-stage loader-preview"><span id="orbit"></span></div></article>
 <article class="card"><h3>Glow bar</h3><p>centered</p><div class="demo-stage loader-preview"><span class="loading-preview-stack"><span>파일 준비</span><span id="bar"></span></span></div></article>
 <article class="card"><h3>Pingpong bar</h3><p>left-right loop</p><div class="demo-stage loader-preview"><span id="pingpong"></span></div></article>
@@ -30,6 +31,7 @@ const create=(id,opts)=>loadingIndicator.create(document.getElementById(id),opts
 window.qa={
  dual:create('dual',{type:'spinner',spinnerStyle:'comet',spinnerMode:'grow',track:true,size:48,highlightColor:'#6d8cff',transformOrigin:'25% 75%'}),
  spokes:create('spokes',{type:'spinner',spinnerStyle:'spokes',size:48,dotCount:12,direction:'reverse',transformOrigin:'50% 100%'}),
+ spokesNormal:create('spokes-normal',{type:'spinner',spinnerStyle:'spokes',size:48,dotCount:12,direction:'normal'}),
  orbit:create('orbit',{type:'spinner',spinnerStyle:'comet',spinnerMode:'fill',track:true,progress:40,size:48,color:'#6d8cff'}),
  bar:create('bar',{type:'bar',indeterminate:true,barWidth:240,glow:true,glowColor:'#ff8a5c',glowSize:20,motionDuration:1}),
  pingpong:create('pingpong',{type:'bar',indeterminate:true,barMode:'pingpong',barWidth:240,motionDuration:1}),
@@ -76,6 +78,7 @@ try {
     const dualRects=[dualTrack,dualArc].filter(Boolean).map(rect);
     const spokeHost=document.getElementById('spokes');
     const spokeEls=[...document.querySelectorAll('#spokes .kt-loading-spinner__spoke')];
+    const normalSpokeEls=[...document.querySelectorAll('#spokes-normal .kt-loading-spinner__spoke')];
     const spokeTransforms=spokeEls.map((el)=>css(el).transform);
     const fillRoot=document.querySelector('#orbit .kt-loading');
     const fillArc=document.querySelector('#orbit .kt-loading-spinner__arc');
@@ -129,7 +132,7 @@ try {
       dualArcAnimation:dualArc?css(dualArc).animationName:'',
       dualSvgAnimation:dualSvg?css(dualSvg).animationName:'',
 
-      spokeCount:spokeEls.length,spokeUnique:new Set(spokeTransforms).size,spokeAnimations:spokeEls.map((el)=>css(el).animationName),spokeDelays:spokeEls.map((el)=>Number.parseFloat(css(el).animationDelay)),spokeOriginToken:spokeHost.style.getPropertyValue('--kt-loading-transform-origin'),
+      spokeCount:spokeEls.length,spokeUnique:new Set(spokeTransforms).size,spokeAnimations:spokeEls.map((el)=>css(el).animationName),spokeDelays:spokeEls.map((el)=>Number.parseFloat(css(el).animationDelay)),normalSpokeDelays:normalSpokeEls.map((el)=>Number.parseFloat(css(el).animationDelay)),spokeOriginToken:spokeHost.style.getPropertyValue('--kt-loading-transform-origin'),
       fill:{determinate:!!fillRoot?.classList.contains('is-determinate-arc'),dash:fillArc?fillArc.style.strokeDasharray:'',animation:fillArc?css(fillArc).animationName:''},
       bar:{samples:barSamples,shadow:css(progress).boxShadow,trackFilter:css(track).filter,widthRatio:rect(progress).width/rect(track).width,timing:barAnimation.effect.getTiming().easing},
       pingpong:{samples:pingpongSamples,name:css(pingpongProgress).animationName,direction:css(pingpongProgress).animationDirection},
@@ -152,7 +155,8 @@ try {
   assert.equal(result.dualSvgAnimation,'kt-loading-spin','dual arc must rotate');
   assert.notEqual(result.dualOrigins[0],result.dualRects[0].width/2+'px '+result.dualRects[0].height/2+'px','custom transform origin must reach transform-based parts');
   assert.equal(result.spokeCount,12); assert.equal(result.spokeUnique,12); assert.ok(result.spokeAnimations.every((name)=>name==='kt-loading-spoke'));
-  assert.ok(result.spokeDelays[0]<result.spokeDelays.at(-1),'reverse must invert the spokes phase order');
+  assert.ok(result.normalSpokeDelays[0]<result.normalSpokeDelays.at(-1),'normal must use the left-to-right spokes phase order');
+  assert.ok(result.spokeDelays[0]>result.spokeDelays.at(-1),'reverse must invert the normal spokes phase order');
   assert.equal(result.spokeOriginToken,'50% 100%');
   // A determinate arc must not self-animate — its length IS the progress.
   assert.ok(result.fill.determinate,'spinnerMode:fill must mark the spinner determinate');
