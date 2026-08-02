@@ -4,10 +4,12 @@
 
 ### English
 
+- Preserved each Fullpage section's internal scroll position when paging away and returning, while keeping first entry anchored at the top.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
+- Fullpage 섹션에 처음 진입할 때는 내부 스크롤 맨 위에서 시작하되, 다른 장에 다녀오면 각 섹션의 마지막 내부 스크롤 위치를 유지하도록 수정했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.49] - 2026-08-02

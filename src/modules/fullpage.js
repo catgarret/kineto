@@ -49,6 +49,10 @@ export default {
     const autoAdvance = Math.max(0, Number(opts.autoAdvance || 0));
     let autoTimer = null;
     let index = Math.min(sections.length - 1, Math.max(0, Number(opts.initial ?? 0)));
+    // First entry starts at the section's top. Once the user has visited a
+    // section, its own scroll position belongs to that section and must survive
+    // paging away and back.
+    const visited = new Set([index]);
     let animating = false;
     let alive = true;
 
@@ -179,10 +183,10 @@ export default {
       if (target === index && !immediate) return;
       const from = index;
       index = target;
-      // A section that was previously visited (or restored by the browser)
-      // must always enter from its beginning. Otherwise one wheel step can land
-      // halfway down a long second page, which looks like the document jumped.
-      if (target !== from && sections[target]) sections[target].scrollTop = 0;
+      // Clear browser-restored scroll only on first entry. Revisiting a long
+      // section resumes at its last internal position.
+      if (target !== from && sections[target] && !visited.has(target)) sections[target].scrollTop = 0;
+      visited.add(target);
       opts.onLeave?.(from, index, sections[from]);
       if (useSnap) {
         sections[index].scrollIntoView(horizontal

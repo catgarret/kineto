@@ -129,6 +129,10 @@ assert.equal(fullpageSections[1].scrollTop, 0, 'same wheel gesture tail must not
 await new Promise((resolve) => setTimeout(resolve, 320));
 wheel();
 assert.equal(fullpageSections[1].scrollTop, 80, 'the next wheel gesture must scroll the long section internally');
+fullpageSections[1].scrollTop = 540;
+fullpage.go(2, true);
+fullpage.go(1, true);
+assert.equal(fullpageSections[1].scrollTop, 540, 're-entering a long section must preserve its last internal scroll position');
 fullpage.destroy();
 fullpageEl.remove();
 

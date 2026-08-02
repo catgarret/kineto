@@ -659,6 +659,11 @@ try {
     await sleep(900);
     wheel();
     const afterNextGesture=longSection.scrollTop;
+    const savedScrollTop=Math.min(240,longSection.scrollHeight-longSection.clientHeight);
+    longSection.scrollTop=savedScrollTop;
+    instance.go(2,true);
+    instance.go(1,true);
+    const afterReentry=longSection.scrollTop;
     const result={
       found:true,
       embeddedFillsHost:Math.abs(embedded.getBoundingClientRect().height-host.getBoundingClientRect().height)<=1,
@@ -666,7 +671,9 @@ try {
       longSectionOverflows:longSection.scrollHeight>longSection.clientHeight+2,
       afterLanding,
       afterTail,
-      afterNextGesture
+      afterNextGesture,
+      savedScrollTop,
+      afterReentry
     };
     instance.go(0,true);
     longSection.scrollTop=0;
@@ -679,6 +686,7 @@ try {
   assert.deepEqual(fullpageFlow.afterLanding,{index:1,scrollTop:0},'first wheel must land at the top of the long section');
   assert.equal(fullpageFlow.afterTail,0,'the first wheel gesture tail must not scroll the new long section');
   assert.ok(fullpageFlow.afterNextGesture>0,'the next wheel gesture must scroll the long section internally');
+  assert.equal(fullpageFlow.afterReentry,fullpageFlow.savedScrollTop,'re-entering a long Fullpage section must preserve its internal scroll position');
   assert.deepEqual(runtimeErrors,[],`Demo runtime errors:\n${runtimeErrors.join('\n')}`);
 
   // Run representative lifecycle coverage in the same Chromium process.

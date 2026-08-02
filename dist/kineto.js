@@ -9381,9 +9381,9 @@ var Br = {
 				y: n.y
 			});
 		}
-		let p = d || l, m = Math.max(4, Number(t.threshold ?? 24)), h = Math.max(0, Number(t.autoAdvance || 0)), g = null, _ = Math.min(i.length - 1, Math.max(0, Number(t.initial ?? 0))), v = !1, y = !0;
+		let p = d || l, m = Math.max(4, Number(t.threshold ?? 24)), h = Math.max(0, Number(t.autoAdvance || 0)), g = null, _ = Math.min(i.length - 1, Math.max(0, Number(t.initial ?? 0))), v = /* @__PURE__ */ new Set([_]), y = !1, b = !0;
 		t.height ? e.style.height = typeof t.height == "number" ? `${t.height}px` : String(t.height) : e.clientHeight < 10 && (e.style.height = "100svh"), e.classList.add("kt-fullpage"), e.style.position = "relative", e.style.overflow = "hidden", e.style.overscrollBehavior = "contain";
-		let b = () => {
+		let x = () => {
 			let t = e.parentElement;
 			for (; t && t !== document.body && t !== document.documentElement;) {
 				let e = getComputedStyle(t);
@@ -9391,73 +9391,73 @@ var Br = {
 				t = t.parentElement;
 			}
 			return null;
-		}, x = document.createElement("div");
-		x.className = "kt-fullpage-track", x.style.cssText = l ? "position:relative;height:100%;width:100%;will-change:transform;" : d ? "height:100%;width:100%;display:flex;will-change:transform;" : "height:100%;will-change:transform;", i.forEach((e, t) => {
-			e.classList.add("kt-fullpage-section"), e.style.height = "100%", l ? (e.style.position = "absolute", e.style.top = "0", e.style.left = "0", e.style.width = "100%", e.style.transform = `translate3d(${f[t].x * 100}%,${f[t].y * 100}%,0)`) : d && (e.style.flex = "0 0 100%"), e.style.overflowX = "hidden", e.style.overflowY = "hidden", x.appendChild(e);
-		}), e.appendChild(x), e.style.touchAction = d ? "pan-y" : "none";
-		let S = null;
-		u && (d ? (e.style.overflowX = "auto", e.style.scrollSnapType = "x mandatory", x.style.width = `${i.length * 100}%`, i.forEach((e) => {
+		}, S = document.createElement("div");
+		S.className = "kt-fullpage-track", S.style.cssText = l ? "position:relative;height:100%;width:100%;will-change:transform;" : d ? "height:100%;width:100%;display:flex;will-change:transform;" : "height:100%;will-change:transform;", i.forEach((e, t) => {
+			e.classList.add("kt-fullpage-section"), e.style.height = "100%", l ? (e.style.position = "absolute", e.style.top = "0", e.style.left = "0", e.style.width = "100%", e.style.transform = `translate3d(${f[t].x * 100}%,${f[t].y * 100}%,0)`) : d && (e.style.flex = "0 0 100%"), e.style.overflowX = "hidden", e.style.overflowY = "hidden", S.appendChild(e);
+		}), e.appendChild(S), e.style.touchAction = d ? "pan-y" : "none";
+		let C = null;
+		u && (d ? (e.style.overflowX = "auto", e.style.scrollSnapType = "x mandatory", S.style.width = `${i.length * 100}%`, i.forEach((e) => {
 			e.style.flex = `0 0 ${100 / i.length}%`, e.style.scrollSnapAlign = "start";
-		})) : (e.style.overflowY = "auto", e.style.scrollSnapType = "y mandatory", x.style.height = `${i.length * 100}%`, i.forEach((e) => {
+		})) : (e.style.overflowY = "auto", e.style.scrollSnapType = "y mandatory", S.style.height = `${i.length * 100}%`, i.forEach((e) => {
 			e.style.height = `${100 / i.length}%`, e.style.scrollSnapAlign = "start";
-		})), S = () => {
+		})), C = () => {
 			let n = d ? e.scrollLeft / Math.max(1, e.clientWidth) : e.scrollTop / Math.max(1, e.clientHeight), r = Math.min(i.length - 1, Math.max(0, Math.round(n)));
-			r !== _ && (_ = r, T(), t.onChange?.(_, i[_]));
-		}, e.addEventListener("scroll", S, { passive: !0 }));
-		let C = null, w = [], T = () => w.forEach((e, t) => {
+			r !== _ && (_ = r, E(), t.onChange?.(_, i[_]));
+		}, e.addEventListener("scroll", C, { passive: !0 }));
+		let w = null, T = [], E = () => T.forEach((e, t) => {
 			let n = t === _;
 			e.setAttribute("aria-current", n ? "true" : "false"), e.style.transform = n ? "scale(1.45)" : "scale(1)", e.style.opacity = n ? "1" : ".45";
 		});
-		t.dots !== !1 && (C = document.createElement("div"), C.className = "kt-fullpage-dots", C.setAttribute("role", "tablist"), C.style.cssText = p ? "position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;flex-direction:row;gap:10px;z-index:5;" : "position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:5;", w = i.map((e, t) => {
+		t.dots !== !1 && (w = document.createElement("div"), w.className = "kt-fullpage-dots", w.setAttribute("role", "tablist"), w.style.cssText = p ? "position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;flex-direction:row;gap:10px;z-index:5;" : "position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:5;", T = i.map((e, t) => {
 			let n = document.createElement("button");
-			return n.type = "button", n.className = "kt-fullpage-dot", n.setAttribute("aria-label", `Go to section ${t + 1}`), n.style.cssText = "width:8px;height:8px;border-radius:50%;border:0;padding:0;cursor:pointer;background:var(--kt-fullpage-dot,currentColor);opacity:.45;transition:transform .25s var(--kt-ease-ui, ease),opacity .25s var(--kt-ease-ui, ease);", n.addEventListener("click", () => D(t)), C.appendChild(n), n;
-		}), e.appendChild(C));
-		let E = () => {
-			v = !1;
+			return n.type = "button", n.className = "kt-fullpage-dot", n.setAttribute("aria-label", `Go to section ${t + 1}`), n.style.cssText = "width:8px;height:8px;border-radius:50%;border:0;padding:0;cursor:pointer;background:var(--kt-fullpage-dot,currentColor);opacity:.45;transition:transform .25s var(--kt-ease-ui, ease),opacity .25s var(--kt-ease-ui, ease);", n.addEventListener("click", () => O(t)), w.appendChild(n), n;
+		}), e.appendChild(w));
+		let D = () => {
+			y = !1;
 		};
-		x.addEventListener("transitionend", E);
-		let D = (e, n = !1) => {
-			if (!y) return;
+		S.addEventListener("transitionend", D);
+		let O = (e, n = !1) => {
+			if (!b) return;
 			let r = e;
 			if (s && (r = (e + i.length) % i.length), r = Math.min(i.length - 1, Math.max(0, r)), r === _ && !n) return;
 			let c = _;
-			_ = r, r !== c && i[r] && (i[r].scrollTop = 0), t.onLeave?.(c, _, i[c]), u ? i[_].scrollIntoView(d ? {
+			_ = r, r !== c && i[r] && !v.has(r) && (i[r].scrollTop = 0), v.add(r), t.onLeave?.(c, _, i[c]), u ? i[_].scrollIntoView(d ? {
 				behavior: n ? "auto" : "smooth",
 				inline: "start",
 				block: "nearest"
 			} : {
 				behavior: n ? "auto" : "smooth",
 				block: "start"
-			}) : (v = !n, x.style.transition = n ? "none" : `transform ${a}s ${o}`, x.style.transform = l ? `translate3d(${-f[_].x * 100}%,${-f[_].y * 100}%,0)` : d ? `translate3d(${-_ * 100}%,0,0)` : `translate3d(0,${-_ * 100}%,0)`, n || setTimeout(E, a * 1e3 + 120)), T(), h && M(), t.onChange?.(_, i[_]);
-		}, O = (e) => s || (e > 0 ? _ < i.length - 1 : _ > 0), k = () => i.forEach((e) => {
+			}) : (y = !n, S.style.transition = n ? "none" : `transform ${a}s ${o}`, S.style.transform = l ? `translate3d(${-f[_].x * 100}%,${-f[_].y * 100}%,0)` : d ? `translate3d(${-_ * 100}%,0,0)` : `translate3d(0,${-_ * 100}%,0)`, n || setTimeout(D, a * 1e3 + 120)), E(), h && N(), t.onChange?.(_, i[_]);
+		}, k = (e) => s || (e > 0 ? _ < i.length - 1 : _ > 0), A = () => i.forEach((e) => {
 			e.style.overflowY = e.scrollHeight > e.clientHeight + 2 ? "auto" : "hidden";
-		}), A = (e) => {
+		}), j = (e) => {
 			let t = i[_];
 			if (!t) return !1;
 			let n = t.scrollHeight - t.clientHeight;
 			return n <= 2 ? !1 : e > 0 ? t.scrollTop < n - 1 : t.scrollTop > 1;
-		}, j = () => {
-			g &&= (clearInterval(g), null);
 		}, M = () => {
-			!h || !y || (j(), g = setInterval(() => {
-				v || (_ >= i.length - 1 && !s ? D(0) : D(_ + 1));
+			g &&= (clearInterval(g), null);
+		}, N = () => {
+			!h || !b || (M(), g = setInterval(() => {
+				y || (_ >= i.length - 1 && !s ? O(0) : O(_ + 1));
 			}, h));
-		}, N = 0, P = 0, F = !1, I = (t) => {
+		}, P = 0, F = 0, I = !1, L = (t) => {
 			if (u && !d) return;
-			let n = performance.now(), r = n - P < 140;
-			P = n, r || (F = !1);
+			let n = performance.now(), r = n - F < 140;
+			F = n, r || (I = !1);
 			let o = t.deltaMode === 1 ? 16 : t.deltaMode === 2 ? e.clientHeight : 1, s = t.deltaY * o, c = t.deltaX * o, l = p && Math.abs(c) >= Math.abs(s) ? c : s;
 			if (Math.abs(l) < 4) return;
 			let f = l > 0 ? 1 : -1;
-			if (v || F) {
+			if (y || I) {
 				t.preventDefault(), t.stopPropagation();
 				return;
 			}
-			if (!d && A(f)) {
-				t.preventDefault(), t.stopPropagation(), i[_].scrollTop += s, h && M();
+			if (!d && j(f)) {
+				t.preventDefault(), t.stopPropagation(), i[_].scrollTop += s, h && N();
 				return;
 			}
-			let m = b();
+			let m = x();
 			if (m) {
 				let n = e.getBoundingClientRect(), r = m.getBoundingClientRect();
 				if (!(n.top <= r.top + 1 && n.bottom >= r.bottom - 1)) {
@@ -9465,43 +9465,43 @@ var Br = {
 					return;
 				}
 			}
-			if (!O(f)) {
-				if (t.preventDefault(), t.stopPropagation(), v || F) return;
+			if (!k(f)) {
+				if (t.preventDefault(), t.stopPropagation(), y || I) return;
 				m ? m.scrollTop += s : window.scrollBy(0, s);
 				return;
 			}
-			t.preventDefault(), t.stopPropagation(), !(v || n < N) && (N = n + Math.max(320, a * 1e3 + 90), D(_ + f), F = !0);
-		}, L = null, R = null, z = !1, B = (e) => {
-			let t = L.x - e.x, n = L.y - e.y;
+			t.preventDefault(), t.stopPropagation(), !(y || n < P) && (P = n + Math.max(320, a * 1e3 + 90), O(_ + f), I = !0);
+		}, R = null, z = null, B = !1, V = (e) => {
+			let t = R.x - e.x, n = R.y - e.y;
 			return d || l && Math.abs(t) >= Math.abs(n) ? t : n;
-		}, V = (e) => {
+		}, H = (e) => {
 			let t = e.touches[0];
-			L = {
+			R = {
 				x: t.clientX,
 				y: t.clientY
-			}, R = {
+			}, z = {
 				x: t.clientX,
 				y: t.clientY
-			}, z = !1;
-		}, H = (t) => {
-			if (u || !L) return;
+			}, B = !1;
+		}, U = (t) => {
+			if (u || !R) return;
 			let n = t.touches[0], r = {
 				x: n.clientX,
 				y: n.clientY
-			}, a = R.y - r.y;
-			R = r;
-			let o = B(r);
+			}, a = z.y - r.y;
+			z = r;
+			let o = V(r);
 			if (Math.abs(o) < 3) return;
 			let s = o > 0 ? 1 : -1;
-			if (v || z) {
+			if (y || B) {
 				t.preventDefault();
 				return;
 			}
-			if (!d && A(s)) {
+			if (!d && j(s)) {
 				t.preventDefault(), i[_].scrollTop += a;
 				return;
 			}
-			let c = d ? null : b();
+			let c = d ? null : x();
 			if (c) {
 				let n = e.getBoundingClientRect(), r = c.getBoundingClientRect();
 				if (!(n.top <= r.top + 1 && n.bottom >= r.bottom - 1)) {
@@ -9509,14 +9509,14 @@ var Br = {
 					return;
 				}
 			}
-			if (!O(s)) {
+			if (!k(s)) {
 				d || (t.preventDefault(), c ? c.scrollTop += a : window.scrollBy(0, a));
 				return;
 			}
-			t.preventDefault(), Math.abs(o) >= m && (z = !0, D(_ + s));
-		}, U = () => {
-			L = null, R = null;
-		}, W = (t) => {
+			t.preventDefault(), Math.abs(o) >= m && (B = !0, O(_ + s));
+		}, W = () => {
+			R = null, z = null;
+		}, G = (t) => {
 			if (!e.contains(document.activeElement)) return;
 			let n = l ? [
 				"ArrowRight",
@@ -9536,39 +9536,39 @@ var Br = {
 				"ArrowUp",
 				"PageUp"
 			] : d ? ["ArrowLeft", "PageUp"] : ["ArrowUp", "PageUp"], a = n.includes(t.key), o = r.includes(t.key);
-			!a && !o && t.key !== "Home" && t.key !== "End" || (t.preventDefault(), t.key === "Home" ? D(0) : t.key === "End" ? D(i.length - 1) : D(_ + (a ? 1 : -1)));
-		}, G = null, K = !1, q = (t) => {
-			u || t.pointerType !== "mouse" || t.button !== 0 || t.target.closest(".kt-fullpage-dot") || (G = d ? t.clientX : t.clientY, K = !1, e.style.cursor = "grabbing");
-		}, J = (e) => {
-			if (G == null || K || v || e.pointerType !== "mouse") return;
-			let t = G - (d ? e.clientX : e.clientY);
+			!a && !o && t.key !== "Home" && t.key !== "End" || (t.preventDefault(), t.key === "Home" ? O(0) : t.key === "End" ? O(i.length - 1) : O(_ + (a ? 1 : -1)));
+		}, K = null, q = !1, J = (t) => {
+			u || t.pointerType !== "mouse" || t.button !== 0 || t.target.closest(".kt-fullpage-dot") || (K = d ? t.clientX : t.clientY, q = !1, e.style.cursor = "grabbing");
+		}, ee = (e) => {
+			if (K == null || q || y || e.pointerType !== "mouse") return;
+			let t = K - (d ? e.clientX : e.clientY);
 			if (Math.abs(t) >= m) {
-				K = !0;
+				q = !0;
 				let e = t > 0 ? 1 : -1;
-				O(e) && D(_ + e);
+				k(e) && O(_ + e);
 			}
-		}, ee = () => {
-			G = null, e.style.cursor = t.drag === !1 ? "" : "grab";
+		}, te = () => {
+			K = null, e.style.cursor = t.drag === !1 ? "" : "grab";
 		};
-		t.drag !== !1 && !u && (e.style.cursor = "grab", e.style.userSelect = "none", e.addEventListener("pointerdown", q), window.addEventListener("pointermove", J), window.addEventListener("pointerup", ee)), t.wheel !== !1 && e.addEventListener("wheel", I, { passive: !1 }), t.touch !== !1 && (e.addEventListener("touchstart", V, { passive: !0 }), e.addEventListener("touchmove", H, { passive: !1 }), e.addEventListener("touchend", U, { passive: !0 })), t.keyboard !== !1 && (e.hasAttribute("tabindex") || e.setAttribute("tabindex", "0"), e.addEventListener("keydown", W)), D(_, !0), requestAnimationFrame(k);
-		let te = null;
-		return typeof ResizeObserver < "u" && (te = new ResizeObserver(k), te.observe(e)), M(), {
+		t.drag !== !1 && !u && (e.style.cursor = "grab", e.style.userSelect = "none", e.addEventListener("pointerdown", J), window.addEventListener("pointermove", ee), window.addEventListener("pointerup", te)), t.wheel !== !1 && e.addEventListener("wheel", L, { passive: !1 }), t.touch !== !1 && (e.addEventListener("touchstart", H, { passive: !0 }), e.addEventListener("touchmove", U, { passive: !1 }), e.addEventListener("touchend", W, { passive: !0 })), t.keyboard !== !1 && (e.hasAttribute("tabindex") || e.setAttribute("tabindex", "0"), e.addEventListener("keydown", G)), O(_, !0), requestAnimationFrame(A);
+		let ne = null;
+		return typeof ResizeObserver < "u" && (ne = new ResizeObserver(A), ne.observe(e)), N(), {
 			el: e,
 			type: "fullpage",
-			go: D,
-			next: () => D(_ + 1),
-			prev: () => D(_ - 1),
+			go: O,
+			next: () => O(_ + 1),
+			prev: () => O(_ - 1),
 			get index() {
 				return _;
 			},
 			pause() {
-				j();
-			},
-			resume() {
 				M();
 			},
+			resume() {
+				N();
+			},
 			destroy() {
-				y = !1, j(), te?.disconnect(), e.removeEventListener("wheel", I), e.removeEventListener("touchstart", V), e.removeEventListener("touchmove", H), e.removeEventListener("touchend", U), e.removeEventListener("keydown", W), e.removeEventListener("pointerdown", q), window.removeEventListener("pointermove", J), window.removeEventListener("pointerup", ee), S && e.removeEventListener("scroll", S), x.removeEventListener("transitionend", E), e.classList.remove("kt-fullpage"), e.innerHTML = n, r == null ? e.removeAttribute("style") : e.setAttribute("style", r);
+				b = !1, M(), ne?.disconnect(), e.removeEventListener("wheel", L), e.removeEventListener("touchstart", H), e.removeEventListener("touchmove", U), e.removeEventListener("touchend", W), e.removeEventListener("keydown", G), e.removeEventListener("pointerdown", J), window.removeEventListener("pointermove", ee), window.removeEventListener("pointerup", te), C && e.removeEventListener("scroll", C), S.removeEventListener("transitionend", D), e.classList.remove("kt-fullpage"), e.innerHTML = n, r == null ? e.removeAttribute("style") : e.setAttribute("style", r);
 			}
 		};
 	},
