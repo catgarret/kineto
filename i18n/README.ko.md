@@ -127,6 +127,7 @@ Kineto는 GSAP과 Lenis를 번들에 포함하지 않습니다.
 인스턴스가 있으면 그대로 사용합니다.
 CDN을 사용할 수 없으면 정적 콘텐츠를 유지하고 표준 동작으로
 대체합니다.
+기본 CDN 엔진은 SHA-384 무결성 검증을 사용합니다. 엔진 URL을 바꾸면 해당 파일의 integrity 값도 함께 설정해야 합니다.
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>

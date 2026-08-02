@@ -130,9 +130,16 @@ You can also pin a version, self-host, or use an internal mirror.
 Kineto.setEngineSource({
   gsap: 'https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js',
   scrollTrigger: 'https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js',
-  lenis: 'https://cdn.jsdelivr.net/npm/lenis@1.1.0/dist/lenis.min.js'
+  lenis: 'https://cdn.jsdelivr.net/npm/lenis@1.1.0/dist/lenis.min.js',
+  gsapIntegrity: 'sha384-...',
+  scrollTriggerIntegrity: 'sha384-...',
+  lenisIntegrity: 'sha384-...'
 });
 ```
+
+The pinned default CDN files use SHA-384 subresource integrity. When overriding
+an engine URL, provide the matching integrity value or self-host the file under
+your own origin.
 
 To manage the engines yourself, load them before Kineto initializes.
 

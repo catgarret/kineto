@@ -60,6 +60,14 @@ try {
   await page.setContent(html,{waitUntil:'load'});
   await page.addStyleTag({path:resolve(root,'dist/kineto.css')});
   await page.addScriptTag({path:resolve(root,'dist/kineto.umd.js')});
+  // The offline route above replaces CDN responses with an empty fixture. Use
+  // that fixture's SHA-384 only inside QA so browser SRI remains exercised
+  // without weakening or bypassing the production hashes.
+  await page.evaluate(() => window.Kineto.setEngineSource({
+    gsapIntegrity: 'sha384-OLBgp1GsljhM2TJ+sbHjaiH9txEUvgdDTAzHv2P24donTt6/529l+9Ua0vFImLlb',
+    scrollTriggerIntegrity: 'sha384-OLBgp1GsljhM2TJ+sbHjaiH9txEUvgdDTAzHv2P24donTt6/529l+9Ua0vFImLlb',
+    lenisIntegrity: 'sha384-OLBgp1GsljhM2TJ+sbHjaiH9txEUvgdDTAzHv2P24donTt6/529l+9Ua0vFImLlb'
+  }));
   await page.addScriptTag({path:resolve(root,'demo/help-i18n.js')});
   await page.addScriptTag({path:resolve(root,'demo/help-i18n-extra.js')});
   await page.addScriptTag({path:resolve(root,'demo/playground-i18n.js')});

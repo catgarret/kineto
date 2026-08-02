@@ -21,7 +21,10 @@ const defer = (callback) => Promise.resolve().then(callback);
 const sources = {
   gsap: 'https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js',
   scrollTrigger: 'https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js',
-  lenis: 'https://cdn.jsdelivr.net/npm/lenis@1.3.25/dist/lenis.min.js'
+  lenis: 'https://cdn.jsdelivr.net/npm/lenis@1.3.25/dist/lenis.min.js',
+  gsapIntegrity: 'sha384-XmJ9SoHtVOHoQUcKvFAzVXwdkKo1Ie3bhmSoIAkcdsHGaIrVJIkmozyq0FJeb/Ly',
+  scrollTriggerIntegrity: 'sha384-wl5TeDVvOWt30Pbf8aSo2ZrzsOjddu3avOBvHe+p+OhJt9gP6w9YXmDkN5DK2/dF',
+  lenisIntegrity: 'sha384-ClD7pCgIUz5M81HT8aZmMxCsWmfsycmBiwL5gy1pUbdWHvICIbea22N9sTtAFotA'
 };
 
 let gsapInstance = (win && win.gsap) ? resolveDefault(win.gsap) : null;
@@ -33,6 +36,11 @@ export function setEngineSource(next = {}) {
   const gsapChanged = ('gsap' in next && next.gsap !== sources.gsap)
     || ('scrollTrigger' in next && next.scrollTrigger !== sources.scrollTrigger);
   const lenisChanged = 'lenis' in next && next.lenis !== sources.lenis;
+  if (gsapChanged) {
+    if ('gsap' in next && !('gsapIntegrity' in next)) sources.gsapIntegrity = '';
+    if ('scrollTrigger' in next && !('scrollTriggerIntegrity' in next)) sources.scrollTriggerIntegrity = '';
+  }
+  if (lenisChanged && !('lenisIntegrity' in next)) sources.lenisIntegrity = '';
   Object.assign(sources, next);
   // A failed request must not poison a later self-host/CDN override.
   if (gsapChanged && !gsapReady()) gsapPromise = null;
@@ -77,7 +85,7 @@ export function gsapReady() {
   return Boolean(getGSAP()?.registerPlugin && getScrollTrigger());
 }
 
-function loadScript(src, timeoutMs = 12000) {
+function loadScript(src, integrity, timeoutMs = 12000) {
   return new Promise((resolve, reject) => {
     if (!src) { reject(new Error('Kineto: engine disabled')); return; }
     if (typeof document === 'undefined') { reject(new Error('Kineto: no document to load ' + src)); return; }
@@ -96,6 +104,10 @@ function loadScript(src, timeoutMs = 12000) {
     }
     const script = document.createElement('script');
     script.src = src;
+    if (integrity) {
+      script.integrity = integrity;
+      script.crossOrigin = 'anonymous';
+    }
     // ensureGSAP awaits GSAP before requesting ScrollTrigger, so downloads can
     // stay async without sacrificing execution order.
     script.async = true;
@@ -119,8 +131,8 @@ export function ensureGSAP() {
   if (gsapPromise) return gsapPromise;
   gsapPromise = (async () => {
     try {
-      if (!(win && win.gsap)) await loadScript(sources.gsap);
-      if (!(win && win.ScrollTrigger)) await loadScript(sources.scrollTrigger);
+      if (!(win && win.gsap)) await loadScript(sources.gsap, sources.gsapIntegrity);
+      if (!(win && win.ScrollTrigger)) await loadScript(sources.scrollTrigger, sources.scrollTriggerIntegrity);
       setAnimationEngine({ gsap: win && win.gsap, ScrollTrigger: win && win.ScrollTrigger });
     } catch (_error) {
       // CDN unreachable — leave engines null; scroll modules fall back.
@@ -138,7 +150,7 @@ export function ensureLenis() {
   if (win && win.Lenis) return Promise.resolve(resolveDefault(win.Lenis));
   if (lenisPromise) return lenisPromise;
   lenisPromise = (async () => {
-    try { await loadScript(sources.lenis); } catch (_error) {
+    try { await loadScript(sources.lenis, sources.lenisIntegrity); } catch (_error) {
       defer(() => { lenisPromise = null; });
       return null;
     }

@@ -85,6 +85,7 @@ const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true 
 KinetoはGSAPとLenisをバンドルに含めません。
 必要なエフェクトを初めて使用するときにCDNから呼び出され、ページにすでに存在するインスタンスがある場合はそのまま使用します。
 CDNが利用できない場合は、静的コンテンツを維持し、標準の動作に置き換えます。
+既定のCDNエンジンはSHA-384整合性検証を使用します。URLを変更する場合は、対象ファイルのintegrity値も設定してください。
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>

@@ -58,9 +58,15 @@ GSAP·ScrollTrigger·Lenis는 필요한 경우에만 비동기로 요청합니�
 Kineto.setEngineSource({
   gsap: '/vendor/gsap.min.js',
   scrollTrigger: '/vendor/ScrollTrigger.min.js',
-  lenis: '/vendor/lenis.min.js'
+  lenis: '/vendor/lenis.min.js',
+  gsapIntegrity: 'sha384-...',
+  scrollTriggerIntegrity: 'sha384-...',
+  lenisIntegrity: 'sha384-...'
 });
 ```
+
+기본 CDN 엔진에는 SHA-384 SRI가 적용됩니다. 엔진 URL을 교체할 때는 해당
+파일의 integrity 값도 함께 교체하거나 동일 출처에 직접 호스팅하세요.
 
 ## Canvas 모듈
 
@@ -73,6 +79,7 @@ Kineto.setEngineSource({
 
 ### scrollSequence
 
+- `urls` 또는 `urlPrefix`를 반드시 명시해야 하며, 값이 없으면 외부 placeholder를 요청하지 않습니다.
 - 전체 프레임을 한 번에 강제 로드하지 않고 현재 프레임 주변을 preload합니다.
 - 프레임 수와 이미지 해상도가 메모리 사용량을 결정합니다.
 - 모바일에서는 프레임 수, DPR, preloadRadius를 보수적으로 설정합니다.

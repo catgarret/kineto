@@ -63,8 +63,10 @@ const BUDGETS = {
   // A real FLIP crossfade snapshots computed styles so the outgoing old-slot
   // clone and incoming live item can overlap. Its bounded ~0.7 KB cost gets a
   // 1 KB raw/gzip allowance without relaxing the dependency-bloat guard.
+  // SHA-384 integrity metadata for the three pinned CDN engines adds ~0.5 KB
+  // raw to the minified ESM while its gzip size remains below 112 KB.
   'kineto.js': { raw: 479, gz: 125 },
-  'kineto.min.js': { raw: 378, gz: 112 },
+  'kineto.min.js': { raw: 379, gz: 112 },
   'kineto.umd.js': { raw: 377, gz: 111 },
   'kineto.umd.min.js': { raw: 377, gz: 111 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS

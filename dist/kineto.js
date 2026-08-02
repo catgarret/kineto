@@ -2,11 +2,14 @@
 var e = typeof window < "u" ? window : void 0, t = (e) => e?.default || e?.gsap || e, n = (e) => Promise.resolve().then(e), r = {
 	gsap: "https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js",
 	scrollTrigger: "https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js",
-	lenis: "https://cdn.jsdelivr.net/npm/lenis@1.3.25/dist/lenis.min.js"
+	lenis: "https://cdn.jsdelivr.net/npm/lenis@1.3.25/dist/lenis.min.js",
+	gsapIntegrity: "sha384-XmJ9SoHtVOHoQUcKvFAzVXwdkKo1Ie3bhmSoIAkcdsHGaIrVJIkmozyq0FJeb/Ly",
+	scrollTriggerIntegrity: "sha384-wl5TeDVvOWt30Pbf8aSo2ZrzsOjddu3avOBvHe+p+OhJt9gP6w9YXmDkN5DK2/dF",
+	lenisIntegrity: "sha384-ClD7pCgIUz5M81HT8aZmMxCsWmfsycmBiwL5gy1pUbdWHvICIbea22N9sTtAFotA"
 }, i = e && e.gsap ? t(e.gsap) : null, a = e && e.ScrollTrigger ? t(e.ScrollTrigger) : null, o = null, s = null;
 function c(t = {}) {
 	let n = "gsap" in t && t.gsap !== r.gsap || "scrollTrigger" in t && t.scrollTrigger !== r.scrollTrigger, i = "lenis" in t && t.lenis !== r.lenis;
-	Object.assign(r, t), n && !m() && (o = null), i && !(e && e.Lenis) && (s = null);
+	n && ("gsap" in t && !("gsapIntegrity" in t) && (r.gsapIntegrity = ""), "scrollTrigger" in t && !("scrollTriggerIntegrity" in t) && (r.scrollTriggerIntegrity = "")), i && !("lenisIntegrity" in t) && (r.lenisIntegrity = ""), Object.assign(r, t), n && !m() && (o = null), i && !(e && e.Lenis) && (s = null);
 }
 function l() {
 	return { ...r };
@@ -28,52 +31,52 @@ function p() {
 function m() {
 	return !!(f()?.registerPlugin && p());
 }
-function h(e, t = 12e3) {
-	return new Promise((n, r) => {
+function h(e, t, n = 12e3) {
+	return new Promise((r, i) => {
 		if (!e) {
-			r(/* @__PURE__ */ Error("Kineto: engine disabled"));
+			i(/* @__PURE__ */ Error("Kineto: engine disabled"));
 			return;
 		}
 		if (typeof document > "u") {
-			r(/* @__PURE__ */ Error("Kineto: no document to load " + e));
+			i(/* @__PURE__ */ Error("Kineto: no document to load " + e));
 			return;
 		}
-		let i = Array.from(document.getElementsByTagName("script")).find((t) => t.src === e && t.dataset.ktFailed !== "1");
-		if (i) {
-			if (i.dataset.ktLoaded === "1") {
-				n();
+		let a = Array.from(document.getElementsByTagName("script")).find((t) => t.src === e && t.dataset.ktFailed !== "1");
+		if (a) {
+			if (a.dataset.ktLoaded === "1") {
+				r();
 				return;
 			}
-			let a = null, o = () => {
-				clearTimeout(a), i.removeEventListener("load", s), i.removeEventListener("error", c);
+			let t = null, o = () => {
+				clearTimeout(t), a.removeEventListener("load", s), a.removeEventListener("error", c);
 			}, s = () => {
-				o(), i.dataset.ktLoaded = "1", n();
+				o(), a.dataset.ktLoaded = "1", r();
 			}, c = () => {
-				o(), i.dataset.ktFailed = "1", r(/* @__PURE__ */ Error("Kineto: load failed " + e));
+				o(), a.dataset.ktFailed = "1", i(/* @__PURE__ */ Error("Kineto: load failed " + e));
 			};
-			i.addEventListener("load", s, { once: !0 }), i.addEventListener("error", c, { once: !0 }), a = setTimeout(() => {
-				o(), r(/* @__PURE__ */ Error("Kineto: load timeout " + e));
-			}, t);
+			a.addEventListener("load", s, { once: !0 }), a.addEventListener("error", c, { once: !0 }), t = setTimeout(() => {
+				o(), i(/* @__PURE__ */ Error("Kineto: load timeout " + e));
+			}, n);
 			return;
 		}
-		let a = document.createElement("script");
-		a.src = e, a.async = !0, a.dataset.ktEngine = "";
-		let o = null, s = () => {
-			clearTimeout(o), a.removeEventListener("load", c), a.removeEventListener("error", l);
-		}, c = () => {
-			s(), a.dataset.ktLoaded = "1", n();
+		let o = document.createElement("script");
+		o.src = e, t && (o.integrity = t, o.crossOrigin = "anonymous"), o.async = !0, o.dataset.ktEngine = "";
+		let s = null, c = () => {
+			clearTimeout(s), o.removeEventListener("load", l), o.removeEventListener("error", u);
 		}, l = () => {
-			s(), a.remove(), r(/* @__PURE__ */ Error("Kineto: load failed " + e));
+			c(), o.dataset.ktLoaded = "1", r();
+		}, u = () => {
+			c(), o.remove(), i(/* @__PURE__ */ Error("Kineto: load failed " + e));
 		};
-		a.addEventListener("load", c, { once: !0 }), a.addEventListener("error", l, { once: !0 }), o = setTimeout(() => {
-			s(), a.remove(), r(/* @__PURE__ */ Error("Kineto: load timeout " + e));
-		}, t), (document.head || document.documentElement).appendChild(a);
+		o.addEventListener("load", l, { once: !0 }), o.addEventListener("error", u, { once: !0 }), s = setTimeout(() => {
+			c(), o.remove(), i(/* @__PURE__ */ Error("Kineto: load timeout " + e));
+		}, n), (document.head || document.documentElement).appendChild(o);
 	});
 }
 function g() {
 	return m() ? (u(), Promise.resolve(f())) : o || (o = (async () => {
 		try {
-			e && e.gsap || await h(r.gsap), e && e.ScrollTrigger || await h(r.scrollTrigger), d({
+			e && e.gsap || await h(r.gsap, r.gsapIntegrity), e && e.ScrollTrigger || await h(r.scrollTrigger, r.scrollTriggerIntegrity), d({
 				gsap: e && e.gsap,
 				ScrollTrigger: e && e.ScrollTrigger
 			});
@@ -87,7 +90,7 @@ function g() {
 function _() {
 	return e && e.Lenis ? Promise.resolve(t(e.Lenis)) : s || (s = (async () => {
 		try {
-			await h(r.lenis);
+			await h(r.lenis, r.lenisIntegrity);
 		} catch {
 			return n(() => {
 				s = null;
@@ -9131,9 +9134,11 @@ var Nr = {
 	};
 } }, Rr = {
 	create(e, t) {
-		let n = re(), r = Y();
-		if (!n || !r) return null;
-		let i = Array.isArray(t.urls) ? t.urls : null, a = Math.max(1, Number(t.frames ?? i?.length ?? 100)), o = t.urlPrefix || "https://example.com/seq/frame_", s = t.extension || ".jpg", c = Number(t.padding ?? 3), l = {
+		let n = Array.isArray(t.urls) && t.urls.length ? t.urls : null;
+		if (!n && !t.urlPrefix) return null;
+		let r = re(), i = Y();
+		if (!r || !i) return null;
+		let a = Math.max(1, Number(t.frames ?? n?.length ?? 100)), o = t.urlPrefix || "", s = t.extension || ".jpg", c = Number(t.padding ?? 3), l = {
 			parent: e.parentNode,
 			next: e.nextSibling,
 			style: e.getAttribute("style")
@@ -9141,7 +9146,7 @@ var Nr = {
 		u.className = "kt-scroll-sequence-wrap", u.style.height = t.scrollLength || `${Math.max(2, a * Number(t.vhPerFrame ?? 3))}vh`, l.parent.insertBefore(u, e), u.appendChild(e), e.style.position = "sticky", e.style.top = t.top == null ? "0" : typeof t.top == "number" ? `${t.top}px` : String(t.top), e.style.height = t.height || "100vh", e.style.overflow = "hidden";
 		let d = document.createElement("canvas");
 		d.setAttribute("aria-hidden", "true"), d.style.cssText = "display:block;width:100%;height:100%;", e.appendChild(d);
-		let f = d.getContext("2d"), p = Array(a), m = Array(a).fill("idle"), h = { frame: 0 }, g = 1, _ = 1, v = 1, y = (e) => i?.[e] || `${o}${String(e + 1).padStart(c, "0")}${s}`, b = (e) => {
+		let f = d.getContext("2d"), p = Array(a), m = Array(a).fill("idle"), h = { frame: 0 }, g = 1, _ = 1, v = 1, y = (e) => n?.[e] || `${o}${String(e + 1).padStart(c, "0")}${s}`, b = (e) => {
 			if (e < 0 || e >= a || m[e] !== "idle") return;
 			m[e] = "loading";
 			let n = new Image();
@@ -9171,7 +9176,7 @@ var Nr = {
 			g = Math.max(1, n.width || window.innerWidth), _ = Math.max(1, n.height || window.innerHeight), v = Math.min(window.devicePixelRatio || 1, Number(t.maxDpr ?? 2)), d.width = Math.round(g * v), d.height = Math.round(_ * v), S(Math.round(h.frame));
 		}, w = typeof ResizeObserver < "u" ? new ResizeObserver(C) : null;
 		w?.observe(e), window.addEventListener("resize", C), C(), b(0), x(0);
-		let T = n.to(h, {
+		let T = r.to(h, {
 			frame: a - 1,
 			snap: { frame: 1 },
 			ease: "none",
@@ -9203,7 +9208,7 @@ var Nr = {
 		return this.reduced(e, t);
 	},
 	reduced(e, t) {
-		let n = Array.isArray(t.urls) ? t.urls[0] : `${t.urlPrefix || "https://example.com/seq/frame_"}${"1".padStart(Number(t.padding ?? 3), "0")}${t.extension || ".jpg"}`;
+		let n = Array.isArray(t.urls) && t.urls.length ? t.urls[0] : t.urlPrefix ? `${t.urlPrefix}${"1".padStart(Number(t.padding ?? 3), "0")}${t.extension || ".jpg"}` : null;
 		if (!n) return null;
 		let r = e.getAttribute("style");
 		return e.style.backgroundImage = `url("${n}")`, e.style.backgroundSize = t.fit || "cover", e.style.backgroundPosition = "center", {

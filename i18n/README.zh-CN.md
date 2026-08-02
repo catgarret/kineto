@@ -85,6 +85,7 @@ const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true 
 Kineto 的捆绑包中不包括 GSAP 和 Lenis。
 第一次使用时会从CDN加载所需的效果，如果页面上已经存在实例，则会使用该效果。
 如果 CDN 不可用，请保留静态内容并回退到标准行为。
+默认 CDN 引擎使用 SHA-384 完整性校验。更改引擎 URL 时，还应设置对应文件的 integrity 值。
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>

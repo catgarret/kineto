@@ -86,6 +86,7 @@ Kineto non include GSAP e Lenis nel suo pacchetto.
 L'effetto richiesto verrà caricato dal CDN la prima volta che lo utilizzi e, se esiste già
 un'istanza sulla pagina, verrà utilizzata.
 Se una CDN non è disponibile, mantieni il contenuto statico e torna al comportamento standard.
+I motori CDN predefiniti usano la verifica di integrità SHA-384. Se cambi un URL, imposta anche il valore integrity del file corrispondente.
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>

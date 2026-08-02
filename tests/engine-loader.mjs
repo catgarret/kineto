@@ -34,11 +34,17 @@ await new Promise((r) => setTimeout(r, 30));
 const scriptSrcs = Array.from(w.document.getElementsByTagName('script')).map((s) => s.src);
 assert.ok(scriptSrcs.some((s) => /cdn\.jsdelivr\.net\/npm\/gsap.*gsap\.min\.js/.test(s)), 'scanning a GSAP effect with no engine present must inject the GSAP CDN <script>');
 assert.ok(Array.from(w.document.querySelectorAll('script[data-kt-engine]')).every((script) => script.async), 'engine scripts must download asynchronously');
+assert.ok(Array.from(w.document.querySelectorAll('script[data-kt-engine]')).every((script) => script.integrity.startsWith('sha384-')), 'default CDN engines must declare SHA-384 subresource integrity');
+assert.ok(Array.from(w.document.querySelectorAll('script[data-kt-engine]')).every((script) => script.crossOrigin === 'anonymous'), 'integrity-protected engines must use anonymous CORS');
 assert.ok(Kineto.getInstance(w.document.querySelector('[data-kt-switch]'), 'switch'), 'a non-GSAP effect must initialise immediately, not wait on the engine fetch');
 
 // Consumer can repoint the engine source (version pin / self-host / mirror).
 Kineto.setEngineSource({ gsap: 'https://example.com/mygsap.js' });
 assert.equal(Kineto.getEngineSource().gsap, 'https://example.com/mygsap.js', 'setEngineSource() must override the CDN URL');
+assert.equal(Kineto.getEngineSource().gsapIntegrity, '', 'a custom URL must not retain integrity metadata for the previous file');
+
+Kineto.setEngineSource({ gsapIntegrity: 'sha384-consumer-managed' });
+assert.equal(Kineto.getEngineSource().gsapIntegrity, 'sha384-consumer-managed', 'setEngineSource() must let self-hosted engines provide their own integrity');
 
 console.log('engine-loader OK — GSAP effect injects the CDN engine on demand; non-GSAP effects init immediately; setEngineSource() repoints the source.');
 process.exit(0);

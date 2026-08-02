@@ -2,13 +2,14 @@ import { G, ST } from '../utils.js';
 
 export default {
   create(el, opts) {
+    const urls = Array.isArray(opts.urls) && opts.urls.length ? opts.urls : null;
+    if (!urls && !opts.urlPrefix) return null;
     const gsap = G();
     const scrollTrigger = ST();
     if (!gsap || !scrollTrigger) return null;
 
-    const urls = Array.isArray(opts.urls) ? opts.urls : null;
     const frameCount = Math.max(1, Number(opts.frames ?? urls?.length ?? 100));
-    const prefix = opts.urlPrefix || 'https://example.com/seq/frame_';
+    const prefix = opts.urlPrefix || '';
     const extension = opts.extension || '.jpg';
     const padding = Number(opts.padding ?? 3);
     const original = {
@@ -163,9 +164,11 @@ export default {
   // no canvas, no per-frame decode (audit D-2).
   fallback(el, opts) { return this.reduced(el, opts); },
   reduced(el, opts) {
-    const first = Array.isArray(opts.urls)
+    const first = Array.isArray(opts.urls) && opts.urls.length
       ? opts.urls[0]
-      : `${opts.urlPrefix || 'https://example.com/seq/frame_'}${String(1).padStart(Number(opts.padding ?? 3), '0')}${opts.extension || '.jpg'}`;
+      : opts.urlPrefix
+        ? `${opts.urlPrefix}${String(1).padStart(Number(opts.padding ?? 3), '0')}${opts.extension || '.jpg'}`
+        : null;
     if (!first) return null;
     const style = el.getAttribute('style');
     el.style.backgroundImage = `url("${first}")`;
