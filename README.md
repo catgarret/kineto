@@ -209,6 +209,11 @@ For each module's variants and full option list, see the [module reference](docs
 
 ## Framework adapters
 
+Kineto ships first-party TypeScript declarations for the full package, modular
+core/module imports, and the React, Vue, and jQuery adapters. Module options
+remain open-ended so custom modules and newly introduced options can be used
+without casts.
+
 ```jsx
 import { Motion } from '@dong-gri/kineto/react';
 <Motion as="h2" type="textReveal" options={{ mode: 'hangul' }}>Hello</Motion>

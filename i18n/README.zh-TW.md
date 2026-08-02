@@ -159,6 +159,9 @@ Kineto.disableSmooth();
 
 ## 框架轉接器
 
+Kineto 為完整套件、模組化 core/module 匯入以及 React、Vue、jQuery 轉接器提供官方
+TypeScript 宣告。模組選項維持可擴充，因此自訂模組和新增選項無需型別斷言即可使用。
+
 ```jsx
 import { Motion } from '@dong-gri/kineto/react';
 <Motion as="h2" type="textReveal" options={{ mode: 'hangul' }}>你好</Motion>

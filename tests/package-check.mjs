@@ -21,9 +21,21 @@ assert.equal(packageJson.browser, './dist/kineto.umd.cjs');
 assert.equal(packageJson.exports['.'].import, './dist/kineto.min.js');
 assert.equal(packageJson.exports['.'].require, './dist/kineto.umd.cjs');
 assert.equal(packageJson.exports['./style.css'], './dist/kineto.min.css');
-assert.equal(packageJson.exports['./core'], './dist/modular/core.js');
-assert.equal(packageJson.exports['./modules/*'], './dist/modular/modules/*.js');
+assert.equal(packageJson.types, './types/index.d.ts');
+assert.equal(packageJson.exports['.'].types, './types/index.d.ts');
+assert.equal(packageJson.exports['./core'].types, './types/core.d.ts');
+assert.equal(packageJson.exports['./core'].default, './dist/modular/core.js');
+assert.equal(packageJson.exports['./modules/*'].types, './types/module.d.ts');
+assert.equal(packageJson.exports['./modules/*'].default, './dist/modular/modules/*.js');
+assert.equal(packageJson.exports['./react'].types, './types/react.d.ts');
+assert.equal(packageJson.exports['./vue'].types, './types/vue.d.ts');
+assert.equal(packageJson.exports['./jquery'].types, './types/jquery.d.ts');
 assert.equal(packageJson.exports['./package.json'], './package.json');
+assert.ok(!packageJson.dependencies?.[packageJson.name], 'package must not depend on itself');
+
+for (const declaration of ['index', 'core', 'module', 'react', 'vue', 'jquery']) {
+  await access(new URL(`../types/${declaration}.d.ts`, import.meta.url));
+}
 
 const esm = await import('@dong-gri/kineto');
 assert.equal(esm.default.version, packageJson.version);

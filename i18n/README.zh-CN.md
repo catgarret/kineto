@@ -159,6 +159,9 @@ Kineto.disableSmooth();
 
 ## 框架适配器
 
+Kineto 为完整包、模块化 core/module 导入以及 React、Vue、jQuery 适配器提供官方
+TypeScript 声明。模块选项保持可扩展，因此自定义模块和新增选项无需类型断言即可使用。
+
 ```jsx
 import { Motion } from '@dong-gri/kineto/react';
 <Motion as="h2" type="textReveal" options={{ mode: 'hangul' }}>你好</Motion>

@@ -159,6 +159,10 @@ Kineto.disableSmooth();
 
 ## フレームワークアダプター
 
+Kineto には、フルパッケージ、モジュール形式の core/module import、React・Vue・jQuery
+アダプター向けの公式 TypeScript 宣言が含まれます。カスタムモジュールや新しいオプションを
+型アサーションなしで使えるよう、モジュールオプションは拡張可能な形式です。
+
 ```jsx
 import { Motion } from '@dong-gri/kineto/react';
 <Motion as="h2" type="textReveal" options={{ mode: 'hangul' }}>こんにちは</Motion>

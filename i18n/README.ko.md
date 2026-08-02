@@ -201,6 +201,10 @@ Kineto.disableSmooth();
 
 ## 프레임워크 어댑터
 
+Kineto는 전체 패키지, 모듈형 core/module import, React·Vue·jQuery
+어댑터용 공식 TypeScript 선언을 함께 제공합니다. 모듈 옵션은 사용자 정의
+모듈과 새 옵션을 타입 단언 없이 쓸 수 있도록 확장 가능한 형태로 유지합니다.
+
 ```jsx
 import { Motion } from '@dong-gri/kineto/react';
 <Motion as="h2" type="textReveal" options={{ mode: 'hangul' }}>안녕하세요</Motion>

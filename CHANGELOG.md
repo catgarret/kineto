@@ -4,10 +4,12 @@
 
 ### English
 
+- Added first-party TypeScript declarations for the full, modular, React, Vue, and jQuery package surfaces, enforced them in CI and installed-tarball checks, and removed the package's unnecessary dependency on itself.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
+- 전체 패키지와 모듈형 import, React, Vue, jQuery 어댑터에 공식 TypeScript 선언을 추가하고 CI 및 설치 tarball 검사에 포함했으며, 패키지가 자기 자신을 의존하던 불필요한 항목을 제거했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.47] - 2026-08-02

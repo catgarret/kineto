@@ -21,10 +21,11 @@ const check = process.argv.includes('--check');
 const BUDGET = {
   // The modular graph adds 52 public entries but compresses shared code across
   // the tarball. Measured after adding it: 460.3 KB packed / 1563.0 KB unpacked
-  // / 65 files. Keep less than 10 KB packed and 17 KB unpacked headroom.
+  // / 65 files. First-party declarations add six small files and about 22 KB
+  // unpacked while leaving the compressed package below the original limit.
   packedKb: 470,
-  unpackedKb: 1580,
-  files: 68
+  unpackedKb: 1600,
+  files: 75
 };
 
 console.log(`release package: ${packedKb.toFixed(1)} KB packed · ${unpackedKb.toFixed(1)} KB unpacked · ${files.length} files`);
@@ -51,6 +52,9 @@ const required = [
   'dist/kineto.umd.min.js',
   'dist/modular/core.js',
   'dist/modular/modules/slider.js',
+  'types/index.d.ts',
+  'types/core.d.ts',
+  'types/module.d.ts',
   'package.json',
   'README.md',
   'LICENSE'

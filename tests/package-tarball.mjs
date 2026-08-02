@@ -53,7 +53,16 @@ try {
   ], { cwd: temp, encoding: 'utf8' }).trim();
   assert.ok(cssPath.endsWith('dist/kineto.min.css'));
 
-  console.log(`package-tarball OK — ${packed.size} bytes; full ESM, modular ESM, CommonJS, and CSS exports install cleanly.`);
+  const installedPackage = JSON.parse(fs.readFileSync(path.join(temp, 'node_modules/@dong-gri/kineto/package.json'), 'utf8'));
+  assert.equal(installedPackage.types, './types/index.d.ts');
+  assert.equal(installedPackage.exports['./core'].types, './types/core.d.ts');
+  assert.equal(installedPackage.exports['./modules/*'].types, './types/module.d.ts');
+  assert.ok(!installedPackage.dependencies?.[installedPackage.name], 'installed package must not depend on itself');
+  for (const declaration of ['index', 'core', 'module', 'react', 'vue', 'jquery']) {
+    assert.ok(fs.existsSync(path.join(temp, `node_modules/@dong-gri/kineto/types/${declaration}.d.ts`)));
+  }
+
+  console.log(`package-tarball OK — ${packed.size} bytes; runtime, CSS, and TypeScript surfaces install cleanly without a self-dependency.`);
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }
