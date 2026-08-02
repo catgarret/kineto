@@ -4,6 +4,16 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.49] - 2026-08-02
+
+### English
+
 - Added first-party TypeScript declarations for the full, modular, React, Vue, and jQuery package surfaces, enforced them in CI and installed-tarball checks, and removed the package's unnecessary dependency on itself.
 - Protected default CDN engine downloads with SHA-384 subresource integrity, allowed custom engine sources to provide matching integrity metadata, and stopped Scroll Sequence from making an implicit request to an example.com placeholder when no frame source is configured.
 - Corrected Loading Indicator Spokes so `normal` runs left-to-right and `reverse` runs right-to-left, with browser coverage for both phase orders.
@@ -17,7 +27,6 @@
 - Loading Indicator Spokes의 `normal`이 왼쪽에서 오른쪽으로, `reverse`가 오른쪽에서 왼쪽으로 진행하도록 방향을 바로잡고 두 위상 순서를 브라우저 테스트로 고정했습니다.
 - 고정 CDN 무결성 메타데이터의 실제 측정 크기에 맞춰 번들 용량 상한을 조정하되, 의존성 비대화를 막는 엄격한 기준은 유지했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
-
 ## [0.8.47] - 2026-08-02
 
 ### English
