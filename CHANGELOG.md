@@ -4,10 +4,12 @@
 
 ### English
 
+- Aligned the bundle-size ceilings with the measured cost of pinned CDN integrity metadata while retaining tight guards against dependency bloat.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
+- 고정 CDN 무결성 메타데이터의 실제 측정 크기에 맞춰 번들 용량 상한을 조정하되, 의존성 비대화를 막는 엄격한 기준은 유지했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.48] - 2026-08-02

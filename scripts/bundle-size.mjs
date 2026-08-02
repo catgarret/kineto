@@ -64,11 +64,13 @@ const BUDGETS = {
   // clone and incoming live item can overlap. Its bounded ~0.7 KB cost gets a
   // 1 KB raw/gzip allowance without relaxing the dependency-bloat guard.
   // SHA-384 integrity metadata for the three pinned CDN engines adds ~0.5 KB
-  // raw to the minified ESM while its gzip size remains below 112 KB.
-  'kineto.js': { raw: 479, gz: 125 },
+  // raw and measures 125.2 KB gzip in the readable ESM / 111.1 KB gzip in
+  // the UMD artifacts. One additional KB preserves sub-KB headroom without
+  // weakening the guard against accidentally rebundling an engine.
+  'kineto.js': { raw: 479, gz: 126 },
   'kineto.min.js': { raw: 379, gz: 112 },
-  'kineto.umd.js': { raw: 377, gz: 111 },
-  'kineto.umd.min.js': { raw: 377, gz: 111 },
+  'kineto.umd.js': { raw: 377, gz: 112 },
+  'kineto.umd.min.js': { raw: 377, gz: 112 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.
