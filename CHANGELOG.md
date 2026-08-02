@@ -4,10 +4,12 @@
 
 ### English
 
+- Added a staged product and engineering roadmap covering consumer bundle budgets, adapter reliability, Motion States, Presence, shared layout, 1.0 gates, ecosystem growth, and explicit non-goals.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
+- 소비자 번들 예산, 어댑터 안정성, Motion States, Presence, shared layout, 1.0 진입 조건, 생태계 확장 및 명시적 비목표를 단기·중기·장기로 정리한 제품·기술 로드맵을 추가했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.50] - 2026-08-02
