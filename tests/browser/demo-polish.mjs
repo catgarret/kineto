@@ -506,6 +506,18 @@ try {
   assert.equal(mobileMega.responsiveClass, true, 'the demo should opt into the library scroll mode');
   assert.equal(mobileMega.topOverflowX, 'auto', 'mobile top-level menu items should be swipeable');
   assert.equal(mobileMega.topWrap, 'nowrap', 'mobile top-level menu items should stay on one row');
+  await page.locator('#mod-megaMenu .demo-tabs > .demo-tab',{hasText:'드롭다운'}).click();
+  const dropdownTrigger=page.locator('#mod-megaMenu .demo-tabpanel:not([hidden]) .kt-menu-trigger',{hasText:'라이브러리'});
+  await dropdownTrigger.click();
+  const mobileDropdown=await dropdownTrigger.evaluate((trigger)=>{
+    const panel=trigger.closest('li').querySelector(':scope > .kt-menu-panel');
+    const rect=panel.getBoundingClientRect();
+    return {expanded:trigger.getAttribute('aria-expanded'),hidden:panel.hidden,position:getComputedStyle(panel).position,left:rect.left,right:rect.right,width:rect.width,viewportWidth:innerWidth};
+  });
+  assert.equal(mobileDropdown.expanded,'true',`mobile Dropdown must open by touch/click: ${JSON.stringify(mobileDropdown)}`);
+  assert.equal(mobileDropdown.hidden,false,`mobile Dropdown panel must be visible: ${JSON.stringify(mobileDropdown)}`);
+  assert.equal(mobileDropdown.position,'fixed',`mobile Dropdown must escape the card's clipping context: ${JSON.stringify(mobileDropdown)}`);
+  assert.ok(mobileDropdown.width>0&&mobileDropdown.left>=-1&&mobileDropdown.right<=mobileDropdown.viewportWidth+1,`mobile Dropdown must remain inside the viewport: ${JSON.stringify(mobileDropdown)}`);
 
   const splitEffect=page.locator('.pt-fx-row [data-pt-preview="split"]');
   await splitEffect.click();

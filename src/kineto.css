@@ -855,9 +855,9 @@ html.kt-preload [data-kt-text-transition] {
 }
 .kt-menu--ind-plus .kt-menu-trigger[aria-expanded="true"]::after { transform: rotate(135deg); }
 /* Responsive top-level item flow is opt-in. `wrap` keeps every item visible;
-   `scroll` preserves one row with touch momentum. Scroll-mode panels are placed
-   against the viewport by the module while open so the scroller cannot clip
-   them. `custom` (the JS default) adds no layout rules. */
+   `scroll` preserves one row with touch momentum. Both responsive panel types
+   are viewport-anchored while open so neither a scroller nor a wrapped card can
+   clip a mobile dropdown. `custom` adds no layout rules. */
 @media (max-width: 720px) {
   .kt-menu--responsive-wrap > ul {
     display: flex; flex-wrap: wrap; justify-content: center;
@@ -874,7 +874,8 @@ html.kt-preload [data-kt-text-transition] {
   .kt-menu--responsive-scroll > ul > li {
     flex: 0 0 auto; scroll-snap-align: start;
   }
-  .kt-menu--responsive-scroll .kt-menu-panel {
+  .kt-menu--responsive-scroll .kt-menu-panel,
+  .kt-menu--responsive-wrap .kt-menu-panel {
     position: fixed;
     inset: var(--kt-menu-panel-top, 72px) 12px auto;
     width: auto;

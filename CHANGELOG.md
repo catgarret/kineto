@@ -10,6 +10,7 @@
 - Added seconds-only Counter clocks, reliable blinking separators, consumer bundle budgets, React/Vue lifecycle and SSR fixtures, and supply-chain reporting guidance.
 - Removed the default terminal frame-width reservation and vertically centered inline terminal glyphs; a fixed viewport is now reserved only when `viewportWidth` is explicitly set.
 - Applied the Slider drag protections to Radial Carousel: images no longer create native ghost drags, swipes keep pointer ownership after the movement threshold, and the following click is ignored.
+- Fixed responsive Dropdown as well as Mega Menu panels: touch toggles now share the mobile path and every non-custom responsive panel is viewport-bounded.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
@@ -20,6 +21,7 @@
 - 초 단위 Counter 시계와 안정적인 구분자 깜빡임, 소비자 번들 예산, React/Vue lifecycle·SSR fixture, 공급망 대응 문서를 추가했습니다.
 - 터미널 프레임의 기본 폭 예약을 제거하고 인라인 특수문자를 수직 중앙에 맞췄습니다. 고정 폭은 이제 `viewportWidth`를 명시한 경우에만 예약됩니다.
 - Radial Carousel에도 Slider의 드래그 보호를 적용했습니다. 이미지 고스트 드래그를 막고, 이동 임계값 뒤 스와이프의 포인터 소유권을 유지하며, 뒤따르는 클릭은 무시합니다.
+- Mega Menu뿐 아니라 일반 Dropdown도 수정했습니다. 터치 토글은 같은 모바일 경로를 사용하며, `custom` 이외의 반응형 패널은 모두 뷰포트 안에 고정됩니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.50] - 2026-08-02

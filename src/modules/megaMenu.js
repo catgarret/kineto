@@ -52,8 +52,11 @@ export default {
     let closeTimer = null;
     let uid = 0;
 
-    const placeScrollablePanel = (entry) => {
-      if (responsive !== 'scroll' || window.innerWidth > 720) return;
+    const placeResponsivePanel = (entry) => {
+      // Both scrollable and wrapped mobile GNBs need a viewport-anchored panel.
+      // A dropdown left absolute under a wrapped item can otherwise be clipped
+      // by its card or open outside the visible mobile viewport.
+      if (responsive === 'custom' || window.innerWidth > 720) return;
       const bottom = entry.trg.getBoundingClientRect().bottom + 6;
       entry.panel.style.setProperty(
         '--kt-menu-panel-top',
@@ -77,7 +80,7 @@ export default {
       entry.li.classList.add('kt-open');
       entry.trg.setAttribute('aria-expanded', 'true');
       entry.panel.hidden = false;
-      placeScrollablePanel(entry);
+      placeResponsivePanel(entry);
       if (!reduce && typeof entry.panel.animate === 'function') {
         entry.anim = entry.panel.animate(
           [{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'translateY(0)' }],

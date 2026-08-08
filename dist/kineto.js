@@ -9923,7 +9923,7 @@ var Br = {
 		let r = V().reducedMotion, i = typeof matchMedia < "u" && matchMedia("(hover:hover) and (pointer:fine)").matches, a = t.trigger === "click" ? "click" : "hover", o = t.layout === "mega" ? "mega" : "dropdown", s = Math.max(0, Number(t.openDelay ?? 60)), c = Math.max(0, Number(t.closeDelay ?? 180)), l = Math.max(.05, Number(t.duration ?? .24)), u = t.responsive === "scroll" || t.responsive === "custom" ? t.responsive : "wrap", d = ["chevron", "plus"].includes(t.indicator) ? t.indicator : "none";
 		e.classList.add("kt-menu", `kt-menu--${o}`, `kt-menu--responsive-${u}`, `kt-menu--ind-${d}`);
 		let f = (e) => Array.from(e.querySelectorAll("a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex=\"-1\"])")), p = [], m = null, h = null, g = null, _ = 0, v = (e) => {
-			if (u !== "scroll" || window.innerWidth > 720) return;
+			if (u === "custom" || window.innerWidth > 720) return;
 			let t = e.trg.getBoundingClientRect().bottom + 6;
 			e.panel.style.setProperty("--kt-menu-panel-top", `${Math.max(12, Math.min(t, window.innerHeight - 172))}px`);
 		}, y = (e) => {
