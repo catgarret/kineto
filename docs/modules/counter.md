@@ -51,7 +51,7 @@
 | `seconds` / `hour12` | 모드 기본값 | 초 표시와 12시간제 |
 | `secondsOnly` | `false` | Clock을 `000S` 같은 초 단위 표시로 전환 |
 | `secondsDigits` / `secondsLabel` | `3` / `'S'` | 초 단위 표시의 최소 자릿수와 접미사 |
-| `until` / `since` | 없음 | 카운트다운 목표 또는 경과 시간 기준 |
+| `until` / `since` | 없음 | 카운트다운 목표 또는 경과 시간 기준. `secondsOnly:true`와 함께 각각 `000S` 남은 초·경과 초를 표시 |
 | `start` | `top 85%` | ScrollTrigger 시작. `false`면 즉시 |
 | `once` | `true` | 재진입 재생 정책 |
 
@@ -63,3 +63,4 @@
 - `destroy()`는 원래 HTML, style, ARIA를 복원합니다.
 - Clock의 `blink:true`는 시간 구분자만 깜빡이며, `secondsOnly`의 단위(`S`)에는 적용되지 않습니다.
 - `secondsOnly:true`는 Clock 전용 표시입니다. 다른 `mode` 또는 `preset`이 함께 전달돼도 Clock 렌더러를 우선해 `000S` 형식을 유지합니다.
+- `since`를 전달하면 경과 초를, `until`을 전달하면 남은 초를 표시합니다. 둘 다 전달된 경우 `until`(카운트다운)을 우선합니다.

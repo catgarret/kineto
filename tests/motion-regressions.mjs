@@ -208,6 +208,16 @@ assert.ok(protectedSecondsCounter.querySelector('.kt-counter-clock-digit'), 'sec
 protectedSecondsInstance.destroy();
 protectedSecondsCounter.remove();
 
+const countdownSecondsCounter = document.createElement('span');
+document.body.appendChild(countdownSecondsCounter);
+const countdownSecondsInstance = counterModule.create(countdownSecondsCounter, {
+  mode: 'clock', secondsOnly: true, secondsDigits: 3, secondsLabel: 'S', until: new Date(Date.now() + 12000).toISOString()
+});
+const countdownSeconds = Number(countdownSecondsCounter.textContent.replace('S', ''));
+assert.ok(countdownSeconds > 0 && countdownSeconds <= 12, 'secondsOnly must support a future until timestamp as a remaining-seconds countdown');
+countdownSecondsInstance.destroy();
+countdownSecondsCounter.remove();
+
 const relativeTime = document.createElement('time');
 relativeTime.textContent = '2026년 8월 9일 10:30';
 document.body.appendChild(relativeTime);

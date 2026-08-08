@@ -1886,3 +1886,21 @@
     }
   }
 })();
+
+(function () {
+  const sets = window.MK_HELP_I18N;
+  if (!sets) return;
+  const tips = {
+    ko: '시계 대신 경과 초 또는 남은 초를 000S 형식으로 표시합니다. since는 경과 시간, until은 카운트다운입니다.',
+    en: 'Shows elapsed or remaining seconds as 000S. Use since for elapsed time and until for a countdown.',
+    ja: '時計の代わりに経過秒または残り秒を000S形式で表示します。sinceは経過時間、untilはカウントダウンです。',
+    'zh-CN': '以 000S 显示经过秒数或剩余秒数。since 用于经过时间，until 用于倒计时。',
+    'zh-TW': '以 000S 顯示經過秒數或剩餘秒數。since 用於經過時間，until 用於倒數計時。',
+    ru: 'Показывает прошедшие или оставшиеся секунды как 000S. since — прошедшее время, until — обратный отсчёт.',
+    it: 'Mostra secondi trascorsi o rimanenti come 000S. Usa since per il trascorso e until per il conto alla rovescia.'
+  };
+  for (const [lang, text] of Object.entries(tips)) {
+    sets[lang] = sets[lang] || {};
+    sets[lang].counter = Object.assign({}, sets[lang].counter, { secondsOnly: text });
+  }
+})();

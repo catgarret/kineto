@@ -1399,13 +1399,13 @@ window.KINETO_COPY_I18N = {
       "Проводит градиентный луч по контуру карточки.",
       "Fa scorrere un raggio sfumato lungo il contorno della scheda."
     ],
-    "서버 기준 시점부터 지난 시간을 000S 형식으로 표시합니다.": [
-      "Shows elapsed time since a server timestamp in the 000S format.",
-      "サーバー時刻からの経過時間を 000S 形式で表示します。",
-      "以 000S 格式显示自服务器时间点以来的经过秒数。",
-      "以 000S 格式顯示自伺服器時間點以來的經過秒數。",
-      "Показывает время с серверной отметки в формате 000S.",
-      "Mostra il tempo trascorso da un istante del server nel formato 000S."
+    "시작 시점부터 지난 시간 또는 목표 시점까지 남은 시간을 000S 형식으로 표시합니다.": [
+      "Shows elapsed time since a start point or remaining time until a target in the 000S format.",
+      "開始時刻からの経過時間または目標時刻までの残り時間を 000S 形式で表示します。",
+      "以 000S 格式显示从起始时刻经过的时间或到目标时刻的剩余时间。",
+      "以 000S 格式顯示從起始時刻經過的時間或到目標時刻的剩餘時間。",
+      "Показывает прошедшее от старта или оставшееся до цели время в формате 000S.",
+      "Mostra il tempo trascorso dall’avvio o quello rimanente fino al traguardo nel formato 000S."
     ],
     "서버가 내려준 날짜를 n분 전 같은 상대 시간으로 표시합니다.": [
       "Shows a server-rendered timestamp as relative time, such as n minutes ago.",
