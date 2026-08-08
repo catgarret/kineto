@@ -9,6 +9,8 @@ Kineto v0.8.50의 공개 API와 소유자 의도를 기준으로 정리한 문�
 - [공통 옵션과 데이터 속성](common-options.md)
 - [접근성](accessibility.md)
 - [성능과 fallback](performance.md)
+- [공급망 운영](supply-chain.md)
+- [보안 신고 정책](../SECURITY.md)
 
 ## API와 기능
 

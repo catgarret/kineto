@@ -45,7 +45,7 @@
 - Attribute: `data-kt-counter`
 - Default variant: `slot`
 - Variants: `slot`, `plain`, `digit`, `pop`, `flip`, `clock`
-- Public options: `blink`, `blinkSeparators`, `clockSeparator`, `clockStyle`, `comma`, `daysLabel`, `decimals`, `delay`, `duration`, `ease`, `format`, `from`, `gap`, `grouping`, `hour12`, `lineHeight`, `locale`, `loops`, `mode`, `onComplete`, `once`, `popAlign`, `popDuration`, `popScale`, `prefix`, `preset`, `rollDirection`, `rollDuration`, `seamColor`, `seconds`, `separator`, `separatorColor`, `shadow`, `showDays`, `since`, `stagger`, `start`, `style`, `suffix`, `tileColor`, `tileRadius`, `tileTextColor`, `to`, `until`
+- Public options: `blink`, `blinkSeparators`, `clockSeparator`, `clockStyle`, `comma`, `daysLabel`, `decimals`, `delay`, `duration`, `ease`, `format`, `from`, `gap`, `grouping`, `hour12`, `lineHeight`, `locale`, `loops`, `mode`, `onComplete`, `once`, `popAlign`, `popDuration`, `popScale`, `prefix`, `preset`, `rollDirection`, `rollDuration`, `seamColor`, `seconds`, `secondsDigits`, `secondsLabel`, `secondsOnly`, `separator`, `separatorColor`, `shadow`, `showDays`, `since`, `stagger`, `start`, `style`, `suffix`, `tileColor`, `tileRadius`, `tileTextColor`, `to`, `until`
 
 ## cssScroll
 
@@ -164,7 +164,7 @@
 - Attribute: `data-kt-reveal`
 - Default variant: `fade-up`
 - Variants: `fade`, `fade-up`, `fade-down`, `fade-left`, `fade-right`, `slide-up`, `slide-down`, `slide-left`, `slide-right`, `zoom`, `zoom-in`, `zoom-out`, `blur`, `rise`, `soft`, `flip`, `flip-x`, `flip-y`, `rotate`, `mask`, `wipe`, `class`, `clock`
-- Public options: `activeClass`, `classOnly`, `clockDirection`, `delay`, `direction`, `duration`, `ease`, `end`, `enterClass`, `enterEase`, `leaveClass`, `onClassChange`, `onComplete`, `onEnter`, `onEnterBack`, `onLeave`, `onLeaveBack`, `once`, `order`, `preset`, `removeClassOnLeave`, `rootMargin`, `spring`, `stagger`, `start`, `startAngle`, `threshold`
+- Public options: `activeClass`, `classOnly`, `clockDirection`, `delay`, `distance`, `direction`, `duration`, `ease`, `end`, `enterClass`, `enterEase`, `leaveClass`, `onClassChange`, `onComplete`, `onEnter`, `onEnterBack`, `onLeave`, `onLeaveBack`, `once`, `order`, `preset`, `removeClassOnLeave`, `rootMargin`, `spring`, `stagger`, `start`, `startAngle`, `threshold`
 
 ## radial
 

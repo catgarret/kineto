@@ -362,24 +362,21 @@ export default {
           .finished.then(done).catch(done);
       }
     } else if (effect === 'flash') {
-      // Plus X's `flashMask`: solid covers translate straight out of frame as
-      // whole blocks — no scaling, so nothing stretches — each a beat behind the
-      // last, on their signature cubic-bezier(.165,.84,.44,1) ease-out.
-      const shift = {
-        up: '0,-100%', down: '0,100%', left: '-100%,0', right: '100%,0'
-      }[direction] || '0,-100%';
-      const flashEase = 'cubic-bezier(.165,.84,.44,1)';
-      const back = layer(`inset:0;background:${color2};`);
-      const front = layer('inset:0;');
-      play(front, [
-        { transform: 'translate3d(0,0,0)' },
-        { transform: `translate3d(${shift},0)` }
-      ], { duration: duration * 1.05, easing: flashEase });
-      play(back, [
-        { transform: 'translate3d(0,0,0)' },
-        { transform: 'translate3d(0,0,0)', offset: .22 },
-        { transform: `translate3d(${shift},0)` }
-      ], { duration: duration * 1.35, easing: flashEase })
+      // Flash is deliberately an exposure pulse, not a second curtain. It peaks
+      // quickly and dissipates in place, so its silhouette and timing remain
+      // distinct even when both effects use the same colour.
+      const glow = layer(`inset:0;background:${color2};mix-blend-mode:screen;`);
+      const flash = layer('inset:0;');
+      play(flash, [
+        { opacity: 0 },
+        { opacity: 0.92, offset: 0.12 },
+        { opacity: 0, offset: 0.62 }
+      ], { duration: Math.max(140, duration * 0.52), easing: 'steps(2,end)' });
+      play(glow, [
+        { opacity: 0, transform: 'scale(.96)' },
+        { opacity: 0.36, transform: 'scale(1)', offset: 0.16 },
+        { opacity: 0, transform: 'scale(1.035)' }
+      ], { duration: Math.max(200, duration * 0.9), easing: 'cubic-bezier(.16,1,.3,1)' })
         .finished.then(done).catch(done);
     } else {
       // curtain (default): the cover peels away in the chosen direction with a

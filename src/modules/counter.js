@@ -11,11 +11,8 @@ function normalizedFormat(opts) {
 // Clock-style blink for separator glyphs (the ":" in 12:34), shared by the
 // clock mode and the blinkSeparators option on the other modes.
 function blinkNode(node) {
-  if (!node.animate) return null;
-  return node.animate(
-    [{ opacity: 1 }, { opacity: 1 }, { opacity: 0.15 }, { opacity: 0.15 }],
-    { duration: 1000, iterations: Infinity, easing: 'steps(1,end)' }
-  );
+  node.classList.add('kt-counter-separator--blink');
+  return null;
 }
 
 // Shared flip visuals — seam color, drop-shadow (toggle/custom) and separator
@@ -409,6 +406,9 @@ export default {
       const lineHeight = Math.max(1, Number(opts.lineHeight
         ?? (Number.isFinite(clockLh) ? clockLh : (Number.isFinite(clockFs) ? clockFs * 1.2 : 40))));
       const showSeconds = opts.seconds !== false;
+      const secondsOnly = opts.secondsOnly === true;
+      const secondsDigits = Math.max(1, Math.round(Number(opts.secondsDigits ?? 3)));
+      const secondsLabel = String(opts.secondsLabel ?? 'S');
       const hour12 = opts.hour12 === true;
       const sepChar = String(opts.clockSeparator ?? ':');
       const blink = opts.blink !== false;
@@ -425,12 +425,18 @@ export default {
           let ms = until ? until.getTime() - Date.now() : Date.now() - since.getTime();
           if (until && ms <= 0 && !completed) { completed = true; opts.onComplete?.(el); }
           ms = Math.max(0, ms);
+          if (secondsOnly) {
+            return { text: `${String(Math.floor(ms / 1000)).padStart(secondsDigits, '0')}${secondsLabel}`, meridiem: '', days: null };
+          }
           const days = Math.floor(ms / 86400000);
           const parts = [pad(Math.floor(ms / 3600000) % 24), pad(Math.floor(ms / 60000) % 60)];
           if (showSeconds) parts.push(pad(Math.floor(ms / 1000) % 60));
           return { text: parts.join(sepChar), meridiem: '', days };
         }
         const now = new Date();
+        if (secondsOnly) {
+          return { text: `${String(now.getSeconds()).padStart(secondsDigits, '0')}${secondsLabel}`, meridiem: '', days: null };
+        }
         let hours = now.getHours();
         let meridiem = '';
         if (hour12) { meridiem = hours >= 12 ? 'PM' : 'AM'; hours = (hours % 12) || 12; }
@@ -554,7 +560,7 @@ export default {
             cells.push(cell);
           } else {
             const separator = createCharacter(el, char, 'kt-counter-separator kt-counter-clock-separator');
-            if (blink) {
+            if (blink && char === sepChar) {
               const player = blinkNode(separator);
               if (player) blinkPlayers.add(player);
             }

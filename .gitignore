@@ -4,6 +4,7 @@ tests/.smoke/
 tests/browser/shots/
 tests/framework-qa/node_modules/
 tests/framework-qa/dist-iife/
+tests/consumer-bundles/.output/
 *.tgz
 *.log
 .DS_Store

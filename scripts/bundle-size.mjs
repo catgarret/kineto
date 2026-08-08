@@ -67,10 +67,13 @@ const BUDGETS = {
   // raw and measures 125.2 KB gzip in the readable ESM / 111.1 KB gzip in
   // the UMD artifacts. One additional KB preserves sub-KB headroom without
   // weakening the guard against accidentally rebundling an engine.
-  'kineto.js': { raw: 479, gz: 126 },
-  'kineto.min.js': { raw: 379, gz: 112 },
-  'kineto.umd.js': { raw: 377, gz: 112 },
-  'kineto.umd.min.js': { raw: 377, gz: 112 },
+  // 2026-08-08: touch-safe menu/slider handling, counter clock formatting,
+  // and CSS edge-fade controls add 1.8 KB raw to ESM and 1.4 KB raw to UMD;
+  // gzip stays within the existing ceilings.
+  'kineto.js': { raw: 481, gz: 126 },
+  'kineto.min.js': { raw: 381, gz: 112 },
+  'kineto.umd.js': { raw: 379, gz: 112 },
+  'kineto.umd.min.js': { raw: 379, gz: 112 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

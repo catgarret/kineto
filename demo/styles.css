@@ -38,6 +38,7 @@
       --shadow-hover:0 2px 4px rgba(28,22,12,.06), 0 20px 50px rgba(28,22,12,.11);
     }
     *{box-sizing:border-box}
+    .gtm-noscript{display:none;visibility:hidden}
     /* Reserve the scrollbar's space always, so toggling overflow:hidden (intro
        lock, sitemap, lightbox) doesn't change the page width and jolt the layout. */
     /* Base bg on <html> too, so iOS safe-area / overscroll regions (notch, home

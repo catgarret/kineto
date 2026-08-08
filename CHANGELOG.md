@@ -4,12 +4,18 @@
 
 ### English
 
+- Added the GTM-KFQSFGJL loader and no-script fallback to the demo source so every generated deployment includes the same Google Tag Manager container.
 - Added a staged product and engineering roadmap covering consumer bundle budgets, adapter reliability, Motion States, Presence, shared layout, 1.0 gates, ecosystem growth, and explicit non-goals.
+- Tightened inline terminal indicators, made Page Reveal Flash a distinct exposure pulse, restored touch opening for responsive Mega Menus, and improved edge fades, Reveal distance controls, and Slider drag handling.
+- Added seconds-only Counter clocks, reliable blinking separators, consumer bundle budgets, React/Vue lifecycle and SSR fixtures, and supply-chain reporting guidance.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
+- 데모 원본에 GTM-KFQSFGJL 로더와 noscript fallback을 추가해 생성되는 모든 배포 사이트에 같은 Google Tag Manager 컨테이너가 포함되도록 했습니다.
 - 소비자 번들 예산, 어댑터 안정성, Motion States, Presence, shared layout, 1.0 진입 조건, 생태계 확장 및 명시적 비목표를 단기·중기·장기로 정리한 제품·기술 로드맵을 추가했습니다.
+- 인라인 터미널 표시기의 여백을 줄이고, Page Reveal Flash를 별도 노출 펄스로 구분했으며, 반응형 Mega Menu의 터치 열기와 가장자리 페이드, Reveal 거리 조절, Slider 드래그를 개선했습니다.
+- 초 단위 Counter 시계와 안정적인 구분자 깜빡임, 소비자 번들 예산, React/Vue lifecycle·SSR fixture, 공급망 대응 문서를 추가했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.50] - 2026-08-02

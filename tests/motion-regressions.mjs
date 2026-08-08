@@ -75,8 +75,25 @@ const horizontalMask = document.createElement('div');
 document.body.appendChild(horizontalMask);
 const horizontalMaskInstance = scrollShadowsModule.create(horizontalMask, { axis: 'x', mode: 'mask' });
 assert.equal(horizontalMaskInstance.state.axis, 'horizontal', 'Scroll Shadows must accept the public x-axis alias');
+await new Promise((resolve) => setTimeout(resolve, 24));
+assert.match(horizontalMask.style.maskImage, /--kt-scroll-shadow-start/, 'mask fade must be driven by the public edge-distance CSS variables');
 horizontalMaskInstance.destroy();
+assert.equal(horizontalMask.style.getPropertyValue('--kt-scroll-shadow-start'), '', 'destroy must clear the mask edge variable');
 horizontalMask.remove();
+
+// On touch devices a hover-configured menu must still open on a single tap.
+const mobileMenuHost = document.createElement('nav');
+mobileMenuHost.innerHTML = '<ul><li><button>Solutions</button><div class="kt-menu-panel"><a href="#">Item</a></div></li></ul>';
+document.body.appendChild(mobileMenuHost);
+const mobileMenu = megaMenuModule.create(mobileMenuHost, { trigger: 'hover', responsive: 'scroll' });
+const mobileTrigger = mobileMenuHost.querySelector('button');
+const touchUp = new window.Event('pointerup', { bubbles: true, cancelable: true });
+Object.defineProperty(touchUp, 'pointerType', { value: 'touch' });
+mobileTrigger.dispatchEvent(touchUp);
+assert.equal(mobileTrigger.getAttribute('aria-expanded'), 'true', 'a touch tap must open a hover mega menu');
+assert.equal(mobileMenuHost.querySelector('.kt-menu-panel').hidden, false, 'the touch-opened mega panel must be rendered');
+mobileMenu.destroy();
+mobileMenuHost.remove();
 
 // Clock reveal on a staggered list must mask each item independently. Masking
 // the <ul> itself turns the whole list into one large clock wipe.
@@ -137,6 +154,7 @@ fullpage.destroy();
 fullpageEl.remove();
 
 const sliderModule = (await import('../src/modules/slider.js')).default;
+const counterModule = (await import('../src/modules/counter.js')).default;
 const bottomSheetModule = (await import('../src/modules/bottomSheet.js')).default;
 const loadingIndicatorModule = (await import('../src/modules/loadingIndicator.js')).default;
 const coverRevealModule = (await import('../src/modules/coverReveal.js')).default;
@@ -156,6 +174,24 @@ assert.equal(radialFinite.index, 4, 'disabling radial infinite mode must retain 
 assert.equal(radialHost.querySelectorAll('.kt-active').length, 1, 'finite radial layout must keep one active item');
 radialFinite.destroy();
 radialHost.remove();
+
+const dragSliderHost = document.createElement('div');
+dragSliderHost.innerHTML = '<div class="kt-slider-wrap"><div class="kt-slider-track"><div class="kt-slide"><img src="a.png"></div><div class="kt-slide"><img src="b.png"></div></div></div>';
+document.body.appendChild(dragSliderHost);
+const dragSlider = sliderModule.create(dragSliderHost, { preset: 'slide', drag: true, touch: true });
+assert.equal(dragSliderHost.querySelector('img').draggable, false, 'slider images must not start the browser ghost-image drag');
+dragSlider.destroy();
+dragSliderHost.remove();
+
+const secondsCounter = document.createElement('span');
+document.body.appendChild(secondsCounter);
+const secondsInstance = counterModule.create(secondsCounter, {
+  mode: 'clock', secondsOnly: true, secondsDigits: 3, secondsLabel: 'S', since: new Date(Date.now() - 12000).toISOString()
+});
+assert.match(secondsCounter.textContent, /^0?12S$/, 'clock seconds-only mode must render an elapsed seconds value with its unit');
+assert.equal(secondsCounter.querySelector('.kt-counter-separator--blink'), null, 'the seconds-only unit must not blink like a clock colon');
+secondsInstance.destroy();
+secondsCounter.remove();
 
 // Determinate indicators update nearby copy and can subscribe to Loader's
 // existing progress event without a new cross-module dependency.

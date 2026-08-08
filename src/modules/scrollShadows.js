@@ -21,6 +21,8 @@ function resolveEase(value) {
  *     the shadow gradients stay pinned (background-attachment:scroll).
  *   mode:"mask" — the content itself DISSOLVES to transparent at the overflowing
  *     edges via `mask-image`, and the fade retracts at each end (scroll-aware).
+ *     This follows the same CSS-variable mask approach as Base UI's Scroll Area:
+ *     the mask stays declarative while JS only publishes available edge distance.
  * The shadow colour reads a `--kt-scroll-shadow` CSS variable, so it (and every
  * other property) stays fully themeable from your stylesheet.
  */
@@ -63,7 +65,8 @@ export default {
       if (signature !== lastState) {
         lastState = signature;
         opts.onChange?.(state, el);
-        el.dispatchEvent(new CustomEvent('kineto:scroll-shadows-change', { detail: state }));
+        const EventCtor = el.ownerDocument?.defaultView?.CustomEvent || globalThis.CustomEvent;
+        if (EventCtor) el.dispatchEvent(new EventCtor('kineto:scroll-shadows-change', { detail: state }));
       }
       return state;
     };
@@ -84,7 +87,9 @@ export default {
       let fromEnd = 0;
       let animationStart = 0;
       const applyMask = () => {
-        const value = `linear-gradient(${dir}, transparent 0, #000 ${currentStart.toFixed(2)}px, #000 calc(100% - ${currentEnd.toFixed(2)}px), transparent 100%)`;
+        el.style.setProperty('--kt-scroll-shadow-start', `${currentStart.toFixed(2)}px`);
+        el.style.setProperty('--kt-scroll-shadow-end', `${currentEnd.toFixed(2)}px`);
+        const value = `linear-gradient(${dir}, transparent 0, #000 min(var(--kt-scroll-shadow-size, ${size}px), var(--kt-scroll-shadow-start)), #000 calc(100% - min(var(--kt-scroll-shadow-size, ${size}px), var(--kt-scroll-shadow-end, ${size}px))), transparent 100%)`;
         el.style.maskImage = value;
         el.style.webkitMaskImage = value;
         publishState();
@@ -140,6 +145,8 @@ export default {
           window.removeEventListener('resize', onScroll);
           el.classList.remove('kt-at-start', 'kt-at-end', 'kt-can-scroll-start', 'kt-can-scroll-end');
           el.style.removeProperty('--kt-scroll-shadow-progress');
+          el.style.removeProperty('--kt-scroll-shadow-start');
+          el.style.removeProperty('--kt-scroll-shadow-end');
           restore();
         }
       };

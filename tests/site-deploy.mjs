@@ -26,18 +26,25 @@ assert.ok(/cdn\.jsdelivr\.net\/npm\/@dong-gri\/kineto\/dist/.test(html), 'site m
 assert.ok(!/@dong-gri\/kineto@[^/]+/.test(html), 'site must not pin a CDN version alias');
 assert.strictEqual(assertSite(html).length, 0, 'assertSite must pass on the rewritten html');
 
-// 3. header + footer expose runtime hooks (so they cannot drift), and no stale "34"
+// 3. The deploy source owns the GTM snippet, so every generated site/index.html
+// includes the exact container once in <head> and once as the body noscript fallback.
+assert.strictEqual((demoHtml.match(/googletagmanager\.com\/gtm\.js\?id='\+i/g) || []).length, 1, 'demo must contain exactly one GTM head loader');
+assert.strictEqual((demoHtml.match(/'GTM-KFQSFGJL'/g) || []).length, 1, 'demo must configure the GTM container exactly once');
+assert.strictEqual((demoHtml.match(/googletagmanager\.com\/ns\.html\?id=GTM-KFQSFGJL/g) || []).length, 1, 'demo must contain exactly one GTM noscript fallback');
+assert.ok(/<noscript><iframe class="gtm-noscript"/.test(demoHtml), 'GTM noscript fallback must stay at the body start without an inline style');
+
+// 4. header + footer expose runtime hooks (so they cannot drift), and no stale "34"
 assert.ok(/data-kt-version/.test(demoHtml), 'demo has [data-kt-version] hook');
 assert.ok(/data-kt-module-count/.test(demoHtml), 'demo has [data-kt-module-count] hook');
 assert.ok(/data-kt-build/.test(demoHtml), 'demo has [data-kt-build] hook');
 
-// 4. no stale build artifacts committed. Ignored local OS files are irrelevant
+// 5. no stale build artifacts committed. Ignored local OS files are irrelevant
 // to a clean checkout, so inspect the Git index rather than the working folder.
 const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean);
 const stale = tracked.filter((file) => /(^|\/)(?:\.fuse_hidden[^/]*|\.DS_Store)$/.test(file));
 assert.strictEqual(stale.length, 0, `stale files present: ${stale.join(', ')}`);
 
-// 5. Canonical live-demo links stay synchronized across package/docs/locales.
+// 6. Canonical live-demo links stay synchronized across package/docs/locales.
 const linkedDocs = [
   'package.json', 'README.md', 'AI-PROMPT-GUIDE.md', 'docs/RELEASING.md',
   'i18n/README.ko.md', 'i18n/README.jp.md', 'i18n/README.zh-CN.md',

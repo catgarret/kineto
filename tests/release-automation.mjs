@@ -13,6 +13,8 @@ const agents = read('AGENTS.md');
 const claude = read('CLAUDE.md');
 const changelog = read('CHANGELOG.md');
 const note = read(`.github/release-notes/v${pkg.version}.md`);
+const security = read('SECURITY.md');
+const supplyChain = read('docs/supply-chain.md');
 
 assert.match(workflow, /tags:\s*\n\s*-\s*"v\[0-9\]\+\.\[0-9\]\+\.\[0-9\]\+"/);
 assert.match(workflow, /id-token:\s*write/);
@@ -31,6 +33,10 @@ assert.match(demoWorkflow, /if: env\.DEMO_SITE_TOKEN != ''/);
 assert.doesNotMatch(demoWorkflow, /DEMO_SITE_TOKEN[\s\S]{0,300}exit 1/);
 assert.match(demoWorkflow, /rsync -a --delete site\/ public-site\/example\/kineto\//);
 assert.doesNotMatch(demoWorkflow, /configure-pages|deploy-pages/);
+assert.match(security, /provenance/i);
+assert.match(security, /3 business days/);
+assert.match(supplyChain, /Socket/);
+assert.match(supplyChain, /npm run verify/);
 
 execFileSync(process.execPath, [path.join(root, 'scripts/check-release.mjs'), `v${pkg.version}`], {
   cwd: root,

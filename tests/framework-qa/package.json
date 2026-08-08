@@ -4,13 +4,15 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "qa": "npm run build && node run-qa.mjs"
+    "qa": "npm run build && node run-qa.mjs && node --preserve-symlinks ssr-qa.mjs"
   },
   "dependencies": {
+    "@dong-gri/kineto": "file:../..",
     "jquery": "^3.7.1",
-    "kineto": "file:../..",
+    "picomatch": "4.0.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "scheduler": "0.27.0",
     "vue": "^3.5.18"
   },
   "devDependencies": {

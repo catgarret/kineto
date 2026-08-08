@@ -1,9 +1,22 @@
 import { chromium } from 'playwright-core';
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+
+async function browserPath() {
+  if (process.env.MK_CHROMIUM || process.env.KT_CHROME) return process.env.MK_CHROMIUM || process.env.KT_CHROME;
+  const corePath = chromium.executablePath();
+  if (existsSync(corePath)) return corePath;
+  // The repository-level Playwright install owns the browser cache in local and
+  // CI development runs; keep the fixture's runtime dependency light while
+  // still using that verified browser when playwright-core has no local binary.
+  const bundled = await import('playwright').catch(() => null);
+  const bundledPath = bundled?.chromium?.executablePath?.();
+  return bundledPath && existsSync(bundledPath) ? bundledPath : '/usr/bin/chromium';
+}
 
 let browser;
 try {
-  browser = await chromium.launch({ executablePath: '/usr/bin/chromium', headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage', '--allow-file-access-from-files'] });
+  browser = await chromium.launch({ executablePath: await browserPath(), headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage', '--allow-file-access-from-files'] });
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.stack || error.message));

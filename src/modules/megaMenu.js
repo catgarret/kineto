@@ -78,7 +78,7 @@ export default {
       entry.trg.setAttribute('aria-expanded', 'true');
       entry.panel.hidden = false;
       placeScrollablePanel(entry);
-      if (!reduce) {
+      if (!reduce && typeof entry.panel.animate === 'function') {
         entry.anim = entry.panel.animate(
           [{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'translateY(0)' }],
           { duration: duration * 1000, easing: 'cubic-bezier(.22,.8,.3,1)' }
@@ -95,7 +95,7 @@ export default {
         entry.anim = null;
       };
       if (entry.anim) { entry.anim.cancel(); entry.anim = null; }
-      if (reduce || instant) hide();
+      if (reduce || instant || typeof entry.panel.animate !== 'function') hide();
       else {
         entry.anim = entry.panel.animate(
           [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-6px)' }],
@@ -172,13 +172,29 @@ export default {
 
       const hoverMode = itemTrigger === 'hover';
       if (canHover && (hoverMode || zones.length)) { li.addEventListener('mouseenter', onEnter); li.addEventListener('mouseleave', onLeave); }
-      trg.addEventListener('click', onClick);
+      // Touch browsers consistently synthesize click, but opening on pointerup
+      // as well avoids a menu being lost when a page-level touch handler cancels
+      // that synthetic click. The timestamp guard keeps one tap to one toggle.
+      let lastTouchToggle = -Infinity;
+      const onPointerUp = (event) => {
+        if (event.pointerType === 'mouse' || (hoverMode && canHover && window.innerWidth > 720)) return;
+        const now = performance.now();
+        if (now - lastTouchToggle < 400) return;
+        lastTouchToggle = now;
+        event.preventDefault();
+        (openEntry === entry) ? doClose(entry) : doOpen(entry);
+      };
+      const guardedClick = (event) => {
+        if (event.detail === 0 || performance.now() - lastTouchToggle >= 400) onClick(event);
+      };
+      trg.addEventListener('pointerup', onPointerUp);
+      trg.addEventListener('click', guardedClick);
       if (canHover) zones.forEach((z) => { z.addEventListener('mouseenter', onEnter); z.addEventListener('mouseleave', onLeave); });
       trg.addEventListener('keydown', onKey);
       panel.addEventListener('keydown', onPanelKey);
       li.addEventListener('focusout', onFocusOut);
 
-      entry.handlers = { onEnter, onLeave, onClick, onKey, onPanelKey, onFocusOut, zones };
+      entry.handlers = { onEnter, onLeave, onClick: guardedClick, onPointerUp, onKey, onPanelKey, onFocusOut, zones };
       entries.push(entry);
     });
 
@@ -210,6 +226,7 @@ export default {
           const h = entry.handlers;
           entry.li.removeEventListener('mouseenter', h.onEnter);
           entry.li.removeEventListener('mouseleave', h.onLeave);
+          entry.trg.removeEventListener('pointerup', h.onPointerUp);
           entry.trg.removeEventListener('click', h.onClick);
           entry.trg.removeEventListener('keydown', h.onKey);
           entry.panel.removeEventListener('keydown', h.onPanelKey);

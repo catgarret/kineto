@@ -38,7 +38,11 @@ const fails = [];
 const ok = (c, m) => { if (!c) fails.push(m); };
 ok(!/\sstyle="/.test(fs.readFileSync(path.join(root, 'demo/index.html'), 'utf8')), 'demo/index.html contains static inline style attributes');
 const sourceDocument = new JSDOM(fs.readFileSync(path.join(root, 'demo/index.html'), 'utf8')).window.document;
-ok(sourceDocument.querySelectorAll('script:not([src])').length === 0, 'demo contains inline behavior scripts');
+const inlineScripts = [...sourceDocument.querySelectorAll('script:not([src])')];
+ok(
+  inlineScripts.length === 1 && /googletagmanager\.com\/gtm\.js/.test(inlineScripts[0].textContent),
+  'demo may contain only the required Google Tag Manager bootstrap inline script'
+);
 ok(sourceDocument.querySelectorAll('style').length === 0, 'demo contains inline style blocks');
 
 // 1. Module Index

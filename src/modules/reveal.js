@@ -254,6 +254,19 @@ export default {
       return `inset(${v} 0px 0px 0px)`; // up (default)
     };
     let from = PRESETS[resolvedPreset];
+    // The historical slide presets use full-element percentages, which are good
+    // for cards but too large for compact inline content. `distance` provides a
+    // direct px override without forcing consumers to reproduce internal styles.
+    if (from && opts.distance != null && opts.distance !== '') {
+      const distance = Math.max(0, Number(opts.distance));
+      if (Number.isFinite(distance)) {
+        from = { ...from };
+        if ('xPercent' in from) { from.x = Math.sign(from.xPercent || 1) * distance; delete from.xPercent; }
+        if ('yPercent' in from) { from.y = Math.sign(from.yPercent || 1) * distance; delete from.yPercent; }
+        if ('x' in from && !('xPercent' in PRESETS[resolvedPreset])) from.x = Math.sign(from.x || 1) * distance;
+        if ('y' in from && !('yPercent' in PRESETS[resolvedPreset])) from.y = Math.sign(from.y || 1) * distance;
+      }
+    }
     if (isClip) from = { opacity: 1, clipPath: clipAt(1) };
     if (!from) {
       console.warn(`[Kineto/reveal] Unknown preset: ${preset}`);

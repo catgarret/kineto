@@ -336,6 +336,7 @@ export default {
     let position = index;      // rendered (smoothed) position
     let target = index;        // where the spring is heading
     let dragging = false;
+    let dragMoved = false;
     let dragStartX = 0;
     let dragStartTarget = 0;
     let lastMoveX = 0;
@@ -398,6 +399,7 @@ export default {
       slide.setAttribute('role', 'group');
       slide.setAttribute('aria-roledescription', 'slide');
       slide.setAttribute('aria-label', `${slideIndex + 1} of ${slides.length}`);
+      slide.querySelectorAll('img').forEach((image) => { image.draggable = false; });
     });
 
     const metrics = () => {
@@ -609,6 +611,7 @@ export default {
     if (syncOnClick) {
       slides.forEach((slide, slideIndex) => {
         const onClick = (event) => {
+          if (performance.now() < suppressClickUntil) { event.preventDefault(); return; }
           if (event.target.closest?.('a,button,input,select,textarea')) return;
           if (slideIndex === index) return;
           goTo(slideIndex);
@@ -676,6 +679,7 @@ export default {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
       if (event.pointerType === 'mouse' ? !allowDrag : !allowTouch) return;
       dragging = true;
+      dragMoved = false;
       pointerId = event.pointerId;
       dragStartX = vertical ? event.clientY : event.clientX;
       dragStartTarget = target;
@@ -691,6 +695,8 @@ export default {
       const { step } = metrics();
       const pointerPosition = vertical ? event.clientY : event.clientX;
       const diff = pointerPosition - dragStartX;
+      if (!dragMoved && Math.abs(diff) < 5) return;
+      dragMoved = true;
       let value = dragStartTarget - diff / Math.max(1, step);
       if (!seamless) {
         if (value < 0) value *= 0.3;
@@ -708,6 +714,7 @@ export default {
       if (!dragging || event.pointerId !== pointerId) return;
       dragging = false;
       wrap.releasePointerCapture?.(pointerId);
+      if (dragMoved) suppressClickUntil = performance.now() + 250;
       const { step } = metrics();
       const fling = clamp(velocity * step * 0.35 / Math.max(1, step), -1.2, 1.2);
       goTo(target + fling);
@@ -730,7 +737,8 @@ export default {
     prevButtons.forEach((button) => bindButton(button, prev));
 
     // Horizontal swipe must win over page scroll once a drag has started.
-    const onTouchMove = (event) => { if (dragging) event.preventDefault(); };
+    let suppressClickUntil = 0;
+    const onTouchMove = (event) => { if (dragging && dragMoved) event.preventDefault(); };
     wrap.addEventListener('pointerdown', onDown);
     wrap.addEventListener('pointermove', onMove);
     wrap.addEventListener('pointerup', onEnd);

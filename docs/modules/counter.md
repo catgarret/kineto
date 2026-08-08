@@ -20,6 +20,7 @@
 <span data-kt-counter="pop" data-kt-to="98760" data-kt-format="," data-kt-pop-scale="1.9">98,760</span>
 <span data-kt-counter="flip" data-kt-to="365">0</span>
 <span data-kt-counter="clock" data-kt-clock-style="flip" data-kt-seconds="true"></span>
+<span data-kt-counter="clock" data-kt-seconds-only="true" data-kt-seconds-digits="3" data-kt-seconds-label="S" data-kt-since="2026-08-02T00:00:00Z"></span>
 ```
 
 ## Pop 동작 계약
@@ -48,6 +49,8 @@
 | `tileColor` / `tileTextColor` | 모드 기본값 | Flip 타일과 숫자 색 |
 | `clockStyle` | `roll` | `roll`, `fade`, `instant`, `flip` |
 | `seconds` / `hour12` | 모드 기본값 | 초 표시와 12시간제 |
+| `secondsOnly` | `false` | Clock을 `000S` 같은 초 단위 표시로 전환 |
+| `secondsDigits` / `secondsLabel` | `3` / `'S'` | 초 단위 표시의 최소 자릿수와 접미사 |
 | `until` / `since` | 없음 | 카운트다운 목표 또는 경과 시간 기준 |
 | `start` | `top 85%` | ScrollTrigger 시작. `false`면 즉시 |
 | `once` | `true` | 재진입 재생 정책 |
@@ -58,3 +61,4 @@
 - `digit`와 `pop`은 세로 reel을 만들지 않습니다.
 - `pop`은 최종 문자열을 다른 숫자로 바꾸지 않습니다.
 - `destroy()`는 원래 HTML, style, ARIA를 복원합니다.
+- Clock의 `blink:true`는 시간 구분자만 깜빡이며, `secondsOnly`의 단위(`S`)에는 적용되지 않습니다.
