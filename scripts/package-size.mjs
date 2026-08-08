@@ -23,10 +23,11 @@ const BUDGET = {
   // the tarball. Measured after adding it: 460.3 KB packed / 1563.0 KB unpacked
   // / 65 files. First-party declarations add six small files and about 22 KB
   // unpacked while leaving the compressed package below the original limit.
-  // The compact interaction and accessibility fixes in 0.8.51 add 0.4 KB to
-  // the release archive; keep one narrow KB of headroom instead of silently
-  // accepting a larger package.
-  packedKb: 471,
+  // npm 11 on the Node 24 release runner produces an archive up to 472.2 KB
+  // for the same allowlisted files (zlib variance). Keep less than 1 KB above
+  // that measured release value rather than treating runner compression as a
+  // product-size regression.
+  packedKb: 473,
   unpackedKb: 1600,
   files: 75
 };

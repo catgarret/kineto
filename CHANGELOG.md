@@ -4,10 +4,12 @@
 
 ### English
 
+- Made the release-package budget robust to the measured Node 24/npm 11 archive compression variance without widening the package allowlist.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
+- 패키지 허용 목록은 유지한 채 Node 24/npm 11에서 확인된 아카이브 압축 편차를 반영하도록 릴리스 패키지 예산을 조정했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.51] - 2026-08-08
