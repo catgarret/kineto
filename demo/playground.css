@@ -395,6 +395,10 @@
 .kt-playground>summary>.kt-playground__summary-name{flex:0 1 auto;min-width:0;max-width:58%;overflow:hidden;white-space:nowrap;display:inline-flex;align-items:center;align-self:center;line-height:1}
 .kt-playground>summary>.kt-playground__summary-name>*{display:inline-flex;align-items:center}
 
+/* The pseudo-element is a flex item. Center it as a real box rather than on
+   the text baseline so the plus/minus aligns with the left settings label. */
+.kt-playground>summary::after{display:grid;place-items:center;align-self:stretch;text-align:initial}
+
 /* Apple-style thin scrollbars for the settings drawer list + code block only. */
 .kt-playground__viewstage>.kt-playground__groups{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--muted) 42%,transparent) transparent}
 .kt-playground__viewstage>.kt-playground__groups::-webkit-scrollbar{width:9px;height:9px}

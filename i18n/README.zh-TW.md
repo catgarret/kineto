@@ -109,6 +109,7 @@ Kineto.disableSmooth();
 | `brushReveal` | `data-kt-brush-reveal` | 指針刷蒙版 |
 | `cardGlow` | `data-kt-card-glow` | 指針聚光燈/反射光/外部光 |
 | `counter` | `data-kt-counter` | 數數、翻轉、時鐘、倒數計時 |
+| `dateTime` | `data-kt-date-time` | 伺服器日期的相對與絕對時間顯示 |
 | `cssScroll` | `data-kt-css-scroll` | CSS 變數/滾動時間軸集成 |
 | `cursor` | `data-kt-cursor` | 11個自訂遊標 |
 | `fullpage` | `data-kt-fullpage` | 垂直/水平/混合軸整頁 |

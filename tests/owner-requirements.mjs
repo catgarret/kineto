@@ -16,7 +16,7 @@ const source = Object.fromEntries(await Promise.all([
 assert.equal(requirements.libraryVersion, packageJson.version);
 assert.equal(requirements.requirements.length, 48, 'all 48 owner requirements must remain locked');
 assert.equal(new Set(requirements.requirements.map(({ id }) => id)).size, 48, 'requirement IDs must be unique');
-assert.equal(features.moduleCount, 51);
+assert.equal(features.moduleCount, 52);
 assert.ok(
   aiPromptGuide.indexOf('Canonical prompt for AI tools (English)')
     < aiPromptGuide.indexOf('## 한국어 사용 안내'),

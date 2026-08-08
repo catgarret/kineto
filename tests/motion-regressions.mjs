@@ -155,6 +155,8 @@ fullpageEl.remove();
 
 const sliderModule = (await import('../src/modules/slider.js')).default;
 const counterModule = (await import('../src/modules/counter.js')).default;
+const dateTimeModule = (await import('../src/modules/dateTime.js')).default;
+const pageRevealModule = (await import('../src/modules/pageReveal.js')).default;
 const bottomSheetModule = (await import('../src/modules/bottomSheet.js')).default;
 const loadingIndicatorModule = (await import('../src/modules/loadingIndicator.js')).default;
 const coverRevealModule = (await import('../src/modules/coverReveal.js')).default;
@@ -193,6 +195,41 @@ assert.match(secondsCounter.textContent, /^0?12S$/, 'clock seconds-only mode mus
 assert.equal(secondsCounter.querySelector('.kt-counter-separator--blink'), null, 'the seconds-only unit must not blink like a clock colon');
 secondsInstance.destroy();
 secondsCounter.remove();
+
+const relativeTime = document.createElement('time');
+relativeTime.textContent = '2026년 8월 9일 10:30';
+document.body.appendChild(relativeTime);
+const relativeInstance = dateTimeModule.create(relativeTime, {
+  date: '2026년 8월 9일 10:30', mode: 'both', locale: 'ko', now: '2026-08-09T10:35:00+09:00', live: false
+});
+assert.match(relativeTime.textContent, /5분 전/, 'dateTime must parse Korean server-rendered dates into relative time');
+assert.match(relativeTime.textContent, /2026/, 'dateTime both mode must retain an absolute timestamp');
+relativeInstance.destroy();
+assert.equal(relativeTime.textContent, '2026년 8월 9일 10:30', 'dateTime destroy must restore server-rendered content');
+relativeTime.remove();
+
+// Flash is an exposure strobe, while Fade is a single opaque cover dissolving.
+// Record the WAAPI frames so a future refactor cannot collapse them into the
+// same opacity curve again.
+const pageRevealFrames = [];
+const nativeAnimate = window.HTMLElement.prototype.animate;
+window.HTMLElement.prototype.animate = function recordPageReveal(frames, options) {
+  pageRevealFrames.push({ frames, options, background: this.style.background, filter: this.style.filter });
+  return { finished: new Promise(() => {}), cancel() {}, pause() {}, play() {} };
+};
+const pageRevealHost = document.createElement('main');
+document.body.appendChild(pageRevealHost);
+const flashReveal = pageRevealModule.create(pageRevealHost, { effect: 'flash', duration: 0.4, color: '#ff5b1c' });
+const flashFrames = pageRevealFrames.splice(0);
+flashReveal.destroy();
+const fadeReveal = pageRevealModule.create(pageRevealHost, { effect: 'fade', duration: 0.4, color: '#ff5b1c' });
+const fadeFrames = pageRevealFrames.splice(0);
+fadeReveal.destroy();
+window.HTMLElement.prototype.animate = nativeAnimate;
+pageRevealHost.remove();
+assert.ok(flashFrames.some(({ background, frames }) => background === 'rgb(255, 255, 255)' && frames.length === 5 && frames[1].opacity === 1 && frames[3].opacity === 0.44), 'Page Reveal flash must use a white double exposure pulse');
+assert.ok(flashFrames.some(({ filter }) => filter === 'blur(16px)'), 'Page Reveal flash must leave a tinted afterimage rather than fading the cover');
+assert.ok(fadeFrames.length === 1 && fadeFrames[0].frames.length === 2 && fadeFrames[0].frames[0].opacity === 1 && fadeFrames[0].frames[1].opacity === 0, 'Page Reveal fade must remain one continuous cover dissolve');
 
 // Determinate indicators update nearby copy and can subscribe to Loader's
 // existing progress event without a new cross-module dependency.

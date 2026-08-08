@@ -49,7 +49,7 @@ for (const key of ['내려받는 중', '{value}% 완료']) {
 }
 // Two tabbed pairs replace four descriptions with two; Wave and Film Grain add
 // two dedicated Lazy examples.
-assert.equal(descriptions.length, 139);
+assert.equal(descriptions.length, 141);
 assert.equal(titles.length, 16);
 
 for (const [label, values, dictionary] of [

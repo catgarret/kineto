@@ -151,6 +151,7 @@ Kineto.disableSmooth();
 | `brushReveal` | `data-kt-brush-reveal` | 포인터 브러시 마스크 |
 | `cardGlow` | `data-kt-card-glow` | 포인터 스포트라이트·반사·외곽광 |
 | `counter` | `data-kt-counter` | 숫자 카운트·플립·시계·카운트다운 |
+| `dateTime` | `data-kt-date-time` | 서버 날짜의 상대 시간·절대 시간 표기 |
 | `cssScroll` | `data-kt-css-scroll` | CSS 변수·스크롤 타임라인 연동 |
 | `cursor` | `data-kt-cursor` | 11가지 커스텀 커서 |
 | `fullpage` | `data-kt-fullpage` | 세로·가로·혼합축 풀페이지 |

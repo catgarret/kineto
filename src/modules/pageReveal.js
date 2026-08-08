@@ -362,21 +362,26 @@ export default {
           .finished.then(done).catch(done);
       }
     } else if (effect === 'flash') {
-      // Flash is deliberately an exposure pulse, not a second curtain. It peaks
-      // quickly and dissipates in place, so its silhouette and timing remain
-      // distinct even when both effects use the same colour.
-      const glow = layer(`inset:0;background:${color2};mix-blend-mode:screen;`);
-      const flash = layer('inset:0;');
+      // Flash is an exposure strobe: a white peak and a short afterimage. It
+      // must not reuse the opaque colour-overlay fade, otherwise both presets
+      // read as the same "cover disappears" transition when colour2 is dark.
+      // The fixed white source is intentional; `color` only tints the delayed
+      // afterimage and preserves the caller's palette without making the flash
+      // itself muddy.
+      const glow = layer(`inset:0;background:${color};mix-blend-mode:screen;filter:blur(16px);`);
+      const flash = layer('inset:0;background:#fff;mix-blend-mode:screen;');
       play(flash, [
         { opacity: 0 },
-        { opacity: 0.92, offset: 0.12 },
-        { opacity: 0, offset: 0.62 }
-      ], { duration: Math.max(140, duration * 0.52), easing: 'steps(2,end)' });
+        { opacity: 1, offset: 0.055 },
+        { opacity: 0, offset: 0.16 },
+        { opacity: 0.44, offset: 0.235 },
+        { opacity: 0, offset: 0.38 }
+      ], { duration: Math.max(180, duration * 0.62), easing: 'steps(1,end)' });
       play(glow, [
-        { opacity: 0, transform: 'scale(.96)' },
-        { opacity: 0.36, transform: 'scale(1)', offset: 0.16 },
-        { opacity: 0, transform: 'scale(1.035)' }
-      ], { duration: Math.max(200, duration * 0.9), easing: 'cubic-bezier(.16,1,.3,1)' })
+        { opacity: 0, transform: 'scale(.97)' },
+        { opacity: 0.3, transform: 'scale(1)', offset: 0.17 },
+        { opacity: 0, transform: 'scale(1.05)' }
+      ], { duration: Math.max(240, duration * 0.96), easing: 'cubic-bezier(.16,1,.3,1)' })
         .finished.then(done).catch(done);
     } else {
       // curtain (default): the cover peels away in the chosen direction with a

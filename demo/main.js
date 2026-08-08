@@ -5,6 +5,12 @@
       document.documentElement.classList.remove('kt-preload');
       throw new Error('Kineto failed to load');
     }
+    // A fixed release-date sample eventually becomes a future timestamp. Keep
+    // this live demo five minutes behind the visitor's current clock instead.
+    document.querySelectorAll('[data-demo-relative-time]').forEach((node)=>{
+      node.setAttribute('data-kt-date',new Date(Date.now()-5*60*1000).toISOString());
+      node.setAttribute('data-kt-mode','relative');
+    });
     // Image Cover Reveal examples demonstrate the real per-image sampler by
     // default. This runs before autoInit on the live page; browser QA injects
     // scripts after DOM ready, so recreate an already-started instance there.
@@ -215,7 +221,7 @@
       setTimeout(finishIntro,9000); // absolute backstop regardless of load
     })();
     const MODULE_GROUPS={
-      'Text':['textSplit','blurText','typewriter','textReveal','textTransition','textFill','overflowText','glitch','counter'],
+      'Text':['textSplit','blurText','typewriter','textReveal','textTransition','textFill','overflowText','glitch','counter','dateTime'],
       'Media':['lazy','lightbox','slider','ambientMedia','brushReveal','scrollSequence','marquee','coverReveal'],
       'Scroll':['parallax','reveal','stickyStack','scrollVelocity','cssScroll','scrollShadows','stickyHeader','horizontalScroll','progress','fullpage'],
       'Pointer':['cursor','tilt','cardGlow','magnetic','ripple','vibrate','mouseParallax','gesture','drag'],
@@ -319,7 +325,7 @@
       const LABEL_OVERRIDE={cssScroll:'CSS Scroll',loader:'Loader'};
       const labelOf=(n)=>LABEL_OVERRIDE[n]||labelize(n);
       const SUBS={
-        textSplit:'문장을 글자·단어 단위로 쪼개 3D로 등장·교체.',blurText:'흐림에서 또렷하게, 스태거로 등장.',shuffle:'랜덤 글리프로 흩뿌린 뒤 확정.',typewriter:'타이핑·한글 자모 조합·캐럿.',textReveal:'글자별 점멸 후 확정되는 등장.',textTransition:'문장을 글자 단위로 교체.',textFill:'스크롤 진행률로 글자에 색이 차오름.',overflowText:'컨테이너보다 긴 텍스트의 여덟 가지 순환.',glitch:'RGB 분리·픽셀 시프트·데이터모시.',counter:'카운트업·플립·시계·카운트다운.',
+        textSplit:'문장을 글자·단어 단위로 쪼개 3D로 등장·교체.',blurText:'흐림에서 또렷하게, 스태거로 등장.',shuffle:'랜덤 글리프로 흩뿌린 뒤 확정.',typewriter:'타이핑·한글 자모 조합·캐럿.',textReveal:'글자별 점멸 후 확정되는 등장.',textTransition:'문장을 글자 단위로 교체.',textFill:'스크롤 진행률로 글자에 색이 차오름.',overflowText:'컨테이너보다 긴 텍스트의 여덟 가지 순환.',glitch:'RGB 분리·픽셀 시프트·데이터모시.',counter:'카운트업·플립·시계·카운트다운.',dateTime:'서버 날짜를 상대 시간·절대 시간으로 표시.',
         lazy:'이미지 로딩 중 재생되는 전환들.',lightbox:'전체화면 그룹 뷰어 — 줌·미니맵·필름스트립.',slider:'커버플로우 슬라이더.',ambientMedia:'재생 프레임을 샘플링한 주변광.',brushReveal:'포인터로 문질러 드러내는 브러시 마스크.',scrollSequence:'스크롤로 이미지 프레임을 스크럽.',marquee:'무한 흐름 마퀴.',radial:'원형 캐러셀(도크형).',coverReveal:'커버가 걷히며 콘텐츠 등장.',
         parallax:'레이어가 다른 속도로 움직여 깊이를 만듦.',reveal:'진입 시 방향·마스크·클록 등장.',stickyStack:'핀 고정 스택 — 세로·가로·플로팅.',scrollVelocity:'스크롤 속도·방향에 반응.',cssScroll:'CSS 애니메이션 타임라인에 연결.',scrollShadows:'스크롤 가능 영역에 엣지 그림자.',stickyHeader:'스크롤에 반응하는 고정 헤더.',horizontalScroll:'세로 스크롤로 가로 이동.',progress:'읽기 진행률 바·링.',fullpage:'한 화면씩 넘기는 풀페이지.',
         cursor:'커스텀 커서 프리셋.',tilt:'포인터 추종 3D 틸트 + 글레어.',cardGlow:'표면 반사·외곽 광택 글로우.',magnetic:'포인터로 끌려오는 자석 버튼.',ripple:'클릭 지점에서 퍼지는 리플.',vibrate:'햅틱 진동 패턴.',mouseParallax:'마우스·자이로 시차 이동.',gesture:'hover·press 스프링 제스처.',drag:'관성·경계·키보드 드래그.',
@@ -407,6 +413,10 @@
             ['텍스트', u=>u.querySelector('[data-kt-loading-indicator="shimmer"],[data-kt-loading-indicator="shimmer-wave"]')],
             ['터미널 · 미터/커서', u=>u.querySelector('[data-kt-terminal-style="meter"],[data-kt-terminal-style="cursor"],[data-kt-terminal-style="dots"],[data-kt-terminal-style="blocks"]')],
             ['터미널 · 프레임 스피너', u=>u.querySelector('[data-kt-loading-indicator="terminal"]')]
+          ],
+          counter:[
+            ['숫자', u=>!['Clock','Elapsed seconds','Countdown'].includes(u.querySelector('h3')?.textContent.trim())],
+            ['시간', u=>['Clock','Elapsed seconds','Countdown'].includes(u.querySelector('h3')?.textContent.trim())]
           ]
         };
         const groupUnits=(list,rules)=>{
@@ -506,6 +516,7 @@
                 const sh=document.createElement('h4');
                 sh.className='module-subgroup'; sh.textContent=label;
                 const sb=document.createElement('div'); sb.className=layoutFor(units);
+                if(n==='counter'&&label==='시간')sb.classList.add('module-block-body--counter-time');
                 // A long set of tiny previews (the 35 frame spinners) would run
                 // for a dozen rows at the default 3-up. Pack those denser.
                 if(units.length>=12) sb.classList.add('module-block-body--dense');
@@ -727,6 +738,16 @@
       const CARD_I18N=window.KINETO_COPY_I18N?.cards||{};
       const TITLE_I18N=window.KINETO_COPY_I18N?.titles||{};
       const UI_I18N=window.KINETO_COPY_I18N?.ui||{};
+      Object.assign(CARD_I18N,{
+        '서버가 내려준 날짜를 n분 전 같은 상대 시간으로 표시합니다.':[
+          'Shows a server-rendered timestamp as relative time, such as n minutes ago.',
+          'サーバー日時を「n分前」のような相対時刻で表示します。',
+          '将服务器日期显示为“n 分钟前”等相对时间。',
+          '將伺服器日期顯示為「n 分鐘前」等相對時間。',
+          'Показывает дату с сервера как относительное время, например «n минут назад».',
+          'Mostra una data del server in forma relativa, ad esempio «n minuti fa».'
+        ]
+      });
       const LANG_IDX={"en": 0, "ja": 1, "zh-CN": 2, "zh-TW": 3, "ru": 4, "it": 5};
       const cleanCopy=(value)=>value.replace(/\s+/g,' ').trim();
       const cardNodes=[...document.querySelectorAll([

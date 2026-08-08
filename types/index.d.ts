@@ -2,7 +2,7 @@ export type KinetoTarget = string | Element | Document | Iterable<Element> | Arr
 export type KinetoOptions = Record<string, unknown>;
 
 export type ModuleName =
-  | 'ambientMedia' | 'blurText' | 'brushReveal' | 'cardGlow' | 'counter'
+  | 'ambientMedia' | 'blurText' | 'brushReveal' | 'cardGlow' | 'counter' | 'dateTime'
   | 'cssScroll' | 'cursor' | 'fullpage' | 'glitch' | 'lazy' | 'lightbox'
   | 'loader' | 'loadingIndicator' | 'magnetic' | 'marquee' | 'mouseParallax'
   | 'overflowText' | 'pageReveal' | 'pageTransition' | 'parallax' | 'progress'
@@ -92,6 +92,7 @@ export const blurText: KinetoFactory;
 export const brushReveal: KinetoFactory;
 export const cardGlow: KinetoFactory;
 export const counter: KinetoFactory;
+export const dateTime: KinetoFactory;
 export const cssScroll: KinetoFactory;
 export const cursor: KinetoFactory;
 export const fullpage: KinetoFactory;

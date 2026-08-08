@@ -103,6 +103,35 @@ try {
   });
   assert.deepEqual(githubButton, { gap: '0px', iconSize: '16px' }, 'hero GitHub button must use its dedicated icon spacing');
 
+  const counterTimeRow = await page.evaluate(() => {
+    const block = document.getElementById('mod-counter');
+    const cards = [...block.querySelectorAll(':scope .module-block-body > .card')];
+    return ['Clock', 'Elapsed seconds', 'Countdown'].map((title) => {
+      const card = cards.find((item) => item.querySelector('h3')?.textContent.trim() === title);
+      const rect = card?.getBoundingClientRect();
+      return { title, left: rect?.left, top: rect?.top, width: rect?.width };
+    });
+  });
+  assert.ok(counterTimeRow.every((item) => Number.isFinite(item.width)), `counter time cards must remain in the Counter block (${JSON.stringify(counterTimeRow)})`);
+  assert.ok(counterTimeRow.every((item) => Math.abs(item.top - counterTimeRow[0].top) < 2), `Clock, elapsed seconds, and countdown must share one row (${JSON.stringify(counterTimeRow)})`);
+  assert.ok(counterTimeRow.every((item) => Math.abs(item.width - counterTimeRow[0].width) < 2), `counter time cards must have equal widths (${JSON.stringify(counterTimeRow)})`);
+
+  const relativeTimeDemo = await page.evaluate(() => {
+    const card = document.querySelector('[data-demo-module="dateTime"]');
+    const target = card?.querySelector('[data-kt-date-time]');
+    const panel = card?.querySelector(':scope > .kt-playground');
+    const body = panel?.__buildBody?.();
+    return {
+      text: target?.textContent?.trim() || '',
+      date: target?.dataset.ktDate || '',
+      hasSettings: Boolean(panel),
+      fields: [...(body?.querySelectorAll('[data-module="dateTime"][data-key]') || [])].map((field) => field.dataset.key)
+    };
+  });
+  assert.match(relativeTimeDemo.text, /(분 전|minute ago)/, 'relative-time demo must show a past relative timestamp: ' + JSON.stringify(relativeTimeDemo));
+  assert.ok(relativeTimeDemo.date, 'relative-time demo must seed a real server-date value: ' + JSON.stringify(relativeTimeDemo));
+  assert.ok(relativeTimeDemo.hasSettings && ['date', 'mode', 'locale', 'live'].every((key) => relativeTimeDemo.fields.includes(key)), 'relative-time demo must expose its settings: ' + JSON.stringify(relativeTimeDemo));
+
   const cover = await page.evaluate(() => {
     const text=document.querySelector('.demo-css-0a735447');
     const stage=text.closest('.demo-stage');

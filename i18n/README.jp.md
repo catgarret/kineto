@@ -109,6 +109,7 @@ Kineto.disableSmooth();
 | `brushReveal` | `data-kt-brush-reveal` | ポインターブラシマスク |
 | `cardGlow` | `data-kt-card-glow` | ポインタスポットライト・反射・外郭光 |
 | `counter` | `data-kt-counter` | 数字カウント・フリップ・時計・カウントダウン |
+| `dateTime` | `data-kt-date-time` | サーバー日時の相対・絶対時刻表示 |
 | `cssScroll` | `data-kt-css-scroll` | CSS変数・スクロールタイムライン連動 |
 | `cursor` | `data-kt-cursor` | 11のカスタムカーソル |
 | `fullpage` | `data-kt-fullpage` | 縦・横・混合軸 フルページ |

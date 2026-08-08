@@ -4,6 +4,7 @@ import parallaxModule from './modules/parallax.js';
 import mouseParallaxModule from './modules/mouseParallax.js';
 import revealModule from './modules/reveal.js';
 import counterModule from './modules/counter.js';
+import dateTimeModule from './modules/dateTime.js';
 import lazyModule from './modules/lazy.js';
 import textSplitModule from './modules/textSplit.js';
 import blurTextModule from './modules/blurText.js';
@@ -58,6 +59,7 @@ const moduleEntries = {
   mouseParallax: mouseParallaxModule,
   reveal: revealModule,
   counter: counterModule,
+  dateTime: dateTimeModule,
   lazy: lazyModule,
   textSplit: textSplitModule,
   blurText: blurTextModule,
@@ -115,6 +117,7 @@ export const parallax = call('parallax');
 export const mouseParallax = call('mouseParallax');
 export const reveal = call('reveal');
 export const counter = call('counter');
+export const dateTime = call('dateTime');
 export const lazy = call('lazy');
 export const textSplit = call('textSplit');
 export const blurText = call('blurText');

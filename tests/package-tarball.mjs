@@ -30,7 +30,7 @@ try {
     '--eval',
     "import Kineto from '@dong-gri/kineto'; console.log(JSON.stringify({version:Kineto.version,modules:Object.keys(Kineto.registry).length}))"
   ], { cwd: temp, encoding: 'utf8' }));
-  assert.equal(esm.modules, 51);
+  assert.equal(esm.modules, 52);
 
   const cjs = JSON.parse(execFileSync(process.execPath, [
     '--input-type=commonjs',

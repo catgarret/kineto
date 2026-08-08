@@ -110,6 +110,7 @@ Kineto.disableSmooth();
 | `brushReveal` | `data-kt-brush-reveal` | Маска кисти-указателя |
 | `cardGlow` | `data-kt-card-glow` | Указатель прожектора/отражение/внешний свет |
 | `counter` | `data-kt-counter` | Подсчет чисел, переворот, часы, обратный отсчет |
+| `dateTime` | `data-kt-date-time` | Относительное и абсолютное время серверной даты |
 | `cssScroll` | `data-kt-css-scroll` | Интеграция переменных CSS/прокрутки временной шкалы |
 | `cursor` | `data-kt-cursor` | 11 пользовательских курсоров |
 | `fullpage` | `data-kt-fullpage` | Полная страница по вертикальной/горизонтальной/смешанной оси |

@@ -110,6 +110,7 @@ Kineto.disableSmooth();
 | `brushReveal` | `data-kt-brush-reveal` | Maschera pennello puntatore |
 | `cardGlow` | `data-kt-card-glow` | Faretto puntatore/riflesso/luce esterna |
 | `counter` | `data-kt-counter` | Conteggio dei numeri, rotazione, orologio, conto alla rovescia |
+| `dateTime` | `data-kt-date-time` | Data del server in tempo relativo e assoluto |
 | `cssScroll` | `data-kt-css-scroll` | Integrazione di variabili CSS/sequenza temporale di scorrimento |
 | `cursor` | `data-kt-cursor` | 11 cursori personalizzati |
 | `fullpage` | `data-kt-fullpage` | Pagina intera asse verticale/orizzontale/misto |

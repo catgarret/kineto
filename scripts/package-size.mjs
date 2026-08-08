@@ -19,16 +19,12 @@ const unpackedKb = result.unpackedSize / 1024;
 const check = process.argv.includes('--check');
 
 const BUDGET = {
-  // The modular graph adds 52 public entries but compresses shared code across
-  // the tarball. Measured after adding it: 460.3 KB packed / 1563.0 KB unpacked
-  // / 65 files. First-party declarations add six small files and about 22 KB
-  // unpacked while leaving the compressed package below the original limit.
-  // npm 11 on the Node 24 release runner produces an archive up to 472.2 KB
-  // for the same allowlisted files (zlib variance). Keep less than 1 KB above
-  // that measured release value rather than treating runner compression as a
-  // product-size regression.
-  packedKb: 473,
-  unpackedKb: 1600,
+  // The 52-entry modular graph adds the Date Time runtime while retaining the
+  // same allowlist. On Node 25/npm 11 it measures 473.9 KB packed / 1604.7 KB
+  // unpacked / 72 files. Keep only a small headroom for archive compression
+  // variance; this is not a blanket increase for future dependencies.
+  packedKb: 475,
+  unpackedKb: 1608,
   files: 75
 };
 

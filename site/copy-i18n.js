@@ -1398,6 +1398,22 @@ window.KINETO_COPY_I18N = {
       "讓漸層光束沿卡片輪廓流動。",
       "Проводит градиентный луч по контуру карточки.",
       "Fa scorrere un raggio sfumato lungo il contorno della scheda."
+    ],
+    "서버 기준 시점부터 지난 시간을 000S 형식으로 표시합니다.": [
+      "Shows elapsed time since a server timestamp in the 000S format.",
+      "サーバー時刻からの経過時間を 000S 形式で表示します。",
+      "以 000S 格式显示自服务器时间点以来的经过秒数。",
+      "以 000S 格式顯示自伺服器時間點以來的經過秒數。",
+      "Показывает время с серверной отметки в формате 000S.",
+      "Mostra il tempo trascorso da un istante del server nel formato 000S."
+    ],
+    "서버가 내려준 날짜를 n분 전 같은 상대 시간으로 표시합니다.": [
+      "Shows a server-rendered timestamp as relative time, such as n minutes ago.",
+      "サーバー日時を「n分前」のような相対時刻で表示します。",
+      "将服务器日期显示为“n 分钟前”等相对时间。",
+      "將伺服器日期顯示為「n 分鐘前」等相對時間。",
+      "Показывает дату с сервера как относительное время, например «n минут назад».",
+      "Mostra una data del server in forma relativa, ad esempio «n minuti fa»."
     ]
   },
   "titles": {

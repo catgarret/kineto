@@ -27,7 +27,7 @@ let pass=0,fail=0; const ck=(n,c,d)=>{console.log(`  [${c?'PASS':'FAIL'}] ${n}${
 console.log('  measured:', JSON.stringify(r));
 ck('runtime version == package', r.runtime===pkg, `${r.runtime} vs ${pkg}`);
 ck('all displayed versions == runtime', r.allVersions.every(v=>v===r.runtime), JSON.stringify(r.allVersions));
-ck('module count == 51', r.moduleCount==='51', r.moduleCount);
+ck('module count == 52', r.moduleCount==='52', r.moduleCount);
 ck('no stale "34" in body text', r.has34===false);
 ck('build id stamped', /^\S+$/.test((r.build||'').trim()) && /build/i.test(r.buildLabel||''), `${r.buildLabel}=${r.build}`);
 await browser.close(); server.close();

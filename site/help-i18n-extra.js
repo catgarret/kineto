@@ -462,6 +462,103 @@
 (function () {
   const sets = window.MK_HELP_I18N;
   if (!sets) return;
+
+  const DATE_TIME_HELP = {
+    ko: {
+      date: '서버가 내려준 원본 시각입니다. ISO 8601, Unix 초·밀리초, 한글 날짜와 점·슬래시 날짜 형식을 해석합니다.',
+      mode: '상대 시간, 현지화된 절대 시간, 또는 두 표기를 함께 표시할지 선택합니다.',
+      locale: 'Intl 표기에 사용할 BCP 47 로케일입니다. 예: ko-KR, en-US.',
+      numeric: 'auto는 어제 같은 자연어를 허용하고, always는 항상 숫자로 표시합니다.',
+      dateStyle: '절대 표기에서 달력 날짜의 상세 수준을 정합니다.',
+      timeStyle: '절대 표기에서 시각의 상세 수준을 정합니다. 비우면 시각을 숨깁니다.',
+      timeZone: '절대 표기에 쓸 IANA 시간대입니다. 예: Asia/Seoul.',
+      live: '상대 시간이 자동으로 갱신됩니다. 서버 렌더 결과를 고정하려면 끕니다.',
+      updateInterval: '상대 시간을 다시 계산하는 주기입니다. 최소값은 1초입니다.',
+      fallback: '날짜를 해석할 수 없을 때 그대로 표시할 문구입니다.'
+    },
+    en: {
+      date: 'Source timestamp from the server. ISO 8601, Unix seconds or milliseconds, Korean dates, and common dot or slash dates are accepted.',
+      mode: 'Choose relative time, localized absolute time, or both together.',
+      locale: 'BCP 47 locale used by Intl formatting, for example ko-KR or en-US.',
+      numeric: 'auto allows words such as yesterday; always uses a numeric amount.',
+      dateStyle: 'Level of detail for the localized calendar date.',
+      timeStyle: 'Optional detail for the localized clock time. Leave blank to hide it.',
+      timeZone: 'IANA time zone used for absolute output, for example Asia/Seoul.',
+      live: 'Refreshes relative time automatically. Turn off for a fixed server-rendered snapshot.',
+      updateInterval: 'Milliseconds between relative-time refreshes; the minimum is one second.',
+      fallback: 'Shown unchanged when the supplied timestamp cannot be interpreted.'
+    },
+    ja: {
+      date: 'サーバーから渡される元の日時です。ISO 8601、Unix秒・ミリ秒、韓国語表記、ドット・スラッシュ区切りの日付を解釈します。',
+      mode: '相対時刻、ローカライズされた絶対時刻、または両方を表示します。',
+      locale: 'Intlの表示に使うBCP 47ロケールです。例: ko-KR、en-US。',
+      numeric: 'autoは「昨日」のような表現を許可し、alwaysは常に数値で表示します。',
+      dateStyle: '絶対表示のカレンダー日付の詳しさを決めます。',
+      timeStyle: '絶対表示の時刻の詳しさです。空欄なら時刻を隠します。',
+      timeZone: '絶対表示に使うIANAタイムゾーンです。例: Asia/Seoul。',
+      live: '相対時刻を自動更新します。サーバー出力を固定する場合はオフにします。',
+      updateInterval: '相対時刻を再計算する間隔です。最小値は1秒です。',
+      fallback: '日時を解釈できないときにそのまま表示する文言です。'
+    },
+    'zh-CN': {
+      date: '服务器提供的原始时间。支持 ISO 8601、Unix 秒或毫秒、韩文日期及常见的点号或斜杠日期。',
+      mode: '选择相对时间、本地化绝对时间，或同时显示两者。',
+      locale: 'Intl 格式化使用的 BCP 47 区域设置，例如 ko-KR 或 en-US。',
+      numeric: 'auto 可使用“昨天”等自然语言；always 始终显示数值。',
+      dateStyle: '设置绝对时间中日历日期的详细程度。',
+      timeStyle: '设置绝对时间中时刻的详细程度。留空则隐藏时刻。',
+      timeZone: '绝对时间使用的 IANA 时区，例如 Asia/Seoul。',
+      live: '自动刷新相对时间。若要固定服务器渲染结果，请关闭。',
+      updateInterval: '重新计算相对时间的间隔，最小为一秒。',
+      fallback: '无法解析时间时原样显示的文字。'
+    },
+    'zh-TW': {
+      date: '伺服器提供的原始時間。支援 ISO 8601、Unix 秒或毫秒、韓文日期及常見的點號或斜線日期。',
+      mode: '選擇相對時間、在地化絕對時間，或同時顯示兩者。',
+      locale: 'Intl 格式化使用的 BCP 47 地區設定，例如 ko-KR 或 en-US。',
+      numeric: 'auto 可使用「昨天」等自然語言；always 一律顯示數值。',
+      dateStyle: '設定絕對時間中日曆日期的詳細程度。',
+      timeStyle: '設定絕對時間中時刻的詳細程度。留空則隱藏時刻。',
+      timeZone: '絕對時間使用的 IANA 時區，例如 Asia/Seoul。',
+      live: '自動更新相對時間。若要固定伺服器渲染結果，請關閉。',
+      updateInterval: '重新計算相對時間的間隔，最小為一秒。',
+      fallback: '無法解析時間時原樣顯示的文字。'
+    },
+    ru: {
+      date: 'Исходная дата от сервера. Поддерживаются ISO 8601, Unix в секундах и миллисекундах, корейские даты и обычные даты с точками или слешами.',
+      mode: 'Выберите относительное время, локализованное абсолютное время или оба варианта.',
+      locale: 'Локаль BCP 47 для форматирования Intl, например ko-KR или en-US.',
+      numeric: 'auto допускает слова вроде «вчера», always всегда использует число.',
+      dateStyle: 'Степень детализации календарной даты в абсолютном формате.',
+      timeStyle: 'Детализация времени в абсолютном формате. Оставьте пустым, чтобы скрыть его.',
+      timeZone: 'Часовой пояс IANA для абсолютного формата, например Asia/Seoul.',
+      live: 'Автоматически обновляет относительное время. Отключите для фиксированного серверного снимка.',
+      updateInterval: 'Интервал пересчёта относительного времени в миллисекундах; минимум одна секунда.',
+      fallback: 'Текст, который показывается без изменений, если дату нельзя распознать.'
+    },
+    it: {
+      date: 'Timestamp sorgente dal server. Sono accettati ISO 8601, Unix in secondi o millisecondi, date coreane e comuni date con punti o barre.',
+      mode: 'Scegli tempo relativo, tempo assoluto localizzato oppure entrambi.',
+      locale: 'Locale BCP 47 usato da Intl, per esempio ko-KR o en-US.',
+      numeric: 'auto consente parole come ieri; always usa sempre un valore numerico.',
+      dateStyle: 'Livello di dettaglio della data di calendario nel formato assoluto.',
+      timeStyle: 'Dettaglio dell’orario nel formato assoluto. Lascia vuoto per nasconderlo.',
+      timeZone: 'Fuso orario IANA per il formato assoluto, per esempio Asia/Seoul.',
+      live: 'Aggiorna automaticamente il tempo relativo. Disattivalo per una vista server fissa.',
+      updateInterval: 'Millisecondi tra gli aggiornamenti del tempo relativo; il minimo è un secondo.',
+      fallback: 'Testo mostrato invariato quando il timestamp non può essere interpretato.'
+    }
+  };
+
+  for (const [lang, tips] of Object.entries(DATE_TIME_HELP)) {
+    sets[lang] = sets[lang] || {};
+    sets[lang].dateTime = Object.assign({}, sets[lang].dateTime, tips);
+  }
+})();
+
+(function () {
+  const sets = window.MK_HELP_I18N;
+  if (!sets) return;
   const copy = {
     ko: { mask: '마지막 색상 패널을 색 없는 콘텐츠 마스크로 대체합니다. layers가 2이면 color2는 사용하지 않습니다.', color2: '두 번째 패널 색입니다. Mask를 켜 마지막 패널이 마스크로 대체되면 사용되지 않습니다.' },
     en: { mask: 'Replaces the final colored panel with a colorless content mask. With two layers, color2 is not used.', color2: 'Color of the second panel. It is unused when Mask replaces that final panel.' },

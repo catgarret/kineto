@@ -5,7 +5,7 @@
 - Library: 0.8.52
 - Feature contract: 1.3.0
 - Behavior contract: 1.2.0
-- Public modules: 51
+- Public modules: 52
 - Root properties: `version`, `easings`, `prefersReducedMotion`, `env`, `performance`, `registry`, `instanceCount`, `smoothEnabled`, `lenis`, `core`
 - Core methods: `autoInit()`, `config()`, `create()`, `destroy()`, `destroyModule()`, `disableSmooth()`, `easing()`, `easingFn()`, `enableSmooth()`, `getEngineSource()`, `getInstance()`, `init()`, `initModules()`, `listTerminalFramePresets()`, `pause()`, `refresh()`, `register()`, `replay()`, `resume()`, `scan()`, `scrollTo()`, `setAnimationEngine()`, `setEngineSource()`, `setReducedMotion()`, `toggleSmooth()`, `unregister()`, `updateModule()`
 - Additional named exports: `modules`, `listTerminalFramePresets`
@@ -46,6 +46,13 @@
 - Default variant: `slot`
 - Variants: `slot`, `plain`, `digit`, `pop`, `flip`, `clock`
 - Public options: `blink`, `blinkSeparators`, `clockSeparator`, `clockStyle`, `comma`, `daysLabel`, `decimals`, `delay`, `duration`, `ease`, `format`, `from`, `gap`, `grouping`, `hour12`, `lineHeight`, `locale`, `loops`, `mode`, `onComplete`, `once`, `popAlign`, `popDuration`, `popScale`, `prefix`, `preset`, `rollDirection`, `rollDuration`, `seamColor`, `seconds`, `secondsDigits`, `secondsLabel`, `secondsOnly`, `separator`, `separatorColor`, `shadow`, `showDays`, `since`, `stagger`, `start`, `style`, `suffix`, `tileColor`, `tileRadius`, `tileTextColor`, `to`, `until`
+
+## dateTime
+
+- Attribute: `data-kt-date-time`
+- Default variant: `relative`
+- Variants: `relative`, `absolute`, `both`
+- Public options: `date`, `dateStyle`, `datetime`, `fallback`, `live`, `locale`, `mode`, `now`, `numeric`, `preset`, `source`, `timeStyle`, `timeZone`, `updateInterval`, `value`
 
 ## cssScroll
 

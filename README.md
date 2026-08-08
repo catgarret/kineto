@@ -168,6 +168,7 @@ Kineto.disableSmooth();
 | `cardGlow` | `data-kt-card-glow` | Pointer spotlight, surface sheen, luminous border |
 | `confetti` | `data-kt-confetti` | Click / view confetti burst |
 | `counter` | `data-kt-counter` | Number count, flip, clock, countdown |
+| `dateTime` | `data-kt-date-time` | Relative and absolute server timestamps |
 | `coverReveal` | `data-kt-cover-reveal` | Color cover wipe reveal |
 | `cssScroll` | `data-kt-css-scroll` | Scroll bound to CSS vars / scroll & view timeline |
 | `cursor` | `data-kt-cursor` | Eleven custom cursor presets |
