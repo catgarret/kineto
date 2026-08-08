@@ -4,6 +4,16 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.53] - 2026-08-08
+
+### English
+
 - Added an explicit Counter demo card for elapsed `000S` seconds, including its server-origin timestamp attributes.
 - Restored a smooth hero scene transition for the deliberate one-gesture snap while retaining its momentum guard.
 - Added the Date Time module for relative, absolute, and combined timestamps, with common server-date parsing and lifecycle cleanup.
@@ -19,7 +29,6 @@
 - Page Reveal Flash를 흰색 이중 노출 펄스와 색상 잔상으로 분리하고, Fade는 연속적인 색상 커버 페이드로 유지했습니다.
 - Counter 데모의 모든 행을 동일한 3열 카드로 정렬하고 설정 요약 컨트롤을 수직 중앙에 맞췄으며, Date Time 데모는 실제 과거 시각과 전체 설정 패널을 표시하도록 수정했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
-
 ## [0.8.52] - 2026-08-08
 
 ### English
