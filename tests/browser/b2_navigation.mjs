@@ -88,6 +88,11 @@ const hFwd=await hash(); ck('Forward -> #mod-counter', hFwd==='#mod-counter', hF
     return event.defaultPrevented;
   });
   await sp.waitForTimeout(300);
+  const momentumAllowed=await sp.evaluate(()=>{
+    const event=new WheelEvent('wheel',{deltaY:120,cancelable:true});
+    window.dispatchEvent(event);
+    return event.defaultPrevented;
+  });
   const tailBlocked=await sp.evaluate(()=>{
     const event=new WheelEvent('wheel',{deltaY:-120,cancelable:true});
     window.dispatchEvent(event);
@@ -99,13 +104,14 @@ const hFwd=await hash(); ck('Forward -> #mod-counter', hFwd==='#mod-counter', hF
     return {top:Math.round(landing.getBoundingClientRect().top),scrollY:Math.round(window.scrollY),offsetTop:landing.offsetTop};
   });
   ck('hero wheel -> first scene', downward&&Math.abs(landed.top)<120, `prevented=${downward}, ${JSON.stringify(landed)}`);
+  ck('hero snap preserves same-direction momentum', !momentumAllowed, `prevented=${momentumAllowed}`);
   ck('hero snap consumes momentum tail', tailBlocked, `prevented=${tailBlocked}`);
   const reverse=await sp.evaluate(()=>{
     const event=new WheelEvent('wheel',{deltaY:-120,cancelable:true});
     window.dispatchEvent(event);
     return event.defaultPrevented;
   });
-  await sp.waitForTimeout(1500);
+  await sp.waitForTimeout(2200);
   const returned=await sp.evaluate(()=>window.scrollY<6);
   ck('first-scene wheel up -> hero', reverse&&returned, `prevented=${reverse}, returned=${returned}, before=${JSON.stringify(landed)}`);
   await ctx.close();

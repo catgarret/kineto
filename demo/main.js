@@ -854,43 +854,51 @@
       if(!hero||!target)return;
       const firstModule=(target.id||'').replace(/^mod-/,'')||'textSplit';
       const landing=document.querySelector('main .section-head')||target;
-      let snapping=false,lastAt=0,consumed=false,ignoreUntil=0;
-      const scrollImmediately=(top)=>{
-        // Once past the hero, the demo enables Lenis. Route through it with
-        // `immediate` so its transform state cannot pull a reverse snap back.
-        if(window.Kineto?.smoothEnabled)window.Kineto.scrollTo(top,{immediate:true,force:true});
-        else window.scrollTo({top,behavior:'auto'});
+      let snapping=false,lastAt=0,consumed=false,ignoreUntil=0,snapDirection=0;
+      const scrollScene=(top)=>{
+        // Keep the intentional one-gesture scene transition visually smooth.
+        // Lenis can otherwise take ownership midway through the native scene
+        // scroll (especially going back to the hero) and leave it unfinished.
+        const lenis=window.Kineto?.lenis;
+        lenis?.stop?.();
+        window.scrollTo({top,behavior:'smooth'});
+        setTimeout(()=>lenis?.start?.(),900);
       };
       const snapTop=()=>{
         snapping=true;
+        snapDirection=-1;
         window.__ktHeroSceneSnap=true;
-        ignoreUntil=performance.now()+450;
-        scrollImmediately(0);
+        ignoreUntil=performance.now()+420;
+        scrollScene(0);
         try{history.replaceState(null,'',location.pathname+location.search);}catch(_){/* file:// */}
-        setTimeout(()=>{snapping=false;window.__ktHeroSceneSnap=false;window.dispatchEvent(new Event('scroll'));},400);
+        setTimeout(()=>{snapping=false;snapDirection=0;window.__ktHeroSceneSnap=false;window.dispatchEvent(new Event('scroll'));},1000);
       };
       const inHero=()=>window.scrollY<hero.offsetHeight-120;
       const heroFullySeen=()=>window.scrollY+window.innerHeight>=hero.offsetHeight-4;
       const nearFirstSection=()=>window.scrollY>60&&window.scrollY<=landing.offsetTop+24;
       const snap=()=>{
         snapping=true;
+        snapDirection=1;
         window.__ktHeroSceneSnap=true;
-        ignoreUntil=performance.now()+450;
+        ignoreUntil=performance.now()+420;
         // Use an explicit document position. `scrollIntoView()` can be ignored
         // during a cancelled wheel event in WebKit, which left the URL changed
         // but the first scene still at the hero.
         const landingTop=Math.max(0,landing.offsetTop-96);
-        scrollImmediately(landingTop);
+        scrollScene(landingTop);
         try{history.replaceState({ktModule:firstModule},'','#mod-'+firstModule);}catch(_){/* file:// */}
-        setTimeout(()=>{snapping=false;window.__ktHeroSceneSnap=false;window.dispatchEvent(new Event('scroll'));},400);
+        setTimeout(()=>{snapping=false;snapDirection=0;window.__ktHeroSceneSnap=false;window.dispatchEvent(new Event('scroll'));},1000);
       };
       window.addEventListener('wheel',(event)=>{
         const now=performance.now();
-        if(now<ignoreUntil){event.preventDefault();return;}
+        // Preserve physical momentum in the direction of travel. Only suppress
+        // the short opposite-direction tail that used to re-trigger the other
+        // scene and make the transition look like a bounce.
+        if(now<ignoreUntil&&Math.sign(event.deltaY)!==snapDirection){event.preventDefault();return;}
         const sameGesture=now-lastAt<280;
         lastAt=now;
         if(!sameGesture)consumed=false;
-        if(snapping||(sameGesture&&consumed)){event.preventDefault();return;}
+        if(snapping||(sameGesture&&consumed))return;
         if(inHero()&&heroFullySeen()&&event.deltaY>8){event.preventDefault();consumed=true;snap();}
         else if(nearFirstSection()&&event.deltaY<-8){event.preventDefault();consumed=true;snapTop();}
       },{passive:false});
