@@ -61,7 +61,11 @@ export default {
     const originalHTML = el.innerHTML;
     const originalStyle = el.getAttribute('style');
     const restoreAttributes = snapshotAttributes(el, ['aria-label', 'aria-live']);
-    const mode = opts.mode || opts.preset || opts.style || 'slot';
+    // `secondsOnly` is a Clock presentation, not a numeric-counter format.
+    // Honour it even when a stale DOM attribute or a copied configuration still
+    // carries another mode, so `000S` never falls through to slot/plain/pop.
+    const secondsOnly = opts.secondsOnly === true;
+    const mode = secondsOnly ? 'clock' : (opts.mode || opts.preset || opts.style || 'slot');
     const from = Number(opts.from ?? 0);
     const parsed = Number.parseFloat((el.textContent || '').replace(/[^0-9.-]/g, ''));
     const to = Number(opts.to ?? (Number.isFinite(parsed) ? parsed : 0));
@@ -406,7 +410,6 @@ export default {
       const lineHeight = Math.max(1, Number(opts.lineHeight
         ?? (Number.isFinite(clockLh) ? clockLh : (Number.isFinite(clockFs) ? clockFs * 1.2 : 40))));
       const showSeconds = opts.seconds !== false;
-      const secondsOnly = opts.secondsOnly === true;
       const secondsDigits = Math.max(1, Math.round(Number(opts.secondsDigits ?? 3)));
       const secondsLabel = String(opts.secondsLabel ?? 'S');
       const hour12 = opts.hour12 === true;

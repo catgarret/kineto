@@ -62,3 +62,4 @@
 - `pop`은 최종 문자열을 다른 숫자로 바꾸지 않습니다.
 - `destroy()`는 원래 HTML, style, ARIA를 복원합니다.
 - Clock의 `blink:true`는 시간 구분자만 깜빡이며, `secondsOnly`의 단위(`S`)에는 적용되지 않습니다.
+- `secondsOnly:true`는 Clock 전용 표시입니다. 다른 `mode` 또는 `preset`이 함께 전달돼도 Clock 렌더러를 우선해 `000S` 형식을 유지합니다.

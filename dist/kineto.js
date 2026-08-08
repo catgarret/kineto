@@ -1685,50 +1685,50 @@ function pt(e, t) {
 }
 var mt = {
 	create(e, t) {
-		let n = ne(), r = e.innerHTML, i = e.getAttribute("style"), a = ie(e, ["aria-label", "aria-live"]), o = t.mode || t.preset || t.style || "slot", s = Number(t.from ?? 0), c = Number.parseFloat((e.textContent || "").replace(/[^0-9.-]/g, "")), l = Number(t.to ?? (Number.isFinite(c) ? c : 0)), u = Math.max(0, Number(t.duration ?? 2)), d = Math.max(0, Number(t.decimals ?? 0)), f = t.prefix || "", p = t.suffix || "", m = {
-			decimals: d,
+		let n = ne(), r = e.innerHTML, i = e.getAttribute("style"), a = ie(e, ["aria-label", "aria-live"]), o = t.secondsOnly === !0, s = o ? "clock" : t.mode || t.preset || t.style || "slot", c = Number(t.from ?? 0), l = Number.parseFloat((e.textContent || "").replace(/[^0-9.-]/g, "")), u = Number(t.to ?? (Number.isFinite(l) ? l : 0)), d = Math.max(0, Number(t.duration ?? 2)), f = Math.max(0, Number(t.decimals ?? 0)), p = t.prefix || "", m = t.suffix || "", h = {
+			decimals: f,
 			format: ct(t),
 			locale: t.locale
-		}, h = fe(l, m), g = `${f}${h}${p}`, _ = pt(e, t), v = [];
-		e.setAttribute("aria-label", g), e.setAttribute("aria-live", "polite");
-		let y = (e) => (e && v.push(e), e), b = () => {
-			v.forEach((e) => {
+		}, g = fe(u, h), _ = `${p}${g}${m}`, v = pt(e, t), y = [];
+		e.setAttribute("aria-label", _), e.setAttribute("aria-live", "polite");
+		let b = (e) => (e && y.push(e), e), x = () => {
+			y.forEach((e) => {
 				e.scrollTrigger?.kill?.(), e.kill?.();
-			}), v.length = 0;
+			}), y.length = 0;
 		};
-		if (o === "plain") {
-			let r = { value: s }, i = () => {
-				e.textContent = `${f}${fe(r.value, m)}${p}`;
+		if (s === "plain") {
+			let r = { value: c }, i = () => {
+				e.textContent = `${p}${fe(r.value, h)}${m}`;
 			};
-			i(), n ? y(n.to(r, {
-				value: l,
-				duration: u,
+			i(), n ? b(n.to(r, {
+				value: u,
+				duration: d,
 				delay: Number(t.delay ?? 0),
 				ease: t.ease || "power2.out",
 				onUpdate: i,
 				onComplete: () => t.onComplete?.(e),
-				scrollTrigger: _
-			})) : (r.value = l, i(), t.onComplete?.(e));
-		} else if (o === "digit") {
-			e.innerHTML = "", e.style.display = "inline-flex", e.style.alignItems = "baseline", dt(e, f, "kt-counter-prefix");
+				scrollTrigger: v
+			})) : (r.value = u, i(), t.onComplete?.(e));
+		} else if (s === "digit") {
+			e.innerHTML = "", e.style.display = "inline-flex", e.style.alignItems = "baseline", dt(e, p, "kt-counter-prefix");
 			let r = [];
-			for (let t of h) /\d/.test(t) ? r.push({
+			for (let t of g) /\d/.test(t) ? r.push({
 				node: ft(e, "0", "kt-counter-digit"),
 				target: Number(t)
 			}) : ft(e, t, "kt-counter-separator");
-			dt(e, p, "kt-counter-suffix");
+			dt(e, m, "kt-counter-suffix");
 			let i = Math.max(0, Number(t.loops ?? 2)), a = Math.max(0, Number(t.stagger ?? .06));
 			if (n) {
 				let o = n.timeline({
 					delay: Number(t.delay ?? 0),
-					scrollTrigger: _,
+					scrollTrigger: v,
 					onComplete: () => t.onComplete?.(e)
 				});
 				r.forEach(({ node: e, target: n }, r) => {
 					let s = { value: 0 }, c = i * 10 + n, l = -1;
 					o.to(s, {
 						value: c,
-						duration: Math.max(.05, u + r * a),
+						duration: Math.max(.05, d + r * a),
 						ease: t.ease || "none",
 						onUpdate: () => {
 							let t = Math.floor(s.value) % 10;
@@ -1738,19 +1738,19 @@ var mt = {
 							e.textContent = String(n);
 						}
 					}, 0);
-				}), y(o);
+				}), b(o);
 			} else r.forEach(({ node: e, target: t }) => {
 				e.textContent = String(t);
 			}), t.onComplete?.(e);
-		} else if (o === "pop") {
-			e.innerHTML = "", e.style.display = "inline-flex", e.style.alignItems = "baseline", dt(e, f, "kt-counter-prefix");
-			let r = Array.from(h, (t) => ft(e, t, /\d/.test(t) ? "kt-counter-digit kt-counter-pop-char" : "kt-counter-separator kt-counter-pop-char"));
-			dt(e, p, "kt-counter-suffix");
-			let i = t.popAlign || "bottom", a = i === "top" ? "50% 0%" : i === "center" ? "50% 50%" : "50% 85%", o = Math.max(1, Number(t.popScale ?? 1.8)), s = Math.max(.1, u || .8), c = Math.min(.36, Math.max(.14, s * .38)), l = Math.max(.05, Number(t.popDuration ?? c)), d = r.length > 1 ? Math.max(.025, (s - l) / (r.length - 1)) : 0, m = Math.max(0, Number(t.stagger ?? d));
+		} else if (s === "pop") {
+			e.innerHTML = "", e.style.display = "inline-flex", e.style.alignItems = "baseline", dt(e, p, "kt-counter-prefix");
+			let r = Array.from(g, (t) => ft(e, t, /\d/.test(t) ? "kt-counter-digit kt-counter-pop-char" : "kt-counter-separator kt-counter-pop-char"));
+			dt(e, m, "kt-counter-suffix");
+			let i = t.popAlign || "bottom", a = i === "top" ? "50% 0%" : i === "center" ? "50% 50%" : "50% 85%", o = Math.max(1, Number(t.popScale ?? 1.8)), s = Math.max(.1, d || .8), c = Math.min(.36, Math.max(.14, s * .38)), l = Math.max(.05, Number(t.popDuration ?? c)), u = r.length > 1 ? Math.max(.025, (s - l) / (r.length - 1)) : 0, f = Math.max(0, Number(t.stagger ?? u));
 			if (n) {
 				let i = n.timeline({
 					delay: Number(t.delay ?? 0),
-					scrollTrigger: _,
+					scrollTrigger: v,
 					onComplete: () => t.onComplete?.(e)
 				});
 				i.set(r, {
@@ -1764,47 +1764,47 @@ var mt = {
 						duration: l,
 						ease: t.ease || "back.out(2.2)",
 						clearProps: "transform,opacity"
-					}, n * m);
-				}), y(i);
+					}, n * f);
+				}), b(i);
 			} else r.forEach((e, t) => {
-				e.style.opacity = "0", e.style.transformOrigin = a, e.style.transform = `scale(${o})`, e.style.transition = `opacity ${l}s ease ${t * m}s,transform ${l}s cubic-bezier(.2,.9,.3,1.25) ${t * m}s`, requestAnimationFrame(() => {
+				e.style.opacity = "0", e.style.transformOrigin = a, e.style.transform = `scale(${o})`, e.style.transition = `opacity ${l}s ease ${t * f}s,transform ${l}s cubic-bezier(.2,.9,.3,1.25) ${t * f}s`, requestAnimationFrame(() => {
 					e.style.opacity = "1", e.style.transform = "scale(1)";
 				});
-			}), setTimeout(() => t.onComplete?.(e), (l + m * r.length) * 1e3);
-		} else if (o === "flip") {
-			e.innerHTML = "", e.style.display = "inline-flex", e.style.alignItems = "center", e.style.gap = `${Math.max(0, Number(t.gap ?? 3))}px`, dt(e, f, "kt-counter-prefix");
-			let n = t.tileColor || "#191b20", r = t.tileTextColor || "#f6f7fb", i = Math.max(0, Number(t.tileRadius ?? 6)), a = "1.24em", o = ut(t), c = [], d = (e) => `position:absolute;left:0;right:0;height:50%;overflow:hidden;${e ? `top:0;border-radius:${i}px ${i}px 0 0` : `bottom:0;border-radius:0 0 ${i}px ${i}px`};background:${n};backface-visibility:hidden;`, m = (e) => `position:absolute;left:0;width:100%;height:${a};line-height:${a};text-align:center;${e ? "top:0" : "bottom:0"};color:${r};`, g = (e, t) => {
+			}), setTimeout(() => t.onComplete?.(e), (l + f * r.length) * 1e3);
+		} else if (s === "flip") {
+			e.innerHTML = "", e.style.display = "inline-flex", e.style.alignItems = "center", e.style.gap = `${Math.max(0, Number(t.gap ?? 3))}px`, dt(e, p, "kt-counter-prefix");
+			let n = t.tileColor || "#191b20", r = t.tileTextColor || "#f6f7fb", i = Math.max(0, Number(t.tileRadius ?? 6)), a = "1.24em", o = ut(t), s = [], l = (e) => `position:absolute;left:0;right:0;height:50%;overflow:hidden;${e ? `top:0;border-radius:${i}px ${i}px 0 0` : `bottom:0;border-radius:0 0 ${i}px ${i}px`};background:${n};backface-visibility:hidden;`, f = (e) => `position:absolute;left:0;width:100%;height:${a};line-height:${a};text-align:center;${e ? "top:0" : "bottom:0"};color:${r};`, h = (e, t) => {
 				let n = document.createElement("span");
-				n.setAttribute("aria-hidden", "true"), n.style.cssText = d(e) + (t ? `transform-origin:50% ${e ? "100%" : "0%"};will-change:transform;z-index:3;` : "z-index:1;");
+				n.setAttribute("aria-hidden", "true"), n.style.cssText = l(e) + (t ? `transform-origin:50% ${e ? "100%" : "0%"};will-change:transform;z-index:3;` : "z-index:1;");
 				let r = document.createElement("span");
-				return r.style.cssText = m(e), r.textContent = "0", n.appendChild(r), {
+				return r.style.cssText = f(e), r.textContent = "0", n.appendChild(r), {
 					half: n,
 					glyph: r
 				};
-			}, _ = l >= s, v = h.replace(/\D/g, "").length, b = String(Math.round(Math.abs(s))).padStart(v, "0").slice(-v), x = 0;
-			for (let t of h) {
+			}, _ = u >= c, v = g.replace(/\D/g, "").length, y = String(Math.round(Math.abs(c))).padStart(v, "0").slice(-v), x = 0;
+			for (let t of g) {
 				if (!/\d/.test(t)) {
 					let n = document.createElement("span");
 					n.className = "kt-counter-separator", n.textContent = t, n.style.opacity = ".7", e.appendChild(n);
 					continue;
 				}
-				let n = Number(b[x] || "0");
+				let n = Number(y[x] || "0");
 				x += 1;
 				let r = document.createElement("span");
 				r.className = "kt-counter-flip-cell", r.style.cssText = `display:inline-block;position:relative;width:1.34ch;height:${a};perspective:340px;${o.hasShadow ? `filter:${o.shadow};` : ""}`;
-				let i = g(!0, !1), s = g(!1, !1), l = g(!0, !0), u = g(!1, !0);
-				u.half.style.transform = "rotateX(90deg)", r.append(i.half, s.half, l.half, u.half);
+				let i = h(!0, !1), c = h(!1, !1), l = h(!0, !0), u = h(!1, !0);
+				u.half.style.transform = "rotateX(90deg)", r.append(i.half, c.half, l.half, u.half);
 				let d = document.createElement("span");
-				d.className = "kt-counter-seam", d.setAttribute("aria-hidden", "true"), d.style.cssText = `position:absolute;left:0;right:0;top:50%;height:1px;margin-top:-0.5px;background:${o.seam};z-index:4;pointer-events:none;`, r.appendChild(d), e.appendChild(r), c.push({
+				d.className = "kt-counter-seam", d.setAttribute("aria-hidden", "true"), d.style.cssText = `position:absolute;left:0;right:0;top:50%;height:1px;margin-top:-0.5px;background:${o.seam};z-index:4;pointer-events:none;`, r.appendChild(d), e.appendChild(r), s.push({
 					topStatic: i,
-					bottomStatic: s,
+					bottomStatic: c,
 					topFlap: l,
 					bottomFlap: u,
 					target: Number(t),
 					start: n
 				});
 			}
-			dt(e, p, "kt-counter-suffix");
+			dt(e, m, "kt-counter-suffix");
 			let S = Math.max(0, Number(t.loops ?? 1)), C = /* @__PURE__ */ new Set(), w = !0, T = (e, t) => {
 				let n = setTimeout(() => {
 					C.delete(n), w && e();
@@ -1886,12 +1886,12 @@ var mt = {
 			}, k = () => {
 				C.forEach(clearTimeout), C.clear(), w = !0;
 				let n = Math.max(0, Number(t.stagger ?? .08)) * 1e3, r = 0;
-				c.forEach((i, a) => {
+				s.forEach((i, a) => {
 					E(i, i.start);
 					let o = _ ? ((i.target - i.start) % 10 + 10) % 10 : ((i.start - i.target) % 10 + 10) % 10, s = S * 10 + o;
 					if (s === 0) return;
 					r += 1;
-					let c = Math.max(120, u * 1e3 / Math.max(1, s));
+					let c = Math.max(120, d * 1e3 / Math.max(1, s));
 					for (let o = 1; o <= s; o += 1) {
 						let l = o === s, u = _ ? (i.start + o - 1) % 10 : ((i.start - (o - 1)) % 10 + 10) % 10, d = _ ? (i.start + o) % 10 : ((i.start - o) % 10 + 10) % 10;
 						T(() => {
@@ -1900,7 +1900,7 @@ var mt = {
 					}
 				});
 			}, A = e.getBoundingClientRect(), j = t.start === !1 || A.bottom > 0 && A.top < window.innerHeight, M = null;
-			j ? k() : M = re(e, k, { threshold: .3 }), y({
+			j ? k() : M = re(e, k, { threshold: .3 }), b({
 				restart: k,
 				pause: () => {
 					w = !1;
@@ -1912,25 +1912,25 @@ var mt = {
 					w = !1, C.forEach(clearTimeout), C.clear(), M?.disconnect();
 				}
 			});
-		} else if (o === "clock") {
+		} else if (s === "clock") {
 			e.innerHTML = "", e.style.display = "inline-flex", e.style.alignItems = "center", e.setAttribute("aria-live", "off");
-			let n = getComputedStyle(e), r = Number.parseFloat(n.lineHeight), i = Number.parseFloat(n.fontSize), a = Math.max(1, Number(t.lineHeight ?? (Number.isFinite(r) ? r : Number.isFinite(i) ? i * 1.2 : 40))), o = t.seconds !== !1, s = t.secondsOnly === !0, c = Math.max(1, Math.round(Number(t.secondsDigits ?? 3))), l = String(t.secondsLabel ?? "S"), u = t.hour12 === !0, d = String(t.clockSeparator ?? ":"), m = t.blink !== !1, h = t.clockStyle || "roll", g = Math.max(80, Number(t.rollDuration ?? .28) * 1e3), _ = String(t.daysLabel ?? "d"), v = t.until ? new Date(t.until) : null, b = t.since ? new Date(t.since) : null, x = !1, S = (e) => String(e).padStart(2, "0"), C = () => {
-				if (v || b) {
-					let n = v ? v.getTime() - Date.now() : Date.now() - b.getTime();
-					if (v && n <= 0 && !x && (x = !0, t.onComplete?.(e)), n = Math.max(0, n), s) return {
+			let n = getComputedStyle(e), r = Number.parseFloat(n.lineHeight), i = Number.parseFloat(n.fontSize), a = Math.max(1, Number(t.lineHeight ?? (Number.isFinite(r) ? r : Number.isFinite(i) ? i * 1.2 : 40))), s = t.seconds !== !1, c = Math.max(1, Math.round(Number(t.secondsDigits ?? 3))), l = String(t.secondsLabel ?? "S"), u = t.hour12 === !0, d = String(t.clockSeparator ?? ":"), f = t.blink !== !1, h = t.clockStyle || "roll", g = Math.max(80, Number(t.rollDuration ?? .28) * 1e3), _ = String(t.daysLabel ?? "d"), v = t.until ? new Date(t.until) : null, y = t.since ? new Date(t.since) : null, x = !1, S = (e) => String(e).padStart(2, "0"), C = () => {
+				if (v || y) {
+					let n = v ? v.getTime() - Date.now() : Date.now() - y.getTime();
+					if (v && n <= 0 && !x && (x = !0, t.onComplete?.(e)), n = Math.max(0, n), o) return {
 						text: `${String(Math.floor(n / 1e3)).padStart(c, "0")}${l}`,
 						meridiem: "",
 						days: null
 					};
 					let r = Math.floor(n / 864e5), i = [S(Math.floor(n / 36e5) % 24), S(Math.floor(n / 6e4) % 60)];
-					return o && i.push(S(Math.floor(n / 1e3) % 60)), {
+					return s && i.push(S(Math.floor(n / 1e3) % 60)), {
 						text: i.join(d),
 						meridiem: "",
 						days: r
 					};
 				}
 				let n = /* @__PURE__ */ new Date();
-				if (s) return {
+				if (o) return {
 					text: `${String(n.getSeconds()).padStart(c, "0")}${l}`,
 					meridiem: "",
 					days: null
@@ -1938,7 +1938,7 @@ var mt = {
 				let r = n.getHours(), i = "";
 				u && (i = r >= 12 ? "PM" : "AM", r = r % 12 || 12);
 				let a = [S(r), S(n.getMinutes())];
-				return o && a.push(S(n.getSeconds())), {
+				return s && a.push(S(n.getSeconds())), {
 					text: a.join(d),
 					meridiem: i,
 					days: null
@@ -2026,19 +2026,19 @@ var mt = {
 					}, i);
 				}, i);
 			}, k = [], A = null, j = null, M = "", N = /* @__PURE__ */ new Set(), P = (e) => e != null && (e > 0 || t.showDays === !0), F = (e) => `${P(e.days) ? String(e.days).length : 0}|${e.text.length}`, I = (t) => {
-				N.forEach((e) => e.cancel()), N.clear(), e.innerHTML = "", k = [], A = null, j = null, dt(e, f, "kt-counter-prefix"), P(t.days) && (j = document.createElement("span"), j.className = "kt-counter-days", j.style.cssText = "margin-right:.5ch;", j.textContent = `${t.days}${_}`, e.appendChild(j));
+				N.forEach((e) => e.cancel()), N.clear(), e.innerHTML = "", k = [], A = null, j = null, dt(e, p, "kt-counter-prefix"), P(t.days) && (j = document.createElement("span"), j.className = "kt-counter-days", j.style.cssText = "margin-right:.5ch;", j.textContent = `${t.days}${_}`, e.appendChild(j));
 				for (let n of t.text) if (/\d/.test(n)) {
 					let t = h === "flip" ? D(n) : w(n);
 					e.appendChild(t.viewport), k.push(t);
 				} else {
 					let t = ft(e, n, "kt-counter-separator kt-counter-clock-separator");
-					if (m && n === d) {
+					if (f && n === d) {
 						let e = lt(t);
 						e && N.add(e);
 					}
 					k.push(null);
 				}
-				u && !v && !b && (A = document.createElement("span"), A.className = "kt-counter-suffix kt-counter-meridiem", A.style.cssText = "margin-left:.4ch;font-size:.55em;opacity:.75;align-self:center;", A.textContent = t.meridiem, e.appendChild(A)), dt(e, p, "kt-counter-suffix");
+				u && !v && !y && (A = document.createElement("span"), A.className = "kt-counter-suffix kt-counter-meridiem", A.style.cssText = "margin-left:.4ch;font-size:.55em;opacity:.75;align-self:center;", A.textContent = t.meridiem, e.appendChild(A)), dt(e, m, "kt-counter-suffix");
 			}, L = (e, n) => {
 				if (h === "flip") {
 					O(e, n);
@@ -2102,7 +2102,7 @@ var mt = {
 				}
 				R(e);
 			}, H = setInterval(V, 250);
-			y({
+			b({
 				kill: () => {
 					B = !1, clearInterval(H), N.forEach((e) => e.cancel());
 				},
@@ -2117,53 +2117,53 @@ var mt = {
 				}
 			});
 		} else {
-			let r = getComputedStyle(e), i = Number.parseFloat(r.lineHeight), a = Number.parseFloat(r.fontSize), o = Number.isFinite(i) ? i : Number.isFinite(a) ? a * 1.2 : 40, c = Math.max(1, Number(t.lineHeight ?? o));
-			e.innerHTML = "", e.style.display = "inline-flex", e.style.alignItems = "flex-end", e.style.overflow = "hidden", dt(e, f, "kt-counter-prefix");
-			let d = h.replace(/\D/g, "").length, m = String(Math.round(Math.abs(s))).padStart(d, "0").slice(-d), g = l >= s, v = [], b = 0;
-			for (let n of h) {
+			let r = getComputedStyle(e), i = Number.parseFloat(r.lineHeight), a = Number.parseFloat(r.fontSize), o = Number.isFinite(i) ? i : Number.isFinite(a) ? a * 1.2 : 40, s = Math.max(1, Number(t.lineHeight ?? o));
+			e.innerHTML = "", e.style.display = "inline-flex", e.style.alignItems = "flex-end", e.style.overflow = "hidden", dt(e, p, "kt-counter-prefix");
+			let l = g.replace(/\D/g, "").length, f = String(Math.round(Math.abs(c))).padStart(l, "0").slice(-l), h = u >= c, _ = [], y = 0;
+			for (let n of g) {
 				if (!/\d/.test(n)) {
 					ft(e, n, "kt-counter-separator");
 					continue;
 				}
-				let r = Number(n), i = Number(m[b] || "0");
-				b += 1;
-				let a = Math.max(0, Number(t.loops ?? 3 + Math.floor(Math.random() * 2))), o = (g ? ((r - i) % 10 + 10) % 10 : ((i - r) % 10 + 10) % 10) + a * 10, s = document.createElement("span");
-				s.className = "kt-counter-slot", s.style.cssText = `display:inline-block;overflow:hidden;height:${c}px;vertical-align:bottom;`;
+				let r = Number(n), i = Number(f[y] || "0");
+				y += 1;
+				let a = Math.max(0, Number(t.loops ?? 3 + Math.floor(Math.random() * 2))), o = (h ? ((r - i) % 10 + 10) % 10 : ((i - r) % 10 + 10) % 10) + a * 10, c = document.createElement("span");
+				c.className = "kt-counter-slot", c.style.cssText = `display:inline-block;overflow:hidden;height:${s}px;vertical-align:bottom;`;
 				let l = document.createElement("span");
 				l.className = "kt-counter-reel", l.style.cssText = "display:flex;flex-direction:column;will-change:transform;";
 				let u = [];
-				for (let e = 0; e <= o; e += 1) u.push(g ? (i + e) % 10 : ((i - e) % 10 + 10) % 10);
-				g || u.reverse(), u.forEach((e) => {
+				for (let e = 0; e <= o; e += 1) u.push(h ? (i + e) % 10 : ((i - e) % 10 + 10) % 10);
+				h || u.reverse(), u.forEach((e) => {
 					let t = document.createElement("span");
-					t.textContent = String(e), t.style.cssText = `height:${c}px;line-height:${c}px;display:flex;align-items:center;justify-content:center;`, l.appendChild(t);
-				}), s.appendChild(l), e.appendChild(s), v.push({
+					t.textContent = String(e), t.style.cssText = `height:${s}px;line-height:${s}px;display:flex;align-items:center;justify-content:center;`, l.appendChild(t);
+				}), c.appendChild(l), e.appendChild(c), _.push({
 					reel: l,
-					fromY: g ? 0 : -(o * c),
-					toY: g ? -(o * c) : 0
+					fromY: h ? 0 : -(o * s),
+					toY: h ? -(o * s) : 0
 				});
 			}
-			if (dt(e, p, "kt-counter-suffix"), n) {
+			if (dt(e, m, "kt-counter-suffix"), n) {
 				let r = n.timeline({
 					delay: Number(t.delay ?? 0),
-					scrollTrigger: _,
+					scrollTrigger: v,
 					onComplete: () => t.onComplete?.(e)
 				});
-				v.forEach(({ reel: e, fromY: n, toY: i }, a) => {
+				_.forEach(({ reel: e, fromY: n, toY: i }, a) => {
 					r.fromTo(e, { y: n }, {
 						y: i,
-						duration: u + a * Number(t.stagger ?? .1),
+						duration: d + a * Number(t.stagger ?? .1),
 						ease: t.ease || "power3.inOut"
 					}, 0);
-				}), y(r);
-			} else v.forEach(({ reel: e, toY: t }) => {
+				}), b(r);
+			} else _.forEach(({ reel: e, toY: t }) => {
 				e.style.transform = `translateY(${t}px)`;
 			}), t.onComplete?.(e);
 		}
 		return t.separatorColor && e.querySelectorAll(".kt-counter-separator").forEach((e) => {
 			e.style.color = `var(--kt-counter-separator,${t.separatorColor})`;
-		}), t.blinkSeparators === !0 && o !== "clock" && o !== "plain" && e.querySelectorAll(".kt-counter-separator").forEach((e) => {
+		}), t.blinkSeparators === !0 && s !== "clock" && s !== "plain" && e.querySelectorAll(".kt-counter-separator").forEach((e) => {
 			let t = lt(e);
-			t && y({
+			t && b({
 				kill: () => t.cancel(),
 				pause: () => t.pause(),
 				resume: () => t.play()
@@ -2171,11 +2171,11 @@ var mt = {
 		}), {
 			el: e,
 			type: "counter",
-			replay: () => v.forEach((e) => e.restart?.()),
-			pause: () => v.forEach((e) => e.pause?.()),
-			resume: () => v.forEach((e) => e.resume?.()),
+			replay: () => y.forEach((e) => e.restart?.()),
+			pause: () => y.forEach((e) => e.pause?.()),
+			resume: () => y.forEach((e) => e.resume?.()),
 			destroy: () => {
-				b(), e.innerHTML = r, i == null ? e.removeAttribute("style") : e.setAttribute("style", i), a();
+				x(), e.innerHTML = r, i == null ? e.removeAttribute("style") : e.setAttribute("style", i), a();
 			}
 		};
 	},

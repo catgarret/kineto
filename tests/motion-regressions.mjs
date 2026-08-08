@@ -196,6 +196,18 @@ assert.equal(secondsCounter.querySelector('.kt-counter-separator--blink'), null,
 secondsInstance.destroy();
 secondsCounter.remove();
 
+const protectedSecondsCounter = document.createElement('span');
+document.body.appendChild(protectedSecondsCounter);
+const protectedSecondsInstance = counterModule.create(protectedSecondsCounter, {
+  // A copied playground configuration can retain an old non-clock mode. The
+  // seconds-only semantic must still win instead of rendering a numeric mode.
+  mode: 'pop', secondsOnly: true, secondsDigits: 3, secondsLabel: 'S', since: new Date(Date.now() - 12000).toISOString()
+});
+assert.match(protectedSecondsCounter.textContent, /^0?12S$/, 'secondsOnly must force the Clock renderer when a conflicting mode is supplied');
+assert.ok(protectedSecondsCounter.querySelector('.kt-counter-clock-digit'), 'secondsOnly with a conflicting mode must use Clock digit markup');
+protectedSecondsInstance.destroy();
+protectedSecondsCounter.remove();
+
 const relativeTime = document.createElement('time');
 relativeTime.textContent = '2026년 8월 9일 10:30';
 document.body.appendChild(relativeTime);

@@ -4,10 +4,12 @@
 
 ### English
 
+- Fixed the Elapsed seconds Counter specialization: it now keeps the Clock renderer when a stale or conflicting mode is supplied, and its demo no longer exposes incompatible modes.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
+- Elapsed seconds Counter는 이전 설정에 충돌하는 모드가 남아 있어도 Clock 렌더러를 유지하도록 수정했고, 데모에서는 호환되지 않는 모드 선택을 숨겼습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.54] - 2026-08-08

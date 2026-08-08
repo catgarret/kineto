@@ -246,6 +246,15 @@ try {
   assert.equal(elapsedState.label,'S');
   assert.ok(elapsedState.since,'seconds-only demo must expose a server-origin timestamp');
   assert.match(elapsedState.text,/^\d+S$/,'seconds-only demo must render a seconds value');
+  const elapsedDrawer=await elapsedSeconds.evaluate((card)=>{
+    const body=card.querySelector(':scope > .kt-playground').__buildBody();
+    return {
+      modeHidden:body.querySelector('[data-module="counter"][data-key="preset"]')?.hidden,
+      sourceMode:card.querySelector('[data-kt-counter]').getAttribute('data-kt-counter')
+    };
+  });
+  assert.equal(elapsedDrawer.modeHidden,true,'seconds-only demo must not expose incompatible Counter modes');
+  assert.equal(elapsedDrawer.sourceMode,'clock','seconds-only demo must retain its Clock activation');
 
   // Every adjustable card must survive a representative live edit. This is a
   // cross-module invariant, not a Card Glow special case: the lightweight
