@@ -20,10 +20,11 @@ const check = process.argv.includes('--check');
 
 const BUDGET = {
   // The 52-entry modular graph adds the Date Time runtime while retaining the
-  // same allowlist. On Node 25/npm 11 it measures 473.9 KB packed / 1604.7 KB
-  // unpacked / 72 files. Keep only a small headroom for archive compression
-  // variance; this is not a blanket increase for future dependencies.
-  packedKb: 475,
+  // same allowlist. It measures 473.9 KB on Node 25/npm 11 and 475.2 KB on
+  // the Node 22/npm 10 release runner, with 1604.7 KB unpacked / 72 files.
+  // Keep only the 0.8 KB cross-runner compression headroom; this is not a
+  // blanket increase for future dependencies.
+  packedKb: 476,
   unpackedKb: 1608,
   files: 75
 };
