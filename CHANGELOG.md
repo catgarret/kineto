@@ -4,6 +4,16 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.51] - 2026-08-08
+
+### English
+
 - Added the GTM-KFQSFGJL loader and no-script fallback to the demo source so every generated deployment includes the same Google Tag Manager container.
 - Added a staged product and engineering roadmap covering consumer bundle budgets, adapter reliability, Motion States, Presence, shared layout, 1.0 gates, ecosystem growth, and explicit non-goals.
 - Tightened inline terminal indicators, made Page Reveal Flash a distinct exposure pulse, restored touch opening for responsive Mega Menus, and improved edge fades, Reveal distance controls, and Slider drag handling.
@@ -25,7 +35,6 @@
 - Mega Menu뿐 아니라 일반 Dropdown도 수정했습니다. 터치 토글은 같은 모바일 경로를 사용하며, `custom` 이외의 반응형 패널은 모두 뷰포트 안에 고정됩니다.
 - 데모 첫 화면의 한 번 스크롤 양방향 장면 이동은 유지하되, 도착 뒤 관성을 차단하고 실제 섹션 경계에서만 역방향 진입하도록 해 튕김을 없앴습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
-
 ## [0.8.50] - 2026-08-02
 
 ### English
