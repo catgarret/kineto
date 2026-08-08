@@ -1060,7 +1060,9 @@ html.kt-preload [data-kt-text-transition] {
    sets the container height/width and item (thumb) styling; the module handles
    the orbit transforms. Themeable via --kt-radial-radius (also set by the
    `radius` option). Only the focal arc shows (overflow clipped). */
-.kt-radial { position: relative; overflow: hidden; }
+.kt-radial { position: relative; overflow: hidden; user-select:none; -webkit-user-select:none; }
+.kt-radial--bottom, .kt-radial--top { touch-action: pan-y; }
+.kt-radial--left, .kt-radial--right, .kt-radial--center { touch-action: pan-x; }
 .kt-radial-hub { position: absolute; z-index:1; width: 0; height: 0; }
 .kt-radial--bottom .kt-radial-hub { left: 50%; top: 100%; }
 .kt-radial--top .kt-radial-hub { left: 50%; top: 0; }
@@ -1068,6 +1070,7 @@ html.kt-preload [data-kt-text-transition] {
 .kt-radial--right .kt-radial-hub { left: 100%; top: 50%; }
 .kt-radial--center .kt-radial-hub { left: 50%; top: 50%; }
 .kt-radial-item { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+.kt-radial-item img { -webkit-user-drag:none; user-select:none; -webkit-user-select:none; }
 .kt-radial-controls { position: absolute; z-index: 2; display: flex; gap: 8px; }
 .kt-radial--bottom .kt-radial-controls { left: 50%; bottom: 20px; gap: 16px; transform: translateX(-50%); }
 .kt-radial--top .kt-radial-controls { left: 50%; top: 20px; gap: 16px; transform: translateX(-50%); }

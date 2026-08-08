@@ -145,8 +145,17 @@ export default {
       items.forEach((item) => {
         item.style.cursor = 'pointer';
         if (!item.hasAttribute('tabindex')) item.tabIndex = -1;
+        // Radial uses a separate engine from the linear Slider, so it must
+        // explicitly disable native image dragging as well. Otherwise a drag
+        // beginning on an avatar becomes the browser's translucent image ghost.
+        item.querySelectorAll('img').forEach((image) => { image.draggable = false; });
       });
+      let suppressItemClickUntil = 0;
       const onItemClick = (event) => {
+        if (performance.now() < suppressItemClickUntil) {
+          event.preventDefault();
+          return;
+        }
         const item = event.target.closest('.kt-radial-item');
         const index = items.indexOf(item);
         if (index >= 0) go(index);
@@ -185,21 +194,36 @@ export default {
       // repeatedly"). Only spin once the drag actually passes a small threshold.
       const onDown = (e) => {
         if (!drag || e.target.closest('.kt-radial-controls, button')) return;
-        dragState = { x: e.clientX, y: e.clientY, start: active, moved: false };
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        dragState = { x: e.clientX, y: e.clientY, start: active, pointerId: e.pointerId, moved: false, captured: false, lastIndex: active };
       };
       const onMove = (e) => {
-        if (!dragState) return;
+        if (!dragState || e.pointerId !== dragState.pointerId) return;
         const delta = dragAxisH ? e.clientX - dragState.x : e.clientY - dragState.y;
         if (Math.abs(delta) <= 6) return; // ignore micro-moves (taps/clicks)
+        if (!dragState.captured) {
+          el.setPointerCapture?.(e.pointerId);
+          dragState.captured = true;
+        }
         dragState.moved = true;
-        go(dragState.start + Math.round(-delta / 60));
+        const nextIndex = dragState.start + Math.round(-delta / 60);
+        if (nextIndex === dragState.lastIndex) return;
+        dragState.lastIndex = nextIndex;
+        go(nextIndex);
       };
-      const onUp = () => { dragState = null; };
+      const onUp = (e) => {
+        if (!dragState || e.pointerId !== dragState.pointerId) return;
+        if (dragState.captured) el.releasePointerCapture?.(e.pointerId);
+        if (dragState.moved) suppressItemClickUntil = performance.now() + 250;
+        dragState = null;
+      };
+      const onTouchMove = (e) => { if (dragState?.moved) e.preventDefault(); };
       if (drag) {
         el.addEventListener('pointerdown', onDown);
         el.addEventListener('pointermove', onMove);
         el.addEventListener('pointerup', onUp);
         el.addEventListener('pointercancel', onUp);
+        el.addEventListener('touchmove', onTouchMove, { passive: false });
       }
 
       // Autoplay (pauses on hover / when tab hidden).
@@ -232,6 +256,7 @@ export default {
           el.removeEventListener('pointermove', onMove);
           el.removeEventListener('pointerup', onUp);
           el.removeEventListener('pointercancel', onUp);
+          el.removeEventListener('touchmove', onTouchMove);
           el.removeEventListener('mouseenter', stopAuto);
           el.removeEventListener('mouseleave', startAuto);
           prevBtn?.removeEventListener('click', prev);

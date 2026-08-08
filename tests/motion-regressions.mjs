@@ -163,9 +163,10 @@ const cardGlowModule = (await import('../src/modules/cardGlow.js')).default;
 const tiltModule = (await import('../src/modules/tilt.js')).default;
 
 const radialHost = document.createElement('div');
-radialHost.innerHTML = '<div>A</div><div>B</div><div>C</div><div>D</div><div>E</div>';
+radialHost.innerHTML = '<div><img src="a.png"></div><div><img src="b.png"></div><div><img src="c.png"></div><div><img src="d.png"></div><div><img src="e.png"></div>';
 document.body.appendChild(radialHost);
 const radialLoop = sliderModule.create(radialHost, { effect: 'radial', loop: 'infinite', controls: false });
+assert.equal(radialHost.querySelector('img').draggable, false, 'radial item images must not start the browser ghost-image drag');
 radialLoop.go(4);
 const retainedRadialIndex = radialLoop.index;
 radialLoop.destroy();
