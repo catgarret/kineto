@@ -232,6 +232,21 @@ try {
   );
   assert.equal(await pop.locator('[data-kt-counter="pop"]').getAttribute('data-kt-to'),'98760');
 
+  const elapsedSeconds=page.locator('#counter .card').filter({has:page.getByRole('heading',{name:'Elapsed seconds',exact:true})});
+  await elapsedSeconds.waitFor();
+  const elapsedState=await elapsedSeconds.locator('[data-kt-counter="clock"]').evaluate((el)=>({
+    text:el.textContent,
+    secondsOnly:el.dataset.ktSecondsOnly,
+    digits:el.dataset.ktSecondsDigits,
+    label:el.dataset.ktSecondsLabel,
+    since:el.dataset.ktSince
+  }));
+  assert.equal(elapsedState.secondsOnly,'true');
+  assert.equal(elapsedState.digits,'3');
+  assert.equal(elapsedState.label,'S');
+  assert.ok(elapsedState.since,'seconds-only demo must expose a server-origin timestamp');
+  assert.match(elapsedState.text,/^\d+S$/,'seconds-only demo must render a seconds value');
+
   // Every adjustable card must survive a representative live edit. This is a
   // cross-module invariant, not a Card Glow special case: the lightweight
   // <details>/<summary>, demo DOM, and active instance count must remain stable

@@ -4,10 +4,12 @@
 
 ### English
 
+- Added an explicit Counter demo card for elapsed `000S` seconds, including its server-origin timestamp attributes.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
+- Counter에 서버 기준 시점과 함께 `000S` 경과 초 표시를 바로 확인할 수 있는 전용 데모 카드를 추가했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.52] - 2026-08-08
