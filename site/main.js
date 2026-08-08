@@ -654,6 +654,9 @@
     const pastHero=()=>!heroEl||window.scrollY>heroEl.offsetHeight-120;
     let smoothOn=false;
     const syncSmoothForScroll=()=>{
+      // The hero scene controller owns this short programmatic landing. Starting
+      // Lenis in the middle of it turns an instant snap into a second easing pass.
+      if(window.__ktHeroSceneSnap)return;
       if(smoothManual)return;
       const shouldRun=smoothWanted()&&pastHero();
       if(shouldRun===smoothOn)return;
@@ -841,44 +844,49 @@
       // Clear the hash if we settle back at the very top (hero) after scrolling up.
       window.addEventListener('scroll',()=>{if(window.scrollY<48&&location.hash&&!navScrollLock&&allowHashClear)clearHash();},{passive:true});
     })();
-    // First-screen snap: one scroll gesture in the hero jumps to #counter,
-    // everything after that is normal scrolling. Momentum is grouped into
-    // gestures so the flick tail never keeps pushing the page. Respects
-    // prefers-reduced-motion (no hijack) and touch swipes on mobile.
+    // First-screen snap: a deliberate first wheel/touch gesture moves between
+    // the hero and the first content scene. Momentum from that gesture is held
+    // until the landing settles, so it cannot trigger the opposite snap.
     (()=>{
       if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
       const hero=document.querySelector('.hero');
-      // First content = the first module in the manifest (#mod-textSplit), not a
-      // hardcoded #counter (B-2). Fall back to the first module block if missing.
       const target=document.getElementById('mod-textSplit')||document.querySelector('main [data-module-block]');
       if(!hero||!target)return;
       const firstModule=(target.id||'').replace(/^mod-/,'')||'textSplit';
-      // Land on the group's intro ("Text" + its description), not on the first
-      // module card — snapping past the heading hid it behind the header and the
-      // section read as starting at Text Split.
       const landing=document.querySelector('main .section-head')||target;
-      let snapping=false,lastAt=0,consumed=false;
-      const inHero=()=>window.scrollY<hero.offsetHeight-120;
-      // Only snap once the hero's own content is fully scrolled into view — if the
-      // hero is taller than the viewport (low-res / small window), let the cut-off
-      // content scroll natively first instead of jumping straight to the first module.
-      const heroFullySeen=()=>window.scrollY+window.innerHeight>=hero.offsetHeight-4;
-      const snap=()=>{
-        snapping=true;
-        landing.scrollIntoView({behavior:'smooth',block:'start'});
-        try{history.replaceState({ktModule:firstModule},'','#mod-'+firstModule);}catch(_){/* file:// */}
-        setTimeout(()=>{snapping=false;},900);
+      let snapping=false,lastAt=0,consumed=false,ignoreUntil=0;
+      const scrollImmediately=(top)=>{
+        // Once past the hero, the demo enables Lenis. Route through it with
+        // `immediate` so its transform state cannot pull a reverse snap back.
+        if(window.Kineto?.smoothEnabled)window.Kineto.scrollTo(top,{immediate:true,force:true});
+        else window.scrollTo({top,behavior:'auto'});
       };
       const snapTop=()=>{
         snapping=true;
-        window.scrollTo({top:0,behavior:'smooth'});
+        window.__ktHeroSceneSnap=true;
+        ignoreUntil=performance.now()+450;
+        scrollImmediately(0);
         try{history.replaceState(null,'',location.pathname+location.search);}catch(_){/* file:// */}
-        setTimeout(()=>{snapping=false;},900);
+        setTimeout(()=>{snapping=false;window.__ktHeroSceneSnap=false;window.dispatchEvent(new Event('scroll'));},400);
       };
-      // 첫 섹션 상단부에서 위로 올리면 히어로로 똑같이 스냅 (대칭 동작)
-      const nearFirstSection=()=>window.scrollY>60&&window.scrollY<=target.offsetTop+140;
+      const inHero=()=>window.scrollY<hero.offsetHeight-120;
+      const heroFullySeen=()=>window.scrollY+window.innerHeight>=hero.offsetHeight-4;
+      const nearFirstSection=()=>window.scrollY>60&&window.scrollY<=landing.offsetTop+24;
+      const snap=()=>{
+        snapping=true;
+        window.__ktHeroSceneSnap=true;
+        ignoreUntil=performance.now()+450;
+        // Use an explicit document position. `scrollIntoView()` can be ignored
+        // during a cancelled wheel event in WebKit, which left the URL changed
+        // but the first scene still at the hero.
+        const landingTop=Math.max(0,landing.offsetTop-96);
+        scrollImmediately(landingTop);
+        try{history.replaceState({ktModule:firstModule},'','#mod-'+firstModule);}catch(_){/* file:// */}
+        setTimeout(()=>{snapping=false;window.__ktHeroSceneSnap=false;window.dispatchEvent(new Event('scroll'));},400);
+      };
       window.addEventListener('wheel',(event)=>{
         const now=performance.now();
+        if(now<ignoreUntil){event.preventDefault();return;}
         const sameGesture=now-lastAt<280;
         lastAt=now;
         if(!sameGesture)consumed=false;
@@ -887,21 +895,29 @@
         else if(nearFirstSection()&&event.deltaY<-8){event.preventDefault();consumed=true;snapTop();}
       },{passive:false});
       document.getElementById('brand-home')?.addEventListener('click',snapTop);
+      // The same intentional one-swipe movement is available on touch screens.
+      // Listen on window so the reverse gesture still works in the intro gap;
+      // only prevent its native scroll once this handler actually owns the swipe.
       let touchY=null,touchDone=false;
-      hero.addEventListener('touchstart',(event)=>{touchY=event.touches[0].clientY;touchDone=false;},{passive:true});
-      hero.addEventListener('touchmove',(event)=>{
-        if(touchY==null||!inHero()||!heroFullySeen())return;
-        if(snapping||touchDone){event.preventDefault();return;}
-        const delta=touchY-event.touches[0].clientY;
-        if(delta>10){event.preventDefault();if(delta>26){touchDone=true;snap();}}
+      window.addEventListener('touchstart',(event)=>{
+        touchY=event.touches[0]?.clientY??null;
+        touchDone=false;
+      },{passive:true});
+      window.addEventListener('touchmove',(event)=>{
+        if(touchY==null)return;
+        if(performance.now()<ignoreUntil||snapping||touchDone){
+          if(touchDone||performance.now()<ignoreUntil)event.preventDefault();
+          return;
+        }
+        const delta=touchY-(event.touches[0]?.clientY??touchY);
+        const down=inHero()&&heroFullySeen()&&delta>26;
+        const up=nearFirstSection()&&delta<-26;
+        if(!down&&!up)return;
+        event.preventDefault();
+        touchDone=true;
+        if(down)snap();else snapTop();
       },{passive:false});
-      target.addEventListener('touchstart',(event)=>{touchY=event.touches[0].clientY;touchDone=false;},{passive:true});
-      target.addEventListener('touchmove',(event)=>{
-        if(touchY==null||!nearFirstSection())return;
-        if(snapping||touchDone){event.preventDefault();return;}
-        const delta=touchY-event.touches[0].clientY;
-        if(delta<-10){event.preventDefault();if(delta<-26){touchDone=true;snapTop();}}
-      },{passive:false});
+      window.addEventListener('touchend',()=>{touchY=null;},{passive:true});
     })();
     // optional dependency toggles → conditional CDN rows
     document.querySelectorAll('.extra-toggle input[data-extra]').forEach(input=>input.addEventListener('change',()=>{

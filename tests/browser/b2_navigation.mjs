@@ -72,6 +72,45 @@ const hFwd=await hash(); ck('Forward -> #mod-counter', hFwd==='#mod-counter', hF
   await ctx.close();
 }
 
+// 6. First-screen snap remains a single deliberate gesture in both directions.
+// Its momentum tail must be consumed rather than bouncing the page straight back.
+{
+  const ctx=await browser.newContext({viewport:{width:1280,height:900}});
+  const sp=await ctx.newPage();
+  await sp.goto(`http://localhost:${PORT}/demo/index.html`,{waitUntil:'load'});
+  await sp.waitForFunction(()=>window.Kineto&&document.getElementById('mod-textSplit'),null,{timeout:15000});
+  // The first-load intro deliberately locks document scrolling while it exits.
+  await sp.waitForTimeout(2500);
+  const downward=await sp.evaluate(()=>{
+    window.scrollTo(0,0);
+    const event=new WheelEvent('wheel',{deltaY:120,cancelable:true});
+    window.dispatchEvent(event);
+    return event.defaultPrevented;
+  });
+  await sp.waitForTimeout(300);
+  const tailBlocked=await sp.evaluate(()=>{
+    const event=new WheelEvent('wheel',{deltaY:-120,cancelable:true});
+    window.dispatchEvent(event);
+    return event.defaultPrevented;
+  });
+  await sp.waitForTimeout(900);
+  const landed=await sp.evaluate(()=>{
+    const landing=document.querySelector('main .section-head');
+    return {top:Math.round(landing.getBoundingClientRect().top),scrollY:Math.round(window.scrollY),offsetTop:landing.offsetTop};
+  });
+  ck('hero wheel -> first scene', downward&&Math.abs(landed.top)<120, `prevented=${downward}, ${JSON.stringify(landed)}`);
+  ck('hero snap consumes momentum tail', tailBlocked, `prevented=${tailBlocked}`);
+  const reverse=await sp.evaluate(()=>{
+    const event=new WheelEvent('wheel',{deltaY:-120,cancelable:true});
+    window.dispatchEvent(event);
+    return event.defaultPrevented;
+  });
+  await sp.waitForTimeout(1500);
+  const returned=await sp.evaluate(()=>window.scrollY<6);
+  ck('first-scene wheel up -> hero', reverse&&returned, `prevented=${reverse}, returned=${returned}, before=${JSON.stringify(landed)}`);
+  await ctx.close();
+}
+
 // Screenshots (evidence H-4): desktop + mobile
 const shotDir=path.join(root,'tests/browser/shots');
 fs.mkdirSync(shotDir,{recursive:true});
