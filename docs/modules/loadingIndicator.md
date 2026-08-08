@@ -47,11 +47,18 @@ Kineto.loadingIndicator('.custom-terminal-spinner', {
 
 `frames`에 문자열 배열을 넘기면 내장 프리셋 대신 사용자 프레임을 순환합니다. `frameInterval`은 프레임 사이의 밀리초 간격이며 최소 40ms로 제한됩니다. 기본 후광은 꺼져 있고 `glow: true`일 때만 적용됩니다.
 
-터미널 표시기는 일반 텍스트 바로 뒤에 붙여도 여백을 만들지 않도록 기본 예약 폭·블록 간격을 두지 않습니다. 폭을 일부러 고정해야 할 때만 아래 CSS 토큰을 지정하면 됩니다.
+터미널 표시기는 일반 텍스트 바로 뒤에 붙여도 여백을 만들지 않도록 기본 예약 폭·블록 간격을 두지 않으며, 인라인 텍스트의 수직 중앙에 정렬됩니다. `fixedWidth` 프리셋도 기본 `4ch` 폭을 강제하지 않습니다. Marquee처럼 폭을 일부러 고정해야 할 때만 `viewportWidth` 옵션을 지정하면 됩니다.
+
+```js
+Kineto.loadingIndicator('.build-status', {
+  type: 'terminal',
+  terminalStyle: 'marquee',
+  viewportWidth: 12
+});
+```
 
 ```css
 .build-status {
-  --kt-terminal-frame-min-width: 2ch;
   --kt-terminal-cell-width: 1ch;
   --kt-terminal-cell-gap: .08em;
 }

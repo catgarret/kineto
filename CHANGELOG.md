@@ -8,6 +8,7 @@
 - Added a staged product and engineering roadmap covering consumer bundle budgets, adapter reliability, Motion States, Presence, shared layout, 1.0 gates, ecosystem growth, and explicit non-goals.
 - Tightened inline terminal indicators, made Page Reveal Flash a distinct exposure pulse, restored touch opening for responsive Mega Menus, and improved edge fades, Reveal distance controls, and Slider drag handling.
 - Added seconds-only Counter clocks, reliable blinking separators, consumer bundle budgets, React/Vue lifecycle and SSR fixtures, and supply-chain reporting guidance.
+- Removed the default terminal frame-width reservation and vertically centered inline terminal glyphs; a fixed viewport is now reserved only when `viewportWidth` is explicitly set.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
@@ -16,6 +17,7 @@
 - 소비자 번들 예산, 어댑터 안정성, Motion States, Presence, shared layout, 1.0 진입 조건, 생태계 확장 및 명시적 비목표를 단기·중기·장기로 정리한 제품·기술 로드맵을 추가했습니다.
 - 인라인 터미널 표시기의 여백을 줄이고, Page Reveal Flash를 별도 노출 펄스로 구분했으며, 반응형 Mega Menu의 터치 열기와 가장자리 페이드, Reveal 거리 조절, Slider 드래그를 개선했습니다.
 - 초 단위 Counter 시계와 안정적인 구분자 깜빡임, 소비자 번들 예산, React/Vue lifecycle·SSR fixture, 공급망 대응 문서를 추가했습니다.
+- 터미널 프레임의 기본 폭 예약을 제거하고 인라인 특수문자를 수직 중앙에 맞췄습니다. 고정 폭은 이제 `viewportWidth`를 명시한 경우에만 예약됩니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.50] - 2026-08-02

@@ -423,7 +423,7 @@
 .kt-loading-shimmer-wave__text{display:inline-flex}
 .kt-loading-shimmer-wave__char{display:inline-block;font-style:normal;color:var(--kt-loading-base-color,currentColor);transform-origin:var(--kt-loading-transform-origin,center);animation:kt-loading-wave var(--kt-loading-motion-duration) ease-in-out infinite}
 .kt-loading-shimmer__text.is-reverse::after{animation-direction:reverse}
-.kt-loading--terminal{display:inline-flex;align-items:center;justify-content:center;inline-size:fit-content;min-inline-size:0;padding:0;color:var(--kt-loading-color);font:650 var(--kt-loading-text-size)/var(--kt-loading-line-height,1.15) var(--kt-loading-font-family,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace)}
+.kt-loading--terminal{display:inline-flex;align-items:center;justify-content:center;inline-size:fit-content;min-inline-size:0;padding:0;vertical-align:middle;color:var(--kt-loading-color);font:650 var(--kt-loading-text-size)/var(--kt-loading-line-height,1.15) var(--kt-loading-font-family,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace)}
 .kt-loading-terminal__cursor,.kt-loading-terminal__dot,.kt-loading-terminal__block,.kt-loading-terminal__frame,.kt-loading-terminal__cell,.kt-loading-terminal__bracket,.kt-loading-terminal__compound-label,.kt-loading-terminal__compound-status{font-style:normal}
 .kt-loading-terminal__cursor{transform-origin:var(--kt-loading-transform-origin,center);animation:kt-loading-blink var(--kt-loading-fast-duration) steps(1,end) infinite}
 .kt-loading-terminal__dot{transform-origin:var(--kt-loading-transform-origin,center);animation:kt-loading-terminal-dot var(--kt-loading-motion-duration) linear infinite}
@@ -435,14 +435,11 @@
 .kt-loading-terminal--typing-cursor .kt-loading-terminal__frame,.kt-loading-terminal--ellipsis-typing .kt-loading-terminal__frame,.kt-loading-terminal--command-prompt .kt-loading-terminal__frame,.kt-loading-terminal--dot-cursor .kt-loading-terminal__frame,.kt-loading-terminal--block-cursor .kt-loading-terminal__frame{text-align:left}
 .kt-loading-terminal__frame--cursor{display:inline-flex;align-items:baseline;white-space:pre}
 .kt-loading-terminal__caret{font-style:normal;transition:opacity 90ms linear}
-.kt-loading-terminal__frame{display:inline-block;min-inline-size:var(--kt-terminal-frame-min-width,0);text-align:var(--kt-terminal-frame-align,left);white-space:pre;line-height:var(--kt-loading-line-height,1.15);font-weight:var(--kt-loading-font-weight,650);letter-spacing:var(--kt-loading-letter-spacing,normal)}
-.kt-loading-terminal__frame--multiline{display:inline-block;white-space:pre;min-inline-size:var(--kt-terminal-frame-min-width,0);min-block-size:0;text-align:left;vertical-align:middle;font-variant-numeric:tabular-nums}
-.kt-loading--terminal.is-fixed-width,.kt-loading-indicator.is-terminal-fixed-width .kt-loading--terminal{min-width:var(--kt-terminal-viewport-width,4ch)}
-/* The 4ch reservation keeps a standalone frame spinner from jittering as its
-   glyph changes width. Inside a compound it just padded a one-glyph spinner
-   out to four characters, leaving a gap before the label. */
-.kt-loading-terminal__compound-spinner .kt-loading--terminal.is-fixed-width{min-width:0}
-.kt-loading--terminal.is-fixed-width:has(.kt-loading-terminal__compound){min-width:0}
+.kt-loading-terminal__frame{display:inline-block;min-inline-size:0;text-align:var(--kt-terminal-frame-align,left);white-space:pre;vertical-align:middle;line-height:var(--kt-loading-line-height,1.15);font-weight:var(--kt-loading-font-weight,650);letter-spacing:var(--kt-loading-letter-spacing,normal)}
+.kt-loading-terminal__frame--multiline{display:inline-block;white-space:pre;min-inline-size:0;min-block-size:0;text-align:left;vertical-align:middle;font-variant-numeric:tabular-nums}
+/* Frame spinners must occupy only their glyph by default. A caller that owns a
+   fixed viewport (for example Marquee) can opt in with `viewportWidth`. */
+.kt-loading--terminal.is-fixed-width,.kt-loading-indicator.is-terminal-fixed-width .kt-loading--terminal{min-inline-size:var(--kt-terminal-viewport-width,0)}
 .terminal-spinner--quad-dots{display:grid;grid-template-columns:repeat(2,var(--kt-terminal-dot-size,4px));grid-template-rows:repeat(2,var(--kt-terminal-dot-size,4px));gap:var(--kt-terminal-dot-gap,4px);width:calc(var(--kt-terminal-dot-size,4px) * 2 + var(--kt-terminal-dot-gap,4px));height:calc(var(--kt-terminal-dot-size,4px) * 2 + var(--kt-terminal-dot-gap,4px))}
 .kt-loading-terminal__quad-dot,.quad-dot{border-radius:50%;background:var(--kt-loading-color,currentColor);opacity:.12;transition:opacity var(--kt-terminal-dot-transition,160ms) linear}
 .kt-loading-terminal__quad-dot.is-square,.quad-dot.is-square{border-radius:1px}

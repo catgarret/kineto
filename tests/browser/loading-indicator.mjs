@@ -116,6 +116,7 @@ try {
     const loopFrames=[readLoop()];
     for(let i=0;i<8;i+=1){await new Promise((resolve)=>setTimeout(resolve,90));loopFrames.push(readLoop());}
     const terminalFrame=document.querySelector('.loading-frame-item .kt-loading-terminal__frame');
+    const fixedTerminal=terminalFrame.closest('.kt-loading--terminal');
     window.frameInstances.ascii.pause();
     const firstFrame=terminalFrame.textContent;
     window.frameInstances.ascii.resume();
@@ -145,7 +146,14 @@ try {
         loopStates:[...new Set(loopFrames)].length,
         loopLit:[...new Set(loopFrames.map((frame)=>frame.split('').filter((bit)=>bit==='1').length))]
       },
-      frame:{first:firstFrame,second:secondFrame},stages,defaultTargets
+      frame:{
+        first:firstFrame,
+        second:secondFrame,
+        width:rect(fixedTerminal).width,
+        minWidth:css(fixedTerminal).minInlineSize,
+        verticalAlign:css(fixedTerminal).verticalAlign,
+        frameVerticalAlign:css(terminalFrame).verticalAlign
+      },stages,defaultTargets
     };
   });
   assert.equal(result.dualRects.length,2,'dual = one track + one arc');
@@ -176,6 +184,10 @@ try {
   assert.ok(result.pingpong.samples[0]<result.pingpong.samples[1] && result.pingpong.samples[1]<result.pingpong.samples[2],`pingpong must travel left to right (${result.pingpong.samples})`);
   assert.ok(result.pingpong.samples[2]>result.pingpong.samples[3] && result.pingpong.samples[3]>result.pingpong.samples[4],`pingpong must return right to left (${result.pingpong.samples})`);
   assert.equal(result.shimmer.size,'200% 100%'); assert.ok(result.shimmer.clip.includes('text')); assert.ok(result.shimmer.background.includes('linear-gradient')); assert.equal(result.shimmer.animation,'kt-loading-shimmer');
+  assert.ok(result.frame.width < 20,`a one-glyph fixed-width terminal spinner must not reserve a 4ch box (got ${result.frame.width}px)`);
+  assert.equal(result.frame.minWidth,'0px','terminal frames must not impose a default minimum width');
+  assert.equal(result.frame.verticalAlign,'middle','terminal indicators must vertically center with adjacent text');
+  assert.equal(result.frame.frameVerticalAlign,'middle','terminal glyph frames must vertically center in their inline box');
   assert.notEqual(result.shimmer.baseColor,'rgba(0, 0, 0, 0)','shimmer base text must remain visible in light mode');
   // Percentage background-position on an image WIDER than the box resolves to
   // (boxW - imageW) * pct — a negative span — so a falling percentage is what
