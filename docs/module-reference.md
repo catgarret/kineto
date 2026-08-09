@@ -52,7 +52,7 @@
 - Attribute: `data-kt-date-time`
 - Default variant: `relative`
 - Variants: `relative`, `absolute`, `both`
-- Public options: `date`, `dateStyle`, `datetime`, `fallback`, `live`, `locale`, `mode`, `now`, `numeric`, `preset`, `source`, `timeStyle`, `timeZone`, `updateInterval`, `value`
+- Public options: `date`, `dateStyle`, `datetime`, `fallback`, `live`, `locale`, `mode`, `now`, `numeric`, `preset`, `relativeCutoff`, `relativeCutoffUnit`, `relativeRounding`, `relativeStyle`, `relativeUnit`, `source`, `timeStyle`, `timeZone`, `updateInterval`, `value`
 
 ## cssScroll
 

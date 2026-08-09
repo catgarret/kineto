@@ -230,6 +230,26 @@ relativeInstance.destroy();
 assert.equal(relativeTime.textContent, '2026년 8월 9일 10:30', 'dateTime destroy must restore server-rendered content');
 relativeTime.remove();
 
+const cutoffRelativeTime = document.createElement('time');
+document.body.appendChild(cutoffRelativeTime);
+const cutoffInstance = dateTimeModule.create(cutoffRelativeTime, {
+  date: '2026-06-01T10:30:00+09:00', mode: 'relative', locale: 'ko', now: '2026-08-09T10:35:00+09:00',
+  relativeCutoff: 30, relativeCutoffUnit: 'day', dateStyle: 'medium', live: false
+});
+assert.match(cutoffRelativeTime.textContent, /2026/, 'relative mode must switch to the localized absolute date after its configured cutoff');
+cutoffInstance.destroy();
+cutoffRelativeTime.remove();
+
+const fixedUnitRelativeTime = document.createElement('time');
+document.body.appendChild(fixedUnitRelativeTime);
+const fixedUnitInstance = dateTimeModule.create(fixedUnitRelativeTime, {
+  date: '2026-08-09T10:30:00+09:00', mode: 'relative', locale: 'ko', now: '2026-08-09T10:35:00+09:00',
+  relativeUnit: 'day', relativeRounding: 'trunc', numeric: 'always', live: false
+});
+assert.match(fixedUnitRelativeTime.textContent, /0일 전/, 'relativeUnit must allow a deliberately fixed calendar unit instead of automatic unit selection');
+fixedUnitInstance.destroy();
+fixedUnitRelativeTime.remove();
+
 // Flash is an exposure strobe, while Fade is a single opaque cover dissolving.
 // Record the WAAPI frames so a future refactor cannot collapse them into the
 // same opacity curve again.

@@ -16,10 +16,27 @@ function parseDate(value) {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function relativeParts(delta, locale, numeric) {
-  const table = [['year', 31557600000], ['month', 2629800000], ['week', 604800000], ['day', 86400000], ['hour', 3600000], ['minute', 60000], ['second', 1000]];
-  const [unit, size] = table.find(([, ms]) => Math.abs(delta) >= ms) || table.at(-1);
-  return new Intl.RelativeTimeFormat(locale || undefined, { numeric: numeric || 'auto' }).format(Math.round(delta / size), unit);
+const RELATIVE_UNITS = [['year', 31557600000], ['month', 2629800000], ['week', 604800000], ['day', 86400000], ['hour', 3600000], ['minute', 60000], ['second', 1000]];
+
+function relativeParts(delta, locale, opts) {
+  const requested = String(opts.relativeUnit || 'auto');
+  const selected = RELATIVE_UNITS.find(([unit]) => unit === requested);
+  const [unit, size] = selected || RELATIVE_UNITS.find(([, ms]) => Math.abs(delta) >= ms) || RELATIVE_UNITS.at(-1);
+  const raw = delta / size;
+  const rounding = String(opts.relativeRounding || 'round');
+  const value = rounding === 'floor' ? Math.floor(raw)
+    : rounding === 'ceil' ? Math.ceil(raw)
+      : rounding === 'trunc' ? Math.trunc(raw) : Math.round(raw);
+  return new Intl.RelativeTimeFormat(locale || undefined, {
+    numeric: opts.numeric || 'auto', style: opts.relativeStyle || 'long'
+  }).format(value, unit);
+}
+
+function pastRelativeCutoff(delta, opts) {
+  const amount = Number(opts.relativeCutoff ?? 0);
+  if (!Number.isFinite(amount) || amount <= 0) return false;
+  const unit = RELATIVE_UNITS.find(([name]) => name === String(opts.relativeCutoffUnit || 'day'));
+  return Boolean(unit) && Math.abs(delta) >= amount * unit[1];
 }
 
 export default {
@@ -36,12 +53,14 @@ export default {
       if (!date) { el.textContent = opts.fallback || originalHTML || ''; return; }
       const now = opts.now ? new Date(opts.now).getTime() : Date.now();
       const delta = date.getTime() - now;
-      const relative = relativeParts(delta, locale, opts.numeric);
+      const relative = relativeParts(delta, locale, opts);
       const absolute = new Intl.DateTimeFormat(locale, {
         dateStyle: opts.dateStyle || 'medium', timeStyle: opts.timeStyle || undefined,
         timeZone: opts.timeZone || undefined
       }).format(date);
-      el.textContent = mode === 'absolute' ? absolute : mode === 'both' ? `${relative} · ${absolute}` : relative;
+      // Relative mode can hand off to the original localized timestamp after a
+      // chosen age. `both` is explicit, so it always retains both values.
+      el.textContent = mode === 'absolute' ? absolute : mode === 'both' ? `${relative} · ${absolute}` : pastRelativeCutoff(delta, opts) ? absolute : relative;
       el.setAttribute('datetime', date.toISOString());
       el.setAttribute('aria-label', el.textContent);
     };

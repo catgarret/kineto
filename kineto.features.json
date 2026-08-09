@@ -763,12 +763,24 @@
         "now",
         "numeric",
         "preset",
+        "relativeCutoff",
+        "relativeCutoffUnit",
+        "relativeRounding",
+        "relativeStyle",
+        "relativeUnit",
         "source",
         "timeStyle",
         "timeZone",
         "updateInterval",
         "value"
-      ]
+      ],
+      "optionDefaults": {
+        "relativeCutoff": 0,
+        "relativeCutoffUnit": "day",
+        "relativeRounding": "round",
+        "relativeStyle": "long",
+        "relativeUnit": "auto"
+      }
     },
     {
       "name": "cssScroll",

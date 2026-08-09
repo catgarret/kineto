@@ -4,10 +4,12 @@
 
 ### English
 
+- Expanded Date Time relative formatting with selectable units, long/short/narrow style, rounding, and an automatic absolute-date cutoff.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
+- Date Time 상대 표기에 단위 선택, long/short/narrow 스타일, 반올림 방식, 일정 기간 이후 절대 날짜 자동 전환을 추가했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 ## [0.8.55] - 2026-08-09

@@ -1904,3 +1904,63 @@
     sets[lang].counter = Object.assign({}, sets[lang].counter, { secondsOnly: text });
   }
 })();
+
+(function () {
+  const sets = window.MK_HELP_I18N;
+  if (!sets) return;
+  const tips = {
+    ko: {
+      relativeStyle: '상대 시간의 길이를 정합니다. long은 “5분 전”, short와 narrow는 더 짧은 표기를 사용합니다.',
+      relativeUnit: 'auto는 시간 차이에 맞는 단위를 고릅니다. 특정 단위를 고르면 모든 값을 그 단위로 계산합니다.',
+      relativeRounding: '단위를 나눈 소수 값을 반올림, 내림, 올림 또는 버림할지 정합니다.',
+      relativeCutoff: '이 기간을 넘기면 relative 모드가 현지화된 원래 날짜로 전환됩니다. 0은 전환하지 않습니다.',
+      relativeCutoffUnit: '절대 날짜 전환 기준에 사용할 시간 단위입니다.'
+    },
+    en: {
+      relativeStyle: 'Controls relative-time length. long uses words; short and narrow use compact output.',
+      relativeUnit: 'auto chooses from the time difference. A chosen unit calculates every value in that unit.',
+      relativeRounding: 'How fractional unit values are rounded: nearest, down, up, or toward zero.',
+      relativeCutoff: 'After this age, relative mode switches to the localized original date. Zero disables the handoff.',
+      relativeCutoffUnit: 'Time unit used for the absolute-date handoff threshold.'
+    },
+    ja: {
+      relativeStyle: '相対時刻の長さです。longは語句、shortとnarrowは短い表記を使います。',
+      relativeUnit: 'autoは時間差に合う単位を選びます。固定するとすべてその単位で計算します。',
+      relativeRounding: '単位で割った小数を四捨五入、切り捨て、切り上げ、またはゼロ方向へ丸めます。',
+      relativeCutoff: 'この期間を超えるとrelative表示は現地化された元の日付へ切り替わります。0は無効です。',
+      relativeCutoffUnit: '絶対日付へ切り替える基準に使う時間単位です。'
+    },
+    'zh-CN': {
+      relativeStyle: '控制相对时间的长度。long 使用完整文字；short 和 narrow 使用紧凑格式。',
+      relativeUnit: 'auto 根据时间差选择单位。指定单位后所有值都按该单位计算。',
+      relativeRounding: '设置单位换算后的小数如何取整：四舍五入、向下、向上或向零。',
+      relativeCutoff: '超过此时长后，relative 模式切换为本地化的原始日期。0 表示不切换。',
+      relativeCutoffUnit: '绝对日期切换阈值使用的时间单位。'
+    },
+    'zh-TW': {
+      relativeStyle: '控制相對時間的長度。long 使用完整文字；short 和 narrow 使用精簡格式。',
+      relativeUnit: 'auto 依時間差選擇單位。指定單位後所有值都按該單位計算。',
+      relativeRounding: '設定單位換算後的小數如何取整：四捨五入、向下、向上或向零。',
+      relativeCutoff: '超過此時長後，relative 模式切換為在地化的原始日期。0 表示不切換。',
+      relativeCutoffUnit: '絕對日期切換門檻使用的時間單位。'
+    },
+    ru: {
+      relativeStyle: 'Длина относительной записи. long использует слова, short и narrow — компактный вид.',
+      relativeUnit: 'auto выбирает единицу по разнице времени. Выбранная единица применяется ко всем значениям.',
+      relativeRounding: 'Как округлять дробное значение единицы: до ближайшего, вниз, вверх или к нулю.',
+      relativeCutoff: 'После этого возраста relative переключается на локализованную исходную дату. Ноль отключает переключение.',
+      relativeCutoffUnit: 'Единица времени для порога перехода к абсолютной дате.'
+    },
+    it: {
+      relativeStyle: 'Lunghezza del tempo relativo. long usa parole, short e narrow una forma compatta.',
+      relativeUnit: 'auto sceglie dall’intervallo. Un’unità scelta calcola ogni valore con quella unità.',
+      relativeRounding: 'Come arrotondare valori frazionari: al più vicino, per difetto, per eccesso o verso zero.',
+      relativeCutoff: 'Dopo questa età relative passa alla data originale localizzata. Zero disabilita il passaggio.',
+      relativeCutoffUnit: 'Unità di tempo usata per la soglia di passaggio alla data assoluta.'
+    }
+  };
+  for (const [lang, values] of Object.entries(tips)) {
+    sets[lang] = sets[lang] || {};
+    sets[lang].dateTime = Object.assign({}, sets[lang].dateTime, values);
+  }
+})();
