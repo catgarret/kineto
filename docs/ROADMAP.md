@@ -75,7 +75,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 | 소비자 번들 예산 | 완료 | 5개 Vite 소비자 fixture와 gzip 예산을 CI에 추가했습니다. |
 | React/Vue lifecycle·SSR | 완료 | React Strict Mode, Vue mount/update/unmount, jQuery lifecycle, React/Vue SSR fixture를 CI에 추가했습니다. |
 | 공급망 운영 문서 | 완료 | `SECURITY.md`와 공급망 대응·릴리스 확인 문서를 추가했습니다. |
-| 데모·문서 경험 개선 | 진행 중 | 실제 적용 문제를 반영한 CSS 훅·예제는 추가했으며, URL 공유·framework별 복사 출력은 다음 단위입니다. |
+| 데모·문서 경험 개선 | 진행 중 | 실제 적용 문제를 반영한 CSS 훅·예제와 변경 설정만 담는 URL 공유를 추가했습니다. framework별 복사 출력이 다음 단위입니다. |
 
 #### 1) 실제 소비자 번들 예산
 
@@ -347,7 +347,8 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 1. 완료: 소비자 번들 fixture와 CI 예산
 2. 완료: React Strict Mode·SSR, Vue lifecycle·SSR fixture
 3. 완료: `SECURITY.md`와 공급망 대응 절차
-4. 다음: 데모 설정 URL 공유와 framework별 copy output
+4. 완료: 데모 설정 URL 공유 — 변경한 안전한 공개 옵션만 직렬화·복원
+5. 다음: framework별 copy output
 5. Motion States RFC 작성 및 2개 실제 예제 검증
 6. States v1 구현
 7. Presence Core RFC와 focus/ARIA/cancel 모델 확정

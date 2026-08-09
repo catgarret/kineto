@@ -108,6 +108,26 @@ try {
   );
   assert.equal(surface.shadowHelp,true,'Tilt/Card Glow shadow help must be translated in every demo locale');
 
+  const sharedSettings = await page.evaluate(async () => {
+    const panel = document.querySelector('#mod-counter .kt-playground');
+    panel.open = true;
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    const target = document.querySelector('.kt-drawer-sheet [data-option="to"]');
+    target.value = '4242';
+    target.dispatchEvent(new window.Event('change', { bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 120));
+    document.querySelector('.kt-drawer-sheet .kt-playground__share').click();
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    const token = new window.URLSearchParams(window.location.search).get('kt');
+    const padded = token.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((token.length + 3) % 4);
+    const payload = JSON.parse(new window.TextDecoder().decode(Uint8Array.from(window.atob(padded), (char) => char.charCodeAt(0))));
+    return { payload, copied: document.querySelector('.kt-drawer-sheet .kt-playground__status').textContent };
+  });
+  assert.equal(sharedSettings.payload.v, 1, 'shared settings URLs must carry a version');
+  assert.equal(sharedSettings.payload.demo.startsWith('counter-'), true, 'shared settings URLs must identify the selected demo');
+  assert.equal(sharedSettings.payload.options.counter.to, 4242, 'shared settings URLs must contain changed safe controls only');
+  assert.match(sharedSettings.copied, /링크|link/i, 'sharing settings must report a copy result');
+
   const localizedCopy=await page.evaluate(async()=>{
     const select=document.getElementById('lang');
     const languages=['ko','en','ja','zh-CN','zh-TW','ru','it'];

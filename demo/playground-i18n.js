@@ -247,7 +247,7 @@
       resizeTitle: '드래그: 높이 조절 · 더블클릭: 초기화', chooseColor: '색상 선택',
       colorValue: 'CSS 색상 값: HEX, RGB, RGBA, HSL 또는 HSLA', openSettings: '설정 열기',
       replayDone: '다시 재생했습니다', resetDone: '기본값으로 되돌렸습니다',
-      copyDone: '복사되었습니다', demoLink: '데모로 이동'
+      copyDone: '복사되었습니다', shareSettings: '설정 링크 복사', shareDone: '설정 링크를 복사했습니다', shareRestored: '공유 설정을 적용했습니다', demoLink: '데모로 이동'
     },
     en: {
       summary: 'Settings · Code', groupMotion: 'Motion · Timing', groupTrigger: 'Trigger · Range',
@@ -258,7 +258,7 @@
       options: 'Module options', resize: 'Resize settings drawer (drag or ↑/↓)',
       resizeTitle: 'Drag to resize · Double-click to reset', chooseColor: 'Choose color',
       colorValue: 'CSS color: HEX, RGB, RGBA, HSL, or HSLA', openSettings: 'Open settings',
-      replayDone: 'Replayed', resetDone: 'Restored defaults', copyDone: 'Copied', demoLink: 'Go to demo'
+      replayDone: 'Replayed', resetDone: 'Restored defaults', copyDone: 'Copied', shareSettings: 'Copy settings link', shareDone: 'Settings link copied', shareRestored: 'Shared settings applied', demoLink: 'Go to demo'
     },
     ja: {
       summary: '設定 · コード', groupMotion: 'モーション · タイミング', groupTrigger: 'トリガー · 範囲',
@@ -269,7 +269,7 @@
       options: 'モジュール設定', resize: '設定パネルの高さを調整（ドラッグまたは↑/↓）',
       resizeTitle: 'ドラッグで調整 · ダブルクリックでリセット', chooseColor: '色を選択',
       colorValue: 'CSSカラー: HEX、RGB、RGBA、HSL、HSLA', openSettings: '設定を開く',
-      replayDone: '再生しました', resetDone: '初期値に戻しました', copyDone: 'コピーしました', demoLink: 'デモへ移動'
+      replayDone: '再生しました', resetDone: '初期値に戻しました', copyDone: 'コピーしました', shareSettings: '設定リンクをコピー', shareDone: '設定リンクをコピーしました', shareRestored: '共有設定を適用しました', demoLink: 'デモへ移動'
     },
     'zh-CN': {
       summary: '设置 · 代码', groupMotion: '动效 · 时间', groupTrigger: '触发 · 范围',
@@ -280,7 +280,7 @@
       options: '模块设置', resize: '调整设置面板高度（拖动或↑/↓）',
       resizeTitle: '拖动调整 · 双击重置', chooseColor: '选择颜色',
       colorValue: 'CSS 颜色：HEX、RGB、RGBA、HSL 或 HSLA', openSettings: '打开设置',
-      replayDone: '已重新播放', resetDone: '已恢复默认值', copyDone: '已复制', demoLink: '前往示例'
+      replayDone: '已重新播放', resetDone: '已恢复默认值', copyDone: '已复制', shareSettings: '复制设置链接', shareDone: '已复制设置链接', shareRestored: '已应用共享设置', demoLink: '前往示例'
     },
     'zh-TW': {
       summary: '設定 · 程式碼', groupMotion: '動效 · 時間', groupTrigger: '觸發 · 範圍',
@@ -291,7 +291,7 @@
       options: '模組設定', resize: '調整設定面板高度（拖曳或↑/↓）',
       resizeTitle: '拖曳調整 · 雙擊重設', chooseColor: '選擇顏色',
       colorValue: 'CSS 顏色：HEX、RGB、RGBA、HSL 或 HSLA', openSettings: '開啟設定',
-      replayDone: '已重新播放', resetDone: '已還原預設值', copyDone: '已複製', demoLink: '前往範例'
+      replayDone: '已重新播放', resetDone: '已還原預設值', copyDone: '已複製', shareSettings: '複製設定連結', shareDone: '已複製設定連結', shareRestored: '已套用共享設定', demoLink: '前往範例'
     },
     ru: {
       summary: 'Настройки · Код', groupMotion: 'Движение · Время', groupTrigger: 'Триггер · Диапазон',
@@ -302,7 +302,7 @@
       options: 'Настройки модуля', resize: 'Изменить высоту панели (перетаскивание или ↑/↓)',
       resizeTitle: 'Перетащить для изменения · Двойной щелчок для сброса', chooseColor: 'Выбрать цвет',
       colorValue: 'Цвет CSS: HEX, RGB, RGBA, HSL или HSLA', openSettings: 'Открыть настройки',
-      replayDone: 'Повтор запущен', resetDone: 'Настройки сброшены', copyDone: 'Скопировано', demoLink: 'Перейти к демо'
+      replayDone: 'Повтор запущен', resetDone: 'Настройки сброшены', copyDone: 'Скопировано', shareSettings: 'Копировать ссылку настроек', shareDone: 'Ссылка настроек скопирована', shareRestored: 'Общие настройки применены', demoLink: 'Перейти к демо'
     },
     it: {
       summary: 'Impostazioni · Codice', groupMotion: 'Movimento · Tempi', groupTrigger: 'Attivazione · Intervallo',
@@ -313,7 +313,7 @@
       options: 'Impostazioni modulo', resize: 'Ridimensiona il pannello (trascina o ↑/↓)',
       resizeTitle: 'Trascina per ridimensionare · Doppio clic per ripristinare', chooseColor: 'Scegli colore',
       colorValue: 'Colore CSS: HEX, RGB, RGBA, HSL o HSLA', openSettings: 'Apri impostazioni',
-      replayDone: 'Riprodotto', resetDone: 'Valori predefiniti ripristinati', copyDone: 'Copiato', demoLink: 'Vai alla demo'
+      replayDone: 'Riprodotto', resetDone: 'Valori predefiniti ripristinati', copyDone: 'Copiato', shareSettings: 'Copia link impostazioni', shareDone: 'Link impostazioni copiato', shareRestored: 'Impostazioni condivise applicate', demoLink: 'Vai alla demo'
     }
   };
 

@@ -960,7 +960,75 @@
     });
   });
 
-  const state = { snapshots: new WeakMap(), childOrders: new WeakMap(), timers: new WeakMap() };
+  const state = { snapshots: new WeakMap(), childOrders: new WeakMap(), timers: new WeakMap(), sharedDemos: new Map(), pendingShare: null };
+
+  // A share URL contains only the controls changed from the authored demo. It
+  // deliberately never serializes callbacks, selectors outside the demo, or
+  // arbitrary DOM — opening a link is a deterministic option restore, not a
+  // remote code execution channel.
+  const SHARE_PARAM = 'kt';
+  const encodeShare = (value) => {
+    const bytes = new window.TextEncoder().encode(JSON.stringify(value));
+    let binary = ''; bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+    return window.btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  };
+  const decodeShare = (value) => {
+    try {
+      const padded = String(value || '').replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((String(value || '').length + 3) % 4);
+      const binary = window.atob(padded);
+      return JSON.parse(new window.TextDecoder().decode(Uint8Array.from(binary, (char) => char.charCodeAt(0))));
+    } catch (_error) { return null; }
+  };
+  function shareOptions(descriptor) {
+    const current = (descriptor.kind === 'loader' || descriptor.kind === 'pageReveal' || descriptor.kind === 'pageTransition')
+      ? descriptor.options : descriptorOptions(descriptor);
+    const baseline = descriptor.shareInitial || {};
+    const allowed = new Set((FIELDS[descriptor.module] || []).map((field) => field[0]));
+    const out = {};
+    allowed.forEach((key) => {
+      const actualKey = descriptor.kind === 'loader' && key === 'preset' ? 'type' : key;
+      const value = current[actualKey];
+      if (value === undefined || typeof value === 'function' || JSON.stringify(value) === JSON.stringify(baseline[actualKey])) return;
+      if (['string', 'number', 'boolean'].includes(typeof value)) out[key] = value;
+    });
+    return out;
+  }
+  function sharedUrl(key, descriptors) {
+    const options = Object.fromEntries(descriptors.map((descriptor) => [descriptor.module, shareOptions(descriptor)]).filter(([, value]) => Object.keys(value).length));
+    const url = new URL(window.location.href);
+    url.searchParams.set(SHARE_PARAM, encodeShare({ v: 1, demo: key, options }));
+    return url;
+  }
+  async function copyShareUrl(key, descriptors, status) {
+    const url = sharedUrl(key, descriptors);
+    history.replaceState(null, '', url);
+    try { await navigator.clipboard.writeText(url.href); }
+    catch (_error) { const textarea = document.createElement('textarea'); textarea.value = url.href; document.body.appendChild(textarea); textarea.select(); document.execCommand('copy'); textarea.remove(); }
+    status.textContent = ui('shareDone');
+    window.ktToast?.(ui('shareDone'));
+  }
+  function restoreSharedDemo() {
+    const payload = state.pendingShare;
+    if (!payload || payload.v !== 1 || typeof payload.demo !== 'string' || !payload.options || typeof payload.options !== 'object') return;
+    const record = state.sharedDemos.get(payload.demo);
+    if (!record) return;
+    const { host, descriptors, panel } = record;
+    descriptors.forEach((descriptor) => {
+      const values = payload.options[descriptor.module];
+      if (!values || typeof values !== 'object') return;
+      const allowed = new Set((FIELDS[descriptor.module] || []).map((field) => field[0]));
+      Object.entries(values).forEach(([key, value]) => {
+        if (!allowed.has(key) || !['string', 'number', 'boolean'].includes(typeof value)) return;
+        if (descriptor.kind === 'loader' || descriptor.kind === 'pageReveal' || descriptor.kind === 'pageTransition') {
+          descriptor.options[descriptor.kind === 'loader' && key === 'preset' ? 'type' : key] = value;
+        } else setOption(descriptor, key, value, typeof value === 'boolean' ? 'checkbox' : typeof value === 'number' ? 'range' : 'text');
+      });
+    });
+    apply(host, descriptors, { textContent: '', dataset: {} }, ui('shareRestored'));
+    updateCode(host, descriptors);
+    panel?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+    state.pendingShare = null;
+  }
   const dash = (value) => value.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
   const camel = (value) => value.replace(/-([a-z])/g, (_m, c) => c.toUpperCase());
   const labelize = (value) => value.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
@@ -2083,9 +2151,11 @@
     const toolbar = document.createElement('div'); toolbar.className = 'kt-playground__toolbar';
     const replayButton = document.createElement('button'); replayButton.type = 'button'; replayButton.className = 'is-primary'; localize(replayButton, descriptors.some((item) => item.kind === 'loader') ? 'run' : 'replay');
     const resetButton = document.createElement('button'); resetButton.type = 'button'; localize(resetButton, 'reset');
+    const shareButton = document.createElement('button'); shareButton.type = 'button'; shareButton.className = 'kt-playground__share'; localize(shareButton, 'shareSettings');
     replayButton.addEventListener('click', () => { replay(host, descriptors, status); window.ktToast?.(ui('replayDone')); });
     resetButton.addEventListener('click', () => { reset(host, descriptors); window.ktToast?.(ui('resetDone')); });
-    toolbar.append(replayButton, resetButton);
+    shareButton.addEventListener('click', () => copyShareUrl(details.dataset.shareKey, descriptors, status));
+    toolbar.append(replayButton, resetButton, shareButton);
 
     const codeWrap = document.createElement('div'); codeWrap.className = 'kt-playground__code';
     codeWrap.innerHTML = '<div class="kt-playground__code-head"><div class="kt-playground__tabs"><button type="button" class="kt-playground__tab is-active" data-code-tab="html">HTML</button><button type="button" class="kt-playground__tab" data-code-tab="js">JS</button><button type="button" class="kt-playground__tab" data-code-tab="css">CSS vars</button></div><div class="kt-playground__code-actions"><button type="button" class="kt-playground__wrap" aria-pressed="false"></button><button type="button" class="kt-playground__copy"></button></div></div><pre class="kt-playground__pre line-numbers"><code></code></pre>';
@@ -2520,10 +2590,18 @@
     // state so the very first edit can still roll back safely (audit B-6).
     descriptors.forEach((d) => d.targets?.forEach?.((t) => { if (!t.__ktLastGood) t.__ktLastGood = Array.from(t.attributes).filter((a) => a.name.startsWith('data-kt-')).map((a) => [a.name, a.value]); }));
     rebuildPanel(controlHost, descriptors);
+    const panel = controlHost.querySelector('.kt-playground');
+    const shareKey = demoId || `${descriptors.map((d) => d.module).join('+')}-${state.sharedDemos.size + 1}`;
+    if (panel) panel.dataset.shareKey = shareKey;
+    descriptors.forEach((descriptor) => {
+      if (!descriptor.shareInitial) descriptor.shareInitial = { ...((descriptor.kind === 'loader' || descriptor.kind === 'pageReveal' || descriptor.kind === 'pageTransition') ? descriptor.options : descriptorOptions(descriptor)) };
+    });
+    state.sharedDemos.set(shareKey, { host: controlHost, descriptors, panel });
     ensureHorizontalSettings(controlHost, descriptors);
   }
 
   function mount(root = document) {
+    if (!state.pendingShare) state.pendingShare = decodeShare(new window.URLSearchParams(window.location.search).get(SHARE_PARAM));
     // Replay as a floating icon on the stage's bottom-left corner.
     root.querySelectorAll('.card [data-action="replay-parent"], .card [data-action="replay"]').forEach((button) => {
       if (button.dataset.playgroundReplayMounted === 'true') return;
@@ -2650,6 +2728,8 @@
       if (element.closest('.card')) return;
       mountHost(element, discover(element));
     });
+
+    restoreSharedDemo();
 
   }
 
