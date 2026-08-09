@@ -1112,7 +1112,6 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 .demo-css-215cecac{display:grid;grid-template-columns:repeat(3,minmax(150px,1fr));gap:24px}
 .demo-css-c7066e18{font:700 12px var(--font-mono);color:var(--accent);margin:0 0 8px}
 .demo-css-5075c6c3{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:14px}
-.demo-css-9afc2115{padding:16px 2px;color:var(--muted);font-size:14px}
 .demo-css-a152d27a{--kt-sheet-bg:var(--panel);--kt-sheet-fg:var(--text)}
 .demo-css-df671843{margin:0 0 8px}
 .demo-css-d691acec{color:var(--muted);font-size:14px;margin:0}

@@ -10,7 +10,21 @@ const EFFECTS = {
     enter: [{ transform: 'translateY(0.9em)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }],
     leave: [{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(-0.7em)', opacity: 0 }]
   },
-  slide: null, // alias of slide-up, filled below
+  // `slide` used to be `EFFECTS.slide = EFFECTS['slide-up']` — literally the same
+  // object, so the two presets were indistinguishable on screen and in the
+  // settings panel. Replaced with the one mechanism this table was missing:
+  // everything else moves in the plane, this one rotates out of it.
+  flip: {
+    enter: [
+      { transform: 'perspective(600px) rotateX(-72deg)', opacity: 0 },
+      { transform: 'perspective(600px) rotateX(0deg)', opacity: 1 }
+    ],
+    leave: [
+      { transform: 'perspective(600px) rotateX(0deg)', opacity: 1 },
+      { transform: 'perspective(600px) rotateX(58deg)', opacity: 0 }
+    ],
+    clip: true
+  },
   rise: {
     enter: [{ transform: 'translateY(110%)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }],
     leave: [{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(-110%)', opacity: 0 }],
@@ -34,7 +48,6 @@ const EFFECTS = {
     leave: [{ clipPath: 'inset(0 0 0 0)', webkitClipPath: 'inset(0 0 0 0)' }, { clipPath: 'inset(0 0 0 100%)', webkitClipPath: 'inset(0 0 0 100%)' }]
   }
 };
-EFFECTS.slide = EFFECTS['slide-up'];
 
 export default {
   create(el, opts) {

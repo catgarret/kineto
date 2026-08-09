@@ -132,6 +132,16 @@ try {
   assert.ok(relativeTimeDemo.date, 'relative-time demo must seed a real server-date value: ' + JSON.stringify(relativeTimeDemo));
   assert.ok(relativeTimeDemo.hasSettings && ['date', 'mode', 'locale', 'live'].every((key) => relativeTimeDemo.fields.includes(key)), 'relative-time demo must expose its settings: ' + JSON.stringify(relativeTimeDemo));
 
+  const brushDrag = await page.evaluate(() => {
+    const host = document.querySelector('[data-kt-brush-reveal]');
+    const image = host?.querySelector('img');
+    const event = new Event('dragstart', { bubbles: true, cancelable: true });
+    image?.dispatchEvent(event);
+    return { draggable: image?.draggable, prevented: event.defaultPrevented };
+  });
+  assert.equal(brushDrag.draggable, false, `Brush Reveal images must disable native browser ghost dragging: ${JSON.stringify(brushDrag)}`);
+  assert.equal(brushDrag.prevented, true, `Brush Reveal must prevent dragstart before a browser ghost image appears: ${JSON.stringify(brushDrag)}`);
+
   const cover = await page.evaluate(() => {
     const text=document.querySelector('.demo-css-0a735447');
     const stage=text.closest('.demo-stage');

@@ -22,10 +22,20 @@ const BUDGET = {
   // The 52-entry modular graph adds the Date Time runtime while retaining the
   // same allowlist. It measures 473.9 KB on Node 25/npm 11 and 475.2 KB on
   // the Node 22/npm 10 release runner, with 1604.7 KB unpacked / 72 files.
-  // Keep only the 0.8 KB cross-runner compression headroom; this is not a
-  // blanket increase for future dependencies.
-  packedKb: 476,
-  unpackedKb: 1608,
+  //
+  // 2026-08-09: the Page Reveal rewrite replaced 5 duplicate presets with 5 new
+  // mechanisms (curve / dissolve / push / grid / skew) and added the pace table;
+  // `textTransition.slide` and `glitch.digital` — both exact aliases — became
+  // `flip` and `wave`. Measures 481.3 KB packed / 1622.4 KB unpacked / 72 files.
+  // `skew` then became `fold`; `reveal` lost the `zoom`/`flip` near-duplicates and
+  // gained `swing`/`skew`, and its no-GSAP fallback now renders rotation and shear
+  // instead of dropping them. `cardGlow.pointer` (an exact alias of `spotlight`)
+  // became `edge`. The file count is
+  // unchanged throughout, so this is preset code, not new surface.
+  // Keeping the same ~1 KB cross-runner compression headroom as before; still
+  // not a blanket increase for future dependencies.
+  packedKb: 486,
+  unpackedKb: 1634,
   files: 75
 };
 

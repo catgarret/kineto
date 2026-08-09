@@ -156,8 +156,26 @@ export default {
       );
       root.style.setProperty('--kt-x', `${xPercent}%`);
       root.style.setProperty('--kt-y', `${yPercent}%`);
-      if (mode === 'spotlight' || mode === 'pointer' || mode === 'border') {
-        spotlight.style.transform = `translate3d(${currentX}px,${currentY}px,0)`;
+      if (mode === 'spotlight' || mode === 'edge' || mode === 'border') {
+        let glowX = currentX;
+        let glowY = currentY;
+        if (mode === 'edge') {
+          // Project the pointer onto whichever border it is closest to, so the
+          // glow rides the edge of the card rather than following the cursor
+          // across its face.
+          const w = el.clientWidth;
+          const h = el.clientHeight;
+          const toLeft = currentX;
+          const toRight = w - currentX;
+          const toTop = currentY;
+          const toBottom = h - currentY;
+          const nearest = Math.min(toLeft, toRight, toTop, toBottom);
+          if (nearest === toLeft) glowX = 0;
+          else if (nearest === toRight) glowX = w;
+          else if (nearest === toTop) glowY = 0;
+          else glowY = h;
+        }
+        spotlight.style.transform = `translate3d(${glowX}px,${glowY}px,0)`;
       }
       updateSurface(xPercent, yPercent);
       const moving = Math.abs(currentX - targetX) > 0.08 || Math.abs(currentY - targetY) > 0.08;

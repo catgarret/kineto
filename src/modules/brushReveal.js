@@ -66,6 +66,16 @@ export default {
     if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
     // Scratch-card behavior on touch: the finger paints instead of scrolling.
     el.style.touchAction = 'none';
+    // An image is draggable by default in browsers. Brush strokes begin on the
+    // same image surface, so prevent native dragstart and explicitly opt child
+    // images out of dragging before a translucent browser drag preview can be
+    // created. Preserve authored draggable attributes for destroy().
+    const draggableImages = [...el.querySelectorAll('img')].map((node) => ({
+      node, hadAttribute: node.hasAttribute('draggable'), value: node.getAttribute('draggable')
+    }));
+    const preventNativeDrag = (event) => event.preventDefault();
+    draggableImages.forEach(({ node }) => { node.draggable = false; });
+    el.addEventListener('dragstart', preventNativeDrag);
 
     const canvas = document.createElement('canvas');
     canvas.className = 'kt-brush-reveal-canvas';
@@ -262,6 +272,11 @@ export default {
         el.removeEventListener('pointerup', onUp);
         el.removeEventListener('pointercancel', onUp);
         el.removeEventListener('pointerleave', onLeave);
+        el.removeEventListener('dragstart', preventNativeDrag);
+        draggableImages.forEach(({ node, hadAttribute, value }) => {
+          if (hadAttribute) node.setAttribute('draggable', value);
+          else node.removeAttribute('draggable');
+        });
         resizeObserver?.disconnect();
         canvas.remove();
         if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);

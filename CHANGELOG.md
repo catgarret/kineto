@@ -4,11 +4,29 @@
 
 ### English
 
+- Prevented native image drag previews from appearing while painting a Brush Reveal stroke.
 - Expanded Date Time relative formatting with selectable units, long/short/narrow style, rounding, and an automatic absolute-date cutoff.
+- **Breaking:** removed preset names that were duplicates of another preset and replaced each with a distinct mechanism, keeping every module's preset count unchanged. Page Reveal dropped `circle`, `wipe`, `columns`, `strips` and `checker` for `curve`, `dissolve`, `push`, `grid` and `fold`; Text Transition's `slide` (literally the same object as `slide-up`) became `flip`; Glitch's `digital` (an alias that redirected to `noise`) became `wave`; Card Glow's `pointer` (identical to `spotlight`) became `edge`; Reveal's `zoom` and `flip` (indistinguishable from `zoom-in` and `flip-x`) became `swing` and `skew`.
+- Rebuilt Page Reveal's timing on expo-out curves with a per-preset pace multiplier, so presets no longer start with a visible hesitation and all sixteen settle at a comparable perceived speed.
+- Fixed Page Reveal `push` throwing the page to the bottom of the document: a percentage translate on the document root resolves against the whole document, not the viewport.
+- Rewrote Page Reveal `flash` as an anamorphic light streak that clips the cover open, replacing a whiteout that ramped opacity and therefore read as `fade`.
+- Fixed Reveal's no-GSAP fallback silently discarding rotation, shear, 3D and transform-origin, which left `rotate`, `flip-x` and `flip-y` rendering as a plain slide-and-fade.
+- Fixed the Slider coverflow active shadow being clipped: the wrap now uses `overflow: clip` with a clip margin instead of two conflicting overflow decisions in the same module.
+- Loader, Page Reveal and Page Transition settings now update the copied HTML as well as the JavaScript; their HTML tab used to be a fixed snippet that ignored every control.
+- Added a development warning when two modules that both write the host element's `transform` are mounted on the same element, since one silently overwrites the other. `docs/rfc/module-composition.md` records the measurements and the proposed fix.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
+- **호환성 변경:** 다른 프리셋과 사실상 같았던 프리셋 이름을 제거하고 각각 다른 메커니즘으로 교체했습니다. 모듈별 프리셋 개수는 그대로입니다. Page Reveal은 `circle`·`wipe`·`columns`·`strips`·`checker`를 빼고 `curve`·`dissolve`·`push`·`grid`·`fold`를 넣었고, Text Transition의 `slide`(`slide-up`과 같은 객체였습니다)는 `flip`으로, Glitch의 `digital`(`noise`로 리다이렉트되던 별칭)은 `wave`로, Card Glow의 `pointer`(`spotlight`와 동일)는 `edge`로, Reveal의 `zoom`·`flip`(`zoom-in`·`flip-x`와 구분 불가)은 `swing`·`skew`로 바뀌었습니다.
+- Page Reveal의 타이밍을 expo-out 곡선과 프리셋별 배속 계수로 다시 잡았습니다. 시작 직후 멈칫하던 느낌이 사라지고 16개 프리셋의 체감 속도가 맞춰집니다.
+- Page Reveal `push`가 페이지를 문서 맨 아래로 밀어버리던 문제를 고쳤습니다. 문서 루트에 건 퍼센트 translate는 뷰포트가 아니라 문서 전체를 기준으로 계산됩니다.
+- Page Reveal `flash`를 커버를 잘라 여는 애너모픽 광선으로 다시 만들었습니다. 이전 화이트아웃은 opacity를 램프해서 구조적으로 `fade`와 같았습니다.
+- Reveal의 GSAP 미사용 폴백이 회전·전단·3D·transform-origin을 조용히 버리던 문제를 고쳤습니다. 그래서 `rotate`·`flip-x`·`flip-y`가 단순 슬라이드 페이드로만 보였습니다.
+- Slider 코버플로우 액티브 섀도가 잘리던 문제를 고쳤습니다. 같은 모듈 안에서 충돌하던 두 개의 overflow 설정을 `overflow: clip` + clip margin으로 통일했습니다.
+- Loader·Page Reveal·Page Transition 설정이 JavaScript뿐 아니라 복사용 HTML에도 반영됩니다. 기존에는 HTML 탭이 어떤 설정에도 반응하지 않는 고정 스니펫이었습니다.
+- 호스트 요소의 `transform`을 함께 쓰는 두 모듈이 같은 요소에 올라가면 개발 중 경고를 띄웁니다. 한쪽이 다른 쪽을 조용히 덮어쓰기 때문입니다. 측정 결과와 해결안은 `docs/rfc/module-composition.md`에 정리했습니다.
+- Brush Reveal을 문지를 때 브라우저 기본 이미지 드래그 고스트가 나타나지 않도록 수정했습니다.
 - Date Time 상대 표기에 단위 선택, long/short/narrow 스타일, 반올림 방식, 일정 기간 이후 절대 날짜 자동 전환을 추가했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 

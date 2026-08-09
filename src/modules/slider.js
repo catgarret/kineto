@@ -385,8 +385,22 @@ export default {
     wrap.setAttribute('aria-roledescription', 'carousel');
     wrap.setAttribute('aria-label', opts.label || 'Carousel');
     if (!wrap.hasAttribute('tabindex')) wrap.tabIndex = 0;
-    wrap.style.overflow = activeShadow ? 'visible' : 'hidden';
-    wrap.style.removeProperty('overflow-clip-margin');
+    // `visible` let the shadow through but also stopped clipping the off-screen
+    // slides, which a looped coverflow needs. `clip` with an explicit clip
+    // margin does both: the box still clips, just N px further out than its own
+    // border box. The margin must cover the drop-shadow's offset plus its blur
+    // (0 18px 24px -> ~54px), which is why the default is 56px.
+    //
+    // `overflow-clip-margin` is honoured ONLY with `clip`, never with `hidden` —
+    // that pairing was the original bug, and the later `visible` was a
+    // workaround for it.
+    if (activeShadow) {
+      wrap.style.overflow = 'clip';
+      wrap.style.overflowClipMargin = 'var(--kt-slide-active-shadow-room, 56px)';
+    } else {
+      wrap.style.overflow = 'hidden';
+      wrap.style.removeProperty('overflow-clip-margin');
+    }
     wrap.style.touchAction = vertical ? 'pan-x' : 'pan-y';
     wrap.style.position = 'relative';
     if (coverflow || flip || cube || cards || creative) wrap.style.perspective = `${Number(opts.perspective ?? 1100)}px`;
@@ -661,7 +675,10 @@ export default {
       wrap.style.height = `${height}px`;
     };
     if (autoHeight) {
-      wrap.style.overflow = wrap.style.overflow || (activeShadow ? 'clip' : 'hidden');
+      // Deliberately does NOT re-decide the overflow mode: it was already set
+      // above, and the old `||` fallback here disagreed with that decision
+      // (`clip` with no clip margin), so any path that reached it with an empty
+      // inline value silently cut the active shadow off again.
       // The track is a flex row, so its children stretch to the wrap's height.
       // Once the wrap is given a height that feedback loop pins every slide to
       // the FIRST slide's height and the measurement can never change. Letting

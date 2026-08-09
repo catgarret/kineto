@@ -37,6 +37,7 @@ Object.assign(globalThis, {
   document: window.document,
   Element: window.Element,
   HTMLElement: window.HTMLElement,
+  Image: window.Image,
   getComputedStyle: window.getComputedStyle,
   requestAnimationFrame: window.requestAnimationFrame.bind(window),
   cancelAnimationFrame: window.cancelAnimationFrame.bind(window)
@@ -94,6 +95,82 @@ assert.equal(mobileTrigger.getAttribute('aria-expanded'), 'true', 'a touch tap m
 assert.equal(mobileMenuHost.querySelector('.kt-menu-panel').hidden, false, 'the touch-opened mega panel must be rendered');
 mobileMenu.destroy();
 mobileMenuHost.remove();
+
+// Reported: "솔루션에 마우스 대면 안 나오고, 왔다갔다 하면 나옴" — a single steady
+// hover appears to do nothing while wiggling in and out opens the panel.
+//
+// It could not be reproduced. `openTimer` and `closeTimer` are shared across all
+// entries of a menu, which is the shape a bug like that usually has, so the four
+// cases below drive the module's own listeners directly: a cold hover, a hover
+// arriving after sweeping across the other items, one arriving after a plain
+// link that owns no panel (so it never cancels a pending close), and the
+// wiggle itself. All four opened when measured in a browser, and this pins them
+// so a future change to the shared timers has to fail loudly instead.
+// jsdom answers `false` to every media query, so without this stub the module
+// takes the no-hover path and none of the assertions below would be testing what
+// they claim to. The stub also documents the fix: `any-hover` is what a
+// touchscreen laptop answers `true` to, while `hover` — the primary pointer —
+// answers `false` and used to disable the whole hover interaction there.
+const realMatchMedia = window.matchMedia;
+const stubQuery = (query, matches) => ({
+  matches, media: query, onchange: null,
+  addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent() { return false; }
+});
+const hoverAwareMatchMedia = (query) => (/any-hover|any-pointer/.test(query)
+  ? stubQuery(query, true)
+  : (realMatchMedia ? realMatchMedia.call(window, query) : stubQuery(query, false)));
+window.matchMedia = hoverAwareMatchMedia;
+// The module reads the bare global, not `window.matchMedia`.
+const realGlobalMatchMedia = globalThis.matchMedia;
+globalThis.matchMedia = hoverAwareMatchMedia;
+const hoverBar = document.createElement('nav');
+hoverBar.innerHTML = `
+  <ul>
+    <li><button>제품</button><div class="kt-menu-panel"><a href="#">P</a></div></li>
+    <li><button>문서</button><div class="kt-menu-panel"><a href="#">D</a></div></li>
+    <li><a href="#">모듈 인덱스</a></li>
+    <li><button>솔루션</button><div class="kt-menu-panel"><a href="#">S</a></div></li>
+  </ul>`;
+document.body.appendChild(hoverBar);
+const hoverMenu = megaMenuModule.create(hoverBar, { trigger: 'hover', responsive: 'scroll', openDelay: 10, closeDelay: 20 });
+const hoverItems = [...hoverBar.querySelectorAll('li')];
+const solutionItem = hoverItems[3];
+const solutionTrigger = solutionItem.querySelector('button');
+const hoverEnter = (li) => li.dispatchEvent(new window.MouseEvent('mouseenter'));
+const hoverLeave = (li) => li.dispatchEvent(new window.MouseEvent('mouseleave'));
+const settle = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+hoverEnter(solutionItem);
+await settle(60);
+assert.equal(solutionTrigger.getAttribute('aria-expanded'), 'true', 'a single cold hover must open the panel');
+hoverLeave(solutionItem);
+await settle(60);
+
+for (const li of hoverItems.slice(0, 3)) { hoverEnter(li); await settle(6); hoverLeave(li); }
+hoverEnter(solutionItem);
+await settle(60);
+assert.equal(solutionTrigger.getAttribute('aria-expanded'), 'true', 'a hover that arrives after sweeping the bar must still open');
+hoverLeave(solutionItem);
+await settle(60);
+
+// The plain <li> owns no panel, so it never clears the pending close the
+// previous item queued — the shared timers have to survive that.
+hoverEnter(hoverItems[0]); await settle(6); hoverLeave(hoverItems[0]);
+hoverEnter(hoverItems[2]); await settle(6); hoverLeave(hoverItems[2]);
+hoverEnter(solutionItem);
+await settle(60);
+assert.equal(solutionTrigger.getAttribute('aria-expanded'), 'true', 'a hover arriving past a panel-less link must still open');
+hoverLeave(solutionItem);
+await settle(60);
+
+hoverEnter(solutionItem); await settle(5); hoverLeave(solutionItem); await settle(5);
+hoverEnter(solutionItem);
+await settle(60);
+assert.equal(solutionTrigger.getAttribute('aria-expanded'), 'true', 'an in-out-in wiggle must leave the panel open, not stuck closed');
+hoverMenu.destroy();
+hoverBar.remove();
+window.matchMedia = realMatchMedia;
+globalThis.matchMedia = realGlobalMatchMedia;
 
 // Clock reveal on a staggered list must mask each item independently. Masking
 // the <ul> itself turns the whole list into one large clock wipe.
@@ -156,6 +233,7 @@ fullpageEl.remove();
 const sliderModule = (await import('../src/modules/slider.js')).default;
 const counterModule = (await import('../src/modules/counter.js')).default;
 const dateTimeModule = (await import('../src/modules/dateTime.js')).default;
+const brushRevealModule = (await import('../src/modules/brushReveal.js')).default;
 const pageRevealModule = (await import('../src/modules/pageReveal.js')).default;
 const bottomSheetModule = (await import('../src/modules/bottomSheet.js')).default;
 const loadingIndicatorModule = (await import('../src/modules/loadingIndicator.js')).default;
@@ -163,6 +241,19 @@ const coverRevealModule = (await import('../src/modules/coverReveal.js')).defaul
 const flipModule = (await import('../src/modules/flip.js')).default;
 const cardGlowModule = (await import('../src/modules/cardGlow.js')).default;
 const tiltModule = (await import('../src/modules/tilt.js')).default;
+
+const brushHost = document.createElement('div');
+brushHost.innerHTML = '<img src="base.png" alt="">';
+document.body.appendChild(brushHost);
+const brushImage = brushHost.querySelector('img');
+const brushInstance = brushRevealModule.create(brushHost, { src: 'reveal.png' });
+assert.equal(brushImage.draggable, false, 'Brush Reveal images must disable native browser drag previews');
+const brushDrag = new window.Event('dragstart', { bubbles: true, cancelable: true });
+brushImage.dispatchEvent(brushDrag);
+assert.equal(brushDrag.defaultPrevented, true, 'Brush Reveal must cancel dragstart before a browser ghost image can appear');
+brushInstance.destroy();
+assert.equal(brushImage.hasAttribute('draggable'), false, 'Brush Reveal destroy must restore an image without an authored draggable attribute');
+brushHost.remove();
 
 const radialHost = document.createElement('div');
 radialHost.innerHTML = '<div><img src="a.png"></div><div><img src="b.png"></div><div><img src="c.png"></div><div><img src="d.png"></div><div><img src="e.png"></div>';
@@ -269,8 +360,28 @@ const fadeFrames = pageRevealFrames.splice(0);
 fadeReveal.destroy();
 window.HTMLElement.prototype.animate = nativeAnimate;
 pageRevealHost.remove();
-assert.ok(flashFrames.some(({ background, frames }) => background === 'rgb(255, 255, 255)' && frames.length === 5 && frames[1].opacity === 1 && frames[3].opacity === 0.44), 'Page Reveal flash must use a white double exposure pulse');
-assert.ok(flashFrames.some(({ filter }) => filter === 'blur(16px)'), 'Page Reveal flash must leave a tinted afterimage rather than fading the cover');
+// Flash has been wrong twice, in opposite directions, and both failures are
+// pinned here.
+//
+// v1 was a five-keyframe `steps(1,end)` double pulse over a page that was never
+// covered — two hard on/off blinks that read as a rendering fault.
+// v2 blew an opaque cover out to white and then ramped its opacity to zero,
+// which is structurally a fade (a global opacity ramp with a colour change) and
+// was reported as looking exactly like one.
+//
+// v3 is an anamorphic light streak that CUTS the frame open: the cover is
+// clipped away from the centre and never changes opacity at all. So the two
+// invariants are: the cover animates clip-path, and nothing in the preset ramps
+// the cover's opacity.
+const flashCover = flashFrames.find(({ frames }) => frames.length === 2 && frames[0].clipPath === 'inset(0 0 0 0)');
+assert.ok(flashCover, 'Page Reveal flash must clip the cover open rather than fading it');
+assert.equal(flashCover.frames[1].clipPath, 'inset(50% 0 50% 0)', 'Page Reveal flash must open the cover from the centre outwards');
+assert.ok(flashCover.frames.every((frame) => frame.opacity === undefined),
+  'Page Reveal flash must not ramp the cover opacity — that is what made it read as fade');
+assert.ok(flashFrames.every(({ options }) => !String(options?.easing ?? '').includes('steps')),
+  'Page Reveal flash must interpolate — a step easing is what made v1 look like a double blink');
+assert.ok(flashFrames.some(({ frames }) => frames.some((frame) => /scaleY\(\d{2,}\)/.test(String(frame.transform || '')))),
+  'Page Reveal flash must blow a light streak out vertically');
 assert.ok(fadeFrames.length === 1 && fadeFrames[0].frames.length === 2 && fadeFrames[0].frames[0].opacity === 1 && fadeFrames[0].frames[1].opacity === 0, 'Page Reveal fade must remain one continuous cover dissolve');
 
 // Determinate indicators update nearby copy and can subscribe to Loader's
@@ -453,6 +564,46 @@ assert.ok(shadowCard.classList.contains('kt-interactive-shadow'), 'destroying Ca
 assert.equal(shadowCard.style.getPropertyValue('--kt-card-glow-shadow-runtime'), '');
 assert.match(shadowCard.style.getPropertyValue('--kt-tilt-shadow-runtime'), /color-mix/);
 tiltShadow.destroy();
+
+// Co-mounting is currently possible because each module owns its OWN overlay
+// child rather than writing into the host, and because the shared box-shadow is
+// composed from custom properties instead of one module overwriting the other's
+// string. Measured in a browser: children 1 -> 2 with both mounted, back to 1
+// after one is destroyed, and Tilt's transform keeps animating throughout.
+//
+// None of that is guaranteed by anything — it is a property of how these two
+// modules happen to be written. See docs/rfc/module-composition.md: `transform`
+// is a single string slot and fourteen modules write it on the host, so the next
+// pair to be co-mounted may well clobber each other. Pin the working case so a
+// refactor cannot silently take it away.
+const combo = document.createElement('div');
+document.body.appendChild(combo);
+Object.defineProperty(combo, 'clientWidth', { configurable: true, value: 240 });
+Object.defineProperty(combo, 'clientHeight', { configurable: true, value: 140 });
+combo.getBoundingClientRect = () => ({ left: 0, top: 0, width: 240, height: 140, right: 240, bottom: 140 });
+const comboTilt = tiltModule.create(combo, { max: 12, glare: false });
+const tiltOnlyChildren = combo.children.length;
+const comboGlow = cardGlowModule.create(combo, { mode: 'spotlight' });
+assert.ok(
+  combo.children.length > tiltOnlyChildren,
+  `Card Glow must add its own overlay instead of reusing Tilt's (${tiltOnlyChildren} -> ${combo.children.length})`
+);
+assert.ok(
+  combo.style.transformStyle === 'preserve-3d',
+  'mounting Card Glow must not clear the 3D context Tilt established'
+);
+comboGlow.destroy();
+assert.equal(
+  combo.children.length, tiltOnlyChildren,
+  'destroying Card Glow must remove only its own overlay'
+);
+assert.ok(
+  combo.style.transformStyle === 'preserve-3d',
+  'destroying Card Glow must leave Tilt fully mounted'
+);
+comboTilt.destroy();
+assert.equal(combo.children.length, 0, 'both modules must clean up after themselves');
+combo.remove();
 assert.ok(!shadowCard.classList.contains('kt-interactive-shadow'), 'last shadow module must clean up host class');
 assert.equal(shadowCard.style.boxShadow, '0 1px 3px rgb(0 0 0 / 20%)', 'original box-shadow must be preserved');
 shadowCard.remove();

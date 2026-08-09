@@ -217,6 +217,34 @@ function ensureCoreServices() {
 // instance simply becomes live a microtask later, once the module resolves. A
 // single in-flight guard (lenisLoading) stops concurrent enables from creating
 // two Lenis instances.
+
+// Modules that assign the host element's own `transform`. Derived by inspection
+// of src/modules/*.js (14 of 52 at the time of writing); anything that only
+// transforms a child it created is deliberately absent, because those compose.
+const HOST_TRANSFORM_MODULES = new Set([
+  'bottomSheet', 'drag', 'gesture', 'lazy', 'loader', 'magnetic', 'marquee',
+  'mouseParallax', 'parallax', 'progress', 'reveal', 'scrollVelocity',
+  'textSplit', 'tilt'
+]);
+const warnedClashes = new WeakMap();
+function warnHostTransformClash(el, name) {
+  if (!HOST_TRANSFORM_MODULES.has(name)) return;
+  const map = getElementMap(el);
+  if (!map) return;
+  const other = [...map.keys()].find((key) => key !== name && HOST_TRANSFORM_MODULES.has(key));
+  if (!other) return;
+  // One warning per element per pair; a live playground remounts constantly and
+  // a warning per remount would be noise, not a signal.
+  const seen = warnedClashes.get(el) || new Set();
+  const pair = [name, other].sort().join('+');
+  if (seen.has(pair)) return;
+  seen.add(pair);
+  warnedClashes.set(el, seen);
+  console.warn(
+    `[Kineto] "${name}" and "${other}" both write this element's transform, so one will overwrite the other. `
+    + 'Put them on nested elements instead. See docs/rfc/module-composition.md'
+  );
+}
 // True when `node` is inside a scrollable container (or one tagged with
 // data-lenis-prevent), so Lenis should skip it and let native scroll happen.
 function isInnerScrollable(node) {
@@ -482,6 +510,14 @@ const Kineto = {
     const instances = elements.map((el) => {
       const existing = getElementMap(el)?.get(name);
       if (existing) return existing.instance;
+
+      // `transform` is a single string slot, and the modules below all write it
+      // on the HOST element. Two of them on one element means whichever runs the
+      // later frame silently erases the other — the shared `box-shadow` was given
+      // a custom-property composition path for exactly this reason, `transform`
+      // has not been. Warn rather than guess at a merge order: see
+      // docs/rfc/module-composition.md.
+      warnHostTransformClash(el, name);
 
       try {
         let instance;

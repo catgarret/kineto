@@ -261,12 +261,21 @@ const mobile = await page.evaluate(() => {
     }),
     ringVisible: Boolean(ring && ring.width > 0 && getComputedStyle(ringNode).visibility !== 'hidden'),
     ringSearchOverlap: overlaps(ring, search),
-    ringBottom: ring ? Math.round(innerHeight - ring.bottom) : null
+    ringBottom: ring ? Math.round(innerHeight - ring.bottom) : null,
+    // Derived, not hardcoded — see the assertion below.
+    moduleCardCount: document.querySelectorAll('[id^="mod-"]').length
   };
 });
 check('mobile page has no horizontal document overflow', mobile.documentWidth <= mobile.viewport + 1, `${mobile.documentWidth}/${mobile.viewport}`);
 check('mobile header controls stay inside and do not overlap', mobile.brandInside && mobile.actionsInside && !mobile.headerOverlap, JSON.stringify(mobile));
-check('mobile search and module chips stay readable', mobile.searchInside && mobile.chipCount === 50 && mobile.chipsReadable, JSON.stringify(mobile));
+// The expected chip count is DERIVED from the module cards actually on the page,
+// never hardcoded. A literal 50 here silently rotted the moment a module was
+// added (Date Time took the demo to 51) and then failed as if the layout were
+// broken, which is the wrong signal entirely. The real invariant is that every
+// module card has exactly one chip.
+check('mobile search and module chips stay readable',
+  mobile.searchInside && mobile.chipCount === mobile.moduleCardCount && mobile.chipCount > 40 && mobile.chipsReadable,
+  JSON.stringify(mobile));
 check('mobile scroll-to-top ring clears module search', mobile.ringVisible && !mobile.ringSearchOverlap && Math.abs(mobile.ringBottom - 112) <= 3, JSON.stringify(mobile));
 
 await page.locator('#sitemap-btn').click();
@@ -281,10 +290,17 @@ const sitemap = await page.evaluate(() => {
     inside: Boolean(box && box.left >= 0 && box.right <= innerWidth && box.top >= 0 && box.bottom <= innerHeight),
     columns: grid ? getComputedStyle(grid).gridTemplateColumns.split(' ').length : 0,
     links: grid?.querySelectorAll('a').length || 0,
-    rawIds: [...grid?.querySelectorAll('.sm-txt b,.sm-txt small') || []].some((node) => /\bmod-[\w-]+/.test(node.textContent))
+    rawIds: [...grid?.querySelectorAll('.sm-txt b,.sm-txt small') || []].some((node) => /\bmod-[\w-]+/.test(node.textContent)),
+    moduleCardCount: document.querySelectorAll('[id^="mod-"]').length
   };
 });
-check('mobile sitemap is a one-column, in-viewport list of all modules', sitemap.open && sitemap.inside && sitemap.columns === 1 && sitemap.links === 50 && !sitemap.rawIds, JSON.stringify(sitemap));
+// Same reasoning as the chip count: "all modules" means one sitemap link per
+// module card on the page, not a magic number that has to be edited by hand
+// every time a module ships.
+check('mobile sitemap is a one-column, in-viewport list of all modules',
+  sitemap.open && sitemap.inside && sitemap.columns === 1
+  && sitemap.links === sitemap.moduleCardCount && sitemap.links > 40 && !sitemap.rawIds,
+  JSON.stringify(sitemap));
 await page.locator('.sitemap-close').click();
 
 await browser.close();

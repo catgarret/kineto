@@ -22,8 +22,20 @@ export default {
     if (!directItems.length) return null;
 
     const reduce = env().reducedMotion;
+    // `hover` and `pointer` describe the PRIMARY input only. On a touchscreen
+    // laptop — a Surface, a touch-enabled Windows notebook, an iPad with a
+    // trackpad — the primary pointer is reported as coarse and non-hovering even
+    // though a mouse is attached and in use. `(hover: hover)` is false there, so
+    // the mouseenter listeners below were never bound, the pointer handler bails
+    // out on `pointerType === 'mouse'`, and hovering the menu did nothing at all
+    // while clicking still worked.
+    //
+    // `any-hover` / `any-pointer` are the queries for "at least one available
+    // input can do this", which is the actual question being asked. A phone still
+    // answers no (it has no fine, hovering input), so touch behaviour is
+    // unchanged.
     const canHover = typeof matchMedia !== 'undefined'
-      && matchMedia('(hover:hover) and (pointer:fine)').matches;
+      && matchMedia('(any-hover: hover) and (any-pointer: fine)').matches;
     const trigger = opts.trigger === 'click' ? 'click' : 'hover';
     const layout = opts.layout === 'mega' ? 'mega' : 'dropdown';
     const openDelay = Math.max(0, Number(opts.openDelay ?? 60));

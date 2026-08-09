@@ -37,7 +37,7 @@
 
 - Attribute: `data-kt-card-glow`
 - Default variant: `spotlight`
-- Variants: `spotlight`, `pointer`, `border`, `comet`, `aurora`, `shine`
+- Variants: `spotlight`, `edge`, `border`, `comet`, `aurora`, `shine`
 - Public options: `alwaysOn`, `blendMode`, `blur`, `borderBlur`, `borderColor`, `borderColor2`, `borderGlow`, `borderInset`, `borderOpacity`, `borderRadius`, `borderWidth`, `color`, `color1`, `color2`, `cycleDuration`, `disableOnMobile`, `duration`, `ease`, `follow`, `halo`, `intensity`, `luminousBorder`, `mode`, `opacity`, `preset`, `radius`, `reflection`, `sensitivity`, `shadow`, `shadowBlur`, `shadowColor`, `shadowCss`, `shadowFollow`, `shadowHoverOnly`, `shadowInset`, `shadowOpacity`, `shadowSpread`, `shadowX`, `shadowY`, `smoothing`, `speed`, `spread`, `surface`, `surfaceBlend`, `surfaceBlur`, `surfaceColor`, `surfaceColor2`, `surfaceGradient`, `surfaceInset`, `surfaceOpacity`, `surfaceSize`
 
 ## counter
@@ -79,7 +79,7 @@
 
 - Attribute: `data-kt-glitch`
 - Default variant: `rgb`
-- Variants: `rgb`, `pixel`, `noise`, `crt`, `digital`, `image`, `datamosh`, `reveal`, `vcr`, `rgb-slice-burst`
+- Variants: `rgb`, `pixel`, `noise`, `crt`, `wave`, `image`, `datamosh`, `reveal`, `vcr`, `rgb-slice-burst`
 - Public options: `artifactCount`, `artifactMaxSize`, `artifactMinSize`, `blendMode`, `burstDurationMax`, `burstDurationMin`, `channelOffset`, `colors`, `delay`, `duration`, `frequency`, `intensity`, `intervalMax`, `intervalMin`, `loop`, `maxSliceOffset`, `preset`, `randomness`, `seed`, `sliceCount`, `sliceCountMax`, `sliceCountMin`, `speed`, `trigger`, `type`
 
 ## lazy
@@ -142,7 +142,7 @@
 
 - Attribute: `data-kt-page-reveal`
 - Default variant: `curtain`
-- Variants: `curtain`, `split`, `circle`, `wipe`, `blinds`, `diagonal`, `checker`, `strips`, `shutter`, `columns`, `fade`, `zoom`, `iris`, `flash`, `center-slit`, `data-mosaic`
+- Variants: `curtain`, `split`, `blinds`, `diagonal`, `shutter`, `fade`, `zoom`, `iris`, `flash`, `center-slit`, `data-mosaic`, `curve`, `dissolve`, `push`, `grid`, `fold`
 - Public options: `angle`, `axis`, `cleanupDuration`, `color`, `color2`, `count`, `delay`, `density`, `direction`, `duration`, `ease`, `effect`, `horizontalDuration`, `largeTileChance`, `lineHeight`, `lineWidth`, `noiseDuration`, `onComplete`, `overscan`, `preset`, `reverse`, `seed`, `smallTileChance`, `stagger`, `tileMax`, `tileMin`, `verticalDuration`
 
 ## pageTransition
@@ -170,7 +170,7 @@
 
 - Attribute: `data-kt-reveal`
 - Default variant: `fade-up`
-- Variants: `fade`, `fade-up`, `fade-down`, `fade-left`, `fade-right`, `slide-up`, `slide-down`, `slide-left`, `slide-right`, `zoom`, `zoom-in`, `zoom-out`, `blur`, `rise`, `soft`, `flip`, `flip-x`, `flip-y`, `rotate`, `mask`, `wipe`, `class`, `clock`
+- Variants: `fade`, `fade-up`, `fade-down`, `fade-left`, `fade-right`, `slide-up`, `slide-down`, `slide-left`, `slide-right`, `zoom-in`, `zoom-out`, `blur`, `rise`, `soft`, `flip-x`, `flip-y`, `rotate`, `mask`, `wipe`, `class`, `clock`, `swing`, `skew`
 - Public options: `activeClass`, `classOnly`, `clockDirection`, `delay`, `distance`, `direction`, `duration`, `ease`, `end`, `enterClass`, `enterEase`, `leaveClass`, `onClassChange`, `onComplete`, `onEnter`, `onEnterBack`, `onLeave`, `onLeaveBack`, `once`, `order`, `preset`, `removeClassOnLeave`, `rootMargin`, `spring`, `stagger`, `start`, `startAngle`, `threshold`
 
 ## radial
@@ -239,8 +239,8 @@
 ## textTransition
 
 - Attribute: `data-kt-text-transition`
-- Default variant: `slide`
-- Variants: `slide-up`, `slide`, `rise`, `fade`, `blur`, `scale`, `clip`, `dissolve`, `shimmer`
+- Default variant: `slide-up`
+- Variants: `slide-up`, `flip`, `rise`, `fade`, `blur`, `scale`, `clip`, `dissolve`, `shimmer`
 - Public options: `ariaLive`, `baseColor`, `blur`, `charDirection`, `charMode`, `duration`, `ease`, `effect`, `endScale`, `hold`, `jitter`, `loop`, `minHeight`, `onChange`, `onComplete`, `pause`, `preset`, `shimColor`, `shimSpeed`, `stagger`, `startScale`, `texts`
 
 ## tilt

@@ -19,7 +19,11 @@ const NOISE_CHARS = '!@#$%^&*()<>?/|{}~ABCDEFGHIJabcdefghij0123456789';
 export default {
   create(el, opts) {
     const type = opts.preset || opts.type || 'rgb';
-    const preset = type === 'digital' ? 'noise' : type;
+    // `digital` used to redirect here to `noise` — an exact alias, so the two
+    // presets produced identical output and the settings panel offered a choice
+    // that changed nothing. Removed; `wave` took its slot with a mechanism the
+    // set did not have.
+    const preset = type;
     const intensity = clamp(Number(opts.intensity ?? 1), 0.1, 3);
     const speed = Math.max(0.1, Number(opts.speed ?? 1));
     // Frequency controls how often a burst recurs without changing its playback
@@ -173,6 +177,87 @@ export default {
     // sweeping roll bar, a vignette and flicker (VCR adds tracking noise + a
     // jitter on the picture). CSS-only, so it's cheap on mobile. Previously `crt`
     // on an image fell through to the text path and blanked the image out.
+    // ── Wave: analogue signal warp (SVG displacement map) ────────────────────
+    // The one deformation in the set. `rgb` offsets whole slices, `pixel`
+    // quantises, `crt`/`vcr` overlay scanlines, `image`/`datamosh` repaint a
+    // canvas — none of them bend the picture itself. feTurbulence drives
+    // feDisplacementMap so rows shear by a smoothly varying amount, which is what
+    // a real analogue signal does under interference.
+    if (preset === 'wave') {
+      const uid = `kt-glitch-wave-${Math.random().toString(36).slice(2, 9)}`;
+      const amount = Math.round(clamp(Number(opts.channelOffset ?? 8), 1, 40) * intensity);
+      const svgNS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNS, 'svg');
+      // Kept out of layout and out of the a11y tree; it exists only to host the
+      // filter definition.
+      svg.setAttribute('aria-hidden', 'true');
+      svg.setAttribute('focusable', 'false');
+      svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;';
+      const filter = document.createElementNS(svgNS, 'filter');
+      filter.setAttribute('id', uid);
+      // The filter region has to exceed the source box or the warped edges clip.
+      filter.setAttribute('x', '-15%'); filter.setAttribute('y', '-15%');
+      filter.setAttribute('width', '130%'); filter.setAttribute('height', '130%');
+      const turbulence = document.createElementNS(svgNS, 'feTurbulence');
+      turbulence.setAttribute('type', 'fractalNoise');
+      // Very low frequency across x, higher across y: that ratio is what makes the
+      // distortion read as horizontal tearing rather than as general mush.
+      turbulence.setAttribute('baseFrequency', '0.0008 0.06');
+      turbulence.setAttribute('numOctaves', '1');
+      turbulence.setAttribute('seed', String(Math.floor(Number(opts.seed ?? 7)) || 7));
+      turbulence.setAttribute('result', 'noise');
+      // Measured: SMIL (<animate>) did not advance at all in headless Chromium —
+      // 14 samples of `baseFrequencyY.animVal` over a second all read 0.02. Rather
+      // than ship an effect whose motion depends on SMIL being scheduled, the
+      // frequency is driven from JS. It also makes pause/resume exact and costs
+      // one attribute write per tick.
+      //
+      // Throttled to ~24fps on purpose: a glitch that updates every frame reads as
+      // smooth noise, and the slight quantisation is part of the look.
+      const period = Math.max(600, 2600 / cadence);
+      const tickMs = 42;
+      let waveStart = performance.now();
+      let waveTimer = null;
+      const stepWave = () => {
+        const phase = ((performance.now() - waveStart) % period) / period;
+        // Triangle sweep low -> high -> low. Held near the low end most of the
+        // cycle so the element stays readable and only tears periodically; a
+        // constantly warped element just looks broken.
+        const ramp = phase < 0.5 ? phase * 2 : (1 - phase) * 2;
+        const eased = Math.pow(ramp, 1.6);
+        const y = (0.02 + eased * 0.07).toFixed(4);
+        turbulence.setAttribute('baseFrequency', `0.0008 ${y}`);
+      };
+      const startWave = () => { if (!waveTimer) waveTimer = setInterval(stepWave, tickMs); };
+      const stopWave = () => { clearInterval(waveTimer); waveTimer = null; };
+      const displace = document.createElementNS(svgNS, 'feDisplacementMap');
+      displace.setAttribute('in', 'SourceGraphic');
+      displace.setAttribute('in2', 'noise');
+      displace.setAttribute('scale', String(amount));
+      displace.setAttribute('xChannelSelector', 'R');
+      displace.setAttribute('yChannelSelector', 'G');
+      filter.appendChild(turbulence);
+      filter.appendChild(displace);
+      svg.appendChild(filter);
+      document.body.appendChild(svg);
+      stepWave();
+      startWave();
+      const originalFilter = el.style.filter;
+      el.style.filter = `${originalFilter ? originalFilter + ' ' : ''}url(#${uid})`;
+      return {
+        el,
+        type: 'glitch',
+        replay: () => { waveStart = performance.now(); stepWave(); },
+        pause: stopWave,
+        resume: startWave,
+        destroy: () => {
+          stopWave();
+          svg.remove();
+          if (originalFilter) el.style.filter = originalFilter; else el.style.removeProperty('filter');
+        }
+      };
+    }
+
     if (preset === 'crt' || preset === 'vcr') {
       const imageEl = el.tagName === 'IMG' ? el : el.querySelector?.('img');
       const host = el.tagName === 'IMG' ? el.parentElement : el;

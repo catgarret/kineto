@@ -10,16 +10,20 @@ const PRESETS = {
   'slide-down': { yPercent: -100, opacity: 0 },
   'slide-left': { xPercent: -100, opacity: 0 },
   'slide-right': { xPercent: 100, opacity: 0 },
-  zoom: { scale: 0.86, opacity: 0 },
   'zoom-in': { scale: 0.78, opacity: 0 },
   'zoom-out': { scale: 1.16, opacity: 0 },
   blur: { filter: 'blur(20px)', opacity: 0 },
   rise: { y: 72, scale: 0.96, opacity: 0 },
   soft: { y: 24, filter: 'blur(8px)', opacity: 0 },
-  flip: { rotationX: -80, transformPerspective: 900, transformOrigin: '50% 100%', opacity: 0 },
   'flip-x': { rotationX: -80, transformPerspective: 900, opacity: 0 },
   'flip-y': { rotationY: -80, transformPerspective: 900, opacity: 0 },
   rotate: { rotate: -8, scale: 0.92, opacity: 0 },
+  // Rotation about a CORNER rather than the centre. `rotate` spins in place;
+  // this one hinges, which is a different read at the same angle.
+  swing: { rotate: -12, x: -28, transformOrigin: '0% 0%', opacity: 0 },
+  // Shear. Nothing else in this table deforms — everything moves, scales,
+  // blurs, rotates or clips.
+  skew: { skewY: 7, y: 28, opacity: 0 },
   mask: { clipPath: 'inset(0 100% 0 0)', opacity: 1 },
   wipe: { clipPath: 'inset(100% 0 0 0)', opacity: 1 }
 };
@@ -448,12 +452,37 @@ export default {
     const xPercent = Number(from.xPercent ?? 0);
     const yPercent = Number(from.yPercent ?? 0);
     const scale = Number(from.scale ?? 1);
+    // Rotation and shear were silently dropped here, so without GSAP the `rotate`,
+    // `flip-x` and `flip-y` presets all degraded to a plain slide-and-fade —
+    // measured: `flip-x` produced `matrix(1, 0, 0, 1, 0, 24)`, i.e. no rotation at
+    // all. Every key the preset table can contain has to be rendered, otherwise a
+    // preset is only real when an optional third-party engine happens to be loaded.
+    const rotate = Number(from.rotate ?? from.rotation ?? 0);
+    const rotationX = Number(from.rotationX ?? 0);
+    const rotationY = Number(from.rotationY ?? 0);
+    const skewX = Number(from.skewX ?? 0);
+    const skewY = Number(from.skewY ?? 0);
+    const perspective = Number(from.transformPerspective ?? 0);
     const duration = Math.max(0, Number(opts.duration ?? 0.55));
     let timers = [];
+    // `perspective()` must come FIRST in the transform list or it does not apply
+    // to the rotations that follow it.
+    const transformFrom = [
+      perspective ? `perspective(${perspective}px)` : '',
+      `translate3d(${x}px,${y}px,0)`,
+      (xPercent || yPercent) ? `translate(${xPercent}%,${yPercent}%)` : '',
+      rotate ? `rotate(${rotate}deg)` : '',
+      rotationX ? `rotateX(${rotationX}deg)` : '',
+      rotationY ? `rotateY(${rotationY}deg)` : '',
+      skewX ? `skewX(${skewX}deg)` : '',
+      skewY ? `skewY(${skewY}deg)` : '',
+      scale !== 1 ? `scale(${scale})` : ''
+    ].filter(Boolean).join(' ');
     const initial = (node) => {
       node.style.transition = 'none';
       node.style.opacity = String(from.opacity ?? 0);
-      node.style.transform = `translate3d(${x}px,${y}px,0) translate(${xPercent}%,${yPercent}%) scale(${scale})`;
+      node.style.transform = transformFrom;
+      if (from.transformOrigin) node.style.transformOrigin = from.transformOrigin;
       if (from.filter) node.style.filter = from.filter;
       if (from.clipPath) node.style.clipPath = from.clipPath;
     };
