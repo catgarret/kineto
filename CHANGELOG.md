@@ -4,6 +4,16 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.56] - 2026-08-09
+
+### English
+
 - Prevented native image drag previews from appearing while painting a Brush Reveal stroke.
 - Expanded Date Time relative formatting with selectable units, long/short/narrow style, rounding, and an automatic absolute-date cutoff.
 - **Breaking:** removed preset names that were duplicates of another preset and replaced each with a distinct mechanism, keeping every module's preset count unchanged. Page Reveal dropped `circle`, `wipe`, `columns`, `strips` and `checker` for `curve`, `dissolve`, `push`, `grid` and `fold`; Text Transition's `slide` (literally the same object as `slide-up`) became `flip`; Glitch's `digital` (an alias that redirected to `noise`) became `wave`; Card Glow's `pointer` (identical to `spotlight`) became `edge`; Reveal's `zoom` and `flip` (indistinguishable from `zoom-in` and `flip-x`) became `swing` and `skew`.
@@ -29,7 +39,6 @@
 - Brush Reveal을 문지를 때 브라우저 기본 이미지 드래그 고스트가 나타나지 않도록 수정했습니다.
 - Date Time 상대 표기에 단위 선택, long/short/narrow 스타일, 반올림 방식, 일정 기간 이후 절대 날짜 자동 전환을 추가했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
-
 ## [0.8.55] - 2026-08-09
 
 ### English
