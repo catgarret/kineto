@@ -4,6 +4,16 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.58] - 2026-08-09
+
+### English
+
 - Retried locked nested QA installs after transient npm registry timeouts, while retaining strict lockfile installs and bounded retry delays.
 <!-- Add matching English release bullets here. -->
 
@@ -11,7 +21,6 @@
 
 - 잠깐의 npm 레지스트리 타임아웃은 제한된 재시도로 다시 시도하되, lockfile을 엄격히 따르는 설치 방식은 유지합니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
-
 ## [0.8.57] - 2026-08-09
 
 ### English
