@@ -4,6 +4,16 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.59] - 2026-08-09
+
+### English
+
 - Added copyable, compact demo-setting URLs that restore safe changed controls for the selected example.
 <!-- Add matching English release bullets here. -->
 
@@ -11,7 +21,6 @@
 
 - 선택한 예시의 변경된 안전한 설정만 복원하는 짧은 데모 설정 URL 복사를 추가했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
-
 ## [0.8.58] - 2026-08-09
 
 ### English
