@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   test:
-    name: Node 22 · full test suite
+    name: Node 24 / npm 11 · full test suite
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
@@ -29,8 +29,11 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
+
+      - name: Use npm with Trusted Publishing support
+        run: npm install --global npm@11
 
       - name: Install dependencies
         run: npm ci
@@ -69,8 +72,11 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
+
+      - name: Use npm with Trusted Publishing support
+        run: npm install --global npm@11
 
       - name: Install dependencies
         run: npm ci

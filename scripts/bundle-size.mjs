@@ -67,13 +67,15 @@ const BUDGETS = {
   // raw and measures 125.2 KB gzip in the readable ESM / 111.1 KB gzip in
   // the UMD artifacts. One additional KB preserves sub-KB headroom without
   // weakening the guard against accidentally rebundling an engine.
-  // 2026-08-08: touch-safe menu/slider handling, counter clock formatting,
-  // and CSS edge-fade controls add 1.8 KB raw to ESM and 1.4 KB raw to UMD;
-  // gzip stays within the existing ceilings.
-  'kineto.js': { raw: 481, gz: 126 },
-  'kineto.min.js': { raw: 381, gz: 112 },
-  'kineto.umd.js': { raw: 379, gz: 112 },
-  'kineto.umd.min.js': { raw: 379, gz: 112 },
+  // 2026-08-09: the 52-module build adds Date Time, the completed Page Reveal
+  // mechanisms and their control surface. Measured on the release runtime
+  // (Node 24/npm 11): 492.2/128.7 KiB ESM and 389.0/115.0 KiB minified ESM.
+  // The ceilings retain roughly 1 KiB gzip headroom and remain far below a
+  // third-party motion engine being bundled accidentally.
+  'kineto.js': { raw: 494, gz: 130 },
+  'kineto.min.js': { raw: 391, gz: 116 },
+  'kineto.umd.js': { raw: 389, gz: 116 },
+  'kineto.umd.min.js': { raw: 389, gz: 116 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.
@@ -84,8 +86,8 @@ const BUDGETS = {
   // interpolation with no stall, no bounce at the loop seam, no backwards sweep.
   // The rest of the CSS is at its floor (measured 2026-07-29: re-minifying the
   // Vite output with lightningcss moves raw by -0.1%).
-  'kineto.css': { raw: 44, gz: 10 },
-  'kineto.min.css': { raw: 44, gz: 10 }
+  'kineto.css': { raw: 45, gz: 10 },
+  'kineto.min.css': { raw: 45, gz: 10 }
 };
 
 const kb = (n) => n / 1024;
