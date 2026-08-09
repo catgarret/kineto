@@ -15,6 +15,7 @@ const changelog = read('CHANGELOG.md');
 const note = read(`.github/release-notes/v${pkg.version}.md`);
 const security = read('SECURITY.md');
 const supplyChain = read('docs/supply-chain.md');
+const qaLocks = ['package-lock.json', 'tests/consumer-bundles/package-lock.json', 'tests/framework-qa/package-lock.json'];
 
 assert.match(workflow, /tags:\s*\n\s*-\s*"v\[0-9\]\+\.\[0-9\]\+\.\[0-9\]\+"/);
 assert.match(workflow, /id-token:\s*write/);
@@ -40,6 +41,7 @@ assert.match(security, /provenance/i);
 assert.match(security, /3 business days/);
 assert.match(supplyChain, /Socket/);
 assert.match(supplyChain, /npm run verify/);
+qaLocks.forEach((lock) => assert.doesNotMatch(read(lock), /\.internal\.api\.openai\.org|artifactory\/api\/npm/, `${lock} must not pin a private registry URL`));
 
 execFileSync(process.execPath, [path.join(root, 'scripts/check-release.mjs'), `v${pkg.version}`], {
   cwd: root,

@@ -82,10 +82,12 @@
 
 ### English
 
+- Replaced private registry URLs captured in the framework QA lockfile with public npm URLs, so hosted runners can install its fixture dependencies.
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
+- framework QA lockfile에 기록된 사설 레지스트리 URL을 공개 npm URL로 교체해 호스팅 러너도 fixture 의존성을 설치할 수 있게 했습니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 ## [0.8.53] - 2026-08-08
 
