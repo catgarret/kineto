@@ -4,6 +4,16 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.57] - 2026-08-09
+
+### English
+
 - Aligned CI with the Node 24/npm 11 release runtime, so the same full verification runs before a tag is created.
 - Recalibrated Kineto's own bundle budgets after the 52-module release while retaining explicit GSAP/Lenis source and CDN-boundary checks.
 <!-- Add matching English release bullets here. -->
@@ -13,7 +23,6 @@
 - CI를 Node 24/npm 11 릴리스 런타임과 맞춰 태그를 만들기 전에 동일한 전체 검증을 실행합니다.
 - 52개 모듈 릴리스 기준으로 Kineto 자체 번들 예산을 다시 측정했습니다. GSAP/Lenis의 소스·CDN 경계 검사는 그대로 유지합니다.
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
-
 ## [0.8.56] - 2026-08-09
 
 ### English
