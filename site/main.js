@@ -875,6 +875,7 @@
       if(!hero||!target)return;
       const firstModule=(target.id||'').replace(/^mod-/,'')||'textSplit';
       const landing=document.querySelector('main .section-head')||target;
+      const SNAP_TAIL_MS=1200;
       let snapping=false,lastAt=0,consumed=false,ignoreUntil=0,snapDirection=0;
       const scrollScene=(top)=>{
         // Keep the intentional one-gesture scene transition visually smooth.
@@ -889,7 +890,7 @@
         snapping=true;
         snapDirection=-1;
         window.__ktHeroSceneSnap=true;
-        ignoreUntil=performance.now()+420;
+        ignoreUntil=performance.now()+SNAP_TAIL_MS;
         scrollScene(0);
         try{history.replaceState(null,'',location.pathname+location.search);}catch(_){/* file:// */}
         setTimeout(()=>{snapping=false;snapDirection=0;window.__ktHeroSceneSnap=false;window.dispatchEvent(new Event('scroll'));},1000);
@@ -901,7 +902,7 @@
         snapping=true;
         snapDirection=1;
         window.__ktHeroSceneSnap=true;
-        ignoreUntil=performance.now()+420;
+        ignoreUntil=performance.now()+SNAP_TAIL_MS;
         // Use an explicit document position. `scrollIntoView()` can be ignored
         // during a cancelled wheel event in WebKit, which left the URL changed
         // but the first scene still at the hero.
