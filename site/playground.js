@@ -1757,6 +1757,32 @@
     return { html, js };
   }
 
+  // Framework snippets intentionally use the public adapters rather than
+  // inventing a second component API. Page-level modules (loader, pageReveal,
+  // pageTransition) do not have adapter equivalents, so their snippets point
+  // consumers to the working Vanilla JS tab instead of pretending otherwise.
+  function frameworkSource(descriptor) {
+    if (descriptor.kind === 'loader' || descriptor.kind === 'pageReveal' || descriptor.kind === 'pageTransition') {
+      return {
+        react: `// ${descriptor.kind} is page-level and is configured with the Vanilla JS API.\n// Use the JS tab above so the page lifecycle remains explicit.`,
+        vue: `<!-- ${descriptor.kind} is page-level and is configured with the Vanilla JS API.\n     Use the JS tab above so the page lifecycle remains explicit. -->`
+      };
+    }
+    const options = descriptorOptions(descriptor);
+    const optionText = JSON.stringify(options, null, 2);
+    const target = descriptor.targets?.[0];
+    const tag = target?.tagName ? target.tagName.toLowerCase() : 'div';
+    const voidTags = new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr']);
+    const reactOptions = optionText.replace(/^\{/, '{{').replace(/\}$/, '}}');
+    const reactBody = voidTags.has(tag)
+      ? `<Motion as="${tag}" type="${descriptor.module}" options=${reactOptions} />`
+      : `<Motion as="${tag}" type="${descriptor.module}" options=${reactOptions}>\n      {/* Replace with your content */}\n    </Motion>`;
+    return {
+      react: `import { Motion } from '@dong-gri/kineto/react';\n\nexport default function Example() {\n  return (\n    ${reactBody}\n  );\n}`,
+      vue: `<script setup>\nimport { useKineto } from '@dong-gri/kineto/vue';\n\nconst { element } = useKineto('${descriptor.module}', ${optionText});\n</script>\n\n<template>\n  <${tag} ref="element">Replace with your content</${tag}>\n</template>`
+    };
+  }
+
   function prettyMarkup(markup) {
     const template = document.createElement('template');
     template.innerHTML = String(markup || '').trim();
@@ -1785,9 +1811,12 @@
 
   function combinedSource(descriptors) {
     const sources = descriptors.map(currentSource);
+    const frameworks = descriptors.map(frameworkSource);
     return {
       html: [...new Set(sources.map((source) => source.html))].join('\n'),
-      js: sources.map((source) => source.js).join('\n\n')
+      js: sources.map((source) => source.js).join('\n\n'),
+      react: frameworks.map((source) => source.react).join('\n\n'),
+      vue: frameworks.map((source) => source.vue).join('\n\n')
     };
   }
 
@@ -1797,14 +1826,20 @@
     const source = combinedSource(descriptors);
     panel.dataset.htmlCode = source.html;
     panel.dataset.jsCode = source.js;
+    panel.dataset.reactCode = source.react;
+    panel.dataset.vueCode = source.vue;
     panel.dataset.cssCode = cssVarsSnippet(descriptors);
     const active = (panel.__mkBody || panel).querySelector('.kt-playground__tab.is-active')?.dataset.codeTab || 'html';
     const code = (panel.__mkBody || panel).querySelector('.kt-playground__pre code');
-    const text = active === 'css' ? panel.dataset.cssCode : active === 'js' ? source.js : source.html;
+    const text = active === 'css' ? panel.dataset.cssCode
+      : active === 'js' ? source.js
+        : active === 'react' ? source.react
+          : active === 'vue' ? source.vue
+            : source.html;
     if (!code) return;
     // Prism syntax highlighting + line numbers (loaded from CDN). Falls back to
     // plain escaped text if Prism isn't available (offline / blocked).
-    const lang = active === 'css' ? 'css' : active === 'js' ? 'javascript' : 'markup';
+    const lang = active === 'css' ? 'css' : active === 'js' || active === 'react' || active === 'vue' ? 'javascript' : 'markup';
     code.className = `language-${lang}`;
     code.textContent = text;
     if (window.Prism?.highlightElement) { try { window.Prism.highlightElement(code); } catch (_e) { code.innerHTML = escapeHtml(text); } }
@@ -1842,7 +1877,9 @@
         const created = window.Kineto?.tooltip?.(help, {
           content: help.dataset.tip,
           placement: 'top',
-          trigger: 'hover',
+          // The playground owns the trigger so a click cannot race a hover
+          // leave timer while the drawer is being repositioned on CI/mobile.
+          trigger: 'manual',
           delay: 70,
           hideDelay: 50,
           offset: 9,
@@ -1858,7 +1895,9 @@
         return instance;
       };
       help.addEventListener('pointerenter', () => ensureHelpTooltip()?.show?.());
+      help.addEventListener('pointerleave', () => ensureHelpTooltip()?.hide?.());
       help.addEventListener('focus', () => ensureHelpTooltip()?.show?.());
+      help.addEventListener('blur', () => ensureHelpTooltip()?.hide?.());
       help.addEventListener('click', () => ensureHelpTooltip()?.show?.());
       wrapper.dataset.tip = tip;
     }
@@ -2158,7 +2197,12 @@
     toolbar.append(replayButton, resetButton, shareButton);
 
     const codeWrap = document.createElement('div'); codeWrap.className = 'kt-playground__code';
-    codeWrap.innerHTML = '<div class="kt-playground__code-head"><div class="kt-playground__tabs"><button type="button" class="kt-playground__tab is-active" data-code-tab="html">HTML</button><button type="button" class="kt-playground__tab" data-code-tab="js">JS</button><button type="button" class="kt-playground__tab" data-code-tab="css">CSS vars</button></div><div class="kt-playground__code-actions"><button type="button" class="kt-playground__wrap" aria-pressed="false"></button><button type="button" class="kt-playground__copy"></button></div></div><pre class="kt-playground__pre line-numbers"><code></code></pre>';
+    codeWrap.innerHTML = '<div class="kt-playground__code-head"><div class="kt-playground__tabs"><button type="button" class="kt-playground__tab is-active" data-code-tab="html"></button><button type="button" class="kt-playground__tab" data-code-tab="js"></button><button type="button" class="kt-playground__tab" data-code-tab="react"></button><button type="button" class="kt-playground__tab" data-code-tab="vue"></button><button type="button" class="kt-playground__tab" data-code-tab="css"></button></div><div class="kt-playground__code-actions"><button type="button" class="kt-playground__wrap" aria-pressed="false"></button><button type="button" class="kt-playground__copy"></button></div></div><pre class="kt-playground__pre line-numbers"><code></code></pre>';
+    localize(codeWrap.querySelector('[data-code-tab="html"]'), 'htmlCode');
+    localize(codeWrap.querySelector('[data-code-tab="js"]'), 'jsCode');
+    localize(codeWrap.querySelector('[data-code-tab="react"]'), 'reactCode');
+    localize(codeWrap.querySelector('[data-code-tab="vue"]'), 'vueCode');
+    localize(codeWrap.querySelector('[data-code-tab="css"]'), 'cssCode');
     localize(codeWrap.querySelector('.kt-playground__wrap'), 'wrap');
     localize(codeWrap.querySelector('.kt-playground__copy'), 'copyCode');
     codeWrap.querySelectorAll('[data-code-tab]').forEach((tab) => tab.addEventListener('click', () => {
@@ -2168,7 +2212,7 @@
     codeWrap.querySelector('.kt-playground__copy').addEventListener('click', async (event) => {
       const copyButton = event.currentTarget;
       const active = codeWrap.querySelector('.kt-playground__tab.is-active').dataset.codeTab;
-      const text = details.dataset[active === 'html' ? 'htmlCode' : active === 'css' ? 'cssCode' : 'jsCode'] || '';
+      const text = details.dataset[active === 'html' ? 'htmlCode' : active === 'css' ? 'cssCode' : `${active}Code`] || '';
       try {
         await navigator.clipboard.writeText(text);
       } catch (_error) {

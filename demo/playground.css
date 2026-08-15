@@ -292,6 +292,7 @@
 /* Toolbar buttons in the head read as pill actions. */
 .kt-playground__head-actions .kt-playground__toolbar button{padding:9px 15px;border-radius:10px}
 .kt-playground__code-actions{display:flex;align-items:center}
+.kt-playground__tabs{min-width:0;overflow-x:auto;scrollbar-width:none}.kt-playground__tabs::-webkit-scrollbar{display:none}.kt-playground__tab{white-space:nowrap}
 .kt-playground__wrap{border:0;border-left:1px solid #272d37;background:transparent;color:#9aa6b7;padding:9px 12px;cursor:pointer;font-size:12px}
 .kt-playground__wrap:hover,.kt-playground__wrap.is-active{color:#fff;background:#222833}
 

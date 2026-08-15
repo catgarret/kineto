@@ -30,7 +30,7 @@ Unsupported environments disable the effect while keeping the content intact.
 ## Highlights
 
 Tune every effect in the [live demo](https://kineto.dongri.me),
-then copy the resulting HTML or JavaScript.
+then copy the resulting HTML, Vanilla JavaScript, React, Vue, or CSS-variable snippet.
 
 **Progressive Print** — Blur and fine noise clear as the image sharpens.
 

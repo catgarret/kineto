@@ -133,6 +133,26 @@ try {
   assert.ok(relativeTimeDemo.date, 'relative-time demo must seed a real server-date value: ' + JSON.stringify(relativeTimeDemo));
   assert.ok(relativeTimeDemo.hasSettings && ['date', 'mode', 'locale', 'live'].every((key) => relativeTimeDemo.fields.includes(key)), 'relative-time demo must expose its settings: ' + JSON.stringify(relativeTimeDemo));
 
+  const frameworkCopy = await page.evaluate(async () => {
+    const panel = document.querySelector('[data-demo-module="dateTime"] .kt-playground');
+    const body = panel?.__buildBody?.();
+    body?.querySelector('[data-view="code"]')?.click();
+    await new Promise(requestAnimationFrame);
+    const tabs = [...(body?.querySelectorAll('[data-code-tab]') || [])].map((tab) => tab.dataset.codeTab);
+    body?.querySelector('[data-code-tab="react"]')?.click();
+    await new Promise(requestAnimationFrame);
+    const react = body?.querySelector('.kt-playground__pre code')?.textContent || '';
+    body?.querySelector('[data-code-tab="vue"]')?.click();
+    await new Promise(requestAnimationFrame);
+    const vue = body?.querySelector('.kt-playground__pre code')?.textContent || '';
+    return { tabs, react, vue };
+  });
+  assert.deepEqual(frameworkCopy.tabs, ['html', 'js', 'react', 'vue', 'css'], `framework copy tabs must be available: ${JSON.stringify(frameworkCopy)}`);
+  assert.match(frameworkCopy.react, /@dong-gri\/kineto\/react/);
+  assert.match(frameworkCopy.react, /<Motion/);
+  assert.match(frameworkCopy.vue, /@dong-gri\/kineto\/vue/);
+  assert.match(frameworkCopy.vue, /useKineto/);
+
   const brushDrag = await page.evaluate(() => {
     const host = document.querySelector('[data-kt-brush-reveal]');
     const image = host?.querySelector('img');

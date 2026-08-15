@@ -23,7 +23,7 @@ Kineto는 `dongri.me`의 픽셀 모자이크 실험에서 시작한 인터랙션
 4. 자동 테스트와 전체 데모
 5. 문서
 
-`demo/index.html`은 소개 페이지이면서 시각 회귀 QA 표면입니다. 조절 가능한 데모는 실시간 설정, Replay, Reset, 현재 설정 기반 HTML/JavaScript와 Copy 동작을 유지합니다.
+`demo/index.html`은 소개 페이지이면서 시각 회귀 QA 표면입니다. 조절 가능한 데모는 실시간 설정, Replay, Reset, 현재 설정 기반 Vanilla HTML/JS·React·Vue·CSS 변수와 Copy 동작을 유지합니다. 페이지 단위 모듈은 어댑터가 없는 이유를 React/Vue 탭에 명시하고 Vanilla JS 출력으로 안내합니다.
 
 ## 특히 보존해야 하는 동작
 

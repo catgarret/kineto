@@ -93,5 +93,10 @@ assert.match(playground, /function replay\(/);
 assert.match(playground, /function apply\(/);
 assert.match(playground, /data-code-tab="html"/);
 assert.match(playground, /data-code-tab="js"/);
+assert.match(playground, /data-code-tab="react"/);
+assert.match(playground, /data-code-tab="vue"/);
+assert.match(playground, /@dong-gri\/kineto\/react/);
+assert.match(playground, /@dong-gri\/kineto\/vue/);
+assert.match(playground, /function frameworkSource\(/);
 
 console.log(`Owner requirements OK: ${requirements.requirements.length} locked requirements.`);

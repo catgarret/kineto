@@ -20,7 +20,7 @@ window.KINETO_COPY_I18N = {
       "module-index": "The 51 public modules in the current release.",
       "_hero": [
         "Explore 51 motion modules on one page.",
-        "Tune the options, then copy the finished HTML and JavaScript."
+        "Tune the options, then copy finished HTML, JS, React, or Vue code."
       ],
       "_chips": [
         [
@@ -58,7 +58,7 @@ window.KINETO_COPY_I18N = {
       "module-index": "現在配布に含まれている51のパブリックモジュールです。",
       "_hero": [
         "51のモーションモジュールを1ページで見てください。",
-        "オプションを調整し、完成したHTML・JavaScriptコードをコピーできます。"
+        "オプションを調整し、HTML・JavaScript・React・Vueコードをコピーできます。"
       ],
       "_chips": [
         [
@@ -96,7 +96,7 @@ window.KINETO_COPY_I18N = {
       "module-index": "当前发行版中包含 51 个公共模块。",
       "_hero": [
         "在一页上探索 51 个运动模块。",
-        "您可以调整选项并复制完整的 HTML 和 JavaScript 代码。"
+        "您可以调整选项并复制完整的 HTML、JavaScript、React 或 Vue 代码。"
       ],
       "_chips": [
         [
@@ -134,7 +134,7 @@ window.KINETO_COPY_I18N = {
       "module-index": "目前發行版中包含 51 個公共模組。",
       "_hero": [
         "在一頁上探索 51 個運動模組。",
-        "您可以調整選項並複製完整的 HTML 和 JavaScript 程式碼。"
+        "您可以調整選項並複製完整的 HTML、JavaScript、React 或 Vue 程式碼。"
       ],
       "_chips": [
         [
@@ -172,7 +172,7 @@ window.KINETO_COPY_I18N = {
       "module-index": "В текущий дистрибутив включён 51 общедоступный модуль.",
       "_hero": [
         "Изучите 51 модуль движения на одной странице.",
-        "Вы можете настроить параметры и скопировать готовый код HTML и JavaScript."
+        "Настройте параметры и скопируйте готовый код HTML, JavaScript, React или Vue."
       ],
       "_chips": [
         [
@@ -210,7 +210,7 @@ window.KINETO_COPY_I18N = {
       "module-index": "La versione attuale include 51 moduli pubblici.",
       "_hero": [
         "Esplora 51 moduli di movimento in una pagina.",
-        "Puoi modificare le opzioni e copiare il codice HTML e JavaScript completato."
+        "Modifica le opzioni e copia il codice HTML, JavaScript, React o Vue pronto."
       ],
       "_chips": [
         [
