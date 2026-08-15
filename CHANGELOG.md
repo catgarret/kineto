@@ -4,11 +4,13 @@
 
 ### English
 
-<!-- Add matching English release bullets here. -->
+- Made Korean server-rendered Date Time values timezone-stable by parsing them as KST instead of the host environment's local timezone.
+- Kept Brush Reveal's dynamically inserted images out of native drag previews, so late image hydration cannot reintroduce a translucent ghost.
 
 ### 한국어
 
-<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 한국어 서버 날짜를 호스트 환경의 로컬 시간대가 아니라 KST로 파싱해 Date Time 상대 표기가 CI와 SSR 환경에서도 동일하게 나오도록 수정했습니다.
+- Brush Reveal에 나중에 삽입되는 이미지도 기본 드래그 고스트가 생기지 않도록 처리해 지연 이미지 하이드레이션 뒤에도 반투명 미리보기가 나타나지 않습니다.
 
 ## [0.8.59] - 2026-08-09
 

@@ -3,6 +3,8 @@ import { snapshotAttributes } from '../utils.js';
 // Accept ISO/RFC timestamps first, then common server-rendered numeric forms
 // (2026.08.09, 2026/08/09, 2026년 8월 9일 12:30). Ambiguous day/month input is
 // intentionally not guessed: native Date parsing remains the final fallback.
+// Korean server-rendered dates are conventionally KST; include the explicit
+// offset so relative output does not depend on the host (or CI runner) TZ.
 function parseDate(value) {
   if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
   if (typeof value === 'number' && Number.isFinite(value)) return new Date(value < 1e12 ? value * 1000 : value);
@@ -10,7 +12,10 @@ function parseDate(value) {
   if (!text) return null;
   if (/^\d{10,13}$/.test(text)) return parseDate(Number(text));
   const korean = text.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:\s+(\d{1,2})(?::(\d{2})(?::(\d{2}))?)?)?$/);
-  if (korean) return new Date(Number(korean[1]), Number(korean[2]) - 1, Number(korean[3]), Number(korean[4] || 0), Number(korean[5] || 0), Number(korean[6] || 0));
+  if (korean) {
+    const [, year, month, day, hour = '0', minute = '0', second = '0'] = korean;
+    return new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:${second.padStart(2, '0')}+09:00`);
+  }
   const normalized = text.replace(/\./g, '-').replace(/\//g, '-');
   const parsed = new Date(normalized);
   return Number.isNaN(parsed.getTime()) ? null : parsed;

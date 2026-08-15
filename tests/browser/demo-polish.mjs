@@ -43,6 +43,7 @@ try {
     await page.addScriptTag({path:resolve(root,file)});
   }
   await page.waitForFunction(()=>window.Kineto&&window.Kineto.instanceCount>30,null,{timeout:15000});
+  await page.waitForFunction(()=>!document.querySelector('.intro-loader'),null,{timeout:10000});
   await page.waitForTimeout(700);
 
   const helpAudit = await page.evaluate(async () => {

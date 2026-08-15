@@ -2270,7 +2270,10 @@ function vt(e) {
 	if (!t) return null;
 	if (/^\d{10,13}$/.test(t)) return vt(Number(t));
 	let n = t.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:\s+(\d{1,2})(?::(\d{2})(?::(\d{2}))?)?)?$/);
-	if (n) return new Date(Number(n[1]), Number(n[2]) - 1, Number(n[3]), Number(n[4] || 0), Number(n[5] || 0), Number(n[6] || 0));
+	if (n) {
+		let [, e, t, r, i = "0", a = "0", o = "0"] = n;
+		return /* @__PURE__ */ new Date(`${e}-${t.padStart(2, "0")}-${r.padStart(2, "0")}T${i.padStart(2, "0")}:${a.padStart(2, "0")}:${o.padStart(2, "0")}+09:00`);
+	}
 	let r = t.replace(/\./g, "-").replace(/\//g, "-"), i = new Date(r);
 	return Number.isNaN(i.getTime()) ? null : i;
 }
@@ -9547,7 +9550,7 @@ var Yr = {
 		d.width = d.height = 48;
 		let f = d.getContext("2d", { willReadFrequently: !0 }), p = 0, m = 0, h = !1, g = () => {
 			try {
-				f.clearRect(0, 0, 48, 48), f.drawImage(C, 0, 0, 48, 48);
+				f.clearRect(0, 0, 48, 48), f.drawImage(T, 0, 0, 48, 48);
 				let e = f.getImageData(0, 0, 48, 48).data, t = 0;
 				for (let n = 3; n < e.length; n += 4) e[n] > 50 && (t += 1);
 				return t / 2304;
@@ -9580,79 +9583,90 @@ var Yr = {
 			}
 		}, v = e.getAttribute("style");
 		getComputedStyle(e).position === "static" && (e.style.position = "relative"), e.style.touchAction = "none";
-		let y = [...e.querySelectorAll("img")].map((e) => ({
-			node: e,
-			hadAttribute: e.hasAttribute("draggable"),
-			value: e.getAttribute("draggable")
-		})), b = (e) => e.preventDefault();
-		y.forEach(({ node: e }) => {
-			e.draggable = !1;
-		}), e.addEventListener("dragstart", b);
-		let x = document.createElement("canvas");
-		x.className = "kt-brush-reveal-canvas", x.setAttribute("aria-hidden", "true"), x.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:inherit;z-index:2;", e.appendChild(x);
-		let S = x.getContext("2d", { alpha: !0 }), C = document.createElement("canvas"), w = C.getContext("2d", { alpha: !0 }), T = new Image();
-		T.decoding = "async", t.crossOrigin && (T.crossOrigin = t.crossOrigin);
-		let E = !1;
-		T.onload = () => {
-			E = !0;
-		}, T.onerror = () => t.onError?.(/* @__PURE__ */ Error(`Kineto brushReveal image failed to load: ${n}`), e), T.src = n;
-		let D = 0, O = 0, k = 1, A = null, j = !0, M = !1, N = !1, P = 0, F = null, I = null, L = () => {
-			let t = e.getBoundingClientRect();
-			D = Math.max(1, t.width), O = Math.max(1, t.height), k = G(window.devicePixelRatio || 1, 1, c);
-			let n = Math.max(1, Math.round(D * k)), r = Math.max(1, Math.round(O * k));
-			(x.width !== n || x.height !== r) && (x.width = n, x.height = r, C.width = n, C.height = r);
+		let y = [], b = (t = e) => {
+			(t.matches?.("img") ? [t] : [...t.querySelectorAll?.("img") || []]).forEach((e) => {
+				y.some((t) => t.node === e) || (y.push({
+					node: e,
+					hadAttribute: e.hasAttribute("draggable"),
+					value: e.getAttribute("draggable")
+				}), e.draggable = !1);
+			});
 		};
-		L();
-		let R = (e, n) => {
-			let o = e * k, s = n * k, c = r * k, l = c * (1 - i), u = G(Number(t.opacity ?? 1), .05, 1), d = w.createRadialGradient(o, s, Math.max(.5, l), o, s, c);
-			d.addColorStop(0, `rgba(255,255,255,${u})`), d.addColorStop(1, "rgba(255,255,255,0)"), w.save(), w.globalCompositeOperation = "source-over", a > 0 && "filter" in w && (w.filter = `blur(${a * k}px)`), w.fillStyle = d, w.beginPath(), w.arc(o, s, c, 0, Math.PI * 2), w.fill(), w.restore(), a > 0 && (w.save(), w.globalCompositeOperation = "source-over", w.fillStyle = `rgba(255,255,255,${u})`, w.beginPath(), w.arc(o, s, Math.max(.5, l), 0, Math.PI * 2), w.fill(), w.restore()), N = !0, P = Math.min(1.5, P + .06);
-		}, z = (e, t) => {
-			if (F == null) R(e, t);
+		b();
+		let x = (e) => e.preventDefault();
+		e.addEventListener("dragstart", x);
+		let S = typeof MutationObserver < "u" ? new MutationObserver((e) => {
+			e.forEach(({ addedNodes: e }) => e.forEach((e) => b(e)));
+		}) : null;
+		S?.observe(e, {
+			childList: !0,
+			subtree: !0
+		});
+		let C = document.createElement("canvas");
+		C.className = "kt-brush-reveal-canvas", C.setAttribute("aria-hidden", "true"), C.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:inherit;z-index:2;", e.appendChild(C);
+		let w = C.getContext("2d", { alpha: !0 }), T = document.createElement("canvas"), E = T.getContext("2d", { alpha: !0 }), D = new Image();
+		D.decoding = "async", t.crossOrigin && (D.crossOrigin = t.crossOrigin);
+		let O = !1;
+		D.onload = () => {
+			O = !0;
+		}, D.onerror = () => t.onError?.(/* @__PURE__ */ Error(`Kineto brushReveal image failed to load: ${n}`), e), D.src = n;
+		let k = 0, A = 0, j = 1, M = null, N = !0, P = !1, F = !1, I = 0, L = null, R = null, z = () => {
+			let t = e.getBoundingClientRect();
+			k = Math.max(1, t.width), A = Math.max(1, t.height), j = G(window.devicePixelRatio || 1, 1, c);
+			let n = Math.max(1, Math.round(k * j)), r = Math.max(1, Math.round(A * j));
+			(C.width !== n || C.height !== r) && (C.width = n, C.height = r, T.width = n, T.height = r);
+		};
+		z();
+		let B = (e, n) => {
+			let o = e * j, s = n * j, c = r * j, l = c * (1 - i), u = G(Number(t.opacity ?? 1), .05, 1), d = E.createRadialGradient(o, s, Math.max(.5, l), o, s, c);
+			d.addColorStop(0, `rgba(255,255,255,${u})`), d.addColorStop(1, "rgba(255,255,255,0)"), E.save(), E.globalCompositeOperation = "source-over", a > 0 && "filter" in E && (E.filter = `blur(${a * j}px)`), E.fillStyle = d, E.beginPath(), E.arc(o, s, c, 0, Math.PI * 2), E.fill(), E.restore(), a > 0 && (E.save(), E.globalCompositeOperation = "source-over", E.fillStyle = `rgba(255,255,255,${u})`, E.beginPath(), E.arc(o, s, Math.max(.5, l), 0, Math.PI * 2), E.fill(), E.restore()), F = !0, I = Math.min(1.5, I + .06);
+		}, V = (e, t) => {
+			if (L == null) B(e, t);
 			else {
-				let n = Math.hypot(e - F, t - I), i = Math.max(1, Math.ceil(n / (r * .35)));
-				for (let n = 1; n <= i; n += 1) R(F + (e - F) * n / i, I + (t - I) * n / i);
+				let n = Math.hypot(e - L, t - R), i = Math.max(1, Math.ceil(n / (r * .35)));
+				for (let n = 1; n <= i; n += 1) B(L + (e - L) * n / i, R + (t - R) * n / i);
 			}
-			F = e, I = t;
-		}, B = () => {
-			if (j) {
-				if (!o && N) {
-					let e = Math.min(.5, s * (P < .22 ? 4 : 1));
-					w.globalCompositeOperation = "destination-out", w.fillStyle = `rgba(0,0,0,${e})`, w.fillRect(0, 0, C.width, C.height), P *= 1 - e;
+			L = e, R = t;
+		}, H = () => {
+			if (N) {
+				if (!o && F) {
+					let e = Math.min(.5, s * (I < .22 ? 4 : 1));
+					E.globalCompositeOperation = "destination-out", E.fillStyle = `rgba(0,0,0,${e})`, E.fillRect(0, 0, T.width, T.height), I *= 1 - e;
 				}
-				if (M && F != null && R(F, I), S.clearRect(0, 0, x.width, x.height), E && N) {
-					let e = Jr(T.naturalWidth, T.naturalHeight, x.width, x.height);
-					S.globalCompositeOperation = "source-over", S.drawImage(T, e.sx, e.sy, e.sw, e.sh, 0, 0, x.width, x.height), S.globalCompositeOperation = "destination-in", S.drawImage(C, 0, 0), S.globalCompositeOperation = "source-over";
+				if (P && L != null && B(L, R), w.clearRect(0, 0, C.width, C.height), O && F) {
+					let e = Jr(D.naturalWidth, D.naturalHeight, C.width, C.height);
+					w.globalCompositeOperation = "source-over", w.drawImage(D, e.sx, e.sy, e.sw, e.sh, 0, 0, C.width, C.height), w.globalCompositeOperation = "destination-in", w.drawImage(T, 0, 0), w.globalCompositeOperation = "source-over";
 				}
-				if (N && _(performance.now()), !o && !M && P < .008) {
-					N = !1, P = 0, w.clearRect(0, 0, C.width, C.height), S.clearRect(0, 0, x.width, x.height), A = null;
+				if (F && _(performance.now()), !o && !P && I < .008) {
+					F = !1, I = 0, E.clearRect(0, 0, T.width, T.height), w.clearRect(0, 0, C.width, C.height), M = null;
 					return;
 				}
-				A = M || !o && N || o && M ? requestAnimationFrame(B) : null;
+				M = P || !o && F || o && P ? requestAnimationFrame(H) : null;
 			}
-		}, V = () => {
-			j && A == null && (A = requestAnimationFrame(B));
-		}, H = () => {
-			l || (M = !0, F = null, I = null, L(), V());
-		}, U = (t) => {
-			if (!M) return;
-			let n = e.getBoundingClientRect();
-			z(t.clientX - n.left, t.clientY - n.top), V();
+		}, U = () => {
+			N && M == null && (M = requestAnimationFrame(H));
 		}, W = () => {
-			M = !1, F = null, I = null, V();
+			l || (P = !0, L = null, R = null, z(), U());
 		}, K = (t) => {
-			M = !0, L(), e.setPointerCapture?.(t.pointerId);
+			if (!P) return;
 			let n = e.getBoundingClientRect();
-			F = t.clientX - n.left, I = t.clientY - n.top, R(F, I), V();
-		}, q = (e) => {
-			(l || e.pointerType !== "mouse") && (M = !1, F = null, I = null), V();
+			V(t.clientX - n.left, t.clientY - n.top), U();
+		}, q = () => {
+			P = !1, L = null, R = null, U();
+		}, J = (t) => {
+			P = !0, z(), e.setPointerCapture?.(t.pointerId);
+			let n = e.getBoundingClientRect();
+			L = t.clientX - n.left, R = t.clientY - n.top, B(L, R), U();
+		}, Y = (e) => {
+			(l || e.pointerType !== "mouse") && (P = !1, L = null, R = null), U();
 		};
-		e.addEventListener("pointerenter", H), e.addEventListener("pointerdown", K), e.addEventListener("pointermove", U, { passive: !0 }), e.addEventListener("pointerup", q), e.addEventListener("pointercancel", q), e.addEventListener("pointerleave", W);
-		let J = typeof ResizeObserver < "u" ? new ResizeObserver(L) : null;
-		return J?.observe(e), {
+		e.addEventListener("pointerenter", W), e.addEventListener("pointerdown", J), e.addEventListener("pointermove", K, { passive: !0 }), e.addEventListener("pointerup", Y), e.addEventListener("pointercancel", Y), e.addEventListener("pointerleave", q);
+		let ee = typeof ResizeObserver < "u" ? new ResizeObserver(z) : null;
+		return ee?.observe(e), {
 			el: e,
 			type: "brushReveal",
 			clear() {
-				w.clearRect(0, 0, C.width, C.height), S.clearRect(0, 0, x.width, x.height), N = !1, P = 0, h = !1, m = 0, p = 0;
+				E.clearRect(0, 0, T.width, T.height), w.clearRect(0, 0, C.width, C.height), F = !1, I = 0, h = !1, m = 0, p = 0;
 			},
 			progress() {
 				return m;
@@ -9661,15 +9675,15 @@ var Yr = {
 				this.clear();
 			},
 			pause() {
-				j = !1, A != null && cancelAnimationFrame(A), A = null;
+				N = !1, M != null && cancelAnimationFrame(M), M = null;
 			},
 			resume() {
-				j || (j = !0, V());
+				N || (N = !0, U());
 			},
 			destroy() {
-				j = !1, A != null && cancelAnimationFrame(A), e.removeEventListener("pointerenter", H), e.removeEventListener("pointerdown", K), e.removeEventListener("pointermove", U), e.removeEventListener("pointerup", q), e.removeEventListener("pointercancel", q), e.removeEventListener("pointerleave", W), e.removeEventListener("dragstart", b), y.forEach(({ node: e, hadAttribute: t, value: n }) => {
+				N = !1, M != null && cancelAnimationFrame(M), e.removeEventListener("pointerenter", W), e.removeEventListener("pointerdown", J), e.removeEventListener("pointermove", K), e.removeEventListener("pointerup", Y), e.removeEventListener("pointercancel", Y), e.removeEventListener("pointerleave", q), e.removeEventListener("dragstart", x), S?.disconnect(), y.forEach(({ node: e, hadAttribute: t, value: n }) => {
 					t ? e.setAttribute("draggable", n) : e.removeAttribute("draggable");
-				}), J?.disconnect(), x.remove(), v == null ? e.removeAttribute("style") : e.setAttribute("style", v);
+				}), ee?.disconnect(), C.remove(), v == null ? e.removeAttribute("style") : e.setAttribute("style", v);
 			}
 		};
 	},

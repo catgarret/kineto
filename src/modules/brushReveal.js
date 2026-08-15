@@ -70,12 +70,27 @@ export default {
     // same image surface, so prevent native dragstart and explicitly opt child
     // images out of dragging before a translucent browser drag preview can be
     // created. Preserve authored draggable attributes for destroy().
-    const draggableImages = [...el.querySelectorAll('img')].map((node) => ({
-      node, hadAttribute: node.hasAttribute('draggable'), value: node.getAttribute('draggable')
-    }));
+    const draggableImages = [];
+    const rememberDraggableImages = (root = el) => {
+      const images = root.matches?.('img') ? [root] : [...(root.querySelectorAll?.('img') || [])];
+      images.forEach((node) => {
+        if (draggableImages.some((item) => item.node === node)) return;
+        draggableImages.push({
+          node, hadAttribute: node.hasAttribute('draggable'), value: node.getAttribute('draggable')
+        });
+        node.draggable = false;
+      });
+    };
+    rememberDraggableImages();
     const preventNativeDrag = (event) => event.preventDefault();
-    draggableImages.forEach(({ node }) => { node.draggable = false; });
     el.addEventListener('dragstart', preventNativeDrag);
+    // Demo galleries and frameworks can insert/replace their base image after
+    // the module is mounted (for example, when a lazy image is hydrated). Keep
+    // those late descendants out of the browser's native drag pipeline too.
+    const imageObserver = typeof MutationObserver !== 'undefined' ? new MutationObserver((records) => {
+      records.forEach(({ addedNodes }) => addedNodes.forEach((node) => rememberDraggableImages(node)));
+    }) : null;
+    imageObserver?.observe(el, { childList: true, subtree: true });
 
     const canvas = document.createElement('canvas');
     canvas.className = 'kt-brush-reveal-canvas';
@@ -273,6 +288,7 @@ export default {
         el.removeEventListener('pointercancel', onUp);
         el.removeEventListener('pointerleave', onLeave);
         el.removeEventListener('dragstart', preventNativeDrag);
+        imageObserver?.disconnect();
         draggableImages.forEach(({ node, hadAttribute, value }) => {
           if (hadAttribute) node.setAttribute('draggable', value);
           else node.removeAttribute('draggable');
