@@ -4,12 +4,21 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.61] - 2026-08-15
+
+### English
+
 - Radial now consumes the click generated after a drag instead of relying on a short timing window, keeping drag navigation stable on slower browsers and CI runners.
 
 ### 한국어
 
 - Radial이 드래그 직후 발생하는 클릭을 짧은 시간 제한이 아니라 다음 이벤트 자체로 소비하도록 바꿔 느린 브라우저와 CI에서도 드래그 이동이 안정적으로 유지됩니다.
-
 ## [0.8.60] - 2026-08-15
 
 ### English
