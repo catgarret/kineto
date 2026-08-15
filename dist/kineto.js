@@ -7041,23 +7041,23 @@ var _r = {
 					e.draggable = !1;
 				});
 			});
-			let j = 0, M = (e) => {
-				if (performance.now() < j) {
-					e.preventDefault();
+			let j = !1, M = null, N = (e) => {
+				if (j) {
+					j = !1, M != null && clearTimeout(M), M = null, e.preventDefault();
 					return;
 				}
 				let t = e.target.closest(".kt-radial-item"), n = r.indexOf(t);
 				n >= 0 && O(n);
 			};
-			y.addEventListener("click", M);
-			let N = e.querySelector(".kt-radial-controls"), P = null, F = null, I = !1;
-			_ && (N || (N = document.createElement("div"), N.className = "kt-radial-controls", N.innerHTML = "<button type=\"button\" class=\"kt-radial-prev\" aria-label=\"Previous\"></button><button type=\"button\" class=\"kt-radial-next\" aria-label=\"Next\"></button>", e.appendChild(N), I = !0), P = N.querySelector(".kt-radial-prev, [data-kt-radial-prev]"), F = N.querySelector(".kt-radial-next, [data-kt-radial-next]"), P?.addEventListener("click", A), F?.addEventListener("click", k));
-			let L = (e) => {
+			y.addEventListener("click", N);
+			let P = e.querySelector(".kt-radial-controls"), F = null, I = null, L = !1;
+			_ && (P || (P = document.createElement("div"), P.className = "kt-radial-controls", P.innerHTML = "<button type=\"button\" class=\"kt-radial-prev\" aria-label=\"Previous\"></button><button type=\"button\" class=\"kt-radial-next\" aria-label=\"Next\"></button>", e.appendChild(P), L = !0), F = P.querySelector(".kt-radial-prev, [data-kt-radial-prev]"), I = P.querySelector(".kt-radial-next, [data-kt-radial-next]"), F?.addEventListener("click", A), I?.addEventListener("click", k));
+			let R = (e) => {
 				e.key === "ArrowRight" || e.key === "ArrowDown" ? (e.preventDefault(), k()) : (e.key === "ArrowLeft" || e.key === "ArrowUp") && (e.preventDefault(), A());
 			};
-			e.hasAttribute("tabindex") || (e.tabIndex = 0), e.addEventListener("keydown", L);
-			let R = null, z = d === "bottom" || d === "top", B = (e) => {
-				!g || e.target.closest(".kt-radial-controls, button") || e.pointerType === "mouse" && e.button !== 0 || (R = {
+			e.hasAttribute("tabindex") || (e.tabIndex = 0), e.addEventListener("keydown", R);
+			let z = null, B = d === "bottom" || d === "top", H = (e) => {
+				!g || e.target.closest(".kt-radial-controls, button") || e.pointerType === "mouse" && e.button !== 0 || (z = {
 					x: e.clientX,
 					y: e.clientY,
 					start: x,
@@ -7066,25 +7066,27 @@ var _r = {
 					captured: !1,
 					lastIndex: x
 				});
-			}, H = (t) => {
-				if (!R || t.pointerId !== R.pointerId) return;
-				let n = z ? t.clientX - R.x : t.clientY - R.y;
-				if (Math.abs(n) <= 6) return;
-				R.captured || (e.setPointerCapture?.(t.pointerId), R.captured = !0), R.moved = !0;
-				let r = R.start + Math.round(-n / 60);
-				r !== R.lastIndex && (R.lastIndex = r, O(r));
 			}, U = (t) => {
-				!R || t.pointerId !== R.pointerId || (R.captured && e.releasePointerCapture?.(t.pointerId), R.moved && (j = performance.now() + 250), R = null);
-			}, W = (e) => {
-				R?.moved && e.preventDefault();
+				if (!z || t.pointerId !== z.pointerId) return;
+				let n = B ? t.clientX - z.x : t.clientY - z.y;
+				if (Math.abs(n) <= 6) return;
+				z.captured || (e.setPointerCapture?.(t.pointerId), z.captured = !0), z.moved = !0;
+				let r = z.start + Math.round(-n / 60);
+				r !== z.lastIndex && (z.lastIndex = r, O(r));
+			}, W = (t) => {
+				!z || t.pointerId !== z.pointerId || (z.captured && e.releasePointerCapture?.(t.pointerId), z.moved && (j = !0, M != null && clearTimeout(M), M = setTimeout(() => {
+					j = !1, M = null;
+				}, 2e3)), z = null);
+			}, K = (e) => {
+				z?.moved && e.preventDefault();
 			};
-			g && (e.addEventListener("pointerdown", B), e.addEventListener("pointermove", H), e.addEventListener("pointerup", U), e.addEventListener("pointercancel", U), e.addEventListener("touchmove", W, { passive: !1 }));
-			let K = Math.max(0, Number(t.autoplay ?? 0)), q = null, J = () => {
-				K && !n && (Y(), q = setInterval(k, K));
-			}, Y = () => {
-				q &&= (clearInterval(q), null);
+			g && (e.addEventListener("pointerdown", H), e.addEventListener("pointermove", U), e.addEventListener("pointerup", W), e.addEventListener("pointercancel", W), e.addEventListener("touchmove", K, { passive: !1 }));
+			let q = Math.max(0, Number(t.autoplay ?? 0)), J = null, Y = () => {
+				q && !n && (ee(), J = setInterval(k, q));
+			}, ee = () => {
+				J &&= (clearInterval(J), null);
 			};
-			return K && (e.addEventListener("mouseenter", Y), e.addEventListener("mouseleave", J), J()), D(w), {
+			return q && (e.addEventListener("mouseenter", ee), e.addEventListener("mouseleave", Y), Y()), D(w), {
 				el: e,
 				type: "slider",
 				effect: "radial",
@@ -7094,12 +7096,12 @@ var _r = {
 				next: k,
 				prev: A,
 				go: O,
-				pause: Y,
-				resume: J,
+				pause: ee,
+				resume: Y,
 				destroy() {
-					Y(), E && cancelAnimationFrame(E), y.removeEventListener("click", M), e.removeEventListener("keydown", L), e.removeEventListener("pointerdown", B), e.removeEventListener("pointermove", H), e.removeEventListener("pointerup", U), e.removeEventListener("pointercancel", U), e.removeEventListener("touchmove", W), e.removeEventListener("mouseenter", Y), e.removeEventListener("mouseleave", J), P?.removeEventListener("click", A), F?.removeEventListener("click", k), r.forEach((t) => {
+					ee(), E && cancelAnimationFrame(E), M != null && clearTimeout(M), y.removeEventListener("click", N), e.removeEventListener("keydown", R), e.removeEventListener("pointerdown", H), e.removeEventListener("pointermove", U), e.removeEventListener("pointerup", W), e.removeEventListener("pointercancel", W), e.removeEventListener("touchmove", K), e.removeEventListener("mouseenter", ee), e.removeEventListener("mouseleave", Y), F?.removeEventListener("click", A), I?.removeEventListener("click", k), r.forEach((t) => {
 						t.style.transform = "", t.style.transition = "", t.style.opacity = "", t.style.zIndex = "", t.style.cursor = "", delete t._ktOffset, t.classList.remove("kt-radial-item", "kt-active", "active-item"), v && t.classList.remove(v), t.removeAttribute("aria-current"), e.appendChild(t);
-					}), y.remove(), S.remove(), I && N.remove(), e.classList.remove("kt-radial", `kt-radial--${d}`), e.style.removeProperty("--kt-radial-radius"), e.removeAttribute("role"), e.removeAttribute("aria-roledescription");
+					}), y.remove(), S.remove(), L && P.remove(), e.classList.remove("kt-radial", `kt-radial--${d}`), e.style.removeProperty("--kt-radial-radius"), e.removeAttribute("role"), e.removeAttribute("aria-roledescription");
 				}
 			};
 		}

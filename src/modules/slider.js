@@ -150,9 +150,13 @@ export default {
         // beginning on an avatar becomes the browser's translucent image ghost.
         item.querySelectorAll('img').forEach((image) => { image.draggable = false; });
       });
-      let suppressItemClickUntil = 0;
+      let suppressItemClick = false;
+      let suppressItemClickTimer = null;
       const onItemClick = (event) => {
-        if (performance.now() < suppressItemClickUntil) {
+        if (suppressItemClick) {
+          suppressItemClick = false;
+          if (suppressItemClickTimer != null) clearTimeout(suppressItemClickTimer);
+          suppressItemClickTimer = null;
           event.preventDefault();
           return;
         }
@@ -214,7 +218,17 @@ export default {
       const onUp = (e) => {
         if (!dragState || e.pointerId !== dragState.pointerId) return;
         if (dragState.captured) el.releasePointerCapture?.(e.pointerId);
-        if (dragState.moved) suppressItemClickUntil = performance.now() + 250;
+        if (dragState.moved) {
+          suppressItemClick = true;
+          if (suppressItemClickTimer != null) clearTimeout(suppressItemClickTimer);
+          // The browser normally emits the synthetic click immediately after
+          // pointerup. Keep a bounded fallback so a cancelled pointer sequence
+          // cannot suppress an unrelated future click forever.
+          suppressItemClickTimer = setTimeout(() => {
+            suppressItemClick = false;
+            suppressItemClickTimer = null;
+          }, 2000);
+        }
         dragState = null;
       };
       const onTouchMove = (e) => { if (dragState?.moved) e.preventDefault(); };
@@ -250,6 +264,7 @@ export default {
         destroy() {
           stopAuto();
           if (radialFrame) cancelAnimationFrame(radialFrame);
+          if (suppressItemClickTimer != null) clearTimeout(suppressItemClickTimer);
           hub.removeEventListener('click', onItemClick);
           el.removeEventListener('keydown', onKey);
           el.removeEventListener('pointerdown', onDown);

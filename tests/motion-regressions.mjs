@@ -262,6 +262,12 @@ const radialLoop = sliderModule.create(radialHost, { effect: 'radial', loop: 'in
 assert.equal(radialHost.querySelector('img').draggable, false, 'radial item images must not start the browser ghost-image drag');
 radialLoop.go(4);
 const retainedRadialIndex = radialLoop.index;
+radialHost.dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, clientX: 0, clientY: 0, button: 0 }));
+radialHost.dispatchEvent(new window.MouseEvent('pointermove', { bubbles: true, clientX: 90, clientY: 0, button: 0 }));
+radialHost.dispatchEvent(new window.MouseEvent('pointerup', { bubbles: true, clientX: 90, clientY: 0, button: 0 }));
+const radialAfterDrag = radialLoop.index;
+radialHost.querySelector('.kt-radial-item').dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+assert.equal(radialLoop.index, radialAfterDrag, 'radial must consume the click following a drag even after a delayed event loop');
 radialLoop.destroy();
 const radialFinite = sliderModule.create(radialHost, { effect: 'radial', loop: 'off', controls: false, initialIndex: retainedRadialIndex });
 assert.equal(radialFinite.index, 4, 'disabling radial infinite mode must retain the active item');
