@@ -4,6 +4,16 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.62] - 2026-08-15
+
+### English
+
 - Added framework-specific playground copy tabs for Vanilla HTML, Vanilla JS, React, Vue, and CSS variables, including current option values and an explicit Vanilla fallback for page-level modules.
 - Made playground help tooltips use an explicit manual trigger so click/focus help remains visible while the settings drawer reflows in slower browsers and CI.
 
@@ -11,7 +21,6 @@
 
 - 플레이그라운드 코드 복사 탭을 Vanilla HTML, Vanilla JS, React, Vue, CSS 변수로 확장하고 현재 옵션 값을 반영합니다. 페이지 단위 모듈은 어댑터가 없는 이유와 Vanilla fallback을 명시합니다.
 - 설정창이 느린 브라우저나 CI에서 재배치될 때도 클릭·포커스 도움말이 유지되도록 플레이그라운드 도움말 툴팁을 명시적 수동 트리거로 변경했습니다.
-
 ## [0.8.61] - 2026-08-15
 
 ### English
