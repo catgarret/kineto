@@ -4,11 +4,11 @@
 
 ### English
 
-<!-- Add matching English release bullets here. -->
+- Kept playground help tooltips visible through focus changes and drawer reflow, removing a timing-sensitive failure in remote browser QA.
 
 ### 한국어
 
-<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 포커스 이동과 설정창 재배치 중에도 플레이그라운드 도움말 툴팁을 유지해 원격 브라우저 QA에서 발생하던 타이밍 의존 실패를 제거했습니다.
 
 ## [0.8.62] - 2026-08-15
 

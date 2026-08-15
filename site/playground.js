@@ -1894,11 +1894,25 @@
         document.getElementById(tipId)?.classList.add('kt-playground-help');
         return instance;
       };
-      help.addEventListener('pointerenter', () => ensureHelpTooltip()?.show?.());
-      help.addEventListener('pointerleave', () => ensureHelpTooltip()?.hide?.());
-      help.addEventListener('focus', () => ensureHelpTooltip()?.show?.());
-      help.addEventListener('blur', () => ensureHelpTooltip()?.hide?.());
-      help.addEventListener('click', () => ensureHelpTooltip()?.show?.());
+      const showHelp = () => {
+        clearTimeout(help.__ktHelpHideTimer);
+        ensureHelpTooltip()?.show?.();
+      };
+      const hideHelp = () => {
+        clearTimeout(help.__ktHelpHideTimer);
+        ensureHelpTooltip()?.hide?.();
+      };
+      const deferHelpHide = () => {
+        clearTimeout(help.__ktHelpHideTimer);
+        // Keep click/focus help alive while the drawer reflows or focus moves
+        // through its dialog; this also removes a timing race on slower CI.
+        help.__ktHelpHideTimer = setTimeout(hideHelp, 700);
+      };
+      help.addEventListener('pointerenter', showHelp);
+      help.addEventListener('pointerleave', deferHelpHide);
+      help.addEventListener('focus', showHelp);
+      help.addEventListener('blur', deferHelpHide);
+      help.addEventListener('click', showHelp);
       wrapper.dataset.tip = tip;
     }
     let input;
