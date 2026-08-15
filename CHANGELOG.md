@@ -4,11 +4,13 @@
 
 ### English
 
-<!-- Add matching English release bullets here. -->
+- Added a Motion States RFC with two real usage examples, lifecycle/cancellation semantics, bundle limits, accessibility boundaries, and explicit release gates before any public API is implemented.
+- Extended the first-screen snap's opposite-direction momentum guard to cover the full landing animation on slower runners, while preserving same-direction momentum.
 
 ### 한국어
 
-<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 실제 사용 예제 2개, lifecycle·취소 의미, 번들 한도, 접근성 경계, 공개 API 구현 전 출시 게이트를 정의한 Motion States RFC를 추가했습니다.
+- 느린 러너에서도 첫 화면 스냅의 반대 방향 관성 꼬리를 전체 착지 애니메이션 동안 차단하되 같은 방향 관성은 유지하도록 보호 시간을 확장했습니다.
 
 ## [0.8.63] - 2026-08-15
 

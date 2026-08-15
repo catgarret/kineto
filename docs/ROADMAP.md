@@ -349,8 +349,8 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 3. 완료: `SECURITY.md`와 공급망 대응 절차
 4. 완료: 데모 설정 URL 공유 — 변경한 안전한 공개 옵션만 직렬화·복원
 5. 완료: framework별 copy output — 현재 옵션을 React `Motion`과 Vue `useKineto` 예제로 복사
-6. 다음: Motion States RFC 작성 및 2개 실제 예제 검증
-7. States v1 구현
+6. 완료: Motion States RFC 작성 및 2개 실제 예제·출시 게이트 정의
+7. 다음: States v1 구현 — RFC 게이트 통과 후에만 공개 계약에 추가
 8. Presence Core RFC와 focus/ARIA/cancel 모델 확정
 9. Presence Core → React/Vue adapter
 10. Slider physics와 FLIP shared-layout은 사용 요구에 따라 병렬이 아닌 후속 선택
