@@ -81,7 +81,12 @@ try {
     const waiting = window.KinetoPresence(waitHost, { mode: 'wait' });
     const waitingLeave = waiting.leave({ duration: 30 });
     const waitingEnter = waiting.enter();
-    const waitResults = { leave: await waitingLeave, enter: await waitingEnter };
+    const waitingEnterLatest = waiting.enter();
+    const waitResults = {
+      leave: await waitingLeave,
+      enter: await waitingEnter,
+      latestEnter: await waitingEnterLatest
+    };
     waiting.destroy();
 
     const destroyHost = document.createElement('div');
@@ -109,7 +114,8 @@ try {
   assert.deepEqual(result.reentryResults.leaving, { status: 'cancelled', reason: 'reenter' });
   assert.deepEqual(result.reentryResults.entering, { status: 'finished' });
   assert.deepEqual(result.waitResults.leave, { status: 'finished' });
-  assert.deepEqual(result.waitResults.enter, { status: 'finished' });
+  assert.deepEqual(result.waitResults.enter, { status: 'cancelled', reason: 'reenter' });
+  assert.deepEqual(result.waitResults.latestEnter, { status: 'finished' });
   assert.deepEqual(result.destroyResult, { status: 'cancelled', reason: 'destroy' });
   assert.equal(result.status, 'destroyed');
   console.log('Presence browser QA OK', JSON.stringify(result));

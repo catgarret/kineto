@@ -183,6 +183,7 @@ export default function createPresence(target, defaults = {}, kineto = null) {
     if (current && current.direction === direction) return current.promise;
     if (current && current.direction !== direction) {
       if ((config.mode || options.mode) === 'wait' && direction === 'enter' && current.direction === 'leave') {
+        if (queued) queued.resolve(result('cancelled', 'reenter'));
         return new Promise((resolve, reject) => { queued = { direction, options, resolve, reject }; });
       }
       cancel(current);
