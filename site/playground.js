@@ -1883,7 +1883,10 @@
           delay: 70,
           hideDelay: 50,
           offset: 9,
-          effect: 'shift'
+          // Help is an inspection affordance, not a motion demo. Disable the
+          // enter animation so a slow CI frame cannot sample its initial
+          // opacity and report a hidden tooltip after the click.
+          effect: 'none'
         });
         const instance = Array.isArray(created) ? created[0] : created;
         if (!instance) return null;
@@ -1896,10 +1899,19 @@
       };
       const showHelp = () => {
         clearTimeout(help.__ktHelpHideTimer);
+        // Keep the explanation pinned briefly while the bottom-sheet moves
+        // focus into its dialog. The focus hand-off can blur the help button
+        // on slower browsers immediately after a programmatic click.
+        help.__ktHelpPinnedUntil = performance.now() + 500;
         ensureHelpTooltip()?.show?.();
       };
       const hideHelp = () => {
         clearTimeout(help.__ktHelpHideTimer);
+        const remaining = (help.__ktHelpPinnedUntil || 0) - performance.now();
+        if (remaining > 0) {
+          help.__ktHelpHideTimer = setTimeout(hideHelp, remaining);
+          return;
+        }
         ensureHelpTooltip()?.hide?.();
       };
       const deferHelpHide = () => {
