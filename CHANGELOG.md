@@ -4,6 +4,16 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.75] - 2026-08-16
+
+### English
+
 - Reduced the Radial smoothing branch so Linux consumer-bundle gzip stays below the 130 KB release budget without changing its behavior.
 
 <!-- Add matching English release bullets here. -->
@@ -13,7 +23,6 @@
 - Radial smoothing 동작은 유지하면서 Linux 소비자 번들도 130KB 릴리스 예산 아래에 남도록 해당 경로의 번들 크기를 줄였습니다.
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
-
 ## [0.8.74] - 2026-08-16
 
 ### English
