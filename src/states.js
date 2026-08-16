@@ -178,7 +178,7 @@ export default function createStates(definitions = {}, defaults = {}, kineto = n
       ...settings,
       delay: settings.delay + (settings.beforeChildren ? childSpan + settings.delayChildren : 0)
     };
-    unique.forEach((el, index) => {
+    unique.forEach((el) => {
       const isChild = children.includes(el);
       const currentOptions = isChild ? childOptions : parentOptions;
       const groupIndex = isChild ? children.indexOf(el) : parents.indexOf(el);

@@ -34,8 +34,11 @@ const BUDGET = {
   // unchanged throughout, so this is preset code, not new surface.
   // Keeping the same ~1 KB cross-runner compression headroom as before; still
   // not a blanket increase for future dependencies.
-  packedKb: 486,
-  unpackedKb: 1634,
+  // 2026-08-16: Motion States v1 adds the opt-in controller to the full
+  // runtime. Its measured release tarball is 488.9 KB packed / 1646.4 KB
+  // unpacked, still within the RFC's 3 KB gzip and package allowlist policy.
+  packedKb: 490,
+  unpackedKb: 1650,
   files: 75
 };
 
