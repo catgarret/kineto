@@ -1,5 +1,7 @@
 # Motion States RFC
 
+> 상태: v1 초기 구현 완료 (v0.8.66 예정). 공개 범위는 이 문서의 제한된 시각 속성·lifecycle 계약으로 고정합니다.
+
 상태 기반 모션은 새 효과 모듈을 추가하기 위한 이름이 아닙니다. `reveal`,
 `flip`, `textReveal`처럼 이미 존재하는 모듈을 조합할 때 반복되는 “초기 상태 →
 표시 상태” 계약을 Core에서 한 번 정의하기 위한 제안입니다.
@@ -20,6 +22,8 @@ v1에서 허용하는 값은 `opacity`, `transform`에 해당하는 `x`, `y`, `s
 `brightness`)으로 한정합니다. 임의의 CSS 속성이나 레이아웃 측정은 상태 API의
 범위에 넣지 않습니다.
 
+`duration`, `delay`, `stagger`, `delayChildren`의 단위는 밀리초입니다.
+
 ## 실제 적용 예제
 
 ### 대시보드 카드 진입
@@ -35,7 +39,7 @@ const dashboard = Kineto.states({
 
 await dashboard.apply('.dashboard-card', 'ready', {
   initial: 'initial',
-  stagger: 0.04,
+  stagger: 40,
   reducedMotion: 'final'
 });
 ```
@@ -51,9 +55,9 @@ const results = Kineto.states({
   hidden: { opacity: 0, y: 8, scale: 0.98 }
 });
 
-await results.apply('.result-card', 'hidden', { stagger: 0.02 });
+await results.apply('.result-card', 'hidden', { stagger: 20 });
 // 데이터를 갱신한 뒤
-await results.apply('.result-card', 'shown', { stagger: 0.02 });
+await results.apply('.result-card', 'shown', { stagger: 20 });
 ```
 
 ## lifecycle와 취소
@@ -99,5 +103,18 @@ v1 구현 전에 다음을 테스트 계약으로 고정합니다.
 - 공개 API와 HTML 속성 연결을 문서화하기 전, 두 개 이상의 실제 사용 사례에서
   기존 모듈 조합보다 코드가 단순해지는지 검토합니다.
 
-이 문서는 구현 승인이 아니라 범위와 중단 조건을 정하는 RFC입니다. 위 게이트를
-통과하기 전에는 `Kineto.states`를 공개 계약에 추가하지 않습니다.
+## v1 구현 표면
+
+`Kineto.states(definitions, defaults)`와 named export `states`를 제공합니다.
+`apply`, `replay`, `scan('[data-kt-state]')`, `destroy`를 지원하며, `apply`가
+반환하는 Promise에는 현재 재생을 취소하는 `cancel()`이 붙습니다. 부모 대상의
+`children`, `stagger`, `delayChildren`, `beforeChildren`, `afterChildren`는
+DOM 수명주기를 건드리지 않고 재생 순서만 조정합니다.
+
+v1의 검증은 `tests/states.mjs`와 실제 Chromium의
+`tests/browser/states.mjs`에 고정되어 있습니다. Core·States 번들 예산과
+React/Vue lifecycle·SSR 검증은 다음 단계에서 별도 fixture로 확장합니다.
+
+이 문서는 범위와 중단 조건을 정하는 RFC이면서 v1 계약의 근거입니다. 임의의
+CSS 속성, DOM 삽입·삭제, focus/ARIA 관리, Presence semantics는 여전히 범위
+밖이며, 필요하면 별도의 Presence 설계와 출시 게이트를 거칩니다.

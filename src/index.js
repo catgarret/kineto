@@ -53,6 +53,7 @@ import scrollShadowsModule from './modules/scrollShadows.js';
 import stickyHeaderModule from './modules/stickyHeader.js';
 import horizontalScrollModule from './modules/horizontalScroll.js';
 import { listTerminalFramePresets } from './modules/loadingIndicator/terminalFramePresets.js';
+import createStates from './states.js';
 
 const moduleEntries = {
   parallax: parallaxModule,
@@ -175,6 +176,8 @@ export { moduleEntries as modules };
 // (and the playground) can hide settings a preset does not support instead of
 // keeping a hand-maintained duplicate of the same list.
 Kineto.listTerminalFramePresets = listTerminalFramePresets;
+Kineto.states = (definitions, options = {}) => createStates(definitions, options, Kineto);
 export { listTerminalFramePresets };
+export const states = (definitions, options = {}) => createStates(definitions, options, Kineto);
 
 export default Kineto;

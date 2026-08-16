@@ -16,7 +16,7 @@ English · [한국어](i18n/README.ko.md) · [日本語](i18n/README.jp.md) · [
 
 ---
 
-Kineto provides 51 modules for motion, media, scroll, text, and UI.
+Kineto provides 52 modules for motion, media, scroll, text, and UI.
 Use a single `data-kt-*` attribute or control the same feature through the
 JavaScript API.
 Unsupported environments disable the effect while keeping the content intact.
@@ -54,7 +54,7 @@ direction.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/lightbox.gif" width="620" alt="Lightbox">
 
-See the [full module list](#modules) below for all 51 modules.
+See the [full module list](#modules) below for all 52 modules.
 
 ## Installation
 
@@ -105,6 +105,27 @@ Kineto.counter('#total', { preset: 'pop', to: 98760, format: ',' });
 Kineto.reveal('.card', { preset: 'fade-up', stagger: 0.06 });
 const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true });
 ```
+
+### Named Motion States
+
+For repeated visual states, use the small state controller instead of creating a
+new effect module. It owns opacity, transform, and the limited blur/brightness
+filter set; DOM removal and accessibility state remain with your component.
+
+```js
+const cards = Kineto.states({
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0 }
+});
+
+await cards.apply('.card', 'visible', { initial: 'hidden', stagger: 40 });
+// `data-kt-state="visible"` elements can be applied with cards.scan().
+```
+
+`apply()` returns a Promise with `finished`/`cancelled` status and a `cancel()`
+method. Call `cards.destroy()` to cancel active runs and restore the original
+inline styles. See the [Motion States RFC](docs/motion-states-rfc.md) for the
+scope and boundaries.
 
 ### iOS edge-to-edge (notch & home bar)
 

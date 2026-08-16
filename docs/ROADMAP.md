@@ -149,7 +149,7 @@ npm provenance는 패키지가 어느 저장소와 빌드 환경에서 만들어
 
 목표는 Kineto만의 조합 모델을 만드는 것입니다.
 
-### P1. Motion States
+### P1. Motion States — v1 초기 구현 완료
 
 현재 `variant`는 모듈 preset을 의미하므로 상태 시스템에 같은 용어를 쓰지 않습니다. `states` 또는 `motionState`로 분리합니다.
 
@@ -181,6 +181,13 @@ Web Animations API는 브라우저 애니메이션 엔진을 JavaScript에 노�
 - Vanilla API와 HTML의 최소 상태 이름 연결이 동일하게 작동합니다.
 - nested orchestration, cancel, replay, destroy, reduced motion 테스트가 있습니다.
 - 기존 `reveal`, `textReveal`, `flip`과 역할 경계를 문서화합니다.
+
+**v1 완료 근거 (v0.8.66 예정)**
+
+- `Kineto.states()`와 named export `states`를 제한된 시각 속성 집합으로 구현했습니다.
+- `apply`, `replay`, `scan('[data-kt-state]')`, 취소 가능한 Promise, `destroy` 복원을 제공합니다.
+- Chromium에서 nested children/stagger, cancel, replay, destroy, reduced motion을 검증하고 SSR 입력 계약을 Node 테스트로 고정했습니다.
+- Presence의 DOM 삽입·삭제·focus·ARIA 책임은 의도대로 포함하지 않았습니다.
 
 ### P1. Presence Core
 
@@ -350,10 +357,11 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 4. 완료: 데모 설정 URL 공유 — 변경한 안전한 공개 옵션만 직렬화·복원
 5. 완료: framework별 copy output — 현재 옵션을 React `Motion`과 Vue `useKineto` 예제로 복사
 6. 완료: Motion States RFC 작성 및 2개 실제 예제·출시 게이트 정의
-7. 다음: States v1 구현 — RFC 게이트 통과 후에만 공개 계약에 추가
-8. Presence Core RFC와 focus/ARIA/cancel 모델 확정
-9. Presence Core → React/Vue adapter
-10. Slider physics와 FLIP shared-layout은 사용 요구에 따라 병렬이 아닌 후속 선택
+7. 완료: States v1 초기 구현 — 제한된 시각 상태·취소·replay·destroy·reduced motion 검증
+8. 다음: Core + States 소비자 번들 fixture와 React/Vue lifecycle·SSR 연동 검증
+9. Presence Core RFC와 focus/ARIA/cancel 모델 확정
+10. Presence Core → React/Vue adapter
+11. Slider physics와 FLIP shared-layout은 사용 요구에 따라 병렬이 아닌 후속 선택
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

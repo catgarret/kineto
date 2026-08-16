@@ -45,6 +45,31 @@ export interface KinetoEnvironment {
   [key: string]: unknown;
 }
 
+export interface KinetoStateController {
+  apply(target: KinetoTarget, state: string, options?: KinetoOptions): Promise<{ status: 'finished' | 'cancelled' }> & { cancel(): void };
+  replay(target?: KinetoTarget, state?: string, options?: KinetoOptions): Promise<{ status: 'finished' | 'cancelled' }> & { cancel(): void };
+  scan(root?: ParentNode | Element | null, options?: KinetoOptions): Promise<{ status: 'finished' | 'cancelled' }>;
+  destroy(): this;
+  readonly stateNames: string[];
+  readonly ssr?: boolean;
+}
+
+export interface KinetoStateDefinitions {
+  [name: string]: {
+    opacity?: number;
+    x?: number;
+    y?: number;
+    scale?: number;
+    rotate?: number;
+    skewX?: number;
+    skewY?: number;
+    blur?: number;
+    brightness?: number;
+    transform?: string;
+    filter?: string;
+  };
+}
+
 export interface KinetoStatic {
   readonly version: string;
   readonly env: KinetoEnvironment;
@@ -78,6 +103,7 @@ export interface KinetoStatic {
   pause(): this;
   resume(): this;
   refresh(): this;
+  states(definitions: KinetoStateDefinitions, options?: KinetoOptions): KinetoStateController;
   listTerminalFramePresets(): unknown;
 }
 
@@ -86,6 +112,7 @@ export default Kineto;
 
 export const modules: Record<ModuleName, KinetoModule>;
 export function listTerminalFramePresets(): unknown;
+export function states(definitions: KinetoStateDefinitions, options?: KinetoOptions): KinetoStateController;
 
 export const ambientMedia: KinetoFactory;
 export const blurText: KinetoFactory;

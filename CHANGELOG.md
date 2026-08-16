@@ -14,10 +14,12 @@
 
 ### English
 
+- Added the first Motion States API with restricted visual states, cancellable apply/replay, HTML state scanning, destroy restoration, and reduced-motion final-state handling.
 - Stabilized playground option help tooltips by removing animation sampling races and keeping the explanation visible while the settings drawer transfers focus.
 
 ### 한국어
 
+- 제한된 시각 상태 집합, 취소 가능한 apply/replay, HTML 상태 스캔, destroy 복원, reduced motion 최종 상태 적용을 지원하는 Motion States 초기 API를 추가했습니다.
 - 플레이그라운드 옵션 도움말에서 애니메이션 초기 프레임과 설정창 포커스 이동으로 툴팁이 사라지는 경합을 없애고 설명이 안정적으로 표시되도록 했습니다.
 ## [0.8.64] - 2026-08-15
 

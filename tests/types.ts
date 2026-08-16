@@ -1,4 +1,4 @@
-import Kineto, { reveal, slider, type KinetoInstance, type KinetoModule } from '@dong-gri/kineto';
+import Kineto, { reveal, slider, states, type KinetoInstance, type KinetoModule } from '@dong-gri/kineto';
 import ModularCore from '@dong-gri/kineto/core';
 import sliderModule from '@dong-gri/kineto/modules/slider';
 
@@ -10,5 +10,8 @@ Kineto.destroyModule(target, 'reveal').refresh();
 
 const moduleDefinition: KinetoModule = sliderModule;
 ModularCore.register('slider', moduleDefinition).slider(target);
+const stateController = states({ hidden: { opacity: 0 }, visible: { opacity: 1, y: 0 } });
+stateController.apply(target, 'visible').cancel();
+Kineto.states({ visible: { opacity: 1 } }).destroy();
 
 void result;

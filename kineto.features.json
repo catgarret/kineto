@@ -6665,6 +6665,7 @@
     "setAnimationEngine",
     "setEngineSource",
     "setReducedMotion",
+    "states",
     "toggleSmooth",
     "unregister",
     "updateModule"
@@ -6682,7 +6683,8 @@
   ],
   "additionalNamedExports": [
     "modules",
-    "listTerminalFramePresets"
+    "listTerminalFramePresets",
+    "states"
   ],
   "criticalBehaviors": {
     "duplicateInitialization": "Creating the same module on the same source element returns the existing instance.",
@@ -6694,7 +6696,8 @@
     "loaderSources": "Loader accepts manual, promise, fetch, resource and window progress sources.",
     "lightboxViewer": "Lightbox covers the full viewport and supports grouped navigation, information, zoom, pan, minimap and custom UI.",
     "smoothScroll": "Lenis smooth scrolling is opt-in and can be enabled or disabled at runtime.",
-    "boundedCardGlow": "Pointer glow remains clipped while optional surface reflection and luminous border are independently configurable."
+    "boundedCardGlow": "Pointer glow remains clipped while optional surface reflection and luminous border are independently configurable.",
+    "motionStates": "Named visual states animate a restricted transform/opacity/filter set with cancellation, replay, destroy restoration and reduced-motion final-state handling."
   },
   "behaviorContractVersion": "1.2.0",
   "variantCapabilities": {
