@@ -163,7 +163,13 @@ export default function createStates(definitions = {}, defaults = {}, kineto = n
     if (initial) unique.forEach((el) => render(el, initial));
     if (!unique.length) return Promise.resolve({ status: 'finished' });
 
-    const run = { entries: [], remaining: unique.length, status: null, resolve: null, reduced: Boolean(settings.reducedMotion === 'final' || kineto?.prefersReducedMotion) };
+    const run = {
+      entries: [],
+      remaining: unique.length,
+      status: null,
+      resolve: null,
+      reduced: Boolean(settings.reducedMotion === 'final' || kineto?.prefersReducedMotion || env().reducedMotion)
+    };
     const promise = new Promise((resolvePromise) => { run.resolve = resolvePromise; });
     promise.cancel = () => cancelRun(run);
     runs.add(run);

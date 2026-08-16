@@ -55,6 +55,10 @@
       "types": "./types/core.d.ts",
       "default": "./dist/modular/core.js"
     },
+    "./states": {
+      "types": "./types/states.d.ts",
+      "default": "./dist/modular/states.js"
+    },
     "./modules/*": {
       "types": "./types/module.d.ts",
       "default": "./dist/modular/modules/*.js"

@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.8.55 · 작성일: 2026-08-02 · 검토: 2026-08-09
+> 기준 버전: v0.8.66 · 작성일: 2026-08-02 · 검토: 2026-08-16
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -182,12 +182,21 @@ Web Animations API는 브라우저 애니메이션 엔진을 JavaScript에 노�
 - nested orchestration, cancel, replay, destroy, reduced motion 테스트가 있습니다.
 - 기존 `reveal`, `textReveal`, `flip`과 역할 경계를 문서화합니다.
 
-**v1 완료 근거 (v0.8.66 예정)**
+**v1 완료 근거 (v0.8.66)**
 
 - `Kineto.states()`와 named export `states`를 제한된 시각 속성 집합으로 구현했습니다.
 - `apply`, `replay`, `scan('[data-kt-state]')`, 취소 가능한 Promise, `destroy` 복원을 제공합니다.
 - Chromium에서 nested children/stagger, cancel, replay, destroy, reduced motion을 검증하고 SSR 입력 계약을 Node 테스트로 고정했습니다.
 - Presence의 DOM 삽입·삭제·focus·ARIA 책임은 의도대로 포함하지 않았습니다.
+
+**소비자 경계·어댑터 검증 완료 (v0.8.67 예정)**
+
+- `@dong-gri/kineto/states` 독립 ESM 엔트리를 추가해 `core`와 States를 선택적으로
+  함께 가져올 수 있게 했습니다. 독립 엔트리도 전체 레지스트리를 등록하지 않습니다.
+- Core + States Vite 소비자 fixture에 gzip 예산을 추가하고, 패키지 surface·tarball·타입
+  선언에서 `./states` export를 검증합니다.
+- React Strict Mode와 Vue mount/unmount에서 States controller 생성·취소·destroy 복원을
+  검사하며, full/standalone States의 SSR 호출이 브라우저 전역 없이 완료되는지 고정했습니다.
 
 ### P1. Presence Core
 
@@ -358,8 +367,8 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 5. 완료: framework별 copy output — 현재 옵션을 React `Motion`과 Vue `useKineto` 예제로 복사
 6. 완료: Motion States RFC 작성 및 2개 실제 예제·출시 게이트 정의
 7. 완료: States v1 초기 구현 — 제한된 시각 상태·취소·replay·destroy·reduced motion 검증
-8. 다음: Core + States 소비자 번들 fixture와 React/Vue lifecycle·SSR 연동 검증
-9. Presence Core RFC와 focus/ARIA/cancel 모델 확정
+8. 완료: Core + States 소비자 번들 fixture와 React/Vue lifecycle·SSR 연동 검증
+9. 다음: Presence Core RFC와 focus/ARIA/cancel 모델 확정
 10. Presence Core → React/Vue adapter
 11. Slider physics와 FLIP shared-layout은 사용 요구에 따라 병렬이 아닌 후속 선택
 

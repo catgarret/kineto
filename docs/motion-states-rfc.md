@@ -112,8 +112,10 @@ v1 구현 전에 다음을 테스트 계약으로 고정합니다.
 DOM 수명주기를 건드리지 않고 재생 순서만 조정합니다.
 
 v1의 검증은 `tests/states.mjs`와 실제 Chromium의
-`tests/browser/states.mjs`에 고정되어 있습니다. Core·States 번들 예산과
-React/Vue lifecycle·SSR 검증은 다음 단계에서 별도 fixture로 확장합니다.
+`tests/browser/states.mjs`에 고정되어 있습니다. `@dong-gri/kineto/core`와
+`@dong-gri/kineto/states`를 함께 가져오는 소비자 fixture의 gzip 경계도
+`tests/consumer-bundles`에서 측정합니다. React/Vue lifecycle·SSR 검증은
+프레임워크 QA fixture에서 별도 계약으로 유지합니다.
 
 이 문서는 범위와 중단 조건을 정하는 RFC이면서 v1 계약의 근거입니다. 임의의
 CSS 속성, DOM 삽입·삭제, focus/ARIA 관리, Presence semantics는 여전히 범위

@@ -37,9 +37,11 @@ const BUDGET = {
   // 2026-08-16: Motion States v1 adds the opt-in controller to the full
   // runtime. Its measured release tarball is 488.9 KB packed / 1646.4 KB
   // unpacked, still within the RFC's 3 KB gzip and package allowlist policy.
-  packedKb: 490,
-  unpackedKb: 1650,
-  files: 75
+  // 2026-08-16: the standalone `states` modular entry and declaration add two
+  // runtime surface files without broadening the allowlist.
+  packedKb: 491,
+  unpackedKb: 1655,
+  files: 76
 };
 
 console.log(`release package: ${packedKb.toFixed(1)} KB packed · ${unpackedKb.toFixed(1)} KB unpacked · ${files.length} files`);
@@ -65,8 +67,10 @@ const required = [
   'dist/kineto.umd.cjs',
   'dist/kineto.umd.min.js',
   'dist/modular/core.js',
+  'dist/modular/states.js',
   'dist/modular/modules/slider.js',
   'types/index.d.ts',
+  'types/states.d.ts',
   'types/core.d.ts',
   'types/module.d.ts',
   'package.json',

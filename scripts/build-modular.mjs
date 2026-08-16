@@ -12,7 +12,10 @@ const moduleNames = (await readdir(modulesDir, { withFileTypes: true }))
   .map((entry) => entry.name.slice(0, -3))
   .sort();
 
-const input = { core: new URL('src/core.js', root).pathname };
+const input = {
+  core: new URL('src/core.js', root).pathname,
+  states: new URL('src/states-entry.js', root).pathname
+};
 moduleNames.forEach((name) => { input[`modules/${name}`] = new URL(`src/modules/${name}.js`, root).pathname; });
 
 await rm(outDir, { recursive: true, force: true });
@@ -26,4 +29,4 @@ await build.write({
 });
 await build.close();
 
-console.log(`Modular ESM: core + ${moduleNames.length} module entries.`);
+console.log(`Modular ESM: core + states + ${moduleNames.length} module entries.`);

@@ -11769,7 +11769,7 @@ function Pi(e = {}, t = {}, n = null) {
 			remaining: _.length,
 			status: null,
 			resolve: null,
-			reduced: !!(h.reducedMotion === "final" || n?.prefersReducedMotion)
+			reduced: !!(h.reducedMotion === "final" || n?.prefersReducedMotion || V().reducedMotion)
 		}, x = new Promise((e) => {
 			b.resolve = e;
 		});

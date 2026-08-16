@@ -278,6 +278,24 @@ Kineto.scan();
 Module entries share code-split runtime chunks. Importing a module does not
 register the other modules or download their implementations.
 
+Motion States is also available as an opt-in modular entry when the application
+does not need the full registry:
+
+```js
+import Kineto from '@dong-gri/kineto/core';
+import states from '@dong-gri/kineto/states';
+
+const cards = states({
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0 }
+});
+
+await cards.apply('.card', 'visible');
+```
+
+The standalone entry shares the same named-state contract and SSR-safe behavior
+as `Kineto.states()`, but does not register the full module set.
+
 ## Browser support
 
 Latest Chrome, Edge, Firefox, and Safari (desktop and mobile). With `prefers-reduced-motion` enabled, every module renders its final state without animation; on unsupported environments the effects degrade to static content.

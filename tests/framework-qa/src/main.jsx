@@ -1,6 +1,6 @@
-import React, { StrictMode, useEffect, useState } from 'react';
+import React, { StrictMode, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createApp, h, nextTick, ref, withDirectives } from 'vue';
+import { createApp, h, nextTick, onBeforeUnmount, onMounted, ref, withDirectives } from 'vue';
 import $ from 'jquery';
 import Kineto from '@dong-gri/kineto';
 import { Motion, useKineto as useReactKineto } from '@dong-gri/kineto/react';
@@ -24,10 +24,30 @@ function ReactHookHarness({ type, dependency }) {
   return <div id="react-hook-target" ref={ref}>React hook adapter</div>;
 }
 
+function ReactStateHarness({ dependency }) {
+  const element = useRef(null);
+  useEffect(() => {
+    const controller = Kineto.states({
+      hidden: { opacity: 0, y: 8 },
+      visible: { opacity: 1, y: 0 }
+    });
+    window.__reactStatesActive = (window.__reactStatesActive || 0) + 1;
+    const run = controller.apply(element.current, dependency ? 'visible' : 'hidden', { duration: 0.01 });
+    return () => {
+      run.cancel();
+      controller.destroy();
+      window.__reactStatesActive -= 1;
+      window.__reactStatesDestroyed = (window.__reactStatesDestroyed || 0) + 1;
+    };
+  }, [dependency]);
+  return <div id="react-state-target" ref={element}>React states adapter</div>;
+}
+
 function ReactHarness({ type, dependency }) {
   return <>
     <Motion id="react-motion-target" type={type} options={{ duration: 0.01 }} dependencies={[dependency]}>React Motion component</Motion>
     <ReactHookHarness type={type} dependency={dependency} />
+    <ReactStateHarness dependency={dependency} />
   </>;
 }
 
@@ -39,17 +59,21 @@ async function testReact() {
   assert(Kineto.getInstance(document.querySelector('#react-motion-target'), 'reveal'), 'React Motion did not mount reveal');
   assert(Kineto.getInstance(document.querySelector('#react-hook-target'), 'reveal'), 'React hook did not mount reveal');
   assert(window.__reactHookInstanceRef?.current, 'React hook instance ref was not populated');
+  assert(window.__reactStatesActive === 1, 'React states controller did not mount exactly once');
 
   root.render(<StrictMode><ReactHarness type="counter" dependency={1} /></StrictMode>);
   await sleep(120);
   assert(!Kineto.getInstance(document.querySelector('#react-motion-target'), 'reveal'), 'React old module survived type update');
   assert(Kineto.getInstance(document.querySelector('#react-motion-target'), 'counter'), 'React Motion did not update type');
   assert(Kineto.getInstance(document.querySelector('#react-hook-target'), 'counter'), 'React hook did not update type');
+  assert(window.__reactStatesActive === 1, 'React states controller was not replaced cleanly');
 
   root.unmount();
   await sleep(80);
   assert(host.childElementCount === 0, 'React root did not unmount');
   assert(Kineto.instanceCount === 0, `React leaked ${Kineto.instanceCount} instances`);
+  assert(window.__reactStatesActive === 0, 'React states controller survived unmount');
+  assert(window.__reactStatesDestroyed >= 2, 'React states cleanup did not run for StrictMode/update');
   pass('React mount/update/unmount', 'StrictMode component + hook');
 
   for (let i = 0; i < 40; i += 1) {
@@ -73,10 +97,27 @@ async function testVue() {
     setup() {
       const composableType = 'reveal';
       const { element, instance } = useVueKineto(composableType, { duration: 0.01 });
+      const stateElement = ref(null);
+      let stateController = null;
+      onMounted(() => {
+        stateController = Kineto.states({
+          hidden: { opacity: 0, y: 8 },
+          visible: { opacity: 1, y: 0 }
+        });
+        window.__vueStatesActive = (window.__vueStatesActive || 0) + 1;
+        stateController.apply(stateElement.value, 'visible', { duration: 0.01 });
+      });
+      onBeforeUnmount(() => {
+        stateController?.destroy();
+        stateController = null;
+        window.__vueStatesActive -= 1;
+        window.__vueStatesDestroyed = (window.__vueStatesDestroyed || 0) + 1;
+      });
       window.__vueComposableInstance = instance;
       return () => h('section', [
         withDirectives(h('div', { id: 'vue-directive-target' }, 'Vue directive adapter'), [[vMotion, { type: type.value, options: { duration: 0.01 } }]]),
-        h('div', { id: 'vue-composable-target', ref: element }, 'Vue composable adapter')
+        h('div', { id: 'vue-composable-target', ref: element }, 'Vue composable adapter'),
+        h('div', { id: 'vue-state-target', ref: stateElement }, 'Vue states adapter')
       ]);
     }
   });
@@ -86,6 +127,7 @@ async function testVue() {
   assert(Kineto.getInstance(document.querySelector('#vue-directive-target'), 'reveal'), 'Vue directive did not mount reveal');
   assert(Kineto.getInstance(document.querySelector('#vue-composable-target'), 'reveal'), 'Vue composable did not mount reveal');
   assert(window.__vueComposableInstance?.value, 'Vue composable instance ref was not populated');
+  assert(window.__vueStatesActive === 1, 'Vue states controller did not mount');
 
   type.value = 'counter';
   await nextTick();
@@ -97,6 +139,8 @@ async function testVue() {
   await sleep(80);
   assert(host.childElementCount === 0, 'Vue root did not unmount');
   assert(Kineto.instanceCount === 0, `Vue leaked ${Kineto.instanceCount} instances`);
+  assert(window.__vueStatesActive === 0, 'Vue states controller survived unmount');
+  assert(window.__vueStatesDestroyed === 1, 'Vue states cleanup did not run exactly once');
   pass('Vue mount/update/unmount', 'directive + composable');
 
   for (let i = 0; i < 40; i += 1) {

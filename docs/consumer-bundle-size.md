@@ -5,10 +5,11 @@
 
 | Consumer entry | JS files | Raw | Gzip | Budget (gzip) |
 | --- | ---: | ---: | ---: | ---: |
-| full | 1 | 476.0 KB | 124.0 KB | ≤ 130 KB |
-| core-reveal | 1 | 38.4 KB | 11.6 KB | ≤ 30 KB |
-| core-three | 1 | 88.1 KB | 24.6 KB | ≤ 65 KB |
-| react-adapter | 1 | 476.8 KB | 124.3 KB | ≤ 135 KB |
-| vue-adapter | 1 | 476.7 KB | 124.2 KB | ≤ 135 KB |
+| full | 1 | 495.0 KB | 129.5 KB | ≤ 130 KB |
+| core-reveal | 1 | 40.1 KB | 12.2 KB | ≤ 30 KB |
+| core-three | 1 | 91.2 KB | 25.5 KB | ≤ 65 KB |
+| core-states | 1 | 31.0 KB | 10.1 KB | ≤ 35 KB |
+| react-adapter | 1 | 495.7 KB | 129.9 KB | ≤ 135 KB |
+| vue-adapter | 1 | 495.7 KB | 129.8 KB | ≤ 135 KB |
 
-The fixture test also requires `core + one module` and `core + three modules` to remain smaller than the full entry.
+The fixture test also requires `core + one module`, `core + three modules`, and `core + states` to remain smaller than the full entry.

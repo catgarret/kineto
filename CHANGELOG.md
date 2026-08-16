@@ -4,11 +4,13 @@
 
 ### English
 
-<!-- Add matching English release bullets here. -->
+- Added a standalone `@dong-gri/kineto/states` modular entry so Core consumers can opt into Motion States without the full module registry.
+- Added Core + States consumer gzip coverage and React/Vue lifecycle plus full/standalone SSR checks for state controllers.
 
 ### 한국어
 
-<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 전체 모듈 레지스트리 없이 Core와 Motion States만 선택할 수 있도록 독립 `@dong-gri/kineto/states` 모듈 엔트리를 추가했습니다.
+- Core + States 소비자 gzip 예산과 React/Vue lifecycle, full/standalone States SSR 검증을 추가했습니다.
 
 ## [0.8.66] - 2026-08-16
 
