@@ -5,6 +5,16 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.69] - 2026-08-16
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Added a Presence Core RFC that fixes cancellation, re-entry, safe-to-remove, focus/ARIA/inert, SSR, and reduced-motion gates before implementation.
 - Added an opt-in `@dong-gri/kineto/presence` prototype with cancellable enter/exit, wait-mode re-entry, safe-to-remove callbacks, managed accessibility restoration, and SSR/reduced-motion fallbacks.
 
@@ -13,7 +23,6 @@
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - 구현 전에 취소·재진입·safe-to-remove·focus/ARIA/inert·SSR·reduced motion 출시 게이트를 고정하는 Presence Core RFC를 추가했습니다.
 - 취소 가능한 enter/exit, wait 모드 재진입, safe-to-remove callback, 접근성 상태 복원, SSR/reduced motion fallback을 지원하는 선택형 `@dong-gri/kineto/presence` prototype을 추가했습니다.
-
 ## [0.8.68] - 2026-08-16
 
 ### English
