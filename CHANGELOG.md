@@ -5,13 +5,28 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.72] - 2026-08-16
+
+### English
+
+<!-- Add matching English release bullets here. -->
+- Restored direct GitHub Pages deployment from the verified `site/` artifact so the canonical demo receives updates after CI without a cross-repository token; added regression checks for the CI, npm, license, and jsDelivr badges.
+- Synchronized the demo's visible module count and all locale copy with the 52-module feature contract, with a regression check preventing stale 51-module text.
+- Hardened Radial Carousel touch handling and native drag prevention, restoring authored `draggable` and `touch-action` values on destroy.
 - Reduced Radial Carousel's drag-protection bookkeeping so the full consumer bundle remains within the Node 24 gzip budget.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 검증된 `site/` artifact를 canonical 데모의 GitHub Pages에 직접 배포하도록 복구해 cross-repository token 없이 CI 후 최신 내용이 반영되게 하고, CI·npm·license·jsDelivr 배지 회귀 검사를 추가했습니다.
+- 데모에 표시되는 모듈 수와 모든 locale copy를 52개 feature contract와 동기화하고, 오래된 51개 문구가 재발하지 않도록 회귀 검사를 추가했습니다.
+- Radial Carousel의 터치 처리와 native drag preview 차단을 보강하고, destroy 시 작성자가 지정한 `draggable`·`touch-action` 값을 복원하게 했습니다.
 - Radial Carousel의 드래그 보호 bookkeeping을 줄여 전체 소비자 번들이 Node 24 gzip 예산 안에 유지되도록 했습니다.
-
 ## [0.8.71] - 2026-08-16
 
 ### English
