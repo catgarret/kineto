@@ -4,12 +4,21 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.65] - 2026-08-16
+
+### English
+
 - Stabilized playground option help tooltips by removing animation sampling races and keeping the explanation visible while the settings drawer transfers focus.
 
 ### 한국어
 
 - 플레이그라운드 옵션 도움말에서 애니메이션 초기 프레임과 설정창 포커스 이동으로 툴팁이 사라지는 경합을 없애고 설명이 안정적으로 표시되도록 했습니다.
-
 ## [0.8.64] - 2026-08-15
 
 ### English
