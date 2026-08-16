@@ -11788,9 +11788,9 @@ function Pi(e = {}, t = {}, n = null) {
 			...h,
 			delay: h.delay + (h.beforeChildren ? C + h.delayChildren : 0)
 		};
-		return _.forEach((e, t) => {
-			let n = f.includes(e), r = n ? w : T, i = n ? f.indexOf(e) : d.indexOf(e);
-			m(b, e, y || null, l, r, Math.max(0, i));
+		return _.forEach((e) => {
+			let t = f.includes(e), n = t ? w : T, r = t ? f.indexOf(e) : d.indexOf(e);
+			m(b, e, y || null, l, n, Math.max(0, r));
 		}), x;
 	}, g = {
 		apply: h,
