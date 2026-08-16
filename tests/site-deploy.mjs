@@ -38,6 +38,13 @@ assert.ok(/data-kt-version/.test(demoHtml), 'demo has [data-kt-version] hook');
 assert.ok(/data-kt-module-count/.test(demoHtml), 'demo has [data-kt-module-count] hook');
 assert.ok(/data-kt-build/.test(demoHtml), 'demo has [data-kt-build] hook');
 
+// Keep the project status links visible in the public hero. These are part of
+// the demo's trust surface, not optional decoration.
+assert.ok(/class="hero-badges"/.test(demoHtml), 'demo keeps the project status badge row');
+for (const badge of ['alt="CI"', 'alt="npm"', 'alt="license"', 'alt="jsDelivr"']) {
+  assert.ok(demoHtml.includes(badge), `demo keeps the ${badge.slice(5, -1)} badge`);
+}
+
 // 5. no stale build artifacts committed. Ignored local OS files are irrelevant
 // to a clean checkout, so inspect the Git index rather than the working folder.
 const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean);

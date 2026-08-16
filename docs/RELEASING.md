@@ -17,23 +17,20 @@ The workflow requests `id-token: write`; no long-lived npm token is stored in
 the repository. GitHub Actions also needs `contents: write`, which is declared
 in the workflow.
 
-The public demo is maintained in the separate
-`catgarret/catgarret.github.io` repository. Create a fine-grained personal
-access token with access only to that repository and `Contents: Read and write`,
-then save it in the Kineto repository as the Actions secret
-`DEMO_SITE_TOKEN`. After `CI` succeeds on `main`, `pages.yml` rebuilds `site/`,
-replaces only `example/kineto`, and commits the result to the site's `master`
-branch. The demo intentionally loads unversioned `@dong-gri/kineto`; the release
-workflow purges the jsDelivr latest aliases after npm publication.
+The public demo is deployed directly from the Kineto repository's GitHub Pages
+artifact. After `CI` succeeds on `main`, `pages.yml` rebuilds the verified
+source and deploys `site/` with `actions/deploy-pages`; no cross-repository
+token is required. The demo intentionally loads unversioned
+`@dong-gri/kineto`; the release workflow purges the jsDelivr latest aliases
+after npm publication.
 
-The canonical demo URL is `https://kineto.dongri.me`. It can be served directly
-with Cloudflare Pages; a Worker proxy is not required. Connect the Kineto GitHub
-repository to a Pages project with production branch `main`, build command
-`npm ci && npm run build`, and output directory `site`, then add
-`kineto.dongri.me` as the Pages custom domain. Keep the separate repository sync
-above as the origin/backup deployment. Do not add a `CNAME` file to
+The canonical demo URL is `https://kineto.dongri.me`. Enable GitHub Pages for
+the Kineto repository with the GitHub Actions source and keep
+`kineto.dongri.me` as its Pages custom domain. The separate
+`catgarret.github.io/example/kineto` copy may remain as a manual backup, but it
+is not the canonical deployment path. Do not change the `CNAME` file in
 `catgarret.github.io`, because that would change the custom domain for the whole
-personal Pages site rather than only `example/kineto`.
+personal Pages site.
 
 ## Preparing a version
 
