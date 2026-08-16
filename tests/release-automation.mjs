@@ -31,12 +31,12 @@ assert.match(changelog, /## \[Unreleased\]\s*\n+### English[\s\S]*### 한국어/
 assert.ok(note.indexOf('## English') < note.indexOf('## 한국어'));
 assert.match(demoWorkflow, /workflows:\s*\[CI\]/);
 assert.match(demoWorkflow, /workflow_run\.conclusion == 'success'/);
-assert.match(demoWorkflow, /repository:\s*catgarret\/catgarret\.github\.io/);
-assert.match(demoWorkflow, /secrets\.DEMO_SITE_TOKEN/);
-assert.match(demoWorkflow, /if: env\.DEMO_SITE_TOKEN != ''/);
-assert.doesNotMatch(demoWorkflow, /DEMO_SITE_TOKEN[\s\S]{0,300}exit 1/);
-assert.match(demoWorkflow, /rsync -a --delete site\/ public-site\/example\/kineto\//);
-assert.doesNotMatch(demoWorkflow, /configure-pages|deploy-pages/);
+assert.match(demoWorkflow, /permissions:[\s\S]*pages:\s*write/);
+assert.match(demoWorkflow, /uses:\s*actions\/configure-pages@v6/);
+assert.match(demoWorkflow, /uses:\s*actions\/upload-pages-artifact@v4/);
+assert.match(demoWorkflow, /uses:\s*actions\/deploy-pages@v4/);
+assert.match(demoWorkflow, /path:\s*site/);
+assert.doesNotMatch(demoWorkflow, /DEMO_SITE_TOKEN|catgarret\/catgarret\.github\.io|rsync -a/);
 assert.match(security, /provenance/i);
 assert.match(security, /3 business days/);
 assert.match(supplyChain, /Socket/);
