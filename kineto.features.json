@@ -1,7 +1,7 @@
 {
   "$schema": "./kineto.features.schema.json",
   "contractVersion": "1.3.0",
-  "libraryVersion": "0.8.66",
+  "libraryVersion": "0.8.67",
   "moduleCount": 52,
   "modules": [
     {
