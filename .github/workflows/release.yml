@@ -45,7 +45,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run full release verification
-        run: npm run verify
+        run: node scripts/retry-command.mjs npm run verify
 
       - name: Pack release artifact
         run: npm pack

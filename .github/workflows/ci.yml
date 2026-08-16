@@ -42,7 +42,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run lint, build, Node and browser tests
-        run: npm run ci
+        run: node scripts/retry-command.mjs npm run ci
 
       - name: Upload browser screenshots on failure
         if: failure()

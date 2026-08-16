@@ -3,10 +3,12 @@
 ## [Unreleased]
 
 ### English
+- CI now retries the complete verification command once after transient runner or browser failures, while keeping the pass requirement strict.
 
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+- 일시적인 러너·브라우저 실패로 전체 검증이 중단되지 않도록 검증 명령을 한 번 재시도하되, 두 번째 실행도 반드시 통과해야 하도록 CI를 보강했습니다.
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 

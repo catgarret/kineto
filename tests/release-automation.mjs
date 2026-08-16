@@ -21,6 +21,8 @@ assert.match(workflow, /tags:\s*\n\s*-\s*"v\[0-9\]\+\.\[0-9\]\+\.\[0-9\]\+"/);
 assert.match(workflow, /id-token:\s*write/);
 assert.match(workflow, /npm publish --access public --provenance/);
 assert.match(workflow, /fetch-retries=3/);
+assert.match(workflow, /retry-command\.mjs npm run verify/);
+assert.match(read('.github/workflows/ci.yml'), /retry-command\.mjs npm run ci/);
 assert.match(pkg.scripts['test:framework'], /scripts\/npm-ci-retry\.mjs/);
 assert.match(pkg.scripts['test:consumer-bundles'], /scripts\/npm-ci-retry\.mjs/);
 assert.match(workflow, /npm run purge/);
