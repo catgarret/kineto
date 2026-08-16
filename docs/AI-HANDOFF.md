@@ -68,7 +68,7 @@ Read:
 
 At this handoff, the most recent completed work includes:
 
-- settings and demo hardening across the 51-module playground;
+- settings and demo hardening across the 52-module playground;
 - composable Tilt/Card Glow shadows;
 - Cover Reveal single/pair/palette/automatic colour modes;
 - CSS colour inputs that preserve HEX, RGB(A), HSL(A), and custom properties;

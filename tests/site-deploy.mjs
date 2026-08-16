@@ -10,7 +10,9 @@ import { rewriteSiteHtml, assertSite } from '../scripts/build-demo-cdn.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+const features = JSON.parse(fs.readFileSync(path.join(root, 'kineto.features.json'), 'utf8'));
 const version = pkg.version;
+const moduleCount = features.moduleCount;
 
 // 1. package version === Kineto.version literal in source
 const core = fs.readFileSync(path.join(root, 'src/core.js'), 'utf8');
@@ -37,6 +39,8 @@ assert.ok(/<noscript><iframe class="gtm-noscript"/.test(demoHtml), 'GTM noscript
 assert.ok(/data-kt-version/.test(demoHtml), 'demo has [data-kt-version] hook');
 assert.ok(/data-kt-module-count/.test(demoHtml), 'demo has [data-kt-module-count] hook');
 assert.ok(/data-kt-build/.test(demoHtml), 'demo has [data-kt-build] hook');
+assert.match(demoHtml, new RegExp(`data-kt-module-count>${moduleCount}<`), 'demo count starts from the feature contract');
+assert.doesNotMatch(demoHtml, /\b51\b/, 'demo must not retain the previous 51-module copy');
 
 // Keep the project status links visible in the public hero. These are part of
 // the demo's trust surface, not optional decoration.

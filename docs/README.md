@@ -16,7 +16,7 @@ Kineto v0.8.70의 공개 API와 소유자 의도를 기준으로 정리한 문�
 
 ## API와 기능
 
-- [계약에서 자동 생성된 51개 Module Reference](module-reference.md)
+- [계약에서 자동 생성된 52개 Module Reference](module-reference.md)
 - [기능 계약](../FEATURE_CONTRACT.md)
 - [48개 소유자 요구사항](../OWNER_REQUIREMENTS.md)
 - [전체 라이브 데모](../demo/index.html)

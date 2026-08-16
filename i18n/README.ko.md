@@ -17,7 +17,7 @@
 
 ---
 
-Kineto는 모션·미디어·스크롤·텍스트·UI를 다루는 51개 모듈을
+Kineto는 모션·미디어·스크롤·텍스트·UI를 다루는 52개 모듈을
 제공합니다.
 `data-kt-*` 속성 하나로 적용하거나 JavaScript API로 세밀하게
 제어할 수 있습니다.
@@ -59,7 +59,7 @@ Kineto는 모션·미디어·스크롤·텍스트·UI를 다루는 51개 모듈�
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/lightbox.gif" width="620" alt="Lightbox">
 
-전체 51개 모듈은 아래 [모듈 목록](#모듈)을 참고하세요.
+전체 52개 모듈은 아래 [모듈 목록](#모듈)을 참고하세요.
 
 ## 설치
 

@@ -7,7 +7,7 @@
 
 ## 현재 기준
 
-- 51개 모듈과 26개 Core API
+- 52개 모듈과 27개 Core API
 - 모든 데모의 설정·코드 패널과 지원 옵션 계약 동기화
 - ESM, CommonJS, UMD, CSS 및 React/Vue/jQuery entry
 - reduced-motion, lifecycle teardown, dependency boundary, bundle budget 검사

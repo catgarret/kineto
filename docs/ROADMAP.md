@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.8.66 · 작성일: 2026-08-02 · 검토: 2026-08-16
+> 기준 버전: v0.8.70 · 작성일: 2026-08-02 · 검토: 2026-08-16
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -17,7 +17,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 
 앞으로의 우선순위는 모듈 수를 늘리는 것이 아니라 아래 네 가지입니다.
 
-1. 기존 51개 모듈의 신뢰도와 일관성
+1. 기존 52개 모듈의 신뢰도와 일관성
 2. 실제 소비자 기준의 초기 로드 비용
 3. Vanilla에서 먼저 성립하는 상태·Presence·레이아웃 primitive
 4. 외부 사용 사례와 문서로 증명되는 제품 신뢰
@@ -26,7 +26,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 
 ### 확인된 강점
 
-- 51개 모듈을 `data-kt-*`, JavaScript API, `core`와 `modules/*` 엔트리로 제공합니다.
+- 52개 모듈을 `data-kt-*`, JavaScript API, `core`와 `modules/*` 엔트리로 제공합니다.
 - TypeScript 선언이 전체·모듈형·React·Vue·jQuery 표면에 제공됩니다.
 - npm 자기 의존성을 제거했고, 설치 tarball과 타입 표면을 CI에서 검사합니다.
 - GSAP·ScrollTrigger·Lenis 기본 CDN에는 고정 버전과 SHA-384 SRI가 적용됩니다.
@@ -37,7 +37,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 
 - 전체 번들은 제품 범위에 비해 관리 가능하지만 예산 상한에 가깝고, 실제 소비자 앱에서 모듈 하나를 가져왔을 때의 번들 비용은 별도 예산으로 관리하지 않습니다.
 - React·Vue 어댑터는 라이프사이클 연결 수준입니다. 선언적 상태 전파, exit 지연, SSR/hydration 검증은 부족합니다.
-- 51개 모듈과 7개 언어는 유지 비용이 큽니다. 새 기능이 기존 기능의 품질과 문서화를 밀어낼 위험이 있습니다.
+- 52개 모듈과 7개 언어는 유지 비용이 큽니다. 새 기능이 기존 기능의 품질과 문서화를 밀어낼 위험이 있습니다.
 - 공개 저장소 지표는 2026-08-02 확인 기준 star 0, fork 0입니다. 코드 품질과 별개로 외부 검증과 사용 사례가 없는 상태입니다.
 - Socket 경고를 줄이는 기술 조치는 진행됐지만, 공급망 신뢰는 특정 점수 하나가 아니라 릴리스 provenance, 의존성 최소화, 변경 이력, 대응 절차를 함께 유지해야 합니다. Socket도 경고 심각도와 공급망 위험을 종합해 점수를 계산한다고 설명합니다([Socket package scores](https://docs.socket.dev/docs/package-scores)).
 - **테스트가 틀린 이유로 실패합니다.** v0.8.43 릴리스는 같은 assertion에서 반복 실패했는데, 원인은 스타일시트가 아니라 아직 레이아웃되지 않은 패널을 측정한 것이었습니다. `display:none` 요소의 `getComputedStyle`은 used value가 아니라 computed value(`repeat(2, minmax(0px, 1fr))`)를 돌려주고, 이 문자열을 공백으로 자르면 토큰이 정확히 3개가 나옵니다. 즉 **그럴듯하게 틀린 값**이 나왔고, 사람은 CSS를 세 번 고쳤습니다. 브라우저 QA에 “측정 대상이 실제로 레이아웃됐는가”를 먼저 확인하는 규칙이 없으면, 통과율 지표 자체를 신뢰할 수 없습니다.
@@ -59,7 +59,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 - Motion의 모든 CSS 값·gesture·layout API를 복제하지 않습니다.
 - Swiper의 방대한 플러그인 목록을 따라 모듈 수를 늘리지 않습니다.
 - 기존 `flip`과 겹치는 새 `layout` 모듈을 만들지 않습니다.
-- 실제 사용 근거 없이 51개 공개 모듈을 더 늘리지 않습니다.
+- 실제 사용 근거 없이 52개 공개 모듈을 더 늘리지 않습니다.
 - 생태계 지표를 만들기 위해 품질이 낮은 예제·홍보성 패키지·의존성을 추가하지 않습니다.
 - **서로 구분되지 않는 variant를 개수 유지 목적으로 남겨두지 않습니다.** 나란히 재생했을 때 어느 쪽인지 말할 수 없으면 하나로 통합하고, 빈 자리는 다른 메커니즘으로 채우거나 비웁니다. 판정 기준은 “옵션이 다르다”가 아니라 “움직임의 메커니즘이 다르다”입니다.
 - **측정 대상이 레이아웃됐는지 확인하지 않는 브라우저 assertion을 추가하지 않습니다.** rect가 0이거나 computed value가 `repeat(`/`auto`/`none` 같은 미해석 문자열이면 그 시점의 측정은 버립니다.
@@ -135,7 +135,7 @@ npm provenance는 패키지가 어느 저장소와 빌드 환경에서 만들어
 #### 5) 문서 정보 구조
 
 - “처음 10분”, “모듈 선택”, “조합”, “프레임워크”, “문제 해결” 경로로 재구성합니다.
-- 51개 reference와 별도로 문제 중심 가이드를 만듭니다.
+- 52개 reference와 별도로 문제 중심 가이드를 만듭니다.
 - public option에는 타입, 기본값, 적용 대상, live update 가능 여부를 자동 생성합니다.
 - CDN 실패, CSP/SRI, SSR, 숨겨진 컨테이너 초기화, Safari 레이아웃 문제를 troubleshooting에 모읍니다.
 
@@ -189,7 +189,7 @@ Web Animations API는 브라우저 애니메이션 엔진을 JavaScript에 노�
 - Chromium에서 nested children/stagger, cancel, replay, destroy, reduced motion을 검증하고 SSR 입력 계약을 Node 테스트로 고정했습니다.
 - Presence의 DOM 삽입·삭제·focus·ARIA 책임은 의도대로 포함하지 않았습니다.
 
-**소비자 경계·어댑터 검증 완료 (v0.8.68 예정)**
+**소비자 경계·어댑터 검증 완료 (v0.8.70)**
 
 - `@dong-gri/kineto/states` 독립 ESM 엔트리를 추가해 `core`와 States를 선택적으로
   함께 가져올 수 있게 했습니다. 독립 엔트리도 전체 레지스트리를 등록하지 않습니다.
@@ -376,10 +376,11 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 8. 완료: Core + States 소비자 번들 fixture와 React/Vue lifecycle·SSR 연동 검증
 9. 완료: Presence Core RFC와 focus/ARIA/cancel 모델 확정
 10. 완료: Presence Core Vanilla prototype과 listener/timer·safeToRemove 테스트
-11. 완료(계약·fixture 1차): Presence 소비자 fixture 확장 및 React/Vue adapter 계약 설계
+11. 완료(계약·fixture 1차, v0.8.70): Presence 소비자 fixture 확장 및 React/Vue adapter 계약 설계
     — 현재는 host-owned lifecycle 경계만 고정했으며, keyed child 자동 제거 컴포넌트는
     별도 release gate 후에 공개합니다.
-11. Slider physics와 FLIP shared-layout은 사용 요구에 따라 병렬이 아닌 후속 선택
+12. 다음: 실제 keyed child 제거 요구가 확인될 때 React/Vue Presence 컴포넌트 구현
+13. 후속 선택: Slider physics와 FLIP shared-layout은 사용 요구에 따라 병렬이 아닌 별도 검토
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

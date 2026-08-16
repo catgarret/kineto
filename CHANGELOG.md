@@ -6,11 +6,13 @@
 
 <!-- Add matching English release bullets here. -->
 - Restored direct GitHub Pages deployment from the verified `site/` artifact so the canonical demo receives updates after CI without a cross-repository token; added regression checks for the CI, npm, license, and jsDelivr badges.
+- Synchronized the demo's visible module count and all locale copy with the 52-module feature contract, with a regression check preventing stale 51-module text.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - 검증된 `site/` artifact를 canonical 데모의 GitHub Pages에 직접 배포하도록 복구해 cross-repository token 없이 CI 후 최신 내용이 반영되게 하고, CI·npm·license·jsDelivr 배지 회귀 검사를 추가했습니다.
+- 데모에 표시되는 모듈 수와 모든 locale copy를 52개 feature contract와 동기화하고, 오래된 51개 문구가 재발하지 않도록 회귀 검사를 추가했습니다.
 
 ## [0.8.70] - 2026-08-16
 

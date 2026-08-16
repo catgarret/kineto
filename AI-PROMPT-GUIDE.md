@@ -203,7 +203,7 @@ installed version's documented cleanup API.
 
 ## Capability map
 
-Kineto currently exposes 51 modules. Use this map to find a likely module, then
+Kineto currently exposes 52 modules. Use this map to find a likely module, then
 read the generated reference for exact variants and options.
 
 | Intent | Modules |

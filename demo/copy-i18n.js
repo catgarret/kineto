@@ -17,9 +17,9 @@ window.KINETO_COPY_I18N = {
       "components": "UI components with keyboard and screen-reader support.<br>Includes accordions, mega menus, tabs, sheets, tooltips, and switches.",
       "buttons-feedback": "Feedback for input and status changes.<br>Includes confetti, hold, toast, and vibration effects.",
       "loading": "Motion applied across the page.<br>Includes loaders, page reveals, and page transitions.",
-      "module-index": "The 51 public modules in the current release.",
+      "module-index": "The 52 public modules in the current release.",
       "_hero": [
-        "Explore 51 motion modules on one page.",
+        "Explore 52 motion modules on one page.",
         "Tune the options, then copy finished HTML, JS, React, or Vue code."
       ],
       "_chips": [
@@ -55,9 +55,9 @@ window.KINETO_COPY_I18N = {
       "components": "キーボードとスクリーンリーダーをサポートするUIです。<br>アコーディオン・メガメニュー・タブ・ボトムシート・ツールチップ・スイッチを提供します。",
       "buttons-feedback": "入力結果と状態を通知するモジュールです。<br>紙吹雪・長押し・トースト・振動効果を提供します。",
       "loading": "ページ全体に適用するモジュールです。<br>ローディング・画面進入・ページ切り替え効果を提供します。",
-      "module-index": "現在配布に含まれている51のパブリックモジュールです。",
+      "module-index": "現在配布に含まれている52のパブリックモジュールです。",
       "_hero": [
-        "51のモーションモジュールを1ページで見てください。",
+        "52のモーションモジュールを1ページで見てください。",
         "オプションを調整し、HTML・JavaScript・React・Vueコードをコピーできます。"
       ],
       "_chips": [
@@ -83,7 +83,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "コア単独動作",
-      "_footerBrand": "HTMLプロパティとJavaScript APIとして使用するWebモーションライブラリ。<br>51個のモジュールで必要な機能のみを選択して使用できます。"
+      "_footerBrand": "HTMLプロパティとJavaScript APIとして使用するWebモーションライブラリ。<br>52個のモジュールで必要な機能のみを選択して使用できます。"
     },
     "zh-CN": {
       "counter": "这是一个移动数字和字母的模块。<br>提供计数器、溢出、分割、打字和故障。",
@@ -93,9 +93,9 @@ window.KINETO_COPY_I18N = {
       "components": "此 UI 支持键盘和屏幕阅读器。<br>它提供了手风琴、大型菜单、选项卡、底部工作表、工具提示和开关。",
       "buttons-feedback": "这是一个报告输入结果和状态的模块。<br>提供五彩纸屑、长按、吐司和振动效果。",
       "loading": "该模块适用于整个页面。<br>提供加载、入屏、页面切换效果。",
-      "module-index": "当前发行版中包含 51 个公共模块。",
+      "module-index": "当前发行版中包含 52 个公共模块。",
       "_hero": [
-        "在一页上探索 51 个运动模块。",
+        "在一页上探索 52 个运动模块。",
         "您可以调整选项并复制完整的 HTML、JavaScript、React 或 Vue 代码。"
       ],
       "_chips": [
@@ -121,7 +121,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "核心独立运营",
-      "_footerBrand": "它是一个用作 HTML 属性和 JavaScript API 的 Web 动作库。<br>您可以从 51 个模块中仅选择和使用您需要的功能。"
+      "_footerBrand": "它是一个用作 HTML 属性和 JavaScript API 的 Web 动作库。<br>您可以从 52 个模块中仅选择和使用您需要的功能。"
     },
     "zh-TW": {
       "counter": "這是一個移動數字和字母的模組。<br>提供計數器、溢出、分割、打字和故障。",
@@ -131,9 +131,9 @@ window.KINETO_COPY_I18N = {
       "components": "此 UI 支援鍵盤和螢幕閱讀器。<br>它提供了手風琴、大型菜單、選項卡、底部工作表、工具提示和開關。",
       "buttons-feedback": "這是一個報告輸入結果和狀態的模組。<br>提供五彩紙屑、長按、吐司和振動效果。",
       "loading": "此模組適用於整個頁面。<br>提供載入、入屏、頁面切換效果。",
-      "module-index": "目前發行版中包含 51 個公共模組。",
+      "module-index": "目前發行版中包含 52 個公共模組。",
       "_hero": [
-        "在一頁上探索 51 個運動模組。",
+        "在一頁上探索 52 個運動模組。",
         "您可以調整選項並複製完整的 HTML、JavaScript、React 或 Vue 程式碼。"
       ],
       "_chips": [
@@ -159,7 +159,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "核心獨立營運",
-      "_footerBrand": "它是一個用作 HTML 屬性和 JavaScript API 的 Web 動作庫。<br>您可以從 51 個模組中僅選擇和使用您需要的功能。"
+      "_footerBrand": "它是一個用作 HTML 屬性和 JavaScript API 的 Web 動作庫。<br>您可以從 52 個模組中僅選擇和使用您需要的功能。"
     },
     "ru": {
       "counter": "Это модуль, который перемещает цифры и буквы.<br>Обеспечивает счетчик, переполнение, разделение, ввод текста и сбои.",
@@ -169,9 +169,9 @@ window.KINETO_COPY_I18N = {
       "components": "Этот пользовательский интерфейс поддерживает программы чтения с клавиатуры и экрана.<br>Он предоставляет аккордеон, мегаменю, вкладку, нижний лист, всплывающую подсказку и переключатель.",
       "buttons-feedback": "Это модуль, который сообщает о результатах ввода и состоянии.<br>Обеспечивает эффекты конфетти, длительного нажатия, тоста и вибрации.",
       "loading": "Этот модуль применяется ко всей странице.<br>Обеспечивает эффекты загрузки, входа на экран и перехода между страницами.",
-      "module-index": "В текущий дистрибутив включён 51 общедоступный модуль.",
+      "module-index": "В текущий дистрибутив включён 52 общедоступный модуль.",
       "_hero": [
-        "Изучите 51 модуль движения на одной странице.",
+        "Изучите 52 модуля движения на одной странице.",
         "Настройте параметры и скопируйте готовый код HTML, JavaScript, React или Vue."
       ],
       "_chips": [
@@ -197,7 +197,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "Независимая работа ядра",
-      "_footerBrand": "Это библиотека веб-анимации для HTML-атрибутов и JavaScript API.<br>Из 51 модуля можно выбрать только нужные функции."
+      "_footerBrand": "Это библиотека веб-анимации для HTML-атрибутов и JavaScript API.<br>Из 52 модулей можно выбрать только нужные функции."
     },
     "it": {
       "counter": "Questo è un modulo che muove numeri e lettere.<br>Fornisce contatore, overflow, suddivisione, digitazione e problemi tecnici.",
@@ -207,9 +207,9 @@ window.KINETO_COPY_I18N = {
       "components": "Questa interfaccia utente supporta tastiera e lettori di schermo.<br>Fornisce fisarmonica, mega menu, scheda, foglio inferiore, descrizione comando e interruttore.",
       "buttons-feedback": "Questo è un modulo che riporta i risultati e lo stato degli input.<br>Fornisce effetti di coriandoli, pressione prolungata, toast e vibrazione.",
       "loading": "Questo modulo si applica all'intera pagina.<br>Fornisce effetti di caricamento, immissione sullo schermo e transizione della pagina.",
-      "module-index": "La versione attuale include 51 moduli pubblici.",
+      "module-index": "La versione attuale include 52 moduli pubblici.",
       "_hero": [
-        "Esplora 51 moduli di movimento in una pagina.",
+        "Esplora 52 moduli di movimento in una pagina.",
         "Modifica le opzioni e copia il codice HTML, JavaScript, React o Vue pronto."
       ],
       "_chips": [
@@ -235,7 +235,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "Funzionamento indipendente dal nucleo",
-      "_footerBrand": "Una libreria di motion per attributi HTML e API JavaScript.<br>Scegli solo le funzioni necessarie tra 51 moduli."
+      "_footerBrand": "Una libreria di motion per attributi HTML e API JavaScript.<br>Scegli solo le funzioni necessarie tra 52 moduli."
     }
   },
   "cards": {

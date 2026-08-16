@@ -48,7 +48,7 @@ instance?.destroy();
 
 ## 3. 자동 초기화
 
-`Kineto.autoInit()`은 등록된 **51개 모듈**의 활성화 속성을 스캔합니다. import만으로 자동 실행되지는 않습니다.
+`Kineto.autoInit()`은 등록된 **52개 모듈**의 활성화 속성을 스캔합니다. import만으로 자동 실행되지는 않습니다.
 
 ```js
 Kineto.scan(document.querySelector('#new-section'));

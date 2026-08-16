@@ -18,7 +18,7 @@
 
 ## 범위 잠금
 
-- 현재 공개 범위는 정확히 **51개 모듈**입니다.
+- 현재 공개 범위는 정확히 **52개 모듈**입니다.
 - 소유자의 명시적 요청 없이 모듈·variant·option·기본값·활성화 속성·return shape·public method를 삭제하거나 재해석하지 않습니다.
 - 기능 분류 역시 계약입니다. 예: `circular`/`bar`는 Loader, `slide-up`/`wipe`는 viewport Reveal, `ripple`은 Button Feedback입니다.
 - `kineto.features.json`이나 `kineto.requirements.json`을 실패한 구현에 맞춰 낮추지 않습니다.
