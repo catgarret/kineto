@@ -376,7 +376,9 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 8. 완료: Core + States 소비자 번들 fixture와 React/Vue lifecycle·SSR 연동 검증
 9. 완료: Presence Core RFC와 focus/ARIA/cancel 모델 확정
 10. 완료: Presence Core Vanilla prototype과 listener/timer·safeToRemove 테스트
-11. 다음: Presence 소비자 fixture 확장 및 React/Vue adapter 계약 설계
+11. 완료(계약·fixture 1차): Presence 소비자 fixture 확장 및 React/Vue adapter 계약 설계
+    — 현재는 host-owned lifecycle 경계만 고정했으며, keyed child 자동 제거 컴포넌트는
+    별도 release gate 후에 공개합니다.
 11. Slider physics와 FLIP shared-layout은 사용 요구에 따라 병렬이 아닌 후속 선택
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**

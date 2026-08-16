@@ -309,7 +309,10 @@ if (result.status === 'finished') panel.remove();
 ```
 
 See the [Presence Core RFC](docs/presence-core-rfc.md) for the current contract;
-the host still owns DOM insertion and removal.
+the host still owns DOM insertion and removal. React/Vue consumers should keep
+the referenced element mounted until `leave()` settles; the framework lifecycle
+fixture and future adapter release gates are documented in the [Presence
+framework adapter contract](docs/presence-adapter-contract.md).
 
 ## Browser support
 

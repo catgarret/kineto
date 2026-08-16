@@ -7,6 +7,7 @@ import { Motion } from '@dong-gri/kineto/react';
 import { useKineto as useVueKineto } from '@dong-gri/kineto/vue';
 import Kineto from '@dong-gri/kineto';
 import standaloneStates from '@dong-gri/kineto/states';
+import standalonePresence from '@dong-gri/kineto/presence';
 
 const reactHtml = renderReactToString(
   React.createElement(Motion, { as: 'section', type: 'reveal', options: { duration: 0.01 } }, 'React SSR')
@@ -32,4 +33,10 @@ assert.equal(standaloneController.ssr, true, 'standalone States entry must be SS
 assert.deepEqual(await standaloneController.apply(null, 'visible'), { status: 'finished' });
 standaloneController.destroy();
 
-console.log('framework SSR QA OK — React/Vue adapters and full/standalone States render without browser globals.');
+const presenceController = standalonePresence(null, { mode: 'wait' });
+assert.equal(presenceController.ssr, true, 'standalone Presence entry must be SSR-safe');
+assert.deepEqual(await presenceController.enter(), { status: 'skipped' });
+assert.deepEqual(await presenceController.leave(), { status: 'skipped' });
+presenceController.destroy();
+
+console.log('framework SSR QA OK — React/Vue adapters plus full/standalone States and Presence render without browser globals.');

@@ -1,10 +1,11 @@
-import React, { StrictMode, useEffect, useRef, useState } from 'react';
+import React, { StrictMode, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createApp, h, nextTick, onBeforeUnmount, onMounted, ref, withDirectives } from 'vue';
+import { createApp, h, nextTick, onBeforeUnmount, onMounted, ref, watch, withDirectives } from 'vue';
 import $ from 'jquery';
 import Kineto from '@dong-gri/kineto';
 import { Motion, useKineto as useReactKineto } from '@dong-gri/kineto/react';
 import { vMotion, useKineto as useVueKineto } from '@dong-gri/kineto/vue';
+import standalonePresence from '@dong-gri/kineto/presence';
 import installJQueryKineto from '@dong-gri/kineto/jquery';
 import '@dong-gri/kineto/style.css';
 
@@ -43,11 +44,36 @@ function ReactStateHarness({ dependency }) {
   return <div id="react-state-target" ref={element}>React states adapter</div>;
 }
 
+function ReactPresenceHarness({ present }) {
+  const element = useRef(null);
+  const controller = useRef(null);
+  useEffect(() => {
+    const lifecycle = standalonePresence(element.current, { duration: 0.01, accessibility: 'managed' });
+    controller.current = lifecycle;
+    window.__reactPresenceActive = (window.__reactPresenceActive || 0) + 1;
+    return () => {
+      lifecycle.destroy();
+      controller.current = null;
+      window.__reactPresenceActive -= 1;
+    };
+  }, []);
+  useEffect(() => {
+    const lifecycle = controller.current;
+    if (!lifecycle) return undefined;
+    lifecycle[present ? 'enter' : 'leave']({ duration: 0.01 }).then((result) => {
+      if (!present && result.status === 'finished') window.__reactPresenceLeaves = (window.__reactPresenceLeaves || 0) + 1;
+    });
+    return undefined;
+  }, [present]);
+  return <div id="react-presence-target" ref={element}>React Presence host</div>;
+}
+
 function ReactHarness({ type, dependency }) {
   return <>
     <Motion id="react-motion-target" type={type} options={{ duration: 0.01 }} dependencies={[dependency]}>React Motion component</Motion>
     <ReactHookHarness type={type} dependency={dependency} />
     <ReactStateHarness dependency={dependency} />
+    <ReactPresenceHarness present={dependency === 0} />
   </>;
 }
 
@@ -60,6 +86,7 @@ async function testReact() {
   assert(Kineto.getInstance(document.querySelector('#react-hook-target'), 'reveal'), 'React hook did not mount reveal');
   assert(window.__reactHookInstanceRef?.current, 'React hook instance ref was not populated');
   assert(window.__reactStatesActive === 1, 'React states controller did not mount exactly once');
+  assert(window.__reactPresenceActive === 1, 'React Presence controller did not mount exactly once');
 
   root.render(<StrictMode><ReactHarness type="counter" dependency={1} /></StrictMode>);
   await sleep(120);
@@ -67,12 +94,14 @@ async function testReact() {
   assert(Kineto.getInstance(document.querySelector('#react-motion-target'), 'counter'), 'React Motion did not update type');
   assert(Kineto.getInstance(document.querySelector('#react-hook-target'), 'counter'), 'React hook did not update type');
   assert(window.__reactStatesActive === 1, 'React states controller was not replaced cleanly');
+  assert(window.__reactPresenceLeaves >= 1, 'React Presence did not resolve the host-owned leave');
 
   root.unmount();
   await sleep(80);
   assert(host.childElementCount === 0, 'React root did not unmount');
   assert(Kineto.instanceCount === 0, `React leaked ${Kineto.instanceCount} instances`);
   assert(window.__reactStatesActive === 0, 'React states controller survived unmount');
+  assert(window.__reactPresenceActive === 0, 'React Presence controller survived unmount');
   assert(window.__reactStatesDestroyed >= 2, 'React states cleanup did not run for StrictMode/update');
   pass('React mount/update/unmount', 'StrictMode component + hook');
 
@@ -93,11 +122,14 @@ async function testReact() {
 async function testVue() {
   const host = document.querySelector('#vue-root');
   const type = ref('reveal');
+  const presenceVisible = ref(true);
   const app = createApp({
     setup() {
       const composableType = 'reveal';
       const { element, instance } = useVueKineto(composableType, { duration: 0.01 });
       const stateElement = ref(null);
+      const presenceElement = ref(null);
+      let presenceController = null;
       let stateController = null;
       onMounted(() => {
         stateController = Kineto.states({
@@ -106,10 +138,21 @@ async function testVue() {
         });
         window.__vueStatesActive = (window.__vueStatesActive || 0) + 1;
         stateController.apply(stateElement.value, 'visible', { duration: 0.01 });
+        presenceController = standalonePresence(presenceElement.value, { duration: 0.01, accessibility: 'managed' });
+        window.__vuePresenceActive = (window.__vuePresenceActive || 0) + 1;
+        presenceController.enter({ duration: 0.01 });
+        watch(presenceVisible, (visible) => {
+          presenceController?.[visible ? 'enter' : 'leave']({ duration: 0.01 }).then((result) => {
+            if (!visible && result.status === 'finished') window.__vuePresenceLeaves = (window.__vuePresenceLeaves || 0) + 1;
+          });
+        });
       });
       onBeforeUnmount(() => {
         stateController?.destroy();
         stateController = null;
+        presenceController?.destroy();
+        presenceController = null;
+        window.__vuePresenceActive -= 1;
         window.__vueStatesActive -= 1;
         window.__vueStatesDestroyed = (window.__vueStatesDestroyed || 0) + 1;
       });
@@ -117,7 +160,8 @@ async function testVue() {
       return () => h('section', [
         withDirectives(h('div', { id: 'vue-directive-target' }, 'Vue directive adapter'), [[vMotion, { type: type.value, options: { duration: 0.01 } }]]),
         h('div', { id: 'vue-composable-target', ref: element }, 'Vue composable adapter'),
-        h('div', { id: 'vue-state-target', ref: stateElement }, 'Vue states adapter')
+        h('div', { id: 'vue-state-target', ref: stateElement }, 'Vue states adapter'),
+        h('div', { id: 'vue-presence-target', ref: presenceElement }, 'Vue Presence host')
       ]);
     }
   });
@@ -128,18 +172,22 @@ async function testVue() {
   assert(Kineto.getInstance(document.querySelector('#vue-composable-target'), 'reveal'), 'Vue composable did not mount reveal');
   assert(window.__vueComposableInstance?.value, 'Vue composable instance ref was not populated');
   assert(window.__vueStatesActive === 1, 'Vue states controller did not mount');
+  assert(window.__vuePresenceActive === 1, 'Vue Presence controller did not mount exactly once');
 
   type.value = 'counter';
+  presenceVisible.value = false;
   await nextTick();
   await sleep(100);
   assert(!Kineto.getInstance(document.querySelector('#vue-directive-target'), 'reveal'), 'Vue directive old module survived update');
   assert(Kineto.getInstance(document.querySelector('#vue-directive-target'), 'counter'), 'Vue directive did not update type');
+  assert(window.__vuePresenceLeaves >= 1, 'Vue Presence did not resolve the host-owned leave');
 
   app.unmount();
   await sleep(80);
   assert(host.childElementCount === 0, 'Vue root did not unmount');
   assert(Kineto.instanceCount === 0, `Vue leaked ${Kineto.instanceCount} instances`);
   assert(window.__vueStatesActive === 0, 'Vue states controller survived unmount');
+  assert(window.__vuePresenceActive === 0, 'Vue Presence controller survived unmount');
   assert(window.__vueStatesDestroyed === 1, 'Vue states cleanup did not run exactly once');
   pass('Vue mount/update/unmount', 'directive + composable');
 

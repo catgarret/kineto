@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Added a Presence framework-adapter contract and React/Vue consumer fixtures that verify host-owned exit timing, cleanup, and SSR behavior before publishing keyed adapter components.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- keyed adapter component를 공개하기 전에 host가 DOM을 소유한 exit timing·cleanup·SSR 경계를 검증하는 Presence framework adapter 계약과 React/Vue 소비자 fixture를 추가했습니다.
 
 ## [0.8.69] - 2026-08-16
 
