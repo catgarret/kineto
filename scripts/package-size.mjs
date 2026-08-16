@@ -38,8 +38,10 @@ const BUDGET = {
   // runtime. Its measured release tarball is 488.9 KB packed / 1646.4 KB
   // unpacked, still within the RFC's 3 KB gzip and package allowlist policy.
   // 2026-08-16: the standalone `states` modular entry and declaration add two
-  // runtime surface files without broadening the allowlist.
-  packedKb: 491,
+  // runtime surface files without broadening the allowlist. Node 24/npm 11
+  // measures 491.8 KB while Node 25/npm 11 measures 490.7 KB, so keep a
+  // bounded cross-runner margin instead of making the check environment-specific.
+  packedKb: 493,
   unpackedKb: 1655,
   files: 76
 };

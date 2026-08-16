@@ -4,11 +4,11 @@
 
 ### English
 
-<!-- Add matching English release bullets here. -->
+- Aligned the packed release budget with the measured Node 24/npm 11 runner while keeping the npm allowlist unchanged.
 
 ### 한국어
 
-<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- npm allowlist는 유지하면서 Node 24/npm 11 실행기에서 측정되는 패키지 압축 크기를 반영하도록 릴리스 예산을 조정했습니다.
 
 ## [0.8.67] - 2026-08-16
 

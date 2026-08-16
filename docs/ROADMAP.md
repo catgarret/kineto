@@ -189,7 +189,7 @@ Web Animations API는 브라우저 애니메이션 엔진을 JavaScript에 노�
 - Chromium에서 nested children/stagger, cancel, replay, destroy, reduced motion을 검증하고 SSR 입력 계약을 Node 테스트로 고정했습니다.
 - Presence의 DOM 삽입·삭제·focus·ARIA 책임은 의도대로 포함하지 않았습니다.
 
-**소비자 경계·어댑터 검증 완료 (v0.8.67 예정)**
+**소비자 경계·어댑터 검증 완료 (v0.8.68 예정)**
 
 - `@dong-gri/kineto/states` 독립 ESM 엔트리를 추가해 `core`와 States를 선택적으로
   함께 가져올 수 있게 했습니다. 독립 엔트리도 전체 레지스트리를 등록하지 않습니다.
