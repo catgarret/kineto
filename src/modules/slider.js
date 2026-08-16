@@ -40,13 +40,35 @@ export default {
       const loop = opts.loop !== false && opts.loop !== 'off';
       const drag = opts.drag !== false;
       const useControls = opts.controls !== false;
+      const originalTouchAction = el.style.touchAction;
       // `activeClass` hooks your OWN class on the focused item (with `.kt-active`).
       const stateClass = (opts.activeClass || '').trim();
 
+      // Radial items are often images. Match the track slider and Brush Reveal
+      // by keeping native drag previews out of the interaction surface, while
+      // preserving authored draggable values for destroy(). Docked wheels leave
+      // the page's perpendicular scroll axis available; a centered wheel keeps
+      // horizontal page scrolling available while claiming its vertical drag axis.
+      const radialImages = [];
+      const rememberRadialImages = (root = el) => {
+        const images = root.matches?.('img') ? [root] : [...(root.querySelectorAll?.('img') || [])];
+        images.forEach((image) => {
+          if (radialImages.some((entry) => entry.node === image)) return;
+          radialImages.push({ node: image, hadAttribute: image.hasAttribute('draggable'), value: image.getAttribute('draggable') });
+          image.draggable = false;
+        });
+      };
+      const preventNativeDrag = (event) => event.preventDefault();
+      const radialImageObserver = typeof MutationObserver !== 'undefined'
+        ? new MutationObserver((records) => records.forEach(({ addedNodes }) => addedNodes.forEach((node) => rememberRadialImages(node))))
+        : null;
+
       el.classList.add('kt-radial', `kt-radial--${position}`);
       el.style.setProperty('--kt-radial-radius', `${radius}px`);
+      el.style.touchAction = position === 'bottom' || position === 'top' ? 'pan-y' : 'pan-x';
       el.setAttribute('role', 'group');
       el.setAttribute('aria-roledescription', 'carousel');
+      el.addEventListener('dragstart', preventNativeDrag);
 
       // Rotation hub: a zero-size point the preset positions at an edge; items
       // orbit around it so only the focal arc shows.
@@ -54,6 +76,8 @@ export default {
       hub.className = 'kt-radial-hub';
       el.appendChild(hub);
       items.forEach((item) => { item.classList.add('kt-radial-item'); hub.appendChild(item); });
+      rememberRadialImages();
+      radialImageObserver?.observe(el, { childList: true, subtree: true });
 
       // `align:"center"` places the hub so the ACTIVE item lands at the container's
       // centre (instead of being clipped at the docked edge), for every dock/angle.
@@ -266,6 +290,8 @@ export default {
           if (radialFrame) cancelAnimationFrame(radialFrame);
           if (suppressItemClickTimer != null) clearTimeout(suppressItemClickTimer);
           hub.removeEventListener('click', onItemClick);
+          el.removeEventListener('dragstart', preventNativeDrag);
+          radialImageObserver?.disconnect();
           el.removeEventListener('keydown', onKey);
           el.removeEventListener('pointerdown', onDown);
           el.removeEventListener('pointermove', onMove);
@@ -287,11 +313,16 @@ export default {
             item.removeAttribute('aria-current');
             el.appendChild(item);
           });
+          radialImages.forEach(({ node, hadAttribute, value }) => {
+            if (hadAttribute) node.setAttribute('draggable', value ?? '');
+            else node.removeAttribute('draggable');
+          });
           hub.remove();
           live.remove();
           if (builtControls) controls.remove();
           el.classList.remove('kt-radial', `kt-radial--${position}`);
           el.style.removeProperty('--kt-radial-radius');
+          el.style.touchAction = originalTouchAction;
           el.removeAttribute('role'); el.removeAttribute('aria-roledescription');
         }
       };

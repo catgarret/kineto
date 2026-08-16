@@ -26,7 +26,7 @@ counter는 최종 값을 `aria-label`로 제공하고 동적 값을 `aria-live="
 
 ## Slider
 
-slider는 wrapper에 carousel 역할과 label을 제공하고 키보드 방향키를 지원합니다. 보이지 않는 슬라이드의 interactive descendant tabindex를 관리합니다. 실제 페이지에서는 명확한 이전/다음 버튼과 현재 위치 텍스트를 함께 제공하는 것을 권장합니다.
+slider는 wrapper에 carousel 역할과 label을 제공하고 키보드 방향키를 지원합니다. 보이지 않는 슬라이드의 interactive descendant tabindex를 관리합니다. 실제 페이지에서는 명확한 이전/다음 버튼과 현재 위치 텍스트를 함께 제공하는 것을 권장합니다. Radial Carousel도 방향별 `touch-action`을 적용해 페이지 스크롤과 스와이프를 분리하고, 이미지의 native drag preview를 차단합니다.
 
 ## Lightbox
 

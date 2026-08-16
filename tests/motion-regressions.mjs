@@ -256,10 +256,14 @@ assert.equal(brushImage.hasAttribute('draggable'), false, 'Brush Reveal destroy 
 brushHost.remove();
 
 const radialHost = document.createElement('div');
-radialHost.innerHTML = '<div><img src="a.png"></div><div><img src="b.png"></div><div><img src="c.png"></div><div><img src="d.png"></div><div><img src="e.png"></div>';
+radialHost.innerHTML = '<div><img src="a.png" draggable="true"></div><div><img src="b.png"></div><div><img src="c.png"></div><div><img src="d.png"></div><div><img src="e.png"></div>';
 document.body.appendChild(radialHost);
 const radialLoop = sliderModule.create(radialHost, { effect: 'radial', loop: 'infinite', controls: false });
 assert.equal(radialHost.querySelector('img').draggable, false, 'radial item images must not start the browser ghost-image drag');
+assert.equal(radialHost.style.touchAction, 'pan-y', 'bottom/top radial docks must preserve perpendicular page scrolling');
+const radialDrag = new window.Event('dragstart', { bubbles: true, cancelable: true });
+radialHost.querySelector('img').dispatchEvent(radialDrag);
+assert.equal(radialDrag.defaultPrevented, true, 'radial must cancel native drag previews on the whole interaction surface');
 radialLoop.go(4);
 const retainedRadialIndex = radialLoop.index;
 radialHost.dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, clientX: 0, clientY: 0, button: 0 }));
@@ -269,6 +273,8 @@ const radialAfterDrag = radialLoop.index;
 radialHost.querySelector('.kt-radial-item').dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
 assert.equal(radialLoop.index, radialAfterDrag, 'radial must consume the click following a drag even after a delayed event loop');
 radialLoop.destroy();
+assert.equal(radialHost.querySelector('img').getAttribute('draggable'), 'true', 'radial destroy must restore an authored draggable value');
+assert.equal(radialHost.style.touchAction, '', 'radial destroy must restore the authored touch-action');
 const radialFinite = sliderModule.create(radialHost, { effect: 'radial', loop: 'off', controls: false, initialIndex: retainedRadialIndex });
 assert.equal(radialFinite.index, 4, 'disabling radial infinite mode must retain the active item');
 assert.equal(radialHost.querySelectorAll('.kt-active').length, 1, 'finite radial layout must keep one active item');
