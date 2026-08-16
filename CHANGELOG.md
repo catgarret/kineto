@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Reduced Radial Carousel's drag-protection bookkeeping so the full consumer bundle remains within the Node 24 gzip budget.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- Radial Carousel의 드래그 보호 bookkeeping을 줄여 전체 소비자 번들이 Node 24 gzip 예산 안에 유지되도록 했습니다.
 
 ## [0.8.71] - 2026-08-16
 

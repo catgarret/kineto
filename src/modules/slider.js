@@ -49,26 +49,19 @@ export default {
       // preserving authored draggable values for destroy(). Docked wheels leave
       // the page's perpendicular scroll axis available; a centered wheel keeps
       // horizontal page scrolling available while claiming its vertical drag axis.
-      const radialImages = [];
-      const rememberRadialImages = (root = el) => {
-        const images = root.matches?.('img') ? [root] : [...(root.querySelectorAll?.('img') || [])];
-        images.forEach((image) => {
-          if (radialImages.some((entry) => entry.node === image)) return;
-          radialImages.push({ node: image, hadAttribute: image.hasAttribute('draggable'), value: image.getAttribute('draggable') });
-          image.draggable = false;
+      const radialImages = items
+        .flatMap((item) => item.matches?.('img') ? [item] : [...item.querySelectorAll('img')])
+        .map((node) => {
+          const value = node.getAttribute('draggable');
+          node.draggable = false;
+          return [node, value];
         });
-      };
-      const preventNativeDrag = (event) => event.preventDefault();
-      const radialImageObserver = typeof MutationObserver !== 'undefined'
-        ? new MutationObserver((records) => records.forEach(({ addedNodes }) => addedNodes.forEach((node) => rememberRadialImages(node))))
-        : null;
 
       el.classList.add('kt-radial', `kt-radial--${position}`);
       el.style.setProperty('--kt-radial-radius', `${radius}px`);
       el.style.touchAction = position === 'bottom' || position === 'top' ? 'pan-y' : 'pan-x';
       el.setAttribute('role', 'group');
       el.setAttribute('aria-roledescription', 'carousel');
-      el.addEventListener('dragstart', preventNativeDrag);
 
       // Rotation hub: a zero-size point the preset positions at an edge; items
       // orbit around it so only the focal arc shows.
@@ -76,8 +69,6 @@ export default {
       hub.className = 'kt-radial-hub';
       el.appendChild(hub);
       items.forEach((item) => { item.classList.add('kt-radial-item'); hub.appendChild(item); });
-      rememberRadialImages();
-      radialImageObserver?.observe(el, { childList: true, subtree: true });
 
       // `align:"center"` places the hub so the ACTIVE item lands at the container's
       // centre (instead of being clipped at the docked edge), for every dock/angle.
@@ -169,10 +160,6 @@ export default {
       items.forEach((item) => {
         item.style.cursor = 'pointer';
         if (!item.hasAttribute('tabindex')) item.tabIndex = -1;
-        // Radial uses a separate engine from the linear Slider, so it must
-        // explicitly disable native image dragging as well. Otherwise a drag
-        // beginning on an avatar becomes the browser's translucent image ghost.
-        item.querySelectorAll('img').forEach((image) => { image.draggable = false; });
       });
       let suppressItemClick = false;
       let suppressItemClickTimer = null;
@@ -290,8 +277,6 @@ export default {
           if (radialFrame) cancelAnimationFrame(radialFrame);
           if (suppressItemClickTimer != null) clearTimeout(suppressItemClickTimer);
           hub.removeEventListener('click', onItemClick);
-          el.removeEventListener('dragstart', preventNativeDrag);
-          radialImageObserver?.disconnect();
           el.removeEventListener('keydown', onKey);
           el.removeEventListener('pointerdown', onDown);
           el.removeEventListener('pointermove', onMove);
@@ -313,9 +298,9 @@ export default {
             item.removeAttribute('aria-current');
             el.appendChild(item);
           });
-          radialImages.forEach(({ node, hadAttribute, value }) => {
-            if (hadAttribute) node.setAttribute('draggable', value ?? '');
-            else node.removeAttribute('draggable');
+          radialImages.forEach(([node, value]) => {
+            if (value == null) node.removeAttribute('draggable');
+            else node.setAttribute('draggable', value);
           });
           hub.remove();
           live.remove();
