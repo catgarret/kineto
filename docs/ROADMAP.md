@@ -198,7 +198,7 @@ Web Animations API는 브라우저 애니메이션 엔진을 JavaScript에 노�
 - React Strict Mode와 Vue mount/unmount에서 States controller 생성·취소·destroy 복원을
   검사하며, full/standalone States의 SSR 호출이 브라우저 전역 없이 완료되는지 고정했습니다.
 
-### P1. Presence Core
+### P1. Presence Core — RFC 검토안 완료
 
 Presence는 React 전용 컴포넌트가 아니라 DOM 제거 전후를 조율하는 Core primitive로 시작합니다.
 
@@ -226,6 +226,11 @@ panel.remove();
 - reduced motion과 destroy 복원
 
 Motion의 AnimatePresence도 direct-child key 추적, 수동 safe-to-remove, exit 전파, `sync`/`wait`/`popLayout`을 각각 다룹니다([Motion AnimatePresence](https://motion.dev/docs/react-animate-presence)). Kineto는 단순 fade-out helper만 추가하지 말고 DOM 수명주기 문제를 끝까지 정의해야 합니다.
+
+`docs/presence-core-rfc.md`에 API 결과, 중복 요청·취소·재진입, `sync`/`wait`/`popLayout`,
+focus 이동, `aria-hidden`·`inert` 복원, SSR·reduced motion 경계를 고정했습니다.
+아직 public API나 구현은 추가하지 않았으며, 아래 출시 게이트를 통과한 뒤에만
+Core에 넣습니다.
 
 ### P2. React·Vue Presence adapter
 
@@ -368,8 +373,8 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 6. 완료: Motion States RFC 작성 및 2개 실제 예제·출시 게이트 정의
 7. 완료: States v1 초기 구현 — 제한된 시각 상태·취소·replay·destroy·reduced motion 검증
 8. 완료: Core + States 소비자 번들 fixture와 React/Vue lifecycle·SSR 연동 검증
-9. 다음: Presence Core RFC와 focus/ARIA/cancel 모델 확정
-10. Presence Core → React/Vue adapter
+9. 완료: Presence Core RFC와 focus/ARIA/cancel 모델 확정
+10. 다음: Presence Core Vanilla prototype과 listener/timer·safeToRemove 테스트
 11. Slider physics와 FLIP shared-layout은 사용 요구에 따라 병렬이 아닌 후속 선택
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
