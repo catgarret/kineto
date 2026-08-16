@@ -42,7 +42,7 @@ export default {
       // settles with the same frame-to-frame lerp used by the track engine.
       // This makes the two slider layouts feel consistent without changing
       // existing radial timing for consumers that do not opt in.
-      const radialSmoothing = opts.smoothing == null ? 0 : clamp(Number(opts.smoothing), 0.02, 0.5);
+      const radialSmoothing = opts.smoothing == null ? 0 : clamp(opts.smoothing, 0.02, 0.5);
       const loop = opts.loop !== false && opts.loop !== 'off';
       const drag = opts.drag !== false;
       const useControls = opts.controls !== false;

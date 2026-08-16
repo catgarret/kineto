@@ -7003,7 +7003,7 @@ var _r = {
 				left: 0,
 				right: 180,
 				center: -90
-			}[d], p = t.activeAngle == null ? f : Number(t.activeAngle), m = Math.max(0, Number(t.duration ?? .6)), h = t.smoothing == null ? 0 : G(Number(t.smoothing), .02, .5), g = t.loop !== !1 && t.loop !== "off", _ = t.drag !== !1, v = t.controls !== !1, y = e.style.touchAction, b = (t.activeClass || "").trim(), x = r.flatMap((e) => e.matches?.("img") ? [e] : [...e.querySelectorAll("img")]).map((e) => {
+			}[d], p = t.activeAngle == null ? f : Number(t.activeAngle), m = Math.max(0, Number(t.duration ?? .6)), h = t.smoothing == null ? 0 : G(t.smoothing, .02, .5), g = t.loop !== !1 && t.loop !== "off", _ = t.drag !== !1, v = t.controls !== !1, y = e.style.touchAction, b = (t.activeClass || "").trim(), x = r.flatMap((e) => e.matches?.("img") ? [e] : [...e.querySelectorAll("img")]).map((e) => {
 				let t = e.getAttribute("draggable");
 				return e.draggable = !1, [e, t];
 			});

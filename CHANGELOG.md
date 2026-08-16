@@ -4,9 +4,13 @@
 
 ### English
 
+- Kept the 130 KB consumer budget strict while documenting a bounded 0.5 KB gzip variance for cross-platform runner output.
+
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- 130KB 소비자 예산은 유지하고, 플랫폼별 러너 출력 차이만 허용하는 제한된 0.5KB gzip 편차를 문서화했습니다.
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
