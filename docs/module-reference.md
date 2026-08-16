@@ -178,7 +178,7 @@
 - Attribute: `data-kt-radial`
 - Default variant: `bottom`
 - Variants: `bottom`, `top`, `left`, `right`
-- Public options: `activeAngle`, `activeClass`, `align`, `autoplay`, `controls`, `drag`, `duration`, `loop`, `position`, `radius`, `step`
+- Public options: `activeAngle`, `activeClass`, `align`, `autoplay`, `controls`, `drag`, `duration`, `loop`, `position`, `radius`, `smoothing`, `step`
 
 ## ripple
 

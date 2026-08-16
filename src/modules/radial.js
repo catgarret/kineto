@@ -19,6 +19,7 @@ function createRadial(el, opts = {}) {
     step: opts.step,
     activeAngle: opts.activeAngle,
     duration: opts.duration,
+    smoothing: opts.smoothing,
     loop: opts.loop,
     drag: opts.drag,
     controls: opts.controls,

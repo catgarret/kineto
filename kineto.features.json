@@ -5001,6 +5001,7 @@
         "loop",
         "position",
         "radius",
+        "smoothing",
         "step"
       ]
     },
@@ -5197,6 +5198,7 @@
         "preset": "slide",
         "radius": 260,
         "slideToClickedSlide": false,
+        "smoothing": 0.14,
         "step": 26,
         "sync": "",
         "wheel": false

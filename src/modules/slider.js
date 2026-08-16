@@ -37,6 +37,14 @@ export default {
       const presetAngle = { bottom: -90, top: 90, left: 0, right: 180, center: -90 }[position];
       const activeAngle = opts.activeAngle != null ? Number(opts.activeAngle) : presetAngle;
       const duration = Math.max(0, Number(opts.duration ?? 0.6));
+      // Keep the historical duration/cubic transition as the default. When a
+      // caller supplies the already-public slider `smoothing` option, radial
+      // settles with the same frame-to-frame lerp used by the track engine.
+      // This makes the two slider layouts feel consistent without changing
+      // existing radial timing for consumers that do not opt in.
+      const radialSmoothing = opts.smoothing == null
+        ? null
+        : clamp(Number(opts.smoothing), 0.02, 0.5);
       const loop = opts.loop !== false && opts.loop !== 'off';
       const drag = opts.drag !== false;
       const useControls = opts.controls !== false;
@@ -145,12 +153,22 @@ export default {
         const from = visualActive;
         const started = performance.now();
         const tick = (time) => {
-          const progress = Math.min(1, (time - started) / (duration * 1000));
-          const eased = 1 - ((1 - progress) ** 3);
-          visualActive = from + (targetActive - from) * eased;
+          if (radialSmoothing != null) {
+            visualActive = lerp(visualActive, targetActive, radialSmoothing);
+          } else {
+            const progress = Math.min(1, (time - started) / (duration * 1000));
+            const eased = 1 - ((1 - progress) ** 3);
+            visualActive = from + (targetActive - from) * eased;
+          }
           renderRadial(visualActive);
-          if (progress < 1) radialFrame = requestAnimationFrame(tick);
-          else radialFrame = null;
+          const settled = Math.abs(visualActive - targetActive) <= 0.0015;
+          const durationDone = (time - started) >= duration * 1000;
+          if ((radialSmoothing != null ? !settled : !durationDone) && !settled) radialFrame = requestAnimationFrame(tick);
+          else {
+            visualActive = targetActive;
+            renderRadial(visualActive);
+            radialFrame = null;
+          }
         };
         radialFrame = requestAnimationFrame(tick);
       };

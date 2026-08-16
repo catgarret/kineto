@@ -7003,108 +7003,114 @@ var _r = {
 				left: 0,
 				right: 180,
 				center: -90
-			}[d], p = t.activeAngle == null ? f : Number(t.activeAngle), m = Math.max(0, Number(t.duration ?? .6)), h = t.loop !== !1 && t.loop !== "off", g = t.drag !== !1, _ = t.controls !== !1, v = e.style.touchAction, y = (t.activeClass || "").trim(), b = r.flatMap((e) => e.matches?.("img") ? [e] : [...e.querySelectorAll("img")]).map((e) => {
+			}[d], p = t.activeAngle == null ? f : Number(t.activeAngle), m = Math.max(0, Number(t.duration ?? .6)), h = t.smoothing == null ? null : G(Number(t.smoothing), .02, .5), g = t.loop !== !1 && t.loop !== "off", _ = t.drag !== !1, v = t.controls !== !1, y = e.style.touchAction, b = (t.activeClass || "").trim(), x = r.flatMap((e) => e.matches?.("img") ? [e] : [...e.querySelectorAll("img")]).map((e) => {
 				let t = e.getAttribute("draggable");
 				return e.draggable = !1, [e, t];
 			});
 			e.classList.add("kt-radial", `kt-radial--${d}`), e.style.setProperty("--kt-radial-radius", `${l}px`), e.style.touchAction = d === "bottom" || d === "top" ? "pan-y" : "pan-x", e.setAttribute("role", "group"), e.setAttribute("aria-roledescription", "carousel");
-			let x = document.createElement("div");
-			if (x.className = "kt-radial-hub", e.appendChild(x), r.forEach((e) => {
-				e.classList.add("kt-radial-item"), x.appendChild(e);
-			}), i) x.style.left = "50%", x.style.top = "50%";
+			let S = document.createElement("div");
+			if (S.className = "kt-radial-hub", e.appendChild(S), r.forEach((e) => {
+				e.classList.add("kt-radial-item"), S.appendChild(e);
+			}), i) S.style.left = "50%", S.style.top = "50%";
 			else if (t.align === "center") {
 				let e = p * Math.PI / 180;
-				x.style.left = `calc(50% - ${(Math.cos(e) * l).toFixed(1)}px)`, x.style.top = `calc(50% - ${(Math.sin(e) * l).toFixed(1)}px)`;
+				S.style.left = `calc(50% - ${(Math.cos(e) * l).toFixed(1)}px)`, S.style.top = `calc(50% - ${(Math.sin(e) * l).toFixed(1)}px)`;
 			}
-			let S = Number(t.initialIndex ?? t.index), C = Number.isFinite(S) ? G(Math.round(S), 0, r.length - 1) : Math.floor(r.length / 2), w = document.createElement("div");
-			w.className = "kt-radial-live", w.setAttribute("aria-live", "polite"), w.style.cssText = "position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);", e.appendChild(w);
-			let T = r.length, E = C, D = C, O = null, k = (e) => {
+			let C = Number(t.initialIndex ?? t.index), w = Number.isFinite(C) ? G(Math.round(C), 0, r.length - 1) : Math.floor(r.length / 2), T = document.createElement("div");
+			T.className = "kt-radial-live", T.setAttribute("aria-live", "polite"), T.style.cssText = "position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);", e.appendChild(T);
+			let E = r.length, D = w, O = w, k = null, A = (e) => {
 				r.forEach((t, n) => {
 					let r = n - e;
-					h && (r = (r % T + T) % T, r > T / 2 && (r -= T));
+					g && (r = (r % E + E) % E, r > E / 2 && (r -= E));
 					let a = p + r * u;
 					t.style.transition = "none", t.style.transform = `rotate(${a}deg) translate(${l}px) rotate(${-a}deg) translate(-50%, -50%)`, t.style.opacity = i ? "1" : String(Math.max(0, 1 - Math.max(0, Math.abs(r) - 1)));
-					let o = n === C;
-					t.classList.toggle("kt-active", o), t.classList.toggle("active-item", o), y && t.classList.toggle(y, o), o ? t.setAttribute("aria-current", "true") : t.removeAttribute("aria-current"), t.style.zIndex = String(100 - Math.abs(r));
-				}), w.textContent = `${C + 1} / ${r.length}`;
-			}, A = (e) => {
-				let t = C, i = h ? (e % r.length + r.length) % r.length : G(e, 0, r.length - 1), a = i - t;
-				if (h && (a > T / 2 ? a -= T : a < -T / 2 && (a += T)), C = i, D += a, O && cancelAnimationFrame(O), n || m === 0) {
-					E = D, k(E);
+					let o = n === w;
+					t.classList.toggle("kt-active", o), t.classList.toggle("active-item", o), b && t.classList.toggle(b, o), o ? t.setAttribute("aria-current", "true") : t.removeAttribute("aria-current"), t.style.zIndex = String(100 - Math.abs(r));
+				}), T.textContent = `${w + 1} / ${r.length}`;
+			}, j = (e) => {
+				let t = w, i = g ? (e % r.length + r.length) % r.length : G(e, 0, r.length - 1), a = i - t;
+				if (g && (a > E / 2 ? a -= E : a < -E / 2 && (a += E)), w = i, O += a, k && cancelAnimationFrame(k), n || m === 0) {
+					D = O, A(D);
 					return;
 				}
-				let o = E, s = performance.now(), c = (e) => {
-					let t = Math.min(1, (e - s) / (m * 1e3)), n = 1 - (1 - t) ** 3;
-					E = o + (D - o) * n, k(E), O = t < 1 ? requestAnimationFrame(c) : null;
+				let o = D, s = performance.now(), c = (e) => {
+					if (h != null) D = W(D, O, h);
+					else {
+						let t = 1 - (1 - Math.min(1, (e - s) / (m * 1e3))) ** 3;
+						D = o + (O - o) * t;
+					}
+					A(D);
+					let t = Math.abs(D - O) <= .0015, n = e - s >= m * 1e3;
+					(h == null ? !n : !t) && !t ? k = requestAnimationFrame(c) : (D = O, A(D), k = null);
 				};
-				O = requestAnimationFrame(c);
-			}, j = () => A(C + 1), M = () => A(C - 1);
+				k = requestAnimationFrame(c);
+			}, M = () => j(w + 1), N = () => j(w - 1);
 			r.forEach((e) => {
 				e.style.cursor = "pointer", e.hasAttribute("tabindex") || (e.tabIndex = -1);
 			});
-			let N = !1, P = null, F = (e) => {
-				if (N) {
-					N = !1, P != null && clearTimeout(P), P = null, e.preventDefault();
+			let P = !1, F = null, I = (e) => {
+				if (P) {
+					P = !1, F != null && clearTimeout(F), F = null, e.preventDefault();
 					return;
 				}
 				let t = e.target.closest(".kt-radial-item"), n = r.indexOf(t);
-				n >= 0 && A(n);
+				n >= 0 && j(n);
 			};
-			x.addEventListener("click", F);
-			let I = e.querySelector(".kt-radial-controls"), L = null, R = null, z = !1;
-			_ && (I || (I = document.createElement("div"), I.className = "kt-radial-controls", I.innerHTML = "<button type=\"button\" class=\"kt-radial-prev\" aria-label=\"Previous\"></button><button type=\"button\" class=\"kt-radial-next\" aria-label=\"Next\"></button>", e.appendChild(I), z = !0), L = I.querySelector(".kt-radial-prev, [data-kt-radial-prev]"), R = I.querySelector(".kt-radial-next, [data-kt-radial-next]"), L?.addEventListener("click", M), R?.addEventListener("click", j));
-			let B = (e) => {
-				e.key === "ArrowRight" || e.key === "ArrowDown" ? (e.preventDefault(), j()) : (e.key === "ArrowLeft" || e.key === "ArrowUp") && (e.preventDefault(), M());
+			S.addEventListener("click", I);
+			let L = e.querySelector(".kt-radial-controls"), R = null, z = null, B = !1;
+			v && (L || (L = document.createElement("div"), L.className = "kt-radial-controls", L.innerHTML = "<button type=\"button\" class=\"kt-radial-prev\" aria-label=\"Previous\"></button><button type=\"button\" class=\"kt-radial-next\" aria-label=\"Next\"></button>", e.appendChild(L), B = !0), R = L.querySelector(".kt-radial-prev, [data-kt-radial-prev]"), z = L.querySelector(".kt-radial-next, [data-kt-radial-next]"), R?.addEventListener("click", N), z?.addEventListener("click", M));
+			let H = (e) => {
+				e.key === "ArrowRight" || e.key === "ArrowDown" ? (e.preventDefault(), M()) : (e.key === "ArrowLeft" || e.key === "ArrowUp") && (e.preventDefault(), N());
 			};
-			e.hasAttribute("tabindex") || (e.tabIndex = 0), e.addEventListener("keydown", B);
-			let H = null, U = d === "bottom" || d === "top", W = (e) => {
-				!g || e.target.closest(".kt-radial-controls, button") || e.pointerType === "mouse" && e.button !== 0 || (H = {
+			e.hasAttribute("tabindex") || (e.tabIndex = 0), e.addEventListener("keydown", H);
+			let U = null, K = d === "bottom" || d === "top", q = (e) => {
+				!_ || e.target.closest(".kt-radial-controls, button") || e.pointerType === "mouse" && e.button !== 0 || (U = {
 					x: e.clientX,
 					y: e.clientY,
-					start: C,
+					start: w,
 					pointerId: e.pointerId,
 					moved: !1,
 					captured: !1,
-					lastIndex: C
+					lastIndex: w
 				});
-			}, K = (t) => {
-				if (!H || t.pointerId !== H.pointerId) return;
-				let n = U ? t.clientX - H.x : t.clientY - H.y;
+			}, J = (t) => {
+				if (!U || t.pointerId !== U.pointerId) return;
+				let n = K ? t.clientX - U.x : t.clientY - U.y;
 				if (Math.abs(n) <= 6) return;
-				H.captured || (e.setPointerCapture?.(t.pointerId), H.captured = !0), H.moved = !0;
-				let r = H.start + Math.round(-n / 60);
-				r !== H.lastIndex && (H.lastIndex = r, A(r));
-			}, q = (t) => {
-				!H || t.pointerId !== H.pointerId || (H.captured && e.releasePointerCapture?.(t.pointerId), H.moved && (N = !0, P != null && clearTimeout(P), P = setTimeout(() => {
-					N = !1, P = null;
-				}, 2e3)), H = null);
-			}, J = (e) => {
-				H?.moved && e.preventDefault();
+				U.captured || (e.setPointerCapture?.(t.pointerId), U.captured = !0), U.moved = !0;
+				let r = U.start + Math.round(-n / 60);
+				r !== U.lastIndex && (U.lastIndex = r, j(r));
+			}, Y = (t) => {
+				!U || t.pointerId !== U.pointerId || (U.captured && e.releasePointerCapture?.(t.pointerId), U.moved && (P = !0, F != null && clearTimeout(F), F = setTimeout(() => {
+					P = !1, F = null;
+				}, 2e3)), U = null);
+			}, ee = (e) => {
+				U?.moved && e.preventDefault();
 			};
-			g && (e.addEventListener("pointerdown", W), e.addEventListener("pointermove", K), e.addEventListener("pointerup", q), e.addEventListener("pointercancel", q), e.addEventListener("touchmove", J, { passive: !1 }));
-			let Y = Math.max(0, Number(t.autoplay ?? 0)), ee = null, te = () => {
-				Y && !n && (ne(), ee = setInterval(j, Y));
-			}, ne = () => {
-				ee &&= (clearInterval(ee), null);
+			_ && (e.addEventListener("pointerdown", q), e.addEventListener("pointermove", J), e.addEventListener("pointerup", Y), e.addEventListener("pointercancel", Y), e.addEventListener("touchmove", ee, { passive: !1 }));
+			let te = Math.max(0, Number(t.autoplay ?? 0)), ne = null, X = () => {
+				te && !n && (re(), ne = setInterval(M, te));
+			}, re = () => {
+				ne &&= (clearInterval(ne), null);
 			};
-			return Y && (e.addEventListener("mouseenter", ne), e.addEventListener("mouseleave", te), te()), k(E), {
+			return te && (e.addEventListener("mouseenter", re), e.addEventListener("mouseleave", X), X()), A(D), {
 				el: e,
 				type: "slider",
 				effect: "radial",
 				get index() {
-					return C;
+					return w;
 				},
-				next: j,
-				prev: M,
-				go: A,
-				pause: ne,
-				resume: te,
+				next: M,
+				prev: N,
+				go: j,
+				pause: re,
+				resume: X,
 				destroy() {
-					ne(), O && cancelAnimationFrame(O), P != null && clearTimeout(P), x.removeEventListener("click", F), e.removeEventListener("keydown", B), e.removeEventListener("pointerdown", W), e.removeEventListener("pointermove", K), e.removeEventListener("pointerup", q), e.removeEventListener("pointercancel", q), e.removeEventListener("touchmove", J), e.removeEventListener("mouseenter", ne), e.removeEventListener("mouseleave", te), L?.removeEventListener("click", M), R?.removeEventListener("click", j), r.forEach((t) => {
-						t.style.transform = "", t.style.transition = "", t.style.opacity = "", t.style.zIndex = "", t.style.cursor = "", delete t._ktOffset, t.classList.remove("kt-radial-item", "kt-active", "active-item"), y && t.classList.remove(y), t.removeAttribute("aria-current"), e.appendChild(t);
-					}), b.forEach(([e, t]) => {
+					re(), k && cancelAnimationFrame(k), F != null && clearTimeout(F), S.removeEventListener("click", I), e.removeEventListener("keydown", H), e.removeEventListener("pointerdown", q), e.removeEventListener("pointermove", J), e.removeEventListener("pointerup", Y), e.removeEventListener("pointercancel", Y), e.removeEventListener("touchmove", ee), e.removeEventListener("mouseenter", re), e.removeEventListener("mouseleave", X), R?.removeEventListener("click", N), z?.removeEventListener("click", M), r.forEach((t) => {
+						t.style.transform = "", t.style.transition = "", t.style.opacity = "", t.style.zIndex = "", t.style.cursor = "", delete t._ktOffset, t.classList.remove("kt-radial-item", "kt-active", "active-item"), b && t.classList.remove(b), t.removeAttribute("aria-current"), e.appendChild(t);
+					}), x.forEach(([e, t]) => {
 						t == null ? e.removeAttribute("draggable") : e.setAttribute("draggable", t);
-					}), x.remove(), w.remove(), z && I.remove(), e.classList.remove("kt-radial", `kt-radial--${d}`), e.style.removeProperty("--kt-radial-radius"), e.style.touchAction = v, e.removeAttribute("role"), e.removeAttribute("aria-roledescription");
+					}), S.remove(), T.remove(), B && L.remove(), e.classList.remove("kt-radial", `kt-radial--${d}`), e.style.removeProperty("--kt-radial-radius"), e.style.touchAction = y, e.removeAttribute("role"), e.removeAttribute("aria-roledescription");
 				}
 			};
 		}
@@ -10747,6 +10753,7 @@ function ci(e, t = {}) {
 		step: t.step,
 		activeAngle: t.activeAngle,
 		duration: t.duration,
+		smoothing: t.smoothing,
 		loop: t.loop,
 		drag: t.drag,
 		controls: t.controls,

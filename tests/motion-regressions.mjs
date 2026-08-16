@@ -278,6 +278,24 @@ assert.equal(radialHost.querySelectorAll('.kt-active').length, 1, 'finite radial
 radialFinite.destroy();
 radialHost.remove();
 
+// Radial opts into the same frame smoothing as the track slider without
+// changing the historical duration default. The first frame must be an
+// intermediate orbit, and the solver must settle on the requested index.
+const radialSmoothHost = document.createElement('div');
+radialSmoothHost.innerHTML = '<div>A</div><div>B</div><div>C</div><div>D</div>';
+document.body.appendChild(radialSmoothHost);
+const radialSmooth = sliderModule.create(radialSmoothHost, { effect: 'radial', loop: 'off', controls: false, smoothing: 0.5 });
+const radialSmoothItem = radialSmoothHost.querySelector('.kt-radial-item');
+const radialSmoothBefore = radialSmoothItem.style.transform;
+radialSmooth.go(0);
+await new Promise((resolve) => window.requestAnimationFrame(resolve));
+const radialSmoothDuring = radialSmoothItem.style.transform;
+assert.notEqual(radialSmoothDuring, radialSmoothBefore, 'radial smoothing must render an intermediate frame');
+await new Promise((resolve) => setTimeout(resolve, 260));
+assert.equal(radialSmooth.index, 0, 'radial smoothing must settle on the requested item');
+radialSmooth.destroy();
+radialSmoothHost.remove();
+
 const dragSliderHost = document.createElement('div');
 dragSliderHost.innerHTML = '<div class="kt-slider-wrap"><div class="kt-slider-track"><div class="kt-slide"><img src="a.png"></div><div class="kt-slide"><img src="b.png"></div></div></div>';
 document.body.appendChild(dragSliderHost);

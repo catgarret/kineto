@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Added opt-in Radial `smoothing` so orbit transitions can share the track slider's frame-based settling while preserving the existing duration default.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 기존 duration 기본 동작은 유지하면서 Radial에도 트랙 슬라이더와 같은 프레임 기반 정착감을 선택적으로 적용하는 `smoothing` 옵션을 추가했습니다.
 
 ## [0.8.72] - 2026-08-16
 
