@@ -42,9 +42,7 @@ export default {
       // settles with the same frame-to-frame lerp used by the track engine.
       // This makes the two slider layouts feel consistent without changing
       // existing radial timing for consumers that do not opt in.
-      const radialSmoothing = opts.smoothing == null
-        ? null
-        : clamp(Number(opts.smoothing), 0.02, 0.5);
+      const radialSmoothing = opts.smoothing == null ? 0 : clamp(Number(opts.smoothing), 0.02, 0.5);
       const loop = opts.loop !== false && opts.loop !== 'off';
       const drag = opts.drag !== false;
       const useControls = opts.controls !== false;
@@ -153,7 +151,7 @@ export default {
         const from = visualActive;
         const started = performance.now();
         const tick = (time) => {
-          if (radialSmoothing != null) {
+          if (radialSmoothing) {
             visualActive = lerp(visualActive, targetActive, radialSmoothing);
           } else {
             const progress = Math.min(1, (time - started) / (duration * 1000));
@@ -161,9 +159,10 @@ export default {
             visualActive = from + (targetActive - from) * eased;
           }
           renderRadial(visualActive);
-          const settled = Math.abs(visualActive - targetActive) <= 0.0015;
-          const durationDone = (time - started) >= duration * 1000;
-          if ((radialSmoothing != null ? !settled : !durationDone) && !settled) radialFrame = requestAnimationFrame(tick);
+          const done = radialSmoothing
+            ? Math.abs(visualActive - targetActive) <= 0.0015
+            : (time - started) >= duration * 1000;
+          if (!done) radialFrame = requestAnimationFrame(tick);
           else {
             visualActive = targetActive;
             renderRadial(visualActive);

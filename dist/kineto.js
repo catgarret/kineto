@@ -7003,7 +7003,7 @@ var _r = {
 				left: 0,
 				right: 180,
 				center: -90
-			}[d], p = t.activeAngle == null ? f : Number(t.activeAngle), m = Math.max(0, Number(t.duration ?? .6)), h = t.smoothing == null ? null : G(Number(t.smoothing), .02, .5), g = t.loop !== !1 && t.loop !== "off", _ = t.drag !== !1, v = t.controls !== !1, y = e.style.touchAction, b = (t.activeClass || "").trim(), x = r.flatMap((e) => e.matches?.("img") ? [e] : [...e.querySelectorAll("img")]).map((e) => {
+			}[d], p = t.activeAngle == null ? f : Number(t.activeAngle), m = Math.max(0, Number(t.duration ?? .6)), h = t.smoothing == null ? 0 : G(Number(t.smoothing), .02, .5), g = t.loop !== !1 && t.loop !== "off", _ = t.drag !== !1, v = t.controls !== !1, y = e.style.touchAction, b = (t.activeClass || "").trim(), x = r.flatMap((e) => e.matches?.("img") ? [e] : [...e.querySelectorAll("img")]).map((e) => {
 				let t = e.getAttribute("draggable");
 				return e.draggable = !1, [e, t];
 			});
@@ -7034,14 +7034,12 @@ var _r = {
 					return;
 				}
 				let o = D, s = performance.now(), c = (e) => {
-					if (h != null) D = W(D, O, h);
+					if (h) D = W(D, O, h);
 					else {
 						let t = 1 - (1 - Math.min(1, (e - s) / (m * 1e3))) ** 3;
 						D = o + (O - o) * t;
 					}
-					A(D);
-					let t = Math.abs(D - O) <= .0015, n = e - s >= m * 1e3;
-					(h == null ? !n : !t) && !t ? k = requestAnimationFrame(c) : (D = O, A(D), k = null);
+					A(D), (h ? Math.abs(D - O) <= .0015 : e - s >= m * 1e3) ? (D = O, A(D), k = null) : k = requestAnimationFrame(c);
 				};
 				k = requestAnimationFrame(c);
 			}, M = () => j(w + 1), N = () => j(w - 1);
