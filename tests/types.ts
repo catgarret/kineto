@@ -1,6 +1,7 @@
 import Kineto, { reveal, slider, states, type KinetoInstance, type KinetoModule } from '@dong-gri/kineto';
 import ModularCore from '@dong-gri/kineto/core';
 import sliderModule from '@dong-gri/kineto/modules/slider';
+import modularPresence from '@dong-gri/kineto/presence';
 
 const target = document.createElement('div');
 const result: KinetoInstance | KinetoInstance[] | null = reveal(target, { preset: 'fade-up' });
@@ -13,5 +14,8 @@ ModularCore.register('slider', moduleDefinition).slider(target);
 const stateController = states({ hidden: { opacity: 0 }, visible: { opacity: 1, y: 0 } });
 stateController.apply(target, 'visible').cancel();
 Kineto.states({ visible: { opacity: 1 } }).destroy();
+const presenceController = modularPresence(target, { mode: 'wait', accessibility: 'managed' });
+presenceController.enter().cancel();
+modularPresence(target).destroy();
 
 void result;

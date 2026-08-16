@@ -27,6 +27,8 @@ assert.equal(packageJson.exports['./core'].types, './types/core.d.ts');
 assert.equal(packageJson.exports['./core'].default, './dist/modular/core.js');
 assert.equal(packageJson.exports['./states'].types, './types/states.d.ts');
 assert.equal(packageJson.exports['./states'].default, './dist/modular/states.js');
+assert.equal(packageJson.exports['./presence'].types, './types/presence.d.ts');
+assert.equal(packageJson.exports['./presence'].default, './dist/modular/presence.js');
 assert.equal(packageJson.exports['./modules/*'].types, './types/module.d.ts');
 assert.equal(packageJson.exports['./modules/*'].default, './dist/modular/modules/*.js');
 assert.equal(packageJson.exports['./react'].types, './types/react.d.ts');
@@ -35,7 +37,7 @@ assert.equal(packageJson.exports['./jquery'].types, './types/jquery.d.ts');
 assert.equal(packageJson.exports['./package.json'], './package.json');
 assert.ok(!packageJson.dependencies?.[packageJson.name], 'package must not depend on itself');
 
-for (const declaration of ['index', 'core', 'states', 'module', 'react', 'vue', 'jquery']) {
+for (const declaration of ['index', 'core', 'states', 'presence', 'module', 'react', 'vue', 'jquery']) {
   await access(new URL(`../types/${declaration}.d.ts`, import.meta.url));
 }
 
@@ -49,6 +51,9 @@ const modularCore = (await import('@dong-gri/kineto/core')).default;
 const modularStates = (await import('@dong-gri/kineto/states')).default;
 assert.equal(typeof modularStates, 'function');
 assert.deepEqual(modularStates({ hidden: { opacity: 0 }, visible: { opacity: 1 } }).stateNames, ['hidden', 'visible']);
+const modularPresence = (await import('@dong-gri/kineto/presence')).default;
+assert.equal(typeof modularPresence, 'function');
+assert.equal(modularPresence(null).ssr, true);
 const sliderModule = (await import('@dong-gri/kineto/modules/slider')).default;
 assert.equal(Object.keys(modularCore.registry).length, 0, 'modular core must not register the full module set');
 modularCore.register('slider', sliderModule);

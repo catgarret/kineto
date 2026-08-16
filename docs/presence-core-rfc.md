@@ -21,19 +21,24 @@ Presence는 `safeToRemove` 경계를 제공합니다.
 ## 제안 API
 
 ```js
-const presence = Kineto.presence(panel, {
+import presence from '@dong-gri/kineto/presence';
+
+const lifecycle = presence(panel, {
   enter: { state: cardStates, name: 'visible' },
   exit: { state: cardStates, name: 'hidden' },
   mode: 'wait',
   accessibility: 'managed'
 });
 
-await presence.enter();
-const result = await presence.leave();
+await lifecycle.enter();
+const result = await lifecycle.leave();
 if (result.status === 'finished') panel.remove();
 ```
 
-컨트롤러는 `enter()`, `leave()`, `cancel()`, `destroy()`와 읽기 전용 `status`를
+현재 prototype은 `@dong-gri/kineto/presence` 선택형 엔트리로 제공됩니다. 전체
+번들에 자동 포함하지 않는 이유는 Presence가 DOM 수명주기·접근성 정책까지
+소유하므로 visual-only 모듈보다 도입 비용이 크기 때문입니다. 컨트롤러는
+`enter()`, `leave()`, `cancel()`, `destroy()`와 읽기 전용 `status`를
 제공합니다. `enter()`·`leave()`는 다음 결과 중 하나로 resolve합니다.
 
 | 결과 | 의미 |

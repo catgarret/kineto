@@ -296,6 +296,21 @@ await cards.apply('.card', 'visible');
 The standalone entry shares the same named-state contract and SSR-safe behavior
 as `Kineto.states()`, but does not register the full module set.
 
+Presence is an opt-in modular prototype because it coordinates DOM lifetime and
+accessibility rather than a visual effect alone:
+
+```js
+import presence from '@dong-gri/kineto/presence';
+
+const lifecycle = presence(panel, { mode: 'wait', accessibility: 'managed' });
+await lifecycle.enter();
+const result = await lifecycle.leave({ duration: 180 });
+if (result.status === 'finished') panel.remove();
+```
+
+See the [Presence Core RFC](docs/presence-core-rfc.md) for the current contract;
+the host still owns DOM insertion and removal.
+
 ## Browser support
 
 Latest Chrome, Edge, Firefox, and Safari (desktop and mobile). With `prefers-reduced-motion` enabled, every module renders its final state without animation; on unsupported environments the effects degrade to static content.

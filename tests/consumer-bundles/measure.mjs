@@ -13,6 +13,7 @@ const fixtures = [
   { name: 'core-reveal', budget: 30 },
   { name: 'core-three', budget: 65 },
   { name: 'core-states', budget: 35 },
+  { name: 'core-presence', budget: 35 },
   { name: 'react-adapter', entry: 'react', budget: 135 },
   { name: 'vue-adapter', entry: 'vue', budget: 135 }
 ];
@@ -51,6 +52,7 @@ const byName = Object.fromEntries(rows.map((row) => [row.name, row]));
 assert.ok(byName['core-reveal'].gzip < byName.full.gzip, 'core + one module must remain smaller than the full entry');
 assert.ok(byName['core-three'].gzip < byName.full.gzip, 'core + three modules must remain smaller than the full entry');
 assert.ok(byName['core-states'].gzip < byName.full.gzip, 'core + states must remain smaller than the full entry');
+assert.ok(byName['core-presence'].gzip < byName.full.gzip, 'core + presence must remain smaller than the full entry');
 
 const table = [
   '| Consumer entry | JS files | Raw | Gzip | Budget (gzip) |',
@@ -68,7 +70,7 @@ if (process.argv.includes('--write')) {
     '',
     table,
     '',
-    'The fixture test also requires `core + one module`, `core + three modules`, and `core + states` to remain smaller than the full entry.'
+    'The fixture test also requires `core + one module`, `core + three modules`, `core + states`, and `core + presence` to remain smaller than the full entry.'
   ].join('\n');
   fs.writeFileSync(path.join(root, 'docs/consumer-bundle-size.md'), `${report}\n`);
 }

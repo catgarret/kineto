@@ -70,6 +70,31 @@ export interface KinetoStateDefinitions {
   };
 }
 
+export type KinetoPresenceStatus = 'idle' | 'entering' | 'leaving' | 'finished' | 'destroyed';
+export type KinetoPresenceResult = {
+  status: 'finished' | 'cancelled' | 'skipped' | 'error';
+  reason?: string;
+  error?: unknown;
+};
+export interface KinetoPresenceOptions extends KinetoOptions {
+  enter?: unknown;
+  exit?: unknown;
+  mode?: 'sync' | 'wait' | 'popLayout';
+  accessibility?: 'visual-only' | 'managed';
+  focusTarget?: KinetoTarget | (() => Element | null);
+  safeToRemove?: (element: Element | null, result: KinetoPresenceResult) => void;
+  reducedMotion?: boolean;
+}
+export interface KinetoPresenceController {
+  enter(options?: KinetoOptions): Promise<KinetoPresenceResult> & { cancel(): void };
+  leave(options?: KinetoOptions): Promise<KinetoPresenceResult> & { cancel(): void };
+  cancel(reason?: string): this;
+  safeToRemove(callback?: (element: Element | null, result: KinetoPresenceResult) => void): this;
+  destroy(): this;
+  readonly status: KinetoPresenceStatus;
+  readonly ssr: boolean;
+}
+
 export interface KinetoStatic {
   readonly version: string;
   readonly env: KinetoEnvironment;

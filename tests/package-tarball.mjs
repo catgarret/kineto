@@ -58,9 +58,11 @@ try {
   assert.equal(installedPackage.exports['./core'].types, './types/core.d.ts');
   assert.equal(installedPackage.exports['./states'].types, './types/states.d.ts');
   assert.equal(installedPackage.exports['./states'].default, './dist/modular/states.js');
+  assert.equal(installedPackage.exports['./presence'].types, './types/presence.d.ts');
+  assert.equal(installedPackage.exports['./presence'].default, './dist/modular/presence.js');
   assert.equal(installedPackage.exports['./modules/*'].types, './types/module.d.ts');
   assert.ok(!installedPackage.dependencies?.[installedPackage.name], 'installed package must not depend on itself');
-  for (const declaration of ['index', 'core', 'states', 'module', 'react', 'vue', 'jquery']) {
+  for (const declaration of ['index', 'core', 'states', 'presence', 'module', 'react', 'vue', 'jquery']) {
     assert.ok(fs.existsSync(path.join(temp, `node_modules/@dong-gri/kineto/types/${declaration}.d.ts`)));
   }
 

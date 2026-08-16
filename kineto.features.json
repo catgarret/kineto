@@ -6697,7 +6697,8 @@
     "lightboxViewer": "Lightbox covers the full viewport and supports grouped navigation, information, zoom, pan, minimap and custom UI.",
     "smoothScroll": "Lenis smooth scrolling is opt-in and can be enabled or disabled at runtime.",
     "boundedCardGlow": "Pointer glow remains clipped while optional surface reflection and luminous border are independently configurable.",
-    "motionStates": "Named visual states animate a restricted transform/opacity/filter set with cancellation, replay, destroy restoration and reduced-motion final-state handling."
+    "motionStates": "Named visual states animate a restricted transform/opacity/filter set with cancellation, replay, destroy restoration and reduced-motion final-state handling.",
+    "presencePrototype": "The optional Presence entry coordinates visual enter/exit with cancellation, re-entry, safe-to-remove, optional focus/ARIA/inert management and SSR-safe fallback."
   },
   "behaviorContractVersion": "1.2.0",
   "variantCapabilities": {
