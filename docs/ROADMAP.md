@@ -30,7 +30,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 - TypeScript 선언이 전체·모듈형·React·Vue·jQuery 표면에 제공됩니다.
 - npm 자기 의존성을 제거했고, 설치 tarball과 타입 표면을 CI에서 검사합니다.
 - GSAP·ScrollTrigger·Lenis 기본 CDN에는 고정 버전과 SHA-384 SRI가 적용됩니다.
-- Chromium 전체 QA, Firefox/WebKit smoke, lifecycle·패키지·번들 예산·npm provenance 검증이 있습니다.
+- Chromium 전체 QA, Firefox/WebKit smoke와 실제 demo-polish QA, lifecycle·패키지·번들 예산·npm provenance 검증이 있습니다.
 - reduced motion, 저사양 fallback, 키보드·ARIA, `destroy()` 복원을 제품 원칙으로 관리합니다.
 
 ### 현재 병목

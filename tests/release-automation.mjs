@@ -8,6 +8,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8');
 const pkg = JSON.parse(read('package.json'));
 const workflow = read('.github/workflows/release.yml');
+const ciWorkflow = read('.github/workflows/ci.yml');
 const demoWorkflow = read('.github/workflows/pages.yml');
 const agents = read('AGENTS.md');
 const claude = read('CLAUDE.md');
@@ -40,6 +41,9 @@ for (const command of [
 assert.match(workflow, /retry-command\.mjs npm pack --dry-run/);
 assert.match(workflow, /retry-command\.mjs npm audit --audit-level=low/);
 assert.match(read('.github/workflows/ci.yml'), /retry-command\.mjs npm pack --dry-run/);
+assert.match(ciWorkflow, /tests\/browser\/demo-polish\.mjs/);
+assert.match(ciWorkflow, /KT_BROWSER:\s*\$\{\{ matrix\.browser \}\}/);
+assert.match(ciWorkflow, /matrix\.browser == 'firefox' \|\| matrix\.browser == 'webkit'/);
 assert.match(pkg.scripts['test:framework'], /scripts\/npm-ci-retry\.mjs/);
 assert.match(pkg.scripts['test:consumer-bundles'], /scripts\/npm-ci-retry\.mjs/);
 assert.match(workflow, /npm run purge/);

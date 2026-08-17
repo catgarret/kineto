@@ -1,6 +1,6 @@
 # Kineto v0.8.102 QA Report
 
-검증일: 2026-08-16
+검증일: 2026-08-17
 대상: npm 배포 후보 전체 소스
 
 ## 자동 검증
@@ -31,12 +31,17 @@
 - Coverflow·Dissolve·Wipe·Radial별 지원 옵션 노출과 무의미한 옵션 숨김
 - Coverflow 활성 그림자 옵션·CSS 토큰·destroy 복원과 설정창 조건부 노출
 - 700px 마지막 카드 전체폭, 390px 복합 로딩 문구, 메가메뉴 첫 hover·2열 화면 내 배치
+- Firefox/WebKit cross-browser demo-polish: Radial ghost/swipe, 모바일 Mega Menu, drawer reflow, Page Reveal zoom/fixed header, Coverflow/Dissolve clip
 
 ## 패키지 확인
 
 배포 전 실제 tarball을 별도 프로젝트에 설치해 ESM, CommonJS, CSS와
 adapter entry를 확인합니다. 현재 패키지는 65개 파일이며 npm dry-run 기준
 압축 크기는 476.3 kB입니다. 패키지명은 `@dong-gri/kineto`, 버전은 `0.8.102`입니다.
+
+## 배포 후 확인
+
+- `npm run test:live-site`가 `https://kineto.dongri.me`에서 현재 버전·52개 모듈·GTM·unversioned CDN을 재확인합니다.
 
 ## 별도 실기기 확인 권장
 

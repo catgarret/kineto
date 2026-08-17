@@ -12,6 +12,7 @@
 - ESM, CommonJS, UMD, CSS 및 React/Vue/jQuery entry
 - reduced-motion, lifecycle teardown, dependency boundary, bundle budget 검사
 - GitHub Actions에서 lint, build, node/browser QA 및 package 검증 자동 실행
+- Firefox/WebKit cross-browser lane에서 실제 demo-polish 회귀를 실행하고 Pages 배포 후 canonical URL을 다시 확인
 
 ## 주요 안정화 내용
 
@@ -29,5 +30,6 @@
 ## 배포 검증
 
 `npm run ci`와 tarball 설치 검증을 모두 통과한 커밋만 배포 대상으로
-사용합니다. 자동 브라우저 QA는 Chromium 기준이며 Safari/WebKit 및
-실기기 터치·진동은 릴리스 후 별도 확인 항목입니다.
+사용합니다. Chromium 전체 QA에 더해 Firefox/WebKit에서 smoke와 실제
+demo-polish를 실행합니다. iOS Safari·Android Chrome의 실기기 터치·진동은
+여전히 별도 확인 항목입니다.
