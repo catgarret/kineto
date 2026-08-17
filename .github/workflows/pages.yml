@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -20,8 +21,7 @@ jobs:
     name: Deploy Kineto demo to GitHub Pages
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.head_branch == 'main')
+      github.event.workflow_run.head_branch == 'main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -39,6 +39,27 @@ jobs:
         with:
           node-version: 22
           cache: npm
+
+      - name: Wait for the triggering CI run
+        if: github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CI_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          for attempt in $(seq 1 60); do
+            state="$(gh run view "$CI_RUN_ID" --json status,conclusion --jq '[.status, (.conclusion // "")] | @tsv')"
+            status="${state%%$'\t'*}"
+            conclusion="${state#*$'\t'}"
+            echo "CI run $CI_RUN_ID: status=$status conclusion=${conclusion:-pending} (poll $attempt/60)"
+            if [ "$status" = completed ]; then
+              [ "$conclusion" = success ] && exit 0
+              echo "The triggering CI run did not succeed."
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "Timed out waiting for the triggering CI run."
+          exit 1
 
       - name: Build deployable demo
         run: |

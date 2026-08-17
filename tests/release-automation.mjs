@@ -57,7 +57,9 @@ assert.ok(claude.includes('AGENTS.md') && claude.includes('English first and Kor
 assert.match(changelog, /## \[Unreleased\]\s*\n+### English[\s\S]*### 한국어/);
 assert.ok(note.indexOf('## English') < note.indexOf('## 한국어'));
 assert.match(demoWorkflow, /workflows:\s*\[CI\]/);
-assert.match(demoWorkflow, /workflow_run\.conclusion == 'success'/);
+assert.match(demoWorkflow, /workflow_run\.head_branch == 'main'/);
+assert.match(demoWorkflow, /gh run view \"\$CI_RUN_ID\"/);
+assert.match(demoWorkflow, /actions:\s*read/);
 assert.match(demoWorkflow, /permissions:[\s\S]*pages:\s*write/);
 assert.match(demoWorkflow, /uses:\s*actions\/configure-pages@v6/);
 assert.match(demoWorkflow, /uses:\s*actions\/upload-pages-artifact@v4/);

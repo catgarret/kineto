@@ -18,9 +18,9 @@ the repository. GitHub Actions also needs `contents: write`, which is declared
 in the workflow.
 
 The public demo is deployed directly from the Kineto repository's GitHub Pages
-artifact. After `CI` succeeds on `main`, `pages.yml` rebuilds the verified
-source and deploys `site/` with `actions/deploy-pages`; no cross-repository
-token is required. The demo intentionally loads unversioned
+artifact. `pages.yml` waits for the triggering `CI` run to reach a successful
+conclusion before it rebuilds the verified source and deploys `site/` with
+`actions/deploy-pages`; no cross-repository token is required. The demo intentionally loads unversioned
 `@dong-gri/kineto`; the release workflow purges the jsDelivr latest aliases
 after npm publication.
 
