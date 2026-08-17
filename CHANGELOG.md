@@ -5,6 +5,16 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.83] - 2026-08-17
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Added opt-in Slider spring settling with public `stiffness`, `damping`, and `mass` controls; the existing interpolation remains the default and Radial hides the track-only controls.
 - Kept the release package allowlist unchanged while accounting for the spring controls' measured unpacked archive cost.
 
@@ -13,7 +23,6 @@
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - Slider에 선택형 스프링 정착과 공개 `stiffness`, `damping`, `mass` 조절을 추가했습니다. 기존 보간이 기본값으로 유지되며 Radial에서는 트랙 전용 컨트롤을 숨깁니다.
 - 스프링 컨트롤로 늘어난 측정된 압축 해제 아카이브 용량만 반영했으며 릴리스 패키지 허용 목록은 그대로 유지했습니다.
-
 ## [0.8.82] - 2026-08-17
 
 ### English
