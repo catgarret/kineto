@@ -1046,6 +1046,12 @@
       }));
       addEventListener('resize',()=>moveIndicator(stage.querySelector('[data-pt-preview].is-active')),{passive:true});
     })();
+    // FLIP demo: stable layout ids make the opt-in View Transitions control
+    // demonstrable while the default remains the existing JS FLIP path.
+    const flipDemoGrid = document.getElementById('flip-grid');
+    flipDemoGrid?.querySelectorAll('.flip-chip').forEach((item, index) => {
+      item.dataset.ktLayoutId = `flip-${index}`;
+    });
     // FLIP demo: record once, reorder as one DOM transaction, then animate
     // existing items directly to their new boxes (no disappear/re-enter pass).
     document.getElementById('flip-shuffle')?.addEventListener('click',()=>{

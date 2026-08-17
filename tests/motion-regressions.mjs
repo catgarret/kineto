@@ -769,6 +769,35 @@ assert.ok(
 );
 crossfadeFlip.destroy();
 window.HTMLElement.prototype.animate = previousPrototypeAnimate;
+
+// View Transitions is an opt-in progressive enhancement for same-document
+// reorders. The native callback owns the DOM mutation; Kineto only applies
+// temporary names and restores any authored inline value after the transition.
+const originalStartViewTransition = document.startViewTransition;
+const hadStartViewTransition = 'startViewTransition' in document;
+let nativeTransitionCalls = 0;
+Object.defineProperty(document, 'startViewTransition', {
+  configurable: true,
+  value(callback) {
+    nativeTransitionCalls += 1;
+    callback();
+    return { finished: Promise.resolve() };
+  }
+});
+flipItems.forEach((item, index) => {
+  item.setAttribute('data-kt-layout-id', `card-${index}`);
+  if (index === 0) item.style.viewTransitionName = 'authored-card';
+});
+const nativeFlip = flipModule.create(flipGrid, { viewTransition: true, watch: false });
+nativeFlip.reorder([...flipItems].reverse());
+assert.equal(nativeTransitionCalls, 1, 'FLIP must use the native View Transition when explicitly enabled');
+assert.equal(flipGrid.firstElementChild, flipItems[5], 'native View Transition callback must own the reorder mutation');
+await new Promise((resolve) => setTimeout(resolve, 0));
+assert.equal(flipItems[0].style.viewTransitionName, 'authored-card', 'native View Transition must restore authored names');
+assert.equal(flipItems[1].style.getPropertyValue('view-transition-name'), '', 'native View Transition names must be temporary');
+nativeFlip.destroy();
+if (hadStartViewTransition) Object.defineProperty(document, 'startViewTransition', { configurable: true, value: originalStartViewTransition });
+else delete document.startViewTransition;
 flipGrid.remove();
 
 // Tilt and Card Glow shadows must coexist with each other and with a card's

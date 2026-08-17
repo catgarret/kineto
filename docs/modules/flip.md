@@ -45,3 +45,27 @@ layout.sort((a, b) => Number(a.dataset.rank) - Number(b.dataset.rank));
 `watch`는 외부 코드가 컨테이너의 직계 자식 DOM을 추가·삭제·재배치할 때 MutationObserver로 자동 재생할지를 정합니다. `watch:false`로 이 감지를 끌 수 있습니다. `shuffle()`, `sort()`, `reorder()`는 명시적으로 호출하는 인스턴스 메서드이므로 `watch` 값과 관계없이 선택한 `mode`로 재생됩니다.
 
 `destroy()`는 observer와 재생 중인 임시 시각 복제본을 제거합니다. `crossfade`의 복제본은 전환 중 화면 표현에만 사용되며 원본 DOM의 이벤트·상태·정렬 대상은 기존 요소 그대로 유지됩니다.
+
+## View Transitions progressive enhancement
+
+같은 문서 안에서 카드가 재배치될 때 브라우저의 View Transitions API를 사용하려면
+`viewTransition: true`를 선택하고 공유할 아이템에 고유한 `data-kt-layout-id`를
+부여합니다.
+
+```html
+<div id="work-grid" data-kt-flip data-kt-view-transition="true">
+  <article data-kt-layout-id="work-a">A</article>
+  <article data-kt-layout-id="work-b">B</article>
+</div>
+```
+
+```js
+const layout = Kineto.flip('#work-grid', { viewTransition: true });
+layout.sort('date', { key: 'date', order: 'desc' });
+```
+
+이 경로는 `reorder()`, `sort()`, `shuffle()`가 실행하는 same-document DOM 재배치에만
+적용됩니다. 브라우저가 `document.startViewTransition()`을 지원하지 않거나 layout id가
+없으면 기존 FLIP 모션으로 자동 fallback합니다. 네이티브 전환의 지속 시간과 easing은
+사이트의 `::view-transition-*` CSS로 조정하고, 서로 다른 문서·부모 사이의 shared
+layout 보정은 아직 제공하지 않습니다.

@@ -66,8 +66,13 @@ const BUDGET = {
   // 2026-08-17: Radial now shares the opt-in spring solver with Track Slider.
   // The modular runtime adds 0.5 KB unpacked locally; retain the fixed file
   // allowlist and a bounded 2 KB margin for the cross-runner archive delta.
-  packedKb: 504,
-  unpackedKb: 1692,
+  // 2026-08-18: the opt-in same-document View Transitions path for `flip`
+  // measures 503.9 KB packed / 1697.5 KB unpacked locally with the same
+  // 78-file allowlist. Absorb that measured runtime cost plus a small Node/npm
+  // archive delta; this is a bounded budget update, not permission to widen the
+  // release surface.
+  packedKb: 506,
+  unpackedKb: 1700,
   files: 78
 };
 

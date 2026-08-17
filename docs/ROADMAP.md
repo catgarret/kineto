@@ -275,10 +275,11 @@ Swiper도 free mode와 sticky 동작을 분리하고, 단순 구성에서는 CSS
 
 새 Layout 모듈을 만들지 않고 `flip`을 확장합니다.
 
-- `data-kt-layout-id` 기반 shared element
-- 서로 다른 부모와 scroll container 간 이동
+- 완료(Unreleased): `flip({ viewTransition: true })`가 `data-kt-layout-id`가 있는
+  same-document 재배치에서 지원 브라우저의 View Transitions API를 선택적으로 사용하고,
+  미지원·실패 환경에서는 기존 FLIP으로 fallback
+- `data-kt-layout-id` 기반 shared element의 서로 다른 부모와 scroll container 간 이동
 - border-radius, clip, fixed header, transformed ancestor 보정
-- 가능한 환경에서 View Transitions API, 미지원 환경에서 현재 clone/FLIP fallback
 - same-document부터 검증하고 cross-document는 별도 단계로 둡니다.
 
 View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사용할 수 있지만 브라우저 지원과 기능 차이가 있으므로 progressive enhancement가 필요합니다([MDN View Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API)).

@@ -88,8 +88,11 @@ const BUDGETS = {
   // 2026-08-17: Radial spring settling adds 0.3 KB raw to ESM/UMD while
   // remaining below the compressed ceilings; retain the dependency guard with
   // a sub-KB raw allowance.
-  'kineto.js': { raw: 503, gz: 132 },
-  'kineto.min.js': { raw: 397, gz: 118 },
+  // 2026-08-18: the opt-in `flip` View Transitions path adds 0.4 KB raw to
+  // readable ESM and 0.7 KB to minified ESM; gzip remains under the existing
+  // ceilings, so absorb only this measured runtime cost.
+  'kineto.js': { raw: 505, gz: 132 },
+  'kineto.min.js': { raw: 399, gz: 118 },
   'kineto.umd.js': { raw: 396, gz: 118 },
   'kineto.umd.min.js': { raw: 396, gz: 118 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS

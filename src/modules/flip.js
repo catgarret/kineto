@@ -5,7 +5,9 @@ import { env } from '../utils.js';
 // new one (First-Last-Invert-Play). Auto-watches via MutationObserver (`watch`);
 // or drive it manually with instance.record() before a change and
 // instance.play() after. Options: duration, ease, stagger, item (child
-// selector). Reduced motion: layout still updates, just without the tween.
+// selector), and opt-in same-document View Transitions (`viewTransition`)
+// for children carrying `data-kt-layout-id`. Reduced motion: layout still
+// updates, just without the tween.
 export default {
   create(el, opts = {}) {
     const reduce = env().reducedMotion;
@@ -137,7 +139,48 @@ export default {
       record();
       const fragment = document.createDocumentFragment();
       nextItems.forEach((item) => fragment.appendChild(item));
-      el.appendChild(fragment);
+      const nativeTransition = opts.viewTransition === true && !reduce
+        && typeof document.startViewTransition === 'function';
+      const namedItems = [];
+      const names = new Set();
+      if (nativeTransition) {
+        nextItems.forEach((item) => {
+          const id = item.getAttribute?.('data-kt-layout-id')?.trim();
+          if (!id) return;
+          const name = `kt-${id.replace(/[^a-zA-Z0-9_-]+/g, '-')}`;
+          if (!name || names.has(name)) return;
+          names.add(name);
+          namedItems.push({ item, authored: item.style.viewTransitionName, name });
+          item.style.viewTransitionName = name;
+        });
+      }
+      const mutate = () => el.appendChild(fragment);
+      if (nativeTransition && namedItems.length) {
+        let mutated = false;
+        try {
+          const transition = document.startViewTransition(() => {
+            mutated = true;
+            mutate();
+            record();
+            observe();
+          });
+          Promise.resolve(transition?.finished).catch(() => {}).finally(() => {
+            namedItems.forEach(({ item, authored }) => {
+              if (authored) item.style.viewTransitionName = authored;
+              else item.style.removeProperty('view-transition-name');
+            });
+          });
+          return nextItems;
+        } catch (_error) {
+          if (!mutated) mutate();
+          namedItems.forEach(({ item, authored }) => {
+            if (authored) item.style.viewTransitionName = authored;
+            else item.style.removeProperty('view-transition-name');
+          });
+        }
+      } else {
+        mutate();
+      }
       requestAnimationFrame(() => {
         play();
         observe();

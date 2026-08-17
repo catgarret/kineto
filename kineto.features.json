@@ -6608,6 +6608,7 @@
         "item",
         "mode",
         "stagger",
+        "viewTransition",
         "watch"
       ]
     },

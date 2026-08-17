@@ -353,7 +353,7 @@
 - Attribute: `data-kt-flip`
 - Default variant: `layout`
 - Variants: `layout`, `none`, `slide`, `fade`, `crossfade`, `fade-slide`, `scale`
-- Public options: `duration`, `ease`, `item`, `mode`, `stagger`, `watch`
+- Public options: `duration`, `ease`, `item`, `mode`, `stagger`, `viewTransition`, `watch`
 
 ## scrollShadows
 

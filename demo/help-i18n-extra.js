@@ -1874,43 +1874,50 @@
       mode: '재배치 방식입니다. none=즉시 변경, slide=이동, fade=사라진 뒤 새 위치에서 등장, crossfade=두 상태가 교차 전환, fade-slide=이동+페이드, scale=축소 후 확대.',
       duration: '재배치 모션 한 번의 시간(초)입니다. mode가 none이면 적용되지 않습니다.',
       stagger: '여러 항목의 모션이 시작되는 시간 간격(초)입니다.',
-      watch: '외부 코드가 직계 자식 DOM을 추가·삭제·재배치할 때 자동 재생합니다. shuffle(), sort(), reorder() 같은 인스턴스 메서드는 이 설정과 관계없이 직접 재생됩니다.'
+      watch: '외부 코드가 직계 자식 DOM을 추가·삭제·재배치할 때 자동 재생합니다. shuffle(), sort(), reorder() 같은 인스턴스 메서드는 이 설정과 관계없이 직접 재생됩니다.',
+      viewTransition: '같은 문서의 data-kt-layout-id 항목 재배치에 브라우저 View Transitions를 사용합니다. 지원하지 않거나 식별자가 없으면 기존 FLIP으로 돌아갑니다.'
     },
     en: {
       mode: 'Reorder style: none=instant, slide=move, fade=fade out then in, crossfade=dissolve between layouts, fade-slide=move and fade, scale=shrink then grow.',
       duration: 'Duration of one reorder animation in seconds. It is ignored when mode is none.',
       stagger: 'Delay in seconds between the starts of item animations.',
-      watch: 'Automatically plays when external code adds, removes, or reorders direct child DOM nodes. Instance methods such as shuffle(), sort(), and reorder() play directly regardless of this setting.'
+      watch: 'Automatically plays when external code adds, removes, or reorders direct child DOM nodes. Instance methods such as shuffle(), sort(), and reorder() play directly regardless of this setting.',
+      viewTransition: 'Uses same-document View Transitions for items with data-kt-layout-id. Unsupported browsers or missing IDs fall back to the existing FLIP path.'
     },
     ja: {
       mode: '項目を並べ替える動きです。noneはモーションなしで新しい位置へ即座に切り替えます。',
       duration: '1回の並べ替えモーションの時間（秒）。modeがnoneの場合は適用されません。',
       stagger: '各項目のモーション開始間隔（秒）です。',
-      watch: '外部コードが直下のDOM子要素を追加・削除・並べ替えた時に自動再生します。shuffle()、sort()、reorder()はこの設定に関係なく直接再生します。'
+      watch: '外部コードが直下のDOM子要素を追加・削除・並べ替えた時に自動再生します。shuffle()、sort()、reorder()はこの設定に関係なく直接再生します。',
+      viewTransition: 'data-kt-layout-id付きの同一文書の再配置でView Transitionsを使います。非対応環境やID未設定時はFLIPに戻ります。'
     },
     'zh-CN': {
       mode: '项目重新排列时的移动方式。none 会无动画地立即切换到新位置。',
       duration: '单次重排动画时长（秒）；mode 为 none 时不生效。',
       stagger: '各项目动画开始之间的间隔（秒）。',
-      watch: '外部代码添加、删除或重排直属 DOM 子节点时自动播放。shuffle()、sort()、reorder() 等实例方法不受此设置影响，会直接播放。'
+      watch: '外部代码添加、删除或重排直属 DOM 子节点时自动播放。shuffle()、sort()、reorder() 等实例方法不受此设置影响，会直接播放。',
+      viewTransition: '对带有 data-kt-layout-id 的同文档重排使用 View Transitions。不支持或缺少 ID 时回退到现有 FLIP。'
     },
     'zh-TW': {
       mode: '項目重新排列時的移動方式。none 會不使用動畫，立即切換到新位置。',
       duration: '單次重排動畫時間（秒）；mode 為 none 時不套用。',
       stagger: '各項目動畫開始之間的間隔（秒）。',
-      watch: '外部程式碼新增、刪除或重排直屬 DOM 子節點時自動播放。shuffle()、sort()、reorder() 等實例方法不受此設定影響，會直接播放。'
+      watch: '外部程式碼新增、刪除或重排直屬 DOM 子節點時自動播放。shuffle()、sort()、reorder() 等實例方法不受此設定影響，會直接播放。',
+      viewTransition: '對帶有 data-kt-layout-id 的同文件重排使用 View Transitions。不支援或缺少 ID 時回退到現有 FLIP。'
     },
     ru: {
       mode: 'Способ перехода элементов на новые места. none применяет новую раскладку сразу, без анимации.',
       duration: 'Длительность одной анимации перестановки в секундах. Не используется при mode none.',
       stagger: 'Задержка между началом анимации элементов в секундах.',
-      watch: 'Автозапуск при добавлении, удалении или перестановке прямых дочерних DOM-узлов внешним кодом. Методы shuffle(), sort() и reorder() запускаются напрямую независимо от этой настройки.'
+      watch: 'Автозапуск при добавлении, удалении или перестановке прямых дочерних DOM-узлов внешним кодом. Методы shuffle(), sort() и reorder() запускаются напрямую независимо от этой настройки.',
+      viewTransition: 'Использует View Transitions для перестановки элементов с data-kt-layout-id в одном документе. При отсутствии поддержки или ID используется текущий FLIP.'
     },
     it: {
       mode: 'Come gli elementi raggiungono la nuova posizione. none applica subito il nuovo layout senza animazione.',
       duration: 'Durata di una transizione di riordino, in secondi. Non si applica con mode none.',
       stagger: 'Intervallo in secondi tra l’avvio delle animazioni degli elementi.',
-      watch: 'Avvia automaticamente quando codice esterno aggiunge, rimuove o riordina figli DOM diretti. I metodi shuffle(), sort() e reorder() si avviano direttamente indipendentemente da questa opzione.'
+      watch: 'Avvia automaticamente quando codice esterno aggiunge, rimuove o riordina figli DOM diretti. I metodi shuffle(), sort() e reorder() si avviano direttamente indipendentemente da questa opzione.',
+      viewTransition: 'Usa View Transitions nello stesso documento per elementi con data-kt-layout-id. Se non supportato o senza ID, torna al percorso FLIP esistente.'
     }
   };
   for (const [lang, tips] of Object.entries(FLIP_HELP)) {

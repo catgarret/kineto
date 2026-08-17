@@ -11,6 +11,7 @@
 - Keep the browser-coverage promise synchronized in release automation and QA reports, including cross-browser demo checks and post-Deploy live-site verification.
 - Preserve Firefox/WebKit smoke and demo-polish screenshots as seven-day CI artifacts when a cross-browser lane fails, so engine-specific regressions remain inspectable.
 - Add the opt-in Vue `useKinetoTransition()` bridge for `<Transition>` enter/leave hooks, phase-specific options, cancellation cleanup, and bounded completion fallback.
+- Add opt-in same-document View Transitions enhancement to `flip` for keyed reorders, with authored-name restoration and automatic FLIP fallback.
 
 ### 한국어
 
@@ -21,6 +22,7 @@
 - 릴리스 자동화와 QA 보고서의 브라우저 범위 약속을 실제 cross-browser demo 검사와 배포 후 live-site 검증까지 동기화합니다.
 - cross-browser 단계가 실패하면 Firefox/WebKit smoke·demo-polish 스크린샷을 7일간 CI 아티팩트로 보존해 엔진별 회귀를 확인할 수 있게 합니다.
 - Vue `<Transition>`의 enter/leave 훅을 연결하는 opt-in `useKinetoTransition()`과 phase별 옵션·취소 정리·완료 fallback을 추가합니다.
+- `flip`의 keyed same-document 재배치에서 opt-in View Transitions 경로를 사용하고, 기존 이름을 복원하며 미지원 환경에서는 FLIP으로 자동 fallback합니다.
 
 ## [0.8.102] - 2026-08-17
 

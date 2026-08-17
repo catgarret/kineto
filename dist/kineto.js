@@ -11499,12 +11499,42 @@ var li = {
 			});
 		};
 		t.watch !== !1 && typeof MutationObserver < "u" && (_ = new MutationObserver(() => g()), v()), f();
-		let y = (t) => {
+		let y = (r) => {
 			_?.disconnect(), f();
-			let n = document.createDocumentFragment();
-			return t.forEach((e) => n.appendChild(e)), e.appendChild(n), requestAnimationFrame(() => {
+			let i = document.createDocumentFragment();
+			r.forEach((e) => i.appendChild(e));
+			let a = t.viewTransition === !0 && !n && typeof document.startViewTransition == "function", o = [], s = /* @__PURE__ */ new Set();
+			a && r.forEach((e) => {
+				let t = e.getAttribute?.("data-kt-layout-id")?.trim();
+				if (!t) return;
+				let n = `kt-${t.replace(/[^a-zA-Z0-9_-]+/g, "-")}`;
+				!n || s.has(n) || (s.add(n), o.push({
+					item: e,
+					authored: e.style.viewTransitionName,
+					name: n
+				}), e.style.viewTransitionName = n);
+			});
+			let c = () => e.appendChild(i);
+			if (a && o.length) {
+				let e = !1;
+				try {
+					let t = document.startViewTransition(() => {
+						e = !0, c(), f(), v();
+					});
+					return Promise.resolve(t?.finished).catch(() => {}).finally(() => {
+						o.forEach(({ item: e, authored: t }) => {
+							t ? e.style.viewTransitionName = t : e.style.removeProperty("view-transition-name");
+						});
+					}), r;
+				} catch {
+					e || c(), o.forEach(({ item: e, authored: t }) => {
+						t ? e.style.viewTransitionName = t : e.style.removeProperty("view-transition-name");
+					});
+				}
+			} else c();
+			return requestAnimationFrame(() => {
 				g(), v();
-			}), t;
+			}), r;
 		};
 		return {
 			el: e,
