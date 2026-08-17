@@ -9,6 +9,7 @@
 - Run the real demo-polish regression suite in the Firefox and WebKit CI lanes so Radial, mobile Mega Menu, drawer layout, and Page Reveal engine regressions cannot hide behind smoke-only coverage.
 - Add Page Reveal mechanism smoke assertions for curtain, flash, iris, dissolve, fade, and push so visually-collapsing presets fail at the source-level boundary before a demo review.
 - Keep the browser-coverage promise synchronized in release automation and QA reports, including cross-browser demo checks and post-Deploy live-site verification.
+- Preserve Firefox/WebKit smoke and demo-polish screenshots as seven-day CI artifacts when a cross-browser lane fails, so engine-specific regressions remain inspectable.
 
 ### 한국어
 
@@ -17,6 +18,7 @@
 - Firefox·WebKit CI 단계에서 실제 데모 polish 회귀 검사를 실행해 Radial·모바일 Mega Menu·드로어 레이아웃·Page Reveal 엔진 회귀가 smoke 검사 뒤에 숨지 않게 합니다.
 - curtain·flash·iris·dissolve·fade·push의 Page Reveal 메커니즘 smoke 검사를 추가해 시각적으로 합쳐지는 preset이 데모 검토 전 소스 경계에서 실패하게 합니다.
 - 릴리스 자동화와 QA 보고서의 브라우저 범위 약속을 실제 cross-browser demo 검사와 배포 후 live-site 검증까지 동기화합니다.
+- cross-browser 단계가 실패하면 Firefox/WebKit smoke·demo-polish 스크린샷을 7일간 CI 아티팩트로 보존해 엔진별 회귀를 확인할 수 있게 합니다.
 
 ## [0.8.102] - 2026-08-17
 

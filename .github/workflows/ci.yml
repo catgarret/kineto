@@ -174,3 +174,14 @@ jobs:
         env:
           KT_BROWSER: ${{ matrix.browser }}
           MK_BROWSER_TEST_TIMEOUT: 240000
+
+      - name: Upload cross-browser artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cross-browser-${{ matrix.browser }}-artifacts
+          path: |
+            tests/browser/shots/
+            tests/.smoke/
+          if-no-files-found: ignore
+          retention-days: 7
