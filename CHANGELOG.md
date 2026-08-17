@@ -5,13 +5,22 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.96] - 2026-08-17
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Split the Node verification chain into five retryable groups so CI failures identify the contracts/package, consumer/framework, demo-surface, runtime-regression, or site/release boundary.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - CI 실패가 계약·패키지, 소비자·프레임워크, 데모 표면, 런타임 회귀, 사이트·릴리스 중 어느 경계인지 드러나도록 Node 검증 체인을 5개 재시도 가능 그룹으로 나눴습니다.
-
 ## [0.8.95] - 2026-08-17
 
 ### English
