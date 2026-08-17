@@ -42,7 +42,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 - Socket 경고를 줄이는 기술 조치는 진행됐지만, 공급망 신뢰는 특정 점수 하나가 아니라 릴리스 provenance, 의존성 최소화, 변경 이력, 대응 절차를 함께 유지해야 합니다. Socket도 경고 심각도와 공급망 위험을 종합해 점수를 계산한다고 설명합니다([Socket package scores](https://docs.socket.dev/docs/package-scores)).
 - **테스트가 틀린 이유로 실패합니다.** v0.8.43 릴리스는 같은 assertion에서 반복 실패했는데, 원인은 스타일시트가 아니라 아직 레이아웃되지 않은 패널을 측정한 것이었습니다. `display:none` 요소의 `getComputedStyle`은 used value가 아니라 computed value(`repeat(2, minmax(0px, 1fr))`)를 돌려주고, 이 문자열을 공백으로 자르면 토큰이 정확히 3개가 나옵니다. 즉 **그럴듯하게 틀린 값**이 나왔고, 사람은 CSS를 세 번 고쳤습니다. 브라우저 QA에 “측정 대상이 실제로 레이아웃됐는가”를 먼저 확인하는 규칙이 없으면, 통과율 지표 자체를 신뢰할 수 없습니다.
 - **엔진 커버리지가 Chromium에 편중돼 있습니다.** Firefox/WebKit은 smoke 수준입니다. 모션 라이브러리에서 이 격차는 이론이 아닙니다. `pageReveal`의 `zoom`은 transform이 걸린 `<body>`가 fixed/sticky 자손의 containing block이 되는 동작에서 Safari와 Chromium이 갈렸고, 커버를 `<html>`로 옮겨야 양쪽이 같아졌습니다. 이런 종류는 smoke 테스트로는 절대 안 잡힙니다.
-- **variant 중복을 아무도 측정하지 않습니다.** 모듈 수 상한(§3)은 있지만 모듈 *안*의 preset 중복 상한은 없습니다. 2026-08-09 기준 `pageReveal`은 16개 variant 중 5개가 서로 구분되지 않는 상태였습니다(`circle`↔`iris`, `wipe`↔`curtain`, `blinds`↔`columns`↔`strips`, `checker`↔`data-mosaic`). 사용자가 체감하는 “기능이 많다”는 variant 개수인데, 품질 관리 단위는 모듈 개수입니다.
+- **variant 중복을 아무도 측정하지 않습니다.** 모듈 수 상한(§3)은 있지만 모듈 *안*의 preset 중복 상한은 없습니다. 2026-08-09 기준 `pageReveal`은 16개 variant 중 5개가 서로 구분되지 않는 상태였습니다(`circle`↔`iris`, `wipe`↔`curtain`, `blinds`↔`columns`↔`strips`, `checker`↔`data-mosaic`). 사용자가 체감하는 “기능이 많다”는 variant 개수인데, 품질 관리 단위는 모듈 개수입니다. 고위험 `pageReveal` 계열은 v0.8.102부터 clip·mask·transform·opacity 메커니즘 smoke 검사를 시작했으며, 나머지는 수동 검토 대상으로 남깁니다.
 
 ## 3. 제품 원칙과 하지 않을 일
 

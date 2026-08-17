@@ -583,6 +583,18 @@ flashReveal.destroy();
 const fadeReveal = pageRevealModule.create(pageRevealHost, { effect: 'fade', duration: 0.4, color: '#ff5b1c' });
 const fadeFrames = pageRevealFrames.splice(0);
 fadeReveal.destroy();
+const capturePageReveal = (effect) => {
+  const instance = pageRevealModule.create(pageRevealHost, { effect, duration: 0.4, color: '#ff5b1c' });
+  const frames = pageRevealFrames.splice(0);
+  const layers = [...pageRevealHost.ownerDocument.documentElement.querySelectorAll('[aria-hidden="true"]')]
+    .map((node) => ({ maskImage: node.style.maskImage, webkitMaskImage: node.style.webkitMaskImage }));
+  instance.destroy();
+  return { frames, layers };
+};
+const curtainCapture = capturePageReveal('curtain');
+const irisCapture = capturePageReveal('iris');
+const dissolveCapture = capturePageReveal('dissolve');
+const pushCapture = capturePageReveal('push');
 window.HTMLElement.prototype.animate = nativeAnimate;
 pageRevealHost.remove();
 // Flash has been wrong twice, in opposite directions, and both failures are
@@ -608,6 +620,14 @@ assert.ok(flashFrames.every(({ options }) => !String(options?.easing ?? '').incl
 assert.ok(flashFrames.some(({ frames }) => frames.some((frame) => /scaleY\(\d{2,}\)/.test(String(frame.transform || '')))),
   'Page Reveal flash must blow a light streak out vertically');
 assert.ok(fadeFrames.length === 1 && fadeFrames[0].frames.length === 2 && fadeFrames[0].frames[0].opacity === 1 && fadeFrames[0].frames[1].opacity === 0, 'Page Reveal fade must remain one continuous cover dissolve');
+assert.ok(curtainCapture.frames.some(({ frames }) => frames.some((frame) => /scale[XY]\(1\)/.test(String(frame.transform || '')))),
+  'Page Reveal curtain must remain a directional cover movement, not a fade alias');
+assert.ok(irisCapture.frames.some(({ frames }) => frames.some((frame) => String(frame.clipPath || '').startsWith('circle('))),
+  'Page Reveal iris must expose a circular clip-path aperture');
+assert.ok(dissolveCapture.layers.some(({ maskImage, webkitMaskImage }) => maskImage || webkitMaskImage),
+  'Page Reveal dissolve must use a feathered mask layer');
+assert.ok(pushCapture.frames.some(({ frames }) => frames.some((frame) => String(frame.transform || '').includes('translateY(11vh)'))),
+  'Page Reveal push must animate the page host instead of duplicating curtain opacity');
 
 // Determinate indicators update nearby copy and can subscribe to Loader's
 // existing progress event without a new cross-module dependency.
