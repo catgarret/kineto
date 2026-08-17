@@ -17,6 +17,7 @@
 - Watch hidden-ancestor mutations as a final Tabs visibility signal so WebKit reliably remeasures indicators when intersection and resize notifications are both skipped.
 - Raise only the UMD raw ceiling by 1 KB for the measured hidden-tab recovery watcher; keep the consumer-facing gzip ceiling unchanged.
 - Expose `tabs.refresh()` and invoke it after demo panels are revealed, giving externally hidden tab sets a deterministic post-layout indicator measurement path on WebKit.
+- Cover delayed WebKit hidden-attribute commits with immediate, two-frame, and bounded follow-up Tabs measurements instead of an open-ended polling loop.
 - Refresh the technical roadmap baseline to v0.8.103 and record the shipped View Transitions, provenance, and Node 24 verification evidence.
 - Make Pages wait for the triggering CI run to finish and deploy only after that run succeeds, even when GitHub emits the workflow-run event before its conclusion is populated.
 
@@ -35,6 +36,7 @@
 - intersection와 resize 알림을 모두 건너뛸 수 있는 WebKit에서도 숨겨진 조상 변경을 감지해 Tabs indicator를 확실히 다시 측정합니다.
 - 숨겨진 탭 복구 watcher의 측정된 비용만 반영해 UMD raw 상한을 1KB 올리고, 소비자가 체감하는 gzip 상한은 그대로 유지합니다.
 - `tabs.refresh()`를 공개하고 데모 패널을 표시한 뒤 호출해 외부에서 숨겼던 탭 세트도 WebKit에서 인디케이터를 확실히 다시 측정하도록 합니다.
+- WebKit의 지연된 hidden 속성 반영도 무한 polling 없이 즉시·두 프레임·제한된 후속 Tabs 측정으로 처리합니다.
 - 기술 로드맵의 기준을 v0.8.103으로 갱신하고 배포된 View Transitions·provenance·Node 24 검증 근거를 기록합니다.
 - GitHub가 workflow-run conclusion을 채우기 전에 이벤트를 보내더라도 Pages가 CI 완료까지 기다리고 성공한 경우에만 배포하도록 보강합니다.
 

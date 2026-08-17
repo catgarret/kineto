@@ -2735,7 +2735,15 @@
           const refresh = () => panel.querySelectorAll('[data-kt-tabs]').forEach((target) => {
             window.Kineto?.getInstance?.(target, 'tabs')?.refresh?.();
           });
-          requestAnimationFrame(() => { refresh(); requestAnimationFrame(refresh); });
+          // WebKit can commit the hidden-attribute removal one frame later
+          // than the click handler. Cover the immediate, two-frame, and
+          // bounded post-layout cases without leaving a polling loop behind.
+          refresh();
+          requestAnimationFrame(() => {
+            refresh();
+            requestAnimationFrame(refresh);
+          });
+          setTimeout(refresh, 32);
         });
         strip.appendChild(tab);
         const descriptors = panel.hasAttribute('data-demo-no-settings') ? [] : discover(panel);
