@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.8.84 · 작성일: 2026-08-02 · 검토: 2026-08-17
+> 기준 버전: v0.8.85 · 작성일: 2026-08-02 · 검토: 2026-08-17
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -236,7 +236,11 @@ Motion의 AnimatePresence도 direct-child key 추적, 수동 safe-to-remove, exi
 
 ### P2. React·Vue Presence adapter
 
-Core가 안정된 뒤에만 다음을 제공합니다.
+Vanilla Presence Core 계약이 고정된 뒤 host-owned lifecycle 범위부터 제공합니다.
+
+- 완료(v0.8.85): `useKinetoPresence`와 `KinetoPresence` wrapper를 React·Vue에 추가
+- 완료(v0.8.85): Strict Mode·Vue lifecycle·SSR·hydration markup fixture를 통과
+- keyed child 자동 제거와 nested propagation은 다음 출시 게이트로 유지
 
 - React: `<KinetoPresence>`, `useKineto`, stable ref, Strict Mode 보장
 - Vue: `<KinetoPresence>`, composable, Vue transition interop
@@ -386,13 +390,14 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 11. 완료(계약·fixture 1차, v0.8.70): Presence 소비자 fixture 확장 및 React/Vue adapter 계약 설계
     — 현재는 host-owned lifecycle 경계만 고정했으며, keyed child 자동 제거 컴포넌트는
     별도 release gate 후에 공개합니다.
-12. 다음: 실제 keyed child 제거 요구가 확인될 때 React/Vue Presence 컴포넌트 구현
-13. 완료(v0.8.77): 화면 밖 Slider·Radial의 rAF·autoplay 정지와 opt-out 계약
-14. 완료(v0.8.78): 최근 pointer sample 기반 Slider release 관성
-15. 완료(v0.8.79): Slider 정착을 경과 시간 기반으로 보정하고 큰 `dt`·60/90/120Hz 회귀 테스트 추가
-16. 완료(v0.8.80): track Slider 해제 플링 배율을 `velocityInfluence`로 공개하고 Radial에는 노출하지 않음
-17. 완료(v0.8.84): track Slider에 opt-in spring solver와 공개 물리 파라미터를 추가하고 Radial에는 노출하지 않음
-18. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구가 확인될 때 별도 검토
+12. 완료(v0.8.85): host-owned React/Vue Presence composable·wrapper와 SSR/lifecycle fixture
+13. 다음: 실제 keyed child 제거 요구가 확인될 때 자동 제거 컴포넌트 구현
+14. 완료(v0.8.77): 화면 밖 Slider·Radial의 rAF·autoplay 정지와 opt-out 계약
+15. 완료(v0.8.78): 최근 pointer sample 기반 Slider release 관성
+16. 완료(v0.8.79): Slider 정착을 경과 시간 기반으로 보정하고 큰 `dt`·60/90/120Hz 회귀 테스트 추가
+17. 완료(v0.8.80): track Slider 해제 플링 배율을 `velocityInfluence`로 공개하고 Radial에는 노출하지 않음
+18. 완료(v0.8.84): track Slider에 opt-in spring solver와 공개 물리 파라미터를 추가하고 Radial에는 노출하지 않음
+19. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구가 확인될 때 별도 검토
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

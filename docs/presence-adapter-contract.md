@@ -1,9 +1,9 @@
 # Presence framework adapter contract
 
-This document defines the integration boundary for the next React/Vue Presence
-work. It is intentionally a contract and fixture milestone, not an
-`AnimatePresence`-style component. The current public entry remains the
-framework-neutral `@dong-gri/kineto/presence` controller.
+This document defines the integration boundary for the React/Vue Presence
+adapters. It is intentionally a host-owned lifecycle API, not an
+`AnimatePresence`-style keyed-child manager. The framework-neutral
+`@dong-gri/kineto/presence` controller remains the source of truth.
 
 ## Current supported shape
 
@@ -52,6 +52,31 @@ exit is running; conditionally unmounting it first makes an exit impossible.
 - Vue Transition interop, keyed children, and nested exit propagation are
   deferred until their ordering and DOM ownership rules are specified.
 
+## Adapter API (v0.8.85)
+
+Both adapters now expose a host-owned Presence composable and a small element
+wrapper. They create one controller for a stable DOM node, call `enter()` or
+`leave()` when `present` changes, and expose the latest `status` and `result`.
+The element remains mounted during `leave()`; the caller still decides when a
+keyed child is removed.
+
+```jsx
+import { KinetoPresence, useKinetoPresence } from '@dong-gri/kineto/react';
+
+function Panel({ present }) {
+  const lifecycle = useKinetoPresence(present, {
+    accessibility: 'managed',
+    exit: { state: states, name: 'hidden' }
+  });
+  return <section ref={lifecycle.ref}>{present ? 'Visible' : 'Leaving'}</section>;
+}
+```
+
+Vue provides the equivalent `useKinetoPresence` composable and
+`KinetoPresence` component. `present` may be a boolean, ref, or getter. Both
+implementations are SSR-safe: no controller is created without a DOM element,
+and the standalone controller resolves SSR calls as `skipped`.
+
 ## SSR and accessibility boundary
 
 The adapter layer must remain safe when no browser globals exist. The
@@ -62,8 +87,8 @@ the host mounted long enough for the result to settle.
 
 ## Release gates for a future adapter API
 
-Before publishing `useKinetoPresence` or `<KinetoPresence>` from either
-adapter, the project must add:
+Before publishing keyed-child behavior or `<KinetoPresence>` as an automatic
+removal manager, the project must add:
 
 1. keyed direct-child identity and reorder tests;
 2. Strict Mode / Vue effect replay and cancellation tests;
@@ -72,5 +97,6 @@ adapter, the project must add:
 5. explicit `safeToRemove` and focus ownership examples;
 6. React/Vue adapter consumer gzip measurements.
 
-Until those gates exist, consumers should use the standalone controller with
-their framework lifecycle hooks as shown above.
+Until those gates exist, consumers should use the new host-owned composables
+or the standalone controller with their framework lifecycle hooks as shown
+above. Automatic keyed-child removal remains out of scope.

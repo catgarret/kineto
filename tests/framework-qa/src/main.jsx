@@ -3,9 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { createApp, h, nextTick, onBeforeUnmount, onMounted, ref, watch, withDirectives } from 'vue';
 import $ from 'jquery';
 import Kineto from '@dong-gri/kineto';
-import { Motion, useKineto as useReactKineto } from '@dong-gri/kineto/react';
-import { vMotion, useKineto as useVueKineto } from '@dong-gri/kineto/vue';
-import standalonePresence from '@dong-gri/kineto/presence';
+import { KinetoPresence as ReactKinetoPresence, Motion, useKineto as useReactKineto, useKinetoPresence as useReactKinetoPresence } from '@dong-gri/kineto/react';
+import { KinetoPresence as VueKinetoPresence, vMotion, useKineto as useVueKineto, useKinetoPresence as useVueKinetoPresence } from '@dong-gri/kineto/vue';
 import installJQueryKineto from '@dong-gri/kineto/jquery';
 import '@dong-gri/kineto/style.css';
 
@@ -45,27 +44,17 @@ function ReactStateHarness({ dependency }) {
 }
 
 function ReactPresenceHarness({ present }) {
-  const element = useRef(null);
-  const controller = useRef(null);
+  const lifecycle = useReactKinetoPresence(present, { duration: 0.01, accessibility: 'managed' });
   useEffect(() => {
-    const lifecycle = standalonePresence(element.current, { duration: 0.01, accessibility: 'managed' });
-    controller.current = lifecycle;
     window.__reactPresenceActive = (window.__reactPresenceActive || 0) + 1;
     return () => {
-      lifecycle.destroy();
-      controller.current = null;
       window.__reactPresenceActive -= 1;
     };
   }, []);
   useEffect(() => {
-    const lifecycle = controller.current;
-    if (!lifecycle) return undefined;
-    lifecycle[present ? 'enter' : 'leave']({ duration: 0.01 }).then((result) => {
-      if (!present && result.status === 'finished') window.__reactPresenceLeaves = (window.__reactPresenceLeaves || 0) + 1;
-    });
-    return undefined;
-  }, [present]);
-  return <div id="react-presence-target" ref={element}>React Presence host</div>;
+    if (!present && lifecycle.result?.status === 'finished') window.__reactPresenceLeaves = (window.__reactPresenceLeaves || 0) + 1;
+  }, [present, lifecycle.result]);
+  return <div id="react-presence-target" ref={lifecycle.ref}>React Presence host</div>;
 }
 
 function ReactHarness({ type, dependency }) {
@@ -74,6 +63,7 @@ function ReactHarness({ type, dependency }) {
     <ReactHookHarness type={type} dependency={dependency} />
     <ReactStateHarness dependency={dependency} />
     <ReactPresenceHarness present={dependency === 0} />
+    <ReactKinetoPresence id="react-presence-component-target" present={dependency === 0} options={{ duration: 0.01 }}>React Presence component</ReactKinetoPresence>
   </>;
 }
 
@@ -128,8 +118,7 @@ async function testVue() {
       const composableType = 'reveal';
       const { element, instance } = useVueKineto(composableType, { duration: 0.01 });
       const stateElement = ref(null);
-      const presenceElement = ref(null);
-      let presenceController = null;
+      const presenceLifecycle = useVueKinetoPresence(presenceVisible, { duration: 0.01, accessibility: 'managed' });
       let stateController = null;
       onMounted(() => {
         stateController = Kineto.states({
@@ -138,20 +127,14 @@ async function testVue() {
         });
         window.__vueStatesActive = (window.__vueStatesActive || 0) + 1;
         stateController.apply(stateElement.value, 'visible', { duration: 0.01 });
-        presenceController = standalonePresence(presenceElement.value, { duration: 0.01, accessibility: 'managed' });
         window.__vuePresenceActive = (window.__vuePresenceActive || 0) + 1;
-        presenceController.enter({ duration: 0.01 });
-        watch(presenceVisible, (visible) => {
-          presenceController?.[visible ? 'enter' : 'leave']({ duration: 0.01 }).then((result) => {
-            if (!visible && result.status === 'finished') window.__vuePresenceLeaves = (window.__vuePresenceLeaves || 0) + 1;
-          });
+        watch(presenceLifecycle.result, (result) => {
+          if (!presenceVisible.value && result?.status === 'finished') window.__vuePresenceLeaves = (window.__vuePresenceLeaves || 0) + 1;
         });
       });
       onBeforeUnmount(() => {
         stateController?.destroy();
         stateController = null;
-        presenceController?.destroy();
-        presenceController = null;
         window.__vuePresenceActive -= 1;
         window.__vueStatesActive -= 1;
         window.__vueStatesDestroyed = (window.__vueStatesDestroyed || 0) + 1;
@@ -161,7 +144,8 @@ async function testVue() {
         withDirectives(h('div', { id: 'vue-directive-target' }, 'Vue directive adapter'), [[vMotion, { type: type.value, options: { duration: 0.01 } }]]),
         h('div', { id: 'vue-composable-target', ref: element }, 'Vue composable adapter'),
         h('div', { id: 'vue-state-target', ref: stateElement }, 'Vue states adapter'),
-        h('div', { id: 'vue-presence-target', ref: presenceElement }, 'Vue Presence host')
+        h('div', { id: 'vue-presence-target', ref: presenceLifecycle.element }, 'Vue Presence host'),
+        h(VueKinetoPresence, { id: 'vue-presence-component-target', present: presenceVisible.value, options: { duration: 0.01 } }, { default: () => 'Vue Presence component' })
       ]);
     }
   });
