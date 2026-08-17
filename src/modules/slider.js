@@ -409,6 +409,10 @@ export default {
     const loopMode = opts.loop === true ? 'infinite' : (opts.loop || 'off');
     const seamless = loopMode === 'infinite';
     const smoothing = clamp(Number(opts.smoothing ?? (0.14 / Math.max(0.2, Number(opts.speed ?? opts.duration ?? 0.55) / 0.55))), 0.02, 0.5);
+    const springEnabled = opts.spring === true;
+    const springStiffness = clamp(Number(opts.stiffness ?? 170), 20, 400);
+    const springDamping = clamp(Number(opts.damping ?? 24), 1, 80);
+    const springMass = clamp(Number(opts.mass ?? 1), 0.1, 4);
     // Release momentum is opt-in tunable while the default preserves the
     // historical fling distance. Values above 1 make a fast release travel
     // farther; 0 disables the release fling without disabling drag itself.
@@ -441,6 +445,7 @@ export default {
     let index = clamp(Math.round(Number(opts.initial ?? 0)), 0, maxIndex);
     let position = index;      // rendered (smoothed) position
     let target = index;        // where the spring is heading
+    let springVelocity = 0;
     let dragging = false;
     let dragMoved = false;
     let dragStartX = 0;
@@ -656,13 +661,28 @@ export default {
       // a single callback teleporting the carousel across its target.
       const dt = Math.min(64, time - lastFrameTime);
       lastFrameTime = time;
-      const amount = 1 - ((1 - (dragging ? 0.55 : smoothing)) ** (dt / 16));
-      position = lerp(position, target, amount);
+      if (springEnabled && !dragging) {
+        // Semi-implicit Euler keeps the public spring controls deterministic
+        // while the 64ms cap prevents a background-tab wake from exploding the
+        // solver. Dragging itself remains direct, then release starts from rest.
+        const seconds = dt / 1000;
+        const acceleration = ((target - position) * springStiffness - springVelocity * springDamping) / springMass;
+        springVelocity += acceleration * seconds;
+        position += springVelocity * seconds;
+      } else {
+        if (dragging) springVelocity = 0;
+        const amount = 1 - ((1 - (dragging ? 0.55 : smoothing)) ** (dt / 16));
+        position = lerp(position, target, amount);
+      }
       render();
-      if (dragging || Math.abs(position - target) > 0.0015) {
+      const settled = springEnabled
+        ? Math.abs(position - target) <= 0.0015 && Math.abs(springVelocity) <= 0.0015
+        : Math.abs(position - target) <= 0.0015;
+      if (dragging || !settled) {
         rafId = requestAnimationFrame(tick);
       } else {
         position = target;
+        springVelocity = 0;
         render();
         rafId = null;
       }

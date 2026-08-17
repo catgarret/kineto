@@ -45,8 +45,10 @@ const BUDGET = {
   // 2026-08-17: npm 11 on the GitHub runner rounds this archive to exactly
   // 496.0 KB while the local npm 11 toolchain reports 494.9 KB. Keep the
   // allowlist unchanged and add only the measured 1 KB boundary margin.
+  // 2026-08-17: the opt-in Slider spring controls add one measured KB to the
+  // unpacked archive; keep the file allowlist fixed and absorb that bounded cost.
   packedKb: 497,
-  unpackedKb: 1665,
+  unpackedKb: 1666,
   files: 78
 };
 

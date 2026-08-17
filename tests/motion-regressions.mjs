@@ -407,6 +407,24 @@ const at120Hz = driveSlider(Array.from({ length: 12 }, (_, index) => (index + 1)
 assert.ok(Math.abs(at60Hz - at120Hz) < 0.02, `slider settling must be refresh-rate invariant — ${at60Hz} vs ${at120Hz}`);
 const cappedGap = driveSlider([16.667, 500]);
 assert.ok(cappedGap < 0.99, `a long frame gap must be capped instead of teleporting — ${cappedGap}`);
+const springHost = document.createElement('div');
+springHost.innerHTML = '<div class="kt-slider-wrap"><div class="kt-slider-track"><div class="kt-slide">A</div><div class="kt-slide">B</div><div class="kt-slide">C</div></div></div>';
+document.body.appendChild(springHost);
+const springSlider = sliderModule.create(springHost, { preset: 'slide', loop: 'off', spring: true, stiffness: 170, damping: 24, mass: 1 });
+const springInitial = springHost.querySelector('.kt-slide').style.transform;
+springSlider.goTo(1);
+let springIntermediate = '';
+for (let time = 16.667; time <= 3000 && queuedFrame; time += 16.667) {
+  const frame = queuedFrame;
+  queuedFrame = null;
+  frame.callback(time);
+  if (!springIntermediate) springIntermediate = springHost.querySelector('.kt-slide').style.transform;
+}
+assert.notEqual(springIntermediate, springInitial, 'spring settling must render an intermediate frame');
+assert.equal(springSlider.index, 1, 'spring settling must reach the requested slide');
+assert.equal(queuedFrame, null, 'spring settling must stop scheduling frames after it settles');
+springSlider.destroy();
+springHost.remove();
 globalThis.requestAnimationFrame = realRequestAnimationFrame;
 globalThis.cancelAnimationFrame = realCancelAnimationFrame;
 
