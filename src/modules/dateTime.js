@@ -14,7 +14,7 @@ function parseDate(value, locale = '') {
   const compact = text.match(/^(\d{4})(\d{2})(\d{2})(?:(\d{2})(\d{2})(\d{2})(?:\.(\d{1,3}))?)?$/);
   if (compact) {
     const [, year, month, day, hour = '0', minute = '0', second = '0', milli = '0'] = compact;
-    return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second), Number(milli.padEnd(3, '0')));
+    return new Date(`${year}-${month}-${day}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:${second.padStart(2, '0')}.${milli.padEnd(3, '0')}+09:00`);
   }
   const koreanClock = text.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:\s*(\d{1,2})\s*시)?(?:\s*(\d{1,2})\s*분)?(?:\s*(\d{1,2})\s*초)?$/);
   if (koreanClock) {
