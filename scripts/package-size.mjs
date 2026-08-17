@@ -52,8 +52,10 @@ const BUDGET = {
   // 2026-08-17: the Node 24/npm 11 GitHub runner measured 497.9 KB packed
   // while the local Node 25/npm 11 toolchain measured 496.7 KB; keep a bounded
   // cross-runner margin without changing the release file allowlist.
-  packedKb: 499,
-  unpackedKb: 1672,
+  // 2026-08-17: the direct keyed-child Presence groups add 2.4 KB packed and
+  // 8.2 KB unpacked on the local toolchain; retain runner headroom below.
+  packedKb: 502,
+  unpackedKb: 1683,
   files: 78
 };
 

@@ -54,5 +54,24 @@ export interface KinetoPresenceProps extends HTMLAttributes<HTMLElement> {
   children?: ReactNode;
 }
 export const KinetoPresence: ForwardRefExoticComponent<KinetoPresenceProps & RefAttributes<KinetoPresenceHandle>>;
+export interface KinetoPresenceGroupOptions extends KinetoPresenceOptions {
+  onResult?: (result: KinetoPresenceResult, key: string) => void;
+}
+export interface KinetoPresenceGroupItem {
+  readonly key: string;
+  readonly child: ReactNode;
+  readonly present: boolean;
+}
+export function useKinetoPresenceGroup(
+  children: ReactNode,
+  options?: KinetoPresenceGroupOptions
+): { items: readonly KinetoPresenceGroupItem[]; onResult(key: string, result: KinetoPresenceResult): void };
+export interface KinetoPresenceGroupProps extends HTMLAttributes<HTMLElement> {
+  as?: ElementType;
+  mode?: 'sync' | 'wait' | 'popLayout';
+  options?: KinetoPresenceGroupOptions & { enterOptions?: KinetoOptions; exitOptions?: KinetoOptions };
+  children?: ReactNode;
+}
+export const KinetoPresenceGroup: (props: KinetoPresenceGroupProps) => ReactNode;
 export { Kineto };
 export default Motion;

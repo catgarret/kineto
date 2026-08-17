@@ -1,4 +1,4 @@
-import { createElement, forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { Children, createElement, forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import Kineto from '@dong-gri/kineto';
 import presence from '@dong-gri/kineto/presence';
 
@@ -67,6 +67,80 @@ export function useKinetoPresence(present = true, options = {}, dependencies = [
   return { ref: elementRef, controller: controllerRef, status, result };
 }
 
+function normalizePresenceChildren(children) {
+  return Children.toArray(children).map((child, index) => ({
+    key: child && typeof child === 'object' && child.key != null ? String(child.key) : `index:${index}`,
+    child
+  }));
+}
+
+function reconcilePresenceItems(current, incoming, mode, pendingRef) {
+  const currentByKey = new Map(current.map((item) => [item.key, item]));
+  const incomingKeys = new Set(incoming.map((item) => item.key));
+  const exiting = current.filter((item) => !item.present);
+  const next = [];
+  const additions = [];
+
+  for (const item of incoming) {
+    const previous = currentByKey.get(item.key);
+    if (previous) next.push({ ...previous, child: item.child, present: true });
+    else additions.push(item);
+  }
+
+  if (mode === 'wait' && exiting.length && additions.length) pendingRef.current = incoming;
+  else {
+    pendingRef.current = null;
+    next.push(...additions.map((item) => ({ ...item, present: true })));
+  }
+
+  for (const item of current) {
+    if (!incomingKeys.has(item.key)) next.push({ ...item, present: false });
+  }
+
+  const unchanged = next.length === current.length
+    && next.every((item, index) => {
+      const previous = current[index];
+      return previous && previous.key === item.key && previous.child === item.child && previous.present === item.present;
+    });
+  return unchanged ? current : next;
+}
+
+/**
+ * Keyed-child Presence state for React. Removed children stay mounted until
+ * their Core leave result is finished/skipped; `wait` queues new keys until
+ * all exiting children have settled.
+ */
+export function useKinetoPresenceGroup(children, options = {}) {
+  const mode = options.mode || 'sync';
+  const pendingRef = useRef(null);
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+  const incoming = normalizePresenceChildren(children);
+  const [items, setItems] = useState(() => incoming.map((item) => ({ ...item, present: true })));
+
+  useEffect(() => {
+    setItems((current) => reconcilePresenceItems(current, incoming, mode, pendingRef));
+  }, [children, mode]);
+
+  const handleResult = (key, nextResult) => {
+    optionsRef.current.onResult?.(nextResult, key);
+    if (!nextResult || !['finished', 'skipped'].includes(nextResult.status)) return;
+    setItems((current) => {
+      const item = current.find((entry) => entry.key === key);
+      if (!item || item.present) return current;
+      const remaining = current.filter((entry) => entry.key !== key);
+      if (mode === 'wait' && !remaining.some((entry) => !entry.present) && pendingRef.current) {
+        const queued = pendingRef.current;
+        pendingRef.current = null;
+        return queued.map((entry) => ({ ...entry, present: true }));
+      }
+      return remaining;
+    });
+  };
+
+  return { items, onResult: handleResult };
+}
+
 /**
  * Generic component wrapper. Example:
  * <Motion as="h2" type="textReveal" options={{ mode: 'hangul' }}>...</Motion>
@@ -96,6 +170,24 @@ export const KinetoPresence = forwardRef(function KinetoPresence(
   }), [controller, status, result]);
   return createElement(as, { ...props, ref, 'data-kt-presence-status': status }, children);
 });
+
+export function KinetoPresenceGroup({ as = 'div', mode, options = {}, children, ...props }) {
+  const effectiveMode = mode || options.mode || 'sync';
+  const groupOptions = { ...options, mode: effectiveMode };
+  const { items, onResult } = useKinetoPresenceGroup(children, groupOptions);
+  return createElement(as, props, items.map((item) => createElement(
+    KinetoPresence,
+    {
+      key: item.key,
+      present: item.present,
+      options: {
+        ...groupOptions,
+        onResult: (nextResult) => onResult(item.key, nextResult)
+      }
+    },
+    item.child
+  )));
+}
 
 export { Kineto };
 export default Motion;

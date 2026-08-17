@@ -1,8 +1,7 @@
 # Presence framework adapter contract
 
 This document defines the integration boundary for the React/Vue Presence
-adapters. It is intentionally a host-owned lifecycle API, not an
-`AnimatePresence`-style keyed-child manager. The framework-neutral
+adapters. The framework-neutral
 `@dong-gri/kineto/presence` controller remains the source of truth.
 
 ## Current supported shape
@@ -38,9 +37,9 @@ exit is running; conditionally unmounting it first makes an exit impossible.
   state, or controllers.
 - A `present` change calls `enter()`/`leave()`; the host remains rendered until
   the leave result is `finished` or `skipped`.
-- The current fixture does not infer React keys or remove siblings. A future
-  `<KinetoPresence>` component needs a separate keyed-child contract before it
-  is published.
+- `<KinetoPresenceGroup>` is the opt-in keyed-child wrapper. It tracks direct
+  child keys, keeps removed children mounted until `finished`/`skipped`, and
+  preserves the incoming order while exits settle.
 
 ## Vue fixture contract
 
@@ -49,16 +48,16 @@ exit is running; conditionally unmounting it first makes an exit impossible.
 - A reactive `present` source calls `enter()`/`leave()` without replacing the
   controller.
 - The host remains in the render tree until the leave result is settled.
-- Vue Transition interop, keyed children, and nested exit propagation are
-  deferred until their ordering and DOM ownership rules are specified.
+- `<KinetoPresenceGroup>` provides the same direct-child key contract. Vue
+  Transition interop and nested exit propagation remain separate gates.
 
 ## Adapter API (v0.8.85)
 
-Both adapters now expose a host-owned Presence composable and a small element
-wrapper. They create one controller for a stable DOM node, call `enter()` or
-`leave()` when `present` changes, and expose the latest `status` and `result`.
-The element remains mounted during `leave()`; the caller still decides when a
-keyed child is removed.
+Both adapters expose a host-owned Presence composable, a small element wrapper,
+and an opt-in keyed-child group. The group creates one controller per direct
+child key, keeps removed children mounted during `leave()`, and removes the
+wrapper only after the Core result settles. The element remains mounted during
+`leave()`; nested groups and parent exit propagation are not inferred.
 
 ```jsx
 import { KinetoPresence, useKinetoPresence } from '@dong-gri/kineto/react';
@@ -70,6 +69,18 @@ function Panel({ present }) {
   });
   return <section ref={lifecycle.ref}>{present ? 'Visible' : 'Leaving'}</section>;
 }
+```
+
+For keyed children, use the explicit group boundary. The default `sync` mode
+allows entering and exiting keys together; `wait` queues new keys until all
+exits finish; `popLayout` forwards the Core layout snapshot policy.
+
+```jsx
+import { KinetoPresenceGroup } from '@dong-gri/kineto/react';
+
+<KinetoPresenceGroup mode="wait" options={{ duration: 180 }}>
+  {items.map((item) => <article key={item.id}>{item.label}</article>)}
+</KinetoPresenceGroup>
 ```
 
 Vue provides the equivalent `useKinetoPresence` composable and
@@ -85,18 +96,18 @@ framework-neutral controller reports `ssr === true` and resolves enter/leave as
 `aria-hidden`/`inert` restoration stay in the Presence Core; adapters only keep
 the host mounted long enough for the result to settle.
 
-## Release gates for a future adapter API
+## Release gates for the next adapter batch
 
-Before publishing keyed-child behavior or `<KinetoPresence>` as an automatic
-removal manager, the project must add:
+Before enabling nested propagation or framework transition interop, the project
+must add:
 
-1. keyed direct-child identity and reorder tests;
-2. Strict Mode / Vue effect replay and cancellation tests;
+1. nested parent/child identity and reorder tests;
+2. Strict Mode / Vue effect replay and cancellation tests for nested groups;
 3. SSR + hydration markup stability checks;
 4. `sync`, `wait`, and `popLayout` ordering fixtures;
 5. explicit `safeToRemove` and focus ownership examples;
 6. React/Vue adapter consumer gzip measurements.
 
-Until those gates exist, consumers should use the new host-owned composables
-or the standalone controller with their framework lifecycle hooks as shown
-above. Automatic keyed-child removal remains out of scope.
+Until those gates exist, consumers should use the group for direct keyed
+children and the host-owned composables or standalone controller for custom
+DOM ownership. Nested automatic propagation remains out of scope.

@@ -1,4 +1,4 @@
-import { defineComponent, h, onBeforeUnmount, onMounted, ref, shallowRef, toRef, unref, watch } from 'vue';
+import { Comment, defineComponent, h, onBeforeUnmount, onMounted, onUpdated, ref, shallowRef, toRef, unref, watch } from 'vue';
 import Kineto from '@dong-gri/kineto';
 import presence from '@dong-gri/kineto/presence';
 
@@ -94,6 +94,89 @@ export function useKinetoPresence(present = true, options = {}, watchSources = [
   return { element, controller, status, result, replay: run };
 }
 
+function normalizePresenceChildren(children = []) {
+  const flat = [];
+  const visit = (value) => {
+    if (Array.isArray(value)) { value.forEach(visit); return; }
+    if (value && value.type !== Comment) flat.push(value);
+  };
+  visit(children);
+  return flat.map((child, index) => ({
+    key: child.key != null ? String(child.key) : `index:${index}`,
+    child
+  }));
+}
+
+function sameVNode(left, right) {
+  if (left === right) return true;
+  if (!left || !right || left.type !== right.type || left.key !== right.key || left.children !== right.children) return false;
+  const leftProps = left.props || {};
+  const rightProps = right.props || {};
+  const keys = new Set([...Object.keys(leftProps), ...Object.keys(rightProps)]);
+  return [...keys].every((key) => leftProps[key] === rightProps[key]);
+}
+
+function reconcilePresenceItems(current, incoming, mode, pendingRef) {
+  const currentByKey = new Map(current.map((item) => [item.key, item]));
+  const incomingKeys = new Set(incoming.map((item) => item.key));
+  const exiting = current.filter((item) => !item.present);
+  const next = [];
+  const additions = [];
+
+  for (const item of incoming) {
+    const previous = currentByKey.get(item.key);
+    if (previous) next.push({ ...previous, child: item.child, present: true });
+    else additions.push(item);
+  }
+
+  if (mode === 'wait' && exiting.length && additions.length) pendingRef.value = incoming;
+  else {
+    pendingRef.value = null;
+    next.push(...additions.map((item) => ({ ...item, present: true })));
+  }
+
+  for (const item of current) {
+    if (!incomingKeys.has(item.key)) next.push({ ...item, present: false });
+  }
+
+  const unchanged = next.length === current.length
+    && next.every((item, index) => {
+      const previous = current[index];
+      return previous && previous.key === item.key && sameVNode(previous.child, item.child) && previous.present === item.present;
+    });
+  return unchanged ? current : next;
+}
+
+/**
+ * Keyed-child Presence state for Vue. Removed VNodes remain rendered until
+ * their Core leave result settles; `wait` queues new keys behind exits.
+ */
+export function useKinetoPresenceGroup(children = [], options = {}) {
+  const mode = options.mode || 'sync';
+  const pending = shallowRef(null);
+  const records = shallowRef(normalizePresenceChildren(children).map((item) => ({ ...item, present: true })));
+
+  const sync = (nextChildren = []) => {
+    records.value = reconcilePresenceItems(records.value, normalizePresenceChildren(nextChildren), mode, pending);
+  };
+  const handleResult = (key, nextResult) => {
+    options.onResult?.(nextResult, key);
+    if (!nextResult || !['finished', 'skipped'].includes(nextResult.status)) return;
+    const item = records.value.find((entry) => entry.key === key);
+    if (!item || item.present) return;
+    const remaining = records.value.filter((entry) => entry.key !== key);
+    if (mode === 'wait' && !remaining.some((entry) => !entry.present) && pending.value) {
+      const queued = pending.value;
+      pending.value = null;
+      records.value = queued.map((entry) => ({ ...entry, present: true }));
+      return;
+    }
+    records.value = remaining;
+  };
+
+  return { items: records, sync, onResult: handleResult };
+}
+
 export const KinetoPresence = defineComponent({
   name: 'KinetoPresence',
   inheritAttrs: false,
@@ -114,9 +197,52 @@ export const KinetoPresence = defineComponent({
   }
 });
 
+export const KinetoPresenceGroup = defineComponent({
+  name: 'KinetoPresenceGroup',
+  inheritAttrs: false,
+  props: {
+    as: { type: [String, Object], default: 'div' },
+    mode: { type: String, default: undefined },
+    options: { type: Object, default: () => ({}) }
+  },
+  setup(props, { attrs, slots, expose }) {
+    const mode = props.mode || props.options.mode || 'sync';
+    const groupOptions = { ...props.options, mode };
+    const lifecycle = useKinetoPresenceGroup([], groupOptions);
+    const latestChildren = shallowRef([]);
+    const mounted = ref(false);
+    const syncChildren = () => lifecycle.sync(latestChildren.value);
+    onMounted(() => {
+      mounted.value = true;
+      syncChildren();
+    });
+    onUpdated(syncChildren);
+    expose(lifecycle);
+    return () => {
+      const slotChildren = slots.default?.() || [];
+      latestChildren.value = slotChildren;
+      const items = mounted.value || lifecycle.items.value.length
+        ? lifecycle.items.value
+        : normalizePresenceChildren(slotChildren).map((item) => ({ ...item, present: true }));
+      return h(props.as, { ...attrs }, items.map((item) => h(
+        KinetoPresence,
+        {
+          key: item.key,
+          present: item.present,
+          options: {
+            ...groupOptions,
+            onResult: (nextResult) => lifecycle.onResult(item.key, nextResult)
+          }
+        },
+        { default: () => item.child }
+      )));
+    };
+  }
+});
+
 export function install(app) {
   app.directive('motion', vMotion);
 }
 
 export { Kineto };
-export default { install, KinetoPresence };
+export default { install, KinetoPresence, KinetoPresenceGroup };

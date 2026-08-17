@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { createApp, h, nextTick, onBeforeUnmount, onMounted, ref, watch, withDirectives } from 'vue';
 import $ from 'jquery';
 import Kineto from '@dong-gri/kineto';
-import { KinetoPresence as ReactKinetoPresence, Motion, useKineto as useReactKineto, useKinetoPresence as useReactKinetoPresence } from '@dong-gri/kineto/react';
-import { KinetoPresence as VueKinetoPresence, vMotion, useKineto as useVueKineto, useKinetoPresence as useVueKinetoPresence } from '@dong-gri/kineto/vue';
+import { KinetoPresence as ReactKinetoPresence, KinetoPresenceGroup as ReactKinetoPresenceGroup, Motion, useKineto as useReactKineto, useKinetoPresence as useReactKinetoPresence } from '@dong-gri/kineto/react';
+import { KinetoPresence as VueKinetoPresence, KinetoPresenceGroup as VueKinetoPresenceGroup, vMotion, useKineto as useVueKineto, useKinetoPresence as useVueKinetoPresence } from '@dong-gri/kineto/vue';
 import installJQueryKineto from '@dong-gri/kineto/jquery';
 import '@dong-gri/kineto/style.css';
 
@@ -58,12 +58,16 @@ function ReactPresenceHarness({ present }) {
 }
 
 function ReactHarness({ type, dependency }) {
+  const groupItems = dependency === 0 ? ['a', 'b'] : ['b', 'c'];
   return <>
     <Motion id="react-motion-target" type={type} options={{ duration: 0.01 }} dependencies={[dependency]}>React Motion component</Motion>
     <ReactHookHarness type={type} dependency={dependency} />
     <ReactStateHarness dependency={dependency} />
     <ReactPresenceHarness present={dependency === 0} />
     <ReactKinetoPresence id="react-presence-component-target" present={dependency === 0} options={{ duration: 0.01 }}>React Presence component</ReactKinetoPresence>
+    <ReactKinetoPresenceGroup id="react-presence-group" mode="sync" options={{ duration: 0.01 }}>
+      {groupItems.map((key) => <article key={key} data-group-key={`react-${key}`}>React group {key}</article>)}
+    </ReactKinetoPresenceGroup>
   </>;
 }
 
@@ -77,6 +81,7 @@ async function testReact() {
   assert(window.__reactHookInstanceRef?.current, 'React hook instance ref was not populated');
   assert(window.__reactStatesActive === 1, 'React states controller did not mount exactly once');
   assert(window.__reactPresenceActive === 1, 'React Presence controller did not mount exactly once');
+  assert(document.querySelectorAll('#react-presence-group [data-group-key]').length === 2, 'React keyed Presence group did not mount both children');
 
   root.render(<StrictMode><ReactHarness type="counter" dependency={1} /></StrictMode>);
   await sleep(120);
@@ -85,6 +90,8 @@ async function testReact() {
   assert(Kineto.getInstance(document.querySelector('#react-hook-target'), 'counter'), 'React hook did not update type');
   assert(window.__reactStatesActive === 1, 'React states controller was not replaced cleanly');
   assert(window.__reactPresenceLeaves >= 1, 'React Presence did not resolve the host-owned leave');
+  assert(!document.querySelector('[data-group-key="react-a"]'), 'React keyed Presence group removed child did not settle');
+  assert(document.querySelector('[data-group-key="react-c"]'), 'React keyed Presence group did not add the new child');
 
   root.unmount();
   await sleep(80);
@@ -145,7 +152,10 @@ async function testVue() {
         h('div', { id: 'vue-composable-target', ref: element }, 'Vue composable adapter'),
         h('div', { id: 'vue-state-target', ref: stateElement }, 'Vue states adapter'),
         h('div', { id: 'vue-presence-target', ref: presenceLifecycle.element }, 'Vue Presence host'),
-        h(VueKinetoPresence, { id: 'vue-presence-component-target', present: presenceVisible.value, options: { duration: 0.01 } }, { default: () => 'Vue Presence component' })
+        h(VueKinetoPresence, { id: 'vue-presence-component-target', present: presenceVisible.value, options: { duration: 0.01 } }, { default: () => 'Vue Presence component' }),
+        h(VueKinetoPresenceGroup, { id: 'vue-presence-group', mode: 'sync', options: { duration: 0.01 } }, {
+          default: () => (presenceVisible.value ? ['a', 'b'] : ['b', 'c']).map((key) => h('article', { key, 'data-group-key': `vue-${key}` }, `Vue group ${key}`))
+        })
       ]);
     }
   });
@@ -157,6 +167,7 @@ async function testVue() {
   assert(window.__vueComposableInstance?.value, 'Vue composable instance ref was not populated');
   assert(window.__vueStatesActive === 1, 'Vue states controller did not mount');
   assert(window.__vuePresenceActive === 1, 'Vue Presence controller did not mount exactly once');
+  assert(document.querySelectorAll('#vue-presence-group [data-group-key]').length === 2, 'Vue keyed Presence group did not mount both children');
 
   type.value = 'counter';
   presenceVisible.value = false;
@@ -165,6 +176,8 @@ async function testVue() {
   assert(!Kineto.getInstance(document.querySelector('#vue-directive-target'), 'reveal'), 'Vue directive old module survived update');
   assert(Kineto.getInstance(document.querySelector('#vue-directive-target'), 'counter'), 'Vue directive did not update type');
   assert(window.__vuePresenceLeaves >= 1, 'Vue Presence did not resolve the host-owned leave');
+  assert(!document.querySelector('[data-group-key="vue-a"]'), 'Vue keyed Presence group removed child did not settle');
+  assert(document.querySelector('[data-group-key="vue-c"]'), 'Vue keyed Presence group did not add the new child');
 
   app.unmount();
   await sleep(80);

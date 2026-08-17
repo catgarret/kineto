@@ -24,7 +24,16 @@ export const KinetoPresence: DefineComponent<{
   options?: KinetoPresenceOptions;
   watchSources?: WatchSource[];
 }>;
+export function useKinetoPresenceGroup(
+  children?: unknown[],
+  options?: KinetoPresenceOptions & { onResult?: (result: KinetoPresenceResult, key: string) => void }
+): { items: Ref<readonly { key: string; child: unknown; present: boolean }[]>; sync(children?: unknown[]): void; onResult(key: string, result: KinetoPresenceResult): void };
+export const KinetoPresenceGroup: DefineComponent<{
+  as?: string | object;
+  mode?: 'sync' | 'wait' | 'popLayout';
+  options?: KinetoPresenceOptions;
+}>;
 export function install(app: App): void;
 export { Kineto };
-declare const plugin: { install: typeof install };
+declare const plugin: { install: typeof install; KinetoPresence: typeof KinetoPresence; KinetoPresenceGroup: typeof KinetoPresenceGroup };
 export default plugin;

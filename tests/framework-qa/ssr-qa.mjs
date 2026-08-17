@@ -3,8 +3,8 @@ import React from 'react';
 import { renderToString as renderReactToString } from 'react-dom/server';
 import { createSSRApp, h } from 'vue';
 import { renderToString as renderVueToString } from '@vue/server-renderer';
-import { KinetoPresence as ReactKinetoPresence, Motion } from '@dong-gri/kineto/react';
-import { KinetoPresence as VueKinetoPresence, useKineto as useVueKineto } from '@dong-gri/kineto/vue';
+import { KinetoPresence as ReactKinetoPresence, KinetoPresenceGroup as ReactKinetoPresenceGroup, Motion } from '@dong-gri/kineto/react';
+import { KinetoPresence as VueKinetoPresence, KinetoPresenceGroup as VueKinetoPresenceGroup, useKineto as useVueKineto } from '@dong-gri/kineto/vue';
 import Kineto from '@dong-gri/kineto';
 import standaloneStates from '@dong-gri/kineto/states';
 import standalonePresence from '@dong-gri/kineto/presence';
@@ -17,6 +17,14 @@ const reactPresenceHtml = renderReactToString(
   React.createElement(ReactKinetoPresence, { as: 'section', present: true }, 'React Presence SSR')
 );
 assert.match(reactPresenceHtml, /React Presence SSR/, 'React Presence SSR must render host content without a controller');
+const reactGroupHtml = renderReactToString(
+  React.createElement(ReactKinetoPresenceGroup, { as: 'section' }, [
+    React.createElement('span', { key: 'a' }, 'React group A'),
+    React.createElement('span', { key: 'b' }, 'React group B')
+  ])
+);
+assert.match(reactGroupHtml, /React group A/, 'React Presence group SSR must render keyed children');
+assert.match(reactGroupHtml, /React group B/, 'React Presence group SSR must render all keyed children');
 
 const VueHarness = {
   setup() {
@@ -30,6 +38,13 @@ const vuePresenceHtml = await renderVueToString(createSSRApp({
   render: () => h(VueKinetoPresence, { as: 'section', present: true }, { default: () => 'Vue Presence SSR' })
 }));
 assert.match(vuePresenceHtml, /Vue Presence SSR/, 'Vue Presence SSR must render host content without a controller');
+const vueGroupHtml = await renderVueToString(createSSRApp({
+  render: () => h(VueKinetoPresenceGroup, { as: 'section' }, {
+    default: () => [h('span', { key: 'a' }, 'Vue group A'), h('span', { key: 'b' }, 'Vue group B')]
+  })
+}));
+assert.match(vueGroupHtml, /Vue group A/, 'Vue Presence group SSR must render keyed children');
+assert.match(vueGroupHtml, /Vue group B/, 'Vue Presence group SSR must render all keyed children');
 
 const fullController = Kineto.states({ hidden: { opacity: 0 }, visible: { opacity: 1 } });
 assert.equal(fullController.ssr, true, 'full States controller must expose SSR mode');
