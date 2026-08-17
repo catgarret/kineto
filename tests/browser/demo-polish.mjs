@@ -16,6 +16,7 @@ html = html
   .replace(/<img /g, '<img crossorigin="anonymous" ');
 const mime = { '.svg':'image/svg+xml','.png':'image/png','.gif':'image/gif','.webp':'image/webp','.js':'text/javascript','.css':'text/css' };
 const browserName = process.env.KT_BROWSER || 'chromium';
+const checkpoint = (name) => console.log(`[demo-polish:${browserName}] ${name}`);
 const browserEngine = { chromium, firefox, webkit }[browserName];
 if (!browserEngine) throw new Error(`Unsupported KT_BROWSER: ${browserName}`);
 const browser = await browserEngine.launch(browserEngine === chromium
@@ -23,6 +24,7 @@ const browser = await browserEngine.launch(browserEngine === chromium
   : { headless:true });
 const page = await browser.newPage({ viewport:{ width:1437, height:807 } });
 try {
+  checkpoint('page-created');
   await page.route(/fonts\.googleapis\.com|fonts\.gstatic\.com|cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net/, (route)=>route.fulfill({status:200,body:'',contentType:'text/css'}));
   await page.route('http://kineto.local/**', async (route) => {
     const url=new URL(route.request().url());
@@ -31,6 +33,7 @@ try {
     catch { await route.fulfill({status:404,body:'Not found'}); }
   });
   await page.setContent(html,{waitUntil:'load'});
+  checkpoint('content-loaded');
   await page.evaluate(() => {
     const store=new Map([['kt-drawer-h','740']]);
     Object.defineProperty(window,'localStorage',{configurable:true,value:{
@@ -44,9 +47,11 @@ try {
   for (const file of ['dist/kineto.umd.js','demo/help-i18n.js','demo/help-i18n-extra.js','demo/playground-i18n.js','demo/playground.js','demo/copy-i18n.js','demo/main.js']) {
     await page.addScriptTag({path:resolve(root,file)});
   }
+  checkpoint('scripts-loaded');
   await page.waitForFunction(()=>window.Kineto&&window.Kineto.instanceCount>30,null,{timeout:15000});
   await page.waitForFunction(()=>!document.querySelector('.intro-loader'),null,{timeout:10000});
   await page.waitForTimeout(700);
+  checkpoint('demo-initialized');
 
   const helpAudit = await page.evaluate(async () => {
     const panels = [...document.querySelectorAll('.kt-playground')];
@@ -98,6 +103,7 @@ try {
   assert.deepEqual(helpAudit.missing, [], `every generated field needs one translated help button (${JSON.stringify(helpAudit.missing.slice(0, 20))})`);
   assert.ok(helpAudit.width >= 14 && helpAudit.height >= 14, `help buttons must not shrink or clip (${JSON.stringify(helpAudit)})`);
   assert.ok(helpAudit.tooltipVisible && helpAudit.tooltipText === helpAudit.expectedText, `clicking help must show its translated explanation (${JSON.stringify(helpAudit)})`);
+  checkpoint('help-audit');
 
   const githubButton = await page.evaluate(() => {
     const button = document.querySelector('.hero-github');
@@ -134,6 +140,7 @@ try {
   assert.match(relativeTimeDemo.text, /(분 전|minute ago)/, 'relative-time demo must show a past relative timestamp: ' + JSON.stringify(relativeTimeDemo));
   assert.ok(relativeTimeDemo.date, 'relative-time demo must seed a real server-date value: ' + JSON.stringify(relativeTimeDemo));
   assert.ok(relativeTimeDemo.hasSettings && ['date', 'mode', 'locale', 'live'].every((key) => relativeTimeDemo.fields.includes(key)), 'relative-time demo must expose its settings: ' + JSON.stringify(relativeTimeDemo));
+  checkpoint('counter-and-relative-time');
 
   const frameworkCopy = await page.evaluate(async () => {
     const panel = document.querySelector('[data-demo-module="dateTime"] .kt-playground');
@@ -154,6 +161,7 @@ try {
   assert.match(frameworkCopy.react, /<Motion/);
   assert.match(frameworkCopy.vue, /@dong-gri\/kineto\/vue/);
   assert.match(frameworkCopy.vue, /useKineto/);
+  checkpoint('framework-copy');
 
   const brushDrag = await page.evaluate(() => {
     const host = document.querySelector('[data-kt-brush-reveal]');
@@ -164,6 +172,7 @@ try {
   });
   assert.equal(brushDrag.draggable, false, `Brush Reveal images must disable native browser ghost dragging: ${JSON.stringify(brushDrag)}`);
   assert.equal(brushDrag.prevented, true, `Brush Reveal must prevent dragstart before a browser ghost image appears: ${JSON.stringify(brushDrag)}`);
+  checkpoint('brush-drag');
 
   const cover = await page.evaluate(() => {
     const text=document.querySelector('.demo-css-0a735447');
@@ -206,6 +215,7 @@ try {
   assert.notEqual(zoomHeader.rootTransform, 'none', `the real Zoom button must animate the root viewport consistently across Safari and Chromium (${JSON.stringify(zoomHeader)})`);
   assert.ok(zoomHeader.width < zoomHeader.beforeWidth, `the persistent header must zoom with the page instead of staying fixed (${JSON.stringify(zoomHeader)})`);
   assert.equal(zoomHeader.viewportCovers, 0, `Zoom must not flash a full-viewport cover over the header (${JSON.stringify(zoomHeader)})`);
+  checkpoint('page-reveal');
   const webkitLayout = await page.evaluate(() => {
     const images = [...document.querySelectorAll('.lightbox-grid img')].map((item) => item.getBoundingClientRect());
     const dots = [...document.querySelectorAll('.kt-slider-dot')].map((item) => {
@@ -234,6 +244,7 @@ try {
   assert.equal(webkitLayout.coverflowOverflow, 'hidden', `Coverflow previews must be clipped at the demo boundary (${JSON.stringify(webkitLayout)})`);
   assert.ok(webkitLayout.coverflowPadding==='70px'&&webkitLayout.coverflowMargin==='-70px', `Coverflow must reserve a clipped lower shadow gutter without changing layout flow (${JSON.stringify(webkitLayout)})`);
   assert.ok(webkitLayout.dissolveClip.includes('inset(0')&&webkitLayout.dissolveSlideClip.includes('inset(0'), `Dissolve must hard-clip both scene and slides so inactive colors cannot leak through rounded subpixels (${JSON.stringify(webkitLayout)})`);
+  checkpoint('engine-layout');
   const coverRevealModes = await page.evaluate(async () => {
     const canvas=document.createElement('canvas'); canvas.width=40; canvas.height=20;
     const context=canvas.getContext('2d'); context.fillStyle='#e3162a'; context.fillRect(0,0,28,20); context.fillStyle='#164ee3'; context.fillRect(28,0,12,20);
@@ -266,6 +277,7 @@ try {
   });
   assert.ok(lineMaskTiming.length>1&&!lineMaskTiming[0].clip.includes('100')&&lineMaskTiming.slice(1).some((line)=>line.clip.includes('100')), `Mask must reveal each rendered line on its own stagger (${JSON.stringify(lineMaskTiming)})`);
   assert.ok(lineMaskTiming.every((line)=>line.panel&&!line.panel.includes('101')), `the remaining color panel must keep the same later slot that color1 used before mask replacement (${JSON.stringify(lineMaskTiming)})`);
+  checkpoint('cover-reveal-unit');
   await page.locator('#cover-gallery-demo').scrollIntoViewIfNeeded();
   await page.evaluate(() => document.querySelectorAll('#cover-gallery-demo img').forEach((image) => { image.loading='eager'; }));
   await page.waitForFunction(() => [...document.querySelectorAll('#cover-gallery-demo img')].every((image)=>image.complete&&image.naturalWidth>0),null,{timeout:10000});
@@ -312,6 +324,7 @@ try {
     return result;
   });
   assert.ok(coverReset.sameTargets&&coverReset.coverInstances===8&&coverReset.coverWrappers===8&&coverReset.flip, `Reset must preserve and recreate both nested Cover Reveal and Flip instances (${JSON.stringify(coverReset)})`);
+  checkpoint('cover-reveal-gallery');
   const radial = page.locator('[data-kt-slider="radial"]');
   const radialDefault = await radial.evaluate((host)=>{
     const boxes=[...host.querySelectorAll('.kt-radial-item')].filter((item)=>Number(getComputedStyle(item).opacity)>.99).map((item)=>item.querySelector('img').getBoundingClientRect());
@@ -379,6 +392,7 @@ try {
   const {afterDrag:radialAfterDrag,afterClick:radialAfterClick}=radialDragResult;
   assert.notEqual(radialAfterDrag,radialInput.index,`Radial must respond to a pointer drag (${JSON.stringify({radialInput,radialAfterDrag})})`);
   assert.equal(radialAfterClick,radialAfterDrag,`Radial must suppress the click generated by a drag (${JSON.stringify({radialInput,radialAfterDrag,radialAfterClick})})`);
+  checkpoint('radial');
   const segmentedDemoTab=page.locator('#mod-tabs .demo-tabs .demo-tab',{hasText:'Segmented'});
   await segmentedDemoTab.click();
   await page.waitForTimeout(80);
@@ -396,6 +410,7 @@ try {
     `a tab revealed after hidden initialization must place its active pill: ${JSON.stringify(initialSegmentIndicator)}`);
   assert.notEqual(initialSegmentIndicator.background,'rgba(0, 0, 0, 0)',
     'the initial segmented-tab pill must have a visible background');
+  checkpoint('tabs');
 
   const megaTabs = await page.evaluate(() => {
     const card = document.querySelector('#mod-megaMenu .card[data-demo-tabs]');
@@ -415,6 +430,7 @@ try {
   assert.equal(megaTabs.overviewItems,3,'the read-only overview must compare dropdown, click, and mega triggers');
   assert.equal(megaTabs.settingsHosts,2,'overview must stay read-only while both detail tabs own settings');
   assert.deepEqual(megaTabs.settingsTargets,['megaMenu','megaMenu'],'each GNB detail tab must own a Mega Menu settings panel');
+  checkpoint('mega-menu-structure');
 
   await page.setViewportSize({width:700,height:807});
   const solutionTrigger=page.locator('#mod-megaMenu .demo-tabpanel:not([hidden]) .kt-menu-trigger',{hasText:'솔루션'});
@@ -447,6 +463,7 @@ try {
     scrollVelocityGrid.last[0].width >= scrollVelocityGrid.gridWidth - 2,
     `Scroll Velocity final card must fill the 700px row: ${JSON.stringify(scrollVelocityGrid)}`
   );
+  checkpoint('responsive-width');
 
   await page.setViewportSize({width:390,height:844});
   // Exactly one visible trigger must match, or the assertions below could be
@@ -568,6 +585,7 @@ try {
   assert.equal(mobileMega.responsiveClass, true, 'the demo should opt into the library scroll mode');
   assert.equal(mobileMega.topOverflowX, 'auto', 'mobile top-level menu items should be swipeable');
   assert.equal(mobileMega.topWrap, 'nowrap', 'mobile top-level menu items should stay on one row');
+  checkpoint('mobile-mega-menu');
   await page.locator('#mod-megaMenu .demo-tabs > .demo-tab',{hasText:'드롭다운'}).click();
   const dropdownTrigger=page.locator('#mod-megaMenu .demo-tabpanel:not([hidden]) .kt-menu-trigger',{hasText:'라이브러리'});
   await dropdownTrigger.click();
@@ -580,6 +598,7 @@ try {
   assert.equal(mobileDropdown.hidden,false,`mobile Dropdown panel must be visible: ${JSON.stringify(mobileDropdown)}`);
   assert.equal(mobileDropdown.position,'fixed',`mobile Dropdown must escape the card's clipping context: ${JSON.stringify(mobileDropdown)}`);
   assert.ok(mobileDropdown.width>0&&mobileDropdown.left>=-1&&mobileDropdown.right<=mobileDropdown.viewportWidth+1,`mobile Dropdown must remain inside the viewport: ${JSON.stringify(mobileDropdown)}`);
+  checkpoint('mobile-dropdown');
 
   const splitEffect=page.locator('.pt-fx-row [data-pt-preview="split"]');
   await splitEffect.click();
@@ -620,6 +639,7 @@ try {
   assert.ok(mobileCompounds.length>=5,'compound loading demos must remain present on mobile');
   assert.ok(mobileCompounds.every((item)=>item.inside),`compound loading text must fit its mobile stage: ${JSON.stringify(mobileCompounds)}`);
   assert.ok(mobileCompounds.every((item)=>item.fullRow),`compound loading cards must use the full mobile row: ${JSON.stringify(mobileCompounds)}`);
+  checkpoint('mobile-loading');
 
   await page.setViewportSize({width:1437,height:807});
   const summary=page.locator('[data-settings-for="loadingIndicator"]').first().locator('.kt-playground > summary');
@@ -637,6 +657,7 @@ try {
   assert.ok(drawerBefore.gripHeight<=24,'drawer grip must stay compact');
   assert.equal(drawerBefore.groupsOverflow,'auto','settings groups must own vertical scrolling');
   assert.equal(drawerBefore.bodyOverflow,'hidden','portal body itself must not become the scroll container');
+  checkpoint('drawer-layout');
 
   const resize=await page.evaluate(() => {
     const sheet=document.querySelector('.kt-drawer-sheet');
@@ -648,6 +669,7 @@ try {
     return {before,after:sheet.getBoundingClientRect().height};
   });
   assert.ok(Math.abs(resize.after-(resize.before+40))<.1,'the visible grey grip must resize the drawer');
+  checkpoint('complete');
   console.log('Demo polish browser QA OK',JSON.stringify({cover,initialSegmentIndicator,megaTabs,mobileMega,mobilePageEffects,mobileCompounds,drawerBefore,resize}));
 } finally {
   await browser.close();

@@ -138,6 +138,10 @@ jobs:
     timeout-minutes: 20
     strategy:
       fail-fast: false
+      # WebKit and Firefox share the same CPU/memory-heavy demo fixture. Keep
+      # the engines isolated on the hosted runner so one lane cannot starve
+      # the other while the full demo-polish suite is booting.
+      max-parallel: 1
       matrix:
         browser: [firefox, webkit]
 
@@ -164,13 +168,17 @@ jobs:
         run: npm run build
 
       - name: Run cross-browser smoke
-        run: node tests/retry-browser-test.mjs tests/browser-smoke.mjs
+        run: |
+          set -o pipefail
+          node tests/retry-browser-test.mjs tests/browser-smoke.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
         env:
           KT_BROWSER: ${{ matrix.browser }}
 
       - name: Run full demo regression QA in the cross-browser lane
         if: matrix.browser == 'firefox' || matrix.browser == 'webkit'
-        run: node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs
+        run: |
+          set -o pipefail
+          node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
         env:
           KT_BROWSER: ${{ matrix.browser }}
           MK_BROWSER_TEST_TIMEOUT: 240000
@@ -182,6 +190,7 @@ jobs:
         with:
           name: cross-browser-${{ matrix.browser }}-artifacts
           path: |
+            cross-browser-${{ matrix.browser }}.log
             tests/browser/shots/
             tests/.smoke/
           if-no-files-found: ignore

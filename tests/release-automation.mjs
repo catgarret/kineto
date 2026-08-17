@@ -44,8 +44,10 @@ assert.match(read('.github/workflows/ci.yml'), /retry-command\.mjs npm pack --dr
 assert.match(ciWorkflow, /tests\/browser\/demo-polish\.mjs/);
 assert.match(ciWorkflow, /KT_BROWSER:\s*\$\{\{ matrix\.browser \}\}/);
 assert.match(ciWorkflow, /matrix\.browser == 'firefox' \|\| matrix\.browser == 'webkit'/);
+assert.match(ciWorkflow, /max-parallel:\s*1/);
 assert.match(ciWorkflow, /MK_BROWSER_TEST_ATTEMPTS:\s*3/);
 assert.match(ciWorkflow, /timeout-minutes:\s*20/);
+assert.match(ciWorkflow, /cross-browser-\$\{\{ matrix\.browser \}\}\.log/);
 assert.match(pkg.scripts['test:framework'], /scripts\/npm-ci-retry\.mjs/);
 assert.match(pkg.scripts['test:consumer-bundles'], /scripts\/npm-ci-retry\.mjs/);
 assert.match(workflow, /npm run purge/);
