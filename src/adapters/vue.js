@@ -55,6 +55,75 @@ export function useKineto(type, options = {}, watchSources = []) {
 }
 
 /**
+ * Bridge a one-shot Kineto module into Vue's <Transition> hook contract.
+ * Vue owns insertion/removal; the adapter only starts the requested module,
+ * calls Vue's done callback from the module completion hook, and destroys the
+ * temporary instance after Vue confirms the phase has settled.
+ *
+ * `options` is shared by enter/leave. `enterOptions` and `leaveOptions` may
+ * override it for the corresponding phase. A bounded fallback timer keeps a
+ * transition from hanging when a custom module does not emit onComplete.
+ */
+export function useKinetoTransition(type, options = {}) {
+  const active = new Map();
+  const phaseOptions = (phase) => {
+    const override = phase === 'enter' ? options.enterOptions : options.leaveOptions;
+    const merged = { ...options, ...(override || {}) };
+    delete merged.enterOptions;
+    delete merged.leaveOptions;
+    return merged;
+  };
+  const durationMs = (phase) => {
+    const phaseConfig = phaseOptions(phase);
+    const duration = Math.max(0, Number(phaseConfig.duration ?? 0.4));
+    const delay = Math.max(0, Number(phaseConfig.delay ?? 0));
+    return (duration + delay) * 1000 + 120;
+  };
+  const cleanup = (el) => {
+    const run = active.get(el);
+    if (!run) return;
+    clearTimeout(run.timer);
+    active.delete(el);
+    try { run.instance?.destroy?.(); } catch (_error) { /* best effort during Vue teardown */ }
+  };
+  const finish = (run) => {
+    if (run.finished) return;
+    run.finished = true;
+    clearTimeout(run.timer);
+    run.done?.();
+  };
+  const start = (el, phase, done) => {
+    cleanup(el);
+    const run = { instance: null, timer: null, done, finished: false };
+    active.set(el, run);
+    const config = phaseOptions(phase);
+    const userComplete = config.onComplete;
+    config.onComplete = (...args) => {
+      try { userComplete?.(...args); } finally { finish(run); }
+    };
+    try {
+      run.instance = Kineto.create(type, el, config);
+      if (!run.instance) finish(run);
+    } catch (_error) {
+      finish(run);
+    }
+    if (!run.finished) run.timer = setTimeout(() => finish(run), durationMs(phase));
+  };
+  const hooks = {
+    onBeforeEnter: (el) => cleanup(el),
+    onEnter: (el, done) => start(el, 'enter', done),
+    onAfterEnter: (el) => cleanup(el),
+    onEnterCancelled: (el) => cleanup(el),
+    onBeforeLeave: (el) => cleanup(el),
+    onLeave: (el, done) => start(el, 'leave', done),
+    onAfterLeave: (el) => cleanup(el),
+    onLeaveCancelled: (el) => cleanup(el)
+  };
+  onBeforeUnmount(() => [...active.keys()].forEach(cleanup));
+  return hooks;
+}
+
+/**
  * Host-owned Presence lifecycle for one stable Vue element.
  * Keep the element rendered until leave() resolves; the host owns keyed
  * state removal and can inspect result/status through the returned refs.

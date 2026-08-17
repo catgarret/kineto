@@ -253,6 +253,30 @@ import KinetoVue from '@dong-gri/kineto/vue';
 app.use(KinetoVue);
 ```
 
+Vue's `<Transition>` can use a Kineto module for one-shot enter/leave motion.
+Vue still owns the DOM boundary; the hook calls Vue's `done` callback from the
+module completion event and cleans up the temporary instance after each phase.
+
+```js
+import { Transition, h, ref } from 'vue';
+import { useKinetoTransition } from '@dong-gri/kineto/vue';
+
+const visible = ref(true);
+const transition = useKinetoTransition('reveal', {
+  enterOptions: { preset: 'fade-up', duration: 0.35 },
+  leaveOptions: { preset: 'fade', duration: 0.2 }
+});
+
+// In a render function:
+h(Transition, transition, {
+  default: () => visible.value ? h('article', 'Panel') : null
+});
+```
+
+Use one-shot modules for this bridge. If a custom module does not emit
+`onComplete`, the adapter uses its configured `duration` + `delay` as a bounded
+fallback so Vue's transition lifecycle cannot remain blocked indefinitely.
+
 ```js
 import installKineto from '@dong-gri/kineto/jquery';
 installKineto(window.jQuery);

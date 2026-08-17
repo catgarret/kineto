@@ -1,10 +1,10 @@
 import React, { StrictMode, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createApp, h, nextTick, onBeforeUnmount, onMounted, ref, watch, withDirectives } from 'vue';
+import { createApp, h, nextTick, onBeforeUnmount, onMounted, ref, Transition, watch, withDirectives } from 'vue';
 import $ from 'jquery';
 import Kineto from '@dong-gri/kineto';
 import { KinetoPresence as ReactKinetoPresence, KinetoPresenceGroup as ReactKinetoPresenceGroup, Motion, useKineto as useReactKineto, useKinetoPresence as useReactKinetoPresence } from '@dong-gri/kineto/react';
-import { KinetoPresence as VueKinetoPresence, KinetoPresenceGroup as VueKinetoPresenceGroup, vMotion, useKineto as useVueKineto, useKinetoPresence as useVueKinetoPresence } from '@dong-gri/kineto/vue';
+import { KinetoPresence as VueKinetoPresence, KinetoPresenceGroup as VueKinetoPresenceGroup, vMotion, useKineto as useVueKineto, useKinetoPresence as useVueKinetoPresence, useKinetoTransition } from '@dong-gri/kineto/vue';
 import installJQueryKineto from '@dong-gri/kineto/jquery';
 import '@dong-gri/kineto/style.css';
 
@@ -130,12 +130,17 @@ async function testVue() {
   const host = document.querySelector('#vue-root');
   const type = ref('reveal');
   const presenceVisible = ref(true);
+  const transitionVisible = ref(true);
   const app = createApp({
     setup() {
       const composableType = 'reveal';
       const { element, instance } = useVueKineto(composableType, { duration: 0.01 });
       const stateElement = ref(null);
       const presenceLifecycle = useVueKinetoPresence(presenceVisible, { duration: 0.01, accessibility: 'managed' });
+      const transitionHooks = useKinetoTransition('reveal', {
+        enterOptions: { preset: 'fade-up', duration: 0.01, onComplete: () => { window.__vueTransitionEnter = (window.__vueTransitionEnter || 0) + 1; } },
+        leaveOptions: { preset: 'fade', duration: 0.01, onComplete: () => { window.__vueTransitionLeave = (window.__vueTransitionLeave || 0) + 1; } }
+      });
       let stateController = null;
       onMounted(() => {
         stateController = Kineto.states({
@@ -161,6 +166,9 @@ async function testVue() {
         withDirectives(h('div', { id: 'vue-directive-target' }, 'Vue directive adapter'), [[vMotion, { type: type.value, options: { duration: 0.01 } }]]),
         h('div', { id: 'vue-composable-target', ref: element }, 'Vue composable adapter'),
         h('div', { id: 'vue-state-target', ref: stateElement }, 'Vue states adapter'),
+        h(Transition, { ...transitionHooks, appear: true }, {
+          default: () => transitionVisible.value ? h('div', { id: 'vue-transition-target' }, 'Vue Transition adapter') : null
+        }),
         h('div', { id: 'vue-presence-target', ref: presenceLifecycle.element }, 'Vue Presence host'),
         h(VueKinetoPresence, { id: 'vue-presence-component-target', present: presenceVisible.value, options: { duration: 0.01 } }, { default: () => 'Vue Presence component' }),
         h(VueKinetoPresenceGroup, { id: 'vue-presence-group', mode: 'sync', options: { duration: 0.01 } }, {
@@ -183,9 +191,12 @@ async function testVue() {
   assert(window.__vueStatesActive === 1, 'Vue states controller did not mount');
   assert(window.__vuePresenceActive === 1, 'Vue Presence controller did not mount exactly once');
   assert(document.querySelectorAll('#vue-presence-group [data-group-key]').length === 2, 'Vue keyed Presence group did not mount both children');
+  assert(document.querySelector('#vue-transition-target'), 'Vue Transition interop did not render the entering child');
+  assert(window.__vueTransitionEnter >= 1, 'Vue Transition interop did not settle the enter hook');
 
   type.value = 'counter';
   presenceVisible.value = false;
+  transitionVisible.value = false;
   await nextTick();
   await sleep(100);
   assert(!Kineto.getInstance(document.querySelector('#vue-directive-target'), 'reveal'), 'Vue directive old module survived update');
@@ -194,10 +205,14 @@ async function testVue() {
   assert(!document.querySelector('[data-group-key="vue-a"]'), 'Vue keyed Presence group removed child did not settle');
   assert(document.querySelector('[data-group-key="vue-c"]'), 'Vue keyed Presence group did not add the new child');
   assert(document.querySelector('[data-group-key="vue-nested-a"]')?.parentElement?.dataset.ktPresenceStatus === 'finished', 'Vue nested Presence child did not propagate parent exit');
+  assert(!document.querySelector('#vue-transition-target'), 'Vue Transition interop did not remove the leaving child');
+  assert(window.__vueTransitionLeave >= 1, 'Vue Transition interop did not settle the leave hook');
+  transitionVisible.value = true;
   presenceVisible.value = true;
   await nextTick();
   await sleep(100);
   assert(document.querySelector('[data-group-key="vue-nested-a"]'), 'Vue nested Presence child did not re-enter after parent propagation');
+  assert(document.querySelector('#vue-transition-target'), 'Vue Transition interop did not re-enter after cancellation/replay');
 
   app.unmount();
   await sleep(80);

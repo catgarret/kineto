@@ -7,12 +7,32 @@ export interface MotionBinding {
   options?: KinetoOptions;
 }
 
+export interface KinetoTransitionOptions extends KinetoOptions {
+  enterOptions?: KinetoOptions;
+  leaveOptions?: KinetoOptions;
+}
+
+export interface KinetoTransitionHooks {
+  onBeforeEnter(el: Element): void;
+  onEnter(el: Element, done: () => void): void;
+  onAfterEnter(el: Element): void;
+  onEnterCancelled(el: Element): void;
+  onBeforeLeave(el: Element): void;
+  onLeave(el: Element, done: () => void): void;
+  onAfterLeave(el: Element): void;
+  onLeaveCancelled(el: Element): void;
+}
+
 export const vMotion: Directive<HTMLElement, string | MotionBinding | KinetoOptions>;
 export function useKineto(
   type: string,
   options?: KinetoOptions,
   watchSources?: WatchSource[]
 ): { element: Ref<HTMLElement | null>; instance: Ref<KinetoInstance | null>; replay(): void };
+export function useKinetoTransition(
+  type: string,
+  options?: KinetoTransitionOptions
+): KinetoTransitionHooks;
 export function useKinetoPresence(
   present?: boolean | Ref<boolean> | (() => boolean),
   options?: KinetoPresenceOptions & { enterOptions?: KinetoOptions; exitOptions?: KinetoOptions; onResult?: (result: KinetoPresenceResult) => void },

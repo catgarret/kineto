@@ -50,7 +50,8 @@ exit is running; conditionally unmounting it first makes an exit impossible.
 - The host remains in the render tree until the leave result is settled.
 - `<KinetoPresenceGroup>` provides the same direct-child key contract. Nested
   parent exit propagation is enabled when the parent opts into `propagate: true`;
-  Vue Transition interop remains a separate gate.
+  `useKinetoTransition()` provides an explicit `<Transition>` hook bridge for
+  one-shot module enter/leave effects.
 
 ## Adapter API (v0.8.89)
 
@@ -86,9 +87,30 @@ import { KinetoPresenceGroup } from '@dong-gri/kineto/react';
 ```
 
 Vue provides the equivalent `useKinetoPresence` composable and
-`KinetoPresence` component. `present` may be a boolean, ref, or getter. Both
+`KinetoPresence` component. `present` may be a boolean, ref, or getter. The
+`useKinetoTransition(type, options)` composable returns Vue transition hooks;
+`enterOptions` and `leaveOptions` override shared module options per phase. Both
 implementations are SSR-safe: no controller is created without a DOM element,
 and the standalone controller resolves SSR calls as `skipped`.
+
+```js
+import { Transition, h, ref } from 'vue';
+import { useKinetoTransition } from '@dong-gri/kineto/vue';
+
+const visible = ref(true);
+const hooks = useKinetoTransition('reveal', {
+  enterOptions: { preset: 'fade-up', duration: 0.35 },
+  leaveOptions: { preset: 'fade', duration: 0.2 }
+});
+
+h(Transition, hooks, {
+  default: () => visible.value ? h('section', 'Content') : null
+});
+```
+
+The adapter invokes Vue's `done` callback from `onComplete`, cleans up after
+`onAfterEnter`/`onAfterLeave`, handles cancellation hooks, and falls back to a
+bounded `duration + delay` timer when a custom module does not emit completion.
 
 ## SSR and accessibility boundary
 
@@ -109,6 +131,8 @@ Before expanding framework transition interop, the project must add:
 5. explicit `safeToRemove` and focus ownership examples;
 6. React/Vue adapter consumer gzip measurements.
 
-Until those gates exist, consumers should use the group for direct keyed
-children and the host-owned composables or standalone controller for custom
-DOM ownership. Vue Transition interop remains out of scope.
+The Vue Transition hook bridge is now covered by the framework fixture. The
+remaining gates apply to future keyed-transition expansion and shared-layout
+interop; consumers should continue to use the group for direct keyed children
+and the host-owned composables or standalone controller for custom DOM
+ownership.

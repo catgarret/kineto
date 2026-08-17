@@ -242,7 +242,8 @@ Vanilla Presence Core 계약이 고정된 뒤 host-owned lifecycle 범위부터 
 - 완료(v0.8.85): Strict Mode·Vue lifecycle·SSR·hydration markup fixture를 통과
 - 완료(v0.8.86): direct keyed child를 추적하고 exit 완료 뒤 자동 제거하는 `KinetoPresenceGroup`을 React·Vue에 추가
 - 완료(v0.8.89): 부모가 `propagate: true`를 선택하면 React·Vue keyed group의 자식 exit와 부모 `safeToRemove` 순서를 전파
-- Vue Transition interop은 다음 출시 게이트로 유지
+- 완료(Unreleased): `useKinetoTransition()`이 Vue `<Transition>`의 enter/leave,
+  cancellation, phase별 옵션, completion fallback을 연결하고 framework QA로 검증
 
 - React: `<KinetoPresence>`, `useKineto`, stable ref, Strict Mode 보장
 - Vue: `<KinetoPresence>`, composable, Vue transition interop
@@ -402,7 +403,7 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 18. 완료(v0.8.80): track Slider 해제 플링 배율을 `velocityInfluence`로 공개하고 Radial에는 노출하지 않음
 19. 완료(v0.8.84): track Slider에 opt-in spring solver와 공개 물리 파라미터를 추가
 20. 완료(v0.8.102): Radial에 동일한 opt-in spring solver와 물리 파라미터를 연결하고 회귀 테스트 추가
-21. 후속: Vue Transition interop과 transition cancellation 경계 검토
+21. 완료(Unreleased): Vue Transition interop과 transition cancellation 경계 검토
 22. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구가 확인될 때 별도 검토
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
