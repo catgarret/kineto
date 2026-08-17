@@ -5,6 +5,16 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.104] - 2026-08-17
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Give the Firefox/WebKit full demo-polish lane a third bounded attempt and a 20-minute job ceiling, while keeping the Chromium and cross-browser smoke contracts unchanged.
 - Serialize the Firefox/WebKit hosted lanes and retain per-engine progress logs so WebKit resource contention or a stalled checkpoint can be diagnosed without weakening the gate.
 - Bound the detached data-URL image readiness probe in Cover Reveal QA so a WebKit decode stall cannot consume all three browser retries.
@@ -39,7 +49,6 @@
 - WebKit의 지연된 hidden 속성 반영도 무한 polling 없이 즉시·두 프레임·제한된 후속 Tabs 측정으로 처리합니다.
 - 기술 로드맵의 기준을 v0.8.103으로 갱신하고 배포된 View Transitions·provenance·Node 24 검증 근거를 기록합니다.
 - GitHub가 workflow-run conclusion을 채우기 전에 이벤트를 보내더라도 Pages가 CI 완료까지 기다리고 성공한 경우에만 배포하도록 보강합니다.
-
 ## [0.8.103] - 2026-08-17
 
 ### English

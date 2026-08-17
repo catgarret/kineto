@@ -2728,6 +2728,22 @@
           panels.forEach((other, otherIndex) => { other.hidden = otherIndex !== index; });
           hosts.forEach((host, hostIndex) => { if (host) host.hidden = hostIndex !== index; });
           [...strip.children].forEach((node, nodeIndex) => node.setAttribute('aria-selected', String(nodeIndex === index)));
+          // A nested Kineto Tabs instance may have been created while this
+          // panel was hidden. WebKit does not consistently emit ResizeObserver
+          // callbacks for a hidden ancestor, so give visible child instances a
+          // deterministic post-layout measurement hook.
+          const refresh = () => panel.querySelectorAll('[data-kt-tabs]').forEach((target) => {
+            window.Kineto?.getInstance?.(target, 'tabs')?.refresh?.();
+          });
+          // WebKit can commit the hidden-attribute removal one frame later
+          // than the click handler. Cover the immediate, two-frame, and
+          // bounded post-layout cases without leaving a polling loop behind.
+          refresh();
+          requestAnimationFrame(() => {
+            refresh();
+            requestAnimationFrame(refresh);
+          });
+          setTimeout(refresh, 32);
         });
         strip.appendChild(tab);
         const descriptors = panel.hasAttribute('data-demo-no-settings') ? [] : discover(panel);
