@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Preserved the 130 KB consumer bundle budget while allowing a measured 1 KB Node 24/Linux gzip variance at the generated-byte boundary.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 130KB consumer bundle 예산은 유지하고 생성 바이트 경계에서 발생하는 Node 24/Linux gzip 변동만 1KB까지 허용하도록 조정했습니다.
 
 ## [0.8.91] - 2026-08-17
 
