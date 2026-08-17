@@ -189,6 +189,22 @@ export default {
       })
       : null;
     visibilityObserver?.observe(el);
+    // Some WebKit versions do not emit an intersection or resize notification
+    // when a `hidden` ancestor is toggled. Watch that semantic visibility bit
+    // directly and wait one frame for the newly revealed layout to settle.
+    const hiddenObserver = indicator && typeof MutationObserver !== 'undefined'
+      ? new MutationObserver((mutations) => {
+        if (!mutations.some((mutation) => mutation.attributeName === 'hidden')) return;
+        requestAnimationFrame(moveIndicator);
+      })
+      : null;
+    if (hiddenObserver) {
+      let ancestor = el.parentElement;
+      while (ancestor) {
+        hiddenObserver.observe(ancestor, { attributes: true, attributeFilter: ['hidden'] });
+        ancestor = ancestor.parentElement;
+      }
+    }
     // Keep the handle so destroy() can cancel a still-pending first paint (no leak).
     const initRaf = requestAnimationFrame(moveIndicator);
 
@@ -203,6 +219,7 @@ export default {
         if (!indicatorObserver) window.removeEventListener('resize', moveIndicator);
         indicatorObserver?.disconnect();
         visibilityObserver?.disconnect();
+        hiddenObserver?.disconnect();
         tabs.forEach((tab) => { tab.removeEventListener('click', onClick); tab.removeEventListener('keydown', onKey); tab.removeAttribute('data-kt-label'); });
         indicator?.remove();
         el.classList.remove('kt-tabs', `kt-tabs--${orientation}`, 'kt-tabs--ind-none', 'kt-tabs--instant');

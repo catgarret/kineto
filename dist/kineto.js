@@ -10780,7 +10780,17 @@ var Yr = {
 			e.some((e) => e.isIntersecting) && v();
 		}) : null;
 		E?.observe(e);
-		let D = requestAnimationFrame(v);
+		let D = p && typeof MutationObserver < "u" ? new MutationObserver((e) => {
+			e.some((e) => e.attributeName === "hidden") && requestAnimationFrame(v);
+		}) : null;
+		if (D) {
+			let t = e.parentElement;
+			for (; t;) D.observe(t, {
+				attributes: !0,
+				attributeFilter: ["hidden"]
+			}), t = t.parentElement;
+		}
+		let O = requestAnimationFrame(v);
 		return {
 			el: e,
 			type: "tabs",
@@ -10788,7 +10798,7 @@ var Yr = {
 			pause() {},
 			resume() {},
 			destroy() {
-				cancelAnimationFrame(D), T || window.removeEventListener("resize", v), T?.disconnect(), E?.disconnect(), d.forEach((e) => {
+				cancelAnimationFrame(O), T || window.removeEventListener("resize", v), T?.disconnect(), E?.disconnect(), D?.disconnect(), d.forEach((e) => {
 					e.removeEventListener("click", x), e.removeEventListener("keydown", w), e.removeAttribute("data-kt-label");
 				}), p?.remove(), e.classList.remove("kt-tabs", `kt-tabs--${i}`, "kt-tabs--ind-none", "kt-tabs--instant"), f.forEach((e) => {
 					e.hidden = !1;
