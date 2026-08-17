@@ -48,6 +48,7 @@ assert.match(ciWorkflow, /max-parallel:\s*1/);
 assert.match(ciWorkflow, /MK_BROWSER_TEST_ATTEMPTS:\s*3/);
 assert.match(ciWorkflow, /timeout-minutes:\s*20/);
 assert.match(ciWorkflow, /cross-browser-\$\{\{ matrix\.browser \}\}\.log/);
+assert.doesNotMatch(read('tests/browser/demo-polish.mjs'), /await image\.decode\(\)/, 'WebKit demo QA must not await an unbounded detached image decode');
 assert.match(pkg.scripts['test:framework'], /scripts\/npm-ci-retry\.mjs/);
 assert.match(pkg.scripts['test:consumer-bundles'], /scripts\/npm-ci-retry\.mjs/);
 assert.match(workflow, /npm run purge/);

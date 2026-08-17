@@ -248,7 +248,15 @@ try {
   const coverRevealModes = await page.evaluate(async () => {
     const canvas=document.createElement('canvas'); canvas.width=40; canvas.height=20;
     const context=canvas.getContext('2d'); context.fillStyle='#e3162a'; context.fillRect(0,0,28,20); context.fillStyle='#164ee3'; context.fillRect(28,0,12,20);
-    const image=new Image(); image.src=canvas.toDataURL(); await image.decode(); document.body.appendChild(image);
+    const image=new Image();
+    const ready=new Promise((resolve)=>{ image.onload=resolve; image.onerror=resolve; });
+    image.src=canvas.toDataURL();
+    // WebKit can leave `HTMLImageElement.decode()` pending indefinitely on a
+    // detached data URL under a throttled hosted runner. The image is only a
+    // tiny unit-test fixture, so a bounded load/error wait is sufficient and
+    // keeps one engine from consuming the wrapper's entire retry budget.
+    await Promise.race([ready,new Promise((resolve)=>setTimeout(resolve,2000))]);
+    document.body.appendChild(image);
     const auto=Kineto.coverReveal(image,{colorMode:'auto',layers:2,duration:10,delay:5000,waitForImage:true});
     await new Promise(requestAnimationFrame);
     const colors=[...image.closest('.kt-cover-wrap').querySelectorAll('[aria-hidden="true"]')].map((panel)=>getComputedStyle(panel).backgroundColor);

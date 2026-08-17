@@ -7,6 +7,7 @@
 <!-- Add matching English release bullets here. -->
 - Give the Firefox/WebKit full demo-polish lane a third bounded attempt and a 20-minute job ceiling, while keeping the Chromium and cross-browser smoke contracts unchanged.
 - Serialize the Firefox/WebKit hosted lanes and retain per-engine progress logs so WebKit resource contention or a stalled checkpoint can be diagnosed without weakening the gate.
+- Bound the detached data-URL image readiness probe in Cover Reveal QA so a WebKit decode stall cannot consume all three browser retries.
 - Refresh the technical roadmap baseline to v0.8.103 and record the shipped View Transitions, provenance, and Node 24 verification evidence.
 - Make Pages wait for the triggering CI run to finish and deploy only after that run succeeds, even when GitHub emits the workflow-run event before its conclusion is populated.
 
@@ -15,6 +16,7 @@
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - Chromium과 cross-browser smoke 계약은 유지하면서 Firefox/WebKit 전체 demo-polish 단계에 제한된 세 번째 시도와 20분 작업 상한을 적용합니다.
 - Firefox/WebKit 호스팅 단계를 엔진별로 직렬화하고 엔진별 진행 로그를 보존해 WebKit 자원 경합이나 정지한 체크포인트를 게이트 완화 없이 진단할 수 있게 합니다.
+- Cover Reveal QA의 분리된 data URL 이미지 준비 대기를 제한해 WebKit decode 정지가 세 번의 브라우저 재시도를 모두 소모하지 않게 합니다.
 - 기술 로드맵의 기준을 v0.8.103으로 갱신하고 배포된 View Transitions·provenance·Node 24 검증 근거를 기록합니다.
 - GitHub가 workflow-run conclusion을 채우기 전에 이벤트를 보내더라도 Pages가 CI 완료까지 기다리고 성공한 경우에만 배포하도록 보강합니다.
 
