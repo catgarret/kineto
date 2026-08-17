@@ -1,6 +1,8 @@
-import { Comment, defineComponent, h, onBeforeUnmount, onMounted, onUpdated, ref, shallowRef, toRef, unref, watch } from 'vue';
+import { Comment, defineComponent, h, inject, onBeforeUnmount, onMounted, onUpdated, provide, ref, shallowRef, toRef, unref, watch } from 'vue';
 import Kineto from '@dong-gri/kineto';
 import presence from '@dong-gri/kineto/presence';
+
+const PresenceParentKey = Symbol('kineto-presence-parent');
 
 function normalizeBinding(binding) {
   if (typeof binding.value === 'string') return { type: binding.value, options: {} };
@@ -62,6 +64,15 @@ export function useKinetoPresence(present = true, options = {}, watchSources = [
   const controller = shallowRef(null);
   const status = ref('idle');
   const result = shallowRef(null);
+  const parentRef = inject(PresenceParentKey, null);
+  let parentRegistration = null;
+  let registeredAtCreate = false;
+  const resolveParent = () => options.parent || parentRef?.value || parentRef?.current || null;
+  const bindParent = () => {
+    const parent = resolveParent();
+    if (!parent || !controller.value || parentRegistration || registeredAtCreate || options.parent) return;
+    parentRegistration = parent.registerChild?.(controller.value) || null;
+  };
   const presentSource = typeof present === 'function'
     || (present && typeof present === 'object' && 'value' in present)
     ? present
@@ -81,12 +92,18 @@ export function useKinetoPresence(present = true, options = {}, watchSources = [
 
   onMounted(() => {
     if (!element.value) return;
-    controller.value = presence(element.value, options);
+    const parent = resolveParent();
+    controller.value = presence(element.value, parent && options.parent == null ? { ...options, parent } : options);
+    registeredAtCreate = Boolean(parent || options.parent);
     status.value = controller.value.status;
     run();
+    bindParent();
   });
+  if (parentRef && typeof parentRef === 'object' && 'value' in parentRef) watch(parentRef, bindParent);
   if (sources.length) watch(sources, run, { deep: true });
   onBeforeUnmount(() => {
+    parentRegistration?.();
+    parentRegistration = null;
     controller.value?.destroy();
     controller.value = null;
   });
@@ -159,19 +176,20 @@ export function useKinetoPresenceGroup(children = [], options = {}) {
   const sync = (nextChildren = []) => {
     records.value = reconcilePresenceItems(records.value, normalizePresenceChildren(nextChildren), mode, pending);
   };
-  const handleResult = (key, nextResult) => {
+  const handleResult = (key, nextResult, _force = false) => {
     options.onResult?.(nextResult, key);
-    if (!nextResult || !['finished', 'skipped'].includes(nextResult.status)) return;
+    if (!nextResult || !['finished', 'skipped'].includes(nextResult.status)) return false;
     const item = records.value.find((entry) => entry.key === key);
-    if (!item || item.present) return;
+    if (!item || item.present) return false;
     const remaining = records.value.filter((entry) => entry.key !== key);
     if (mode === 'wait' && !remaining.some((entry) => !entry.present) && pending.value) {
       const queued = pending.value;
       pending.value = null;
       records.value = queued.map((entry) => ({ ...entry, present: true }));
-      return;
+      return false;
     }
     records.value = remaining;
+    return false;
   };
 
   return { items: records, sync, onResult: handleResult };
@@ -188,6 +206,7 @@ export const KinetoPresence = defineComponent({
   },
   setup(props, { attrs, slots, expose }) {
     const lifecycle = useKinetoPresence(toRef(props, 'present'), props.options, props.watchSources);
+    provide(PresenceParentKey, lifecycle.controller);
     expose(lifecycle);
     return () => h(props.as, {
       ...attrs,
@@ -231,7 +250,11 @@ export const KinetoPresenceGroup = defineComponent({
           present: item.present,
           options: {
             ...groupOptions,
-            onResult: (nextResult) => lifecycle.onResult(item.key, nextResult)
+            onResult: undefined,
+            safeToRemove: (element, nextResult) => {
+              groupOptions.safeToRemove?.(element, nextResult);
+              lifecycle.onResult(item.key, nextResult, true);
+            }
           }
         },
         { default: () => item.child }

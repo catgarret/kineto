@@ -84,15 +84,19 @@ export interface KinetoPresenceOptions extends KinetoOptions {
   focusTarget?: KinetoTarget | (() => Element | null);
   safeToRemove?: (element: Element | null, result: KinetoPresenceResult) => void;
   reducedMotion?: boolean;
+  parent?: KinetoPresenceController;
+  propagate?: boolean;
 }
 export interface KinetoPresenceController {
   enter(options?: KinetoOptions): Promise<KinetoPresenceResult> & { cancel(): void };
   leave(options?: KinetoOptions): Promise<KinetoPresenceResult> & { cancel(): void };
   cancel(reason?: string): this;
+  registerChild(child: KinetoPresenceController): () => void;
   safeToRemove(callback?: (element: Element | null, result: KinetoPresenceResult) => void): this;
   destroy(): this;
   readonly status: KinetoPresenceStatus;
   readonly ssr: boolean;
+  readonly childCount: number;
 }
 
 export interface KinetoStatic {

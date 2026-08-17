@@ -241,7 +241,8 @@ Vanilla Presence Core 계약이 고정된 뒤 host-owned lifecycle 범위부터 
 - 완료(v0.8.85): `useKinetoPresence`와 `KinetoPresence` wrapper를 React·Vue에 추가
 - 완료(v0.8.85): Strict Mode·Vue lifecycle·SSR·hydration markup fixture를 통과
 - 완료(v0.8.86): direct keyed child를 추적하고 exit 완료 뒤 자동 제거하는 `KinetoPresenceGroup`을 React·Vue에 추가
-- nested propagation과 Vue Transition interop은 다음 출시 게이트로 유지
+- 완료(v0.8.89): 부모가 `propagate: true`를 선택하면 React·Vue keyed group의 자식 exit와 부모 `safeToRemove` 순서를 전파
+- Vue Transition interop은 다음 출시 게이트로 유지
 
 - React: `<KinetoPresence>`, `useKineto`, stable ref, Strict Mode 보장
 - Vue: `<KinetoPresence>`, composable, Vue transition interop
@@ -393,13 +394,14 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
     별도 release gate 후에 공개합니다.
 12. 완료(v0.8.85): host-owned React/Vue Presence composable·wrapper와 SSR/lifecycle fixture
 13. 완료(v0.8.86): React/Vue direct keyed child group, `sync`/`wait`/`popLayout` 전달, reorder·SSR fixture
-14. 다음: nested group propagation과 부모 safe-to-remove ordering 검증
+14. 완료(v0.8.89): nested group propagation과 부모 safe-to-remove ordering 검증
 15. 완료(v0.8.77): 화면 밖 Slider·Radial의 rAF·autoplay 정지와 opt-out 계약
 16. 완료(v0.8.78): 최근 pointer sample 기반 Slider release 관성
 17. 완료(v0.8.79): Slider 정착을 경과 시간 기반으로 보정하고 큰 `dt`·60/90/120Hz 회귀 테스트 추가
 18. 완료(v0.8.80): track Slider 해제 플링 배율을 `velocityInfluence`로 공개하고 Radial에는 노출하지 않음
 19. 완료(v0.8.84): track Slider에 opt-in spring solver와 공개 물리 파라미터를 추가하고 Radial에는 노출하지 않음
-20. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구가 확인될 때 별도 검토
+20. 후속: Vue Transition interop과 transition cancellation 경계 검토
+21. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구가 확인될 때 별도 검토
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

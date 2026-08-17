@@ -1,6 +1,8 @@
-import { Children, createElement, forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { Children, createContext, createElement, forwardRef, useContext, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import Kineto from '@dong-gri/kineto';
 import presence from '@dong-gri/kineto/presence';
+
+const PresenceParentContext = createContext(null);
 
 /**
  * React hook for one Kineto module.
@@ -32,13 +34,15 @@ export function useKineto(type, options = {}, dependencies = []) {
 export function useKinetoPresence(present = true, options = {}, dependencies = []) {
   const elementRef = useRef(null);
   const controllerRef = useRef(null);
+  const parentController = useContext(PresenceParentContext);
   const [status, setStatus] = useState('idle');
   const [result, setResult] = useState(null);
 
   useEffect(() => {
     const element = elementRef.current;
     if (!element) return undefined;
-    const controller = presence(element, options);
+    const parent = options.parent || parentController;
+    const controller = presence(element, parent && options.parent == null ? { ...options, parent } : options);
     controllerRef.current = controller;
     setStatus(controller.status);
     return () => {
@@ -47,7 +51,7 @@ export function useKinetoPresence(present = true, options = {}, dependencies = [
     };
   // Presence options are intentionally controlled by the caller through the
   // dependency list, matching useKineto's lifecycle contract.
-  }, []);
+  }, [parentController]);
 
   useEffect(() => {
     const controller = controllerRef.current;
@@ -62,7 +66,7 @@ export function useKinetoPresence(present = true, options = {}, dependencies = [
     });
     return () => { active = false; };
   // The caller owns reactivity; dependencies opt into rerunning the lifecycle.
-  }, [present, ...dependencies]);
+  }, [present, parentController, ...dependencies]);
 
   return { ref: elementRef, controller: controllerRef, status, result };
 }
@@ -122,7 +126,7 @@ export function useKinetoPresenceGroup(children, options = {}) {
     setItems((current) => reconcilePresenceItems(current, incoming, mode, pendingRef));
   }, [children, mode]);
 
-  const handleResult = (key, nextResult) => {
+  const handleResult = (key, nextResult, _force = false) => {
     optionsRef.current.onResult?.(nextResult, key);
     if (!nextResult || !['finished', 'skipped'].includes(nextResult.status)) return;
     setItems((current) => {
@@ -168,7 +172,11 @@ export const KinetoPresence = forwardRef(function KinetoPresence(
     get status() { return status; },
     get result() { return result; }
   }), [controller, status, result]);
-  return createElement(as, { ...props, ref, 'data-kt-presence-status': status }, children);
+  return createElement(
+    PresenceParentContext.Provider,
+    { value: controller.current },
+    createElement(as, { ...props, ref, 'data-kt-presence-status': status }, children)
+  );
 });
 
 export function KinetoPresenceGroup({ as = 'div', mode, options = {}, children, ...props }) {
@@ -182,7 +190,12 @@ export function KinetoPresenceGroup({ as = 'div', mode, options = {}, children, 
       present: item.present,
       options: {
         ...groupOptions,
-        onResult: (nextResult) => onResult(item.key, nextResult)
+        onResult: undefined,
+        safeToRemove: (element, nextResult) => {
+          groupOptions.safeToRemove?.(element, nextResult);
+          groupOptions.onResult?.(nextResult, item.key);
+          onResult(item.key, nextResult, true);
+        }
       }
     },
     item.child

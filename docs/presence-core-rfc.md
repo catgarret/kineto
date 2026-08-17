@@ -1,6 +1,6 @@
 # Presence Core RFC
 
-> 상태: Vanilla prototype·React/Vue host-owned adapter·direct keyed-child group 완료 · nested propagation은 별도 출시 게이트
+> 상태: Vanilla prototype·React/Vue host-owned adapter·direct keyed-child group·nested propagation 완료 · framework transition interop은 별도 출시 게이트
 
 Presence는 요소의 시각 상태가 아니라 DOM 수명주기를 조율하는 기능입니다.
 따라서 `states`의 별칭이나 React 전용 컴포넌트로 만들지 않고, Vanilla Core에서
@@ -102,7 +102,7 @@ Vanilla에서 사용할 수 있어야 하며, 실제 adapter 구현은 Core 계�
 
 ## 다음 출시 게이트
 
-Nested propagation과 framework transition interop을 공개하기 전에 다음을 자동화합니다.
+Framework transition interop을 확장하기 전에 다음을 자동화합니다.
 
 1. 중복 enter/leave의 idempotency와 `sync`/`wait`/`popLayout` 순서
 2. 실행 중 cancel·reenter·destroy 및 `safeToRemove` 중복 호출
@@ -112,6 +112,6 @@ Nested propagation과 framework transition interop을 공개하기 전에 다음
 6. React Strict Mode·Vue mount/update/unmount와 hydration
 7. Core + Presence 소비자 gzip 예산과 listener/timer 순증가 0
 
-이 중 하나라도 명확히 검증되지 않으면 nested propagation은 실험 브랜치에
+이 중 하나라도 명확히 검증되지 않으면 transition interop은 실험 브랜치에
 둡니다. `states`의 시각 상태 계약과 Presence의 DOM 수명주기 계약은 서로
 합치지 않고 별도 controller로 유지합니다.

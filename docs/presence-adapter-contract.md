@@ -48,16 +48,18 @@ exit is running; conditionally unmounting it first makes an exit impossible.
 - A reactive `present` source calls `enter()`/`leave()` without replacing the
   controller.
 - The host remains in the render tree until the leave result is settled.
-- `<KinetoPresenceGroup>` provides the same direct-child key contract. Vue
-  Transition interop and nested exit propagation remain separate gates.
+- `<KinetoPresenceGroup>` provides the same direct-child key contract. Nested
+  parent exit propagation is enabled when the parent opts into `propagate: true`;
+  Vue Transition interop remains a separate gate.
 
-## Adapter API (v0.8.85)
+## Adapter API (v0.8.89)
 
 Both adapters expose a host-owned Presence composable, a small element wrapper,
 and an opt-in keyed-child group. The group creates one controller per direct
 child key, keeps removed children mounted during `leave()`, and removes the
-wrapper only after the Core result settles. The element remains mounted during
-`leave()`; nested groups and parent exit propagation are not inferred.
+wrapper only after the Core result settles. A parent `KinetoPresence` can opt
+into nested exit propagation with `propagate: true`; the host still owns DOM
+insertion/removal.
 
 ```jsx
 import { KinetoPresence, useKinetoPresence } from '@dong-gri/kineto/react';
@@ -98,10 +100,9 @@ the host mounted long enough for the result to settle.
 
 ## Release gates for the next adapter batch
 
-Before enabling nested propagation or framework transition interop, the project
-must add:
+Before expanding framework transition interop, the project must add:
 
-1. nested parent/child identity and reorder tests;
+1. nested parent/child identity and reorder tests across repeated parent enter/leave;
 2. Strict Mode / Vue effect replay and cancellation tests for nested groups;
 3. SSR + hydration markup stability checks;
 4. `sync`, `wait`, and `popLayout` ordering fixtures;
@@ -110,4 +111,4 @@ must add:
 
 Until those gates exist, consumers should use the group for direct keyed
 children and the host-owned composables or standalone controller for custom
-DOM ownership. Nested automatic propagation remains out of scope.
+DOM ownership. Vue Transition interop remains out of scope.

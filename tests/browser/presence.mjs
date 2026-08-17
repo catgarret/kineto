@@ -95,7 +95,39 @@ try {
     const doomedLeave = doomed.leave({ duration: 200 });
     doomed.destroy();
     const destroyResult = await doomedLeave;
-    return { entered, afterEnter, left, afterLeave, restored, reentryResults, waitResults, destroyResult, status: doomed.status };
+    const parentHost = document.createElement('section');
+    const childHost = document.createElement('div');
+    parentHost.appendChild(childHost);
+    document.body.appendChild(parentHost);
+    let parentSafeCalls = 0;
+    let childSafeCalls = 0;
+    const propagationOrder = [];
+    const parent = window.KinetoPresence(parentHost, {
+      duration: 10,
+      propagate: true,
+      safeToRemove: () => { parentSafeCalls += 1; propagationOrder.push('parent'); }
+    });
+    const nested = window.KinetoPresence(childHost, {
+      duration: 30,
+      parent,
+      safeToRemove: () => { childSafeCalls += 1; propagationOrder.push('child'); }
+    });
+    await parent.enter();
+    const propagationStarted = performance.now();
+    const parentLeave = parent.leave();
+    const parentResult = await parentLeave;
+    const propagationElapsed = performance.now() - propagationStarted;
+    const propagation = {
+      parentResult,
+      nestedStatus: nested.status,
+      parentSafeCalls,
+      childSafeCalls,
+      propagationOrder,
+      propagationElapsed
+    };
+    nested.destroy();
+    parent.destroy();
+    return { entered, afterEnter, left, afterLeave, restored, reentryResults, waitResults, destroyResult, status: doomed.status, propagation };
   });
   assert.deepEqual(result.entered, { status: 'finished' });
   assert.equal(result.afterEnter.opacity, '1');
@@ -118,6 +150,11 @@ try {
   assert.deepEqual(result.waitResults.latestEnter, { status: 'finished' });
   assert.deepEqual(result.destroyResult, { status: 'cancelled', reason: 'destroy' });
   assert.equal(result.status, 'destroyed');
+  assert.deepEqual(result.propagation.parentResult, { status: 'finished' });
+  assert.equal(result.propagation.nestedStatus, 'finished');
+  assert.equal(result.propagation.parentSafeCalls, 1);
+  assert.equal(result.propagation.childSafeCalls, 1);
+  assert.deepEqual(result.propagation.propagationOrder, ['child', 'parent']);
   console.log('Presence browser QA OK', JSON.stringify(result));
 
   const reducedContext = await browser.newContext({ reducedMotion: 'reduce' });

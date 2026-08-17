@@ -68,6 +68,12 @@ function ReactHarness({ type, dependency }) {
     <ReactKinetoPresenceGroup id="react-presence-group" mode="sync" options={{ duration: 0.01 }}>
       {groupItems.map((key) => <article key={key} data-group-key={`react-${key}`}>React group {key}</article>)}
     </ReactKinetoPresenceGroup>
+    <ReactKinetoPresence id="react-presence-parent" present={dependency === 0} options={{ duration: 0.01, propagate: true }}>
+      <ReactKinetoPresenceGroup id="react-nested-presence-group" options={{ duration: 0.01 }}>
+        <article key="nested-a" data-group-key="react-nested-a">React nested A</article>
+        <article key="nested-b" data-group-key="react-nested-b">React nested B</article>
+      </ReactKinetoPresenceGroup>
+    </ReactKinetoPresence>
   </>;
 }
 
@@ -92,6 +98,10 @@ async function testReact() {
   assert(window.__reactPresenceLeaves >= 1, 'React Presence did not resolve the host-owned leave');
   assert(!document.querySelector('[data-group-key="react-a"]'), 'React keyed Presence group removed child did not settle');
   assert(document.querySelector('[data-group-key="react-c"]'), 'React keyed Presence group did not add the new child');
+  assert(document.querySelector('[data-group-key="react-nested-a"]')?.parentElement?.dataset.ktPresenceStatus === 'finished', 'React nested Presence child did not propagate parent exit');
+  root.render(<StrictMode><ReactHarness type="counter" dependency={0} /></StrictMode>);
+  await sleep(120);
+  assert(document.querySelector('[data-group-key="react-nested-a"]'), 'React nested Presence child did not re-enter after parent propagation');
 
   root.unmount();
   await sleep(80);
@@ -155,6 +165,11 @@ async function testVue() {
         h(VueKinetoPresence, { id: 'vue-presence-component-target', present: presenceVisible.value, options: { duration: 0.01 } }, { default: () => 'Vue Presence component' }),
         h(VueKinetoPresenceGroup, { id: 'vue-presence-group', mode: 'sync', options: { duration: 0.01 } }, {
           default: () => (presenceVisible.value ? ['a', 'b'] : ['b', 'c']).map((key) => h('article', { key, 'data-group-key': `vue-${key}` }, `Vue group ${key}`))
+        }),
+        h(VueKinetoPresence, { id: 'vue-presence-parent', present: presenceVisible.value, options: { duration: 0.01, propagate: true } }, {
+          default: () => h(VueKinetoPresenceGroup, { id: 'vue-nested-presence-group', options: { duration: 0.01 } }, {
+            default: () => [h('article', { key: 'nested-a', 'data-group-key': 'vue-nested-a' }, 'Vue nested A'), h('article', { key: 'nested-b', 'data-group-key': 'vue-nested-b' }, 'Vue nested B')]
+          })
         })
       ]);
     }
@@ -178,6 +193,11 @@ async function testVue() {
   assert(window.__vuePresenceLeaves >= 1, 'Vue Presence did not resolve the host-owned leave');
   assert(!document.querySelector('[data-group-key="vue-a"]'), 'Vue keyed Presence group removed child did not settle');
   assert(document.querySelector('[data-group-key="vue-c"]'), 'Vue keyed Presence group did not add the new child');
+  assert(document.querySelector('[data-group-key="vue-nested-a"]')?.parentElement?.dataset.ktPresenceStatus === 'finished', 'Vue nested Presence child did not propagate parent exit');
+  presenceVisible.value = true;
+  await nextTick();
+  await sleep(100);
+  assert(document.querySelector('[data-group-key="vue-nested-a"]'), 'Vue nested Presence child did not re-enter after parent propagation');
 
   app.unmount();
   await sleep(80);

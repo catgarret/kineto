@@ -54,8 +54,11 @@ const BUDGET = {
   // cross-runner margin without changing the release file allowlist.
   // 2026-08-17: the direct keyed-child Presence groups add 2.4 KB packed and
   // 8.2 KB unpacked on the local toolchain; retain runner headroom below.
+  // 2026-08-17: nested parent propagation adds 0.3 KB unpacked at the local
+  // npm 11 boundary; keep the allowlist fixed and absorb only that measured
+  // cost plus a small cross-runner margin.
   packedKb: 502,
-  unpackedKb: 1683,
+  unpackedKb: 1685,
   files: 78
 };
 

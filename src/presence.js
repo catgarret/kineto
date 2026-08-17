@@ -101,6 +101,8 @@ export default function createPresence(target, defaults = {}, kineto = null) {
   let accessibilitySnapshot = null;
   let layoutSnapshot = null;
   let safeRemoval = typeof config.safeToRemove === 'function' ? config.safeToRemove : null;
+  const childControllers = new Set();
+  let unregisterParent = null;
 
   const managed = config.accessibility === 'managed';
   const reduced = Boolean(config.reducedMotion === true || kineto?.prefersReducedMotion || runtime.reducedMotion);
@@ -171,7 +173,14 @@ export default function createPresence(target, defaults = {}, kineto = null) {
     }
   };
 
-  const cancel = (run, reason = 'reenter') => finish(run, result('cancelled', reason));
+  const cancel = (run, reason = 'reenter') => {
+    if (run?.childControllers?.length) {
+      run.childControllers.forEach((child) => {
+        try { child.cancel(reason === 'reenter' ? 'reenter' : 'parent'); } catch (_error) { /* child cleanup is best effort */ }
+      });
+    }
+    finish(run, result('cancelled', reason));
+  };
 
   const start = (direction, options = {}) => {
     if (destroyed) return Promise.resolve(result('cancelled', 'destroy'));
@@ -197,7 +206,8 @@ export default function createPresence(target, defaults = {}, kineto = null) {
       resolve: null,
       reject: null,
       timer: null,
-      motion: null
+      motion: null,
+      childControllers: []
     };
     run.promise = new Promise((resolve, reject) => { run.resolve = resolve; run.reject = reject; });
     run.promise.cancel = () => cancel(run);
@@ -205,6 +215,13 @@ export default function createPresence(target, defaults = {}, kineto = null) {
     status = direction === 'enter' ? 'entering' : 'leaving';
     applyManaged(direction, options);
     captureLayout(direction, options);
+    if (config.propagate && childControllers.size) {
+      run.childControllers = [...childControllers].filter((child) => child && child !== controller);
+    }
+    const childPromises = run.childControllers.map((child) => {
+      try { return direction === 'leave' ? child.leave(options) : child.enter(options); }
+      catch (error) { return Promise.resolve(result('error', 'propagate', { error })); }
+    });
     const descriptor = descriptorFor(options.motion ?? config[direction]);
     if (reduced) {
       if (descriptor?.run) {
@@ -213,7 +230,10 @@ export default function createPresence(target, defaults = {}, kineto = null) {
           run.motion = motion && typeof motion.cancel === 'function' ? motion : null;
         } catch (_error) { /* final state is best effort in reduced mode */ }
       }
-      finish(run, result('skipped'));
+      Promise.all(childPromises).then((childResults) => {
+        const childError = childResults.find((childResult) => childResult?.status === 'error');
+        finish(run, childError || result('skipped'));
+      });
       return run.promise;
     }
     try {
@@ -222,8 +242,12 @@ export default function createPresence(target, defaults = {}, kineto = null) {
       const motionPromise = motion && typeof motion.then === 'function' ? motion : Promise.resolve();
       const fallback = descriptor?.run ? null : waitFor(number(options.duration ?? config.duration, 0) + number(options.delay ?? config.delay, 0), false);
       run.timer = fallback;
-      Promise.race([motionPromise, fallback?.promise || Promise.resolve()]).then(
-        () => finish(run, result('finished')),
+      const motionDone = Promise.race([motionPromise, fallback?.promise || Promise.resolve()]);
+      Promise.all([motionDone, Promise.all(childPromises)]).then(
+        ([, childResults]) => {
+          const childError = childResults.find((childResult) => childResult?.status === 'error');
+          finish(run, childError || result('finished'));
+        },
         (error) => finish(run, result('error', 'motion', { error }))
       );
     } catch (error) {
@@ -236,12 +260,25 @@ export default function createPresence(target, defaults = {}, kineto = null) {
     enter(options = {}) { return start('enter', options); },
     leave(options = {}) { return start('leave', options); },
     cancel(reason = 'cancel') { if (active) cancel(active, reason); return controller; },
+    registerChild(child) {
+      if (!child || child === controller) return () => {};
+      childControllers.add(child);
+      return () => childControllers.delete(child);
+    },
     safeToRemove(callback) { safeRemoval = typeof callback === 'function' ? callback : null; return controller; },
+    get childCount() { return childControllers.size; },
     destroy() {
       if (destroyed) return controller;
       destroyed = true;
       if (active) cancel(active, 'destroy');
       if (queued) { queued.resolve(result('cancelled', 'destroy')); queued = null; }
+      if (config.propagate) {
+        [...childControllers].forEach((child) => {
+          try { child.cancel('parent'); } catch (_error) { /* child cleanup is best effort */ }
+        });
+      }
+      unregisterParent?.();
+      unregisterParent = null;
       restoreLayout();
       restoreManaged();
       status = 'destroyed';
@@ -250,5 +287,6 @@ export default function createPresence(target, defaults = {}, kineto = null) {
     get status() { return status; },
     get ssr() { return runtime.ssr; }
   };
+  if (config.parent?.registerChild) unregisterParent = config.parent.registerChild(controller);
   return controller;
 }
