@@ -894,7 +894,7 @@ function et() {
 	e.id = "kineto-inline-fallback", e.textContent = "\n    @property --kt-angle { syntax: \"<angle>\"; initial-value: 0deg; inherits: false; }\n    @keyframes kt-border-spin { to { --kt-angle: 360deg; } }\n    @keyframes kt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }\n    @keyframes kt-aurora { to { transform: rotate(360deg); } }\n    @keyframes kt-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }\n    @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }\n    .kt-cursor-active, .kt-cursor-active * { cursor: none !important; }\n    .kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }\n    .kt-tw-caret { animation: kt-caret .8s step-end infinite; }\n    .kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }\n    .kt-slider-wrap { position: relative; overflow: hidden; }\n    @media (prefers-reduced-motion: reduce) {\n      [data-kt-reveal], [data-kt-text-split], [data-kt-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }\n    }\n  ", document.head.appendChild(e);
 }
 var Q = {
-	version: "0.8.99",
+	version: "0.8.100",
 	easing: M,
 	easingFn: F,
 	easings: j,
@@ -2284,7 +2284,7 @@ function _t(e, t = "") {
 	let r = n.match(/^(\d{4})(\d{2})(\d{2})(?:(\d{2})(\d{2})(\d{2})(?:\.(\d{1,3}))?)?$/);
 	if (r) {
 		let [, e, t, n, i = "0", a = "0", o = "0", s = "0"] = r;
-		return new Date(Number(e), Number(t) - 1, Number(n), Number(i), Number(a), Number(o), Number(s.padEnd(3, "0")));
+		return /* @__PURE__ */ new Date(`${e}-${t}-${n}T${i.padStart(2, "0")}:${a.padStart(2, "0")}:${o.padStart(2, "0")}.${s.padEnd(3, "0")}+09:00`);
 	}
 	let i = n.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:\s*(\d{1,2})\s*시)?(?:\s*(\d{1,2})\s*분)?(?:\s*(\d{1,2})\s*초)?$/);
 	if (i) {
