@@ -59,10 +59,11 @@ const BUDGET = {
   // cost plus a small cross-runner margin.
   // 2026-08-17: the date-time parser now accepts compact, Korean clock-text,
   // and locale-aware day/month server timestamps, while reduced counters keep
-  // seconds-only output. The local npm 11 archive measures 1688.2 KB unpacked;
-  // keep the allowlist fixed and absorb this bounded 3.2 KB runtime increase
-  // with the existing cross-runner margin.
-  packedKb: 502,
+  // seconds-only output. The local npm 11 archive measures 501.1 KB packed /
+  // 1688.2 KB unpacked; Node 24/npm 11 measures 502.3 KB packed. Keep the
+  // allowlist fixed and absorb this bounded runtime increase with a 1.7 KB
+  // cross-runner margin rather than widening the file surface.
+  packedKb: 504,
   unpackedKb: 1690,
   files: 78
 };
