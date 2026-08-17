@@ -5,6 +5,16 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.103] - 2026-08-17
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Verify the canonical Pages URL after deployment, including runtime version, module count, GTM, and the unversioned CDN route.
 - Run the real demo-polish regression suite in the Firefox and WebKit CI lanes so Radial, mobile Mega Menu, drawer layout, and Page Reveal engine regressions cannot hide behind smoke-only coverage.
 - Add Page Reveal mechanism smoke assertions for curtain, flash, iris, dissolve, fade, and push so visually-collapsing presets fail at the source-level boundary before a demo review.
@@ -23,7 +33,6 @@
 - cross-browser 단계가 실패하면 Firefox/WebKit smoke·demo-polish 스크린샷을 7일간 CI 아티팩트로 보존해 엔진별 회귀를 확인할 수 있게 합니다.
 - Vue `<Transition>`의 enter/leave 훅을 연결하는 opt-in `useKinetoTransition()`과 phase별 옵션·취소 정리·완료 fallback을 추가합니다.
 - `flip`의 keyed same-document 재배치에서 opt-in View Transitions 경로를 사용하고, 기존 이름을 복원하며 미지원 환경에서는 FLIP으로 자동 fallback합니다.
-
 ## [0.8.102] - 2026-08-17
 
 ### English
