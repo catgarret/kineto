@@ -46,6 +46,7 @@ export default {
       const loop = opts.loop !== false && opts.loop !== 'off';
       const drag = opts.drag !== false;
       const useControls = opts.controls !== false;
+      const pauseWhenOffscreen = opts.pauseWhenOffscreen !== false;
       const originalTouchAction = el.style.touchAction;
       // `activeClass` hooks your OWN class on the focused item (with `.kt-active`).
       const stateClass = (opts.activeClass || '').trim();
@@ -103,6 +104,8 @@ export default {
       let visualActive = active;
       let targetActive = active;
       let radialFrame = null;
+      let offscreen = false;
+      let visibilityObserver = null;
       const renderRadial = (positionValue) => {
         items.forEach((item, i) => {
           let offset = i - positionValue;
@@ -143,6 +146,11 @@ export default {
         active = nextActive;
         targetActive += delta;
         if (radialFrame) cancelAnimationFrame(radialFrame);
+        if (offscreen) {
+          visualActive = targetActive;
+          renderRadial(visualActive);
+          return;
+        }
         if (reduce || duration === 0) {
           visualActive = targetActive;
           renderRadial(visualActive);
@@ -271,7 +279,7 @@ export default {
       // Autoplay (pauses on hover / when tab hidden).
       const autoplay = Math.max(0, Number(opts.autoplay ?? 0));
       let timer = null;
-      const startAuto = () => { if (autoplay && !reduce) { stopAuto(); timer = setInterval(next, autoplay); } };
+      const startAuto = () => { if (autoplay && !reduce && !offscreen) { stopAuto(); timer = setInterval(next, autoplay); } };
       const stopAuto = () => { if (timer) { clearInterval(timer); timer = null; } };
       if (autoplay) {
         el.addEventListener('mouseenter', stopAuto);
@@ -280,6 +288,25 @@ export default {
       }
 
       renderRadial(visualActive);
+
+      if (pauseWhenOffscreen && typeof IntersectionObserver !== 'undefined') {
+        visibilityObserver = new IntersectionObserver(([entry]) => {
+          const visible = Boolean(entry?.isIntersecting && (entry.intersectionRatio == null || entry.intersectionRatio > 0));
+          if (visible === !offscreen) return;
+          offscreen = !visible;
+          if (offscreen) {
+            stopAuto();
+            if (radialFrame) { cancelAnimationFrame(radialFrame); radialFrame = null; }
+          } else {
+            if (Math.abs(visualActive - targetActive) > 0.0015) {
+              visualActive = targetActive;
+              renderRadial(visualActive);
+            }
+            startAuto();
+          }
+        }, { threshold: 0.01 });
+        visibilityObserver.observe(el);
+      }
 
       return {
         el,
@@ -291,6 +318,7 @@ export default {
         resume: startAuto,
         destroy() {
           stopAuto();
+          visibilityObserver?.disconnect();
           if (radialFrame) cancelAnimationFrame(radialFrame);
           if (suppressItemClickTimer != null) clearTimeout(suppressItemClickTimer);
           hub.removeEventListener('click', onItemClick);
@@ -385,6 +413,7 @@ export default {
     // Hover pausing is opt-in. This keeps the runtime aligned with the settings
     // switch: an unchecked Pause on hover control must never pause autoplay.
     const pauseOnHover = opts.pauseOnHover === true;
+    const pauseWhenOffscreen = opts.pauseWhenOffscreen !== false;
     const rotate = Number(opts.rotate ?? 32);
     const depth = Number(opts.depth ?? 140);
     const scaleStep = Number(opts.scaleStep ?? 0.12);
@@ -421,6 +450,8 @@ export default {
     let timerStartedAt = 0;
     let remaining = autoplayDelay;
     let hoverPaused = false;
+    let offscreen = false;
+    let visibilityObserver = null;
     let paused = false;
     let alive = true;
     let pauseButton = null;
@@ -614,6 +645,7 @@ export default {
 
     const tick = () => {
       if (!alive) return;
+      if (offscreen) { rafId = null; return; }
       position = lerp(position, target, dragging ? 0.55 : smoothing);
       render();
       if (dragging || Math.abs(position - target) > 0.0015) {
@@ -751,7 +783,7 @@ export default {
     const start = (reset = false) => {
       stop(false);
       if (reset) resetAutoplayClock();
-      if (!autoplayDelay || paused || hoverPaused || dragging) return;
+      if (!autoplayDelay || paused || hoverPaused || dragging || offscreen) return;
       if (remaining <= 16) remaining = autoplayDelay;
       timerStartedAt = performance.now();
       timer = setTimeout(() => {
@@ -854,6 +886,24 @@ export default {
     const onLeave = () => { if (pauseOnHover) { hoverPaused = false; start(); } };
     wrap.addEventListener('pointerenter', onEnter);
     wrap.addEventListener('pointerleave', onLeave);
+
+    if (pauseWhenOffscreen && typeof IntersectionObserver !== 'undefined') {
+      visibilityObserver = new IntersectionObserver(([entry]) => {
+        const visible = Boolean(entry?.isIntersecting && (entry.intersectionRatio == null || entry.intersectionRatio > 0));
+        if (visible === !offscreen) return;
+        offscreen = !visible;
+        if (offscreen) {
+          stop();
+          if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
+          stopProgressLoop();
+        } else {
+          wake();
+          start();
+          startProgressLoop();
+        }
+      }, { threshold: 0.01 });
+      visibilityObserver.observe(el);
+    }
     const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => { render(); }) : null;
     resizeObserver?.observe(wrap);
 
@@ -999,6 +1049,7 @@ export default {
         alive = false;
         stop();
         stopProgressLoop();
+        visibilityObserver?.disconnect();
         dotButtons.forEach((dot) => dot.remove());
         dotsWrap?.remove();
         progressWrap?.remove();

@@ -631,6 +631,7 @@
       "progress": "남은 자동재생 시간을 보여주는 진행 표시를 켭니다.",
       "progressType": "진행 표시 모양입니다. bar=가로 막대, ring=원형 링.",
       "pauseButton": "자동재생을 멈추고 다시 재생하는 버튼을 표시합니다.",
+      "pauseWhenOffscreen": "화면 밖에서는 자동재생과 전환 프레임을 멈춥니다.",
       "pauseOnHover": "마우스를 올린 동안 자동재생을 멈춥니다."
     },
     "lightbox": {
@@ -694,6 +695,7 @@
       "progress": "Show how much autoplay time is left.",
       "progressType": "Progress shape: bar or ring.",
       "pauseButton": "Show a pause/resume control for autoplay.",
+      "pauseWhenOffscreen": "Pause autoplay and transition frames while the slider is offscreen.",
       "pauseOnHover": "Pause autoplay while the pointer is over the slider."
     },
     "lightbox": {
@@ -757,6 +759,7 @@
       "progress": "自動再生の残り時間を表示します。",
       "progressType": "進行表示の形（bar / ring）です。",
       "pauseButton": "自動再生の一時停止ボタンを表示します。",
+      "pauseWhenOffscreen": "画面外では自動再生と切り替えフレームを停止します。",
       "pauseOnHover": "ポインターが乗っている間は自動再生を止めます。"
     },
     "lightbox": {
@@ -820,6 +823,7 @@
       "progress": "显示自动播放剩余时间。",
       "progressType": "进度形状：bar 或 ring。",
       "pauseButton": "显示自动播放的暂停/继续按钮。",
+      "pauseWhenOffscreen": "滑块离开屏幕后暂停自动播放和过渡帧。",
       "pauseOnHover": "指针悬停时暂停自动播放。"
     },
     "lightbox": {
@@ -883,6 +887,7 @@
       "progress": "顯示自動播放剩餘時間。",
       "progressType": "進度形狀：bar 或 ring。",
       "pauseButton": "顯示自動播放的暫停/繼續按鈕。",
+      "pauseWhenOffscreen": "滑塊離開畫面後暫停自動播放與轉場影格。",
       "pauseOnHover": "指標停留時暫停自動播放。"
     },
     "lightbox": {
@@ -946,6 +951,7 @@
       "progress": "Показывать остаток времени автопрокрутки.",
       "progressType": "Форма индикатора: полоса или кольцо.",
       "pauseButton": "Показывать кнопку паузы автопрокрутки.",
+      "pauseWhenOffscreen": "Останавливать автопрокрутку и кадры перехода вне экрана.",
       "pauseOnHover": "Пауза автопрокрутки при наведении."
     },
     "lightbox": {
@@ -1009,6 +1015,7 @@
       "progress": "Mostra il tempo rimanente dell’autoplay.",
       "progressType": "Forma del progresso: barra o anello.",
       "pauseButton": "Mostra un controllo di pausa per l’autoplay.",
+      "pauseWhenOffscreen": "Metti in pausa autoplay e fotogrammi di transizione quando la slide è fuori schermo.",
       "pauseOnHover": "Metti in pausa l’autoplay al passaggio del puntatore."
     },
     "lightbox": {

@@ -242,6 +242,35 @@ const flipModule = (await import('../src/modules/flip.js')).default;
 const cardGlowModule = (await import('../src/modules/cardGlow.js')).default;
 const tiltModule = (await import('../src/modules/tilt.js')).default;
 
+// Keep slider visibility lifecycle deterministic without depending on a browser
+// viewport. Tests drive the observer entries explicitly for both track and Radial.
+class TestIntersectionObserver {
+  static instances = [];
+  constructor(callback) { this.callback = callback; this.target = null; TestIntersectionObserver.instances.push(this); }
+  observe(target) {
+    this.target = target;
+    // Non-slider modules still need the normal initial in-view callback. Slider
+    // tests drive their entries manually so the offscreen transition is stable.
+    if (!target?.classList?.contains('kt-slider--slide')
+      && !target?.classList?.contains('kt-slider--fade')
+      && !target?.classList?.contains('kt-slider--dissolve')
+      && !target?.classList?.contains('kt-slider--wipe')
+      && !target?.classList?.contains('kt-slider--coverflow')
+      && !target?.classList?.contains('kt-slider--flip')
+      && !target?.classList?.contains('kt-slider--cube')
+      && !target?.classList?.contains('kt-slider--cards')
+      && !target?.classList?.contains('kt-slider--creative')
+      && !target?.classList?.contains('kt-radial')) {
+      Promise.resolve().then(() => this.callback([{ target: this.target, isIntersecting: true, intersectionRatio: 1 }]));
+    }
+  }
+  disconnect() { this.target = null; }
+  setVisible(isIntersecting) {
+    this.callback([{ target: this.target, isIntersecting, intersectionRatio: isIntersecting ? 1 : 0 }]);
+  }
+}
+globalThis.IntersectionObserver = window.IntersectionObserver = TestIntersectionObserver;
+
 const brushHost = document.createElement('div');
 brushHost.innerHTML = '<img src="base.png" alt="">';
 document.body.appendChild(brushHost);
@@ -303,6 +332,40 @@ const dragSlider = sliderModule.create(dragSliderHost, { preset: 'slide', drag: 
 assert.equal(dragSliderHost.querySelector('img').draggable, false, 'slider images must not start the browser ghost-image drag');
 dragSlider.destroy();
 dragSliderHost.remove();
+
+// Offscreen sliders stop their timer, progress loop and in-flight transform rAF,
+// then resume from the preserved autoplay deadline when they re-enter the view.
+const visibilitySliderHost = document.createElement('div');
+visibilitySliderHost.innerHTML = '<div class="kt-slider-wrap"><div class="kt-slider-track"><div>A</div><div>B</div></div></div>';
+document.body.appendChild(visibilitySliderHost);
+const visibilitySlider = sliderModule.create(visibilitySliderHost, { preset: 'slide', autoplay: 45, pauseWhenOffscreen: true });
+const visibilityObserver = TestIntersectionObserver.instances.at(-1);
+assert.ok(visibilityObserver?.target === visibilitySliderHost, 'slider must observe its host for offscreen lifecycle');
+visibilityObserver.setVisible(false);
+const offscreenIndex = visibilitySlider.index;
+await new Promise((resolve) => setTimeout(resolve, 80));
+assert.equal(visibilitySlider.index, offscreenIndex, 'offscreen slider must stop autoplay');
+visibilityObserver.setVisible(true);
+await new Promise((resolve) => setTimeout(resolve, 70));
+assert.notEqual(visibilitySlider.index, offscreenIndex, 'visible slider must resume autoplay');
+visibilitySlider.destroy();
+assert.equal(visibilityObserver.target, null, 'destroy must disconnect the offscreen observer');
+visibilitySliderHost.remove();
+
+const radialVisibilityHost = document.createElement('div');
+radialVisibilityHost.innerHTML = '<div>A</div><div>B</div><div>C</div>';
+document.body.appendChild(radialVisibilityHost);
+const radialVisibility = sliderModule.create(radialVisibilityHost, { effect: 'radial', autoplay: 45, pauseWhenOffscreen: true, controls: false });
+const radialVisibilityObserver = TestIntersectionObserver.instances.at(-1);
+radialVisibilityObserver.setVisible(false);
+const radialOffscreenIndex = radialVisibility.index;
+await new Promise((resolve) => setTimeout(resolve, 80));
+assert.equal(radialVisibility.index, radialOffscreenIndex, 'offscreen Radial must stop autoplay');
+radialVisibilityObserver.setVisible(true);
+await new Promise((resolve) => setTimeout(resolve, 70));
+assert.notEqual(radialVisibility.index, radialOffscreenIndex, 'visible Radial must resume autoplay');
+radialVisibility.destroy();
+radialVisibilityHost.remove();
 
 const secondsCounter = document.createElement('span');
 document.body.appendChild(secondsCounter);

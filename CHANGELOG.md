@@ -4,11 +4,11 @@
 
 ### English
 
-<!-- Add matching English release bullets here. -->
+- Added opt-in visibility lifecycle control for Slider and Radial: offscreen instances now stop transition rAF, autoplay, and progress work by default, with `pauseWhenOffscreen:false` for continuous playback.
 
 ### 한국어
 
-<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- Slider·Radial이 화면 밖에 있을 때 전환 rAF·자동 재생·진행 UI 작업을 기본으로 멈추도록 했고, 계속 재생하려면 `pauseWhenOffscreen:false`로 선택할 수 있게 했습니다.
 
 ## [0.8.76] - 2026-08-16
 

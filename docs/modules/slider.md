@@ -58,6 +58,9 @@ Coverflow에서 `activeShadow:true`를 켜면 활성 슬라이드의 회전된 �
 `dots:true`로 페이지 점을 표시합니다. `progress:true`와 `progressType:'bar'|'ring'`으로 자동 재생 진행률을 표시하며 `pauseButton:true`로 재생·일시정지 버튼을 추가합니다.
 
 일시정지, 호버, 드래그 중에는 타이머와 진행 UI가 같은 지점에서 멈춥니다. 다시 시작하면 남은 시간부터 이어집니다.
+화면 밖으로 완전히 벗어난 슬라이더는 기본적으로 자동 재생, 진행 UI, 전환용
+`requestAnimationFrame`을 멈춥니다. 다시 화면에 들어오면 남은 상태에서 재개합니다.
+이 동작이 필요하지 않으면 `pauseWhenOffscreen:false`로 끌 수 있습니다.
 
 ## API와 이벤트
 

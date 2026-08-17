@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.8.76 · 작성일: 2026-08-02 · 검토: 2026-08-16
+> 기준 버전: v0.8.77 · 작성일: 2026-08-02 · 검토: 2026-08-17
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -256,7 +256,7 @@ Core가 안정된 뒤에만 다음을 제공합니다.
 - radial과 track slider의 spring solver 공유
 - `stiffness`, `damping`, `mass`, `velocityInfluence`의 opt-in 공개
 - 큰 `dt` 상한과 60/90/120Hz 재현 테스트
-- offscreen slider의 rAF·autoplay 정지
+- 완료(v0.8.77): 화면 밖 Slider·Radial의 rAF·autoplay 정지와 `pauseWhenOffscreen:false` opt-out
 - momentum, bounce, sticky snap을 서로 독립된 설정으로 모델링
 - simple mode에서 CSS Scroll Snap을 쓸 수 있는 경로 검토
 
@@ -386,7 +386,8 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
     — 현재는 host-owned lifecycle 경계만 고정했으며, keyed child 자동 제거 컴포넌트는
     별도 release gate 후에 공개합니다.
 12. 다음: 실제 keyed child 제거 요구가 확인될 때 React/Vue Presence 컴포넌트 구현
-13. 후속 선택: Slider physics와 FLIP shared-layout은 사용 요구에 따라 병렬이 아닌 별도 검토
+13. 완료(v0.8.77): 화면 밖 Slider·Radial의 rAF·autoplay 정지와 opt-out 계약
+14. 후속 선택: Slider physics와 FLIP shared-layout은 사용 요구에 따라 병렬이 아닌 별도 검토
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 
