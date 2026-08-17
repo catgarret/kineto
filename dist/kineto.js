@@ -10776,20 +10776,11 @@ var Yr = {
 		}), b(m, !1);
 		let T = p && typeof ResizeObserver < "u" ? new ResizeObserver(v) : null;
 		T?.observe(u), T || window.addEventListener("resize", v);
-		let E = p && typeof IntersectionObserver < "u" ? new IntersectionObserver((e) => {
-			e.some((e) => e.isIntersecting) && v();
-		}) : null;
-		E?.observe(e);
-		let D = p && typeof MutationObserver < "u" ? new MutationObserver((e) => {
-			e.some((e) => e.attributeName === "hidden") && requestAnimationFrame(v);
-		}) : null;
-		if (D) {
-			let t = e.parentElement;
-			for (; t;) D.observe(t, {
-				attributes: !0,
-				attributeFilter: ["hidden"]
-			}), t = t.parentElement;
-		}
+		let E = p && typeof MutationObserver < "u" ? new MutationObserver(() => requestAnimationFrame(v)) : null, D = e.closest?.("[hidden]");
+		E && D && E.observe(D, {
+			attributes: !0,
+			attributeFilter: ["hidden"]
+		});
 		let O = requestAnimationFrame(v);
 		return {
 			el: e,
@@ -10798,7 +10789,7 @@ var Yr = {
 			pause() {},
 			resume() {},
 			destroy() {
-				cancelAnimationFrame(O), T || window.removeEventListener("resize", v), T?.disconnect(), E?.disconnect(), D?.disconnect(), d.forEach((e) => {
+				cancelAnimationFrame(O), T || window.removeEventListener("resize", v), T?.disconnect(), E?.disconnect(), d.forEach((e) => {
 					e.removeEventListener("click", x), e.removeEventListener("keydown", w), e.removeAttribute("data-kt-label");
 				}), p?.remove(), e.classList.remove("kt-tabs", `kt-tabs--${i}`, "kt-tabs--ind-none", "kt-tabs--instant"), f.forEach((e) => {
 					e.hidden = !1;

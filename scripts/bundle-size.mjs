@@ -91,13 +91,15 @@ const BUDGETS = {
   // 2026-08-18: the opt-in `flip` View Transitions path adds 0.4 KB raw to
   // readable ESM and 0.7 KB to minified ESM; gzip remains under the existing
   // ceilings, so absorb only this measured runtime cost.
+  // 2026-08-18: hidden-tab indicator recovery adds ~0.2 KB raw to the UMD
+  // runtime; keep gzip strict and absorb only this measured visibility cost.
   // Node 24/npm 11's zlib reports 132.3/118.2 KB for the same release bytes
   // that Node 25 reports as 132.0/118.0 KB. Keep the product ceilings strict
   // and allow only this bounded cross-runtime gzip variance.
   'kineto.js': { raw: 505, gz: 132, variance: 1 },
   'kineto.min.js': { raw: 399, gz: 118, variance: 1 },
-  'kineto.umd.js': { raw: 396, gz: 118 },
-  'kineto.umd.min.js': { raw: 396, gz: 118 },
+  'kineto.umd.js': { raw: 397, gz: 118 },
+  'kineto.umd.min.js': { raw: 397, gz: 118 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

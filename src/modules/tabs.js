@@ -179,32 +179,14 @@ export default {
       : null;
     indicatorObserver?.observe(list);
     if (!indicatorObserver) window.addEventListener('resize', moveIndicator);
-    // ResizeObserver is not consistent when the tab list itself stays at the
-    // same computed size while an ancestor switches from `[hidden]` to visible
-    // (WebKit is the notable case). Observe visibility as a second signal so a
-    // tab set initialized in a hidden demo panel places its marker on reveal.
-    const visibilityObserver = indicator && typeof IntersectionObserver !== 'undefined'
-      ? new IntersectionObserver((entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) moveIndicator();
-      })
-      : null;
-    visibilityObserver?.observe(el);
-    // Some WebKit versions do not emit an intersection or resize notification
-    // when a `hidden` ancestor is toggled. Watch that semantic visibility bit
-    // directly and wait one frame for the newly revealed layout to settle.
+    // Some WebKit versions do not emit a resize notification when a `hidden`
+    // ancestor is toggled. Watch that semantic visibility bit directly and wait
+    // one frame for the newly revealed layout to settle.
     const hiddenObserver = indicator && typeof MutationObserver !== 'undefined'
-      ? new MutationObserver((mutations) => {
-        if (!mutations.some((mutation) => mutation.attributeName === 'hidden')) return;
-        requestAnimationFrame(moveIndicator);
-      })
+      ? new MutationObserver(() => requestAnimationFrame(moveIndicator))
       : null;
-    if (hiddenObserver) {
-      let ancestor = el.parentElement;
-      while (ancestor) {
-        hiddenObserver.observe(ancestor, { attributes: true, attributeFilter: ['hidden'] });
-        ancestor = ancestor.parentElement;
-      }
-    }
+    const hiddenAncestor = el.closest?.('[hidden]');
+    if (hiddenObserver && hiddenAncestor) hiddenObserver.observe(hiddenAncestor, { attributes: true, attributeFilter: ['hidden'] });
     // Keep the handle so destroy() can cancel a still-pending first paint (no leak).
     const initRaf = requestAnimationFrame(moveIndicator);
 
@@ -218,7 +200,6 @@ export default {
         cancelAnimationFrame(initRaf);
         if (!indicatorObserver) window.removeEventListener('resize', moveIndicator);
         indicatorObserver?.disconnect();
-        visibilityObserver?.disconnect();
         hiddenObserver?.disconnect();
         tabs.forEach((tab) => { tab.removeEventListener('click', onClick); tab.removeEventListener('keydown', onKey); tab.removeAttribute('data-kt-label'); });
         indicator?.remove();
