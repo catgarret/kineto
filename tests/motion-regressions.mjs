@@ -7,6 +7,15 @@ import scrollShadowsModule from '../src/modules/scrollShadows.js';
 import overflowTextModule from '../src/modules/overflowText.js';
 import { getTerminalFramePreset } from '../src/modules/loadingIndicator/terminalFramePresets.js';
 
+// GitHub's public check metadata only exposes a step-level failure by default.
+// Mirror an uncaught assertion into an annotation so runner-only regressions
+// retain their exact message without requiring authenticated log access.
+process.on('uncaughtExceptionMonitor', (error) => {
+  if (!process.env.GITHUB_ACTIONS) return;
+  const detail = String(error?.stack || error).replace(/\r?\n/g, ' ').slice(0, 900);
+  console.error(`::error title=motion-regressions assertion::${detail}`);
+});
+
 const rounded = (values) => values.map((value) => Number(value.toFixed(3)));
 assert.deepEqual(rounded(staggerDelays(5, 0.1, 'start')), [0, 0.1, 0.2, 0.3, 0.4]);
 assert.deepEqual(rounded(staggerDelays(5, 0.1, 'end')), [0.4, 0.3, 0.2, 0.1, 0]);

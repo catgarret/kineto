@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Emit the exact uncaught assertion from motion-regression QA as a GitHub annotation so runner-only failures remain diagnosable without authenticated logs.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 러너에서만 발생하는 실패도 인증된 로그 없이 진단할 수 있도록 motion-regression QA의 처리되지 않은 assertion을 정확한 GitHub annotation으로 남깁니다.
 
 ## [0.8.97] - 2026-08-17
 
