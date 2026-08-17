@@ -300,8 +300,8 @@ try {
   assert.equal(new Set(coverRevealModes.colors).size, 2, `auto Cover Reveal must retain distinct colors extracted from the image (${JSON.stringify(coverRevealModes)})`);
   assert.ok(coverRevealModes.panels === 1 && coverRevealModes.wrapClip !== '' && coverRevealModes.contentClip === '', `mask replacement must clip the complete wrapper above both content and colored panels (${JSON.stringify(coverRevealModes)})`);
   const lineMaskTiming = await page.evaluate(async () => {
-    const host=document.createElement('div');host.style.cssText='position:fixed;top:40px;left:10px;width:120px';
-    const text=document.createElement('div');text.textContent='first row second row third row';host.appendChild(text);document.body.appendChild(host);
+    const host=document.createElement('div');host.style.cssText='position:fixed;top:40px;left:10px;width:64px';
+    const text=document.createElement('div');text.textContent='first second third fourth fifth sixth seventh';host.appendChild(text);document.body.appendChild(host);
     const instance=Kineto.coverReveal(text,{mask:true,lines:true,layers:2,color:'#f00',color2:'#0f0',duration:1,stagger:200,waitForImage:false});
     // Wait for the first line's reveal and a later line's still-covered state
     // instead of assuming an 80ms first-paint window in hosted WebKit.

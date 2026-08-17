@@ -11,6 +11,7 @@
 - Emit the last completed demo-polish checkpoint as a CI annotation when a browser retry is terminated, keeping hosted-runner failures actionable without relaxing the gate.
 - Synchronize both Cover Reveal mask regressions on their actual clip-path/stagger states instead of fixed delays, preserving the WebKit assertions while tolerating slow first-paint delivery.
 - Keep the exhaustive help-field audit in Chromium's integrated lane and use a representative lazy drawer audit in Firefox/WebKit, so hosted engine QA reaches the motion checks within its bounded retry window.
+- Make the line-mask regression sample unambiguously multi-line across engine font metrics, so stagger coverage tests the mask rather than an accidental single-line layout.
 - Refresh the technical roadmap baseline to v0.8.103 and record the shipped View Transitions, provenance, and Node 24 verification evidence.
 - Make Pages wait for the triggering CI run to finish and deploy only after that run succeeds, even when GitHub emits the workflow-run event before its conclusion is populated.
 
@@ -23,6 +24,7 @@
 - 브라우저 재시도가 종료될 때 마지막 demo-polish 체크포인트를 CI annotation으로 남겨 게이트를 완화하지 않고도 호스팅 러너 실패 원인을 확인할 수 있게 합니다.
 - Cover Reveal mask 회귀 검사를 고정 지연이 아닌 실제 clip-path·stagger 상태에 동기화해 WebKit의 느린 첫 페인트에서도 검증을 약화하지 않고 통과하도록 합니다.
 - 전체 help-field 감사는 Chromium 통합 단계에 유지하고 Firefox/WebKit에서는 대표 lazy 드로어를 감사해 호스팅 엔진 QA가 제한된 재시도 안에 모션 검사까지 도달하도록 합니다.
+- line-mask 회귀 샘플을 엔진별 글꼴 측정에서도 확실한 여러 줄로 고정해 우연한 한 줄 레이아웃이 아닌 stagger mask를 검증합니다.
 - 기술 로드맵의 기준을 v0.8.103으로 갱신하고 배포된 View Transitions·provenance·Node 24 검증 근거를 기록합니다.
 - GitHub가 workflow-run conclusion을 채우기 전에 이벤트를 보내더라도 Pages가 CI 완료까지 기다리고 성공한 경우에만 배포하도록 보강합니다.
 
