@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.8.85 · 작성일: 2026-08-02 · 검토: 2026-08-17
+> 기준 버전: v0.8.102 · 작성일: 2026-08-02 · 검토: 2026-08-17
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -259,7 +259,7 @@ Vanilla Presence Core 계약이 고정된 뒤 host-owned lifecycle 범위부터 
 
 - 완료(v0.8.78): 최근 최대 5개 pointer sample의 순서 가중 속도
 - 완료(v0.8.80): `velocityInfluence`로 track Slider 해제 플링 배율을 선택적으로 조정
-- 완료(v0.8.102 예정): radial과 track slider가 `spring`, `stiffness`, `damping`,
+- 완료(v0.8.102): radial과 track slider가 `spring`, `stiffness`, `damping`,
   `mass`를 공유하는 opt-in 정착 모델과 각도·반지름 회귀 테스트
 - 완료(v0.8.84): track Slider에서 `stiffness`, `damping`, `mass`를
   `spring:true`일 때만 사용하는 opt-in 공개
@@ -401,7 +401,7 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 17. 완료(v0.8.79): Slider 정착을 경과 시간 기반으로 보정하고 큰 `dt`·60/90/120Hz 회귀 테스트 추가
 18. 완료(v0.8.80): track Slider 해제 플링 배율을 `velocityInfluence`로 공개하고 Radial에는 노출하지 않음
 19. 완료(v0.8.84): track Slider에 opt-in spring solver와 공개 물리 파라미터를 추가
-20. 완료(v0.8.102 예정): Radial에 동일한 opt-in spring solver와 물리 파라미터를 연결하고 회귀 테스트 추가
+20. 완료(v0.8.102): Radial에 동일한 opt-in spring solver와 물리 파라미터를 연결하고 회귀 테스트 추가
 21. 후속: Vue Transition interop과 transition cancellation 경계 검토
 22. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구가 확인될 때 별도 검토
 
