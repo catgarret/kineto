@@ -145,6 +145,7 @@
     "test:update": "node tests/update-model.mjs",
     "test:audit": "node tests/audit-extra.mjs",
     "test:site": "node tests/site-deploy.mjs",
+    "test:live-site": "node scripts/verify-live-site.mjs",
     "test:release": "node tests/release-automation.mjs",
     "test:package-size": "node scripts/package-size.mjs --check",
     "test:package-tarball": "node tests/package-tarball.mjs",

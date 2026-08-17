@@ -55,6 +55,8 @@ assert.match(demoWorkflow, /uses:\s*actions\/configure-pages@v6/);
 assert.match(demoWorkflow, /uses:\s*actions\/upload-pages-artifact@v4/);
 assert.match(demoWorkflow, /uses:\s*actions\/deploy-pages@v4/);
 assert.match(demoWorkflow, /path:\s*site/);
+assert.match(demoWorkflow, /npm run test:live-site/);
+assert.match(pkg.scripts['test:live-site'], /verify-live-site\.mjs/);
 assert.doesNotMatch(demoWorkflow, /DEMO_SITE_TOKEN|catgarret\/catgarret\.github\.io|rsync -a/);
 assert.match(security, /provenance/i);
 assert.match(security, /3 business days/);

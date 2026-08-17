@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Verify the canonical Pages URL after deployment, including runtime version, module count, GTM, and the unversioned CDN route.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 배포 후 canonical Pages URL에서 런타임 버전·모듈 수·GTM·unversioned CDN 경로를 실제로 확인합니다.
 
 ## [0.8.102] - 2026-08-17
 

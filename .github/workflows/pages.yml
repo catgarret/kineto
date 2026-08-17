@@ -57,3 +57,6 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify canonical live site
+        run: npm run test:live-site

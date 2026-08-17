@@ -32,6 +32,11 @@ is not the canonical deployment path. Do not change the `CNAME` file in
 `catgarret.github.io`, because that would change the custom domain for the whole
 personal Pages site.
 
+After Pages deploys, `npm run test:live-site` re-fetches the canonical URL and
+checks the live response for the version, module count, GTM, and unversioned
+CDN. It retries while the CDN cache propagates, separating a passing generated
+`site/` artifact from a live page that users can actually see.
+
 ## Preparing a version
 
 Start from a clean `main` branch after all feature/fix commits are complete.
