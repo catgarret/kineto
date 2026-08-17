@@ -1,6 +1,6 @@
 # Presence Core RFC
 
-> 상태: 설계 확정 전 검토안 · 구현 미착수
+> 상태: Vanilla prototype 완료 · React/Vue adapter와 keyed-child 자동 제거는 별도 출시 게이트
 
 Presence는 요소의 시각 상태가 아니라 DOM 수명주기를 조율하는 기능입니다.
 따라서 `states`의 별칭이나 React 전용 컴포넌트로 만들지 않고, Vanilla Core에서
