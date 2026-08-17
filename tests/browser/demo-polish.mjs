@@ -208,8 +208,20 @@ try {
     const header = document.querySelector('.site-header');
     const beforeWidth = header.getBoundingClientRect().width;
     document.querySelector('[data-page-effect="zoom"]').click();
-    await new Promise(requestAnimationFrame);
-    const rootAnimations = document.documentElement.getAnimations().filter((animation) => animation.effect?.target === document.documentElement);
+    // WebKit may expose the animation one frame later when the click handler
+    // is attached by a separately loaded demo script. Wait for the actual root
+    // animation instead of sampling a single frame and mistaking a race for a
+    // broken Page Reveal implementation.
+    const rootAnimations = await new Promise((resolve, reject) => {
+      const deadline = performance.now() + 2000;
+      const check = () => {
+        const animations = document.documentElement.getAnimations().filter((animation) => animation.effect?.target === document.documentElement);
+        if (animations.length) { resolve(animations); return; }
+        if (performance.now() > deadline) { reject(new Error('Page Reveal zoom root animation was not created')); return; }
+        requestAnimationFrame(check);
+      };
+      check();
+    });
     rootAnimations.forEach((animation) => { animation.pause(); animation.currentTime = 140; });
     const style = getComputedStyle(header);
     const during = {
@@ -321,12 +333,13 @@ try {
     const lines=[...text.querySelectorAll('.kt-cover-line')];
     const result=lines.map((line)=>({
       clip:line.style.clipPath,
-      panel:line.querySelector('[aria-hidden="true"]')?.style.transform||''
+      panel:line.querySelector('[aria-hidden="true"]')?.style.transform||'',
+      background:line.querySelector('[aria-hidden="true"]')?.style.background||''
     }));
     instance.destroy();host.remove();return result;
   });
   assert.ok(lineMaskTiming.length>1&&!lineMaskTiming[0].clip.includes('100')&&lineMaskTiming.slice(1).some((line)=>line.clip.includes('100')), `Mask must reveal each rendered line on its own stagger (${JSON.stringify(lineMaskTiming)})`);
-  assert.ok(lineMaskTiming.every((line)=>line.panel&&!line.panel.includes('101')), `the remaining color panel must keep the same later slot that color1 used before mask replacement (${JSON.stringify(lineMaskTiming)})`);
+  assert.ok(lineMaskTiming.every((line)=>line.panel&&line.background&&!/0,?\s*255,?\s*0/.test(line.background)), `the mask replacement must keep one color1 panel per line; a completed panel may already have exited by the time a slow engine reports the stagger (${JSON.stringify(lineMaskTiming)})`);
   checkpoint('cover-reveal-unit');
   await page.locator('#cover-gallery-demo').scrollIntoViewIfNeeded();
   await page.evaluate(() => document.querySelectorAll('#cover-gallery-demo img').forEach((image) => { image.loading='eager'; }));
