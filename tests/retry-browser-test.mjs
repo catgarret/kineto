@@ -57,7 +57,7 @@ for (let attempt = 1; attempt <= attempts; attempt += 1) {
   const result = await run();
   if (result.ok) process.exit(0);
   if (attempt < attempts) {
-    console.warn(`Browser QA attempt ${attempt} failed; retrying in a fresh process group.`);
+    console.warn(`Browser QA attempt ${attempt} failed (code=${result.code ?? 'null'}, signal=${result.signal ?? 'none'}, timedOut=${result.timedOut}); retrying in a fresh process group.`);
     await delay(1200);
   }
 }
