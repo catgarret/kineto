@@ -45,7 +45,18 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run full release verification
-        run: node scripts/retry-command.mjs npm run verify
+        run: |
+          set -o pipefail
+          node scripts/retry-command.mjs npm run verify 2>&1 | tee release.log
+
+      - name: Upload release verification log on failure
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: release-verification-log
+          path: release.log
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Pack release artifact
         run: npm pack

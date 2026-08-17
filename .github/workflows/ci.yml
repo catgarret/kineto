@@ -42,7 +42,9 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run lint, build, Node and browser tests
-        run: node scripts/retry-command.mjs npm run ci
+        run: |
+          set -o pipefail
+          node scripts/retry-command.mjs npm run ci 2>&1 | tee ci.log
 
       - name: Upload browser screenshots on failure
         if: failure()
@@ -50,6 +52,7 @@ jobs:
         with:
           name: browser-test-artifacts
           path: |
+            ci.log
             tests/browser/shots/
             tests/.smoke/
           if-no-files-found: ignore
