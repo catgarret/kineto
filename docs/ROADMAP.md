@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.8.102 · 작성일: 2026-08-02 · 검토: 2026-08-17
+> 기준 버전: v0.8.103 · 작성일: 2026-08-02 · 검토: 2026-08-18
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -32,6 +32,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 - GSAP·ScrollTrigger·Lenis 기본 CDN에는 고정 버전과 SHA-384 SRI가 적용됩니다.
 - Chromium 전체 QA, Firefox/WebKit smoke와 실제 demo-polish QA, lifecycle·패키지·번들 예산·npm provenance 검증이 있습니다.
 - reduced motion, 저사양 fallback, 키보드·ARIA, `destroy()` 복원을 제품 원칙으로 관리합니다.
+- v0.8.103은 Node 24/npm 11 전체 검증, npm provenance 공개, GitHub Release 생성을 통과했습니다. 배포용 gzip 상한은 유지하고 Node 24 zlib 경계 차이만 별도 variance로 흡수합니다.
 
 ### 현재 병목
 
@@ -275,7 +276,7 @@ Swiper도 free mode와 sticky 동작을 분리하고, 단순 구성에서는 CSS
 
 새 Layout 모듈을 만들지 않고 `flip`을 확장합니다.
 
-- 완료(Unreleased): `flip({ viewTransition: true })`가 `data-kt-layout-id`가 있는
+- 완료(v0.8.103): `flip({ viewTransition: true })`가 `data-kt-layout-id`가 있는
   same-document 재배치에서 지원 브라우저의 View Transitions API를 선택적으로 사용하고,
   미지원·실패 환경에서는 기존 FLIP으로 fallback
 - `data-kt-layout-id` 기반 shared element의 서로 다른 부모와 scroll container 간 이동
@@ -404,8 +405,9 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 18. 완료(v0.8.80): track Slider 해제 플링 배율을 `velocityInfluence`로 공개하고 Radial에는 노출하지 않음
 19. 완료(v0.8.84): track Slider에 opt-in spring solver와 공개 물리 파라미터를 추가
 20. 완료(v0.8.102): Radial에 동일한 opt-in spring solver와 물리 파라미터를 연결하고 회귀 테스트 추가
-21. 완료(Unreleased): Vue Transition interop과 transition cancellation 경계 검토
-22. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구가 확인될 때 별도 검토
+21. 완료(v0.8.103): Vue Transition interop과 transition cancellation 경계 검토
+22. 완료(v0.8.103): same-document `flip` View Transitions progressive enhancement와 FLIP fallback 검증
+23. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구가 확인될 때 별도 검토
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

@@ -6,11 +6,13 @@
 
 <!-- Add matching English release bullets here. -->
 - Give the Firefox/WebKit full demo-polish lane a third bounded attempt and a 20-minute job ceiling, while keeping the Chromium and cross-browser smoke contracts unchanged.
+- Refresh the technical roadmap baseline to v0.8.103 and record the shipped View Transitions, provenance, and Node 24 verification evidence.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - Chromium과 cross-browser smoke 계약은 유지하면서 Firefox/WebKit 전체 demo-polish 단계에 제한된 세 번째 시도와 20분 작업 상한을 적용합니다.
+- 기술 로드맵의 기준을 v0.8.103으로 갱신하고 배포된 View Transitions·provenance·Node 24 검증 근거를 기록합니다.
 
 ## [0.8.103] - 2026-08-17
 
