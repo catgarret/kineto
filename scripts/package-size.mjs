@@ -49,7 +49,10 @@ const BUDGET = {
   // unpacked archive; keep the file allowlist fixed and absorb that bounded cost.
   // 2026-08-17: host-owned React/Vue Presence adapters add their public source
   // and declarations to the same allowlist; absorb the measured 5.4 KB cost.
-  packedKb: 497,
+  // 2026-08-17: the Node 24/npm 11 GitHub runner measured 497.9 KB packed
+  // while the local Node 25/npm 11 toolchain measured 496.7 KB; keep a bounded
+  // cross-runner margin without changing the release file allowlist.
+  packedKb: 499,
   unpackedKb: 1672,
   files: 78
 };
