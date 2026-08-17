@@ -47,8 +47,10 @@ const BUDGET = {
   // allowlist unchanged and add only the measured 1 KB boundary margin.
   // 2026-08-17: the opt-in Slider spring controls add one measured KB to the
   // unpacked archive; keep the file allowlist fixed and absorb that bounded cost.
+  // 2026-08-17: host-owned React/Vue Presence adapters add their public source
+  // and declarations to the same allowlist; absorb the measured 5.4 KB cost.
   packedKb: 497,
-  unpackedKb: 1666,
+  unpackedKb: 1672,
   files: 78
 };
 
