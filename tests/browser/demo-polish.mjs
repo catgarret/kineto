@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { chromium, webkit } from 'playwright';
+import { chromium, firefox, webkit } from 'playwright';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 
@@ -15,7 +15,9 @@ html = html
   // instead of silently falling back to the surrounding page color.
   .replace(/<img /g, '<img crossorigin="anonymous" ');
 const mime = { '.svg':'image/svg+xml','.png':'image/png','.gif':'image/gif','.webp':'image/webp','.js':'text/javascript','.css':'text/css' };
-const browserEngine = process.env.KT_BROWSER === 'webkit' ? webkit : chromium;
+const browserName = process.env.KT_BROWSER || 'chromium';
+const browserEngine = { chromium, firefox, webkit }[browserName];
+if (!browserEngine) throw new Error(`Unsupported KT_BROWSER: ${browserName}`);
 const browser = await browserEngine.launch(browserEngine === chromium
   ? { headless:true, ...(process.env.KT_CHROME ? { executablePath:process.env.KT_CHROME } : {}), args:['--no-sandbox','--disable-setuid-sandbox','--disable-gpu'] }
   : { headless:true });

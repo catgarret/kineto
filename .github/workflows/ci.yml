@@ -168,9 +168,9 @@ jobs:
         env:
           KT_BROWSER: ${{ matrix.browser }}
 
-      - name: Run WebKit demo regression QA
-        if: matrix.browser == 'webkit'
+      - name: Run full demo regression QA in the cross-browser lane
+        if: matrix.browser == 'firefox' || matrix.browser == 'webkit'
         run: node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs
         env:
-          KT_BROWSER: webkit
+          KT_BROWSER: ${{ matrix.browser }}
           MK_BROWSER_TEST_TIMEOUT: 240000

@@ -6,13 +6,13 @@
 
 <!-- Add matching English release bullets here. -->
 - Verify the canonical Pages URL after deployment, including runtime version, module count, GTM, and the unversioned CDN route.
-- Run the real demo-polish regression suite in the WebKit CI lane so Radial, mobile Mega Menu, drawer layout, and Page Reveal Safari regressions cannot hide behind smoke-only coverage.
+- Run the real demo-polish regression suite in the Firefox and WebKit CI lanes so Radial, mobile Mega Menu, drawer layout, and Page Reveal engine regressions cannot hide behind smoke-only coverage.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - 배포 후 canonical Pages URL에서 런타임 버전·모듈 수·GTM·unversioned CDN 경로를 실제로 확인합니다.
-- WebKit CI 단계에서 실제 데모 polish 회귀 검사를 실행해 Radial·모바일 Mega Menu·드로어 레이아웃·Page Reveal Safari 회귀가 smoke 검사 뒤에 숨지 않게 합니다.
+- Firefox·WebKit CI 단계에서 실제 데모 polish 회귀 검사를 실행해 Radial·모바일 Mega Menu·드로어 레이아웃·Page Reveal 엔진 회귀가 smoke 검사 뒤에 숨지 않게 합니다.
 
 ## [0.8.102] - 2026-08-17
 
