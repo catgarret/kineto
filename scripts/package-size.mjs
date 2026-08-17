@@ -63,8 +63,11 @@ const BUDGET = {
   // 1688.2 KB unpacked; Node 24/npm 11 measures 502.3 KB packed. Keep the
   // allowlist fixed and absorb this bounded runtime increase with a 1.7 KB
   // cross-runner margin rather than widening the file surface.
+  // 2026-08-17: Radial now shares the opt-in spring solver with Track Slider.
+  // The modular runtime adds 0.5 KB unpacked locally; retain the fixed file
+  // allowlist and a bounded 2 KB margin for the cross-runner archive delta.
   packedKb: 504,
-  unpackedKb: 1690,
+  unpackedKb: 1692,
   files: 78
 };
 

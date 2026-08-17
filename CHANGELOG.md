@@ -5,13 +5,22 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.102] - 2026-08-17
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Add opt-in spring settling to Radial and share the Slider physics controls without changing the legacy cubic default.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - 기존 cubic 기본 동작은 유지하면서 Radial에도 Slider 물리 제어값을 공유하는 opt-in 스프링 정착을 추가했습니다.
-
 ## [0.8.101] - 2026-08-17
 
 ### English

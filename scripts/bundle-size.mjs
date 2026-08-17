@@ -85,10 +85,13 @@ const BUDGETS = {
   // Measured raw deltas are +0.6 KB ESM, +0.3 KB minified, and +0.5 KB UMD;
   // gzip remains below the existing ceilings, so absorb only this bounded
   // runtime cost without changing the compressed budgets.
-  'kineto.js': { raw: 502, gz: 132 },
+  // 2026-08-17: Radial spring settling adds 0.3 KB raw to ESM/UMD while
+  // remaining below the compressed ceilings; retain the dependency guard with
+  // a sub-KB raw allowance.
+  'kineto.js': { raw: 503, gz: 132 },
   'kineto.min.js': { raw: 397, gz: 118 },
-  'kineto.umd.js': { raw: 395, gz: 118 },
-  'kineto.umd.min.js': { raw: 395, gz: 118 },
+  'kineto.umd.js': { raw: 396, gz: 118 },
+  'kineto.umd.min.js': { raw: 396, gz: 118 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

@@ -1,6 +1,6 @@
 # Kineto Documentation
 
-Kineto v0.8.101의 공개 API와 소유자 의도를 기준으로 정리한 문서입니다.
+Kineto v0.8.102의 공개 API와 소유자 의도를 기준으로 정리한 문서입니다.
 
 ## 시작하기
 
