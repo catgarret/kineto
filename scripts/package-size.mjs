@@ -71,7 +71,10 @@ const BUDGET = {
   // 78-file allowlist. Absorb that measured runtime cost plus a small Node/npm
   // archive delta; this is a bounded budget update, not permission to widen the
   // release surface.
-  packedKb: 506,
+  // 2026-08-18: Node 24/npm 11 measured 506.3 KB after the documentation-only
+  // package metadata update while Node 25/npm 11 remained at 505.1 KB. Keep the
+  // allowlist fixed and absorb only this rounded 1 KB runner boundary.
+  packedKb: 507,
   unpackedKb: 1700,
   files: 78
 };

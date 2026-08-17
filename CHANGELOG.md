@@ -9,6 +9,7 @@
 - Add a Korean troubleshooting guide for modular imports, hidden layouts, mobile Mega Menu, Slider/Radial drag, Page Reveal distinctions, date parsing, Scroll Shadows, SSR, CDN/SRI/GTM, CI, and reduced motion.
 - Add a docs-navigation CI audit that keeps the package version, 52-module reference, module index, roadmap, and troubleshooting headings synchronized.
 - Document when to use the full entry versus `core` + module imports and link the troubleshooting path from both README indexes.
+- Absorb the measured 0.3 KB Node 24/npm 11 release-tarball boundary without widening the runtime file allowlist, and run the docs-navigation audit in the hosted CI group.
 
 ### 한국어
 
@@ -17,6 +18,7 @@
 - 모듈형 import, 숨겨진 레이아웃, 모바일 Mega Menu, Slider/Radial 드래그, Page Reveal 차이, 날짜 파싱, Scroll Shadows, SSR, CDN/SRI/GTM, CI, reduced motion을 증상별로 설명하는 한국어 troubleshooting 문서를 추가했습니다.
 - package 버전·52개 module reference·module index·로드맵·troubleshooting heading의 동기화를 유지하는 docs-navigation CI 감사를 추가했습니다.
 - 전체 엔트리와 `core` + 모듈 import를 언제 선택할지 문서화하고 두 README 색인에서 troubleshooting 경로를 연결했습니다.
+- Node 24/npm 11에서 측정된 release tarball 0.3KB 경계만 흡수하고 runtime 파일 allowlist는 넓히지 않았으며, hosted CI 그룹에도 docs-navigation 감사를 포함했습니다.
 
 ## [0.8.104] - 2026-08-17
 
