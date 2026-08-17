@@ -44,10 +44,40 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Run full release verification
+      - name: Run lint
         run: |
           set -o pipefail
-          node scripts/retry-command.mjs npm run verify 2>&1 | tee release.log
+          node scripts/retry-command.mjs npm run lint 2>&1 | tee -a release.log
+
+      - name: Build distributions
+        run: |
+          set -o pipefail
+          node scripts/retry-command.mjs npm run build 2>&1 | tee -a release.log
+
+      - name: Run Node tests
+        run: |
+          set -o pipefail
+          node scripts/retry-command.mjs npm run test:node 2>&1 | tee -a release.log
+
+      - name: Run demo QA
+        run: |
+          set -o pipefail
+          node scripts/retry-command.mjs npm run test:demo 2>&1 | tee -a release.log
+
+      - name: Run browser QA
+        run: |
+          set -o pipefail
+          node scripts/retry-command.mjs npm run test:browser 2>&1 | tee -a release.log
+
+      - name: Pack dry run
+        run: |
+          set -o pipefail
+          node scripts/retry-command.mjs npm pack --dry-run 2>&1 | tee -a release.log
+
+      - name: Run npm audit
+        run: |
+          set -o pipefail
+          node scripts/retry-command.mjs npm audit --audit-level=low 2>&1 | tee -a release.log
 
       - name: Upload release verification log on failure
         if: failure()

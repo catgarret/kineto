@@ -21,8 +21,13 @@ assert.match(workflow, /tags:\s*\n\s*-\s*"v\[0-9\]\+\.\[0-9\]\+\.\[0-9\]\+"/);
 assert.match(workflow, /id-token:\s*write/);
 assert.match(workflow, /npm publish --access public --provenance/);
 assert.match(workflow, /fetch-retries=3/);
-assert.match(workflow, /retry-command\.mjs npm run verify/);
-assert.match(read('.github/workflows/ci.yml'), /retry-command\.mjs npm run ci/);
+for (const command of ['lint', 'build', 'test:node', 'test:demo', 'test:browser']) {
+  assert.match(workflow, new RegExp(`retry-command\\.mjs npm run ${command}`), `release workflow must isolate ${command}`);
+  assert.match(read('.github/workflows/ci.yml'), new RegExp(`retry-command\\.mjs npm run ${command}`), `CI workflow must isolate ${command}`);
+}
+assert.match(workflow, /retry-command\.mjs npm pack --dry-run/);
+assert.match(workflow, /retry-command\.mjs npm audit --audit-level=low/);
+assert.match(read('.github/workflows/ci.yml'), /retry-command\.mjs npm pack --dry-run/);
 assert.match(pkg.scripts['test:framework'], /scripts\/npm-ci-retry\.mjs/);
 assert.match(pkg.scripts['test:consumer-bundles'], /scripts\/npm-ci-retry\.mjs/);
 assert.match(workflow, /npm run purge/);

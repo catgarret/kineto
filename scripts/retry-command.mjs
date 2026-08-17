@@ -1,4 +1,4 @@
-// Re-run a complete verification command once after a transient CI failure.
+// Re-run a verification command after a transient CI failure.
 // The command is still required to pass; retries only absorb short-lived
 // runner, browser, or registry instability without masking a real regression.
 import { spawn } from 'node:child_process';

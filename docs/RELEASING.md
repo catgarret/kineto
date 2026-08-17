@@ -73,8 +73,8 @@ The command validates the release, pushes `main`, creates an annotated tag, and
 pushes the tag. The tag starts `.github/workflows/release.yml`, which:
 
 1. checks version and bilingual release-note consistency;
-2. runs full Node and browser verification, retrying once after a transient
-   runner or browser failure while still requiring a clean second pass;
+2. runs the lint, build, Node, demo, browser, package, and audit stages with
+   up to two transient reruns per stage while still requiring a clean pass;
 3. packs and publishes the npm package with provenance;
 4. creates a GitHub Release with English first and Korean second.
 
