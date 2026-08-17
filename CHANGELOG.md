@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Fixed the date-time regression fixture to pin its Korean server timestamp comparison to `+09:00`, matching the parser contract on UTC runners.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 한국어 서버 날짜 파서 계약과 UTC 러너의 결과가 달라지지 않도록 날짜·시간 회귀 fixture의 비교 시각에 `+09:00`을 고정했습니다.
 
 ## [0.8.98] - 2026-08-17
 
