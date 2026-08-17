@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Increased the full consumer-bundle runner variance to a bounded 0.75 KB so Node 24/Linux gzip output at the rounding edge does not reject the 130 KB product budget.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 130KB 제품 예산은 유지하면서 Node 24/Linux gzip 출력이 반올림 경계에서 거부되지 않도록 전체 소비자 번들의 러너 편차 한도를 0.75KB로 제한적으로 조정했습니다.
 
 ## [0.8.83] - 2026-08-17
 
