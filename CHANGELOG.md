@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Keep runtime-regression checks running after an individual failure and emit the exact failed command as a GitHub annotation before failing the group.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 런타임 회귀 그룹에서 개별 검사가 실패해도 나머지 검사를 계속 실행하고, 그룹 실패 전에 정확한 명령을 GitHub annotation으로 남깁니다.
 
 ## [0.8.96] - 2026-08-17
 

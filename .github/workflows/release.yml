@@ -83,12 +83,20 @@ jobs:
 
       - name: Run Node tests · runtime regressions
         run: |
-          set -euo pipefail
+          set -uo pipefail
+          failures=()
           for command in test:easings test:reduced test:update test:audit test:leak test:perf test:deps test:engine test:sequence-sources test:regressions; do
             echo "::group::$command"
-            node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log
+            if ! node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log; then
+              echo "::error title=Node runtime test failed::$command"
+              failures+=("$command")
+            fi
             echo "::endgroup::"
           done
+          if ((${#failures[@]})); then
+            printf 'Node runtime test failures: %s\n' "${failures[*]}"
+            exit 1
+          fi
 
       - name: Run Node tests · site and release
         run: |
