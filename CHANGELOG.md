@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Extended the browser QA attempt timeout to 180 seconds so slower shared runners can finish the full demo and animated-media checks before a retry.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 느린 공유 러너에서도 전체 데모·애니메이션 미디어 검사를 재시도 전에 완료할 수 있도록 브라우저 QA 시도 제한을 180초로 늘렸습니다.
 
 ## [0.8.81] - 2026-08-17
 

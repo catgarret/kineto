@@ -6,7 +6,10 @@ if (!target) throw new Error('Usage: node tests/retry-browser-test.mjs <test-fil
 
 const testFile = resolve(process.cwd(), target);
 const attempts = Number(process.env.MK_BROWSER_TEST_ATTEMPTS || 2);
-const timeout = Number(process.env.MK_BROWSER_TEST_TIMEOUT || 120000);
+// The full demo QA includes 184 lazy playgrounds plus animated-media capture.
+// GitHub's shared runners can take longer than the local ~80s baseline while
+// still remaining a bounded test; allow one 180s attempt before retrying.
+const timeout = Number(process.env.MK_BROWSER_TEST_TIMEOUT || 180000);
 const delay = (ms) => new Promise((resolveDelay) => setTimeout(resolveDelay, ms));
 
 function signalGroup(pid, signal) {
