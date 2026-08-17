@@ -5,13 +5,22 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.80] - 2026-08-17
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Added the opt-in Slider `velocityInfluence` control for tuning release momentum; the default remains `0.35` and Radial hides the irrelevant field.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - Slider 해제 관성을 조절하는 선택형 `velocityInfluence` 컨트롤을 추가했습니다. 기본값은 `0.35`로 유지되며 Radial에서는 무관한 필드를 숨깁니다.
-
 ## [0.8.79] - 2026-08-17
 
 ### English
