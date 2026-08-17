@@ -35,6 +35,13 @@ function parseDate(value, locale = '') {
     const month = firstNumber > 12 ? secondNumber : secondNumber > 12 ? firstNumber : usLocale ? firstNumber : secondNumber;
     const day = firstNumber > 12 ? firstNumber : secondNumber > 12 ? secondNumber : usLocale ? secondNumber : firstNumber;
     if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      // Korean servers commonly emit `MM/DD/YYYY HH:mm` even when the
+      // surrounding locale is Korean. Keep that value anchored to KST so the
+      // relative label is stable on UTC CI/SSR hosts. Other locales retain
+      // the historical host-local interpretation for ambiguous numeric dates.
+      if (/^ko(?:-|$)/i.test(String(locale))) {
+        return new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(secondValue).padStart(2, '0')}+09:00`);
+      }
       return new Date(Number(year), month - 1, day, Number(hour), Number(minute), Number(secondValue));
     }
   }

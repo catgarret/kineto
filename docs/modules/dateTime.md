@@ -11,4 +11,4 @@
 
 `relativeCutoff`(0이면 사용 안 함)와 `relativeCutoffUnit`을 설정하면 `relative` 모드는 해당 기간을 넘긴 날짜를 현지화된 절대 시각으로 자동 전환합니다. 예를 들어 `relativeCutoff: 30`, `relativeCutoffUnit: 'day'`는 30일 이내에는 `n일 전`, 그 이후에는 원래 날짜를 표시합니다. `both`는 요청한 대로 상대·절대 표기를 항상 함께 유지합니다.
 
-`locale`, `timeZone`, `dateStyle`, `timeStyle`, `updateInterval`, `live:false`로 표시와 갱신을 조절할 수 있습니다. 모호한 날짜 형식은 추측하지 않고 브라우저 파서에 맡기며, 해석할 수 없으면 원문 또는 `fallback`을 유지합니다.
+`locale`, `timeZone`, `dateStyle`, `timeStyle`, `updateInterval`, `live:false`로 표시와 갱신을 조절할 수 있습니다. `MM/DD/YYYY`처럼 모호한 숫자형 날짜는 `en-US`에서는 월-일, 그 외 locale에서는 일-월 규칙을 사용하며, 한국어 locale에서는 서버 관례에 맞춰 +09:00으로 정규화합니다. 해석할 수 없으면 원문 또는 `fallback`을 유지합니다.
