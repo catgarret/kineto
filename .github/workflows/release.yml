@@ -54,10 +54,50 @@ jobs:
           set -o pipefail
           node scripts/retry-command.mjs npm run build 2>&1 | tee -a release.log
 
-      - name: Run Node tests
+      - name: Run Node tests · contracts and package
         run: |
-          set -o pipefail
-          node scripts/retry-command.mjs npm run test:node 2>&1 | tee -a release.log
+          set -euo pipefail
+          for command in test:utils test:states test:presence test:contract test:requirements test:docs test:package test:types test:package-size test:package-tarball; do
+            echo "::group::$command"
+            node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log
+            echo "::endgroup::"
+          done
+
+      - name: Run Node tests · consumers and frameworks
+        run: |
+          set -euo pipefail
+          for command in test:consumer-bundles test:framework; do
+            echo "::group::$command"
+            node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log
+            echo "::endgroup::"
+          done
+
+      - name: Run Node tests · demo surface
+        run: |
+          set -euo pipefail
+          for command in test:parity test:structure test:copy test:lazy test:options test:variants test:help test:inline test:defaults test:variant-options; do
+            echo "::group::$command"
+            node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log
+            echo "::endgroup::"
+          done
+
+      - name: Run Node tests · runtime regressions
+        run: |
+          set -euo pipefail
+          for command in test:easings test:reduced test:update test:audit test:leak test:perf test:deps test:engine test:sequence-sources test:regressions; do
+            echo "::group::$command"
+            node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log
+            echo "::endgroup::"
+          done
+
+      - name: Run Node tests · site and release
+        run: |
+          set -euo pipefail
+          for command in test:site test:release test:size; do
+            echo "::group::$command"
+            node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log
+            echo "::endgroup::"
+          done
 
       - name: Run demo QA
         run: |
