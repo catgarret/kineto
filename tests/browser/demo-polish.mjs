@@ -16,7 +16,17 @@ html = html
   .replace(/<img /g, '<img crossorigin="anonymous" ');
 const mime = { '.svg':'image/svg+xml','.png':'image/png','.gif':'image/gif','.webp':'image/webp','.js':'text/javascript','.css':'text/css' };
 const browserName = process.env.KT_BROWSER || 'chromium';
-const checkpoint = (name) => console.log(`[demo-polish:${browserName}] ${name}`);
+let lastCheckpoint = 'startup';
+const checkpoint = (name) => {
+  lastCheckpoint = name;
+  console.log(`[demo-polish:${browserName}] ${name}`);
+};
+// The retry wrapper terminates a stalled browser process after a bounded
+// attempt. Emit the last completed phase as a workflow annotation so a
+// hosted-runner hang remains actionable even when job logs require sign-in.
+process.on('SIGTERM', () => {
+  console.error(`::error title=Demo polish timeout::${browserName} stopped after checkpoint: ${lastCheckpoint}`);
+});
 const browserEngine = { chromium, firefox, webkit }[browserName];
 if (!browserEngine) throw new Error(`Unsupported KT_BROWSER: ${browserName}`);
 const browser = await browserEngine.launch(browserEngine === chromium
