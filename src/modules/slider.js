@@ -444,6 +444,7 @@ export default {
     let lastMoveX = 0;
     let lastMoveTime = 0;
     let velocity = 0;
+    let sampleCount = 0;
     let pointerId = null;
     let rafId = null;
     let timer = null;
@@ -808,6 +809,7 @@ export default {
       lastMoveX = vertical ? event.clientY : event.clientX;
       lastMoveTime = performance.now();
       velocity = 0;
+      sampleCount = 0;
       wrap.setPointerCapture?.(pointerId);
       stop();
       wake();
@@ -826,7 +828,9 @@ export default {
       }
       const now = performance.now();
       const dt = Math.max(1, now - lastMoveTime);
-      velocity = (lastMoveX - pointerPosition) / dt; // px per ms toward next
+      const sampleVelocity = (lastMoveX - pointerPosition) / dt; // px per ms toward next
+      sampleCount = Math.min(5, sampleCount + 1);
+      velocity += (sampleVelocity - velocity) * (2 / (sampleCount + 1));
       lastMoveX = pointerPosition;
       lastMoveTime = now;
       target = value;
@@ -837,8 +841,10 @@ export default {
       dragging = false;
       wrap.releasePointerCapture?.(pointerId);
       if (dragMoved) suppressClickUntil = performance.now() + 250;
-      const { step } = metrics();
-      const fling = clamp(velocity * step * 0.35 / Math.max(1, step), -1.2, 1.2);
+      // The rolling average caps its memory at five samples, so a single noisy
+      // pointer event no longer decides the fling while the latest samples
+      // still dominate the direction and velocity of the release.
+      const fling = clamp(velocity * 0.35, -1.2, 1.2);
       goTo(target + fling);
       start();
     };

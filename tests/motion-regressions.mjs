@@ -333,6 +333,25 @@ assert.equal(dragSliderHost.querySelector('img').draggable, false, 'slider image
 dragSlider.destroy();
 dragSliderHost.remove();
 
+const inertiaSliderHost = document.createElement('div');
+inertiaSliderHost.innerHTML = '<div class="kt-slider-wrap"><div class="kt-slider-track"><div>A</div><div>B</div><div>C</div><div>D</div><div>E</div></div></div>';
+document.body.appendChild(inertiaSliderHost);
+const inertiaSlider = sliderModule.create(inertiaSliderHost, { preset: 'slide', loop: 'off', drag: true, touch: true });
+const inertiaWrap = inertiaSliderHost.querySelector('.kt-slider-wrap');
+const pointer = (type, clientX) => {
+  const event = new window.MouseEvent(type, { bubbles: true, cancelable: true, clientX, clientY: 0, button: 0 });
+  Object.defineProperty(event, 'pointerId', { value: 7 });
+  Object.defineProperty(event, 'pointerType', { value: 'touch' });
+  return event;
+};
+inertiaWrap.dispatchEvent(pointer('pointerdown', 300));
+inertiaWrap.dispatchEvent(pointer('pointermove', 250));
+inertiaWrap.dispatchEvent(pointer('pointermove', 230));
+inertiaWrap.dispatchEvent(pointer('pointerup', 230));
+assert.ok(inertiaSlider.index > 0, 'recent pointer samples must carry a drag release into the next slide');
+inertiaSlider.destroy();
+inertiaSliderHost.remove();
+
 // Offscreen sliders stop their timer, progress loop and in-flight transform rAF,
 // then resume from the preserved autoplay deadline when they re-enter the view.
 const visibilitySliderHost = document.createElement('div');
