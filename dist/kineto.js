@@ -894,7 +894,7 @@ function et() {
 	e.id = "kineto-inline-fallback", e.textContent = "\n    @property --kt-angle { syntax: \"<angle>\"; initial-value: 0deg; inherits: false; }\n    @keyframes kt-border-spin { to { --kt-angle: 360deg; } }\n    @keyframes kt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }\n    @keyframes kt-aurora { to { transform: rotate(360deg); } }\n    @keyframes kt-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }\n    @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }\n    .kt-cursor-active, .kt-cursor-active * { cursor: none !important; }\n    .kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }\n    .kt-tw-caret { animation: kt-caret .8s step-end infinite; }\n    .kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }\n    .kt-slider-wrap { position: relative; overflow: hidden; }\n    @media (prefers-reduced-motion: reduce) {\n      [data-kt-reveal], [data-kt-text-split], [data-kt-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }\n    }\n  ", document.head.appendChild(e);
 }
 var Q = {
-	version: "0.8.100",
+	version: "0.8.101",
 	easing: M,
 	easingFn: F,
 	easings: j,
@@ -2299,7 +2299,7 @@ function _t(e, t = "") {
 	let o = n.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?:[ T](\d{1,2}):?(\d{2})?(?::?(\d{2}))?)?$/);
 	if (o) {
 		let [, e, n, r, i = "0", a = "0", s = "0"] = o, c = Number(e), l = Number(n), u = /^en-US(?:-|$)/i.test(String(t)), d = c > 12 ? l : l > 12 || u ? c : l, f = c > 12 ? c : l > 12 || u ? l : c;
-		if (d >= 1 && d <= 12 && f >= 1 && f <= 31) return new Date(Number(r), d - 1, f, Number(i), Number(a), Number(s));
+		if (d >= 1 && d <= 12 && f >= 1 && f <= 31) return /^ko(?:-|$)/i.test(String(t)) ? /* @__PURE__ */ new Date(`${r}-${String(d).padStart(2, "0")}-${String(f).padStart(2, "0")}T${String(i).padStart(2, "0")}:${String(a).padStart(2, "0")}:${String(s).padStart(2, "0")}+09:00`) : new Date(Number(r), d - 1, f, Number(i), Number(a), Number(s));
 	}
 	let s = n.replace(/\./g, "-").replace(/\//g, "-"), c = new Date(s);
 	return Number.isNaN(c.getTime()) ? null : c;
