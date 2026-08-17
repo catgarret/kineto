@@ -253,13 +253,14 @@ Vanilla Presence Core 계약이 고정된 뒤 host-owned lifecycle 범위부터 
 
 일반 Slider는 기존 velocity 경로를 유지하면서 `spring:true`를 선택할 때만
 별도의 정착 solver를 사용합니다. 기본값은 기존 보간이므로 기존 소비자의
-동작을 보존하고 비용은 명시된 번들 예산 안에서 관리합니다. Radial은 현재 호환성을 위해 `smoothing`만
-공개하며, 두 모드의 spring solver 통합은 별도 검증 과제로 남겨 둡니다.
+동작을 보존하고 비용은 명시된 번들 예산 안에서 관리합니다. Radial도
+`spring:true`를 선택할 때만 같은 정착 solver를 사용하며, 기본값은 기존
+호환 동작을 유지합니다.
 
 - 완료(v0.8.78): 최근 최대 5개 pointer sample의 순서 가중 속도
 - 완료(v0.8.80): `velocityInfluence`로 track Slider 해제 플링 배율을 선택적으로 조정
-- 후속: radial과 track slider의 spring solver 공유는 Radial의 각도·반지름
-  정착 모델을 먼저 고정한 뒤 검토
+- 완료(v0.8.102 예정): radial과 track slider가 `spring`, `stiffness`, `damping`,
+  `mass`를 공유하는 opt-in 정착 모델과 각도·반지름 회귀 테스트
 - 완료(v0.8.84): track Slider에서 `stiffness`, `damping`, `mass`를
   `spring:true`일 때만 사용하는 opt-in 공개
 - 완료(v0.8.79): 큰 `dt` 상한과 60/90/120Hz 재현 테스트
@@ -399,9 +400,10 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 16. 완료(v0.8.78): 최근 pointer sample 기반 Slider release 관성
 17. 완료(v0.8.79): Slider 정착을 경과 시간 기반으로 보정하고 큰 `dt`·60/90/120Hz 회귀 테스트 추가
 18. 완료(v0.8.80): track Slider 해제 플링 배율을 `velocityInfluence`로 공개하고 Radial에는 노출하지 않음
-19. 완료(v0.8.84): track Slider에 opt-in spring solver와 공개 물리 파라미터를 추가하고 Radial에는 노출하지 않음
-20. 후속: Vue Transition interop과 transition cancellation 경계 검토
-21. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구가 확인될 때 별도 검토
+19. 완료(v0.8.84): track Slider에 opt-in spring solver와 공개 물리 파라미터를 추가
+20. 완료(v0.8.102 예정): Radial에 동일한 opt-in spring solver와 물리 파라미터를 연결하고 회귀 테스트 추가
+21. 후속: Vue Transition interop과 transition cancellation 경계 검토
+22. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구가 확인될 때 별도 검토
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

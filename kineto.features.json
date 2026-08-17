@@ -5002,7 +5002,11 @@
         "position",
         "radius",
         "smoothing",
-        "step"
+        "step",
+        "spring",
+        "stiffness",
+        "damping",
+        "mass"
       ]
     },
     {

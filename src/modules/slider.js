@@ -43,6 +43,10 @@ export default {
       // This makes the two slider layouts feel consistent without changing
       // existing radial timing for consumers that do not opt in.
       const radialSmoothing = opts.smoothing == null ? 0 : clamp(opts.smoothing, 0.02, 0.5);
+      const radialSpring = opts.spring === true;
+      const radialStiffness = clamp(Number(opts.stiffness ?? 170), 20, 400);
+      const radialDamping = clamp(Number(opts.damping ?? 24), 1, 80);
+      const radialMass = clamp(Number(opts.mass ?? 1), 0.1, 4);
       const loop = opts.loop !== false && opts.loop !== 'off';
       const drag = opts.drag !== false;
       const useControls = opts.controls !== false;
@@ -104,6 +108,8 @@ export default {
       let visualActive = active;
       let targetActive = active;
       let radialFrame = null;
+      let radialVelocity = 0;
+      let radialLastTime = -16;
       let offscreen = false;
       let visibilityObserver = null;
       const renderRadial = (positionValue) => {
@@ -148,18 +154,28 @@ export default {
         if (radialFrame) cancelAnimationFrame(radialFrame);
         if (offscreen) {
           visualActive = targetActive;
+          radialVelocity = 0;
           renderRadial(visualActive);
           return;
         }
         if (reduce || duration === 0) {
           visualActive = targetActive;
+          radialVelocity = 0;
           renderRadial(visualActive);
           return;
         }
         const from = visualActive;
         const started = performance.now();
+        radialLastTime = started - 16;
         const tick = (time) => {
-          if (radialSmoothing) {
+          const dt = Math.min(64, Math.max(0, time - radialLastTime));
+          radialLastTime = time;
+          if (radialSpring) {
+            const seconds = dt / 1000;
+            const acceleration = ((targetActive - visualActive) * radialStiffness - radialVelocity * radialDamping) / radialMass;
+            radialVelocity += acceleration * seconds;
+            visualActive += radialVelocity * seconds;
+          } else if (radialSmoothing) {
             visualActive = lerp(visualActive, targetActive, radialSmoothing);
           } else {
             const progress = Math.min(1, (time - started) / (duration * 1000));
@@ -167,12 +183,15 @@ export default {
             visualActive = from + (targetActive - from) * eased;
           }
           renderRadial(visualActive);
-          const done = radialSmoothing
+          const done = radialSpring
+            ? Math.abs(visualActive - targetActive) <= 0.0015 && Math.abs(radialVelocity) <= 0.0015
+            : radialSmoothing
             ? Math.abs(visualActive - targetActive) <= 0.0015
             : (time - started) >= duration * 1000;
           if (!done) radialFrame = requestAnimationFrame(tick);
           else {
             visualActive = targetActive;
+            radialVelocity = 0;
             renderRadial(visualActive);
             radialFrame = null;
           }

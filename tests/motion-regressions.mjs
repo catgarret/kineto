@@ -334,6 +334,26 @@ assert.equal(radialSmooth.index, 0, 'radial smoothing must settle on the request
 radialSmooth.destroy();
 radialSmoothHost.remove();
 
+// Radial can opt into the same spring settling model as Track without
+// changing its historical cubic default. The intermediate frame must move,
+// and the public controls must settle at the requested index.
+const radialSpringHost = document.createElement('div');
+radialSpringHost.innerHTML = '<div>A</div><div>B</div><div>C</div><div>D</div>';
+document.body.appendChild(radialSpringHost);
+const radialSpring = sliderModule.create(radialSpringHost, {
+  effect: 'radial', loop: 'off', controls: false, spring: true,
+  stiffness: 170, damping: 24, mass: 1
+});
+const radialSpringItem = radialSpringHost.querySelector('.kt-radial-item');
+const radialSpringBefore = radialSpringItem.style.transform;
+radialSpring.go(0);
+await new Promise((resolve) => setTimeout(resolve, 40));
+assert.notEqual(radialSpringItem.style.transform, radialSpringBefore, 'radial spring must render an intermediate orbit');
+await new Promise((resolve) => setTimeout(resolve, 800));
+assert.equal(radialSpring.index, 0, 'radial spring must settle on the requested item');
+radialSpring.destroy();
+radialSpringHost.remove();
+
 const dragSliderHost = document.createElement('div');
 dragSliderHost.innerHTML = '<div class="kt-slider-wrap"><div class="kt-slider-track"><div class="kt-slide"><img src="a.png"></div><div class="kt-slide"><img src="b.png"></div></div></div>';
 document.body.appendChild(dragSliderHost);
