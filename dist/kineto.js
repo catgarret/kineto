@@ -2218,20 +2218,32 @@ var gt = {
 	},
 	reduced(e, t) {
 		let n = e.innerHTML, r = e.getAttribute("style");
-		if ((t.mode || t.preset || t.style || "slot") === "clock") {
+		if ((t.secondsOnly === !0 ? "clock" : t.mode || t.preset || t.style || "slot") === "clock") {
 			let i = String(t.clockSeparator ?? ":"), a = t.seconds !== !1, o = t.hour12 === !0, s = () => {
-				let n = (e) => String(e).padStart(2, "0");
+				let n = (e) => String(e).padStart(2, "0"), r = t.secondsOnly === !0;
 				if (t.until || t.since) {
-					let r = t.until ? new Date(t.until) : new Date(t.since), o = Math.max(0, t.until ? r.getTime() - Date.now() : Date.now() - r.getTime()), s = Math.floor(o / 864e5), c = [n(Math.floor(o / 36e5) % 24), n(Math.floor(o / 6e4) % 60)];
-					a && c.push(n(Math.floor(o / 1e3) % 60));
-					let l = s > 0 || t.showDays === !0 ? `${s}${t.daysLabel ?? "d"} ` : "";
-					e.textContent = `${t.prefix || ""}${l}${c.join(i)}${t.suffix || ""}`;
+					let o = t.until ? new Date(t.until) : new Date(t.since), s = Math.max(0, t.until ? o.getTime() - Date.now() : Date.now() - o.getTime());
+					if (r) {
+						let n = Math.max(1, Math.round(Number(t.secondsDigits ?? 3)));
+						e.textContent = `${String(Math.floor(s / 1e3)).padStart(n, "0")}${String(t.secondsLabel ?? "S")}`;
+						return;
+					}
+					let c = Math.floor(s / 864e5), l = [n(Math.floor(s / 36e5) % 24), n(Math.floor(s / 6e4) % 60)];
+					a && l.push(n(Math.floor(s / 1e3) % 60));
+					let u = c > 0 || t.showDays === !0 ? `${c}${t.daysLabel ?? "d"} ` : "";
+					e.textContent = `${t.prefix || ""}${u}${l.join(i)}${t.suffix || ""}`;
 					return;
 				}
-				let r = /* @__PURE__ */ new Date(), s = r.getHours(), c = "";
-				o && (c = s >= 12 ? " PM" : " AM", s = s % 12 || 12);
-				let l = [n(s), n(r.getMinutes())];
-				a && l.push(n(r.getSeconds())), e.textContent = `${t.prefix || ""}${l.join(i)}${c}${t.suffix || ""}`;
+				let s = /* @__PURE__ */ new Date();
+				if (r) {
+					let n = Math.max(1, Math.round(Number(t.secondsDigits ?? 3)));
+					e.textContent = `${String(s.getSeconds()).padStart(n, "0")}${String(t.secondsLabel ?? "S")}`;
+					return;
+				}
+				let c = s.getHours(), l = "";
+				o && (l = c >= 12 ? " PM" : " AM", c = c % 12 || 12);
+				let u = [n(c), n(s.getMinutes())];
+				a && u.push(n(s.getSeconds())), e.textContent = `${t.prefix || ""}${u.join(i)}${l}${t.suffix || ""}`;
 			};
 			s();
 			let c = setInterval(s, 1e3);
@@ -2263,19 +2275,34 @@ var gt = {
 };
 //#endregion
 //#region src/modules/dateTime.js
-function _t(e) {
+function _t(e, t = "") {
 	if (e instanceof Date && !Number.isNaN(e.getTime())) return e;
 	if (typeof e == "number" && Number.isFinite(e)) return new Date(e < 0xe8d4a51000 ? e * 1e3 : e);
-	let t = String(e ?? "").trim();
-	if (!t) return null;
-	if (/^\d{10,13}$/.test(t)) return _t(Number(t));
-	let n = t.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:\s+(\d{1,2})(?::(\d{2})(?::(\d{2}))?)?)?$/);
-	if (n) {
-		let [, e, t, r, i = "0", a = "0", o = "0"] = n;
-		return /* @__PURE__ */ new Date(`${e}-${t.padStart(2, "0")}-${r.padStart(2, "0")}T${i.padStart(2, "0")}:${a.padStart(2, "0")}:${o.padStart(2, "0")}+09:00`);
+	let n = String(e ?? "").trim();
+	if (!n) return null;
+	if (/^\d{10,13}$/.test(n)) return _t(Number(n), t);
+	let r = n.match(/^(\d{4})(\d{2})(\d{2})(?:(\d{2})(\d{2})(\d{2})(?:\.(\d{1,3}))?)?$/);
+	if (r) {
+		let [, e, t, n, i = "0", a = "0", o = "0", s = "0"] = r;
+		return new Date(Number(e), Number(t) - 1, Number(n), Number(i), Number(a), Number(o), Number(s.padEnd(3, "0")));
 	}
-	let r = t.replace(/\./g, "-").replace(/\//g, "-"), i = new Date(r);
-	return Number.isNaN(i.getTime()) ? null : i;
+	let i = n.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:\s*(\d{1,2})\s*시)?(?:\s*(\d{1,2})\s*분)?(?:\s*(\d{1,2})\s*초)?$/);
+	if (i) {
+		let [, e, t, n, r = "0", a = "0", o = "0"] = i;
+		return /* @__PURE__ */ new Date(`${e}-${t.padStart(2, "0")}-${n.padStart(2, "0")}T${r.padStart(2, "0")}:${a.padStart(2, "0")}:${o.padStart(2, "0")}+09:00`);
+	}
+	let a = n.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:\s+(\d{1,2})(?::(\d{2})(?::(\d{2}))?)?)?$/);
+	if (a) {
+		let [, e, t, n, r = "0", i = "0", o = "0"] = a;
+		return /* @__PURE__ */ new Date(`${e}-${t.padStart(2, "0")}-${n.padStart(2, "0")}T${r.padStart(2, "0")}:${i.padStart(2, "0")}:${o.padStart(2, "0")}+09:00`);
+	}
+	let o = n.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?:[ T](\d{1,2}):?(\d{2})?(?::?(\d{2}))?)?$/);
+	if (o) {
+		let [, e, n, r, i = "0", a = "0", s = "0"] = o, c = Number(e), l = Number(n), u = /^en-US(?:-|$)/i.test(String(t)), d = c > 12 ? l : l > 12 || u ? c : l, f = c > 12 ? c : l > 12 || u ? l : c;
+		if (d >= 1 && d <= 12 && f >= 1 && f <= 31) return new Date(Number(r), d - 1, f, Number(i), Number(a), Number(s));
+	}
+	let s = n.replace(/\./g, "-").replace(/\//g, "-"), c = new Date(s);
+	return Number.isNaN(c.getTime()) ? null : c;
 }
 var vt = [
 	["year", 315576e5],
@@ -2304,17 +2331,17 @@ var xt = { create(e, t) {
 		"aria-label",
 		"aria-live",
 		"datetime"
-	]), a = _t(t.value ?? t.date ?? t.datetime ?? t.source ?? e.getAttribute("datetime") ?? e.textContent), o = t.locale || document.documentElement.lang || void 0, s = t.mode || t.preset || "relative", c = Math.max(1e3, Number(t.updateInterval ?? 3e4)), l = () => {
-		if (!a) {
+	]), a = t.locale || document.documentElement.lang || void 0, o = _t(t.value ?? t.date ?? t.datetime ?? t.source ?? e.getAttribute("datetime") ?? e.textContent, a), s = t.mode || t.preset || "relative", c = Math.max(1e3, Number(t.updateInterval ?? 3e4)), l = () => {
+		if (!o) {
 			e.textContent = t.fallback || n || "";
 			return;
 		}
-		let r = t.now ? new Date(t.now).getTime() : Date.now(), i = a.getTime() - r, c = yt(i, o, t), l = new Intl.DateTimeFormat(o, {
+		let r = t.now ? new Date(t.now).getTime() : Date.now(), i = o.getTime() - r, c = yt(i, a, t), l = new Intl.DateTimeFormat(a, {
 			dateStyle: t.dateStyle || "medium",
 			timeStyle: t.timeStyle || void 0,
 			timeZone: t.timeZone || void 0
-		}).format(a);
-		e.textContent = s === "absolute" ? l : s === "both" ? `${c} · ${l}` : bt(i, t) ? l : c, e.setAttribute("datetime", a.toISOString()), e.setAttribute("aria-label", e.textContent);
+		}).format(o);
+		e.textContent = s === "absolute" ? l : s === "both" ? `${c} · ${l}` : bt(i, t) ? l : c, e.setAttribute("datetime", o.toISOString()), e.setAttribute("aria-label", e.textContent);
 	};
 	e.setAttribute("aria-live", "off"), l();
 	let u = s === "absolute" || t.live === !1 ? null : setInterval(l, c);

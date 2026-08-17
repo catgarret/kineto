@@ -506,6 +506,17 @@ relativeInstance.destroy();
 assert.equal(relativeTime.textContent, '2026년 8월 9일 10:30', 'dateTime destroy must restore server-rendered content');
 relativeTime.remove();
 
+for (const serverDate of ['20260809103000', '2026년 8월 9일 10시 30분', '09/08/2026 10:30']) {
+  const compactTime = document.createElement('time');
+  document.body.appendChild(compactTime);
+  const compactInstance = dateTimeModule.create(compactTime, {
+    date: serverDate, mode: 'relative', locale: 'ko', now: '2026-08-09T10:35:00', live: false
+  });
+  assert.match(compactTime.textContent, /5분 전/, `dateTime must normalize non-ISO server date: ${serverDate}`);
+  compactInstance.destroy();
+  compactTime.remove();
+}
+
 const cutoffRelativeTime = document.createElement('time');
 document.body.appendChild(cutoffRelativeTime);
 const cutoffInstance = dateTimeModule.create(cutoffRelativeTime, {

@@ -1414,6 +1414,38 @@ window.KINETO_COPY_I18N = {
       "將伺服器日期顯示為「n 分鐘前」等相對時間。",
       "Показывает дату с сервера как относительное время, например «n минут назад».",
       "Mostra una data del server in forma relativa, ad esempio «n minuti fa»."
+    ],
+    "서버 시각을 n분 전처럼 자동 단위로 표시합니다.": [
+      "Formats a server timestamp with an automatic unit, such as n minutes ago.",
+      "サーバー日時を「n分前」のように自動単位で表示します。",
+      "使用自动单位显示服务器时间，例如“n 分钟前”。",
+      "使用自動單位顯示伺服器時間，例如「n 分鐘前」。",
+      "Показывает серверное время с автоматически выбранной единицей, например «n минут назад».",
+      "Formatta l’ora del server con un’unità automatica, ad esempio «n minuti fa»."
+    ],
+    "미래 등록 예약은 n시간 후처럼 같은 규칙으로 표시합니다.": [
+      "Formats future scheduled timestamps with the same rule, such as in n hours.",
+      "未来の予約日時も「n時間後」のように同じ規則で表示します。",
+      "使用相同规则显示未来预约时间，例如“n 小时后”。",
+      "使用相同規則顯示未來預約時間，例如「n 小時後」。",
+      "Показывает будущие запланированные даты по тому же правилу, например «через n часов».",
+      "Formatta le date future pianificate con la stessa regola, ad esempio «tra n ore»."
+    ],
+    "상대 시간과 현지화된 원래 시각을 함께 표시합니다.": [
+      "Shows relative time together with the localized original timestamp.",
+      "相対時刻とローカライズした元の日時を一緒に表示します。",
+      "同时显示相对时间和本地化的原始时间。",
+      "同時顯示相對時間與在地化的原始時間。",
+      "Mostra insieme il tempo relativo e il timestamp originale localizzato.",
+      "Mostra insieme il tempo relativo e il timestamp originale localizzato."
+    ],
+    "지정한 기간이 지나면 상대 시간 대신 원래 날짜로 전환합니다.": [
+      "Switches from relative time to the original date after a chosen cutoff.",
+      "指定した期間を過ぎると相対時刻から元の日付に切り替えます。",
+      "超过指定时长后，从相对时间切换为原始日期。",
+      "超過指定時長後，從相對時間切換為原始日期。",
+      "После заданного срока переключается с относительного времени на исходную дату.",
+      "Dopo il limite scelto passa dal tempo relativo alla data originale."
     ]
   },
   "titles": {
@@ -1440,6 +1472,38 @@ window.KINETO_COPY_I18N = {
       "徑向轉盤",
       "Радиальная карусель",
       "Giostra radiale"
+    ],
+    "Relative time · past": [
+      "Relative time · past",
+      "相対時刻・過去",
+      "相对时间·过去",
+      "相對時間・過去",
+      "Относительное время · прошлое",
+      "Tempo relativo · passato"
+    ],
+    "Relative time · future": [
+      "Relative time · future",
+      "相対時刻・未来",
+      "相对时间·未来",
+      "相對時間・未來",
+      "Относительное время · будущее",
+      "Tempo relativo · futuro"
+    ],
+    "Both · relative + absolute": [
+      "Both · relative + absolute",
+      "両方・相対＋絶対",
+      "两者·相对+绝对",
+      "兩者・相對＋絕對",
+      "Оба · относительное + абсолютное",
+      "Entrambi · relativo + assoluto"
+    ],
+    "Cutoff · absolute handoff": [
+      "Cutoff · absolute handoff",
+      "期限・絶対日時へ切替",
+      "截止·切换为绝对日期",
+      "截止・切換為絕對日期",
+      "Порог · переход к абсолютной дате",
+      "Limite · passaggio alla data assoluta"
     ],
     "List Reveal — 순차 노출": [
       "List Reveal — Sequential Reveal",

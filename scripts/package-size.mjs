@@ -57,8 +57,13 @@ const BUDGET = {
   // 2026-08-17: nested parent propagation adds 0.3 KB unpacked at the local
   // npm 11 boundary; keep the allowlist fixed and absorb only that measured
   // cost plus a small cross-runner margin.
+  // 2026-08-17: the date-time parser now accepts compact, Korean clock-text,
+  // and locale-aware day/month server timestamps, while reduced counters keep
+  // seconds-only output. The local npm 11 archive measures 1688.2 KB unpacked;
+  // keep the allowlist fixed and absorb this bounded 3.2 KB runtime increase
+  // with the existing cross-runner margin.
   packedKb: 502,
-  unpackedKb: 1685,
+  unpackedKb: 1690,
   files: 78
 };
 

@@ -1,20 +1,42 @@
 import { snapshotAttributes } from '../utils.js';
 
 // Accept ISO/RFC timestamps first, then common server-rendered numeric forms
-// (2026.08.09, 2026/08/09, 2026년 8월 9일 12:30). Ambiguous day/month input is
-// intentionally not guessed: native Date parsing remains the final fallback.
+// (2026.08.09, 2026/08/09, 2026년 8월 9일 12:30). Ambiguous day/month input
+// follows an explicit locale rule instead of depending on the browser parser.
 // Korean server-rendered dates are conventionally KST; include the explicit
 // offset so relative output does not depend on the host (or CI runner) TZ.
-function parseDate(value) {
+function parseDate(value, locale = '') {
   if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
   if (typeof value === 'number' && Number.isFinite(value)) return new Date(value < 1e12 ? value * 1000 : value);
   const text = String(value ?? '').trim();
   if (!text) return null;
-  if (/^\d{10,13}$/.test(text)) return parseDate(Number(text));
+  if (/^\d{10,13}$/.test(text)) return parseDate(Number(text), locale);
+  const compact = text.match(/^(\d{4})(\d{2})(\d{2})(?:(\d{2})(\d{2})(\d{2})(?:\.(\d{1,3}))?)?$/);
+  if (compact) {
+    const [, year, month, day, hour = '0', minute = '0', second = '0', milli = '0'] = compact;
+    return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second), Number(milli.padEnd(3, '0')));
+  }
+  const koreanClock = text.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:\s*(\d{1,2})\s*시)?(?:\s*(\d{1,2})\s*분)?(?:\s*(\d{1,2})\s*초)?$/);
+  if (koreanClock) {
+    const [, year, month, day, hour = '0', minute = '0', second = '0'] = koreanClock;
+    return new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:${second.padStart(2, '0')}+09:00`);
+  }
   const korean = text.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:\s+(\d{1,2})(?::(\d{2})(?::(\d{2}))?)?)?$/);
   if (korean) {
     const [, year, month, day, hour = '0', minute = '0', second = '0'] = korean;
     return new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:${second.padStart(2, '0')}+09:00`);
+  }
+  const dayFirst = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?:[ T](\d{1,2}):?(\d{2})?(?::?(\d{2}))?)?$/);
+  if (dayFirst) {
+    const [, first, second, year, hour = '0', minute = '0', secondValue = '0'] = dayFirst;
+    const firstNumber = Number(first);
+    const secondNumber = Number(second);
+    const usLocale = /^en-US(?:-|$)/i.test(String(locale));
+    const month = firstNumber > 12 ? secondNumber : secondNumber > 12 ? firstNumber : usLocale ? firstNumber : secondNumber;
+    const day = firstNumber > 12 ? firstNumber : secondNumber > 12 ? secondNumber : usLocale ? secondNumber : firstNumber;
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return new Date(Number(year), month - 1, day, Number(hour), Number(minute), Number(secondValue));
+    }
   }
   const normalized = text.replace(/\./g, '-').replace(/\//g, '-');
   const parsed = new Date(normalized);
@@ -49,9 +71,9 @@ export default {
     const originalHTML = el.innerHTML;
     const originalStyle = el.getAttribute('style');
     const restoreAttributes = snapshotAttributes(el, ['aria-label', 'aria-live', 'datetime']);
-    const value = opts.value ?? opts.date ?? opts.datetime ?? opts.source ?? el.getAttribute('datetime') ?? el.textContent;
-    const date = parseDate(value);
     const locale = opts.locale || document.documentElement.lang || undefined;
+    const value = opts.value ?? opts.date ?? opts.datetime ?? opts.source ?? el.getAttribute('datetime') ?? el.textContent;
+    const date = parseDate(value, locale);
     const mode = opts.mode || opts.preset || 'relative';
     const interval = Math.max(1000, Number(opts.updateInterval ?? 30000));
     const render = () => {

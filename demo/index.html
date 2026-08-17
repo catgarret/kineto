@@ -93,13 +93,16 @@
         <article class="card"><h3>Pop</h3><p>완성된 숫자가 커진 상태에서 차례로 자리 잡습니다.</p><div class="demo-stage"><div class="counter-value" data-kt-counter="pop" data-kt-to="98760" data-kt-format="," data-kt-duration="0.9" data-kt-pop-scale="2.15">0</div></div><div class="replay-row"><button class="btn" data-action="replay-parent" data-module="counter">Replay</button></div></article>
         <article class="card"><h3>Split-flap</h3><p>숫자가 전광판처럼 반으로 접히며 바뀝니다.</p><div class="demo-stage"><div class="counter-value demo-css-c81542d9" data-kt-counter="flip" data-kt-to="24680" data-kt-format="," data-kt-duration="1.6" data-kt-loops="1">0</div></div><div class="replay-row"><button class="btn" data-action="replay-parent" data-module="counter">Replay</button></div></article>
       </div>
-      <div class="grid">
+      <div class="grid counter-time-grid">
         <article class="card"><h3>Clock</h3><p>현재 시각을 초 단위로 표시합니다.</p><div class="demo-stage"><div class="counter-value" data-kt-counter="clock" data-kt-seconds="true">00:00:00</div></div></article>
         <article class="card"><h3>Elapsed seconds</h3><p>시작 시점부터 지난 시간 또는 목표 시점까지 남은 시간을 <code>000S</code> 형식으로 표시합니다.</p><div class="demo-stage"><div class="counter-value" data-kt-counter="clock" data-kt-seconds-only="true" data-kt-seconds-digits="3" data-kt-seconds-label="S" data-kt-since="2026-08-02T00:00:00Z">000S</div></div></article>
         <article class="card"><h3>Countdown</h3><p>지정한 시점까지 남은 시간을 계산합니다.</p><div class="demo-stage"><div class="counter-value" data-kt-counter="clock" data-kt-until="2027-01-01T00:00:00" data-kt-clock-style="roll" data-kt-days-label="d">00:00:00</div></div></article>
       </div>
-      <div class="grid">
-        <article class="card" data-demo-module="dateTime"><h3>Relative time</h3><p>서버가 내려준 날짜를 <code>n분 전</code> 같은 상대 시간으로 표시합니다.</p><div class="demo-stage"><time class="counter-value" data-demo-relative-time data-kt-date-time data-kt-mode="relative">5분 전</time></div></article>
+      <div class="grid date-time-grid">
+        <article class="card" data-demo-module="dateTime"><h3>Relative time · past</h3><p>서버 시각을 <code>n분 전</code>처럼 자동 단위로 표시합니다.</p><div class="demo-stage"><time class="counter-value" data-demo-relative-time data-demo-relative-offset="-300000" data-kt-date-time data-kt-mode="relative" data-kt-relative-style="long">5분 전</time></div></article>
+        <article class="card" data-demo-module="dateTime"><h3>Relative time · future</h3><p>미래 등록 예약은 <code>n시간 후</code>처럼 같은 규칙으로 표시합니다.</p><div class="demo-stage"><time class="counter-value" data-demo-relative-time data-demo-relative-offset="7200000" data-kt-date-time data-kt-mode="relative" data-kt-relative-style="long">2시간 후</time></div></article>
+        <article class="card" data-demo-module="dateTime"><h3>Both · relative + absolute</h3><p>상대 시간과 현지화된 원래 시각을 함께 표시합니다.</p><div class="demo-stage"><time class="counter-value" data-demo-relative-time data-demo-relative-offset="-86400000" data-kt-date-time data-kt-mode="both">어제 · 원래 시각</time></div></article>
+        <article class="card" data-demo-module="dateTime"><h3>Cutoff · absolute handoff</h3><p>지정한 기간이 지나면 상대 시간 대신 원래 날짜로 전환합니다.</p><div class="demo-stage"><time class="counter-value" data-demo-relative-time data-demo-relative-offset="-259200000" data-kt-date-time data-kt-mode="relative" data-kt-relative-cutoff="1" data-kt-relative-cutoff-unit="day">2026. 8. 14.</time></div></article>
       </div>
       <div class="grid">
         <article class="card"><h3>Loop</h3><p>같은 문구를 끊김 없이 이어서 흘립니다.</p><div class="demo-stage"><div class="overflow-display" data-kt-overflow-text="loop" data-kt-speed="44" data-kt-gap="42">IRIVER — Designer's Motion Collection 2026</div></div><div class="replay-row"><button class="btn" data-action="replay-parent" data-module="overflowText">Replay</button></div></article>

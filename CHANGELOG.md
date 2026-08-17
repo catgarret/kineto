@@ -5,10 +5,16 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Expanded the date-time demo into past, future, combined, and absolute-handoff examples so every relative-time mode is visible and configurable.
+- Normalized compact, Korean clock-text, and locale-aware day/month server timestamps before relative or absolute formatting.
+- Fixed reduced-motion `secondsOnly` counters to keep the `000S` elapsed/countdown contract, and locked Clock/Elapsed seconds/Countdown demos to equal three-column desktop rows.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 날짜·시간 데모를 과거·미래·상대+절대·절대 날짜 전환 예제로 확장해 상대 시간 모드와 설정을 모두 확인할 수 있게 했습니다.
+- 압축형 날짜, 한국어 시각 문장, locale 기준 일/월 표기의 서버 날짜를 정규화한 뒤 상대·절대 형식으로 처리합니다.
+- reduced-motion에서도 `000S` elapsed/countdown 계약을 유지하도록 `secondsOnly`를 보완하고 Clock/Elapsed seconds/Countdown 데모를 데스크톱 3열 동일 폭으로 고정했습니다.
 
 ## [0.8.89] - 2026-08-17
 

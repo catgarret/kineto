@@ -216,6 +216,7 @@
        넘지 않게 하고(빈 트랙은 auto-fit이 접음), 카드 수에 따라 자동 대응한다:
        1개→100%, 2개→50/50, 3개→1:1:1, 4개 이상→3단으로 줄바꿈. */
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(max(260px,calc((100% - 32px)/3)),1fr));gap:var(--sp-4);align-items:stretch}
+    .counter-time-grid,.date-time-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
     .counter-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
     .counter-grid>.card{grid-column:span 2}
     .counter-grid--compact>.card:nth-last-child(-n+2){grid-column:span 3}
@@ -566,6 +567,7 @@
     @media(max-width:850px){
       .card,.card.wide{grid-column:auto}
       .counter-grid>.card,.counter-grid--compact>.card:nth-last-child(-n+2){grid-column:span 3}
+      .counter-time-grid,.date-time-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
       .site-header{padding-inline:16px}
       .grid{gap:14px}
       .glow-demo>div{padding:30px}

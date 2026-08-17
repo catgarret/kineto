@@ -5,11 +5,13 @@
       document.documentElement.classList.remove('kt-preload');
       throw new Error('Kineto failed to load');
     }
-    // A fixed release-date sample eventually becomes a future timestamp. Keep
-    // this live demo five minutes behind the visitor's current clock instead.
+    // Seed relative-time cards from the visitor's current clock so the demo
+    // always exercises the server-date parser without becoming stale. Each card
+    // can opt into a different past/future offset and mode in markup.
     document.querySelectorAll('[data-demo-relative-time]').forEach((node)=>{
-      node.setAttribute('data-kt-date',new Date(Date.now()-5*60*1000).toISOString());
-      node.setAttribute('data-kt-mode','relative');
+      const offset=Number(node.getAttribute('data-demo-relative-offset')||-5*60*1000);
+      node.setAttribute('data-kt-date',new Date(Date.now()+offset).toISOString());
+      if(!node.hasAttribute('data-kt-mode'))node.setAttribute('data-kt-mode','relative');
     });
     // Image Cover Reveal examples demonstrate the real per-image sampler by
     // default. This runs before autoInit on the live page; browser QA injects

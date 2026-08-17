@@ -784,7 +784,7 @@ export default {
   reduced(el, opts) {
     const originalHTML = el.innerHTML;
     const originalStyle = el.getAttribute('style');
-    const mode = opts.mode || opts.preset || opts.style || 'slot';
+    const mode = opts.secondsOnly === true ? 'clock' : (opts.mode || opts.preset || opts.style || 'slot');
     if (mode === 'clock') {
       // Reduced motion: plain text time, refreshed without any animation.
       const sepChar = String(opts.clockSeparator ?? ':');
@@ -792,9 +792,15 @@ export default {
       const hour12 = opts.hour12 === true;
       const renderTime = () => {
         const pad = (value) => String(value).padStart(2, '0');
+        const secondsOnly = opts.secondsOnly === true;
         if (opts.until || opts.since) {
           const target = opts.until ? new Date(opts.until) : new Date(opts.since);
           const ms = Math.max(0, opts.until ? target.getTime() - Date.now() : Date.now() - target.getTime());
+          if (secondsOnly) {
+            const digits = Math.max(1, Math.round(Number(opts.secondsDigits ?? 3)));
+            el.textContent = `${String(Math.floor(ms / 1000)).padStart(digits, '0')}${String(opts.secondsLabel ?? 'S')}`;
+            return;
+          }
           const days = Math.floor(ms / 86400000);
           const parts = [pad(Math.floor(ms / 3600000) % 24), pad(Math.floor(ms / 60000) % 60)];
           if (showSeconds) parts.push(pad(Math.floor(ms / 1000) % 60));
@@ -803,6 +809,11 @@ export default {
           return;
         }
         const now = new Date();
+        if (secondsOnly) {
+          const digits = Math.max(1, Math.round(Number(opts.secondsDigits ?? 3)));
+          el.textContent = `${String(now.getSeconds()).padStart(digits, '0')}${String(opts.secondsLabel ?? 'S')}`;
+          return;
+        }
         let hours = now.getHours();
         let meridiem = '';
         if (hour12) { meridiem = hours >= 12 ? ' PM' : ' AM'; hours = (hours % 12) || 12; }
