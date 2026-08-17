@@ -10,7 +10,7 @@
 | core-three | 1 | 93.2 KB | 26.0 KB | ≤ 65 KB |
 | core-states | 1 | 31.0 KB | 10.1 KB | ≤ 35 KB |
 | core-presence | 1 | 31.9 KB | 10.2 KB | ≤ 35 KB |
-| react-adapter | 1 | 497.8 KB | 130.5 KB | ≤ 135 KB |
-| vue-adapter | 1 | 497.7 KB | 130.4 KB | ≤ 135 KB |
+| react-adapter | 1 | 508.9 KB | 133.7 KB | ≤ 135 KB |
+| vue-adapter | 1 | 511.8 KB | 134.7 KB | ≤ 135 KB (+1 KB runner variance) |
 
 The fixture test also requires `core + one module`, `core + three modules`, `core + states`, and `core + presence` to remain smaller than the full entry.
