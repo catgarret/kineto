@@ -1,6 +1,6 @@
 {
   "requirementsVersion": "3.1.0",
-  "libraryVersion": "0.8.92",
+  "libraryVersion": "0.8.93",
   "owner": "dongri.me",
   "changePolicy": "Requirements may only be removed or semantically changed with explicit owner approval.",
   "requirements": [

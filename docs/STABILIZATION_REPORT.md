@@ -1,4 +1,4 @@
-# Kineto v0.8.92 Stabilization Report
+# Kineto v0.8.93 Stabilization Report
 
 ## 범위
 
