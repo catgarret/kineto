@@ -5,13 +5,22 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.78] - 2026-08-17
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Improved Slider drag release inertia by weighting up to five recent pointer samples by recency.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - 최근 최대 5개 포인터 샘플을 순서로 가중해 Slider 드래그 해제 관성을 더 안정적으로 계산합니다.
-
 ## [0.8.77] - 2026-08-17
 
 ### English
