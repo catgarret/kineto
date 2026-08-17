@@ -273,7 +273,19 @@ try {
     auto.destroy(); image.remove();
     const host=document.createElement('div'); host.style.cssText='position:fixed;top:10px;left:10px'; const text=document.createElement('div'); text.textContent='content mask'; host.appendChild(text); document.body.appendChild(host);
     const mask=Kineto.coverReveal(text,{mask:true,layers:2,color:'#f00',color2:'#0f0',duration:10,delay:5000,waitForImage:false});
-    await new Promise((resolve)=>setTimeout(resolve,80));
+    // IntersectionObserver/first-paint delivery can be slower in hosted
+    // WebKit than in local runs. Synchronize on the actual mask style rather
+    // than sampling a fixed 80ms window, while keeping the probe bounded.
+    await new Promise((resolve, reject) => {
+      const deadline = performance.now() + 2000;
+      const check = () => {
+        const current = text.closest('.kt-cover-wrap');
+        if (current?.style.clipPath) { resolve(); return; }
+        if (performance.now() > deadline) { reject(new Error('Cover Reveal mask did not establish a clip path')); return; }
+        requestAnimationFrame(check);
+      };
+      check();
+    });
     const wrap=text.closest('.kt-cover-wrap');
     const result={colors,panels:wrap.querySelectorAll('[aria-hidden="true"]').length,wrapClip:wrap.style.clipPath,contentClip:text.style.clipPath};
     mask.destroy(); host.remove();
