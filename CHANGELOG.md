@@ -23,6 +23,7 @@
 - Add the opt-in Vue `useKinetoTransition()` bridge for `<Transition>` enter/leave hooks, phase-specific options, cancellation cleanup, and bounded completion fallback.
 - Add opt-in same-document View Transitions enhancement to `flip` for keyed reorders, with authored-name restoration and automatic FLIP fallback.
 - Keep the 130/135 KB consumer budgets and entry allowlist unchanged while absorbing only measured Node 24 runner variance for consumer bundles and distributable ESM gzip output.
+- Create the GitHub Release with the runner's built-in `gh` CLI so transient codeload 429/502 failures from an external release action do not block npm publication.
 
 ### 한국어
 
@@ -35,6 +36,7 @@
 - Vue `<Transition>`의 enter/leave 훅을 연결하는 opt-in `useKinetoTransition()`과 phase별 옵션·취소 정리·완료 fallback을 추가합니다.
 - `flip`의 keyed same-document 재배치에서 opt-in View Transitions 경로를 사용하고, 기존 이름을 복원하며 미지원 환경에서는 FLIP으로 자동 fallback합니다.
 - 소비자 번들과 배포용 ESM gzip에서 측정된 Node 24 러너 차이만 제한적으로 흡수하고 130/135KB 소비자 예산과 엔트리 허용 목록은 유지합니다.
+- 외부 release action의 codeload 429/502 오류로 npm 배포가 막히지 않도록 러너 기본 `gh` CLI로 GitHub Release를 생성합니다.
 ## [0.8.102] - 2026-08-17
 
 ### English

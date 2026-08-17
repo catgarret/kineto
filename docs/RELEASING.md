@@ -81,7 +81,9 @@ pushes the tag. The tag starts `.github/workflows/release.yml`, which:
 2. runs the lint, build, Node, demo, browser, package, and audit stages with
    up to two transient reruns per stage while still requiring a clean pass;
 3. packs and publishes the npm package with provenance;
-4. creates a GitHub Release with English first and Korean second.
+4. creates a GitHub Release with the runner's built-in `gh` CLI, with English
+   first and Korean second. Using the CLI avoids a separate codeload action
+   download at the final step.
 
 The publish step is idempotent: a workflow retry detects an already published
 version and skips the duplicate npm publish.

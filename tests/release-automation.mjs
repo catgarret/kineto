@@ -47,7 +47,9 @@ assert.match(ciWorkflow, /matrix\.browser == 'firefox' \|\| matrix\.browser == '
 assert.match(pkg.scripts['test:framework'], /scripts\/npm-ci-retry\.mjs/);
 assert.match(pkg.scripts['test:consumer-bundles'], /scripts\/npm-ci-retry\.mjs/);
 assert.match(workflow, /npm run purge/);
-assert.match(workflow, /body_path:\s*"\.github\/release-notes\/\$\{\{ github\.ref_name \}\}\.md"/);
+assert.match(workflow, /--notes-file\s+"\.github\/release-notes\/\$GITHUB_REF_NAME\.md"/);
+assert.match(workflow, /gh release create \"\$GITHUB_REF_NAME\"/);
+assert.doesNotMatch(workflow, /softprops\/action-gh-release/);
 assert.ok(agents.includes('English first') && agents.includes('Korean translation'));
 assert.ok(claude.includes('AGENTS.md') && claude.includes('English first and Korean second'));
 assert.match(changelog, /## \[Unreleased\]\s*\n+### English[\s\S]*### 한국어/);
