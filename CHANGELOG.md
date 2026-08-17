@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Synced the roadmap baseline to v0.8.84 and recorded that `kineto.dongri.me` is canonical while the separate GitHub Pages copy is a manual backup.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 로드맵 기준 버전을 v0.8.84로 맞추고 `kineto.dongri.me`를 공식 주소로, 별도 GitHub Pages 사본을 수동 백업으로 명시했습니다.
 
 ## [0.8.84] - 2026-08-17
 
