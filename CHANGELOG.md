@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Increase only bounded consumer-bundle runner variance after Node 24 measured 131.3 KB full, 135.2 KB React, and 136.2 KB Vue gzip; the 130/135 KB product budgets and entry allowlist remain unchanged.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- Node 24에서 full 131.3KB·React 135.2KB·Vue 136.2KB gzip으로 측정된 차이만 반영해 소비자 번들 러너 variance를 제한적으로 조정했습니다. 130/135KB 제품 예산과 엔트리 허용 목록은 그대로 유지합니다.
 
 ## [0.8.103] - 2026-08-17
 
