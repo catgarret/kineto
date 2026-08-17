@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Increased the release archive size guard by a measured 1 KB cross-runner margin; the npm allowlist and unpacked/file-count limits are unchanged.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- GitHub Actions와 로컬 npm 압축 차이를 반영해 릴리스 아카이브 크기 검사에 측정된 1KB 여유만 추가했습니다. npm 허용 목록과 압축 해제·파일 수 제한은 그대로입니다.
 
 ## [0.8.80] - 2026-08-17
 
