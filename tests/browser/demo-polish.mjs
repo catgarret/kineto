@@ -303,7 +303,21 @@ try {
     const host=document.createElement('div');host.style.cssText='position:fixed;top:40px;left:10px;width:120px';
     const text=document.createElement('div');text.textContent='first row second row third row';host.appendChild(text);document.body.appendChild(host);
     const instance=Kineto.coverReveal(text,{mask:true,lines:true,layers:2,color:'#f00',color2:'#0f0',duration:1,stagger:200,waitForImage:false});
-    await new Promise((resolve)=>setTimeout(resolve,80));
+    // Wait for the first line's reveal and a later line's still-covered state
+    // instead of assuming an 80ms first-paint window in hosted WebKit.
+    await new Promise((resolve, reject) => {
+      const deadline = performance.now() + 2000;
+      const check = () => {
+        const current = [...text.querySelectorAll('.kt-cover-line')].map((line) => line.style.clipPath);
+        if (current.length > 1 && !current[0].includes('100') && current.slice(1).some((clip) => clip.includes('100'))) {
+          resolve();
+          return;
+        }
+        if (performance.now() > deadline) { reject(new Error('Cover Reveal line mask did not establish staggered clips')); return; }
+        requestAnimationFrame(check);
+      };
+      check();
+    });
     const lines=[...text.querySelectorAll('.kt-cover-line')];
     const result=lines.map((line)=>({
       clip:line.style.clipPath,
