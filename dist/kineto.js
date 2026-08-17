@@ -7153,25 +7153,25 @@ var _r = {
 				hidden: e.getAttribute("aria-hidden"),
 				label: e.getAttribute("aria-label")
 			}))
-		}, K = G(Math.round(Number(t.initial ?? 0)), 0, w), q = K, J = K, te = !1, ne = !1, re = 0, Y = 0, ie = 0, ae = 0, X = 0, oe = 0, se = null, ce = null, le = null, ue = 0, de = O, fe = !1, pe = !1, me = null, he = !1, ge = !0, _e = null, ve = t.enabled !== !1, ye = () => {};
+		}, K = G(Math.round(Number(t.initial ?? 0)), 0, w), q = K, J = K, te = !1, ne = !1, re = 0, Y = 0, ie = 0, ae = 0, X = 0, oe = 0, se = null, ce = null, le = -16, ue = null, de = 0, fe = O, pe = !1, me = !1, he = null, ge = !1, _e = !0, ve = null, ye = t.enabled !== !1, be = () => {};
 		n.setAttribute("role", "region"), n.setAttribute("aria-roledescription", "carousel"), n.setAttribute("aria-label", t.label || "Carousel"), n.hasAttribute("tabindex") || (n.tabIndex = 0), g ? (n.style.overflow = "clip", n.style.overflowClipMargin = "var(--kt-slide-active-shadow-room, 56px)") : (n.style.overflow = "hidden", n.style.removeProperty("overflow-clip-margin")), n.style.touchAction = L ? "pan-x" : "pan-y", n.style.position = "relative", (s || d || f || p || m) && (n.style.perspective = `${Number(t.perspective ?? 1100)}px`), e.dataset.ktSliderEffect = o, e.classList.add(`kt-slider--${o}`), e.classList.toggle("kt-slider--active-shadow", g), g && e.style.setProperty("--kt-slide-active-shadow-opacity", `${Number((_ * 100).toFixed(2))}%`), r.style.display = "block", r.style.position = "relative", r.style.width = "100%", r.style.transformStyle = s ? "preserve-3d" : "flat";
-		let be = 100 / x;
+		let xe = 100 / x;
 		i.forEach((e, n) => {
-			e.style.position = n === 0 ? "relative" : "absolute", e.style.top = "0", e.style.left = "0", L ? (e.style.width = "100%", e.style.height = `calc(${be}% - ${y * (x - 1) / x}px)`, n !== 0 && (e.style.width = "100%")) : (e.style.width = `calc(${be}% - ${y * (x - 1) / x}px)`, e.style.minWidth = "0", n !== 0 && t.autoHeight !== !0 && (e.style.height = "100%")), e.style.transformOrigin = "50% 50%", e.style.willChange = g ? "transform,opacity,filter" : "transform,opacity", e.style.transition = "none", e.setAttribute("role", "group"), e.setAttribute("aria-roledescription", "slide"), e.setAttribute("aria-label", `${n + 1} of ${i.length}`), e.querySelectorAll("img").forEach((e) => {
+			e.style.position = n === 0 ? "relative" : "absolute", e.style.top = "0", e.style.left = "0", L ? (e.style.width = "100%", e.style.height = `calc(${xe}% - ${y * (x - 1) / x}px)`) : (e.style.width = `calc(${xe}% - ${y * (x - 1) / x}px)`, e.style.minWidth = "0", n !== 0 && t.autoHeight !== !0 && (e.style.height = "100%")), e.style.transformOrigin = "50% 50%", e.style.willChange = g ? "transform,opacity,filter" : "transform,opacity", e.style.transition = "none", e.setAttribute("role", "group"), e.setAttribute("aria-roledescription", "slide"), e.setAttribute("aria-label", `${n + 1} of ${i.length}`), e.querySelectorAll("img").forEach((e) => {
 				e.draggable = !1;
 			});
 		});
-		let xe = () => {
+		let Se = () => {
 			let e = n.getBoundingClientRect(), t = (L ? e.height : e.width) || 1, r = (L ? i[0].offsetHeight : i[0].offsetWidth) || t / x;
 			return {
 				width: t,
 				slideWidth: r,
 				step: r + y
 			};
-		}, Se = () => {
+		}, Ce = () => {
 			if (h) {
 				i.forEach((e, t) => {
-					let n = E ? De(t - q) : t - q, r = Math.abs(n), i = G(1 - r, 0, 1), a = G(1 - Math.abs(i * 2 - 1), 0, 1);
+					let n = E ? Oe(t - q) : t - q, r = Math.abs(n), i = G(1 - r, 0, 1), a = G(1 - Math.abs(i * 2 - 1), 0, 1);
 					if (e.style.setProperty("--kt-slider-slide-distance", String(n)), e.style.setProperty("--kt-slider-slide-progress", String(i)), e.style.setProperty("--kt-slider-transition-mix", String(a)), e.style.filter = "", e.style.clipPath = "", e.style.backfaceVisibility = "", c) e.style.transform = "translate3d(0,0,0)", e.style.opacity = String(i);
 					else if (l) {
 						let t = r * 14 * R, n = 1 + r * .045 * R;
@@ -7201,187 +7201,189 @@ var _r = {
 				});
 				return;
 			}
-			let { width: e, slideWidth: n, step: r } = xe(), a = C ? (e - n) / 2 : 0;
+			let { width: e, slideWidth: n, step: r } = Se(), a = C ? (e - n) / 2 : 0;
 			i.forEach((e, n) => {
-				let i = E ? De(n - q) : n - q, o = Math.abs(i), c = a + i * r * (s ? Number(t.spacing ?? .62) : 1);
+				let i = E ? Oe(n - q) : n - q, o = Math.abs(i), c = a + i * r * (s ? Number(t.spacing ?? .62) : 1);
 				if (s) {
 					let t = G(-i * j, -j * 1.4, j * 1.4), n = Math.max(P, 1 - o * N);
 					e.style.transform = L ? `translate3d(0,${c}px,${-o * M}px) rotateX(${-t}deg) scale(${n})` : `translate3d(${c}px,0,${-o * M}px) rotateY(${t}deg) scale(${n})`, e.style.opacity = String(Math.max(I, 1 - o * F)), e.style.zIndex = String(1e3 - Math.round(o * 10));
 				} else e.style.transform = L ? `translate3d(0,${c}px,0)` : `translate3d(${c}px,0,0)`, e.style.opacity = "1", e.style.zIndex = "";
 			});
-		}, Ce = () => {
+		}, we = () => {
 			i.forEach((e, t) => {
 				let n = t === K, r = C ? Math.abs(t - K) > Math.ceil(x / 2) : t < K || t >= K + Math.ceil(x);
 				e.setAttribute("aria-hidden", String(s ? !n : r)), e.classList.toggle("is-active", n);
-			}), e.dataset.ktSliderIndex = String(K), ot(), ze(), Pe(K), t.onChange?.(K, i[K], e);
-		}, we = () => {
-			if (ge) {
-				if (pe) {
-					ce = null;
-					return;
-				}
-				q = W(q, J, te ? .55 : D), Se(), te || Math.abs(q - J) > .0015 ? ce = requestAnimationFrame(we) : (q = J, Se(), ce = null);
+			}), e.dataset.ktSliderIndex = String(K), st(), Be(), Fe(K), t.onChange?.(K, i[K], e);
+		}, Te = (e) => {
+			if (!_e) return;
+			if (me) {
+				ce = null;
+				return;
 			}
-		}, Te = () => {
-			ge && ce == null && (ce = requestAnimationFrame(we));
-		}, Ee = i.length, De = (e) => (e = (e % Ee + Ee) % Ee, e > Ee / 2 ? e - Ee : e), Oe = (e) => (Math.round(e) % Ee + Ee) % Ee, ke = (n) => {
-			if (!ve) return;
+			let t = Math.min(64, e - le);
+			le = e;
+			let n = 1 - (1 - (te ? .55 : D)) ** (t / 16);
+			q = W(q, J, n), Ce(), te || Math.abs(q - J) > .0015 ? ce = requestAnimationFrame(Te) : (q = J, Ce(), ce = null);
+		}, Ee = () => {
+			_e && ce == null && (ce = requestAnimationFrame(Te));
+		}, De = i.length, Oe = (e) => (e = (e % De + De) % De, e > De / 2 ? e - De : e), ke = (e) => (Math.round(e) % De + De) % De, Ae = (n) => {
+			if (!ye) return;
 			J = E ? n : G(n, 0, w);
-			let r = E ? Oe(J) : G(Math.round(J), 0, w);
+			let r = E ? ke(J) : G(Math.round(J), 0, w);
 			if (r !== K) {
 				let n = K;
 				t.onBeforeChange?.(r, n, e), a("kt-slider-before-change", {
 					index: r,
 					previousIndex: n,
 					slide: i[r]
-				}), K = r, Ce(), a("kt-slider-change", {
+				}), K = r, we(), a("kt-slider-change", {
 					index: K,
 					previousIndex: n,
 					slide: i[K]
 				});
 			}
-			Te();
-		}, Ae = (e) => {
+			Ee();
+		}, Z = (e) => {
 			if (E) {
 				let t = Math.round(J);
-				ke(t + Math.round(De(e - t)));
-			} else ke(e);
-		}, Z = () => E ? ke(Math.round(J) + S) : Ae(T === "rewind" && K >= w ? 0 : Math.min(w, K + S)), je = () => E ? ke(Math.round(J) - S) : Ae(T === "rewind" && K <= 0 ? w : Math.max(0, K - S)), Me = (() => {
+				Ae(t + Math.round(Oe(e - t)));
+			} else Ae(e);
+		}, je = () => E ? Ae(Math.round(J) + S) : Z(T === "rewind" && K >= w ? 0 : Math.min(w, K + S)), Me = () => E ? Ae(Math.round(J) - S) : Z(T === "rewind" && K <= 0 ? w : Math.max(0, K - S)), Ne = (() => {
 			let e = t.sync;
 			return e ? (Array.isArray(e) ? e : [e]).map((e) => typeof e == "string" ? document.querySelector(e) : e).filter(Boolean) : [];
-		})(), Ne = !1, Pe = (t) => {
-			!Me.length || Ne || Me.forEach((n) => {
+		})(), Pe = !1, Fe = (t) => {
+			!Ne.length || Pe || Ne.forEach((n) => {
 				let r = n.__ktSlider;
 				!r || r.el === e || r.syncTo(t);
 			});
-		}, Fe = t.sync ? !0 : t.slideToClickedSlide === !0, Ie = [];
+		}, Ie = t.sync ? !0 : t.slideToClickedSlide === !0, Le = [];
 		t.grabCursor === !0 && (e.style.cursor = "grab", e.addEventListener("pointerdown", () => {
 			e.style.cursor = "grabbing";
 		}), e.addEventListener("pointerup", () => {
 			e.style.cursor = "grab";
-		})), Fe && i.forEach((e, t) => {
+		})), Ie && i.forEach((e, t) => {
 			let n = (e) => {
-				if (performance.now() < Xe) {
+				if (performance.now() < Ze) {
 					e.preventDefault();
 					return;
 				}
-				e.target.closest?.("a,button,input,select,textarea") || t !== K && Ae(t);
+				e.target.closest?.("a,button,input,select,textarea") || t !== K && Z(t);
 			};
-			e.addEventListener("click", n), Ie.push({
+			e.addEventListener("click", n), Le.push({
 				slide: e,
 				onClick: n
 			});
 		});
-		let Le = t.autoHeight === !0, Re = null, ze = () => {
-			if (!Le) return;
+		let Re = t.autoHeight === !0, ze = null, Be = () => {
+			if (!Re) return;
 			let e = i[K];
 			if (!e) return;
 			let r = Math.round(e.scrollHeight || e.getBoundingClientRect().height);
 			r && (n.style.transition = `height ${Math.max(.05, Number(t.duration ?? .6))}s cubic-bezier(.22,.8,.3,1)`, n.style.height = `${r}px`);
 		};
-		Le && (r.style.alignItems = "flex-start", Re = () => ze(), window.addEventListener("resize", Re), requestAnimationFrame(ze));
-		let Be = (e = !0) => {
-			le != null && e && (de = Math.max(0, de - (performance.now() - ue))), clearTimeout(le), le = null;
-		}, Ve = () => {
-			de = O, ye();
-		}, He = (e = !1) => {
-			Be(!1), e && Ve(), !(!O || he || fe || te || pe) && (de <= 16 && (de = O), ue = performance.now(), le = setTimeout(() => {
-				le = null, !te && !he && !fe && (Z(), Ve()), He();
-			}, de));
-		}, Ue = (e) => {
-			ve && (e.pointerType === "mouse" && e.button !== 0 || (e.pointerType === "mouse" ? !B : !H) || (te = !0, ne = !1, se = e.pointerId, re = L ? e.clientY : e.clientX, Y = J, ie = L ? e.clientY : e.clientX, ae = performance.now(), X = 0, oe = 0, n.setPointerCapture?.(se), Be(), Te()));
+		Re && (r.style.alignItems = "flex-start", ze = () => Be(), window.addEventListener("resize", ze), requestAnimationFrame(Be));
+		let Ve = (e = !0) => {
+			ue != null && e && (fe = Math.max(0, fe - (performance.now() - de))), clearTimeout(ue), ue = null;
+		}, He = () => {
+			fe = O, be();
+		}, Ue = (e = !1) => {
+			Ve(!1), e && He(), !(!O || ge || pe || te || me) && (fe <= 16 && (fe = O), de = performance.now(), ue = setTimeout(() => {
+				ue = null, !te && !ge && !pe && (je(), He()), Ue();
+			}, fe));
 		}, We = (e) => {
+			ye && (e.pointerType === "mouse" && e.button !== 0 || (e.pointerType === "mouse" ? !B : !H) || (te = !0, ne = !1, se = e.pointerId, re = L ? e.clientY : e.clientX, Y = J, ie = L ? e.clientY : e.clientX, ae = performance.now(), X = 0, oe = 0, n.setPointerCapture?.(se), Ve(), Ee()));
+		}, Ge = (e) => {
 			if (!te || e.pointerId !== se) return;
-			let { step: t } = xe(), n = L ? e.clientY : e.clientX, r = n - re;
+			let { step: t } = Se(), n = L ? e.clientY : e.clientX, r = n - re;
 			if (!ne && Math.abs(r) < 5) return;
 			ne = !0;
 			let i = Y - r / Math.max(1, t);
 			E || (i < 0 ? i *= .3 : i > w && (i = w + (i - w) * .3));
 			let a = performance.now(), o = Math.max(1, a - ae), s = (ie - n) / o;
-			oe = Math.min(5, oe + 1), X += (s - X) * (2 / (oe + 1)), ie = n, ae = a, J = i, Te();
-		}, Ge = (e) => {
-			if (!te || e.pointerId !== se) return;
-			te = !1, n.releasePointerCapture?.(se), ne && (Xe = performance.now() + 250);
-			let t = G(X * .35, -1.2, 1.2);
-			Ae(J + t), He();
+			oe = Math.min(5, oe + 1), X += (s - X) * (2 / (oe + 1)), ie = n, ae = a, J = i, Ee();
 		}, Ke = (e) => {
-			if (!ve || !U) return;
+			if (!te || e.pointerId !== se) return;
+			te = !1, n.releasePointerCapture?.(se), ne && (Ze = performance.now() + 250);
+			let t = G(X * .35, -1.2, 1.2);
+			Z(J + t), Ue();
+		}, qe = (e) => {
+			if (!ye || !U) return;
 			let t = L ? "ArrowDown" : "ArrowRight", n = L ? "ArrowUp" : "ArrowLeft";
-			e.key === t ? (e.preventDefault(), Z()) : e.key === n ? (e.preventDefault(), je()) : e.key === "Home" ? (e.preventDefault(), Ae(0)) : e.key === "End" && (e.preventDefault(), Ae(w));
-		}, qe = Array.from(document.querySelectorAll(t.nextSelector || `[data-kt-slider-next="${e.id || ""}"], [data-kt-slider-next]`)).filter((e) => !e.dataset.ktSliderBound), Je = Array.from(document.querySelectorAll(t.prevSelector || `[data-kt-slider-prev="${e.id || ""}"], [data-kt-slider-prev]`)).filter((e) => !e.dataset.ktSliderBound), Ye = (e, t) => {
+			e.key === t ? (e.preventDefault(), je()) : e.key === n ? (e.preventDefault(), Me()) : e.key === "Home" ? (e.preventDefault(), Z(0)) : e.key === "End" && (e.preventDefault(), Z(w));
+		}, Je = Array.from(document.querySelectorAll(t.nextSelector || `[data-kt-slider-next="${e.id || ""}"], [data-kt-slider-next]`)).filter((e) => !e.dataset.ktSliderBound), Ye = Array.from(document.querySelectorAll(t.prevSelector || `[data-kt-slider-prev="${e.id || ""}"], [data-kt-slider-prev]`)).filter((e) => !e.dataset.ktSliderBound), Xe = (e, t) => {
 			e.dataset.ktSliderBound = "true", e.addEventListener("click", t);
 		};
-		qe.forEach((e) => Ye(e, Z)), Je.forEach((e) => Ye(e, je));
-		let Xe = 0, Ze = (e) => {
+		Je.forEach((e) => Xe(e, je)), Ye.forEach((e) => Xe(e, Me));
+		let Ze = 0, Qe = (e) => {
 			te && ne && e.preventDefault();
 		};
-		n.addEventListener("pointerdown", Ue), n.addEventListener("pointermove", We), n.addEventListener("pointerup", Ge), n.addEventListener("pointercancel", Ge), n.addEventListener("touchmove", Ze, { passive: !1 }), n.addEventListener("keydown", Ke);
-		let Qe = t.wheel === !0, $e = 0, et = (e) => {
-			if (!ve) return;
+		n.addEventListener("pointerdown", We), n.addEventListener("pointermove", Ge), n.addEventListener("pointerup", Ke), n.addEventListener("pointercancel", Ke), n.addEventListener("touchmove", Qe, { passive: !1 }), n.addEventListener("keydown", qe);
+		let $e = t.wheel === !0, et = 0, Q = (e) => {
+			if (!ye) return;
 			let t = Math.abs(e.deltaX) >= Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
 			if (Math.abs(t) < 6) return;
 			e.preventDefault();
 			let n = performance.now();
-			n - $e < 320 || ($e = n, t > 0 ? Z() : je());
+			n - et < 320 || (et = n, t > 0 ? je() : Me());
 		};
-		Qe && n.addEventListener("wheel", et, { passive: !1 });
-		let Q = () => {
-			k && (fe = !0, Be());
-		}, tt = () => {
-			k && (fe = !1, He());
+		$e && n.addEventListener("wheel", Q, { passive: !1 });
+		let tt = () => {
+			k && (pe = !0, Ve());
+		}, nt = () => {
+			k && (pe = !1, Ue());
 		};
-		n.addEventListener("pointerenter", Q), n.addEventListener("pointerleave", tt), A && typeof IntersectionObserver < "u" && (me = new IntersectionObserver(([e]) => {
+		n.addEventListener("pointerenter", tt), n.addEventListener("pointerleave", nt), A && typeof IntersectionObserver < "u" && (he = new IntersectionObserver(([e]) => {
 			let t = !!(e?.isIntersecting && (e.intersectionRatio == null || e.intersectionRatio > 0));
-			t !== !pe && (pe = !t, pe ? (Be(), ce != null && (cancelAnimationFrame(ce), ce = null), gt()) : (Te(), He(), vt()));
-		}, { threshold: .01 }), me.observe(e));
-		let nt = typeof ResizeObserver < "u" ? new ResizeObserver(() => {
-			Se();
+			t !== !me && (me = !t, me ? (Ve(), ce != null && (cancelAnimationFrame(ce), ce = null), _t()) : (Ee(), Ue(), yt()));
+		}, { threshold: .01 }), he.observe(e));
+		let rt = typeof ResizeObserver < "u" ? new ResizeObserver(() => {
+			Ce();
 		}) : null;
-		nt?.observe(n);
-		let rt = t.dots === !0, it = [], at = null;
-		rt && (at = document.createElement("div"), at.className = "kt-slider-dots", i.forEach((e, t) => {
+		rt?.observe(n);
+		let it = t.dots === !0, at = [], ot = null;
+		it && (ot = document.createElement("div"), ot.className = "kt-slider-dots", i.forEach((e, t) => {
 			let n = document.createElement("button");
 			n.type = "button", n.className = "kt-slider-dot", n.setAttribute("aria-label", `Go to slide ${t + 1}`), n.addEventListener("pointerdown", (e) => e.stopPropagation()), n.addEventListener("click", (e) => {
-				e.stopPropagation(), Ae(t), He(!0);
-			}), at.appendChild(n), it.push(n);
-		}), n.appendChild(at));
-		let ot = () => {
-			it.forEach((e, t) => {
+				e.stopPropagation(), Z(t), Ue(!0);
+			}), ot.appendChild(n), at.push(n);
+		}), n.appendChild(ot));
+		let st = () => {
+			at.forEach((e, t) => {
 				let n = t === K;
 				e.classList.toggle("is-active", n), e.setAttribute("aria-current", String(n));
 			});
-		}, st = t.progress === !0 && O > 0, ct = t.progressType === "ring" ? "ring" : "bar", lt = null, ut = null, dt = null;
-		st && (ut = document.createElement("div"), ut.className = `kt-slider-progress kt-slider-progress--${ct}`, ct === "ring" ? (ut.innerHTML = "<svg class=\"kt-slider-progress__svg\" viewBox=\"0 0 36 36\" aria-hidden=\"true\"><circle class=\"kt-slider-progress__track\" cx=\"18\" cy=\"18\" r=\"15\"/><circle class=\"kt-slider-progress__fill\" cx=\"18\" cy=\"18\" r=\"15\" pathLength=\"1\" stroke-dasharray=\"1\" stroke-dashoffset=\"1\"/></svg>", lt = ut.querySelector(".kt-slider-progress__fill")) : (ut.setAttribute("aria-hidden", "true"), lt = document.createElement("div"), lt.className = "kt-slider-progress__fill", ut.appendChild(lt)), n.appendChild(ut));
-		let ft = () => {
-			_e && (_e.dataset.paused = String(he), _e.setAttribute("aria-label", he ? "Resume carousel autoplay" : "Pause carousel autoplay"), _e.setAttribute("aria-pressed", String(he)), _e.innerHTML = he ? "<svg viewBox=\"0 0 20 20\" aria-hidden=\"true\"><path d=\"M7 5.2v9.6L14.5 10 7 5.2Z\" fill=\"currentColor\"/></svg>" : "<svg viewBox=\"0 0 20 20\" aria-hidden=\"true\"><path d=\"M6.4 5.2h2.4v9.6H6.4zm4.8 0h2.4v9.6h-2.4z\" fill=\"currentColor\"/></svg>");
+		}, ct = t.progress === !0 && O > 0, lt = t.progressType === "ring" ? "ring" : "bar", ut = null, dt = null, ft = null;
+		ct && (dt = document.createElement("div"), dt.className = `kt-slider-progress kt-slider-progress--${lt}`, lt === "ring" ? (dt.innerHTML = "<svg class=\"kt-slider-progress__svg\" viewBox=\"0 0 36 36\" aria-hidden=\"true\"><circle class=\"kt-slider-progress__track\" cx=\"18\" cy=\"18\" r=\"15\"/><circle class=\"kt-slider-progress__fill\" cx=\"18\" cy=\"18\" r=\"15\" pathLength=\"1\" stroke-dasharray=\"1\" stroke-dashoffset=\"1\"/></svg>", ut = dt.querySelector(".kt-slider-progress__fill")) : (dt.setAttribute("aria-hidden", "true"), ut = document.createElement("div"), ut.className = "kt-slider-progress__fill", dt.appendChild(ut)), n.appendChild(dt));
+		let pt = () => {
+			ve && (ve.dataset.paused = String(ge), ve.setAttribute("aria-label", ge ? "Resume carousel autoplay" : "Pause carousel autoplay"), ve.setAttribute("aria-pressed", String(ge)), ve.innerHTML = ge ? "<svg viewBox=\"0 0 20 20\" aria-hidden=\"true\"><path d=\"M7 5.2v9.6L14.5 10 7 5.2Z\" fill=\"currentColor\"/></svg>" : "<svg viewBox=\"0 0 20 20\" aria-hidden=\"true\"><path d=\"M6.4 5.2h2.4v9.6H6.4zm4.8 0h2.4v9.6h-2.4z\" fill=\"currentColor\"/></svg>");
 		};
-		t.pauseButton === !0 && O > 0 && (_e = document.createElement("button"), _e.type = "button", _e.className = "kt-slider-pause", _e.addEventListener("pointerdown", (e) => e.stopPropagation()), _e.addEventListener("click", (e) => {
-			e.stopPropagation(), he = !he, he ? Be() : He(), ft();
-		}), ft(), ut && ct === "ring" ? (ut.classList.add("has-control"), ut.appendChild(_e)) : n.appendChild(_e));
-		let pt = 0, mt = () => {
-			lt && (ct === "ring" ? lt.style.strokeDashoffset = String(1 - pt) : lt.style.transform = `scaleX(${pt})`);
-		}, ht = () => {
-			pt = 0, mt();
+		t.pauseButton === !0 && O > 0 && (ve = document.createElement("button"), ve.type = "button", ve.className = "kt-slider-pause", ve.addEventListener("pointerdown", (e) => e.stopPropagation()), ve.addEventListener("click", (e) => {
+			e.stopPropagation(), ge = !ge, ge ? Ve() : Ue(), pt();
+		}), pt(), dt && lt === "ring" ? (dt.classList.add("has-control"), dt.appendChild(ve)) : n.appendChild(ve));
+		let mt = 0, ht = () => {
+			ut && (lt === "ring" ? ut.style.strokeDashoffset = String(1 - mt) : ut.style.transform = `scaleX(${mt})`);
 		}, gt = () => {
-			dt != null && (cancelAnimationFrame(dt), dt = null);
+			mt = 0, ht();
 		}, _t = () => {
-			if (!lt) {
-				dt = null;
+			ft != null && (cancelAnimationFrame(ft), ft = null);
+		}, vt = () => {
+			if (!ut) {
+				ft = null;
 				return;
 			}
-			if (le != null && !te && !he && !fe) {
-				let e = performance.now() - ue;
-				pt = G((O - de + e) / O, 0, 1);
+			if (ue != null && !te && !ge && !pe) {
+				let e = performance.now() - de;
+				mt = G((O - fe + e) / O, 0, 1);
 			}
-			mt(), dt = requestAnimationFrame(_t);
-		}, vt = () => {
-			lt && dt == null && _t();
+			ht(), ft = requestAnimationFrame(vt);
+		}, yt = () => {
+			ut && ft == null && vt();
 		};
-		ye = ht, Se(), Ce(), He(), vt(), t.onInit?.(e), a("kt-slider-init", {
+		be = gt, Ce(), we(), Ue(), yt(), t.onInit?.(e), a("kt-slider-init", {
 			index: K,
 			slide: i[K]
 		});
-		let yt = {
+		let bt = {
 			el: e,
 			type: "slider",
 			get index() {
@@ -7391,31 +7393,31 @@ var _r = {
 				return i.slice();
 			},
 			syncTo(e) {
-				Ne = !0;
+				Pe = !0;
 				try {
-					Ae(Number(e));
+					Z(Number(e));
 				} finally {
-					Ne = !1;
+					Pe = !1;
 				}
 			},
-			next: Z,
-			prev: je,
-			slideNext: Z,
-			slidePrev: je,
+			next: je,
+			prev: Me,
+			slideNext: je,
+			slidePrev: Me,
 			goTo(e) {
-				Ae(Number(e));
+				Z(Number(e));
 			},
 			slideTo(e) {
-				Ae(Number(e));
+				Z(Number(e));
 			},
 			replay() {
-				Ae(0);
+				Z(0);
 			},
 			get paused() {
-				return he;
+				return ge;
 			},
 			get enabled() {
-				return ve;
+				return ye;
 			},
 			get isBeginning() {
 				return !E && K === 0;
@@ -7424,31 +7426,31 @@ var _r = {
 				return !E && K === w;
 			},
 			enable() {
-				ve = !0, n.removeAttribute("aria-disabled");
+				ye = !0, n.removeAttribute("aria-disabled");
 			},
 			disable() {
-				ve = !1, Be(), n.setAttribute("aria-disabled", "true");
+				ye = !1, Ve(), n.setAttribute("aria-disabled", "true");
 			},
 			pause() {
-				he = !0, Be(), ft();
+				ge = !0, Ve(), pt();
 			},
 			resume() {
-				he = !1, He(), ft();
+				ge = !1, Ue(), pt();
 			},
 			destroy() {
-				ge = !1, Be(), gt(), me?.disconnect(), it.forEach((e) => e.remove()), at?.remove(), ut?.remove(), _e?.remove(), ce != null && cancelAnimationFrame(ce), nt?.disconnect(), n.removeEventListener("pointerdown", Ue), n.removeEventListener("pointermove", We), n.removeEventListener("pointerup", Ge), n.removeEventListener("pointercancel", Ge), n.removeEventListener("touchmove", Ze), n.removeEventListener("keydown", Ke), n.removeEventListener("wheel", et), n.removeEventListener("pointerenter", Q), n.removeEventListener("pointerleave", tt), qe.forEach((e) => {
-					e.removeEventListener("click", Z), delete e.dataset.ktSliderBound;
-				}), Je.forEach((e) => {
+				_e = !1, Ve(), _t(), he?.disconnect(), at.forEach((e) => e.remove()), ot?.remove(), dt?.remove(), ve?.remove(), ce != null && cancelAnimationFrame(ce), rt?.disconnect(), n.removeEventListener("pointerdown", We), n.removeEventListener("pointermove", Ge), n.removeEventListener("pointerup", Ke), n.removeEventListener("pointercancel", Ke), n.removeEventListener("touchmove", Qe), n.removeEventListener("keydown", qe), n.removeEventListener("wheel", Q), n.removeEventListener("pointerenter", tt), n.removeEventListener("pointerleave", nt), Je.forEach((e) => {
 					e.removeEventListener("click", je), delete e.dataset.ktSliderBound;
+				}), Ye.forEach((e) => {
+					e.removeEventListener("click", Me), delete e.dataset.ktSliderBound;
 				});
 				let t = (e, t, n) => n == null ? e.removeAttribute(t) : e.setAttribute(t, n);
 				t(n, "style", ee.wrap), t(r, "style", ee.track), t(n, "role", ee.wrapRole), t(n, "aria-label", ee.wrapLabel), t(n, "tabindex", ee.wrapTab), i.forEach((e, n) => {
 					let r = ee.slides[n];
 					t(e, "style", r.style), t(e, "role", r.role), t(e, "aria-hidden", r.hidden), t(e, "aria-label", r.label), e.classList.remove("is-active");
-				}), Ie.forEach(({ slide: e, onClick: t }) => e.removeEventListener("click", t)), Re && window.removeEventListener("resize", Re), n.style.removeProperty("height"), r.style.removeProperty("align-items"), e.style.removeProperty("cursor"), e.classList.remove(`kt-slider--${o}`, "kt-slider--active-shadow"), v ? e.style.setProperty("--kt-slide-active-shadow-opacity", v) : e.style.removeProperty("--kt-slide-active-shadow-opacity"), delete e.dataset.ktSliderIndex, delete e.dataset.ktSliderEffect, delete e.__ktSlider;
+				}), Le.forEach(({ slide: e, onClick: t }) => e.removeEventListener("click", t)), ze && window.removeEventListener("resize", ze), n.style.removeProperty("height"), r.style.removeProperty("align-items"), e.style.removeProperty("cursor"), e.classList.remove(`kt-slider--${o}`, "kt-slider--active-shadow"), v ? e.style.setProperty("--kt-slide-active-shadow-opacity", v) : e.style.removeProperty("--kt-slide-active-shadow-opacity"), delete e.dataset.ktSliderIndex, delete e.dataset.ktSliderEffect, delete e.__ktSlider;
 			}
 		};
-		return e.__ktSlider = yt, yt;
+		return e.__ktSlider = bt, bt;
 	},
 	reduced(e) {
 		let t = X(e, ["overflowX", "scrollSnapType"]);

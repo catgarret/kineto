@@ -447,6 +447,7 @@ export default {
     let sampleCount = 0;
     let pointerId = null;
     let rafId = null;
+    let lastFrameTime = -16;
     let timer = null;
     let timerStartedAt = 0;
     let remaining = autoplayDelay;
@@ -503,7 +504,6 @@ export default {
       if (vertical) {
         slide.style.width = '100%';
         slide.style.height = `calc(${slideWidthPercent}% - ${(gap * (perView - 1)) / perView}px)`;
-        if (slideIndex !== 0) slide.style.width = '100%';
       } else {
         slide.style.width = `calc(${slideWidthPercent}% - ${(gap * (perView - 1)) / perView}px)`;
         slide.style.minWidth = '0';
@@ -644,10 +644,16 @@ export default {
       opts.onChange?.(index, slides[index], el);
     };
 
-    const tick = () => {
+    const tick = (time) => {
       if (!alive) return;
       if (offscreen) { rafId = null; return; }
-      position = lerp(position, target, dragging ? 0.55 : smoothing);
+      // Normalize the frame lerp to elapsed time so 60/90/120Hz displays
+      // settle at the same rate. A long background-tab gap is capped to avoid
+      // a single callback teleporting the carousel across its target.
+      const dt = Math.min(64, time - lastFrameTime);
+      lastFrameTime = time;
+      const amount = 1 - ((1 - (dragging ? 0.55 : smoothing)) ** (dt / 16));
+      position = lerp(position, target, amount);
       render();
       if (dragging || Math.abs(position - target) > 0.0015) {
         rafId = requestAnimationFrame(tick);

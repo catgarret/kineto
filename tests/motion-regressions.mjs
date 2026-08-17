@@ -352,6 +352,41 @@ assert.ok(inertiaSlider.index > 0, 'recent pointer samples must carry a drag rel
 inertiaSlider.destroy();
 inertiaSliderHost.remove();
 
+// Track settling is elapsed-time based rather than frame-count based: driving
+// the same 100ms at 60Hz and 120Hz should land at practically the same point.
+// The first callback also establishes a normal frame interval, while a long
+// gap is capped inside the solver so a background-tab resume cannot teleport.
+const realRequestAnimationFrame = globalThis.requestAnimationFrame;
+const realCancelAnimationFrame = globalThis.cancelAnimationFrame;
+let queuedFrame = null;
+let frameId = 0;
+globalThis.requestAnimationFrame = (callback) => { queuedFrame = { callback, id: ++frameId }; return frameId; };
+globalThis.cancelAnimationFrame = (id) => { if (queuedFrame?.id === id) queuedFrame = null; };
+const driveSlider = (times) => {
+  const host = document.createElement('div');
+  host.innerHTML = '<div class="kt-slider-wrap"><div class="kt-slider-track"><div class="kt-slide">A</div><div class="kt-slide">B</div><div class="kt-slide">C</div></div></div>';
+  document.body.appendChild(host);
+  const instance = sliderModule.create(host, { preset: 'slide', loop: 'off', smoothing: 0.14 });
+  instance.goTo(1);
+  for (const time of times) {
+    const frame = queuedFrame;
+    queuedFrame = null;
+    assert.ok(frame, `slider must schedule a frame at ${time}ms`);
+    frame.callback(time);
+  }
+  const transform = host.querySelector('.kt-slide').style.transform;
+  instance.destroy();
+  host.remove();
+  return Number(transform.match(/translate3d\((-?[\d.]+)px/)?.[1] || 0);
+};
+const at60Hz = driveSlider([16.667, 33.334, 50.001, 66.668, 83.335, 100.002]);
+const at120Hz = driveSlider(Array.from({ length: 12 }, (_, index) => (index + 1) * 8.333));
+assert.ok(Math.abs(at60Hz - at120Hz) < 0.02, `slider settling must be refresh-rate invariant — ${at60Hz} vs ${at120Hz}`);
+const cappedGap = driveSlider([16.667, 500]);
+assert.ok(cappedGap < 0.99, `a long frame gap must be capped instead of teleporting — ${cappedGap}`);
+globalThis.requestAnimationFrame = realRequestAnimationFrame;
+globalThis.cancelAnimationFrame = realCancelAnimationFrame;
+
 // Offscreen sliders stop their timer, progress loop and in-flight transform rAF,
 // then resume from the preserved autoplay deadline when they re-enter the view.
 const visibilitySliderHost = document.createElement('div');
