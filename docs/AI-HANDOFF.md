@@ -47,7 +47,7 @@ another agent's prose report are leads to verify, not evidence of completion.
 
 - Package: `@dong-gri/kineto`
 - Current source version: `0.8.102`
-- Latest npm version at the time this workflow was added: `0.8.42`
+- Latest published npm version at the time of this handoff: `0.8.102`
 - Public surface: 52 modules and 27 Core APIs
 - Primary branch: `main`
 - Remote: `https://github.com/catgarret/kineto`
