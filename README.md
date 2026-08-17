@@ -10,7 +10,7 @@ English · [한국어](i18n/README.ko.md) · [日本語](i18n/README.jp.md) · [
 
 <p><a href="https://github.com/catgarret/kineto/actions/workflows/ci.yml"><img src="https://github.com/catgarret/kineto/actions/workflows/ci.yml/badge.svg" alt="CI" height="20"></a>&nbsp;&nbsp;<a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
-[Live demo](https://kineto.dongri.me) · [Module reference](docs/module-reference.md) · [AI prompt guide](AI-PROMPT-GUIDE.md) · [Feature contract](FEATURE_CONTRACT.md)
+[Live demo](https://kineto.dongri.me) · [Module reference](docs/module-reference.md) · [Troubleshooting](docs/troubleshooting.md) · [AI prompt guide](AI-PROMPT-GUIDE.md) · [Feature contract](FEATURE_CONTRACT.md)
 
 </div>
 
@@ -70,6 +70,11 @@ import '@dong-gri/kineto/style.css';
 
 Kineto.autoInit();
 ```
+
+기본 엔트리는 52개 모듈을 한 번에 등록하는 가장 간단한 경로입니다. 초기 번들 비용이
+중요한 제품에서는 아래의 `core` + 모듈 엔트리를 기본 선택으로 두고, 실제 사용하는
+모듈만 등록하십시오. 소비자별 측정값과 gzip 예산은
+[`docs/consumer-bundle-size.md`](docs/consumer-bundle-size.md)에 공개합니다.
 
 ### CDN (script tag, no build step)
 
@@ -301,6 +306,17 @@ Kineto.scan();
 
 Module entries share code-split runtime chunks. Importing a module does not
 register the other modules or download their implementations.
+
+권장 판단은 다음과 같습니다.
+
+- 랜딩 페이지나 짧은 프로토타입: 기본 엔트리로 빠르게 시작합니다.
+- 제품 번들: `@dong-gri/kineto/core`와 `@dong-gri/kineto/modules/<name>`만 가져옵니다.
+- 기능을 늦게 열어야 하는 경우: 해당 모듈 엔트리를 동적 import하고, 로드가 끝난 뒤
+  `Kineto.register()`와 `Kineto.scan()`을 호출합니다.
+
+모듈형 엔트리는 자동으로 다른 모듈을 등록하지 않습니다. 따라서 `data-kt-*` 속성이
+있어도 해당 모듈을 등록하지 않으면 동작하지 않는 것이 정상이며, 이 경우에는
+[`troubleshooting`](docs/troubleshooting.md#모듈형-엔트리가-동작하지-않음)을 먼저 확인하십시오.
 
 Motion States is also available as an opt-in modular entry when the application
 does not need the full registry:

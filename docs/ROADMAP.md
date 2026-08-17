@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.8.103 · 작성일: 2026-08-02 · 검토: 2026-08-18
+> 기준 버전: v0.8.104 · 작성일: 2026-08-02 · 검토: 2026-08-18
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -32,7 +32,8 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 - GSAP·ScrollTrigger·Lenis 기본 CDN에는 고정 버전과 SHA-384 SRI가 적용됩니다.
 - Chromium 전체 QA, Firefox/WebKit smoke와 실제 demo-polish QA, lifecycle·패키지·번들 예산·npm provenance 검증이 있습니다.
 - reduced motion, 저사양 fallback, 키보드·ARIA, `destroy()` 복원을 제품 원칙으로 관리합니다.
-- v0.8.103은 Node 24/npm 11 전체 검증, npm provenance 공개, GitHub Release 생성을 통과했습니다. 배포용 gzip 상한은 유지하고 Node 24 zlib 경계 차이만 별도 variance로 흡수합니다.
+- v0.8.104는 Node 24/npm 11 전체 검증, npm provenance 공개, GitHub Release와 Pages 배포를 통과했습니다. 배포용 gzip 상한은 유지하고 Node 24 zlib 경계 차이만 별도 variance로 흡수합니다.
+- v0.8.104에서 숨겨진 Tabs 패널을 다시 열 때 WebKit의 지연된 `hidden` 반영까지 포함해 indicator를 재측정하고, `tabs.refresh()` 공개 메서드와 bounded follow-up 측정을 추가했습니다. canonical demo에서 52개 모듈·GTM·unversioned CDN 경로를 다시 확인했습니다.
 
 ### 현재 병목
 
@@ -77,7 +78,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 | React/Vue lifecycle·SSR | 완료 | React Strict Mode, Vue mount/update/unmount, jQuery lifecycle, React/Vue SSR fixture를 CI에 추가했습니다. |
 | 공급망 운영 문서 | 완료 | `SECURITY.md`와 공급망 대응·릴리스 확인 문서를 추가했습니다. |
 | 전체 검증 재시도 안전망 | 완료 | CI와 릴리스 검증이 일시적인 러너·브라우저 실패 시 한 번만 재시도하되, 재실행도 반드시 통과하도록 고정했습니다. |
-| 데모·문서 경험 개선 | 완료(1차) | 실제 적용 문제를 반영한 CSS 훅·예제, 변경 설정 URL 공유, Vanilla HTML/JS·React·Vue·CSS 복사 탭을 추가했습니다. 실제 조합 예제와 문제 중심 문서는 다음 단위입니다. |
+| 데모·문서 경험 개선 | 완료(2차) | 실제 적용 문제를 반영한 CSS 훅·예제, 변경 설정 URL 공유, Vanilla HTML/JS·React·Vue·CSS 복사 탭, 문제 중심 troubleshooting 문서와 문서 링크 감사 테스트를 추가했습니다. 실제 조합 예제와 모듈별 사용 판단 메타데이터는 다음 단위입니다. |
 
 #### 1) 실제 소비자 번들 예산
 
@@ -407,7 +408,11 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 20. 완료(v0.8.102): Radial에 동일한 opt-in spring solver와 물리 파라미터를 연결하고 회귀 테스트 추가
 21. 완료(v0.8.103): Vue Transition interop과 transition cancellation 경계 검토
 22. 완료(v0.8.103): same-document `flip` View Transitions progressive enhancement와 FLIP fallback 검증
-23. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구가 확인될 때 별도 검토
+23. 완료(v0.8.104): 숨겨진 Tabs 패널의 WebKit indicator 재측정과 live-site 배포 후 검증
+24. 완료(v0.8.104): troubleshooting 문서와 문서 링크·버전 기준선 자동 감사
+25. 다음 단위: 모듈별 “언제 쓰는가 / 언제 피하는가 / 접근성·성능 상태” 메타데이터를 52개 데모와 복사 코드에 연결
+26. 다음 단위: transform·clip·fixed/sticky 의존 모듈의 Firefox/WebKit 체크포인트를 정기 QA 지표로 승격
+27. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구가 확인될 때 별도 검토
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

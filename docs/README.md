@@ -11,6 +11,7 @@ Kineto v0.8.104의 공개 API와 소유자 의도를 기준으로 정리한 문�
 - [공통 옵션과 데이터 속성](common-options.md)
 - [접근성](accessibility.md)
 - [성능과 fallback](performance.md)
+- [문제 해결](troubleshooting.md)
 - [공급망 운영](supply-chain.md)
 - [보안 신고 정책](../SECURITY.md)
 
@@ -22,3 +23,6 @@ Kineto v0.8.104의 공개 API와 소유자 의도를 기준으로 정리한 문�
 - [전체 라이브 데모](../demo/index.html)
 
 `module-reference.md`는 `kineto.features.json`에서 생성됩니다. variant 또는 공개 option을 바꾸려면 소유자 승인을 확인한 뒤 `npm run docs:contract`를 실행하고 테스트·데모·changelog를 함께 갱신합니다.
+
+문제 해결 문서는 SSR/hydration, 숨겨진 컨테이너, 모바일 Mega Menu, WebKit 레이아웃,
+슬라이더 드래그, 날짜 파싱, CDN·CSP/SRI와 CI 실패를 증상별로 정리합니다.

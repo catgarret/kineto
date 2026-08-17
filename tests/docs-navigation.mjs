@@ -1,0 +1,56 @@
+// Documentation integrity guard. The roadmap and troubleshooting guide are
+// operational inputs, not decorative pages: a stale version or broken module
+// link sends the next maintainer toward the wrong release contract.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
+const pkg = JSON.parse(read('package.json'));
+const contract = JSON.parse(read('kineto.features.json'));
+const readme = read('README.md');
+const docsReadme = read('docs/README.md');
+const roadmap = read('docs/ROADMAP.md');
+const troubleshooting = read('docs/troubleshooting.md');
+const reference = read('docs/module-reference.md');
+const modulesReadme = read('docs/modules/README.md');
+const localizedReadmes = ['ko', 'jp', 'zh-CN', 'zh-TW', 'ru', 'it'].map((locale) => read(`i18n/README.${locale}.md`));
+
+assert.equal(pkg.version, contract.libraryVersion, 'package and feature contract versions must match');
+assert.match(roadmap, new RegExp(`기준 버전: v${pkg.version}(?:\\s|·)`), 'roadmap baseline must track package version');
+assert.match(roadmap, new RegExp(`v${pkg.version}에서`), 'roadmap must record the latest release evidence');
+assert.match(readme, /\[Troubleshooting\]\(docs\/troubleshooting\.md\)/, 'root README must link troubleshooting');
+assert.match(docsReadme, /\[문제 해결\]\(troubleshooting\.md\)/, 'docs index must link troubleshooting');
+assert.ok(localizedReadmes.every((content) => content.includes('../docs/troubleshooting.md')), 'every localized README must link troubleshooting');
+
+const moduleNames = contract.modules.map((module) => module.name);
+const referenceNames = [...reference.matchAll(/^## ([A-Za-z][A-Za-z0-9]*)$/gm)].map((match) => match[1]);
+assert.equal(referenceNames.length, contract.moduleCount, 'generated module reference heading count must match contract');
+assert.deepEqual(new Set(referenceNames), new Set(moduleNames), 'generated module reference must cover every public module');
+for (const name of moduleNames) {
+  const listed = modulesReadme.includes(`| \`${name}\` |`)
+    || (name === 'radial' && modulesReadme.includes('| `slider` |'));
+  assert.ok(listed, `module index must list ${name}`);
+}
+
+for (const heading of [
+  '## 모듈형 엔트리가 동작하지 않음',
+  '## 숨겨진 컨테이너에서 크기·정렬이 틀림',
+  '## 모바일 Mega Menu가 열리지 않거나 엉뚱한 위치에 표시됨',
+  '## Slider/Radial을 드래그하면 고스트 이미지가 생김',
+  '## Page Reveal의 fade·flash가 비슷하게 보임',
+  '## dateTime이 `n분 전` 대신 이상한 날짜를 표시함',
+  '## Scroll Shadows가 너무 진하거나 자연스럽지 않음',
+  '## SSR·hydration에서 `window` 오류 또는 DOM 불일치',
+  '## CDN·CSP/SRI·GTM 확인',
+  '## CI가 오래 걸리거나 실패함'
+]) {
+  assert.ok(troubleshooting.includes(heading), `troubleshooting guide is missing: ${heading}`);
+}
+for (const token of ['tabs.refresh()', "trigger: 'click'", 'relativeCutoff', 'GTM-KFQSFGJL', 'prefers-reduced-motion']) {
+  assert.ok(troubleshooting.includes(token), `troubleshooting guide is missing operational token: ${token}`);
+}
+
+console.log(`docs-navigation OK — v${pkg.version}, ${moduleNames.length} module references, troubleshooting coverage present.`);

@@ -11,7 +11,7 @@
 
 <p><a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="../LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
-[라이브 데모](https://kineto.dongri.me) · [모듈 레퍼런스](../docs/module-reference.md) · [AI 프롬프트 가이드](../AI-PROMPT-GUIDE.md) · [기능 계약](../FEATURE_CONTRACT.md)
+[라이브 데모](https://kineto.dongri.me) · [모듈 레퍼런스](../docs/module-reference.md) · [문제 해결](../docs/troubleshooting.md) · [AI 프롬프트 가이드](../AI-PROMPT-GUIDE.md) · [기능 계약](../FEATURE_CONTRACT.md)
 
 </div>
 
