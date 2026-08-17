@@ -5,13 +5,22 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.8.91] - 2026-08-17
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Widened only the measured npm packed-size headroom for Node 24/npm 11 so the release workflow accepts the same 76-file allowlist across runners.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - 동일한 76개 파일 allowlist를 러너별로 유지할 수 있도록 Node 24/npm 11에서 측정된 npm packed-size 여유만 조정했습니다.
-
 ## [0.8.90] - 2026-08-17
 
 ### English
