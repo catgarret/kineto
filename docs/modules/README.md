@@ -56,6 +56,8 @@
 | `drag` | `data-kt-drag` | drag with inertia / bounds / keyboard |
 | `flip` | `data-kt-flip` | FLIP layout animation |
 
+`tabs` 인스턴스는 `select(index)`, `refresh()`, `destroy()` 메서드를 제공합니다. 외부 UI가 탭 패널을 `hidden` 상태에서 다시 표시한 뒤에는 `refresh()`를 호출해 인디케이터 geometry를 즉시 재측정할 수 있습니다.
+
 ## 카테고리 원칙
 
 - Counter와 Loader를 분리합니다. `circular`와 `bar`는 Loader입니다.

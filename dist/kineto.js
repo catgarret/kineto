@@ -10704,7 +10704,9 @@ var Yr = {
 				} else g();
 				_ = !1;
 			}
-		}, y = () => s === "slide" ? [{
+		}, y = () => {
+			p && (g(), _ = !1);
+		}, b = () => s === "slide" ? [{
 			opacity: 0,
 			transform: "translateX(8px)"
 		}, {
@@ -10716,7 +10718,7 @@ var Yr = {
 		}, {
 			opacity: 1,
 			filter: "blur(0px)"
-		}] : [{ opacity: 0 }, { opacity: 1 }], b = (r, i = !0) => {
+		}] : [{ opacity: 0 }, { opacity: 1 }], x = (r, i = !0) => {
 			let o = m;
 			m = G(r, 0, d.length - 1);
 			let l = o !== m, u = !n && s !== "none" && a > 0, p = s === "cross" || s === "crossfade";
@@ -10727,7 +10729,7 @@ var Yr = {
 				if (r) if (n) {
 					if (r.hidden = !1, r.classList.add("kt-active"), u) {
 						let e = p && l ? a * 500 : 0;
-						r.animate(y(), {
+						r.animate(b(), {
 							duration: a * (p ? 500 : 1e3),
 							delay: e,
 							easing: "cubic-bezier(.22,.8,.3,1)",
@@ -10756,41 +10758,42 @@ var Yr = {
 				} catch {}
 			}
 			i && d[m].focus();
-		}, x = (e) => {
+		}, S = (e) => {
 			let t = d.indexOf(e.currentTarget);
-			t >= 0 && (e.preventDefault(), b(t, !1));
-		}, S = i === "vertical" ? "ArrowUp" : "ArrowLeft", C = i === "vertical" ? "ArrowDown" : "ArrowRight", w = (e) => {
+			t >= 0 && (e.preventDefault(), x(t, !1));
+		}, C = i === "vertical" ? "ArrowUp" : "ArrowLeft", w = i === "vertical" ? "ArrowDown" : "ArrowRight", T = (e) => {
 			let t = null;
-			if (e.key === C) t = (d.indexOf(e.currentTarget) + 1) % d.length;
-			else if (e.key === S) t = (d.indexOf(e.currentTarget) - 1 + d.length) % d.length;
+			if (e.key === w) t = (d.indexOf(e.currentTarget) + 1) % d.length;
+			else if (e.key === C) t = (d.indexOf(e.currentTarget) - 1 + d.length) % d.length;
 			else if (e.key === "Home") t = 0;
 			else if (e.key === "End") t = d.length - 1;
 			else if ((e.key === "Enter" || e.key === " ") && r === "manual") {
-				e.preventDefault(), b(d.indexOf(e.currentTarget), !1);
+				e.preventDefault(), x(d.indexOf(e.currentTarget), !1);
 				return;
 			}
-			t != null && (e.preventDefault(), d[t].focus(), r === "automatic" && b(t, !1));
+			t != null && (e.preventDefault(), d[t].focus(), r === "automatic" && x(t, !1));
 		};
 		d.forEach((e) => {
-			e.addEventListener("click", x), e.addEventListener("keydown", w);
-		}), b(m, !1);
-		let T = p && typeof ResizeObserver < "u" ? new ResizeObserver(v) : null;
-		T?.observe(u), T || window.addEventListener("resize", v);
-		let E = p && typeof MutationObserver < "u" ? new MutationObserver(() => requestAnimationFrame(v)) : null, D = e.closest?.("[hidden]");
-		E && D && E.observe(D, {
+			e.addEventListener("click", S), e.addEventListener("keydown", T);
+		}), x(m, !1);
+		let E = p && typeof ResizeObserver < "u" ? new ResizeObserver(v) : null;
+		E?.observe(u), E || window.addEventListener("resize", v);
+		let D = p && typeof MutationObserver < "u" ? new MutationObserver(() => requestAnimationFrame(v)) : null, O = e.closest?.("[hidden]");
+		D && O && D.observe(O, {
 			attributes: !0,
 			attributeFilter: ["hidden"]
 		});
-		let O = requestAnimationFrame(v);
+		let k = requestAnimationFrame(v);
 		return {
 			el: e,
 			type: "tabs",
-			select: (e) => b(e, !1),
+			select: (e) => x(e, !1),
+			refresh: y,
 			pause() {},
 			resume() {},
 			destroy() {
-				cancelAnimationFrame(O), T || window.removeEventListener("resize", v), T?.disconnect(), E?.disconnect(), d.forEach((e) => {
-					e.removeEventListener("click", x), e.removeEventListener("keydown", w), e.removeAttribute("data-kt-label");
+				cancelAnimationFrame(k), E || window.removeEventListener("resize", v), E?.disconnect(), D?.disconnect(), d.forEach((e) => {
+					e.removeEventListener("click", S), e.removeEventListener("keydown", T), e.removeAttribute("data-kt-label");
 				}), p?.remove(), e.classList.remove("kt-tabs", `kt-tabs--${i}`, "kt-tabs--ind-none", "kt-tabs--instant"), f.forEach((e) => {
 					e.hidden = !1;
 				});

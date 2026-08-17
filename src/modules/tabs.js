@@ -102,6 +102,16 @@ export default {
       }
       indFirst = false;
     };
+    // Consumers that reveal a tab set through their own state (for example a
+    // card switcher that toggles `hidden` on the panel) can explicitly ask the
+    // module to measure again after layout becomes visible. This is intentionally
+    // synchronous and skips the indicator transition: it is a geometry repair,
+    // not a tab selection.
+    const refresh = () => {
+      if (!indicator) return;
+      placeIndicator();
+      indFirst = false;
+    };
 
     // Enter animation for the incoming panel. `cross` waits for the outgoing
     // panel to fade out first (fade-out → fade-in), the rest animate the
@@ -194,6 +204,7 @@ export default {
       el,
       type: 'tabs',
       select: (i) => select(i, false),
+      refresh,
       pause() {},
       resume() {},
       destroy() {
