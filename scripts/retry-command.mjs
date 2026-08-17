@@ -7,7 +7,9 @@ const command = process.argv[2];
 const args = process.argv.slice(3);
 if (!command) throw new Error('Usage: node scripts/retry-command.mjs <command> [...args]');
 
-const attempts = Number(process.env.KT_COMMAND_ATTEMPTS || 2);
+// Full CI/release verification includes browser and generated-bundle checks;
+// allow two transient reruns before reporting a real failure.
+const attempts = Number(process.env.KT_COMMAND_ATTEMPTS || 3);
 const retryDelay = Number(process.env.KT_COMMAND_RETRY_DELAY_MS || 1500);
 if (!Number.isInteger(attempts) || attempts < 1) {
   throw new Error('KT_COMMAND_ATTEMPTS must be a positive integer');

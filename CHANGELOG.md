@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Increased the bounded full CI/release verification retry policy to three attempts for transient browser and generated-bundle runner failures.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 일시적인 브라우저·생성 번들 러너 실패를 흡수하도록 전체 CI/릴리스 검증 재시도 정책을 3회로 조정했습니다.
 
 ## [0.8.92] - 2026-08-17
 
