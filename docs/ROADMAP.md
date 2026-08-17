@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.8.78 · 작성일: 2026-08-02 · 검토: 2026-08-17
+> 기준 버전: v0.8.79 · 작성일: 2026-08-02 · 검토: 2026-08-17
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -253,6 +253,7 @@ Core가 안정된 뒤에만 다음을 제공합니다.
 단계로 남겨 둡니다.
 
 - 완료(v0.8.78): 최근 최대 5개 pointer sample의 순서 가중 속도
+- 완료(v0.8.80): `velocityInfluence`로 track Slider 해제 플링 배율을 선택적으로 조정
 - radial과 track slider의 spring solver 공유
 - `stiffness`, `damping`, `mass`, `velocityInfluence`의 opt-in 공개
 - 완료(v0.8.79): 큰 `dt` 상한과 60/90/120Hz 재현 테스트
@@ -389,7 +390,8 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 13. 완료(v0.8.77): 화면 밖 Slider·Radial의 rAF·autoplay 정지와 opt-out 계약
 14. 완료(v0.8.78): 최근 pointer sample 기반 Slider release 관성
 15. 완료(v0.8.79): Slider 정착을 경과 시간 기반으로 보정하고 큰 `dt`·60/90/120Hz 회귀 테스트 추가
-16. 후속 선택: Slider physics의 공개 파라미터·spring solver와 FLIP shared-layout은 사용 요구에 따라 병렬이 아닌 별도 검토
+16. 완료(v0.8.80): track Slider 해제 플링 배율을 `velocityInfluence`로 공개하고 Radial에는 노출하지 않음
+17. 후속 선택: Slider physics의 공개 spring 파라미터·solver와 FLIP shared-layout은 사용 요구에 따라 병렬이 아닌 별도 검토
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

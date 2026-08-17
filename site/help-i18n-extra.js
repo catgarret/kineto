@@ -1078,6 +1078,7 @@
         "breakpoints": "화면 폭별 설정을 JSON으로 덮어씁니다. 예: {\"640\":{\"perView\":2},\"1024\":{\"perView\":3}}",
         "grabCursor": "마우스를 올리면 잡는 손 모양 커서로 바꿔 드래그 가능함을 알립니다.",
         "slideToClickedSlide": "옆에 있는 슬라이드를 클릭하면 그 슬라이드가 활성 위치로 옵니다."
+        ,"velocityInfluence": "드래그를 놓을 때 남는 관성의 배율입니다. 0이면 플링을 끄고, 1보다 크게 하면 더 멀리 이동합니다. Radial에는 적용되지 않습니다."
       },
       "glitch": {
         "seed": "난수 시드입니다. 같은 값이면 같은 버스트 순서가 재현되므로 마음에 든 연출을 고정할 수 있습니다.",
@@ -1115,6 +1116,7 @@
         "breakpoints": "Per-width overrides as JSON, e.g. {\"640\":{\"perView\":2},\"1024\":{\"perView\":3}}",
         "grabCursor": "Swap in a grab cursor on hover so it reads as draggable.",
         "slideToClickedSlide": "Clicking a neighbouring slide brings it to the active position."
+        ,"velocityInfluence": "Multiplier for release momentum. Use 0 to disable the fling or a value above 1 to travel farther; it does not affect Radial."
       },
       "glitch": {
         "seed": "Random seed. The same value replays the same burst sequence, so you can lock a take you like.",
@@ -1152,6 +1154,7 @@
         "breakpoints": "画面幅ごとの設定を JSON で上書きします。例: {\"640\":{\"perView\":2},\"1024\":{\"perView\":3}}",
         "grabCursor": "ホバー時につかむ形のカーソルに変え、ドラッグできることを示します。",
         "slideToClickedSlide": "隣のスライドをクリックすると、そのスライドがアクティブ位置に来ます。"
+        ,"velocityInfluence": "解放時の慣性倍率。0 でフリングを無効にし、1 より大きくすると遠くまで移動します。Radial には適用されません。"
       },
       "glitch": {
         "seed": "乱数シード。同じ値なら同じバースト順が再現されるので、気に入った演出を固定できます。",
@@ -1189,6 +1192,7 @@
         "breakpoints": "以 JSON 按屏幕宽度覆盖设置，例如 {\"640\":{\"perView\":2},\"1024\":{\"perView\":3}}",
         "grabCursor": "悬停时切换为抓取光标，提示可以拖动。",
         "slideToClickedSlide": "点击旁边的滑块即可将其移到当前位置。"
+        ,"velocityInfluence": "释放时的惯性倍率。设为 0 可关闭甩动，设为大于 1 可移动更远；不适用于 Radial。"
       },
       "glitch": {
         "seed": "随机种子。相同数值会重现相同的爆发序列，可固定满意的效果。",
@@ -1226,6 +1230,7 @@
         "breakpoints": "以 JSON 按螢幕寬度覆寫設定，例如 {\"640\":{\"perView\":2},\"1024\":{\"perView\":3}}",
         "grabCursor": "停留時切換為抓取游標，提示可以拖曳。",
         "slideToClickedSlide": "點擊旁邊的滑塊即可將其移到目前位置。"
+        ,"velocityInfluence": "釋放時的慣性倍率。設為 0 可關閉甩動，設為大於 1 可移動更遠；不適用於 Radial。"
       },
       "glitch": {
         "seed": "隨機種子。相同數值會重現相同的爆發序列，可固定滿意的效果。",
@@ -1263,6 +1268,7 @@
         "breakpoints": "Переопределения по ширине в JSON, напр. {\"640\":{\"perView\":2},\"1024\":{\"perView\":3}}",
         "grabCursor": "Курсор-«рука» при наведении, чтобы было видно: можно тащить.",
         "slideToClickedSlide": "Клик по соседнему слайду выводит его в активную позицию."
+        ,"velocityInfluence": "Множитель инерции при отпускании. 0 отключает рывок, значение выше 1 ведёт дальше; на Radial не действует."
       },
       "glitch": {
         "seed": "Сид случайности. При том же значении повторяется та же серия вспышек — можно закрепить удачный вариант.",
@@ -1300,6 +1306,7 @@
         "breakpoints": "Override per larghezza in JSON, es. {\"640\":{\"perView\":2},\"1024\":{\"perView\":3}}",
         "grabCursor": "Cursore a mano al passaggio del mouse, per far capire che si può trascinare.",
         "slideToClickedSlide": "Cliccando una slide vicina, questa passa in posizione attiva."
+        ,"velocityInfluence": "Moltiplicatore dell’inerzia al rilascio. 0 disattiva lo slancio, oltre 1 porta più lontano; non vale per Radial."
       },
       "glitch": {
         "seed": "Seme casuale. Lo stesso valore ripete la stessa sequenza di burst, così puoi fissare quella che preferisci.",

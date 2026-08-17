@@ -409,6 +409,10 @@ export default {
     const loopMode = opts.loop === true ? 'infinite' : (opts.loop || 'off');
     const seamless = loopMode === 'infinite';
     const smoothing = clamp(Number(opts.smoothing ?? (0.14 / Math.max(0.2, Number(opts.speed ?? opts.duration ?? 0.55) / 0.55))), 0.02, 0.5);
+    // Release momentum is opt-in tunable while the default preserves the
+    // historical fling distance. Values above 1 make a fast release travel
+    // farther; 0 disables the release fling without disabling drag itself.
+    const velocityInfluence = clamp(Number(opts.velocityInfluence ?? 0.35), 0, 1.2);
     const autoplayDelay = opts.autoplay === true ? 3000 : Math.max(0, Number(opts.autoplay || 0));
     // Hover pausing is opt-in. This keeps the runtime aligned with the settings
     // switch: an unchecked Pause on hover control must never pause autoplay.
@@ -850,7 +854,7 @@ export default {
       // The rolling average caps its memory at five samples, so a single noisy
       // pointer event no longer decides the fling while the latest samples
       // still dominate the direction and velocity of the release.
-      const fling = clamp(velocity * 0.35, -1.2, 1.2);
+      const fling = clamp(velocity * velocityInfluence, -1.2, 1.2);
       goTo(target + fling);
       start();
     };

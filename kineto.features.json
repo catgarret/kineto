@@ -5167,6 +5167,7 @@
         "speed",
         "step",
         "sync",
+        "velocityInfluence",
         "touch",
         "wheel"
       ],
@@ -5203,6 +5204,7 @@
         "smoothing": 0.14,
         "step": 26,
         "sync": "",
+        "velocityInfluence": 0.35,
         "wheel": false
       },
       "variantOptions": {
@@ -5252,6 +5254,7 @@
           "speed",
           "sync",
           "touch",
+          "velocityInfluence",
           "wheel"
         ],
         "fade": [
@@ -5300,6 +5303,7 @@
           "speed",
           "sync",
           "touch",
+          "velocityInfluence",
           "wheel"
         ],
         "dissolve": [
@@ -5348,6 +5352,7 @@
           "speed",
           "sync",
           "touch",
+          "velocityInfluence",
           "wheel"
         ],
         "wipe": [
@@ -5396,6 +5401,7 @@
           "speed",
           "sync",
           "touch",
+          "velocityInfluence",
           "wheel"
         ],
         "coverflow": [
@@ -5447,6 +5453,7 @@
           "speed",
           "sync",
           "touch",
+          "velocityInfluence",
           "wheel"
         ],
         "flip": [
@@ -5495,6 +5502,7 @@
           "speed",
           "sync",
           "touch",
+          "velocityInfluence",
           "wheel"
         ],
         "cube": [
@@ -5543,6 +5551,7 @@
           "speed",
           "sync",
           "touch",
+          "velocityInfluence",
           "wheel"
         ],
         "cards": [
@@ -5591,6 +5600,7 @@
           "speed",
           "sync",
           "touch",
+          "velocityInfluence",
           "wheel"
         ],
         "creative": [
@@ -5639,6 +5649,7 @@
           "speed",
           "sync",
           "touch",
+          "velocityInfluence",
           "wheel"
         ],
         "radial": [
@@ -5691,6 +5702,7 @@
           "step",
           "sync",
           "touch",
+          "velocityInfluence",
           "wheel"
         ]
       }

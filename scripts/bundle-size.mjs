@@ -72,13 +72,16 @@ const BUDGETS = {
   // (Node 24/npm 11): 492.2/128.7 KiB ESM and 389.0/115.0 KiB minified ESM.
   // The ceilings retain roughly 1 KiB gzip headroom and remain far below a
   // third-party motion engine being bundled accidentally.
+// 2026-08-17: Slider release momentum is now an opt-in public control. The UMD
+// raw ceiling moves to 394 KB for this bounded runtime-only addition; gzip stays
+// at the strict 118 KB ceiling.
   // 2026-08-16: Motion States v1 adds 1.6 KB gzip to the readable build and
   // remains below the RFC's 3 KB incremental limit. Keep a small, explicit
   // headroom instead of allowing an unbounded budget increase.
   'kineto.js': { raw: 500, gz: 132 },
   'kineto.min.js': { raw: 395, gz: 118 },
-  'kineto.umd.js': { raw: 393, gz: 118 },
-  'kineto.umd.min.js': { raw: 393, gz: 118 },
+  'kineto.umd.js': { raw: 394, gz: 118 },
+  'kineto.umd.min.js': { raw: 394, gz: 118 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

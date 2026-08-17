@@ -352,6 +352,29 @@ assert.ok(inertiaSlider.index > 0, 'recent pointer samples must carry a drag rel
 inertiaSlider.destroy();
 inertiaSliderHost.remove();
 
+// `velocityInfluence` controls only the release fling. With a measured slide
+// step, the same short drag rounds to the first slide when it is 0 and carries
+// into the next slide when the influence is enabled.
+const influenceHost = document.createElement('div');
+influenceHost.innerHTML = '<div class="kt-slider-wrap"><div class="kt-slider-track"><div class="kt-slide">A</div><div class="kt-slide">B</div><div class="kt-slide">C</div><div class="kt-slide">D</div></div></div>';
+document.body.appendChild(influenceHost);
+const influenceWrap = influenceHost.querySelector('.kt-slider-wrap');
+Object.defineProperty(influenceWrap, 'getBoundingClientRect', { configurable: true, value: () => ({ left: 0, top: 0, width: 300, height: 100, right: 300, bottom: 100 }) });
+influenceHost.querySelectorAll('.kt-slide').forEach((slide) => Object.defineProperty(slide, 'offsetWidth', { configurable: true, value: 100 }));
+const noFling = sliderModule.create(influenceHost, { preset: 'slide', loop: 'off', velocityInfluence: 0 });
+influenceWrap.dispatchEvent(pointer('pointerdown', 200));
+influenceWrap.dispatchEvent(pointer('pointermove', 185));
+influenceWrap.dispatchEvent(pointer('pointerup', 185));
+assert.equal(noFling.index, 0, 'velocityInfluence=0 must disable release fling');
+noFling.destroy();
+const strongFling = sliderModule.create(influenceHost, { preset: 'slide', loop: 'off', velocityInfluence: 1.2 });
+influenceWrap.dispatchEvent(pointer('pointerdown', 200));
+influenceWrap.dispatchEvent(pointer('pointermove', 185));
+influenceWrap.dispatchEvent(pointer('pointerup', 185));
+assert.ok(strongFling.index > 0, 'velocityInfluence above 1 must carry a release into the next slide');
+strongFling.destroy();
+influenceHost.remove();
+
 // Track settling is elapsed-time based rather than frame-count based: driving
 // the same 100ms at 60Hz and 120Hz should land at practically the same point.
 // The first callback also establishes a normal frame interval, while a long
