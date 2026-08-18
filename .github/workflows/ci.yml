@@ -162,7 +162,12 @@ jobs:
         run: npm ci --prefer-offline --fetch-retries=3 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=5000 --fetch-timeout=30000
 
       - name: Install Playwright ${{ matrix.browser }}
-        run: npx playwright install --with-deps ${{ matrix.browser }}
+        run: |
+          set -o pipefail
+          # Browser binaries are an external download. Bound each attempt so a
+          # stalled CDN cannot consume the whole 20-minute matrix job; every
+          # retry still has to install successfully before QA can start.
+          node scripts/retry-command.mjs timeout --signal=TERM 5m npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Build distributions
         run: npm run build

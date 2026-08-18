@@ -52,7 +52,7 @@ for (const heading of [
 ]) {
   assert.ok(troubleshooting.includes(heading), `troubleshooting guide is missing: ${heading}`);
 }
-for (const token of ['tabs.refresh()', "trigger: 'click'", 'relativeCutoff', 'GTM-KFQSFGJL', 'prefers-reduced-motion']) {
+for (const token of ['tabs.refresh()', "trigger: 'click'", 'relativeCutoff', 'GTM-KFQSFGJL', 'prefers-reduced-motion', 'timeout 5m']) {
   assert.ok(troubleshooting.includes(token), `troubleshooting guide is missing operational token: ${token}`);
 }
 
