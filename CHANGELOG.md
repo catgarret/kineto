@@ -6,7 +6,7 @@
 
 <!-- Add matching English release bullets here. -->
 - Add a pinned Rolldown consumer fixture alongside Vite, with separate gzip budgets and a generated report that distinguishes cross-bundler evidence from universal byte promises.
-- Bound Playwright Chromium binary installation to five minutes per attempt with three required retries, matching the cross-browser lanes so a stalled browser CDN cannot leave the main CI job running until its global timeout.
+- Bound Playwright Chromium binary installation to five minutes per attempt with three required retries and kept apt dependency provisioning out of the main lane, so a stalled browser or package mirror cannot leave CI running until its global timeout.
 - Add an opt-in public diagnostics hub with stable `KT_*` codes, bounded history, sink/subscriber APIs, and validation while keeping default consumers silent.
 - Add an iOS Safari/Android Chrome physical-device QA runbook and evidence format without counting Playwright emulation as device success.
 - Audit all 16 Page Reveal variants against distinct source mechanisms and keep removed aliases out of the public contract.
@@ -28,7 +28,7 @@
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - Vite와 함께 고정된 Rolldown 소비자 fixture를 추가하고, bundler 간 근거와 모든 bundler의 절대 바이트 약속을 구분하는 gzip 예산·생성 보고서를 연결했습니다.
-- Playwright Chromium 바이너리 설치도 시도당 5분, 최대 3회로 제한해 교차 브라우저 lane과 같은 방식으로 브라우저 CDN 정체가 메인 CI를 전역 timeout까지 붙잡지 않도록 했습니다.
+- Playwright Chromium 바이너리 설치를 시도당 5분, 최대 3회로 제한하고 메인 lane에서는 apt 의존성 설치를 제외해 브라우저·패키지 mirror 정체가 CI를 전역 timeout까지 붙잡지 않도록 했습니다.
 - 기본 소비자는 조용하게 유지하면서 안정적인 `KT_*` 코드, 제한된 history, sink/subscriber API와 validation을 제공하는 opt-in 공개 diagnostics hub를 추가했습니다.
 - iOS Safari·Android Chrome 실기기 QA 실행표와 증거 형식을 추가했으며, Playwright emulation을 실기기 성공으로 집계하지 않습니다.
 - 16개 Page Reveal variant를 서로 다른 소스 메커니즘과 대조 감사하고, 제거된 alias가 공개 contract로 돌아오지 않도록 고정했습니다.
