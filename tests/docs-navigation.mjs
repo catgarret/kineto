@@ -17,6 +17,7 @@ const troubleshooting = read('docs/troubleshooting.md');
 const usageMatrix = read('docs/module-usage-matrix.md');
 const reference = read('docs/module-reference.md');
 const modulesReadme = read('docs/modules/README.md');
+const demoPolish = read('tests/browser/demo-polish.mjs');
 const localizedReadmes = ['ko', 'jp', 'zh-CN', 'zh-TW', 'ru', 'it'].map((locale) => read(`i18n/README.${locale}.md`));
 
 assert.equal(pkg.version, contract.libraryVersion, 'package and feature contract versions must match');
@@ -54,6 +55,11 @@ for (const heading of [
 }
 for (const token of ['tabs.refresh()', "trigger: 'click'", 'relativeCutoff', 'GTM-KFQSFGJL', 'prefers-reduced-motion', 'timeout 5m']) {
   assert.ok(troubleshooting.includes(token), `troubleshooting guide is missing operational token: ${token}`);
+}
+assert.match(roadmap, /heavy-layout/, 'roadmap must record the cross-engine heavy-layout checkpoint');
+assert.match(demoPolish, /checkpoint\('heavy-layout'\)/, 'browser QA must emit the heavy-layout checkpoint');
+for (const moduleName of ['pageReveal', 'pageTransition', 'slider', 'stickyStack', 'stickyHeader', 'lightbox', 'cursor', 'fullpage']) {
+  assert.ok(roadmap.includes(moduleName), `roadmap heavy-layout list is missing ${moduleName}`);
 }
 
 console.log(`docs-navigation OK — v${pkg.version}, ${moduleNames.length} module references, troubleshooting coverage present.`);

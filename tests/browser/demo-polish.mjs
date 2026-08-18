@@ -273,6 +273,86 @@ try {
   assert.ok(webkitLayout.coverflowPadding==='70px'&&webkitLayout.coverflowMargin==='-70px', `Coverflow must reserve a clipped lower shadow gutter without changing layout flow (${JSON.stringify(webkitLayout)})`);
   assert.ok(webkitLayout.dissolveClip.includes('inset(0')&&webkitLayout.dissolveSlideClip.includes('inset(0'), `Dissolve must hard-clip both scene and slides so inactive colors cannot leak through rounded subpixels (${JSON.stringify(webkitLayout)})`);
   checkpoint('engine-layout');
+  const heavyLayout = await page.evaluate(async () => {
+    const box = (element) => {
+      if (!element) return null;
+      const rect = element.getBoundingClientRect();
+      return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
+    };
+    const vertical = document.querySelector('.stack-vertical');
+    const verticalStage = vertical?.closest('.sticky-vertical-stage');
+    const horizontal = document.querySelector('.horizontal-scroll');
+    const horizontalViewport = horizontal?.querySelector('.kt-sticky-horizontal-viewport');
+    const horizontalTrack = horizontal?.querySelector('.kt-sticky-horizontal-track');
+    const floating = document.querySelector('.floating-scroll');
+    const floatingViewport = floating?.querySelector('.kt-floating-viewport');
+    const shadows = document.querySelector('[data-kt-scroll-shadows="mask"]');
+    const stickyHost = [...document.querySelectorAll('.demo-scrollbox')].find((element) => element.querySelector('.demo-sticky-head'));
+    const stickyHeader = stickyHost?.querySelector('.demo-sticky-head');
+    const fixedHeader = document.querySelector('.cover-fixed-header');
+    const pageTransition = document.querySelector('.pt-fx-row');
+    const cursors = [...document.querySelectorAll('.kt-cursor')];
+    const fullpages = [...document.querySelectorAll('#mod-fullpage [data-kt-fullpage]')];
+    const stickyBefore = stickyHeader ? { scrollTop: stickyHost.scrollTop, progress: stickyHeader.style.getPropertyValue('--kt-header-progress'), stuck: stickyHeader.classList.contains('kt-stuck') } : null;
+    if (stickyHost && stickyHeader) {
+      stickyHost.scrollTop = Math.min(80, Math.max(0, stickyHost.scrollHeight - stickyHost.clientHeight));
+      stickyHost.dispatchEvent(new Event('scroll'));
+      await new Promise(requestAnimationFrame);
+    }
+    const stickyAfter = stickyHeader ? { scrollTop: stickyHost.scrollTop, progress: stickyHeader.style.getPropertyValue('--kt-header-progress'), stuck: stickyHeader.classList.contains('kt-stuck') } : null;
+    if (stickyHost && stickyBefore) stickyHost.scrollTop = stickyBefore.scrollTop;
+    return {
+      stickyStack: {
+        stage: box(verticalStage),
+        host: box(vertical),
+        children: [...(vertical?.children || [])].map((element) => ({ position: getComputedStyle(element).position, box: box(element) }))
+      },
+      horizontalStack: {
+        host: box(horizontal),
+        viewport: { ...box(horizontalViewport), position: horizontalViewport && getComputedStyle(horizontalViewport).position, overflow: horizontalViewport && getComputedStyle(horizontalViewport).overflow },
+        track: { ...box(horizontalTrack), scrollWidth: horizontalTrack?.scrollWidth || 0, viewportWidth: horizontalViewport?.clientWidth || 0 },
+        children: [...(horizontalTrack?.children || [])].map((element) => box(element))
+      },
+      floatingStack: {
+        host: box(floating),
+        viewport: { ...box(floatingViewport), position: floatingViewport && getComputedStyle(floatingViewport).position, overflow: floatingViewport && getComputedStyle(floatingViewport).overflow },
+        children: [...(floatingViewport?.children || [])].map((element) => ({ position: getComputedStyle(element).position, box: box(element) }))
+      },
+      scrollShadows: {
+        box: box(shadows),
+        max: shadows ? shadows.scrollHeight - shadows.clientHeight : 0,
+        mask: shadows ? (getComputedStyle(shadows).maskImage !== 'none' ? getComputedStyle(shadows).maskImage : getComputedStyle(shadows).webkitMaskImage) : 'none',
+        end: shadows?.style.getPropertyValue('--kt-scroll-shadow-end') || ''
+      },
+      stickyHeader: {
+        host: box(stickyHost),
+        header: { ...box(stickyHeader), position: stickyHeader && getComputedStyle(stickyHeader).position },
+        before: stickyBefore,
+        after: stickyAfter
+      },
+      fixedHeader: { box: box(fixedHeader), position: fixedHeader && getComputedStyle(fixedHeader).position },
+      pageTransition: { box: box(pageTransition), overflowX: pageTransition && getComputedStyle(pageTransition).overflowX, buttons: pageTransition?.querySelectorAll('button').length || 0 },
+      cursor: { count: cursors.length, roots: cursors.slice(0, 4).map((element) => ({ position: getComputedStyle(element).position, pointerEvents: getComputedStyle(element).pointerEvents, box: box(element) })) },
+      fullpage: fullpages.map((host) => {
+        const track = host.querySelector('.kt-fullpage-track');
+        const hostBox = box(host);
+        return { box: hostBox, track: box(track), overflow: getComputedStyle(host).overflow, sections: [...(track?.children || [])].map((section) => ({ box: box(section), overflowY: getComputedStyle(section).overflowY })) };
+      })
+    };
+  });
+  const positiveBox = (value) => value && value.width > 0 && value.height > 0;
+  assert.ok(positiveBox(heavyLayout.stickyStack.stage) && positiveBox(heavyLayout.stickyStack.host), `sticky stack must retain measurable stage bounds: ${JSON.stringify(heavyLayout.stickyStack)}`);
+  assert.ok(heavyLayout.stickyStack.children.length >= 3 && heavyLayout.stickyStack.children.every((item) => item.position === 'sticky' && positiveBox(item.box)), `vertical Sticky Stack cards must use native sticky positioning in every engine: ${JSON.stringify(heavyLayout.stickyStack)}`);
+  assert.ok(positiveBox(heavyLayout.horizontalStack.viewport) && heavyLayout.horizontalStack.viewport.position === 'sticky' && heavyLayout.horizontalStack.viewport.overflow === 'hidden', `horizontal Sticky Stack must keep a clipped sticky viewport: ${JSON.stringify(heavyLayout.horizontalStack)}`);
+  assert.ok(heavyLayout.horizontalStack.track.scrollWidth > heavyLayout.horizontalStack.track.viewportWidth && heavyLayout.horizontalStack.children.every(positiveBox), `horizontal Sticky Stack must preserve an overflowing measurable track: ${JSON.stringify(heavyLayout.horizontalStack)}`);
+  assert.ok(positiveBox(heavyLayout.floatingStack.viewport) && heavyLayout.floatingStack.viewport.position === 'sticky' && heavyLayout.floatingStack.viewport.overflow === 'hidden' && heavyLayout.floatingStack.children.every((item) => item.position === 'absolute' && positiveBox(item.box)), `floating Sticky Stack must keep absolute layers inside a clipped sticky viewport: ${JSON.stringify(heavyLayout.floatingStack)}`);
+  assert.ok(positiveBox(heavyLayout.scrollShadows.box) && heavyLayout.scrollShadows.max > 0 && heavyLayout.scrollShadows.mask.includes('gradient') && heavyLayout.scrollShadows.end, `Scroll Shadows mask must publish a real edge fade for overflowing content: ${JSON.stringify(heavyLayout.scrollShadows)}`);
+  assert.ok(positiveBox(heavyLayout.stickyHeader.host) && positiveBox(heavyLayout.stickyHeader.header) && heavyLayout.stickyHeader.header.position === 'sticky' && Number(heavyLayout.stickyHeader.after.progress) > Number(heavyLayout.stickyHeader.before.progress) && heavyLayout.stickyHeader.after.stuck, `Sticky Header must react inside its own scroll host: ${JSON.stringify(heavyLayout.stickyHeader)}`);
+  assert.ok(positiveBox(heavyLayout.fixedHeader.box) && heavyLayout.fixedHeader.position === 'sticky', `cover-to-fixed Sticky Header must retain its sticky layer: ${JSON.stringify(heavyLayout.fixedHeader)}`);
+  assert.ok(positiveBox(heavyLayout.pageTransition.box) && heavyLayout.pageTransition.buttons >= 8, `Page Transition effects must retain a measurable clipped control row: ${JSON.stringify(heavyLayout.pageTransition)}`);
+  assert.ok(heavyLayout.cursor.count > 0 && heavyLayout.cursor.roots.every((item) => item.position === 'fixed' && item.pointerEvents === 'none'), `Cursor layers must remain fixed and pointer-transparent: ${JSON.stringify(heavyLayout.cursor)}`);
+  assert.ok(heavyLayout.fullpage.length >= 3 && heavyLayout.fullpage.every((item) => positiveBox(item.box) && positiveBox(item.track) && item.overflow === 'hidden' && item.sections.length >= 2 && item.sections.every((section) => positiveBox(section.box))), `Fullpage tracks and sections must retain measurable clipped layers: ${JSON.stringify(heavyLayout.fullpage)}`);
+  checkpoint('heavy-layout');
   const coverRevealModes = await page.evaluate(async () => {
     const canvas=document.createElement('canvas'); canvas.width=40; canvas.height=20;
     const context=canvas.getContext('2d'); context.fillStyle='#e3162a'; context.fillRect(0,0,28,20); context.fillStyle='#164ee3'; context.fillRect(28,0,12,20);
