@@ -67,12 +67,20 @@ jobs:
 
       - name: Run Node tests · consumers and frameworks
         run: |
-          set -euo pipefail
+          set -uo pipefail
+          failures=()
           for command in test:consumer-bundles test:framework; do
             echo "::group::$command"
-            node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a ci.log
+            if ! node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a ci.log; then
+              echo "::error title=Consumer/framework test failed::$command"
+              failures+=("$command")
+            fi
             echo "::endgroup::"
           done
+          if ((${#failures[@]})); then
+            printf 'Consumer/framework test failures: %s\n' "${failures[*]}"
+            exit 1
+          fi
 
       - name: Run Node tests · demo surface
         run: |
