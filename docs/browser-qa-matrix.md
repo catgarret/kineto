@@ -13,10 +13,10 @@
 | `evergreen` | Chromium 전체 + Firefox/WebKit smoke | 최신 evergreen 브라우저의 일반 DOM·CSS 경로 | 모든 variant를 세 엔진에서 같은 깊이로 검사하지 않음 |
 | `evergreen-pointer` | Chromium 포인터·pointer-events 검사 + 대표 Firefox/WebKit smoke | 데스크톱 포인터 입력을 보조 기능으로 지원 | 터치 전용 기기의 실제 센서·포인터 조합은 별도 확인 필요 |
 | `evergreen-scroll` | Chromium 스크롤/레이아웃 검사 + 대표 Firefox/WebKit smoke | 최신 스크롤 API가 있는 브라우저에서 동작, 미지원 시 정적·기본 흐름 유지 | 실제 iOS Safari/Android Chrome 실기기 검증은 아직 릴리스 증거에 포함하지 않음 |
-| `evergreen-touch` | Chromium touch 에뮬레이션 + 모바일 레이아웃 검사 | 키보드·touch fallback과 native semantics를 우선 | 제조사 WebView와 실기기 IME/viewport 차이는 별도 QA 필요 |
+| `evergreen-touch` | Chromium touch 에뮬레이션 + 모바일 레이아웃 검사 | 키보드·touch fallback과 native semantics를 우선 | 제조사 WebView와 실기기 IME/viewport 차이는 [실기기 실행표](browser-device-qa.md)로 별도 기록 |
 | `evergreen-canvas` | Chromium canvas/media QA + heavy-layout 대상 세 엔진 | 캔버스·미디어 효과의 fallback과 레이어 경계를 검증 | cross-origin 미디어와 저사양 GPU의 실제 성능은 소비자가 측정해야 함 |
 
-이 표의 “지원”은 브라우저·OS 조합 전체를 보증한다는 뜻이 아닙니다. 실기기 검증을 추가할 때는 기기·OS·브라우저 버전과 재현 fixture를 [QA 이력](browser-qa-history.md)에 함께 기록하고, 자동화되지 않은 수동 확인은 자동 통과율에 합산하지 않습니다.
+이 표의 “지원”은 브라우저·OS 조합 전체를 보증한다는 뜻이 아닙니다. 실기기 검증을 추가할 때는 [실기기 실행표](browser-device-qa.md)의 절차와 증거 형식을 사용해 기기·OS·브라우저 버전과 재현 fixture를 [QA 이력](browser-qa-history.md)에 함께 기록하고, 자동화되지 않은 수동 확인은 자동 통과율에 합산하지 않습니다.
 
 ## 대상과 검사 계약
 
@@ -31,6 +31,8 @@
 | `stickyHeader` | scroll host 내부 sticky/fixed 전환 | header position, 내부 scroll progress, `kt-stuck`, cover header bounds |
 | `lightbox` | overlay·grid·viewport clipping | thumbnail grid와 viewer 레이어가 0×0 또는 행 겹침 없이 배치됨 |
 | `cursor` | fixed layer·pointer transparency | 커서 루트가 fixed이고 `pointer-events:none`을 유지함 |
+| `radial` | radial item transform·image layer | 각 item이 하나의 측정 가능한 이미지 레이어를 유지하고 드래그 후 ghost duplicate가 생기지 않음 |
+| `coverReveal` | wrapper·mask panel clipping | 8개 gallery target이 wrapper와 mask panel을 하나씩 유지하고 0×0·ghost panel이 없음 |
 | `fullpage` | transformed track·section overflow | 각 track/section의 bounds와 host clip, 내부 overflow 상태 |
 
 검사는 “스타일 문자열이 존재한다”에서 끝나지 않습니다. 먼저 `getBoundingClientRect()`가 0이 아닌지 확인하고, 실제 used value를 읽은 뒤 스크롤·레이어 관계를 확인합니다. `repeat(...)`, `auto`, `none`처럼 아직 레이아웃되지 않았거나 효과가 적용되지 않은 computed value는 성공으로 취급하지 않습니다.

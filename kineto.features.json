@@ -6717,7 +6717,9 @@
     "instanceCount",
     "smoothEnabled",
     "lenis",
-    "core"
+    "core",
+    "diagnostics",
+    "diagnosticCodes"
   ],
   "coreApi": [
     "autoInit",

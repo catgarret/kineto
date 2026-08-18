@@ -1,4 +1,4 @@
-import Kineto, { reveal, slider, states, type KinetoInstance, type KinetoModule } from '@dong-gri/kineto';
+import Kineto, { reveal, slider, states, type KinetoInstance, type KinetoModule, type KinetoDiagnostic } from '@dong-gri/kineto';
 import ModularCore from '@dong-gri/kineto/core';
 import sliderModule from '@dong-gri/kineto/modules/slider';
 import modularPresence from '@dong-gri/kineto/presence';
@@ -14,8 +14,16 @@ ModularCore.register('slider', moduleDefinition).slider(target);
 const stateController = states({ hidden: { opacity: 0 }, visible: { opacity: 1, y: 0 } });
 stateController.apply(target, 'visible').cancel();
 Kineto.states({ visible: { opacity: 1 } }).destroy();
+const diagnostic: KinetoDiagnostic = Kineto.diagnostics.emit({
+  code: Kineto.diagnosticCodes.DEBUG,
+  module: 'core',
+  phase: 'runtime',
+  recoverable: true
+});
+Kineto.diagnostics.clear();
 const presenceController = modularPresence(target, { mode: 'wait', accessibility: 'managed' });
 presenceController.enter().cancel();
 modularPresence(target).destroy();
 
 void result;
+void diagnostic;

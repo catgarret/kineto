@@ -45,6 +45,34 @@ export interface KinetoEnvironment {
   [key: string]: unknown;
 }
 
+export type KinetoDiagnosticCode =
+  | 'KT_DEBUG'
+  | 'KT_INVALID_MODULE'
+  | 'KT_UNKNOWN_MODULE'
+  | 'KT_CREATE_FAILED'
+  | 'KT_UPDATE_FAILED'
+  | 'KT_DESTROY_FAILED'
+  | 'KT_LIFECYCLE_FAILED'
+  | 'KT_TRANSFORM_CONFLICT';
+
+export interface KinetoDiagnostic {
+  readonly code: KinetoDiagnosticCode | (string & {});
+  readonly module: string;
+  readonly phase: 'register' | 'create' | 'update' | 'destroy' | 'replay' | 'runtime';
+  readonly recoverable: boolean;
+  readonly cause?: unknown;
+  readonly detail?: unknown;
+  readonly timestamp: number;
+}
+
+export interface KinetoDiagnostics {
+  create(input: Omit<KinetoDiagnostic, 'timestamp'> & { timestamp?: number }): KinetoDiagnostic;
+  emit(input: Omit<KinetoDiagnostic, 'timestamp'> & { timestamp?: number }): KinetoDiagnostic;
+  subscribe(listener: (event: KinetoDiagnostic) => void): () => boolean;
+  clear(): void;
+  readonly history: KinetoDiagnostic[];
+}
+
 export interface KinetoStateController {
   apply(target: KinetoTarget, state: string, options?: KinetoOptions): Promise<{ status: 'finished' | 'cancelled' }> & { cancel(): void };
   replay(target?: KinetoTarget, state?: string, options?: KinetoOptions): Promise<{ status: 'finished' | 'cancelled' }> & { cancel(): void };
@@ -108,6 +136,8 @@ export interface KinetoStatic {
   readonly instanceCount: number;
   readonly smoothEnabled: boolean;
   readonly lenis: unknown;
+  readonly diagnostics: KinetoDiagnostics;
+  readonly diagnosticCodes: Readonly<Record<string, KinetoDiagnosticCode>>;
   core: Record<string, (...args: any[]) => unknown>;
   config(options?: KinetoOptions): this;
   setReducedMotion(policy: boolean | 'system'): this;

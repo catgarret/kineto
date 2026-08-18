@@ -10,6 +10,7 @@
 // enables it never fetches Lenis. See src/runtime.js for the engine loader.
 import { dash, env, G, noopInstance, q, readOpts, ST, setMotionDefaults } from './utils.js';
 import { setAnimationEngine, setEngineSource, getEngineSource, ensureGSAP, ensureLenis, gsapReady } from './runtime.js';
+import { createDiagnosticHub, DIAGNOSTIC_CODES } from './diagnostics.js';
 
 // Modules whose motion is driven by GSAP / ScrollTrigger. If a page uses any of
 // these, scan() fetches the engine (from the page or the CDN) before creating
@@ -56,8 +57,17 @@ const config = {
   forceReducedMotion: false,
   performance: 'auto',
   spring: false,
-  debug: false
+  debug: false,
+  debugSink: null
 };
+
+const diagnostics = createDiagnosticHub({
+  isEnabled: () => Boolean(config.debug || typeof config.debugSink === 'function'),
+  sink: (event) => {
+    if (typeof config.debugSink === 'function') config.debugSink(event);
+    else if (config.debug) console.info('[Kineto]', event);
+  }
+});
 
 // Watch the OS reduced-motion setting for RUNTIME changes and keep the cached
 // env in sync, dispatching `kineto:reduced-motion` so live views/instances can
@@ -114,7 +124,17 @@ function installConnectionWatch() {
 }
 
 function debug(...args) {
-  if (config.debug) console.info('[Kineto]', ...args);
+  diagnostics.emit({
+    code: DIAGNOSTIC_CODES.DEBUG,
+    module: 'core',
+    phase: 'runtime',
+    recoverable: true,
+    detail: { message: args.map((value) => value instanceof Error ? value.message : value) }
+  });
+}
+
+function emitDiagnostic(payload) {
+  return diagnostics.emit(payload);
 }
 
 function normalizeInstance(instance, sourceEl, name, options) {
@@ -167,6 +187,7 @@ function removeRecord(record, destroy = true, teardownIfEmpty = true) {
       record.destroyImplementation();
     } catch (error) {
       console.error(`[Kineto/${record.name}] destroy() failed:`, error);
+      emitDiagnostic({ code: DIAGNOSTIC_CODES.DESTROY_FAILED, module: record.name, phase: 'destroy', recoverable: true, cause: error });
     }
   }
   if (teardownIfEmpty && records.size === 0) teardownCoreServices();
@@ -244,6 +265,13 @@ function warnHostTransformClash(el, name) {
     `[Kineto] "${name}" and "${other}" both write this element's transform, so one will overwrite the other. `
     + 'Put them on nested elements instead. See docs/rfc/module-composition.md'
   );
+  emitDiagnostic({
+    code: DIAGNOSTIC_CODES.TRANSFORM_CONFLICT,
+    module: name,
+    phase: 'create',
+    recoverable: true,
+    detail: { otherModule: other }
+  });
 }
 // True when `node` is inside a scrollable container (or one tagged with
 // data-lenis-prevent), so Lenis should skip it and let native scroll happen.
@@ -423,6 +451,9 @@ const Kineto = {
     return records.size;
   },
 
+  diagnostics,
+  diagnosticCodes: DIAGNOSTIC_CODES,
+
   get smoothEnabled() {
     return Boolean(lenis);
   },
@@ -481,6 +512,7 @@ const Kineto = {
   register(name, module) {
     if (!name || !module || typeof module.create !== 'function') {
       console.warn(`[Kineto] Module "${name}" needs a create() function.`);
+      emitDiagnostic({ code: DIAGNOSTIC_CODES.INVALID_MODULE, module: String(name || 'unknown'), phase: 'register', recoverable: true });
       return this;
     }
     modules.set(name, module);
@@ -501,6 +533,7 @@ const Kineto = {
     const module = modules.get(name);
     if (!module) {
       console.warn(`[Kineto] Unknown module: ${name}`);
+      emitDiagnostic({ code: DIAGNOSTIC_CODES.UNKNOWN_MODULE, module: String(name || 'unknown'), phase: 'create', recoverable: true });
       return null;
     }
 
@@ -541,6 +574,7 @@ const Kineto = {
         return addRecord(el, name, instance, options);
       } catch (error) {
         console.error(`[Kineto/${name}] create() failed:`, error);
+        emitDiagnostic({ code: DIAGNOSTIC_CODES.CREATE_FAILED, module: name, phase: 'create', recoverable: true, cause: error });
         return null;
       }
     }).filter(Boolean);
@@ -648,6 +682,7 @@ const Kineto = {
           return;
         } catch (error) {
           console.error(`[Kineto/${name}] update() failed, recreating:`, error);
+          emitDiagnostic({ code: DIAGNOSTIC_CODES.UPDATE_FAILED, module: name, phase: 'update', recoverable: true, cause: error });
         }
       }
       const opts = record ? { ...record.options, ...patch } : patch;

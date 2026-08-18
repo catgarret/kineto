@@ -27,11 +27,12 @@ for (const command of ['lint', 'build', 'test:demo', 'test:browser']) {
   assert.match(read('.github/workflows/ci.yml'), new RegExp(`retry-command\\.mjs npm run ${command}`), `CI workflow must isolate ${command}`);
 }
 for (const command of [
-  'test:utils', 'test:states', 'test:presence', 'test:contract', 'test:requirements',
-  'test:docs', 'test:package', 'test:types', 'test:package-size', 'test:package-tarball',
+  'test:utils', 'test:diagnostics', 'test:states', 'test:presence', 'test:contract', 'test:requirements',
+  'test:docs', 'test:docs-navigation', 'test:module-metadata', 'test:module-status', 'test:mobile-device-manifest',
+  'test:package', 'test:types', 'test:package-size', 'test:package-tarball',
   'test:consumer-bundles', 'test:framework', 'test:parity', 'test:structure', 'test:copy',
   'test:lazy', 'test:options', 'test:variants', 'test:help', 'test:inline', 'test:defaults',
-  'test:variant-options', 'test:easings', 'test:reduced', 'test:update', 'test:audit',
+  'test:variant-options', 'test:variant-distinctness', 'test:easings', 'test:reduced', 'test:update', 'test:audit',
   'test:leak', 'test:perf', 'test:deps', 'test:engine', 'test:sequence-sources',
   'test:regressions', 'test:site', 'test:release', 'test:size'
 ]) {

@@ -293,6 +293,8 @@ try {
     const pageTransition = document.querySelector('.pt-fx-row');
     const cursors = [...document.querySelectorAll('.kt-cursor')];
     const fullpages = [...document.querySelectorAll('#mod-fullpage [data-kt-fullpage]')];
+    const radial = document.querySelector('[data-kt-slider="radial"]');
+    const coverGallery = document.querySelector('#cover-gallery-demo');
     const stickyBefore = stickyHeader ? { scrollTop: stickyHost.scrollTop, progress: stickyHeader.style.getPropertyValue('--kt-header-progress'), stuck: stickyHeader.classList.contains('kt-stuck') } : null;
     if (stickyHost && stickyHeader) {
       stickyHost.scrollTop = Math.min(80, Math.max(0, stickyHost.scrollHeight - stickyHost.clientHeight));
@@ -333,6 +335,22 @@ try {
       fixedHeader: { box: box(fixedHeader), position: fixedHeader && getComputedStyle(fixedHeader).position },
       pageTransition: { box: box(pageTransition), overflowX: pageTransition && getComputedStyle(pageTransition).overflowX, buttons: pageTransition?.querySelectorAll('button').length || 0 },
       cursor: { count: cursors.length, roots: cursors.slice(0, 4).map((element) => ({ position: getComputedStyle(element).position, pointerEvents: getComputedStyle(element).pointerEvents, box: box(element) })) },
+      radial: {
+        box: box(radial),
+        items: [...(radial?.querySelectorAll('.kt-radial-item') || [])].map((item) => ({
+          box: box(item),
+          images: item.querySelectorAll('img').length,
+          opacity: Number(getComputedStyle(item).opacity)
+        }))
+      },
+      coverReveal: {
+        box: box(coverGallery),
+        targets: [...(coverGallery?.querySelectorAll('[data-kt-cover-reveal]') || [])].map((target) => ({
+          box: box(target),
+          wrapper: box(target.closest('.kt-cover-wrap')),
+          panels: target.closest('.kt-cover-wrap')?.querySelectorAll('[aria-hidden="true"]').length || 0
+        }))
+      },
       fullpage: fullpages.map((host) => {
         const track = host.querySelector('.kt-fullpage-track');
         const hostBox = box(host);
@@ -351,6 +369,8 @@ try {
   assert.ok(positiveBox(heavyLayout.fixedHeader.box) && heavyLayout.fixedHeader.position === 'sticky', `cover-to-fixed Sticky Header must retain its sticky layer: ${JSON.stringify(heavyLayout.fixedHeader)}`);
   assert.ok(positiveBox(heavyLayout.pageTransition.box) && heavyLayout.pageTransition.buttons >= 8, `Page Transition effects must retain a measurable clipped control row: ${JSON.stringify(heavyLayout.pageTransition)}`);
   assert.ok(heavyLayout.cursor.count > 0 && heavyLayout.cursor.roots.every((item) => item.position === 'fixed' && item.pointerEvents === 'none'), `Cursor layers must remain fixed and pointer-transparent: ${JSON.stringify(heavyLayout.cursor)}`);
+  assert.ok(positiveBox(heavyLayout.radial.box) && heavyLayout.radial.items.length >= 5 && heavyLayout.radial.items.every((item) => item.images === 1 && positiveBox(item.box)), `Radial Carousel must keep one measurable image layer per item without ghost duplicates: ${JSON.stringify(heavyLayout.radial)}`);
+  assert.ok(positiveBox(heavyLayout.coverReveal.box) && heavyLayout.coverReveal.targets.length >= 8 && heavyLayout.coverReveal.targets.every((target) => positiveBox(target.box) && positiveBox(target.wrapper) && target.panels >= 1), `Cover Reveal gallery must keep measurable target/wrapper layers without clipped ghost panels: ${JSON.stringify(heavyLayout.coverReveal)}`);
   assert.ok(heavyLayout.fullpage.length >= 3 && heavyLayout.fullpage.every((item) => positiveBox(item.box) && positiveBox(item.track) && item.overflow === 'hidden' && item.sections.length >= 2 && item.sections.every((section) => positiveBox(section.box))), `Fullpage tracks and sections must retain measurable clipped layers: ${JSON.stringify(heavyLayout.fullpage)}`);
   checkpoint('heavy-layout');
   const coverRevealModes = await page.evaluate(async () => {

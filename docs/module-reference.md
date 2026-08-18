@@ -6,7 +6,7 @@
 - Feature contract: 1.3.0
 - Behavior contract: 1.2.0
 - Public modules: 52
-- Root properties: `version`, `easings`, `prefersReducedMotion`, `env`, `performance`, `registry`, `instanceCount`, `smoothEnabled`, `lenis`, `core`
+- Root properties: `version`, `easings`, `prefersReducedMotion`, `env`, `performance`, `registry`, `instanceCount`, `smoothEnabled`, `lenis`, `core`, `diagnostics`, `diagnosticCodes`
 - Core methods: `autoInit()`, `config()`, `create()`, `destroy()`, `destroyModule()`, `disableSmooth()`, `easing()`, `easingFn()`, `enableSmooth()`, `getEngineSource()`, `getInstance()`, `init()`, `initModules()`, `listTerminalFramePresets()`, `pause()`, `refresh()`, `register()`, `replay()`, `resume()`, `scan()`, `scrollTo()`, `setAnimationEngine()`, `setEngineSource()`, `setReducedMotion()`, `states()`, `toggleSmooth()`, `unregister()`, `updateModule()`
 - Additional named exports: `modules`, `listTerminalFramePresets`, `states`
 

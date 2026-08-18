@@ -19,6 +19,8 @@ const moduleStatus = read('docs/module-status.md');
 const consumerBundles = read('docs/consumer-bundle-size.md');
 const browserQa = read('docs/browser-qa-matrix.md');
 const browserQaHistory = read('docs/browser-qa-history.md');
+const browserDeviceQa = read('docs/browser-device-qa.md');
+const variantDistinctness = read('docs/variant-distinctness.md');
 const flipSharedLayout = read('docs/flip-shared-layout.md');
 const readiness = read('docs/1.0-readiness.md');
 const diagnostics = read('docs/diagnostics-and-deprecation.md');
@@ -40,6 +42,8 @@ assert.match(docsReadme, /\[소비자 번들 측정\]\(consumer-bundle-size\.md\
 assert.match(docsReadme, /\[브라우저 레이어 QA 매트릭스\]\(browser-qa-matrix\.md\)/, 'docs index must link browser QA matrix');
 for (const [label, file] of [
   ['브라우저 레이어 QA 이력', 'browser-qa-history.md'],
+  ['실기기 브라우저 QA 실행표', 'browser-device-qa.md'],
+  ['Page Reveal variant 중복 감사', 'variant-distinctness.md'],
   ['FLIP shared layout 범위', 'flip-shared-layout.md'],
   ['1.0 계약 준비도', '1.0-readiness.md'],
   ['1.0 진단·deprecation 계약', 'diagnostics-and-deprecation.md'],
@@ -89,13 +93,20 @@ for (const token of ['공개 지원표', 'evergreen-canvas', '실제 iOS Safari/
 for (const token of ['stable', 'maintenance', 'experimental', 'deprecated']) {
   assert.ok(moduleStatus.includes(`\`${token}\``), `module status is missing: ${token}`);
 }
-for (const token of ['Measurement scope', 'Vite library build', 'independent non-Vite bundler']) {
+for (const token of ['Measurement scope', 'Vite library build', 'Independent bundler check (Rolldown)', 'Rolldown']) {
   assert.ok(consumerBundles.includes(token), `consumer bundle report is missing: ${token}`);
 }
 for (const token of ['public error code', 'opt-in debug output', 'migration fixture', '최소 한 minor']) {
   assert.ok(diagnostics.includes(token), `diagnostics/deprecation contract is missing: ${token}`);
 }
 assert.match(browserQaHistory, /fa055cc/);
+for (const token of ['iOS Safari', 'Android Chrome', 'docs/qa-evidence']) {
+  assert.ok(browserDeviceQa.includes(token), `device QA runbook is missing: ${token}`);
+}
+assert.match(browserDeviceQa, /실제\s+iOS\/Android 성공으로 표기하지 않습니다/);
+for (const token of ['curtain', 'fade', 'flash', 'data-mosaic', 'distinct', '2026-08-19']) {
+  assert.ok(variantDistinctness.includes(token), `variant distinctness audit is missing: ${token}`);
+}
 assert.match(flipSharedLayout, /data-kt-layout-id/);
 assert.match(readiness, /Core API·module registry/);
 assert.match(presetBoundary, /@dong-gri\/kineto\/core/);

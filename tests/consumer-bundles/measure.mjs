@@ -18,13 +18,11 @@ const fixtures = [
   { name: 'core-three', budget: 65 },
   { name: 'core-states', budget: 35 },
   { name: 'core-presence', budget: 35 },
-  // React's generated adapter bundle rounds to 135.2 KB gzip on Node 24/npm 11
-  // Linux while remaining 134.8 KB locally; keep the product budget unchanged
-  // and absorb only the same bounded runner variance as Vue.
-  { name: 'react-adapter', entry: 'react', budget: 135, variance: 1 },
-  // Vue's generated adapter bundle is 134.7 KB locally and can reach 136.2 KB
-  // on the Node 24/npm 11 Linux runner after the keyed-child group addition.
-  { name: 'vue-adapter', entry: 'vue', budget: 135, variance: 2 }
+  // The public diagnostics hub adds a shared code/history surface to both
+  // adapters. Keep the adapter product budget at 137 KB and reserve only a
+  // bounded 1 KB runner variance around the new measured baseline.
+  { name: 'react-adapter', entry: 'react', budget: 137, variance: 1 },
+  { name: 'vue-adapter', entry: 'vue', budget: 137, variance: 1 }
 ];
 const kb = (value) => value / 1024;
 
@@ -74,7 +72,7 @@ const measurementNotes = [
   '- Bundler: Vite library build with the repository\'s pinned Vite toolchain.',
   '- React and Vue are externalized; each row measures Kineto entry cost rather than framework cost.',
   '- The fixture proves relative tree-shaking boundaries for full, core + one module, core + three modules, States, Presence, React, and Vue.',
-  '- An independent non-Vite bundler is not claimed yet; add it only when its resolver and external-peer policy can be pinned in CI.'
+  '- An independent Rolldown fixture is pinned separately; its absolute bytes are recorded as a second bundler signal, not a universal cross-bundler promise.'
 ].join('\n');
 console.log(`consumer-bundles OK\n${table}`);
 

@@ -420,13 +420,18 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 30. 완료(v0.8.104 후속): `docs/1.0-readiness.md`에 Core·entry·types·lifecycle·browser evidence·외부 사용 사례의 동결 준비도를 분리 기록
 31. 완료(v0.8.104 후속): `docs/preset-runtime-boundary.md`에 full/core/module/states/presence/adapter import 경계와 별도 preset 분리 조건을 문서화
 32. 완료(v0.8.104 후속): `docs/platform-enhancements.md`에 View Transitions·CSS Scroll Snap·Scroll-driven Animations의 progressive enhancement와 fallback gate를 기록
-33. 다음 단위: `heavy-layout`의 실제 회귀 사례가 누적되면 일반 모듈 중 같은 레이어 위험이 확인되는 항목만 대상 목록에 편입
+33. 완료(v0.8.104 후속): 실제 회귀 사례가 보고된 Cover Reveal gallery와 Radial Carousel의 wrapper·image layer·measurable bounds를 `heavy-layout`에 편입
 34. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구 2건이 확인될 때 구현 RFC로 승격
-35. 완료(감사 기반): 공개 variant 목록을 `PUBLIC_VARIANTS`로 contract에서 생성하고 pageReveal·Loader의 stale effect 선택지를 제거; 시각적 variant 중복의 최종 수동 판정은 남김
-36. 완료(문서·게이트): `docs/browser-qa-matrix.md`에 일반·pointer·scroll·touch·canvas 지원표와 실기기 검증 한계를 고정
-37. 완료(측정 범위): consumer bundle report에 Vite 측정 범위·tree-shaking 증거·비 Vite bundler 미검증 조건을 기록
+35. 완료(v0.8.104 후속): 공개 variant 목록을 `PUBLIC_VARIANTS`로 contract에서 생성하고 pageReveal·Loader의 stale effect 선택지를 제거; 16개 Page Reveal variant의 메커니즘·코드 branch 수동 감사를 `docs/variant-distinctness.md`와 CI로 고정
+36. 완료(문서·게이트): `docs/browser-qa-matrix.md`에 일반·pointer·scroll·touch·canvas 지원표와 실기기 검증 한계를 고정하고, iOS Safari·Android Chrome 실행표와 증거 형식을 추가
+37. 완료(측정 범위): Vite와 별도로 고정된 Rolldown consumer fixture·gzip 예산·생성 보고서를 추가해 비-Vite tree-shaking 신호를 CI에서 기록
 38. 완료(기준선): 52개 공개 모듈의 `stable`/`maintenance`/`experimental`/`deprecated` 상태표와 변경 게이트를 추가
-39. 완료(계약 초안): 1.0 오류 코드·opt-in debug·deprecation migration 절차를 문서화; public error shape 구현은 실제 요구 전까지 보류
+39. 완료(구현·계약): `Kineto.diagnosticCodes`, `Kineto.diagnostics`, opt-in debug sink·subscription·최근 50개 history와 validation을 구현하고 1.0 readiness·문서·Node 테스트에 연결
+40. 완료(소비자 번들): Vite/Rolldown fixture를 함께 실행하도록 CI·release workflow와 lockfile을 갱신하고 측정 보고서를 자동 생성
+41. 완료(모바일 QA 경계): 실기기 미실행 상태를 숨기지 않고 기기·OS·orientation·reduced-motion·증거 경로를 기록하는 실행표를 추가
+42. 완료(진단 API): Core 오류·debug 경로가 공통 `KT_*` shape를 사용하고 sink/listener 오류가 모듈 동작을 깨뜨리지 않는지 회귀 테스트 추가
+43. 완료(variant 감사): `pageReveal` 공개 16개가 각각 하나의 구현 branch와 구분 메커니즘을 가지며 legacy alias가 contract에 없는지 검사
+44. 완료(heavy-layout 확대): Cover Reveal·Radial을 포함한 10개 레이어 모듈의 measurable bounds·wrapper·image layer 경계를 Chromium·Firefox·WebKit에서 검사
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

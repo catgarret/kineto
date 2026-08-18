@@ -96,10 +96,15 @@ const BUDGETS = {
   // Node 24/npm 11's zlib reports 132.3/118.2 KB for the same release bytes
   // that Node 25 reports as 132.0/118.0 KB. Keep the product ceilings strict
   // and allow only this bounded cross-runtime gzip variance.
-  'kineto.js': { raw: 505, gz: 132, variance: 1 },
-  'kineto.min.js': { raw: 399, gz: 118, variance: 1 },
-  'kineto.umd.js': { raw: 397, gz: 118 },
-  'kineto.umd.min.js': { raw: 397, gz: 118 },
+  // 2026-08-19: the opt-in diagnostics hub adds the stable code table and
+  // bounded history to every entry. Measured Node 25/npm 11 output is
+  // 506.4/133.0 KB readable ESM, 400.0/118.8 KB minified ESM, and
+  // 398.2/118.1 KB UMD. Keep the allowlist and dependency guard unchanged;
+  // absorb only this measured runtime surface with rounded ceilings.
+  'kineto.js': { raw: 507, gz: 133, variance: 1 },
+  'kineto.min.js': { raw: 401, gz: 119, variance: 1 },
+  'kineto.umd.js': { raw: 399, gz: 119 },
+  'kineto.umd.min.js': { raw: 399, gz: 119 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

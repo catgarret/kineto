@@ -74,8 +74,12 @@ const BUDGET = {
   // 2026-08-18: Node 24/npm 11 measured 506.3 KB after the documentation-only
   // package metadata update while Node 25/npm 11 remained at 505.1 KB. Keep the
   // allowlist fixed and absorb only this rounded 1 KB runner boundary.
-  packedKb: 507,
-  unpackedKb: 1700,
+  // 2026-08-19: the opt-in diagnostics hub adds the public code table, bounded
+  // history, and source/type surface. Node 25/npm 11 measures 508.2 KB packed /
+  // 1708.8 KB unpacked; keep the allowlist fixed and absorb only this measured
+  // runtime cost with a small rounded margin.
+  packedKb: 509,
+  unpackedKb: 1710,
   files: 78
 };
 

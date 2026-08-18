@@ -16,6 +16,8 @@ Kineto v0.8.104의 공개 API와 소유자 의도를 기준으로 정리한 문�
 - [소비자 번들 측정](consumer-bundle-size.md)
 - [브라우저 레이어 QA 매트릭스](browser-qa-matrix.md)
 - [브라우저 레이어 QA 이력](browser-qa-history.md)
+- [실기기 브라우저 QA 실행표](browser-device-qa.md)
+- [Page Reveal variant 중복 감사](variant-distinctness.md)
 - [FLIP shared layout 범위](flip-shared-layout.md)
 - [1.0 계약 준비도](1.0-readiness.md)
 - [1.0 진단·deprecation 계약](diagnostics-and-deprecation.md)
