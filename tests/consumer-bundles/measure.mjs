@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
@@ -25,6 +24,12 @@ const fixtures = [
   { name: 'vue-adapter', entry: 'vue', budget: 137, variance: 1 }
 ];
 const kb = (value) => value / 1024;
+const assertCheck = (condition, message) => {
+  if (!condition) {
+    console.error(`::error title=Consumer bundle check failed::${message.replaceAll('\n', ' ')}`);
+    throw new Error(message);
+  }
+};
 
 async function measure({ name, entry = name, budget, variance = 0 }) {
   const outDir = path.join(outputRoot, name);
@@ -49,17 +54,17 @@ async function measure({ name, entry = name, budget, variance = 0 }) {
     .filter((file) => file.endsWith('.js'));
   const bytes = files.reduce((total, file) => total + fs.statSync(path.join(outDir, file)).size, 0);
   const gzip = files.reduce((total, file) => total + zlib.gzipSync(fs.readFileSync(path.join(outDir, file)), { level: 9 }).length, 0);
-  assert.ok(kb(gzip) <= budget + variance, `${name} consumer bundle is ${kb(gzip).toFixed(1)} KB gzip (budget ≤ ${budget} KB${variance ? ` + ${variance} KB runner variance` : ''})`);
+  assertCheck(kb(gzip) <= budget + variance, `${name} consumer bundle is ${kb(gzip).toFixed(1)} KB gzip (budget ≤ ${budget} KB${variance ? ` + ${variance} KB runner variance` : ''})`);
   return { name, files: files.length, raw: kb(bytes), gzip: kb(gzip), budget, variance };
 }
 
 const rows = [];
 for (const fixture of fixtures) rows.push(await measure(fixture));
 const byName = Object.fromEntries(rows.map((row) => [row.name, row]));
-assert.ok(byName['core-reveal'].gzip < byName.full.gzip, 'core + one module must remain smaller than the full entry');
-assert.ok(byName['core-three'].gzip < byName.full.gzip, 'core + three modules must remain smaller than the full entry');
-assert.ok(byName['core-states'].gzip < byName.full.gzip, 'core + states must remain smaller than the full entry');
-assert.ok(byName['core-presence'].gzip < byName.full.gzip, 'core + presence must remain smaller than the full entry');
+assertCheck(byName['core-reveal'].gzip < byName.full.gzip, 'core + one module must remain smaller than the full entry');
+assertCheck(byName['core-three'].gzip < byName.full.gzip, 'core + three modules must remain smaller than the full entry');
+assertCheck(byName['core-states'].gzip < byName.full.gzip, 'core + states must remain smaller than the full entry');
+assertCheck(byName['core-presence'].gzip < byName.full.gzip, 'core + presence must remain smaller than the full entry');
 
 const table = [
   '| Consumer entry | JS files | Raw | Gzip | Budget (gzip) |',

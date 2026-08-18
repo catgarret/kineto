@@ -43,4 +43,5 @@ for (let attempt = 1; attempt <= attempts; attempt += 1) {
   }
 }
 
+console.error(`::error title=Locked nested install failed::${target}`);
 process.exitCode = 1;

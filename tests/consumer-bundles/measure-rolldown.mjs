@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
@@ -16,6 +15,12 @@ const fixtures = [
   { name: 'vue-adapter', entry: 'vue', budget: 137, variance: 1 }
 ];
 const kb = (value) => value / 1024;
+const assertCheck = (condition, message) => {
+  if (!condition) {
+    console.error(`::error title=Rolldown consumer check failed::${message.replaceAll('\n', ' ')}`);
+    throw new Error(message);
+  }
+};
 
 async function measure({ name, entry, budget, variance = 0 }) {
   const bundle = await rolldown({
@@ -27,19 +32,19 @@ async function measure({ name, entry, budget, variance = 0 }) {
   const { output } = await bundle.generate({ format: 'esm', sourcemap: false });
   await bundle.close();
   const chunks = output.filter((item) => item.type === 'chunk');
-  assert.ok(chunks.length > 0, `${name} Rolldown fixture emitted no chunks`);
+  assertCheck(chunks.length > 0, `${name} Rolldown fixture emitted no chunks`);
   const source = chunks.map((chunk) => chunk.code).join('\n');
   const raw = Buffer.byteLength(source);
   const gzip = zlib.gzipSync(source, { level: 9 }).length;
-  assert.ok(kb(gzip) <= budget + variance, `${name} Rolldown bundle is ${kb(gzip).toFixed(1)} KB gzip (budget ≤ ${budget} KB${variance ? ` + ${variance} KB runner variance` : ''})`);
+  assertCheck(kb(gzip) <= budget + variance, `${name} Rolldown bundle is ${kb(gzip).toFixed(1)} KB gzip (budget ≤ ${budget} KB${variance ? ` + ${variance} KB runner variance` : ''})`);
   return { name, files: chunks.length, raw: kb(raw), gzip: kb(gzip), budget, variance };
 }
 
 const rows = [];
 for (const fixture of fixtures) rows.push(await measure(fixture));
 const byName = Object.fromEntries(rows.map((row) => [row.name, row]));
-assert.ok(byName['core-reveal'].gzip < byName.full.gzip, 'Rolldown core + one module must remain smaller than full');
-assert.ok(byName['core-three'].gzip < byName.full.gzip, 'Rolldown core + three modules must remain smaller than full');
+assertCheck(byName['core-reveal'].gzip < byName.full.gzip, 'Rolldown core + one module must remain smaller than full');
+assertCheck(byName['core-three'].gzip < byName.full.gzip, 'Rolldown core + three modules must remain smaller than full');
 
 const table = [
   '| Rolldown consumer entry | JS chunks | Raw | Gzip | Budget (gzip) |',
