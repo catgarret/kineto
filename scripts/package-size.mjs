@@ -78,7 +78,9 @@ const BUDGET = {
   // history, and source/type surface. Node 25/npm 11 measures 508.2 KB packed /
   // 1708.8 KB unpacked; keep the allowlist fixed and absorb only this measured
   // runtime cost with a small rounded margin.
-  packedKb: 509,
+  // Node 24/npm 11 measures 509.8 KB packed / 1709.8 KB unpacked, so the
+  // rounded packed ceiling must cover that runner without widening the file list.
+  packedKb: 511,
   unpackedKb: 1710,
   files: 78
 };

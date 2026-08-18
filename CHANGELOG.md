@@ -10,6 +10,7 @@
 - Add an iOS Safari/Android Chrome physical-device QA runbook and evidence format without counting Playwright emulation as device success.
 - Audit all 16 Page Reveal variants against distinct source mechanisms and keep removed aliases out of the public contract.
 - Promote Cover Reveal gallery and Radial Carousel layer checks into the cross-engine `heavy-layout` regression checkpoint to catch clipping and ghost-image regressions.
+- Absorb the measured Node 24/npm 11 diagnostics package archive boundary without widening the release file allowlist.
 - Refresh the roadmap baseline to v0.8.104 and record the WebKit Tabs recovery, 52-module live-site check, and post-deploy verification evidence.
 - Add a Korean troubleshooting guide for modular imports, hidden layouts, mobile Mega Menu, Slider/Radial drag, Page Reveal distinctions, date parsing, Scroll Shadows, SSR, CDN/SRI/GTM, CI, and reduced motion.
 - Add a docs-navigation CI audit that keeps the package version, 52-module reference, module index, roadmap, and troubleshooting headings synchronized.
@@ -30,6 +31,7 @@
 - iOS Safari·Android Chrome 실기기 QA 실행표와 증거 형식을 추가했으며, Playwright emulation을 실기기 성공으로 집계하지 않습니다.
 - 16개 Page Reveal variant를 서로 다른 소스 메커니즘과 대조 감사하고, 제거된 alias가 공개 contract로 돌아오지 않도록 고정했습니다.
 - Cover Reveal gallery와 Radial Carousel 레이어 검사를 교차 엔진 `heavy-layout` 회귀 체크포인트로 승격해 clipping·고스트 이미지 회귀를 잡도록 했습니다.
+- release 파일 allowlist를 넓히지 않고 Node 24/npm 11 diagnostics 패키지 archive의 측정된 경계 차이만 흡수했습니다.
 - 로드맵 기준을 v0.8.104로 갱신하고 WebKit Tabs 복구, 52개 모듈 live-site 점검, 배포 후 검증 근거를 기록했습니다.
 - 모듈형 import, 숨겨진 레이아웃, 모바일 Mega Menu, Slider/Radial 드래그, Page Reveal 차이, 날짜 파싱, Scroll Shadows, SSR, CDN/SRI/GTM, CI, reduced motion을 증상별로 설명하는 한국어 troubleshooting 문서를 추가했습니다.
 - package 버전·52개 module reference·module index·로드맵·troubleshooting heading의 동기화를 유지하는 docs-navigation CI 감사를 추가했습니다.
