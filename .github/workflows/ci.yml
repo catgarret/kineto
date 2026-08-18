@@ -177,10 +177,14 @@ jobs:
       - name: Install Playwright ${{ matrix.browser }}
         run: |
           set -o pipefail
-          # Browser binaries are an external download. Keep apt dependency
-          # provisioning out of the matrix lane because an apt mirror stall can
-          # block the whole job; bound each binary download attempt instead.
-          node scripts/retry-command.mjs timeout --signal=TERM 5m npx playwright install ${{ matrix.browser }}
+          # Firefox runs with the hosted runner's libraries. WebKit needs its
+          # additional runtime packages; bound that apt/browser provisioning so
+          # a mirror stall cannot consume the whole matrix job.
+          if [ "${{ matrix.browser }}" = "webkit" ]; then
+            timeout --foreground --kill-after=30s 10m npx playwright install --with-deps webkit
+          else
+            node scripts/retry-command.mjs timeout --signal=TERM 5m npx playwright install firefox
+          fi
 
       - name: Build distributions
         run: npm run build
