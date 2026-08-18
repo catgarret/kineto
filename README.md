@@ -10,7 +10,7 @@ English · [한국어](i18n/README.ko.md) · [日本語](i18n/README.jp.md) · [
 
 <p><a href="https://github.com/catgarret/kineto/actions/workflows/ci.yml"><img src="https://github.com/catgarret/kineto/actions/workflows/ci.yml/badge.svg" alt="CI" height="20"></a>&nbsp;&nbsp;<a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
-[Live demo](https://kineto.dongri.me) · [Module reference](docs/module-reference.md) · [Troubleshooting](docs/troubleshooting.md) · [AI prompt guide](AI-PROMPT-GUIDE.md) · [Feature contract](FEATURE_CONTRACT.md)
+[Live demo](https://kineto.dongri.me) · [Module reference](docs/module-reference.md) · [Usage and quality matrix](docs/module-usage-matrix.md) · [Troubleshooting](docs/troubleshooting.md) · [AI prompt guide](AI-PROMPT-GUIDE.md) · [Feature contract](FEATURE_CONTRACT.md)
 
 </div>
 

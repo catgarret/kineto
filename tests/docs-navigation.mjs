@@ -14,6 +14,7 @@ const readme = read('README.md');
 const docsReadme = read('docs/README.md');
 const roadmap = read('docs/ROADMAP.md');
 const troubleshooting = read('docs/troubleshooting.md');
+const usageMatrix = read('docs/module-usage-matrix.md');
 const reference = read('docs/module-reference.md');
 const modulesReadme = read('docs/modules/README.md');
 const localizedReadmes = ['ko', 'jp', 'zh-CN', 'zh-TW', 'ru', 'it'].map((locale) => read(`i18n/README.${locale}.md`));
@@ -23,6 +24,7 @@ assert.match(roadmap, new RegExp(`기준 버전: v${pkg.version}(?:\\s|·)`), 'r
 assert.match(roadmap, new RegExp(`v${pkg.version}에서`), 'roadmap must record the latest release evidence');
 assert.match(readme, /\[Troubleshooting\]\(docs\/troubleshooting\.md\)/, 'root README must link troubleshooting');
 assert.match(docsReadme, /\[문제 해결\]\(troubleshooting\.md\)/, 'docs index must link troubleshooting');
+assert.match(docsReadme, /\[모듈 사용·품질 매트릭스\]\(module-usage-matrix\.md\)/, 'docs index must link module quality matrix');
 assert.ok(localizedReadmes.every((content) => content.includes('../docs/troubleshooting.md')), 'every localized README must link troubleshooting');
 
 const moduleNames = contract.modules.map((module) => module.name);
@@ -33,6 +35,7 @@ for (const name of moduleNames) {
   const listed = modulesReadme.includes(`| \`${name}\` |`)
     || (name === 'radial' && modulesReadme.includes('| `slider` |'));
   assert.ok(listed, `module index must list ${name}`);
+  assert.ok(usageMatrix.includes(`| \`${name}\` |`), `module quality matrix must list ${name}`);
 }
 
 for (const heading of [

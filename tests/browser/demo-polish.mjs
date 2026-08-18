@@ -8,7 +8,7 @@ let html = await readFile(resolve(root, 'demo/index.html'), 'utf8');
 html = html
   .replace(/<link rel="stylesheet" href="\.\.\/dist\/kineto\.css[^"]*">/, '')
   .replace(/<script src="\.\.\/dist\/kineto\.umd\.js[^"]*"><\/script>/, '')
-  .replace(/<script src="\.\/(?:help-i18n|help-i18n-extra|playground-i18n|playground|copy-i18n|main)\.js[^"]*"><\/script>/g, '')
+  .replace(/<script src="\.\/(?:help-i18n|help-i18n-extra|playground-i18n|playground|copy-i18n|module-metadata|main)\.js[^"]*"><\/script>/g, '')
   .replace('<head>', '<head><base href="http://kineto.local/demo/">')
   // setContent() keeps an opaque/about:blank document origin. Mark demo images
   // as anonymous and return ACAO below so Canvas tests exercise real pixels
@@ -54,7 +54,7 @@ try {
     }});
   });
   await page.addStyleTag({path:resolve(root,'dist/kineto.css')});
-  for (const file of ['dist/kineto.umd.js','demo/help-i18n.js','demo/help-i18n-extra.js','demo/playground-i18n.js','demo/playground.js','demo/copy-i18n.js','demo/main.js']) {
+  for (const file of ['dist/kineto.umd.js','demo/help-i18n.js','demo/help-i18n-extra.js','demo/playground-i18n.js','demo/module-metadata.js','demo/playground.js','demo/copy-i18n.js','demo/main.js']) {
     await page.addScriptTag({path:resolve(root,file)});
   }
   checkpoint('scripts-loaded');

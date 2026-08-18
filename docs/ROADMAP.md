@@ -34,6 +34,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 - reduced motion, 저사양 fallback, 키보드·ARIA, `destroy()` 복원을 제품 원칙으로 관리합니다.
 - v0.8.104는 Node 24/npm 11 전체 검증, npm provenance 공개, GitHub Release와 Pages 배포를 통과했습니다. 배포용 gzip 상한은 유지하고 Node 24 zlib 경계 차이만 별도 variance로 흡수합니다.
 - v0.8.104에서 숨겨진 Tabs 패널을 다시 열 때 WebKit의 지연된 `hidden` 반영까지 포함해 indicator를 재측정하고, `tabs.refresh()` 공개 메서드와 bounded follow-up 측정을 추가했습니다. canonical demo에서 52개 모듈·GTM·unversioned CDN 경로를 다시 확인했습니다.
+- 52개 모듈의 사용 시점·피해야 할 상황·접근성·성능·reduced motion 상태를 단일 생성 원본과 데모 뱃지, 문서 매트릭스, CI completeness 검사로 연결했습니다.
 
 ### 현재 병목
 
@@ -78,7 +79,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 | React/Vue lifecycle·SSR | 완료 | React Strict Mode, Vue mount/update/unmount, jQuery lifecycle, React/Vue SSR fixture를 CI에 추가했습니다. |
 | 공급망 운영 문서 | 완료 | `SECURITY.md`와 공급망 대응·릴리스 확인 문서를 추가했습니다. |
 | 전체 검증 재시도 안전망 | 완료 | CI와 릴리스 검증이 일시적인 러너·브라우저 실패 시 한 번만 재시도하되, 재실행도 반드시 통과하도록 고정했습니다. |
-| 데모·문서 경험 개선 | 완료(2차) | 실제 적용 문제를 반영한 CSS 훅·예제, 변경 설정 URL 공유, Vanilla HTML/JS·React·Vue·CSS 복사 탭, 문제 중심 troubleshooting 문서와 문서 링크 감사 테스트를 추가했습니다. 실제 조합 예제와 모듈별 사용 판단 메타데이터는 다음 단위입니다. |
+| 데모·문서 경험 개선 | 완료(3차) | 실제 적용 문제를 반영한 CSS 훅·예제, 변경 설정 URL 공유, Vanilla HTML/JS·React·Vue·CSS 복사 탭, 문제 중심 troubleshooting 문서, 52개 모듈 사용·품질 매트릭스와 completeness CI를 추가했습니다. |
 
 #### 1) 실제 소비자 번들 예산
 
@@ -410,7 +411,7 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 22. 완료(v0.8.103): same-document `flip` View Transitions progressive enhancement와 FLIP fallback 검증
 23. 완료(v0.8.104): 숨겨진 Tabs 패널의 WebKit indicator 재측정과 live-site 배포 후 검증
 24. 완료(v0.8.104): troubleshooting 문서와 문서 링크·버전 기준선 자동 감사
-25. 다음 단위: 모듈별 “언제 쓰는가 / 언제 피하는가 / 접근성·성능 상태” 메타데이터를 52개 데모와 복사 코드에 연결
+25. 완료(v0.8.104 후속): 모듈별 “언제 쓰는가 / 언제 피하는가 / 접근성·성능·reduced motion 상태” 메타데이터를 52개 모듈 매트릭스와 데모 뱃지·CI completeness 검사에 연결
 26. 다음 단위: transform·clip·fixed/sticky 의존 모듈의 Firefox/WebKit 체크포인트를 정기 QA 지표로 승격
 27. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구가 확인될 때 별도 검토
 

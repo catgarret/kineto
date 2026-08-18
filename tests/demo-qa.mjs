@@ -71,6 +71,7 @@ try {
   await page.addScriptTag({path:resolve(root,'demo/help-i18n.js')});
   await page.addScriptTag({path:resolve(root,'demo/help-i18n-extra.js')});
   await page.addScriptTag({path:resolve(root,'demo/playground-i18n.js')});
+  await page.addScriptTag({path:resolve(root,'demo/module-metadata.js')});
   await page.addScriptTag({path:resolve(root,'demo/playground.js')});
   await page.addScriptTag({path:resolve(root,'demo/copy-i18n.js')});
   await page.addScriptTag({content:inlineScript});

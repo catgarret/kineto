@@ -10,6 +10,7 @@
 - Add a docs-navigation CI audit that keeps the package version, 52-module reference, module index, roadmap, and troubleshooting headings synchronized.
 - Document when to use the full entry versus `core` + module imports and link the troubleshooting path from both README indexes.
 - Absorb the measured 0.3 KB Node 24/npm 11 release-tarball boundary without widening the runtime file allowlist, and run the docs-navigation audit in the hosted CI group.
+- Add a single generated 52-module usage and quality matrix, neutral demo badges for accessibility/performance/reduced-motion status, and a CI completeness check that keeps the demo surface and docs aligned.
 
 ### 한국어
 
@@ -19,6 +20,7 @@
 - package 버전·52개 module reference·module index·로드맵·troubleshooting heading의 동기화를 유지하는 docs-navigation CI 감사를 추가했습니다.
 - 전체 엔트리와 `core` + 모듈 import를 언제 선택할지 문서화하고 두 README 색인에서 troubleshooting 경로를 연결했습니다.
 - Node 24/npm 11에서 측정된 release tarball 0.3KB 경계만 흡수하고 runtime 파일 allowlist는 넓히지 않았으며, hosted CI 그룹에도 docs-navigation 감사를 포함했습니다.
+- 52개 모듈의 사용 시점·피해야 할 상황·접근성·성능·reduced motion 상태를 단일 생성 매트릭스와 데모 뱃지로 연결하고, 데모·문서 누락을 잡는 CI completeness 검사를 추가했습니다.
 
 ## [0.8.104] - 2026-08-17
 

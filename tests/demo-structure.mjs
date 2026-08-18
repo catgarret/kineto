@@ -31,6 +31,7 @@ const run = (c) => { const s = d.createElement('script'); s.textContent = c; d.b
 const noop = () => {};
 run(`const R=${JSON.stringify(REGISTRY)};window.Kineto={registry:Object.fromEntries(R.map(m=>[m,{}])),config:${noop},init:${noop},replay:${noop},destroyModule:${noop},pageReveal:${noop},loader:()=>({destroy:()=>{}}),enableSmooth:${noop},disableSmooth:${noop},getInstance:()=>null};`);
 try { run(fs.readFileSync(path.join(root, 'demo/help-i18n.js'), 'utf8')); } catch (_) {}
+run(fs.readFileSync(path.join(root, 'demo/module-metadata.js'), 'utf8'));
 run(fs.readFileSync(path.join(root, 'demo/playground.js'), 'utf8'));
 run(fs.readFileSync(path.join(root, 'demo/main.js'), 'utf8'));
 
