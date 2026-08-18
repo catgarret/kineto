@@ -13,6 +13,7 @@
 - Keep Firefox/WebKit matrix lanes on bounded browser-binary installs without apt provisioning, while restoring the Chromium lane's required libraries behind a 10-minute timeout so full browser QA remains runnable without an unbounded package-mirror wait.
 - Connect cross-browser smoke servers through their originating Playwright engine instead of always using Chromium, restoring the WebKit smoke contract.
 - Provision WebKit's required runtime libraries in its bounded matrix lane while retaining the faster Firefox binary-only path.
+- Record the successful hosted v0.8.104 verification across Chromium, Firefox, WebKit, Pages, and both live-site hostnames.
 - Add an opt-in public diagnostics hub with stable `KT_*` codes, bounded history, sink/subscriber APIs, and validation while keeping default consumers silent.
 - Add an iOS Safari/Android Chrome physical-device QA runbook and evidence format without counting Playwright emulation as device success.
 - Audit all 16 Page Reveal variants against distinct source mechanisms and keep removed aliases out of the public contract.
@@ -41,6 +42,7 @@
 - Firefox/WebKit matrix lane은 apt 의존성 설치 없이 제한된 브라우저 바이너리를 사용하고, 전체 browser QA에 필요한 Chromium 라이브러리는 10분 timeout 안에서 복원해 package mirror 정체가 무기한 대기하지 않도록 했습니다.
 - 교차 브라우저 smoke server를 항상 Chromium client로 연결하지 않고 생성한 Playwright engine으로 연결해 WebKit smoke 계약을 복구했습니다.
 - WebKit matrix lane에는 필요한 runtime library를 제한 시간 안에 설치하고 Firefox는 빠른 바이너리-only 경로를 유지했습니다.
+- Chromium·Firefox·WebKit·Pages와 두 live-site hostname에서 v0.8.104 hosted 검증이 성공한 근거를 기록했습니다.
 - 기본 소비자는 조용하게 유지하면서 안정적인 `KT_*` 코드, 제한된 history, sink/subscriber API와 validation을 제공하는 opt-in 공개 diagnostics hub를 추가했습니다.
 - iOS Safari·Android Chrome 실기기 QA 실행표와 증거 형식을 추가했으며, Playwright emulation을 실기기 성공으로 집계하지 않습니다.
 - 16개 Page Reveal variant를 서로 다른 소스 메커니즘과 대조 감사하고, 제거된 alias가 공개 contract로 돌아오지 않도록 고정했습니다.
