@@ -68,6 +68,14 @@ const table = [
   '| --- | ---: | ---: | ---: | ---: |',
   ...rows.map((row) => `| ${row.name} | ${row.files} | ${row.raw.toFixed(1)} KB | ${row.gzip.toFixed(1)} KB | ≤ ${row.budget} KB${row.variance ? ` (+${row.variance} KB runner variance)` : ''} |`)
 ].join('\n');
+const measurementNotes = [
+  '## Measurement scope',
+  '',
+  '- Bundler: Vite library build with the repository\'s pinned Vite toolchain.',
+  '- React and Vue are externalized; each row measures Kineto entry cost rather than framework cost.',
+  '- The fixture proves relative tree-shaking boundaries for full, core + one module, core + three modules, States, Presence, React, and Vue.',
+  '- An independent non-Vite bundler is not claimed yet; add it only when its resolver and external-peer policy can be pinned in CI.'
+].join('\n');
 console.log(`consumer-bundles OK\n${table}`);
 
 if (process.argv.includes('--write')) {
@@ -79,7 +87,9 @@ if (process.argv.includes('--write')) {
     '',
     table,
     '',
-    'The fixture test also requires `core + one module`, `core + three modules`, `core + states`, and `core + presence` to remain smaller than the full entry.'
+    'The fixture test also requires `core + one module`, `core + three modules`, `core + states`, and `core + presence` to remain smaller than the full entry.',
+    '',
+    measurementNotes
   ].join('\n');
   fs.writeFileSync(path.join(root, 'docs/consumer-bundle-size.md'), `${report}\n`);
 }

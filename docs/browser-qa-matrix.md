@@ -4,6 +4,20 @@
 
 이 문서는 모든 모듈을 모든 브라우저에서 같은 깊이로 검사하기 위한 문서가 아닙니다. 일반 모듈은 Chromium 전체 QA와 Firefox/WebKit smoke를 유지하고, 브라우저 엔진 차이가 실제 사용자 화면을 바꿀 가능성이 높은 레이어 모듈만 `heavy-layout` 체크포인트로 승격합니다.
 
+## 공개 지원표
+
+`docs/module-usage-matrix.md`의 브라우저 기준은 지원 범위를 과장하지 않도록 다음 QA 깊이와 연결합니다.
+
+| 기준 | 자동 증거 | 공개 의미 | 현재 한계 |
+|---|---|---|---|
+| `evergreen` | Chromium 전체 + Firefox/WebKit smoke | 최신 evergreen 브라우저의 일반 DOM·CSS 경로 | 모든 variant를 세 엔진에서 같은 깊이로 검사하지 않음 |
+| `evergreen-pointer` | Chromium 포인터·pointer-events 검사 + 대표 Firefox/WebKit smoke | 데스크톱 포인터 입력을 보조 기능으로 지원 | 터치 전용 기기의 실제 센서·포인터 조합은 별도 확인 필요 |
+| `evergreen-scroll` | Chromium 스크롤/레이아웃 검사 + 대표 Firefox/WebKit smoke | 최신 스크롤 API가 있는 브라우저에서 동작, 미지원 시 정적·기본 흐름 유지 | 실제 iOS Safari/Android Chrome 실기기 검증은 아직 릴리스 증거에 포함하지 않음 |
+| `evergreen-touch` | Chromium touch 에뮬레이션 + 모바일 레이아웃 검사 | 키보드·touch fallback과 native semantics를 우선 | 제조사 WebView와 실기기 IME/viewport 차이는 별도 QA 필요 |
+| `evergreen-canvas` | Chromium canvas/media QA + heavy-layout 대상 세 엔진 | 캔버스·미디어 효과의 fallback과 레이어 경계를 검증 | cross-origin 미디어와 저사양 GPU의 실제 성능은 소비자가 측정해야 함 |
+
+이 표의 “지원”은 브라우저·OS 조합 전체를 보증한다는 뜻이 아닙니다. 실기기 검증을 추가할 때는 기기·OS·브라우저 버전과 재현 fixture를 [QA 이력](browser-qa-history.md)에 함께 기록하고, 자동화되지 않은 수동 확인은 자동 통과율에 합산하지 않습니다.
+
 ## 대상과 검사 계약
 
 `tests/browser/demo-polish.mjs`의 `checkpoint('heavy-layout')`는 Chromium·Firefox·WebKit에서 다음 계약을 한 번에 검사합니다.

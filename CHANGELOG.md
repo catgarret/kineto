@@ -15,6 +15,7 @@
 - Promote transform, clip, fixed/sticky, mask, and 3D layer boundaries for pageReveal, pageTransition, slider, stickyStack, stickyHeader, lightbox, cursor, and fullpage into a cross-engine `heavy-layout` demo-polish checkpoint, verified in Chromium, Firefox, and WebKit.
 - Add a browser-layer QA matrix with module risk boundaries, used-value measurement rules, release triage categories, and criteria for promoting additional modules into the cross-engine checkpoint.
 - Add five roadmap decision documents covering QA history, FLIP shared-layout scope, 1.0 readiness, preset/runtime boundaries, and platform progressive enhancement.
+- Derive demo variant choices from the feature contract, remove stale Page Reveal/Loader effects, and add browser-support, consumer-bundle, module-status, and 1.0 diagnostics/deprecation audits.
 
 ### 한국어
 
@@ -29,6 +30,7 @@
 - pageReveal·pageTransition·slider·stickyStack·stickyHeader·lightbox·cursor·fullpage의 transform·clip·fixed/sticky·mask·3D 레이어 경계를 `demo-polish`의 교차 엔진 `heavy-layout` 체크포인트로 승격하고 Chromium·Firefox·WebKit에서 검증했습니다.
 - 모듈별 레이어 위험, used value 측정 규칙, 릴리스 triage 분류, 추가 모듈 편입 조건을 정리한 브라우저 레이어 QA 매트릭스를 추가하고 docs-navigation CI에 연결했습니다.
 - 브라우저 QA 이력, FLIP shared-layout 범위, 1.0 계약 준비도, preset/runtime 경계, 플랫폼 progressive enhancement를 다루는 로드맵 문서 5개를 추가했습니다.
+- 기능 계약에서 데모 variant 선택지를 생성해 오래된 Page Reveal·Loader 효과를 제거하고, 브라우저 지원표·소비자 번들·모듈 상태·1.0 진단/deprecation 감사를 추가했습니다.
 
 ## [0.8.104] - 2026-08-17
 

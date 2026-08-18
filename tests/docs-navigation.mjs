@@ -15,10 +15,13 @@ const docsReadme = read('docs/README.md');
 const roadmap = read('docs/ROADMAP.md');
 const troubleshooting = read('docs/troubleshooting.md');
 const usageMatrix = read('docs/module-usage-matrix.md');
+const moduleStatus = read('docs/module-status.md');
+const consumerBundles = read('docs/consumer-bundle-size.md');
 const browserQa = read('docs/browser-qa-matrix.md');
 const browserQaHistory = read('docs/browser-qa-history.md');
 const flipSharedLayout = read('docs/flip-shared-layout.md');
 const readiness = read('docs/1.0-readiness.md');
+const diagnostics = read('docs/diagnostics-and-deprecation.md');
 const presetBoundary = read('docs/preset-runtime-boundary.md');
 const platformEnhancements = read('docs/platform-enhancements.md');
 const reference = read('docs/module-reference.md');
@@ -32,11 +35,14 @@ assert.match(roadmap, new RegExp(`v${pkg.version}에서`), 'roadmap must record 
 assert.match(readme, /\[Troubleshooting\]\(docs\/troubleshooting\.md\)/, 'root README must link troubleshooting');
 assert.match(docsReadme, /\[문제 해결\]\(troubleshooting\.md\)/, 'docs index must link troubleshooting');
 assert.match(docsReadme, /\[모듈 사용·품질 매트릭스\]\(module-usage-matrix\.md\)/, 'docs index must link module quality matrix');
+assert.match(docsReadme, /\[모듈 유지 상태표\]\(module-status\.md\)/, 'docs index must link module status');
+assert.match(docsReadme, /\[소비자 번들 측정\]\(consumer-bundle-size\.md\)/, 'docs index must link consumer bundle measurements');
 assert.match(docsReadme, /\[브라우저 레이어 QA 매트릭스\]\(browser-qa-matrix\.md\)/, 'docs index must link browser QA matrix');
 for (const [label, file] of [
   ['브라우저 레이어 QA 이력', 'browser-qa-history.md'],
   ['FLIP shared layout 범위', 'flip-shared-layout.md'],
   ['1.0 계약 준비도', '1.0-readiness.md'],
+  ['1.0 진단·deprecation 계약', 'diagnostics-and-deprecation.md'],
   ['Preset과 runtime 경계', 'preset-runtime-boundary.md'],
   ['플랫폼 progressive enhancement 경로', 'platform-enhancements.md']
 ]) {
@@ -76,6 +82,18 @@ assert.match(roadmap, /heavy-layout/, 'roadmap must record the cross-engine heav
 assert.match(demoPolish, /checkpoint\('heavy-layout'\)/, 'browser QA must emit the heavy-layout checkpoint');
 for (const token of ["checkpoint('heavy-layout')", 'getBoundingClientRect', 'position:fixed', 'position:sticky', 'clip-path', 'Firefox', 'WebKit']) {
   assert.ok(browserQa.includes(token), `browser QA matrix is missing operational token: ${token}`);
+}
+for (const token of ['공개 지원표', 'evergreen-canvas', '실제 iOS Safari/Android Chrome 실기기 검증']) {
+  assert.ok(browserQa.includes(token), `browser QA support table is missing operational token: ${token}`);
+}
+for (const token of ['stable', 'maintenance', 'experimental', 'deprecated']) {
+  assert.ok(moduleStatus.includes(`\`${token}\``), `module status is missing: ${token}`);
+}
+for (const token of ['Measurement scope', 'Vite library build', 'independent non-Vite bundler']) {
+  assert.ok(consumerBundles.includes(token), `consumer bundle report is missing: ${token}`);
+}
+for (const token of ['public error code', 'opt-in debug output', 'migration fixture', '최소 한 minor']) {
+  assert.ok(diagnostics.includes(token), `diagnostics/deprecation contract is missing: ${token}`);
 }
 assert.match(browserQaHistory, /fa055cc/);
 assert.match(flipSharedLayout, /data-kt-layout-id/);

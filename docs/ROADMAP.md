@@ -422,6 +422,11 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 32. 완료(v0.8.104 후속): `docs/platform-enhancements.md`에 View Transitions·CSS Scroll Snap·Scroll-driven Animations의 progressive enhancement와 fallback gate를 기록
 33. 다음 단위: `heavy-layout`의 실제 회귀 사례가 누적되면 일반 모듈 중 같은 레이어 위험이 확인되는 항목만 대상 목록에 편입
 34. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구 2건이 확인될 때 구현 RFC로 승격
+35. 완료(감사 기반): 공개 variant 목록을 `PUBLIC_VARIANTS`로 contract에서 생성하고 pageReveal·Loader의 stale effect 선택지를 제거; 시각적 variant 중복의 최종 수동 판정은 남김
+36. 완료(문서·게이트): `docs/browser-qa-matrix.md`에 일반·pointer·scroll·touch·canvas 지원표와 실기기 검증 한계를 고정
+37. 완료(측정 범위): consumer bundle report에 Vite 측정 범위·tree-shaking 증거·비 Vite bundler 미검증 조건을 기록
+38. 완료(기준선): 52개 공개 모듈의 `stable`/`maintenance`/`experimental`/`deprecated` 상태표와 변경 게이트를 추가
+39. 완료(계약 초안): 1.0 오류 코드·opt-in debug·deprecation migration 절차를 문서화; public error shape 구현은 실제 요구 전까지 보류
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

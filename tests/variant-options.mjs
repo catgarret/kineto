@@ -43,6 +43,20 @@ for (const module of declared) {
 
 // The generated demo block must mirror the contract exactly.
 const source = fs.readFileSync(path.join(root, 'demo/playground.js'), 'utf8');
+const variantListMatch = source.match(/^ {2}const PUBLIC_VARIANTS = (\{.*\});$/m);
+if (!variantListMatch) problems.push('demo/playground.js no longer contains a generated PUBLIC_VARIANTS block');
+else {
+  const mirroredVariants = JSON.parse(variantListMatch[1]);
+  const expectedVariants = Object.fromEntries([...contract.modules]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((module) => [module.name, module.variants]));
+  if (variantListMatch[1] !== JSON.stringify(expectedVariants)) {
+    problems.push('demo PUBLIC_VARIANTS has drifted from the contract. Run: node scripts/sync-playground-options.mjs');
+  }
+  if (JSON.stringify(mirroredVariants.pageReveal) !== JSON.stringify(contract.modules.find((module) => module.name === 'pageReveal').variants)) {
+    problems.push('pageReveal settings choices do not mirror the public contract');
+  }
+}
 const match = source.match(/^ {2}const VARIANT_OPTIONS = (\{.*\});$/m);
 if (!match) problems.push('demo/playground.js no longer contains a generated VARIANT_OPTIONS block');
 else {

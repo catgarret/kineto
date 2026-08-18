@@ -12,10 +12,13 @@ const feat = JSON.parse(fs.readFileSync(path.join(root, 'kineto.features.json'),
 
 // Build the contract object with alphabetically-sorted module keys and option lists.
 const contract = {};
+const variants = {};
 for (const m of [...feat.modules].sort((a, b) => a.name.localeCompare(b.name))) {
   contract[m.name] = [...m.publicOptions].sort();
+  variants[m.name] = [...m.variants];
 }
 const literal = `  const PUBLIC_OPTIONS = ${JSON.stringify(contract)};`;
+const variantsLiteral = `  const PUBLIC_VARIANTS = ${JSON.stringify(variants)};`;
 
 // Which capability each variant needs, mirrored from the contract so the demo
 // never carries its own copy. A module that adds a variant declares it once in
@@ -54,16 +57,18 @@ const file = path.join(root, 'demo/playground.js');
 const src = fs.readFileSync(file, 'utf8');
 const re = /^ {2}const PUBLIC_OPTIONS = \{.*\};$/m;
 if (!re.test(src)) { console.error('sync-playground-options: PUBLIC_OPTIONS block not found'); process.exit(1); }
+const variantsRe = /^ {2}const PUBLIC_VARIANTS = \{.*\};$/m;
+if (!variantsRe.test(src)) { console.error('sync-playground-options: PUBLIC_VARIANTS block not found'); process.exit(1); }
 const reqRe = /^ {2}const VARIANT_REQUIRES = \{.*\};$/m;
 if (!reqRe.test(src)) { console.error('sync-playground-options: VARIANT_REQUIRES block not found'); process.exit(1); }
 const defRe = /^ {2}const PUBLIC_DEFAULTS = \{.*\};$/m;
 if (!defRe.test(src)) { console.error('sync-playground-options: PUBLIC_DEFAULTS block not found'); process.exit(1); }
 const varOptRe = /^ {2}const VARIANT_OPTIONS = \{.*\};$/m;
 if (!varOptRe.test(src)) { console.error('sync-playground-options: VARIANT_OPTIONS block not found'); process.exit(1); }
-const next = src.replace(re, literal).replace(reqRe, requiresLiteral).replace(defRe, defaultsLiteral).replace(varOptRe, variantOptionsLiteral);
+const next = src.replace(re, literal).replace(variantsRe, variantsLiteral).replace(reqRe, requiresLiteral).replace(defRe, defaultsLiteral).replace(varOptRe, variantOptionsLiteral);
 
 if (check) {
-  if (next !== src) { console.error('demo/playground.js PUBLIC_OPTIONS / VARIANT_REQUIRES / PUBLIC_DEFAULTS is out of sync with kineto.features.json. Run: node scripts/sync-playground-options.mjs'); process.exit(1); }
+  if (next !== src) { console.error('demo/playground.js PUBLIC_OPTIONS / PUBLIC_VARIANTS / VARIANT_REQUIRES / PUBLIC_DEFAULTS is out of sync with kineto.features.json. Run: node scripts/sync-playground-options.mjs'); process.exit(1); }
   console.log('playground PUBLIC_OPTIONS in sync with features.json.');
 } else {
   if (next !== src) { fs.writeFileSync(file, next); console.log('Synced demo/playground.js PUBLIC_OPTIONS from features.json.'); }

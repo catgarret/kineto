@@ -5,12 +5,19 @@
 
 | Consumer entry | JS files | Raw | Gzip | Budget (gzip) |
 | --- | ---: | ---: | ---: | ---: |
-| full | 1 | 500.3 KB | 131.0 KB | ≤ 130 KB (+2 KB runner variance) |
+| full | 1 | 500.6 KB | 131.1 KB | ≤ 130 KB (+2 KB runner variance) |
 | core-reveal | 1 | 40.1 KB | 12.2 KB | ≤ 30 KB |
 | core-three | 1 | 94.1 KB | 26.2 KB | ≤ 65 KB |
 | core-states | 1 | 31.0 KB | 10.1 KB | ≤ 35 KB |
 | core-presence | 1 | 32.9 KB | 10.5 KB | ≤ 35 KB |
-| react-adapter | 1 | 513.3 KB | 134.8 KB | ≤ 135 KB (+1 KB runner variance) |
-| vue-adapter | 1 | 516.6 KB | 135.9 KB | ≤ 135 KB (+2 KB runner variance) |
+| react-adapter | 1 | 513.6 KB | 134.9 KB | ≤ 135 KB (+1 KB runner variance) |
+| vue-adapter | 1 | 516.9 KB | 136.0 KB | ≤ 135 KB (+2 KB runner variance) |
 
 The fixture test also requires `core + one module`, `core + three modules`, `core + states`, and `core + presence` to remain smaller than the full entry.
+
+## Measurement scope
+
+- Bundler: Vite library build with the repository's pinned Vite toolchain.
+- React and Vue are externalized; each row measures Kineto entry cost rather than framework cost.
+- The fixture proves relative tree-shaking boundaries for full, core + one module, core + three modules, States, Presence, React, and Vue.
+- An independent non-Vite bundler is not claimed yet; add it only when its resolver and external-peer policy can be pinned in CI.
