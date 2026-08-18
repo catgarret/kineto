@@ -177,10 +177,10 @@ jobs:
       - name: Install Playwright ${{ matrix.browser }}
         run: |
           set -o pipefail
-          # Browser binaries are an external download. Bound each attempt so a
-          # stalled CDN cannot consume the whole 20-minute matrix job; every
-          # retry still has to install successfully before QA can start.
-          node scripts/retry-command.mjs timeout --signal=TERM 5m npx playwright install --with-deps ${{ matrix.browser }}
+          # Browser binaries are an external download. Keep apt dependency
+          # provisioning out of the matrix lane because an apt mirror stall can
+          # block the whole job; bound each binary download attempt instead.
+          node scripts/retry-command.mjs timeout --signal=TERM 5m npx playwright install ${{ matrix.browser }}
 
       - name: Build distributions
         run: npm run build
