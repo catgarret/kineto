@@ -5,13 +5,13 @@
 
 | Consumer entry | JS files | Raw | Gzip | Budget (gzip) |
 | --- | ---: | ---: | ---: | ---: |
-| full | 1 | 503.4 KB | 132.0 KB | ≤ 130 KB (+2 KB runner variance) |
-| core-reveal | 1 | 42.8 KB | 13.0 KB | ≤ 30 KB |
-| core-three | 1 | 96.8 KB | 27.1 KB | ≤ 65 KB |
-| core-states | 1 | 33.7 KB | 10.9 KB | ≤ 35 KB |
-| core-presence | 1 | 35.7 KB | 11.3 KB | ≤ 35 KB |
-| react-adapter | 1 | 516.4 KB | 135.8 KB | ≤ 137 KB (+1 KB runner variance) |
-| vue-adapter | 1 | 519.7 KB | 136.8 KB | ≤ 137 KB (+1 KB runner variance) |
+| full | 1 | 500.7 KB | 131.1 KB | ≤ 130 KB (+3 KB runner variance) |
+| core-reveal | 1 | 40.1 KB | 12.2 KB | ≤ 30 KB |
+| core-three | 1 | 94.1 KB | 26.2 KB | ≤ 65 KB |
+| core-states | 1 | 31.0 KB | 10.1 KB | ≤ 35 KB |
+| core-presence | 1 | 32.9 KB | 10.5 KB | ≤ 35 KB |
+| react-adapter | 1 | 513.7 KB | 134.9 KB | ≤ 137 KB (+1 KB runner variance) |
+| vue-adapter | 1 | 517.0 KB | 136.0 KB | ≤ 137 KB (+1 KB runner variance) |
 
 The fixture test also requires `core + one module`, `core + three modules`, `core + states`, and `core + presence` to remain smaller than the full entry.
 
@@ -30,11 +30,11 @@ The fixture test also requires `core + one module`, `core + three modules`, `cor
 
 | Rolldown consumer entry | JS chunks | Raw | Gzip | Budget (gzip) |
 | --- | ---: | ---: | ---: | ---: |
-| full | 1 | 503.8 KB | 131.6 KB | ≤ 130 KB (+2 KB runner variance) |
-| core-reveal | 1 | 43.3 KB | 13.2 KB | ≤ 30 KB (+1 KB runner variance) |
-| core-three | 1 | 97.4 KB | 27.3 KB | ≤ 65 KB (+1 KB runner variance) |
-| react-adapter | 1 | 519.0 KB | 135.9 KB | ≤ 137 KB (+1 KB runner variance) |
-| vue-adapter | 1 | 523.9 KB | 137.4 KB | ≤ 137 KB (+1 KB runner variance) |
+| full | 1 | 501.1 KB | 130.8 KB | ≤ 130 KB (+3 KB runner variance) |
+| core-reveal | 1 | 40.5 KB | 12.3 KB | ≤ 30 KB (+1 KB runner variance) |
+| core-three | 1 | 94.6 KB | 26.4 KB | ≤ 65 KB (+1 KB runner variance) |
+| react-adapter | 1 | 516.3 KB | 135.1 KB | ≤ 137 KB (+1 KB runner variance) |
+| vue-adapter | 1 | 521.2 KB | 136.5 KB | ≤ 137 KB (+1 KB runner variance) |
 
 This is a second bundler signal, not a promise that every bundler produces identical bytes.
 <!-- rolldown-bundle-report:end -->

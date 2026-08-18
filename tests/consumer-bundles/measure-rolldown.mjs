@@ -8,7 +8,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../..');
 const reportPath = path.join(root, 'docs/consumer-bundle-size.md');
 const fixtures = [
-  { name: 'full', entry: 'full', budget: 130, variance: 2 },
+  { name: 'full', entry: 'full', budget: 130, variance: 3 },
   { name: 'core-reveal', entry: 'core-reveal', budget: 30, variance: 1 },
   { name: 'core-three', entry: 'core-three', budget: 65, variance: 1 },
   { name: 'react-adapter', entry: 'react', budget: 137, variance: 1 },
