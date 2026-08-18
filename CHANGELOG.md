@@ -13,6 +13,7 @@
 - Add a single generated 52-module usage and quality matrix, neutral demo badges for accessibility/performance/reduced-motion status, and a CI completeness check that keeps the demo surface and docs aligned.
 - Bound Playwright Firefox/WebKit binary installation to five minutes per attempt with three required retries, so a stalled browser CDN cannot consume the full matrix job without producing a useful failure.
 - Promote transform, clip, fixed/sticky, mask, and 3D layer boundaries for pageReveal, pageTransition, slider, stickyStack, stickyHeader, lightbox, cursor, and fullpage into a cross-engine `heavy-layout` demo-polish checkpoint, verified in Chromium, Firefox, and WebKit.
+- Add a browser-layer QA matrix with module risk boundaries, used-value measurement rules, release triage categories, and criteria for promoting additional modules into the cross-engine checkpoint.
 
 ### 한국어
 
@@ -25,6 +26,7 @@
 - 52개 모듈의 사용 시점·피해야 할 상황·접근성·성능·reduced motion 상태를 단일 생성 매트릭스와 데모 뱃지로 연결하고, 데모·문서 누락을 잡는 CI completeness 검사를 추가했습니다.
 - Playwright Firefox/WebKit 바이너리 설치를 시도당 5분, 최대 3회로 제한해 브라우저 CDN이 멈춰도 matrix job 전체 시간을 소모하지 않고 원인을 남기도록 했습니다.
 - pageReveal·pageTransition·slider·stickyStack·stickyHeader·lightbox·cursor·fullpage의 transform·clip·fixed/sticky·mask·3D 레이어 경계를 `demo-polish`의 교차 엔진 `heavy-layout` 체크포인트로 승격하고 Chromium·Firefox·WebKit에서 검증했습니다.
+- 모듈별 레이어 위험, used value 측정 규칙, 릴리스 triage 분류, 추가 모듈 편입 조건을 정리한 브라우저 레이어 QA 매트릭스를 추가하고 docs-navigation CI에 연결했습니다.
 
 ## [0.8.104] - 2026-08-17
 

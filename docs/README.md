@@ -12,6 +12,7 @@ Kineto v0.8.104의 공개 API와 소유자 의도를 기준으로 정리한 문�
 - [접근성](accessibility.md)
 - [성능과 fallback](performance.md)
 - [모듈 사용·품질 매트릭스](module-usage-matrix.md)
+- [브라우저 레이어 QA 매트릭스](browser-qa-matrix.md)
 - [문제 해결](troubleshooting.md)
 - [공급망 운영](supply-chain.md)
 - [보안 신고 정책](../SECURITY.md)

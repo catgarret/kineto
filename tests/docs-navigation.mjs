@@ -15,6 +15,7 @@ const docsReadme = read('docs/README.md');
 const roadmap = read('docs/ROADMAP.md');
 const troubleshooting = read('docs/troubleshooting.md');
 const usageMatrix = read('docs/module-usage-matrix.md');
+const browserQa = read('docs/browser-qa-matrix.md');
 const reference = read('docs/module-reference.md');
 const modulesReadme = read('docs/modules/README.md');
 const demoPolish = read('tests/browser/demo-polish.mjs');
@@ -26,6 +27,7 @@ assert.match(roadmap, new RegExp(`v${pkg.version}에서`), 'roadmap must record 
 assert.match(readme, /\[Troubleshooting\]\(docs\/troubleshooting\.md\)/, 'root README must link troubleshooting');
 assert.match(docsReadme, /\[문제 해결\]\(troubleshooting\.md\)/, 'docs index must link troubleshooting');
 assert.match(docsReadme, /\[모듈 사용·품질 매트릭스\]\(module-usage-matrix\.md\)/, 'docs index must link module quality matrix');
+assert.match(docsReadme, /\[브라우저 레이어 QA 매트릭스\]\(browser-qa-matrix\.md\)/, 'docs index must link browser QA matrix');
 assert.ok(localizedReadmes.every((content) => content.includes('../docs/troubleshooting.md')), 'every localized README must link troubleshooting');
 
 const moduleNames = contract.modules.map((module) => module.name);
@@ -58,6 +60,9 @@ for (const token of ['tabs.refresh()', "trigger: 'click'", 'relativeCutoff', 'GT
 }
 assert.match(roadmap, /heavy-layout/, 'roadmap must record the cross-engine heavy-layout checkpoint');
 assert.match(demoPolish, /checkpoint\('heavy-layout'\)/, 'browser QA must emit the heavy-layout checkpoint');
+for (const token of ["checkpoint('heavy-layout')", 'getBoundingClientRect', 'position:fixed', 'position:sticky', 'clip-path', 'Firefox', 'WebKit']) {
+  assert.ok(browserQa.includes(token), `browser QA matrix is missing operational token: ${token}`);
+}
 for (const moduleName of ['pageReveal', 'pageTransition', 'slider', 'stickyStack', 'stickyHeader', 'lightbox', 'cursor', 'fullpage']) {
   assert.ok(roadmap.includes(moduleName), `roadmap heavy-layout list is missing ${moduleName}`);
 }

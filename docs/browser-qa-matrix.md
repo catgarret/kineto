@@ -1,0 +1,47 @@
+# 브라우저 레이어 QA 매트릭스
+
+기준 버전: v0.8.104 후속 · 검토: 2026-08-18
+
+이 문서는 모든 모듈을 모든 브라우저에서 같은 깊이로 검사하기 위한 문서가 아닙니다. 일반 모듈은 Chromium 전체 QA와 Firefox/WebKit smoke를 유지하고, 브라우저 엔진 차이가 실제 사용자 화면을 바꿀 가능성이 높은 레이어 모듈만 `heavy-layout` 체크포인트로 승격합니다.
+
+## 대상과 검사 계약
+
+`tests/browser/demo-polish.mjs`의 `checkpoint('heavy-layout')`는 Chromium·Firefox·WebKit에서 다음 계약을 한 번에 검사합니다.
+
+| 모듈 | 위험 경계 | 검사하는 결과 |
+|---|---|---|
+| `pageReveal` | transform 조상·fixed/sticky containing block | 루트 애니메이션과 persistent header의 레이어·크기·cover 중복 없음 |
+| `pageTransition` | clip·overlay·반응형 overflow | 효과 선택 행이 실제 레이아웃되고 버튼 수와 stage bounds가 유지됨 |
+| `slider` | clip·3D transform·ghost layer | Coverflow clip, dissolve scene/slide clip, dot geometry가 유지됨 |
+| `stickyStack` | native sticky·absolute layer·overflow clip | vertical sticky 카드, horizontal overflowing track, floating viewport의 측정 가능한 bounds |
+| `stickyHeader` | scroll host 내부 sticky/fixed 전환 | header position, 내부 scroll progress, `kt-stuck`, cover header bounds |
+| `lightbox` | overlay·grid·viewport clipping | thumbnail grid와 viewer 레이어가 0×0 또는 행 겹침 없이 배치됨 |
+| `cursor` | fixed layer·pointer transparency | 커서 루트가 fixed이고 `pointer-events:none`을 유지함 |
+| `fullpage` | transformed track·section overflow | 각 track/section의 bounds와 host clip, 내부 overflow 상태 |
+
+검사는 “스타일 문자열이 존재한다”에서 끝나지 않습니다. 먼저 `getBoundingClientRect()`가 0이 아닌지 확인하고, 실제 used value를 읽은 뒤 스크롤·레이어 관계를 확인합니다. `repeat(...)`, `auto`, `none`처럼 아직 레이아웃되지 않았거나 효과가 적용되지 않은 computed value는 성공으로 취급하지 않습니다.
+
+## 실행과 릴리스 게이트
+
+로컬에서 한 엔진만 확인할 때:
+
+```bash
+KT_BROWSER=chromium node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs
+KT_BROWSER=firefox node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs
+KT_BROWSER=webkit node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs
+```
+
+릴리스 전에는 `npm run ci`의 Node 24 전체 job과 Firefox/WebKit matrix가 모두 성공해야 합니다. `heavy-layout` 단계가 실패하면 다음 순서로 분류합니다.
+
+1. **레이아웃 준비 실패**: rect가 0이거나 hidden 조상에서 측정됐는지 확인합니다. 대상이 레이아웃되기 전에 읽은 assertion이면 동기화를 고칩니다.
+2. **엔진 차이**: 같은 DOM·CSS가 한 엔진에서만 다른 used value를 내는지 확인합니다. 브라우저별 예외를 추가하기 전에 containing block·overflow·clip 원인을 재현합니다.
+3. **실제 회귀**: 두 엔진 이상에서 같은 경계가 깨지거나 한 엔진에서 사용자에게 보이는 레이어가 사라지면 모듈 수정과 회귀 테스트를 함께 추가합니다.
+4. **환경 실패**: 브라우저 설치·CDN·러너 정지라면 코드 게이트를 완화하지 않고 bounded retry와 마지막 checkpoint를 확인합니다.
+
+현재 대상 목록에 없는 모듈은 다음 조건을 모두 만족할 때만 추가합니다.
+
+- transform 조상, `position:fixed`/`position:sticky`, `clip-path`/mask, 3D transform 중 하나가 실제 데모에서 사용됩니다.
+- Chromium smoke만으로 재현되지 않는 Firefox/WebKit 레이아웃 차이가 확인됩니다.
+- 0×0, viewport 밖, clipping 누수처럼 자동으로 판정할 수 있는 회귀 결과가 있습니다.
+
+2026-08-18 기준 `fa055cc`의 CI run `32099365793`에서 Node 24 전체, Firefox, WebKit과 Pages 배포가 모두 성공했습니다. 이 기록은 통과 사실을 남기는 용도이며, 브라우저 버전이나 러너가 바뀌면 같은 명령으로 다시 갱신해야 합니다.

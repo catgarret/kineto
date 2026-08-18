@@ -414,8 +414,9 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 24. 완료(v0.8.104): troubleshooting 문서와 문서 링크·버전 기준선 자동 감사
 25. 완료(v0.8.104 후속): 모듈별 “언제 쓰는가 / 언제 피하는가 / 접근성·성능·reduced motion 상태” 메타데이터를 52개 모듈 매트릭스와 데모 뱃지·CI completeness 검사에 연결
 26. 완료(v0.8.104 후속): `pageReveal`, `pageTransition`, `slider`, `stickyStack`, `stickyHeader`, `lightbox`, `cursor`, `fullpage`의 transform·clip·fixed/sticky 의존 경계를 `heavy-layout` 체크포인트로 고정하고 Chromium·Firefox·WebKit 정기 QA 지표에 연결
-27. 다음 단위: `heavy-layout`의 실제 회귀 사례를 릴리스 전 triage 지표로 축적하고, 일반 모듈 중 같은 레이어 위험이 확인되는 항목만 대상 목록에 편입
-28. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구가 확인될 때 별도 검토
+27. 완료(v0.8.104 후속): `docs/browser-qa-matrix.md`에 대상 모듈·레이어 위험·rect/used-value 측정 규칙·실패 분류·대상 편입 조건을 기록하고 docs-navigation CI에 연결
+28. 다음 단위: `heavy-layout`의 실제 회귀 사례를 릴리스 전 triage 지표로 축적하고, 일반 모듈 중 같은 레이어 위험이 확인되는 항목만 대상 목록에 편입
+29. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구가 확인될 때 별도 검토
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 
