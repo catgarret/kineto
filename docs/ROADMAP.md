@@ -415,8 +415,13 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 25. 완료(v0.8.104 후속): 모듈별 “언제 쓰는가 / 언제 피하는가 / 접근성·성능·reduced motion 상태” 메타데이터를 52개 모듈 매트릭스와 데모 뱃지·CI completeness 검사에 연결
 26. 완료(v0.8.104 후속): `pageReveal`, `pageTransition`, `slider`, `stickyStack`, `stickyHeader`, `lightbox`, `cursor`, `fullpage`의 transform·clip·fixed/sticky 의존 경계를 `heavy-layout` 체크포인트로 고정하고 Chromium·Firefox·WebKit 정기 QA 지표에 연결
 27. 완료(v0.8.104 후속): `docs/browser-qa-matrix.md`에 대상 모듈·레이어 위험·rect/used-value 측정 규칙·실패 분류·대상 편입 조건을 기록하고 docs-navigation CI에 연결
-28. 다음 단위: `heavy-layout`의 실제 회귀 사례를 릴리스 전 triage 지표로 축적하고, 일반 모듈 중 같은 레이어 위험이 확인되는 항목만 대상 목록에 편입
-29. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구가 확인될 때 별도 검토
+28. 완료(v0.8.104 후속): `docs/browser-qa-history.md`에 CI·브라우저·Pages 결과와 실패 분류 규칙을 기록해 릴리스 전 `heavy-layout` triage 이력을 시작
+29. 완료(v0.8.104 후속): `docs/flip-shared-layout.md`에 현재 `flip` 계약, 미공개 범위, 실제 요구 2건 기반의 확장 gate를 고정
+30. 완료(v0.8.104 후속): `docs/1.0-readiness.md`에 Core·entry·types·lifecycle·browser evidence·외부 사용 사례의 동결 준비도를 분리 기록
+31. 완료(v0.8.104 후속): `docs/preset-runtime-boundary.md`에 full/core/module/states/presence/adapter import 경계와 별도 preset 분리 조건을 문서화
+32. 완료(v0.8.104 후속): `docs/platform-enhancements.md`에 View Transitions·CSS Scroll Snap·Scroll-driven Animations의 progressive enhancement와 fallback gate를 기록
+33. 다음 단위: `heavy-layout`의 실제 회귀 사례가 누적되면 일반 모듈 중 같은 레이어 위험이 확인되는 항목만 대상 목록에 편입
+34. 후속 선택: FLIP shared-layout은 실제 keyed child 전환 요구 2건이 확인될 때 구현 RFC로 승격
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

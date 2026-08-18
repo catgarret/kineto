@@ -16,6 +16,11 @@ const roadmap = read('docs/ROADMAP.md');
 const troubleshooting = read('docs/troubleshooting.md');
 const usageMatrix = read('docs/module-usage-matrix.md');
 const browserQa = read('docs/browser-qa-matrix.md');
+const browserQaHistory = read('docs/browser-qa-history.md');
+const flipSharedLayout = read('docs/flip-shared-layout.md');
+const readiness = read('docs/1.0-readiness.md');
+const presetBoundary = read('docs/preset-runtime-boundary.md');
+const platformEnhancements = read('docs/platform-enhancements.md');
 const reference = read('docs/module-reference.md');
 const modulesReadme = read('docs/modules/README.md');
 const demoPolish = read('tests/browser/demo-polish.mjs');
@@ -28,6 +33,15 @@ assert.match(readme, /\[Troubleshooting\]\(docs\/troubleshooting\.md\)/, 'root R
 assert.match(docsReadme, /\[문제 해결\]\(troubleshooting\.md\)/, 'docs index must link troubleshooting');
 assert.match(docsReadme, /\[모듈 사용·품질 매트릭스\]\(module-usage-matrix\.md\)/, 'docs index must link module quality matrix');
 assert.match(docsReadme, /\[브라우저 레이어 QA 매트릭스\]\(browser-qa-matrix\.md\)/, 'docs index must link browser QA matrix');
+for (const [label, file] of [
+  ['브라우저 레이어 QA 이력', 'browser-qa-history.md'],
+  ['FLIP shared layout 범위', 'flip-shared-layout.md'],
+  ['1.0 계약 준비도', '1.0-readiness.md'],
+  ['Preset과 runtime 경계', 'preset-runtime-boundary.md'],
+  ['플랫폼 progressive enhancement 경로', 'platform-enhancements.md']
+]) {
+  assert.match(docsReadme, new RegExp(`\\[${label}\\]\\(${file}\\)`), `docs index must link ${file}`);
+}
 assert.ok(localizedReadmes.every((content) => content.includes('../docs/troubleshooting.md')), 'every localized README must link troubleshooting');
 
 const moduleNames = contract.modules.map((module) => module.name);
@@ -63,6 +77,11 @@ assert.match(demoPolish, /checkpoint\('heavy-layout'\)/, 'browser QA must emit t
 for (const token of ["checkpoint('heavy-layout')", 'getBoundingClientRect', 'position:fixed', 'position:sticky', 'clip-path', 'Firefox', 'WebKit']) {
   assert.ok(browserQa.includes(token), `browser QA matrix is missing operational token: ${token}`);
 }
+assert.match(browserQaHistory, /fa055cc/);
+assert.match(flipSharedLayout, /data-kt-layout-id/);
+assert.match(readiness, /Core API·module registry/);
+assert.match(presetBoundary, /@dong-gri\/kineto\/core/);
+assert.match(platformEnhancements, /View Transitions/);
 for (const moduleName of ['pageReveal', 'pageTransition', 'slider', 'stickyStack', 'stickyHeader', 'lightbox', 'cursor', 'fullpage']) {
   assert.ok(roadmap.includes(moduleName), `roadmap heavy-layout list is missing ${moduleName}`);
 }
