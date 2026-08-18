@@ -10,7 +10,7 @@
 - Annotate the exact consumer/framework subcommand when the hosted grouped check fails, preserving the hard gate while making remote-only failures actionable without private logs.
 - Emit failure annotations from locked nested installs and consumer/Rolldown budget checks so a hosted failure identifies its failing boundary even when job logs require authentication.
 - Account for the measured 0.3 KB Linux esbuild gzip delta at the full consumer fixture boundary while keeping the 130 KB product budget unchanged.
-- Keep Firefox/WebKit matrix lanes on bounded browser-binary installs without apt provisioning, preventing the same hosted package-mirror stall from blocking cross-browser QA.
+- Keep Firefox/WebKit matrix lanes on bounded browser-binary installs without apt provisioning, while restoring the Chromium lane's required libraries behind a 10-minute timeout so full browser QA remains runnable without an unbounded package-mirror wait.
 - Connect cross-browser smoke servers through their originating Playwright engine instead of always using Chromium, restoring the WebKit smoke contract.
 - Add an opt-in public diagnostics hub with stable `KT_*` codes, bounded history, sink/subscriber APIs, and validation while keeping default consumers silent.
 - Add an iOS Safari/Android Chrome physical-device QA runbook and evidence format without counting Playwright emulation as device success.
@@ -37,7 +37,7 @@
 - hosted grouped check가 실패하면 정확히 어떤 consumer/framework 하위 명령인지 annotation으로 남겨 private log 없이도 원격 전용 실패를 추적할 수 있게 했습니다. 테스트 gate 자체는 유지합니다.
 - locked nested install과 consumer/Rolldown 예산 검사가 실패할 때도 annotation을 남겨 job log 인증이 없어도 어느 경계에서 실패했는지 확인할 수 있게 했습니다.
 - full consumer fixture에서 측정된 Linux esbuild gzip 0.3KB 차이만 반영하고 130KB 제품 예산 자체는 유지했습니다.
-- Firefox/WebKit matrix lane도 apt 의존성 설치 없이 제한된 브라우저 바이너리 설치를 사용해 hosted package mirror 정체가 교차 브라우저 QA를 막지 않도록 했습니다.
+- Firefox/WebKit matrix lane은 apt 의존성 설치 없이 제한된 브라우저 바이너리를 사용하고, 전체 browser QA에 필요한 Chromium 라이브러리는 10분 timeout 안에서 복원해 package mirror 정체가 무기한 대기하지 않도록 했습니다.
 - 교차 브라우저 smoke server를 항상 Chromium client로 연결하지 않고 생성한 Playwright engine으로 연결해 WebKit smoke 계약을 복구했습니다.
 - 기본 소비자는 조용하게 유지하면서 안정적인 `KT_*` 코드, 제한된 history, sink/subscriber API와 validation을 제공하는 opt-in 공개 diagnostics hub를 추가했습니다.
 - iOS Safari·Android Chrome 실기기 QA 실행표와 증거 형식을 추가했으며, Playwright emulation을 실기기 성공으로 집계하지 않습니다.

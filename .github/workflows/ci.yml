@@ -41,10 +41,10 @@ jobs:
       - name: Install Playwright Chromium
         run: |
           set -o pipefail
-          # Browser binaries are an external download. Keep dependency
-          # provisioning out of the main lane because an apt mirror stall can
-          # block the whole job; bound each binary download attempt instead.
-          node scripts/retry-command.mjs timeout --signal=TERM 5m npx playwright install chromium
+          # Chromium's full browser QA needs the runner libraries as well as
+          # the binary. Bound apt/browser provisioning so a mirror stall cannot
+          # consume the whole test job.
+          timeout --foreground --kill-after=30s 10m npx playwright install --with-deps chromium
 
       - name: Run lint
         run: |
