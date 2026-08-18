@@ -38,7 +38,9 @@ try {
     headless: true,
     ...(browserName === 'chromium' ? { args: ['--no-sandbox', '--disable-dev-shm-usage', '--allow-file-access-from-files'] } : {})
   });
-  browser = await chromium.connect(browserServer.wsEndpoint());
+  // A BrowserServer endpoint must be connected through the same engine that
+  // created it; Chromium's protocol client cannot attach to Firefox/WebKit.
+  browser = await browserType.connect(browserServer.wsEndpoint());
   const page = await browser.newPage({ reducedMotion: 'no-preference' });
   const runtimeErrors = [];
   page.on('pageerror', (error) => runtimeErrors.push(error.stack || error.message));
