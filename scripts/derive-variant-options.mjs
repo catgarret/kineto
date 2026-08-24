@@ -339,6 +339,12 @@ const PINS = {
     // Arc geometry belongs to the radial effect only.
     radius: ['radial'], step: ['radial'], activeAngle: ['radial'], position: ['radial'],
     controls: ['radial'],
+    // Release physics is currently implemented by the linear track engine.
+    // Radial has a separate discrete orbit gesture and must not expose dead
+    // controls until an independent radial model is specified.
+    momentum: ['slide', 'fade', 'dissolve', 'wipe', 'coverflow', 'flip', 'cube', 'cards', 'creative'],
+    bounce: ['slide', 'fade', 'dissolve', 'wipe', 'coverflow', 'flip', 'cube', 'cards', 'creative'],
+    stickySnap: ['slide', 'fade', 'dissolve', 'wipe', 'coverflow', 'flip', 'cube', 'cards', 'creative'],
     // 3D depth is coverflow's own.
     depth: ['coverflow'], rotate: ['coverflow'],
     activeShadow: ['coverflow'], activeShadowOpacity: ['coverflow']

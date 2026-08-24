@@ -381,6 +381,7 @@ export default {
     if (!track) return null;
     const slides = Array.from(track.children);
     if (!slides.length) return null;
+    const reduce = env().reducedMotion;
     const emit = (name, detail) => {
       const EventCtor = el.ownerDocument?.defaultView?.CustomEvent || globalThis.CustomEvent;
       if (EventCtor) el.dispatchEvent(new EventCtor(name, { detail }));
@@ -436,6 +437,18 @@ export default {
     // historical fling distance. Values above 1 make a fast release travel
     // farther; 0 disables the release fling without disabling drag itself.
     const velocityInfluence = clamp(Number(opts.velocityInfluence ?? 0.35), 0, 1.2);
+    // Keep the historical release fling enabled by default, but expose a
+    // semantic switch so consumers do not have to overload velocityInfluence=0
+    // when they want a completely non-inertial track.
+    const momentumEnabled = opts.momentum !== false;
+    // Edge resistance is already applied while dragging. `bounce:true` adds a
+    // bounded return animation after release; it is opt-in so existing sliders
+    // retain their exact settle timing and visual range.
+    const bounceEnabled = opts.bounce === true;
+    // Button, keyboard and API navigation always snap. A drag can opt in to
+    // the final integer snap; the default preserves the historical fractional
+    // release target used by velocityInfluence.
+    const stickySnap = opts.stickySnap === true;
     const autoplayDelay = opts.autoplay === true ? 3000 : Math.max(0, Number(opts.autoplay || 0));
     // Hover pausing is opt-in. This keeps the runtime aligned with the settings
     // switch: an unchecked Pause on hover control must never pause autoplay.
@@ -466,6 +479,8 @@ export default {
     let target = index;        // where the spring is heading
     let springVelocity = 0;
     let dragging = false;
+    let bounceActive = false;
+    let bounceTarget = index;
     let dragMoved = false;
     let dragStartX = 0;
     let dragStartTarget = 0;
@@ -680,12 +695,14 @@ export default {
       // a single callback teleporting the carousel across its target.
       const dt = Math.min(64, time - lastFrameTime);
       lastFrameTime = time;
-      if (springEnabled && !dragging) {
+      const physicsEnabled = springEnabled || bounceActive;
+      if (physicsEnabled && !dragging) {
         // Semi-implicit Euler keeps the public spring controls deterministic
         // while the 64ms cap prevents a background-tab wake from exploding the
         // solver. Dragging itself remains direct, then release starts from rest.
         const seconds = dt / 1000;
-        const acceleration = ((target - position) * springStiffness - springVelocity * springDamping) / springMass;
+        const solverTarget = bounceActive ? bounceTarget : target;
+        const acceleration = ((solverTarget - position) * springStiffness - springVelocity * springDamping) / springMass;
         springVelocity += acceleration * seconds;
         position += springVelocity * seconds;
       } else {
@@ -694,12 +711,13 @@ export default {
         position = lerp(position, target, amount);
       }
       render();
-      const settled = springEnabled
+      const settled = physicsEnabled
         ? Math.abs(position - target) <= 0.0015 && Math.abs(springVelocity) <= 0.0015
         : Math.abs(position - target) <= 0.0015;
       if (dragging || !settled) {
         rafId = requestAnimationFrame(tick);
       } else {
+        bounceActive = false;
         position = target;
         springVelocity = 0;
         render();
@@ -717,9 +735,11 @@ export default {
     const normalize = (value) => ((Math.round(value) % slideCount) + slideCount) % slideCount;
     // In loop mode the continuous target just keeps climbing/falling forever, so
     // the spring never has to unwind the whole track to wrap around.
-    const settle = (raw) => {
+    const settle = (raw, { snap = true } = {}) => {
       if (!enabled) return;
-      target = seamless ? raw : clamp(raw, 0, maxIndex);
+      bounceActive = false;
+      const requested = seamless ? raw : clamp(raw, 0, maxIndex);
+      target = !seamless && snap ? Math.round(requested) : requested;
       const nextIndex = seamless ? normalize(target) : clamp(Math.round(target), 0, maxIndex);
       if (nextIndex !== index) {
         const previousIndex = index;
@@ -732,8 +752,8 @@ export default {
       wake();
     };
     const goTo = (value) => {
-      if (seamless) { const base = Math.round(target); settle(base + Math.round(wrapDelta(value - base))); }
-      else settle(value);
+      if (seamless) { const base = Math.round(target); settle(base + Math.round(wrapDelta(value - base)), { snap: true }); }
+      else settle(value, { snap: true });
     };
     const next = () => {
       if (seamless) return settle(Math.round(target) + perGroup);
@@ -851,6 +871,8 @@ export default {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
       if (event.pointerType === 'mouse' ? !allowDrag : !allowTouch) return;
       dragging = true;
+      bounceActive = false;
+      springVelocity = 0;
       dragMoved = false;
       pointerId = event.pointerId;
       dragStartX = vertical ? event.clientY : event.clientX;
@@ -893,8 +915,18 @@ export default {
       // The rolling average caps its memory at five samples, so a single noisy
       // pointer event no longer decides the fling while the latest samples
       // still dominate the direction and velocity of the release.
-      const fling = clamp(velocity * velocityInfluence, -1.2, 1.2);
-      goTo(target + fling);
+      const fling = momentumEnabled ? clamp(velocity * velocityInfluence, -1.2, 1.2) : 0;
+      const rawTarget = target + fling;
+      const outOfBounds = !seamless && (target < 0 || target > maxIndex || rawTarget < 0 || rawTarget > maxIndex);
+      if (bounceEnabled && !reduce && outOfBounds) {
+        bounceTarget = clamp(rawTarget, 0, maxIndex);
+        settle(bounceTarget, { snap: true });
+        bounceActive = true;
+        springVelocity = 0;
+        wake();
+      } else {
+        settle(rawTarget, { snap: stickySnap });
+      }
       start();
     };
     const onKey = (event) => {

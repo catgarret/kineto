@@ -19,6 +19,7 @@ Kineto v0.8.104의 공개 API와 소유자 의도를 기준으로 정리한 문�
 - [실기기 브라우저 QA 실행표](browser-device-qa.md)
 - [Page Reveal variant 중복 감사](variant-distinctness.md)
 - [FLIP shared layout 범위](flip-shared-layout.md)
+- [Slider physics RFC](slider-physics-rfc.md)
 - [1.0 계약 준비도](1.0-readiness.md)
 - [1.0 진단·deprecation 계약](diagnostics-and-deprecation.md)
 - [Preset과 runtime 경계](preset-runtime-boundary.md)

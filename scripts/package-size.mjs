@@ -80,8 +80,11 @@ const BUDGET = {
   // runtime cost with a small rounded margin.
   // Node 24/npm 11 measures 509.8 KB packed / 1709.8 KB unpacked, so the
   // rounded packed ceiling must cover that runner without widening the file list.
+  // 2026-08-25: Slider release momentum/bounce/sticky-snap controls add 1.4 KB
+  // unpacked on the local Node 25/npm 11 archive; keep the fixed allowlist and
+  // absorb only this bounded physics runtime cost.
   packedKb: 511,
-  unpackedKb: 1710,
+  unpackedKb: 1712,
   files: 78
 };
 

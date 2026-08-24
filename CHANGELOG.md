@@ -5,6 +5,7 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Add independent Slider track controls for release momentum, edge bounce, and sticky snap while preserving the existing fractional release target by default; document the native Scroll Snap and FLIP evidence gates in a dedicated RFC.
 - Add a pinned Rolldown consumer fixture alongside Vite, with separate gzip budgets and a generated report that distinguishes cross-bundler evidence from universal byte promises.
 - Bound Playwright Chromium binary installation to five minutes per attempt with three required retries and kept apt dependency provisioning out of the main lane, so a stalled browser or package mirror cannot leave CI running until its global timeout.
 - Annotate the exact consumer/framework subcommand when the hosted grouped check fails, preserving the hard gate while making remote-only failures actionable without private logs.
@@ -36,6 +37,7 @@
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- Slider track에 release momentum·edge bounce·sticky snap을 서로 독립적으로 설정할 수 있게 추가했습니다. 기본값은 기존 fractional release target을 보존하며, native Scroll Snap과 FLIP은 별도 RFC의 증거 gate로 문서화했습니다.
 - Vite와 함께 고정된 Rolldown 소비자 fixture를 추가하고, bundler 간 근거와 모든 bundler의 절대 바이트 약속을 구분하는 gzip 예산·생성 보고서를 연결했습니다.
 - Playwright Chromium 바이너리 설치를 시도당 5분, 최대 3회로 제한하고 메인 lane에서는 apt 의존성 설치를 제외해 브라우저·패키지 mirror 정체가 CI를 전역 timeout까지 붙잡지 않도록 했습니다.
 - hosted grouped check가 실패하면 정확히 어떤 consumer/framework 하위 명령인지 annotation으로 남겨 private log 없이도 원격 전용 실패를 추적할 수 있게 했습니다. 테스트 gate 자체는 유지합니다.

@@ -70,6 +70,12 @@ Coverflow에서 `activeShadow:true`를 켜면 활성 슬라이드의 회전된 �
 `0`이면 드래그 자체는 유지하면서 해제 플링만 끄고, `1`보다 크게 하면
 빠른 해제가 다음 슬라이드까지 더 멀리 이어집니다. Radial에는 적용되지
 않습니다.
+`momentum:false`는 해제 속도를 완전히 무시합니다. `velocityInfluence:0`과
+같은 결과를 내지만, 설정 의도가 코드에 드러나는 이름입니다.
+`stickySnap:true`를 선택하면 드래그를 놓은 위치를 가장 가까운 정수 슬라이드로
+고정합니다. 기본값은 `false`로, 기존의 fractional release target을 보존합니다.
+`bounce:true`는 양 끝에서 발생한 overscroll을 놓을 때 경계로 되돌리는 제한된
+스프링 애니메이션을 추가합니다. 기본값은 `false`입니다.
 `spring:true`를 켜면 트랙 정착을 스프링 물리로 바꿉니다. `stiffness`(기본 `170`),
 `damping`(기본 `24`), `mass`(기본 `1`)로 당기는 힘·감쇠·질량을 조절할 수
 있으며, 세 파라미터는 `spring:true`인 트랙·Radial 효과에서만 의미가
@@ -77,6 +83,13 @@ Coverflow에서 `activeShadow:true`를 켜면 활성 슬라이드의 회전된 �
 목표 위치로 정착하는 보간은 프레임 수가 아니라 경과 시간을 기준으로 계산하며,
 긴 백그라운드 탭 간격은 64ms로 제한합니다. 따라서 60/90/120Hz에서도 같은
 시간에 거의 같은 위치로 수렴합니다.
+
+`momentum`, `bounce`, `stickySnap`은 track Slider에 먼저 적용됩니다. Radial은
+원호 이동 방식과 입력 축이 달라 같은 관성 모델을 자동으로 공유하지 않습니다.
+단순한 수평 `slide` 구성에서 native CSS Scroll Snap을 사용하는 경로는
+[`docs/slider-physics-rfc.md`](../slider-physics-rfc.md)의 지원 조건을 충족한
+경우에만 별도 opt-in으로 검토합니다. 현재 기본 엔진은 기존 transform/drag
+경로를 사용합니다.
 
 ## API와 이벤트
 

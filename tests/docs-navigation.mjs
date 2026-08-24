@@ -22,6 +22,7 @@ const browserQaHistory = read('docs/browser-qa-history.md');
 const browserDeviceQa = read('docs/browser-device-qa.md');
 const variantDistinctness = read('docs/variant-distinctness.md');
 const flipSharedLayout = read('docs/flip-shared-layout.md');
+const sliderPhysics = read('docs/slider-physics-rfc.md');
 const readiness = read('docs/1.0-readiness.md');
 const diagnostics = read('docs/diagnostics-and-deprecation.md');
 const presetBoundary = read('docs/preset-runtime-boundary.md');
@@ -46,6 +47,7 @@ for (const [label, file] of [
   ['실기기 브라우저 QA 실행표', 'browser-device-qa.md'],
   ['Page Reveal variant 중복 감사', 'variant-distinctness.md'],
   ['FLIP shared layout 범위', 'flip-shared-layout.md'],
+  ['Slider physics RFC', 'slider-physics-rfc.md'],
   ['1.0 계약 준비도', '1.0-readiness.md'],
   ['1.0 진단·deprecation 계약', 'diagnostics-and-deprecation.md'],
   ['Preset과 runtime 경계', 'preset-runtime-boundary.md'],
@@ -110,6 +112,10 @@ for (const token of ['curtain', 'fade', 'flash', 'data-mosaic', 'distinct', '202
   assert.ok(variantDistinctness.includes(token), `variant distinctness audit is missing: ${token}`);
 }
 assert.match(flipSharedLayout, /data-kt-layout-id/);
+assert.match(sliderPhysics, /momentum/);
+assert.match(sliderPhysics, /bounce/);
+assert.match(sliderPhysics, /sticky snap/);
+assert.match(sliderPhysics, /native Scroll Snap/);
 assert.match(readiness, /Core API·module registry/);
 assert.match(presetBoundary, /@dong-gri\/kineto\/core/);
 assert.match(platformEnhancements, /View Transitions/);

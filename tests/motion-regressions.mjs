@@ -402,7 +402,41 @@ influenceWrap.dispatchEvent(pointer('pointermove', 185));
 influenceWrap.dispatchEvent(pointer('pointerup', 185));
 assert.ok(strongFling.index > 0, 'velocityInfluence above 1 must carry a release into the next slide');
 strongFling.destroy();
+
+const momentumOff = sliderModule.create(influenceHost, {
+  preset: 'slide', loop: 'off', velocityInfluence: 1.2, momentum: false
+});
+influenceWrap.dispatchEvent(pointer('pointerdown', 200));
+influenceWrap.dispatchEvent(pointer('pointermove', 185));
+influenceWrap.dispatchEvent(pointer('pointerup', 185));
+assert.equal(momentumOff.index, 0, 'momentum=false must ignore release velocity even when velocityInfluence is high');
+momentumOff.destroy();
+
+const stickySnap = sliderModule.create(influenceHost, {
+  preset: 'slide', loop: 'off', velocityInfluence: 0, stickySnap: true
+});
+influenceWrap.dispatchEvent(pointer('pointerdown', 200));
+influenceWrap.dispatchEvent(pointer('pointermove', 145));
+influenceWrap.dispatchEvent(pointer('pointerup', 145));
+assert.equal(stickySnap.index, 1, 'stickySnap=true must choose the nearest slide after a fractional drag');
+stickySnap.destroy();
 influenceHost.remove();
+
+const bounceHost = document.createElement('div');
+bounceHost.innerHTML = '<div class="kt-slider-wrap"><div class="kt-slider-track"><div class="kt-slide">A</div><div class="kt-slide">B</div><div class="kt-slide">C</div></div></div>';
+document.body.appendChild(bounceHost);
+const bounceWrap = bounceHost.querySelector('.kt-slider-wrap');
+Object.defineProperty(bounceWrap, 'getBoundingClientRect', { configurable: true, value: () => ({ left: 0, top: 0, width: 300, height: 100, right: 300, bottom: 100 }) });
+bounceHost.querySelectorAll('.kt-slide').forEach((slide) => Object.defineProperty(slide, 'offsetWidth', { configurable: true, value: 100 }));
+const bounceSlider = sliderModule.create(bounceHost, { preset: 'slide', loop: 'off', initial: 0, bounce: true });
+bounceWrap.dispatchEvent(pointer('pointerdown', 100));
+bounceWrap.dispatchEvent(pointer('pointermove', 500));
+bounceWrap.dispatchEvent(pointer('pointerup', 500));
+assert.equal(bounceSlider.index, 0, 'bounce must settle an overscrolled first edge at index 0');
+await new Promise((resolve) => setTimeout(resolve, 180));
+bounceSlider.destroy();
+assert.equal(bounceWrap.getAttribute('style'), null, 'bounce destroy must restore the authored wrapper style');
+bounceHost.remove();
 
 // Track settling is elapsed-time based rather than frame-count based: driving
 // the same 100ms at 60Hz and 120Hz should land at practically the same point.
