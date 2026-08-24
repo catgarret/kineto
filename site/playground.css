@@ -173,6 +173,7 @@
 .kt-playground__drawer-heading{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1 1 0}
 .kt-playground__drawer-heading strong{font-size:16px;font-weight:800;letter-spacing:-.015em}
 .kt-playground__drawer-sub{font-size:12px;color:var(--muted)}
+.kt-playground__drawer-quality{display:block;margin-top:2px;color:var(--muted);font:600 9px/1.2 var(--font-mono);letter-spacing:.03em;text-transform:uppercase}
 .kt-playground__head-actions{display:flex;align-items:center;gap:10px;flex:1 1 0;justify-content:flex-end}
 .kt-playground__viewtabs{margin:0 auto}
 .kt-playground__head-actions .kt-playground__toolbar{margin:0}

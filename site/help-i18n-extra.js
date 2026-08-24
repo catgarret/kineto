@@ -459,6 +459,55 @@
   });
 })();
 
+// Slider physics controls are intentionally separate from the older
+// velocityInfluence/spring knobs: each switch describes one user-visible
+// behaviour and can be measured independently in the regression fixture.
+(function () {
+  const sets = window.MK_HELP_I18N;
+  if (!sets) return;
+  const tips = {
+    ko: {
+      momentum: '드래그를 놓은 뒤 속도를 다음 슬라이드 이동에 반영합니다. 끄면 놓는 즉시 정착합니다.',
+      bounce: '양 끝에서 넘친 거리를 놓을 때 가장자리로 부드럽게 되돌립니다.',
+      stickySnap: '드래그를 놓을 때 가장 가까운 정수 슬라이드에 붙입니다.'
+    },
+    en: {
+      momentum: 'Carries release velocity into the next slide. Turn it off for an immediate settle.',
+      bounce: 'Returns edge overscroll to the nearest boundary with a bounded animation.',
+      stickySnap: 'Snaps a drag release to the nearest whole slide.'
+    },
+    ja: {
+      momentum: '指を離した速度を次のスライド移動に反映します。オフならすぐに停止します。',
+      bounce: '端からはみ出した距離を、離したときに端へ滑らかに戻します。',
+      stickySnap: 'ドラッグを離したとき最も近い整数スライドに固定します。'
+    },
+    'zh-CN': {
+      momentum: '将释放时的速度带入下一张幻灯片。关闭后会立即停稳。',
+      bounce: '释放时把边缘的过度拖动以有界动画返回最近边界。',
+      stickySnap: '释放拖拽时吸附到最近的整张幻灯片。'
+    },
+    'zh-TW': {
+      momentum: '將釋放時的速度帶入下一張投影片。關閉後會立即停穩。',
+      bounce: '釋放時把邊緣的過度拖曳以有界動畫返回最近邊界。',
+      stickySnap: '釋放拖曳時吸附到最近的整張投影片。'
+    },
+    ru: {
+      momentum: 'Переносит скорость отпускания на следующий слайд. Выкл. — остановка сразу.',
+      bounce: 'Возвращает перелёт за край к ближайшей границе ограниченной анимацией.',
+      stickySnap: 'После перетаскивания прилипает к ближайшему целому слайду.'
+    },
+    it: {
+      momentum: 'Trasporta la velocità del rilascio verso la slide successiva. Disattiva per fermarti subito.',
+      bounce: 'Riporta l’overscroll del bordo al limite più vicino con un’animazione limitata.',
+      stickySnap: 'Aggancia il rilascio del drag alla slide intera più vicina.'
+    }
+  };
+  for (const [lang, values] of Object.entries(tips)) {
+    sets[lang] = sets[lang] || {};
+    sets[lang].slider = Object.assign({}, sets[lang].slider, values);
+  }
+})();
+
 (function () {
   const sets = window.MK_HELP_I18N;
   if (!sets) return;

@@ -516,6 +516,13 @@
     .mii-name{font:700 13px/1.25 var(--font-sans);color:var(--text)}
     .mod-index-item:hover .mii-name{color:var(--accent)}
     .mii-sub{font:500 11.5px/1.4 var(--font-sans);color:var(--muted);word-break:keep-all}
+    .module-quality-meta{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;color:var(--muted);font:600 9px/1.2 var(--font-mono);letter-spacing:.02em;text-transform:uppercase}
+    .module-quality-meta__item{display:inline-flex;align-items:center;gap:3px;padding:3px 5px;border:1px solid color-mix(in srgb,var(--line) 80%,transparent);border-radius:5px;background:color-mix(in srgb,var(--panel) 76%,transparent);white-space:nowrap}
+    .module-quality-meta__item b{font-size:8px;letter-spacing:.08em;color:var(--text)}
+    .module-quality-meta__item--heavy{border-color:color-mix(in srgb,var(--accent) 44%,var(--line))}
+    .module-quality-meta__item--manual,.module-quality-meta__item--visual-only{border-style:dashed}
+    .module-block-quality{margin:-8px 0 15px}
+    .module-block-quality .module-quality-meta{margin-top:0}
     @media(max-width:520px){.module-group{grid-template-columns:1fr}.module-group-chips{grid-template-columns:1fr}}
     .footer{--nav-w:206px;padding:clamp(42px,6vw,72px) max(26px,env(safe-area-inset-right)) max(44px,env(safe-area-inset-bottom)) calc(max(26px,env(safe-area-inset-left)) + var(--nav-w));color:var(--muted);font-size:13px;border-top:1px solid var(--line);background:linear-gradient(180deg,color-mix(in srgb,var(--panel2) 28%,transparent),transparent 52%);margin-top:0}
     .footer>.container{width:min(1120px,calc(100% - 56px));max-width:none;margin:0 auto}

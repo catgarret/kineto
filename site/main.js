@@ -326,6 +326,14 @@
       // ─────────────────────────────────────────────────────────────────────
       const LABEL_OVERRIDE={cssScroll:'CSS Scroll',loader:'Loader'};
       const labelOf=(n)=>LABEL_OVERRIDE[n]||labelize(n);
+      const MODULE_STATUS=window.KINETO_MODULE_METADATA||{};
+      const qualityMeta=(name)=>{
+        const meta=MODULE_STATUS[name];
+        if(!meta)return '';
+        const labels=[['A11Y',meta.accessibility],['PERF',meta.performance],['RM',meta.reducedMotion]];
+        const aria=labels.map(([label,value])=>`${label} ${value}`).join(' · ');
+        return `<span class="module-quality-meta" data-module-quality="${name}" aria-label="${aria}" title="${aria}">${labels.map(([label,value])=>`<span class="module-quality-meta__item module-quality-meta__item--${value}" data-quality-${label.toLowerCase()}="${value}"><b>${label}</b> ${value}</span>`).join('')}</span>`;
+      };
       const SUBS={
         textSplit:'문장을 글자·단어 단위로 쪼개 3D로 등장·교체.',blurText:'흐림에서 또렷하게, 스태거로 등장.',shuffle:'랜덤 글리프로 흩뿌린 뒤 확정.',typewriter:'타이핑·한글 자모 조합·캐럿.',textReveal:'글자별 점멸 후 확정되는 등장.',textTransition:'문장을 글자 단위로 교체.',textFill:'스크롤 진행률로 글자에 색이 차오름.',overflowText:'컨테이너보다 긴 텍스트의 여덟 가지 순환.',glitch:'RGB 분리·픽셀 시프트·데이터모시.',counter:'카운트업·플립·시계·카운트다운.',dateTime:'서버 날짜를 상대 시간·절대 시간으로 표시.',
         lazy:'이미지 로딩 중 재생되는 전환들.',lightbox:'전체화면 그룹 뷰어 — 줌·미니맵·필름스트립.',slider:'커버플로우 슬라이더.',ambientMedia:'재생 프레임을 샘플링한 주변광.',brushReveal:'포인터로 문질러 드러내는 브러시 마스크.',scrollSequence:'스크롤로 이미지 프레임을 스크럽.',marquee:'무한 흐름 마퀴.',radial:'원형 캐러셀(도크형).',coverReveal:'커버가 걷히며 콘텐츠 등장.',
@@ -367,7 +375,7 @@
           .filter(g=>g.items.length)
           .map(({group,items})=>{
             const cells=items.map(n=>
-              `<button type="button" class="mod-index-item" data-module="${n}" title="데모로 이동"><span class="mii-name">${labelOf(n)}</span><span class="mii-sub">${SUBS[n]||''}</span></button>`
+              `<button type="button" class="mod-index-item" data-module="${n}" title="데모로 이동"><span class="mii-name">${labelOf(n)}</span><span class="mii-sub">${SUBS[n]||''}</span>${qualityMeta(n)}</button>`
             ).join('');
             return `<div class="module-group"><p class="module-group-label">${group}</p><div class="module-group-chips">${cells}</div></div>`;
           }).join('');
@@ -509,6 +517,10 @@
             const h=document.createElement('h3'); h.className='module-block-title'; h.textContent=labelOf(n);
             const p=document.createElement('p'); p.className='module-block-sub'; p.textContent=SUBS[n]||'';
             block.append(h,p);
+            const quality=document.createElement('div');
+            quality.className='module-block-quality';
+            quality.innerHTML=qualityMeta(n);
+            block.append(quality);
             // Some modules ship far too many demos for one flat grid (Loading
             // Indicator alone has 40+). Those declare a sub-grouping so the
             // block reads as a few short, labelled sets instead of one wall.
