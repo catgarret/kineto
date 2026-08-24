@@ -8,8 +8,8 @@
 - 기능 계약 버전: `1.3.0`
 - 동작 계약 버전: `1.2.0`
 - 공개 모듈: 정확히 **52개**
-- Core public property: **10개**
-- Core API: **27개**
+- Core public property: **12개**
+- Core API: **28개**
 - compatibility API: **9개**
 - additional named export: `modules`
 

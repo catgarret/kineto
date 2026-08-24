@@ -26,6 +26,7 @@ const readiness = read('docs/1.0-readiness.md');
 const diagnostics = read('docs/diagnostics-and-deprecation.md');
 const presetBoundary = read('docs/preset-runtime-boundary.md');
 const platformEnhancements = read('docs/platform-enhancements.md');
+const caseStudy = read('docs/case-study-template.md');
 const reference = read('docs/module-reference.md');
 const modulesReadme = read('docs/modules/README.md');
 const demoPolish = read('tests/browser/demo-polish.mjs');
@@ -48,7 +49,8 @@ for (const [label, file] of [
   ['1.0 계약 준비도', '1.0-readiness.md'],
   ['1.0 진단·deprecation 계약', 'diagnostics-and-deprecation.md'],
   ['Preset과 runtime 경계', 'preset-runtime-boundary.md'],
-  ['플랫폼 progressive enhancement 경로', 'platform-enhancements.md']
+  ['플랫폼 progressive enhancement 경로', 'platform-enhancements.md'],
+  ['실제 사용 사례 기록 템플릿', 'case-study-template.md']
 ]) {
   assert.match(docsReadme, new RegExp(`\\[${label}\\]\\(${file}\\)`), `docs index must link ${file}`);
 }
@@ -111,6 +113,7 @@ assert.match(flipSharedLayout, /data-kt-layout-id/);
 assert.match(readiness, /Core API·module registry/);
 assert.match(presetBoundary, /@dong-gri\/kineto\/core/);
 assert.match(platformEnhancements, /View Transitions/);
+assert.match(caseStudy, /3건/);
 for (const moduleName of ['pageReveal', 'pageTransition', 'slider', 'stickyStack', 'stickyHeader', 'lightbox', 'cursor', 'fullpage']) {
   assert.ok(roadmap.includes(moduleName), `roadmap heavy-layout list is missing ${moduleName}`);
 }

@@ -432,6 +432,11 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 42. 완료(진단 API): Core 오류·debug 경로가 공통 `KT_*` shape를 사용하고 sink/listener 오류가 모듈 동작을 깨뜨리지 않는지 회귀 테스트 추가
 43. 완료(variant 감사): `pageReveal` 공개 16개가 각각 하나의 구현 branch와 구분 메커니즘을 가지며 legacy alias가 contract에 없는지 검사
 44. 완료(heavy-layout 확대): Cover Reveal·Radial을 포함한 10개 레이어 모듈의 measurable bounds·wrapper·image layer 경계를 Chromium·Firefox·WebKit에서 검사
+45. 완료(운영): `CONTRIBUTING.md`·기준 문서의 공개 계약 수치를 52개 모듈·28개 Core API로 갱신하고 readiness 검사에 연결
+46. 완료(운영): 재현 URL·환경·기대/실제 결과를 강제하는 GitHub Bug Report form 추가
+47. 완료(운영): 실제 사용 사례·fallback·lifecycle·번들 비용을 요구하는 Feature Proposal form 추가
+48. 완료(운영): Chromium·Firefox·WebKit·iOS Safari·Android Chrome의 증거 경계를 기록하는 Browser QA form 추가
+49. 완료(운영): 1.0 외부 검증을 위한 [실제 사용 사례 기록 템플릿](case-study-template.md)과 계약-aware readiness CI 검사 추가
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

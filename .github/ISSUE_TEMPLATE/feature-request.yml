@@ -1,0 +1,47 @@
+name: Feature proposal
+description: Propose an opt-in feature with evidence and a defined fallback.
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        새 기능은 기존 모듈 조합으로 해결되지 않는 실제 작업과 Vanilla Core 계약을 먼저 확인합니다.
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Real use case
+      description: 어떤 제품 작업에서 현재 API 조합으로 해결되지 않는지, 최소 두 개의 사례나 독립 피드백을 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-api
+    attributes:
+      label: Proposed API and boundary
+      description: 새 public option/variant인지, 기존 모듈의 opt-in 확장인지, 새 entry가 필요한지 명시해 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: fallback
+    attributes:
+      label: Fallback and lifecycle
+      description: reduced-motion, 미지원 브라우저, destroy, cancel, replay, update, keyboard/focus/ARIA 동작을 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: cost
+    attributes:
+      label: Bundle and maintenance cost
+      description: 예상 consumer gzip 비용, 외부 엔진 의존성, 문서·데모·테스트 유지 비용을 적어 주세요.
+    validations:
+      required: true
+  - type: checkboxes
+    id: gate
+    attributes:
+      label: Roadmap gate
+      options:
+        - label: The proposal answers all eight decision-gate questions in docs/ROADMAP.md.
+          required: true
+        - label: The feature can be introduced without removing or silently reinterpreting an existing contract.
+          required: true

@@ -30,6 +30,7 @@
 - Add a browser-layer QA matrix with module risk boundaries, used-value measurement rules, release triage categories, and criteria for promoting additional modules into the cross-engine checkpoint.
 - Add five roadmap decision documents covering QA history, FLIP shared-layout scope, 1.0 readiness, preset/runtime boundaries, and platform progressive enhancement.
 - Derive demo variant choices from the feature contract, remove stale Page Reveal/Loader effects, and add browser-support, consumer-bundle, module-status, and 1.0 diagnostics/deprecation audits.
+- Add contract-aware contribution and issue forms for reproducible bugs, gated feature proposals, and browser/device QA evidence, plus a case-study template and CI readiness check for the long-term 1.0 gate.
 
 ### 한국어
 
@@ -59,6 +60,7 @@
 - 모듈별 레이어 위험, used value 측정 규칙, 릴리스 triage 분류, 추가 모듈 편입 조건을 정리한 브라우저 레이어 QA 매트릭스를 추가하고 docs-navigation CI에 연결했습니다.
 - 브라우저 QA 이력, FLIP shared-layout 범위, 1.0 계약 준비도, preset/runtime 경계, 플랫폼 progressive enhancement를 다루는 로드맵 문서 5개를 추가했습니다.
 - 기능 계약에서 데모 variant 선택지를 생성해 오래된 Page Reveal·Loader 효과를 제거하고, 브라우저 지원표·소비자 번들·모듈 상태·1.0 진단/deprecation 감사를 추가했습니다.
+- 계약 수치를 자동 감시하는 기여 가이드와 재현 가능한 버그·게이트가 포함된 기능 제안·브라우저/실기기 QA issue form, 실제 사용 사례 템플릿과 장기 1.0 readiness CI 검사를 추가했습니다.
 
 ## [0.8.104] - 2026-08-17
 

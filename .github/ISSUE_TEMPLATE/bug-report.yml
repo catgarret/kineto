@@ -1,0 +1,58 @@
+name: Bug report
+description: Report a reproducible Kineto behavior or documentation defect.
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        공개 계약을 줄이거나 variant를 제거하지 않고 원인을 재현할 수 있도록 작성해 주세요.
+  - type: input
+    id: version
+    attributes:
+      label: Kineto version
+      description: package.json 또는 npm에서 확인한 정확한 버전입니다.
+      placeholder: "0.8.104"
+    validations:
+      required: true
+  - type: input
+    id: module
+    attributes:
+      label: Module and variant
+      description: 예: slider / radial, dateTime / relative
+      placeholder: "slider / radial"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: 실행 가능한 URL 또는 복사 가능한 최소 HTML/JavaScript를 제공해 주세요.
+      render: html
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+      description: 기대 결과와 실제 결과를 분리해 적어 주세요.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: 브라우저·버전·OS·입력 방식(pointer/touch/keyboard)을 적어 주세요.
+      placeholder: "Safari 18 / iOS 18 / touch"
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched the troubleshooting guide and existing issues.
+          required: true
+        - label: I can reproduce this without modifying Kineto's generated dist files.
+          required: true

@@ -23,6 +23,7 @@ Kineto v0.8.104의 공개 API와 소유자 의도를 기준으로 정리한 문�
 - [1.0 진단·deprecation 계약](diagnostics-and-deprecation.md)
 - [Preset과 runtime 경계](preset-runtime-boundary.md)
 - [플랫폼 progressive enhancement 경로](platform-enhancements.md)
+- [실제 사용 사례 기록 템플릿](case-study-template.md)
 - [문제 해결](troubleshooting.md)
 - [공급망 운영](supply-chain.md)
 - [보안 신고 정책](../SECURITY.md)

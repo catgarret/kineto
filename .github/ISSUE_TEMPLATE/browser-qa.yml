@@ -1,0 +1,61 @@
+name: Browser QA report
+description: Record a browser, device, layout, or input-specific regression.
+title: "[Browser QA] "
+labels:
+  - browser-qa
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Playwright emulation은 실기기 성공으로 집계하지 않습니다. 실기기 증거는 docs/browser-device-qa.md 형식을 따릅니다.
+  - type: dropdown
+    id: engine
+    attributes:
+      label: Engine
+      options:
+        - Chromium
+        - Firefox
+        - WebKit
+        - iOS Safari (physical device)
+        - Android Chrome (physical device)
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device, OS, and orientation
+      placeholder: "iPhone 15 / iOS 18 / portrait"
+    validations:
+      required: true
+  - type: input
+    id: checkpoint
+    attributes:
+      label: QA checkpoint
+      description: 예: heavy-layout / radial drag / hidden tabs / reduced motion
+      placeholder: "heavy-layout / radial drag"
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: 재현 URL, screenshot/video 경로, console error, rect/used-value 측정값을 남겨 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: 한 번의 wheel/touch 이동을 포함해 최소 재현 절차를 적어 주세요.
+    validations:
+      required: true
+  - type: checkboxes
+    id: qa-policy
+    attributes:
+      label: QA policy
+      options:
+        - label: I recorded whether reduced motion was enabled.
+          required: true
+        - label: I did not classify browser emulation as physical-device evidence.
+          required: true

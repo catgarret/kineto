@@ -28,7 +28,7 @@ for (const command of ['lint', 'build', 'test:demo', 'test:browser']) {
 }
 for (const command of [
   'test:utils', 'test:diagnostics', 'test:states', 'test:presence', 'test:contract', 'test:requirements',
-  'test:docs', 'test:docs-navigation', 'test:module-metadata', 'test:module-status', 'test:mobile-device-manifest',
+  'test:docs', 'test:docs-navigation', 'test:roadmap-readiness', 'test:module-metadata', 'test:module-status', 'test:mobile-device-manifest',
   'test:package', 'test:types', 'test:package-size', 'test:package-tarball',
   'test:consumer-bundles', 'test:framework', 'test:parity', 'test:structure', 'test:copy',
   'test:lazy', 'test:options', 'test:variants', 'test:help', 'test:inline', 'test:defaults',
