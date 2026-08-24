@@ -72,7 +72,27 @@ const hFwd=await hash(); ck('Forward -> #mod-counter', hFwd==='#mod-counter', hF
   await ctx.close();
 }
 
-// 6. First-screen snap remains a single deliberate gesture in both directions.
+// 6. A copied settings URL may combine `?kt=…` with a module hash. Restoring
+// the selected card must not steal the final scroll from the requested block.
+{
+  const ctx=await browser.newContext({viewport:{width:1280,height:900}});
+  const sp=await ctx.newPage();
+  const shared='?kt=eyJ2IjoxLCJkZW1vIjoidHlwZXdyaXRlci0xNSIsIm9wdGlvbnMiOnt9fQ#mod-textReveal';
+  await sp.goto(`http://localhost:${PORT}/demo/index.html${shared}`,{waitUntil:'load'});
+  await sp.waitForFunction(()=>window.Kineto&&document.getElementById('mod-textReveal'),null,{timeout:15000});
+  await sp.waitForTimeout(2500);
+  const r=await sp.evaluate(()=>({
+    hash:location.hash,
+    top:Math.round(document.getElementById('mod-textReveal')?.getBoundingClientRect().top||99999),
+    restored:Boolean(document.querySelector('.kt-playground[data-share-key="typewriter-15"]'))
+  }));
+  ck('shared settings URL keeps the requested module hash',r.hash==='#mod-textReveal',r.hash);
+  ck('shared settings URL lands on the requested module',Math.abs(r.top)<200,`|top|=${Math.abs(r.top)}`);
+  ck('shared settings URL restores its selected demo',r.restored,String(r.restored));
+  await ctx.close();
+}
+
+// 7. First-screen snap remains a single deliberate gesture in both directions.
 // Its momentum tail must be consumed rather than bouncing the page straight back.
 {
   const ctx=await browser.newContext({viewport:{width:1280,height:900}});

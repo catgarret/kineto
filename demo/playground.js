@@ -1038,7 +1038,13 @@
     });
     apply(host, descriptors, { textContent: '', dataset: {} }, ui('shareRestored'));
     updateCode(host, descriptors);
-    panel?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+    // A shared settings URL can also carry a module deep-link hash. In that
+    // case the page router owns the final scroll position; moving the settings
+    // panel here starts a competing smooth scroll and can leave Safari/Android
+    // at the restored card instead of the requested `#mod-…` block. Preserve
+    // the hash and let main.js perform the late layout-safe module jump.
+    const hasModuleDeepLink = /^#mod-[A-Za-z0-9]+$/.test(window.location.hash || '');
+    if (!hasModuleDeepLink) panel?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
     state.pendingShare = null;
   }
   const dash = (value) => value.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();

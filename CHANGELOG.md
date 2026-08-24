@@ -5,6 +5,7 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Preserve the module deep-link hash when opening a shared demo-settings URL, so restoring a card cannot override the requested `#mod-…` destination on mobile or Safari.
 - Add independent Slider track controls for release momentum, edge bounce, and sticky snap while preserving the existing fractional release target by default; document the native Scroll Snap and FLIP evidence gates in a dedicated RFC.
 - Record the successful hosted CI, Firefox/WebKit matrix, Pages deployment, and live-site verification for the Slider physics follow-up.
 - Add a pinned Rolldown consumer fixture alongside Vite, with separate gzip budgets and a generated report that distinguishes cross-bundler evidence from universal byte promises.
@@ -38,6 +39,7 @@
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 데모 설정 공유 URL의 `#mod-…` 모듈 딥링크를 보존해 카드 설정 복원이 모바일·Safari에서 요청한 이동 위치를 덮어쓰지 않도록 수정했습니다.
 - Slider track에 release momentum·edge bounce·sticky snap을 서로 독립적으로 설정할 수 있게 추가했습니다. 기본값은 기존 fractional release target을 보존하며, native Scroll Snap과 FLIP은 별도 RFC의 증거 gate로 문서화했습니다.
 - Slider physics 후속 변경의 hosted CI·Firefox/WebKit matrix·Pages 배포·live-site 검증 성공 결과를 기록했습니다.
 - Vite와 함께 고정된 Rolldown 소비자 fixture를 추가하고, bundler 간 근거와 모든 bundler의 절대 바이트 약속을 구분하는 gzip 예산·생성 보고서를 연결했습니다.
