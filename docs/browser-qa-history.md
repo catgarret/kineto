@@ -10,6 +10,7 @@
 | 2026-08-19 | v0.8.104 후속 | `b027a42` | `32157033656` | 실패(package-size: Node 24 archive 509.8 KB > 509 KB) | 미실행 | 미실행 | 미실행 | `1f0938c`에서 Node 24 측정 경계 수정 |
 | 2026-08-19 | v0.8.104 후속 | `1f0938c` | `32158273523` | 성공 | 실패(consumer/framework 묶음) | 미실행 | 미실행 | 동일 Node 24 명령과 `npm ci`를 로컬에서 재현했을 때는 통과; 원격 상세 로그는 공개되지 않아 원인 미확정 |
 | 2026-08-19 | v0.8.104 후속 | `dbd4074` | `32165756521` | 성공 | 성공 | 성공 | `32167074624` 성공 | Chromium·Firefox·WebKit `heavy-layout` 및 live-site canonical/backup URL(v0.8.104·52개·GTM) 확인 |
+| 2026-08-24 | v0.8.104 운영 gate 후속 | `b6dbc87` | `32688876241` | 성공 | 성공 | 성공 | `32689372504` 성공 | 운영 문서·issue form·readiness CI 추가 후 Chromium·Firefox·WebKit과 Pages 재확인 |
 
 ## 기록 규칙
 
