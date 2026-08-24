@@ -11,6 +11,14 @@ function parseDate(value, locale = '') {
   const text = String(value ?? '').trim();
   if (!text) return null;
   if (/^\d{10,13}$/.test(text)) return parseDate(Number(text), locale);
+  // Preserve standard ISO/RFC values before the legacy separator normalizer
+  // below. Replacing every `.` in an ISO timestamp would turn fractional
+  // seconds such as `.453Z` into an invalid `-453Z` suffix.
+  const standard = new Date(text);
+  if (!Number.isNaN(standard.getTime()) && (
+    /^\d{4}-\d{2}-\d{2}(?:$|[T\s])/.test(text)
+    || /^[A-Za-z]{3},\s/.test(text)
+  )) return standard;
   const compact = text.match(/^(\d{4})(\d{2})(\d{2})(?:(\d{2})(\d{2})(\d{2})(?:\.(\d{1,3}))?)?$/);
   if (compact) {
     const [, year, month, day, hour = '0', minute = '0', second = '0', milli = '0'] = compact;

@@ -144,17 +144,25 @@ try {
   const relativeTimeDemo = await page.evaluate(() => {
     const card = document.querySelector('[data-demo-module="dateTime"]');
     const target = card?.querySelector('[data-kt-date-time]');
+    const bothCard = [...document.querySelectorAll('[data-demo-module="dateTime"]')]
+      .find((item) => item.querySelector('h3')?.textContent.trim() === 'Both · relative + absolute');
+    const both = bothCard?.querySelector('[data-kt-date-time]');
     const panel = card?.querySelector(':scope > .kt-playground');
     const body = panel?.__buildBody?.();
     return {
       text: target?.textContent?.trim() || '',
       date: target?.dataset.ktDate || '',
+      bothText: both?.textContent?.trim() || '',
+      bothDatetime: both?.getAttribute('datetime') || '',
       hasSettings: Boolean(panel),
       fields: [...(body?.querySelectorAll('[data-module="dateTime"][data-key]') || [])].map((field) => field.dataset.key)
     };
   });
   assert.match(relativeTimeDemo.text, /(분 전|minute ago)/, 'relative-time demo must show a past relative timestamp: ' + JSON.stringify(relativeTimeDemo));
   assert.ok(relativeTimeDemo.date, 'relative-time demo must seed a real server-date value: ' + JSON.stringify(relativeTimeDemo));
+  assert.match(relativeTimeDemo.bothText, /·/, 'both date-time demo must show relative and absolute values: ' + JSON.stringify(relativeTimeDemo));
+  assert.notEqual(relativeTimeDemo.bothText, '어제 · 원래 시각', 'both date-time demo must replace its placeholder text: ' + JSON.stringify(relativeTimeDemo));
+  assert.ok(relativeTimeDemo.bothDatetime, 'both date-time demo must expose a parsed datetime attribute: ' + JSON.stringify(relativeTimeDemo));
   assert.ok(relativeTimeDemo.hasSettings && ['date', 'mode', 'locale', 'live'].every((key) => relativeTimeDemo.fields.includes(key)), 'relative-time demo must expose its settings: ' + JSON.stringify(relativeTimeDemo));
   checkpoint('counter-and-relative-time');
 
