@@ -98,13 +98,14 @@ const BUDGET = {
   // runner delta in the packed ceiling while keeping the file list and
   // consumer gzip budgets unchanged.
   // 2026-09-01: strict year-first separator/time/offset validation adds the
-  // measured 3.6 KB unpacked on Node 25/npm 11 (1730.3 KB total) while the
+  // measured 4.6 KB unpacked on Node 25/npm 11 (1731.3 KB total) while the
   // 77-file surface remains fixed. Absorb only this parser safety cost in the
   // rounded unpacked ceiling; consumer gzip budgets remain unchanged. Node 24
-  // npm 11 reports 515.6 KB packed for the resulting archive, so the packed
-  // ceiling is rounded to 516 KB and remains below any dependency-bloat jump.
-  packedKb: 516,
-  unpackedKb: 1731,
+  // npm 11 reports 516.0 KB packed (528410 bytes) for the resulting archive,
+  // 26 bytes above the integer 516 KB boundary. Round the runner ceiling to
+  // 517 KB; it remains a fixed 77-file allowlist and is not a surface increase.
+  packedKb: 517,
+  unpackedKb: 1732,
   files: 78
 };
 

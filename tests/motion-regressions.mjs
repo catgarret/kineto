@@ -618,7 +618,9 @@ for (const invalidDate of [
 for (const validDate of [
   '2026-8-9 10:30',
   '2026/08/09 10:30:00+0900',
-  '2026.08.09T10:30:00+09:00'
+  '2026.08.09T10:30:00+09:00',
+  '2026-08-09 10:30:00.123456 +09:00',
+  '09/08/2026 10:30:00.987654+0900'
 ]) {
   const validVariant = document.createElement('time');
   document.body.appendChild(validVariant);

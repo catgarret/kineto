@@ -113,8 +113,12 @@ const BUDGETS = {
   // 2026-09-01: Radial WebKit drag suppression and strict server-date
   // validation add less than 1 KB to each generated artifact. Raise only raw
   // ceilings to the next measured KB; compressed budgets remain unchanged.
+  // 2026-09-01 follow-up: accepting offset whitespace and high-precision
+  // fractional seconds moves minified ESM to 405.2 KB raw. Round only that
+  // artifact's raw ceiling to 406 KB; gzip and all other product ceilings stay
+  // unchanged.
   'kineto.js': { raw: 513, gz: 133, variance: 2 },
-  'kineto.min.js': { raw: 405, gz: 119, variance: 2 },
+  'kineto.min.js': { raw: 406, gz: 119, variance: 2 },
   'kineto.umd.js': { raw: 404, gz: 119, variance: 1 },
   'kineto.umd.min.js': { raw: 404, gz: 119, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS

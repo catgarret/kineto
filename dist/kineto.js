@@ -2398,58 +2398,72 @@ function wt(e, t = "") {
 		let r = new Date(Date.UTC(Number(e), Number(t) - 1, Number(n)));
 		return r.getUTCFullYear() === Number(e) && r.getUTCMonth() === Number(t) - 1 && r.getUTCDate() === Number(n);
 	}, a = (e = "0", t = "0", n = "0", r = "0") => {
-		let i = Number(e), a = Number(t), o = Number(n), s = String(r), c = Number(s.padEnd(3, "0"));
-		return /^\d{1,3}$/.test(s) && Number.isInteger(i) && i >= 0 && i <= 23 && Number.isInteger(a) && a >= 0 && a <= 59 && Number.isInteger(o) && o >= 0 && o <= 59 && Number.isInteger(c) && c >= 0 && c <= 999;
-	}, o = (e) => {
+		let i = Number(e), a = Number(t), o = Number(n), s = String(r), c = Number(s.slice(0, 3).padEnd(3, "0"));
+		return /^\d+$/.test(s) && Number.isInteger(i) && i >= 0 && i <= 23 && Number.isInteger(a) && a >= 0 && a <= 59 && Number.isInteger(o) && o >= 0 && o <= 59 && Number.isInteger(c) && c >= 0 && c <= 999;
+	}, o = (e = "0") => {
+		let t = String(e);
+		return /^\d+$/.test(t) ? t.slice(0, 3).padEnd(3, "0") : null;
+	}, s = (e) => {
 		if (!e) return "";
 		if (String(e).toUpperCase() === "Z") return "Z";
 		let t = String(e).match(/^([+-])(\d{2}):?(\d{2})$/);
 		return !t || Number(t[2]) > 23 || Number(t[3]) > 59 ? null : `${t[1]}${t[2]}:${t[3]}`;
-	}, s = n.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:(?:[T\s]+)(\d{1,2})(?::?(\d{2}))?(?::?(\d{2})(?:\.(\d{1,3}))?)?(Z|[+-]\d{2}:?\d{2})?)?$/i);
-	if (s) {
-		let [, e, t, n, c, l = "0", u = "0", d = "0", f] = s;
+	}, c = n.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:(?:[T\s]+)(\d{1,2})(?::?(\d{2}))?(?::?(\d{2})(?:\.(\d+))?)?\s*(Z|[+-]\d{2}:?\d{2})?)?$/i);
+	if (c) {
+		let [, e, t, n, l, u = "0", d = "0", f = "0", p] = c;
 		if (!i(e, t, n)) return null;
-		let p = o(f);
-		if (f && !p) return null;
-		if (c === void 0) {
-			if (f) return null;
+		let m = s(p);
+		if (p && !m) return null;
+		if (l === void 0) {
+			if (p) return null;
 			let i = r ? /* @__PURE__ */ new Date(`${e}-${String(t).padStart(2, "0")}-${String(n).padStart(2, "0")}T00:00:00.000+09:00`) : /* @__PURE__ */ new Date(`${e}-${String(t).padStart(2, "0")}-${String(n).padStart(2, "0")}`);
 			return Number.isNaN(i.getTime()) ? null : i;
 		}
-		if (!a(c, l, u, d)) return null;
-		let m = p || (r ? "+09:00" : ""), h = `${e}-${String(t).padStart(2, "0")}-${String(n).padStart(2, "0")}T${String(c).padStart(2, "0")}:${String(l).padStart(2, "0")}:${String(u).padStart(2, "0")}.${String(d).padEnd(3, "0")}${m}`, g = new Date(h);
-		return Number.isNaN(g.getTime()) ? null : g;
+		if (!a(l, u, d, f)) return null;
+		let h = m || (r ? "+09:00" : ""), g = o(f);
+		if (!g) return null;
+		let _ = `${e}-${String(t).padStart(2, "0")}-${String(n).padStart(2, "0")}T${String(l).padStart(2, "0")}:${String(u).padStart(2, "0")}:${String(d).padStart(2, "0")}.${g}${h}`, v = new Date(_);
+		return Number.isNaN(v.getTime()) ? null : v;
 	}
-	let c = new Date(n);
-	if (!Number.isNaN(c.getTime()) && (/^\d{4}-\d{2}-\d{2}(?:$|[T\s])/.test(n) || /^[A-Za-z]{3},\s/.test(n))) return c;
-	let l = n.match(/^(\d{4})(\d{2})(\d{2})(?:(\d{2})(\d{2})(\d{2})(?:\.(\d{1,3}))?)?$/);
-	if (l) {
-		let [, e, t, n, o = "0", s = "0", c = "0", u = "0"] = l;
-		if (!i(e, t, n) || !a(o, s, c, u)) return null;
-		let d = `${e}-${t}-${n}T${o.padStart(2, "0")}:${s.padStart(2, "0")}:${c.padStart(2, "0")}.${u.padEnd(3, "0")}${r ? "+09:00" : ""}`, f = new Date(d);
+	let l = new Date(n);
+	if (!Number.isNaN(l.getTime()) && (/^\d{4}-\d{2}-\d{2}(?:$|[T\s])/.test(n) || /^[A-Za-z]{3},\s/.test(n))) return l;
+	let u = n.match(/^(\d{4})(\d{2})(\d{2})(?:(\d{2})(\d{2})(\d{2})(?:\.(\d{1,3}))?)?$/);
+	if (u) {
+		let [, e, t, n, o = "0", s = "0", c = "0", l = "0"] = u;
+		if (!i(e, t, n) || !a(o, s, c, l)) return null;
+		let d = `${e}-${t}-${n}T${o.padStart(2, "0")}:${s.padStart(2, "0")}:${c.padStart(2, "0")}.${l.padEnd(3, "0")}${r ? "+09:00" : ""}`, f = new Date(d);
 		return Number.isNaN(f.getTime()) ? null : f;
 	}
-	let u = n.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:\s*(\d{1,2})\s*시)?(?:\s*(\d{1,2})\s*분)?(?:\s*(\d{1,2})\s*초)?$/);
-	if (u) {
-		let [, e, t, n, r = "0", o = "0", s = "0"] = u;
-		if (!i(e, t, n) || !a(r, o, s)) return null;
-		let c = /* @__PURE__ */ new Date(`${e}-${t.padStart(2, "0")}-${n.padStart(2, "0")}T${r.padStart(2, "0")}:${o.padStart(2, "0")}:${s.padStart(2, "0")}+09:00`);
-		return Number.isNaN(c.getTime()) ? null : c;
-	}
-	let d = n.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:\s+(\d{1,2})(?::(\d{2})(?::(\d{2}))?)?)?$/);
+	let d = n.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:\s*(\d{1,2})\s*시)?(?:\s*(\d{1,2})\s*분)?(?:\s*(\d{1,2})\s*초)?$/);
 	if (d) {
 		let [, e, t, n, r = "0", o = "0", s = "0"] = d;
 		if (!i(e, t, n) || !a(r, o, s)) return null;
 		let c = /* @__PURE__ */ new Date(`${e}-${t.padStart(2, "0")}-${n.padStart(2, "0")}T${r.padStart(2, "0")}:${o.padStart(2, "0")}:${s.padStart(2, "0")}+09:00`);
 		return Number.isNaN(c.getTime()) ? null : c;
 	}
-	let f = n.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?:[ T](\d{1,2}):?(\d{2})?(?::?(\d{2}))?)?$/);
+	let f = n.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:\s+(\d{1,2})(?::(\d{2})(?::(\d{2}))?)?)?$/);
 	if (f) {
-		let [, e, n, o, s = "0", c = "0", l = "0"] = f, u = Number(e), d = Number(n), p = /^en-US(?:-|$)/i.test(String(t)), m = u > 12 ? d : d > 12 || p ? u : d, h = u > 12 ? u : d > 12 || p ? d : u;
-		if (m >= 1 && m <= 12 && h >= 1 && h <= 31 && i(o, m, h) && a(s, c, l)) return r ? /* @__PURE__ */ new Date(`${o}-${String(m).padStart(2, "0")}-${String(h).padStart(2, "0")}T${String(s).padStart(2, "0")}:${String(c).padStart(2, "0")}:${String(l).padStart(2, "0")}+09:00`) : new Date(Number(o), m - 1, h, Number(s), Number(c), Number(l));
+		let [, e, t, n, r = "0", o = "0", s = "0"] = f;
+		if (!i(e, t, n) || !a(r, o, s)) return null;
+		let c = /* @__PURE__ */ new Date(`${e}-${t.padStart(2, "0")}-${n.padStart(2, "0")}T${r.padStart(2, "0")}:${o.padStart(2, "0")}:${s.padStart(2, "0")}+09:00`);
+		return Number.isNaN(c.getTime()) ? null : c;
 	}
-	let p = n.replace(/\./g, "-").replace(/\//g, "-"), m = new Date(p);
-	return Number.isNaN(m.getTime()) ? null : m;
+	let p = n.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?:[ T](\d{1,2}):?(\d{2})?(?::?(\d{2})(?:\.(\d+))?)?\s*(Z|[+-]\d{2}:?\d{2})?)?$/i);
+	if (p) {
+		let [, e, n, c, l, u, d, f = "0", m] = p, h = l ?? "0", g = u ?? "0", _ = d ?? "0", v = Number(e), y = Number(n), b = /^en-US(?:-|$)/i.test(String(t)), x = v > 12 ? y : y > 12 || b ? v : y, S = v > 12 ? v : y > 12 || b ? y : v, C = s(m);
+		if (m && !C) return null;
+		if (x >= 1 && x <= 12 && S >= 1 && S <= 31 && i(c, x, S) && a(h, g, _, f)) {
+			if (r || C) {
+				let e = o(f);
+				if (!e) return null;
+				let t = C || "+09:00";
+				return /* @__PURE__ */ new Date(`${c}-${String(x).padStart(2, "0")}-${String(S).padStart(2, "0")}T${String(h).padStart(2, "0")}:${String(g).padStart(2, "0")}:${String(_).padStart(2, "0")}.${e}${t}`);
+			}
+			return new Date(Number(c), x - 1, S, Number(h), Number(g), Number(_), Number(o(f)));
+		}
+	}
+	let m = n.replace(/\./g, "-").replace(/\//g, "-"), h = new Date(m);
+	return Number.isNaN(h.getTime()) ? null : h;
 }
 var Tt = [
 	["year", 315576e5],

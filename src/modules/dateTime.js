@@ -23,12 +23,19 @@ function parseDate(value, locale = '') {
     const minuteNumber = Number(minute);
     const secondNumber = Number(second);
     const milliText = String(milli);
-    const milliNumber = Number(milliText.padEnd(3, '0'));
-    return /^\d{1,3}$/.test(milliText)
+    const milliNumber = Number(milliText.slice(0, 3).padEnd(3, '0'));
+    return /^\d+$/.test(milliText)
       && Number.isInteger(hourNumber) && hourNumber >= 0 && hourNumber <= 23
       && Number.isInteger(minuteNumber) && minuteNumber >= 0 && minuteNumber <= 59
       && Number.isInteger(secondNumber) && secondNumber >= 0 && secondNumber <= 59
       && Number.isInteger(milliNumber) && milliNumber >= 0 && milliNumber <= 999;
+  };
+  const formatMilliseconds = (milli = '0') => {
+    const textValue = String(milli);
+    if (!/^\d+$/.test(textValue)) return null;
+    // Date stores milliseconds only. RFC 3339 and several SQL drivers emit
+    // more precision, so retain the first three digits deterministically.
+    return textValue.slice(0, 3).padEnd(3, '0');
   };
   const normalizeOffset = (offset) => {
     if (!offset) return '';
@@ -40,7 +47,7 @@ function parseDate(value, locale = '') {
   // Parse every year-first separator consistently before handing the value to
   // the permissive platform parser. Date.parse silently rolls values such as
   // 2026-02-31 into March, and browsers disagree on slash/dot timestamps.
-  const yearFirst = text.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:(?:[T\s]+)(\d{1,2})(?::?(\d{2}))?(?::?(\d{2})(?:\.(\d{1,3}))?)?(Z|[+-]\d{2}:?\d{2})?)?$/i);
+  const yearFirst = text.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:(?:[T\s]+)(\d{1,2})(?::?(\d{2}))?(?::?(\d{2})(?:\.(\d+))?)?\s*(Z|[+-]\d{2}:?\d{2})?)?$/i);
   if (yearFirst) {
     const [, year, month, day, hour, minute = '0', second = '0', milli = '0', rawOffset] = yearFirst;
     if (!validCalendarDate(year, month, day)) return null;
@@ -55,7 +62,9 @@ function parseDate(value, locale = '') {
     }
     if (!validClockTime(hour, minute, second, milli)) return null;
     const suffix = offset || (koreanLocale ? '+09:00' : '');
-    const iso = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}.${String(milli).padEnd(3, '0')}${suffix}`;
+    const milliseconds = formatMilliseconds(milli);
+    if (!milliseconds) return null;
+    const iso = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}.${milliseconds}${suffix}`;
     const parsed = new Date(iso);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
@@ -89,23 +98,31 @@ function parseDate(value, locale = '') {
     const parsed = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:${second.padStart(2, '0')}+09:00`);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
-  const dayFirst = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?:[ T](\d{1,2}):?(\d{2})?(?::?(\d{2}))?)?$/);
+  const dayFirst = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?:[ T](\d{1,2}):?(\d{2})?(?::?(\d{2})(?:\.(\d+))?)?\s*(Z|[+-]\d{2}:?\d{2})?)?$/i);
   if (dayFirst) {
-    const [, first, second, year, hour = '0', minute = '0', secondValue = '0'] = dayFirst;
+    const [, first, second, year, hour, minute, secondValue, milli = '0', rawOffset] = dayFirst;
+    const normalizedHour = hour ?? '0';
+    const normalizedMinute = minute ?? '0';
+    const normalizedSecond = secondValue ?? '0';
     const firstNumber = Number(first);
     const secondNumber = Number(second);
     const usLocale = /^en-US(?:-|$)/i.test(String(locale));
     const month = firstNumber > 12 ? secondNumber : secondNumber > 12 ? firstNumber : usLocale ? firstNumber : secondNumber;
     const day = firstNumber > 12 ? firstNumber : secondNumber > 12 ? secondNumber : usLocale ? secondNumber : firstNumber;
-    if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && validCalendarDate(year, month, day) && validClockTime(hour, minute, secondValue)) {
+    const offset = normalizeOffset(rawOffset);
+    if (rawOffset && !offset) return null;
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && validCalendarDate(year, month, day) && validClockTime(normalizedHour, normalizedMinute, normalizedSecond, milli)) {
       // Korean servers commonly emit `MM/DD/YYYY HH:mm` even when the
       // surrounding locale is Korean. Keep that value anchored to KST so the
       // relative label is stable on UTC CI/SSR hosts. Other locales retain
       // the historical host-local interpretation for ambiguous numeric dates.
-      if (koreanLocale) {
-        return new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(secondValue).padStart(2, '0')}+09:00`);
+      if (koreanLocale || offset) {
+        const milliseconds = formatMilliseconds(milli);
+        if (!milliseconds) return null;
+        const suffix = offset || '+09:00';
+        return new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(normalizedHour).padStart(2, '0')}:${String(normalizedMinute).padStart(2, '0')}:${String(normalizedSecond).padStart(2, '0')}.${milliseconds}${suffix}`);
       }
-      return new Date(Number(year), month - 1, day, Number(hour), Number(minute), Number(secondValue));
+      return new Date(Number(year), month - 1, day, Number(normalizedHour), Number(normalizedMinute), Number(normalizedSecond), Number(formatMilliseconds(milli)));
     }
   }
   const normalized = text.replace(/\./g, '-').replace(/\//g, '-');

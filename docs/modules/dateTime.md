@@ -11,6 +11,6 @@
 
 `relativeCutoff`(0이면 사용 안 함)와 `relativeCutoffUnit`을 설정하면 `relative` 모드는 해당 기간을 넘긴 날짜를 현지화된 절대 시각으로 자동 전환합니다. 예를 들어 `relativeCutoff: 30`, `relativeCutoffUnit: 'day'`는 30일 이내에는 `n일 전`, 그 이후에는 원래 날짜를 표시합니다. `both`는 요청한 대로 상대·절대 표기를 항상 함께 유지합니다.
 
-`locale`, `timeZone`, `dateStyle`, `timeStyle`, `updateInterval`, `live:false`로 표시와 갱신을 조절할 수 있습니다. `YYYY-MM-DD HH:mm[:ss]`처럼 시간대가 없는 SQL/ISO 문자열은 한국어 locale에서 서버 관례에 맞춰 +09:00으로 정규화하여 UTC와 브라우저의 결과가 달라지지 않게 합니다. `MM/DD/YYYY`처럼 모호한 숫자형 날짜는 `en-US`에서는 월-일, 그 외 locale에서는 일-월 규칙을 사용하며, 해석할 수 없으면 원문 또는 `fallback`을 유지합니다.
+`locale`, `timeZone`, `dateStyle`, `timeStyle`, `updateInterval`, `live:false`로 표시와 갱신을 조절할 수 있습니다. `YYYY-MM-DD HH:mm[:ss]`처럼 시간대가 없는 SQL/ISO 문자열은 한국어 locale에서 서버 관례에 맞춰 +09:00으로 정규화하여 UTC와 브라우저의 결과가 달라지지 않게 합니다. 시간대 앞 공백(`10:30:00 +09:00`)도 허용하며, 서버가 밀리초보다 긴 소수초를 보내면 처음 세 자리까지 밀리초로 안정적으로 잘라냅니다. `MM/DD/YYYY`처럼 모호한 숫자형 날짜는 `en-US`에서는 월-일, 그 외 locale에서는 일-월 규칙을 사용하며, 명시적 offset이 있으면 locale과 관계없이 해당 offset을 적용합니다. 해석할 수 없으면 원문 또는 `fallback`을 유지합니다.
 
 연-월-일 표기의 구분자(`-`, `/`, `.`)와 브라우저 엔진이 달라도 동일한 유효성 검사를 먼저 거치므로, 서버가 내려준 값이 조용히 다음 날짜로 rollover되는 일을 막습니다.

@@ -30,6 +30,9 @@
 - Keep the measured strict-parser raw increase within the ESM artifact ceiling without widening any compressed consumer budget.
 - Align the packed archive ceiling with the measured Node 24/npm 11 515.6 KB result while keeping the release file allowlist fixed.
 - Scope the measured Node 24 Rolldown Vue-adapter compression variance to that independent fixture, leaving the 138 KB consumer product budget unchanged.
+- Accept the measured 1731.3 KB unpacked archive produced by the dateTime input-compatibility guards, keeping the 77-file surface and consumer gzip budgets unchanged.
+- Raise only the minified ESM raw artifact ceiling to 406 KB for the measured dateTime compatibility guard; compressed product budgets remain unchanged.
+- Round the Node 24/npm 11 packed archive ceiling to 517 KB after measuring 528410 bytes, keeping the fixed 77-file allowlist and unpacked budget.
 
 ### 한국어
 
@@ -59,6 +62,9 @@
 - 엄격한 파서의 측정된 raw 증가를 ESM 산출물 상한에만 반영하고, 소비자 압축 예산은 늘리지 않습니다.
 - Node 24/npm 11에서 측정된 packed 515.6KB 결과만 archive 상한에 반영하고, 릴리스 파일 허용 목록은 고정합니다.
 - Node 24 Rolldown Vue adapter의 측정된 압축 variance만 독립 fixture에 한정해 반영하고, 138KB 소비자 제품 예산은 유지합니다.
+- dateTime 입력 호환성 guard로 측정된 unpacked 1731.3KB archive 경계만 반영하고, 77개 파일 표면과 소비자 gzip 예산은 유지합니다.
+- dateTime 호환성 guard로 측정된 minified ESM raw 산출물만 406KB 상한으로 조정하고, 압축 제품 예산은 유지합니다.
+- Node 24/npm 11에서 측정된 528410 bytes packed archive 경계를 517KB로 반영하고, 77개 파일 허용 목록과 unpacked 예산은 유지합니다.
 
 ## [0.9.3] - 2026-08-31
 
