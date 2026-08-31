@@ -17,6 +17,7 @@
 | 2026-09-01 | v0.9.3 readiness evidence 후속 | `8a880e2` | `33412656491` | 성공 | 성공 | 성공 | `33413636565` 성공 | 실기기·case study·deprecation·FLIP evidence contract를 CI에 연결; canonical·backup parity는 build `8a880e2`로 확인 |
 | 2026-09-01 | v0.9.3 roadmap priority 후속 | `aba05d9` | `33414388601` | 성공 | 성공 | 성공 | `33415329474` 성공 | States/Presence 확장 gate, modular entry 기본 경로, 고위험 WebKit 목록과 실서비스 선행 조건을 문서화; canonical·backup parity는 build `aba05d9`로 확인 |
 | 2026-09-01 | v0.9.3 supply-chain boundary 후속 | `f500a74` | `33418047636` | 성공 | 성공 | 성공 | `33418967364` 성공 | lockfile registry·integrity 경계를 CI에 연결; canonical·backup parity는 build `f500a74`로 확인했고 backup Pages run `33419171058`도 성공 |
+| 2026-09-01 | v0.9.3 package archive variance 후속 | `c3fc1be` | `33422557181` | 성공 | 성공 | 성공 | `33423355483` 성공 | Node 24/npm 11의 측정된 packed archive 경계를 보정한 뒤 전체 suite·Firefox·WebKit과 canonical·backup parity(build `c3fc1be`)를 확인했고 backup Pages run `33423437879`도 성공 |
 
 ## 기록 규칙
 
