@@ -461,6 +461,11 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 57. 완료(v0.9.3 후속): `.github/workflows/live-site-parity.yml`에 주간 schedule·수동 dispatch parity 경보를 추가하고 canonical Pages 배포와 독립적으로 운영
 58. 완료(v0.9.3 후속): `test:readiness-gates`로 실기기·외부 사례·deprecated·FLIP 증거 게이트와 parity monitor 연결을 자동 점검; 증거가 없을 때 1.0 완료로 오판하지 않도록 고정
 59. 완료(v0.9.3 후속): `test:deps`에 zero-runtime-dependency·optional peer metadata 경계를 추가해 공급망 payload drift를 조기에 검출
+60. 완료(v0.9.3 후속): 실기기 QA 증거 디렉터리의 날짜·환경·기대/실제 결과 형식을 자동 검사해 에뮬레이션 결과와 실기기 증거를 섞지 않도록 고정
+61. 완료(v0.9.3 후속): 외부 case study가 필수 사용 사례·검증 결과·공개 동의를 갖춘 실제 기록인지 검사하고 빈 템플릿 집계를 차단
+62. 완료(v0.9.3 후속): deprecated 모듈이 생길 때 migration fixture와 문서 상태 갱신을 요구하는 조건부 gate 추가
+63. 완료(v0.9.3 후속): 브라우저 QA 이력 각 행에 커밋·CI/결과 귀속이 남는지 검사해 성공 주장을 추적 가능하게 고정
+64. 완료(v0.9.3 후속): readiness evidence 검사를 `test:node`·release automation 계약에 연결해 CI와 릴리스가 같은 외부 증거 경계를 사용
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 
