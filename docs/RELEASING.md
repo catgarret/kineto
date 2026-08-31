@@ -42,6 +42,11 @@ check the canonical and backup URLs together, including their build markers.
 This is an explicit parity check; it does not make the non-canonical repository
 an automatic deployment target.
 
+`.github/workflows/live-site-parity.yml` runs the same check weekly and on manual
+dispatch. It is intentionally independent of the Pages deploy workflow, so a
+stale manual backup raises a separate signal instead of blocking a canonical
+deploy.
+
 ## Preparing a version
 
 Start from a clean `main` branch after all feature/fix commits are complete.
