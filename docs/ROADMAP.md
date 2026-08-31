@@ -32,7 +32,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 - GSAP·ScrollTrigger·Lenis 기본 CDN에는 고정 버전과 SHA-384 SRI가 적용됩니다.
 - Chromium 전체 QA, Firefox/WebKit smoke와 실제 demo-polish QA가 있으며, transform·clip·fixed/sticky 의존 모듈은 세 엔진의 `heavy-layout` 체크포인트로 별도 검증합니다. lifecycle·패키지·번들 예산·npm provenance 검증도 함께 유지합니다.
 - reduced motion, 저사양 fallback, 키보드·ARIA, `destroy()` 복원을 제품 원칙으로 관리합니다.
-- v0.8.104는 Node 24/npm 11 전체 검증, npm provenance 공개, GitHub Release와 Pages 배포를 통과했습니다. 배포용 gzip 상한은 유지하고 Node 24 zlib 경계 차이만 별도 variance로 흡수합니다.
+- v0.9.3은 Node 24/npm 11 전체 검증, npm provenance 공개, GitHub Release와 Pages 배포를 통과했습니다. 배포용 gzip 상한은 유지하고 Node 24 zlib 경계 차이만 별도 variance로 흡수합니다.
 - v0.8.104에서 숨겨진 Tabs 패널을 다시 열 때 WebKit의 지연된 `hidden` 반영까지 포함해 indicator를 재측정하고, `tabs.refresh()` 공개 메서드와 bounded follow-up 측정을 추가했습니다. canonical demo에서 52개 모듈·GTM·unversioned CDN 경로를 다시 확인했습니다.
 - 52개 모듈의 사용 시점·피해야 할 상황·접근성·성능·reduced motion 상태를 단일 생성 원본과 데모 뱃지, 문서 매트릭스, CI completeness 검사로 연결했습니다.
 - v0.8.104 후속으로 `pageReveal`, `pageTransition`, `slider`, `stickyStack`, `stickyHeader`, `lightbox`, `cursor`, `fullpage`의 레이어·클리핑·sticky/fixed 경계를 `demo-polish`의 `heavy-layout` 체크포인트로 고정하고 Chromium·Firefox·WebKit에서 모두 통과시켰습니다.
@@ -41,13 +41,14 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 - v0.9.1에서 Node 24/Linux의 실제 전체 consumer gzip 측정값(133.2KB)을 반영해 제품 130KB 예산은 유지하고 제한된 runner variance만 조정했습니다.
 - v0.9.2에서 site/release 테스트 묶음이 실패한 하위 명령을 CI와 Release annotation으로 남기도록 해 원격 러너 실패를 재현 가능한 단위로 분류합니다.
 - v0.9.3에서 전체 Chromium 브라우저 QA를 hosted runner 기준 시도당 240초·3회로 제한하고, 재시도 후 실패 시 `test:browser` annotation을 남겨 브라우저 단계의 원격 실패를 바로 분류합니다.
+- v0.9.3 배포 후 canonical `kineto.dongri.me`와 별도 백업 `git.dongri.me/example/kineto`가 모두 같은 버전·모듈 수·GTM·build marker를 제공하는 것을 확인했습니다.
 
 ### 현재 병목
 
 - 전체 번들은 제품 범위에 비해 관리 가능하지만 예산 상한에 가깝고, 실제 소비자 앱에서 모듈 하나를 가져왔을 때의 번들 비용은 별도 예산으로 관리하지 않습니다.
 - React·Vue 어댑터는 라이프사이클 연결 수준입니다. 선언적 상태 전파, exit 지연, SSR/hydration 검증은 부족합니다.
 - 52개 모듈과 7개 언어는 유지 비용이 큽니다. 새 기능이 기존 기능의 품질과 문서화를 밀어낼 위험이 있습니다.
-- 공개 저장소 지표는 2026-08-02 확인 기준 star 0, fork 0입니다. 코드 품질과 별개로 외부 검증과 사용 사례가 없는 상태입니다.
+- 공개 저장소 지표는 2026-08-31 확인 기준 star 0, fork 0, 공개 issue 0입니다. 코드 품질과 별개로 외부 검증과 사용 사례가 없는 상태입니다.
 - Socket 경고를 줄이는 기술 조치는 진행됐지만, 공급망 신뢰는 특정 점수 하나가 아니라 릴리스 provenance, 의존성 최소화, 변경 이력, 대응 절차를 함께 유지해야 합니다. Socket도 경고 심각도와 공급망 위험을 종합해 점수를 계산한다고 설명합니다([Socket package scores](https://docs.socket.dev/docs/package-scores)).
 - **테스트가 틀린 이유로 실패합니다.** v0.8.43 릴리스는 같은 assertion에서 반복 실패했는데, 원인은 스타일시트가 아니라 아직 레이아웃되지 않은 패널을 측정한 것이었습니다. `display:none` 요소의 `getComputedStyle`은 used value가 아니라 computed value(`repeat(2, minmax(0px, 1fr))`)를 돌려주고, 이 문자열을 공백으로 자르면 토큰이 정확히 3개가 나옵니다. 즉 **그럴듯하게 틀린 값**이 나왔고, 사람은 CSS를 세 번 고쳤습니다. 브라우저 QA에 “측정 대상이 실제로 레이아웃됐는가”를 먼저 확인하는 규칙이 없으면, 통과율 지표 자체를 신뢰할 수 없습니다.
 - **엔진 커버리지가 아직 균등하지 않습니다.** 일반 모듈은 Chromium 전체와 Firefox/WebKit smoke를 유지하지만, transform·clip·fixed/sticky·mask·3D 경계를 쓰는 고위험 목록은 `heavy-layout` 체크포인트로 세 엔진을 함께 검사합니다. `pageReveal`의 `zoom`은 transform이 걸린 `<body>`가 fixed/sticky 자손의 containing block이 되는 동작에서 Safari와 Chromium이 갈렸고, 커버를 `<html>`로 옮겨야 양쪽이 같아졌습니다. 남은 일반 모듈까지 전부 같은 깊이로 올리는 것은 실제 회귀 신호와 실행 비용을 비교해 단계적으로 결정합니다.
