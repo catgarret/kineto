@@ -16,6 +16,7 @@ const stabilization = read('docs/STABILIZATION_REPORT.md');
 const qaReport = read('docs/QA_REPORT.md');
 const roadmap = read('docs/ROADMAP.md');
 const readiness = read('docs/1.0-readiness.md');
+const qaHistory = read('docs/browser-qa-history.md');
 const caseStudy = read('docs/case-study-template.md');
 
 assert.match(contributing, new RegExp(`${contract.moduleCount}개 모듈·${contract.coreApi.length}개 Core API·${requirements.requirements.length}개 소유자 요구사항`));
@@ -35,6 +36,8 @@ assert.match(roadmap, /데모 정합성·복사 경로·troubleshooting/);
 assert.match(roadmap, /core` \+ 필요한\n모듈 entry/);
 assert.match(readiness, /실서비스 1곳 투입/);
 assert.match(read('docs/browser-qa-matrix.md'), /`pageReveal`,\n`pageTransition`, `slider`/);
+assert.match(qaHistory, /`8a880e2`.*`33412656491`.*`33413636565`/);
+assert.match(qaHistory, /`aba05d9`.*`33414388601`.*`33415329474`/);
 for (const token of ['기록일', 'Kineto 버전', 'reduced-motion', '키보드·focus·ARIA', '소비자 번들 측정값', '공개 동의']) {
   assert.ok(caseStudy.includes(token), `case-study template is missing ${token}`);
 }

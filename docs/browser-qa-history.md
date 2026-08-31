@@ -14,6 +14,8 @@
 | 2026-08-25 | v0.8.104 Slider physics 후속 | `a13c04d` | `32747071438` | 성공 | 성공 | 성공 | `32747976927` 성공 | `momentum`·`bounce`·`stickySnap` 추가 후 Chromium·Firefox·WebKit, Pages와 live-site 재확인 |
 | 2026-08-31 | v0.9.3 browser QA hardening | `2898293` | `33398495438` | 성공 | 성공 | 성공 | `33399421877` 성공 | Chromium 전체 QA 재시도 경계를 적용한 릴리스 검증; npm provenance·GitHub Release·canonical live-site까지 확인 |
 | 2026-08-31 | v0.9.3 parity monitor 후속 | `23ee145` | `33406221579` | 성공 | 성공 | 성공 | `33407131223` 성공 | 주간·수동 parity workflow 추가 후 canonical·backup live-site가 모두 v0.9.3·52개·GTM·build `23ee145`로 일치 |
+| 2026-09-01 | v0.9.3 readiness evidence 후속 | `8a880e2` | `33412656491` | 성공 | 성공 | 성공 | `33413636565` 성공 | 실기기·case study·deprecation·FLIP evidence contract를 CI에 연결; canonical·backup parity는 build `8a880e2`로 확인 |
+| 2026-09-01 | v0.9.3 roadmap priority 후속 | `aba05d9` | `33414388601` | 성공 | 성공 | 성공 | `33415329474` 성공 | States/Presence 확장 gate, modular entry 기본 경로, 고위험 WebKit 목록과 실서비스 선행 조건을 문서화; canonical·backup parity는 build `aba05d9`로 확인 |
 
 ## 기록 규칙
 
