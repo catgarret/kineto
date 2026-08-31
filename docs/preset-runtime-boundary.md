@@ -2,6 +2,11 @@
 
 현재 패키지는 별도 preset 패키지를 만들지 않고, runtime과 모듈형 entry를 먼저 제공합니다. 소비자는 필요한 표면을 선택하고 디자인 preset은 애플리케이션 CSS 또는 별도 정적 manifest로 관리합니다.
 
+제품 앱의 기본 설치 경로는 `@dong-gri/kineto/core`와 실제로 사용하는
+`@dong-gri/kineto/modules/<name>` entry입니다. 전체 `@dong-gri/kineto` entry는
+CDN·빠른 prototype·모든 모듈을 한 번에 탐색하는 데모용으로 안내합니다. 이 구분은
+별도 preset package를 만들지 않아도 소비자 초기 번들 비용을 예측하게 합니다.
+
 | 사용 목적 | 권장 entry | 비고 |
 |---|---|---|
 | 빠른 CDN·전체 데모 | `@dong-gri/kineto` | registry와 전체 모듈을 한 번에 사용 |

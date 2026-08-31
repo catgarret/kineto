@@ -22,6 +22,12 @@
 
 `tests/browser/demo-polish.mjs`의 `checkpoint('heavy-layout')`는 Chromium·Firefox·WebKit에서 다음 계약을 한 번에 검사합니다.
 
+다음 모듈은 transform 조상·fixed/sticky·clip/mask·3D 경계를 실제로 사용하므로
+일반 smoke가 아니라 세 엔진의 `heavy-layout` 전체 대상으로 유지합니다: `pageReveal`,
+`pageTransition`, `slider`, `stickyStack`, `stickyHeader`, `lightbox`, `cursor`,
+`fullpage`, `radial`, `coverReveal`. 새 모듈을 이 목록에 넣으려면 아래 편입 조건과
+재현 가능한 레이아웃 회귀를 함께 추가해야 합니다.
+
 | 모듈 | 위험 경계 | 검사하는 결과 |
 |---|---|---|
 | `pageReveal` | transform 조상·fixed/sticky containing block | 루트 애니메이션과 persistent header의 레이어·크기·cover 중복 없음 |

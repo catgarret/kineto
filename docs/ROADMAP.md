@@ -160,7 +160,7 @@ npm provenance는 패키지가 어느 저장소와 빌드 환경에서 만들어
 
 목표는 Kineto만의 조합 모델을 만드는 것입니다.
 
-### P1. Motion States — v1 초기 구현 완료
+### P2. Motion States — v1 prototype 완료, 확장 보류
 
 현재 `variant`는 모듈 preset을 의미하므로 상태 시스템에 같은 용어를 쓰지 않습니다. `states` 또는 `motionState`로 분리합니다.
 
@@ -209,7 +209,7 @@ Web Animations API는 브라우저 애니메이션 엔진을 JavaScript에 노�
 - React Strict Mode와 Vue mount/unmount에서 States controller 생성·취소·destroy 복원을
   검사하며, full/standalone States의 SSR 호출이 브라우저 전역 없이 완료되는지 고정했습니다.
 
-### P1. Presence Core — 선택형 Vanilla prototype 완료
+### P2. Presence Core — 선택형 Vanilla prototype 완료, 확장 보류
 
 Presence는 React 전용 컴포넌트가 아니라 DOM 제거 전후를 조율하는 Core primitive로 시작합니다.
 
@@ -344,9 +344,10 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 | P0 | 소비자 번들 fixture·예산 | 높음 | 낮음 | 1~2주 | 없음 |
 | P0 | React/Vue lifecycle·SSR 매트릭스 | 높음 | 중간 | 2~3주 | 없음 |
 | P0 | SECURITY.md·공급망 운영 | 중간 | 낮음 | 1주 | 없음 |
+| P0 | 데모 정합성·복사 경로·troubleshooting | 매우 높음 | 중간 | 1~2주 | 문서 구조 |
 | P1 | 데모 공유 URL·복사 경로 개선 | 높음 | 중간 | 2~4주 | 문서 구조 |
-| P1 | Motion States v1 | 높음 | 높음 | 4~8주 | 번들 예산·취소 모델 |
-| P1 | Presence Core | 높음 | 높음 | 4~8주 | States 또는 공통 실행 primitive |
+| P2 | Motion States 확장 | 높음 | 높음 | 4~8주 | 실제 요구 2건·번들 예산·취소 모델 |
+| P2 | Presence Core 확장 | 높음 | 높음 | 4~8주 | 실제 요구 2건·States 또는 공통 실행 primitive |
 | P2 | React/Vue Presence | 중간~높음 | 높음 | 3~5주 | Presence Core 안정화 |
 | P2 | Slider physics 통합 | 중간 | 중간 | 3~5주 | 시간 기반 테스트 harness |
 | P2 | FLIP shared layout | 중간 | 높음 | 4~8주 | View Transition fallback 설계 |
@@ -501,10 +502,12 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 ### 11.3 tree-shaking은 장기 과제가 아니라 문서 결정입니다
 
 §6-2는 “프리셋과 런타임 분리”를 6~18개월로 두는데, `core` + `modules/*` 엔트리는 **이미
-존재합니다**. 남은 것은 패키징이 아니라 **무엇을 기본 설치 경로로 문서화할 것인가**라는
+존재합니다**. 따라서 1.0 전의 남은 일은 패키징이 아니라 **무엇을 기본 설치 경로로 문서화할 것인가**라는
 결정 하나입니다. README와 데모 복사 출력이 아직 전체 번들을 기본으로 보여주고 있다면,
-소비자가 받는 바이트는 예산 측정과 무관하게 줄지 않습니다. 이건 1~2일짜리 문서·복사 출력
-변경이고, §4 P0의 번들 예산 작업과 같은 사이클에 있어야 합니다.
+소비자가 받는 바이트는 예산 측정과 무관하게 줄지 않습니다. 제품 앱은 `core` + 필요한
+모듈 entry를 기본으로 안내하고, 전체 entry는 CDN·빠른 prototype으로 한정하는 결정을
+이번 사이클에 문서와 복사 출력에 반영합니다. 별도 preset package 분리는 실제 중복 비용이
+확인될 때까지 보류합니다.
 
 ### 11.4 “star 0”에 대한 대응이 비어 있습니다
 
