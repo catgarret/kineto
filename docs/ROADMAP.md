@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.8.105 · 작성일: 2026-08-02 · 검토: 2026-08-31
+> 기준 버전: v0.9.0 · 작성일: 2026-08-02 · 검토: 2026-08-31
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -37,6 +37,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 - 52개 모듈의 사용 시점·피해야 할 상황·접근성·성능·reduced motion 상태를 단일 생성 원본과 데모 뱃지, 문서 매트릭스, CI completeness 검사로 연결했습니다.
 - v0.8.104 후속으로 `pageReveal`, `pageTransition`, `slider`, `stickyStack`, `stickyHeader`, `lightbox`, `cursor`, `fullpage`의 레이어·클리핑·sticky/fixed 경계를 `demo-polish`의 `heavy-layout` 체크포인트로 고정하고 Chromium·Firefox·WebKit에서 모두 통과시켰습니다.
 - v0.8.105에서 소수 초가 포함된 ISO 날짜 입력을 보존 파싱하도록 수정해 Date Time의 `Both · relative + absolute` 데모가 상대 시각과 절대 시각을 함께 표시합니다. 배포 후 canonical demo의 CDN 경로까지 확인합니다.
+- v0.9.0에서 단순 Slider에 `scrollSnap:true` native CSS Scroll Snap 경로를 추가하고, 조건 밖 transform fallback과 Chromium·Firefox·WebKit smoke, 소비자 번들·패키지 예산을 함께 검증했습니다.
 
 ### 현재 병목
 
