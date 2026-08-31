@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Sync the separate Pages backup at `catgarret.github.io/example/kineto` to the verified v0.9.3 demo artifact without changing its site-wide CNAME.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 별도 Pages 백업 경로 `catgarret.github.io/example/kineto`를 검증된 v0.9.3 데모 산출물과 동기화했으며 사이트 전체 CNAME은 변경하지 않았습니다.
 
 ## [0.9.3] - 2026-08-31
 

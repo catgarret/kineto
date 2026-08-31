@@ -455,6 +455,7 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 52. 완료(Unreleased): Slider drag `stickySnap` opt-in 정수 정착과 기존 fractional target 보존
 53. 완료(Unreleased): 단순 Slider `scrollSnap:true`를 strict eligibility·transform fallback·번들 gate와 함께 구현하고 Chromium·Firefox·WebKit smoke fixture로 검증
 54. 유지(Unreleased): FLIP shared layout은 실제 요구 2건 전까지 구현하지 않는 evidence gate 유지
+55. 완료(v0.9.3 후속): 별도 Pages 백업 경로 `catgarret.github.io/example/kineto`를 canonical `kineto.dongri.me`의 v0.9.3 산출물과 동기화하고, CNAME·사이트 전체 범위는 변경하지 않음
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

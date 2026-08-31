@@ -12,6 +12,7 @@
 | 2026-08-19 | v0.8.104 후속 | `dbd4074` | `32165756521` | 성공 | 성공 | 성공 | `32167074624` 성공 | Chromium·Firefox·WebKit `heavy-layout` 및 live-site canonical/backup URL(v0.8.104·52개·GTM) 확인 |
 | 2026-08-24 | v0.8.104 운영 gate 후속 | `b6dbc87` | `32688876241` | 성공 | 성공 | 성공 | `32689372504` 성공 | 운영 문서·issue form·readiness CI 추가 후 Chromium·Firefox·WebKit과 Pages 재확인 |
 | 2026-08-25 | v0.8.104 Slider physics 후속 | `a13c04d` | `32747071438` | 성공 | 성공 | 성공 | `32747976927` 성공 | `momentum`·`bounce`·`stickySnap` 추가 후 Chromium·Firefox·WebKit, Pages와 live-site 재확인 |
+| 2026-08-31 | v0.9.3 browser QA hardening | `2898293` | `33398495438` | 성공 | 성공 | 성공 | `33399421877` 성공 | Chromium 전체 QA 재시도 경계를 적용한 릴리스 검증; npm provenance·GitHub Release·canonical live-site까지 확인 |
 
 ## 기록 규칙
 
