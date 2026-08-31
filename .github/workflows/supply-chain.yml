@@ -35,7 +35,21 @@ jobs:
         run: npm run test:lockfile-boundary
 
       - name: Run npm audit
-        run: npm audit --audit-level=low
+        run: |
+          mkdir -p artifacts
+          npm audit --audit-level=low --json > artifacts/npm-audit.json
+
+      - name: Generate SPDX SBOM
+        run: |
+          npm sbom --sbom-format=spdx > artifacts/kineto-sbom.spdx.json
 
       - name: Check package surface
         run: npm pack --dry-run
+
+      - name: Upload supply-chain reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: supply-chain-reports
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 14

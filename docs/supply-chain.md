@@ -47,6 +47,10 @@ workflow에서 같은 명령을 실행합니다. lockfile을 갱신할 때 regis
 
 `.github/workflows/supply-chain.yml`은 매주 월요일과 수동 dispatch에서 별도
 공급망 점검을 실행합니다. `npm ci --ignore-scripts`로 잠금 설치를 재현한 뒤
-lockfile registry 경계, `npm audit --audit-level=low`, `npm pack --dry-run`을
-차례로 확인합니다. 이 workflow는 공개 Socket 점수나 경고를 자동으로 대체하지
-않으며, Socket 경고는 위의 분류 절차에 따라 별도로 검토·기록합니다.
+lockfile registry 경계, `npm audit --audit-level=low`, SPDX SBOM 생성,
+`npm pack --dry-run`을 차례로 확인합니다. SBOM과 점검 산출물은 14일 동안
+workflow artifact로 보관해 특정 실행의 의존성 표면을 재검토할 수 있습니다.
+`.github/dependabot.yml`은 npm과 GitHub Actions 업데이트를 서로 분리해 매주
+제안하며, 패키지는 install lifecycle script를 제공하지 않는 정책을 유지합니다.
+이 workflow는 공개 Socket 점수나 경고를 자동으로 대체하지 않으며, Socket 경고는
+위의 분류 절차에 따라 별도로 검토·기록합니다.

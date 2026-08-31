@@ -482,6 +482,11 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 77. 완료(v0.9.3 후속): Node 24와 Node 25의 package archive 차이를 별도 runner variance로 문서화
 78. 완료(v0.9.3 후속): 로컬 Node 24/npm 11 재현 명령으로 원격 package-size 실패를 재현·확인
 79. 완료(v0.9.3 후속): package-size 경계 수정 후 전체 CI 재실행을 release 전제조건으로 고정
+80. 완료(v0.9.3 후속): npm과 GitHub Actions를 분리한 주간 Dependabot 업데이트 정책 추가
+81. 완료(v0.9.3 후속): 공급망 workflow에서 SPDX SBOM을 생성하고 실행 artifact로 14일 보관
+82. 완료(v0.9.3 후속): SBOM·audit 산출물 누락을 실패시키는 artifact 업로드 계약 추가
+83. 완료(v0.9.3 후속): package install lifecycle script 금지 정책을 공급망 회귀검사에 고정
+84. 완료(v0.9.3 후속): 공급망 운영 문서에 Dependabot·SBOM·artifact 보존 범위 기록
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 
