@@ -29,6 +29,7 @@
 - Absorb the measured sub-1 KB raw UMD artifact increase from strict date parsing while keeping compressed bundle ceilings and the zero-engine dependency guard unchanged.
 - Keep the measured strict-parser raw increase within the ESM artifact ceiling without widening any compressed consumer budget.
 - Align the packed archive ceiling with the measured Node 24/npm 11 515.6 KB result while keeping the release file allowlist fixed.
+- Scope the measured Node 24 Rolldown Vue-adapter compression variance to that independent fixture, leaving the 138 KB consumer product budget unchanged.
 
 ### 한국어
 
@@ -57,6 +58,7 @@
 - 엄격한 날짜 파서로 인한 UMD 산출물의 측정된 1KB 미만 raw 증가만 반영하고, 압축 번들 상한과 엔진 의존성 0개 경계는 유지합니다.
 - 엄격한 파서의 측정된 raw 증가를 ESM 산출물 상한에만 반영하고, 소비자 압축 예산은 늘리지 않습니다.
 - Node 24/npm 11에서 측정된 packed 515.6KB 결과만 archive 상한에 반영하고, 릴리스 파일 허용 목록은 고정합니다.
+- Node 24 Rolldown Vue adapter의 측정된 압축 variance만 독립 fixture에 한정해 반영하고, 138KB 소비자 제품 예산은 유지합니다.
 
 ## [0.9.3] - 2026-08-31
 

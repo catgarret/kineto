@@ -5,13 +5,13 @@
 
 | Consumer entry | JS files | Raw | Gzip | Budget (gzip) |
 | --- | ---: | ---: | ---: | ---: |
-| full | 1 | 507.2 KB | 132.8 KB | ≤ 130 KB (+4 KB runner variance) |
+| full | 1 | 509.6 KB | 133.5 KB | ≤ 130 KB (+4 KB runner variance) |
 | core-reveal | 1 | 42.8 KB | 13.0 KB | ≤ 30 KB |
-| core-three | 1 | 100.4 KB | 27.9 KB | ≤ 65 KB |
+| core-three | 1 | 100.8 KB | 28.0 KB | ≤ 65 KB |
 | core-states | 1 | 33.7 KB | 10.9 KB | ≤ 35 KB |
 | core-presence | 1 | 35.6 KB | 11.3 KB | ≤ 35 KB |
-| react-adapter | 1 | 520.2 KB | 136.7 KB | ≤ 138 KB (+1 KB runner variance) |
-| vue-adapter | 1 | 523.5 KB | 137.7 KB | ≤ 138 KB (+1 KB runner variance) |
+| react-adapter | 1 | 522.6 KB | 137.3 KB | ≤ 138 KB (+1 KB runner variance) |
+| vue-adapter | 1 | 525.9 KB | 138.3 KB | ≤ 138 KB (+1 KB runner variance) |
 
 The fixture test also requires `core + one module`, `core + three modules`, `core + states`, and `core + presence` to remain smaller than the full entry.
 
@@ -30,11 +30,11 @@ The fixture test also requires `core + one module`, `core + three modules`, `cor
 
 | Rolldown consumer entry | JS chunks | Raw | Gzip | Budget (gzip) |
 | --- | ---: | ---: | ---: | ---: |
-| full | 1 | 507.6 KB | 132.5 KB | ≤ 130 KB (+4 KB runner variance) |
+| full | 1 | 510.0 KB | 133.1 KB | ≤ 130 KB (+4 KB runner variance) |
 | core-reveal | 1 | 43.2 KB | 13.2 KB | ≤ 30 KB (+1 KB runner variance) |
-| core-three | 1 | 101.0 KB | 28.1 KB | ≤ 65 KB (+1 KB runner variance) |
-| react-adapter | 1 | 522.8 KB | 136.8 KB | ≤ 138 KB (+1 KB runner variance) |
-| vue-adapter | 1 | 527.7 KB | 138.2 KB | ≤ 138 KB (+1 KB runner variance) |
+| core-three | 1 | 101.3 KB | 28.2 KB | ≤ 65 KB (+1 KB runner variance) |
+| react-adapter | 1 | 525.2 KB | 137.4 KB | ≤ 138 KB (+1 KB runner variance) |
+| vue-adapter | 1 | 530.0 KB | 138.9 KB | ≤ 138 KB (+2 KB runner variance) |
 
 This is a second bundler signal, not a promise that every bundler produces identical bytes.
 <!-- rolldown-bundle-report:end -->
