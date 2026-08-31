@@ -37,6 +37,11 @@ checks the live response for the version, module count, GTM, and unversioned
 CDN. It retries while the CDN cache propagates, separating a passing generated
 `site/` artifact from a live page that users can actually see.
 
+After synchronizing the separate backup, run `npm run test:live-site:parity` to
+check the canonical and backup URLs together, including their build markers.
+This is an explicit parity check; it does not make the non-canonical repository
+an automatic deployment target.
+
 ## Preparing a version
 
 Start from a clean `main` branch after all feature/fix commits are complete.
