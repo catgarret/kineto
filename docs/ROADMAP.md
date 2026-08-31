@@ -468,6 +468,10 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 63. 완료(v0.9.3 후속): 브라우저 QA 이력 각 행에 커밋·CI/결과 귀속이 남는지 검사해 성공 주장을 추적 가능하게 고정
 64. 완료(v0.9.3 후속): readiness evidence 검사를 `test:node`·release automation 계약에 연결해 CI와 릴리스가 같은 외부 증거 경계를 사용
 65. 완료(v0.9.3 후속): readiness evidence와 로드맵 우선순위 변경의 CI·Pages·canonical/backup parity 결과를 브라우저 QA 이력에 귀속
+66. 완료(v0.9.3 후속): 세 개의 npm lockfile을 lockfileVersion 3과 public registry tarball·integrity 경계로 검사
+67. 완료(v0.9.3 후속): consumer/framework fixture의 유일한 로컬 Kineto link(`../..`)를 명시적 예외로 고정하고 임의 workspace link를 차단
+68. 완료(v0.9.3 후속): lockfile boundary 검사를 `test:node`·CI·release workflow에 연결해 설치 경계가 모든 릴리스 경로에서 동일하게 검증되도록 고정
+69. 완료(v0.9.3 후속): 공급망 문서에 lockfile registry 경계와 갱신 시 검토 기준을 기록
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

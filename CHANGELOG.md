@@ -11,6 +11,7 @@
 - Add a readiness-evidence contract for physical-device artifacts, case-study completeness, deprecation fixtures, and attributable browser QA history.
 - Clarify the roadmap gate: demo parity and modular entry guidance are P0, while new States/Presence expansion waits for real demand and high-risk WebKit coverage remains explicit.
 - Record the readiness-evidence and roadmap-priority CI/Pages outcomes in the browser QA history with canonical/backup parity markers.
+- Enforce lockfileVersion 3, public npm registry tarballs, integrity metadata, and the two fixture-only local Kineto links in CI and release checks.
 - Add an explicit canonical/backup live-site parity check with a local fixture, including build-marker drift detection without coupling the backup repository to deployment.
 - Sync the separate Pages backup at `catgarret.github.io/example/kineto` to the verified v0.9.3 demo artifact without changing its site-wide CNAME.
 
@@ -23,6 +24,7 @@
 - 실기기 증거 형식·case study 필수 기록·deprecation fixture·브라우저 QA 이력의 추적 가능성을 readiness-evidence 검사로 고정했습니다.
 - 데모 정합성·모듈형 entry 안내를 P0으로 올리고, States/Presence 확장은 실제 요구 전까지 보류하며 고위험 WebKit 대상을 명시했습니다.
 - readiness-evidence와 로드맵 우선순위 변경의 CI·Pages 결과 및 canonical/backup parity build marker를 브라우저 QA 이력에 기록했습니다.
+- CI와 릴리스 검사에서 lockfileVersion 3, public npm registry tarball, integrity metadata, fixture 전용 로컬 Kineto link 2개 경계를 강제합니다.
 - 백업 저장소를 배포 대상에 결합하지 않고도 canonical·백업의 버전·모듈 수·GTM·CDN·build marker drift를 검사하는 live-site parity 명령과 로컬 fixture를 추가했습니다.
 - 별도 Pages 백업 경로 `catgarret.github.io/example/kineto`를 검증된 v0.9.3 데모 산출물과 동기화했으며 사이트 전체 CNAME은 변경하지 않았습니다.
 

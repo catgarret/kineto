@@ -29,3 +29,16 @@ GSAP·Lenis와 framework integration은 optional peer dependency 또는 on-deman
 경로로만 제공해 설치 시 암묵적인 실행 payload가 늘지 않도록 합니다. `npm run
 test:deps`가 이 metadata 경계, source import, built bundle의 CDN loader와 UMD
 크기를 함께 검사합니다.
+
+## 잠금파일 registry 경계
+
+세 개의 npm 잠금파일(`package-lock.json`, consumer fixture, framework fixture)은
+lockfileVersion 3을 사용하고, 외부 패키지의 `resolved` URL을
+`https://registry.npmjs.org/*.tgz`로 고정합니다. 각 registry 항목은 무결성
+`integrity` 값을 가져야 하며, git·사설 registry·임의 tarball URL을 허용하지
+않습니다. fixture가 로컬 Kineto 소스를 소비하는 경우에만
+`node_modules/@dong-gri/kineto`가 `../..` npm link로 예외 처리됩니다.
+
+이 경계는 `npm run test:lockfile-boundary`로 검사하며 `test:node`, CI, release
+workflow에서 같은 명령을 실행합니다. lockfile을 갱신할 때 registry 변경이나
+새로운 workspace link가 생기면 코드 변경과 같은 검토·근거를 남겨야 합니다.
