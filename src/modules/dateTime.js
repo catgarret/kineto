@@ -18,17 +18,44 @@ function parseDate(value, locale = '') {
       && probe.getUTCMonth() === Number(month) - 1
       && probe.getUTCDate() === Number(day);
   };
-  // SQL-style timestamps and ISO values without an offset are common in
-  // server-rendered attributes. Browsers interpret those as host-local time,
-  // which made the same markup produce different relative labels in UTC CI
-  // and in a KST browser. Korean server dates conventionally use KST, so pin
-  // that one ambiguous form to +09:00 while leaving explicit offsets and other
-  // locales to the platform parser.
-  const naiveIso = text.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{1,2})(?::?(\d{2}))?(?::?(\d{2})(?:\.(\d{1,3}))?)?)?$/);
-  if (naiveIso && koreanLocale) {
-    const [, year, month, day, hour = '0', minute = '0', second = '0', milli = '0'] = naiveIso;
+  const validClockTime = (hour = '0', minute = '0', second = '0', milli = '0') => {
+    const hourNumber = Number(hour);
+    const minuteNumber = Number(minute);
+    const secondNumber = Number(second);
+    const milliText = String(milli);
+    const milliNumber = Number(milliText.padEnd(3, '0'));
+    return /^\d{1,3}$/.test(milliText)
+      && Number.isInteger(hourNumber) && hourNumber >= 0 && hourNumber <= 23
+      && Number.isInteger(minuteNumber) && minuteNumber >= 0 && minuteNumber <= 59
+      && Number.isInteger(secondNumber) && secondNumber >= 0 && secondNumber <= 59
+      && Number.isInteger(milliNumber) && milliNumber >= 0 && milliNumber <= 999;
+  };
+  const normalizeOffset = (offset) => {
+    if (!offset) return '';
+    if (String(offset).toUpperCase() === 'Z') return 'Z';
+    const match = String(offset).match(/^([+-])(\d{2}):?(\d{2})$/);
+    if (!match || Number(match[2]) > 23 || Number(match[3]) > 59) return null;
+    return `${match[1]}${match[2]}:${match[3]}`;
+  };
+  // Parse every year-first separator consistently before handing the value to
+  // the permissive platform parser. Date.parse silently rolls values such as
+  // 2026-02-31 into March, and browsers disagree on slash/dot timestamps.
+  const yearFirst = text.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:(?:[T\s]+)(\d{1,2})(?::?(\d{2}))?(?::?(\d{2})(?:\.(\d{1,3}))?)?(Z|[+-]\d{2}:?\d{2})?)?$/i);
+  if (yearFirst) {
+    const [, year, month, day, hour, minute = '0', second = '0', milli = '0', rawOffset] = yearFirst;
     if (!validCalendarDate(year, month, day)) return null;
-    const iso = `${year}-${month}-${day}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}.${String(milli).padEnd(3, '0')}+09:00`;
+    const offset = normalizeOffset(rawOffset);
+    if (rawOffset && !offset) return null;
+    if (hour === undefined) {
+      if (rawOffset) return null;
+      const dateOnly = koreanLocale
+        ? new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T00:00:00.000+09:00`)
+        : new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
+      return Number.isNaN(dateOnly.getTime()) ? null : dateOnly;
+    }
+    if (!validClockTime(hour, minute, second, milli)) return null;
+    const suffix = offset || (koreanLocale ? '+09:00' : '');
+    const iso = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}.${String(milli).padEnd(3, '0')}${suffix}`;
     const parsed = new Date(iso);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
@@ -43,7 +70,7 @@ function parseDate(value, locale = '') {
   const compact = text.match(/^(\d{4})(\d{2})(\d{2})(?:(\d{2})(\d{2})(\d{2})(?:\.(\d{1,3}))?)?$/);
   if (compact) {
     const [, year, month, day, hour = '0', minute = '0', second = '0', milli = '0'] = compact;
-    if (!validCalendarDate(year, month, day)) return null;
+    if (!validCalendarDate(year, month, day) || !validClockTime(hour, minute, second, milli)) return null;
     const iso = `${year}-${month}-${day}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:${second.padStart(2, '0')}.${milli.padEnd(3, '0')}${koreanLocale ? '+09:00' : ''}`;
     const parsed = new Date(iso);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
@@ -51,14 +78,14 @@ function parseDate(value, locale = '') {
   const koreanClock = text.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:\s*(\d{1,2})\s*시)?(?:\s*(\d{1,2})\s*분)?(?:\s*(\d{1,2})\s*초)?$/);
   if (koreanClock) {
     const [, year, month, day, hour = '0', minute = '0', second = '0'] = koreanClock;
-    if (!validCalendarDate(year, month, day)) return null;
+    if (!validCalendarDate(year, month, day) || !validClockTime(hour, minute, second)) return null;
     const parsed = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:${second.padStart(2, '0')}+09:00`);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
   const korean = text.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:\s+(\d{1,2})(?::(\d{2})(?::(\d{2}))?)?)?$/);
   if (korean) {
     const [, year, month, day, hour = '0', minute = '0', second = '0'] = korean;
-    if (!validCalendarDate(year, month, day)) return null;
+    if (!validCalendarDate(year, month, day) || !validClockTime(hour, minute, second)) return null;
     const parsed = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:${second.padStart(2, '0')}+09:00`);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
@@ -70,7 +97,7 @@ function parseDate(value, locale = '') {
     const usLocale = /^en-US(?:-|$)/i.test(String(locale));
     const month = firstNumber > 12 ? secondNumber : secondNumber > 12 ? firstNumber : usLocale ? firstNumber : secondNumber;
     const day = firstNumber > 12 ? firstNumber : secondNumber > 12 ? secondNumber : usLocale ? secondNumber : firstNumber;
-    if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && validCalendarDate(year, month, day)) {
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && validCalendarDate(year, month, day) && validClockTime(hour, minute, secondValue)) {
       // Korean servers commonly emit `MM/DD/YYYY HH:mm` even when the
       // surrounding locale is Korean. Keep that value anchored to KST so the
       // relative label is stable on UTC CI/SSR hosts. Other locales retain

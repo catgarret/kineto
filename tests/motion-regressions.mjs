@@ -599,6 +599,37 @@ assert.equal(invalidServerDate.textContent, '날짜 확인 필요', 'dateTime mu
 invalidDateInstance.destroy();
 invalidServerDate.remove();
 
+for (const invalidDate of [
+  ['2026-02-31T10:30:00', 'en-US'],
+  ['2026/02/31 10:30', 'en-US'],
+  ['2026.02.31 10:30', 'ko'],
+  ['2026-08-09 25:70:00', 'ko']
+]) {
+  const invalidVariant = document.createElement('time');
+  document.body.appendChild(invalidVariant);
+  const invalidVariantInstance = dateTimeModule.create(invalidVariant, {
+    date: invalidDate[0], mode: 'relative', locale: invalidDate[1], fallback: '날짜 확인 필요', live: false
+  });
+  assert.equal(invalidVariant.textContent, '날짜 확인 필요', `dateTime must reject invalid calendar/time input: ${invalidDate[0]}`);
+  invalidVariantInstance.destroy();
+  invalidVariant.remove();
+}
+
+for (const validDate of [
+  '2026-8-9 10:30',
+  '2026/08/09 10:30:00+0900',
+  '2026.08.09T10:30:00+09:00'
+]) {
+  const validVariant = document.createElement('time');
+  document.body.appendChild(validVariant);
+  const validVariantInstance = dateTimeModule.create(validVariant, {
+    date: validDate, mode: 'relative', locale: 'ko', now: '2026-08-09T10:35:00+09:00', live: false
+  });
+  assert.match(validVariant.textContent, /5분 전/, `dateTime must normalize valid year-first server date: ${validDate}`);
+  validVariantInstance.destroy();
+  validVariant.remove();
+}
+
 const cutoffRelativeTime = document.createElement('time');
 document.body.appendChild(cutoffRelativeTime);
 const cutoffInstance = dateTimeModule.create(cutoffRelativeTime, {

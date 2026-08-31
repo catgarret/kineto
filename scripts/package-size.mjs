@@ -97,8 +97,12 @@ const BUDGET = {
   // measures 514.2 KB packed for the same 77-file surface; absorb that bounded
   // runner delta in the packed ceiling while keeping the file list and
   // consumer gzip budgets unchanged.
+  // 2026-09-01: strict year-first separator/time/offset validation adds the
+  // measured 3.6 KB unpacked on Node 25/npm 11 (1730.3 KB total) while the
+  // 77-file surface remains fixed. Absorb only this parser safety cost in the
+  // rounded unpacked ceiling; consumer gzip budgets remain unchanged.
   packedKb: 515,
-  unpackedKb: 1727,
+  unpackedKb: 1731,
   files: 78
 };
 

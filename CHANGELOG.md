@@ -25,6 +25,9 @@
 - Keep the Radial drag regression assertion portable across engines that do not expose the WebKit-only `-webkit-user-drag` computed property.
 - Normalize vendor-prefixed computed style access in the Radial browser checkpoint so WebKit and Firefox validate the same interaction contract.
 - Record the successful Node 24, Firefox, WebKit, canonical Pages, backup Pages, and live-site parity evidence for the Radial/dateTime follow-up.
+- Harden dateTime parsing across dash, slash, and dot year-first inputs, validate clock ranges, preserve explicit offsets, and add cross-locale rollover regression coverage.
+- Absorb the measured sub-1 KB raw UMD artifact increase from strict date parsing while keeping compressed bundle ceilings and the zero-engine dependency guard unchanged.
+- Keep the measured strict-parser raw increase within the ESM artifact ceiling without widening any compressed consumer budget.
 
 ### 한국어
 
@@ -49,6 +52,9 @@
 - WebKit 전용 `-webkit-user-drag` 계산 속성을 노출하지 않는 브라우저에서도 Radial 드래그 회귀 검사가 올바르게 동작하도록 엔진별 검사를 분리했습니다.
 - Radial 브라우저 체크포인트에서 vendor prefix 계산 스타일을 정규화해 WebKit·Firefox가 동일한 상호작용 계약을 검증하도록 했습니다.
 - Radial/dateTime 후속 작업의 Node 24·Firefox·WebKit·canonical Pages·backup Pages·live-site parity 성공 증거를 브라우저 QA 이력에 기록했습니다.
+- dateTime의 연-월-일(`-`, `/`, `.`) 입력을 엄격하게 검증하고 시각 범위를 검사하며 명시적 offset을 보존하고, locale별 날짜 rollover 회귀 테스트를 추가했습니다.
+- 엄격한 날짜 파서로 인한 UMD 산출물의 측정된 1KB 미만 raw 증가만 반영하고, 압축 번들 상한과 엔진 의존성 0개 경계는 유지합니다.
+- 엄격한 파서의 측정된 raw 증가를 ESM 산출물 상한에만 반영하고, 소비자 압축 예산은 늘리지 않습니다.
 
 ## [0.9.3] - 2026-08-31
 
