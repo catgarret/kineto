@@ -5,13 +5,22 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.9.1] - 2026-08-31
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Widen only the full consumer fixture's bounded runner variance to cover the measured 133.2 KB Node 24/Linux gzip output, keeping the 130 KB product budget unchanged.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - 130KB 제품 예산은 유지하면서 Node 24/Linux에서 측정된 133.2KB gzip 결과를 수용하도록 전체 consumer fixture의 제한된 runner variance만 조정했습니다.
-
 ## [0.9.0] - 2026-08-31
 
 ### English
