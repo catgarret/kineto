@@ -5,7 +5,7 @@ Kineto는 브라우저가 제공하는 안정적인 기능을 먼저 사용하�
 | 플랫폼 기능 | Kineto 사용 경로 | fallback | 상태 |
 |---|---|---|---|
 | View Transitions | `flip({ viewTransition: true })` + `data-kt-layout-id` | 기존 FLIP | 구현·회귀 검사 완료 |
-| CSS Scroll Snap | Fullpage `mode: 'snap'`, 단순 slider 후보 | 기존 transform/drag 엔진 | 제한된 경로 유지, 실제 사용 사례 수집 |
+| CSS Scroll Snap | Fullpage `mode: 'snap'`, Slider `scrollSnap:true` 단순 경로 | 기존 transform/drag 엔진 | 실험적 opt-in, 조건 밖 자동 fallback |
 | Scroll-driven Animations | CSS variable·native scroll을 우선 검토 | rAF/ScrollTrigger bridge | 실험·호환성 조사 |
 | `prefers-reduced-motion` | 최종 상태·정적 표시 | 모션 제거 | 전 모듈 계약과 QA 유지 |
 

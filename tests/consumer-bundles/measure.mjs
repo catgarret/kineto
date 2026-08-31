@@ -17,11 +17,11 @@ const fixtures = [
   { name: 'core-three', budget: 65 },
   { name: 'core-states', budget: 35 },
   { name: 'core-presence', budget: 35 },
-  // The public diagnostics hub adds a shared code/history surface to both
-  // adapters. Keep the adapter product budget at 137 KB and reserve only a
-  // bounded 1 KB runner variance around the new measured baseline.
-  { name: 'react-adapter', entry: 'react', budget: 137, variance: 1 },
-  { name: 'vue-adapter', entry: 'vue', budget: 137, variance: 1 }
+  // The public diagnostics hub and Slider native Scroll Snap path add a shared
+  // runtime surface to both adapters. Keep the adapter product budget at 138 KB
+  // and reserve only a bounded 1 KB runner variance around the measured base.
+  { name: 'react-adapter', entry: 'react', budget: 138, variance: 1 },
+  { name: 'vue-adapter', entry: 'vue', budget: 138, variance: 1 }
 ];
 const kb = (value) => value / 1024;
 const assertCheck = (condition, message) => {

@@ -468,6 +468,24 @@ export default {
     const allowTouch = opts.touch !== false;
     const allowKeyboard = opts.keyboard !== false;
 
+    // Native Scroll Snap is deliberately narrow: it must preserve the
+    // transform engine's one-slide semantics and keep every effect with its
+    // established renderer. Touch is required because browsers cannot
+    // selectively disable native touch scrolling without reintroducing a
+    // custom gesture engine; mouse dragging is handled below when enabled.
+    let scrollSnapRequested = false;
+    let nativeScrollSnap = false;
+    if (effect === 'slide') {
+      scrollSnapRequested = opts.scrollSnap === true;
+      nativeScrollSnap = scrollSnapRequested
+        && loopMode === 'off'
+        && !vertical
+        && perView === 1
+        && gap === 0
+        && opts.autoHeight !== true
+        && allowTouch;
+    }
+
     const original = {
       wrap: wrap.getAttribute('style'), track: track.getAttribute('style'),
       wrapRole: wrap.getAttribute('role'), wrapLabel: wrap.getAttribute('aria-label'), wrapTab: wrap.getAttribute('tabindex'),
@@ -483,6 +501,7 @@ export default {
     let bounceTarget = index;
     let dragMoved = false;
     let dragStartX = 0;
+    let dragStartScroll = 0;
     let dragStartTarget = 0;
     let lastMoveX = 0;
     let lastMoveTime = 0;
@@ -527,27 +546,48 @@ export default {
     }
     wrap.style.touchAction = vertical ? 'pan-x' : 'pan-y';
     wrap.style.position = 'relative';
+    if (nativeScrollSnap) {
+      wrap.style.overflowX = 'auto';
+      wrap.style.overflowY = 'hidden';
+      wrap.style.scrollSnapType = 'x mandatory';
+      wrap.style.scrollBehavior = reduce ? 'auto' : 'smooth';
+      wrap.style.touchAction = 'pan-x pan-y';
+      wrap.style.overscrollBehaviorX = 'contain';
+    }
     if (coverflow || flip || cube || cards || creative) wrap.style.perspective = `${Number(opts.perspective ?? 1100)}px`;
     el.dataset.ktSliderEffect = effect;
+    if (scrollSnapRequested) el.dataset.ktSliderScrollSnap = nativeScrollSnap ? 'native' : 'fallback';
     el.classList.add(`kt-slider--${effect}`);
     el.classList.toggle('kt-slider--active-shadow', activeShadow);
     if (activeShadow) {
       el.style.setProperty('--kt-slide-active-shadow-opacity', `${Number((activeShadowOpacity * 100).toFixed(2))}%`);
     }
-    track.style.display = 'block';
+    track.style.display = nativeScrollSnap ? 'flex' : 'block';
     track.style.position = 'relative';
     track.style.width = '100%';
     track.style.transformStyle = coverflow ? 'preserve-3d' : 'flat';
+    if (nativeScrollSnap) track.style.flexWrap = 'nowrap';
 
     const slideWidthPercent = 100 / perView;
     slides.forEach((slide, slideIndex) => {
-      slide.style.position = slideIndex === 0 ? 'relative' : 'absolute';
-      slide.style.top = '0';
-      slide.style.left = '0';
-      if (vertical) {
+      if (nativeScrollSnap) {
+        slide.style.position = 'relative';
+        slide.style.top = '';
+        slide.style.left = '';
+        slide.style.width = '100%';
+        slide.style.minWidth = '100%';
+        slide.style.flex = '0 0 100%';
+        slide.style.height = '100%';
+        slide.style.scrollSnapAlign = 'start';
+      } else {
+        slide.style.position = slideIndex === 0 ? 'relative' : 'absolute';
+        slide.style.top = '0';
+        slide.style.left = '0';
+      }
+      if (!nativeScrollSnap && vertical) {
         slide.style.width = '100%';
         slide.style.height = `calc(${slideWidthPercent}% - ${(gap * (perView - 1)) / perView}px)`;
-      } else {
+      } else if (!nativeScrollSnap) {
         slide.style.width = `calc(${slideWidthPercent}% - ${(gap * (perView - 1)) / perView}px)`;
         slide.style.minWidth = '0';
         // Every slide but the first is absolutely positioned, so it needs a
@@ -556,8 +596,9 @@ export default {
         if (slideIndex !== 0 && opts.autoHeight !== true) slide.style.height = '100%';
       }
       slide.style.transformOrigin = '50% 50%';
-      slide.style.willChange = activeShadow ? 'transform,opacity,filter' : 'transform,opacity';
+      slide.style.willChange = nativeScrollSnap ? 'auto' : (activeShadow ? 'transform,opacity,filter' : 'transform,opacity');
       slide.style.transition = 'none';
+      if (nativeScrollSnap) slide.style.transform = 'none';
       slide.setAttribute('role', 'group');
       slide.setAttribute('aria-roledescription', 'slide');
       slide.setAttribute('aria-label', `${slideIndex + 1} of ${slides.length}`);
@@ -575,6 +616,21 @@ export default {
     };
 
     const render = () => {
+      if (nativeScrollSnap) {
+        slides.forEach((slide) => {
+          slide.style.transform = 'none';
+          slide.style.opacity = '1';
+          slide.style.filter = '';
+          slide.style.clipPath = '';
+          slide.style.backfaceVisibility = '';
+          slide.style.zIndex = '';
+          slide.style.pointerEvents = '';
+          slide.style.setProperty('--kt-slider-slide-distance', '0');
+          slide.style.setProperty('--kt-slider-slide-progress', '1');
+          slide.style.setProperty('--kt-slider-transition-mix', '0');
+        });
+        return;
+      }
       if (stacked) {
         // Stack scene effects in one plane. Fade remains a clean cross-fade;
         // dissolve adds a noisy blur/scale transition; wipe, flip, cube, cards
@@ -687,6 +743,30 @@ export default {
       opts.onChange?.(index, slides[index], el);
     };
 
+    const commitIndex = (nextIndex) => {
+      if (nextIndex === index) return false;
+      const previousIndex = index;
+      opts.onBeforeChange?.(nextIndex, previousIndex, el);
+      emit('kt-slider-before-change', { index: nextIndex, previousIndex, slide: slides[nextIndex] });
+      index = nextIndex;
+      syncState();
+      emit('kt-slider-change', { index, previousIndex, slide: slides[index] });
+      return true;
+    };
+
+    let nativeScrollRaf = null;
+    const onNativeScroll = () => {
+      if (!nativeScrollSnap || !alive || nativeScrollRaf != null) return;
+      nativeScrollRaf = requestAnimationFrame(() => {
+        nativeScrollRaf = null;
+        const width = Math.max(1, wrap.clientWidth || wrap.getBoundingClientRect().width);
+        const nextIndex = clamp(Math.round(wrap.scrollLeft / width), 0, maxIndex);
+        target = nextIndex;
+        position = nextIndex;
+        commitIndex(nextIndex);
+      });
+    };
+
     const tick = (time) => {
       if (!alive) return;
       if (offscreen) { rafId = null; return; }
@@ -741,14 +821,16 @@ export default {
       const requested = seamless ? raw : clamp(raw, 0, maxIndex);
       target = !seamless && snap ? Math.round(requested) : requested;
       const nextIndex = seamless ? normalize(target) : clamp(Math.round(target), 0, maxIndex);
-      if (nextIndex !== index) {
-        const previousIndex = index;
-        opts.onBeforeChange?.(nextIndex, previousIndex, el);
-        emit('kt-slider-before-change', { index: nextIndex, previousIndex, slide: slides[nextIndex] });
-        index = nextIndex;
-        syncState();
-        emit('kt-slider-change', { index, previousIndex, slide: slides[index] });
+      if (nativeScrollSnap) {
+        target = nextIndex;
+        position = nextIndex;
+        commitIndex(nextIndex);
+        const width = Math.max(1, wrap.clientWidth || wrap.getBoundingClientRect().width);
+        if (reduce) wrap.scrollLeft = nextIndex * width;
+        else wrap.scrollTo?.({ left: nextIndex * width, behavior: 'smooth' });
+        return;
       }
+      commitIndex(nextIndex);
       wake();
     };
     const goTo = (value) => {
@@ -870,6 +952,24 @@ export default {
       if (!enabled) return;
       if (event.pointerType === 'mouse' && event.button !== 0) return;
       if (event.pointerType === 'mouse' ? !allowDrag : !allowTouch) return;
+      if (nativeScrollSnap) {
+        // Native touch scrolling remains browser-owned. For a mouse, retain
+        // the familiar click-drag affordance by translating the scroll offset
+        // directly and letting the release snap to the nearest page.
+        if (event.pointerType !== 'mouse') return;
+        dragging = true;
+        dragMoved = false;
+        pointerId = event.pointerId;
+        dragStartX = event.clientX;
+        dragStartScroll = wrap.scrollLeft;
+        lastMoveX = event.clientX;
+        lastMoveTime = performance.now();
+        wrap.style.scrollSnapType = 'none';
+        wrap.style.scrollBehavior = 'auto';
+        wrap.setPointerCapture?.(pointerId);
+        stop();
+        return;
+      }
       dragging = true;
       bounceActive = false;
       springVelocity = 0;
@@ -887,6 +987,15 @@ export default {
     };
     const onMove = (event) => {
       if (!dragging || event.pointerId !== pointerId) return;
+      if (nativeScrollSnap) {
+        const diff = event.clientX - dragStartX;
+        if (!dragMoved && Math.abs(diff) < 5) return;
+        dragMoved = true;
+        const maxScroll = Math.max(0, wrap.scrollWidth - wrap.clientWidth);
+        wrap.scrollLeft = clamp(dragStartScroll - diff, 0, maxScroll);
+        event.preventDefault();
+        return;
+      }
       const { step } = metrics();
       const pointerPosition = vertical ? event.clientY : event.clientX;
       const diff = pointerPosition - dragStartX;
@@ -911,6 +1020,16 @@ export default {
       if (!dragging || event.pointerId !== pointerId) return;
       dragging = false;
       wrap.releasePointerCapture?.(pointerId);
+      if (nativeScrollSnap) {
+        if (dragMoved) suppressClickUntil = performance.now() + 250;
+        const width = Math.max(1, wrap.clientWidth || wrap.getBoundingClientRect().width);
+        const scroll = wrap.scrollLeft;
+        wrap.style.scrollSnapType = 'x mandatory';
+        wrap.style.scrollBehavior = reduce ? 'auto' : 'smooth';
+        settle(Math.round(scroll / width));
+        start();
+        return;
+      }
       if (dragMoved) suppressClickUntil = performance.now() + 250;
       // The rolling average caps its memory at five samples, so a single noisy
       // pointer event no longer decides the fling while the latest samples
@@ -960,6 +1079,13 @@ export default {
     let wheelLock = 0;
     const onWheel = (event) => {
       if (!enabled) return;
+      if (nativeScrollSnap) {
+        // CSS Scroll Snap owns horizontal wheel/touchpad movement. `wheel:false`
+        // keeps the option's historical meaning without trapping a vertical
+        // page scroll that happens to pass over the slider.
+        if (!wheelNav && Math.abs(event.deltaX) >= Math.abs(event.deltaY)) event.preventDefault();
+        return;
+      }
       const delta = Math.abs(event.deltaX) >= Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
       if (Math.abs(delta) < 6) return;
       event.preventDefault();
@@ -968,7 +1094,7 @@ export default {
       wheelLock = now;
       if (delta > 0) next(); else prev();
     };
-    if (wheelNav) wrap.addEventListener('wheel', onWheel, { passive: false });
+    if (wheelNav || nativeScrollSnap) wrap.addEventListener('wheel', onWheel, { passive: false });
     const onEnter = () => { if (pauseOnHover) { hoverPaused = true; stop(); } };
     const onLeave = () => { if (pauseOnHover) { hoverPaused = false; start(); } };
     wrap.addEventListener('pointerenter', onEnter);
@@ -991,8 +1117,18 @@ export default {
       }, { threshold: 0.01 });
       visibilityObserver.observe(el);
     }
-    const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => { render(); }) : null;
+    const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => {
+      render();
+      if (nativeScrollSnap) {
+        const width = Math.max(1, wrap.clientWidth || wrap.getBoundingClientRect().width);
+        const behavior = wrap.style.scrollBehavior;
+        wrap.style.scrollBehavior = 'auto';
+        wrap.scrollLeft = index * width;
+        wrap.style.scrollBehavior = behavior;
+      }
+    }) : null;
     resizeObserver?.observe(wrap);
+    if (nativeScrollSnap) wrap.addEventListener('scroll', onNativeScroll, { passive: true });
 
     // Pagination dots — intentionally class-only so product code can completely
     // restyle them without fighting inline declarations.
@@ -1101,6 +1237,16 @@ export default {
 
     render();
     syncState();
+    if (nativeScrollSnap) {
+      requestAnimationFrame(() => {
+        if (!alive) return;
+        const width = Math.max(1, wrap.clientWidth || wrap.getBoundingClientRect().width);
+        const behavior = wrap.style.scrollBehavior;
+        wrap.style.scrollBehavior = 'auto';
+        wrap.scrollLeft = index * width;
+        wrap.style.scrollBehavior = behavior;
+      });
+    }
     start();
     startProgressLoop();
     opts.onInit?.(el);
@@ -1142,8 +1288,9 @@ export default {
         progressWrap?.remove();
         pauseButton?.remove();
         if (rafId != null) cancelAnimationFrame(rafId);
+        if (nativeScrollRaf != null) cancelAnimationFrame(nativeScrollRaf);
         resizeObserver?.disconnect();
-        wrap.removeEventListener('pointerdown', onDown); wrap.removeEventListener('pointermove', onMove); wrap.removeEventListener('pointerup', onEnd); wrap.removeEventListener('pointercancel', onEnd); wrap.removeEventListener('touchmove', onTouchMove); wrap.removeEventListener('keydown', onKey); wrap.removeEventListener('wheel', onWheel); wrap.removeEventListener('pointerenter', onEnter); wrap.removeEventListener('pointerleave', onLeave);
+        wrap.removeEventListener('pointerdown', onDown); wrap.removeEventListener('pointermove', onMove); wrap.removeEventListener('pointerup', onEnd); wrap.removeEventListener('pointercancel', onEnd); wrap.removeEventListener('touchmove', onTouchMove); wrap.removeEventListener('keydown', onKey); wrap.removeEventListener('wheel', onWheel); wrap.removeEventListener('pointerenter', onEnter); wrap.removeEventListener('pointerleave', onLeave); wrap.removeEventListener('scroll', onNativeScroll);
         nextButtons.forEach((button) => { button.removeEventListener('click', next); delete button.dataset.ktSliderBound; });
         prevButtons.forEach((button) => { button.removeEventListener('click', prev); delete button.dataset.ktSliderBound; });
         const restore = (node, name, value) => value == null ? node.removeAttribute(name) : node.setAttribute(name, value);
@@ -1159,6 +1306,7 @@ export default {
         else el.style.removeProperty('--kt-slide-active-shadow-opacity');
         delete el.dataset.ktSliderIndex;
         delete el.dataset.ktSliderEffect;
+        delete el.dataset.ktSliderScrollSnap;
         delete el.__ktSlider;
       }
     };

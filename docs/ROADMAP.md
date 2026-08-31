@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.8.105 · 작성일: 2026-08-02 · 검토: 2026-08-25
+> 기준 버전: v0.8.105 · 작성일: 2026-08-02 · 검토: 2026-08-31
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -279,7 +279,7 @@ Vanilla Presence Core 계약이 고정된 뒤 host-owned lifecycle 범위부터 
 - 완료: track Slider에 `momentum:false`를 추가해 release velocity를 의미적으로 끌 수 있게 했습니다. 기존 기본값과 `velocityInfluence` 동작은 보존합니다.
 - 완료: `bounce:true`에서 양 끝 overscroll을 경계로 되돌리는 bounded physics 경로를 추가했습니다. loop와 reduced-motion 경계는 기존 모델을 따릅니다.
 - 완료: `stickySnap:true`에서 drag release를 가장 가까운 정수 slide로 고정합니다. 기본값은 기존 fractional release target을 보존하도록 `false`입니다.
-- 진행: 단순 `slide` 전용 native CSS Scroll Snap은 [Slider physics RFC](slider-physics-rfc.md)의 fixture·브라우저·번들 조건을 먼저 충족해야 공개 옵션으로 승격합니다.
+- 완료(Unreleased): 단순 `slide` 전용 `scrollSnap:true`를 strict eligibility와 transform fallback으로 공개했습니다. Chromium fixture에서 native scroll, API·마우스 드래그·키보드·sync·destroy 복원을 고정하며, perView>1·loop·3D·radial·autoHeight·세로 축은 계속 fallback합니다.
 - 유지: FLIP shared layout은 실제 keyed child 전환 요구 2건과 focus·scroll 정책이 모일 때까지 현재 gate를 유지합니다. 새 `layout` 모듈은 만들지 않습니다.
 
 Swiper도 free mode와 sticky 동작을 분리하고, 단순 구성에서는 CSS mode의 성능 이점과 기능 제한을 명시합니다([Swiper API](https://swiperjs.com/swiper-api)). Kineto는 옵션 수를 복제하지 말고 물리 모델의 경계를 참고합니다.
@@ -449,7 +449,7 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 50. 완료(Unreleased): Slider track release의 `momentum` 의미 스위치와 회귀 계약 추가
 51. 완료(Unreleased): Slider edge overscroll `bounce` opt-in 정착 경로와 reduced-motion 경계 문서화
 52. 완료(Unreleased): Slider drag `stickySnap` opt-in 정수 정착과 기존 fractional target 보존
-53. 진행(Unreleased): 단순 Slider native CSS Scroll Snap 도입 조건·fallback·번들 gate를 RFC로 고정
+53. 완료(Unreleased): 단순 Slider `scrollSnap:true`를 strict eligibility·transform fallback·번들 gate와 함께 구현하고 Chromium·Firefox·WebKit smoke fixture로 검증
 54. 유지(Unreleased): FLIP shared layout은 실제 요구 2건 전까지 구현하지 않는 evidence gate 유지
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**

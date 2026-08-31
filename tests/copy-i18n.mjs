@@ -48,8 +48,9 @@ for (const key of ['내려받는 중', '{value}% 완료']) {
   assert.equal(copy.ui[key]?.length, languages.length, `missing localized demo UI: ${key}`);
 }
 // Two tabbed pairs replace four descriptions with two; Wave and Film Grain add
-// two dedicated Lazy examples; the date-time demo now has four explicit modes.
-assert.equal(descriptions.length, 144);
+// two dedicated Lazy examples; the date-time demo now has four explicit modes;
+// the native Scroll Snap slider adds one translated description.
+assert.equal(descriptions.length, 145);
 assert.equal(titles.length, 16);
 
 for (const [label, values, dictionary] of [

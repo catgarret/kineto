@@ -11,8 +11,10 @@ const fixtures = [
   { name: 'full', entry: 'full', budget: 130, variance: 3 },
   { name: 'core-reveal', entry: 'core-reveal', budget: 30, variance: 1 },
   { name: 'core-three', entry: 'core-three', budget: 65, variance: 1 },
-  { name: 'react-adapter', entry: 'react', budget: 137, variance: 1 },
-  { name: 'vue-adapter', entry: 'vue', budget: 137, variance: 1 }
+  // Native Slider Scroll Snap adds a bounded shared runtime path to both
+  // adapters; keep one KB runner variance above the 138 KB product ceiling.
+  { name: 'react-adapter', entry: 'react', budget: 138, variance: 1 },
+  { name: 'vue-adapter', entry: 'vue', budget: 138, variance: 1 }
 ];
 const kb = (value) => value / 1024;
 const assertCheck = (condition, message) => {

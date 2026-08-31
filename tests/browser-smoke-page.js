@@ -89,6 +89,25 @@ async function runSmoke() {
     results.slider = 'failed';
     errors.push(`slider: ${error.stack || error.message}`);
   }
+  const nativeSlider = make();
+  nativeSlider.innerHTML = '<div class="kt-slider-wrap"><div class="kt-slider-track"><div class="kt-slide">N1</div><div class="kt-slide">N2</div></div></div>';
+  try {
+    const nativeInstance = Kineto.create('slider', nativeSlider, {
+      effect: 'slide', loop: 'off', perView: 1, axis: 'x', gap: 0, scrollSnap: true
+    });
+    const nativeWrap = nativeSlider.querySelector('.kt-slider-wrap');
+    const nativeSelected = nativeSlider.dataset.ktSliderScrollSnap === 'native'
+      && getComputedStyle(nativeWrap).overflowX === 'auto'
+      && /x.*mandatory/.test(getComputedStyle(nativeWrap).scrollSnapType)
+      && nativeWrap.scrollWidth > nativeWrap.clientWidth;
+    nativeInstance?.goTo(1);
+    if (!nativeSelected || nativeInstance?.index !== 1) throw new Error('native Scroll Snap path did not select or navigate');
+    nativeInstance?.destroy();
+    results.sliderNative = 'ok';
+  } catch (error) {
+    results.sliderNative = 'failed';
+    errors.push(`sliderNative: ${error.stack || error.message}`);
+  }
   const ambient = make(); ambient.innerHTML = '<iframe title="empty"></iframe>'; run('ambientMedia', ambient, { color: '#888', disableOnMobile: false });
   run('pageReveal', make());
   run('glitch', make('div', 'Glitch'));

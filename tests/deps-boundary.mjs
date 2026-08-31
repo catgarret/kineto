@@ -33,12 +33,12 @@ for (const build of ['dist/kineto.js', 'dist/kineto.umd.js']) {
   assert.match(code, /cdn\.jsdelivr\.net\/npm\/gsap/, `${build} is missing the GSAP CDN loader — engines must be fetched on demand`);
   assert.match(code, /cdn\.jsdelivr\.net\/npm\/lenis/, `${build} is missing the Lenis CDN loader`);
 }
-// The readable UMD build is currently 387 KB after the 52-module surface and
-// the distinct Page Reveal mechanisms were added. Bundling GSAP+Lenis measured
-// about 407 KB before that work, so a 400 KB ceiling still catches that class
-// of regression while allowing the supported runtime itself to evolve. Exact
-// distributable budgets live in scripts/bundle-size.mjs.
+// The readable UMD build is currently just over 401 KB after the native Slider
+// Scroll Snap path was added. Bundling GSAP+Lenis measured about 407 KB before
+// this work, so a 403 KB ceiling still catches that class of regression while
+// allowing the measured runtime path to evolve. Exact distributable budgets
+// live in scripts/bundle-size.mjs.
 const umdBytes = fs.statSync(path.join(root, 'dist/kineto.umd.js')).size;
-assert.ok(umdBytes < 400 * 1024, `dist/kineto.umd.js is ${(umdBytes / 1024).toFixed(0)}KB — too large; an engine looks bundled again (expected < 400KB without GSAP/Lenis)`);
+assert.ok(umdBytes < 403 * 1024, `dist/kineto.umd.js is ${(umdBytes / 1024).toFixed(0)}KB — too large; an engine looks bundled again (expected < 403KB without GSAP/Lenis)`);
 
 console.log(`deps-boundary OK — no gsap/lenis imports in ${srcFiles.length} source files; both builds use the on-demand CDN loader; UMD is ${(umdBytes / 1024).toFixed(0)}KB (engines not bundled).`);

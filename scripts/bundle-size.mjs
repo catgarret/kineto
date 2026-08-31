@@ -101,10 +101,15 @@ const BUDGETS = {
   // 506.4/133.0 KB readable ESM, 400.0/118.8 KB minified ESM, and
   // 398.2/118.1 KB UMD. Keep the allowlist and dependency guard unchanged;
   // absorb only this measured runtime surface with rounded ceilings.
-  'kineto.js': { raw: 507, gz: 133, variance: 1 },
-  'kineto.min.js': { raw: 401, gz: 119, variance: 1 },
-  'kineto.umd.js': { raw: 399, gz: 119 },
-  'kineto.umd.min.js': { raw: 399, gz: 119 },
+  // 2026-08-31: native Scroll Snap adds a bounded runtime path to Slider
+  // (strict eligibility + mouse drag bridge + lifecycle sync). The measured
+  // raw deltas are ~3.1 KB ESM, ~2.9 KB minified ESM, and ~2.5 KB UMD; gzip
+  // remains within the existing 1 KB runner variance. Raise only raw ceilings
+  // to the next KB and keep compressed budgets unchanged.
+  'kineto.js': { raw: 511, gz: 133, variance: 1 },
+  'kineto.min.js': { raw: 404, gz: 119, variance: 1 },
+  'kineto.umd.js': { raw: 402, gz: 119 },
+  'kineto.umd.min.js': { raw: 402, gz: 119 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

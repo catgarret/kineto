@@ -106,7 +106,7 @@
     "demo:cdn": "node scripts/build-demo-cdn.mjs",
     "purge": "node scripts/purge-cdn.mjs",
     "test:contract": "node tests/feature-contract.mjs",
-    "test:browser": "node tests/browser/b1_version.mjs && node tests/browser/b2_navigation.mjs && node tests/retry-browser-test.mjs tests/browser/measure.mjs && node tests/browser/loader-core.mjs && node tests/browser/loading-indicator.mjs && node tests/browser/feedback-components.mjs && node tests/browser/states.mjs && node tests/browser/presence.mjs && node tests/browser/demo-polish.mjs && node tests/browser/nav-parity.mjs && node tests/browser/drawer-layout.mjs",
+    "test:browser": "node tests/browser/b1_version.mjs && node tests/browser/b2_navigation.mjs && node tests/retry-browser-test.mjs tests/browser/measure.mjs && node tests/browser/loader-core.mjs && node tests/browser/loading-indicator.mjs && node tests/browser/feedback-components.mjs && node tests/browser/states.mjs && node tests/browser/presence.mjs && node tests/browser/demo-polish.mjs && node tests/browser/nav-parity.mjs && node tests/browser/drawer-layout.mjs && node tests/browser/slider-scroll-snap.mjs",
     "test:browser:cross": "node tests/browser-smoke.mjs",
     "test:package": "node tests/package-check.mjs",
     "test:types": "tsc --noEmit --strict --module NodeNext --moduleResolution NodeNext --target ES2022 --lib ES2022,DOM,DOM.Iterable tests/types.ts",

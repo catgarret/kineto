@@ -1017,10 +1017,10 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 #mod-slider .module-block-body>.card{height:100%}
 #mod-slider .slider-demo{height:clamp(230px,31vw,320px);padding:0;border-radius:var(--r-stage);background:var(--panel2)}
 #mod-slider .card:first-child .slider-demo{background:transparent}
-/* Keep the 36px shadow allowance inside the card instead of extending the
-   transformed side slides through the card edge. */
-#mod-slider .card:first-child .slider-demo{width:calc(100% - 72px);margin-inline:auto}
-@media(max-width:600px){#mod-slider .card:first-child .slider-demo{width:calc(100% - 32px)}}
+/* The slider viewport fills its card; coverflow shadow room is handled by the
+   component's clip margin rather than shrinking the demo's content width. */
+#mod-slider .card:first-child .slider-demo{width:100%;margin-inline:auto}
+@media(max-width:600px){#mod-slider .card:first-child .slider-demo{width:100%}}
 #mod-slider .slider-demo>.kt-slider-wrap,#mod-slider .slider-demo .kt-slider-track{width:100%;height:100%}
 #mod-slider .slider-demo .kt-slide{height:100%}
 #mod-slider .slider-demo .kt-slide{min-height:0;overflow:hidden}
@@ -1029,6 +1029,8 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 #mod-slider .slider-demo.kt-slider--active-shadow .kt-slide.is-active,
 #mod-slider .slider-demo .kt-slider--active-shadow .kt-slide.is-active{overflow:visible}
 #mod-slider .slider-demo .kt-slide img{display:block;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover}
+#mod-slider .slider-demo--native-snap .kt-slide{display:grid;place-items:center;background:linear-gradient(135deg,#e9eefc,#d7e4ff);color:#18243d;font-size:clamp(1.5rem,3vw,2.4rem)}
+#mod-slider .slider-demo--native-snap .kt-slider-wrap{scrollbar-width:thin}
 #mod-slider .slider-demo.kt-slider--active-shadow{box-sizing:content-box;padding-bottom:70px;margin-bottom:-70px}
 #mod-slider .slider-controls{margin-top:12px}
 #mod-cardGlow .module-block-body{grid-template-columns:repeat(6,minmax(0,1fr))}

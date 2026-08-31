@@ -300,6 +300,7 @@
       effectIntensity: '디졸브·와이프·3D 효과의 이동, 회전, 블러 강도입니다.',
       activeShadow: 'Coverflow의 활성 슬라이드에 실루엣을 따르는 그림자를 표시합니다.',
       activeShadowOpacity: '활성 그림자의 불투명도입니다. CSS 변수로 색·위치·블러도 바꿀 수 있습니다.',
+      scrollSnap: '단순한 수평 slide에서 브라우저 native scrolling과 CSS Scroll Snap을 사용합니다. 조건 밖 구성은 기존 엔진으로 fallback합니다.',
       drag: '마우스나 펜으로 끌어 슬라이드를 이동합니다.',
       touch: '터치 스와이프를 허용합니다.',
       keyboard: '포커스된 슬라이더에서 방향키·Home·End를 사용합니다.'
@@ -310,6 +311,7 @@
       effectIntensity: 'Movement, rotation and blur strength for dissolve, wipe and 3D effects.',
       activeShadow: 'Add a silhouette-following shadow to the active Coverflow slide.',
       activeShadowOpacity: 'Active-shadow opacity. CSS variables also control its colour, offset and blur.',
+      scrollSnap: 'Use native scrolling and CSS Scroll Snap for a simple horizontal slide; other configurations fall back to the transform engine.',
       drag: 'Allow mouse or pen dragging.',
       touch: 'Allow touch swiping.',
       keyboard: 'Use arrow, Home and End keys while the slider is focused.'
@@ -317,31 +319,31 @@
     ja: {
       preset: '切り替え効果。fadeは交差、dissolveは粒子とぼかし、wipeは方向マスク、その他は異なる3D構成です。',
       effectDirection: 'wipeが開く方向です。', effectIntensity: 'ディゾルブ・ワイプ・3D効果の移動、回転、ぼかしの強さです。',
-      activeShadow: 'Coverflowのアクティブスライドに輪郭沿いの影を表示します。', activeShadowOpacity: '影の不透明度。色・位置・ぼかしはCSS変数でも調整できます。',
+      activeShadow: 'Coverflowのアクティブスライドに輪郭沿いの影を表示します。', activeShadowOpacity: '影の不透明度。色・位置・ぼかしはCSS変数でも調整できます。', scrollSnap: 'シンプルな横スライダーではネイティブスクロールと CSS Scroll Snap を使い、条件外は既存エンジンに戻ります。',
       drag: 'マウスまたはペンのドラッグを許可します。', touch: 'タッチスワイプを許可します。', keyboard: 'フォーカス中に矢印・Home・Endキーを使います。'
     },
     'zh-CN': {
       preset: '切换效果：fade 交叉淡入，dissolve 添加颗粒和模糊，wipe 使用方向遮罩，其他模式使用不同的 3D 场景。',
       effectDirection: 'wipe 展开的方向。', effectIntensity: '溶解、擦除和 3D 效果的移动、旋转与模糊强度。',
-      activeShadow: '为 Coverflow 当前滑块添加跟随轮廓的阴影。', activeShadowOpacity: '当前阴影透明度；颜色、偏移和模糊也可用 CSS 变量调整。',
+      activeShadow: '为 Coverflow 当前滑块添加跟随轮廓的阴影。', activeShadowOpacity: '当前阴影透明度；颜色、偏移和模糊也可用 CSS 变量调整。', scrollSnap: '简单水平滑块使用原生滚动和 CSS Scroll Snap，其他配置会回退到变换引擎。',
       drag: '允许鼠标或手写笔拖动。', touch: '允许触摸滑动。', keyboard: '聚焦时使用方向键、Home 和 End。'
     },
     'zh-TW': {
       preset: '切換效果：fade 交叉淡入，dissolve 加入顆粒與模糊，wipe 使用方向遮罩，其他模式使用不同的 3D 場景。',
       effectDirection: 'wipe 展開的方向。', effectIntensity: '溶解、擦除與 3D 效果的移動、旋轉及模糊強度。',
-      activeShadow: '為 Coverflow 目前投影片加入跟隨輪廓的陰影。', activeShadowOpacity: '目前陰影透明度；顏色、位移與模糊也可用 CSS 變數調整。',
+      activeShadow: '為 Coverflow 目前投影片加入跟隨輪廓的陰影。', activeShadowOpacity: '目前陰影透明度；顏色、位移與模糊也可用 CSS 變數調整。', scrollSnap: '簡單的水平滑桿使用原生捲動與 CSS Scroll Snap，其他設定會回退到變換引擎。',
       drag: '允許滑鼠或手寫筆拖曳。', touch: '允許觸控滑動。', keyboard: '聚焦時使用方向鍵、Home 與 End。'
     },
     ru: {
       preset: 'Эффект перехода: fade — кроссфейд, dissolve — зерно и размытие, wipe — направленная маска, остальные режимы используют разные 3D-сцены.',
       effectDirection: 'Направление раскрытия wipe.', effectIntensity: 'Сила движения, вращения и размытия эффектов.',
-      activeShadow: 'Добавить тень по силуэту активного слайда Coverflow.', activeShadowOpacity: 'Прозрачность тени; цвет, смещение и размытие также задаются CSS-переменными.',
+      activeShadow: 'Добавить тень по силуэту активного слайда Coverflow.', activeShadowOpacity: 'Прозрачность тени; цвет, смещение и размытие также задаются CSS-переменными.', scrollSnap: 'Простой горизонтальный слайдер использует нативную прокрутку и CSS Scroll Snap; другие конфигурации переходят на transform-движок.',
       drag: 'Разрешить перетаскивание мышью или пером.', touch: 'Разрешить свайпы.', keyboard: 'Использовать стрелки, Home и End в фокусе.'
     },
     it: {
       preset: 'Effetto di transizione: fade incrocia, dissolve aggiunge grana e sfocatura, wipe usa una maschera direzionale; gli altri usano scene 3D distinte.',
       effectDirection: 'Direzione di apertura del wipe.', effectIntensity: 'Intensità di movimento, rotazione e sfocatura degli effetti.',
-      activeShadow: 'Aggiunge un’ombra che segue la sagoma della slide Coverflow attiva.', activeShadowOpacity: 'Opacità dell’ombra; colore, offset e sfocatura restano regolabili via CSS.',
+      activeShadow: 'Aggiunge un’ombra che segue la sagoma della slide Coverflow attiva.', activeShadowOpacity: 'Opacità dell’ombra; colore, offset e sfocatura restano regolabili via CSS.', scrollSnap: 'Uno slider orizzontale semplice usa lo scorrimento nativo e CSS Scroll Snap; le altre configurazioni fanno fallback al motore transform.',
       drag: 'Consenti il trascinamento con mouse o penna.', touch: 'Consenti lo scorrimento touch.', keyboard: 'Usa frecce, Home e Fine quando lo slider è attivo.'
     }
   };

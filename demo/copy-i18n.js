@@ -751,6 +751,14 @@ window.KINETO_COPY_I18N = {
       "Плавно меняет сцены с мелким зерном и мягким размытием.",
       "Cambia scena con grana fine e una sfocatura morbida."
     ],
+    "CSS Scroll Snap으로 수평 슬라이드를 넘깁니다.": [
+      "Pages through a simple horizontal slider with native scrolling and CSS Scroll Snap.",
+      "ネイティブスクロールと CSS Scroll Snap でシンプルな横スライダーを切り替えます。",
+      "使用原生滚动和 CSS Scroll Snap 切换简单的水平滑块。",
+      "使用原生捲動與 CSS Scroll Snap 切換簡單的水平滑桿。",
+      "Переключает простой горизонтальный слайдер с помощью нативной прокрутки и CSS Scroll Snap.",
+      "Scorre un semplice slider orizzontale con lo scorrimento nativo e CSS Scroll Snap."
+    ],
     "세 모듈을 함께 써도 GIF 재생을 유지합니다.": [
       "Keeps GIF playback running when three modules share one image.",
       "3 つのモジュールが 1 つの画像を共有しているときに、GIF 再生を実行し続けます。",

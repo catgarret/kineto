@@ -86,10 +86,15 @@ Coverflow에서 `activeShadow:true`를 켜면 활성 슬라이드의 회전된 �
 
 `momentum`, `bounce`, `stickySnap`은 track Slider에 먼저 적용됩니다. Radial은
 원호 이동 방식과 입력 축이 달라 같은 관성 모델을 자동으로 공유하지 않습니다.
-단순한 수평 `slide` 구성에서 native CSS Scroll Snap을 사용하는 경로는
-[`docs/slider-physics-rfc.md`](../slider-physics-rfc.md)의 지원 조건을 충족한
-경우에만 별도 opt-in으로 검토합니다. 현재 기본 엔진은 기존 transform/drag
-경로를 사용합니다.
+단순한 수평 `slide` 구성에서는 `scrollSnap:true`로 native CSS Scroll Snap을
+선택할 수 있습니다. `loop:'off'`, `perView:1`, `axis:'x'`, `gap:0`,
+`autoHeight:false`(기본값), touch 입력이 모두 필요하며, 조건을 벗어나면
+자동으로 기존 transform 엔진으로 fallback합니다. 기본값은 `false`이고, 효과가
+다른 슬라이더나 루프·다중 표시·세로 축에서는 native 경로를 사용하지 않습니다.
+native 경로에서도 API·키보드·휠·touch·마우스 드래그가 같은 `index`와 change
+이벤트를 공유하며, `destroy()`는 authored scroll 스타일을 복원합니다. 자세한
+지원 범위와 브라우저 검증 기준은 [`docs/slider-physics-rfc.md`](../slider-physics-rfc.md)를
+참조하세요.
 
 ## API와 이벤트
 
@@ -104,6 +109,12 @@ const slider = Kineto.slider('.my-slider', {
   onChange(index, slide) {
     console.log(index, slide);
   }
+})[0];
+
+// Narrow native CSS Scroll Snap path; unsupported combinations fall back.
+const nativeSlider = Kineto.slider('.snap-slider', {
+  effect: 'slide', loop: 'off', perView: 1, axis: 'x', gap: 0,
+  scrollSnap: true
 })[0];
 
 slider.slideNext();

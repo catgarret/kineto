@@ -5,10 +5,16 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Add an opt-in native CSS Scroll Snap path for simple horizontal `slide` sliders, with strict eligibility, transform fallback, shared API/change semantics, mouse drag, keyboard, wheel, touch, sync, and authored-style restoration.
+- Add a browser regression fixture covering native scroll position, manual scroll lifecycle, API navigation, mouse drag, keyboard navigation, sync, ineligible-effect fallback, and `destroy()` restoration.
+- Make the first Slider demo viewport fill its card width; the component keeps coverflow shadow room without shrinking the authored demo area.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 단순한 수평 `slide` 슬라이더에 strict eligibility와 transform fallback을 갖춘 native CSS Scroll Snap opt-in 경로를 추가하고, API/change 의미·마우스 드래그·키보드·휠·터치·sync·authored 스타일 복원을 일관되게 유지했습니다.
+- native 스크롤 위치·수동 스크롤 lifecycle·API 이동·마우스 드래그·키보드·sync·조건 밖 효과 fallback·`destroy()` 복원을 고정하는 브라우저 회귀 fixture를 추가했습니다.
+- 첫 번째 Slider 데모 viewport가 카드 너비를 모두 사용하도록 조정하고, coverflow 그림자 여백은 컴포넌트 내부에서 유지하도록 했습니다.
 
 ## [0.8.105] - 2026-08-24
 

@@ -83,8 +83,12 @@ const BUDGET = {
   // 2026-08-25: Slider release momentum/bounce/sticky-snap controls add 1.4 KB
   // unpacked on the local Node 25/npm 11 archive; keep the fixed allowlist and
   // absorb only this bounded physics runtime cost.
-  packedKb: 511,
-  unpackedKb: 1712,
+  // 2026-08-31: the opt-in native Scroll Snap path adds 0.7 KB packed and
+  // 9.9 KB unpacked through the built Slider/module artifacts. Keep the same
+  // 78-file allowlist and absorb only this bounded runtime cost plus the
+  // existing cross-runner margin.
+  packedKb: 513,
+  unpackedKb: 1724,
   files: 78
 };
 
