@@ -13,6 +13,7 @@
 | 2026-08-24 | v0.8.104 운영 gate 후속 | `b6dbc87` | `32688876241` | 성공 | 성공 | 성공 | `32689372504` 성공 | 운영 문서·issue form·readiness CI 추가 후 Chromium·Firefox·WebKit과 Pages 재확인 |
 | 2026-08-25 | v0.8.104 Slider physics 후속 | `a13c04d` | `32747071438` | 성공 | 성공 | 성공 | `32747976927` 성공 | `momentum`·`bounce`·`stickySnap` 추가 후 Chromium·Firefox·WebKit, Pages와 live-site 재확인 |
 | 2026-08-31 | v0.9.3 browser QA hardening | `2898293` | `33398495438` | 성공 | 성공 | 성공 | `33399421877` 성공 | Chromium 전체 QA 재시도 경계를 적용한 릴리스 검증; npm provenance·GitHub Release·canonical live-site까지 확인 |
+| 2026-08-31 | v0.9.3 parity monitor 후속 | `23ee145` | `33406221579` | 성공 | 성공 | 성공 | `33407131223` 성공 | 주간·수동 parity workflow 추가 후 canonical·backup live-site가 모두 v0.9.3·52개·GTM·build `23ee145`로 일치 |
 
 ## 기록 규칙
 
