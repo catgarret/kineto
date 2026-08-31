@@ -509,6 +509,11 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 93. 완료(v0.9.3 후속): Radial/dateTime guard의 1KB 미만 raw 산출물 비용만 bundle-size 상한에 반영하고 gzip 제품 예산은 유지
 94. 완료(v0.9.3 후속): WebKit 전용 computed style 부재를 허용하도록 Radial cross-browser QA assertion을 엔진별로 분리
 95. 완료(v0.9.3 후속): Radial QA에서 user-select·touch-action vendor 스타일을 정규화해 Firefox·WebKit 검증을 동일 계약으로 통합
+96. 완료(v0.9.3 후속): 연-월-일 입력의 dash/slash/dot 구분자와 한 자리 월·일을 동일하게 검증
+97. 완료(v0.9.3 후속): 시·분·초·밀리초 범위를 검사해 브라우저의 잘못된 시간 rollover를 차단
+98. 완료(v0.9.3 후속): `Z`, `+09:00`, `+0900` 명시적 timezone offset을 보존·정규화
+99. 완료(v0.9.3 후속): `ko`·`en-US` 및 slash/dot 입력의 불가능한 날짜 회귀를 추가
+100. 완료(v0.9.3 후속): dateTime reference·troubleshooting·Node 회귀 테스트에 입력 경계를 문서화
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 
