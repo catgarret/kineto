@@ -401,7 +401,7 @@ function injectCSSFallback() {
 }
 
 const Kineto = {
-  version: '0.9.2',
+  version: '0.9.3',
 
   // Central easing subsystem (audit C / J-3). `Kineto.easing(name)` resolves any
   // token — CSS keyword, easings.net name, 'elastic-out'/'bounce-in-out'
