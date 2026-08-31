@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Keep JavaScript artifact gzip ceilings unchanged while absorbing only the measured Node 24/Linux boundary variance, and annotate failing site/release subcommands in CI logs.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- JavaScript 산출물 gzip 제품 상한은 유지하고 Node 24/Linux 경계의 제한된 variance만 흡수했으며, CI 로그에서 site/release 하위 실패 명령을 식별하도록 했습니다.
 
 ## [0.9.1] - 2026-08-31
 

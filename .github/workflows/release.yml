@@ -100,12 +100,20 @@ jobs:
 
       - name: Run Node tests · site and release
         run: |
-          set -euo pipefail
+          set -uo pipefail
+          failures=()
           for command in test:site test:release test:size; do
             echo "::group::$command"
-            node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log
+            if ! node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log; then
+              echo "::error title=Site/release test failed::$command"
+              failures+=("$command")
+            fi
             echo "::endgroup::"
           done
+          if ((${#failures[@]})); then
+            printf 'Site/release test failures: %s\n' "${failures[*]}"
+            exit 1
+          fi
 
       - name: Run demo QA
         run: |
