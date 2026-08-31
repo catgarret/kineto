@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.9.3 · 작성일: 2026-08-02 · 검토: 2026-08-31
+> 기준 버전: v0.9.3 · 작성일: 2026-08-02 · 검토: 2026-09-01
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -489,6 +489,12 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 84. 완료(v0.9.3 후속): 공급망 운영 문서에 Dependabot·SBOM·artifact 보존 범위 기록
 85. 완료(v0.9.3 후속): hosted WebKit full-demo regression의 추가 runner variance를 QA 이력에 분리 기록
 86. 완료(v0.9.3 후속): WebKit에만 bounded process-group 재시도 1회를 추가하고 assertion 실패는 계속 fatal로 유지
+87. 완료(v0.9.3 후속): Radial 이미지에 WebKit native drag 억제·capturing `dragstart` guard를 추가하고 destroy 복원을 검증
+88. 완료(v0.9.3 후속): 시간대 없는 SQL/ISO 서버 시각을 한국어 locale에서 +09:00으로 안정화
+89. 완료(v0.9.3 후속): 존재하지 않는 달력 날짜를 자동 보정하지 않는 dateTime parser 경계 추가
+90. 완료(v0.9.3 후속): Radial ghost-drag와 비표준 dateTime 입력을 Chromium·Firefox·WebKit QA 체크포인트에 고정
+91. 완료(v0.9.3 후속): Scroll Shadows mask와 Page Reveal 효과 차이의 사용·troubleshooting 문서 경계를 최신 상태로 갱신
+92. 완료(v0.9.3 후속): Radial/dateTime 안전 guard의 측정된 unpacked 비용만 package budget에 흡수하고 packed·파일 수·소비자 gzip 상한은 유지
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

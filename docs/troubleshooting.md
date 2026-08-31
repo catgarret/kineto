@@ -65,8 +65,9 @@ Android Chrome에서 실제 터치 동작을 확인할 때는 pointer 이벤트�
 
 슬라이드 안의 `<img>`가 브라우저 기본 drag source로 남아 있으면 반투명 고스트가
 생기고 pointer capture가 끊길 수 있습니다. Slider는 슬라이드 이미지를
-`draggable=false`로 처리하고, 실제 이동 임계값을 넘은 뒤에만 페이지 스크롤과 클릭을
-억제합니다. 사용자 코드에서 이미지를 다시 `draggable=true`로 바꾸지 마십시오.
+`draggable=false`, `-webkit-user-drag:none`, 캡처 단계 `dragstart` 취소를 함께 적용하고,
+실제 이동 임계값을 넘은 뒤에만 페이지 스크롤과 클릭을 억제합니다. 사용자 코드에서
+초기화 후 이미지를 다시 `draggable=true`로 바꾸거나 `-webkit-user-drag`를 덮어쓰지 마십시오.
 
 Radial에서 드래그가 끊기면 다음을 확인하십시오.
 
@@ -85,8 +86,9 @@ Radial에서 드래그가 끊기면 다음을 확인하십시오.
 
 ## dateTime이 `n분 전` 대신 이상한 날짜를 표시함
 
-dateTime은 ISO/RFC, Unix timestamp, `YYYY.MM.DD`, `YYYY/MM/DD`,
-`YYYY년 M월 D일` 형식을 인식합니다. 상대 표기는 `relativeUnit: 'auto'`일 때 초·분·시·일·주·월·년
+dateTime은 ISO/RFC, Unix timestamp, SQL datetime, `YYYY.MM.DD`, `YYYY/MM/DD`,
+`YYYY년 M월 D일` 형식을 인식합니다. 한국어 locale의 시간대 없는 SQL/ISO 값은 +09:00으로
+정규화하며, 존재하지 않는 달력 날짜는 다른 날짜로 자동 보정하지 않습니다. 상대 표기는 `relativeUnit: 'auto'`일 때 초·분·시·일·주·월·년
 중 가장 알맞은 단위를 선택하고, `relativeCutoff`를 넘으면 현지화된 절대 시각으로
 전환합니다.
 

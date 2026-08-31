@@ -64,8 +64,16 @@ export default {
         .flatMap((item) => item.matches?.('img') ? [item] : [...item.querySelectorAll('img')])
         .map((node) => {
           const value = node.getAttribute('draggable');
+          const userSelect = node.style.userSelect;
+          const webkitUserDrag = node.style.webkitUserDrag;
           node.draggable = false;
-          return [node, value];
+          // `draggable=false` is the standards hook, but Safari can still
+          // capture an image drag preview when the pointer starts on a
+          // transformed descendant. Keep the interaction surface passive and
+          // restore the authored inline values on destroy().
+          node.style.userSelect = 'none';
+          node.style.webkitUserDrag = 'none';
+          return [node, value, userSelect, webkitUserDrag];
         });
 
       el.classList.add('kt-radial', `kt-radial--${position}`);
@@ -103,6 +111,14 @@ export default {
       live.setAttribute('aria-live', 'polite');
       live.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);';
       el.appendChild(live);
+
+      // A capturing listener is the final guard against browser-native image
+      // drag previews. It also covers images nested in links or custom item
+      // wrappers where a browser may ignore the element's draggable flag.
+      const onDragStart = (event) => {
+        if (event.target?.closest?.('.kt-radial-item')) event.preventDefault();
+      };
+      el.addEventListener('dragstart', onDragStart, true);
 
       const n = items.length;
       let visualActive = active;
@@ -341,6 +357,7 @@ export default {
           if (radialFrame) cancelAnimationFrame(radialFrame);
           if (suppressItemClickTimer != null) clearTimeout(suppressItemClickTimer);
           hub.removeEventListener('click', onItemClick);
+          el.removeEventListener('dragstart', onDragStart, true);
           el.removeEventListener('keydown', onKey);
           el.removeEventListener('pointerdown', onDown);
           el.removeEventListener('pointermove', onMove);
@@ -362,9 +379,11 @@ export default {
             item.removeAttribute('aria-current');
             el.appendChild(item);
           });
-          radialImages.forEach(([node, value]) => {
+          radialImages.forEach(([node, value, userSelect, webkitUserDrag]) => {
             if (value == null) node.removeAttribute('draggable');
             else node.setAttribute('draggable', value);
+            node.style.userSelect = userSelect;
+            node.style.webkitUserDrag = webkitUserDrag;
           });
           hub.remove();
           live.remove();

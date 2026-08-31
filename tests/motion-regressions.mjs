@@ -296,8 +296,16 @@ brushHost.remove();
 const radialHost = document.createElement('div');
 radialHost.innerHTML = '<div><img src="a.png" draggable="true"></div><div><img src="b.png"></div><div><img src="c.png"></div><div><img src="d.png"></div><div><img src="e.png"></div>';
 document.body.appendChild(radialHost);
+const authoredRadialImage = radialHost.querySelector('img');
+authoredRadialImage.style.userSelect = 'text';
+authoredRadialImage.style.webkitUserDrag = 'element';
 const radialLoop = sliderModule.create(radialHost, { effect: 'radial', loop: 'infinite', controls: false });
 assert.equal(radialHost.querySelector('img').draggable, false, 'radial item images must not start the browser ghost-image drag');
+assert.equal(authoredRadialImage.style.userSelect, 'none', 'radial images must disable text selection while spinning');
+assert.equal(authoredRadialImage.style.webkitUserDrag, 'none', 'radial images must disable WebKit native drag previews');
+const radialDragStart = new window.Event('dragstart', { bubbles: true, cancelable: true });
+authoredRadialImage.dispatchEvent(radialDragStart);
+assert.equal(radialDragStart.defaultPrevented, true, 'radial must cancel dragstart at the container boundary');
 assert.equal(radialHost.style.touchAction, 'pan-y', 'bottom/top radial docks must preserve perpendicular page scrolling');
 radialLoop.go(4);
 const retainedRadialIndex = radialLoop.index;
@@ -309,6 +317,8 @@ radialHost.querySelector('.kt-radial-item').dispatchEvent(new window.MouseEvent(
 assert.equal(radialLoop.index, radialAfterDrag, 'radial must consume the click following a drag even after a delayed event loop');
 radialLoop.destroy();
 assert.equal(radialHost.querySelector('img').getAttribute('draggable'), 'true', 'radial destroy must restore an authored draggable value');
+assert.equal(authoredRadialImage.style.userSelect, 'text', 'radial destroy must restore authored image selection');
+assert.equal(authoredRadialImage.style.webkitUserDrag, 'element', 'radial destroy must restore authored WebKit drag behavior');
 assert.equal(radialHost.style.touchAction, '', 'radial destroy must restore the authored touch-action');
 const radialFinite = sliderModule.create(radialHost, { effect: 'radial', loop: 'off', controls: false, initialIndex: retainedRadialIndex });
 assert.equal(radialFinite.index, 4, 'disabling radial infinite mode must retain the active item');
@@ -569,7 +579,7 @@ relativeInstance.destroy();
 assert.equal(relativeTime.textContent, '2026년 8월 9일 10:30', 'dateTime destroy must restore server-rendered content');
 relativeTime.remove();
 
-for (const serverDate of ['20260809103000', '2026년 8월 9일 10시 30분', '09/08/2026 10:30']) {
+for (const serverDate of ['20260809103000', '2026년 8월 9일 10시 30분', '09/08/2026 10:30', '2026-08-09 10:30:00', '2026-08-09T10:30:00']) {
   const compactTime = document.createElement('time');
   document.body.appendChild(compactTime);
   const compactInstance = dateTimeModule.create(compactTime, {
@@ -579,6 +589,15 @@ for (const serverDate of ['20260809103000', '2026년 8월 9일 10시 30분', '09
   compactInstance.destroy();
   compactTime.remove();
 }
+
+const invalidServerDate = document.createElement('time');
+document.body.appendChild(invalidServerDate);
+const invalidDateInstance = dateTimeModule.create(invalidServerDate, {
+  date: '2026-02-31 10:30:00', mode: 'relative', locale: 'ko', fallback: '날짜 확인 필요', live: false
+});
+assert.equal(invalidServerDate.textContent, '날짜 확인 필요', 'dateTime must reject impossible calendar dates instead of normalizing into a different day');
+invalidDateInstance.destroy();
+invalidServerDate.remove();
 
 const cutoffRelativeTime = document.createElement('time');
 document.body.appendChild(cutoffRelativeTime);

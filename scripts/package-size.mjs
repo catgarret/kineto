@@ -92,8 +92,12 @@ const BUDGET = {
   // 11 remains 511.8 KB. Keep the 77-file allowlist and absorb only this
   // measured 1 KB package-metadata boundary; this is not a runtime budget
   // increase or permission to widen the release surface.
+  // 2026-09-01: the Radial native-drag guard and deterministic SQL/ISO date
+  // parser add 2.7 KB unpacked on the local npm 11 archive. Keep the packed
+  // ceiling, file allowlist, and consumer gzip budgets unchanged; absorb only
+  // this measured runtime safety cost.
   packedKb: 514,
-  unpackedKb: 1724,
+  unpackedKb: 1727,
   files: 78
 };
 
