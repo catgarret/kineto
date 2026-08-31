@@ -12,6 +12,16 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
+const packageJson = JSON.parse(read('package.json'));
+
+// 0. Published runtime metadata must stay dependency-free. Engines are loaded
+// on demand from the page/CDN, while framework integrations remain optional
+// peer dependencies so consumers do not receive an implicit install payload.
+assert.equal(Object.keys(packageJson.dependencies || {}).length, 0, 'package.json must not add runtime dependencies');
+assert.equal(Object.keys(packageJson.optionalDependencies || {}).length, 0, 'package.json must not add optional runtime dependencies');
+for (const dependency of Object.keys(packageJson.peerDependencies || {})) {
+  assert.equal(packageJson.peerDependenciesMeta?.[dependency]?.optional, true, `${dependency} peer dependency must remain optional`);
+}
 
 // 1. No source file may import the gsap or lenis packages (static or dynamic).
 const IMPORT_GSAP = /(?:import\s+[^;]*from\s*['"]gsap(?:\/[^'"]*)?['"]|import\(\s*['"]gsap(?:\/[^'"]*)?['"]\s*\))/;
@@ -41,4 +51,4 @@ for (const build of ['dist/kineto.js', 'dist/kineto.umd.js']) {
 const umdBytes = fs.statSync(path.join(root, 'dist/kineto.umd.js')).size;
 assert.ok(umdBytes < 403 * 1024, `dist/kineto.umd.js is ${(umdBytes / 1024).toFixed(0)}KB — too large; an engine looks bundled again (expected < 403KB without GSAP/Lenis)`);
 
-console.log(`deps-boundary OK — no gsap/lenis imports in ${srcFiles.length} source files; both builds use the on-demand CDN loader; UMD is ${(umdBytes / 1024).toFixed(0)}KB (engines not bundled).`);
+console.log(`deps-boundary OK — zero runtime dependencies, ${Object.keys(packageJson.peerDependencies || {}).length} optional peers, no gsap/lenis imports in ${srcFiles.length} source files; both builds use the on-demand CDN loader; UMD is ${(umdBytes / 1024).toFixed(0)}KB (engines not bundled).`);

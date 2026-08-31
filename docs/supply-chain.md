@@ -21,3 +21,11 @@ Socket, npm audit, GitHub Advisory 경고는 다음 네 가지 중 하나로 기
 
 runtime dependency, 개발 도구 dependency, CDN 엔진은 영향 범위가 다르므로
 자동 업데이트와 대응 우선순위도 분리합니다.
+
+## 패키지 metadata 경계
+
+공개 package는 런타임 `dependencies`와 `optionalDependencies`를 두지 않습니다.
+GSAP·Lenis와 framework integration은 optional peer dependency 또는 on-demand CDN
+경로로만 제공해 설치 시 암묵적인 실행 payload가 늘지 않도록 합니다. `npm run
+test:deps`가 이 metadata 경계, source import, built bundle의 CDN loader와 UMD
+크기를 함께 검사합니다.
