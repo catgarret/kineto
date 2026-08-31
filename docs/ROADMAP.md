@@ -459,6 +459,7 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 55. 완료(v0.9.3 후속): 별도 Pages 백업 경로 `catgarret.github.io/example/kineto`를 canonical `kineto.dongri.me`의 v0.9.3 산출물과 동기화하고, CNAME·사이트 전체 범위는 변경하지 않음
 56. 완료(v0.9.3 후속): `test:live-site:parity`와 로컬 fixture를 추가해 canonical·백업의 버전·모듈 수·GTM·CDN·build marker drift를 검출
 57. 완료(v0.9.3 후속): `.github/workflows/live-site-parity.yml`에 주간 schedule·수동 dispatch parity 경보를 추가하고 canonical Pages 배포와 독립적으로 운영
+58. 완료(v0.9.3 후속): `test:readiness-gates`로 실기기·외부 사례·deprecated·FLIP 증거 게이트와 parity monitor 연결을 자동 점검; 증거가 없을 때 1.0 완료로 오판하지 않도록 고정
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

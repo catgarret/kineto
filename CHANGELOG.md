@@ -6,6 +6,7 @@
 
 <!-- Add matching English release bullets here. -->
 - Add a weekly and manually dispatched live-site parity alert that stays independent from canonical Pages deployment.
+- Add a readiness-gate check that keeps physical-device, external-case, deprecation, and FLIP evidence statuses honest in CI.
 - Add an explicit canonical/backup live-site parity check with a local fixture, including build-marker drift detection without coupling the backup repository to deployment.
 - Sync the separate Pages backup at `catgarret.github.io/example/kineto` to the verified v0.9.3 demo artifact without changing its site-wide CNAME.
 
@@ -13,6 +14,7 @@
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - canonical Pages 배포를 막지 않도록 분리한 주간·수동 live-site parity 경보 workflow를 추가했습니다.
+- 실기기·외부 사례·deprecation·FLIP 증거 상태가 CI에서 완료로 오인되지 않도록 readiness-gate 검사를 추가했습니다.
 - 백업 저장소를 배포 대상에 결합하지 않고도 canonical·백업의 버전·모듈 수·GTM·CDN·build marker drift를 검사하는 live-site parity 명령과 로컬 fixture를 추가했습니다.
 - 별도 Pages 백업 경로 `catgarret.github.io/example/kineto`를 검증된 v0.9.3 데모 산출물과 동기화했으며 사이트 전체 CNAME은 변경하지 않았습니다.
 
