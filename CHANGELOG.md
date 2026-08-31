@@ -21,6 +21,7 @@
 - Absorb the measured 2.7 KB unpacked cost of the Radial/dateTime safety guards without widening the packed, file-count, or consumer gzip budgets.
 - Add an explicit canonical/backup live-site parity check with a local fixture, including build-marker drift detection without coupling the backup repository to deployment.
 - Sync the separate Pages backup at `catgarret.github.io/example/kineto` to the verified v0.9.3 demo artifact without changing its site-wide CNAME.
+- Absorb only the measured sub-1 KB raw cost of the Radial/dateTime guards in the artifact-size check; keep compressed budgets and dependency protection unchanged.
 
 ### 한국어
 
@@ -41,6 +42,7 @@
 - Radial/dateTime 안전 guard의 측정된 unpacked 2.7KB 비용만 반영하고 packed·파일 수·소비자 gzip 예산은 늘리지 않습니다.
 - 백업 저장소를 배포 대상에 결합하지 않고도 canonical·백업의 버전·모듈 수·GTM·CDN·build marker drift를 검사하는 live-site parity 명령과 로컬 fixture를 추가했습니다.
 - 별도 Pages 백업 경로 `catgarret.github.io/example/kineto`를 검증된 v0.9.3 데모 산출물과 동기화했으며 사이트 전체 CNAME은 변경하지 않았습니다.
+- Radial/dateTime guard의 측정된 1KB 미만 raw 비용만 산출물 크기 검사에 반영하고, 압축 예산과 의존성 보호 상한은 유지합니다.
 
 ## [0.9.3] - 2026-08-31
 
