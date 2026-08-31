@@ -96,8 +96,10 @@ const BUDGET = {
   // parser add 2.7 KB unpacked on the local npm 11 archive. Keep the packed
   // ceiling, file allowlist, and consumer gzip budgets unchanged; absorb only
   // this measured runtime safety cost.
+  // Node 24/npm 11 has historically measured ~1 KB above the local unpacked
+  // archive at this boundary. Keep that runner margin explicit and bounded.
   packedKb: 514,
-  unpackedKb: 1727,
+  unpackedKb: 1728,
   files: 78
 };
 
