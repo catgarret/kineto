@@ -494,7 +494,7 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 89. 완료(v0.9.3 후속): 존재하지 않는 달력 날짜를 자동 보정하지 않는 dateTime parser 경계 추가
 90. 완료(v0.9.3 후속): Radial ghost-drag와 비표준 dateTime 입력을 Chromium·Firefox·WebKit QA 체크포인트에 고정
 91. 완료(v0.9.3 후속): Scroll Shadows mask와 Page Reveal 효과 차이의 사용·troubleshooting 문서 경계를 최신 상태로 갱신
-92. 완료(v0.9.3 후속): Radial/dateTime 안전 guard의 측정된 unpacked 비용과 hosted Node 24 archive 경계를 다음 1KB 단위로만 package budget에 흡수하고 packed·파일 수·소비자 gzip 상한은 유지
+92. 완료(v0.9.3 후속): Radial/dateTime 안전 guard의 측정된 unpacked 비용과 Node 24 packed archive 514.2KB 경계를 package budget에 흡수하고 77개 파일 표면·소비자 gzip 상한은 유지
 93. 완료(v0.9.3 후속): Radial/dateTime guard의 1KB 미만 raw 산출물 비용만 bundle-size 상한에 반영하고 gzip 제품 예산은 유지
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
