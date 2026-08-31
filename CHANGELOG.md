@@ -18,7 +18,7 @@
 - Give the hosted WebKit full-demo lane one additional bounded process-group retry while keeping assertion failures fatal.
 - Harden Radial image dragging with WebKit user-drag suppression and a capturing `dragstart` guard, restoring authored image styles on destroy.
 - Normalize timezone-less SQL/ISO timestamps for Korean server output and reject impossible calendar dates instead of silently rolling them into another day.
-- Absorb the measured 2.7 KB unpacked cost of the Radial/dateTime safety guards plus the known ~1 KB Node 24 archive variance without widening packed, file-count, or consumer gzip budgets.
+- Absorb the measured 2.7 KB unpacked cost of the Radial/dateTime safety guards plus the hosted Node 24 archive boundary at the next KB without widening packed, file-count, or consumer gzip budgets.
 - Add an explicit canonical/backup live-site parity check with a local fixture, including build-marker drift detection without coupling the backup repository to deployment.
 - Sync the separate Pages backup at `catgarret.github.io/example/kineto` to the verified v0.9.3 demo artifact without changing its site-wide CNAME.
 - Absorb only the measured sub-1 KB raw cost of the Radial/dateTime guards in the artifact-size check; keep compressed budgets and dependency protection unchanged.
@@ -39,7 +39,7 @@
 - hosted WebKit 전체 데모 lane에는 assertion 실패를 숨기지 않는 bounded process-group 재시도 1회를 추가했습니다.
 - Radial 이미지 드래그에 WebKit user-drag 차단과 capturing `dragstart` guard를 적용하고 destroy 시 작성자 스타일을 복원합니다.
 - 한국어 서버 출력의 시간대 없는 SQL/ISO 시각을 안정적으로 정규화하고 존재하지 않는 날짜를 다른 날짜로 자동 보정하지 않습니다.
-- Radial/dateTime 안전 guard의 측정된 unpacked 2.7KB 비용과 알려진 Node 24 archive 약 1KB 편차만 반영하고 packed·파일 수·소비자 gzip 예산은 늘리지 않습니다.
+- Radial/dateTime 안전 guard의 측정된 unpacked 2.7KB 비용과 hosted Node 24 archive 경계를 다음 1KB 단위로만 반영하고 packed·파일 수·소비자 gzip 예산은 늘리지 않습니다.
 - 백업 저장소를 배포 대상에 결합하지 않고도 canonical·백업의 버전·모듈 수·GTM·CDN·build marker drift를 검사하는 live-site parity 명령과 로컬 fixture를 추가했습니다.
 - 별도 Pages 백업 경로 `catgarret.github.io/example/kineto`를 검증된 v0.9.3 데모 산출물과 동기화했으며 사이트 전체 CNAME은 변경하지 않았습니다.
 - Radial/dateTime guard의 측정된 1KB 미만 raw 비용만 산출물 크기 검사에 반영하고, 압축 예산과 의존성 보호 상한은 유지합니다.
