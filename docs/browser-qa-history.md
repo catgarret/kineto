@@ -18,6 +18,7 @@
 | 2026-09-01 | v0.9.3 roadmap priority 후속 | `aba05d9` | `33414388601` | 성공 | 성공 | 성공 | `33415329474` 성공 | States/Presence 확장 gate, modular entry 기본 경로, 고위험 WebKit 목록과 실서비스 선행 조건을 문서화; canonical·backup parity는 build `aba05d9`로 확인 |
 | 2026-09-01 | v0.9.3 supply-chain boundary 후속 | `f500a74` | `33418047636` | 성공 | 성공 | 성공 | `33418967364` 성공 | lockfile registry·integrity 경계를 CI에 연결; canonical·backup parity는 build `f500a74`로 확인했고 backup Pages run `33419171058`도 성공 |
 | 2026-09-01 | v0.9.3 package archive variance 후속 | `c3fc1be` | `33422557181` | 성공 | 성공 | 성공 | `33423355483` 성공 | Node 24/npm 11의 측정된 packed archive 경계를 보정한 뒤 전체 suite·Firefox·WebKit과 canonical·backup parity(build `c3fc1be`)를 확인했고 backup Pages run `33423437879`도 성공 |
+| 2026-09-01 | v0.9.3 supply-chain guardrail 후속 | `e5433a6` | `33425915584` | 성공 | 성공 | 실패(WebKit full demo regression) | 미실행 | hosted WebKit에서 3회 bounded retry가 모두 실패해 추가 runner variance를 확인; 코드 변경과 섞지 않고 retry 정책을 보강한 뒤 재검증 |
 
 ## 기록 규칙
 

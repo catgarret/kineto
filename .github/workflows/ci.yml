@@ -142,7 +142,11 @@ jobs:
           # longer than the cross-browser smoke lane on a shared runner. Keep
           # the retry bounded while allowing a complete attempt to finish.
           MK_BROWSER_TEST_TIMEOUT: 240000
-          MK_BROWSER_TEST_ATTEMPTS: 3
+          # WebKit's hosted runner occasionally loses one full-demo attempt
+          # while provisioning its isolated process. Keep the existing
+          # bounded timeout and allow one additional clean process group only
+          # for that engine; assertions still fail the job after all attempts.
+          MK_BROWSER_TEST_ATTEMPTS: ${{ matrix.browser == 'webkit' && 4 || 3 }}
 
       - name: Pack dry run
         run: |

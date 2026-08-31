@@ -487,6 +487,8 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 82. 완료(v0.9.3 후속): SBOM·audit 산출물 누락을 실패시키는 artifact 업로드 계약 추가
 83. 완료(v0.9.3 후속): package install lifecycle script 금지 정책을 공급망 회귀검사에 고정
 84. 완료(v0.9.3 후속): 공급망 운영 문서에 Dependabot·SBOM·artifact 보존 범위 기록
+85. 완료(v0.9.3 후속): hosted WebKit full-demo regression의 추가 runner variance를 QA 이력에 분리 기록
+86. 완료(v0.9.3 후속): WebKit에만 bounded process-group 재시도 1회를 추가하고 assertion 실패는 계속 fatal로 유지
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 
