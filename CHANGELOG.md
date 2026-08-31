@@ -13,6 +13,7 @@
 - Record the readiness-evidence and roadmap-priority CI/Pages outcomes in the browser QA history with canonical/backup parity markers.
 - Enforce lockfileVersion 3, public npm registry tarballs, integrity metadata, and the two fixture-only local Kineto links in CI and release checks.
 - Add a weekly and manually dispatched supply-chain audit that reproduces a locked install, runs npm audit, and checks the package surface without treating Socket scores as a substitute for triage.
+- Absorb only the measured Node 24/npm 11 package-metadata archive boundary from the new supply-chain contract, keeping runtime gzip, unpacked, and release-file budgets unchanged.
 - Add an explicit canonical/backup live-site parity check with a local fixture, including build-marker drift detection without coupling the backup repository to deployment.
 - Sync the separate Pages backup at `catgarret.github.io/example/kineto` to the verified v0.9.3 demo artifact without changing its site-wide CNAME.
 
@@ -27,6 +28,7 @@
 - readiness-evidence와 로드맵 우선순위 변경의 CI·Pages 결과 및 canonical/backup parity build marker를 브라우저 QA 이력에 기록했습니다.
 - CI와 릴리스 검사에서 lockfileVersion 3, public npm registry tarball, integrity metadata, fixture 전용 로컬 Kineto link 2개 경계를 강제합니다.
 - 주간·수동 공급망 audit에서 잠금 설치·npm audit·패키지 표면을 재현하고, Socket 점수를 개별 경고 triage의 대체값으로 사용하지 않도록 범위를 분리했습니다.
+- 새 공급망 계약으로 발생한 Node 24/npm 11 패키지 metadata archive 경계만 측정값에 맞춰 흡수했으며 runtime gzip·unpacked·릴리스 파일 예산은 유지합니다.
 - 백업 저장소를 배포 대상에 결합하지 않고도 canonical·백업의 버전·모듈 수·GTM·CDN·build marker drift를 검사하는 live-site parity 명령과 로컬 fixture를 추가했습니다.
 - 별도 Pages 백업 경로 `catgarret.github.io/example/kineto`를 검증된 v0.9.3 데모 산출물과 동기화했으며 사이트 전체 CNAME은 변경하지 않았습니다.
 

@@ -87,7 +87,12 @@ const BUDGET = {
   // 9.9 KB unpacked through the built Slider/module artifacts. Keep the same
   // 78-file allowlist and absorb only this bounded runtime cost plus the
   // existing cross-runner margin.
-  packedKb: 513,
+  // 2026-09-01: adding the supply-chain workflow contract and script metadata
+  // raised the Node 24/npm 11 archive to a rounded 513.0 KB while Node 25/npm
+  // 11 remains 511.8 KB. Keep the 77-file allowlist and absorb only this
+  // measured 1 KB package-metadata boundary; this is not a runtime budget
+  // increase or permission to widen the release surface.
+  packedKb: 514,
   unpackedKb: 1724,
   files: 78
 };

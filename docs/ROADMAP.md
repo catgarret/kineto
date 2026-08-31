@@ -477,6 +477,11 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 72. 완료(v0.9.3 후속): 같은 workflow에서 `npm pack --dry-run`과 lockfile boundary를 함께 실행해 설치·배포 표면을 점검
 73. 완료(v0.9.3 후속): supply-chain workflow 계약 테스트를 `test:node`·CI·release에 연결
 74. 완료(v0.9.3 후속): 주간 점검의 범위·한계와 Socket 수동 triage 절차를 공급망 문서에 기록
+75. 완료(v0.9.3 후속): supply-chain workflow 메타데이터로 발생한 Node 24/npm 11 packed archive 경계를 실제 측정값으로 보정
+76. 완료(v0.9.3 후속): package-size 보정이 runtime gzip·unpacked·파일 allowlist를 넓히지 않는다는 회귀 검증
+77. 완료(v0.9.3 후속): Node 24와 Node 25의 package archive 차이를 별도 runner variance로 문서화
+78. 완료(v0.9.3 후속): 로컬 Node 24/npm 11 재현 명령으로 원격 package-size 실패를 재현·확인
+79. 완료(v0.9.3 후속): package-size 경계 수정 후 전체 CI 재실행을 release 전제조건으로 고정
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 
