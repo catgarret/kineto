@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.9.1 · 작성일: 2026-08-02 · 검토: 2026-08-31
+> 기준 버전: v0.9.2 · 작성일: 2026-08-02 · 검토: 2026-08-31
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -39,6 +39,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 - v0.8.105에서 소수 초가 포함된 ISO 날짜 입력을 보존 파싱하도록 수정해 Date Time의 `Both · relative + absolute` 데모가 상대 시각과 절대 시각을 함께 표시합니다. 배포 후 canonical demo의 CDN 경로까지 확인합니다.
 - v0.9.0에서 단순 Slider에 `scrollSnap:true` native CSS Scroll Snap 경로를 추가하고, 조건 밖 transform fallback과 Chromium·Firefox·WebKit smoke, 소비자 번들·패키지 예산을 함께 검증했습니다.
 - v0.9.1에서 Node 24/Linux의 실제 전체 consumer gzip 측정값(133.2KB)을 반영해 제품 130KB 예산은 유지하고 제한된 runner variance만 조정했습니다.
+- v0.9.2에서 site/release 테스트 묶음이 실패한 하위 명령을 CI와 Release annotation으로 남기도록 해 원격 러너 실패를 재현 가능한 단위로 분류합니다.
 
 ### 현재 병목
 
