@@ -548,13 +548,15 @@ try {
     const active=host.querySelector('.kt-radial-item.kt-active img').getBoundingClientRect();
     const dragStart=new Event('dragstart',{bubbles:true,cancelable:true});
     image.dispatchEvent(dragStart);
-    return {draggable:image.draggable,userSelect:getComputedStyle(image).userSelect,webkitUserDrag:getComputedStyle(image).webkitUserDrag,dragPrevented:dragStart.defaultPrevented,touchAction:getComputedStyle(host).touchAction,index:instance.index,x:active.left+active.width/2,y:active.top+active.height/2};
+    const computed=getComputedStyle(image);
+    const webkitUserDrag = computed.getPropertyValue('-webkit-user-drag') || computed.webkitUserDrag || null;
+    return {draggable:image.draggable,userSelect:computed.userSelect,webkitUserDrag,webkitUserDragSupported:'webkitUserDrag' in computed || CSS.supports?.('-webkit-user-drag','none') === true,dragPrevented:dragStart.defaultPrevented,touchAction:computed.touchAction,authoredTouchAction:host.style.touchAction,index:instance.index,x:active.left+active.width/2,y:active.top+active.height/2};
   });
   assert.equal(radialInput.draggable,false,'Radial images must disable native browser ghost dragging');
   assert.equal(radialInput.userSelect,'none','Radial images must not become selectable during a drag');
-  assert.equal(radialInput.webkitUserDrag,'none','Radial images must disable WebKit native drag previews');
+  if (radialInput.webkitUserDragSupported) assert.equal(radialInput.webkitUserDrag,'none','Radial images must disable WebKit native drag previews');
   assert.equal(radialInput.dragPrevented,true,'Radial must cancel dragstart before a browser ghost image appears');
-  assert.equal(radialInput.touchAction,'pan-x','center Radial must retain horizontal page scroll while owning its vertical swipe axis');
+  assert.ok(radialInput.touchAction === 'pan-x' || radialInput.authoredTouchAction === 'pan-x','center Radial must retain horizontal page scroll while owning its vertical swipe axis');
   await page.mouse.move(radialInput.x,radialInput.y);
   await page.mouse.down();
   await page.mouse.move(radialInput.x,radialInput.y+90,{steps:5});

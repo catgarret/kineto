@@ -22,6 +22,7 @@
 - Add an explicit canonical/backup live-site parity check with a local fixture, including build-marker drift detection without coupling the backup repository to deployment.
 - Sync the separate Pages backup at `catgarret.github.io/example/kineto` to the verified v0.9.3 demo artifact without changing its site-wide CNAME.
 - Absorb only the measured sub-1 KB raw cost of the Radial/dateTime guards in the artifact-size check; keep compressed budgets and dependency protection unchanged.
+- Keep the Radial drag regression assertion portable across engines that do not expose the WebKit-only `-webkit-user-drag` computed property.
 
 ### 한국어
 
@@ -43,6 +44,7 @@
 - 백업 저장소를 배포 대상에 결합하지 않고도 canonical·백업의 버전·모듈 수·GTM·CDN·build marker drift를 검사하는 live-site parity 명령과 로컬 fixture를 추가했습니다.
 - 별도 Pages 백업 경로 `catgarret.github.io/example/kineto`를 검증된 v0.9.3 데모 산출물과 동기화했으며 사이트 전체 CNAME은 변경하지 않았습니다.
 - Radial/dateTime guard의 측정된 1KB 미만 raw 비용만 산출물 크기 검사에 반영하고, 압축 예산과 의존성 보호 상한은 유지합니다.
+- WebKit 전용 `-webkit-user-drag` 계산 속성을 노출하지 않는 브라우저에서도 Radial 드래그 회귀 검사가 올바르게 동작하도록 엔진별 검사를 분리했습니다.
 
 ## [0.9.3] - 2026-08-31
 
