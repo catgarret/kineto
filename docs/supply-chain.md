@@ -42,3 +42,11 @@ lockfileVersion 3을 사용하고, 외부 패키지의 `resolved` URL을
 이 경계는 `npm run test:lockfile-boundary`로 검사하며 `test:node`, CI, release
 workflow에서 같은 명령을 실행합니다. lockfile을 갱신할 때 registry 변경이나
 새로운 workspace link가 생기면 코드 변경과 같은 검토·근거를 남겨야 합니다.
+
+## 주간 공급망 점검
+
+`.github/workflows/supply-chain.yml`은 매주 월요일과 수동 dispatch에서 별도
+공급망 점검을 실행합니다. `npm ci --ignore-scripts`로 잠금 설치를 재현한 뒤
+lockfile registry 경계, `npm audit --audit-level=low`, `npm pack --dry-run`을
+차례로 확인합니다. 이 workflow는 공개 Socket 점수나 경고를 자동으로 대체하지
+않으며, Socket 경고는 위의 분류 절차에 따라 별도로 검토·기록합니다.

@@ -472,6 +472,11 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 67. 완료(v0.9.3 후속): consumer/framework fixture의 유일한 로컬 Kineto link(`../..`)를 명시적 예외로 고정하고 임의 workspace link를 차단
 68. 완료(v0.9.3 후속): lockfile boundary 검사를 `test:node`·CI·release workflow에 연결해 설치 경계가 모든 릴리스 경로에서 동일하게 검증되도록 고정
 69. 완료(v0.9.3 후속): 공급망 문서에 lockfile registry 경계와 갱신 시 검토 기준을 기록
+70. 완료(v0.9.3 후속): 주간·수동 공급망 audit workflow를 추가해 잠금 설치를 별도 job에서 재현
+71. 완료(v0.9.3 후속): 공급망 workflow에 `npm audit --audit-level=low`를 연결하고 Socket 점수와 역할을 분리
+72. 완료(v0.9.3 후속): 같은 workflow에서 `npm pack --dry-run`과 lockfile boundary를 함께 실행해 설치·배포 표면을 점검
+73. 완료(v0.9.3 후속): supply-chain workflow 계약 테스트를 `test:node`·CI·release에 연결
+74. 완료(v0.9.3 후속): 주간 점검의 범위·한계와 Socket 수동 triage 절차를 공급망 문서에 기록
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

@@ -1,0 +1,41 @@
+name: Supply-chain audit
+
+on:
+  schedule:
+    - cron: "41 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supply-chain-audit
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Lockfile, audit, and package boundary
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --prefer-offline --fetch-retries=3 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=5000 --fetch-timeout=30000
+
+      - name: Check lockfile registry boundary
+        run: npm run test:lockfile-boundary
+
+      - name: Run npm audit
+        run: npm audit --audit-level=low
+
+      - name: Check package surface
+        run: npm pack --dry-run
