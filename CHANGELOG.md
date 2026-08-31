@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Bound the full Chromium browser QA lane to 240 seconds per attempt with three fresh retries in CI and release, and annotate `test:browser` when the gate still fails.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 전체 Chromium 브라우저 QA를 CI와 릴리스에서 시도당 240초·새 프로세스 3회로 제한하고, 재시도 후에도 실패하면 `test:browser` annotation을 남기도록 했습니다.
 
 ## [0.9.2] - 2026-08-31
 

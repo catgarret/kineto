@@ -133,7 +133,16 @@ jobs:
       - name: Run browser QA
         run: |
           set -o pipefail
-          node scripts/retry-command.mjs npm run test:browser 2>&1 | tee -a ci.log
+          if ! node scripts/retry-command.mjs npm run test:browser 2>&1 | tee -a ci.log; then
+            echo "::error title=Browser QA failed::test:browser"
+            exit 1
+          fi
+        env:
+          # The full Chromium lane exercises every playground and can spend
+          # longer than the cross-browser smoke lane on a shared runner. Keep
+          # the retry bounded while allowing a complete attempt to finish.
+          MK_BROWSER_TEST_TIMEOUT: 240000
+          MK_BROWSER_TEST_ATTEMPTS: 3
 
       - name: Pack dry run
         run: |

@@ -123,7 +123,15 @@ jobs:
       - name: Run browser QA
         run: |
           set -o pipefail
-          node scripts/retry-command.mjs npm run test:browser 2>&1 | tee -a release.log
+          if ! node scripts/retry-command.mjs npm run test:browser 2>&1 | tee -a release.log; then
+            echo "::error title=Browser QA failed::test:browser"
+            exit 1
+          fi
+        env:
+          # Match the full CI lane: hosted Chromium can need more time than a
+          # local run while still remaining a bounded release gate.
+          MK_BROWSER_TEST_TIMEOUT: 240000
+          MK_BROWSER_TEST_ATTEMPTS: 3
 
       - name: Pack dry run
         run: |

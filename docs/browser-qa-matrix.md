@@ -49,6 +49,11 @@ KT_BROWSER=webkit node tests/retry-browser-test.mjs tests/browser/demo-polish.mj
 
 릴리스 전에는 `npm run ci`의 Node 24 전체 job과 Firefox/WebKit matrix가 모두 성공해야 합니다. `heavy-layout` 단계가 실패하면 다음 순서로 분류합니다.
 
+Chromium 전체 lane은 모든 playground를 포함하므로 hosted runner에서 시도당 `240s`, 최대
+3회로 실행합니다. 재시도 후에도 실패하면 `test:browser` annotation과 `ci.log`의 마지막
+checkpoint를 먼저 확인합니다. 이 제한은 실패를 숨기지 않고, 일시적인 runner 지연만
+재현 가능한 범위에서 흡수하기 위한 것입니다.
+
 1. **레이아웃 준비 실패**: rect가 0이거나 hidden 조상에서 측정됐는지 확인합니다. 대상이 레이아웃되기 전에 읽은 assertion이면 동기화를 고칩니다.
 2. **엔진 차이**: 같은 DOM·CSS가 한 엔진에서만 다른 used value를 내는지 확인합니다. 브라우저별 예외를 추가하기 전에 containing block·overflow·clip 원인을 재현합니다.
 3. **실제 회귀**: 두 엔진 이상에서 같은 경계가 깨지거나 한 엔진에서 사용자에게 보이는 레이어가 사라지면 모듈 수정과 회귀 테스트를 함께 추가합니다.

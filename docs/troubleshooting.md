@@ -158,11 +158,11 @@ npm run test:browser
 npm run ci
 ```
 
+Chromium 전체 lane은 시도당 `240s`, 최대 3회로 제한된 browser retry를 사용하고,
 Firefox/WebKit hosted lane은 브라우저 바이너리 설치도 시도당 `timeout 5m`으로 제한한
-bounded retry와 job timeout을 사용합니다. 실패 시 마지막
-checkpoint와 엔진별 artifact를 먼저 확인하고, 테스트를 삭제하거나 timeout을 무제한으로
-늘리지 마십시오. 릴리스 전에는 `npm run verify`와 `npm run test:live-site`까지 실행해야
-합니다.
+bounded retry와 job timeout을 사용합니다. 실패 시 마지막 checkpoint와 엔진별 artifact를
+먼저 확인하고, 테스트를 삭제하거나 timeout을 무제한으로 늘리지 마십시오. 릴리스 전에는
+`npm run verify`와 `npm run test:live-site`까지 실행해야 합니다.
 
 ## reduced motion·접근성
 
