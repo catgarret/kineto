@@ -23,6 +23,7 @@
 - Sync the separate Pages backup at `catgarret.github.io/example/kineto` to the verified v0.9.3 demo artifact without changing its site-wide CNAME.
 - Absorb only the measured sub-1 KB raw cost of the Radial/dateTime guards in the artifact-size check; keep compressed budgets and dependency protection unchanged.
 - Keep the Radial drag regression assertion portable across engines that do not expose the WebKit-only `-webkit-user-drag` computed property.
+- Normalize vendor-prefixed computed style access in the Radial browser checkpoint so WebKit and Firefox validate the same interaction contract.
 
 ### 한국어
 
@@ -45,6 +46,7 @@
 - 별도 Pages 백업 경로 `catgarret.github.io/example/kineto`를 검증된 v0.9.3 데모 산출물과 동기화했으며 사이트 전체 CNAME은 변경하지 않았습니다.
 - Radial/dateTime guard의 측정된 1KB 미만 raw 비용만 산출물 크기 검사에 반영하고, 압축 예산과 의존성 보호 상한은 유지합니다.
 - WebKit 전용 `-webkit-user-drag` 계산 속성을 노출하지 않는 브라우저에서도 Radial 드래그 회귀 검사가 올바르게 동작하도록 엔진별 검사를 분리했습니다.
+- Radial 브라우저 체크포인트에서 vendor prefix 계산 스타일을 정규화해 WebKit·Firefox가 동일한 상호작용 계약을 검증하도록 했습니다.
 
 ## [0.9.3] - 2026-08-31
 

@@ -549,8 +549,10 @@ try {
     const dragStart=new Event('dragstart',{bubbles:true,cancelable:true});
     image.dispatchEvent(dragStart);
     const computed=getComputedStyle(image);
+    const userSelect = computed.getPropertyValue('user-select') || computed.getPropertyValue('-webkit-user-select') || computed.userSelect || computed.webkitUserSelect || null;
     const webkitUserDrag = computed.getPropertyValue('-webkit-user-drag') || computed.webkitUserDrag || null;
-    return {draggable:image.draggable,userSelect:computed.userSelect,webkitUserDrag,webkitUserDragSupported:'webkitUserDrag' in computed || CSS.supports?.('-webkit-user-drag','none') === true,dragPrevented:dragStart.defaultPrevented,touchAction:computed.touchAction,authoredTouchAction:host.style.touchAction,index:instance.index,x:active.left+active.width/2,y:active.top+active.height/2};
+    const touchAction = computed.getPropertyValue('touch-action') || computed.touchAction || null;
+    return {draggable:image.draggable,userSelect,webkitUserDrag,webkitUserDragSupported:'webkitUserDrag' in computed || CSS.supports?.('-webkit-user-drag','none') === true,dragPrevented:dragStart.defaultPrevented,touchAction,authoredTouchAction:host.style.touchAction,index:instance.index,x:active.left+active.width/2,y:active.top+active.height/2};
   });
   assert.equal(radialInput.draggable,false,'Radial images must disable native browser ghost dragging');
   assert.equal(radialInput.userSelect,'none','Radial images must not become selectable during a drag');

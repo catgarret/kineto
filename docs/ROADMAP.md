@@ -497,6 +497,7 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 92. 완료(v0.9.3 후속): Radial/dateTime 안전 guard의 측정된 unpacked 비용과 Node 24 packed archive 514.2KB 경계를 package budget에 흡수하고 77개 파일 표면·소비자 gzip 상한은 유지
 93. 완료(v0.9.3 후속): Radial/dateTime guard의 1KB 미만 raw 산출물 비용만 bundle-size 상한에 반영하고 gzip 제품 예산은 유지
 94. 완료(v0.9.3 후속): WebKit 전용 computed style 부재를 허용하도록 Radial cross-browser QA assertion을 엔진별로 분리
+95. 완료(v0.9.3 후속): Radial QA에서 user-select·touch-action vendor 스타일을 정규화해 Firefox·WebKit 검증을 동일 계약으로 통합
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 
