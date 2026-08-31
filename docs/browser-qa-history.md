@@ -21,6 +21,7 @@
 | 2026-09-01 | v0.9.3 supply-chain guardrail 후속 | `e5433a6` | `33425915584` | 성공 | 성공 | 실패(WebKit full demo regression) | 미실행 | hosted WebKit에서 3회 bounded retry가 모두 실패해 추가 runner variance를 확인; 코드 변경과 섞지 않고 retry 정책을 보강한 뒤 재검증 |
 | 2026-09-01 | v0.9.3 Radial/dateTime cross-browser 후속 | `cc61fc0` | `33432885640` | 성공 | 성공 | 성공 | `33433936527` 성공 (backup `33434130058` 성공) | Radial native-drag guard·server timestamp parser와 엔진별 computed-style QA를 확인했고 canonical·backup parity는 build `cc61fc0`으로 일치 |
 | 2026-09-01 | v0.9.3 dateTime parser boundary 후속 | `f269b70` | `33437610805` | 성공 | 성공 | 성공 | `33438491659` 성공 (backup `33438642493` 성공) | dash/slash/dot·invalid clock·explicit offset parser 경계와 Node 24 package/Rolldown variance를 확인했고 canonical·backup parity는 build `f269b70`으로 일치 |
+| 2026-09-01 | v0.9.3 dateTime input compatibility 후속 | `83cf02b` | `33440847916` | 성공 | 성공 | 성공 | `33441580615` 성공 (backup `33441913403` 성공) | offset 앞 공백·고정밀 소수초·숫자형 날짜 offset 회귀와 Node 24 package 경계를 확인했고 canonical·backup parity는 build `83cf02b`으로 일치 |
 
 ## 기록 규칙
 
