@@ -54,6 +54,18 @@ lock.version = next;
 if (lock.packages?.['']) lock.packages[''].version = next;
 fs.writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`);
 
+for (const relative of [
+  'tests/consumer-bundles/package-lock.json',
+  'tests/framework-qa/package-lock.json'
+]) {
+  const fixtureLockPath = path.join(root, relative);
+  const fixtureLock = JSON.parse(fs.readFileSync(fixtureLockPath, 'utf8'));
+  const linkedRoot = fixtureLock.packages?.['../..'];
+  if (linkedRoot?.version !== current) fail(`${relative} linked root is not ${current}`);
+  linkedRoot.version = next;
+  fs.writeFileSync(fixtureLockPath, `${JSON.stringify(fixtureLock, null, 2)}\n`);
+}
+
 const versionFiles = [
   'src/core.js',
   'FEATURE_CONTRACT.md',
@@ -75,12 +87,22 @@ for (const relative of versionFiles) {
   fs.writeFileSync(file, source.replaceAll(current, next));
 }
 
+// The roadmap contains historical release references that must not be changed
+// wholesale. Synchronize only its explicit baseline and leave the meaningful
+// `v<next>에서` evidence line for release review to validate.
+const roadmapPath = path.join(root, 'docs', 'ROADMAP.md');
+const roadmap = fs.readFileSync(roadmapPath, 'utf8');
+const roadmapBaseline = new RegExp(`^(> 기준 버전: )v${current.replaceAll('.', '\\.')}(?=\\s|·)`, 'm');
+if (!roadmapBaseline.test(roadmap)) fail(`docs/ROADMAP.md baseline is not v${current}`);
+fs.writeFileSync(roadmapPath, roadmap.replace(roadmapBaseline, `$1v${next}`));
+
 const releaseNote = `# Kineto v${next}\n\n## English\n\n${english}\n\n## 한국어\n\n${korean}\n`;
 const noteDir = path.join(root, '.github', 'release-notes');
 fs.mkdirSync(noteDir, { recursive: true });
 fs.writeFileSync(path.join(noteDir, `v${next}.md`), releaseNote);
 
 run('npm', ['run', 'docs:contract']);
+run(process.execPath, [path.join(root, 'scripts', 'generate-module-metadata.mjs')]);
 run('npm', ['run', 'build']);
 run(process.execPath, [path.join(root, 'scripts', 'check-release.mjs'), `v${next}`]);
 

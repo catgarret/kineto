@@ -18,7 +18,10 @@ const note = read(`.github/release-notes/v${pkg.version}.md`);
 const security = read('SECURITY.md');
 const supplyChain = read('docs/supply-chain.md');
 const purgeScript = read('scripts/purge-cdn.mjs');
+const prepareReleaseScript = read('scripts/prepare-release.mjs');
 const qaLocks = ['package-lock.json', 'tests/consumer-bundles/package-lock.json', 'tests/framework-qa/package-lock.json'];
+const consumerLock = JSON.parse(read(qaLocks[1]));
+const frameworkLock = JSON.parse(read(qaLocks[2]));
 const workflowFiles = fs.readdirSync(path.join(root, '.github/workflows')).filter((file) => /\.ya?ml$/.test(file));
 
 function mappingBlock(source, key, indent = 2) {
@@ -75,6 +78,18 @@ for (const file of workflowFiles) {
 }
 
 assert.match(workflow, /tags:\s*\n\s*-\s*"v\[0-9\]\+\.\[0-9\]\+\.\[0-9\]\+"/);
+assert.match(prepareReleaseScript, /const roadmapPath = path\.join\(root, 'docs', 'ROADMAP\.md'\)/,
+  'release preparation must target the roadmap explicitly');
+assert.match(prepareReleaseScript, /roadmap\.replace\(roadmapBaseline, `\$1v\$\{next\}`\)/,
+  'release preparation must synchronize only the roadmap baseline version');
+assert.doesNotMatch(prepareReleaseScript, /versionFiles = \[[\s\S]*?'docs\/ROADMAP\.md'[\s\S]*?\];/,
+  'release preparation must not rewrite historical roadmap version references');
+assert.match(prepareReleaseScript, /generate-module-metadata\.mjs/,
+  'release preparation must regenerate versioned module metadata');
+assert.equal(consumerLock.packages['../..'].version, pkg.version,
+  'consumer fixture linked-root metadata must track the release version');
+assert.equal(frameworkLock.packages['../..'].version, pkg.version,
+  'framework fixture linked-root metadata must track the release version');
 assert.match(workflow, /^permissions:\s*\n\s{2}contents:\s*read$/m);
 assert.equal((workflow.match(/^\s+contents:\s*write$/gm) || []).length, 1, 'only publish may write repository contents');
 assert.equal((workflow.match(/^\s+id-token:\s*write$/gm) || []).length, 1, 'only publish may request OIDC');

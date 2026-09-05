@@ -5,12 +5,23 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.9.4] - 2026-09-05
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Deploy the exact tested JavaScript and CSS with the demo, require the expected commit and byte hashes through bounded propagation and request timeouts in live verification, and keep public jsDelivr installation snippets intact.
 - Give demo settings collision-tested semantic v2 share keys with v1-link compatibility and hash landing, then add skip navigation, complete ARIA tab relationships, roving keyboard controls, and seven-locale accessible names for user controls.
 - Keep Mega Menu panel IDs collision-free across simultaneous instances and restore authored class, style, hidden, ID, and ARIA state after cancelling animations on destroy; exercise every one of the 52 modules through create, replay, duplicate-init, and destroy in Chromium, Firefox, and WebKit.
 - Add real React and Vue hydration QA, resolve Vue object/ref/getter options immediately before each replacement, and share matching Vite/Rolldown budgets for Core plus States and Presence entry combinations.
 - Audit all three lockfiles with durable but locally ignored reports, update bounded development dependencies, lock optional network primitives and Lenis 1.3.26 SRI, and document the current Socket alert triage without hiding unavoidable packaging signals.
 - Pin every third-party workflow action to a full commit SHA, cover supported Node 20/22 runtimes, require cross-browser release gates and one checksum-bound tarball, and make jsDelivr purging bounded and fatal on partial failure.
+- Keep the roadmap baseline, fixture lock metadata, and generated module metadata synchronized during release preparation so the generated candidate passes its own contracts.
 - Restore automatic backup-site synchronization without a cross-repository Kineto secret by rebuilding the latest successful main CI commit in a read-only job and limiting the write-scoped job to `example/kineto`.
 - Add a weekly and manually dispatched live-site parity alert that stays independent from canonical Pages deployment.
 - Add a readiness-gate check that keeps physical-device, external-case, deprecation, and FLIP evidence statuses honest in CI.
@@ -50,6 +61,7 @@
 - 실제 React·Vue hydration QA를 추가하고 Vue 객체·ref·getter options를 매 교체 직전에 다시 평가하며, Core에 States·Presence를 조합한 Vite/Rolldown 소비자 예산을 동일하게 측정합니다.
 - 세 lockfile을 Git에서 제외되는 개별 report로 audit하고 제한된 개발 의존성을 갱신했으며, 선택적 network primitive와 Lenis 1.3.26 SRI를 고정하고 회피할 수 없는 packaging 신호를 숨기지 않은 현재 Socket 경고 판정을 기록했습니다.
 - 모든 외부 workflow action을 전체 commit SHA로 고정하고 지원 Node 20/22를 검사하며, 교차 브라우저 release gate와 checksum에 결속된 단일 tarball을 요구하고 jsDelivr purge의 재시도·시간을 제한해 일부 실패도 치명적으로 처리합니다.
+- 릴리스 준비 과정에서 로드맵 기준 버전·fixture lock metadata·생성형 모듈 metadata를 함께 동기화해 생성된 후보가 자체 계약을 통과하도록 했습니다.
 - Kineto 저장소의 cross-repository secret 없이 최신 main CI 성공 commit을 read-only job에서 다시 빌드하고, 쓰기 권한 job은 `example/kineto`만 바꾸도록 제한해 백업 사이트 자동 동기화를 복구했습니다.
 - canonical Pages 배포를 막지 않도록 분리한 주간·수동 live-site parity 경보 workflow를 추가했습니다.
 - 실기기·외부 사례·deprecation·FLIP 증거 상태가 CI에서 완료로 오인되지 않도록 readiness-gate 검사를 추가했습니다.
@@ -79,7 +91,6 @@
 - dateTime 입력 호환성 guard로 측정된 unpacked 1731.3KB archive 경계만 반영하고, 77개 파일 표면과 소비자 gzip 예산은 유지합니다.
 - dateTime 호환성 guard로 측정된 minified ESM raw 산출물만 406KB 상한으로 조정하고, 압축 제품 예산은 유지합니다.
 - Node 24/npm 11에서 측정된 528410 bytes packed archive 경계를 517KB로 반영하고, 77개 파일 허용 목록과 unpacked 예산은 유지합니다.
-
 ## [0.9.3] - 2026-08-31
 
 ### English

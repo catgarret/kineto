@@ -1,6 +1,6 @@
 {
   "name": "@dong-gri/kineto",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "Interactive web motion effects with live controls and copy-ready code — 52 modules for JavaScript, React, Vue, and jQuery. Zero required dependencies.",
   "type": "module",
   "keywords": [
