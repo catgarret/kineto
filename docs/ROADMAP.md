@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.9.4 · 작성일: 2026-08-02 · 검토: 2026-09-05
+> 기준 버전: v0.9.5 · 작성일: 2026-08-02 · 검토: 2026-09-05
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -46,6 +46,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 - v0.9.3에서 전체 Chromium 브라우저 QA를 hosted runner 기준 시도당 240초·3회로 제한하고, 재시도 후 실패 시 `test:browser` annotation을 남겨 브라우저 단계의 원격 실패를 바로 분류합니다.
 - v0.9.3 배포 후 canonical `kineto.dongri.me`와 별도 백업 `git.dongri.me/example/kineto`가 모두 같은 버전·모듈 수·GTM·build marker를 제공하는 것을 확인했습니다.
 - v0.9.4에서 co-deployed runtime hash, 최소 권한 release, 세 lockfile, React·Vue hydration, 52개 cross-browser lifecycle, semantic 공유 URL과 locale별 ARIA를 릴리스 게이트로 고정했으며 실제 태그·Pages 결과는 배포 후 QA 이력에 기록합니다.
+- v0.9.5에서 v0.9.4 배포 게이트가 발견한 다국어 맨 위로 이동 ring의 observer 재생성 후 label 회귀를 수정하고, 예제 본문과 사용자 조작 UI를 분리한 결정적 QA를 고정했으며 실제 npm·GitHub Release·Pages 결과는 배포 후 증거로 남깁니다.
 
 ### 현재 병목
 
