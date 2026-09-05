@@ -56,6 +56,11 @@ assert.match(
   /\['button\.kt-progress-ring','맨 위로'\]/,
   'the generated back-to-top ring must join the locale refresh contract'
 );
+assert.match(
+  demoMain,
+  /progressSource\.dataset\.ktLabel=localizedDemoUi\('맨 위로',language\)/,
+  'the declarative progress source must retain the locale across auto-init replacement'
+);
 // Two tabbed pairs replace four descriptions with two; Wave and Film Grain add
 // two dedicated Lazy examples; the date-time demo now has four explicit modes;
 // the native Scroll Snap slider adds one translated description.

@@ -742,6 +742,12 @@
       ['.footer-links','푸터 탐색']
     ];
     const refreshDemoControlNames=(root=document,language=document.documentElement.lang||'ko')=>{
+      // Keep the declarative source option in sync as well as the currently
+      // generated button. A broad demo mutation may cause auto-init to replace
+      // the ring after this function returns; the replacement must inherit the
+      // selected locale instead of falling back to the authored Korean label.
+      const progressSource=root.querySelector('[data-kt-progress][data-kt-click-to-top="true"]');
+      if(progressSource)progressSource.dataset.ktLabel=localizedDemoUi('맨 위로',language);
       DEMO_CONTROL_NAME_SELECTORS.forEach(([selector,key])=>{
         root.querySelectorAll(selector).forEach((node)=>{node.dataset.demoI18nAriaLabel=key;});
       });

@@ -170,6 +170,21 @@ try {
       await new Promise((resolve)=>window.requestAnimationFrame(
         ()=>window.requestAnimationFrame(resolve)
       ));
+      // Locale changes mutate several demo regions and can make auto-init
+      // replace generated controls. Wait for the replacement ring to inherit
+      // the selected locale instead of sampling an intermediate DOM.
+      const expectedTop=language==='ko'
+        ?'맨 위로'
+        :window.KINETO_COPY_I18N.ui['맨 위로'][{en:0,ja:1,'zh-CN':2,'zh-TW':3,ru:4,it:5}[language]];
+      await new Promise((resolve)=>{
+        const deadline=Date.now()+300;
+        const poll=()=>{
+          if(document.querySelector('button.kt-progress-ring')?.getAttribute('aria-label')===expectedTop
+            ||Date.now()>=deadline){resolve();return;}
+          setTimeout(poll,10);
+        };
+        poll();
+      });
       const descriptions=[...document.querySelectorAll([
         'main .card > p',
         'main .scroll-demo-unit > p',

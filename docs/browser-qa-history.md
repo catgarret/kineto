@@ -24,6 +24,7 @@
 | 2026-09-01 | v0.9.3 dateTime input compatibility 후속 | `83cf02b` | `33440847916` | 성공 | 성공 | 성공 | `33441580615` 성공 (backup `33441913403` 성공) | offset 앞 공백·고정밀 소수초·숫자형 날짜 offset 회귀와 Node 24 package 경계를 확인했고 canonical·backup parity는 build `83cf02b`으로 일치 |
 | 2026-09-05 | v0.9.4 release candidate | `b2a1b50` | CI `33943995190` / Release `33943996528` | 실패(demo locale QA 범위 경합) | 성공(release gate) | 성공(release gate) | 미실행 | 사용자 조작 UI 번역은 통과했으나, 실행 시점에 생성되는 한국어 예제 본문 `aria-label`을 UI로 오분류해 Node 24·Chromium job이 실패; npm publish는 미실행하고 v0.9.5 정방향 수정으로 전환 |
 | 2026-09-05 | v0.9.4 locale QA 후속 | `69fdd2a` | `33944688134` | 실패(맨 위로 이동 ring 번역 누락) | 미실행 | 미실행 | 미실행 | 애니메이션 본문 경합을 제거한 뒤 생성형 `button.kt-progress-ring`의 `aria-label`이 비한국어 locale에서 `맨 위로`로 남는 실제 누락을 분리; 생성 컨트롤을 locale refresh 대상에 추가해 재검증 |
+| 2026-09-05 | v0.9.4 generated-control 후속 | `528ac65` | `33945152483` | 실패(observer 재생성 후 label 회귀) | 미실행 | 미실행 | 미실행 | 현재 ring을 번역한 뒤 demo DOM mutation으로 auto-init이 ring을 교체하면 원본 `data-kt-label` 한국어를 다시 사용함을 확인; 원본 declarative option과 생성 button을 함께 locale 동기화하고 QA가 안정 상태를 기다리도록 보강 |
 
 ## 기록 규칙
 
