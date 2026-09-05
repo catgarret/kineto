@@ -23,6 +23,7 @@
 | 2026-09-01 | v0.9.3 dateTime parser boundary 후속 | `f269b70` | `33437610805` | 성공 | 성공 | 성공 | `33438491659` 성공 (backup `33438642493` 성공) | dash/slash/dot·invalid clock·explicit offset parser 경계와 Node 24 package/Rolldown variance를 확인했고 canonical·backup parity는 build `f269b70`으로 일치 |
 | 2026-09-01 | v0.9.3 dateTime input compatibility 후속 | `83cf02b` | `33440847916` | 성공 | 성공 | 성공 | `33441580615` 성공 (backup `33441913403` 성공) | offset 앞 공백·고정밀 소수초·숫자형 날짜 offset 회귀와 Node 24 package 경계를 확인했고 canonical·backup parity는 build `83cf02b`으로 일치 |
 | 2026-09-05 | v0.9.4 release candidate | `b2a1b50` | CI `33943995190` / Release `33943996528` | 실패(demo locale QA 범위 경합) | 성공(release gate) | 성공(release gate) | 미실행 | 사용자 조작 UI 번역은 통과했으나, 실행 시점에 생성되는 한국어 예제 본문 `aria-label`을 UI로 오분류해 Node 24·Chromium job이 실패; npm publish는 미실행하고 v0.9.5 정방향 수정으로 전환 |
+| 2026-09-05 | v0.9.4 locale QA 후속 | `69fdd2a` | `33944688134` | 실패(맨 위로 이동 ring 번역 누락) | 미실행 | 미실행 | 미실행 | 애니메이션 본문 경합을 제거한 뒤 생성형 `button.kt-progress-ring`의 `aria-label`이 비한국어 locale에서 `맨 위로`로 남는 실제 누락을 분리; 생성 컨트롤을 locale refresh 대상에 추가해 재검증 |
 
 ## 기록 규칙
 

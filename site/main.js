@@ -737,6 +737,7 @@
       ['#cover-gallery-replay','갤러리 순서를 섞어 다시 재생'],
       ['#flip-shuffle','그리드 순서 섞기'],
       ['.pt-fx-row','전환 효과'],
+      ['button.kt-progress-ring','맨 위로'],
       ['.footer-logo','Kineto 맨 위로'],
       ['.footer-links','푸터 탐색']
     ];

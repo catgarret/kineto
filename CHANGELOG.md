@@ -5,13 +5,13 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
-- Make multilingual demo accessibility QA deterministic by separating localized application controls from intentionally authored Korean animation content.
+- Translate the generated back-to-top progress-ring control in all seven demo locales, and make its accessibility QA deterministic by separating application controls from intentionally authored Korean animation content.
 - Probe an absent local release tag without printing an expected Git fatal, and document pushed-tag fix-forward handling after a failed publish workflow.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
-- 다국어 데모 접근성 QA에서 번역 대상 앱 컨트롤과 의도적으로 한국어로 작성된 애니메이션 본문을 분리해 러너 속도와 관계없이 결정적으로 검사합니다.
+- 생성된 맨 위로 이동 progress-ring 컨트롤을 데모 7개 언어로 번역하고, 접근성 QA에서 앱 컨트롤과 의도적으로 한국어로 작성된 애니메이션 본문을 분리해 러너 속도와 관계없이 검사합니다.
 - 없는 로컬 릴리스 태그를 확인할 때 예상된 Git fatal 문구를 출력하지 않고, 푸시된 태그의 배포 workflow가 실패한 경우도 새 patch로 정방향 수정하도록 문서화했습니다.
 
 ## [0.9.4] - 2026-09-05

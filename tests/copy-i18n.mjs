@@ -6,6 +6,7 @@ import { JSDOM } from 'jsdom';
 
 const root = path.resolve(import.meta.dirname, '..');
 const html = fs.readFileSync(path.join(root, 'demo/index.html'), 'utf8');
+const demoMain = fs.readFileSync(path.join(root, 'demo/main.js'), 'utf8');
 const document = new JSDOM(html).window.document;
 const context = { window: {} };
 
@@ -50,6 +51,11 @@ for (const key of [
 ]) {
   assert.equal(copy.ui[key]?.length, languages.length, `missing localized demo UI: ${key}`);
 }
+assert.match(
+  demoMain,
+  /\['button\.kt-progress-ring','맨 위로'\]/,
+  'the generated back-to-top ring must join the locale refresh contract'
+);
 // Two tabbed pairs replace four descriptions with two; Wave and Film Grain add
 // two dedicated Lazy examples; the date-time demo now has four explicit modes;
 // the native Scroll Snap slider adds one translated description.
