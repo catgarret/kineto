@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Record the v0.9.5 publish-stage path failure and the successful v0.9.6 end-to-end release evidence: cross-browser CI, npm SLSA provenance, byte-identical npm/GitHub tarballs, canonical Pages, and synchronized backup hosting.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- v0.9.5 게시 단계의 경로 해석 실패와 v0.9.6의 교차 브라우저 CI·npm SLSA provenance·npm/GitHub 동일 tarball·공식 Pages·백업 호스팅 동기화 성공 근거를 함께 기록했습니다.
 
 ## [0.9.6] - 2026-09-05
 

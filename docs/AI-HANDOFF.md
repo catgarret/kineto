@@ -80,6 +80,9 @@ At this handoff, the most recent completed work includes:
   output binding;
 - bounded composition through existing Slider, Cover Reveal, and loading
   lifecycle APIs.
+- an end-to-end v0.9.6 release whose cross-browser CI, npm SLSA provenance,
+  checksum-identical npm/GitHub tarballs, canonical Pages, and synchronized
+  backup deployment are recorded in `docs/browser-qa-history.md`.
 
 Always verify this summary against Git history because later commits supersede
 it.

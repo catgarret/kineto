@@ -25,6 +25,8 @@
 | 2026-09-05 | v0.9.4 release candidate | `b2a1b50` | CI `33943995190` / Release `33943996528` | 실패(demo locale QA 범위 경합) | 성공(release gate) | 성공(release gate) | 미실행 | 사용자 조작 UI 번역은 통과했으나, 실행 시점에 생성되는 한국어 예제 본문 `aria-label`을 UI로 오분류해 Node 24·Chromium job이 실패; npm publish는 미실행하고 v0.9.5 정방향 수정으로 전환 |
 | 2026-09-05 | v0.9.4 locale QA 후속 | `69fdd2a` | `33944688134` | 실패(맨 위로 이동 ring 번역 누락) | 미실행 | 미실행 | 미실행 | 애니메이션 본문 경합을 제거한 뒤 생성형 `button.kt-progress-ring`의 `aria-label`이 비한국어 locale에서 `맨 위로`로 남는 실제 누락을 분리; 생성 컨트롤을 locale refresh 대상에 추가해 재검증 |
 | 2026-09-05 | v0.9.4 generated-control 후속 | `528ac65` | `33945152483` | 실패(observer 재생성 후 label 회귀) | 미실행 | 미실행 | 미실행 | 현재 ring을 번역한 뒤 demo DOM mutation으로 auto-init이 ring을 교체하면 원본 `data-kt-label` 한국어를 다시 사용함을 확인; 원본 declarative option과 생성 button을 함께 locale 동기화하고 QA가 안정 상태를 기다리도록 보강 |
+| 2026-09-05 | v0.9.5 release | `8ac7a2b` | CI `33946293529` / Release `33946295274` | 성공 | 성공 | 성공 | `33946819020` 성공 | 일반 CI·canonical Pages와 Release Verify·Firefox·WebKit은 성공했으나 publish 단계에서 npm 11이 prefix 없는 tarball 경로를 Git package spec으로 해석해 실패; npm publish·jsDelivr purge·GitHub Release는 미실행 |
+| 2026-09-05 | v0.9.6 release | `8d784b6` | CI `33947520040` / Release `33947520948` | 성공 | 성공 | 성공 | `33947939177` 성공 (backup `33947986088` 성공) | 명시적 `./` tarball 경로로 동일 checksum artifact를 npm provenance와 GitHub Release에 게시하고, backup sync `33947970148` 뒤 canonical·backup이 v0.9.6·52개·GTM·build `8d784b6`·runtime hash로 일치함을 확인 |
 
 ## 기록 규칙
 

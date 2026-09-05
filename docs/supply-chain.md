@@ -10,6 +10,23 @@ Kineto의 공급망 안전성은 단일 점수로 판단하지 않습니다. npm
 3. `npm run release:ship -- v<version>`은 소유자의 명시적 배포 승인 뒤에만 실행합니다.
 4. 태그 워크플로가 npm provenance 포함 배포와 GitHub Release 생성을 끝낸 뒤 npm과 Release의 버전을 대조합니다.
 
+## 2026-09-05 v0.9.6 배포 증거
+
+- CI `33947520040`과 최소 권한 Release `33947520948`에서 Node 20·22·24,
+  Chromium·Firefox·WebKit, package·세 lockfile audit gate가 통과했습니다.
+- npm `@dong-gri/kineto@0.9.6`에는 SLSA provenance v1 attestation과 registry
+  signature가 있으며, publish 로그의 Sigstore transparency log index는
+  `2721404961`입니다.
+- npm tarball과 GitHub Release asset은 SHA-256
+  `bfbd557cb7b34032df71fb2d6b629c4f39ebd03f8b518afcbec3abeca3b948b9`로
+  byte-for-byte 일치하고, npm registry의 SHA-512 integrity도 로컬 계산값과
+  일치합니다.
+- 세 lockfile의 `npm audit --audit-level=low` 결과는 모두 취약점 0건이며,
+  공개 tarball은 77개 파일과 runtime dependency 0개 경계를 유지합니다.
+- Socket의 v0.9.6 공개 화면은 릴리스 직후 검색·직접 조회에서 아직 확인되지 않아
+  경고 수를 추정하지 않습니다. 아래 0.9.3 경고별 판정은 새 scan이 제공될 때 같은
+  tarball 근거로 다시 대조합니다.
+
 ## 경고 분류
 
 Socket, npm audit, GitHub Advisory 경고는 다음 네 가지 중 하나로 기록합니다.

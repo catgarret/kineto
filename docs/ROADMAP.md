@@ -8,7 +8,7 @@
 > 반영 여부를 먼저 결정한 뒤 나머지 절을 갱신해야 합니다.
 
 2026-09-05 후속 묶음은 dateTime 입력 경계(96~105)에 이어 배포 무결성·framework
-hydration·공급망·데모 재현성·cross-browser 범위(106 이후)를 보강했습니다.
+hydration·공급망·데모 재현성·cross-browser 범위(106~129)를 보강했습니다.
 
 ## 1. 결론
 
@@ -546,6 +546,11 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 122. 완료(Unreleased): Vue options의 일반 객체·ref·getter를 실제 create 직전에 다시 평가하고 React·Vue hydration fixture에서 revision `0 → 1` 교체와 최종 instance 0을 검증
 123. 완료(Unreleased): Mega Menu destroy가 실행 중 animation을 취소한 뒤 작성자의 host/item/trigger/panel class·inline style·hidden·ID·ARIA를 정확히 복원하고 재생성·재파괴 lifecycle까지 회귀 검사
 124. 완료(Unreleased): semantic 공유 key가 card 내부 heading까지 읽도록 보강해 CardGlow Soft·Sharp 충돌을 제거하고, 사용자 조작 UI accessible name의 7개 locale 동기화와 의도적 한국어 예제 범위를 자동 검사
+125. 완료(v0.9.5): 생성형 맨 위로 이동 progress ring의 accessible name을 7개 locale로 동기화하고, observer가 control을 재생성해도 원본 declarative label과 생성 button이 같은 locale을 유지하도록 회귀 검사
+126. 완료(v0.9.5): 없는 local release tag를 fatal 출력 없이 확인하고, 이미 push된 tag의 publish workflow 실패는 tag를 변경하지 않고 새 patch version으로 정방향 수정하도록 release 절차를 고정
+127. 완료(v0.9.5 실행 증거): `8ac7a2b`의 CI `33946293529`와 canonical Pages `33946819020`, Release `33946295274`의 Verify·Firefox·WebKit 성공을 확인하고, prefix 없는 tarball 경로 때문에 publish만 실패한 사실을 분리해 기록
+128. 완료(v0.9.6): checksum 검증 tarball output을 명시적인 `./release-artifact/...tgz`로 고정하고, npm이 이를 Git package spec으로 해석하지 않도록 release contract를 추가한 뒤 실제 `npm publish --dry-run`으로 경로 해석을 검증
+129. 완료(v0.9.6 실행 증거): `8d784b6`의 CI `33947520040`·Release `33947520948`·Pages `33947939177`, npm SLSA provenance, npm/GitHub tarball SHA-256 일치, backup sync `33947970148`·Pages `33947986088`, 두 공개 도메인의 v0.9.6·52개·GTM·build/runtime hash 일치를 확인
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

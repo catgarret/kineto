@@ -1,7 +1,7 @@
 # Kineto v0.9.6 QA Report
 
 검증일: 2026-09-05
-대상: npm 배포 후보 전체 소스
+대상: npm v0.9.6 배포 소스와 공개 산출물
 
 ## 자동 검증
 
@@ -47,6 +47,9 @@ ESM, CommonJS, CSS와 adapter entry를 확인합니다. `npm run test:package-si
 ## 배포 후 확인
 
 - `npm run test:live-site`가 `https://kineto.dongri.me`에서 기대 커밋·현재 버전·52개 모듈·GTM·공개 CDN 설치 예시를 확인하고, 페이지가 실제 실행하는 co-deployed JS/CSS의 SHA-256이 테스트된 `dist/`와 같은지 재확인합니다.
+- v0.9.6 CI `33947520040`, Release `33947520948`, canonical Pages `33947939177`이 성공했으며 npm에는 SLSA provenance v1 attestation이 함께 게시됐습니다.
+- npm registry tarball과 GitHub Release asset은 SHA-256 `bfbd557cb7b34032df71fb2d6b629c4f39ebd03f8b518afcbec3abeca3b948b9`로 byte-for-byte 일치합니다.
+- backup sync `33947970148`과 Pages `33947986088` 뒤 `npm run test:live-site:parity`가 두 도메인의 v0.9.6·52개 모듈·GTM·build `8d784b6`·runtime hash `77e3fae55ef1` 일치를 확인했습니다.
 
 ## 별도 실기기 확인 권장
 
