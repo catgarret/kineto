@@ -5,13 +5,22 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.9.6] - 2026-09-05
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Pass the checksum-verified release tarball to npm as an explicit local path, preventing npm 11 from interpreting `release-artifact/...tgz` as a GitHub package spec.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - checksum 검증을 마친 릴리스 tarball을 명시적인 로컬 경로로 npm에 전달해 npm 11이 `release-artifact/...tgz`를 GitHub 패키지 명세로 오인하지 않도록 수정했습니다.
-
 ## [0.9.5] - 2026-09-05
 
 ### English

@@ -1,6 +1,6 @@
 # Module usage and quality matrix
 
-> Generated from `scripts/generate-module-metadata.mjs` · library v0.9.5 · 52 modules.
+> Generated from `scripts/generate-module-metadata.mjs` · library v0.9.6 · 52 modules.
 >
 > 데모의 모듈 인덱스와 복사 코드에서 확인할 최소 판단 기준입니다. `native`·`managed`가 표시되어도 실제 콘텐츠의 이름·대체 동작은 소비자가 함께 제공해야 합니다.
 

@@ -1,4 +1,4 @@
-# Kineto v0.9.5 QA Report
+# Kineto v0.9.6 QA Report
 
 검증일: 2026-09-05
 대상: npm 배포 후보 전체 소스
@@ -42,7 +42,7 @@ ESM, CommonJS, CSS와 adapter entry를 확인합니다. `npm run test:package-si
 77개 파일, 압축 514.9 kB, 해제 1730.6 kB입니다. 이는 고정된 릴리스 수치가
 아니며 빌드 산출물이 바뀌면 달라집니다. 릴리스 후보를 최종 빌드한 뒤 위 세
 명령을 다시 실행하고 그 출력값을 최종 근거로 사용합니다. 패키지명은
-`@dong-gri/kineto`, 버전은 `0.9.5`입니다.
+`@dong-gri/kineto`, 버전은 `0.9.6`입니다.
 
 ## 배포 후 확인
 
