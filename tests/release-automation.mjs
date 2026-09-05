@@ -59,6 +59,7 @@ const releaseCrossBrowserJob = mappingBlock(workflow, 'cross-browser');
 const publishJob = mappingBlock(workflow, 'publish');
 const ciNodeCompatibilityJob = mappingBlock(ciWorkflow, 'node-compatibility');
 const ciTestJob = mappingBlock(ciWorkflow, 'test');
+const ciCrossBrowserJob = mappingBlock(ciWorkflow, 'cross-browser');
 const verifiedPackageUpload = stepBlock(verifyJob, 'Upload the verified package');
 const verifiedPackageDownload = stepBlock(publishJob, 'Download the verified package');
 const artifactVerification = stepBlock(publishJob, 'Verify artifact digest');
@@ -112,6 +113,10 @@ for (const command of ['build', 'test:package', 'test:types', 'test:package-tarb
   assert.ok(ciNodeCompatibilityJob.includes(command), `public engine job must run ${command}`);
 }
 assert.doesNotMatch(ciTestJob, /matrix\.browser/, 'the non-matrix Chromium job must not reference matrix.browser');
+assert.match(ciCrossBrowserJob, /MK_BROWSER_TEST_ATTEMPTS:\s*\$\{\{ matrix\.browser == 'webkit' && 4 \|\| 3 \}\}/,
+  'only the actual WebKit matrix lane receives the fourth bounded attempt');
+assert.match(releaseCrossBrowserJob, /MK_BROWSER_TEST_ATTEMPTS:\s*\$\{\{ matrix\.browser == 'webkit' && 4 \|\| 3 \}\}/,
+  'the release WebKit lane must retain the same bounded retry policy');
 for (const command of ['lint', 'build', 'test:demo', 'test:browser']) {
   assert.match(workflow, new RegExp(`retry-command\\.mjs npm run ${command}`), `release workflow must isolate ${command}`);
   assert.match(read('.github/workflows/ci.yml'), new RegExp(`retry-command\\.mjs npm run ${command}`), `CI workflow must isolate ${command}`);
