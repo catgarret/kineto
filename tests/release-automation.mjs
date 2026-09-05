@@ -19,6 +19,7 @@ const security = read('SECURITY.md');
 const supplyChain = read('docs/supply-chain.md');
 const purgeScript = read('scripts/purge-cdn.mjs');
 const prepareReleaseScript = read('scripts/prepare-release.mjs');
+const shipReleaseScript = read('scripts/ship-release.mjs');
 const qaLocks = ['package-lock.json', 'tests/consumer-bundles/package-lock.json', 'tests/framework-qa/package-lock.json'];
 const consumerLock = JSON.parse(read(qaLocks[1]));
 const frameworkLock = JSON.parse(read(qaLocks[2]));
@@ -86,6 +87,10 @@ assert.doesNotMatch(prepareReleaseScript, /versionFiles = \[[\s\S]*?'docs\/ROADM
   'release preparation must not rewrite historical roadmap version references');
 assert.match(prepareReleaseScript, /generate-module-metadata\.mjs/,
   'release preparation must regenerate versioned module metadata');
+assert.match(shipReleaseScript, /spawnSync\([\s\S]*?'show-ref', '--verify', '--quiet'/,
+  'release shipping must probe a missing local tag without emitting an expected git fatal');
+assert.doesNotMatch(shipReleaseScript, /rev-parse[\s\S]*refs\/tags/,
+  'release shipping must not use a noisy failing rev-parse as its missing-tag branch');
 assert.equal(consumerLock.packages['../..'].version, pkg.version,
   'consumer fixture linked-root metadata must track the release version');
 assert.equal(frameworkLock.packages['../..'].version, pkg.version,

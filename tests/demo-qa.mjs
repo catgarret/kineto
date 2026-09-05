@@ -202,18 +202,21 @@ try {
           });
           checks.push({key:'본문으로 건너뛰기',actual:document.querySelector('.skip-link')?.textContent,expected:expected('본문으로 건너뛰기')});
           checks.push({key:'sitemap-title',actual:document.getElementById('sitemap-title')?.textContent,expected:`Kineto — ${expected('사이트맵')}`});
-          const intentionalExampleLabels=[
-            '혼합 내비게이션','드롭다운 내비게이션','메가메뉴 내비게이션',
-            '상품 정보','글 상태','알림','자동 저장','다크 모드'
-          ].sort();
+          // Animated examples intentionally preserve their authored Korean
+          // content. Several modules mirror that content into aria-label only
+          // after an animation starts, so a document-wide query is sensitive to
+          // runner speed. Restrict the untranslated-label guard to application
+          // chrome; localized controls themselves are exhaustively asserted by
+          // `checks` above, including controls rendered inside demo stages.
           const remainingKorean=language==='ko'?[]:[...document.querySelectorAll('[aria-label]')]
+            .filter((node)=>!node.closest('.demo-stage'))
             .map((node)=>node.getAttribute('aria-label'))
             .filter((label)=>/[가-힣]/.test(label))
             .sort();
           return {
             ok:document.documentElement.lang===language
               &&checks.every(({actual,expected:value})=>actual===value)
-              &&(language==='ko'||JSON.stringify(remainingKorean)===JSON.stringify(intentionalExampleLabels)),
+              &&remainingKorean.length===0,
             checks,
             remainingKorean
           };

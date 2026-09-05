@@ -1,5 +1,5 @@
 import process from 'node:process';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -18,15 +18,15 @@ if (output('git', ['branch', '--show-current']) !== 'main') fail('release must b
 
 run(process.execPath, [path.join(root, 'scripts', 'check-release.mjs'), tag]);
 
-try {
-  output('git', ['rev-parse', '--verify', `refs/tags/${tag}`]);
-  fail(`local tag ${tag} already exists`);
-} catch (error) {
-  if (error?.status === 1 || error?.status === 128) {
-    // Expected: the release tag does not exist locally.
-  } else {
-    throw error;
-  }
+const localTagProbe = spawnSync(
+  'git',
+  ['show-ref', '--verify', '--quiet', `refs/tags/${tag}`],
+  { cwd: root, encoding: 'utf8' }
+);
+if (localTagProbe.error) throw localTagProbe.error;
+if (localTagProbe.status === 0) fail(`local tag ${tag} already exists`);
+if (localTagProbe.status !== 1) {
+  fail(`could not inspect local tag ${tag}: ${localTagProbe.stderr?.trim() || `git exited ${localTagProbe.status}`}`);
 }
 
 const remoteTag = output('git', ['ls-remote', '--tags', 'origin', `refs/tags/${tag}`]);

@@ -91,8 +91,9 @@ Publishing is an explicit external action:
 npm run release:ship -- v<version>
 ```
 
-The command validates the release, pushes `main`, creates an annotated tag, and
-pushes the tag. The tag starts `.github/workflows/release.yml`, which:
+The command validates the release, quietly checks that neither the local nor
+remote tag exists, pushes `main`, creates an annotated tag, and pushes the tag.
+The tag starts `.github/workflows/release.yml`, which:
 
 1. checks version and bilingual release-note consistency;
 2. runs lint, build, Node, demo, Chromium, package, and all-lockfile audit gates;
@@ -136,4 +137,5 @@ npm run verify
 npm run release:ship -- v<version>
 ```
 
-Never delete or move a published tag. Ship corrections as a new patch release.
+Never delete or move a pushed release tag, including when its publish workflow
+fails before npm publication. Ship corrections as a new patch release.
