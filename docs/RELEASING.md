@@ -99,7 +99,8 @@ The tag starts `.github/workflows/release.yml`, which:
 2. runs lint, build, Node, demo, Chromium, package, and all-lockfile audit gates;
 3. independently requires Firefox and WebKit smoke plus demo regression gates;
 4. packs one verified tarball, records its SHA-256 digest, and passes that exact
-   artifact to the permission-scoped publish job;
+   artifact to the permission-scoped publish job as an explicit `./`-prefixed
+   local path so npm cannot reinterpret it as a Git package spec;
 5. publishes the tarball to npm with provenance only after every browser gate;
 6. creates a GitHub Release with the runner's built-in `gh` CLI, with English
    first and Korean second.

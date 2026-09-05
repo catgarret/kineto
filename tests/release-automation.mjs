@@ -117,7 +117,8 @@ assert.match(artifactVerification, /mapfile -d '' -t tarballs/);
 assert.match(artifactVerification, /mapfile -d '' -t checksums/);
 assert.match(artifactVerification, /"\$checksum" != "\$tarball\.sha256"/);
 assert.match(artifactVerification, /sha256sum --check --strict --/);
-assert.match(artifactVerification, /tarball=%s/);
+assert.match(artifactVerification, /tarball=\.\/%s/,
+  'the verified tarball output must remain an explicit local path so npm does not parse it as a Git spec');
 assert.equal((publishJob.match(/\$\{\{ steps\.verified_artifact\.outputs\.tarball \}\}/g) || []).length, 2,
   'npm and GitHub must consume the same digest-verified tarball output');
 assert.match(npmPublish, /npm publish "\$RELEASE_TARBALL" --access public --provenance/);

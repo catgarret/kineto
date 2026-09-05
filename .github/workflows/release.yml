@@ -295,7 +295,9 @@ jobs:
             exit 1
           fi
           (cd release-artifact && sha256sum --check --strict -- "$(basename "$checksum")")
-          printf 'tarball=%s\n' "$tarball" >> "$GITHUB_OUTPUT"
+          # npm treats an unprefixed "owner/repo"-shaped value as a Git spec.
+          # Keep the verified artifact explicitly relative for every consumer.
+          printf 'tarball=./%s\n' "$tarball" >> "$GITHUB_OUTPUT"
 
       - name: Publish package with provenance
         shell: bash
