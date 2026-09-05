@@ -1,6 +1,6 @@
 # 문제 해결
 
-이 문서는 Kineto v0.8.104에서 확인된 증상을 증상·원인·확인 순서로 정리한 운영
+이 문서는 현재 Kineto에서 확인된 증상을 증상·원인·확인 순서로 정리한 운영
 가이드입니다. 효과를 숨기거나 모듈을 제거하는 방식으로 문제를 피하지 말고, 먼저
 레이아웃·입력·라이프사이클을 확인하십시오.
 
@@ -38,7 +38,7 @@ const tabs = Kineto.getInstance('.tabs', 'tabs');
 tabs?.refresh?.();
 ```
 
-v0.8.104의 데모는 패널 공개 직후와 두 개의 animation frame, 제한된 후속 측정까지
+현재 데모는 패널 공개 직후와 두 개의 animation frame, 제한된 후속 측정까지
 사용합니다. 애플리케이션에서 임의의 무한 polling을 추가하지 말고, 표시 상태 변경과
 레이아웃 완료 시점에 맞춰 한 번 호출하십시오.
 
@@ -147,6 +147,12 @@ SSR 단계에서는 브라우저 전역을 읽지 않는 Core/adapter 엔트리�
 모듈 생성은 mount/effect 이후에 실행하십시오. React Strict Mode에서는 mount → cleanup
 → mount가 반복되므로 ref를 안정적으로 유지하고 `destroy()`를 누락하지 않아야 합니다.
 Vue도 같은 원칙으로 `onMounted`에서 초기화하고 `onBeforeUnmount`에서 정리합니다.
+React `useKineto()`의 options 변경을 반영하려면 해당 값을 `dependencies`에 넣고,
+Vue에서는 `watchSources`에 넣으십시오. Vue `setup()` 이후 바뀐 값을 새 인스턴스에
+전달할 때는 options를 ref 또는 getter(`() => ({ duration: duration.value })`)로 넘기면
+매 create 직전에 최신 값을 읽습니다. 두 adapter는 cleanup 뒤 인스턴스를 교체하며,
+모듈마다 의미가 다른 partial update를 임의로 추측하지 않습니다. live update가 필요한
+경우 반환된 instance 또는 Core `updateModule()`을 명시적으로 사용하십시오.
 
 ## CDN·CSP/SRI·GTM 확인
 

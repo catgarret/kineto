@@ -217,6 +217,16 @@ import KinetoVue from '@dong-gri/kineto/vue';
 app.use(KinetoVue);
 ```
 
+어댑터의 옵션 변경은 명시적인 교체 정책을 따릅니다. React는 `type` 또는
+`dependencies`의 값이 변경될 때만 모듈을 다시 생성합니다. Vue의
+`useKineto()`도 `watchSources`에 대해 같은 방식으로 동작하며, `v-motion`은
+바인딩이 변경되면 인스턴스를 교체합니다. Vue는 options 객체, ref 또는 getter를
+받을 수 있습니다. `setup()` 이후 변경된 값을 교체 시점에 읽어야 한다면
+ref/getter를 사용하세요. 어댑터는 매 create 직전에 이를 해석합니다. 교체 전에는
+항상 정리 작업을 먼저 수행합니다. 어댑터는 각 모듈이 부분적인 `updateModule()`
+호출을 지원하는지 추측하지 않습니다. 명령형 실시간 업데이트가 필요하면 반환된
+인스턴스를 보관하거나 Core API를 직접 호출하세요.
+
 ```js
 import installKineto from '@dong-gri/kineto/jquery';
 installKineto(window.jQuery);

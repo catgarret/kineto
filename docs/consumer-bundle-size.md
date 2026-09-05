@@ -5,13 +5,13 @@
 
 | Consumer entry | JS files | Raw | Gzip | Budget (gzip) |
 | --- | ---: | ---: | ---: | ---: |
-| full | 1 | 509.6 KB | 133.5 KB | ≤ 130 KB (+4 KB runner variance) |
+| full | 1 | 509.9 KB | 133.6 KB | ≤ 130 KB (+4 KB runner variance) |
 | core-reveal | 1 | 42.8 KB | 13.0 KB | ≤ 30 KB |
 | core-three | 1 | 100.8 KB | 28.0 KB | ≤ 65 KB |
 | core-states | 1 | 33.7 KB | 10.9 KB | ≤ 35 KB |
 | core-presence | 1 | 35.6 KB | 11.3 KB | ≤ 35 KB |
-| react-adapter | 1 | 522.6 KB | 137.3 KB | ≤ 138 KB (+1 KB runner variance) |
-| vue-adapter | 1 | 525.9 KB | 138.3 KB | ≤ 138 KB (+1 KB runner variance) |
+| react-adapter | 1 | 522.9 KB | 137.4 KB | ≤ 138 KB (+1 KB runner variance) |
+| vue-adapter | 1 | 526.2 KB | 138.5 KB | ≤ 138 KB (+1 KB runner variance) |
 
 The fixture test also requires `core + one module`, `core + three modules`, `core + states`, and `core + presence` to remain smaller than the full entry.
 
@@ -19,6 +19,7 @@ The fixture test also requires `core + one module`, `core + three modules`, `cor
 
 - Bundler: Vite library build with the repository's pinned Vite toolchain.
 - React and Vue are externalized; each row measures Kineto entry cost rather than framework cost.
+- Vite and Rolldown share one public-entry matrix, product gzip budgets, and modular tree-shaking boundaries; only bounded runner variance is bundler-specific.
 - The fixture proves relative tree-shaking boundaries for full, core + one module, core + three modules, States, Presence, React, and Vue.
 - An independent Rolldown fixture is pinned separately; its absolute bytes are recorded as a second bundler signal, not a universal cross-bundler promise.
 
@@ -30,11 +31,13 @@ The fixture test also requires `core + one module`, `core + three modules`, `cor
 
 | Rolldown consumer entry | JS chunks | Raw | Gzip | Budget (gzip) |
 | --- | ---: | ---: | ---: | ---: |
-| full | 1 | 510.0 KB | 133.1 KB | ≤ 130 KB (+4 KB runner variance) |
+| full | 1 | 510.3 KB | 133.2 KB | ≤ 130 KB (+4 KB runner variance) |
 | core-reveal | 1 | 43.2 KB | 13.2 KB | ≤ 30 KB (+1 KB runner variance) |
 | core-three | 1 | 101.3 KB | 28.2 KB | ≤ 65 KB (+1 KB runner variance) |
-| react-adapter | 1 | 525.2 KB | 137.4 KB | ≤ 138 KB (+1 KB runner variance) |
-| vue-adapter | 1 | 530.0 KB | 138.9 KB | ≤ 138 KB (+2 KB runner variance) |
+| core-states | 1 | 34.1 KB | 11.0 KB | ≤ 35 KB |
+| core-presence | 1 | 36.1 KB | 11.4 KB | ≤ 35 KB |
+| react-adapter | 1 | 525.5 KB | 137.6 KB | ≤ 138 KB (+1 KB runner variance) |
+| vue-adapter | 1 | 530.4 KB | 139.0 KB | ≤ 138 KB (+2 KB runner variance) |
 
-This is a second bundler signal, not a promise that every bundler produces identical bytes.
+This uses the same public-entry matrix, product gzip budgets, and modular tree-shaking boundaries as Vite. It is a second bundler signal, not a promise that every bundler produces identical bytes.
 <!-- rolldown-bundle-report:end -->

@@ -1,6 +1,6 @@
 # Kineto v0.9.3 QA Report
 
-검증일: 2026-08-17
+검증일: 2026-09-05
 대상: npm 배포 후보 전체 소스
 
 ## 자동 검증
@@ -14,7 +14,7 @@
 | Docs / options parity | 통과 | 생성 문서와 설정 필드 계약 동기화 |
 | Package surface | 통과 | ESM, CommonJS, CSS, React/Vue/jQuery entry |
 | Lifecycle | 통과 | 이벤트·rAF·Observer 해제 및 reduced-motion 재적용 |
-| Bundle budget | 통과 | gzip: min ESM 116.7 kB, min UMD 116.0 kB, CSS 9.1 kB |
+| Bundle budget | 통과 | gzip: min ESM 120.3 kB, min UMD 119.6 kB, CSS 9.1 kB |
 
 ## 실제 브라우저 회귀 항목
 
@@ -26,7 +26,7 @@
 - Reveal order, Counter, Loader, Toast와 모듈 lifecycle
 - 모바일 헤더, 사이트맵, 하단 탐색과 맨 위로 버튼의 안전 간격
 - 데모의 정적 inline style/script/style block 0건 및 52개 공개 모듈 계약 일치
-- 7개 언어의 카드·모듈 색인·설정창 UI 및 372개 옵션 도움말 번역 일치
+- 7개 언어의 카드·모듈 색인·설정창 UI 및 504개 옵션 도움말 번역 일치
 - Scanner 무진행률 재생과 진행률 지정 시 정지, Loader/Loading Indicator 접근성 역할
 - Coverflow·Dissolve·Wipe·Radial별 지원 옵션 노출과 무의미한 옵션 숨김
 - Coverflow 활성 그림자 옵션·CSS 토큰·destroy 복원과 설정창 조건부 노출
@@ -35,13 +35,18 @@
 
 ## 패키지 확인
 
-배포 전 실제 tarball을 별도 프로젝트에 설치해 ESM, CommonJS, CSS와
-adapter entry를 확인합니다. 현재 패키지는 65개 파일이며 npm dry-run 기준
-압축 크기는 476.3 kB입니다. 패키지명은 `@dong-gri/kineto`, 버전은 `0.9.3`입니다.
+배포 전 `npm run test:package-tarball`로 실제 tarball을 별도 프로젝트에 설치해
+ESM, CommonJS, CSS와 adapter entry를 확인합니다. `npm run test:package-size`는
+압축 517 kB·해제 1732 kB·77개 파일의 상한과 배포 파일 allowlist를 검사합니다.
+이 보고서 갱신 시점의 `npm pack --dry-run --json --ignore-scripts` 측정값은
+77개 파일, 압축 514.9 kB, 해제 1730.6 kB입니다. 이는 고정된 릴리스 수치가
+아니며 빌드 산출물이 바뀌면 달라집니다. 릴리스 후보를 최종 빌드한 뒤 위 세
+명령을 다시 실행하고 그 출력값을 최종 근거로 사용합니다. 패키지명은
+`@dong-gri/kineto`, 버전은 `0.9.3`입니다.
 
 ## 배포 후 확인
 
-- `npm run test:live-site`가 `https://kineto.dongri.me`에서 현재 버전·52개 모듈·GTM·unversioned CDN을 재확인합니다.
+- `npm run test:live-site`가 `https://kineto.dongri.me`에서 기대 커밋·현재 버전·52개 모듈·GTM·공개 CDN 설치 예시를 확인하고, 페이지가 실제 실행하는 co-deployed JS/CSS의 SHA-256이 테스트된 `dist/`와 같은지 재확인합니다.
 
 ## 별도 실기기 확인 권장
 

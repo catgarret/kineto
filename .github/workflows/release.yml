@@ -10,23 +10,22 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write
-  id-token: write
+  contents: read
 
 jobs:
-  publish:
-    name: Verify · npm · GitHub Release
+  verify:
+    name: Verify · Chromium · package
     runs-on: ubuntu-latest
     timeout-minutes: 35
 
     steps:
       - name: Checkout tagged source
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           fetch-depth: 0
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24
           package-manager-cache: false
@@ -138,32 +137,184 @@ jobs:
           set -o pipefail
           node scripts/retry-command.mjs npm pack --dry-run 2>&1 | tee -a release.log
 
-      - name: Run npm audit
+      - name: Audit root and fixture lockfiles
         run: |
           set -o pipefail
-          node scripts/retry-command.mjs npm audit --audit-level=low 2>&1 | tee -a release.log
+          node scripts/retry-command.mjs npm run audit:lockfiles -- --output-dir release-audit 2>&1 | tee -a release.log
 
       - name: Upload release verification log on failure
         if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: release-verification-log
-          path: release.log
+          path: |
+            release.log
+            release-audit/
           if-no-files-found: error
           retention-days: 7
+          overwrite: true
 
-      - name: Pack release artifact
-        run: npm pack
+      - name: Pack the verified release artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-artifact
+          mapfile -d '' -t existing < <(find release-artifact -mindepth 1 -maxdepth 1 -print0)
+          if [ "${#existing[@]}" -ne 0 ]; then
+            printf 'Release artifact directory must start empty; found %s files.\n' "${#existing[@]}"
+            exit 1
+          fi
+          npm pack --pack-destination release-artifact
+          mapfile -d '' -t tarballs < <(find release-artifact -maxdepth 1 -type f -name '*.tgz' -print0)
+          if [ "${#tarballs[@]}" -ne 1 ]; then
+            printf 'Expected exactly one package tarball, found %s.\n' "${#tarballs[@]}"
+            exit 1
+          fi
+          tarball="$(basename "${tarballs[0]}")"
+          (cd release-artifact && sha256sum -- "$tarball" > "$tarball.sha256")
+          mapfile -d '' -t artifacts < <(find release-artifact -mindepth 1 -maxdepth 1 -print0)
+          if [ "${#artifacts[@]}" -ne 2 ]; then
+            printf 'Expected only the tarball and checksum, found %s files.\n' "${#artifacts[@]}"
+            exit 1
+          fi
+
+      - name: Upload the verified package
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: verified-package-${{ github.ref_name }}
+          path: release-artifact/
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: true
+
+  cross-browser:
+    name: ${{ matrix.browser }} · release gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        browser: [firefox, webkit]
+
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --fetch-retries=3 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=5000 --fetch-timeout=30000
+
+      - name: Install Playwright ${{ matrix.browser }}
+        shell: bash
+        run: |
+          set -o pipefail
+          if [ "${{ matrix.browser }}" = "webkit" ]; then
+            timeout --foreground --kill-after=30s 10m npx playwright install --with-deps webkit
+          else
+            node scripts/retry-command.mjs timeout --signal=TERM 5m npx playwright install firefox
+          fi
+
+      - name: Build distributions
+        run: npm run build
+
+      - name: Run cross-browser release QA
+        shell: bash
+        run: |
+          set -o pipefail
+          node tests/retry-browser-test.mjs tests/browser-smoke.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
+          node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
+        env:
+          KT_BROWSER: ${{ matrix.browser }}
+          MK_BROWSER_TEST_TIMEOUT: 240000
+          MK_BROWSER_TEST_ATTEMPTS: 3
+
+      - name: Upload cross-browser artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: release-${{ matrix.browser }}-artifacts
+          path: |
+            release-${{ matrix.browser }}.log
+            tests/browser/shots/
+            tests/.smoke/
+          if-no-files-found: ignore
+          retention-days: 7
+          overwrite: true
+
+  publish:
+    name: Publish verified npm and GitHub artifacts
+    needs: [verify, cross-browser]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+          registry-url: https://registry.npmjs.org
+
+      - name: Use npm with Trusted Publishing support
+        run: npm install --global npm@11
+
+      - name: Download the verified package
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: verified-package-${{ github.ref_name }}
+          path: release-artifact
+
+      - name: Verify artifact digest
+        id: verified_artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -d '' -t artifacts < <(find release-artifact -mindepth 1 -maxdepth 1 -print0)
+          mapfile -d '' -t tarballs < <(find release-artifact -maxdepth 1 -type f -name '*.tgz' -print0)
+          mapfile -d '' -t checksums < <(find release-artifact -maxdepth 1 -type f -name '*.sha256' -print0)
+          if [ "${#artifacts[@]}" -ne 2 ] || [ "${#tarballs[@]}" -ne 1 ] || [ "${#checksums[@]}" -ne 1 ]; then
+            printf 'Expected only one tarball and one checksum; found %s total, %s tarballs, and %s checksums.\n' "${#artifacts[@]}" "${#tarballs[@]}" "${#checksums[@]}"
+            exit 1
+          fi
+          tarball="${tarballs[0]}"
+          checksum="${checksums[0]}"
+          if [ "$checksum" != "$tarball.sha256" ]; then
+            printf 'Checksum file %s does not belong to %s.\n' "$checksum" "$tarball"
+            exit 1
+          fi
+          (cd release-artifact && sha256sum --check --strict -- "$(basename "$checksum")")
+          printf 'tarball=%s\n' "$tarball" >> "$GITHUB_OUTPUT"
 
       - name: Publish package with provenance
         shell: bash
+        env:
+          RELEASE_TARBALL: ${{ steps.verified_artifact.outputs.tarball }}
         run: |
+          set -euo pipefail
           PACKAGE_NAME="$(node -p "require('./package.json').name")"
           PACKAGE_VERSION="$(node -p "require('./package.json').version")"
-          if npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version >/dev/null 2>&1; then
+          test -f "$RELEASE_TARBALL"
+          TARBALL_INTEGRITY="sha512-$(node -e 'const { createHash } = require("node:crypto"); const { readFileSync } = require("node:fs"); process.stdout.write(createHash("sha512").update(readFileSync(process.argv[1])).digest("base64"));' "$RELEASE_TARBALL")"
+          if PUBLISHED_INTEGRITY="$(npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" dist.integrity 2>/dev/null)"; then
+            if [ "$PUBLISHED_INTEGRITY" != "$TARBALL_INTEGRITY" ]; then
+              echo "Published package integrity does not match the verified release tarball."
+              exit 1
+            fi
             echo "${PACKAGE_NAME}@${PACKAGE_VERSION} is already published; skipping npm publish."
           else
-            npm publish --access public --provenance
+            npm publish "$RELEASE_TARBALL" --access public --provenance
           fi
 
       - name: Refresh jsDelivr latest aliases
@@ -172,8 +323,15 @@ jobs:
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TARBALL: ${{ steps.verified_artifact.outputs.tarball }}
+        shell: bash
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            --title "Kineto $GITHUB_REF_NAME" \
-            --notes-file ".github/release-notes/$GITHUB_REF_NAME.md" \
-            *.tgz
+          set -euo pipefail
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "GitHub Release $GITHUB_REF_NAME already exists; leaving the immutable release unchanged."
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --title "Kineto $GITHUB_REF_NAME" \
+              --notes-file ".github/release-notes/$GITHUB_REF_NAME.md" \
+              "$RELEASE_TARBALL"
+          fi

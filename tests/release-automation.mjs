@@ -17,12 +17,101 @@ const changelog = read('CHANGELOG.md');
 const note = read(`.github/release-notes/v${pkg.version}.md`);
 const security = read('SECURITY.md');
 const supplyChain = read('docs/supply-chain.md');
+const purgeScript = read('scripts/purge-cdn.mjs');
 const qaLocks = ['package-lock.json', 'tests/consumer-bundles/package-lock.json', 'tests/framework-qa/package-lock.json'];
+const workflowFiles = fs.readdirSync(path.join(root, '.github/workflows')).filter((file) => /\.ya?ml$/.test(file));
+
+function mappingBlock(source, key, indent = 2) {
+  const lines = source.split('\n');
+  const prefix = `${' '.repeat(indent)}${key}:`;
+  const start = lines.findIndex((line) => line === prefix || line.startsWith(`${prefix} `));
+  assert.notEqual(start, -1, `missing YAML block ${key}`);
+  let end = lines.length;
+  for (let index = start + 1; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (!line.trim() || line.trimStart().startsWith('#')) continue;
+    const leading = line.length - line.trimStart().length;
+    if (leading <= indent) {
+      end = index;
+      break;
+    }
+  }
+  return lines.slice(start, end).join('\n');
+}
+
+function stepBlock(job, name) {
+  const lines = job.split('\n');
+  const marker = `- name: ${name}`;
+  const start = lines.findIndex((line) => line.trim() === marker);
+  assert.notEqual(start, -1, `missing workflow step ${name}`);
+  let end = lines.length;
+  for (let index = start + 1; index < lines.length; index += 1) {
+    if (lines[index].startsWith('      - name: ')) {
+      end = index;
+      break;
+    }
+  }
+  return lines.slice(start, end).join('\n');
+}
+
+const verifyJob = mappingBlock(workflow, 'verify');
+const releaseCrossBrowserJob = mappingBlock(workflow, 'cross-browser');
+const publishJob = mappingBlock(workflow, 'publish');
+const ciNodeCompatibilityJob = mappingBlock(ciWorkflow, 'node-compatibility');
+const ciTestJob = mappingBlock(ciWorkflow, 'test');
+const verifiedPackageUpload = stepBlock(verifyJob, 'Upload the verified package');
+const verifiedPackageDownload = stepBlock(publishJob, 'Download the verified package');
+const artifactVerification = stepBlock(publishJob, 'Verify artifact digest');
+const npmPublish = stepBlock(publishJob, 'Publish package with provenance');
+const githubRelease = stepBlock(publishJob, 'Create GitHub Release');
+
+for (const file of workflowFiles) {
+  const source = read(`.github/workflows/${file}`);
+  for (const [, action] of source.matchAll(/uses:\s*([^\s#]+)/g)) {
+    if (action.startsWith('./')) continue;
+    assert.match(action, /@[0-9a-f]{40}$/, `${file} must pin ${action} to an immutable full commit SHA`);
+  }
+}
 
 assert.match(workflow, /tags:\s*\n\s*-\s*"v\[0-9\]\+\.\[0-9\]\+\.\[0-9\]\+"/);
-assert.match(workflow, /id-token:\s*write/);
-assert.match(workflow, /npm publish --access public --provenance/);
+assert.match(workflow, /^permissions:\s*\n\s{2}contents:\s*read$/m);
+assert.equal((workflow.match(/^\s+contents:\s*write$/gm) || []).length, 1, 'only publish may write repository contents');
+assert.equal((workflow.match(/^\s+id-token:\s*write$/gm) || []).length, 1, 'only publish may request OIDC');
+assert.doesNotMatch(verifyJob, /contents:\s*write|id-token:\s*write/);
+assert.doesNotMatch(releaseCrossBrowserJob, /contents:\s*write|id-token:\s*write/);
+assert.match(publishJob, /permissions:\s*\n\s+contents:\s*write\s*\n\s+id-token:\s*write/);
+assert.match(publishJob, /needs:\s*\[verify, cross-browser\]/);
+assert.doesNotMatch(publishJob, /if:\s*always\(\)/, 'publish must retain the default all-needs-succeeded gate');
+assert.match(releaseCrossBrowserJob, /matrix:\s*\n\s*browser:\s*\[firefox, webkit\]/);
+assert.match(verifiedPackageUpload, /^\s+name:\s*verified-package-\$\{\{ github\.ref_name \}\}$/m);
+assert.match(verifiedPackageUpload, /overwrite:\s*true/, 'a full workflow rerun must safely replace its prior verified artifact');
+assert.match(verifiedPackageDownload, /^\s+name:\s*verified-package-\$\{\{ github\.ref_name \}\}$/m);
+assert.match(verifiedPackageDownload, /actions\/download-artifact@[0-9a-f]{40}\s+# v7/);
+assert.match(verifyJob, /mapfile -d '' -t tarballs/);
+assert.match(verifyJob, /Expected exactly one package tarball/);
+assert.match(verifyJob, /sha256sum -- "\$tarball" > "\$tarball\.sha256"/);
+assert.match(artifactVerification, /id:\s*verified_artifact/);
+assert.match(artifactVerification, /mapfile -d '' -t artifacts/);
+assert.match(artifactVerification, /mapfile -d '' -t tarballs/);
+assert.match(artifactVerification, /mapfile -d '' -t checksums/);
+assert.match(artifactVerification, /"\$checksum" != "\$tarball\.sha256"/);
+assert.match(artifactVerification, /sha256sum --check --strict --/);
+assert.match(artifactVerification, /tarball=%s/);
+assert.equal((publishJob.match(/\$\{\{ steps\.verified_artifact\.outputs\.tarball \}\}/g) || []).length, 2,
+  'npm and GitHub must consume the same digest-verified tarball output');
+assert.match(npmPublish, /npm publish "\$RELEASE_TARBALL" --access public --provenance/);
+assert.match(githubRelease, /"\$RELEASE_TARBALL"/);
+assert.doesNotMatch(publishJob, /release-artifact\/\*\.tgz|-print -quit/,
+  'publish steps must not rediscover or wildcard a different tarball after digest verification');
 assert.match(workflow, /fetch-retries=3/);
+assert.match(ciNodeCompatibilityJob, /node:\s*\["20\.19\.0", "22\.12\.0"\]/);
+assert.match(ciNodeCompatibilityJob, /Node \$\{\{ matrix\.node \}\} · public engine contract/);
+assert.match(ciNodeCompatibilityJob, /node-version:\s*\$\{\{ matrix\.node \}\}/);
+assert.match(ciNodeCompatibilityJob, /npm ci --ignore-scripts/);
+for (const command of ['build', 'test:package', 'test:types', 'test:package-tarball']) {
+  assert.ok(ciNodeCompatibilityJob.includes(command), `public engine job must run ${command}`);
+}
+assert.doesNotMatch(ciTestJob, /matrix\.browser/, 'the non-matrix Chromium job must not reference matrix.browser');
 for (const command of ['lint', 'build', 'test:demo', 'test:browser']) {
   assert.match(workflow, new RegExp(`retry-command\\.mjs npm run ${command}`), `release workflow must isolate ${command}`);
   assert.match(read('.github/workflows/ci.yml'), new RegExp(`retry-command\\.mjs npm run ${command}`), `CI workflow must isolate ${command}`);
@@ -41,7 +130,7 @@ for (const command of [
   assert.ok(read('.github/workflows/ci.yml').includes(command), `CI workflow must cover ${command}`);
 }
 assert.match(workflow, /retry-command\.mjs npm pack --dry-run/);
-assert.match(workflow, /retry-command\.mjs npm audit --audit-level=low/);
+assert.match(workflow, /retry-command\.mjs npm run audit:lockfiles -- --output-dir release-audit/);
 assert.match(read('.github/workflows/ci.yml'), /retry-command\.mjs npm pack --dry-run/);
 assert.match(ciWorkflow, /tests\/browser\/demo-polish\.mjs/);
 assert.match(ciWorkflow, /KT_BROWSER:\s*\$\{\{ matrix\.browser \}\}/);
@@ -62,22 +151,41 @@ assert.match(demoPolish, /minimumHelpFields = browserName === 'chromium' \? 374 
 assert.match(pkg.scripts['test:framework'], /scripts\/npm-ci-retry\.mjs/);
 assert.match(pkg.scripts['test:consumer-bundles'], /scripts\/npm-ci-retry\.mjs/);
 assert.match(workflow, /npm run purge/);
+for (const publishedAlias of ['kineto.min.js', 'kineto.umd.cjs', 'kineto.umd.min.js', 'kineto.min.css']) {
+  assert.ok(purgeScript.includes(`'${publishedAlias}'`), `CDN purge must include published alias ${publishedAlias}`);
+}
+assert.doesNotMatch(purgeScript, /'kineto\.js'|'kineto\.css'/, 'CDN purge must not claim unpublished development files');
+assert.match(purgeScript, /throw new Error\(`jsDelivr purge failed for:/, 'partial CDN purge failures must fail the release');
+assert.match(purgeScript, /process\.exitCode = 1/, 'the purge CLI must return a nonzero exit code after partial failure');
+assert.match(purgeScript, /requestTimeout = 10000/, 'each CDN request must have a finite timeout');
+assert.match(purgeScript, /attempts, 'attempts', \{ min: 1, max: 5 \}/, 'retry attempts must have a hard upper bound');
 assert.match(workflow, /--notes-file\s+"\.github\/release-notes\/\$GITHUB_REF_NAME\.md"/);
-assert.match(workflow, /gh release create \"\$GITHUB_REF_NAME\"/);
+assert.match(githubRelease, /gh release view "\$GITHUB_REF_NAME"/);
+assert.match(githubRelease, /GitHub Release \$GITHUB_REF_NAME already exists; leaving the immutable release unchanged/);
+assert.match(githubRelease, /gh release create "\$GITHUB_REF_NAME"/);
+assert.doesNotMatch(githubRelease, /gh release (edit|upload|delete)/, 'reruns must not mutate an existing GitHub Release');
+assert.match(npmPublish, /npm view "\$\{PACKAGE_NAME\}@\$\{PACKAGE_VERSION\}" dist\.integrity/);
+assert.match(npmPublish, /"\$PUBLISHED_INTEGRITY" != "\$TARBALL_INTEGRITY"/,
+  'a rerun must refuse an existing npm version whose bytes differ from the verified tarball');
+assert.match(npmPublish, /is already published; skipping npm publish/);
 assert.doesNotMatch(workflow, /softprops\/action-gh-release/);
 assert.ok(agents.includes('English first') && agents.includes('Korean translation'));
 assert.ok(claude.includes('AGENTS.md') && claude.includes('English first and Korean second'));
 assert.match(changelog, /## \[Unreleased\]\s*\n+### English[\s\S]*### 한국어/);
 assert.ok(note.indexOf('## English') < note.indexOf('## 한국어'));
 assert.match(demoWorkflow, /workflows:\s*\[CI\]/);
+assert.match(demoWorkflow, /workflow_run\.event == 'push'/);
+assert.match(demoWorkflow, /workflow_run\.head_repository\.full_name == github\.repository/);
 assert.match(demoWorkflow, /workflow_run\.head_branch == 'main'/);
-assert.match(demoWorkflow, /gh run view \"\$CI_RUN_ID\"/);
-assert.match(demoWorkflow, /actions:\s*read/);
+assert.match(demoWorkflow, /workflow_run\.conclusion == 'success'/);
+assert.doesNotMatch(demoWorkflow, /gh run view|CI_RUN_ID|actions:\s*read/);
 assert.match(demoWorkflow, /permissions:[\s\S]*pages:\s*write/);
-assert.match(demoWorkflow, /uses:\s*actions\/configure-pages@v6/);
-assert.match(demoWorkflow, /uses:\s*actions\/upload-pages-artifact@v4/);
-assert.match(demoWorkflow, /uses:\s*actions\/deploy-pages@v4/);
+assert.match(demoWorkflow, /uses:\s*actions\/configure-pages@[0-9a-f]{40}\s+# v6/);
+assert.match(demoWorkflow, /uses:\s*actions\/upload-pages-artifact@[0-9a-f]{40}\s+# v4/);
+assert.match(demoWorkflow, /uses:\s*actions\/deploy-pages@[0-9a-f]{40}\s+# v4/);
 assert.match(demoWorkflow, /path:\s*site/);
+assert.match(demoWorkflow, /KT_EXPECTED_BUILD:\s*\$\{\{ github\.event\.workflow_run\.head_sha \|\| github\.sha \}\}/);
+assert.match(demoWorkflow, /KT_LIVE_ATTEMPTS:\s*24/, 'Pages verification must tolerate bounded custom-domain propagation');
 assert.match(demoWorkflow, /npm run test:live-site/);
 assert.match(pkg.scripts['test:live-site'], /verify-live-site\.mjs/);
 assert.match(pkg.scripts['test:live-site:parity'], /verify-live-site\.mjs --include-backup/);
@@ -87,10 +195,12 @@ assert.match(parityWorkflow, /schedule:/);
 assert.match(parityWorkflow, /cron:\s*"17 3 \* \* 1"/);
 assert.match(parityWorkflow, /permissions:[\s\S]*contents:\s*read/);
 assert.match(parityWorkflow, /timeout-minutes:\s*10/);
+assert.match(parityWorkflow, /KT_EXPECTED_BUILD:\s*\$\{\{ github\.sha \}\}/);
 assert.match(parityWorkflow, /npm run test:live-site:parity/);
 assert.doesNotMatch(parityWorkflow, /catgarret\/catgarret\.github\.io|rsync -a|workflow_run/);
 assert.match(read('scripts/verify-live-site.mjs'), /KT_LIVE_BACKUP_URL/);
 assert.match(read('scripts/verify-live-site.mjs'), /build marker mismatch/);
+assert.match(read('scripts/verify-live-site.mjs'), /KT_LIVE_REQUEST_TIMEOUT_MS/);
 assert.doesNotMatch(demoWorkflow, /DEMO_SITE_TOKEN|catgarret\/catgarret\.github\.io|rsync -a/);
 assert.match(security, /provenance/i);
 assert.match(security, /3 business days/);
@@ -102,5 +212,9 @@ execFileSync(process.execPath, [path.join(root, 'scripts/check-release.mjs'), `v
   cwd: root,
   stdio: 'inherit'
 });
+execFileSync(process.execPath, [path.join(root, 'tests/cdn-purge.mjs')], {
+  cwd: root,
+  stdio: 'inherit'
+});
 
-console.log('release-automation OK — agent handoff, bilingual notes, tag workflow, npm provenance.');
+console.log('release-automation OK — gated least-privilege publish, verified tarball reuse, rerun safety, pinned actions, engine CI, and CDN failure handling.');

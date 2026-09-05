@@ -7,6 +7,7 @@ import { killBrowserServer } from './browser-cleanup.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const contract = JSON.parse(await readFile(resolve(root, 'kineto.features.json'), 'utf8'));
+const contractModules = contract.modules.map(({ name }) => name).sort();
 const outDir = resolve(import.meta.dirname, '.smoke');
 await mkdir(outDir, { recursive: true });
 await build({
@@ -54,6 +55,9 @@ try {
   const result = await page.evaluate(() => window.__MK_SMOKE__);
   assert.deepEqual(runtimeErrors, [], `Browser runtime errors:\n${runtimeErrors.join('\n')}`);
   assert.equal(result.ok, true, `Smoke failures:\n${result.errors.join('\n')}`);
+  assert.deepEqual(result.registry, contractModules, 'source registry does not match the public module contract');
+  assert.deepEqual(result.exercised, contractModules, 'cross-browser smoke did not exercise every public module');
+  assert.equal(Object.keys(result.results).length, contract.moduleCount, 'cross-browser smoke module count is stale');
   assert.equal(result.instanceCount, 0, 'Kineto leaked active instances');
 
   await page.addScriptTag({ path: resolve(root, 'dist/kineto.umd.js') });
@@ -65,7 +69,7 @@ try {
   assert.deepEqual(umd, { version: contract.libraryVersion, modules: contract.moduleCount, autoInit: 'function' }, 'UMD global surface is invalid');
   assert.deepEqual(runtimeErrors, [], `UMD runtime errors:
 ${runtimeErrors.join('\n')}`);
-  console.log(`Browser smoke OK: ${Object.keys(result.results).length} modules exercised in ${browserName}; UMD global verified.`);
+  console.log(`Browser smoke OK: all ${contract.moduleCount} modules exercised in ${browserName}; UMD global verified.`);
   passed = true;
 } finally {
   killBrowserServer(browserServer);

@@ -3,25 +3,12 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { rolldown } from 'rolldown';
+import { fixturesFor, treeShakenEntries } from './fixture-config.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../..');
 const reportPath = path.join(root, 'docs/consumer-bundle-size.md');
-const fixtures = [
-  // Node 24/Linux measured 133.2 KB gzip for the v0.9.0 full runtime; keep
-  // the 130 KB product budget and a bounded 4 KB runner variance.
-  { name: 'full', entry: 'full', budget: 130, variance: 4 },
-  { name: 'core-reveal', entry: 'core-reveal', budget: 30, variance: 1 },
-  { name: 'core-three', entry: 'core-three', budget: 65, variance: 1 },
-  // Native Slider Scroll Snap adds a bounded shared runtime path to both
-  // adapters; keep one KB runner variance above the 138 KB product ceiling.
-  { name: 'react-adapter', entry: 'react', budget: 138, variance: 1 },
-  // Node 24/npm 11's Rolldown compression reaches 139.2 KB for the same
-  // source while Vite remains below the 1 KB variance. Keep this extra KB
-  // scoped to the independent Vue/Rolldown signal rather than raising the
-  // consumer product budget.
-  { name: 'vue-adapter', entry: 'vue', budget: 138, variance: 2 }
-];
+const fixtures = fixturesFor('rolldown');
 const kb = (value) => value / 1024;
 const assertCheck = (condition, message) => {
   if (!condition) {
@@ -51,8 +38,9 @@ async function measure({ name, entry, budget, variance = 0 }) {
 const rows = [];
 for (const fixture of fixtures) rows.push(await measure(fixture));
 const byName = Object.fromEntries(rows.map((row) => [row.name, row]));
-assertCheck(byName['core-reveal'].gzip < byName.full.gzip, 'Rolldown core + one module must remain smaller than full');
-assertCheck(byName['core-three'].gzip < byName.full.gzip, 'Rolldown core + three modules must remain smaller than full');
+treeShakenEntries.forEach((name) => {
+  assertCheck(byName[name].gzip < byName.full.gzip, `Rolldown ${name} must remain smaller than full`);
+});
 
 const table = [
   '| Rolldown consumer entry | JS chunks | Raw | Gzip | Budget (gzip) |',
@@ -68,7 +56,7 @@ const section = [
   '',
   table,
   '',
-  'This is a second bundler signal, not a promise that every bundler produces identical bytes.',
+  'This uses the same public-entry matrix, product gzip budgets, and modular tree-shaking boundaries as Vite. It is a second bundler signal, not a promise that every bundler produces identical bytes.',
   '<!-- rolldown-bundle-report:end -->'
 ].join('\n');
 

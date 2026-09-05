@@ -122,12 +122,42 @@ try {
     const token = new window.URLSearchParams(window.location.search).get('kt');
     const padded = token.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((token.length + 3) % 4);
     const payload = JSON.parse(new window.TextDecoder().decode(Uint8Array.from(window.atob(padded), (char) => char.charCodeAt(0))));
-    return { payload, copied: document.querySelector('.kt-drawer-sheet .kt-playground__status').textContent };
+    const keys = [...document.querySelectorAll('.kt-playground[data-share-key]')].map((item) => item.dataset.shareKey);
+    return {
+      payload,
+      shareKey: panel.dataset.shareKey,
+      legacyShareKey: panel.dataset.shareLegacyKey,
+      uniqueKeys: new Set(keys).size === keys.length,
+      copied: document.querySelector('.kt-drawer-sheet .kt-playground__status').textContent
+    };
   });
-  assert.equal(sharedSettings.payload.v, 1, 'shared settings URLs must carry a version');
-  assert.equal(sharedSettings.payload.demo.startsWith('counter-'), true, 'shared settings URLs must identify the selected demo');
+  assert.equal(sharedSettings.payload.v, 2, 'new shared settings URLs must use the semantic-key payload version');
+  assert.equal(sharedSettings.payload.demo, sharedSettings.shareKey, 'the payload must identify the selected semantic demo key');
+  assert.match(sharedSettings.payload.demo, /^counter--.+--counter-/, 'shared settings keys must encode stable block, card, module, and variant context');
+  assert.equal(sharedSettings.legacyShareKey.startsWith('counter-'), true, 'the panel must retain its v1 ordinal alias');
+  assert.equal(sharedSettings.uniqueKeys, true, 'semantic settings keys must be collision checked');
   assert.equal(sharedSettings.payload.options.counter.to, 4242, 'shared settings URLs must contain changed safe controls only');
   assert.match(sharedSettings.copied, /링크|link/i, 'sharing settings must report a copy result');
+
+  const cardGlowShareIdentity=await page.evaluate(()=>[
+    ...document.querySelectorAll('#pointer .glow-demo')
+  ].slice(0,2).map((card)=>({
+    heading:card.querySelector('h3')?.textContent.trim(),
+    shareKey:card.querySelector(':scope > .kt-playground')?.dataset.shareKey,
+    legacyShareKey:card.querySelector(':scope > .kt-playground')?.dataset.shareLegacyKey
+  })));
+  assert.deepEqual(cardGlowShareIdentity,[
+    {
+      heading:'Soft',
+      shareKey:'cardglow--soft--tilt-default+card-glow-spotlight',
+      legacyShareKey:'tilt+cardGlow-115'
+    },
+    {
+      heading:'Sharp',
+      shareKey:'cardglow--sharp--tilt-default+card-glow-spotlight',
+      legacyShareKey:'tilt+cardGlow-116'
+    }
+  ],'nested Card Glow headings must produce stable semantic keys without changing their v1 aliases');
 
   const localizedCopy=await page.evaluate(async()=>{
     const select=document.getElementById('lang');
@@ -163,6 +193,31 @@ try {
           (!/[가-힣]/.test(node.textContent)&&!/[가-힣]/.test(node.title))
           ||language==='ko'
         )),
+        accessibleChrome:(()=>{
+          const index={en:0,ja:1,'zh-CN':2,'zh-TW':3,ru:4,it:5};
+          const expected=(key)=>language==='ko'?key:window.KINETO_COPY_I18N.ui[key]?.[index[language]];
+          const checks=[...document.querySelectorAll('[data-demo-i18n-aria-label]')].map((node)=>{
+            const key=node.dataset.demoI18nAriaLabel;
+            return {key,actual:node.getAttribute('aria-label'),expected:expected(key)};
+          });
+          checks.push({key:'본문으로 건너뛰기',actual:document.querySelector('.skip-link')?.textContent,expected:expected('본문으로 건너뛰기')});
+          checks.push({key:'sitemap-title',actual:document.getElementById('sitemap-title')?.textContent,expected:`Kineto — ${expected('사이트맵')}`});
+          const intentionalExampleLabels=[
+            '혼합 내비게이션','드롭다운 내비게이션','메가메뉴 내비게이션',
+            '상품 정보','글 상태','알림','자동 저장','다크 모드'
+          ].sort();
+          const remainingKorean=language==='ko'?[]:[...document.querySelectorAll('[aria-label]')]
+            .map((node)=>node.getAttribute('aria-label'))
+            .filter((label)=>/[가-힣]/.test(label))
+            .sort();
+          return {
+            ok:document.documentElement.lang===language
+              &&checks.every(({actual,expected:value})=>actual===value)
+              &&(language==='ko'||JSON.stringify(remainingKorean)===JSON.stringify(intentionalExampleLabels)),
+            checks,
+            remainingKorean
+          };
+        })(),
         moduleIndexKorean:language==='ko'?[]:[...document.querySelectorAll('.mod-index-item .mii-sub')]
           .filter((node)=>/[가-힣]/.test(node.textContent))
           .map((node)=>node.closest('.mod-index-item')?.dataset.module),
@@ -176,8 +231,8 @@ try {
     return result;
   });
   assert.ok(
-    Object.values(localizedCopy).every(({count,twoLines,summary,drawerChrome,moduleIndexKorean,moduleBlockKorean})=>
-      count>=129&&twoLines&&summary&&drawerChrome&&moduleIndexKorean.length===0&&moduleBlockKorean.length===0
+    Object.values(localizedCopy).every(({count,twoLines,summary,drawerChrome,accessibleChrome,moduleIndexKorean,moduleBlockKorean})=>
+      count>=129&&twoLines&&summary&&drawerChrome&&accessibleChrome.ok&&moduleIndexKorean.length===0&&moduleBlockKorean.length===0
     ),
     `localized demo copy or controls are incomplete: ${JSON.stringify(localizedCopy)}`
   );

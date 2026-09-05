@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: read
-  actions: read
   pages: write
   id-token: write
 
@@ -21,7 +20,10 @@ jobs:
     name: Deploy Kineto demo to GitHub Pages
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.head_branch == 'main'
+      (github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.conclusion == 'success')
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -30,36 +32,15 @@ jobs:
 
     steps:
       - name: Checkout verified Kineto source
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 22
           cache: npm
-
-      - name: Wait for the triggering CI run
-        if: github.event_name == 'workflow_run'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          CI_RUN_ID: ${{ github.event.workflow_run.id }}
-        run: |
-          for attempt in $(seq 1 60); do
-            state="$(gh run view "$CI_RUN_ID" --json status,conclusion --jq '[.status, (.conclusion // "")] | @tsv')"
-            status="${state%%$'\t'*}"
-            conclusion="${state#*$'\t'}"
-            echo "CI run $CI_RUN_ID: status=$status conclusion=${conclusion:-pending} (poll $attempt/60)"
-            if [ "$status" = completed ]; then
-              [ "$conclusion" = success ] && exit 0
-              echo "The triggering CI run did not succeed."
-              exit 1
-            fi
-            sleep 10
-          done
-          echo "Timed out waiting for the triggering CI run."
-          exit 1
 
       - name: Build deployable demo
         run: |
@@ -68,16 +49,19 @@ jobs:
           npm run test:site
 
       - name: Configure GitHub Pages
-        uses: actions/configure-pages@v6
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
 
       - name: Upload demo artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
           path: site
 
       - name: Deploy
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
 
       - name: Verify canonical live site
+        env:
+          KT_EXPECTED_BUILD: ${{ github.event.workflow_run.head_sha || github.sha }}
+          KT_LIVE_ATTEMPTS: 24
         run: npm run test:live-site

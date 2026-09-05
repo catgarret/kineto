@@ -5,6 +5,7 @@ tests/browser/shots/
 tests/framework-qa/node_modules/
 tests/framework-qa/dist-iife/
 tests/consumer-bundles/.output/
+/artifacts/
 *.tgz
 *.log
 .DS_Store

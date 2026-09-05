@@ -174,6 +174,13 @@ import KinetoVue from '@dong-gri/kineto/vue';
 app.use(KinetoVue);
 ```
 
+适配器选项更新采用明确的替换策略。React 仅在 `type` 或 `dependencies` 中的某个值
+发生变化时重新创建模块；Vue 的 `useKineto()` 对 `watchSources` 采取相同策略，
+`v-motion` 则在绑定发生变化时替换实例。Vue 可接受 options 对象、ref 或 getter；
+如果替换时需要读取 `setup()` 后发生变化的值，请使用 ref/getter。适配器会在每次
+create 前立即解析它。替换前始终先执行清理。适配器不会猜测某个模块是否支持部分
+`updateModule()` 调用。如需命令式实时更新，请保留返回的实例，或直接调用 Core API。
+
 ```js
 import installKineto from '@dong-gri/kineto/jquery';
 installKineto(window.jQuery);

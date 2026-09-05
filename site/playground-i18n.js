@@ -240,7 +240,7 @@
     ko: {
       summary: '설정 · 코드', groupMotion: '모션 · 타이밍', groupTrigger: '트리거 · 범위',
       groupLook: '외형', groupBehavior: '동작', groupAdvanced: '고급 · API',
-      run: '실행', replay: '다시 재생', reset: '초기화', settings: '설정', code: '코드',
+      run: '실행', replay: '다시 재생', reset: '초기화', settings: '설정', code: '코드', viewTabsLabel: '설정 및 코드 보기', codeTabsLabel: '코드 형식',
       wrap: '자동 줄바꿈', copyCode: '코드 복사', copied: '복사됨', copy: '복사', htmlCode: 'HTML', jsCode: 'Vanilla JS', reactCode: 'React', vueCode: 'Vue', cssCode: 'CSS vars',
       liveHint: '옵션을 바꾸면 위 예제에 바로 반영됩니다.', closeOptions: '옵션 닫기',
       options: '옵션 설정', resize: '설정창 높이 조절 (드래그 또는 ↑/↓)',
@@ -252,7 +252,7 @@
     en: {
       summary: 'Settings · Code', groupMotion: 'Motion · Timing', groupTrigger: 'Trigger · Range',
       groupLook: 'Appearance', groupBehavior: 'Behavior', groupAdvanced: 'Advanced · API',
-      run: 'Run', replay: 'Replay', reset: 'Reset', settings: 'Settings', code: 'Code',
+      run: 'Run', replay: 'Replay', reset: 'Reset', settings: 'Settings', code: 'Code', viewTabsLabel: 'Settings and code view', codeTabsLabel: 'Code format',
       wrap: 'Wrap lines', copyCode: 'Copy code', copied: 'Copied', copy: 'Copy', htmlCode: 'HTML', jsCode: 'Vanilla JS', reactCode: 'React', vueCode: 'Vue', cssCode: 'CSS vars',
       liveHint: 'Changes are applied to the example above.', closeOptions: 'Close options',
       options: 'Module options', resize: 'Resize settings drawer (drag or ↑/↓)',
@@ -263,7 +263,7 @@
     ja: {
       summary: '設定 · コード', groupMotion: 'モーション · タイミング', groupTrigger: 'トリガー · 範囲',
       groupLook: '外観', groupBehavior: '動作', groupAdvanced: '詳細 · API',
-      run: '実行', replay: '再生', reset: 'リセット', settings: '設定', code: 'コード',
+      run: '実行', replay: '再生', reset: 'リセット', settings: '設定', code: 'コード', viewTabsLabel: '設定とコード表示', codeTabsLabel: 'コード形式',
       wrap: '行を折り返す', copyCode: 'コードをコピー', copied: 'コピー済み', copy: 'コピー', htmlCode: 'HTML', jsCode: 'Vanilla JS', reactCode: 'React', vueCode: 'Vue', cssCode: 'CSS vars',
       liveHint: '変更は上の例にすぐ反映されます。', closeOptions: '設定を閉じる',
       options: 'モジュール設定', resize: '設定パネルの高さを調整（ドラッグまたは↑/↓）',
@@ -274,7 +274,7 @@
     'zh-CN': {
       summary: '设置 · 代码', groupMotion: '动效 · 时间', groupTrigger: '触发 · 范围',
       groupLook: '外观', groupBehavior: '行为', groupAdvanced: '高级 · API',
-      run: '运行', replay: '重新播放', reset: '重置', settings: '设置', code: '代码',
+      run: '运行', replay: '重新播放', reset: '重置', settings: '设置', code: '代码', viewTabsLabel: '设置和代码视图', codeTabsLabel: '代码格式',
       wrap: '自动换行', copyCode: '复制代码', copied: '已复制', copy: '复制', htmlCode: 'HTML', jsCode: 'Vanilla JS', reactCode: 'React', vueCode: 'Vue', cssCode: 'CSS 变量',
       liveHint: '修改会立即应用到上方示例。', closeOptions: '关闭设置',
       options: '模块设置', resize: '调整设置面板高度（拖动或↑/↓）',
@@ -285,7 +285,7 @@
     'zh-TW': {
       summary: '設定 · 程式碼', groupMotion: '動效 · 時間', groupTrigger: '觸發 · 範圍',
       groupLook: '外觀', groupBehavior: '行為', groupAdvanced: '進階 · API',
-      run: '執行', replay: '重新播放', reset: '重設', settings: '設定', code: '程式碼',
+      run: '執行', replay: '重新播放', reset: '重設', settings: '設定', code: '程式碼', viewTabsLabel: '設定與程式碼檢視', codeTabsLabel: '程式碼格式',
       wrap: '自動換行', copyCode: '複製程式碼', copied: '已複製', copy: '複製', htmlCode: 'HTML', jsCode: 'Vanilla JS', reactCode: 'React', vueCode: 'Vue', cssCode: 'CSS 變數',
       liveHint: '修改會立即套用到上方範例。', closeOptions: '關閉設定',
       options: '模組設定', resize: '調整設定面板高度（拖曳或↑/↓）',
@@ -296,7 +296,7 @@
     ru: {
       summary: 'Настройки · Код', groupMotion: 'Движение · Время', groupTrigger: 'Триггер · Диапазон',
       groupLook: 'Внешний вид', groupBehavior: 'Поведение', groupAdvanced: 'Дополнительно · API',
-      run: 'Запустить', replay: 'Повторить', reset: 'Сбросить', settings: 'Настройки', code: 'Код',
+      run: 'Запустить', replay: 'Повторить', reset: 'Сбросить', settings: 'Настройки', code: 'Код', viewTabsLabel: 'Настройки и просмотр кода', codeTabsLabel: 'Формат кода',
       wrap: 'Перенос строк', copyCode: 'Копировать код', copied: 'Скопировано', copy: 'Копировать', htmlCode: 'HTML', jsCode: 'Vanilla JS', reactCode: 'React', vueCode: 'Vue', cssCode: 'Переменные CSS',
       liveHint: 'Изменения сразу применяются к примеру выше.', closeOptions: 'Закрыть настройки',
       options: 'Настройки модуля', resize: 'Изменить высоту панели (перетаскивание или ↑/↓)',
@@ -307,7 +307,7 @@
     it: {
       summary: 'Impostazioni · Codice', groupMotion: 'Movimento · Tempi', groupTrigger: 'Attivazione · Intervallo',
       groupLook: 'Aspetto', groupBehavior: 'Comportamento', groupAdvanced: 'Avanzate · API',
-      run: 'Esegui', replay: 'Riproduci', reset: 'Ripristina', settings: 'Impostazioni', code: 'Codice',
+      run: 'Esegui', replay: 'Riproduci', reset: 'Ripristina', settings: 'Impostazioni', code: 'Codice', viewTabsLabel: 'Impostazioni e vista codice', codeTabsLabel: 'Formato codice',
       wrap: 'A capo automatico', copyCode: 'Copia codice', copied: 'Copiato', copy: 'Copia', htmlCode: 'HTML', jsCode: 'JavaScript vanilla', reactCode: 'React', vueCode: 'Vue', cssCode: 'Variabili CSS',
       liveHint: 'Le modifiche si applicano subito all’esempio sopra.', closeOptions: 'Chiudi impostazioni',
       options: 'Impostazioni modulo', resize: 'Ridimensiona il pannello (trascina o ↑/↓)',

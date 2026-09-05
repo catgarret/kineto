@@ -31,12 +31,14 @@ const instance = Kineto.parallax('.hero-img', {
 instance.destroy();
 ```
 
-### React (v0.3 예정)
+### React
 
 ```jsx
-<MkParallax speed={0.5}>
+import { Motion } from '@dong-gri/kineto/react';
+
+<Motion as="div" type="parallax" options={{ speed: 0.5, axis: 'y' }}>
   <img src="hero.jpg" />
-</MkParallax>
+</Motion>
 ```
 
 ---

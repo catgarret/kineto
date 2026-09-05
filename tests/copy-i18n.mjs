@@ -44,7 +44,10 @@ const titles = [...new Set(
 )];
 
 assert.deepEqual([...copy.languages], languages);
-for (const key of ['내려받는 중', '{value}% 완료']) {
+for (const key of [
+  '본문으로 건너뛰기', '맨 위로 이동', '사이트맵', '테마 전환', '언어 선택',
+  '모듈 목록', '모듈 검색', '닫기', '내려받는 중', '{value}% 완료'
+]) {
   assert.equal(copy.ui[key]?.length, languages.length, `missing localized demo UI: ${key}`);
 }
 // Two tabbed pairs replace four descriptions with two; Wave and Film Grain add

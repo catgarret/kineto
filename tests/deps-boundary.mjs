@@ -35,6 +35,47 @@ for (const file of srcFiles) {
   assert.doesNotMatch(code, IMPORT_LENIS, `${path.relative(root, file)} imports the lenis package — engines must load at runtime, not be bundled`);
 }
 
+// Browser network capabilities are intentional public surfaces, but their
+// source-file boundary must not expand unnoticed. Media `src` assignments use
+// consumer-provided assets; direct fetches and dynamic scripts are the smaller,
+// higher-risk subset reviewed in docs/supply-chain.md.
+const relativeSourceFiles = (pattern) => srcFiles
+  .filter((file) => pattern.test(fs.readFileSync(file, 'utf8')))
+  .map((file) => path.relative(root, file).split(path.sep).join('/'))
+  .sort();
+
+assert.deepEqual(relativeSourceFiles(/\bfetch\s*\(/), [
+  'src/modules/lightbox.js',
+  'src/modules/loader.js',
+  'src/modules/pageTransition.js'
+], 'direct browser fetch access must stay inside the reviewed public features');
+assert.deepEqual(relativeSourceFiles(/document\.createElement\(\s*['"]script['"]\s*\)/), [
+  'src/modules/pageTransition.js',
+  'src/runtime.js'
+], 'dynamic script creation must stay inside the reviewed engine and page-transition paths');
+assert.deepEqual(relativeSourceFiles(/\.src\s*=/), [
+  'src/modules/ambientMedia.js',
+  'src/modules/brushReveal.js',
+  'src/modules/cursor.js',
+  'src/modules/lazy.js',
+  'src/modules/lightbox.js',
+  'src/modules/scrollSequence.js',
+  'src/runtime.js'
+], 'browser resource URL assignment must stay inside the reviewed engine/media paths');
+
+for (const [label, pattern] of [
+  ['XMLHttpRequest', /\bXMLHttpRequest\b/],
+  ['WebSocket', /\bWebSocket\b/],
+  ['EventSource', /\bEventSource\b/],
+  ['sendBeacon', /\bsendBeacon\s*\(/]
+]) {
+  assert.deepEqual(relativeSourceFiles(pattern), [], `${label} access is not an approved Kineto network capability`);
+}
+
+const runtimeSource = read('src/runtime.js');
+assert.match(runtimeSource, /https:\/\/cdn\.jsdelivr\.net\/npm\/lenis@1\.3\.26\/dist\/lenis\.min\.js/, 'source must use the audited immutable Lenis 1.3.26 CDN asset');
+assert.match(runtimeSource, /sha384-jqpi9VmOdhyLoLURgjCn7EpnG9BbnHW57ibIZoeaIU\+erWDH3k8fQQg0xH2ySjnw/, 'source must carry the audited Lenis 1.3.26 SHA-384 integrity');
+
 // 2. Built bundles must carry the on-demand CDN loader (proof they fetch, not
 //    bundle) and must NOT balloon to the size that bundling GSAP+Lenis caused
 //    (~400 KB). A regression that re-bundles an engine trips this ceiling.
@@ -51,4 +92,4 @@ for (const build of ['dist/kineto.js', 'dist/kineto.umd.js']) {
 const umdBytes = fs.statSync(path.join(root, 'dist/kineto.umd.js')).size;
 assert.ok(umdBytes < 404 * 1024, `dist/kineto.umd.js is ${(umdBytes / 1024).toFixed(0)}KB — too large; an engine looks bundled again (expected < 404KB without GSAP/Lenis)`);
 
-console.log(`deps-boundary OK — zero runtime dependencies, ${Object.keys(packageJson.peerDependencies || {}).length} optional peers, no gsap/lenis imports in ${srcFiles.length} source files; both builds use the on-demand CDN loader; UMD is ${(umdBytes / 1024).toFixed(0)}KB (engines not bundled).`);
+console.log(`deps-boundary OK — zero runtime dependencies, ${Object.keys(packageJson.peerDependencies || {}).length} optional peers, reviewed browser network capability boundary, no gsap/lenis imports in ${srcFiles.length} source files; both builds use the on-demand CDN loader; UMD is ${(umdBytes / 1024).toFixed(0)}KB (engines not bundled).`);

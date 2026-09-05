@@ -20,10 +20,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 22
           cache: npm
@@ -34,22 +34,32 @@ jobs:
       - name: Check lockfile registry boundary
         run: npm run test:lockfile-boundary
 
-      - name: Run npm audit
-        run: |
-          mkdir -p artifacts
-          npm audit --audit-level=low --json > artifacts/npm-audit.json
+      - name: Audit root and fixture lockfiles
+        id: lockfile_audit
+        continue-on-error: true
+        run: npm run audit:lockfiles -- --output-dir artifacts
 
       - name: Generate SPDX SBOM
+        if: always()
         run: |
+          mkdir -p artifacts
           npm sbom --sbom-format=spdx > artifacts/kineto-sbom.spdx.json
 
       - name: Check package surface
-        run: npm pack --dry-run
+        if: always()
+        run: |
+          npm run test:package-size
+          npm run test:package-tarball
 
       - name: Upload supply-chain reports
-        uses: actions/upload-artifact@v4
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: supply-chain-reports
           path: artifacts/
           if-no-files-found: error
           retention-days: 14
+
+      - name: Fail on audit findings or audit errors
+        if: always() && steps.lockfile_audit.outcome == 'failure'
+        run: exit 1

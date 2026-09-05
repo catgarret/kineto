@@ -21,10 +21,10 @@ const defer = (callback) => Promise.resolve().then(callback);
 const sources = {
   gsap: 'https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js',
   scrollTrigger: 'https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js',
-  lenis: 'https://cdn.jsdelivr.net/npm/lenis@1.3.25/dist/lenis.min.js',
+  lenis: 'https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js',
   gsapIntegrity: 'sha384-XmJ9SoHtVOHoQUcKvFAzVXwdkKo1Ie3bhmSoIAkcdsHGaIrVJIkmozyq0FJeb/Ly',
   scrollTriggerIntegrity: 'sha384-wl5TeDVvOWt30Pbf8aSo2ZrzsOjddu3avOBvHe+p+OhJt9gP6w9YXmDkN5DK2/dF',
-  lenisIntegrity: 'sha384-ClD7pCgIUz5M81HT8aZmMxCsWmfsycmBiwL5gy1pUbdWHvICIbea22N9sTtAFotA'
+  lenisIntegrity: 'sha384-jqpi9VmOdhyLoLURgjCn7EpnG9BbnHW57ibIZoeaIU+erWDH3k8fQQg0xH2ySjnw'
 };
 
 let gsapInstance = (win && win.gsap) ? resolveDefault(win.gsap) : null;

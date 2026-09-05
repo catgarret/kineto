@@ -17,6 +17,40 @@ permissions:
   contents: read
 
 jobs:
+  node-compatibility:
+    name: Node ${{ matrix.node }} · public engine contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["20.19.0", "22.12.0"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --prefer-offline --fetch-retries=3 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=5000 --fetch-timeout=30000
+
+      - name: Build and verify the public runtime contract
+        run: |
+          set -euo pipefail
+          npm run build
+          npm run test:utils
+          npm run test:states
+          npm run test:presence
+          npm run test:package
+          npm run test:types
+          npm run test:package-tarball
+          npm pack --dry-run
+
   test:
     name: Node 24 / npm 11 · full test suite
     runs-on: ubuntu-latest
@@ -24,10 +58,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24
           cache: npm
@@ -142,11 +176,7 @@ jobs:
           # longer than the cross-browser smoke lane on a shared runner. Keep
           # the retry bounded while allowing a complete attempt to finish.
           MK_BROWSER_TEST_TIMEOUT: 240000
-          # WebKit's hosted runner occasionally loses one full-demo attempt
-          # while provisioning its isolated process. Keep the existing
-          # bounded timeout and allow one additional clean process group only
-          # for that engine; assertions still fail the job after all attempts.
-          MK_BROWSER_TEST_ATTEMPTS: ${{ matrix.browser == 'webkit' && 4 || 3 }}
+          MK_BROWSER_TEST_ATTEMPTS: 3
 
       - name: Pack dry run
         run: |
@@ -155,7 +185,7 @@ jobs:
 
       - name: Upload browser screenshots on failure
         if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: browser-test-artifacts
           path: |
@@ -164,6 +194,7 @@ jobs:
             tests/.smoke/
           if-no-files-found: ignore
           retention-days: 7
+          overwrite: true
 
   cross-browser:
     name: ${{ matrix.browser }} · browser smoke
@@ -181,10 +212,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24
           cache: npm
@@ -229,7 +260,7 @@ jobs:
 
       - name: Upload cross-browser artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: cross-browser-${{ matrix.browser }}-artifacts
           path: |
@@ -238,3 +269,4 @@ jobs:
             tests/.smoke/
           if-no-files-found: ignore
           retention-days: 7
+          overwrite: true

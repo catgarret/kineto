@@ -23,10 +23,12 @@ export interface KinetoTransitionHooks {
   onLeaveCancelled(el: Element): void;
 }
 
+export type KinetoOptionsSource = KinetoOptions | Ref<KinetoOptions> | (() => KinetoOptions);
+
 export const vMotion: Directive<HTMLElement, string | MotionBinding | KinetoOptions>;
 export function useKineto(
   type: string,
-  options?: KinetoOptions,
+  options?: KinetoOptionsSource,
   watchSources?: WatchSource[]
 ): { element: Ref<HTMLElement | null>; instance: Ref<KinetoInstance | null>; replay(): void };
 export function useKinetoTransition(

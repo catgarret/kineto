@@ -23,74 +23,187 @@ async function runSmoke() {
     root.appendChild(el);
     return el;
   };
+  const withMarkup = (html, tag = 'div') => {
+    const el = make(tag, '');
+    el.innerHTML = html;
+    return el;
+  };
+  const sliderFixture = (prefix = '') => withMarkup(
+    `<div class="kt-slider-wrap"><div class="kt-slider-track"><div class="kt-slide">${prefix}A</div><div class="kt-slide">${prefix}B</div></div></div>`
+  );
   const results = {};
-  const run = (name, el, options = {}, { allowNull = false } = {}) => {
+  const supplementalResults = {};
+  const run = (name, el, options = {}, { verify } = {}) => {
     try {
       const first = Kineto.create(name, el, options);
       const second = Kineto.create(name, el, options);
-      if (!allowNull && !first) throw new Error(`${name} returned null`);
-      if (first && second !== first) throw new Error(`${name} duplicate initialization created a new instance`);
-      if (first) {
-        first.pause?.();
-        first.resume?.();
-        if (name === 'reveal') {
-          first.destroy();
-          if (Kineto.getInstance(el, name)) throw new Error(`${name} direct destroy left a stale core record`);
-          const recreated = Kineto.create(name, el, options);
-          if (!recreated || recreated === first) throw new Error(`${name} could not recreate after direct destroy`);
-        }
-        const replayed = Kineto.replay(el, name);
-        if (!replayed) throw new Error(`${name} replay returned null`);
-        Kineto.destroyModule(el, name);
-        if (Kineto.getInstance(el, name)) throw new Error(`${name} was not destroyed`);
+      if (!first) throw new Error(`${name} returned null`);
+      if (second !== first) throw new Error(`${name} duplicate initialization created a new instance`);
+      verify?.(first);
+      first.pause?.();
+      first.resume?.();
+      if (name === 'reveal') {
+        first.destroy();
+        if (Kineto.getInstance(el, name)) throw new Error(`${name} direct destroy left a stale core record`);
+        const recreated = Kineto.create(name, el, options);
+        if (!recreated || recreated === first) throw new Error(`${name} could not recreate after direct destroy`);
       }
-      results[name] = first ? 'ok' : 'supported-null';
+      const replayed = Kineto.replay(el, name);
+      if (!replayed) throw new Error(`${name} replay returned null`);
+      Kineto.destroyModule(el, name);
+      if (Kineto.getInstance(el, name)) throw new Error(`${name} was not destroyed`);
+      results[name] = 'ok';
     } catch (error) {
       results[name] = 'failed';
       errors.push(`${name}: ${error.stack || error.message}`);
     }
   };
 
-  run('parallax', make());
-  run('mouseParallax', make());
-  run('reveal', make());
-  run('counter', make('div', '0'), { mode: 'plain', to: 12, duration: 0.01 });
-  const lazy = make('img', ''); lazy.setAttribute('data-src', svg); run('lazy', lazy, { preset: 'pixelate', duration: 0.01, delay: 0, steps: [0.2, 1] });
-  run('textSplit', make('div', 'Split text'));
-  run('blurText', make('div', 'Blur text'));
-  run('typewriter', make('div', 'Type'), { strings: ['A'], typeSpeed: 1, loop: false });
-  run('textReveal', make('div', 'Shuffle'), { preset: 'shuffle', text: 'Shuffle', speed: 1 });
-  run('textTransition', make('div', 'One'), { texts: ['One', 'Two'], duration: 0.01, pause: 10, loop: false });
-  run('magnetic', make('button', 'Magnetic'));
-  run('ripple', make('button', 'Ripple'), { duration: 30 });
-  const marquee = make(); marquee.innerHTML = '<span>Marquee</span><span>Marquee</span>'; run('marquee', marquee, { speed: 20 });
-  const overflow = make('div', 'A very long track title that must scroll like an old MP3 display'); overflow.style.width = '120px'; run('overflowText', overflow, { mode: 'bounce', speed: 120, delay: 0, endPause: 10 });
-  run('loader', make(), { minDuration: 0, duration: 0.01 });
-  run('tilt', make(), { glare: false });
-  run('cursor', make(), {}, { allowNull: true });
-  run('textFill', make('div', 'Fill text'));
-  const sticky = make(); sticky.id = 'sticky'; sticky.innerHTML = '<div>A</div><div>B</div>'; run('stickyStack', sticky);
+  // Headless Firefox/WebKit do not expose the optional Vibration API. Stub the
+  // browser capability in this isolated fixture so Vibrate still executes its
+  // real create/replay/destroy path instead of being silently excluded.
+  if (typeof navigator.vibrate !== 'function') {
+    Object.defineProperty(navigator, 'vibrate', { configurable: true, value: () => true });
+  }
+
+  const smokeCases = {
+    ambientMedia: () => ({
+      el: withMarkup('<iframe title="Ambient source"></iframe>'),
+      options: { color: '#888', disableOnMobile: false }
+    }),
+    blurText: () => ({ el: make('div', 'Blur text') }),
+    brushReveal: () => ({
+      el: withMarkup(`<img src="${svg}" alt="">`),
+      options: { src: svg, persist: true }
+    }),
+    cardGlow: () => ({ el: make(), options: { mode: 'spotlight', radius: 90, sensitivity: 1.2 } }),
+    counter: () => ({ el: make('div', '0'), options: { mode: 'plain', to: 12, duration: 0.01 } }),
+    dateTime: () => ({
+      el: make('time', '2026-01-02 03:04:05'),
+      options: { value: '2026-01-02T03:04:05Z', now: '2026-01-02T03:05:05Z', live: false }
+    }),
+    cssScroll: () => ({ el: make() }),
+    cursor: () => ({ el: make(), options: { clickImage: svg } }),
+    fullpage: () => {
+      const el = withMarkup('<section>One</section><section>Two</section>');
+      el.style.height = '180px';
+      return { el, options: { duration: 0.15, wheel: false, touch: false, keyboard: false, drag: false } };
+    },
+    glitch: () => ({ el: make('div', 'Glitch') }),
+    lazy: () => {
+      const el = make('img', '');
+      el.setAttribute('data-src', svg);
+      return { el, options: { preset: 'pixelate', duration: 0.01, delay: 0, steps: [0.2, 1] } };
+    },
+    lightbox: () => {
+      const el = make('img', '');
+      el.src = svg;
+      return { el };
+    },
+    loader: () => ({ el: make(), options: { minDuration: 0, duration: 0.01 } }),
+    loadingIndicator: () => ({ el: make(), options: { type: 'spinner', autoComplete: false } }),
+    magnetic: () => ({ el: make('button', 'Magnetic') }),
+    marquee: () => ({ el: withMarkup('<span>Marquee</span><span>Marquee</span>'), options: { speed: 20 } }),
+    mouseParallax: () => ({ el: make() }),
+    overflowText: () => {
+      const el = make('div', 'A very long track title that must scroll like an old MP3 display');
+      el.style.width = '120px';
+      return { el, options: { mode: 'bounce', speed: 120, delay: 0, endPause: 10 } };
+    },
+    pageReveal: () => ({ el: make() }),
+    pageTransition: () => ({ el: document.body, options: { minDuration: 0, executeScripts: false } }),
+    parallax: () => ({ el: make() }),
+    progress: () => ({ el: make() }),
+    reveal: () => ({ el: make() }),
+    radial: () => ({
+      el: withMarkup('<div>Radial A</div><div>Radial B</div>'),
+      options: { autoplay: false, controls: false, duration: 0.01 }
+    }),
+    ripple: () => ({ el: make('button', 'Ripple'), options: { duration: 30 } }),
+    scrollSequence: () => ({ el: make(), options: { frames: 2, urls: [svg, svg], scrollLength: '200px' } }),
+    scrollVelocity: () => ({ el: make(), options: { mode: 'translate', axis: 'x', distance: 24 } }),
+    slider: () => ({
+      el: sliderFixture(),
+      options: { autoplay: false, speed: 0.01 },
+      verify(instance) {
+        if (instance.index !== 0) throw new Error(`slider initial getter is invalid: ${instance.index}`);
+        instance.next();
+        if (instance.index !== 1) throw new Error(`slider live index getter was flattened: ${instance.index}`);
+      }
+    }),
+    stickyStack: () => {
+      const el = withMarkup('<div>A</div><div>B</div>');
+      el.id = 'sticky';
+      return { el };
+    },
+    textFill: () => ({ el: make('div', 'Fill text') }),
+    textReveal: () => ({ el: make('div', 'Shuffle'), options: { preset: 'shuffle', text: 'Shuffle', speed: 1 } }),
+    textSplit: () => ({ el: make('div', 'Split text') }),
+    textTransition: () => ({ el: make('div', 'One'), options: { texts: ['One', 'Two'], duration: 0.01, pause: 10, loop: false } }),
+    tilt: () => ({ el: make(), options: { glare: false } }),
+    typewriter: () => ({ el: make('div', 'Type'), options: { strings: ['A'], typeSpeed: 1, loop: false } }),
+    vibrate: () => ({ el: make(), options: { trigger: 'manual' } }),
+    confetti: () => ({ el: make('button', 'Confetti'), options: { trigger: 'click', count: 4 } }),
+    accordion: () => ({ el: withMarkup('<details><summary>Question</summary><p>Answer</p></details>') }),
+    hold: () => ({ el: make('button', 'Hold'), options: { submit: false } }),
+    megaMenu: () => ({
+      el: withMarkup('<ul><li><button>Menu</button><div class="kt-menu-panel"><a href="#">Item</a></div></li></ul>', 'nav'),
+      options: { trigger: 'click' }
+    }),
+    toast: () => ({ el: make('button', 'Toast'), options: { duration: 1000 } }),
+    bottomSheet: () => {
+      const el = withMarkup('<h2 id="smoke-sheet-title">Sheet</h2><button>Close</button>', 'section');
+      el.id = 'smoke-bottom-sheet';
+      el.setAttribute('aria-labelledby', 'smoke-sheet-title');
+      return { el, options: { backdrop: false } };
+    },
+    tabs: () => ({
+      el: withMarkup('<div class="kt-tablist"><button>One</button><button>Two</button></div><div class="kt-tabpanel">Panel one</div><div class="kt-tabpanel">Panel two</div>')
+    }),
+    coverReveal: () => ({ el: make('div', 'Cover reveal'), options: { duration: 0.05, waitForImage: false } }),
+    gesture: () => ({ el: make('button', 'Gesture') }),
+    drag: () => ({ el: make('div', 'Drag'), options: { inertia: false } }),
+    tooltip: () => {
+      const el = make('button', 'Tooltip');
+      el.title = 'Tooltip content';
+      return { el };
+    },
+    switch: () => ({ el: make('button', 'Switch') }),
+    flip: () => ({ el: withMarkup('<span>One</span><span>Two</span>'), options: { duration: 0 } }),
+    scrollShadows: () => {
+      const el = withMarkup('<div style="height:180px">Scrollable content</div>');
+      el.style.cssText = 'height:60px;overflow:auto;';
+      return { el, options: { transitionMode: 'instant' } };
+    },
+    stickyHeader: () => ({ el: make('header', 'Sticky header') }),
+    horizontalScroll: () => ({
+      el: withMarkup('<div style="width:180px">One</div><div style="width:180px">Two</div>'),
+      options: { height: '80px', smooth: false }
+    })
+  };
+
+  const declared = Object.keys(smokeCases).sort();
+  const missingCases = expected.filter((name) => !declared.includes(name));
+  const unknownCases = declared.filter((name) => !expected.includes(name));
+  if (missingCases.length || unknownCases.length) {
+    errors.push(`smoke registry mismatch; missing: ${missingCases.join(',') || 'none'}; unknown: ${unknownCases.join(',') || 'none'}`);
+  }
+  expected.forEach((name) => {
+    try {
+      const fixture = smokeCases[name]?.();
+      if (!fixture) return;
+      run(name, fixture.el, fixture.options, { verify: fixture.verify });
+    } catch (error) {
+      results[name] = 'failed';
+      errors.push(`${name} fixture: ${error.stack || error.message}`);
+    }
+  });
+
+  // Retain focused variant coverage in addition to the one-case-per-module
+  // registry. These do not count as separate public modules.
   const horizontal = make(); horizontal.innerHTML = '<div>A</div><div>B</div><div>C</div>'; run('stickyStack', horizontal, { mode: 'horizontal', pin: false, scrub: 0.1 });
   const floating = make(); floating.innerHTML = '<div>A</div><div>B</div><div>C</div>'; run('stickyStack', floating, { mode: 'floating', pin: false, scrub: 0.1, scrollLength: 10 });
-  run('scrollVelocity', make(), { mode: 'translate', axis: 'x', distance: 24 });
-  run('progress', make());
-  const slider = make(); slider.innerHTML = '<div class="kt-slider-wrap"><div class="kt-slider-track"><div class="kt-slide">A</div><div class="kt-slide">B</div></div></div>';
-  try {
-    const sliderInstance = Kineto.create('slider', slider, { autoplay: false, speed: 0.01 });
-    if (!sliderInstance) throw new Error('slider returned null');
-    if (sliderInstance.index !== 0) throw new Error(`slider initial getter is invalid: ${sliderInstance.index}`);
-    sliderInstance.next();
-    if (sliderInstance.index !== 1) throw new Error(`slider live index getter was flattened: ${sliderInstance.index}`);
-    const duplicateSlider = Kineto.create('slider', slider, { autoplay: false });
-    if (duplicateSlider !== sliderInstance) throw new Error('slider duplicate initialization created a new instance');
-    sliderInstance.destroy();
-    results.slider = 'ok';
-  } catch (error) {
-    results.slider = 'failed';
-    errors.push(`slider: ${error.stack || error.message}`);
-  }
-  const nativeSlider = make();
-  nativeSlider.innerHTML = '<div class="kt-slider-wrap"><div class="kt-slider-track"><div class="kt-slide">N1</div><div class="kt-slide">N2</div></div></div>';
+  const nativeSlider = sliderFixture('Native ');
   try {
     const nativeInstance = Kineto.create('slider', nativeSlider, {
       effect: 'slide', loop: 'off', perView: 1, axis: 'x', gap: 0, scrollSnap: true
@@ -103,20 +216,11 @@ async function runSmoke() {
     nativeInstance?.goTo(1);
     if (!nativeSelected || nativeInstance?.index !== 1) throw new Error('native Scroll Snap path did not select or navigate');
     nativeInstance?.destroy();
-    results.sliderNative = 'ok';
+    supplementalResults.sliderNative = 'ok';
   } catch (error) {
-    results.sliderNative = 'failed';
+    supplementalResults.sliderNative = 'failed';
     errors.push(`sliderNative: ${error.stack || error.message}`);
   }
-  const ambient = make(); ambient.innerHTML = '<iframe title="empty"></iframe>'; run('ambientMedia', ambient, { color: '#888', disableOnMobile: false });
-  run('pageReveal', make());
-  run('glitch', make('div', 'Glitch'));
-  run('cardGlow', make(), { mode: 'spotlight', radius: 90, sensitivity: 1.2 });
-  const lightbox = make('img', ''); lightbox.src = svg; run('lightbox', lightbox);
-  run('pageTransition', document.body, { minDuration: 0, executeScripts: false });
-  run('vibrate', make(), { trigger: 'click' }, { allowNull: true });
-  run('cssScroll', make());
-  const sequence = make(); run('scrollSequence', sequence, { frames: 2, urls: [svg, svg], scrollLength: '200px' });
 
   // Functional checks for the article's pixelate use case and key text/data flows.
   const functionalHost = document.createElement('div');
@@ -321,14 +425,24 @@ async function runSmoke() {
   replayedCounter?.destroy();
   functionalHost.remove();
   const registry = Object.keys(Kineto.registry).sort();
+  const exercised = Object.keys(results).sort();
   if (JSON.stringify(registry) !== JSON.stringify(expected)) errors.push(`registry mismatch: ${registry.join(',')}`);
+  if (JSON.stringify(exercised) !== JSON.stringify(expected)) errors.push(`smoke coverage mismatch: ${exercised.join(',')}`);
   Kineto.destroy();
   if (Kineto.instanceCount !== 0) errors.push(`instance leak: ${Kineto.instanceCount}`);
-  window.__MK_SMOKE__ = { ok: errors.length === 0, errors, results, registry, instanceCount: Kineto.instanceCount };
+  window.__MK_SMOKE__ = {
+    ok: errors.length === 0,
+    errors,
+    results,
+    supplementalResults,
+    registry,
+    exercised,
+    instanceCount: Kineto.instanceCount
+  };
   document.documentElement.dataset.smokeDone = 'true';
 }
 
 runSmoke().catch((error) => {
-  window.__MK_SMOKE__ = { ok: false, errors: [error.stack || error.message], results: {}, registry: [], instanceCount: -1 };
+  window.__MK_SMOKE__ = { ok: false, errors: [error.stack || error.message], results: {}, registry: [], exercised: [], instanceCount: -1 };
   document.documentElement.dataset.smokeDone = 'true';
 });

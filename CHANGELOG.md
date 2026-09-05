@@ -5,6 +5,13 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Deploy the exact tested JavaScript and CSS with the demo, require the expected commit and byte hashes through bounded propagation and request timeouts in live verification, and keep public jsDelivr installation snippets intact.
+- Give demo settings collision-tested semantic v2 share keys with v1-link compatibility and hash landing, then add skip navigation, complete ARIA tab relationships, roving keyboard controls, and seven-locale accessible names for user controls.
+- Keep Mega Menu panel IDs collision-free across simultaneous instances and restore authored class, style, hidden, ID, and ARIA state after cancelling animations on destroy; exercise every one of the 52 modules through create, replay, duplicate-init, and destroy in Chromium, Firefox, and WebKit.
+- Add real React and Vue hydration QA, resolve Vue object/ref/getter options immediately before each replacement, and share matching Vite/Rolldown budgets for Core plus States and Presence entry combinations.
+- Audit all three lockfiles with durable but locally ignored reports, update bounded development dependencies, lock optional network primitives and Lenis 1.3.26 SRI, and document the current Socket alert triage without hiding unavoidable packaging signals.
+- Pin every third-party workflow action to a full commit SHA, cover supported Node 20/22 runtimes, require cross-browser release gates and one checksum-bound tarball, and make jsDelivr purging bounded and fatal on partial failure.
+- Restore automatic backup-site synchronization without a cross-repository Kineto secret by rebuilding the latest successful main CI commit in a read-only job and limiting the write-scoped job to `example/kineto`.
 - Add a weekly and manually dispatched live-site parity alert that stays independent from canonical Pages deployment.
 - Add a readiness-gate check that keeps physical-device, external-case, deprecation, and FLIP evidence statuses honest in CI.
 - Enforce the zero-runtime-dependency and optional-peer metadata boundary in the supply-chain test.
@@ -37,6 +44,13 @@
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 데모가 테스트한 JavaScript·CSS를 그대로 함께 배포하고 제한된 전파 대기·요청 timeout을 둔 live 검증에서 기대 커밋과 파일 hash까지 확인하며, 공개 jsDelivr 설치 예시는 유지합니다.
+- 데모 설정 공유 주소를 충돌 검사한 의미 기반 v2 key로 안정화하면서 v1 링크 호환성과 hash 착지를 보존하고, skip navigation·완전한 ARIA tab 관계·roving keyboard 조작·사용자 조작 UI의 7개 언어 접근성 이름을 추가했습니다.
+- 동시에 존재하는 Mega Menu panel ID가 충돌하지 않게 하고 destroy에서 animation을 취소한 뒤 작성자 class·style·hidden·ID·ARIA 상태를 복원하며, Chromium·Firefox·WebKit에서 52개 전 모듈의 생성·재생·중복 초기화·해제를 검사합니다.
+- 실제 React·Vue hydration QA를 추가하고 Vue 객체·ref·getter options를 매 교체 직전에 다시 평가하며, Core에 States·Presence를 조합한 Vite/Rolldown 소비자 예산을 동일하게 측정합니다.
+- 세 lockfile을 Git에서 제외되는 개별 report로 audit하고 제한된 개발 의존성을 갱신했으며, 선택적 network primitive와 Lenis 1.3.26 SRI를 고정하고 회피할 수 없는 packaging 신호를 숨기지 않은 현재 Socket 경고 판정을 기록했습니다.
+- 모든 외부 workflow action을 전체 commit SHA로 고정하고 지원 Node 20/22를 검사하며, 교차 브라우저 release gate와 checksum에 결속된 단일 tarball을 요구하고 jsDelivr purge의 재시도·시간을 제한해 일부 실패도 치명적으로 처리합니다.
+- Kineto 저장소의 cross-repository secret 없이 최신 main CI 성공 commit을 read-only job에서 다시 빌드하고, 쓰기 권한 job은 `example/kineto`만 바꾸도록 제한해 백업 사이트 자동 동기화를 복구했습니다.
 - canonical Pages 배포를 막지 않도록 분리한 주간·수동 live-site parity 경보 workflow를 추가했습니다.
 - 실기기·외부 사례·deprecation·FLIP 증거 상태가 CI에서 완료로 오인되지 않도록 readiness-gate 검사를 추가했습니다.
 - 공급망 검사에서 런타임 의존성 0개와 optional peer metadata 경계를 고정해 payload drift를 조기에 감지합니다.

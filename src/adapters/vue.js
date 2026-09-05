@@ -34,6 +34,11 @@ export const vMotion = {
   }
 };
 
+function resolveKinetoOptions(options) {
+  const resolved = typeof options === 'function' ? options() : unref(options);
+  return resolved && typeof resolved === 'object' ? resolved : {};
+}
+
 export function useKineto(type, options = {}, watchSources = []) {
   const element = ref(null);
   const instance = ref(null);
@@ -41,7 +46,7 @@ export function useKineto(type, options = {}, watchSources = []) {
   const mount = () => {
     if (!element.value || !type) return;
     Kineto.destroyModule(element.value, type);
-    instance.value = Kineto.create(type, element.value, options);
+    instance.value = Kineto.create(type, element.value, resolveKinetoOptions(options));
   };
 
   onMounted(mount);

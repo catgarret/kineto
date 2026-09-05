@@ -30,6 +30,9 @@ const platformEnhancements = read('docs/platform-enhancements.md');
 const caseStudy = read('docs/case-study-template.md');
 const reference = read('docs/module-reference.md');
 const modulesReadme = read('docs/modules/README.md');
+const textSplitGuide = read('docs/modules/text-split.md');
+const parallaxGuide = read('docs/modules/parallax.md');
+const motionStatesRfc = read('docs/motion-states-rfc.md');
 const demoPolish = read('tests/browser/demo-polish.mjs');
 const localizedReadmes = ['ko', 'jp', 'zh-CN', 'zh-TW', 'ru', 'it'].map((locale) => read(`i18n/README.${locale}.md`));
 
@@ -120,6 +123,11 @@ assert.match(readiness, /Core API·module registry/);
 assert.match(presetBoundary, /@dong-gri\/kineto\/core/);
 assert.match(platformEnhancements, /View Transitions/);
 assert.match(caseStudy, /3건/);
+assert.doesNotMatch(textSplitGuide, /v0\.3[^\n]*예정/, 'active module docs must not promise a stale line-splitting version');
+assert.doesNotMatch(parallaxGuide, /v0\.3[^\n]*예정|MkParallax/, 'React module docs must use the shipped Motion adapter');
+assert.match(parallaxGuide, /@dong-gri\/kineto\/react/);
+assert.doesNotMatch(motionStatesRfc, /v0\.8\.66[^\n]*예정/, 'completed RFCs must not describe a released version as future work');
+assert.doesNotMatch(troubleshooting, /문서는 Kineto v0\.8\.104|v0\.8\.104의 데모/, 'operational troubleshooting must not present an old release as the current baseline');
 for (const moduleName of ['pageReveal', 'pageTransition', 'slider', 'stickyStack', 'stickyHeader', 'lightbox', 'cursor', 'fullpage']) {
   assert.ok(roadmap.includes(moduleName), `roadmap heavy-layout list is missing ${moduleName}`);
 }

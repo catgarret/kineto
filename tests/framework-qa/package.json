@@ -3,20 +3,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build",
-    "qa": "npm run build && node run-qa.mjs && node --preserve-symlinks ssr-qa.mjs"
+    "build": "vite build && vite build --config vite.config.hydration.js",
+    "qa": "npm run build && node run-qa.mjs && node --preserve-symlinks run-hydration-qa.mjs && node --preserve-symlinks ssr-qa.mjs"
   },
   "dependencies": {
     "@dong-gri/kineto": "file:../..",
     "jquery": "^3.7.1",
-    "picomatch": "4.0.3",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
+    "picomatch": "4.0.7",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "scheduler": "0.27.0",
-    "vue": "^3.5.18"
+    "vue": "^3.5.42"
   },
   "devDependencies": {
-    "playwright-core": "^1.61.1",
-    "vite": "^8.1.5"
+    "playwright-core": "^1.62.1",
+    "vite": "^8.2.2"
   }
 }

@@ -1,8 +1,12 @@
 # 브라우저 레이어 QA 매트릭스
 
-기준 버전: v0.8.104 후속 · 검토: 2026-09-01
+기준 버전: v0.9.3 후속 · 검토: 2026-09-05
 
-이 문서는 모든 모듈을 모든 브라우저에서 같은 깊이로 검사하기 위한 문서가 아닙니다. 일반 모듈은 Chromium 전체 QA와 Firefox/WebKit smoke를 유지하고, 브라우저 엔진 차이가 실제 사용자 화면을 바꿀 가능성이 높은 레이어 모듈만 `heavy-layout` 체크포인트로 승격합니다.
+모든 공개 모듈은 Chromium·Firefox·WebKit에서 registry 일치와
+create → duplicate init → replay → destroy lifecycle smoke를 통과해야 합니다. 모든
+variant와 입력을 같은 깊이로 검사한다는 뜻은 아니며, 브라우저 엔진 차이가 실제
+화면을 바꿀 가능성이 높은 레이어 모듈은 별도 `heavy-layout` 체크포인트로
+승격합니다.
 
 ## 공개 지원표
 
@@ -10,9 +14,9 @@
 
 | 기준 | 자동 증거 | 공개 의미 | 현재 한계 |
 |---|---|---|---|
-| `evergreen` | Chromium 전체 + Firefox/WebKit smoke | 최신 evergreen 브라우저의 일반 DOM·CSS 경로 | 모든 variant를 세 엔진에서 같은 깊이로 검사하지 않음 |
-| `evergreen-pointer` | Chromium 포인터·pointer-events 검사 + 대표 Firefox/WebKit smoke | 데스크톱 포인터 입력을 보조 기능으로 지원 | 터치 전용 기기의 실제 센서·포인터 조합은 별도 확인 필요 |
-| `evergreen-scroll` | Chromium 스크롤/레이아웃 검사 + 대표 Firefox/WebKit smoke | 최신 스크롤 API가 있는 브라우저에서 동작, 미지원 시 정적·기본 흐름 유지 | 실제 iOS Safari/Android Chrome 실기기 검증은 아직 릴리스 증거에 포함하지 않음 |
+| `evergreen` | Chromium 전체 + 세 엔진 52/52 lifecycle smoke | 최신 evergreen 브라우저의 일반 DOM·CSS 경로 | 모든 variant를 세 엔진에서 같은 깊이로 검사하지 않음 |
+| `evergreen-pointer` | Chromium 포인터·pointer-events 검사 + 세 엔진 전체 module lifecycle + 대표 입력 smoke | 데스크톱 포인터 입력을 보조 기능으로 지원 | 터치 전용 기기의 실제 센서·포인터 조합은 별도 확인 필요 |
+| `evergreen-scroll` | Chromium 스크롤/레이아웃 검사 + 세 엔진 전체 module lifecycle + 대표 스크롤 smoke | 최신 스크롤 API가 있는 브라우저에서 동작, 미지원 시 정적·기본 흐름 유지 | 실제 iOS Safari/Android Chrome 실기기 검증은 아직 릴리스 증거에 포함하지 않음 |
 | `evergreen-touch` | Chromium touch 에뮬레이션 + 모바일 레이아웃 검사 | 키보드·touch fallback과 native semantics를 우선 | 제조사 WebView와 실기기 IME/viewport 차이는 [실기기 실행표](browser-device-qa.md)로 별도 기록 |
 | `evergreen-canvas` | Chromium canvas/media QA + heavy-layout 대상 세 엔진 | 캔버스·미디어 효과의 fallback과 레이어 경계를 검증 | cross-origin 미디어와 저사양 GPU의 실제 성능은 소비자가 측정해야 함 |
 
@@ -48,12 +52,21 @@
 로컬에서 한 엔진만 확인할 때:
 
 ```bash
+KT_BROWSER=chromium node tests/browser-smoke.mjs
+KT_BROWSER=firefox node tests/browser-smoke.mjs
+KT_BROWSER=webkit node tests/browser-smoke.mjs
+
 KT_BROWSER=chromium node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs
 KT_BROWSER=firefox node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs
 KT_BROWSER=webkit node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs
 ```
 
-릴리스 전에는 `npm run ci`의 Node 24 전체 job과 Firefox/WebKit matrix가 모두 성공해야 합니다. `heavy-layout` 단계가 실패하면 다음 순서로 분류합니다.
+`tests/browser-smoke.mjs`는 `kineto.features.json`과 실제 runtime registry, 실행된
+fixture 이름·개수가 모두 같은지 비교하므로 새 공개 모듈에 fixture가 없으면
+실패합니다. 릴리스 전에는 `npm run ci`의 Node 24 전체 job과 Firefox/WebKit
+matrix가 모두 성공해야 하며, tag release도 같은 두 cross-browser gate가 끝나기
+전에는 publish job을 시작하지 않습니다. `heavy-layout` 단계가 실패하면 다음
+순서로 분류합니다.
 
 Chromium 전체 lane은 모든 playground를 포함하므로 hosted runner에서 시도당 `240s`, 최대
 3회로 실행합니다. 재시도 후에도 실패하면 `test:browser` annotation과 `ci.log`의 마지막

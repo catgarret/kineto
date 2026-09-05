@@ -12,7 +12,7 @@ Kineto는 `dongri.me`의 픽셀 모자이크 실험에서 시작한 인터랙션
 - 공개 모듈: 52개
 - Core API: 28개
 - 소유자 고정 요구사항: 48개
-- 라이브 플레이그라운드: 131개
+- 라이브 플레이그라운드: 188개
 - Smooth Scroll: 기본 비활성화, Lenis runtime API로 선택 사용
 
 소스 오브 트루스:
@@ -62,4 +62,11 @@ Kineto는 `dongri.me`의 픽셀 모자이크 실험에서 시작한 인터랙션
 npm run ci
 ```
 
-배포 전에는 `npm run verify`로 전체 검사와 의존성 보안 감사를 실행하고, 최종 `.tgz`를 별도 프로젝트에 설치해 ESM/CommonJS surface와 React StrictMode, Vue, jQuery 반복 mount/unmount를 검사합니다. 자동 브라우저 QA는 Chromium 기준이며 Safari/WebKit, Firefox, 실제 iOS/Android는 별도 QA 대상입니다.
+배포 전에는 `npm run verify`로 전체 검사와 세 잠금파일 의존성 감사를 실행하고,
+최종 `.tgz`를 별도 fixture에 설치해 ESM/CommonJS surface와 React Strict Mode,
+Vue, jQuery 반복 mount/unmount를 검사합니다. React `hydrateRoot`와 Vue
+`createSSRApp`의 실제 브라우저 hydration도 SSR node 재사용·update·unmount까지
+검사합니다. 자동 브라우저 QA는 Chromium 전체 데모와
+Chromium·Firefox·WebKit 52/52 공개 모듈 lifecycle smoke를 포함합니다. 실제
+iOS Safari와 Android Chrome은 자동 통과로 대체하지 않고 별도 실기기 증거로
+남깁니다.

@@ -18,34 +18,41 @@ the repository. GitHub Actions also needs `contents: write`, which is declared
 in the workflow.
 
 The public demo is deployed directly from the Kineto repository's GitHub Pages
-artifact. `pages.yml` waits for the triggering `CI` run to reach a successful
-conclusion before it rebuilds the verified source and deploys `site/` with
-`actions/deploy-pages`; no cross-repository token is required. The demo intentionally loads unversioned
-`@dong-gri/kineto`; the release workflow purges the jsDelivr latest aliases
-after npm publication.
+artifact. `pages.yml` accepts only a successful same-repository `push` CI run on
+`main`, rebuilds that exact commit, and deploys `site/`; no cross-repository
+token is required. The page executes the minified JavaScript and CSS copied from
+the same tested `dist/` into the Pages artifact. Public installation snippets
+still show the unversioned jsDelivr aliases, and the release workflow purges
+only the four files actually shipped to npm after publication.
 
 The canonical demo URL is `https://kineto.dongri.me`. Enable GitHub Pages for
 the Kineto repository with the GitHub Actions source and keep
 `kineto.dongri.me` as its Pages custom domain. The separate
-`catgarret.github.io/example/kineto` copy may remain as a manual backup, but it
-is not the canonical deployment path. Do not change the `CNAME` file in
-`catgarret.github.io`, because that would change the custom domain for the whole
-personal Pages site.
+`catgarret.github.io/example/kineto` copy is maintained by that repository's
+`sync-kineto.yml`: every 15 minutes it selects the newest successful Kineto
+`main` push CI commit, builds and verifies it in a read-only job, then passes the
+artifact to a separate write-scoped job that replaces only `example/kineto`.
+This avoids a cross-repository token in Kineto while keeping the backup
+automatic. Do not change the `CNAME` file in `catgarret.github.io`, because that
+would change the custom domain for the whole personal Pages site.
 
 After Pages deploys, `npm run test:live-site` re-fetches the canonical URL and
-checks the live response for the version, module count, GTM, and unversioned
-CDN. It retries while the CDN cache propagates, separating a passing generated
-`site/` artifact from a live page that users can actually see.
+checks the live response for the expected commit, version, module count, GTM,
+and public CDN installation snippet. It also downloads the JavaScript and CSS
+used by that page and compares their SHA-256 digests with the local tested
+`dist/` files. This prevents a new HTML shell from silently executing an older
+npm/CDN runtime. The Pages job permits a bounded two-minute propagation window
+for the custom domain, while every HTML and asset request has its own finite
+timeout.
 
-After synchronizing the separate backup, run `npm run test:live-site:parity` to
-check the canonical and backup URLs together, including their build markers.
-This is an explicit parity check; it does not make the non-canonical repository
-an automatic deployment target.
+After the backup sync finishes, run `npm run test:live-site:parity` to check the
+canonical and backup URLs together, including their build markers and runtime
+asset hashes.
 
 `.github/workflows/live-site-parity.yml` runs the same check weekly and on manual
 dispatch. It is intentionally independent of the Pages deploy workflow, so a
-stale manual backup raises a separate signal instead of blocking a canonical
-deploy.
+delayed or failed backup sync raises a separate signal instead of blocking a
+canonical deploy.
 
 ## Preparing a version
 
@@ -88,12 +95,17 @@ The command validates the release, pushes `main`, creates an annotated tag, and
 pushes the tag. The tag starts `.github/workflows/release.yml`, which:
 
 1. checks version and bilingual release-note consistency;
-2. runs the lint, build, Node, demo, browser, package, and audit stages with
-   up to two transient reruns per stage while still requiring a clean pass;
-3. packs and publishes the npm package with provenance;
-4. creates a GitHub Release with the runner's built-in `gh` CLI, with English
-   first and Korean second. Using the CLI avoids a separate codeload action
-   download at the final step.
+2. runs lint, build, Node, demo, Chromium, package, and all-lockfile audit gates;
+3. independently requires Firefox and WebKit smoke plus demo regression gates;
+4. packs one verified tarball, records its SHA-256 digest, and passes that exact
+   artifact to the permission-scoped publish job;
+5. publishes the tarball to npm with provenance only after every browser gate;
+6. creates a GitHub Release with the runner's built-in `gh` CLI, with English
+   first and Korean second.
+
+Third-party GitHub Actions are pinned to immutable full commit SHAs. Their
+readable major-version comments are informational; update the SHA only after
+reviewing the upstream action release.
 
 The publish step is idempotent: a workflow retry detects an already published
 version and skips the duplicate npm publish.

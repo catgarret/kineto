@@ -1,4 +1,14 @@
-import { env } from '../utils.js';
+import { env, snapshotAttributes } from '../utils.js';
+
+let panelUid = 0;
+
+function nextPanelId(panel) {
+  let id;
+  do {
+    id = `kt-menu-panel-${++panelUid}`;
+  } while (panel.getRootNode?.().getElementById?.(id) || panel.ownerDocument.getElementById(id));
+  return id;
+}
 
 // Mega-menu / GNB — turns a nested <nav><ul><li> structure into an accessible
 // navigation with hover-to-open dropdowns (Korean GNB style) or full-width
@@ -48,6 +58,7 @@ export default {
     // 'chevron' rotates, 'plus' turns into ×. State hook = aria-expanded.
     const indicator = ['chevron', 'plus'].includes(opts.indicator) ? opts.indicator : 'none';
 
+    const restoreMenu = snapshotAttributes(el, ['class']);
     el.classList.add(
       'kt-menu',
       `kt-menu--${layout}`,
@@ -62,39 +73,42 @@ export default {
     let openEntry = null;
     let openTimer = null;
     let closeTimer = null;
-    let uid = 0;
 
-    const placeResponsivePanel = (entry) => {
+    const stopAnimation = (entry) => {
+      if (!entry.a) return;
+      entry.a.onfinish = entry.a.oncancel = null;
+      entry.a.cancel();
+      entry.a = null;
+    };
+
+    const placeResponsivePanel = ({ p: panel, t: trigger }) => {
       // Both scrollable and wrapped mobile GNBs need a viewport-anchored panel.
       // A dropdown left absolute under a wrapped item can otherwise be clipped
       // by its card or open outside the visible mobile viewport.
       if (responsive === 'custom' || window.innerWidth > 720) return;
-      const bottom = entry.trg.getBoundingClientRect().bottom + 6;
-      entry.panel.style.setProperty(
+      const bottom = trigger.getBoundingClientRect().bottom + 6;
+      panel.style.setProperty(
         '--kt-menu-panel-top',
         `${Math.max(12, Math.min(bottom, window.innerHeight - 172))}px`
       );
     };
 
     const doOpen = (entry) => {
+      const { i: item, p: panel, t: trigger } = entry;
       clearTimeout(closeTimer);
       if (openEntry === entry) return;
       if (openEntry) doClose(openEntry, true);
       // Cancel a pending close before making the panel visible. The close
       // animation's oncancel handler hides the panel, so cancelling it after
       // `hidden = false` would immediately undo a rapid reopen.
-      if (entry.anim) {
-        entry.anim.oncancel = null;
-        entry.anim.cancel();
-        entry.anim = null;
-      }
+      stopAnimation(entry);
       openEntry = entry;
-      entry.li.classList.add('kt-open');
-      entry.trg.setAttribute('aria-expanded', 'true');
-      entry.panel.hidden = false;
+      item.classList.add('kt-open');
+      trigger.setAttribute('aria-expanded', 'true');
+      panel.hidden = false;
       placeResponsivePanel(entry);
-      if (!reduce && typeof entry.panel.animate === 'function') {
-        entry.anim = entry.panel.animate(
+      if (!reduce && typeof panel.animate === 'function') {
+        entry.a = panel.animate(
           [{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'translateY(0)' }],
           { duration: duration * 1000, easing: 'cubic-bezier(.22,.8,.3,1)' }
         );
@@ -103,21 +117,22 @@ export default {
 
     const doClose = (entry, instant) => {
       if (!entry) return;
-      entry.li.classList.remove('kt-open');
-      entry.trg.setAttribute('aria-expanded', 'false');
+      const { i: item, p: panel, t: trigger } = entry;
+      item.classList.remove('kt-open');
+      trigger.setAttribute('aria-expanded', 'false');
       const hide = () => {
-        entry.panel.hidden = true;
-        entry.anim = null;
+        panel.hidden = true;
+        entry.a = null;
       };
-      if (entry.anim) { entry.anim.cancel(); entry.anim = null; }
-      if (reduce || instant || typeof entry.panel.animate !== 'function') hide();
+      stopAnimation(entry);
+      if (reduce || instant || typeof panel.animate !== 'function') hide();
       else {
-        entry.anim = entry.panel.animate(
+        entry.a = panel.animate(
           [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-6px)' }],
           { duration: duration * 700, easing: 'ease' }
         );
-        entry.anim.onfinish = hide;
-        entry.anim.oncancel = hide;
+        entry.a.onfinish = hide;
+        entry.a.oncancel = hide;
       }
       if (openEntry === entry) openEntry = null;
     };
@@ -126,8 +141,12 @@ export default {
       const panel = li.querySelector(':scope > .kt-menu-panel');
       const trg = li.querySelector('a,button,summary,[role="button"]') || li.firstElementChild;
       if (!panel || !trg) return;
-      uid += 1;
-      panel.id = panel.id || `kt-menu-panel-${uid}`;
+      const restore = [
+        snapshotAttributes(li, ['class']),
+        snapshotAttributes(trg, ['class', 'aria-haspopup', 'aria-expanded', 'aria-controls']),
+        snapshotAttributes(panel, ['class', 'style', 'id', 'hidden'])
+      ];
+      if (!panel.id) panel.id = nextPanelId(panel);
       panel.hidden = true;
       trg.setAttribute('aria-haspopup', 'true');
       trg.setAttribute('aria-expanded', 'false');
@@ -141,9 +160,11 @@ export default {
       const zoneSel = li.getAttribute('data-kt-menu-open');
       const zones = zoneSel ? Array.from(document.querySelectorAll(zoneSel)) : [];
 
+      // Compact keys keep this private hot-path record from being repeated
+      // verbatim across the ESM, UMD and modular release artifacts.
       const entry = {
-        li, panel, trg, anim: null, handlers: {},
-        panelTop: panel.style.getPropertyValue('--kt-menu-panel-top')
+        i: li, p: panel, t: trg, a: null,
+        r: restore
       };
       const index = () => entries.indexOf(entry);
 
@@ -164,9 +185,9 @@ export default {
         } else if (event.key === 'Escape') {
           doClose(entry); trg.focus();
         } else if (event.key === 'ArrowRight') {
-          event.preventDefault(); entries[(index() + 1) % entries.length].trg.focus();
+          event.preventDefault(); entries[(index() + 1) % entries.length].t.focus();
         } else if (event.key === 'ArrowLeft') {
-          event.preventDefault(); entries[(index() - 1 + entries.length) % entries.length].trg.focus();
+          event.preventDefault(); entries[(index() - 1 + entries.length) % entries.length].t.focus();
         }
       };
       const onPanelKey = (event) => {
@@ -209,15 +230,15 @@ export default {
       panel.addEventListener('keydown', onPanelKey);
       li.addEventListener('focusout', onFocusOut);
 
-      entry.handlers = { onEnter, onLeave, onClick: guardedClick, onPointerUp, onKey, onPanelKey, onFocusOut, zones };
+      entry.h = [onEnter, onLeave, guardedClick, onPointerUp, onKey, onPanelKey, onFocusOut, zones];
       entries.push(entry);
     });
 
-    if (!entries.length) return null;
+    if (!entries.length) { restoreMenu(); return null; }
 
     // Click / Esc anywhere outside an open menu closes it.
-    const onDocDown = (event) => { if (openEntry && !openEntry.li.contains(event.target)) doClose(openEntry); };
-    const onDocKey = (event) => { if (event.key === 'Escape' && openEntry) { const e = openEntry; doClose(e); e.trg.focus(); } };
+    const onDocDown = (event) => { if (openEntry && !openEntry.i.contains(event.target)) doClose(openEntry); };
+    const onDocKey = (event) => { if (event.key === 'Escape' && openEntry) { const e = openEntry; doClose(e); e.t.focus(); } };
     document.addEventListener('pointerdown', onDocDown, true);
     document.addEventListener('keydown', onDocKey);
 
@@ -231,31 +252,21 @@ export default {
         clearTimeout(closeTimer);
         document.removeEventListener('pointerdown', onDocDown, true);
         document.removeEventListener('keydown', onDocKey);
-        el.classList.remove(
-          'kt-menu',
-          `kt-menu--${layout}`,
-          `kt-menu--responsive-${responsive}`,
-          `kt-menu--ind-${indicator}`
-        );
         entries.forEach((entry) => {
-          const h = entry.handlers;
-          entry.li.removeEventListener('mouseenter', h.onEnter);
-          entry.li.removeEventListener('mouseleave', h.onLeave);
-          entry.trg.removeEventListener('pointerup', h.onPointerUp);
-          entry.trg.removeEventListener('click', h.onClick);
-          entry.trg.removeEventListener('keydown', h.onKey);
-          entry.panel.removeEventListener('keydown', h.onPanelKey);
-          entry.li.removeEventListener('focusout', h.onFocusOut);
-          (h.zones || []).forEach((z) => { z.removeEventListener('mouseenter', h.onEnter); z.removeEventListener('mouseleave', h.onLeave); });
-          entry.li.classList.remove('kt-open');
-          entry.trg.classList.remove('kt-menu-trigger');
-          if (entry.panelTop) entry.panel.style.setProperty('--kt-menu-panel-top', entry.panelTop);
-          else entry.panel.style.removeProperty('--kt-menu-panel-top');
-          entry.panel.hidden = false;
-          entry.trg.removeAttribute('aria-haspopup');
-          entry.trg.removeAttribute('aria-expanded');
-          entry.trg.removeAttribute('aria-controls');
+          const { i: item, p: panel, t: trigger, h: handlers, r: restore } = entry;
+          const [onEnter, onLeave, onClick, onPointerUp, onKey, onPanelKey, onFocusOut, zones] = handlers;
+          stopAnimation(entry);
+          item.removeEventListener('mouseenter', onEnter);
+          item.removeEventListener('mouseleave', onLeave);
+          trigger.removeEventListener('pointerup', onPointerUp);
+          trigger.removeEventListener('click', onClick);
+          trigger.removeEventListener('keydown', onKey);
+          panel.removeEventListener('keydown', onPanelKey);
+          item.removeEventListener('focusout', onFocusOut);
+          zones.forEach((z) => { z.removeEventListener('mouseenter', onEnter); z.removeEventListener('mouseleave', onLeave); });
+          restore.forEach((restoreState) => restoreState());
         });
+        restoreMenu();
       }
     };
   },

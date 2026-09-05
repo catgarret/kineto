@@ -126,13 +126,15 @@ Before expanding framework transition interop, the project must add:
 
 1. nested parent/child identity and reorder tests across repeated parent enter/leave;
 2. Strict Mode / Vue effect replay and cancellation tests for nested groups;
-3. SSR + hydration markup stability checks;
+3. SSR + hydration markup stability checks — completed for React `hydrateRoot`
+   and Vue `createSSRApp`: both reuse the server node, replace one controller on
+   an option update, and return `Kineto.instanceCount` to zero on unmount;
 4. `sync`, `wait`, and `popLayout` ordering fixtures;
 5. explicit `safeToRemove` and focus ownership examples;
 6. React/Vue adapter consumer gzip measurements.
 
-The Vue Transition hook bridge is now covered by the framework fixture. The
-remaining gates apply to future keyed-transition expansion and shared-layout
-interop; consumers should continue to use the group for direct keyed children
-and the host-owned composables or standalone controller for custom DOM
-ownership.
+The Vue Transition hook bridge and the React/Vue browser hydration path are now
+covered by the framework fixture. The remaining gates apply to future
+keyed-transition expansion and shared-layout interop; consumers should continue
+to use the group for direct keyed children and the host-owned composables or
+standalone controller for custom DOM ownership.

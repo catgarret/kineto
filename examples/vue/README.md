@@ -32,11 +32,14 @@ Composable도 사용할 수 있습니다.
 
 ```vue
 <script setup>
+import { ref } from 'vue';
 import { useKineto } from 'kineto/vue';
 
+const preset = ref('fade-up');
 const { element, replay } = useKineto(
   'reveal',
-  { preset: 'fade-up' }
+  () => ({ preset: preset.value }),
+  [preset]
 );
 </script>
 
@@ -45,5 +48,8 @@ const { element, replay } = useKineto(
   <button @click="replay">Replay</button>
 </template>
 ```
+
+`watchSources`가 변경되면 기존 인스턴스를 정리한 뒤 새로 생성합니다. options를
+ref 또는 getter로 넘기면 이때 `setup()` 시점의 값이 아니라 최신 값을 사용합니다.
 
 Nuxt에서는 client-only plugin 또는 client component 안에서 어댑터를 등록합니다.

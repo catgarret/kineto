@@ -258,6 +258,17 @@ import KinetoVue from '@dong-gri/kineto/vue';
 app.use(KinetoVue);
 ```
 
+Adapter option updates use an explicit replacement policy. React recreates the
+module only when `type` or a value in `dependencies` changes; Vue's
+`useKineto()` does the same for `watchSources`, and `v-motion` replaces the
+instance when its binding changes. Vue accepts an options object, ref, or
+getter; use a ref/getter when a replacement must read values that changed after
+`setup()`. The adapter resolves it immediately before every create. Cleanup
+always runs before the replacement.
+The adapters do not guess whether an individual module supports a partial
+`updateModule()` call. For imperative live updates, retain the returned instance
+or call the Core API directly.
+
 Vue's `<Transition>` can use a Kineto module for one-shot enter/leave motion.
 Vue still owns the DOM boundary; the hook calls Vue's `done` callback from the
 module completion event and cleans up the temporary instance after each phase.

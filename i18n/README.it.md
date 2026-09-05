@@ -172,6 +172,17 @@ import KinetoVue from '@dong-gri/kineto/vue';
 app.use(KinetoVue);
 ```
 
+Gli aggiornamenti delle opzioni negli adattatori seguono una politica esplicita
+di sostituzione. React ricrea il modulo solo quando cambia `type` o un valore in
+`dependencies`; `useKineto()` di Vue fa lo stesso per `watchSources`, mentre
+`v-motion` sostituisce l'istanza quando cambia il binding. Vue accetta un oggetto
+options, un ref o un getter; usa un ref/getter quando la sostituzione deve leggere
+valori cambiati dopo `setup()`. L'adattatore valuta la sorgente delle opzioni subito
+prima di ogni create. La pulizia viene sempre eseguita prima della sostituzione. Gli
+adattatori non tentano di dedurre se un singolo modulo supporti una chiamata parziale
+a `updateModule()`. Per aggiornamenti live imperativi, conserva l'istanza restituita
+oppure chiama direttamente l'API Core.
+
 ```js
 import installKineto from '@dong-gri/kineto/jquery';
 installKineto(window.jQuery);

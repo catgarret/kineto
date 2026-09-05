@@ -51,6 +51,10 @@
     button,a{font:inherit}
     ::selection{background:color-mix(in srgb,var(--accent) 24%,transparent)}
 
+    .skip-link{position:fixed;z-index:10000;top:max(8px,env(safe-area-inset-top));left:max(8px,env(safe-area-inset-left));padding:10px 14px;border:2px solid var(--accent);border-radius:9px;background:var(--panel);color:var(--text);font-weight:800;text-decoration:none;transform:translateY(calc(-100% - 20px));transition:transform .15s ease}
+    .skip-link:focus-visible{transform:translateY(0);outline:2px solid var(--text);outline-offset:2px}
+    #main-content:focus{outline:none}
+
     .top-progress{position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));transform-origin:left;z-index:2}
     :root{--kt-progress-color:var(--accent)}
     .kt-progress-ring{--kt-progress-ring-bg:color-mix(in srgb,var(--panel) 82%,transparent);backdrop-filter:blur(10px)}

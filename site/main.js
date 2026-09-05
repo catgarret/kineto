@@ -718,9 +718,40 @@
       const target=document.getElementById(link.getAttribute('href').slice(1));
       if(!target)return;
       event.preventDefault();
-      target.scrollIntoView({behavior:'smooth',block:'start'});
+      const isSkipLink=link.classList.contains('skip-link');
+      target.scrollIntoView({behavior:isSkipLink?'auto':'smooth',block:'start'});
+      if(isSkipLink)requestAnimationFrame(()=>target.focus({preventScroll:true}));
       try{history.replaceState(null,'',link.getAttribute('href'));}catch(_){/* about:blank/file 환경 대비 */}
     });
+
+    const DEMO_LANGUAGE_INDEX={en:0,ja:1,'zh-CN':2,'zh-TW':3,ru:4,it:5};
+    const localizedDemoUi=(key,language=document.documentElement.lang||'ko')=>{
+      if(language==='ko')return key;
+      const values=window.KINETO_COPY_I18N?.ui?.[key];
+      return values?.[DEMO_LANGUAGE_INDEX[language]]||key;
+    };
+    const DEMO_CONTROL_NAME_SELECTORS=[
+      ['.slider-nav--prev','이전 슬라이드'],
+      ['.slider-nav--next','다음 슬라이드'],
+      ['#list-reveal-replay','다시 재생'],
+      ['#cover-gallery-replay','갤러리 순서를 섞어 다시 재생'],
+      ['#flip-shuffle','그리드 순서 섞기'],
+      ['.pt-fx-row','전환 효과'],
+      ['.footer-logo','Kineto 맨 위로'],
+      ['.footer-links','푸터 탐색']
+    ];
+    const refreshDemoControlNames=(root=document,language=document.documentElement.lang||'ko')=>{
+      DEMO_CONTROL_NAME_SELECTORS.forEach(([selector,key])=>{
+        root.querySelectorAll(selector).forEach((node)=>{node.dataset.demoI18nAriaLabel=key;});
+      });
+      root.querySelectorAll('[data-demo-i18n-aria-label]').forEach((node)=>{
+        node.setAttribute('aria-label',localizedDemoUi(node.dataset.demoI18nAriaLabel,language));
+      });
+      root.querySelectorAll('[data-demo-i18n-text]').forEach((node)=>{
+        const prefix=node.dataset.demoI18nPrefix||'';
+        node.textContent=prefix+localizedDemoUi(node.dataset.demoI18nText,language);
+      });
+    };
 
     // Language: Korean source plus six complete static translations.
     (()=>{
@@ -828,6 +859,7 @@
             node.textContent=value.replaceAll('{value}',progress).replaceAll('{progress}',progress);
           } else node.textContent=value;
         });
+        refreshDemoControlNames(document,lang);
         document.querySelectorAll('[data-module-block] .module-block-sub').forEach((subtitle)=>{
           const block=subtitle.closest('[data-module-block]');
           if(!subtitle.dataset.koSub)subtitle.dataset.koSub=subtitle.textContent;
@@ -851,6 +883,7 @@
       try{saved=localStorage.getItem('kt-lang')||'ko';}catch(_){}
       select.value=saved;
       if(saved!=='ko')apply(saved);
+      else refreshDemoControlNames(document,'ko');
       select.addEventListener('change',()=>{
         apply(select.value);
         try{localStorage.setItem('kt-lang',select.value);}catch(_){}
@@ -1145,11 +1178,12 @@
         overlay.hidden=true;
         const closeSvg='<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" focusable="false"><path d="M5 5l10 10M15 5L5 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
         overlay.innerHTML='<div class="sitemap-panel" role="dialog" aria-modal="true" aria-labelledby="sitemap-title">'
-          +'<div class="sitemap-head"><strong id="sitemap-title">Kineto — Sitemap</strong><button class="sitemap-close" type="button" aria-label="닫기">'+closeSvg+'</button></div>'
+          +'<div class="sitemap-head"><strong id="sitemap-title" data-demo-i18n-text="사이트맵" data-demo-i18n-prefix="Kineto — ">Kineto — 사이트맵</strong><button class="sitemap-close" type="button" aria-label="닫기" data-demo-i18n-aria-label="닫기">'+closeSvg+'</button></div>'
           +'<div class="sitemap-grid">'+sections.map((s,i)=>{
             return `<a href="#${s.id}" data-module="${s.name}" data-sitemap-module data-kt-no-transition><i>${String(i+1).padStart(2,'0')}</i><span class="sm-txt"><b>${s.title}</b><small data-description>${s.desc}</small></span></a>`;
           }).join('')+'</div></div>';
         document.body.appendChild(overlay);
+        refreshDemoControlNames(overlay);
         let previousFocus=null;
         let inertState=[];
         const focusables=()=>[...overlay.querySelectorAll('a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(el=>!el.hidden);

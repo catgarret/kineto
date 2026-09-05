@@ -35,6 +35,114 @@ console.log('  heights: settings=',hSettings,' code=',hCode);
 ck('height differs between 설정 and 코드 view (content-driven)', Math.abs(hSettings-hCode)>8, `${hSettings} vs ${hCode}`);
 ck('height within floor/ceiling', hSettings>=230 && hSettings<=780 && hCode>=230 && hCode<=780);
 
+const tabSemantics=await pg.evaluate(()=>{
+  const body=[...document.querySelectorAll('.kt-drawer-sheet>.kt-playground__body')].find((node)=>!node.hidden);
+  const viewList=body.querySelector('.kt-playground__viewtabs');
+  const viewTabs=[...viewList.querySelectorAll('[role="tab"]')];
+  const codeList=body.querySelector('.kt-playground__tabs');
+  const codeTabs=[...codeList.querySelectorAll('[role="tab"]')];
+  const codeOutput=body.querySelector('.kt-playground__pre[role="tabpanel"]');
+  const allIds=[...body.querySelectorAll('[id]')].map((node)=>node.id).filter((id)=>id.startsWith('kt-playground-a11y-'));
+  return {
+    labelledLists:viewList.getAttribute('aria-label')&&codeList.getAttribute('aria-label'),
+    outerRelations:viewTabs.every((tab)=>{
+      const panel=document.getElementById(tab.getAttribute('aria-controls'));
+      return Boolean(tab.id&&panel?.getAttribute('role')==='tabpanel'&&panel.getAttribute('aria-labelledby')===tab.id);
+    }),
+    codeRelations:codeTabs.every((tab)=>tab.id&&tab.getAttribute('aria-controls')===codeOutput.id),
+    codeLabelledBy:codeOutput.getAttribute('aria-labelledby')===codeTabs.find((tab)=>tab.getAttribute('aria-selected')==='true')?.id,
+    outerRoving:viewTabs.filter((tab)=>tab.tabIndex===0).length===1,
+    codeRoving:codeTabs.filter((tab)=>tab.tabIndex===0).length===1,
+    uniqueIds:new Set(allIds).size===allIds.length,
+    ids:allIds
+  };
+});
+ck('view and code tabs expose labelled tablists',Boolean(tabSemantics.labelledLists));
+ck('view tabs control uniquely labelled tabpanels',tabSemantics.outerRelations===true);
+ck('code tabs control the labelled code output panel',tabSemantics.codeRelations===true&&tabSemantics.codeLabelledBy===true);
+ck('both tab levels use one roving tabindex stop',tabSemantics.outerRoving===true&&tabSemantics.codeRoving===true);
+ck('generated tab and panel ids are unique',tabSemantics.uniqueIds===true);
+
+const localizedTablistNames=await pg.evaluate(async()=>{
+  const select=document.getElementById('lang');
+  const originalLanguage=select.value;
+  const languages=['ko','en','ja','zh-CN','zh-TW','ru','it'];
+  const results=[];
+  for(const language of languages){
+    select.value=language;
+    select.dispatchEvent(new Event('change',{bubbles:true}));
+    await new Promise((resolve)=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    const body=[...document.querySelectorAll('.kt-drawer-sheet>.kt-playground__body')]
+      .find((node)=>!node.hidden);
+    const messages=window.KINETO_PLAYGROUND_I18N[language];
+    results.push({
+      language,
+      documentLanguage:document.documentElement.lang,
+      viewActual:body?.querySelector('.kt-playground__viewtabs')?.getAttribute('aria-label'),
+      viewExpected:messages.viewTabsLabel,
+      codeActual:body?.querySelector('.kt-playground__tabs')?.getAttribute('aria-label'),
+      codeExpected:messages.codeTabsLabel
+    });
+  }
+  select.value=originalLanguage;
+  select.dispatchEvent(new Event('change',{bubbles:true}));
+  await new Promise((resolve)=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  return results;
+});
+ck(
+  'all 7 locales expose translated settings/code and code-format tablist names',
+  localizedTablistNames.every((result)=>(
+    result.documentLanguage===result.language
+    &&result.viewActual===result.viewExpected
+    &&result.codeActual===result.codeExpected
+  )),
+  JSON.stringify(localizedTablistNames.filter((result)=>(
+    result.documentLanguage!==result.language
+    ||result.viewActual!==result.viewExpected
+    ||result.codeActual!==result.codeExpected
+  )))
+);
+
+await pg.locator('.kt-drawer-sheet .kt-vt[data-view="settings"]').focus();
+await pg.keyboard.press('ArrowRight');
+let keyboardTabs=await pg.evaluate(()=>({
+  active:document.activeElement?.dataset.view,
+  selected:document.querySelector('.kt-drawer-sheet .kt-vt[aria-selected="true"]')?.dataset.view
+}));
+ck('ArrowRight focuses and activates the next view tab',keyboardTabs.active==='code'&&keyboardTabs.selected==='code',JSON.stringify(keyboardTabs));
+await pg.keyboard.press('Home');
+keyboardTabs=await pg.evaluate(()=>({active:document.activeElement?.dataset.view,selected:document.querySelector('.kt-drawer-sheet .kt-vt[aria-selected="true"]')?.dataset.view}));
+ck('Home focuses and activates the first view tab',keyboardTabs.active==='settings'&&keyboardTabs.selected==='settings',JSON.stringify(keyboardTabs));
+await pg.keyboard.press('End');
+await pg.locator('.kt-drawer-sheet [data-code-tab="html"]').focus();
+await pg.keyboard.press('ArrowRight');
+let codeKeyboard=await pg.evaluate(()=>({
+  active:document.activeElement?.dataset.codeTab,
+  activeId:document.activeElement?.id,
+  selected:document.querySelector('.kt-drawer-sheet [data-code-tab][aria-selected="true"]')?.dataset.codeTab,
+  labelledby:document.querySelector('.kt-drawer-sheet .kt-playground__pre')?.getAttribute('aria-labelledby')
+}));
+ck('ArrowRight focuses and activates the next code tab',codeKeyboard.active==='js'&&codeKeyboard.selected==='js'&&codeKeyboard.labelledby===codeKeyboard.activeId,JSON.stringify(codeKeyboard));
+await pg.keyboard.press('End');
+codeKeyboard=await pg.evaluate(()=>({active:document.activeElement?.dataset.codeTab,selected:document.querySelector('.kt-drawer-sheet [data-code-tab][aria-selected="true"]')?.dataset.codeTab}));
+ck('End focuses and activates the last code tab',codeKeyboard.active==='css'&&codeKeyboard.selected==='css',JSON.stringify(codeKeyboard));
+await pg.keyboard.press('Home');
+codeKeyboard=await pg.evaluate(()=>({active:document.activeElement?.dataset.codeTab,selected:document.querySelector('.kt-drawer-sheet [data-code-tab][aria-selected="true"]')?.dataset.codeTab}));
+ck('Home focuses and activates the first code tab',codeKeyboard.active==='html'&&codeKeyboard.selected==='html',JSON.stringify(codeKeyboard));
+
+await pg.locator('.kt-drawer-sheet .kt-playground__toolbar button').nth(1).click();
+await pg.waitForTimeout(500);
+const rebuiltTabs=await pg.evaluate((oldIds)=>{
+  const ids=[...document.querySelectorAll('[id^="kt-playground-a11y-"]')].map((node)=>node.id);
+  return {
+    unique:new Set(ids).size===ids.length,
+    oldRemoved:oldIds.every((id)=>!document.getElementById(id)),
+    bodyCount:[...document.querySelectorAll('.kt-drawer-sheet>.kt-playground__body')].filter((node)=>!node.hidden).length,
+    tablists:document.querySelectorAll('.kt-drawer-sheet>.kt-playground__body:not([hidden]) [role="tablist"]').length
+  };
+},tabSemantics.ids);
+ck('reset rebuild removes old tab ids without duplicate tablists',rebuiltTabs.unique&&rebuiltTabs.oldRemoved&&rebuiltTabs.bodyCount===1&&rebuiltTabs.tablists===2,JSON.stringify(rebuiltTabs));
+
 // packing + overlap, before and after folding
 const measure=()=>pg.evaluate(()=>{
   const groups=[...document.querySelectorAll('.kt-playground__viewstage>.kt-playground__groups .kt-playground__group')].filter(g=>g.offsetParent!==null);

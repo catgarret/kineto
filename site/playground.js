@@ -973,7 +973,10 @@
     });
   });
 
-  const state = { snapshots: new WeakMap(), childOrders: new WeakMap(), timers: new WeakMap(), sharedDemos: new Map(), pendingShare: null };
+  const state = {
+    snapshots: new WeakMap(), childOrders: new WeakMap(), timers: new WeakMap(),
+    sharedDemos: new Map(), shareAliases: new Map(), legacyShareKeys: new Set(), pendingShare: null, a11ySequence: 0
+  };
 
   // A share URL contains only the controls changed from the authored demo. It
   // deliberately never serializes callbacks, selectors outside the demo, or
@@ -1009,7 +1012,7 @@
   function sharedUrl(key, descriptors) {
     const options = Object.fromEntries(descriptors.map((descriptor) => [descriptor.module, shareOptions(descriptor)]).filter(([, value]) => Object.keys(value).length));
     const url = new URL(window.location.href);
-    url.searchParams.set(SHARE_PARAM, encodeShare({ v: 1, demo: key, options }));
+    url.searchParams.set(SHARE_PARAM, encodeShare({ v: 2, demo: key, options }));
     return url;
   }
   async function copyShareUrl(key, descriptors, status) {
@@ -1022,8 +1025,11 @@
   }
   function restoreSharedDemo() {
     const payload = state.pendingShare;
-    if (!payload || payload.v !== 1 || typeof payload.demo !== 'string' || !payload.options || typeof payload.options !== 'object') return;
-    const record = state.sharedDemos.get(payload.demo);
+    if (!payload || ![1, 2].includes(payload.v) || typeof payload.demo !== 'string' || !payload.options || typeof payload.options !== 'object') return;
+    // v1 links used a global mount ordinal (`typewriter-15`). Keep those exact
+    // identifiers as aliases, while v2 addresses the stable semantic record.
+    const shareKey = payload.v === 1 ? state.shareAliases.get(payload.demo) : payload.demo;
+    const record = shareKey ? state.sharedDemos.get(shareKey) : null;
     if (!record) return;
     const { host, descriptors, panel } = record;
     descriptors.forEach((descriptor) => {
@@ -2133,6 +2139,7 @@
     let __body = null;
     const buildBody = () => {
       if (__body) return __body;
+    const a11yId = `kt-playground-a11y-${++state.a11ySequence}`;
     const body = document.createElement('div'); body.className = 'kt-playground__body';
     const groups = document.createElement('div'); groups.className = 'kt-playground__groups';
     const status = document.createElement('div'); status.className = 'kt-playground__status'; status.setAttribute('aria-live','polite');
@@ -2264,10 +2271,43 @@
     localize(codeWrap.querySelector('[data-code-tab="css"]'), 'cssCode');
     localize(codeWrap.querySelector('.kt-playground__wrap'), 'wrap');
     localize(codeWrap.querySelector('.kt-playground__copy'), 'copyCode');
-    codeWrap.querySelectorAll('[data-code-tab]').forEach((tab) => tab.addEventListener('click', () => {
-      codeWrap.querySelectorAll('[data-code-tab]').forEach((item) => item.classList.toggle('is-active', item === tab));
+    const codeTablist = codeWrap.querySelector('.kt-playground__tabs');
+    const codeTabs = [...codeWrap.querySelectorAll('[data-code-tab]')];
+    const codeOutput = codeWrap.querySelector('.kt-playground__pre');
+    codeTablist.setAttribute('role', 'tablist');
+    codeTablist.setAttribute('aria-orientation', 'horizontal');
+    localize(codeTablist, 'codeTabsLabel', 'aria-label');
+    codeOutput.id = `${a11yId}-code-output`;
+    codeOutput.setAttribute('role', 'tabpanel');
+    codeOutput.tabIndex = 0;
+    codeTabs.forEach((tab, index) => {
+      tab.id = `${a11yId}-code-${tab.dataset.codeTab}-tab`;
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-controls', codeOutput.id);
+      tab.setAttribute('aria-selected', String(index === 0));
+      tab.tabIndex = index === 0 ? 0 : -1;
+    });
+    codeOutput.setAttribute('aria-labelledby', codeTabs[0].id);
+    const activateCodeTab = (tab, focus = false) => {
+      codeTabs.forEach((item) => {
+        const selected = item === tab;
+        item.classList.toggle('is-active', selected);
+        item.setAttribute('aria-selected', String(selected));
+        item.tabIndex = selected ? 0 : -1;
+      });
+      codeOutput.setAttribute('aria-labelledby', tab.id);
       updateCode(host, descriptors);
-    }));
+      if (focus) tab.focus();
+    };
+    codeTabs.forEach((tab) => tab.addEventListener('click', () => activateCodeTab(tab)));
+    codeTablist.addEventListener('keydown', (event) => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const current = Math.max(0, codeTabs.indexOf(event.target.closest('[role="tab"]')));
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? codeTabs.length - 1
+        : (current + (event.key === 'ArrowRight' ? 1 : -1) + codeTabs.length) % codeTabs.length;
+      activateCodeTab(codeTabs[next], true);
+    });
     codeWrap.querySelector('.kt-playground__copy').addEventListener('click', async (event) => {
       const copyButton = event.currentTarget;
       const active = codeWrap.querySelector('.kt-playground__tab.is-active').dataset.codeTab;
@@ -2323,6 +2363,8 @@
     // of a scroll to the bottom (replaces the old option-search field).
     const viewTabs = document.createElement('div'); viewTabs.className = 'kt-playground__viewtabs';
     viewTabs.setAttribute('role', 'tablist');
+    viewTabs.setAttribute('aria-orientation', 'horizontal');
+    localize(viewTabs, 'viewTabsLabel', 'aria-label');
     viewTabs.innerHTML = '<button type="button" class="kt-vt is-active" data-view="settings" role="tab" aria-selected="true"></button><button type="button" class="kt-vt" data-view="code" role="tab" aria-selected="false"></button>';
     localize(viewTabs.querySelector('[data-view="settings"]'), 'settings');
     localize(viewTabs.querySelector('[data-view="code"]'), 'code');
@@ -2348,15 +2390,29 @@
     viewStage.dataset.view = 'settings';
     groups.classList.add('kt-playground__view', 'is-active');
     codeWrap.classList.add('kt-playground__view');
+    const settingsViewTab = viewTabs.querySelector('[data-view="settings"]');
+    const codeViewTab = viewTabs.querySelector('[data-view="code"]');
+    settingsViewTab.id = `${a11yId}-view-settings-tab`;
+    codeViewTab.id = `${a11yId}-view-code-tab`;
+    groups.id = `${a11yId}-view-settings-panel`;
+    codeWrap.id = `${a11yId}-view-code-panel`;
+    settingsViewTab.setAttribute('aria-controls', groups.id);
+    codeViewTab.setAttribute('aria-controls', codeWrap.id);
+    settingsViewTab.tabIndex = 0;
+    codeViewTab.tabIndex = -1;
+    groups.setAttribute('role', 'tabpanel');
+    groups.setAttribute('aria-labelledby', settingsViewTab.id);
+    codeWrap.setAttribute('role', 'tabpanel');
+    codeWrap.setAttribute('aria-labelledby', codeViewTab.id);
     groups.setAttribute('aria-hidden', 'false');
     codeWrap.setAttribute('aria-hidden', 'true');
     codeWrap.inert = true;
     viewTabs.dataset.view = 'settings';
-    const switchView = (t) => {
+    const switchView = (t, focus = false) => {
       const isCode = t.dataset.view === 'code';
       viewTabs.dataset.view = isCode ? 'code' : 'settings';
       viewStage.dataset.view = isCode ? 'code' : 'settings';
-      viewTabs.querySelectorAll('.kt-vt').forEach((b) => { const on = b === t; b.classList.toggle('is-active', on); b.setAttribute('aria-selected', String(on)); });
+      viewTabs.querySelectorAll('.kt-vt').forEach((b) => { const on = b === t; b.classList.toggle('is-active', on); b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; });
       groups.classList.toggle('is-active', !isCode);
       codeWrap.classList.toggle('is-active', isCode);
       groups.setAttribute('aria-hidden', String(isCode));
@@ -2364,17 +2420,18 @@
       groups.inert = isCode;
       codeWrap.inert = !isCode;
       if (isCode) updateCode(host, descriptors);
+      if (focus) t.focus();
       requestAnimationFrame(() => drawerRoot().fit(body));
     };
     viewTabs.querySelectorAll('.kt-vt').forEach((t) => t.addEventListener('click', () => switchView(t)));
     viewTabs.addEventListener('keydown', (event) => {
-      if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
       event.preventDefault();
       const tabs = [...viewTabs.querySelectorAll('.kt-vt')];
-      const active = tabs.findIndex((tab) => tab.classList.contains('is-active'));
-      const next = tabs[(active + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
-      next.focus();
-      switchView(next);
+      const current = Math.max(0, tabs.indexOf(event.target.closest('[role="tab"]')));
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
+        : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+      switchView(tabs[next], true);
     });
 
     details.__mkBody = body;
@@ -2509,7 +2566,8 @@
       if (!onGrip && (!inHeader || event.target.closest?.(noResize))) return;
       resetSheetH();
     });
-    localize(grip, 'resizeTitle', 'title');
+    grip.dataset.pgI18nTitle = 'resizeTitle';
+    grip.title = ui('resizeTitle');
     sheet.appendChild(grip);
     document.body.append(backdrop, sheet);
     const focusables = () => [...sheet.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter((el) => el.offsetParent !== null || el === document.activeElement);
@@ -2636,6 +2694,8 @@
 
   function rebuildPanel(host, descriptors, message = '', keepOpen = false) {
     const previous = host.querySelector(':scope > .kt-playground');
+    const shareKey = previous?.dataset.shareKey;
+    const legacyShareKey = previous?.dataset.shareLegacyKey;
     const wasOpen = keepOpen || previous?.open;
     previous?.__mkBody?.querySelector('.kt-playground__status')?.__ktHelpTooltips?.forEach?.((instance) => {
       if (instance?.el) window.Kineto?.destroyModule?.(instance.el, 'tooltip');
@@ -2643,6 +2703,8 @@
     previous?.__mkBody?.remove();
     previous?.remove();
     const panel = panelFor(host, descriptors);
+    if (shareKey) panel.dataset.shareKey = shareKey;
+    if (legacyShareKey) panel.dataset.shareLegacyKey = legacyShareKey;
     host.appendChild(panel);
     // When the previous panel was open, eagerly build the new body so it can
     // re-open in place and receive the status message (which lives in the body).
@@ -2667,6 +2729,63 @@
       if (panel) panel.open = true;
     });
     viewport.appendChild(proxy);
+  }
+
+  const shareSlug = (value, fallback = 'demo') => {
+    const slug = String(value || '').normalize('NFKC').toLocaleLowerCase('en-US')
+      .replace(/[^\p{Letter}\p{Number}]+/gu, '-')
+      .replace(/^-+|-+$/g, '');
+    return slug || fallback;
+  };
+  function authoredShareLabel(node) {
+    const text = node?.textContent?.replace(/\s+/g, ' ').trim() || '';
+    if (!text) return '';
+    // Card headings can be translated before playground mounting. Resolve a
+    // translated title back to its authored dictionary key so language choice
+    // cannot change a copied URL.
+    const titles = window.KINETO_COPY_I18N?.titles || {};
+    const canonical = Object.entries(titles).find(([key, translations]) => (
+      key === text || (Array.isArray(translations) && translations.includes(text))
+    ));
+    return canonical?.[0] || text;
+  }
+  function descriptorShareVariant(descriptor) {
+    const authored = (descriptor.kind === 'loader' || descriptor.kind === 'pageReveal' || descriptor.kind === 'pageTransition')
+      ? descriptor.options : descriptorOptions(descriptor);
+    if (descriptor.kind === 'loader' && authored.type) return String(authored.type);
+    const options = descriptor.kind === 'element'
+      ? { ...(PUBLIC_DEFAULTS[descriptor.module] || {}), ...(DEFAULTS[descriptor.module] || {}), ...authored }
+      : authored;
+    for (const key of VARIANT_KEYS_ORDER) {
+      if (options[key] != null && options[key] !== '') return String(options[key]);
+    }
+    return 'default';
+  }
+  function semanticShareKey(host, descriptors, demoId) {
+    const block = host.closest('[data-module-block]');
+    const card = host.matches('.card') ? host : host.closest('.card');
+    const unit = host.closest('.scroll-demo-unit,.hscroll-demo-unit,[data-demo-id]');
+    const tab = host.matches('.demo-tabpanel') ? host : host.closest('.demo-tabpanel');
+    const blockLabel = block?.dataset.moduleBlock || block?.id?.replace(/^mod-/, '') || descriptors[0]?.module;
+    // Some authored cards (for example Card Glow) wrap their visible heading
+    // in a layout div. Read the first authored heading anywhere in the card so
+    // two visually named variants do not fall back to an order-dependent
+    // module label and `--2` collision suffix.
+    const cardHeading = card?.querySelector('h3, h4');
+    const unitHeading = unit?.querySelector?.(':scope > h3, :scope > h4');
+    const cardLabel = demoId || authoredShareLabel(cardHeading || unitHeading) || descriptors[0]?.module;
+    const tabLabel = tab?.dataset.demoTabLabel || '';
+    const moduleSignature = descriptors.map((descriptor) => (
+      `${shareSlug(dash(descriptor.module))}-${shareSlug(descriptorShareVariant(descriptor), 'default')}`
+    )).join('+');
+    return [shareSlug(blockLabel), shareSlug(cardLabel), tabLabel && shareSlug(tabLabel), moduleSignature]
+      .filter(Boolean).join('--');
+  }
+  function availableSemanticShareKey(base) {
+    if (!state.sharedDemos.has(base)) return base;
+    let collision = 2;
+    while (state.sharedDemos.has(`${base}--${collision}`)) collision += 1;
+    return `${base}--${collision}`;
   }
 
   function mountHost(host, descriptors) {
@@ -2702,12 +2821,18 @@
     descriptors.forEach((d) => d.targets?.forEach?.((t) => { if (!t.__ktLastGood) t.__ktLastGood = Array.from(t.attributes).filter((a) => a.name.startsWith('data-kt-')).map((a) => [a.name, a.value]); }));
     rebuildPanel(controlHost, descriptors);
     const panel = controlHost.querySelector('.kt-playground');
-    const shareKey = demoId || `${descriptors.map((d) => d.module).join('+')}-${state.sharedDemos.size + 1}`;
-    if (panel) panel.dataset.shareKey = shareKey;
+    const legacyShareKey = demoId || `${descriptors.map((d) => d.module).join('+')}-${state.legacyShareKeys.size + 1}`;
+    state.legacyShareKeys.add(legacyShareKey);
+    const shareKey = availableSemanticShareKey(semanticShareKey(host, descriptors, demoId));
+    if (panel) {
+      panel.dataset.shareKey = shareKey;
+      panel.dataset.shareLegacyKey = legacyShareKey;
+    }
     descriptors.forEach((descriptor) => {
       if (!descriptor.shareInitial) descriptor.shareInitial = { ...((descriptor.kind === 'loader' || descriptor.kind === 'pageReveal' || descriptor.kind === 'pageTransition') ? descriptor.options : descriptorOptions(descriptor)) };
     });
     state.sharedDemos.set(shareKey, { host: controlHost, descriptors, panel });
+    state.shareAliases.set(legacyShareKey, shareKey);
     ensureHorizontalSettings(controlHost, descriptors);
   }
 
@@ -2875,6 +3000,7 @@
         const help = field.querySelector('.kt-help');
         if (help) {
           help.dataset.tip = tip;
+          help.setAttribute('aria-label', tip);
           help.__ktHelpTooltip?.update?.({ content: tip });
         }
       });

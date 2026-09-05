@@ -23,7 +23,8 @@ const { default: Kineto } = await import('../dist/kineto.js');
 const defaults = Kineto.getEngineSource();
 assert.match(defaults.gsap, /gsap@3\.15\.0/, 'default GSAP URL must be version-pinned for deterministic caching');
 assert.match(defaults.scrollTrigger, /gsap@3\.15\.0/, 'default ScrollTrigger URL must match the pinned GSAP version');
-assert.match(defaults.lenis, /lenis@1\.3\.25/, 'default Lenis URL must be version-pinned for deterministic caching');
+assert.equal(defaults.lenis, 'https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js', 'default Lenis URL must match the audited immutable CDN asset');
+assert.equal(defaults.lenisIntegrity, 'sha384-jqpi9VmOdhyLoLURgjCn7EpnG9BbnHW57ibIZoeaIU+erWDH3k8fQQg0xH2ySjnw', 'default Lenis SRI must match the audited 1.3.26 bytes');
 
 // A GSAP-backed effect (reveal) with no engine on the page → CDN inject.
 // A non-GSAP effect (switch) on the same page → must init immediately.

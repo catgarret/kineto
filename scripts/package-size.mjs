@@ -106,7 +106,7 @@ const BUDGET = {
   // 517 KB; it remains a fixed 77-file allowlist and is not a surface increase.
   packedKb: 517,
   unpackedKb: 1732,
-  files: 78
+  files: 77
 };
 
 console.log(`release package: ${packedKb.toFixed(1)} KB packed · ${unpackedKb.toFixed(1)} KB unpacked · ${files.length} files`);

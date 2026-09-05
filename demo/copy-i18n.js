@@ -1619,6 +1619,182 @@ window.KINETO_COPY_I18N = {
     ]
   },
   "ui": {
+    "본문으로 건너뛰기": [
+      "Skip to main content",
+      "メインコンテンツへ移動",
+      "跳转到主要内容",
+      "跳至主要內容",
+      "Перейти к основному содержимому",
+      "Vai al contenuto principale"
+    ],
+    "맨 위로 이동": [
+      "Go to top",
+      "ページ上部へ移動",
+      "返回顶部",
+      "返回頂端",
+      "Перейти в начало страницы",
+      "Vai all'inizio della pagina"
+    ],
+    "사이트맵": [
+      "Sitemap",
+      "サイトマップ",
+      "网站地图",
+      "網站地圖",
+      "Карта сайта",
+      "Mappa del sito"
+    ],
+    "테마 전환": [
+      "Switch theme",
+      "テーマを切り替え",
+      "切换主题",
+      "切換主題",
+      "Сменить тему",
+      "Cambia tema"
+    ],
+    "언어 선택": [
+      "Select language",
+      "言語を選択",
+      "选择语言",
+      "選擇語言",
+      "Выбрать язык",
+      "Seleziona lingua"
+    ],
+    "모듈 목록": [
+      "Module list",
+      "モジュール一覧",
+      "模块列表",
+      "模組清單",
+      "Список модулей",
+      "Elenco moduli"
+    ],
+    "모듈 검색": [
+      "Search modules",
+      "モジュールを検索",
+      "搜索模块",
+      "搜尋模組",
+      "Поиск модулей",
+      "Cerca moduli"
+    ],
+    "닫기": [
+      "Close",
+      "閉じる",
+      "关闭",
+      "關閉",
+      "Закрыть",
+      "Chiudi"
+    ],
+    "프로젝트 배포 및 패키지 상태": [
+      "Project deployment and package status",
+      "プロジェクトのデプロイとパッケージの状態",
+      "项目部署和软件包状态",
+      "專案部署與套件狀態",
+      "Статус развёртывания и пакета",
+      "Stato di distribuzione e del pacchetto"
+    ],
+    "GitHub Actions CI 상태": [
+      "GitHub Actions CI status",
+      "GitHub Actions CI の状態",
+      "GitHub Actions CI 状态",
+      "GitHub Actions CI 狀態",
+      "Статус CI в GitHub Actions",
+      "Stato CI di GitHub Actions"
+    ],
+    "npm 최신 버전": [
+      "Latest npm version",
+      "npm の最新バージョン",
+      "npm 最新版本",
+      "npm 最新版本",
+      "Последняя версия в npm",
+      "Ultima versione su npm"
+    ],
+    "프로젝트 라이선스": [
+      "Project license",
+      "プロジェクトのライセンス",
+      "项目许可证",
+      "專案授權條款",
+      "Лицензия проекта",
+      "Licenza del progetto"
+    ],
+    "jsDelivr 월간 다운로드": [
+      "Monthly jsDelivr downloads",
+      "jsDelivr の月間ダウンロード数",
+      "jsDelivr 每月下载量",
+      "jsDelivr 每月下載量",
+      "Загрузки jsDelivr за месяц",
+      "Download mensili da jsDelivr"
+    ],
+    "주요 특징": [
+      "Key features",
+      "主な機能",
+      "主要功能",
+      "主要功能",
+      "Основные возможности",
+      "Funzionalità principali"
+    ],
+    "이전 슬라이드": [
+      "Previous slide",
+      "前のスライド",
+      "上一张幻灯片",
+      "上一張投影片",
+      "Предыдущий слайд",
+      "Diapositiva precedente"
+    ],
+    "다음 슬라이드": [
+      "Next slide",
+      "次のスライド",
+      "下一张幻灯片",
+      "下一張投影片",
+      "Следующий слайд",
+      "Diapositiva successiva"
+    ],
+    "다시 재생": [
+      "Replay",
+      "もう一度再生",
+      "重新播放",
+      "重新播放",
+      "Повторить",
+      "Riproduci di nuovo"
+    ],
+    "갤러리 순서를 섞어 다시 재생": [
+      "Shuffle the gallery and replay",
+      "ギャラリーを並べ替えて再生",
+      "随机排列图库并重新播放",
+      "隨機排列圖庫並重新播放",
+      "Перемешать галерею и повторить",
+      "Mescola la galleria e riproduci di nuovo"
+    ],
+    "그리드 순서 섞기": [
+      "Shuffle grid order",
+      "グリッドの順序をシャッフル",
+      "随机排列网格顺序",
+      "隨機排列網格順序",
+      "Перемешать элементы сетки",
+      "Mescola l'ordine della griglia"
+    ],
+    "전환 효과": [
+      "Transition effects",
+      "トランジション効果",
+      "过渡效果",
+      "轉場效果",
+      "Эффекты перехода",
+      "Effetti di transizione"
+    ],
+    "Kineto 맨 위로": [
+      "Kineto: go to top",
+      "Kineto: ページ上部へ移動",
+      "Kineto：返回顶部",
+      "Kineto：返回頂端",
+      "Kineto: перейти в начало страницы",
+      "Kineto: vai all'inizio della pagina"
+    ],
+    "푸터 탐색": [
+      "Footer navigation",
+      "フッターナビゲーション",
+      "页脚导航",
+      "頁尾導覽",
+      "Навигация в подвале",
+      "Navigazione nel piè di pagina"
+    ],
     "모듈 검색…": [
       "Search for modules…",
       "モジュール検索…",

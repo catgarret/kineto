@@ -1,6 +1,6 @@
-// The generated public site must use the unversioned CDN route, carry no
-// ../dist references, and expose runtime version/count hooks so header/footer
-// reflect the bundle that npm currently serves.
+// The generated public site must execute the exact local artifacts that CI
+// tested, retain public CDN install snippets, carry no ../dist references, and
+// expose runtime version/count hooks so header/footer remain traceable.
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -20,13 +20,23 @@ const m = core.match(/version:\s*'([^']+)'/);
 assert.ok(m, 'src/core.js has a version literal');
 assert.strictEqual(m[1], version, `Kineto.version (${m[1]}) must equal package.json version (${version})`);
 
-// 2. rewrite of the real demo produces a clean unversioned site with no local refs
+// 2. rewrite of the real demo produces co-deployed runtime references while
+// preserving the public unversioned CDN install snippet.
 const demoHtml = fs.readFileSync(path.join(root, 'demo/index.html'), 'utf8');
 const { html, leftover } = rewriteSiteHtml(demoHtml, { build: 'testhash' });
 assert.strictEqual(leftover, 0, 'site must have 0 ../dist references');
-assert.ok(/cdn\.jsdelivr\.net\/npm\/@dong-gri\/kineto\/dist/.test(html), 'site must reference the unversioned current CDN bundle');
-assert.ok(!/@dong-gri\/kineto@[^/]+/.test(html), 'site must not pin a CDN version alias');
+assert.ok(/src="\.\/kineto\.umd\.min\.js\?v=testhash"/.test(html), 'site must execute the co-deployed UMD bundle');
+assert.ok(/href="\.\/kineto\.min\.css\?v=testhash"/.test(html), 'site must load the co-deployed stylesheet');
+assert.ok(/cdn\.jsdelivr\.net\/npm\/@dong-gri\/kineto\/dist/.test(html), 'site must retain the unversioned public CDN install snippet');
 assert.strictEqual(assertSite(html).length, 0, 'assertSite must pass on the rewritten html');
+
+for (const asset of ['kineto.umd.min.js', 'kineto.min.css']) {
+  assert.deepStrictEqual(
+    fs.readFileSync(path.join(root, 'site', asset)),
+    fs.readFileSync(path.join(root, 'dist', asset)),
+    `site/${asset} must byte-match dist/${asset}`
+  );
+}
 
 // 3. The deploy source owns the GTM snippet, so every generated site/index.html
 // includes the exact container once in <head> and once as the body noscript fallback.
@@ -68,4 +78,4 @@ for (const relative of linkedDocs) {
   assert.doesNotMatch(source, /https:\/\/kineto\.dongri\.me\//);
 }
 
-console.log(`site-deploy OK — unversioned CDN, canonical demo URL, 0 ../dist, runtime version(${version})/count/build hooks present, no stale files.`);
+console.log(`site-deploy OK — co-deployed runtime matches dist, public CDN snippets remain, canonical URL/GTM/version(${version})/count/build hooks present.`);

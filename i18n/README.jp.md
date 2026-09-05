@@ -175,6 +175,17 @@ import KinetoVue from '@dong-gri/kineto/vue';
 app.use(KinetoVue);
 ```
 
+アダプターのオプション更新には明示的な置換ポリシーを使用します。React は
+`type` または `dependencies` 内の値が変わった場合にのみモジュールを再作成します。
+Vue の `useKineto()` も `watchSources` に対して同様に動作し、`v-motion` は
+バインディングが変わるとインスタンスを置き換えます。Vue は options オブジェクト、
+ref、または getter を受け取れます。置換時に `setup()` 後に変化した値を読み取る
+必要がある場合は ref/getter を使用してください。アダプターは毎回 create の直前に
+それを解決します。置換前には必ずクリーンアップが実行されます。アダプターは、
+個々のモジュールが部分的な `updateModule()` 呼び出しをサポートするかどうかを
+推測しません。命令型のライブ更新では、返されたインスタンスを保持するか、
+Core API を直接呼び出してください。
+
 ```js
 import installKineto from '@dong-gri/kineto/jquery';
 installKineto(window.jQuery);
