@@ -5,6 +5,16 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.9.7] - 2026-09-06
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Account for the measured one-shot media and text/lifecycle fix cost in full-runtime and package budgets (about 3.3 KB additional Vite full-consumer gzip), while retaining core-plus-module budgets, zero runtime dependencies, and the 52-module/77-file release surface.
 - Check both GitHub workflows against the package test manifest, including exhaustive demo-control, click-media, and live-site-script checks; isolate nine external demo resources in offline QA and preserve historical npm versions, workflow IDs, and checksums during version preparation.
 - Normalize GIF, APNG, and animated WebP click images to one play, restart each click independently, and share pointer/touch cleanup; expose format examples and image/sprite controls with explicit CORS and lifetime behavior.
@@ -29,7 +39,6 @@
 - 카드별 첫 range만 확인하던 데모 검사를 51개 모듈·7개 입력 타입의 렌더된 고유 drawer control 전수 검사로 교체해 옵션 반영·debounce 재빌드·중복 인스턴스 0건을 검증하고, 런타임 필드 키 중복도 차단합니다.
 - Page Reveal에 한정됐던 variant 구분 검사를 Reveal·Lazy·Cursor·Overflow Text·Glitch·Slider의 공개 variant 78개로 확대하고, 고유 source fingerprint와 전용 데모·생성형 설정의 정합성을 함께 검증합니다.
 - v0.9.5 게시 단계의 경로 해석 실패와 v0.9.6의 교차 브라우저 CI·npm SLSA provenance·npm/GitHub 동일 tarball·공식 Pages·백업 호스팅 동기화 성공 근거를 함께 기록했습니다.
-
 ## [0.9.6] - 2026-09-05
 
 ### English
