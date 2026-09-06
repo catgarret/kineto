@@ -43,6 +43,45 @@ function createCharacter(el, char, className = 'kt-counter-char') {
   return node;
 }
 
+function resolveLineHeight(el, requested) {
+  const explicit = Number(requested);
+  if (requested != null && Number.isFinite(explicit) && explicit > 0) return explicit;
+
+  const computed = getComputedStyle(el);
+  const fontSize = Number.parseFloat(computed.fontSize);
+  const lineHeightText = String(computed.lineHeight || '').trim();
+  const computedLineHeight = Number.parseFloat(lineHeightText);
+  if (/px$/i.test(lineHeightText) && Number.isFinite(computedLineHeight) && computedLineHeight > 0) {
+    return computedLineHeight;
+  }
+  // Browsers generally resolve unitless/% values to pixels, while DOM test
+  // environments can return the authored token. Keep both paths accurate.
+  if (Number.isFinite(fontSize) && fontSize > 0) {
+    if (/^\d*\.?\d+$/.test(lineHeightText) && computedLineHeight > 0) return fontSize * computedLineHeight;
+    if (/^\d*\.?\d+em$/i.test(lineHeightText) && computedLineHeight > 0) return fontSize * computedLineHeight;
+    if (/^\d*\.?\d+%$/.test(lineHeightText) && computedLineHeight > 0) return fontSize * computedLineHeight / 100;
+  }
+
+  // Browsers can expose the keyword `normal` instead of a used pixel value.
+  // Measure one inherited line box before replacing the author-owned content;
+  // jsdom and detached nodes have no geometry, so retain the font-size fallback.
+  const probe = document.createElement('span');
+  probe.textContent = '0';
+  probe.setAttribute('aria-hidden', 'true');
+  probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;display:inline-block;padding:0;border:0;line-height:inherit;';
+  el.appendChild(probe);
+  const measured = probe.getBoundingClientRect().height;
+  probe.remove();
+  if (Number.isFinite(measured) && measured > 0) return measured;
+
+  return Number.isFinite(fontSize) && fontSize > 0 ? fontSize * 1.2 : 40;
+}
+
+function constrainLineViewport(viewport, lineHeight, extra = '') {
+  const height = `${Math.max(1, lineHeight)}px`;
+  viewport.style.cssText = `${extra}overflow:hidden;height:${height};max-height:${height};block-size:${height};max-block-size:${height};contain:paint;`;
+}
+
 function buildScrollTrigger(el, opts) {
   if (opts.start === false) return undefined;
   const rect = el.getBoundingClientRect();
@@ -404,11 +443,7 @@ export default {
       el.style.alignItems = 'center';
       // A ticking clock must not announce itself every second.
       el.setAttribute('aria-live', 'off');
-      const computedClock = getComputedStyle(el);
-      const clockLh = Number.parseFloat(computedClock.lineHeight);
-      const clockFs = Number.parseFloat(computedClock.fontSize);
-      const lineHeight = Math.max(1, Number(opts.lineHeight
-        ?? (Number.isFinite(clockLh) ? clockLh : (Number.isFinite(clockFs) ? clockFs * 1.2 : 40))));
+      const lineHeight = resolveLineHeight(el, opts.lineHeight);
       const showSeconds = opts.seconds !== false;
       const secondsDigits = Math.max(1, Math.round(Number(opts.secondsDigits ?? 3)));
       const secondsLabel = String(opts.secondsLabel ?? 'S');
@@ -451,7 +486,7 @@ export default {
       const makeDigit = (char) => {
         const viewport = document.createElement('span');
         viewport.className = 'kt-counter-digit kt-counter-clock-digit';
-        viewport.style.cssText = `display:inline-block;overflow:hidden;height:${lineHeight}px;min-width:1ch;text-align:center;`;
+        constrainLineViewport(viewport, lineHeight, 'display:inline-block;min-width:1ch;text-align:center;vertical-align:bottom;');
         const stack = document.createElement('span');
         stack.style.cssText = 'display:block;will-change:transform;';
         const glyph = document.createElement('span');
@@ -666,13 +701,7 @@ export default {
         restart: () => { if (!clockAlive) { clockAlive = true; intervalId = setInterval(update, 250); } }
       });
     } else {
-      const computed = getComputedStyle(el);
-      const parsedLineHeight = Number.parseFloat(computed.lineHeight);
-      const parsedFontSize = Number.parseFloat(computed.fontSize);
-      const automaticLineHeight = Number.isFinite(parsedLineHeight)
-        ? parsedLineHeight
-        : (Number.isFinite(parsedFontSize) ? parsedFontSize * 1.2 : 40);
-      const lineHeight = Math.max(1, Number(opts.lineHeight ?? automaticLineHeight));
+      const lineHeight = resolveLineHeight(el, opts.lineHeight);
       el.innerHTML = '';
       el.style.display = 'inline-flex';
       el.style.alignItems = 'flex-end';
@@ -703,7 +732,7 @@ export default {
         const steps = base + loops * 10;
         const viewport = document.createElement('span');
         viewport.className = 'kt-counter-slot';
-        viewport.style.cssText = `display:inline-block;overflow:hidden;height:${lineHeight}px;vertical-align:bottom;`;
+        constrainLineViewport(viewport, lineHeight, 'display:inline-block;vertical-align:bottom;');
         const reel = document.createElement('span');
         reel.className = 'kt-counter-reel';
         reel.style.cssText = 'display:flex;flex-direction:column;will-change:transform;';

@@ -117,10 +117,16 @@ const BUDGETS = {
   // fractional seconds moves minified ESM to 405.2 KB raw. Round only that
   // artifact's raw ceiling to 406 KB; gzip and all other product ceilings stay
   // unchanged.
-  'kineto.js': { raw: 513, gz: 133, variance: 2 },
-  'kineto.min.js': { raw: 406, gz: 119, variance: 2 },
-  'kineto.umd.js': { raw: 404, gz: 119, variance: 1 },
-  'kineto.umd.min.js': { raw: 404, gz: 119, variance: 1 },
+  // 2026-09-06: one-shot GIF/APNG/WebP metadata + lifetime parsing, multiline
+  // author-DOM restoration, bounded counter reels and cssScroll fallback add
+  // real runtime bytes (not runner variance). Node 24 measures 521.0/137.9 KB
+  // readable ESM, 410.8/123.2 KB min ESM and 409.0/122.5 KB UMD. Account for
+  // that requested behavior with rounded raw/gzip ceilings; keep variance,
+  // CSS, dependencies and the public entry allowlist unchanged.
+  'kineto.js': { raw: 522, gz: 137, variance: 2 },
+  'kineto.min.js': { raw: 412, gz: 122, variance: 2 },
+  'kineto.umd.js': { raw: 410, gz: 122, variance: 1 },
+  'kineto.umd.min.js': { raw: 410, gz: 122, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

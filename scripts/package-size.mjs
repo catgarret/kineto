@@ -104,8 +104,12 @@ const BUDGET = {
   // npm 11 reports 516.0 KB packed (528410 bytes) for the resulting archive,
   // 26 bytes above the integer 516 KB boundary. Round the runner ceiling to
   // 517 KB; it remains a fixed 77-file allowlist and is not a surface increase.
-  packedKb: 517,
-  unpackedKb: 1732,
+  // 2026-09-06: click-image one-shot parsing/cleanup, multiline author-state
+  // restoration, counter clipping and cssScroll guards measure 526.9 KB packed
+  // / 1755.0 KB unpacked on Node 24/npm 11. This is measured feature/fix cost,
+  // not compression variance; retain all 77 allowed files and round only bytes.
+  packedKb: 528,
+  unpackedKb: 1756,
   files: 77
 };
 

@@ -34,6 +34,22 @@ assert.match(roadmap, /P2 \| Motion States 확장/);
 assert.match(roadmap, /P2 \| Presence Core 확장/);
 assert.match(roadmap, /데모 정합성·복사 경로·troubleshooting/);
 assert.match(roadmap, /core` \+ 필요한\n모듈 entry/);
+assert.match(roadmap, /Vite·Rolldown 소비자 fixture가 full·core\+1·core\+3/);
+assert.match(roadmap, /실제 운영 앱의 장기 로딩·캐시·조합 비용 증거/);
+assert.doesNotMatch(roadmap, /모듈 하나를 가져왔을 때의 번들 비용은 별도 예산으로 관리하지 않습니다/);
+assert.match(roadmap, /`pageReveal` 16개와 Reveal·Lazy·Cursor·Overflow Text·Glitch·Slider 78개/);
+assert.match(roadmap, /전용 데모 markup은 47\/78/);
+assert.doesNotMatch(roadmap, /variant 중복을 아무도 측정하지 않습니다/);
+assert.match(roadmap, /§11은 당시의 검토 기록으로 보존/);
+for (let item = 106; item <= 124; item += 1) {
+  assert.match(roadmap, new RegExp(`^${item}\\. 완료\\(v0\\.9\\.4\\):`, 'm'), `roadmap item ${item} must remain attributed to its shipped v0.9.4 release`);
+}
+for (const item of [50, 51, 52]) {
+  assert.match(roadmap, new RegExp(`^${item}\\. 완료\\(v0\\.8\\.105\\):`, 'm'), `roadmap item ${item} must remain attributed to v0.8.105`);
+}
+assert.match(roadmap, /^53\. 완료\(v0\.9\.0\):/m);
+assert.match(roadmap, /^54\. 유지\(증거 게이트\):/m);
+assert.match(roadmap, /완료\(v0\.8\.103\): `useKinetoTransition\(\)`/);
 assert.match(readiness, /실서비스 1곳 투입/);
 assert.match(read('docs/browser-qa-matrix.md'), /`pageReveal`,\n`pageTransition`, `slider`/);
 assert.match(qaHistory, /`8a880e2`.*`33412656491`.*`33413636565`/);

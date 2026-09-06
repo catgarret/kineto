@@ -63,9 +63,10 @@ assert.match(
 );
 // Two tabbed pairs replace four descriptions with two; Wave and Film Grain add
 // two dedicated Lazy examples; the date-time demo now has four explicit modes;
-// the native Scroll Snap slider adds one translated description.
+// the native Scroll Snap slider adds one translated description; CSS Scroll
+// adds one translated mixed-language title for its native/fallback comparison.
 assert.equal(descriptions.length, 145);
-assert.equal(titles.length, 16);
+assert.equal(titles.length, 17);
 
 for (const [label, values, dictionary] of [
   ['card description', descriptions, copy.cards],

@@ -11,7 +11,7 @@
 | `dateTime` | `data-kt-date-time` | relative/absolute server timestamp |
 | `lazy` | `data-kt-lazy` | image loading/reveal effects |
 | `textSplit` | `data-kt-text-split` | character/word split motion |
-| `blurText` | `data-kt-blur-text` | blur text reveal |
+| `blurText` | `data-kt-blur-text` | [blur text reveal](blur-text.md) |
 | `typewriter` | `data-kt-typewriter` | type/erase loop |
 | `textReveal` | `data-kt-text-reveal` | stream/char/word/line/bounce/hangul |
 | `textTransition` | `data-kt-text-transition` | measured rotating text/items |

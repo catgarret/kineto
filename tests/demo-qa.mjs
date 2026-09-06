@@ -45,12 +45,36 @@ try {
     args:['--no-sandbox','--disable-dev-shm-usage','--autoplay-policy=no-user-gesture-required']
   });
   browser = await chromium.connect(browserServer.wsEndpoint());
-  const page = await browser.newPage({ viewport:{ width:1440,height:900 }, reducedMotion:'no-preference' });
+  const page = await browser.newPage({ viewport:{ width:1440,height:900 }, reducedMotion:'no-preference', offline:true });
   const runtimeErrors=[];
   page.on('pageerror',(error)=>runtimeErrors.push(error.stack||error.message));
-  page.on('console',(message)=>{ if(message.type()==='error') runtimeErrors.push(`console: ${message.text()}`); });
+  page.on('console',(message)=>{
+    if(message.type()==='error') {
+      const location=message.location();
+      runtimeErrors.push(`console: ${message.text()} (${location.url||'unknown'}:${location.lineNumber??0})`);
+    }
+  });
   // Font CDNs are unreachable in the offline QA sandbox — stub them.
   await page.route(/fonts\.googleapis\.com|fonts\.gstatic\.com|cdn\.jsdelivr\.net/, (route)=>route.fulfill({status:200,body:'',contentType:'text/css'}));
+  // Keep analytics and decorative CDN assets deterministic without removing
+  // them from the production demo. Only these observed external URLs receive
+  // fixtures; any new un-routed resource still fails in the offline context.
+  const noopScript={status:200,body:'/* Offline demo QA fixture. */',contentType:'text/javascript'};
+  const emptyStylesheet={status:200,body:'',contentType:'text/css'};
+  const badgeFixture={status:200,body:'<svg xmlns="http://www.w3.org/2000/svg" width="90" height="20" viewBox="0 0 90 20"><rect width="90" height="20" rx="3" fill="#555"/><text x="45" y="14" text-anchor="middle" fill="white" font-size="11">QA fixture</text></svg>',contentType:'image/svg+xml'};
+  const externalFixtures=new Map([
+    ['https://www.googletagmanager.com/gtm.js?id=GTM-KFQSFGJL',noopScript],
+    ['https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css',emptyStylesheet],
+    ['https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css',emptyStylesheet],
+    ['https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js',noopScript],
+    ['https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js',noopScript],
+    ['https://github.com/catgarret/kineto/actions/workflows/ci.yml/badge.svg',badgeFixture],
+    ['https://img.shields.io/npm/v/@dong-gri/kineto.svg',badgeFixture],
+    ['https://img.shields.io/npm/l/@dong-gri/kineto.svg',badgeFixture],
+    ['https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg',badgeFixture]
+  ]);
+  await page.route((url)=>externalFixtures.has(url.href),
+    (route)=>route.fulfill(externalFixtures.get(route.request().url())));
   await page.route('http://kineto.local/**', async (route) => {
     const url=new URL(route.request().url());
     const relative=decodeURIComponent(url.pathname).replace(/^\/demo\//,'');
@@ -158,6 +182,41 @@ try {
       legacyShareKey:'tilt+cardGlow-116'
     }
   ],'nested Card Glow headings must produce stable semantic keys without changing their v1 aliases');
+
+  const cssScrollSettingsIdentity=await page.evaluate(()=>{
+    const card=[...document.querySelectorAll('.card[data-demo-tabs]')]
+      .find((candidate)=>candidate.querySelector('[data-kt-css-scroll]'));
+    const panels=[...card.querySelectorAll('.demo-tabpanel')];
+    const hosts=[...card.querySelectorAll(':scope > .demo-tabhosts > .kt-playground-host')];
+    return panels.map((panel,index)=>{
+      const playground=hosts[index]?.querySelector('.kt-playground');
+      const body=playground?.__buildBody?.();
+      return {
+        label:panel.dataset.demoTabLabel,
+        legacyShareKey:playground?.dataset.shareLegacyKey||'',
+        shareKey:playground?.dataset.shareKey||'',
+        timeline:body?.querySelector('[data-module="cssScroll"][data-key="timeline"] select')?.value,
+        fields:[...body.querySelectorAll('[data-module="cssScroll"][data-key]')]
+          .map((field)=>field.dataset.key).sort()
+      };
+    });
+  });
+  const cssScrollFields=['axis','cssAnimation','end','property','rangeEnd','rangeStart','start','timeline'];
+  assert.deepEqual(
+    cssScrollSettingsIdentity.map(({label,timeline,fields})=>({label,timeline,fields})),
+    [
+      {label:'대체 경로',timeline:'view',fields:cssScrollFields},
+      {label:'네이티브 뷰',timeline:'view',fields:cssScrollFields},
+      {label:'네이티브 스크롤',timeline:'scroll',fields:cssScrollFields}
+    ],
+    'all three cssScroll variants must expose the existing native/fallback settings'
+  );
+  assert.match(cssScrollSettingsIdentity[0].legacyShareKey,/^cssScroll-\d+$/,
+    'the historical cssScroll settings host must retain its v1 ordinal alias');
+  assert.deepEqual(cssScrollSettingsIdentity.slice(1).map(({legacyShareKey})=>legacyShareKey),['',''],
+    'new cssScroll native settings must not consume historical v1 ordinals');
+  assert.equal(new Set(cssScrollSettingsIdentity.map(({shareKey})=>shareKey)).size,3,
+    'each cssScroll tab must retain a distinct semantic v2 share key');
 
   const localizedCopy=await page.evaluate(async()=>{
     const select=document.getElementById('lang');
@@ -350,50 +409,190 @@ try {
   assert.equal(elapsedDrawer.modeHidden,true,'seconds-only demo must not expose incompatible Counter modes');
   assert.equal(elapsedDrawer.sourceMode,'clock','seconds-only demo must retain its Clock activation');
 
-  // Every adjustable card must survive a representative live edit. This is a
-  // cross-module invariant, not a Card Glow special case: the lightweight
-  // <details>/<summary>, demo DOM, and active instance count must remain stable
-  // after the playground destroys/recreates a module.
+  // Exercise every distinct runtime drawer control, not merely the first range
+  // in each card. Controls are grouped by body/module: every binding is changed
+  // and synchronously checked, then restored before one debounced rebuild. This
+  // keeps the sweep fast while covering text/select/checkbox/number/colour/ease,
+  // conditional controls, tab hosts, and the three virtual page-level panels.
   const panelSweep=await page.evaluate(async()=>{
     const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));
-    const failures=[];
-    const panels=[...document.querySelectorAll('.card > .kt-playground')];
-    const duplicates=[];
-    let exercised=0;
-    for(const panel of panels){
-      const card=panel.parentElement;
+    const dash=(value)=>String(value).replace(/([a-z\d])([A-Z])/g,'$1-$2').toLowerCase();
+    const panels=[...document.querySelectorAll('.kt-playground')];
+    const candidates=new Map();
+    let renderedOccurrences=0;
+
+    // A module/key/type is one factory binding. Prefer a currently visible
+    // instance when the same option appears in several demo variants; hidden
+    // conditional fields are still exercised when no visible variant exists.
+    panels.forEach((panel)=>{
       const body=panel.__buildBody?.();
-      const input=body?.querySelector('.kt-playground__field:not([hidden]) input[type="range"][data-option]');
-      if(!input)continue;
-      const before=input.value;
-      const min=Number(input.min); const max=Number(input.max); const step=Number(input.step)||1;
-      let next=Math.min(max,Number(before)+step);
-      if(next===Number(before))next=Math.max(min,Number(before)-step);
-      input.value=String(next);
-      input.dispatchEvent(new window.Event('input',{bubbles:true}));
-      await sleep(140);
-      exercised+=1;
-      if(!panel.isConnected||card.querySelector(':scope > .kt-playground')!==panel||!panel.querySelector('summary')){
-        failures.push(card.querySelector('h3')?.textContent?.trim()||card.dataset.settingsFor||'unknown card');
-        continue;
-      }
-      // Put the demo back so the sweep itself cannot bias later assertions.
-      input.value=before;
-      input.dispatchEvent(new window.Event('input',{bubbles:true}));
-      await sleep(140);
-      [card,...card.querySelectorAll('*')].forEach((node)=>{
-        const counts=new Map();
-        Kineto.getInstance(node).forEach((instance)=>counts.set(instance.type,(counts.get(instance.type)||0)+1));
-        counts.forEach((count,type)=>{
-          if(count>1)duplicates.push(`${card.querySelector('h3')?.textContent?.trim()||'unknown'}:${type}×${count}`);
-        });
+      body?.querySelectorAll('.kt-playground__field[data-module][data-key][data-type]').forEach((field)=>{
+        renderedOccurrences+=1;
+        const input=field.querySelector('input[data-option],select[data-option]');
+        if(!input)return;
+        const {module,key,type}=field.dataset;
+        const signature=`${module}.${key}:${type}`;
+        const candidate={body,field,input,key,module,panel,type,visible:!field.hidden};
+        const previous=candidates.get(signature);
+        if(!previous||(candidate.visible&&!previous.visible))candidates.set(signature,candidate);
       });
+    });
+
+    const groupsByBody=new Map();
+    candidates.forEach((candidate,signature)=>{
+      if(!groupsByBody.has(candidate.body))groupsByBody.set(candidate.body,new Map());
+      const moduleGroups=groupsByBody.get(candidate.body);
+      if(!moduleGroups.has(candidate.module))moduleGroups.set(candidate.module,[]);
+      moduleGroups.get(candidate.module).push({...candidate,signature});
+    });
+
+    const responseFailures=[];
+    const rebuildFailures=[];
+    const untestable=[];
+    const exercisedByType={};
+    const exercisedModules=new Set();
+    const resetPanels=new Set();
+    let exercised=0;
+
+    const valueOf=(input,type)=>type==='checkbox'?input.checked:input.value;
+    const writeValue=(input,type,value)=>{
+      if(type==='checkbox')input.checked=Boolean(value);
+      else input.value=String(value);
+    };
+    const probeValue=(input,type)=>{
+      const before=valueOf(input,type);
+      if(type==='checkbox')return !before;
+      if(type==='select'||type==='easing'){
+        const alternatives=[...input.options].filter((option)=>!option.disabled&&option.value!==before);
+        return alternatives.find((option)=>option.value!=='')?.value??alternatives[0]?.value;
+      }
+      if(type==='color')return String(before).toLowerCase()==='#123456'?'#654321':'#123456';
+      if(type==='range'){
+        const current=Number(before);
+        const min=Number(input.min);
+        const max=Number(input.max);
+        const step=Number(input.step)||1;
+        const up=Math.min(max,current+step);
+        return up!==current?String(up):String(Math.max(min,current-step));
+      }
+      if(type==='number'){
+        const current=Number(before);
+        return String(Number.isFinite(current)?current+1:1);
+      }
+      if(type==='text')return before==='__kt_control_probe__'?'__kt_control_probe_2__':'__kt_control_probe__';
+      return undefined;
+    };
+    const codeState=(panel)=>[
+      panel.dataset.htmlCode||'',panel.dataset.jsCode||'',
+      panel.dataset.reactCode||'',panel.dataset.vueCode||'',panel.dataset.cssCode||''
+    ].join('\u0000');
+
+    for(const [body,moduleGroups] of groupsByBody){
+      const owner=body.__mkOwner;
+      if(owner?.isConnected)resetPanels.add(owner);
+      for(const [module,controls] of moduleGroups){
+        if(!owner?.isConnected){
+          rebuildFailures.push(`${module}: settings owner disconnected before edit`);
+          continue;
+        }
+        const status=body.querySelector('.kt-playground__status');
+        const sentinel=`__kt_control_rebuild_${module}_${exercised}__`;
+        if(status)status.textContent=sentinel;
+
+        for(const control of controls){
+          const {input,key,signature,type}=control;
+          const before=valueOf(input,type);
+          const next=probeValue(input,type);
+          if(next===undefined||String(next)===String(before)){
+            untestable.push(signature);
+            continue;
+          }
+          const expectedAttribute=`data-kt-${dash(key==='preset'?module:key)}`;
+          const codeBefore=codeState(owner);
+          const observer=new window.MutationObserver(()=>{});
+          observer.observe(document.documentElement,{
+            attributes:true,
+            attributeOldValue:true,
+            subtree:true,
+            attributeFilter:[expectedAttribute]
+          });
+          writeValue(input,type,next);
+          input.dispatchEvent(new window.Event(type==='range'||type==='color'?'input':'change',{bubbles:true}));
+          const reflected=observer.takeRecords().some((record)=>record.attributeName===expectedAttribute)
+            ||codeState(owner)!==codeBefore;
+          observer.disconnect();
+          if(!reflected)responseFailures.push(signature);
+
+          // Restore synchronously. The host-level debounce then performs one
+          // real rebuild for the whole module with safe authored values.
+          writeValue(input,type,before);
+          input.dispatchEvent(new window.Event(type==='range'||type==='color'?'input':'change',{bubbles:true}));
+          exercised+=1;
+          exercisedByType[type]=(exercisedByType[type]||0)+1;
+          exercisedModules.add(module);
+        }
+
+        await sleep(180);
+        if(!owner.isConnected||!owner.querySelector('summary')){
+          rebuildFailures.push(`${module}: settings trigger disappeared after rebuild`);
+        }
+        if(status?.textContent===sentinel){
+          rebuildFailures.push(`${module}: debounced rebuild did not complete`);
+        }
+        if(status?.dataset.error==='1'){
+          rebuildFailures.push(`${module}: ${status.textContent||'rebuild failed'}`);
+        }
+      }
     }
-    return {failures,duplicates:[...new Set(duplicates)],exercised};
+
+    // Return every touched demo to its authored state so this exhaustive audit
+    // cannot bias the later, scenario-specific assertions in this same page.
+    resetPanels.forEach((panel)=>{
+      if(!panel.isConnected)return;
+      panel.__mkBody?.querySelector('.kt-playground__toolbar button:nth-child(2)')?.click();
+    });
+    await sleep(80);
+
+    const duplicates=[];
+    [document.documentElement,...document.querySelectorAll('*')].forEach((node)=>{
+      const counts=new Map();
+      Kineto.getInstance(node).forEach((instance)=>counts.set(instance.type,(counts.get(instance.type)||0)+1));
+      counts.forEach((count,type)=>{
+        if(count>1)duplicates.push(`${node.id||node.className||node.tagName}:${type}×${count}`);
+      });
+    });
+
+    return {
+      discovered:candidates.size,
+      duplicateInstances:[...new Set(duplicates)],
+      exercised,
+      exercisedByType,
+      exercisedModules:exercisedModules.size,
+      hiddenOnly:[...candidates.values()].filter((candidate)=>!candidate.visible).length,
+      rebuildFailures,
+      renderedOccurrences,
+      responseFailures,
+      runtimeFieldDefinitions:Object.values(window.KinetoPlayground.fields).reduce((sum,definitions)=>sum+definitions.length,0),
+      runtimeFieldModules:Object.keys(window.KinetoPlayground.fields).length,
+      untestable
+    };
   });
-  assert.ok(panelSweep.exercised>=40,`expected to exercise at least 40 settings cards, got ${panelSweep.exercised}`);
-  assert.deepEqual(panelSweep.failures,[],`settings trigger/demo disappeared after live edit: ${panelSweep.failures.join(', ')}`);
-  assert.deepEqual(panelSweep.duplicates,[],`live-edit sweep created duplicate target instances: ${panelSweep.duplicates.join(', ')}`);
+  assert.ok(
+    panelSweep.discovered>=panelSweep.runtimeFieldDefinitions,
+    `rendered control manifest ${panelSweep.discovered} did not cover ${panelSweep.runtimeFieldDefinitions} runtime field definitions`
+  );
+  assert.equal(panelSweep.exercised,panelSweep.discovered,`exercised ${panelSweep.exercised}/${panelSweep.discovered} distinct drawer controls`);
+  assert.ok(panelSweep.exercisedModules>=panelSweep.runtimeFieldModules,`exercised only ${panelSweep.exercisedModules}/${panelSweep.runtimeFieldModules} runtime field modules`);
+  assert.deepEqual(Object.keys(panelSweep.exercisedByType).sort(),['checkbox','color','easing','number','range','select','text']);
+  assert.deepEqual(panelSweep.untestable,[],`drawer controls had no deterministic alternate value: ${panelSweep.untestable.join(', ')}`);
+  assert.deepEqual(panelSweep.responseFailures,[],`drawer controls did not reflect their edited option: ${panelSweep.responseFailures.join(', ')}`);
+  assert.deepEqual(panelSweep.rebuildFailures,[],`drawer module rebuild failures: ${panelSweep.rebuildFailures.join(', ')}`);
+  assert.deepEqual(panelSweep.duplicateInstances,[],`live-edit sweep created duplicate target instances: ${panelSweep.duplicateInstances.join(', ')}`);
+  console.log(
+    `Demo control QA: ${panelSweep.exercised}/${panelSweep.discovered} distinct controls `
+    + `(${panelSweep.renderedOccurrences} rendered instances, ${panelSweep.hiddenOnly} conditional-only), `
+    + `${panelSweep.exercisedModules} modules and ${Object.keys(panelSweep.exercisedByType).length} control types.`
+  );
 
   const loaderVisibility=await page.evaluate(async()=>{
     const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));

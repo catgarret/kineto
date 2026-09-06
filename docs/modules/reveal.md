@@ -45,4 +45,8 @@ Kineto는 viewport 감지와 class on/off만 담당하고 실제 모션은 CSS�
 
 Text Motion과 Content Entrance 데모는 시각 검수를 위해 Replay를 제공합니다. reduced-motion에서는 최종 상태를 즉시 표시합니다.
 
+일반 `reveal`은 대상의 자식 DOM을 다시 만들지 않으므로 authored `<br>`와
+inline markup을 그대로 보존합니다. 글자·단어를 실제 span으로 나누는
+`textSplit`과 `textReveal`만 별도의 줄바꿈 복원 경로를 사용합니다.
+
 `slide-*`, `fade-*`, `rise`, `soft` 프리셋은 `distance`(px)로 이동 거리를 직접 줄일 수 있습니다. 기본 프리셋을 덮는 복잡한 인라인 스타일 없이, 본문 텍스트·배지처럼 촘촘한 레이아웃에 맞출 때 사용합니다.

@@ -1,17 +1,33 @@
 import { ST } from '../utils.js';
 
+function customPropertySnapshot(el, property) {
+  const value = el.style.getPropertyValue(property);
+  const priority = el.style.getPropertyPriority(property);
+  return {
+    value,
+    priority,
+    restore() {
+      if (value) el.style.setProperty(property, value, priority);
+      else el.style.removeProperty(property);
+    }
+  };
+}
+
 export default {
   create(el, opts) {
     const property = opts.property || '--scroll-progress';
-    const supportsTimeline = typeof CSS !== 'undefined' && CSS.supports?.('animation-timeline', 'scroll()');
+    const rawAxis = String(opts.axis || '').trim();
+    const usesScroll = opts.timeline === 'scroll';
+    const timeline = usesScroll ? `scroll(nearest${rawAxis ? ` ${rawAxis}` : ''})` : `view(${rawAxis})`;
+    const supportsTimeline = typeof CSS !== 'undefined' && CSS.supports?.('animation-timeline', timeline);
+    const propertySnapshot = customPropertySnapshot(el, property);
     const previous = {
       animationName: el.style.animationName,
       animationTimeline: el.style.animationTimeline,
       animationRangeStart: el.style.animationRangeStart,
       animationRangeEnd: el.style.animationRangeEnd,
       animationFillMode: el.style.animationFillMode,
-      animationPlayState: el.style.animationPlayState,
-      property: el.style.getPropertyValue(property)
+      animationPlayState: el.style.animationPlayState
     };
 
     if (supportsTimeline && opts.cssAnimation) {
@@ -19,10 +35,8 @@ export default {
       // reading bars / reverse columns); default `view()` links to the element's
       // own passage through the scrollport (fade/reveal on enter). `axis` picks
       // block/inline/x/y for either.
-      const rawAxis = (opts.axis || '').trim();
-      const usesScroll = opts.timeline === 'scroll';
       el.style.animationName = opts.cssAnimation;
-      el.style.animationTimeline = usesScroll ? `scroll(nearest${rawAxis ? ` ${rawAxis}` : ''})` : `view(${rawAxis})`;
+      el.style.animationTimeline = timeline;
       el.style.animationRangeStart = opts.rangeStart || (usesScroll ? '0%' : 'entry 0%');
       el.style.animationRangeEnd = opts.rangeEnd || (usesScroll ? '100%' : 'exit 100%');
       el.style.animationFillMode = 'both';
@@ -39,8 +53,7 @@ export default {
           el.style.animationRangeEnd = previous.animationRangeEnd;
           el.style.animationFillMode = previous.animationFillMode;
           el.style.animationPlayState = previous.animationPlayState;
-          if (previous.property) el.style.setProperty(property, previous.property);
-          else el.style.removeProperty(property);
+          propertySnapshot.restore();
         }
       };
     }
@@ -64,9 +77,23 @@ export default {
       resume: () => trigger.enable(),
       destroy: () => {
         trigger.kill();
-        if (previous.property) el.style.setProperty(property, previous.property);
-        else el.style.removeProperty(property);
+        propertySnapshot.restore();
       }
+    };
+  },
+
+  reduced(el, opts = {}) {
+    const property = opts.property || '--scroll-progress';
+    const snapshot = customPropertySnapshot(el, property);
+    // Reduced motion skips both continuously sampled implementations while
+    // preserving their meaningful completed state.
+    el.style.setProperty(property, '1', snapshot.priority);
+    return {
+      el,
+      type: 'cssScroll',
+      pause() {},
+      resume() {},
+      destroy: snapshot.restore
     };
   }
 };

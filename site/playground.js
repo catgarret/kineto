@@ -116,7 +116,7 @@
     textReveal: [['preset','Mode','select',['stream','char','word','line','bounce','hangul','decode','flicker']],['rainbow','Rainbow scramble','checkbox'],['rainbowColors','Scramble palette','text'],['scrambleFade','Fade scramble','checkbox'],['flickerLoop','Ambient flicker','checkbox'],['loop','Loop','checkbox'],['hold','Loop hold (ms)','range',200,4000,100],['flickerCount','Decode frames','range',1,8,1],['speed','Speed (ms)','range',10,200,5],['stagger','Stagger','range',0,0.2,0.005],['duration','Duration','range',0.1,2,0.05]],
     textTransition: [['preset','Effect','select',['slide-up','rise','fade','blur','scale','clip','dissolve','shimmer']],['jitter','Dissolve jitter','range',0,14,1],['duration','Duration','range',0.1,2,0.05],['pause','Pause (ms)','range',100,4000,100],['blur','Blur','range',0,40,1],['startScale','Start scale','range',0.4,1.4,0.05],['endScale','End scale','range',0.4,1.4,0.05],['charMode','Char mode','checkbox'],['charDirection','Char order','select',['ltr','rtl','random']],['loop','Loop','checkbox']],
     glitch: [['preset','Type','select',['rgb','rgb-slice-burst','pixel','noise','crt','image','datamosh','reveal','vcr']],['sliceCount','Image slices','range',2,16,1],['intensity','Intensity','range',0.1,3,0.05],['speed','Playback speed','range',0.2,3,0.05],['frequency','Burst frequency','range',0.1,4,0.05],['randomness','Randomness','range',0,1,0.05],['duration','Burst duration','range',0.2,3,0.05],['trigger','Trigger','select',['auto','hover','scroll']],['delay','Initial delay','range',0,3,0.05],['loop','Loop','checkbox'],['seed','Seed','number'],['channelOffset','Channel offset (px)','range',0,24,1],['maxSliceOffset','Max slice shift (px)','range',0,80,2],['sliceCountMin','Min slices','range',1,12,1],['sliceCountMax','Max slices','range',1,20,1],['burstDurationMin','Burst min (ms)','range',30,400,10],['burstDurationMax','Burst max (ms)','range',30,600,10],['intervalMin','Gap min (ms)','range',80,2000,20],['intervalMax','Gap max (ms)','range',80,4000,20],['artifactCount','Artifact blocks','range',0,12,1],['artifactMinSize','Artifact min (px)','range',2,60,2],['artifactMaxSize','Artifact max (px)','range',4,140,2]],
-    cursor: [['preset','Type','select',['dot','ring','blob','crosshair','text','trail','orbit','snake','sparkle','image','custom']],['src','Image URL','text'],['hoverSrc','Hover image URL','text'],['width','Image width','range',16,120,2],['height','Image height','range',16,120,2],['template','Custom HTML','text'],['hoverTemplate','Hover HTML','text'],['hoverClass','Hover class','text'],['snakeText','Snake text','text'],['snakeMinScale','Snake min scale','range',0.1,1,0.02],['orbitHoverScale','Orbit hover grow','range',1,2.5,0.05],['color','Color','color'],['dotSize','Dot size','range',1,30,1],['followerSize','Follower size','range',8,120,2],['smoothing','Smoothing','range',0.01,1,0.01],['hoverScale','Hover scale','range',0.5,4,0.1],['pressScale','Press scale','range',0.3,1.5,0.05],['hoverEffect','Hover effect','select',['dot','ring','pill']],['hoverDotSize','Hover size','range',6,80,2],['trailCount','Trail count','range',3,16,1],['orbitRadius','Orbit radius','range',20,120,2],['orbitText','Orbit text','text'],['snakeText','Snake text','text'],['rotateText','Rotate text','text'],['mixBlendMode','Blend','select',['normal','difference','screen','multiply']]],
+    cursor: [['preset','Type','select',['dot','ring','blob','crosshair','text','trail','orbit','snake','sparkle','image','custom']],['src','Image URL','text'],['hoverSrc','Hover image URL','text'],['width','Image width','range',16,120,2],['height','Image height','range',16,120,2],['template','Custom HTML','text'],['hoverTemplate','Hover HTML','text'],['hoverClass','Hover class','text'],['snakeText','Snake text','text'],['snakeMinScale','Snake min scale','range',0.1,1,0.02],['orbitHoverScale','Orbit hover grow','range',1,2.5,0.05],['clickImage','Click GIF/APNG/WebP URL','text'],['clickImageDuration','Click image lifetime (ms)','range',0,5000,20],['clickImageSize','Click image width (px)','range',8,320,2],['clickSprite','Click sprite-sheet URL','text'],['clickSpriteDuration','Click sprite duration (ms)','range',80,3000,20],['clickSpriteWidth','Sprite frame width (px)','range',8,320,2],['clickSpriteHeight','Sprite frame height (px)','range',8,320,2],['clickSpriteFrames','Sprite frame count','range',1,32,1],['color','Color','color'],['dotSize','Dot size','range',1,30,1],['followerSize','Follower size','range',8,120,2],['smoothing','Smoothing','range',0.01,1,0.01],['hoverScale','Hover scale','range',0.5,4,0.1],['pressScale','Press scale','range',0.3,1.5,0.05],['hoverEffect','Hover effect','select',['dot','ring','pill']],['hoverDotSize','Hover size','range',6,80,2],['trailCount','Trail count','range',3,16,1],['orbitRadius','Orbit radius','range',20,120,2],['orbitText','Orbit text','text'],['rotateText','Rotate text','text'],['mixBlendMode','Blend','select',['normal','difference','screen','multiply']]],
     textFill: [['baseColor','Base color','color'],['fillColor','Fill color','color'],['start','Start','text'],['end','End','text'],['scrub','Scrub','range',0,2,0.1]],
     reveal: [['preset','Preset','select',['fade','fade-up','fade-down','fade-left','fade-right','slide-up','slide-down','slide-left','slide-right','zoom-in','zoom-out','blur','rise','soft','flip','flip-x','flip-y','rotate','mask','wipe','clock','class']],['startAngle','Clock start (deg)','range',0,360,5],['clockDirection','Clock direction','select',['cw','ccw']],['direction','Direction','select',['up','down','left','right']],['duration','Duration','range',0.1,2.5,0.05],['delay','Delay','range',0,2,0.05],['stagger','Stagger (s)','range',0,0.3,0.01],['order','Order','select',['start','end','center','edges','random']],['once','Once','checkbox']],
     scrollVelocity: [['preset','Effect','select',['skew','translate','rotate','scale','combo']],['axis','Axis','select',['x','y']],['distance','Distance','range',0,180,5],['maxSkew','Max skew','range',0,24,1],['maxRotate','Max rotate','range',0,24,1],['maxScale','Max scale','range',0,0.5,0.01],['maxBlur','Max blur','range',0,12,0.25],['smoothing','Smoothing','range',0.01,0.5,0.01],['spring','Spring','checkbox'],['stiffness','Stiffness','range',20,400,5],['damping','Damping','range',1,60,1],['mass','Mass','range',0.1,4,0.1],['reverse','Reverse','checkbox']],
@@ -128,7 +128,7 @@
     fullpage: [['duration','Duration','range',0.2,1.6,0.05],['axis','Axis','select',['y','x','mixed']],['drag','Mouse drag','checkbox'],['mode','Mode','select',['transform','snap']],['loop','Loop','checkbox'],['dots','Dots','checkbox'],['wheel','Wheel','checkbox'],['touch','Touch swipe','checkbox'],['keyboard','Keyboard','checkbox'],['threshold','Swipe threshold','range',10,80,2],['autoAdvance','Auto advance (ms)','range',0,6000,250]],
     marquee: [['direction','Direction','select',['left','right']],['skew','Scroll skew (deg)','range',0,20,1],['fade','Edge fade (px)','range',0,120,4],['speed','Speed','range',10,200,5],['pauseOnHover','Pause on hover','checkbox'],['reverseOnScrollUp','Reverse on scroll','checkbox'],['scrollAcceleration','Acceleration','range',0,1.5,0.05]],
     parallax: [['axis','Axis','select',['x','y']],['speed','Speed','range',-1,1,0.05],['distance','Distance','range',-300,300,10],['scrub','Scrub','range',0,2,0.1]],
-    cssScroll: [['property','CSS property','text'],['start','Start','text'],['end','End','text']],
+    cssScroll: [['property','CSS property','text'],['cssAnimation','CSS keyframes','text'],['timeline','Timeline','select',['view','scroll']],['axis','Timeline axis','select',['block','inline','x','y']],['rangeStart','Range start','text'],['rangeEnd','Range end','text'],['start','Fallback start','text'],['end','Fallback end','text']],
     scrollSequence: [['fit','Fit','select',['cover','contain']],['scrollLength','Scroll length','text'],['scrub','Scrub','range',0,2,0.1],['preloadRadius','Preload radius','range',0,12,1]],
     brushReveal: [['radius','Brush radius','range',12,200,2],['softness','Softness','range',0,0.95,0.05],['fade','Heal speed','range',0.005,0.3,0.005],['persist','Persist strokes','checkbox'],['blur','Edge blur (px)','range',0,20,1],['opacity','Brush opacity','range',0.1,1,0.05]],
     blurText: [['duration','Duration','range',0.1,2.5,0.05],['stagger','Stagger','range',0,0.2,0.005],['once','Once','checkbox']]
@@ -143,6 +143,7 @@
     cardGlow:{radius:160,opacity:.8,blur:14,spread:0,follow:.18,sensitivity:1,alwaysOn:false,color:'#ff5b1c',shadow:false,shadowColor:'#111827',shadowOpacity:.24,shadowBlur:32,shadowSpread:-10,shadowX:0,shadowY:12,shadowFollow:12,shadowHoverOnly:false,shadowInset:false,shadowCss:''},
     tilt:{max:12,sensitivity:1,smoothing:.12,perspective:1000,scale:1.02,reverse:false,reset:true,glare:true,glareOpacity:.22,glareRadius:120,tiltShadow:false,tiltShadowColor:'#111827',tiltShadowOpacity:.28,tiltShadowBlur:34,tiltShadowSpread:-8,tiltShadowX:0,tiltShadowY:14,tiltShadowFollow:1.1,tiltShadowHoverOnly:false,tiltShadowInset:false,tiltShadowCss:''},
     magnetic:{strength:.45,radius:120},ripple:{duration:520,opacity:.75,scale:2.6,centered:false,unbounded:false,color:'rgba(255,255,255,.75)'},
+    cursor:{clickImage:"",clickSprite:"",clickImageDuration:0,clickImageSize:96,clickSpriteDuration:480,clickSpriteWidth:96,clickSpriteHeight:96,clickSpriteFrames:8},
     mouseParallax:{maxX:40,maxY:40,speed:.05,global:false},textSplit:{by:'char',animation:'wave',duration:.8,stagger:.035,delay:0},
     typewriter:{typeSpeed:55,eraseSpeed:30,pauseAfter:950,loop:true,caret:true,hangul:false},textReveal:{speed:65,stagger:.04,duration:.8},
     textTransition:{duration:.45,pause:1100,blur:16,startScale:.86,endScale:1.12,charMode:false,loop:true},glitch:{intensity:1.15,delay:.2,speed:1,trigger:'auto',loop:true},
@@ -151,7 +152,8 @@
     slider:{loop:'infinite',gap:18,perView:1.35,speed:.55,autoplay:0,dots:false,progress:false,progressType:'bar',pauseButton:false,pauseOnHover:false,drag:true,touch:true,keyboard:true,scrollSnap:false,effectIntensity:1,effectDirection:'left',rotate:42,depth:130,minScale:.82},ambientMedia:{blur:48,inset:-28,opacity:.78,sampleInterval:700},
     lightbox:{duration:.18,backdropOpacity:.82,backdropBlur:20,radius:14,closeOnImage:false,toolbar:true,info:true,minimap:true,closeOnBackdrop:true},marquee:{direction:'left',speed:70,pauseOnHover:true,reverseOnScrollUp:true,scrollAcceleration:.35},
     parallax:{axis:'y',speed:-.18,distance:100,scrub:1},brushReveal:{radius:80,softness:.55,fade:.045,persist:false,blur:0},scrollSequence:{fit:'cover',scrollLength:'400vh',scrub:1,preloadRadius:3},blurText:{duration:.8,stagger:.025,once:true},
-    scrollShadows:{mode:'shadow',shape:'radial',axis:'vertical',size:44,transition:180,opacity:1,shadow:'rgba(0, 0, 0, 0.24)'}
+    scrollShadows:{mode:'shadow',shape:'radial',axis:'vertical',size:44,transition:180,opacity:1,shadow:'rgba(0, 0, 0, 0.24)'},
+    cssScroll:{cssAnimation:'',timeline:'view',axis:'block',rangeStart:'',rangeEnd:''}
   };
 
 
@@ -237,10 +239,19 @@
       seconds:(o)=>(o.preset)==='clock', secondsOnly:(o)=>(o.preset)==='clock', hour12:(o)=>(o.preset)==='clock'&&!o.until&&!o.since, blink:(o)=>(o.preset)==='clock', clockStyle:(o)=>(o.preset)==='clock', until:(o)=>(o.preset)==='clock', since:(o)=>(o.preset)==='clock'&&!o.until, daysLabel:(o)=>(o.preset)==='clock'&&(!!o.until||!!o.since), clockSeparator:(o)=>(o.preset)==='clock', rollDuration:(o)=>(o.preset)==='clock'&&(o.clockStyle||'roll')!=='instant', rollDirection:(o)=>(o.preset)==='clock'&&(o.clockStyle||'roll')==='roll'
     },
     cssScroll: {
-      preset: () => true
+      preset: () => true,
+      timeline: (o) => Boolean(o.cssAnimation), axis: (o) => Boolean(o.cssAnimation),
+      rangeStart: (o) => Boolean(o.cssAnimation), rangeEnd: (o) => Boolean(o.cssAnimation),
+      start: (o) => !o.cssAnimation, end: (o) => !o.cssAnimation
     },
     cursor: {
-      preset: () => true
+      preset: () => true,
+      clickImageDuration:(o)=>Boolean(o.clickImage)&&!o.clickSprite,
+      clickImageSize:(o)=>Boolean(o.clickImage)&&!o.clickSprite,
+      clickSpriteDuration:(o)=>Boolean(o.clickSprite),
+      clickSpriteWidth:(o)=>Boolean(o.clickSprite),
+      clickSpriteHeight:(o)=>Boolean(o.clickSprite),
+      clickSpriteFrames:(o)=>Boolean(o.clickSprite)
     },
     fullpage: {
       preset: () => true
@@ -562,7 +573,7 @@
     accordion: [['single','Single open','checkbox'],['effect','Reveal effect','select',['blur','fade','none']],['duration','Duration (s)','range',0.1,1,0.02],['blur','Blur','range',0,20,1],['arrowPosition','Arrow side','select',['right','left']],['ease','Ease','text'],['activeClass','Active class','text']],
     megaMenu: [['trigger','Trigger','select',['hover','click']],['layout','Layout','select',['dropdown','mega']],['responsive','Responsive items','select',['wrap','scroll','custom']],['indicator','Indicator','select',['none','chevron','plus']],['openDelay','Open delay (ms)','range',0,400,10],['closeDelay','Close delay (ms)','range',0,600,10],['duration','Duration (s)','range',0.05,0.6,0.01]],
     toast: [['message','Message','text'],['type','Type','select',['info','success','warning','error','none']],['icon','Icon (glyph/emoji)','text'],['position','Position','select',['bottom-right','bottom-left','top-right','top-left','top','bottom']],['duration','Duration (ms)','range',1000,30000,500],['progressBar','Progress','select',['none','bar','ring']],['barColor','Progress color','text'],['max','Max stack','range',1,8,1],['dismissible','Dismissible (close btn)','checkbox']],
-    bottomSheet: [['autoHeight','Auto height','checkbox'],['maxHeight','Max height','text'],['backdrop','Backdrop','checkbox'],['backdropOpacity','Backdrop opacity','range',0,1,0.05],['dismissible','Dismissible','checkbox'],['handle','Drag handle','checkbox'],['resizable','Resizable height','checkbox'],['resizeArea','Resize area','select',['handle','header']],['minHeight','Minimum height','range',120,480,10],['maxHeight','Maximum height','range',320,1200,20],['duration','Duration (s)','range',0.1,0.8,0.02]],
+    bottomSheet: [['autoHeight','Auto height','checkbox'],['maxHeight','Max height','text'],['backdrop','Backdrop','checkbox'],['backdropOpacity','Backdrop opacity','range',0,1,0.05],['dismissible','Dismissible','checkbox'],['handle','Drag handle','checkbox'],['resizable','Resizable height','checkbox'],['resizeArea','Resize area','select',['handle','header']],['minHeight','Minimum height','range',120,480,10],['duration','Duration (s)','range',0.1,0.8,0.02]],
     tabs: [['activation','Activation','select',['automatic','manual']],['orientation','Orientation','select',['horizontal','vertical']],['effect','Panel effect','select',['fade','slide','blur','cross','none']],['indicatorMotion','Marker motion','select',['slide','none','fade']],['indicator','Indicator','checkbox'],['duration','Duration (s)','range',0,0.6,0.02],['activeClass','Active class','text']],
     coverReveal: [['mask','Mask replaces final panel','checkbox'],['maskDirection','Mask direction','select',['','left','right','up','down']],['watch','Replay on content change','checkbox'],['lines','Per-line (text)','checkbox'],['colorMode','Color mode','select',['single','pair','palette','auto']],['color','Panel color','color'],['color2','Panel color 2','color'],['colors','Color palette','text'],['direction','Direction','select',['right','left','up','down','random']],['duration','Duration (s)','range',0.2,2,0.05],['delay','Delay (ms)','range',0,2000,50],['layers','Layers','range',1,3,1],['stagger','Stagger (ms)','range',0,400,10],['waitForImage','Wait for image','checkbox']],
     gesture: [['hoverScale','Hover scale','range',1,1.4,0.01],['tapScale','Tap scale','range',0.7,1,0.01],['lift','Lift (px)','range',0,20,1],['origin','Origin','select',['center','top','bottom','left','right']],['duration','Duration (s)','range',0,0.6,0.02]],
@@ -606,7 +617,7 @@
     horizontalScroll: [['height','Stage height','text'],['top','Pin top','text'],['smooth','Smooth','checkbox']],
     loadingIndicator: [
       ['preset','Type','select',['spinner','dots','bar','shimmer','shimmer-wave','terminal']],
-      ['spinnerStyle','Spinner style','select',['ring','comet','spokes']],['spinnerMode','Arc mode','select',['grow','spin','fill']],['track','Show track','checkbox'],['rotateSpokes','Rotate whole spinner','checkbox'],['dotStyle','Dot style','select',['pulse','bounce','wave']],['terminalStyle','Terminal style','select',['cursor','dots','blocks','meter','line-slash','braille','braille-pulse','quarter-circle','circle','clock','arrow-orbit','triangle','box-corners','block-shade','growing-blocks','moon','diamond','pulse-dot','spark','binary','toggle-blocks','cross','asterisk','quad-dot-chase','quad-dot-pulse','bouncing-ball','bouncing-bar','scanner','snake','marquee','typing-cursor','ellipsis-typing','block-cursor','command-prompt','dot-cursor','spinner-label','quad-dots-label','spinner-elapsed','spinner-step','spinner-meter']],
+      ['spinnerStyle','Spinner style','select',['ring','comet','spokes']],['spinnerMode','Arc mode','select',['grow','spin','fill']],['track','Show track','checkbox'],['rotateSpokes','Rotate whole spinner','checkbox'],['dotStyle','Dot style','select',['pulse','bounce','wave']],['terminalStyle','Terminal style','select',['cursor','dots','blocks','meter','line-slash','braille','braille-pulse','quarter-circle','circle','clock','arrow-orbit','triangle','box-corners','block-shade','growing-blocks','moon','diamond','pulse-dot','spark','binary','toggle-blocks','cross','asterisk','quad-dot-chase','bouncing-ball','bouncing-bar','scanner','snake','marquee','typing-cursor','ellipsis-typing','block-cursor','command-prompt','dot-cursor','spinner-label','quad-dots-label','spinner-elapsed','spinner-step','spinner-meter']],
       ['motionDuration','Motion duration (s)','range',0.2,4,0.05],['direction','Direction','select',['normal','reverse']],['transformOrigin','Origin','select',['center','left','right','top','bottom','top left','top right','bottom left','bottom right']],['size','Size','range',18,160,2],['stroke','Stroke','range',1,16,1],
       ['barMode','Bar mode','select',['slide','grow','pingpong']],['barWidth','Bar width','range',80,520,10],['barHeight','Bar height','range',2,24,1],['indeterminate','Indeterminate','checkbox'],['progress','Progress','range',0,100,1],['showSpinner','Show spinner glyph','checkbox'],['showLabel','Show label','checkbox'],['showStatus','Show status','checkbox'],['stepTotal','Step total','range',2,20,1],
       ['dotCount','Dot count','range',3,16,1],['dotSize','Dot size','range',2,24,1],['dotGap','Dot gap','range',0,24,1],
@@ -1028,7 +1039,7 @@
     if (!payload || ![1, 2].includes(payload.v) || typeof payload.demo !== 'string' || !payload.options || typeof payload.options !== 'object') return;
     // v1 links used a global mount ordinal (`typewriter-15`). Keep those exact
     // identifiers as aliases, while v2 addresses the stable semantic record.
-    const shareKey = payload.v === 1 ? state.shareAliases.get(payload.demo) : payload.demo;
+    const shareKey = state.shareAliases.get(payload.demo) || (payload.v === 2 ? payload.demo : '');
     const record = shareKey ? state.sharedDemos.get(shareKey) : null;
     if (!record) return;
     const { host, descriptors, panel } = record;
@@ -2821,18 +2832,33 @@
     descriptors.forEach((d) => d.targets?.forEach?.((t) => { if (!t.__ktLastGood) t.__ktLastGood = Array.from(t.attributes).filter((a) => a.name.startsWith('data-kt-')).map((a) => [a.name, a.value]); }));
     rebuildPanel(controlHost, descriptors);
     const panel = controlHost.querySelector('.kt-playground');
-    const legacyShareKey = demoId || `${descriptors.map((d) => d.module).join('+')}-${state.legacyShareKeys.size + 1}`;
-    state.legacyShareKeys.add(legacyShareKey);
+    // New panels can join semantic v2 sharing without consuming a historical
+    // v1 ordinal. This keeps every existing order-derived alias stable.
+    const hasLegacyShare = !host.hasAttribute('data-demo-no-legacy-share');
+    const legacyShareKey = hasLegacyShare
+      ? (demoId || `${descriptors.map((d) => d.module).join('+')}-${state.legacyShareKeys.size + 1}`)
+      : '';
+    if (legacyShareKey) state.legacyShareKeys.add(legacyShareKey);
     const shareKey = availableSemanticShareKey(semanticShareKey(host, descriptors, demoId));
     if (panel) {
       panel.dataset.shareKey = shareKey;
-      panel.dataset.shareLegacyKey = legacyShareKey;
+      if (legacyShareKey) panel.dataset.shareLegacyKey = legacyShareKey;
     }
     descriptors.forEach((descriptor) => {
       if (!descriptor.shareInitial) descriptor.shareInitial = { ...((descriptor.kind === 'loader' || descriptor.kind === 'pageReveal' || descriptor.kind === 'pageTransition') ? descriptor.options : descriptorOptions(descriptor)) };
     });
     state.sharedDemos.set(shareKey, { host: controlHost, descriptors, panel });
-    state.shareAliases.set(legacyShareKey, shareKey);
+    if (legacyShareKey) state.shareAliases.set(legacyShareKey, shareKey);
+    // An owner-approved merge of adjacent duplicate cards reserves the removed
+    // card's v1 ordinal and routes its v2 heading key to the surviving settings.
+    if (host.dataset.demoMergedCard) {
+      const mergedLegacyKey = `${descriptors.map((d) => d.module).join('+')}-${state.legacyShareKeys.size + 1}`;
+      state.legacyShareKeys.add(mergedLegacyKey);
+      state.shareAliases.set(mergedLegacyKey, shareKey);
+      const mergedKey = shareKey.split('--');
+      mergedKey[1] = shareSlug(host.dataset.demoMergedCard);
+      state.shareAliases.set(mergedKey.join('--'), shareKey);
+    }
     ensureHorizontalSettings(controlHost, descriptors);
   }
 
@@ -2881,7 +2907,11 @@
         tab.type = 'button';
         tab.className = 'demo-tab';
         tab.setAttribute('role', 'tab');
-        tab.textContent = panel.dataset.demoTabLabel || `예시 ${index + 1}`;
+        const tabLabel = panel.dataset.demoTabLabel || `예시 ${index + 1}`;
+        tab.textContent = tabLabel;
+        if (panel.hasAttribute('data-demo-tab-i18n')) {
+          tab.dataset.demoI18n = panel.dataset.demoTabI18n || tabLabel;
+        }
         tab.setAttribute('aria-selected', String(index === 0));
         tab.addEventListener('click', () => {
           panels.forEach((other, otherIndex) => { other.hidden = otherIndex !== index; });
@@ -2921,7 +2951,27 @@
     });
     root.querySelectorAll('.card').forEach((card) => {
       // Its panels are already mounted individually above.
-      if (card.hasAttribute('data-demo-tabs')) return;
+      if (card.hasAttribute('data-demo-tabs')) {
+        // A card converted from one historical settings host into tabs can
+        // create its new hosts in the early tab pass without shifting v1 URL
+        // ordinals. Reserve exactly one alias here, at the card's old position
+        // among ordinary cards, and attach it to the first (legacy) panel.
+        if (card.hasAttribute('data-demo-defer-legacy-share')
+          && card.dataset.demoDeferredLegacyMounted !== 'true') {
+          const controlHost = card.querySelector(':scope > .demo-tabhosts > .kt-playground-host');
+          const panel = controlHost?.querySelector(':scope > .kt-playground');
+          const shareKey = panel?.dataset.shareKey;
+          const moduleName = controlHost?.dataset.settingsFor;
+          if (panel && shareKey && moduleName) {
+            const legacyShareKey = `${moduleName}-${state.legacyShareKeys.size + 1}`;
+            state.legacyShareKeys.add(legacyShareKey);
+            state.shareAliases.set(legacyShareKey, shareKey);
+            panel.dataset.shareLegacyKey = legacyShareKey;
+            card.dataset.demoDeferredLegacyMounted = 'true';
+          }
+        }
+        return;
+      }
       let descriptors = discover(card);
       const loaderButton = card.querySelector('[data-loader-type]');
       if (loaderButton) {

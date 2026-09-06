@@ -920,8 +920,10 @@
       window.addEventListener('scroll',()=>{if(window.scrollY<48&&location.hash&&!navScrollLock&&allowHashClear)clearHash();},{passive:true});
     })();
     // First-screen snap: a deliberate first wheel/touch gesture moves between
-    // the hero and the first content scene. Momentum from that gesture is held
-    // until the landing settles, so it cannot trigger the opposite snap.
+    // the hero and the first content scene. We animate the document position
+    // ourselves and own the rest of that physical gesture until it goes quiet.
+    // This keeps the requested inertial landing without letting native momentum
+    // and Lenis add a second movement (the mobile/trackpad "bounce").
     (()=>{
       if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
       const hero=document.querySelector('.hero');
@@ -929,54 +931,91 @@
       if(!hero||!target)return;
       const firstModule=(target.id||'').replace(/^mod-/,'')||'textSplit';
       const landing=document.querySelector('main .section-head')||target;
-      const SNAP_TAIL_MS=1200;
-      let snapping=false,lastAt=0,consumed=false,ignoreUntil=0,snapDirection=0;
-      const scrollScene=(top)=>{
-        // Keep the intentional one-gesture scene transition visually smooth.
-        // Lenis can otherwise take ownership midway through the native scene
-        // scroll (especially going back to the hero) and leave it unfinished.
-        const lenis=window.Kineto?.lenis;
-        lenis?.stop?.();
-        window.scrollTo({top,behavior:'smooth'});
-        setTimeout(()=>lenis?.start?.(),900);
+      const SNAP_MIN_MS=680;
+      const SNAP_MAX_MS=860;
+      const GESTURE_QUIET_MS=180;
+      let snapping=false,gestureOwned=false,animationDone=false,lastInputAt=0;
+      let scrollRaf=null,releaseTimer=null,touchActive=false;
+      const finishGesture=()=>{
+        clearTimeout(releaseTimer);
+        releaseTimer=null;
+        if(!gestureOwned||!animationDone||touchActive)return;
+        const quietFor=performance.now()-lastInputAt;
+        if(quietFor<GESTURE_QUIET_MS){
+          releaseTimer=setTimeout(finishGesture,GESTURE_QUIET_MS-quietFor+1);
+          return;
+        }
+        gestureOwned=false;
+        snapping=false;
+        window.__ktHeroSceneSnap=false;
+        // A manually enabled Lenis instance is intentionally not managed by
+        // syncSmoothForScroll(), so resume it here. Automatic mode is resolved
+        // by the synthetic scroll notification below (enable below the hero,
+        // destroy again at the hero).
+        if(smoothManual&&smoothWanted())window.Kineto?.lenis?.start?.();
+        window.dispatchEvent(new Event('scroll'));
+      };
+      const noteInput=()=>{
+        lastInputAt=performance.now();
+        if(animationDone)finishGesture();
+      };
+      const beginGesture=()=>{
+        clearTimeout(releaseTimer);
+        if(scrollRaf!=null)cancelAnimationFrame(scrollRaf);
+        releaseTimer=null;
+        scrollRaf=null;
+        snapping=true;
+        gestureOwned=true;
+        animationDone=false;
+        noteInput();
+        window.__ktHeroSceneSnap=true;
+        window.Kineto?.lenis?.stop?.();
+      };
+      const scrollScene=(requestedTop)=>{
+        const maxTop=Math.max(0,document.documentElement.scrollHeight-window.innerHeight);
+        const top=Math.min(maxTop,Math.max(0,requestedTop));
+        const from=window.scrollY;
+        const distance=top-from;
+        const duration=Math.min(SNAP_MAX_MS,Math.max(SNAP_MIN_MS,Math.abs(distance)*.42));
+        const started=performance.now();
+        // A quartic ease-out carries visible momentum through the middle of the
+        // trip, then settles without overshoot. Clamp every write so Safari's
+        // rubber-band range never becomes part of the programmed trajectory.
+        const frame=(now)=>{
+          const progress=Math.min(1,Math.max(0,(now-started)/duration));
+          const eased=1-Math.pow(1-progress,4);
+          const next=from+distance*eased;
+          window.scrollTo(0,distance>=0?Math.min(top,Math.max(from,next)):Math.max(top,Math.min(from,next)));
+          if(progress<1){scrollRaf=requestAnimationFrame(frame);return;}
+          scrollRaf=null;
+          window.scrollTo(0,top);
+          animationDone=true;
+          finishGesture();
+        };
+        scrollRaf=requestAnimationFrame(frame);
       };
       const snapTop=()=>{
-        snapping=true;
-        snapDirection=-1;
-        window.__ktHeroSceneSnap=true;
-        ignoreUntil=performance.now()+SNAP_TAIL_MS;
+        beginGesture();
         scrollScene(0);
         try{history.replaceState(null,'',location.pathname+location.search);}catch(_){/* file:// */}
-        setTimeout(()=>{snapping=false;snapDirection=0;window.__ktHeroSceneSnap=false;window.dispatchEvent(new Event('scroll'));},1000);
       };
       const inHero=()=>window.scrollY<hero.offsetHeight-120;
       const heroFullySeen=()=>window.scrollY+window.innerHeight>=hero.offsetHeight-4;
       const nearFirstSection=()=>window.scrollY>60&&window.scrollY<=landing.offsetTop+24;
       const snap=()=>{
-        snapping=true;
-        snapDirection=1;
-        window.__ktHeroSceneSnap=true;
-        ignoreUntil=performance.now()+SNAP_TAIL_MS;
+        beginGesture();
         // Use an explicit document position. `scrollIntoView()` can be ignored
         // during a cancelled wheel event in WebKit, which left the URL changed
         // but the first scene still at the hero.
         const landingTop=Math.max(0,landing.offsetTop-96);
         scrollScene(landingTop);
         try{history.replaceState({ktModule:firstModule},'','#mod-'+firstModule);}catch(_){/* file:// */}
-        setTimeout(()=>{snapping=false;snapDirection=0;window.__ktHeroSceneSnap=false;window.dispatchEvent(new Event('scroll'));},1000);
       };
       window.addEventListener('wheel',(event)=>{
-        const now=performance.now();
-        // Preserve physical momentum in the direction of travel. Only suppress
-        // the short opposite-direction tail that used to re-trigger the other
-        // scene and make the transition look like a bounce.
-        if(now<ignoreUntil&&Math.sign(event.deltaY)!==snapDirection){event.preventDefault();return;}
-        const sameGesture=now-lastAt<280;
-        lastAt=now;
-        if(!sameGesture)consumed=false;
-        if(snapping||(sameGesture&&consumed))return;
-        if(inHero()&&heroFullySeen()&&event.deltaY>8){event.preventDefault();consumed=true;snap();}
-        else if(nearFirstSection()&&event.deltaY<-8){event.preventDefault();consumed=true;snapTop();}
+        if(gestureOwned){event.preventDefault();noteInput();return;}
+        if(snapping)return;
+        if(inHero()&&heroFullySeen()&&event.deltaY>8){event.preventDefault();snap();}
+        else if(nearFirstSection()&&event.deltaY<-8){event.preventDefault();snapTop();}
       },{passive:false});
       document.getElementById('brand-home')?.addEventListener('click',snapTop);
       // The same intentional one-swipe movement is available on touch screens.
@@ -984,15 +1023,14 @@
       // only prevent its native scroll once this handler actually owns the swipe.
       let touchY=null,touchDone=false;
       window.addEventListener('touchstart',(event)=>{
+        touchActive=true;
         touchY=event.touches[0]?.clientY??null;
         touchDone=false;
       },{passive:true});
       window.addEventListener('touchmove',(event)=>{
         if(touchY==null)return;
-        if(performance.now()<ignoreUntil||snapping||touchDone){
-          if(touchDone||performance.now()<ignoreUntil)event.preventDefault();
-          return;
-        }
+        if(gestureOwned||touchDone){event.preventDefault();noteInput();return;}
+        if(snapping)return;
         const delta=touchY-(event.touches[0]?.clientY??touchY);
         const down=inHero()&&heroFullySeen()&&delta>26;
         const up=nearFirstSection()&&delta<-26;
@@ -1001,7 +1039,13 @@
         touchDone=true;
         if(down)snap();else snapTop();
       },{passive:false});
-      window.addEventListener('touchend',()=>{touchY=null;},{passive:true});
+      const endTouch=()=>{
+        touchY=null;
+        touchActive=false;
+        if(gestureOwned){noteInput();finishGesture();}
+      };
+      window.addEventListener('touchend',endTouch,{passive:true});
+      window.addEventListener('touchcancel',endTouch,{passive:true});
     })();
     // optional dependency toggles → conditional CDN rows
     document.querySelectorAll('.extra-toggle input[data-extra]').forEach(input=>input.addEventListener('change',()=>{

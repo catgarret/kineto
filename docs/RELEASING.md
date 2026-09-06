@@ -75,6 +75,11 @@ This command:
   entry points and remains within its compressed, unpacked, and file-count
   budgets.
 
+Preparation updates the current source labels in the QA report and AI handoff,
+but preserves the last verified npm version, historical workflow runs, dates,
+and artifact hashes. Record new publication and deployment evidence only after
+the corresponding remote operations succeed.
+
 Review the result, then run:
 
 ```bash

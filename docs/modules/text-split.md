@@ -27,6 +27,25 @@ Kineto.textSplit('h1', {
 });
 ```
 
+`<br>`로 작성한 줄바꿈과 JavaScript `texts` 배열 안의 `\n`은 `char`,
+`word`, 문구 교체, `replay()`에서 모두 실제 줄바꿈으로 유지됩니다.
+
+```html
+<h1 data-kt-text-split="word">첫 번째 줄<br>두 번째 줄</h1>
+```
+
+```js
+Kineto.textSplit('.status', {
+  by: 'char',
+  texts: ['전략을 분석하고 있어요.\n잠시만 기다려 주세요.', '이미지를 생성하고 있어요.\n곧 완료됩니다.']
+});
+```
+
+Text Reveal도 authored `<br>`와 `text` 옵션의 `\n`을 같은 방식으로
+보존합니다. [Blur Text](blur-text.md)는 DOM의 `<br>`와 실제 줄바꿈 문자를
+보존합니다. 일반 `reveal`은 자식 DOM을 분할하지 않으므로 기존 `<br>`를
+그대로 둡니다.
+
 ---
 
 ## 옵션
@@ -90,12 +109,13 @@ Kineto.textSplit('h1', {
 
 스크린리더는 `aria-label`만 읽고 분할된 span은 무시합니다.
 
-`prefers-reduced-motion`: 분할은 하지만 stagger 없이 모두 한 번에 표시.
+`prefers-reduced-motion`: 애니메이션 없이 첫 문구를 표시하고 줄바꿈을
+유지합니다. 옵션 문구가 없으면 작성한 inline markup도 유지합니다.
 
 ---
 
 ## 알려진 한계
 
-- **HTML 태그 제거됨**: textContent로 추출하기 때문에 `<em>`, `<strong>` 같은 inline 태그가 사라집니다. 강조하려면 GSAP에서 특정 글자 인덱스에 다른 색을 입히는 식으로 우회.
-- **줄(line) 분할 미지원**: 현재 공개 계약은 `char`와 `word`만 지원합니다. 실제 사용 요구와 접근성·레이아웃 복원 검증이 확보되기 전에는 line 분할 일정을 약속하지 않습니다.
+- **일반 애니메이션의 HTML 태그 제거**: 텍스트를 추출해 새 span으로 나누므로 `<em>`, `<strong>` 같은 inline 태그는 사라집니다. `<br>`는 줄바꿈으로 복원합니다.
+- **줄(line) 단위 분할 미지원**: 강제 줄바꿈 자체는 보존하지만, 한 줄 전체를 하나의 animation unit으로 만드는 `by: 'line'`은 현재 공개 계약에 없습니다.
 - **다국어**: 한글/영문 모두 동작. 이모지는 분리되지 않음 (의도).

@@ -108,12 +108,7 @@ const CATALOG = [
   { id: 'toggle-blocks', name: 'Toggle Blocks', description: 'A square toggles between empty, half and filled.', renderer: 'multiline-frame', frames: ['□', '▣', '■', '▣'], defaultInterval: 180, fixedWidth: true, supportedOptions: COMMON, legacyAliases: ['boxes'] },
   { id: 'cross', name: 'Cross', description: 'A plus and a multiply sign alternate.', renderer: 'text-frame', frames: ['+', '×', '+', '×'], defaultInterval: 140, fixedWidth: true, supportedOptions: COMMON },
   { id: 'asterisk', name: 'Asterisk', description: 'Plus, multiply and asterisk in rotation.', renderer: 'text-frame', frames: ['+', '×', '✳', '×'], defaultInterval: 140, fixedWidth: true, supportedOptions: COMMON },
-  { id: 'quad-dot-chase', name: 'Quad Dot Chase', description: 'Four corner dots hand a bright head around a 2×2 square, each trailing dot a step dimmer.', renderer: 'matrix-frame', frames: [], defaultInterval: 200, supportedOptions: MATRIX_OPTS, accessibilityLabel: 'Loading' },
-  // The reference recording also breathes: the whole 2x2 cluster dims and
-  // brightens while the head goes round, which reads as a slower, calmer
-  // sibling of the plain chase. Kept as its own preset so both looks are
-  // reachable rather than hidden behind an option nobody finds.
-  { id: 'quad-dot-pulse', name: 'Quad Dot Pulse', description: 'The 2x2 dot chase with the whole cluster breathing as the head goes round.', renderer: 'matrix-frame', frames: [], defaultInterval: 200, supportedOptions: MATRIX_OPTS, accessibilityLabel: 'Loading' },
+  { id: 'quad-dot-chase', name: 'Quad Dot Chase', description: 'Four corner dots hand a bright head around a 2×2 square, each trailing dot a step dimmer.', renderer: 'matrix-frame', frames: [], defaultInterval: 200, supportedOptions: MATRIX_OPTS, accessibilityLabel: 'Loading', legacyAliases: ['quad-dot-pulse'] },
   { id: 'bouncing-ball', name: 'Bouncing Ball', description: 'A ball travels the track and bounces off both walls.', renderer: 'marquee-frame', frames: bounceTrack('●'), defaultInterval: 90, fixedWidth: true, supportedOptions: MOVING },
   { id: 'bouncing-bar', name: 'Bouncing Bar', description: 'A three-cell bar slides the track and rebounds.', renderer: 'marquee-frame', frames: bounceTrack('==='), defaultInterval: 90, fixedWidth: true, supportedOptions: MOVING },
   { id: 'scanner', name: 'Scanner', description: 'A beam grows from one wall to the far end, then restarts. Reverse mirrors the arrowhead; a numeric progress fills it like a bar.', renderer: 'marquee-frame', frames: sweepTrack(), defaultInterval: 90, fixedWidth: true, supportedOptions: SCANNER_OPTS },

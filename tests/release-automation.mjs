@@ -85,6 +85,14 @@ assert.match(prepareReleaseScript, /roadmap\.replace\(roadmapBaseline, `\$1v\$\{
   'release preparation must synchronize only the roadmap baseline version');
 assert.doesNotMatch(prepareReleaseScript, /versionFiles = \[[\s\S]*?'docs\/ROADMAP\.md'[\s\S]*?\];/,
   'release preparation must not rewrite historical roadmap version references');
+for (const document of ['QA_REPORT', 'AI-HANDOFF']) {
+  assert.doesNotMatch(prepareReleaseScript,
+    new RegExp(`versionFiles = \\[[\\s\\S]*?'docs/${document}\\.md'[\\s\\S]*?\\];`),
+    `release preparation must not rewrite historical ${document} evidence globally`);
+}
+assert.match(prepareReleaseScript, /updateReleaseDocumentVersion\(relative, source, current, next\)/,
+  'release preparation must selectively update source labels in publication evidence documents');
+execFileSync(process.execPath, [path.join(root, 'tests/release-document-versions.mjs')], { stdio: 'inherit' });
 assert.match(prepareReleaseScript, /generate-module-metadata\.mjs/,
   'release preparation must regenerate versioned module metadata');
 assert.match(shipReleaseScript, /spawnSync\([\s\S]*?'show-ref', '--verify', '--quiet'/,
@@ -104,6 +112,14 @@ assert.match(publishJob, /permissions:\s*\n\s+contents:\s*write\s*\n\s+id-token:
 assert.match(publishJob, /needs:\s*\[verify, cross-browser\]/);
 assert.doesNotMatch(publishJob, /if:\s*always\(\)/, 'publish must retain the default all-needs-succeeded gate');
 assert.match(releaseCrossBrowserJob, /matrix:\s*\n\s*browser:\s*\[firefox, webkit\]/);
+assert.match(ciCrossBrowserJob, /tests\/browser\/css-scroll\.mjs/,
+  'CI cross-browser lanes must exercise cssScroll native/fallback progress');
+assert.match(releaseCrossBrowserJob, /tests\/browser\/css-scroll\.mjs/,
+  'release cross-browser lanes must exercise cssScroll native/fallback progress');
+assert.match(ciCrossBrowserJob, /tests\/browser\/cursor-click-media\.mjs/,
+  'CI cross-browser lanes must exercise one-shot animated cursor media');
+assert.match(releaseCrossBrowserJob, /tests\/browser\/cursor-click-media\.mjs/,
+  'release cross-browser lanes must exercise one-shot animated cursor media');
 assert.match(verifiedPackageUpload, /^\s+name:\s*verified-package-\$\{\{ github\.ref_name \}\}$/m);
 assert.match(verifiedPackageUpload, /overwrite:\s*true/, 'a full workflow rerun must safely replace its prior verified artifact');
 assert.match(verifiedPackageDownload, /^\s+name:\s*verified-package-\$\{\{ github\.ref_name \}\}$/m);
@@ -142,18 +158,14 @@ for (const command of ['lint', 'build', 'test:demo', 'test:browser']) {
   assert.match(workflow, new RegExp(`retry-command\\.mjs npm run ${command}`), `release workflow must isolate ${command}`);
   assert.match(read('.github/workflows/ci.yml'), new RegExp(`retry-command\\.mjs npm run ${command}`), `CI workflow must isolate ${command}`);
 }
-for (const command of [
-  'test:utils', 'test:diagnostics', 'test:states', 'test:presence', 'test:contract', 'test:requirements',
-  'test:docs', 'test:docs-navigation', 'test:roadmap-readiness', 'test:readiness-gates', 'test:readiness-evidence', 'test:lockfile-boundary', 'test:supply-chain-automation', 'test:module-metadata', 'test:module-status', 'test:mobile-device-manifest',
-  'test:package', 'test:types', 'test:package-size', 'test:package-tarball',
-  'test:consumer-bundles', 'test:framework', 'test:parity', 'test:structure', 'test:copy',
-  'test:lazy', 'test:options', 'test:variants', 'test:help', 'test:inline', 'test:defaults',
-  'test:variant-options', 'test:variant-distinctness', 'test:easings', 'test:reduced', 'test:update', 'test:audit',
-  'test:leak', 'test:perf', 'test:deps', 'test:engine', 'test:sequence-sources',
-  'test:regressions', 'test:site', 'test:release', 'test:size'
-]) {
-  assert.ok(workflow.includes(command), `release workflow must cover ${command}`);
-  assert.ok(read('.github/workflows/ci.yml').includes(command), `CI workflow must cover ${command}`);
+// Derive this manifest from the local suite instead of maintaining a second
+// hand-written list that can silently omit a newly added regression gate.
+for (const step of pkg.scripts['test:node'].split(' && ')) {
+  assert.match(step, /^npm run test:[\w-]+$/, `unsupported Node test step: ${step}`);
+  const command = step.slice('npm run '.length);
+  const token = new RegExp(`(?:^|\\s)${command}(?=\\s|;|$)`, 'm');
+  assert.match(workflow, token, `release workflow must cover ${command}`);
+  assert.match(ciWorkflow, token, `CI workflow must cover ${command}`);
 }
 assert.match(workflow, /retry-command\.mjs npm pack --dry-run/);
 assert.match(workflow, /retry-command\.mjs npm run audit:lockfiles -- --output-dir release-audit/);

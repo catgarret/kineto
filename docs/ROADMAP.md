@@ -1,14 +1,17 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.9.6 · 작성일: 2026-08-02 · 검토: 2026-09-05
+> 기준 버전: v0.9.6 · 작성일: 2026-08-02 · 검토: 2026-09-06
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
-> §8 지표 교체, §11 검토 의견입니다. §11은 이 로드맵과 다른 판단을 적은 절이므로
-> 반영 여부를 먼저 결정한 뒤 나머지 절을 갱신해야 합니다.
+> §8 지표 교체, §11 검토 의견입니다. §11은 당시의 검토 기록으로 보존하며, 채택한 권고는
+> 현재 우선순위·완료 목록·자동 게이트에 이미 반영되어 있습니다.
 
 2026-09-05 후속 묶음은 dateTime 입력 경계(96~105)에 이어 배포 무결성·framework
 hydration·공급망·데모 재현성·cross-browser 범위(106~129)를 보강했습니다.
+현재 미배포 묶음은 설정 전수 검사·CSS scroll 검증과 실사용 줄바꿈·카운터·
+클릭 이미지·모바일 스크롤 수정입니다. 구현 완료와 원격 배포 완료를 구분하며,
+최종 CI·npm·두 호스팅 결과는 배포 후 QA 이력에 기록합니다.
 
 ## 1. 결론
 
@@ -51,14 +54,14 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 
 ### 현재 병목
 
-- 전체 번들은 제품 범위에 비해 관리 가능하지만 예산 상한에 가깝고, 실제 소비자 앱에서 모듈 하나를 가져왔을 때의 번들 비용은 별도 예산으로 관리하지 않습니다.
+- Vite·Rolldown 소비자 fixture가 full·core+1·core+3·States·Presence·React·Vue 비용과 tree-shaking을 예산으로 관리합니다. 남은 병목은 전체 entry가 제품 상한에 가깝고, 실제 운영 앱의 장기 로딩·캐시·조합 비용 증거가 아직 없다는 점입니다.
 - React·Vue 기본 어댑터의 Strict lifecycle·SSR·실제 브라우저 hydration은 자동 검증합니다. 남은 확장은 새 wrapper를 늘리는 일이 아니라 nested keyed transition과 shared-layout 요구 증거·identity/focus 정책을 먼저 확보하는 일입니다.
 - 52개 모듈과 7개 언어는 유지 비용이 큽니다. 새 기능이 기존 기능의 품질과 문서화를 밀어낼 위험이 있습니다.
 - 공개 저장소 지표는 2026-08-31 확인 기준 star 0, fork 0, 공개 issue 0입니다. 코드 품질과 별개로 외부 검증과 사용 사례가 없는 상태입니다.
 - Socket 경고를 줄이는 기술 조치는 진행됐지만, 공급망 신뢰는 특정 점수 하나가 아니라 릴리스 provenance, 의존성 최소화, 변경 이력, 대응 절차를 함께 유지해야 합니다. Socket도 경고 심각도와 공급망 위험을 종합해 점수를 계산한다고 설명합니다([Socket package scores](https://docs.socket.dev/docs/package-scores)).
 - **테스트가 틀린 이유로 실패합니다.** v0.8.43 릴리스는 같은 assertion에서 반복 실패했는데, 원인은 스타일시트가 아니라 아직 레이아웃되지 않은 패널을 측정한 것이었습니다. `display:none` 요소의 `getComputedStyle`은 used value가 아니라 computed value(`repeat(2, minmax(0px, 1fr))`)를 돌려주고, 이 문자열을 공백으로 자르면 토큰이 정확히 3개가 나옵니다. 즉 **그럴듯하게 틀린 값**이 나왔고, 사람은 CSS를 세 번 고쳤습니다. 브라우저 QA에 “측정 대상이 실제로 레이아웃됐는가”를 먼저 확인하는 규칙이 없으면, 통과율 지표 자체를 신뢰할 수 없습니다.
 - **엔진 커버리지가 아직 균등하지 않습니다.** 일반 모듈은 Chromium 전체와 Firefox/WebKit smoke를 유지하지만, transform·clip·fixed/sticky·mask·3D 경계를 쓰는 고위험 목록은 `heavy-layout` 체크포인트로 세 엔진을 함께 검사합니다. `pageReveal`의 `zoom`은 transform이 걸린 `<body>`가 fixed/sticky 자손의 containing block이 되는 동작에서 Safari와 Chromium이 갈렸고, 커버를 `<html>`로 옮겨야 양쪽이 같아졌습니다. 남은 일반 모듈까지 전부 같은 깊이로 올리는 것은 실제 회귀 신호와 실행 비용을 비교해 단계적으로 결정합니다.
-- **variant 중복을 아무도 측정하지 않습니다.** 모듈 수 상한(§3)은 있지만 모듈 *안*의 preset 중복 상한은 없습니다. 2026-08-09 기준 `pageReveal`은 16개 variant 중 5개가 서로 구분되지 않는 상태였습니다(`circle`↔`iris`, `wipe`↔`curtain`, `blinds`↔`columns`↔`strips`, `checker`↔`data-mosaic`). 사용자가 체감하는 “기능이 많다”는 variant 개수인데, 품질 관리 단위는 모듈 개수입니다. 고위험 `pageReveal` 계열은 v0.8.102부터 clip·mask·transform·opacity 메커니즘 smoke 검사를 시작했으며, 나머지는 수동 검토 대상으로 남깁니다.
+- **variant 구분성은 정적 게이트와 실제 시각 검증을 분리해 관리합니다.** `pageReveal` 16개와 Reveal·Lazy·Cursor·Overflow Text·Glitch·Slider 78개는 contract·구현 branch/source fingerprint·생성 설정의 1:1 대응을 자동 검사합니다. 다만 확대 범위 중 전용 데모 markup은 47/78이고 source fingerprint는 픽셀 단위 시각 회귀를 대신하지 않습니다. 남은 병목은 이름 수가 아니라 실제 회귀 신호가 있는 variant의 전용 비교 화면과 cross-browser 시각 검증을 비용에 맞춰 확대하는 일입니다.
 
 ## 3. 제품 원칙과 하지 않을 일
 
@@ -271,7 +274,7 @@ Vanilla Presence Core 계약이 고정된 뒤 host-owned lifecycle 범위부터 
 - 완료(v0.8.85): Strict Mode·Vue lifecycle·SSR·hydration markup fixture를 통과
 - 완료(v0.8.86): direct keyed child를 추적하고 exit 완료 뒤 자동 제거하는 `KinetoPresenceGroup`을 React·Vue에 추가
 - 완료(v0.8.89): 부모가 `propagate: true`를 선택하면 React·Vue keyed group의 자식 exit와 부모 `safeToRemove` 순서를 전파
-- 완료(Unreleased): `useKinetoTransition()`이 Vue `<Transition>`의 enter/leave,
+- 완료(v0.8.103): `useKinetoTransition()`이 Vue `<Transition>`의 enter/leave,
   cancellation, phase별 옵션, completion fallback을 연결하고 framework QA로 검증
 
 - React: `<KinetoPresence>`, `useKineto`, stable ref, Strict Mode 보장
@@ -298,13 +301,13 @@ Vanilla Presence Core 계약이 고정된 뒤 host-owned lifecycle 범위부터 
 - momentum, bounce, sticky snap을 서로 독립된 설정으로 모델링
 - simple mode에서 CSS Scroll Snap을 쓸 수 있는 경로 검토
 
-**이번 묶음 진행 상태 (Unreleased)**
+**v0.8.105~v0.9.0 진행 결과**
 
-- 완료: track Slider에 `momentum:false`를 추가해 release velocity를 의미적으로 끌 수 있게 했습니다. 기존 기본값과 `velocityInfluence` 동작은 보존합니다.
-- 완료: `bounce:true`에서 양 끝 overscroll을 경계로 되돌리는 bounded physics 경로를 추가했습니다. loop와 reduced-motion 경계는 기존 모델을 따릅니다.
-- 완료: `stickySnap:true`에서 drag release를 가장 가까운 정수 slide로 고정합니다. 기본값은 기존 fractional release target을 보존하도록 `false`입니다.
-- 완료(Unreleased): 단순 `slide` 전용 `scrollSnap:true`를 strict eligibility와 transform fallback으로 공개했습니다. Chromium fixture에서 native scroll, API·마우스 드래그·키보드·sync·destroy 복원을 고정하며, perView>1·loop·3D·radial·autoHeight·세로 축은 계속 fallback합니다.
-- 유지: FLIP shared layout은 실제 keyed child 전환 요구 2건과 focus·scroll 정책이 모일 때까지 현재 gate를 유지합니다. 새 `layout` 모듈은 만들지 않습니다.
+- 완료(v0.8.105): track Slider에 `momentum:false`를 추가해 release velocity를 의미적으로 끌 수 있게 했습니다. 기존 기본값과 `velocityInfluence` 동작은 보존합니다.
+- 완료(v0.8.105): `bounce:true`에서 양 끝 overscroll을 경계로 되돌리는 bounded physics 경로를 추가했습니다. loop와 reduced-motion 경계는 기존 모델을 따릅니다.
+- 완료(v0.8.105): `stickySnap:true`에서 drag release를 가장 가까운 정수 slide로 고정합니다. 기본값은 기존 fractional release target을 보존하도록 `false`입니다.
+- 완료(v0.9.0): 단순 `slide` 전용 `scrollSnap:true`를 strict eligibility와 transform fallback으로 공개했습니다. Chromium fixture에서 native scroll, API·마우스 드래그·키보드·sync·destroy 복원을 고정하며, perView>1·loop·3D·radial·autoHeight·세로 축은 계속 fallback합니다.
+- 유지(증거 게이트): FLIP shared layout은 실제 keyed child 전환 요구 2건과 focus·scroll 정책이 모일 때까지 현재 gate를 유지합니다. 새 `layout` 모듈은 만들지 않습니다.
 
 Swiper도 free mode와 sticky 동작을 분리하고, 단순 구성에서는 CSS mode의 성능 이점과 기능 제한을 명시합니다([Swiper API](https://swiperjs.com/swiper-api)). Kineto는 옵션 수를 복제하지 말고 물리 모델의 경계를 참고합니다.
 
@@ -418,7 +421,14 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 
 ## 10. 다음 실행 순서
 
-다음 개발 사이클은 아래 순서가 가장 안전합니다.
+현재 남은 순서는 다음과 같습니다.
+
+- 진행 중: 실사용 수정 묶음의 통합 CI, 번들·패키지 비용 검토, patch 배포와 두 도메인 산출물 일치 확인.
+- 후속: 전용 데모가 없는 variant 중 실제 적용·회귀 근거가 있는 항목의 비교 화면과 브라우저 검증 확대.
+- 외부 증거 필요: 실제 iOS Safari·Android Chrome·스크린리더 검사, 운영 앱의 장기 성능 측정, 공개 동의를 받은 외부 사용 사례 3개.
+- 증거 확보 후 결정: FLIP shared layout과 States·Presence 추가 확장. 현재 자동 검사나 데모를 외부 사용 증거로 집계하지 않습니다.
+
+아래는 완료 이력입니다.
 
 1. 완료: 소비자 번들 fixture와 CI 예산
 2. 완료: React Strict Mode·SSR, Vue lifecycle·SSR fixture
@@ -471,11 +481,11 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 47. 완료(운영): 실제 사용 사례·fallback·lifecycle·번들 비용을 요구하는 Feature Proposal form 추가
 48. 완료(운영): Chromium·Firefox·WebKit·iOS Safari·Android Chrome의 증거 경계를 기록하는 Browser QA form 추가
 49. 완료(운영): 1.0 외부 검증을 위한 [실제 사용 사례 기록 템플릿](case-study-template.md)과 계약-aware readiness CI 검사 추가
-50. 완료(Unreleased): Slider track release의 `momentum` 의미 스위치와 회귀 계약 추가
-51. 완료(Unreleased): Slider edge overscroll `bounce` opt-in 정착 경로와 reduced-motion 경계 문서화
-52. 완료(Unreleased): Slider drag `stickySnap` opt-in 정수 정착과 기존 fractional target 보존
-53. 완료(Unreleased): 단순 Slider `scrollSnap:true`를 strict eligibility·transform fallback·번들 gate와 함께 구현하고 Chromium·Firefox·WebKit smoke fixture로 검증
-54. 유지(Unreleased): FLIP shared layout은 실제 요구 2건 전까지 구현하지 않는 evidence gate 유지
+50. 완료(v0.8.105): Slider track release의 `momentum` 의미 스위치와 회귀 계약 추가
+51. 완료(v0.8.105): Slider edge overscroll `bounce` opt-in 정착 경로와 reduced-motion 경계 문서화
+52. 완료(v0.8.105): Slider drag `stickySnap` opt-in 정수 정착과 기존 fractional target 보존
+53. 완료(v0.9.0): 단순 Slider `scrollSnap:true`를 strict eligibility·transform fallback·번들 gate와 함께 구현하고 Chromium·Firefox·WebKit smoke fixture로 검증
+54. 유지(증거 게이트): FLIP shared layout은 실제 요구 2건 전까지 구현하지 않는 evidence gate 유지
 55. 완료(v0.9.3 후속): 별도 Pages 백업 경로 `catgarret.github.io/example/kineto`를 canonical `kineto.dongri.me`의 v0.9.3 산출물과 동기화하고, CNAME·사이트 전체 범위는 변경하지 않음
 56. 완료(v0.9.3 후속): `test:live-site:parity`와 로컬 fixture를 추가해 canonical·백업의 버전·모듈 수·GTM·CDN·build marker drift를 검출
 57. 완료(v0.9.3 후속): `.github/workflows/live-site-parity.yml`에 주간 schedule·수동 dispatch parity 경보를 추가하고 canonical Pages 배포와 독립적으로 운영
@@ -527,30 +537,41 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 103. 완료(v0.9.3 후속): 모호한 숫자형 날짜도 명시적 timezone offset을 우선 적용
 104. 완료(v0.9.3 후속): 공백·고정밀 소수초·숫자형 offset 조합의 Node 회귀를 추가
 105. 완료(v0.9.3 후속): dateTime reference·troubleshooting에 새 서버 입력 경계를 반영
-106. 완료(Unreleased): Pages가 테스트한 `dist/kineto.umd.min.js`·`kineto.min.css`를 HTML과 함께 배포하고, 생성 산출물의 byte 일치·build marker와 live-site SHA-256 불일치 검출을 자동화
-107. 완료(Unreleased): Pages workflow가 같은 저장소 `main`의 성공한 push CI가 가리키는 정확한 commit에서만 자동 배포되고, 배포 후 기대 commit을 다시 검사하도록 고정
-108. 완료(Unreleased): 태그 릴리스를 read-only 검증·Firefox/WebKit gate·최소 권한 publish job으로 분리하고 두 검증 job이 모두 성공해야 쓰기·OIDC 권한을 얻도록 제한
-109. 완료(Unreleased): 검증 job이 tarball 하나와 SHA-256 checksum을 만들고 publish job이 digest를 확인한 동일 tarball만 npm과 GitHub Release에 사용하도록 고정
-110. 완료(Unreleased): 릴리스 재실행 시 기존 npm 버전의 integrity가 검증 tarball과 같을 때만 publish를 건너뛰고, 기존 GitHub Release는 수정하지 않는 불변 재실행 계약 추가
-111. 완료(Unreleased): jsDelivr purge 대상을 실제 공개 alias 4개로 제한하고 요청 timeout·최대 5회 bounded retry·부분 실패의 non-zero 종료를 회귀 테스트로 고정
-112. 완료(Unreleased): 외부 GitHub Action을 commit SHA로 고정하고 Node 20.19·22.12에서 build·package·types·tarball public-engine 계약을 별도 CI matrix로 검증
-113. 완료(Unreleased): root·consumer-bundles·framework-qa 세 lockfile을 모두 감사해 성공·실패와 무관하게 기계 판독 보고서를 남기고, 세 npm 경로를 주간 Dependabot 범위에 포함
-114. 완료(Unreleased): root와 두 fixture의 도구·framework 의존성을 잠금 갱신하고 `picomatch` 안전 하한, jQuery 3 호환 경계, Lenis 1.3.26 URL·SRI를 자동 검사
-115. 완료(Unreleased): Vite와 Rolldown이 full·core+1·core+3·States·Presence·React·Vue의 단일 fixture matrix와 동일 제품 gzip·tree-shaking 경계를 공유하도록 통합
-116. 완료(Unreleased): React와 Vue의 실제 SSR markup을 Chromium에서 hydrate해 DOM 재사용·warning/error 0·host당 단일 생성·update 교체·unmount 후 instance 0을 검사
-117. 완료(Unreleased): Chromium·Firefox·WebKit smoke가 공개 52개 모듈을 각각 실제 create·중복 init·replay·destroy하고 registry·실행 목록·instance leak을 contract와 대조
-118. 완료(Unreleased): 데모 설정 공유 URL을 authored module block·card·module·variant 기반 semantic key의 payload v2로 전환하고 v1 ordinal alias·실제 옵션 복원·hash 착지를 보존
-119. 완료(Unreleased): 데모 맨 앞 skip link, 설정/코드와 코드 형식 tablist의 ARIA 관계·roving tabindex·화살표/Home/End 자동 활성화, 재초기화 중복 방지를 Chromium QA로 고정
-120. 완료(Unreleased): 7개 locale에서 header·검색·사이트맵·설정 탭의 accessible name을 동기화하고, Mega Menu 다중 인스턴스 panel ID·trigger ARIA의 생성·destroy 복원을 자동 검사
-121. 완료(Unreleased): 별도 `catgarret.github.io` workflow가 Kineto `main`의 최신 성공 CI commit을 15분 간격으로 선택해 read-only build job에서 검증하고, write 권한을 분리한 job이 `example/kineto`만 자동 동기화하도록 복구했으며 수동 dispatch 실행도 성공
-122. 완료(Unreleased): Vue options의 일반 객체·ref·getter를 실제 create 직전에 다시 평가하고 React·Vue hydration fixture에서 revision `0 → 1` 교체와 최종 instance 0을 검증
-123. 완료(Unreleased): Mega Menu destroy가 실행 중 animation을 취소한 뒤 작성자의 host/item/trigger/panel class·inline style·hidden·ID·ARIA를 정확히 복원하고 재생성·재파괴 lifecycle까지 회귀 검사
-124. 완료(Unreleased): semantic 공유 key가 card 내부 heading까지 읽도록 보강해 CardGlow Soft·Sharp 충돌을 제거하고, 사용자 조작 UI accessible name의 7개 locale 동기화와 의도적 한국어 예제 범위를 자동 검사
+106. 완료(v0.9.4): Pages가 테스트한 `dist/kineto.umd.min.js`·`kineto.min.css`를 HTML과 함께 배포하고, 생성 산출물의 byte 일치·build marker와 live-site SHA-256 불일치 검출을 자동화
+107. 완료(v0.9.4): Pages workflow가 같은 저장소 `main`의 성공한 push CI가 가리키는 정확한 commit에서만 자동 배포되고, 배포 후 기대 commit을 다시 검사하도록 고정
+108. 완료(v0.9.4): 태그 릴리스를 read-only 검증·Firefox/WebKit gate·최소 권한 publish job으로 분리하고 두 검증 job이 모두 성공해야 쓰기·OIDC 권한을 얻도록 제한
+109. 완료(v0.9.4): 검증 job이 tarball 하나와 SHA-256 checksum을 만들고 publish job이 digest를 확인한 동일 tarball만 npm과 GitHub Release에 사용하도록 고정
+110. 완료(v0.9.4): 릴리스 재실행 시 기존 npm 버전의 integrity가 검증 tarball과 같을 때만 publish를 건너뛰고, 기존 GitHub Release는 수정하지 않는 불변 재실행 계약 추가
+111. 완료(v0.9.4): jsDelivr purge 대상을 실제 공개 alias 4개로 제한하고 요청 timeout·최대 5회 bounded retry·부분 실패의 non-zero 종료를 회귀 테스트로 고정
+112. 완료(v0.9.4): 외부 GitHub Action을 commit SHA로 고정하고 Node 20.19·22.12에서 build·package·types·tarball public-engine 계약을 별도 CI matrix로 검증
+113. 완료(v0.9.4): root·consumer-bundles·framework-qa 세 lockfile을 모두 감사해 성공·실패와 무관하게 기계 판독 보고서를 남기고, 세 npm 경로를 주간 Dependabot 범위에 포함
+114. 완료(v0.9.4): root와 두 fixture의 도구·framework 의존성을 잠금 갱신하고 `picomatch` 안전 하한, jQuery 3 호환 경계, Lenis 1.3.26 URL·SRI를 자동 검사
+115. 완료(v0.9.4): Vite와 Rolldown이 full·core+1·core+3·States·Presence·React·Vue의 단일 fixture matrix와 동일 제품 gzip·tree-shaking 경계를 공유하도록 통합
+116. 완료(v0.9.4): React와 Vue의 실제 SSR markup을 Chromium에서 hydrate해 DOM 재사용·warning/error 0·host당 단일 생성·update 교체·unmount 후 instance 0을 검사
+117. 완료(v0.9.4): Chromium·Firefox·WebKit smoke가 공개 52개 모듈을 각각 실제 create·중복 init·replay·destroy하고 registry·실행 목록·instance leak을 contract와 대조
+118. 완료(v0.9.4): 데모 설정 공유 URL을 authored module block·card·module·variant 기반 semantic key의 payload v2로 전환하고 v1 ordinal alias·실제 옵션 복원·hash 착지를 보존
+119. 완료(v0.9.4): 데모 맨 앞 skip link, 설정/코드와 코드 형식 tablist의 ARIA 관계·roving tabindex·화살표/Home/End 자동 활성화, 재초기화 중복 방지를 Chromium QA로 고정
+120. 완료(v0.9.4): 7개 locale에서 header·검색·사이트맵·설정 탭의 accessible name을 동기화하고, Mega Menu 다중 인스턴스 panel ID·trigger ARIA의 생성·destroy 복원을 자동 검사
+121. 완료(v0.9.4): 별도 `catgarret.github.io` workflow가 Kineto `main`의 최신 성공 CI commit을 15분 간격으로 선택해 read-only build job에서 검증하고, write 권한을 분리한 job이 `example/kineto`만 자동 동기화하도록 복구했으며 수동 dispatch 실행도 성공
+122. 완료(v0.9.4): Vue options의 일반 객체·ref·getter를 실제 create 직전에 다시 평가하고 React·Vue hydration fixture에서 revision `0 → 1` 교체와 최종 instance 0을 검증
+123. 완료(v0.9.4): Mega Menu destroy가 실행 중 animation을 취소한 뒤 작성자의 host/item/trigger/panel class·inline style·hidden·ID·ARIA를 정확히 복원하고 재생성·재파괴 lifecycle까지 회귀 검사
+124. 완료(v0.9.4): semantic 공유 key가 card 내부 heading까지 읽도록 보강해 CardGlow Soft·Sharp 충돌을 제거하고, 사용자 조작 UI accessible name의 7개 locale 동기화와 의도적 한국어 예제 범위를 자동 검사
 125. 완료(v0.9.5): 생성형 맨 위로 이동 progress ring의 accessible name을 7개 locale로 동기화하고, observer가 control을 재생성해도 원본 declarative label과 생성 button이 같은 locale을 유지하도록 회귀 검사
 126. 완료(v0.9.5): 없는 local release tag를 fatal 출력 없이 확인하고, 이미 push된 tag의 publish workflow 실패는 tag를 변경하지 않고 새 patch version으로 정방향 수정하도록 release 절차를 고정
 127. 완료(v0.9.5 실행 증거): `8ac7a2b`의 CI `33946293529`와 canonical Pages `33946819020`, Release `33946295274`의 Verify·Firefox·WebKit 성공을 확인하고, prefix 없는 tarball 경로 때문에 publish만 실패한 사실을 분리해 기록
 128. 완료(v0.9.6): checksum 검증 tarball output을 명시적인 `./release-artifact/...tgz`로 고정하고, npm이 이를 Git package spec으로 해석하지 않도록 release contract를 추가한 뒤 실제 `npm publish --dry-run`으로 경로 해석을 검증
 129. 완료(v0.9.6 실행 증거): `8d784b6`의 CI `33947520040`·Release `33947520948`·Pages `33947939177`, npm SLSA provenance, npm/GitHub tarball SHA-256 일치, backup sync `33947970148`·Pages `33947986088`, 두 공개 도메인의 v0.9.6·52개·GTM·build/runtime hash 일치를 확인
+130. 완료(Unreleased): 로드맵의 당시 검토 의견과 현재 구현 상태를 분리하고, 소비자 번들·framework hydration·Slider·공유 URL 완료 이력을 실제 릴리스에 귀속
+131. 완료(Unreleased): Page Reveal 16개에 더해 Reveal·Lazy·Cursor·Overflow Text·Glitch·Slider 78개 variant의 구현 fingerprint·계약·데모·설정 대응을 정적 게이트로 검증
+132. 완료(Unreleased): 데모의 고유 설정 control을 타입별로 전수 조작하고, 옵션 반영·모듈 재빌드·trigger 보존·중복 instance를 검사하며 런타임 field key 중복을 제거
+133. 완료(Unreleased): CSS Scroll의 native scroll/view와 ScrollTrigger fallback·reduced motion·작성자 style 복원을 Chromium·Firefox·WebKit 실제 스크롤로 검증하고 3가지 다국어 데모·설정을 제공
+134. 완료(Unreleased): Text Split·Text Reveal·Blur Text의 `<br>`·`\n`·CRLF를 모션 축소까지 보존하고, 실제 로딩 문구 형태·문구 교체·replay·ARIA·원본 DOM 복원 및 native flicker lifecycle을 회귀 검사에 포함
+135. 완료(Unreleased): Counter Slot·Clock 숫자 전환 viewport를 소비자 computed `line-height`로 제한하고 overflow·paint containment와 작성자 style 복원을 검증
+136. 완료(Unreleased): 모바일 hero 전환의 한 제스처 이동·감속을 유지하면서 같은 물리 제스처의 잔여 입력을 정착까지 처리하고, 세 엔진에서 단조 이동·오버슈트 없음·양방향 복귀를 검사
+137. 완료(Unreleased): 클릭 GIF·APNG·animated WebP의 1회 반복 정규화·파일 길이 기반 수명·매 클릭 재시작과 포인터·터치 cleanup을 제공하고, 세 엔진에서 실제 이미지 프레임의 진행·정지·재시작을 검증
+138. 완료(Unreleased): Quad Dot Pulse를 Chase의 호환 alias로 통합하고 중복 공개 카드·선택지를 제거하면서 기존 v1·v2 공유 URL을 보존
+139. 완료(Unreleased): 두 GitHub workflow에 설정 전수·클릭 이미지 회귀를 연결하고, 릴리스 준비 시 현재 소스 버전만 갱신해 과거 npm·workflow·checksum 증거를 보존
+140. 완료(Unreleased 측정): Node 24에서 Vite 전체 소비자 gzip 증가 약 3.3KB와 tarball 압축 526.9KB/해제 1755.0KB를 측정해 요청 기능 비용으로 기록하고, full·adapter 비용 예산만 조정하며 core 조합 예산·runtime dependency 0·52개 모듈·77개 파일 경계를 유지
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

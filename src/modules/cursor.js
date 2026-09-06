@@ -1,23 +1,20 @@
 import { clamp, lerp } from '../utils.js';
+import { createCursorClickEffects } from './cursor/clickEffects.js';
 
-// Sprite sheet metrics probed from the image (square frames assumed);
-// keyed by the options object so both pointer and touch paths share it.
-const spriteMetaStore = new WeakMap();
-function ensureSpriteMeta(opts) {
-  if (!opts.clickSprite) return null;
-  let meta = spriteMetaStore.get(opts);
-  if (!meta) {
-    meta = {};
-    spriteMetaStore.set(opts, meta);
-    const probe = new Image();
-    probe.onload = () => {
-      const frameHeight = probe.naturalHeight || 96;
-      const frames = Math.max(1, Math.round(probe.naturalWidth / Math.max(1, frameHeight)));
-      Object.assign(meta, { width: probe.naturalWidth / frames, height: frameHeight, frames });
-    };
-    probe.src = opts.clickSprite;
-  }
-  return meta;
+// Keep the click-effect option boundary in the public module entry. Besides
+// avoiding unrelated cursor options in the media controller, this makes the
+// source-derived variant contract see every supported click option.
+function clickEffectOptions(opts) {
+  return {
+    clickImage: opts.clickImage,
+    clickImageDuration: opts.clickImageDuration,
+    clickImageSize: opts.clickImageSize,
+    clickSprite: opts.clickSprite,
+    clickSpriteDuration: opts.clickSpriteDuration,
+    clickSpriteFrames: opts.clickSpriteFrames,
+    clickSpriteHeight: opts.clickSpriteHeight,
+    clickSpriteWidth: opts.clickSpriteWidth
+  };
 }
 
 function pointInsideViewport(event) {
@@ -57,7 +54,6 @@ export default {
     // taps spawn the sprite or one-shot image at the touch point.
     if (touchDevice) {
       if (!opts.clickSprite && !opts.clickImage) return null;
-      ensureSpriteMeta(opts);
       return this._clickEffectsOnly(el, opts);
     }
 
@@ -258,6 +254,7 @@ export default {
       labelHost.appendChild(label);
     }
     document.body.appendChild(cursor);
+    const clickEffects = createCursorClickEffects(clickEffectOptions(opts), cursor, zIndex);
 
     let mouseX = window.innerWidth / 2;
     let mouseY = window.innerHeight / 2;
@@ -439,49 +436,10 @@ export default {
       if (hoverTarget && !hoverTarget.contains(event.relatedTarget)) leaveTarget();
       if (!event.relatedTarget) setVisible(false);
     };
-    // Click effects: a sprite-sheet burst or a one-shot image (GIF/APNG/WebP
-    // restart via cache-busted src) spawned at the click point.
-    let clickStyle = null;
-    const spawnClickEffect = (x, y) => {
-      if (opts.clickSprite) {
-        const meta = ensureSpriteMeta(opts) || {};
-        const frameWidth = Math.max(8, Number(opts.clickSpriteWidth ?? meta.width ?? 96));
-        const frameHeight = Math.max(8, Number(opts.clickSpriteHeight ?? meta.height ?? frameWidth));
-        const frames = Math.max(1, Math.round(Number(opts.clickSpriteFrames ?? meta.frames ?? 8)));
-        const duration = Math.max(80, Number(opts.clickSpriteDuration ?? 480));
-        const signature = `${frameWidth}x${frames}`;
-        if (!clickStyle) {
-          const uid = `kt-cur-spr-${Math.random().toString(36).slice(2, 7)}`;
-          clickStyle = document.createElement('style');
-          clickStyle.dataset.uid = uid;
-          document.head.appendChild(clickStyle);
-        }
-        if (clickStyle.dataset.signature !== signature) {
-          clickStyle.dataset.signature = signature;
-          clickStyle.textContent = `@keyframes ${clickStyle.dataset.uid} { to { background-position: -${frameWidth * frames}px 0; } }`;
-        }
-        const node = document.createElement('span');
-        node.setAttribute('aria-hidden', 'true');
-        node.style.cssText = `position:fixed;left:${x}px;top:${y}px;width:${frameWidth}px;height:${frameHeight}px;transform:translate(-50%,-50%);pointer-events:none;z-index:${zIndex + 1};background:url("${opts.clickSprite}") 0 0/auto ${frameHeight}px no-repeat;animation:${clickStyle.dataset.uid} ${duration}ms steps(${frames}) forwards;`;
-        cursor.appendChild(node);
-        setTimeout(() => node.remove(), duration + 40);
-      } else if (opts.clickImage) {
-        const size = Math.max(8, Number(opts.clickImageSize ?? 96));
-        const duration = Math.max(80, Number(opts.clickImageDuration ?? 700));
-        const node = document.createElement('img');
-        node.alt = '';
-        node.setAttribute('aria-hidden', 'true');
-        const src = String(opts.clickImage);
-        node.src = src + (src.includes('?') ? '&' : '?') + 'mkc=' + Date.now();
-        node.style.cssText = `position:fixed;left:${x}px;top:${y}px;width:${size}px;height:auto;transform:translate(-50%,-50%);pointer-events:none;z-index:${zIndex + 1};`;
-        cursor.appendChild(node);
-        setTimeout(() => node.remove(), duration);
-      }
-    };
     const onDown = (event) => {
       pressed = true;
       cursor.classList.add('is-pressed');
-      if (visible && (opts.clickSprite || opts.clickImage)) spawnClickEffect(event.clientX, event.clientY);
+      if (visible && (opts.clickSprite || opts.clickImage)) clickEffects.spawn(event.clientX, event.clientY);
     };
     const onUp = () => { pressed = false; cursor.classList.remove('is-pressed'); };
     const onWindowOut = (event) => { if (!event.relatedTarget) setVisible(false); };
@@ -585,7 +543,7 @@ export default {
           el.removeAttribute('data-kt-cursor-scope');
         }
         injectedStyle?.remove();
-        clickStyle?.remove();
+        clickEffects.destroy();
         cursor.remove();
         if (!scoped && !document.querySelector('.kt-cursor')) {
           root.classList.remove('kt-cursor-active');
@@ -598,45 +556,9 @@ export default {
   // Minimal instance for touch devices: no pointer visuals, only tap effects.
   _clickEffectsOnly(el, opts) {
     const zIndex = Number(opts.zIndex ?? 2147483000);
-    let clickStyle = null;
-    const spawn = (x, y) => {
-      if (opts.clickSprite) {
-        const meta = ensureSpriteMeta(opts) || {};
-        const frameWidth = Math.max(8, Number(opts.clickSpriteWidth ?? meta.width ?? 96));
-        const frameHeight = Math.max(8, Number(opts.clickSpriteHeight ?? meta.height ?? frameWidth));
-        const frames = Math.max(1, Math.round(Number(opts.clickSpriteFrames ?? meta.frames ?? 8)));
-        const duration = Math.max(80, Number(opts.clickSpriteDuration ?? 480));
-        const signature = `${frameWidth}x${frames}`;
-        if (!clickStyle) {
-          const uid = `kt-cur-spr-${Math.random().toString(36).slice(2, 7)}`;
-          clickStyle = document.createElement('style');
-          clickStyle.dataset.uid = uid;
-          document.head.appendChild(clickStyle);
-        }
-        if (clickStyle.dataset.signature !== signature) {
-          clickStyle.dataset.signature = signature;
-          clickStyle.textContent = `@keyframes ${clickStyle.dataset.uid} { to { background-position: -${frameWidth * frames}px 0; } }`;
-        }
-        const node = document.createElement('span');
-        node.setAttribute('aria-hidden', 'true');
-        node.style.cssText = `position:fixed;left:${x}px;top:${y}px;width:${frameWidth}px;height:${frameHeight}px;transform:translate(-50%,-50%);pointer-events:none;z-index:${zIndex + 1};background:url("${opts.clickSprite}") 0 0/auto ${frameHeight}px no-repeat;animation:${clickStyle.dataset.uid} ${duration}ms steps(${frames}) forwards;`;
-        document.body.appendChild(node);
-        setTimeout(() => node.remove(), duration + 40);
-      } else if (opts.clickImage) {
-        const size = Math.max(8, Number(opts.clickImageSize ?? 96));
-        const duration = Math.max(80, Number(opts.clickImageDuration ?? 700));
-        const node = document.createElement('img');
-        node.alt = '';
-        node.setAttribute('aria-hidden', 'true');
-        const src = String(opts.clickImage);
-        node.src = src + (src.includes('?') ? '&' : '?') + 'mkc=' + Date.now();
-        node.style.cssText = `position:fixed;left:${x}px;top:${y}px;width:${size}px;height:auto;transform:translate(-50%,-50%);pointer-events:none;z-index:${zIndex + 1};`;
-        document.body.appendChild(node);
-        setTimeout(() => node.remove(), duration);
-      }
-    };
     const target = (el === document.body || el === document.documentElement) ? document : el;
-    const onDown = (event) => spawn(event.clientX, event.clientY);
+    const clickEffects = createCursorClickEffects(clickEffectOptions(opts), document.body, zIndex);
+    const onDown = (event) => clickEffects.spawn(event.clientX, event.clientY);
     target.addEventListener('pointerdown', onDown, { passive: true });
     return {
       el,
@@ -645,7 +567,7 @@ export default {
       resume() {},
       destroy() {
         target.removeEventListener('pointerdown', onDown);
-        clickStyle?.remove();
+        clickEffects.destroy();
       }
     };
   },

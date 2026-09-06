@@ -646,6 +646,56 @@ try {
   checkpoint('responsive-width');
 
   await page.setViewportSize({width:390,height:844});
+  const mobileSceneMotion = await page.evaluate(async () => {
+    const wait = (ms) => new Promise((resolveWait) => setTimeout(resolveWait, ms));
+    const fireTouch = (type, y) => {
+      const event = new Event(type, { bubbles:true, cancelable:true });
+      Object.defineProperty(event, 'touches', { value:type === 'touchend' ? [] : [{ clientY:y }] });
+      window.dispatchEvent(event);
+      return event.defaultPrevented;
+    };
+    const sample = async () => {
+      const path = [];
+      for (let index = 0; index < 10; index += 1) {
+        await wait(90);
+        path.push(Math.round(window.scrollY));
+      }
+      return path;
+    };
+    const hero = document.querySelector('.hero');
+    window.Kineto?.lenis?.stop?.();
+    window.scrollTo(0, Math.max(0, hero.offsetHeight - window.innerHeight));
+    window.Kineto?.lenis?.start?.();
+    await new Promise(requestAnimationFrame);
+    fireTouch('touchstart', 700);
+    const downTriggered = fireTouch('touchmove', 660);
+    const downTail = fireTouch('touchmove', 600);
+    fireTouch('touchend', 600);
+    const down = await sample();
+    const landing = Math.round(window.scrollY);
+    await wait(220);
+    fireTouch('touchstart', 220);
+    const upTriggered = fireTouch('touchmove', 270);
+    const upTail = fireTouch('touchmove', 330);
+    fireTouch('touchend', 330);
+    const up = await sample();
+    return { downTriggered, downTail, upTriggered, upTail, down, up, landing };
+  });
+  assert.ok(
+    mobileSceneMotion.downTriggered && mobileSceneMotion.downTail
+      && new Set(mobileSceneMotion.down).size >= 4
+      && mobileSceneMotion.down.every((value,index,path)=>index === 0 || value >= path[index - 1])
+      && mobileSceneMotion.down.every((value)=>value <= mobileSceneMotion.landing + 1),
+    `mobile hero landing must keep inertial frames without a downward rebound in ${browserName}: ${JSON.stringify(mobileSceneMotion)}`
+  );
+  assert.ok(
+    mobileSceneMotion.upTriggered && mobileSceneMotion.upTail
+      && new Set(mobileSceneMotion.up).size >= 4
+      && mobileSceneMotion.up.every((value,index,path)=>index === 0 || value <= path[index - 1])
+      && mobileSceneMotion.up.at(-1) < 6,
+    `mobile hero return must settle monotonically without a rebound in ${browserName}: ${JSON.stringify(mobileSceneMotion)}`
+  );
+  checkpoint('mobile-hero-scene');
   // Exactly one visible trigger must match, or the assertions below could be
   // reading a hidden duplicate from one of the other GNB tabs. Those tabs carry
   // `hidden`, so their panels never lay out and `grid-template-columns` would

@@ -56,6 +56,10 @@ KT_BROWSER=chromium node tests/browser-smoke.mjs
 KT_BROWSER=firefox node tests/browser-smoke.mjs
 KT_BROWSER=webkit node tests/browser-smoke.mjs
 
+KT_BROWSER=chromium node tests/browser/css-scroll.mjs
+KT_BROWSER=firefox node tests/browser/css-scroll.mjs
+KT_BROWSER=webkit node tests/browser/css-scroll.mjs
+
 KT_BROWSER=chromium node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs
 KT_BROWSER=firefox node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs
 KT_BROWSER=webkit node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs
@@ -67,6 +71,14 @@ fixture 이름·개수가 모두 같은지 비교하므로 새 공개 모듈에 
 matrix가 모두 성공해야 하며, tag release도 같은 두 cross-browser gate가 끝나기
 전에는 publish job을 시작하지 않습니다. `heavy-layout` 단계가 실패하면 다음
 순서로 분류합니다.
+
+`tests/browser/css-scroll.mjs`는 Scroll-driven Animations의 별도 scroll 계약입니다. Chromium lane은 native `scroll()`과 `view()` timeline의 computed custom-property 값이 실제 scrollport 진행률과 요소 통과 진행률을 따르는지 반드시 검사합니다. Firefox·WebKit lane도 같은 feature detection을 실행해 지원되는 native 경로를 검사합니다. 세 엔진 모두 `cssAnimation`을 생략한 명시적 progress-property fallback, 정확히 생성한 timeline만 미지원인 결정적 fallback, reduced-motion 완료 상태와 `destroy()` 복원을 공통으로 검사하므로 CSS longhand 존재 여부만으로 성공 처리하지 않습니다.
+
+`demo-polish`의 `mobile-hero-scene`은 세 엔진에서 모바일 폭의 touch 입력 후
+내려가기·올라가기 위치를 연속 측정합니다. 한 제스처로 시작한 이동이 여러
+프레임으로 감속하고 방향 반전·오버슈트 없이 정착해야 합니다. Chromium의
+`b2_navigation`은 wheel 잔여 입력과 모바일 touch 입력의 소유권도 검사합니다.
+합성 입력과 브라우저 측정은 실제 iOS·Android의 OS rubber-band 검증을 대신하지 않습니다.
 
 Chromium 전체 lane은 모든 playground를 포함하므로 hosted runner에서 시도당 `240s`, 최대
 3회로 실행합니다. 재시도 후에도 실패하면 `test:browser` annotation과 `ci.log`의 마지막

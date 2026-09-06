@@ -76,6 +76,7 @@ module과 공유 runtime만 받습니다. 경로 목록은 `npm run test:deps`�
 | [`src/modules/pageTransition.js`](../src/modules/pageTransition.js) | full entry 세 개, `dist/modular/modules/pageTransition.js` | same-origin link 전환 때 대상 HTML을 요청합니다. `executeScripts`가 켜져 있으면 받은 container의 script를 다시 활성화하며, 실패 시 native navigation으로 전환합니다. |
 | [`src/modules/lightbox.js`](../src/modules/lightbox.js) | full entry 세 개, `dist/modular/modules/lightbox.js` | 표시할 image/thumbnail `src`, opt-in EXIF read, 사용자가 누른 download, share 동작에만 도달합니다. |
 | Ambient Media, Brush Reveal, Cursor, Lazy, Scroll Sequence | 각각의 modular module과 full entry | 소비자가 제공한 image/video/frame/sprite URL을 DOM `src`에 연결할 때 브라우저가 media를 요청합니다. library가 고정한 외부 host는 없습니다. |
+| Cursor 클릭 애니메이션 | `cursor/clickEffects.js`, cursor modular entry와 full entry | `clickImage`를 지정한 경우에만 소비자 URL을 CORS·same-origin credentials로 읽어 GIF/APNG/WebP의 반복 메타데이터를 바꿉니다. 요청은 15초 안에 종료하고 destroy에서 취소합니다. 읽기가 차단되면 원본 이미지의 시간 제한 표시로 대체하며 새 고정 외부 host는 추가하지 않습니다. |
 
 0.9.3 공개 bundle의 기본 Lenis는 1.3.25였습니다. 다음 build의 1.3.26 CDN
 자산은 jsDelivr 응답의 `x-jsd-version: 1.3.26`을 확인하고 npm

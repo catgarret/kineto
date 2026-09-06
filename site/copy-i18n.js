@@ -239,6 +239,14 @@ window.KINETO_COPY_I18N = {
     }
   },
   "cards": {
+    "CSS 진행률을 fallback·view·scroll timeline으로 비교합니다.": [
+      "Compares CSS progress across fallback, view, and scroll timelines.",
+      "CSS の進行率をフォールバック、view、scroll タイムラインで比較します。",
+      "比较 fallback、view 与 scroll 时间线中的 CSS 进度。",
+      "比較 fallback、view 與 scroll 時間軸中的 CSS 進度。",
+      "Сравнивает прогресс CSS в режимах fallback, view и scroll timeline.",
+      "Confronta il progresso CSS tra fallback e timeline view e scroll."
+    ],
     "시계 얼굴이 12시·3시·6시·9시 순서로 바뀝니다.": ["Clock faces advance through 12, 3, 6, and 9 o’clock.","時計の文字盤が12時・3時・6時・9時の順に切り替わります。","时钟表盘依次切换为12点、3点、6点和9点。","時鐘表面依序切換為12點、3點、6點和9點。","Циферблат последовательно показывает 12, 3, 6 и 9 часов.","Il quadrante passa in sequenza dalle 12 alle 3, alle 6 e alle 9."],
     "두 점이 셀 가장자리를 따라 회전하는 점자 스피너입니다.": ["A Braille spinner with two dots rotating around the cell edge.","2つの点がセルの縁を回転する点字スピナーです。","两个点沿单元格边缘旋转的盲文旋转指示器。","兩個點沿著儲存格邊緣旋轉的點字指示器。","Брайлевский индикатор: две точки вращаются по краю ячейки.","Spinner Braille con due punti che ruotano lungo il bordo della cella."],
     "점자 세로 막대가 차오르고 잠시 멈춘 뒤 비워집니다.": ["A vertical Braille bar fills, pauses briefly, then drains.","点字の縦バーが満ち、少し止まってから空になります。","盲文竖条逐渐填满，短暂停留后再清空。","點字直條逐漸填滿，短暫停留後再清空。","Вертикальная брайлевская шкала заполняется, ненадолго замирает и опустошается.","Una barra Braille verticale si riempie, resta piena per un istante e si svuota."],
@@ -527,13 +535,13 @@ window.KINETO_COPY_I18N = {
       "Он плавно перемещает текст и реагирует на направление прокрутки.",
       "Fa scorrere il testo senza interruzioni e risponde alla direzione di scorrimento."
     ],
-    "글자를 나눠 순서대로 나타냅니다.": [
-      "Divide the letters and display them in order.",
-      "文字を分割して順番に表示します。",
-      "将字母分开并按顺序显示。",
-      "將字母分開並依序顯示。",
-      "Разделите буквы и расставьте их по порядку.",
-      "Dividi le lettere e visualizzale in ordine."
+    "글자를 나누면서 작성한 <br> 줄바꿈을 유지합니다.": [
+      "Splits the text while preserving authored &lt;br&gt; line breaks.",
+      "テキストを分割しながら、記述された &lt;br&gt; 改行を維持します。",
+      "拆分文本，同时保留原有的 &lt;br&gt; 换行。",
+      "拆分文字，同時保留原有的 &lt;br&gt; 換行。",
+      "Разбивает текст, сохраняя заданные переносы &lt;br&gt;.",
+      "Divide il testo mantenendo le interruzioni di riga &lt;br&gt; definite."
     ],
     "글자가 3D로 회전하며 나타납니다.": [
       "The letters appear rotating in 3D.",
@@ -543,21 +551,21 @@ window.KINETO_COPY_I18N = {
       "Буквы вращаются в 3D.",
       "Le lettere appaiono rotanti in 3D."
     ],
-    "문장을 글자 단위로 나눠 순서대로 교체합니다.": [
-      "Divide the sentence into letters and replace them in order.",
-      "文を文字に分割し、順番に置き換えます。",
-      "将句子分成字母并按顺序替换。",
-      "將句子分成字母並依序替換。",
-      "Разделите предложение на буквы и замените их по порядку.",
-      "Dividi la frase in lettere e sostituiscile in ordine."
+    "옵션 문자열의 \\n 줄바꿈을 유지하며 문구를 교체합니다.": [
+      "Swaps phrases while preserving \\n line breaks in option strings.",
+      "オプション文字列の \\n 改行を維持しながらフレーズを切り替えます。",
+      "切换短语时保留选项字符串中的 \\n 换行。",
+      "切換詞句時保留選項字串中的 \\n 換行。",
+      "Переключает фразы, сохраняя переносы \\n в строках параметров.",
+      "Sostituisce le frasi mantenendo le interruzioni \\n nelle stringhe delle opzioni."
     ],
-    "흐린 글자가 차례로 선명해집니다.": [
-      "Blurry letters become clear one after another.",
-      "ぼやけていた文字が次々と鮮明になっていきます。",
-      "模糊的字母一个接一个地变得清晰起来。",
-      "模糊的字母一個接一個地變得清晰起來。",
-      "Размытые буквы проясняются одна за другой.",
-      "Le lettere sfocate diventano chiare una dopo l'altra."
+    "줄바꿈을 유지하며 흐린 글자가 차례로 선명해집니다.": [
+      "Blurred letters sharpen in sequence while preserving line breaks.",
+      "改行を維持しながら、ぼやけた文字が順番に鮮明になります。",
+      "保留换行，让模糊的文字依次变清晰。",
+      "保留換行，讓模糊的文字依次變清晰。",
+      "Размытые буквы проясняются по очереди, сохраняя переносы строк.",
+      "Le lettere sfocate diventano nitide in sequenza, mantenendo le interruzioni di riga."
     ],
     "무작위 글자가 빠르게 원문으로 바뀝니다.": [
       "Random letters are quickly converted into original text.",
@@ -1457,6 +1465,14 @@ window.KINETO_COPY_I18N = {
     ]
   },
   "titles": {
+    "CSS 스크롤 구동 애니메이션": [
+      "CSS scroll-driven animation",
+      "CSS スクロール駆動アニメーション",
+      "CSS 滚动驱动动画",
+      "CSS 捲動驅動動畫",
+      "CSS-анимация, управляемая прокруткой",
+      "Animazione CSS guidata dallo scorrimento"
+    ],
     "Scene 전환 (아이템)": [
       "Scene transition (item)",
       "シーン遷移（アイテム）",
@@ -1619,6 +1635,30 @@ window.KINETO_COPY_I18N = {
     ]
   },
   "ui": {
+    "대체 경로": [
+      "Fallback",
+      "フォールバック",
+      "回退",
+      "備援",
+      "Резервный режим",
+      "Fallback"
+    ],
+    "네이티브 뷰": [
+      "Native view",
+      "ネイティブ view",
+      "原生 view",
+      "原生 view",
+      "Нативный view",
+      "View nativa"
+    ],
+    "네이티브 스크롤": [
+      "Native scroll",
+      "ネイティブ scroll",
+      "原生 scroll",
+      "原生 scroll",
+      "Нативный scroll",
+      "Scroll nativo"
+    ],
     "본문으로 건너뛰기": [
       "Skip to main content",
       "メインコンテンツへ移動",

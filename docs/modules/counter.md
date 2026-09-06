@@ -45,7 +45,7 @@
 | `stagger` | 자동/모드별 | 자릿수별 시간차 |
 | `popScale` | `1.8` | Pop 시작 크기 |
 | `popDuration` | 자동 | 글자 하나의 착지 시간 |
-| `lineHeight` | 계산값 | Slot 한 칸 높이 |
+| `lineHeight` | 계산값 | Slot/Clock 세로 전환 한 칸 높이(px) |
 | `tileColor` / `tileTextColor` | 모드 기본값 | Flip 타일과 숫자 색 |
 | `clockStyle` | `roll` | `roll`, `fade`, `instant`, `flip` |
 | `seconds` / `hour12` | 모드 기본값 | 초 표시와 12시간제 |
@@ -64,3 +64,8 @@
 - Clock의 `blink:true`는 시간 구분자만 깜빡이며, `secondsOnly`의 단위(`S`)에는 적용되지 않습니다.
 - `secondsOnly:true`는 Clock 전용 표시입니다. 다른 `mode` 또는 `preset`이 함께 전달돼도 Clock 렌더러를 우선해 `000S` 형식을 유지합니다.
 - `since`를 전달하면 경과 초를, `until`을 전달하면 남은 초를 표시합니다. 둘 다 전달된 경우 `until`(카운트다운)을 우선합니다.
+- Slot과 Clock의 세로 전환 viewport는 요소의 실제 computed `line-height`를
+  한 칸 높이로 사용하고 `overflow`와 paint containment로 그 범위를
+  자릅니다. 따라서 작성자가 설정한 `line-height` 안에서만 숫자가
+  교체되며, `destroy()` 뒤에는 작성자 HTML과 inline style이 그대로
+  복원됩니다. 별도 높이가 필요할 때만 `lineHeight` 픽셀 값을 전달합니다.

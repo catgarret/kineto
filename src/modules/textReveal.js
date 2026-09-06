@@ -1,10 +1,35 @@
-import { G, gsapEaseName, hangulFrames, observeOnce, segmentText, snapshotAttributes, scramblePainter } from '../utils.js';
+import {
+  G,
+  gsapEaseName,
+  hangulFrames,
+  normalizeTextLineBreaks,
+  observeOnce,
+  renderTextLineBreaks,
+  segmentText,
+  snapshotAttributes,
+  snapshotChildNodes,
+  scramblePainter,
+  textWithLineBreaks
+} from '../utils.js';
+
+function lineBreak() {
+  const br = document.createElement('br');
+  br.setAttribute('aria-hidden', 'true');
+  return br;
+}
+
+function appendWhitespace(parent, content) {
+  normalizeTextLineBreaks(content).split(/(\n)/).forEach((part) => {
+    if (!part) return;
+    parent.appendChild(part === '\n' ? lineBreak() : document.createTextNode(part));
+  });
+}
 
 export default {
   create(el, opts) {
-    const originalHTML = el.innerHTML;
+    const restoreContent = snapshotChildNodes(el);
     const restoreAttributes = snapshotAttributes(el, ['aria-label']);
-    const text = String(opts.text ?? el.textContent ?? '');
+    const text = normalizeTextLineBreaks(opts.text ?? textWithLineBreaks(el));
     const mode = opts.mode || opts.preset || 'stream';
     const speed = Number(opts.speed ?? (mode === 'stream' ? 30 : mode === 'hangul' ? 80 : 100));
     const delay = Number(opts.delay ?? 0);
@@ -14,6 +39,8 @@ export default {
     let observer = null;
     let alive = true;
     let started = false;
+    let destroyed = false;
+    let generation = 0;
 
     el.setAttribute('aria-label', text);
     el.innerHTML = '';
@@ -28,10 +55,19 @@ export default {
     };
 
     const clearWork = () => {
+      generation += 1;
       timers.forEach(clearTimeout);
       timers.clear();
-      animations.forEach((animation) => animation.kill?.());
+      animations.forEach((animation) => {
+        if (typeof animation.kill === 'function') animation.kill();
+        else animation.cancel?.();
+      });
       animations.length = 0;
+    };
+
+    const resumeAnimation = (animation) => {
+      if (typeof animation.resume === 'function') animation.resume();
+      else animation.play?.();
     };
 
     const addSpan = (content, styles = {}) => {
@@ -43,7 +79,7 @@ export default {
       return span;
     };
 
-    const complete = () => opts.onComplete?.(el);
+    const complete = () => { if (alive && !destroyed) opts.onComplete?.(el); };
 
     const renderHangul = () => {
       const chars = segmentText(text);
@@ -59,7 +95,8 @@ export default {
         }
         const char = chars[charIndex];
         if (/^\s$/.test(char)) {
-          cursor.before(document.createTextNode(char));
+          if (char === '\n') cursor.before(lineBreak());
+          else cursor.before(document.createTextNode(char));
           charIndex += 1;
           later(nextChar, speed);
           return;
@@ -86,7 +123,7 @@ export default {
     const renderBounce = () => {
       const spans = segmentText(text).map((char) => {
         if (/^\s$/.test(char)) {
-          el.appendChild(document.createTextNode(char));
+          appendWhitespace(el, char);
           return null;
         }
         const span = addSpan(char, { opacity: '0', transformOrigin: 'bottom' });
@@ -118,7 +155,7 @@ export default {
 
     const renderStream = () => {
       let tokens;
-      if (mode === 'word') tokens = text.split(/(\s+)/);
+      if (mode === 'word') tokens = text.split(/(\n|[^\S\n]+)/);
       else if (mode === 'line') tokens = text.split(/(\n)/);
       else tokens = segmentText(text);
 
@@ -126,7 +163,7 @@ export default {
       tokens.forEach((token) => {
         if (!token) return;
         if (/^\s+$/.test(token)) {
-          el.appendChild(document.createTextNode(token));
+          appendWhitespace(el, token);
           return;
         }
         const wrapper = addSpan('', { overflow: 'hidden', verticalAlign: 'bottom', paddingBottom: '2px' });
@@ -165,17 +202,16 @@ export default {
       const flickerFrames = Math.max(1, Math.round(Number(opts.flickerCount ?? 3)));
       const hold = Math.max(200, Number(opts.hold ?? 1400));
       const cells = segmentText(text).map((char) => {
+        if (char === '\n') {
+          return { span: lineBreak(), char, space: true, break: true };
+        }
         if (/^\s$/.test(char)) {
           const gapSpan = addSpan(' ', { width: '0.45em' });
           return { span: gapSpan, char, space: true };
         }
         const span = addSpan(char, { visibility: 'hidden' });
-        el.appendChild(span);
         return { span, char, space: false };
       });
-      cells.forEach(({ span, space }) => { if (space) el.appendChild(span); });
-      // Preserve original order: rebuild children in sequence.
-      el.innerHTML = '';
       cells.forEach(({ span }) => el.appendChild(span));
 
       let index = 0;
@@ -194,7 +230,7 @@ export default {
         }
         const cell = cells[index];
         index += 1;
-        if (cell.space) { later(step, speed * 0.6); return; }
+        if (cell.space) { later(step, cell.break ? 0 : speed * 0.6); return; }
         cell.span.style.visibility = 'visible';
         let frame = 0;
         const flick = () => {
@@ -218,10 +254,11 @@ export default {
     // ── Callisto-style mechanical flicker: every character blinks on with an
     // irregular strobe before holding, optionally re-flickering forever. ────
     const renderFlicker = () => {
+      const currentGeneration = generation;
       const duration = Math.max(0.1, Number(opts.duration ?? 0.9)) * 1000;
       const spans = segmentText(text).map((char) => {
         if (/^\s$/.test(char)) {
-          el.appendChild(document.createTextNode(char));
+          appendWhitespace(el, char);
           return null;
         }
         const span = addSpan(char, { opacity: '0' });
@@ -249,6 +286,9 @@ export default {
       let done = 0;
       spans.forEach((span) => {
         strobe(span).finished.then(() => {
+          // A fulfilled native `finished` promise can already be queued when
+          // replay/destroy cancels its animation. Ignore that previous run.
+          if (currentGeneration !== generation) return;
           done += 1;
           if (done === spans.length) complete();
         }).catch(() => {});
@@ -280,7 +320,7 @@ export default {
       const revealRate = Math.max(1, Number(opts.revealRate ?? 2));
       const graphemes = segmentText(text);
       const cells = graphemes.map((char) => {
-        if (/^\s$/.test(char)) { el.appendChild(document.createTextNode(char)); return null; }
+        if (/^\s$/.test(char)) { appendWhitespace(el, char); return null; }
         const span = addSpan(char, { textAlign: 'center' });
         el.appendChild(span);
         return span;
@@ -330,6 +370,7 @@ export default {
     });
 
     const reset = () => {
+      if (destroyed) return;
       clearWork();
       el.innerHTML = '';
       alive = true;
@@ -342,30 +383,47 @@ export default {
       type: 'textReveal',
       replay: reset,
       pause: () => {
+        if (destroyed) return;
         alive = false;
         timers.forEach(clearTimeout);
+        timers.clear();
         animations.forEach((animation) => animation.pause?.());
       },
       resume: () => {
-        if (!alive) {
+        if (!destroyed && !alive) {
           alive = true;
-          if (animations.length) animations.forEach((animation) => animation.resume?.());
+          if (animations.length) animations.forEach(resumeAnimation);
           else reset();
         }
       },
       destroy: () => {
+        if (destroyed) return;
+        destroyed = true;
         alive = false;
         observer?.disconnect();
         clearWork();
-        el.innerHTML = originalHTML;
+        restoreContent();
         restoreAttributes();
       }
     };
   },
 
-  reduced(el, opts) {
-    const originalHTML = el.innerHTML;
-    el.textContent = String(opts.text ?? el.getAttribute('aria-label') ?? el.textContent ?? '');
-    return { el, type: 'textReveal', pause() {}, resume() {}, destroy() { el.innerHTML = originalHTML; } };
+  reduced(el, opts = {}) {
+    const restoreContent = snapshotChildNodes(el);
+    const restoreAttributes = snapshotAttributes(el, ['aria-label']);
+    const text = normalizeTextLineBreaks(opts.text ?? textWithLineBreaks(el));
+    el.setAttribute('aria-label', text);
+    if (opts.text != null) el.textContent = text;
+    renderTextLineBreaks(el);
+    return {
+      el,
+      type: 'textReveal',
+      pause() {},
+      resume() {},
+      destroy() {
+        restoreContent();
+        restoreAttributes();
+      }
+    };
   }
 };

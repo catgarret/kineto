@@ -18,7 +18,7 @@ Kineto.config({
 
 ## 텍스트 분할
 
-`textSplit`, `blurText`, `textFill`, 일부 `textReveal` 모드는 원문을 `aria-label`에 보존하고 시각용 span을 `aria-hidden` 처리합니다. 적용 후 실제 스크린리더 확인이 필요합니다.
+`textSplit`, `blurText`, `textFill`, 일부 `textReveal` 모드는 원문을 `aria-label`에 보존하고 시각용 span을 `aria-hidden` 처리합니다. Text Split/Text Reveal은 작성한 `<br>`와 옵션 문자열의 `\n`도 label에 보존합니다. Text Split이 `texts`를 교체할 때는 현재 화면에 보이는 문구만 label로 갱신하며, `replay()`와 `destroy()`에서도 현재값·작성자 속성을 각각 복원합니다. 적용 후 실제 스크린리더 확인이 필요합니다.
 
 ## Counter
 

@@ -461,6 +461,152 @@
   });
 })();
 
+// Cursor click-media controls are shared by pointer and touch-only runtimes.
+// Keep the format/CORS boundary explicit in every supported demo language.
+(() => {
+  const sets = window.MK_HELP_I18N;
+  if (!sets) return;
+  const tips = {
+    ko: {
+      clickImage: '클릭마다 처음부터 한 번 재생할 GIF·APNG·animated WebP URL입니다. CORS로 읽을 수 없으면 표시 시간 제한 방식으로 대체합니다.',
+      clickImageDuration: '이미지 로드 후 표시 시간(ms)입니다. 0 또는 생략 시 한 사이클 길이를 자동 계산합니다. 양수를 지정할 때는 한 사이클 이상으로 설정하세요.',
+      clickImageSize: '클릭 이미지 너비(px)입니다. 높이는 원본 비율을 유지합니다.',
+      clickSprite: '클릭마다 한 번 재생할 가로 스프라이트 시트 URL입니다. clickImage와 함께 쓰면 이 옵션을 우선합니다.',
+      clickSpriteDuration: '스프라이트 전체 프레임을 한 번 재생하는 시간(ms)입니다.',
+      clickSpriteWidth: '스프라이트 한 프레임 너비(px)입니다. 비우면 정사각 프레임으로 자동 추론합니다.',
+      clickSpriteHeight: '스프라이트 한 프레임 높이(px)입니다. 비우면 자동 추론한 너비를 사용합니다.',
+      clickSpriteFrames: '가로 스프라이트 시트의 프레임 수입니다. 비우면 이미지 크기로 자동 추론합니다.'
+    },
+    en: {
+      clickImage: 'GIF, APNG, or animated WebP restarted for one play per click. Unreadable cross-origin files fall back to a timed image.',
+      clickImageDuration: 'Display time after the image loads (ms). Zero or omitted derives one encoded cycle; a positive value should cover the full cycle.',
+      clickImageSize: 'Click-image width in pixels; height keeps the source aspect ratio.',
+      clickSprite: 'Horizontal sprite sheet played once per click. This takes priority when clickImage is also set.',
+      clickSpriteDuration: 'Time in milliseconds for one complete sprite-sheet pass.',
+      clickSpriteWidth: 'Width of one sprite frame in pixels. Empty auto-detects square frames.',
+      clickSpriteHeight: 'Height of one sprite frame in pixels. Empty uses the detected frame width.',
+      clickSpriteFrames: 'Frame count in the horizontal sheet. Empty derives it from image dimensions.'
+    },
+    ja: {
+      clickImage: 'クリックごとに先頭から1回再生するGIF・APNG・animated WebPのURL。CORSで読めない場合は時間制限表示に切り替えます。',
+      clickImageDuration: '読込完了後の表示時間(ms)。0または省略時は1サイクルを自動計算します。正数を指定する場合は1サイクル以上にしてください。',
+      clickImageSize: 'クリック画像の幅(px)。高さは元の比率を保ちます。',
+      clickSprite: 'クリックごとに1回再生する横並びスプライト。clickImageと同時指定時はこちらを優先します。',
+      clickSpriteDuration: 'スプライト全フレームを1回再生する時間(ms)。',
+      clickSpriteWidth: '1フレームの幅(px)。空なら正方形フレームとして自動判定します。',
+      clickSpriteHeight: '1フレームの高さ(px)。空なら検出した幅を使います。',
+      clickSpriteFrames: '横並びシートのフレーム数。空なら画像寸法から判定します。'
+    },
+    'zh-CN': {
+      clickImage: '每次点击从头播放一次的 GIF、APNG 或动态 WebP URL；跨域不可读时改用定时移除。',
+      clickImageDuration: '图片加载后的显示时间(ms)。0或省略时自动计算一个周期；指定正数时应覆盖完整周期。',
+      clickImageSize: '点击图片宽度(px)，高度保持原始比例。',
+      clickSprite: '每次点击播放一次的横向精灵图；与 clickImage 同时设置时优先。',
+      clickSpriteDuration: '完整播放一次精灵图的时间(ms)。',
+      clickSpriteWidth: '单帧宽度(px)，留空时按正方形帧自动推断。',
+      clickSpriteHeight: '单帧高度(px)，留空时使用推断出的帧宽。',
+      clickSpriteFrames: '横向精灵图的帧数，留空时根据图片尺寸推断。'
+    },
+    'zh-TW': {
+      clickImage: '每次點擊從頭播放一次的 GIF、APNG 或動態 WebP URL；跨來源不可讀時改用定時移除。',
+      clickImageDuration: '圖片載入後的顯示時間(ms)。0或省略時自動計算一個週期；指定正數時應涵蓋完整週期。',
+      clickImageSize: '點擊圖片寬度(px)，高度維持原始比例。',
+      clickSprite: '每次點擊播放一次的橫向精靈圖；與 clickImage 同時設定時優先。',
+      clickSpriteDuration: '完整播放一次精靈圖的時間(ms)。',
+      clickSpriteWidth: '單幀寬度(px)，留空時按正方形幀自動推算。',
+      clickSpriteHeight: '單幀高度(px)，留空時使用推算出的幀寬。',
+      clickSpriteFrames: '橫向精靈圖的幀數，留空時依圖片尺寸推算。'
+    },
+    ru: {
+      clickImage: 'URL GIF, APNG или animated WebP, запускаемого с начала один раз на клик. Без CORS используется удаление по таймеру.',
+      clickImageDuration: 'Время показа после загрузки (мс). Ноль или пропуск автоматически вычисляет один цикл; положительное время должно покрывать весь цикл.',
+      clickImageSize: 'Ширина изображения клика в пикселях; высота сохраняет пропорции.',
+      clickSprite: 'Горизонтальный спрайт-лист, проигрываемый один раз на клик. Имеет приоритет над clickImage.',
+      clickSpriteDuration: 'Время одного полного прохода спрайт-листа в миллисекундах.',
+      clickSpriteWidth: 'Ширина кадра в пикселях; пустое значение включает автоопределение квадратных кадров.',
+      clickSpriteHeight: 'Высота кадра в пикселях; пустое значение использует найденную ширину.',
+      clickSpriteFrames: 'Число кадров в горизонтальном листе; пустое значение вычисляется по размерам.'
+    },
+    it: {
+      clickImage: 'URL GIF, APNG o WebP animata riavviata una volta per clic. Senza CORS usa la rimozione temporizzata.',
+      clickImageDuration: 'Tempo di visualizzazione dopo il caricamento (ms). Zero o valore omesso calcola un ciclo; un valore positivo deve coprire il ciclo completo.',
+      clickImageSize: 'Larghezza dell’immagine al clic in pixel; l’altezza mantiene le proporzioni.',
+      clickSprite: 'Sprite sheet orizzontale riprodotto una volta per clic; ha priorità su clickImage.',
+      clickSpriteDuration: 'Durata in millisecondi di un passaggio completo dello sprite.',
+      clickSpriteWidth: 'Larghezza di un fotogramma in pixel; vuoto rileva fotogrammi quadrati.',
+      clickSpriteHeight: 'Altezza di un fotogramma in pixel; vuoto usa la larghezza rilevata.',
+      clickSpriteFrames: 'Numero di fotogrammi nel foglio orizzontale; vuoto lo ricava dalle dimensioni.'
+    }
+  };
+  for (const [lang, values] of Object.entries(tips)) {
+    sets[lang] = sets[lang] || {};
+    sets[lang].cursor = Object.assign({}, sets[lang].cursor, values);
+  }
+})();
+
+// Native Scroll-driven Animations controls for cssScroll. The first demo tab
+// starts on the legacy progress-property fallback; entering a keyframe name
+// reveals these native timeline controls without adding a new public option.
+(() => {
+  const sets = window.MK_HELP_I18N;
+  if (!sets) return;
+  const tips = {
+    ko: {
+      cssAnimation: '네이티브 timeline에서 실행할 @keyframes 이름입니다. 비우면 ScrollTrigger가 CSS 진행률 변수를 갱신합니다.',
+      timeline: 'view는 요소의 scrollport 통과율을, scroll은 가장 가까운 scrollport의 전체 진행률을 사용합니다.',
+      axis: 'timeline이 측정할 축입니다. block/inline은 글쓰기 방향을 따르고 x/y는 물리 축을 고정합니다.',
+      rangeStart: '네이티브 animation range 시작점입니다. 비우면 view는 entry 0%, scroll은 0%를 사용합니다.',
+      rangeEnd: '네이티브 animation range 끝점입니다. 비우면 view는 exit 100%, scroll은 100%를 사용합니다.'
+    },
+    en: {
+      cssAnimation: 'Name of the @keyframes animation for the native timeline. Leave blank to publish CSS progress through ScrollTrigger.',
+      timeline: 'view tracks the element through its scrollport; scroll tracks the nearest scrollport\'s overall progress.',
+      axis: 'Axis sampled by the timeline. block/inline follow writing mode; x/y select a physical axis.',
+      rangeStart: 'Start of the native animation range. Blank uses entry 0% for view or 0% for scroll.',
+      rangeEnd: 'End of the native animation range. Blank uses exit 100% for view or 100% for scroll.'
+    },
+    ja: {
+      cssAnimation: 'ネイティブタイムラインで実行する @keyframes 名。空欄なら ScrollTrigger が CSS 進行率を更新します。',
+      timeline: 'view は要素がスクロール領域を通過する割合、scroll は最寄りのスクロール領域全体の進行率を使います。',
+      axis: 'タイムラインが測定する軸。block/inline は書字方向に従い、x/y は物理軸を固定します。',
+      rangeStart: 'ネイティブ animation range の開始点。空欄時は view が entry 0%、scroll が 0% です。',
+      rangeEnd: 'ネイティブ animation range の終了点。空欄時は view が exit 100%、scroll が 100% です。'
+    },
+    'zh-CN': {
+      cssAnimation: '原生时间线运行的 @keyframes 名称。留空时由 ScrollTrigger 更新 CSS 进度变量。',
+      timeline: 'view 跟踪元素穿过滚动区域的进度；scroll 跟踪最近滚动区域的整体进度。',
+      axis: '时间线采样轴。block/inline 遵循书写方向，x/y 固定为物理轴。',
+      rangeStart: '原生 animation range 的起点。留空时 view 使用 entry 0%，scroll 使用 0%。',
+      rangeEnd: '原生 animation range 的终点。留空时 view 使用 exit 100%，scroll 使用 100%。'
+    },
+    'zh-TW': {
+      cssAnimation: '原生時間軸執行的 @keyframes 名稱。留空時由 ScrollTrigger 更新 CSS 進度變數。',
+      timeline: 'view 追蹤元素穿過捲動區域的進度；scroll 追蹤最近捲動區域的整體進度。',
+      axis: '時間軸取樣軸。block/inline 遵循書寫方向，x/y 固定為物理軸。',
+      rangeStart: '原生 animation range 的起點。留空時 view 使用 entry 0%，scroll 使用 0%。',
+      rangeEnd: '原生 animation range 的終點。留空時 view 使用 exit 100%，scroll 使用 100%。'
+    },
+    ru: {
+      cssAnimation: 'Имя @keyframes для нативной шкалы. Пустое поле оставляет обновление CSS-прогресса за ScrollTrigger.',
+      timeline: 'view отслеживает прохождение элемента через область прокрутки; scroll — общий прогресс ближайшей области.',
+      axis: 'Ось шкалы. block/inline следуют направлению письма, а x/y задают физическую ось.',
+      rangeStart: 'Начало нативного animation range. Пусто: entry 0% для view или 0% для scroll.',
+      rangeEnd: 'Конец нативного animation range. Пусто: exit 100% для view или 100% для scroll.'
+    },
+    it: {
+      cssAnimation: 'Nome dei @keyframes eseguiti sulla timeline nativa. Vuoto affida il progresso CSS a ScrollTrigger.',
+      timeline: 'view segue il passaggio dell’elemento nello scrollport; scroll segue il progresso totale dello scrollport più vicino.',
+      axis: 'Asse campionato dalla timeline. block/inline seguono la scrittura; x/y fissano un asse fisico.',
+      rangeStart: 'Inizio dell’animation range nativo. Vuoto usa entry 0% per view o 0% per scroll.',
+      rangeEnd: 'Fine dell’animation range nativo. Vuoto usa exit 100% per view o 100% per scroll.'
+    }
+  };
+  for (const [lang, values] of Object.entries(tips)) {
+    sets[lang] = sets[lang] || {};
+    sets[lang].cssScroll = Object.assign({}, sets[lang].cssScroll, values);
+  }
+})();
+
 // Slider physics controls are intentionally separate from the older
 // velocityInfluence/spring knobs: each switch describes one user-visible
 // behaviour and can be measured independently in the regression fixture.

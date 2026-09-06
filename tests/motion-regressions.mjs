@@ -1486,6 +1486,293 @@ assert.equal(Kineto.getInstance(document.querySelector('#combined'), 'progress')
 Kineto.destroy(document);
 Kineto.unregister('slider');
 Kineto.unregister('progress');
+
+// Counter reels are paint viewports, not unbounded transform tracks. Their
+// height follows the consumer's computed line-height so a countdown can sit
+// inside a bordered/status UI without incoming digits painting outside it.
+const slotLineHeightHost = document.createElement('span');
+slotLineHeightHost.setAttribute('style', 'font-size: 20px; line-height: 37px; color: navy');
+slotLineHeightHost.textContent = '0';
+document.body.appendChild(slotLineHeightHost);
+const slotLineHeightStyle = slotLineHeightHost.getAttribute('style');
+const slotLineHeightCounter = counterModule.create(slotLineHeightHost, {
+  mode: 'slot', to: 42, duration: 0, loops: 0, start: false
+});
+const slotViewport = slotLineHeightHost.querySelector('.kt-counter-slot');
+assert.equal(slotViewport.style.height, '37px', 'slot viewport must use the authored computed line-height');
+assert.equal(slotViewport.style.maxHeight, '37px', 'slot viewport must cap its physical height to one line');
+assert.equal(slotViewport.style.blockSize, '37px', 'slot viewport must cap its logical block size to one line');
+assert.equal(slotViewport.style.overflow, 'hidden', 'slot viewport must clip the offscreen reel');
+assert.equal(slotViewport.style.contain, 'paint', 'slot viewport must retain compositor clipping while its reel moves');
+slotLineHeightCounter.destroy();
+assert.equal(slotLineHeightHost.getAttribute('style'), slotLineHeightStyle, 'slot destroy must restore the authored line-height and style exactly');
+slotLineHeightHost.remove();
+
+const clockLineHeightHost = document.createElement('span');
+clockLineHeightHost.setAttribute('style', 'font-size: 18px; line-height: 1.5; color: maroon');
+document.body.appendChild(clockLineHeightHost);
+const clockLineHeightStyle = clockLineHeightHost.getAttribute('style');
+const clockLineHeightCounter = counterModule.create(clockLineHeightHost, {
+  mode: 'clock', clockStyle: 'instant', seconds: true
+});
+const clockViewport = clockLineHeightHost.querySelector('.kt-counter-clock-digit');
+assert.equal(clockViewport.style.height, '27px', 'clock roll viewport must resolve the authored unitless computed line-height');
+assert.equal(clockViewport.style.maxBlockSize, '27px', 'clock roll viewport must remain one logical line tall');
+assert.equal(clockViewport.style.overflow, 'hidden', 'clock roll viewport must clip incoming and outgoing digits');
+assert.equal(clockViewport.style.contain, 'paint', 'clock roll viewport must not paint through the surrounding UI');
+clockLineHeightCounter.destroy();
+assert.equal(clockLineHeightHost.getAttribute('style'), clockLineHeightStyle, 'clock destroy must restore the authored line-height and style exactly');
+clockLineHeightHost.remove();
+
+// Text Split and Text Reveal rebuild author content into animation spans. A
+// <br> therefore has to become an explicit newline before teardown, and a \n
+// in programmatic swap text has to become a real <br> again on every render.
+const { setAnimationEngine } = await import('../src/runtime.js');
+const player = (complete) => {
+  let killed = false;
+  Promise.resolve().then(() => { if (!killed) complete?.(); });
+  return {
+    kill() { killed = true; },
+    pause() {},
+    resume() {},
+    restart() {},
+    isActive() { return false; }
+  };
+};
+const fakeGsap = {
+  registerPlugin() {},
+  set() {},
+  fromTo(_targets, _from, to) { return player(to.onComplete); },
+  to(_targets, to) { return player(to.onComplete); }
+};
+const fakeScrollTrigger = {
+  create(options) {
+    let killed = false;
+    Promise.resolve().then(() => { if (!killed) options.onEnter?.(); });
+    return { kill() { killed = true; } };
+  }
+};
+setAnimationEngine({ gsap: fakeGsap, ScrollTrigger: fakeScrollTrigger });
+const textSplitModule = (await import('../src/modules/textSplit.js')).default;
+const textRevealModule = (await import('../src/modules/textReveal.js')).default;
+const blurTextModule = (await import('../src/modules/blurText.js')).default;
+
+for (const [name, module, options] of [
+  ['textSplit', textSplitModule, { by: 'word', animation: 'fade' }],
+  ['textReveal', textRevealModule, { mode: 'char' }],
+  ['blurText', blurTextModule, {}]
+]) {
+  for (const reduced of [false, true]) {
+    const host = document.createElement('p');
+    host.innerHTML = '<strong>첫<br>둘</strong>';
+    host.querySelector('strong').firstChild.nodeValue = '첫\r\n시작';
+    host.appendChild(document.createTextNode('\r\n셋\n넷'));
+    host.setAttribute('aria-label', 'Author label');
+    host.setAttribute('style', 'opacity: .6; filter: blur(1px); color: navy');
+    const authorHTML = host.innerHTML;
+    const authorStyle = host.style.cssText;
+    const authorStrong = host.querySelector('strong');
+    document.body.appendChild(host);
+    const instance = reduced ? module.reduced(host, options) : module.create(host, {
+      ...options, duration: 0, stagger: 0
+    });
+    await Promise.resolve();
+    assert.equal(host.querySelectorAll('br').length, 4, `${name} ${reduced ? 'reduced' : 'normal'} must preserve authored br, nested CRLF and LF breaks`);
+    assert.equal(host.getAttribute('aria-label'), '첫\n시작\n둘\n셋\n넷', `${name} must expose normalized multiline source to ARIA`);
+    if (reduced) {
+      assert.equal(host.querySelector('strong'), authorStrong, `${name} reduced mode must preserve authored inline elements`);
+    } else {
+      instance.replay();
+      assert.equal(host.querySelectorAll('br').length, 4, `${name} replay must keep all authored line breaks`);
+    }
+    instance.destroy();
+    assert.equal(host.innerHTML, authorHTML, `${name} destroy must restore the exact authored multiline markup`);
+    assert.equal(host.querySelector('strong'), authorStrong, `${name} destroy must restore original inline elements without losing attached listeners`);
+    assert.equal(host.style.cssText, authorStyle, `${name} destroy must restore authored styles`);
+    assert.equal(host.getAttribute('aria-label'), 'Author label', `${name} destroy must restore authored ARIA`);
+    host.remove();
+  }
+}
+
+const authoredSplit = document.createElement('h2');
+authoredSplit.setAttribute('aria-label', 'Author label');
+authoredSplit.innerHTML = '첫 번째 줄<br>두 번째 줄';
+const authoredSplitHTML = authoredSplit.innerHTML;
+document.body.appendChild(authoredSplit);
+const authoredSplitInstance = textSplitModule.create(authoredSplit, {
+  by: 'char', animation: 'fade', duration: 0, stagger: 0
+});
+await Promise.resolve();
+assert.equal(authoredSplit.querySelectorAll('br').length, 1, 'char split must preserve an authored <br> as a real line break');
+assert.equal(authoredSplit.getAttribute('aria-label'), '첫 번째 줄\n두 번째 줄', 'char split ARIA must preserve the authored line break');
+authoredSplitInstance.replay();
+assert.equal(authoredSplit.querySelectorAll('br').length, 1, 'char split replay must preserve the authored line break');
+authoredSplitInstance.destroy();
+assert.equal(authoredSplit.innerHTML, authoredSplitHTML, 'char split destroy must restore the exact authored <br> markup');
+assert.equal(authoredSplit.getAttribute('aria-label'), 'Author label', 'char split destroy must restore authored ARIA');
+authoredSplit.remove();
+
+const reducedSplit = document.createElement('p');
+reducedSplit.innerHTML = '<strong>reduced fallback</strong>';
+const reducedSplitHTML = reducedSplit.innerHTML;
+document.body.appendChild(reducedSplit);
+const reducedSplitInstance = textSplitModule.reduced(reducedSplit, {
+  texts: ['감소된 모션에서도\n줄바꿈 유지', '교체하지 않는 둘째 문구']
+});
+assert.equal(reducedSplit.querySelectorAll('br').length, 1, 'reduced Text Split must render the first options newline as <br>');
+assert.equal(reducedSplit.getAttribute('aria-label'), '감소된 모션에서도\n줄바꿈 유지', 'reduced Text Split must expose its static multiline value to ARIA');
+reducedSplitInstance.destroy();
+assert.equal(reducedSplit.innerHTML, reducedSplitHTML, 'reduced Text Split destroy must restore author markup');
+assert.equal(reducedSplit.hasAttribute('aria-label'), false, 'reduced Text Split destroy must remove generated ARIA');
+reducedSplit.remove();
+
+const swappedSplit = document.createElement('p');
+swappedSplit.innerHTML = '<strong>fallback</strong>';
+const swappedSplitHTML = swappedSplit.innerHTML;
+document.body.appendChild(swappedSplit);
+const swaps = [];
+const swappedSplitInstance = textSplitModule.create(swappedSplit, {
+  by: 'word', animation: 'fade', duration: 0, stagger: 0, hold: 200,
+  texts: ['분석한 전략과\n브랜드 리소스', '생성 결과를\n확인합니다'],
+  onSwap: (_index, text) => swaps.push(text)
+});
+await Promise.resolve();
+assert.equal(swappedSplit.querySelectorAll('br').length, 1, 'word split must render a \n from options as <br>');
+assert.equal(swappedSplit.getAttribute('aria-label'), '분석한 전략과\n브랜드 리소스', 'word split must expose only the currently visible multiline text to ARIA');
+await new Promise((resolve) => setTimeout(resolve, 230));
+assert.deepEqual(swaps, ['생성 결과를\n확인합니다'], 'multiline swap must report the unchanged source string');
+assert.equal(swappedSplit.querySelectorAll('br').length, 1, 'word split swap must keep a real line break');
+assert.equal(swappedSplit.getAttribute('aria-label'), '생성 결과를\n확인합니다', 'word split swap must update ARIA to the visible multiline text');
+swappedSplitInstance.replay();
+assert.equal(swappedSplit.querySelectorAll('br').length, 1, 'word split replay must rebuild its first multiline value');
+assert.equal(swappedSplit.getAttribute('aria-label'), '분석한 전략과\n브랜드 리소스', 'word split replay must restore the first ARIA value');
+swappedSplitInstance.destroy();
+assert.equal(swappedSplit.innerHTML, swappedSplitHTML, 'word split destroy must restore author markup after swap and replay');
+assert.equal(swappedSplit.hasAttribute('aria-label'), false, 'word split destroy must remove generated ARIA');
+swappedSplit.remove();
+
+const revealedText = document.createElement('p');
+revealedText.innerHTML = '서버 문구<br>다음 줄';
+const revealedHTML = revealedText.innerHTML;
+document.body.appendChild(revealedText);
+const revealedInstance = textRevealModule.create(revealedText, {
+  mode: 'word', duration: 0, stagger: 0
+});
+await Promise.resolve();
+assert.equal(revealedText.querySelectorAll('br').length, 1, 'Text Reveal word mode must retain authored <br>');
+assert.equal(revealedText.getAttribute('aria-label'), '서버 문구\n다음 줄', 'Text Reveal ARIA must retain the authored line break');
+revealedInstance.replay();
+assert.equal(revealedText.querySelectorAll('br').length, 1, 'Text Reveal replay must retain authored line breaks');
+revealedInstance.destroy();
+assert.equal(revealedText.innerHTML, revealedHTML, 'Text Reveal destroy must restore authored <br> markup');
+assert.equal(revealedText.hasAttribute('aria-label'), false, 'Text Reveal destroy must remove generated ARIA');
+revealedText.remove();
+
+const optionReveal = document.createElement('p');
+optionReveal.innerHTML = '<em>작성자 원문</em>';
+const optionRevealHTML = optionReveal.innerHTML;
+document.body.appendChild(optionReveal);
+const optionRevealInstance = textRevealModule.create(optionReveal, {
+  mode: 'line', text: '옵션 첫 줄\n옵션 둘째 줄', duration: 0, stagger: 0
+});
+await Promise.resolve();
+assert.equal(optionReveal.querySelectorAll('br').length, 1, 'Text Reveal text option must render \n as a real line break');
+assert.equal(optionReveal.getAttribute('aria-label'), '옵션 첫 줄\n옵션 둘째 줄', 'Text Reveal text option must preserve its line break in ARIA');
+optionRevealInstance.destroy();
+assert.equal(optionReveal.innerHTML, optionRevealHTML, 'Text Reveal destroy must restore author markup after a text override');
+optionReveal.remove();
+
+const textRevealAnimate = window.HTMLElement.prototype.animate;
+const nativeTextRevealPlayers = [];
+window.HTMLElement.prototype.animate = () => {
+  const player = {
+    finished: Promise.resolve(),
+    cancelled: false,
+    paused: false,
+    played: false,
+    cancel() { this.cancelled = true; },
+    pause() { this.paused = true; },
+    play() { this.played = true; }
+  };
+  nativeTextRevealPlayers.push(player);
+  return player;
+};
+for (const mode of ['char', 'line', 'bounce', 'hangul', 'decode', 'flicker', 'shuffle']) {
+  const multilineReveal = document.createElement('p');
+  multilineReveal.textContent = '작성자 원문';
+  document.body.appendChild(multilineReveal);
+  const multilineRevealInstance = textRevealModule.create(multilineReveal, {
+    mode,
+    text: 'A\nB',
+    duration: 0,
+    stagger: 0,
+    speed: 1,
+    flickerCount: 1
+  });
+  await new Promise((resolve) => setTimeout(resolve, 12));
+  assert.equal(multilineReveal.querySelectorAll('br').length, 1, `Text Reveal ${mode} mode must preserve a text-option newline`);
+  multilineRevealInstance.destroy();
+  assert.equal(multilineReveal.textContent, '작성자 원문', `Text Reveal ${mode} destroy must restore author text`);
+  multilineReveal.remove();
+}
+
+const nativeFlicker = document.createElement('p');
+nativeFlicker.textContent = 'native lifecycle';
+document.body.appendChild(nativeFlicker);
+const nativeFlickerStart = nativeTextRevealPlayers.length;
+const nativeFlickerInstance = textRevealModule.create(nativeFlicker, {
+  mode: 'flicker', duration: 0.1, stagger: 0
+});
+await new Promise((resolve) => setTimeout(resolve, 12));
+const firstFlickerPlayers = nativeTextRevealPlayers.slice(nativeFlickerStart);
+assert.ok(firstFlickerPlayers.length > 0, 'flicker must create native Web Animations');
+nativeFlickerInstance.pause();
+assert.ok(firstFlickerPlayers.every((player) => player.paused), 'Text Reveal pause must pause native Web Animations');
+nativeFlickerInstance.resume();
+assert.ok(firstFlickerPlayers.every((player) => player.played), 'Text Reveal resume must play native Web Animations');
+nativeFlickerInstance.replay();
+assert.ok(firstFlickerPlayers.every((player) => player.cancelled), 'Text Reveal replay must cancel superseded native Web Animations');
+await new Promise((resolve) => setTimeout(resolve, 12));
+const replayPlayers = nativeTextRevealPlayers.slice(nativeFlickerStart + firstFlickerPlayers.length);
+nativeFlickerInstance.destroy();
+assert.ok(replayPlayers.length > 0 && replayPlayers.every((player) => player.cancelled), 'Text Reveal destroy must cancel active native Web Animations');
+nativeFlicker.remove();
+
+// Native completion promises are delivered on a microtask. Cancelling an
+// already fulfilled animation cannot retract that callback from an old run.
+const staleFlicker = document.createElement('p');
+staleFlicker.textContent = 'A';
+document.body.appendChild(staleFlicker);
+let staleCompletions = 0;
+const staleFlickerInstance = textRevealModule.create(staleFlicker, {
+  mode: 'flicker', onComplete: () => { staleCompletions += 1; }
+});
+await Promise.resolve();
+staleFlickerInstance.replay();
+await Promise.resolve();
+assert.equal(staleCompletions, 1, 'Text Reveal replay must ignore a queued completion from its previous run');
+staleFlickerInstance.destroy();
+staleFlicker.remove();
+
+const destroyedFlicker = document.createElement('p');
+destroyedFlicker.innerHTML = '<em>A</em>';
+document.body.appendChild(destroyedFlicker);
+let destroyedCompletions = 0;
+const destroyedFlickerInstance = textRevealModule.create(destroyedFlicker, {
+  mode: 'flicker', onComplete: () => { destroyedCompletions += 1; }
+});
+await Promise.resolve();
+destroyedFlickerInstance.destroy();
+const playersAfterDestroy = nativeTextRevealPlayers.length;
+destroyedFlickerInstance.resume();
+destroyedFlickerInstance.replay();
+await Promise.resolve();
+assert.equal(destroyedCompletions, 0, 'Text Reveal destroy must suppress queued completion callbacks');
+assert.equal(nativeTextRevealPlayers.length, playersAfterDestroy, 'Text Reveal methods must not create animations after destroy');
+assert.equal(destroyedFlicker.innerHTML, '<em>A</em>', 'Text Reveal methods must keep restored author markup after destroy');
+destroyedFlicker.remove();
+window.HTMLElement.prototype.animate = textRevealAnimate;
+
 dom.window.close();
 
-console.log('Motion regressions OK — reveal order; fullpage handoff; bounded composition APIs; interaction shadows; Bottom Sheet resizing; loading indicators; Cover Reveal combinations; slider progress and activation collisions.');
+console.log('Motion regressions OK — reveal order; fullpage handoff; bounded composition APIs; interaction shadows; Bottom Sheet resizing; loading indicators; Cover Reveal combinations; bounded counter line boxes; multiline text motion; slider progress and activation collisions.');

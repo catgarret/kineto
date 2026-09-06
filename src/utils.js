@@ -367,6 +367,64 @@ export function segmentText(text, decomposeKorean = false) {
   });
 }
 
+// `Node.textContent` intentionally omits the visual newline contributed by
+// <br>. Text motion modules rebuild their source into generated spans, so read
+// authored breaks explicitly before that DOM is replaced. Programmatic text is
+// normalised too, keeping Windows and legacy carriage returns on the same path.
+export function normalizeTextLineBreaks(text) {
+  return String(text ?? '').replace(/\r\n?/g, '\n').replace(/[\u2028\u2029]/g, '\n');
+}
+
+export function textWithLineBreaks(el) {
+  if (!el?.childNodes) return normalizeTextLineBreaks(el?.textContent || '');
+  let text = '';
+  const visit = (node) => {
+    if (node.nodeType === 3) {
+      text += node.nodeValue || '';
+      return;
+    }
+    if (node.nodeType !== 1) return;
+    if (node.tagName === 'BR') {
+      text += '\n';
+      return;
+    }
+    node.childNodes.forEach(visit);
+  };
+  el.childNodes.forEach(visit);
+  return normalizeTextLineBreaks(text);
+}
+
+// Preserve inline markup in static/reduced-motion text while giving authored
+// text-node newlines the same visible meaning as an explicit <br>.
+export function renderTextLineBreaks(el) {
+  Array.from(el.childNodes).forEach((node) => {
+    if (node.nodeType === 3) {
+      const text = normalizeTextLineBreaks(node.nodeValue);
+      if (!text.includes('\n')) return;
+      const fragment = document.createDocumentFragment();
+      text.split(/(\n)/).forEach((part) => {
+        if (part) fragment.appendChild(part === '\n' ? document.createElement('br') : document.createTextNode(part));
+      });
+      node.replaceWith(fragment);
+    } else if (node.nodeType === 1 && !['SCRIPT', 'STYLE'].includes(node.tagName)) {
+      renderTextLineBreaks(node);
+    }
+  });
+}
+
+// Reinsert author-owned nodes instead of parsing an HTML string on teardown.
+// Besides preserving listeners, this retains CRLF text nodes exactly.
+export function snapshotChildNodes(el) {
+  const entries = [];
+  const visit = (node) => {
+    const children = Array.from(node.childNodes);
+    entries.push([node, children]);
+    children.forEach((child) => { if (child.nodeType === 1) visit(child); });
+  };
+  visit(el);
+  return () => entries.forEach(([node, children]) => node.replaceChildren(...children));
+}
+
 export function formatNumber(value, { decimals = 0, format = '', locale } = {}) {
   const number = Number(value);
   if (!Number.isFinite(number)) return String(value);

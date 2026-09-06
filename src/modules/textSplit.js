@@ -1,4 +1,15 @@
-import { G, gsapEaseName, segmentText, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
+import {
+  G,
+  gsapEaseName,
+  normalizeTextLineBreaks,
+  renderTextLineBreaks,
+  segmentText,
+  snapshotAttributes,
+  snapshotChildNodes,
+  snapshotInlineStyles,
+  ST,
+  textWithLineBreaks
+} from '../utils.js';
 
 // Per-animation from/to states. "rise" clips inside an overflow wrapper,
 // "spin"/"flip" rotate every glyph in 3D, "wave" is a soft bounce-up.
@@ -34,6 +45,19 @@ const SWAP_OUT = {
 
 function buildUnits(el, text, by, wrap) {
   const units = [];
+  const appendBreak = () => {
+    const br = document.createElement('br');
+    br.setAttribute('aria-hidden', 'true');
+    el.appendChild(br);
+  };
+  const appendWhitespace = (content) => {
+    const parts = normalizeTextLineBreaks(content).split(/(\n)/);
+    parts.forEach((part) => {
+      if (!part) return;
+      if (part === '\n') appendBreak();
+      else el.appendChild(document.createTextNode(part));
+    });
+  };
   const addUnit = (content) => {
     const span = document.createElement('span');
     span.style.display = 'inline-block';
@@ -53,14 +77,14 @@ function buildUnits(el, text, by, wrap) {
   };
 
   if (by === 'word') {
-    text.split(/(\s+)/).forEach((token) => {
+    normalizeTextLineBreaks(text).split(/(\n|[^\S\n]+)/).forEach((token) => {
       if (!token) return;
-      if (/^\s+$/.test(token)) el.appendChild(document.createTextNode(token));
+      if (/^\s+$/.test(token)) appendWhitespace(token);
       else addUnit(token);
     });
   } else {
-    segmentText(text).forEach((char) => {
-      if (/^\s$/.test(char)) el.appendChild(document.createTextNode(char));
+    segmentText(normalizeTextLineBreaks(text)).forEach((char) => {
+      if (/^\s$/.test(char)) appendWhitespace(char);
       else addUnit(char);
     });
   }
@@ -76,16 +100,18 @@ export default {
     const by = opts.by || 'char';
     const animationName = (typeof opts.animation === 'string' && ANIMATIONS[opts.animation]) ? opts.animation : (ANIMATIONS[opts.preset] ? opts.preset : 'rise');
     const definition = ANIMATIONS[animationName];
-    const originalHTML = el.innerHTML;
+    const restoreContent = snapshotChildNodes(el);
     const restoreAttributes = snapshotAttributes(el, ['aria-label']);
-    const originalText = el.textContent || '';
+    const originalText = textWithLineBreaks(el);
     const restoreStyle = snapshotInlineStyles(el, ['overflow', 'perspective', 'display', 'minHeight']);
-    const texts = Array.isArray(opts.texts) && opts.texts.length ? opts.texts.map(String) : null;
+    const texts = Array.isArray(opts.texts) && opts.texts.length
+      ? opts.texts.map((text) => normalizeTextLineBreaks(String(text)))
+      : null;
     const duration = Number(opts.duration ?? 0.8);
     const stagger = Number(opts.stagger ?? 0.03);
     const ease = opts.ease ? gsapEaseName(opts.ease) : 'power3.out';
 
-    el.setAttribute('aria-label', texts ? texts.join(', ') : originalText);
+    el.setAttribute('aria-label', texts ? texts[0] : originalText);
     el.innerHTML = '';
     if (animationName === 'spin' || animationName === 'flip') el.style.perspective = `${Number(opts.perspective ?? 600)}px`;
 
@@ -133,6 +159,7 @@ export default {
             textIndex = (textIndex + 1) % texts.length;
             el.innerHTML = '';
             units = buildUnits(el, texts[textIndex], by, false);
+            el.setAttribute('aria-label', texts[textIndex]);
             opts.onSwap?.(textIndex, texts[textIndex], el);
             playIn(scheduleSwap);
           }
@@ -171,6 +198,7 @@ export default {
           textIndex = 0;
           el.innerHTML = '';
           units = buildUnits(el, texts[0], by, false);
+          el.setAttribute('aria-label', texts[0]);
         }
         gsap.set(units, { ...definition.from });
         playIn(texts ? scheduleSwap : null);
@@ -182,17 +210,35 @@ export default {
         clearTimeout(swapTimer);
         trigger.kill();
         tween?.kill();
-        el.innerHTML = originalHTML;
+        restoreContent();
         restoreAttributes();
         restoreStyle();
       }
     };
   },
 
-  reduced(el) {
-    const restore = snapshotInlineStyles(el, ['opacity', 'transform']);
+  reduced(el, opts = {}) {
+    const restoreContent = snapshotChildNodes(el);
+    const restoreAttributes = snapshotAttributes(el, ['aria-label']);
+    const restoreStyle = snapshotInlineStyles(el, ['opacity', 'transform']);
+    const firstText = Array.isArray(opts.texts) && opts.texts.length
+      ? normalizeTextLineBreaks(String(opts.texts[0]))
+      : textWithLineBreaks(el);
+    if (Array.isArray(opts.texts) && opts.texts.length) el.textContent = firstText;
+    renderTextLineBreaks(el);
+    el.setAttribute('aria-label', firstText);
     el.style.opacity = '1';
     el.style.transform = 'none';
-    return { el, type: 'textSplit', pause() {}, resume() {}, destroy: restore };
+    return {
+      el,
+      type: 'textSplit',
+      pause() {},
+      resume() {},
+      destroy() {
+        restoreContent();
+        restoreAttributes();
+        restoreStyle();
+      }
+    };
   }
 };

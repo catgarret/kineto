@@ -3,6 +3,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { updateReleaseDocumentVersion } from './release-document-versions.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const spec = process.argv[2];
@@ -73,18 +74,22 @@ const versionFiles = [
   'kineto.features.json',
   'kineto.requirements.json',
   'demo/index.html',
-  'docs/QA_REPORT.md',
   'docs/README.md',
   'docs/getting-started.md',
   'docs/STABILIZATION_REPORT.md',
-  'docs/CONTEXT.md',
-  'docs/AI-HANDOFF.md'
+  'docs/CONTEXT.md'
 ];
 for (const relative of versionFiles) {
   const file = path.join(root, relative);
   const source = fs.readFileSync(file, 'utf8');
   if (!source.includes(current)) fail(`${relative} does not contain current version ${current}`);
   fs.writeFileSync(file, source.replaceAll(current, next));
+}
+
+for (const relative of ['docs/QA_REPORT.md', 'docs/AI-HANDOFF.md']) {
+  const file = path.join(root, relative);
+  const source = fs.readFileSync(file, 'utf8');
+  fs.writeFileSync(file, updateReleaseDocumentVersion(relative, source, current, next));
 }
 
 // The roadmap contains historical release references that must not be changed

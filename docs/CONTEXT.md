@@ -12,7 +12,7 @@ Kineto는 `dongri.me`의 픽셀 모자이크 실험에서 시작한 인터랙션
 - 공개 모듈: 52개
 - Core API: 28개
 - 소유자 고정 요구사항: 48개
-- 라이브 플레이그라운드: 188개
+- 라이브 플레이그라운드: 189개
 - Smooth Scroll: 기본 비활성화, Lenis runtime API로 선택 사용
 
 소스 오브 트루스:
@@ -46,6 +46,11 @@ Kineto는 `dongri.me`의 픽셀 모자이크 실험에서 시작한 인터랙션
 - Loader와 Loading Indicator는 진행률 이벤트·CSS 변수·출력 바인딩을
   공유하며, Indicator는 `bindProgress()`로 Loader를 구독할 수 있습니다.
 - Smooth Scroll은 명시적으로 켜고 끌 수 있어야 합니다.
+- 데모의 hero와 첫 콘텐츠 사이 전환은 한 번의 wheel·touch 제스처로 시작하고
+  여러 프레임의 감속으로 정착합니다. 제스처의 잔여 관성 입력과 Lenis가 겹쳐
+  화면을 다시 움직이지 않도록 하되, 즉시 화면이 바뀌는 방식으로 대체하지 않습니다.
+- Text Split·Text Reveal은 작성한 `<br>`와 문자열의 `\n`을 문구 교체·replay에도
+  보존하고, Counter Slot·Clock의 숫자 전환은 소비자 `line-height` 안에서 잘립니다.
 
 ## 개발 규칙
 

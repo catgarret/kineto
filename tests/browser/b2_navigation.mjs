@@ -156,7 +156,8 @@ const hFwd=await hash(); ck('Forward -> #mod-counter', hFwd==='#mod-counter', hF
 }
 
 // 7. First-screen snap remains a single deliberate gesture in both directions.
-// Its momentum tail must be consumed rather than bouncing the page straight back.
+// The programmed trajectory supplies the inertia; the rest of the physical
+// wheel/touch gesture is consumed so native scrolling cannot add an overshoot.
 {
   const ctx=await browser.newContext({viewport:{width:1280,height:900}});
   const sp=await ctx.newPage();
@@ -170,7 +171,7 @@ const hFwd=await hash(); ck('Forward -> #mod-counter', hFwd==='#mod-counter', hF
     window.dispatchEvent(event);
     return event.defaultPrevented;
   });
-  await sp.waitForTimeout(300);
+  await sp.waitForTimeout(40);
   const momentumAllowed=await sp.evaluate(()=>{
     const event=new WheelEvent('wheel',{deltaY:120,cancelable:true});
     window.dispatchEvent(event);
@@ -181,22 +182,98 @@ const hFwd=await hash(); ck('Forward -> #mod-counter', hFwd==='#mod-counter', hF
     window.dispatchEvent(event);
     return event.defaultPrevented;
   });
-  await sp.waitForTimeout(900);
+  const downPath=[];
+  for(let sample=0;sample<10;sample+=1){
+    await sp.waitForTimeout(90);
+    downPath.push(await sp.evaluate(()=>Math.round(window.scrollY)));
+  }
   const landed=await sp.evaluate(()=>{
     const landing=document.querySelector('main .section-head');
     return {top:Math.round(landing.getBoundingClientRect().top),scrollY:Math.round(window.scrollY),offsetTop:landing.offsetTop};
   });
   ck('hero wheel -> first scene', downward&&Math.abs(landed.top)<120, `prevented=${downward}, ${JSON.stringify(landed)}`);
-  ck('hero snap preserves same-direction momentum', !momentumAllowed, `prevented=${momentumAllowed}`);
-  ck('hero snap consumes momentum tail', tailBlocked, `prevented=${tailBlocked}`);
+  ck('hero snap owns same-direction momentum tail', momentumAllowed, `prevented=${momentumAllowed}`);
+  ck('hero snap owns opposite-direction momentum tail', tailBlocked, `prevented=${tailBlocked}`);
+  ck('hero snap keeps an inertial multi-frame trajectory',new Set(downPath).size>=4,JSON.stringify(downPath));
+  ck('hero snap never reverses or overshoots downward',downPath.every((value,index)=>index===0||value>=downPath[index-1])&&downPath.every(value=>value<=landed.scrollY+1),JSON.stringify(downPath));
+  await sp.waitForTimeout(220);
   const reverse=await sp.evaluate(()=>{
     const event=new WheelEvent('wheel',{deltaY:-120,cancelable:true});
     window.dispatchEvent(event);
     return event.defaultPrevented;
   });
-  await sp.waitForTimeout(2200);
+  const upPath=[];
+  for(let sample=0;sample<10;sample+=1){
+    await sp.waitForTimeout(90);
+    upPath.push(await sp.evaluate(()=>Math.round(window.scrollY)));
+  }
   const returned=await sp.evaluate(()=>window.scrollY<6);
   ck('first-scene wheel up -> hero', reverse&&returned, `prevented=${reverse}, returned=${returned}, before=${JSON.stringify(landed)}`);
+  ck('hero return keeps an inertial multi-frame trajectory',new Set(upPath).size>=4,JSON.stringify(upPath));
+  ck('hero return never rebounds away from the top',upPath.every((value,index)=>index===0||value<=upPath[index-1])&&upPath.every(value=>value>=0),JSON.stringify(upPath));
+  await ctx.close();
+}
+
+// 8. The same ownership contract holds for coarse-pointer touch input. A
+// synthetic touch sequence is sufficient here because the regression was the
+// page controller combining native momentum with its own programmatic scroll,
+// not OS-level rubber-band rendering.
+{
+  const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  const sp=await ctx.newPage();
+  await sp.goto(`http://localhost:${PORT}/demo/index.html`,{waitUntil:'load'});
+  await sp.waitForFunction(()=>window.Kineto&&document.getElementById('mod-textSplit'),null,{timeout:15000});
+  await sp.waitForTimeout(2500);
+  const swipe=await sp.evaluate(()=>{
+    const hero=document.querySelector('.hero');
+    // The mobile hero can be taller than one small viewport. Native scrolling
+    // remains available inside it; the one-gesture scene transition begins at
+    // the intended lower boundary once the full hero has been seen.
+    window.scrollTo(0,Math.max(0,hero.offsetHeight-window.innerHeight));
+    const fire=(type,y)=>{
+      const event=new Event(type,{bubbles:true,cancelable:true});
+      Object.defineProperty(event,'touches',{value:type==='touchend'?[]:[{clientY:y}]});
+      window.dispatchEvent(event);
+      return event.defaultPrevented;
+    };
+    fire('touchstart',700);
+    const triggered=fire('touchmove',660);
+    const tail=fire('touchmove',600);
+    fire('touchend',600);
+    return {triggered,tail};
+  });
+  const downPath=[];
+  for(let sample=0;sample<10;sample+=1){
+    await sp.waitForTimeout(90);
+    downPath.push(await sp.evaluate(()=>Math.round(window.scrollY)));
+  }
+  const landed=await sp.evaluate(()=>({
+    scrollY:Math.round(window.scrollY),
+    top:Math.round(document.querySelector('main .section-head').getBoundingClientRect().top)
+  }));
+  ck('mobile swipe -> first scene',swipe.triggered&&swipe.tail&&Math.abs(landed.top)<120,`${JSON.stringify(swipe)} ${JSON.stringify(landed)}`);
+  ck('mobile landing is monotonic with no rebound',new Set(downPath).size>=4&&downPath.every((value,index)=>index===0||value>=downPath[index-1])&&downPath.every(value=>value<=landed.scrollY+1),JSON.stringify(downPath));
+  await sp.waitForTimeout(220);
+  const reverse=await sp.evaluate(()=>{
+    const fire=(type,y)=>{
+      const event=new Event(type,{bubbles:true,cancelable:true});
+      Object.defineProperty(event,'touches',{value:type==='touchend'?[]:[{clientY:y}]});
+      window.dispatchEvent(event);
+      return event.defaultPrevented;
+    };
+    fire('touchstart',220);
+    const triggered=fire('touchmove',270);
+    const tail=fire('touchmove',330);
+    fire('touchend',330);
+    return {triggered,tail};
+  });
+  const upPath=[];
+  for(let sample=0;sample<10;sample+=1){
+    await sp.waitForTimeout(90);
+    upPath.push(await sp.evaluate(()=>Math.round(window.scrollY)));
+  }
+  ck('mobile reverse swipe -> hero',reverse.triggered&&reverse.tail&&upPath.at(-1)<6,`${JSON.stringify(reverse)} ${JSON.stringify(upPath)}`);
+  ck('mobile return is monotonic with no rebound',new Set(upPath).size>=4&&upPath.every((value,index)=>index===0||value<=upPath[index-1])&&upPath.every(value=>value>=0),JSON.stringify(upPath));
   await ctx.close();
 }
 

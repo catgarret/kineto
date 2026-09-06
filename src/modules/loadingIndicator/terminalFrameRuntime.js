@@ -177,7 +177,7 @@ function pickFrames(preset, opts) {
     // length and the determinate fill all depend on live options.
     return buildScannerFrames(opts, opts.direction === 'reverse' || opts.direction === 'rtl');
   }
-  if ((preset.id === 'quad-dot-chase' || preset.id === 'quad-dot-pulse') && opts.asciiOnly) {
+  if (preset.id === 'quad-dot-chase' && opts.asciiOnly) {
     return QUAD_FALLBACK.slice();
   }
   return preset.frames.slice();
@@ -296,13 +296,7 @@ export function mountTerminalFrameSpinner(root, preset, opts) {
             ? (dotIndex - quadHead + 4) % 4
             : (quadHead - dotIndex + 4) % 4;
           const base = QUAD_TRAIL[distance] ?? minOpacity;
-          // quad-dot-pulse breathes the whole cluster on top of the chase: a
-          // slow cosine over one full lap, so it dims and brightens as the head
-          // travels rather than holding one flat brightness.
-          const breathe = preset.id === 'quad-dot-pulse'
-            ? 0.62 + 0.38 * (0.5 + 0.5 * Math.cos((quadHead / 4) * Math.PI * 2))
-            : 1;
-          dot.style.opacity = String((minOpacity + (base - minOpacity) * trailStrength) * breathe);
+          dot.style.opacity = String(minOpacity + (base - minOpacity) * trailStrength);
         });
         quadHead = reversed ? (quadHead + 3) % 4 : (quadHead + 1) % 4;
       };

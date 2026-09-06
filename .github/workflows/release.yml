@@ -74,7 +74,7 @@ jobs:
       - name: Run Node tests · demo surface
         run: |
           set -euo pipefail
-          for command in test:parity test:structure test:copy test:lazy test:options test:variants test:help test:inline test:defaults test:variant-options test:variant-distinctness; do
+          for command in test:parity test:structure test:copy test:lazy test:options test:demo-controls test:variants test:help test:inline test:defaults test:variant-options test:variant-distinctness; do
             echo "::group::$command"
             node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log
             echo "::endgroup::"
@@ -84,7 +84,7 @@ jobs:
         run: |
           set -uo pipefail
           failures=()
-          for command in test:easings test:reduced test:update test:audit test:leak test:perf test:deps test:engine test:sequence-sources test:regressions; do
+          for command in test:easings test:reduced test:update test:audit test:leak test:perf test:deps test:engine test:sequence-sources test:regressions test:cursor-click-media; do
             echo "::group::$command"
             if ! node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log; then
               echo "::error title=Node runtime test failed::$command"
@@ -101,7 +101,7 @@ jobs:
         run: |
           set -uo pipefail
           failures=()
-          for command in test:site test:release test:size; do
+          for command in test:site test:live-site-script test:release test:size; do
             echo "::group::$command"
             if ! node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log; then
               echo "::error title=Site/release test failed::$command"
@@ -228,6 +228,8 @@ jobs:
         run: |
           set -o pipefail
           node tests/retry-browser-test.mjs tests/browser-smoke.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
+          node tests/retry-browser-test.mjs tests/browser/css-scroll.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
+          node tests/retry-browser-test.mjs tests/browser/cursor-click-media.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
         env:
           KT_BROWSER: ${{ matrix.browser }}

@@ -1,18 +1,20 @@
-import { G, gsapEaseName, observeOnce, segmentText, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
+import { G, gsapEaseName, observeOnce, renderTextLineBreaks, segmentText, snapshotAttributes, snapshotChildNodes, snapshotInlineStyles, ST, textWithLineBreaks } from '../utils.js';
 
 export default {
   create(el, opts) {
     const gsap = G();
     const scrollTrigger = ST();
-    const originalHTML = el.innerHTML;
+    const restoreContent = snapshotChildNodes(el);
     const restoreAttributes = snapshotAttributes(el, ['aria-label']);
-    const text = el.textContent || '';
+    const text = textWithLineBreaks(el);
     el.setAttribute('aria-label', text);
     el.innerHTML = '';
 
     const chars = segmentText(text).map((char) => {
       if (/^\s$/.test(char)) {
-        el.appendChild(document.createTextNode(char));
+        const whitespace = char === '\n' ? document.createElement('br') : document.createTextNode(char);
+        if (char === '\n') whitespace.setAttribute('aria-hidden', 'true');
+        el.appendChild(whitespace);
         return null;
       }
       const span = document.createElement('span');
@@ -98,16 +100,30 @@ export default {
         clearTimers();
         tween?.scrollTrigger?.kill();
         tween?.kill();
-        el.innerHTML = originalHTML;
+        restoreContent();
         restoreAttributes();
       }
     };
   },
 
   reduced(el) {
+    const restoreContent = snapshotChildNodes(el);
+    const restoreAttributes = snapshotAttributes(el, ['aria-label']);
     const restore = snapshotInlineStyles(el, ['opacity', 'filter']);
+    el.setAttribute('aria-label', textWithLineBreaks(el));
+    renderTextLineBreaks(el);
     el.style.opacity = '1';
     el.style.filter = 'none';
-    return { el, type: 'blurText', pause() {}, resume() {}, destroy: restore };
+    return {
+      el,
+      type: 'blurText',
+      pause() {},
+      resume() {},
+      destroy() {
+        restoreContent();
+        restoreAttributes();
+        restore();
+      }
+    };
   }
 };

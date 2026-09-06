@@ -73,6 +73,12 @@ Kineto.loadingIndicator('.build-status', {
 | `circle` | 부채꼴 문자가 시계 방향으로 회전합니다. |
 | `clock` | 실제 시계 얼굴이 12시·3시·6시·9시 순서로 바뀝니다. |
 
+2×2 점 프리셋은 동작이 겹치던 `Quad Dot Pulse`를 별도 목록에서 제거하고
+`quad-dot-chase` 하나로 제공합니다. 기존 `terminalStyle:
+'quad-dot-pulse'` 설정은 호환 alias로 `quad-dot-chase`에 연결되므로 이전
+마크업을 바로 고치지 않아도 동작합니다. 새 코드와 설정창에는
+`quad-dot-chase`를 사용하세요.
+
 `scanner`는 진행률이 없으면 계속 움직입니다. `progress` 또는
 `setProgress()`로 값을 전달하면 해당 위치에서 멈추는 실제 진행률
 표시로 전환됩니다.
