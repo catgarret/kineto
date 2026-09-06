@@ -213,7 +213,7 @@
     "lenis": "^1.3.26",
     "playwright": "^1.62.1",
     "playwright-core": "^1.62.1",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "vite": "^8.2.2"
   },
   "engines": {
