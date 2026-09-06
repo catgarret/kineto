@@ -47,7 +47,7 @@ another agent's prose report are leads to verify, not evidence of completion.
 
 - Package: `@dong-gri/kineto`
 - Current source version: `0.9.7`
-- Latest published npm version at the time of this handoff: `0.9.6`
+- Latest published npm version at the time of this handoff: `0.9.7`
 - Public surface: 52 modules and 28 Core APIs
 - Primary branch: `main`
 - Remote: `https://github.com/catgarret/kineto`
@@ -83,6 +83,11 @@ At this handoff, the most recent completed work includes:
 - an end-to-end v0.9.6 release whose cross-browser CI, npm SLSA provenance,
   checksum-identical npm/GitHub tarballs, canonical Pages, and synchronized
   backup deployment are recorded in `docs/browser-qa-history.md`.
+- v0.9.7 production fixes for authored text breaks, line-height-clipped counter
+  reels, one-shot click media, deduplicated Quad Dot presets, and inertial hero
+  landing; exhaustive control QA and native/fallback cssScroll checks are
+  recorded alongside matching npm/GitHub tarballs and both deployed sites in
+  `docs/QA_REPORT.md` and `docs/browser-qa-history.md`.
 
 Always verify this summary against Git history because later commits supersede
 it.

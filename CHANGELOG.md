@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Record the verified v0.9.7 release, matching npm/GitHub tarballs and provenance metadata, successful cross-browser workflows, and canonical/backup parity for all twelve first-party scripts/styles and four click-media assets.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- v0.9.7의 npm/GitHub 동일 tarball·provenance metadata, 교차 브라우저 workflow 성공과 두 도메인의 자체 JS/CSS 12개·클릭 미디어 4개 일치를 기록했습니다.
 
 ## [0.9.7] - 2026-09-06
 

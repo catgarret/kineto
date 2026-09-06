@@ -10,8 +10,8 @@
 2026-09-05 후속 묶음은 dateTime 입력 경계(96~105)에 이어 배포 무결성·framework
 hydration·공급망·데모 재현성·cross-browser 범위(106~129)를 보강했습니다.
 v0.9.7에서 설정 전수 검사·CSS scroll 검증과 실사용 줄바꿈·카운터·
-클릭 이미지·모바일 스크롤을 개선합니다. 현재 릴리스 후보이며 구현 완료와 원격 배포 완료를 구분하고,
-최종 CI·npm·두 호스팅 결과는 배포 후 QA 이력에 기록합니다.
+클릭 이미지·모바일 스크롤을 개선했습니다. 최종 CI·npm·GitHub Release·두 호스팅의
+검증 결과는 QA 보고서와 브라우저 QA 이력에 기록했습니다. 실기기·외부 사용 증거는 별도 미완료 상태입니다.
 
 ## 1. 결론
 
@@ -421,9 +421,9 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 
 ## 10. 다음 실행 순서
 
-현재 남은 순서는 다음과 같습니다.
+실사용 수정 묶음의 통합 CI·번들/패키지 비용 검토·v0.9.7 배포와 두 도메인의
+자체 JS/CSS·클릭 미디어 일치 확인을 완료했습니다. 현재 남은 순서는 다음과 같습니다.
 
-- 진행 중: 실사용 수정 묶음의 통합 CI, 번들·패키지 비용 검토, patch 배포와 두 도메인 산출물 일치 확인.
 - 후속: 전용 데모가 없는 variant 중 실제 적용·회귀 근거가 있는 항목의 비교 화면과 브라우저 검증 확대.
 - 외부 증거 필요: 실제 iOS Safari·Android Chrome·스크린리더 검사, 운영 앱의 장기 성능 측정, 공개 동의를 받은 외부 사용 사례 3개.
 - 증거 확보 후 결정: FLIP shared layout과 States·Presence 추가 확장. 현재 자동 검사나 데모를 외부 사용 증거로 집계하지 않습니다.
@@ -561,17 +561,18 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 127. 완료(v0.9.5 실행 증거): `8ac7a2b`의 CI `33946293529`와 canonical Pages `33946819020`, Release `33946295274`의 Verify·Firefox·WebKit 성공을 확인하고, prefix 없는 tarball 경로 때문에 publish만 실패한 사실을 분리해 기록
 128. 완료(v0.9.6): checksum 검증 tarball output을 명시적인 `./release-artifact/...tgz`로 고정하고, npm이 이를 Git package spec으로 해석하지 않도록 release contract를 추가한 뒤 실제 `npm publish --dry-run`으로 경로 해석을 검증
 129. 완료(v0.9.6 실행 증거): `8d784b6`의 CI `33947520040`·Release `33947520948`·Pages `33947939177`, npm SLSA provenance, npm/GitHub tarball SHA-256 일치, backup sync `33947970148`·Pages `33947986088`, 두 공개 도메인의 v0.9.6·52개·GTM·build/runtime hash 일치를 확인
-130. 완료(Unreleased): 로드맵의 당시 검토 의견과 현재 구현 상태를 분리하고, 소비자 번들·framework hydration·Slider·공유 URL 완료 이력을 실제 릴리스에 귀속
-131. 완료(Unreleased): Page Reveal 16개에 더해 Reveal·Lazy·Cursor·Overflow Text·Glitch·Slider 78개 variant의 구현 fingerprint·계약·데모·설정 대응을 정적 게이트로 검증
-132. 완료(Unreleased): 데모의 고유 설정 control을 타입별로 전수 조작하고, 옵션 반영·모듈 재빌드·trigger 보존·중복 instance를 검사하며 런타임 field key 중복을 제거
-133. 완료(Unreleased): CSS Scroll의 native scroll/view와 ScrollTrigger fallback·reduced motion·작성자 style 복원을 Chromium·Firefox·WebKit 실제 스크롤로 검증하고 3가지 다국어 데모·설정을 제공
-134. 완료(Unreleased): Text Split·Text Reveal·Blur Text의 `<br>`·`\n`·CRLF를 모션 축소까지 보존하고, 실제 로딩 문구 형태·문구 교체·replay·ARIA·원본 DOM 복원 및 native flicker lifecycle을 회귀 검사에 포함
-135. 완료(Unreleased): Counter Slot·Clock 숫자 전환 viewport를 소비자 computed `line-height`로 제한하고 overflow·paint containment와 작성자 style 복원을 검증
-136. 완료(Unreleased): 모바일 hero 전환의 한 제스처 이동·감속을 유지하면서 같은 물리 제스처의 잔여 입력을 정착까지 처리하고, 세 엔진에서 단조 이동·오버슈트 없음·양방향 복귀를 검사
-137. 완료(Unreleased): 클릭 GIF·APNG·animated WebP의 1회 반복 정규화·파일 길이 기반 수명·매 클릭 재시작과 포인터·터치 cleanup을 제공하고, 세 엔진에서 실제 이미지 프레임의 진행·정지·재시작을 검증
-138. 완료(Unreleased): Quad Dot Pulse를 Chase의 호환 alias로 통합하고 중복 공개 카드·선택지를 제거하면서 기존 v1·v2 공유 URL을 보존
-139. 완료(Unreleased): 두 GitHub workflow에 설정 전수·클릭 이미지 회귀를 연결하고, 릴리스 준비 시 현재 소스 버전만 갱신해 과거 npm·workflow·checksum 증거를 보존
-140. 완료(Unreleased 측정): Node 24에서 Vite 전체 소비자 gzip 증가 약 3.3KB와 tarball 압축 526.9KB/해제 1755.0KB를 측정해 요청 기능 비용으로 기록하고, full·adapter 비용 예산만 조정하며 core 조합 예산·runtime dependency 0·52개 모듈·77개 파일 경계를 유지
+130. 완료(v0.9.7): 로드맵의 당시 검토 의견과 현재 구현 상태를 분리하고, 소비자 번들·framework hydration·Slider·공유 URL 완료 이력을 실제 릴리스에 귀속
+131. 완료(v0.9.7): Page Reveal 16개에 더해 Reveal·Lazy·Cursor·Overflow Text·Glitch·Slider 78개 variant의 구현 fingerprint·계약·데모·설정 대응을 정적 게이트로 검증
+132. 완료(v0.9.7): 데모의 고유 설정 control을 타입별로 전수 조작하고, 옵션 반영·모듈 재빌드·trigger 보존·중복 instance를 검사하며 런타임 field key 중복을 제거
+133. 완료(v0.9.7): CSS Scroll의 native scroll/view와 ScrollTrigger fallback·reduced motion·작성자 style 복원을 Chromium·Firefox·WebKit 실제 스크롤로 검증하고 3가지 다국어 데모·설정을 제공
+134. 완료(v0.9.7): Text Split·Text Reveal·Blur Text의 `<br>`·`\n`·CRLF를 모션 축소까지 보존하고, 실제 로딩 문구 형태·문구 교체·replay·ARIA·원본 DOM 복원 및 native flicker lifecycle을 회귀 검사에 포함
+135. 완료(v0.9.7): Counter Slot·Clock 숫자 전환 viewport를 소비자 computed `line-height`로 제한하고 overflow·paint containment와 작성자 style 복원을 검증
+136. 완료(v0.9.7): 모바일 hero 전환의 한 제스처 이동·감속을 유지하면서 같은 물리 제스처의 잔여 입력을 정착까지 처리하고, 세 엔진에서 단조 이동·오버슈트 없음·양방향 복귀를 검사
+137. 완료(v0.9.7): 클릭 GIF·APNG·animated WebP의 1회 반복 정규화·파일 길이 기반 수명·매 클릭 재시작과 포인터·터치 cleanup을 제공하고, 세 엔진에서 실제 이미지 프레임의 진행·정지·재시작을 검증
+138. 완료(v0.9.7): Quad Dot Pulse를 Chase의 호환 alias로 통합하고 중복 공개 카드·선택지를 제거하면서 기존 v1·v2 공유 URL을 보존
+139. 완료(v0.9.7): 두 GitHub workflow에 설정 전수·클릭 이미지 회귀를 연결하고, 릴리스 준비 시 현재 소스 버전만 갱신해 과거 npm·workflow·checksum 증거를 보존
+140. 완료(v0.9.7 측정): Node 24에서 Vite 전체 소비자 gzip 증가 약 3.3KB와 tarball 압축 526.9KB/해제 1755.0KB를 측정해 요청 기능 비용으로 기록하고, full·adapter 비용 예산만 조정하며 core 조합 예산·runtime dependency 0·52개 모듈·77개 파일 경계를 유지
+141. 완료(v0.9.7 배포): CI·Release·Pages 성공, npm/GitHub 동일 tarball과 provenance metadata, 두 도메인의 build `32db56e`·자체 JS/CSS 12개·클릭 미디어 4개 일치를 실제 공개 응답으로 확인
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

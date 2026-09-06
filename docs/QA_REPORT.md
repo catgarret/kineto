@@ -1,7 +1,7 @@
 # Kineto v0.9.7 QA Report
 
 검증일: 2026-09-06
-대상: v0.9.7 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
+대상: v0.9.7 공개 릴리스 payload · source/build `32db56e` · 이후 docs-only 배포와 이전 공개 배포 근거는 버전별로 유지
 
 ## 자동 검증
 
@@ -15,8 +15,9 @@
 | Package surface | 통과 | ESM, CommonJS, CSS, React/Vue/jQuery entry |
 | Lifecycle | 통과 | 이벤트·rAF·Observer 해제 및 reduced-motion 재적용 |
 | Bundle budget | 통과 | Node 24 gzip: min ESM 123.2 kB, min UMD 122.5 kB, CSS 9.2 kB; 전체 측정값은 `docs/bundle-size.md` |
+| Integrated gates | 통과 | 수정본 `npm run ci`, v0.9.7 `npm run verify`; root·consumer·framework lockfile 모두 취약점 0건 |
 
-## Unreleased 추가 검증
+## v0.9.7 추가 검증
 
 | 영역 | 결과 | 세부 내용 |
 |---|---|---|
@@ -41,7 +42,12 @@ locale 전환에서 요청 실패·console 오류는 모두 0건입니다. 별�
 미등록 외부 이미지 요청은 계속 실패하며 console에 실제 URL이 기록됨을
 확인했습니다. 공개 사이트의 GTM·배지 markup은 유지합니다.
 
-## 실제 브라우저 회귀 항목
+## 회귀 검증 범위
+
+아래는 Node DOM 회귀 검사와 실제 브라우저 검사의 합산 범위입니다.
+문자열·중첩 원본 DOM 복원 경계는 `test:regressions`의 DOM fixture로,
+움직임·좌표·이미지 프레임은 실제 Chromium·Firefox·WebKit fixture로 확인합니다.
+실제 iPhone·Android 기기의 OS 관성이나 화면 시각 검증으로 집계하지 않습니다.
 
 - Slider 자동재생, hover/manual pause, 남은 시간 유지
 - Slider progress ring/bar 전환과 독립 Progress 모듈의 속성 충돌 방지
@@ -81,9 +87,19 @@ ESM, CommonJS, CSS와 adapter entry를 확인합니다. `npm run test:package-si
 - npm registry tarball과 GitHub Release asset은 SHA-256 `bfbd557cb7b34032df71fb2d6b629c4f39ebd03f8b518afcbec3abeca3b948b9`로 byte-for-byte 일치합니다.
 - backup sync `33947970148`과 Pages `33947986088` 뒤 `npm run test:live-site:parity`가 두 도메인의 v0.9.6·52개 모듈·GTM·build `8d784b6`·runtime hash `77e3fae55ef1` 일치를 확인했습니다.
 
+### v0.9.7
+
+- [CI `34022107743`](https://github.com/catgarret/kineto/actions/runs/34022107743), [Release `34022108485`](https://github.com/catgarret/kineto/actions/runs/34022108485), [canonical Pages `34022529453`](https://github.com/catgarret/kineto/actions/runs/34022529453)가 모두 성공했습니다. Node 20·22 호환성과 Node 24 전체·Firefox·WebKit 검사를 포함합니다.
+- npm 공개 version/latest `0.9.7`과 [GitHub Release](https://github.com/catgarret/kineto/releases/tag/v0.9.7)를 확인했습니다. npm 게시 metadata 시각은 `2026-09-06T08:39:55.559Z`입니다.
+- npm/GitHub tarball은 직접 바이트 비교로 동일한 539,534 bytes이며 SHA-256은 `f79d165e05e0f77781826295b02b1fa8e43c0407ab5ad37a96336f569489dcbd`입니다. npm SHA512와 GitHub asset digest도 일치합니다.
+- npm publish/v0.1·SLSA provenance/v1 attestation metadata의 subject digest, git commit `32db56e30c0edcecfae0ebd100017c84acc881e3`, Release run이 일치합니다. 별도 암호학적 서명 검증을 수행했다는 의미는 아닙니다.
+- [backup sync `34022621240`](https://github.com/catgarret/catgarret.github.io/actions/runs/34022621240), [backup Pages `34022646728`](https://github.com/catgarret/catgarret.github.io/actions/runs/34022646728) 성공 후 `npm run test:live-site:parity`가 두 도메인의 `v0.9.7 / 52 modules / GTM / build 32db56e`를 확인했습니다.
+- 2026-09-06 17:44 KST에 각 HTML이 참조하는 자체 JS/CSS 12개와 GIF·animated WebP·APNG·Click Burst SVG 4개가 두 도메인에서 모두 로컬 `site/`와 SHA256 일치했습니다. UMD는 `979166e8665ba347f067e92a1cc1c5c8bdd8bc9e66153b9e0b3aed6ca65ce900`, `main.js`는 `0bb967fe729b4a367028de8445afeb63896ccc02d77bb204b004698099de6ba9`입니다.
+- 이 보고서의 후속 docs-only 커밋은 런타임·자체 asset을 변경하지 않습니다. Pages가 새 커밋을 배포하면 HTML build marker만 달라질 수 있으므로, release payload의 build와 현재 Pages build를 구분해 기록합니다.
+
 ## 별도 실기기 확인 권장
 
-- Safari / WebKit
+- 실제 macOS Safari 앱(WebKit 자동화와 구분)
 - 실제 iOS Safari와 Android Chrome의 터치·진동
 - 장시간 탭 유지 시 메모리와 배터리 사용량
 

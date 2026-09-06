@@ -28,6 +28,8 @@
 | 2026-09-05 | v0.9.5 release | `8ac7a2b` | CI `33946293529` / Release `33946295274` | 성공 | 성공 | 성공 | `33946819020` 성공 | 일반 CI·canonical Pages와 Release Verify·Firefox·WebKit은 성공했으나 publish 단계에서 npm 11이 prefix 없는 tarball 경로를 Git package spec으로 해석해 실패; npm publish·jsDelivr purge·GitHub Release는 미실행 |
 | 2026-09-05 | v0.9.6 release | `8d784b6` | CI `33947520040` / Release `33947520948` | 성공 | 성공 | 성공 | `33947939177` 성공 (backup `33947986088` 성공) | 명시적 `./` tarball 경로로 동일 checksum artifact를 npm provenance와 GitHub Release에 게시하고, backup sync `33947970148` 뒤 canonical·backup이 v0.9.6·52개·GTM·build `8d784b6`·runtime hash로 일치함을 확인 |
 
+| 2026-09-06 | v0.9.7 production fixes | `32db56e` | CI `34022107743` / Release `34022108485` | 성공 | 성공 | 성공 | `34022529453` 성공 (backup `34022646728` 성공) | 줄바꿈·counter clipping·one-shot media·hero landing·cssScroll·설정 전수 검사를 통과하고 npm/GitHub 동일 tarball·provenance metadata를 확인; backup sync `34022621240` 뒤 두 도메인의 build `32db56e`·자체 JS/CSS 12개·클릭 미디어 4개 일치 확인 |
+
 ## 기록 규칙
 
 - 새 릴리스 또는 레이어 관련 회귀 수정이 병합되면 한 행을 추가합니다.
