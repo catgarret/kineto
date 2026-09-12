@@ -1,7 +1,7 @@
-# Kineto v0.9.7 QA Report
+# Kineto v0.9.8 QA Report
 
-검증일: 2026-09-06
-대상: v0.9.7 공개 릴리스 payload · source/build `32db56e` · 이후 docs-only 배포와 이전 공개 배포 근거는 버전별로 유지
+검증일: 2026-09-12
+대상: v0.9.8 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
 ## 2026-09-12 후속 변경 검증
 
@@ -14,7 +14,7 @@
 | Reveal | 통과 | 세 엔진 23개 프리셋 × native/GSAP, 실제 진입, delay/완료 시점, 원본 줄바꿈, 재생 중 제거, 일반 GSAP 경로 반복 진입, callback 내부 destroy 후 후속 변경 차단 |
 | 데모 | 통과 | 198개 playground, 650/650 고유 설정(렌더된 control 5,122개), 신규 비교 카드 9개, 390px 배치, 기존 공유 URL, 7개 locale의 실행 중 hero text·ARIA |
 | 공급망 | 통과 | Node 24에서 root·consumer·framework 3개 lockfile 각각 취약점 0건 |
-| 통합 CI | 통과 | Node 24.20.0 `npm run ci`: lint·build·전체 Node·데모·Chromium·npm pack, 기존 번들·패키지 상한 유지 |
+| 통합 CI·릴리스 검증 | 통과 | Node 24.20.0 `npm run ci` 및 v0.9.8 `npm run verify`: lint·build·전체 Node·데모·Chromium·npm pack·3개 lockfile 감사, 기존 번들·패키지 상한 유지 |
 | 공개 범위 | 유지 | 52개 모듈·28개 Core API·48개 요구사항, runtime 의존성 0개·npm 파일 77개 |
 
 비교 카드 검사의 숨겨진 drawer 본문이 후속 공유 링크 검사에 간섭한 문제는
@@ -30,7 +30,7 @@ Slider의 소유 상태 복원 중복을 통합했습니다. 기존 예산·77�
 변경하지 않았습니다. 실기기 iOS/Android·스크린리더, 외부 프로젝트 사례와
 문서에 남긴 마스크 계열 반복·Glitch Wave 옵션의 동작 차이는 미완료입니다.
 
-## 자동 검증
+## v0.9.7 자동 검증 기록
 
 | 영역 | 결과 | 세부 내용 |
 |---|---|---|
@@ -101,11 +101,11 @@ locale 전환에서 요청 실패·console 오류는 모두 0건입니다. 별�
 배포 전 `npm run test:package-tarball`로 실제 tarball을 별도 프로젝트에 설치해
 ESM, CommonJS, CSS와 adapter entry를 확인합니다. `npm run test:package-size`는
 압축 528 kB·해제 1756 kB·77개 파일의 상한과 배포 파일 allowlist를 검사합니다.
-이 보고서 갱신 시점의 `npm pack --dry-run --json --ignore-scripts` 측정값은
-77개 파일, 압축 526.9 kB, 해제 1755.0 kB입니다. 이는 고정된 릴리스 수치가
+이 보고서 갱신 시점의 Node 24 `npm pack --dry-run --json` 측정값은
+77개 파일, 압축 528.0 kB, 해제 1755.1 kB입니다. 이는 고정된 릴리스 수치가
 아니며 빌드 산출물이 바뀌면 달라집니다. 릴리스 후보를 최종 빌드한 뒤 위 세
 명령을 다시 실행하고 그 출력값을 최종 근거로 사용합니다. 패키지명은
-`@dong-gri/kineto`, 버전은 `0.9.7`입니다.
+`@dong-gri/kineto`, 버전은 `0.9.8`입니다.
 
 ## 배포 후 확인
 

@@ -5,6 +5,16 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.9.8] - 2026-09-12
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Restore Slider track/radial author state and sibling order, share native image-drag guards without overwriting unrelated image styles, and clean up grab-cursor listeners and queued auto-height writes; exercise all ten effects, image dragging, and replay in three browser engines.
 - Repair Reveal's clipped-target automatic entrance, unintended native vertical offset, mask/wipe defaults, final GSAP skew, and replay/destroy cleanup; honor native delay and completion timing and verify all 23 presets with and without GSAP in Chromium, Firefox, and WebKit.
 - Add six Slider and three Reveal comparison cards with all seven demo locales and semantic settings links that preserve historical shared URLs; restore missing Swing, Skew, and Wave settings choices, increase dedicated high-risk variant demos from 47/78 to 56/78, and synchronize the 1.0 readiness evidence to the verified v0.9.7 deployment.
@@ -21,7 +31,6 @@
 - GitHub Actions의 참고용 major 버전 주석 대신 실제 action 이름과 불변 full SHA pin을 검사합니다. 태그·branch·잘못된 hash·고정되지 않은 중복 step을 거부하며, 의존성은 기존 지원 major·최소 버전 경계를 유지하는 안정 minor·patch 업데이트를 허용합니다.
 - 언어 전환 시 첫 화면 애니메이션 문구를 재생성해 화면 텍스트·접근성 이름·Replay·destroy 복원이 선택한 언어를 유지하도록 수정했습니다.
 - v0.9.7의 npm/GitHub 동일 tarball·provenance metadata, 교차 브라우저 workflow 성공과 두 도메인의 자체 JS/CSS 12개·클릭 미디어 4개 일치를 기록했습니다.
-
 ## [0.9.7] - 2026-09-06
 
 ### English
