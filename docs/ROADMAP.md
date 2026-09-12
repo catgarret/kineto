@@ -14,8 +14,10 @@ v0.9.7에서 설정 전수 검사·CSS scroll 검증과 실사용 줄바꿈·카
 검증 결과는 QA 보고서와 브라우저 QA 이력에 기록했습니다. 실기기·외부 사용 증거는 별도 미완료 상태입니다.
 
 v0.9.8에서 Slider·Reveal의 원본 상태 복원과 Replay를 보강하고, 비교 데모 9개,
-누락된 프리셋 선택과 hero 언어 전환을 수정합니다. 이 후보의 로컬 CI·세 엔진
-검증은 완료했으며, npm·GitHub Release·두 사이트의 새 배포 증거는 원격 완료 후 기록합니다.
+누락된 프리셋 선택과 hero 언어 전환을 수정했습니다. 로컬 CI·세 엔진 검증과
+원격 CI·Release·npm 게시·두 사이트 배포를 완료했습니다. 2026-09-12 14:04 KST에
+양쪽의 build `92bc1b6`, 자체 JS/CSS 12개와 클릭 미디어 4개 일치를 확인했으며
+상세 근거는 [QA 보고서](QA_REPORT.md#v098)와 147번에 기록했습니다.
 
 ## 1. 결론
 
@@ -430,9 +432,10 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 자체 JS/CSS·클릭 미디어 일치 확인을 완료했습니다. 현재 남은 순서는 다음과 같습니다.
 
 추가 묶음은 Slider·Reveal의 실제 재현 결함, 9개 전용 비교 카드, 공급망 검사와
-1.0 근거 최신화입니다. 아래 142~146번은 구현·회귀 검증 범위이며, 새 릴리스의
-원격 CI·npm·Pages 결과는 배포 후 별도로 기록합니다.
+1.0 근거 최신화였으며 v0.9.8로 배포까지 완료했습니다. 아래 142~146번은 해당
+릴리스의 구현·회귀 검증, 147번은 원격 CI·npm·Pages와 공개 산출물 검증입니다.
 
+- 후속: Reveal 마스크 계열의 반복·callback과 Glitch Wave의 무효 옵션을 기존 계약 안에서 개선하고 실제 동작·lifecycle·비용을 검증. 후속 Unreleased 작업은 v0.9.8 완료 근거에 합산하지 않음.
 - 후속: 전용 데모가 없는 variant 중 실제 적용·회귀 근거가 있는 항목의 비교 화면과 브라우저 검증 확대.
 - 외부 증거 필요: 실제 iOS Safari·Android Chrome·스크린리더 검사, 운영 앱의 장기 성능 측정, 공개 동의를 받은 외부 사용 사례 3개.
 - 증거 확보 후 결정: FLIP shared layout과 States·Presence 추가 확장. 현재 자동 검사나 데모를 외부 사용 증거로 집계하지 않습니다.
@@ -582,11 +585,12 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 139. 완료(v0.9.7): 두 GitHub workflow에 설정 전수·클릭 이미지 회귀를 연결하고, 릴리스 준비 시 현재 소스 버전만 갱신해 과거 npm·workflow·checksum 증거를 보존
 140. 완료(v0.9.7 측정): Node 24에서 Vite 전체 소비자 gzip 증가 약 3.3KB와 tarball 압축 526.9KB/해제 1755.0KB를 측정해 요청 기능 비용으로 기록하고, full·adapter 비용 예산만 조정하며 core 조합 예산·runtime dependency 0·52개 모듈·77개 파일 경계를 유지
 141. 완료(v0.9.7 배포): CI·Release·Pages 성공, npm/GitHub 동일 tarball과 provenance metadata, 두 도메인의 build `32db56e`·자체 JS/CSS 12개·클릭 미디어 4개 일치를 실제 공개 응답으로 확인
-142. 완료(구현·회귀): GitHub Actions의 참고용 버전 주석과 보안 SHA pin을 분리하고, 의존성 17개 guard를 기존 지원 major·range 형식·최소 버전을 유지하는 상향 업데이트 검사로 변경. 미검증 TypeScript 7·jQuery 4 자동 허용은 하지 않음
-143. 완료(구현·회귀): Slider Track/Radial의 작성자 높이·ARIA·노드 순서 복원, 공유 이미지 drag 차단, 비소유 이미지 스타일 보존과 grab cursor·autoHeight 정리. 10개 효과의 실제 중간 프레임·버튼·키보드·이미지 드래그·Replay를 세 엔진에서 검증
-144. 완료(구현·회귀): Reveal의 영구 숨김 clip 진입·불필요한 이동·Mask/Wipe 기본 방향·종료 skew·delay/완료 시점과 예약 동작 정리. 23개 프리셋의 native/GSAP 경로와 `once:false`의 Replay 이후 이탈·역진입을 세 엔진에서 검증
-145. 완료(데모·회귀): Slider 6개·Reveal 3개 전용 비교 카드와 7개 언어 설명·설정을 추가해 공개 고위험 variant 전용 데모를 56/78로 확대하고, 실제 설정 목록의 Swing·Skew·Wave 누락과 실행 중 hero의 언어별 ARIA를 수정. 새 semantic 공유 URL은 과거 v1 순번을 소비하지 않음
-146. 완료(운영 계약): 1.0 준비도의 배포 근거를 검증된 v0.9.7·후속 문서 배포로 동기화하고, package의 cross-browser 검사 목록이 CI·release 두 workflow에 누락되지 않는 게이트 추가. 실기기·외부 사용 사례는 미완료 상태 유지
+142. 완료(v0.9.8): GitHub Actions의 참고용 버전 주석과 보안 SHA pin을 분리하고, 의존성 17개 guard를 기존 지원 major·range 형식·최소 버전을 유지하는 상향 업데이트 검사로 변경. 미검증 TypeScript 7·jQuery 4 자동 허용은 하지 않음
+143. 완료(v0.9.8): Slider Track/Radial의 작성자 높이·ARIA·노드 순서 복원, 공유 이미지 drag 차단, 비소유 이미지 스타일 보존과 grab cursor·autoHeight 정리. 10개 효과의 실제 중간 프레임·버튼·키보드·이미지 드래그·Replay를 세 엔진에서 검증
+144. 완료(v0.9.8): Reveal의 영구 숨김 clip 진입·불필요한 이동·Mask/Wipe 기본 방향·종료 skew·delay/완료 시점과 예약 동작 정리. 23개 프리셋의 native/GSAP 경로와 일반 GSAP 경로 `once:false`의 Replay 이후 이탈·역진입을 세 엔진에서 검증. 별도 마스크 계열 반복·callback은 후속 과제로 유지
+145. 완료(v0.9.8): Slider 6개·Reveal 3개 전용 비교 카드와 7개 언어 설명·설정을 추가해 공개 고위험 variant 전용 데모를 56/78로 확대하고, 실제 설정 목록의 Swing·Skew·Wave 누락과 실행 중 hero의 언어별 ARIA를 수정. 새 semantic 공유 URL은 과거 v1 순번을 소비하지 않음
+146. 완료(v0.9.8): 1.0 준비도의 배포 근거를 검증된 v0.9.7·후속 문서 배포로 동기화하고, package의 cross-browser 검사 목록이 CI·release 두 workflow에 누락되지 않는 게이트 추가. 실기기·외부 사용 사례는 미완료 상태 유지
+147. 완료(v0.9.8 배포): CI `34674057118`·Release `34674057605`·canonical Pages `34674519452`·backup sync `34674543935`·backup Pages `34674565133` 성공, npm/GitHub 540,657-byte tarball·provenance metadata 일치, 두 도메인의 v0.9.8·52개·GTM·배지 4개·build `92bc1b6` 및 자체 JS/CSS 12개·클릭 미디어 4개 byte 일치를 실제 공개 응답으로 확인
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

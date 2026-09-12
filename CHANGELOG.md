@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Record the verified v0.9.8 release, byte-identical npm/GitHub packages and linked provenance metadata, successful CI, and canonical/backup parity for all twelve first-party scripts/styles and four click-media assets.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- v0.9.8 릴리스의 npm/GitHub 동일 패키지와 provenance metadata 연결, CI 성공, 두 도메인의 자체 JS/CSS 12개·클릭 미디어 4개 일치 근거를 기록했습니다.
 
 ## [0.9.8] - 2026-09-12
 

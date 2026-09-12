@@ -29,6 +29,7 @@
 | 2026-09-05 | v0.9.6 release | `8d784b6` | CI `33947520040` / Release `33947520948` | 성공 | 성공 | 성공 | `33947939177` 성공 (backup `33947986088` 성공) | 명시적 `./` tarball 경로로 동일 checksum artifact를 npm provenance와 GitHub Release에 게시하고, backup sync `33947970148` 뒤 canonical·backup이 v0.9.6·52개·GTM·build `8d784b6`·runtime hash로 일치함을 확인 |
 
 | 2026-09-06 | v0.9.7 production fixes | `32db56e` | CI `34022107743` / Release `34022108485` | 성공 | 성공 | 성공 | `34022529453` 성공 (backup `34022646728` 성공) | 줄바꿈·counter clipping·one-shot media·hero landing·cssScroll·설정 전수 검사를 통과하고 npm/GitHub 동일 tarball·provenance metadata를 확인; backup sync `34022621240` 뒤 두 도메인의 build `32db56e`·자체 JS/CSS 12개·클릭 미디어 4개 일치 확인 |
+| 2026-09-12 | v0.9.8 variant lifecycle | `92bc1b6` | CI `34674057118` / Release `34674057605` | 성공 | 성공 | 성공 | `34674519452` 성공 (backup `34674565133` 성공) | Slider 10개·Reveal 23개 native/GSAP 경로, 198개 playground와 공급망 계약을 검증. npm/GitHub tarball 540,657 bytes·SHA256 `3590f2ce36caaef544811935cb2748000312e781f5f5b2f8fac63990508e29c4`·provenance metadata 일치; backup sync `34674543935` 후 14:04 KST에 두 도메인 build `92bc1b6`·52개·GTM·배지 4개·자체 JS/CSS 12개·클릭 미디어 4개 일치 확인 |
 
 ## 기록 규칙
 

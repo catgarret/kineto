@@ -1,6 +1,6 @@
 # 브라우저 레이어 QA 매트릭스
 
-기준 버전: v0.9.7 후속 · 검토: 2026-09-12
+기준 버전: v0.9.8 · 검토: 2026-09-12
 
 모든 공개 모듈은 Chromium·Firefox·WebKit에서 registry 일치와
 create → duplicate init → replay → destroy lifecycle smoke를 통과해야 합니다. 모든
@@ -106,3 +106,9 @@ workflow의 timeout으로 제한합니다. 그 안에서 `retry-browser-test.mjs
 - 0×0, viewport 밖, clipping 누수처럼 자동으로 판정할 수 있는 회귀 결과가 있습니다.
 
 2026-08-18 기준 `fa055cc`의 CI run `32099365793`에서 Node 24 전체, Firefox, WebKit과 Pages 배포가 모두 성공했습니다. 이 기록은 통과 사실을 남기는 용도이며, 브라우저 버전이나 러너가 바뀌면 같은 명령으로 다시 갱신해야 합니다.
+
+2026-09-12 v0.9.8 `92bc1b6`의 CI `34674057118`에서 Node 24 전체·Firefox·WebKit,
+Release `34674057605`의 별도 검증 gate, canonical Pages `34674519452`와 backup
+Pages `34674565133`이 모두 성공했습니다. 두 공개 사이트의 build·runtime·자체
+JS/CSS 12개·클릭 미디어 4개 일치는 [QA 보고서](QA_REPORT.md#v098)에 기록했습니다.
+이 배포 근거는 후속 Unreleased 변경, 실제 iOS·Android·스크린리더 검증을 포함하지 않습니다.

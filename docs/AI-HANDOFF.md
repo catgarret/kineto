@@ -47,7 +47,7 @@ another agent's prose report are leads to verify, not evidence of completion.
 
 - Package: `@dong-gri/kineto`
 - Current source version: `0.9.8`
-- Latest published npm version at the time of this handoff: `0.9.7`
+- Latest published npm version at the time of this handoff: `0.9.8`
 - Public surface: 52 modules and 28 Core APIs
 - Primary branch: `main`
 - Remote: `https://github.com/catgarret/kineto`
@@ -88,11 +88,20 @@ At this handoff, the most recent completed work includes:
   landing; exhaustive control QA and native/fallback cssScroll checks are
   recorded alongside matching npm/GitHub tarballs and both deployed sites in
   `docs/QA_REPORT.md` and `docs/browser-qa-history.md`.
-- post-v0.9.7 Slider/Reveal lifecycle fixes, nine comparison cards, complete
+- v0.9.8 Slider/Reveal lifecycle fixes, nine comparison cards, complete
   high-risk preset selectors, animated hero locale/ARIA rebuilding, and
   immutable-action/dependency-floor guards; the 2026-09-12 local CI and
-  three-engine variant checks are recorded in `docs/QA_REPORT.md`. Publication
-  evidence remains separate from those local checks.
+  three-engine variant checks are recorded in `docs/QA_REPORT.md`. CI
+  `34674057118`, Release `34674057605`, canonical Pages `34674519452`, backup
+  sync `34674543935`, and backup Pages `34674565133` succeeded. npm/GitHub
+  tarballs are byte-identical, provenance metadata matches release commit
+  `92bc1b688c04c0bf9833abfa53d4200648b80464`, and both sites served that build's
+  matching first-party JS/CSS and click media at 2026-09-12 14:04 KST.
+
+Subsequent source changes remain Unreleased until their own verification and
+publication evidence is recorded. v0.9.8 does not close the documented Reveal
+mask-family repeat/callback or Glitch Wave option gaps, physical-device QA, or
+external case-study gates.
 
 Always verify this summary against Git history because later commits supersede
 it.
