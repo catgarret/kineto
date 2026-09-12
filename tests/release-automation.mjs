@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { assertPinnedAction } from './workflow-action-pins.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8');
@@ -78,6 +79,33 @@ for (const file of workflowFiles) {
   }
 }
 
+const fixtureAction = 'actions/upload-pages-artifact';
+const fixtureSha = 'a'.repeat(40);
+for (const comment of ['', ' # v4', ' # v5.0.0', ' # reviewed upstream release']) {
+  assert.doesNotThrow(() => assertPinnedAction(
+    `steps:\n  - uses: ${fixtureAction}@${fixtureSha}${comment}\n`, fixtureAction
+  ), 'changing or omitting an informational version comment must preserve a valid SHA pin');
+}
+for (const quote of ['\'', '"']) {
+  assert.doesNotThrow(() => assertPinnedAction(
+    `uses: ${quote}${fixtureAction}@${fixtureSha}${quote} # v5\n`, fixtureAction
+  ), 'quoted YAML uses values retain the same pin');
+}
+for (const revision of ['v5', 'main', 'a'.repeat(39), 'a'.repeat(41), `${fixtureSha}-extra`, `${fixtureSha}#v5`, '${{ inputs.action_ref }}', '']) {
+  assert.throws(() => assertPinnedAction(
+    `uses: ${fixtureAction}@${revision} # v5\n`, fixtureAction
+  ), /immutable full commit SHA/, `reject non-immutable or malformed revision ${revision}`);
+}
+assert.throws(() => assertPinnedAction(
+  `# uses: ${fixtureAction}@${fixtureSha}\n`, fixtureAction
+), /missing workflow action/, 'a commented-out uses line cannot satisfy a required action');
+assert.throws(() => assertPinnedAction(
+  `uses: ${fixtureAction}-extra@${fixtureSha}\n`, fixtureAction
+), /missing workflow action/, 'an action with a matching name prefix is not the required action');
+assert.throws(() => assertPinnedAction(
+  `- uses: ${fixtureAction}@${fixtureSha}\n- uses: ${fixtureAction}@main\n`, fixtureAction
+), /immutable full commit SHA/, 'every use of the required action must be pinned');
+
 assert.match(workflow, /tags:\s*\n\s*-\s*"v\[0-9\]\+\.\[0-9\]\+\.\[0-9\]\+"/);
 assert.match(prepareReleaseScript, /const roadmapPath = path\.join\(root, 'docs', 'ROADMAP\.md'\)/,
   'release preparation must target the roadmap explicitly');
@@ -123,7 +151,7 @@ assert.match(releaseCrossBrowserJob, /tests\/browser\/cursor-click-media\.mjs/,
 assert.match(verifiedPackageUpload, /^\s+name:\s*verified-package-\$\{\{ github\.ref_name \}\}$/m);
 assert.match(verifiedPackageUpload, /overwrite:\s*true/, 'a full workflow rerun must safely replace its prior verified artifact');
 assert.match(verifiedPackageDownload, /^\s+name:\s*verified-package-\$\{\{ github\.ref_name \}\}$/m);
-assert.match(verifiedPackageDownload, /actions\/download-artifact@[0-9a-f]{40}\s+# v7/);
+assertPinnedAction(verifiedPackageDownload, 'actions/download-artifact');
 assert.match(verifyJob, /mapfile -d '' -t tarballs/);
 assert.match(verifyJob, /Expected exactly one package tarball/);
 assert.match(verifyJob, /sha256sum -- "\$tarball" > "\$tarball\.sha256"/);
@@ -168,6 +196,29 @@ for (const step of pkg.scripts['test:node'].split(' && ')) {
   assert.match(ciWorkflow, token, `CI workflow must cover ${command}`);
 }
 assert.match(workflow, /retry-command\.mjs npm pack --dry-run/);
+function hasCrossBrowserCommand(source, file) {
+  const escaped = file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`^[ \\t]*node tests/retry-browser-test\\.mjs ${escaped} 2>&1(?:[ \\t]+\\|[ \\t]+tee -a [\\w.\\-/]*(?:\\$\\{\\{ matrix\\.browser \\}\\})?[\\w.\\-/]+)?[ \\t]*$`, 'm').test(source);
+}
+const crossBrowserFixture = 'tests/example.mjs';
+assert.equal(hasCrossBrowserCommand('  node tests/retry-browser-test.mjs tests/example.mjs 2>&1 | tee -a ci.log', crossBrowserFixture), true);
+assert.equal(hasCrossBrowserCommand('  node tests/retry-browser-test.mjs tests/example.mjs 2>&1', crossBrowserFixture), true);
+for (const invalid of [
+  '# node tests/retry-browser-test.mjs tests/example.mjs 2>&1',
+  'echo "node tests/retry-browser-test.mjs tests/example.mjs 2>&1"',
+  'node tests/retry-browser-test.mjs tests/exampleXmjs 2>&1',
+  'node tests/retry-browser-test.mjs tests/example.mjs 2>&1 || true',
+  'node tests/retry-browser-test.mjs tests/example.mjs 2>&1 | tee -a ci.log || true',
+  'node tests/retry-browser-test.mjs tests/example.mjs 2>&1 | tee -a ci.log; exit 0'
+]) assert.equal(hasCrossBrowserCommand(invalid, crossBrowserFixture), false);
+for (const step of pkg.scripts['test:browser:cross'].split(' && ')) {
+  assert.match(step, /^node tests\/[\w/-]+\.mjs$/, `unsupported cross-browser test step: ${step}`);
+  const testFile = step.slice('node '.length);
+  for (const [lane, source] of [['CI', ciCrossBrowserJob], ['release', releaseCrossBrowserJob]]) {
+    assert.ok(hasCrossBrowserCommand(source, testFile),
+      `${lane} cross-browser workflow must cover ${testFile}`);
+  }
+}
 assert.match(workflow, /retry-command\.mjs npm run audit:lockfiles -- --output-dir release-audit/);
 assert.match(read('.github/workflows/ci.yml'), /retry-command\.mjs npm pack --dry-run/);
 assert.match(ciWorkflow, /tests\/browser\/demo-polish\.mjs/);
@@ -218,9 +269,9 @@ assert.match(demoWorkflow, /workflow_run\.head_branch == 'main'/);
 assert.match(demoWorkflow, /workflow_run\.conclusion == 'success'/);
 assert.doesNotMatch(demoWorkflow, /gh run view|CI_RUN_ID|actions:\s*read/);
 assert.match(demoWorkflow, /permissions:[\s\S]*pages:\s*write/);
-assert.match(demoWorkflow, /uses:\s*actions\/configure-pages@[0-9a-f]{40}\s+# v6/);
-assert.match(demoWorkflow, /uses:\s*actions\/upload-pages-artifact@[0-9a-f]{40}\s+# v4/);
-assert.match(demoWorkflow, /uses:\s*actions\/deploy-pages@[0-9a-f]{40}\s+# v4/);
+assertPinnedAction(demoWorkflow, 'actions/configure-pages');
+assertPinnedAction(demoWorkflow, 'actions/upload-pages-artifact');
+assertPinnedAction(demoWorkflow, 'actions/deploy-pages');
 assert.match(demoWorkflow, /path:\s*site/);
 assert.match(demoWorkflow, /KT_EXPECTED_BUILD:\s*\$\{\{ github\.event\.workflow_run\.head_sha \|\| github\.sha \}\}/);
 assert.match(demoWorkflow, /KT_LIVE_ATTEMPTS:\s*24/, 'Pages verification must tolerate bounded custom-domain propagation');

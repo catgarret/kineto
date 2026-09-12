@@ -38,7 +38,13 @@ assert.match(roadmap, /Vite·Rolldown 소비자 fixture가 full·core\+1·core\+
 assert.match(roadmap, /실제 운영 앱의 장기 로딩·캐시·조합 비용 증거/);
 assert.doesNotMatch(roadmap, /모듈 하나를 가져왔을 때의 번들 비용은 별도 예산으로 관리하지 않습니다/);
 assert.match(roadmap, /`pageReveal` 16개와 Reveal·Lazy·Cursor·Overflow Text·Glitch·Slider 78개/);
-assert.match(roadmap, /전용 데모 markup은 47\/78/);
+const dedicatedCoverage = [...read('docs/variant-distinctness.md').matchAll(/\| \x60\w+\x60 \| \x60\d+\/\d+\x60 \| \x60(\d+)\/(\d+)\x60 \| distinct \|/g)];
+assert.equal(dedicatedCoverage.length, 6, 'expanded variant audit must retain six module rows');
+const [dedicatedDemos, auditedVariants] = dedicatedCoverage.reduce(
+  ([demos, variants], row) => [demos + Number(row[1]), variants + Number(row[2])], [0, 0]
+);
+assert.ok(roadmap.includes(`전용 데모 markup은 ${dedicatedDemos}/${auditedVariants}`),
+  'roadmap dedicated-demo coverage must match the independently checked variant audit');
 assert.doesNotMatch(roadmap, /variant 중복을 아무도 측정하지 않습니다/);
 assert.match(roadmap, /§11은 당시의 검토 기록으로 보존/);
 for (let item = 106; item <= 124; item += 1) {

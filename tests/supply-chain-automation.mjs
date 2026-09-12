@@ -4,6 +4,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { auditLockfiles, auditTargets } from '../scripts/audit-lockfiles.mjs';
+import { assertPinnedAction } from './workflow-action-pins.mjs';
+import { assertDependencyFloor } from './dependency-floors.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8');
@@ -19,8 +21,8 @@ assert.match(workflow, /workflow_dispatch:/);
 assert.match(workflow, /cron:\s*"41 3 \* \* 1"/);
 assert.match(workflow, /permissions:[\s\S]*contents:\s*read/);
 assert.match(workflow, /timeout-minutes:\s*10/);
-assert.match(workflow, /uses:\s*actions\/checkout@[0-9a-f]{40}\s+# v6/);
-assert.match(workflow, /uses:\s*actions\/setup-node@[0-9a-f]{40}\s+# v6/);
+assertPinnedAction(workflow, 'actions/checkout');
+assertPinnedAction(workflow, 'actions/setup-node');
 assert.match(workflow, /node-version:\s*22/);
 assert.match(workflow, /npm ci --ignore-scripts/);
 assert.match(workflow, /npm run test:lockfile-boundary/);
@@ -30,7 +32,7 @@ assert.match(workflow, /npm run audit:lockfiles -- --output-dir artifacts/);
 assert.match(workflow, /npm sbom --sbom-format=spdx/);
 assert.match(workflow, /npm run test:package-size/);
 assert.match(workflow, /npm run test:package-tarball/);
-assert.match(workflow, /uses:\s*actions\/upload-artifact@[0-9a-f]{40}\s+# v4/);
+assertPinnedAction(workflow, 'actions/upload-artifact');
 assert.match(workflow, /name:\s*supply-chain-reports/);
 assert.match(workflow, /path:\s*artifacts\//);
 assert.match(workflow, /retention-days:\s*14/);
@@ -52,23 +54,45 @@ assert.match(dependabot, /package-ecosystem:\s*github-actions/);
 assert.match(dependabot, /interval:\s*weekly/);
 assert.match(dependabot, /timezone:\s*Asia\/Seoul/);
 
-assert.equal(packageJson.devDependencies.eslint, '^10.10.0');
-assert.equal(packageJson.devDependencies.lenis, '^1.3.26');
-assert.equal(packageJson.devDependencies.playwright, '^1.62.1');
-assert.equal(packageJson.devDependencies['playwright-core'], '^1.62.1');
-assert.equal(packageJson.devDependencies.vite, '^8.2.2');
-assert.equal(packageJson.devDependencies.typescript, '^6.0.3', 'TypeScript 7 requires a separate compatibility change');
-assert.equal(consumerPackage.dependencies.react, '^19.2.8');
-assert.equal(consumerPackage.dependencies.vue, '^3.5.42');
-assert.equal(consumerPackage.devDependencies.rolldown, '1.2.7');
-assert.equal(consumerPackage.devDependencies.vite, '^8.2.2');
-assert.equal(frameworkPackage.dependencies.jquery, '^3.7.1', 'jQuery 4 requires a separate adapter compatibility change');
-assert.equal(frameworkPackage.dependencies.picomatch, '4.0.7');
-assert.equal(frameworkPackage.dependencies.react, '^19.2.8');
-assert.equal(frameworkPackage.dependencies['react-dom'], '^19.2.8');
-assert.equal(frameworkPackage.dependencies.vue, '^3.5.42');
-assert.equal(frameworkPackage.devDependencies['playwright-core'], '^1.62.1');
-assert.equal(frameworkPackage.devDependencies.vite, '^8.2.2');
+for (const [actual, minimum] of [
+  ['^6.0.3', '^6.0.3'], ['^6.0.4', '^6.0.3'], ['^6.1.0', '^6.0.3'],
+  ['^3.7.2', '^3.7.1'], ['^3.10.0', '^3.7.1'],
+  ['1.2.7', '1.2.7'], ['1.2.8', '1.2.7'], ['1.3.0', '1.2.7']
+]) {
+  assert.doesNotThrow(() => assertDependencyFloor(actual, minimum),
+    `${actual} must satisfy the existing ${minimum} floor`);
+}
+for (const [actual, minimum] of [
+  ['^6.0.2', '^6.0.3'], ['^5.99.99', '^6.0.3'], ['^7.0.2', '^6.0.3'],
+  ['^3.6.99', '^3.7.1'], ['^4.0.0', '^3.7.1'], ['3.7.1', '^3.7.1'],
+  ['1.2.6', '1.2.7'], ['2.0.0', '1.2.7'], ['^1.2.8', '1.2.7'],
+  ['*', '^3.7.1'], ['^3.7.1 || ^4.0.0', '^3.7.1'], ['>=3.7.1', '^3.7.1'],
+  ['~3.7.1', '^3.7.1'], ['^3.7', '^3.7.1'], ['^3.7.x', '^3.7.1'],
+  ['latest', '^3.7.1'], ['^3.7.2-beta.1', '^3.7.1'], ['^3.7.1+build', '^3.7.1'],
+  ['^03.7.1', '^3.7.1'], [' ^3.7.1', '^3.7.1'], [undefined, '^3.7.1'],
+  ['^3.9007199254740992.1', '^3.7.1']
+]) {
+  assert.throws(() => assertDependencyFloor(actual, minimum), /supported major/,
+    `${String(actual)} must not bypass the existing ${minimum} policy`);
+}
+
+assertDependencyFloor(packageJson.devDependencies.eslint, '^10.10.0', 'root eslint');
+assertDependencyFloor(packageJson.devDependencies.lenis, '^1.3.26', 'root lenis');
+assertDependencyFloor(packageJson.devDependencies.playwright, '^1.62.1', 'root playwright');
+assertDependencyFloor(packageJson.devDependencies['playwright-core'], '^1.62.1', 'root playwright-core');
+assertDependencyFloor(packageJson.devDependencies.vite, '^8.2.2', 'root vite');
+assertDependencyFloor(packageJson.devDependencies.typescript, '^6.0.3', 'root TypeScript');
+assertDependencyFloor(consumerPackage.dependencies.react, '^19.2.8', 'consumer React');
+assertDependencyFloor(consumerPackage.dependencies.vue, '^3.5.42', 'consumer Vue');
+assertDependencyFloor(consumerPackage.devDependencies.rolldown, '1.2.7', 'consumer rolldown');
+assertDependencyFloor(consumerPackage.devDependencies.vite, '^8.2.2', 'consumer vite');
+assertDependencyFloor(frameworkPackage.dependencies.jquery, '^3.7.1', 'framework jQuery');
+assertDependencyFloor(frameworkPackage.dependencies.picomatch, '4.0.7', 'framework picomatch');
+assertDependencyFloor(frameworkPackage.dependencies.react, '^19.2.8', 'framework React');
+assertDependencyFloor(frameworkPackage.dependencies['react-dom'], '^19.2.8', 'framework React DOM');
+assertDependencyFloor(frameworkPackage.dependencies.vue, '^3.5.42', 'framework Vue');
+assertDependencyFloor(frameworkPackage.devDependencies['playwright-core'], '^1.62.1', 'framework playwright-core');
+assertDependencyFloor(frameworkPackage.devDependencies.vite, '^8.2.2', 'framework vite');
 
 for (const lockfile of auditedLockfiles) {
   const lock = JSON.parse(read(lockfile));

@@ -847,6 +847,15 @@ window.KINETO_COPY_I18N = {
       "Содержимое появится снизу.",
       "Il contenuto apparirà dal basso."
     ],
+    "위치와 크기를 유지하며 두 장면의 투명도만 교차합니다.": ["Crossfade between two scenes without changing their position or size.", "位置とサイズを保ち、2つのシーンの透明度だけを切り替えます。", "保持位置和大小不变，仅交叉切换两个场景的透明度。", "保持位置與大小不變，僅交叉切換兩個場景的透明度。", "Меняет прозрачность двух сцен, сохраняя их положение и размер.", "Sfuma tra due scene mantenendo posizione e dimensioni."],
+    "이미지를 움직이지 않고 한쪽 경계부터 다음 장면을 드러냅니다.": ["Reveal the next scene from one edge without moving the image.", "画像を動かさず、片側の端から次のシーンを表示します。", "不移动图像，从一侧边缘开始显示下一场景。", "不移動影像，從一側邊緣開始顯示下一個場景。", "Открывает следующую сцену от одного края, не перемещая изображение.", "Rivela la scena successiva da un bordo senza spostare l'immagine."],
+    "한 장의 카드를 180도 뒤집어 다음 장면으로 넘깁니다.": ["Flip a single card through 180 degrees to the next scene.", "1枚のカードを180度裏返して次のシーンに切り替えます。", "将一张卡片翻转180度以切换到下一场景。", "將一張卡片翻轉180度以切換到下一個場景。", "Переворачивает карточку на 180 градусов к следующей сцене.", "Ruota una carta di 180 gradi per passare alla scena successiva."],
+    "정육면체의 모서리를 축으로 90도 회전합니다.": ["Rotate 90 degrees around the edge of a cube.", "立方体の辺を軸に90度回転します。", "以立方体的边为轴旋转90度。", "以立方體的邊為軸旋轉90度。", "Поворачивает на 90 градусов вокруг ребра куба.", "Ruota di 90 gradi attorno allo spigolo di un cubo."],
+    "겹친 카드의 깊이와 기울기를 바꾸며 한 장씩 넘깁니다.": ["Advance stacked cards while changing their depth and tilt.", "重なったカードの奥行きと傾きを変えながら1枚ずつ送ります。", "改变叠放卡片的深度和倾斜角度，逐张切换。", "改變堆疊卡片的深度與傾斜角度，逐張切換。", "Перелистывает стопку карточек, меняя их глубину и наклон.", "Scorre le carte sovrapposte variandone profondità e inclinazione."],
+    "이동·회전·블러를 함께 적용해 장면을 전환합니다.": ["Combine movement, rotation, and blur to change scenes.", "移動・回転・ぼかしを組み合わせてシーンを切り替えます。", "结合移动、旋转和模糊来切换场景。", "結合移動、旋轉與模糊來切換場景。", "Сочетает перемещение, вращение и размытие при смене сцен.", "Combina movimento, rotazione e sfocatura nel cambio di scena."],
+    "콘텐츠의 가로 마스크가 열리며 줄바꿈과 원본 배치를 유지합니다.": ["Open a horizontal content mask while preserving line breaks and layout.", "改行と元の配置を保ちながら、コンテンツのマスクを横方向に開きます。", "沿水平方向打开内容遮罩，同时保留换行和原始布局。", "沿水平方向開啟內容遮罩，同時保留換行與原始配置。", "Открывает маску по горизонтали, сохраняя переносы строк и расположение.", "Apre una maschera orizzontale preservando gli a capo e il layout."],
+    "왼쪽 위 모서리를 축으로 콘텐츠가 흔들리듯 들어옵니다.": ["Swing content in around its top-left corner.", "左上の角を軸に、揺れるようにコンテンツが入ります。", "内容以左上角为轴摆动进入。", "內容以左上角為軸擺動進入。", "Вводит содержимое, поворачивая его вокруг верхнего левого угла.", "Fa entrare il contenuto ruotandolo attorno all'angolo superiore sinistro."],
+    "기울어진 형태를 바로잡으며 콘텐츠를 드러냅니다.": ["Reveal content while straightening its skewed shape.", "傾いた形をまっすぐに戻しながらコンテンツを表示します。", "将倾斜变形的内容恢复平直并显示。", "將傾斜變形的內容恢復平直並顯示。", "Показывает содержимое, выпрямляя его скошенную форму.", "Rivela il contenuto raddrizzandone la deformazione obliqua."],
     "지정한 방향으로 마스크가 열립니다.": [
       "The mask opens in the direction you specify.",
       "マスクは指定した方向に開きます。",

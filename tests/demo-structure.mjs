@@ -71,6 +71,19 @@ for (const name of ['stickyStack', 'scrollSequence', 'horizontalScroll']) {
   }
 }
 ok(d.querySelectorAll('.kt-playground-host--above').length === 0, 'a settings panel is still placed above its demo');
+for (const [module, variants] of [
+  ['slider', ['fade', 'wipe', 'flip', 'cube', 'cards', 'creative']],
+  ['reveal', ['mask', 'swing', 'skew']]
+]) {
+  for (const variant of variants) {
+    const cards = [...d.querySelectorAll(`#mod-${module} .card[data-demo-no-legacy-share]`)]
+      .filter((card) => card.querySelector(`[data-kt-${module}="${variant}"]`));
+    ok(cards.length === 1, `${module}.${variant}: requires one dedicated comparison card`);
+    const panel = cards[0]?.querySelector(':scope > .kt-playground');
+    ok(!!panel?.dataset.shareKey, `${module}.${variant}: requires semantic shared settings`);
+    ok(!panel?.dataset.shareLegacyKey, `${module}.${variant}: must not shift historical v1 aliases`);
+  }
+}
 const verticalStack = d.querySelector('[data-kt-sticky-stack="vertical"]');
 const verticalUnit = verticalStack?.closest('.sticky-stack-unit');
 const verticalStage = verticalStack?.closest('.demo-stage');

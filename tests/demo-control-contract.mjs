@@ -32,6 +32,15 @@ window.document.body.appendChild(script);
 
 const fields = window.KinetoPlayground?.fields;
 assert.ok(fields && typeof fields === 'object', 'KinetoPlayground.fields must expose the complete runtime field manifest');
+const contracts = JSON.parse(fs.readFileSync(path.join(root, 'kineto.features.json'), 'utf8')).modules;
+for (const name of ['reveal', 'lazy', 'cursor', 'overflowText', 'glitch', 'slider']) {
+  const contract = contracts.find((module) => module.name === name);
+  assert.deepEqual(
+    [...fields[name].find(([key]) => key === 'preset')[3]].sort(),
+    [...contract.variants].sort(),
+    `${name}: the rendered preset field must include every public variant and no removed aliases`
+  );
+}
 
 const supportedTypes = new Set(['checkbox', 'color', 'easing', 'number', 'range', 'select', 'text']);
 const seenTypes = new Set();

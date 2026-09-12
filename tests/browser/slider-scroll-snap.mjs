@@ -127,15 +127,18 @@ check('ineligible effects fall back to the transform engine', fallback.mode === 
 const restore = await page.evaluate(() => {
   const el = document.createElement('div');
   el.className = 'fixture';
-  el.innerHTML = '<div class="kt-slider-wrap" style="overflow:auto;scroll-snap-type:none;scroll-behavior:auto"><div class="kt-slider-track"><div class="kt-slide">R1</div><div class="kt-slide">R2</div></div></div>';
+  el.innerHTML = '<div class="kt-slider-wrap" style="overflow:auto !important;scroll-snap-type:none;scroll-behavior:auto"><div class="kt-slider-track"><div class="kt-slide">R1</div><div class="kt-slide">R2</div></div></div>';
   document.body.appendChild(el);
   const wrap = el.querySelector('.kt-slider-wrap');
-  const authored = wrap.getAttribute('style');
+  // Property-scoped restoration may normalize CSS whitespace and declaration
+  // order. Compare every owned value and priority, not source serialization.
+  const styles = () => [...wrap.style].sort().map((name) => [name, wrap.style.getPropertyValue(name), wrap.style.getPropertyPriority(name)]);
+  const authored = styles();
   const api = window.Kineto.create('slider', el, { effect: 'slide', loop: 'off', perView: 1, gap: 0, scrollSnap: true });
   api.destroy();
-  return { authored, restored: wrap.getAttribute('style') };
+  return { authored, restored: styles() };
 });
-check('destroy restores authored scroll styles', restore.authored === restore.restored, JSON.stringify(restore));
+check('destroy restores authored scroll styles', JSON.stringify(restore.authored) === JSON.stringify(restore.restored), JSON.stringify(restore));
 
 await page.evaluate(() => {
   for (const el of document.querySelectorAll('.fixture')) {

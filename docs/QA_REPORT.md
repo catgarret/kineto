@@ -3,6 +3,33 @@
 검증일: 2026-09-06
 대상: v0.9.7 공개 릴리스 payload · source/build `32db56e` · 이후 docs-only 배포와 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-12 후속 변경 검증
+
+아래는 v0.9.7 이후 변경의 로컬 실행 근거입니다. 새 npm·Pages 배포 성공을
+의미하지 않으며, 기존 v0.9.7 공개 릴리스 근거는 아래에 보존합니다.
+
+| 영역 | 결과 | 검증 범위 |
+|---|---|---|
+| Slider | 통과 | 세 엔진 10/10 효과의 실제 중간·최종 프레임, 이미지 드래그, 버튼·키보드, Replay·destroy, 앱이 변경한 비소유 host/viewport/Radial 항목 스타일·클래스 보존 |
+| Reveal | 통과 | 세 엔진 23개 프리셋 × native/GSAP, 실제 진입, delay/완료 시점, 원본 줄바꿈, 재생 중 제거, 일반 GSAP 경로 반복 진입, callback 내부 destroy 후 후속 변경 차단 |
+| 데모 | 통과 | 198개 playground, 650/650 고유 설정(렌더된 control 5,122개), 신규 비교 카드 9개, 390px 배치, 기존 공유 URL, 7개 locale의 실행 중 hero text·ARIA |
+| 공급망 | 통과 | Node 24에서 root·consumer·framework 3개 lockfile 각각 취약점 0건 |
+| 통합 CI | 통과 | Node 24.20.0 `npm run ci`: lint·build·전체 Node·데모·Chromium·npm pack, 기존 번들·패키지 상한 유지 |
+| 공개 범위 | 유지 | 52개 모듈·28개 Core API·48개 요구사항, runtime 의존성 0개·npm 파일 77개 |
+
+비교 카드 검사의 숨겨진 drawer 본문이 후속 공유 링크 검사에 간섭한 문제는
+기존 Reset 경로로 정리해 해결했습니다. 이후 드러난 hero의 이전 언어 ARIA는
+정상 사용에서도 재현돼, 언어 전환 시 Blur Text의 DOM·snapshot·접근성 이름을
+함께 재생성했습니다. 기존 공유 링크·번역 단언을 제외하지 않았습니다.
+Native Scroll Snap의 복원 검사는 CSSOM이 정규화한 공백·세미콜론을 실패로
+판정하던 문자열 비교 대신 전체 CSS 속성값·priority를 비교합니다.
+`overflow:auto !important` 복원까지 포함한 11개 검사가 통과했습니다.
+
+패키지 예산을 넘긴 초기 구현은 Reveal의 대상 수집·원본 복원·클래스 처리와
+Slider의 소유 상태 복원 중복을 통합했습니다. 기존 예산·77개 allowlist는
+변경하지 않았습니다. 실기기 iOS/Android·스크린리더, 외부 프로젝트 사례와
+문서에 남긴 마스크 계열 반복·Glitch Wave 옵션의 동작 차이는 미완료입니다.
+
 ## 자동 검증
 
 | 영역 | 결과 | 세부 내용 |

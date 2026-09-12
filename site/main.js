@@ -843,7 +843,17 @@
           if(text)copy.innerHTML=text;
         });
         const heroLines=dict?dict._hero:KO._hero;
-        leadLines.forEach((line,i)=>{if(heroLines&&heroLines[i]!=null)line.textContent=heroLines[i];});
+        leadLines.forEach((line,i)=>{
+          if(!heroLines||heroLines[i]==null)return;
+          // Blur Text owns both split nodes and their accessible label. Retire
+          // the previous locale before replacing its source so queued motion
+          // or a later destroy cannot restore the old language.
+          const hadMotion=Boolean(Kineto.getInstance(line,'blurText'));
+          if(hadMotion)Kineto.destroyModule(line,'blurText');
+          line.textContent=heroLines[i];
+          line.setAttribute('aria-label',heroLines[i]);
+          if(hadMotion)Kineto.initModules(line);
+        });
         const chips=dict?dict._chips:KO._chips;
         chipNodes.forEach((chip,i)=>{if(chips&&chips[i]){chip.textContent=chips[i][0];chip.dataset.tip=chips[i][1];}});
         if(coreNote)coreNote.textContent=(dict?dict._support:KO._support)||KO._support;

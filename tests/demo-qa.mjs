@@ -133,6 +133,116 @@ try {
   );
   assert.equal(surface.shadowHelp,true,'Tilt/Card Glow shadow help must be translated in every demo locale');
 
+  // Dedicated comparison cards must remain useful after the demo reorganizes
+  // them into module blocks. Check their own settings and rendered bounds,
+  // without consuming any of the historical ordinal share aliases.
+  const comparisonViewport=page.viewportSize();
+  const comparisonScroll=await page.evaluate(()=>({x:window.scrollX,y:window.scrollY}));
+  const comparisonSettings=await page.evaluate(async()=>{
+    const records=[...document.querySelectorAll('.slider-demo--comparison,.reveal-demo-card--comparison')].map((target)=>{
+      const module=target.hasAttribute('data-kt-slider')?'slider':'reveal';
+      const variant=target.getAttribute(`data-kt-${module}`);
+      const card=target.closest('.card');
+      const panel=card?.querySelector(':scope > .kt-playground');
+      const body=panel?.__buildBody?.();
+      const preset=body?.querySelector(`[data-module="${module}"][data-option="preset"]`);
+      const duration=body?.querySelector(`[data-module="${module}"][data-option="duration"]`);
+      const originalDuration=duration?.value;
+      return {target,module,variant,card,panel,preset,duration,originalDuration,
+        originalInstance:window.Kineto.getInstance(target,module)};
+    });
+    records.forEach(({duration,originalDuration})=>{
+      if(!duration)return;
+      duration.value=String(Number(originalDuration)+.05);
+      duration.dispatchEvent(new window.Event('input',{bubbles:true}));
+    });
+    await new Promise((resolve)=>setTimeout(resolve,180));
+    const results=records.map(({target,module,variant,card,panel,preset,duration,originalDuration,originalInstance})=>({
+      key:`${module}:${variant}`,
+      settingsFor:card?.dataset.settingsFor,
+      noLegacy:card?.hasAttribute('data-demo-no-legacy-share'),
+      shareKey:panel?.dataset.shareKey||'',
+      legacyShareKey:panel?.dataset.shareLegacyKey||'',
+      preset:preset?.value,
+      connected:Boolean(duration&&window.Kineto.getInstance(target,module)
+        &&window.Kineto.getInstance(target,module)!==originalInstance
+        &&Math.abs(Number(target.getAttribute('data-kt-duration'))-(Number(originalDuration)+.05))<.0001)
+    }));
+    records.forEach(({duration,originalDuration})=>{
+      if(!duration)return;
+      duration.value=originalDuration;
+      duration.dispatchEvent(new window.Event('input',{bubbles:true}));
+    });
+    await new Promise((resolve)=>setTimeout(resolve,180));
+    return results;
+  });
+  const comparisonKeys=['slider:fade','slider:wipe','slider:flip','slider:cube','slider:cards','slider:creative','reveal:mask','reveal:swing','reveal:skew'];
+  assert.deepEqual(comparisonSettings.map(({key})=>key).sort(),[...comparisonKeys].sort(),
+    'all nine dedicated Slider/Reveal comparisons must mount exactly once');
+  assert.equal(new Set(comparisonSettings.map(({shareKey})=>shareKey)).size,9,
+    'comparison cards must have distinct semantic settings links');
+  for(const record of comparisonSettings){
+    const [module,variant]=record.key.split(':');
+    assert.equal(record.settingsFor,module,`${record.key}: settings must belong to the illustrated module`);
+    assert.equal(record.preset,variant,`${record.key}: settings must show the illustrated variant`);
+    assert.ok(record.shareKey.startsWith(`${module}--`)&&record.shareKey.endsWith(`--${module}-${variant}`),
+      `${record.key}: semantic share identity must encode its module and variant (${record.shareKey})`);
+    assert.ok(record.noLegacy&&!record.legacyShareKey,`${record.key}: new comparisons must not allocate a legacy alias`);
+    assert.equal(record.connected,true,`${record.key}: changing duration must initialize or rebuild its connected runtime target`);
+  }
+
+  for(const viewport of [comparisonViewport,{width:390,height:844}]){
+    await page.setViewportSize(viewport);
+    await page.evaluate(()=>new Promise((resolve)=>window.requestAnimationFrame(()=>window.requestAnimationFrame(resolve))));
+    const layout=await page.evaluate(()=>{
+      const rect=(node)=>{const box=node?.getBoundingClientRect();return box?{left:box.left,right:box.right,width:box.width,height:box.height}:null;};
+      return {
+        width:document.documentElement.clientWidth,
+        scrollWidth:document.documentElement.scrollWidth,
+        cards:[...document.querySelectorAll('.slider-demo--comparison,.reveal-demo-card--comparison')].map((target)=>{
+          const card=target.closest('.card');
+          return {name:card?.querySelector('h3')?.textContent,card:rect(card),target:rect(target),
+            stage:rect(target.closest('.demo-stage')||target),settings:rect(card?.querySelector(':scope > .kt-playground > summary'))};
+        })
+      };
+    });
+    assert.ok(layout.scrollWidth<=layout.width+1,`${viewport.width}px: comparison demos must not introduce page-wide horizontal overflow (${layout.scrollWidth})`);
+    for(const record of layout.cards){
+      for(const part of ['card','target','stage','settings']){
+        assert.ok(record[part]?.width>0&&record[part]?.height>0,`${viewport.width}px/${record.name}: ${part} must have a nonzero rendered box`);
+      }
+      for(const part of ['stage','settings']){
+        assert.ok(record[part].left>=record.card.left-1&&record[part].right<=record.card.right+1,
+          `${viewport.width}px/${record.name}: ${part} must fit inside its card`);
+      }
+      assert.ok(record.card.left>=-1&&record.card.right<=layout.width+1,
+        `${viewport.width}px/${record.name}: card must fit inside the viewport`);
+    }
+  }
+  await page.setViewportSize(comparisonViewport);
+  const comparisonCleanup=await page.evaluate(async({x,y})=>{
+    const panels=[...document.querySelectorAll('.slider-demo--comparison,.reveal-demo-card--comparison')]
+      .map((target)=>target.closest('.card').querySelector(':scope > .kt-playground'));
+    panels.forEach((panel)=>{panel.open=false;});
+    await new Promise((resolve)=>window.requestAnimationFrame(()=>window.requestAnimationFrame(resolve)));
+    // Building a lazy body portals its hidden controls into the shared drawer.
+    // Reset through the existing UI path so the cached body, help instances,
+    // and changed options are cleaned up together before older drawer tests.
+    let resetCount=0;
+    panels.forEach((panel)=>{
+      const reset=panel.__mkBody?.querySelector('.kt-playground__toolbar button:nth-child(2)');
+      if(reset){reset.click();resetCount+=1;}
+    });
+    await new Promise((resolve)=>window.requestAnimationFrame(()=>window.requestAnimationFrame(resolve)));
+    window.scrollTo({left:x,top:y,behavior:'instant'});
+    return {resetCount,bodies:document.querySelectorAll('.kt-drawer-sheet .kt-playground__body').length,
+      openPanels:document.querySelectorAll('.kt-playground[open]').length,
+      openDrawers:document.querySelectorAll('.kt-drawer-sheet.is-open,.kt-drawer-backdrop.is-open').length};
+  },comparisonScroll);
+  assert.deepEqual(comparisonCleanup,{resetCount:9,bodies:0,openPanels:0,openDrawers:0},
+    'comparison checks must restore lazy bodies and leave no shared drawer state for later tests');
+  await page.waitForFunction(()=>!document.querySelector('.demo-toast'),null,{timeout:5000});
+
   const sharedSettings = await page.evaluate(async () => {
     const panel = document.querySelector('#mod-counter .kt-playground');
     panel.open = true;
@@ -218,9 +328,16 @@ try {
   assert.equal(new Set(cssScrollSettingsIdentity.map(({shareKey})=>shareKey)).size,3,
     'each cssScroll tab must retain a distinct semantic v2 share key');
 
+  // Locale switching must also handle a running hero effect, not only the
+  // unsplit text that happens to exist before viewport-driven initialization.
+  await page.evaluate(()=>window.Kineto.initModules(document.querySelectorAll('.lead-line')));
+  await page.waitForFunction(()=>[...document.querySelectorAll('.lead-line')]
+    .every((line)=>window.Kineto.getInstance(line,'blurText')),null,{timeout:10000});
   const localizedCopy=await page.evaluate(async()=>{
     const select=document.getElementById('lang');
     const languages=['ko','en','ja','zh-CN','zh-TW','ru','it'];
+    const heroLines=[...document.querySelectorAll('.lead-line')];
+    const koreanHero=heroLines.map((line)=>line.textContent);
     const result={};
     document.querySelector('.card > .kt-playground')?.__buildBody?.();
     for(const language of languages){
@@ -254,6 +371,11 @@ try {
       ].join(','))];
       result[language]={
         count:descriptions.length,
+        heroCopy:heroLines.every((line,index)=>{
+          const expected=(language==='ko'?koreanHero:window.KINETO_COPY_I18N.langs[language]._hero)[index];
+          return line.textContent===expected&&line.getAttribute('aria-label')===expected
+            &&Boolean(window.Kineto.getInstance(line,'blurText'));
+        }),
         twoLines:descriptions.every((node)=>{
           const style=getComputedStyle(node);
           const lineHeight=Number.parseFloat(style.lineHeight);
@@ -308,8 +430,8 @@ try {
     return result;
   });
   assert.ok(
-    Object.values(localizedCopy).every(({count,twoLines,summary,drawerChrome,accessibleChrome,moduleIndexKorean,moduleBlockKorean})=>
-      count>=129&&twoLines&&summary&&drawerChrome&&accessibleChrome.ok&&moduleIndexKorean.length===0&&moduleBlockKorean.length===0
+    Object.values(localizedCopy).every(({count,heroCopy,twoLines,summary,drawerChrome,accessibleChrome,moduleIndexKorean,moduleBlockKorean})=>
+      count>=129&&heroCopy&&twoLines&&summary&&drawerChrome&&accessibleChrome.ok&&moduleIndexKorean.length===0&&moduleBlockKorean.length===0
     ),
     `localized demo copy or controls are incomplete: ${JSON.stringify(localizedCopy)}`
   );

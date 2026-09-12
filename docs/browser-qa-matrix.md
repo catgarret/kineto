@@ -1,6 +1,6 @@
 # 브라우저 레이어 QA 매트릭스
 
-기준 버전: v0.9.3 후속 · 검토: 2026-09-05
+기준 버전: v0.9.7 후속 · 검토: 2026-09-12
 
 모든 공개 모듈은 Chromium·Firefox·WebKit에서 registry 일치와
 create → duplicate init → replay → destroy lifecycle smoke를 통과해야 합니다. 모든
@@ -74,16 +74,25 @@ matrix가 모두 성공해야 하며, tag release도 같은 두 cross-browser ga
 
 `tests/browser/css-scroll.mjs`는 Scroll-driven Animations의 별도 scroll 계약입니다. Chromium lane은 native `scroll()`과 `view()` timeline의 computed custom-property 값이 실제 scrollport 진행률과 요소 통과 진행률을 따르는지 반드시 검사합니다. Firefox·WebKit lane도 같은 feature detection을 실행해 지원되는 native 경로를 검사합니다. 세 엔진 모두 `cssAnimation`을 생략한 명시적 progress-property fallback, 정확히 생성한 timeline만 미지원인 결정적 fallback, reduced-motion 완료 상태와 `destroy()` 복원을 공통으로 검사하므로 CSS longhand 존재 여부만으로 성공 처리하지 않습니다.
 
+`tests/slider-variant-browser.mjs`와 `tests/reveal-variant-browser.mjs`는
+각각 Slider 10개 효과와 Reveal 23개 프리셋의 실제 렌더링 상태·중간 전환·원본
+복원을 검사합니다. Reveal은 선택적 GSAP을 켜고 끈 경로를 모두 검사합니다.
+이는 픽셀 스냅샷의 동일성 보장이 아니라 이동·clip·mask·회전의 작동과 lifecycle
+회귀를 잡는 검사입니다. `test:browser:cross`에 등록된 모든 파일이 일반 CI와
+release의 Firefox/WebKit job에도 등록돼야 하는 정적 게이트를 함께 둡니다.
+
 `demo-polish`의 `mobile-hero-scene`은 세 엔진에서 모바일 폭의 touch 입력 후
 내려가기·올라가기 위치를 연속 측정합니다. 한 제스처로 시작한 이동이 여러
 프레임으로 감속하고 방향 반전·오버슈트 없이 정착해야 합니다. Chromium의
 `b2_navigation`은 wheel 잔여 입력과 모바일 touch 입력의 소유권도 검사합니다.
 합성 입력과 브라우저 측정은 실제 iOS·Android의 OS rubber-band 검증을 대신하지 않습니다.
 
-Chromium 전체 lane은 모든 playground를 포함하므로 hosted runner에서 시도당 `240s`, 최대
-3회로 실행합니다. 재시도 후에도 실패하면 `test:browser` annotation과 `ci.log`의 마지막
-checkpoint를 먼저 확인합니다. 이 제한은 실패를 숨기지 않고, 일시적인 runner 지연만
-재현 가능한 범위에서 흡수하기 위한 것입니다.
+Hosted Chromium lane은 `test:browser` 명령을 최대 3회 재시도하며 전체 job은
+workflow의 timeout으로 제한합니다. 그 안에서 `retry-browser-test.mjs`로 감싼
+개별 fixture에는 시도당 `240s`·최대 3회가 적용되며, 전체 suite 합계의 240초
+제한은 아닙니다. 직접 실행되는 fixture에는 이 wrapper 제한이 적용되지 않습니다.
+재시도 후에도 실패하면 `test:browser` annotation과 `ci.log`의 마지막 checkpoint를
+먼저 확인합니다. 실패를 숨기지 않고 일시적인 runner 지연만 정해진 횟수로 흡수합니다.
 
 1. **레이아웃 준비 실패**: rect가 0이거나 hidden 조상에서 측정됐는지 확인합니다. 대상이 레이아웃되기 전에 읽은 assertion이면 동기화를 고칩니다.
 2. **엔진 차이**: 같은 DOM·CSS가 한 엔진에서만 다른 used value를 내는지 확인합니다. 브라우저별 예외를 추가하기 전에 containing block·overflow·clip 원인을 재현합니다.

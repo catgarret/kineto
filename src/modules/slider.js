@@ -1,4 +1,44 @@
-import { clamp, env, lerp, snapshotInlineStyles } from '../utils.js';
+import { clamp, env, lerp, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
+
+// Do not rewind presentation owned by a composing module or application.
+const snapshotPresentation = (el, properties, classes = [], attributes = []) => {
+  const hadStyle = el.hasAttribute('style');
+  const hadClass = el.hasAttribute('class');
+  const restoreAttributes = snapshotAttributes(el, attributes);
+  const styles = properties.map((name) => [name, el.style.getPropertyValue(name), el.style.getPropertyPriority(name)]);
+  const tokens = classes.map((name) => [name, el.classList.contains(name)]);
+  return () => {
+    restoreAttributes();
+    styles.forEach((state) => el.style.setProperty(...state));
+    tokens.forEach((state) => el.classList.toggle(...state));
+    if (!hadStyle && !el.style.length) el.removeAttribute('style');
+    if (!hadClass && !el.classList.length) el.removeAttribute('class');
+  };
+};
+
+// Both layouts restore only drag/selection styles; Lazy may update the rest.
+const preventImageDrag = (root, items) => {
+  const restores = items.flatMap((item) => item.matches('img') ? [item] : [...item.querySelectorAll('img')]).map((image) => {
+    const restoreStyle = snapshotInlineStyles(image, ['userSelect', 'webkitUserDrag']);
+    const restoreCSS = snapshotPresentation(image, ['user-select', '-webkit-user-drag'], [], ['draggable']);
+    image.draggable = false;
+    image.style.userSelect = 'none';
+    image.style.webkitUserDrag = 'none';
+    return () => {
+      // Preserve unsupported vendor properties in DOM adapters and CSS priorities.
+      restoreStyle();
+      restoreCSS();
+    };
+  });
+  const onDragStart = (event) => {
+    if (items.some((item) => item.contains(event.target))) event.preventDefault();
+  };
+  root.addEventListener('dragstart', onDragStart, true);
+  return () => {
+    root.removeEventListener('dragstart', onDragStart, true);
+    restores.forEach((restore) => restore());
+  };
+};
 
 /*
  * Single-engine slider: one continuous position value drives every slide
@@ -51,30 +91,20 @@ export default {
       const drag = opts.drag !== false;
       const useControls = opts.controls !== false;
       const pauseWhenOffscreen = opts.pauseWhenOffscreen !== false;
-      const originalTouchAction = el.style.touchAction;
+      const restorePresentation = snapshotPresentation(el, ['touch-action', '--kt-radial-radius'], ['kt-radial', `kt-radial--${position}`], ['role', 'aria-roledescription', 'tabindex']);
       // `activeClass` hooks your OWN class on the focused item (with `.kt-active`).
       const stateClass = (opts.activeClass || '').trim();
+      const itemStates = items.map((item) => ({
+        item, next: item.nextSibling,
+        restore: snapshotPresentation(item, ['transform', 'transition', 'opacity', 'z-index', 'cursor'], ['kt-radial-item', 'kt-active', 'active-item', stateClass].filter(Boolean), ['aria-current', 'tabindex'])
+      }));
 
       // Radial items are often images. Match the track slider and Brush Reveal
       // by keeping native drag previews out of the interaction surface, while
       // preserving authored draggable values for destroy(). Docked wheels leave
       // the page's perpendicular scroll axis available; a centered wheel keeps
       // horizontal page scrolling available while claiming its vertical drag axis.
-      const radialImages = items
-        .flatMap((item) => item.matches?.('img') ? [item] : [...item.querySelectorAll('img')])
-        .map((node) => {
-          const value = node.getAttribute('draggable');
-          const userSelect = node.style.userSelect;
-          const webkitUserDrag = node.style.webkitUserDrag;
-          node.draggable = false;
-          // `draggable=false` is the standards hook, but Safari can still
-          // capture an image drag preview when the pointer starts on a
-          // transformed descendant. Keep the interaction surface passive and
-          // restore the authored inline values on destroy().
-          node.style.userSelect = 'none';
-          node.style.webkitUserDrag = 'none';
-          return [node, value, userSelect, webkitUserDrag];
-        });
+      const restoreImages = preventImageDrag(el, items);
 
       el.classList.add('kt-radial', `kt-radial--${position}`);
       el.style.setProperty('--kt-radial-radius', `${radius}px`);
@@ -111,14 +141,6 @@ export default {
       live.setAttribute('aria-live', 'polite');
       live.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);';
       el.appendChild(live);
-
-      // A capturing listener is the final guard against browser-native image
-      // drag previews. It also covers images nested in links or custom item
-      // wrappers where a browser may ignore the element's draggable flag.
-      const onDragStart = (event) => {
-        if (event.target?.closest?.('.kt-radial-item')) event.preventDefault();
-      };
-      el.addEventListener('dragstart', onDragStart, true);
 
       const n = items.length;
       let visualActive = active;
@@ -357,7 +379,6 @@ export default {
           if (radialFrame) cancelAnimationFrame(radialFrame);
           if (suppressItemClickTimer != null) clearTimeout(suppressItemClickTimer);
           hub.removeEventListener('click', onItemClick);
-          el.removeEventListener('dragstart', onDragStart, true);
           el.removeEventListener('keydown', onKey);
           el.removeEventListener('pointerdown', onDown);
           el.removeEventListener('pointermove', onMove);
@@ -368,30 +389,17 @@ export default {
           el.removeEventListener('mouseleave', startAuto);
           prevBtn?.removeEventListener('click', prev);
           nextBtn?.removeEventListener('click', next);
-          items.forEach((item) => {
-            // Fully restore each item: clear inline transform/opacity/transition,
-            // remove the kt-radial-item class (so its `will-change:transform` from
-            // the stylesheet doesn't linger) and the active markers, then re-home it.
-            item.style.transform = ''; item.style.transition = ''; item.style.opacity = ''; item.style.zIndex = ''; item.style.cursor = '';
-            delete item._ktOffset;
-            item.classList.remove('kt-radial-item', 'kt-active', 'active-item');
-            if (stateClass) item.classList.remove(stateClass);
-            item.removeAttribute('aria-current');
-            el.appendChild(item);
+          // Reverse insertion preserves author-owned comments, controls and
+          // each original item node in its original sibling position.
+          [...itemStates].reverse().forEach(({ item, next, restore }) => {
+            el.insertBefore(item, next?.parentNode === el ? next : null);
+            restore();
           });
-          radialImages.forEach(([node, value, userSelect, webkitUserDrag]) => {
-            if (value == null) node.removeAttribute('draggable');
-            else node.setAttribute('draggable', value);
-            node.style.userSelect = userSelect;
-            node.style.webkitUserDrag = webkitUserDrag;
-          });
+          restoreImages();
           hub.remove();
           live.remove();
           if (builtControls) controls.remove();
-          el.classList.remove('kt-radial', `kt-radial--${position}`);
-          el.style.removeProperty('--kt-radial-radius');
-          el.style.touchAction = originalTouchAction;
-          el.removeAttribute('role'); el.removeAttribute('aria-roledescription');
+          restorePresentation();
         }
       };
     }
@@ -418,7 +426,6 @@ export default {
     const stacked = fade || dissolve || wipe || flip || cube || cards || creative;
     const activeShadow = coverflow && opts.activeShadow === true;
     const activeShadowOpacity = clamp(Number(opts.activeShadowOpacity ?? 0.28), 0, 1);
-    const originalActiveShadowOpacity = el.style.getPropertyValue('--kt-slide-active-shadow-opacity');
     const gap = Math.max(0, Number(opts.gap ?? (coverflow ? 22 : 0)));
     // `breakpoints` mirrors Swiper: {"640":{"perView":2},"1024":{"perView":3}} —
     // the widest entry at or below the viewport wins. Accepts an object or a
@@ -505,11 +512,11 @@ export default {
         && allowTouch;
     }
 
-    const original = {
-      wrap: wrap.getAttribute('style'), track: track.getAttribute('style'),
-      wrapRole: wrap.getAttribute('role'), wrapLabel: wrap.getAttribute('aria-label'), wrapTab: wrap.getAttribute('tabindex'),
-      slides: slides.map((slide) => ({ style: slide.getAttribute('style'), role: slide.getAttribute('role'), hidden: slide.getAttribute('aria-hidden'), label: slide.getAttribute('aria-label') }))
-    };
+    const restorePresentation = snapshotPresentation(el, [opts.grabCursor === true && 'cursor', activeShadow && '--kt-slide-active-shadow-opacity'].filter(Boolean), [`kt-slider--${effect}`, 'kt-slider--active-shadow'], ['data-kt-slider-index', 'data-kt-slider-effect', 'data-kt-slider-scroll-snap']);
+    const restoreViewport = snapshotPresentation(wrap, ['overflow', 'overflow-x', 'overflow-y', 'overflow-clip-margin', 'touch-action', 'position', 'perspective', 'scroll-snap-type', 'scroll-behavior', 'overscroll-behavior-x', 'height', 'transition'], [], ['role', 'aria-roledescription', 'aria-label', 'tabindex', 'aria-disabled']);
+    const restoreTrack = snapshotAttributes(track, ['style']);
+    const restoreSlides = slides.map((slide) => snapshotAttributes(slide, ['class', 'style', 'role', 'aria-roledescription', 'aria-hidden', 'aria-label']));
+    const restoreImages = preventImageDrag(wrap, slides);
 
     let index = clamp(Math.round(Number(opts.initial ?? 0)), 0, maxIndex);
     let position = index;      // rendered (smoothed) position
@@ -621,7 +628,6 @@ export default {
       slide.setAttribute('role', 'group');
       slide.setAttribute('aria-roledescription', 'slide');
       slide.setAttribute('aria-label', `${slideIndex + 1} of ${slides.length}`);
-      slide.querySelectorAll('img').forEach((image) => { image.draggable = false; });
     });
 
     const metrics = () => {
@@ -893,10 +899,12 @@ export default {
     // Swiper parity: show the drag affordance, and let a click on a neighbouring
     // slide bring it to the front instead of only the arrows doing so.
     const clickHandlers = [];
+    const onGrabStart = () => { el.style.cursor = 'grabbing'; };
+    const onGrabEnd = () => { el.style.cursor = 'grab'; };
     if (opts.grabCursor === true) {
       el.style.cursor = 'grab';
-      el.addEventListener('pointerdown', () => { el.style.cursor = 'grabbing'; });
-      el.addEventListener('pointerup', () => { el.style.cursor = 'grab'; });
+      el.addEventListener('pointerdown', onGrabStart);
+      el.addEventListener('pointerup', onGrabEnd);
     }
     if (syncOnClick) {
       slides.forEach((slide, slideIndex) => {
@@ -917,7 +925,7 @@ export default {
     const autoHeight = opts.autoHeight === true;
     let autoHeightResize = null;
     const applyAutoHeight = () => {
-      if (!autoHeight) return;
+      if (!alive || !autoHeight) return;
       const slide = slides[index];
       if (!slide) return;
       const height = Math.round(slide.scrollHeight || slide.getBoundingClientRect().height);
@@ -1312,20 +1320,15 @@ export default {
         wrap.removeEventListener('pointerdown', onDown); wrap.removeEventListener('pointermove', onMove); wrap.removeEventListener('pointerup', onEnd); wrap.removeEventListener('pointercancel', onEnd); wrap.removeEventListener('touchmove', onTouchMove); wrap.removeEventListener('keydown', onKey); wrap.removeEventListener('wheel', onWheel); wrap.removeEventListener('pointerenter', onEnter); wrap.removeEventListener('pointerleave', onLeave); wrap.removeEventListener('scroll', onNativeScroll);
         nextButtons.forEach((button) => { button.removeEventListener('click', next); delete button.dataset.ktSliderBound; });
         prevButtons.forEach((button) => { button.removeEventListener('click', prev); delete button.dataset.ktSliderBound; });
-        const restore = (node, name, value) => value == null ? node.removeAttribute(name) : node.setAttribute(name, value);
-        restore(wrap, 'style', original.wrap); restore(track, 'style', original.track); restore(wrap, 'role', original.wrapRole); restore(wrap, 'aria-label', original.wrapLabel); restore(wrap, 'tabindex', original.wrapTab);
-        slides.forEach((slide, slideIndex) => { const state = original.slides[slideIndex]; restore(slide, 'style', state.style); restore(slide, 'role', state.role); restore(slide, 'aria-hidden', state.hidden); restore(slide, 'aria-label', state.label); slide.classList.remove('is-active'); });
+        el.removeEventListener('pointerdown', onGrabStart);
+        el.removeEventListener('pointerup', onGrabEnd);
+        restoreViewport();
+        restoreTrack();
+        restoreSlides.forEach((restore) => restore());
+        restoreImages();
         clickHandlers.forEach(({ slide, onClick }) => slide.removeEventListener('click', onClick));
         if (autoHeightResize) window.removeEventListener('resize', autoHeightResize);
-        wrap.style.removeProperty('height');
-        track.style.removeProperty('align-items');
-        el.style.removeProperty('cursor');
-        el.classList.remove(`kt-slider--${effect}`, 'kt-slider--active-shadow');
-        if (originalActiveShadowOpacity) el.style.setProperty('--kt-slide-active-shadow-opacity', originalActiveShadowOpacity);
-        else el.style.removeProperty('--kt-slide-active-shadow-opacity');
-        delete el.dataset.ktSliderIndex;
-        delete el.dataset.ktSliderEffect;
-        delete el.dataset.ktSliderScrollSnap;
+        restorePresentation();
         delete el.__ktSlider;
       }
     };

@@ -65,7 +65,8 @@ assert.match(
 // two dedicated Lazy examples; the date-time demo now has four explicit modes;
 // the native Scroll Snap slider adds one translated description; CSS Scroll
 // adds one translated mixed-language title for its native/fallback comparison.
-assert.equal(descriptions.length, 145);
+// Six Slider and three Reveal comparison cards add nine translated descriptions.
+assert.equal(descriptions.length, 154);
 assert.equal(titles.length, 17);
 
 for (const [label, values, dictionary] of [

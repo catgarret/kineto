@@ -17,6 +17,10 @@
 | `creative` | 깊이, 회전, 블러를 조합한 장면 전환 |
 | `radial` | 항목을 원형 궤도에 배치하는 캐러셀 |
 
+데모는 위 10개 효과를 전용 카드로 제공합니다. Fade·Wipe·Flip·Cube·Cards·Creative는
+같은 이미지·크기·0.7초 설정에서 자동 재생 없이 버튼과 드래그로 비교합니다.
+설정·코드 패널은 각 카드에 독립적으로 연결되고 기존 공유 링크도 유지됩니다.
+
 ```html
 <div class="my-slider" data-kt-slider="dissolve" data-kt-loop="rewind">
   <div class="kt-slider-wrap">
@@ -40,6 +44,14 @@ Radial 동작을 유지하려면 생략합니다. `spring:true`를 선택하면 
 `spring:false`이며 기존 cubic 전환 비용과 동작을 그대로 유지합니다.
 
 슬라이드와 Radial 항목 안의 이미지는 라이브러리가 `draggable=false`와 `-webkit-user-drag:none`으로 처리하고 컨테이너의 `dragstart`도 캡처 단계에서 취소하므로, Safari를 포함한 브라우저의 반투명 고스트 이미지가 드래그를 가로채지 않습니다. 실제 이동 임계값을 넘은 뒤에만 페이지 스크롤을 막고 클릭을 억제하며, `destroy()`에서 이미지에 원래 지정한 drag·선택 스타일을 복원합니다.
+
+`destroy()`는 작성자가 지정한 높이·ARIA와 Radial의 원래 노드 순서를 복원합니다.
+Host·viewport·Radial 항목은 Slider가 소유한 CSS 속성·클래스만 되돌려서,
+실행 중 앱이 바꾼 다른 클래스·색상·CSS 변수를 유지합니다. 중첩 이미지도
+drag·선택 속성만 원래 priority와 함께 복원하므로 Lazy가 갱신한
+`opacity`·`filter`는 유지됩니다. Track·일반 slide 자체는 기존 전체 snapshot
+복원 정책을 유지합니다. 원래 없던 빈 style/class 속성은 남기지 않으며,
+예약된 자동 높이 측정과 grab cursor 리스너도 제거 후 다시 DOM을 바꾸지 않습니다.
 
 트랙 효과는 `.kt-slider-track`이 필요합니다. `radial`은 활성 요소 바로
 아래에 항목이 두 개 이상 있어야 합니다. 설정 데모는 현재 마크업에서

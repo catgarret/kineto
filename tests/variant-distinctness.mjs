@@ -75,7 +75,7 @@ const MODULE_AUDITS = {
     pixel: ['pixel-grid-glyph-fragments', 'const pixelBurst = () => {', 'pixelBits.add(bit);'],
     noise: ['character-noise-scramble', 'const noiseBurst = () => {', 'NOISE_CHARS[Math.floor(random() * NOISE_CHARS.length)]'],
     crt: ['image-crt-scan-roll', "if (preset === 'crt' || preset === 'vcr') {", "overlay.className = 'kt-glitch-crt';"],
-    wave: ['seeded-slice-wave', "if (preset === 'wave') {", 'const stepWave = () => {'],
+    wave: ['svg-signal-displacement', "if (preset === 'wave') {", 'const stepWave = () => {'],
     image: ['canvas-channel-slice-loop', "if (preset === 'image' || preset === 'reveal' || preset === 'datamosh') {", 'const drawImageGlitch = (amp) => {'],
     datamosh: ['block-compression-burst', "const datamoshMode = preset === 'datamosh';", 'datamoshMode ? (0.35 + Math.sin(progress * Math.PI) * 0.8)'],
     reveal: ['one-shot-glitch-decode', "const revealMode = preset === 'reveal';", "if (revealMode) imageEl.style.opacity = '0';"],
@@ -174,5 +174,5 @@ assertAuditSummary(reveal, authoredReveal);
 additionalVariants += reveal.variants.length;
 directDemoVariants += authoredReveal.size;
 
-assert.match(audit, /확대 검토일: 2026-09-05/);
+assert.match(audit, /확대 검토일: 2026-09-06/);
 console.log(`variant-distinctness OK — ${pageReveal.variants.length} Page Reveal + ${additionalVariants} expanded mechanisms audited; ${directDemoVariants}/${additionalVariants} expanded variants have dedicated demo markup and all remain available in settings.`);

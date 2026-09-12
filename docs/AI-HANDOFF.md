@@ -88,6 +88,11 @@ At this handoff, the most recent completed work includes:
   landing; exhaustive control QA and native/fallback cssScroll checks are
   recorded alongside matching npm/GitHub tarballs and both deployed sites in
   `docs/QA_REPORT.md` and `docs/browser-qa-history.md`.
+- post-v0.9.7 Slider/Reveal lifecycle fixes, nine comparison cards, complete
+  high-risk preset selectors, animated hero locale/ARIA rebuilding, and
+  immutable-action/dependency-floor guards; the 2026-09-12 local CI and
+  three-engine variant checks are recorded in `docs/QA_REPORT.md`. Publication
+  evidence remains separate from those local checks.
 
 Always verify this summary against Git history because later commits supersede
 it.

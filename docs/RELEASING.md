@@ -112,7 +112,18 @@ The tag starts `.github/workflows/release.yml`, which:
 
 Third-party GitHub Actions are pinned to immutable full commit SHAs. Their
 readable major-version comments are informational; update the SHA only after
-reviewing the upstream action release.
+reviewing the upstream action release. Tests validate the actual action name
+and full 40-character SHA, not a fixed major in its comment. A changed or omitted
+comment is allowed; tags, branches, truncated hashes, and unpinned duplicate
+steps are still rejected. Passing this pin check is not proof that a new action
+major is compatible: the normal CI and release gates remain required.
+
+Dependency-floor tests likewise permit stable minor/patch increases within the
+currently supported major and the existing caret/exact range form. They reject
+lower floors, prereleases, wildcard/OR ranges, and unsupported major changes.
+TypeScript 7 and jQuery 4 still require separate type/adapter compatibility work;
+an old PR failure is not evidence that its dependency is incompatible until it
+has been tested against current main.
 
 The publish step is idempotent: a workflow retry detects an already published
 version and skips the duplicate npm publish.

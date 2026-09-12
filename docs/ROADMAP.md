@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.9.7 · 작성일: 2026-08-02 · 검토: 2026-09-06
+> 기준 버전: v0.9.7 · 작성일: 2026-08-02 · 검토: 2026-09-12
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -61,7 +61,8 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 - Socket 경고를 줄이는 기술 조치는 진행됐지만, 공급망 신뢰는 특정 점수 하나가 아니라 릴리스 provenance, 의존성 최소화, 변경 이력, 대응 절차를 함께 유지해야 합니다. Socket도 경고 심각도와 공급망 위험을 종합해 점수를 계산한다고 설명합니다([Socket package scores](https://docs.socket.dev/docs/package-scores)).
 - **테스트가 틀린 이유로 실패합니다.** v0.8.43 릴리스는 같은 assertion에서 반복 실패했는데, 원인은 스타일시트가 아니라 아직 레이아웃되지 않은 패널을 측정한 것이었습니다. `display:none` 요소의 `getComputedStyle`은 used value가 아니라 computed value(`repeat(2, minmax(0px, 1fr))`)를 돌려주고, 이 문자열을 공백으로 자르면 토큰이 정확히 3개가 나옵니다. 즉 **그럴듯하게 틀린 값**이 나왔고, 사람은 CSS를 세 번 고쳤습니다. 브라우저 QA에 “측정 대상이 실제로 레이아웃됐는가”를 먼저 확인하는 규칙이 없으면, 통과율 지표 자체를 신뢰할 수 없습니다.
 - **엔진 커버리지가 아직 균등하지 않습니다.** 일반 모듈은 Chromium 전체와 Firefox/WebKit smoke를 유지하지만, transform·clip·fixed/sticky·mask·3D 경계를 쓰는 고위험 목록은 `heavy-layout` 체크포인트로 세 엔진을 함께 검사합니다. `pageReveal`의 `zoom`은 transform이 걸린 `<body>`가 fixed/sticky 자손의 containing block이 되는 동작에서 Safari와 Chromium이 갈렸고, 커버를 `<html>`로 옮겨야 양쪽이 같아졌습니다. 남은 일반 모듈까지 전부 같은 깊이로 올리는 것은 실제 회귀 신호와 실행 비용을 비교해 단계적으로 결정합니다.
-- **variant 구분성은 정적 게이트와 실제 시각 검증을 분리해 관리합니다.** `pageReveal` 16개와 Reveal·Lazy·Cursor·Overflow Text·Glitch·Slider 78개는 contract·구현 branch/source fingerprint·생성 설정의 1:1 대응을 자동 검사합니다. 다만 확대 범위 중 전용 데모 markup은 47/78이고 source fingerprint는 픽셀 단위 시각 회귀를 대신하지 않습니다. 남은 병목은 이름 수가 아니라 실제 회귀 신호가 있는 variant의 전용 비교 화면과 cross-browser 시각 검증을 비용에 맞춰 확대하는 일입니다.
+- **variant 구분성은 정적 게이트와 실제 시각 검증을 분리해 관리합니다.** `pageReveal` 16개와 Reveal·Lazy·Cursor·Overflow Text·Glitch·Slider 78개는 contract·구현 branch/source fingerprint·생성 설정의 1:1 대응을 자동 검사합니다. 확대 범위 중 전용 데모 markup은 56/78이며 Slider 10개 효과는 전용 카드로 비교합니다. source fingerprint는 픽셀 단위 시각 회귀를 대신하지 않습니다. 남은 병목은 이름 수가 아니라 실제 회귀 신호가 있는 variant의 전용 비교 화면과 cross-browser 검증을 비용에 맞춰 확대하는 일입니다.
+- **분기별 옵션 의미 검증은 계속 필요합니다.** 2026-09-06 실제 동작 점검에서 Reveal의 별도 `mask`·`wipe`·`clock` 경로는 일반 transform 경로와 달리 `once:false` 역재생·재진입 callback이 연결되지 않고, Glitch `wave`는 연속 필터라 `trigger`·`loop`·`duration`·`delay`를 사용하지 않는 기존 제한을 확인했습니다. 모듈 문서에 제한을 표시했으며, 후속 묶음에서 분기별 lifecycle 통일과 무효 설정 숨김·실제 동작 검사를 진행합니다. 단순 attribute 반영 검사를 이 의미 검증의 완료 근거로 집계하지 않습니다.
 
 ## 3. 제품 원칙과 하지 않을 일
 
@@ -424,6 +425,10 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 실사용 수정 묶음의 통합 CI·번들/패키지 비용 검토·v0.9.7 배포와 두 도메인의
 자체 JS/CSS·클릭 미디어 일치 확인을 완료했습니다. 현재 남은 순서는 다음과 같습니다.
 
+추가 묶음은 Slider·Reveal의 실제 재현 결함, 9개 전용 비교 카드, 공급망 검사와
+1.0 근거 최신화입니다. 아래 142~146번은 구현·회귀 검증 범위이며, 새 릴리스의
+원격 CI·npm·Pages 결과는 배포 후 별도로 기록합니다.
+
 - 후속: 전용 데모가 없는 variant 중 실제 적용·회귀 근거가 있는 항목의 비교 화면과 브라우저 검증 확대.
 - 외부 증거 필요: 실제 iOS Safari·Android Chrome·스크린리더 검사, 운영 앱의 장기 성능 측정, 공개 동의를 받은 외부 사용 사례 3개.
 - 증거 확보 후 결정: FLIP shared layout과 States·Presence 추가 확장. 현재 자동 검사나 데모를 외부 사용 증거로 집계하지 않습니다.
@@ -573,6 +578,11 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 139. 완료(v0.9.7): 두 GitHub workflow에 설정 전수·클릭 이미지 회귀를 연결하고, 릴리스 준비 시 현재 소스 버전만 갱신해 과거 npm·workflow·checksum 증거를 보존
 140. 완료(v0.9.7 측정): Node 24에서 Vite 전체 소비자 gzip 증가 약 3.3KB와 tarball 압축 526.9KB/해제 1755.0KB를 측정해 요청 기능 비용으로 기록하고, full·adapter 비용 예산만 조정하며 core 조합 예산·runtime dependency 0·52개 모듈·77개 파일 경계를 유지
 141. 완료(v0.9.7 배포): CI·Release·Pages 성공, npm/GitHub 동일 tarball과 provenance metadata, 두 도메인의 build `32db56e`·자체 JS/CSS 12개·클릭 미디어 4개 일치를 실제 공개 응답으로 확인
+142. 완료(구현·회귀): GitHub Actions의 참고용 버전 주석과 보안 SHA pin을 분리하고, 의존성 17개 guard를 기존 지원 major·range 형식·최소 버전을 유지하는 상향 업데이트 검사로 변경. 미검증 TypeScript 7·jQuery 4 자동 허용은 하지 않음
+143. 완료(구현·회귀): Slider Track/Radial의 작성자 높이·ARIA·노드 순서 복원, 공유 이미지 drag 차단, 비소유 이미지 스타일 보존과 grab cursor·autoHeight 정리. 10개 효과의 실제 중간 프레임·버튼·키보드·이미지 드래그·Replay를 세 엔진에서 검증
+144. 완료(구현·회귀): Reveal의 영구 숨김 clip 진입·불필요한 이동·Mask/Wipe 기본 방향·종료 skew·delay/완료 시점과 예약 동작 정리. 23개 프리셋의 native/GSAP 경로와 `once:false`의 Replay 이후 이탈·역진입을 세 엔진에서 검증
+145. 완료(데모·회귀): Slider 6개·Reveal 3개 전용 비교 카드와 7개 언어 설명·설정을 추가해 공개 고위험 variant 전용 데모를 56/78로 확대하고, 실제 설정 목록의 Swing·Skew·Wave 누락과 실행 중 hero의 언어별 ARIA를 수정. 새 semantic 공유 URL은 과거 v1 순번을 소비하지 않음
+146. 완료(운영 계약): 1.0 준비도의 배포 근거를 검증된 v0.9.7·후속 문서 배포로 동기화하고, package의 cross-browser 검사 목록이 CI·release 두 workflow에 누락되지 않는 게이트 추가. 실기기·외부 사용 사례는 미완료 상태 유지
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

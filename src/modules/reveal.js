@@ -32,6 +32,13 @@ const PRESETS = {
 // (which run on their own clip-path proxy tweens, not a gsap stagger) still honor
 // the `order` option: start / end / center / edges / random.
 const ORDER_PRESETS = new Set(['start', 'end', 'center', 'edges', 'random']);
+const revealTargets = (el, opts) => opts.stagger && el.children.length ? Array.from(el.children) : [el];
+// Staggered children and their root share one author-state lifetime.
+function snapshotTargets(el, targets) {
+  const restores = [...new Set([...targets, el])].map((node) => snapshotAttributes(node, ['style', 'class']));
+  return () => restores.forEach((restore) => restore());
+}
+
 function normalizeOrder(value) {
   return ORDER_PRESETS.has(String(value)) ? String(value) : 'start';
 }
@@ -59,21 +66,17 @@ function staggerDelays(count, each, from) {
   return Array.from({ length: count }, (_unused, i) => dist(i) * step);
 }
 
-function addClasses(el, opts) {
+function setClasses(el, opts, active) {
   const enter = String(opts.enterClass || opts.activeClass || 'is-inview').split(/\s+/).filter(Boolean);
   const leave = String(opts.leaveClass || '').split(/\s+/).filter(Boolean);
-  leave.forEach((className) => el.classList.remove(className));
-  enter.forEach((className) => el.classList.add(className));
-  opts.onClassChange?.(true, el);
+  const [remove, add] = active ? [leave, enter] : [enter, leave];
+  remove.forEach((className) => el.classList.remove(className));
+  add.forEach((className) => el.classList.add(className));
+  opts.onClassChange?.(active, el);
 }
 
-function removeClasses(el, opts) {
-  const enter = String(opts.enterClass || opts.activeClass || 'is-inview').split(/\s+/).filter(Boolean);
-  const leave = String(opts.leaveClass || '').split(/\s+/).filter(Boolean);
-  enter.forEach((className) => el.classList.remove(className));
-  leave.forEach((className) => el.classList.add(className));
-  opts.onClassChange?.(false, el);
-}
+const addClasses = (el, opts) => setClasses(el, opts, true);
+const removeClasses = (el, opts) => setClasses(el, opts, false);
 
 export { PRESETS, staggerDelays };
 
@@ -83,7 +86,7 @@ export default {
     const scrollTrigger = ST();
     const preset = opts.preset || 'fade-up';
     const presetDirection = preset.startsWith('slide-') ? preset.slice(6) : null;
-    const direction = opts.direction || presetDirection || 'up';
+    const direction = opts.direction || presetDirection || (preset === 'mask' ? 'right' : 'up');
     const resolvedPreset = preset.startsWith('slide-') && ['up', 'down', 'left', 'right'].includes(direction)
       ? `slide-${direction}`
       : preset;
@@ -94,14 +97,18 @@ export default {
     if (classOnly) {
       let observer = null;
       let trigger = null;
+      let replayRaf = null;
+      let destroyed = false;
       const enter = () => {
+        if (destroyed) return;
         addClasses(el, opts);
-        opts.onEnter?.(el);
+        if (!destroyed) opts.onEnter?.(el);
       };
       const leave = () => {
+        if (destroyed) return;
         if (opts.removeClassOnLeave === false) return;
         removeClasses(el, opts);
-        opts.onLeave?.(el);
+        if (!destroyed) opts.onLeave?.(el);
       };
       if (scrollTrigger) {
         trigger = scrollTrigger.create({
@@ -110,9 +117,9 @@ export default {
           end: opts.end || 'bottom 15%',
           once,
           onEnter: enter,
-          onEnterBack: () => { enter(); opts.onEnterBack?.(el); },
+          onEnterBack: () => { enter(); if (!destroyed) opts.onEnterBack?.(el); },
           onLeave: leave,
-          onLeaveBack: () => { leave(); opts.onLeaveBack?.(el); }
+          onLeaveBack: () => { leave(); if (!destroyed) opts.onLeaveBack?.(el); }
         });
       } else if (once) {
         observer = observeOnce(el, enter, { threshold: Number(opts.threshold ?? 0.1), rootMargin: opts.rootMargin || '0px 0px -10% 0px' });
@@ -125,10 +132,19 @@ export default {
       return {
         el,
         type: 'reveal',
-        replay(nextOptions) { Object.assign(opts, nextOptions || {}); removeClasses(el, opts); requestAnimationFrame(enter); },
+        replay(nextOptions) {
+          if (destroyed) return;
+          Object.assign(opts, nextOptions || {});
+          if (replayRaf != null) cancelAnimationFrame(replayRaf);
+          removeClasses(el, opts);
+          if (destroyed) return;
+          replayRaf = requestAnimationFrame(() => { replayRaf = null; enter(); });
+        },
         pause() { trigger?.disable?.(); observer?.disconnect?.(); },
         resume() { trigger?.enable?.(); },
         destroy() {
+          destroyed = true;
+          if (replayRaf != null) cancelAnimationFrame(replayRaf);
           trigger?.kill?.();
           observer?.disconnect?.();
           if (originalClass == null) el.removeAttribute('class'); else el.setAttribute('class', originalClass);
@@ -140,9 +156,8 @@ export default {
       // Clock wipe: a conic mask sweeps around like a watch hand until the
       // content is fully revealed. A staggered container applies a separate
       // clock mask to every direct child instead of masking the whole list.
-      const clockNodes = (opts.stagger && el.children.length) ? Array.from(el.children) : [el];
-      const restores = clockNodes.map((node) => snapshotAttributes(node, ['style', 'class']));
-      const rootRestore = clockNodes[0] === el ? null : snapshotAttributes(el, ['style', 'class']);
+      const clockNodes = revealTargets(el, opts);
+      const restore = snapshotTargets(el, clockNodes);
       const apply = (node, progress) => {
         const startAngle = Number(opts.startAngle ?? 0);
         const counter = opts.clockDirection === 'ccw';
@@ -240,8 +255,7 @@ export default {
           stop();
           clockObserver?.kill?.();
           clockObserver?.disconnect?.();
-          restores.forEach((restore) => restore());
-          rootRestore?.();
+          restore();
         }
       };
     }
@@ -286,11 +300,9 @@ export default {
       // Stagger across children when asked (and they exist) so a list wipes in
       // item-by-item; otherwise the whole element is one clip. `order` reshapes
       // the per-child delays exactly like the transform path below.
-      const clipNodes = (opts.stagger && el.children.length) ? Array.from(el.children) : [el];
+      const clipNodes = revealTargets(el, opts);
       const staggered = clipNodes.length > 1;
-      const nodeRestores = clipNodes.map((node) => snapshotAttributes(node, ['style', 'class']));
-      const elRestore = staggered ? snapshotAttributes(el, ['style', 'class']) : null;
-      const clipRestore = () => { nodeRestores.forEach((fn) => fn()); elRestore?.(); };
+      const clipRestore = snapshotTargets(el, clipNodes);
       const clipDuration = Math.max(0.05, Number(opts.duration ?? 0.8));
       // Compute ease locally: the shared `const ease` below is declared after this
       // branch's early return, so referencing it here would throw (TDZ).
@@ -347,11 +359,11 @@ export default {
       };
     }
 
-    const target = opts.stagger && el.children.length ? Array.from(el.children) : el;
-    const targets = Array.isArray(target) ? target : [target];
-    const restores = targets.map((node) => snapshotAttributes(node, ['style', 'class']));
+    const targets = revealTargets(el, opts);
+    const restore = snapshotTargets(el, targets);
     const duration = Math.max(0, Number(opts.duration ?? 0.8));
     const ease = (opts.enterEase ?? opts.ease) ? gsapEaseName(opts.enterEase ?? opts.ease) : ((opts.spring ?? motionDefaults.spring) === true ? 'back.out(1.25)' : 'power3.out');
+    let destroyed = false;
     const animateVars = (delay = Number(opts.delay ?? 0)) => {
       // Explicit delays keep every order preset identical across the GSAP and
       // CSS fallback paths. Random is rebuilt for each entrance/replay.
@@ -365,6 +377,8 @@ export default {
         rotation: 0,
         rotationX: 0,
         rotationY: 0,
+        skewX: 0,
+        skewY: 0,
         opacity: 1,
         filter: 'blur(0px)',
         duration,
@@ -376,6 +390,13 @@ export default {
         onComplete: () => { targets.forEach((node) => { node.style.willChange = ''; }); opts.onComplete?.(el); }
       };
     };
+    let tween = null;
+    let activeTween = null;
+    const useScrollTween = () => {
+      if (!tween) return;
+      if (activeTween !== tween) activeTween?.kill();
+      activeTween = tween;
+    };
     const to = {
       ...animateVars(),
       scrollTrigger: {
@@ -383,20 +404,44 @@ export default {
         start: opts.start || 'top 85%',
         end: opts.end,
         toggleActions: once ? 'play none none none' : 'play reverse play reverse',
-        onEnter: () => opts.onEnter?.(el),
+        onEnter: () => { if (destroyed) return; useScrollTween(); opts.onEnter?.(el); },
         onLeave: () => {
+          if (destroyed) return;
+          useScrollTween();
           opts.onLeave?.(el);
+          if (destroyed) return;
           if (!once && opts.removeClassOnLeave !== false) removeClasses(el, opts);
         },
-        onEnterBack: () => { addClasses(el, opts); opts.onEnterBack?.(el); },
+        onEnterBack: () => {
+          if (destroyed) return;
+          useScrollTween();
+          addClasses(el, opts);
+          if (!destroyed) opts.onEnterBack?.(el);
+        },
         onLeaveBack: () => {
+          if (destroyed) return;
+          useScrollTween();
           opts.onLeaveBack?.(el);
+          if (destroyed) return;
           if (!once && opts.removeClassOnLeave !== false) removeClasses(el, opts);
         }
       }
     };
     targets.forEach((node) => { node.style.willChange = 'transform,opacity,filter,clip-path'; });
-    const tween = gsap.fromTo(target, from, to);
+    tween = gsap.fromTo(targets, from, to);
+    activeTween = tween;
+    const playImmediate = (delay = 0) => {
+      if (destroyed) return;
+      io?.disconnect();
+      io = null;
+      // A repeatable entrance still needs its original timeline and trigger
+      // for later leave/re-enter actions. The replay only temporarily owns the
+      // rendered properties; a scroll boundary hands them back to that tween.
+      if (once) tween.scrollTrigger?.disable(false);
+      tween.pause();
+      if (activeTween !== tween) activeTween.kill();
+      activeTween = gsap.fromTo(targets, from, { ...animateVars(delay), overwrite: 'auto' });
+    };
 
     // Backup trigger: ScrollTrigger can miss an element whose position it measured
     // before late images / the intro overlay settled, or one that is already in
@@ -410,8 +455,7 @@ export default {
         if (!entries.some((entry) => entry.isIntersecting)) return;
         io.disconnect(); io = null;
         if (tween.progress() === 0) {
-          tween.scrollTrigger?.disable(false); // stop ScrollTrigger double-firing
-          gsap.fromTo(target, from, { ...animateVars(0), overwrite: 'auto' });
+          playImmediate(Number(opts.delay ?? 0));
         }
       }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
       io.observe(el);
@@ -422,14 +466,16 @@ export default {
       // Play the entrance now as a one-shot, independent of the scroll trigger —
       // ScrollTrigger holds its own tween paused while the element is already in
       // view, so tween.restart() alone would just snap back to the start state.
-      replay(nextOptions) { Object.assign(opts, nextOptions || {}); gsap.fromTo(target, from, { ...animateVars(0), overwrite: 'auto' }); },
-      pause() { tween.pause(); },
-      resume() { tween.resume(); },
+      replay(nextOptions) { Object.assign(opts, nextOptions || {}); playImmediate(); },
+      pause() { activeTween.pause(); },
+      resume() { activeTween.resume(); },
       destroy() {
+        destroyed = true;
         io?.disconnect();
         tween.scrollTrigger?.kill?.();
+        activeTween.kill();
         tween.kill();
-        restores.forEach((restore) => restore());
+        restore();
       }
     };
   },
@@ -444,11 +490,10 @@ export default {
   },
 
   fallback(el, opts = {}, from = PRESETS['fade-up']) {
-    const targets = opts.stagger && el.children.length ? Array.from(el.children) : [el];
-    const restores = targets.map((node) => snapshotAttributes(node, ['style', 'class']));
-    const restoreRoot = targets.length > 1 ? snapshotAttributes(el, ['style', 'class']) : null;
+    const targets = revealTargets(el, opts);
+    const restore = snapshotTargets(el, targets);
     const x = Number(from.x ?? 0);
-    const y = Number(from.y ?? 24);
+    const y = Number(from.y ?? 0);
     const xPercent = Number(from.xPercent ?? 0);
     const yPercent = Number(from.yPercent ?? 0);
     const scale = Number(from.scale ?? 1);
@@ -465,6 +510,18 @@ export default {
     const perspective = Number(from.transformPerspective ?? 0);
     const duration = Math.max(0, Number(opts.duration ?? 0.55));
     let timers = [];
+    let destroyed = false;
+    const rafs = new Set();
+    const frame = (callback) => {
+      const id = requestAnimationFrame(() => { rafs.delete(id); if (!destroyed) callback(); });
+      rafs.add(id);
+    };
+    const stop = () => {
+      timers.forEach(clearTimeout);
+      timers = [];
+      rafs.forEach(cancelAnimationFrame);
+      rafs.clear();
+    };
     // `perspective()` must come FIRST in the transform list or it does not apply
     // to the rotations that follow it.
     const transformFrom = [
@@ -484,38 +541,55 @@ export default {
       node.style.transform = transformFrom;
       if (from.transformOrigin) node.style.transformOrigin = from.transformOrigin;
       if (from.filter) node.style.filter = from.filter;
-      if (from.clipPath) node.style.clipPath = from.clipPath;
+      // Fully clipped targets do not intersect the viewport. Keep them hidden
+      // with opacity until the observer enters, then install the clip before
+      // starting its transition (without inserting an authored-DOM wrapper).
+      if (from.clipPath) { node.style.clipPath = 'none'; node.style.opacity = '0'; }
     };
     targets.forEach(initial);
     const enter = () => {
-      timers.forEach(clearTimeout);
-      timers = [];
+      if (destroyed) return;
+      stop();
+      if (from.clipPath) {
+        targets.forEach((node) => { node.style.clipPath = from.clipPath; node.style.opacity = '1'; });
+        void el.offsetWidth;
+      }
       const delays = staggerDelays(targets.length, opts.stagger, opts.order);
+      const baseDelay = Math.max(0, Number(opts.delay ?? 0));
       const finalIndex = delays.indexOf(Math.max(...delays));
       addClasses(el, opts);
       targets.forEach((node, index) => {
-        timers.push(setTimeout(() => requestAnimationFrame(() => {
+        timers.push(setTimeout(() => frame(() => {
           node.style.transition = `opacity ${duration}s ease,transform ${duration}s ease,filter ${duration}s ease,clip-path ${duration}s ease`;
           node.style.opacity = '1';
           node.style.transform = 'none';
           node.style.filter = 'none';
           node.style.clipPath = 'inset(0)';
-          if (index === finalIndex) opts.onComplete?.(el);
-        }), delays[index] * 1000));
+          if (index === finalIndex) timers.push(setTimeout(() => {
+            if (!destroyed) opts.onComplete?.(el);
+          }, duration * 1000));
+        }), (baseDelay + delays[index]) * 1000));
       });
     };
     const observer = observeOnce(el, enter, { threshold: Number(opts.threshold ?? 0.1), rootMargin: opts.rootMargin || '0px 0px -10% 0px' });
     return {
       el,
       type: 'reveal',
-      replay(nextOptions) { Object.assign(opts, nextOptions || {}); targets.forEach(initial); requestAnimationFrame(enter); },
+      replay(nextOptions) {
+        if (destroyed) return;
+        Object.assign(opts, nextOptions || {});
+        observer.disconnect();
+        stop();
+        targets.forEach(initial);
+        frame(enter);
+      },
       pause() {},
       resume() {},
       destroy() {
+        destroyed = true;
         observer.disconnect();
-        timers.forEach(clearTimeout);
-        restores.forEach((restore) => restore());
-        restoreRoot?.();
+        stop();
+        restore();
       }
     };
   }

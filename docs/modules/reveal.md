@@ -4,7 +4,12 @@
 
 ## 프리셋
 
-`fade`, `fade-up/down/left/right`, `slide-up/down/left/right`, `zoom`, `zoom-in/out`, `blur`, `rise`, `soft`, `flip`, `flip-x/y`, `rotate`, `mask`, `wipe`, `clock`, `class`
+`fade`, `fade-up/down/left/right`, `slide-up/down/left/right`, `zoom-in/out`, `blur`, `rise`, `soft`, `flip-x/y`, `rotate`, `swing`, `skew`, `mask`, `wipe`, `clock`, `class`
+
+방향 없는 `zoom`·`flip`은 공개 프리셋이 아닙니다. `zoom-in`·`zoom-out`,
+`flip-x`·`flip-y` 중 의도한 동작을 지정합니다. `swing`은 왼쪽 위 모서리를
+축으로 회전하고, `skew`는 전단 변형을 바로잡습니다. 데모에서 Mask·Swing·Skew의
+독립 카드와 Replay로 원본 줄바꿈을 유지하는 진입 동작을 비교할 수 있습니다.
 
 ```html
 <section data-kt-reveal="slide-left">왼쪽에서 등장</section>
@@ -44,6 +49,23 @@
 Kineto는 viewport 감지와 class on/off만 담당하고 실제 모션은 CSS로 구현할 수 있습니다. `activeClass`, `enterClass`, `leaveClass`, `onClassChange`를 제공합니다.
 
 Text Motion과 Content Entrance 데모는 시각 검수를 위해 Replay를 제공합니다. reduced-motion에서는 최종 상태를 즉시 표시합니다.
+
+방향을 생략한 `mask`는 가로로, `wipe`는 세로로 열립니다. `direction`을
+지정하면 해당 방향을 우선합니다. GSAP 없이도 마스크가 viewport 진입을 감지해
+자동 재생되며, 순수 `fade`에는 추가 이동이 없습니다.
+`delay`는 재생 시작 전 대기 시간(초)이고 `onComplete`는 전환 시간이 지난 뒤
+호출됩니다. `replay()`·`destroy()`는 이전 실행에 예약된 callback을 취소합니다.
+GSAP 경로의 `pause()`·`resume()`는 Replay로 시작한 현재 tween에도 적용됩니다.
+GSAP의 일반 transform/opacity 프리셋(`mask`·`wipe`·`clock`·`class` 제외)은
+`once:false`에서 Replay 뒤에도 원래 스크롤 이탈·역재생·재진입과
+진입/이탈 callback을 유지합니다.
+엔진 없는 일반 CSS 전환 경로의 `pause()`·`resume()`는 기존처럼 no-op입니다.
+
+별도 마스크 분기에는 기존 제한이 남아 있습니다. `mask`·`wipe`·`clock`은
+`once:false`를 지정해도 viewport 자동 진입은 한 번이며, 이탈 역재생과
+자동 재진입 반복은 아직 지원하지 않습니다. 이 세 프리셋의 `onEnter`·`onLeave`·
+`onEnterBack`·`onLeaveBack`도 현재 연결되어 있지 않습니다. 명시적인 `replay()`와
+`onComplete`는 사용할 수 있으며, 이 제한은 후속 개선 대상입니다.
 
 일반 `reveal`은 대상의 자식 DOM을 다시 만들지 않으므로 authored `<br>`와
 inline markup을 그대로 보존합니다. 글자·단어를 실제 span으로 나누는
