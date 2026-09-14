@@ -106,8 +106,11 @@ v0.9.8의 Node 24 `npm pack --dry-run --json` 측정값은 77개 파일,
 압축 528.0 kB, 해제 1755.1 kB입니다. 실제 공개 tarball은 540,657 bytes,
 registry의 해제 크기는 1,797,191 bytes로 확인했습니다. 이 수치는 릴리스
 `92bc1b6`의 근거이며 후속 빌드 비용을 대신하지 않습니다. 다음 릴리스 후보는
-최종 빌드한 뒤 위 세 명령을 다시 실행합니다. 패키지명은
-`@dong-gri/kineto`, 공개 버전은 `0.9.8`입니다.
+최종 빌드한 뒤 위 세 명령을 다시 실행합니다.
+
+<!-- release:prepare updates this source label, not the publication evidence below. -->
+현재 소스의 패키지명은
+`@dong-gri/kineto`, 버전은 `0.9.8`입니다.
 
 ## 배포 후 확인
 
