@@ -53,6 +53,11 @@
 
 Kineto는 viewport 감지와 class on/off만 담당하고 실제 모션은 CSS로 구현할 수 있습니다. `activeClass`, `enterClass`, `leaveClass`, `onClassChange`를 제공합니다.
 
+Class-only의 `pause()`는 viewport에 따른 class 변경을 정지하고 `resume()`는
+native 관찰을 다시 연결합니다. `once:true`로 이미 진입한 요소는 재개만으로
+다시 실행하지 않습니다. `destroy()` 이후에는 재개할 수 없으며, 작성자가
+class에 연결한 CSS 애니메이션 자체를 정지하는 기능은 아닙니다.
+
 Text Motion과 Content Entrance 데모는 시각 검수를 위해 Replay를 제공합니다. reduced-motion에서는 최종 상태를 즉시 표시합니다.
 
 방향을 생략한 `mask`는 가로로, `wipe`는 세로로 열립니다. `direction`을

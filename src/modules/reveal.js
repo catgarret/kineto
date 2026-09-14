@@ -300,16 +300,25 @@ export default {
       let trigger = null;
       let replayRaf = null;
       let destroyed = false;
+      let paused = false;
+      let entered = false;
       const enter = () => {
-        if (destroyed) return;
+        if (destroyed || paused) return;
+        entered = true;
         addClasses(el, opts);
         if (!destroyed) opts.onEnter?.(el);
       };
       const leave = () => {
-        if (destroyed) return;
+        if (destroyed || paused) return;
         if (opts.removeClassOnLeave === false) return;
         removeClasses(el, opts);
         if (!destroyed) opts.onLeave?.(el);
+      };
+      const resume = () => {
+        if (destroyed || !paused) return;
+        paused = false;
+        trigger?.enable?.();
+        if (!once || !entered) observer?.observe?.(el);
       };
       if (scrollTrigger) {
         trigger = scrollTrigger.create({
@@ -334,6 +343,7 @@ export default {
         el,
         type: 'reveal',
         replay(nextOptions) {
+          resume();
           if (destroyed) return;
           Object.assign(opts, nextOptions || {});
           if (replayRaf != null) cancelAnimationFrame(replayRaf);
@@ -341,8 +351,8 @@ export default {
           if (destroyed) return;
           replayRaf = requestAnimationFrame(() => { replayRaf = null; enter(); });
         },
-        pause() { trigger?.disable?.(); observer?.disconnect?.(); },
-        resume() { trigger?.enable?.(); },
+        pause() { if (destroyed) return; paused = true; trigger?.disable?.(); observer?.disconnect?.(); },
+        resume,
         destroy() {
           destroyed = true;
           if (replayRaf != null) cancelAnimationFrame(replayRaf);

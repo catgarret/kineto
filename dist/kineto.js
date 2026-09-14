@@ -1672,44 +1672,44 @@ var wt = {
 			"right"
 		].includes(s) ? `slide-${s}` : a, l = t.classOnly === !0 || a === "class", u = t.once !== !1, d = e.getAttribute("class");
 		if (l) {
-			let n = null, r = null, a = null, o = !1, s = () => {
-				o || (xt(e, t), o || t.onEnter?.(e));
-			}, c = () => {
-				o || t.removeClassOnLeave !== !1 && (St(e, t), o || t.onLeave?.(e));
+			let n = null, r = null, a = null, o = !1, s = !1, c = !1, l = () => {
+				o || s || (c = !0, xt(e, t), o || t.onEnter?.(e));
+			}, f = () => {
+				o || s || t.removeClassOnLeave !== !1 && (St(e, t), o || t.onLeave?.(e));
+			}, p = () => {
+				!o && s && (s = !1, r?.enable?.(), (!u || !c) && n?.observe?.(e));
 			};
 			return i ? r = i.create({
 				trigger: e,
 				start: t.start || "top 85%",
 				end: t.end || "bottom 15%",
 				once: u,
-				onEnter: s,
+				onEnter: l,
 				onEnterBack: () => {
-					s(), o || t.onEnterBack?.(e);
+					l(), o || t.onEnterBack?.(e);
 				},
-				onLeave: c,
+				onLeave: f,
 				onLeaveBack: () => {
-					c(), o || t.onLeaveBack?.(e);
+					f(), o || t.onLeaveBack?.(e);
 				}
-			}) : u ? n = oe(e, s, {
+			}) : u ? n = oe(e, l, {
 				threshold: Number(t.threshold ?? .1),
 				rootMargin: t.rootMargin || "0px 0px -10% 0px"
-			}) : typeof IntersectionObserver < "u" ? (n = new IntersectionObserver(([e]) => e.isIntersecting ? s() : c(), {
+			}) : typeof IntersectionObserver < "u" ? (n = new IntersectionObserver(([e]) => e.isIntersecting ? l() : f(), {
 				threshold: Number(t.threshold ?? .1),
 				rootMargin: t.rootMargin || "0px"
-			}), n.observe(e)) : s(), {
+			}), n.observe(e)) : l(), {
 				el: e,
 				type: "reveal",
 				replay(n) {
-					o || (Object.assign(t, n || {}), a != null && cancelAnimationFrame(a), St(e, t), !o && (a = requestAnimationFrame(() => {
-						a = null, s();
+					p(), !o && (Object.assign(t, n || {}), a != null && cancelAnimationFrame(a), St(e, t), !o && (a = requestAnimationFrame(() => {
+						a = null, l();
 					})));
 				},
 				pause() {
-					r?.disable?.(), n?.disconnect?.();
+					o || (s = !0, r?.disable?.(), n?.disconnect?.());
 				},
-				resume() {
-					r?.enable?.();
-				},
+				resume: p,
 				destroy() {
 					o = !0, a != null && cancelAnimationFrame(a), r?.kill?.(), n?.disconnect?.(), d == null ? e.removeAttribute("class") : e.setAttribute("class", d);
 				}

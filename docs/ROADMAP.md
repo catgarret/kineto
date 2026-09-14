@@ -601,6 +601,8 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 153. 완료(Unreleased): 일반 native Reveal의 Web Animations 기반 pause/resume로 시작 지연·stagger·중간 진행률을 보존. 작성자 애니메이션 분리, 완료 후 재시작 방지, callback 내부 destroy와 빈 style 속성 복원 회귀를 추가하고, 기존 easing·구형 CSS 경로·용량 예산은 유지
 154. 완료(Unreleased): 저성능 Reveal의 Core context/시작 geometry 혼동을 수정해 23개 프리셋·class-only·direction/distance를 native 경로에서 보존. 로드된 GSAP/ScrollTrigger 미사용과 DOM 복원을 세 엔진에서 검증하고 Node 24 전체 CI 통과. 완료 목록 Set·공통 keyframe 재사용·class token 일괄 처리로 반복 작업을 줄이고 성능 문서의 UMD 엔진 포함 오류를 수정. 압축·소비자 예산은 유지하고 실측 1766.1KiB에 맞춰 해제 상한만 1767KiB로 조정
 
+155. 완료(Unreleased): Native class-only Reveal의 pause 후 관찰 재연결을 복구하고, 정지 중 class 변경·완료한 once 진입 재실행·destroy 후 재시작을 차단. 일반/저성능 × once true/false를 Chromium·Firefox·WebKit에서 검증. 기존 번들 예산 유지 및 Node 24 전체 CI 단독 재실행 통과. 최초 Vue Transition 타이밍 단언 실패는 원인 미확정으로 QA 보고서에 별도 기록
+
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 
 ## 11. 검토 의견 (2026-08-09)

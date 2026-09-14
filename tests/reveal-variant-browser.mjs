@@ -598,6 +598,54 @@ try {
       check(reentrant.instances === 0 && reentrant.triggers === 0, 'gsap: reentrant destruction must leave no instance or trigger');
     }
     if (engine === 'native') {
+      const classControl = await page.evaluate(async () => {
+        const { core } = window.__revealTest;
+        const wait = () => new Promise((resolve) => setTimeout(resolve, 100));
+        const results = [];
+        for (const performance of ['high', 'low']) for (const once of [true, false]) {
+          core.config({ performance });
+          const element = document.createElement('div');
+          element.style.cssText = 'position:fixed;top:1600px;width:100px;height:40px';
+          element.textContent = 'Class hook';
+          document.body.append(element);
+          const original = element.outerHTML;
+          let entered = 0, left = 0;
+          const instance = core.create('reveal', element, {
+            preset: 'class', once, enterClass: 'visible', leaveClass: 'outside',
+            onEnter: () => { entered += 1; }, onLeave: () => { left += 1; }
+          });
+          await wait();
+          instance.pause(); instance.pause();
+          const before = { entered, left };
+          element.style.top = '20px';
+          await wait();
+          const held = entered === before.entered && left === before.left;
+          instance.resume(); instance.resume();
+          await wait();
+          const resumed = entered === 1 && element.classList.contains('visible');
+          instance.pause();
+          element.style.top = '1600px';
+          await wait();
+          instance.resume();
+          await wait();
+          const leftAgain = once || element.classList.contains('outside');
+          element.style.top = '20px';
+          await wait();
+          const reentered = entered === (once ? 1 : 2);
+          element.style.top = '1600px';
+          instance.destroy();
+          instance.resume(); instance.pause();
+          await wait();
+          const restored = element.outerHTML === original && entered === (once ? 1 : 2);
+          element.remove();
+          results.push({ performance, once, held, resumed, leftAgain, reentered, restored });
+        }
+        core.config({ performance: 'high' });
+        return results;
+      });
+      for (const state of classControl) for (const key of ['held', 'resumed', 'leftAgain', 'reentered', 'restored']) {
+        check(state[key], `native/class/${state.performance}/once:${state.once}: ${key}`);
+      }
       const playback = await page.evaluate(async () => {
         const { core } = window.__revealTest;
         const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

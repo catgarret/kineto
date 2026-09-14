@@ -5,6 +5,24 @@
 
 ## 2026-09-14 Unreleased 검증
 
+### 후속: class-only Reveal 관찰 재개
+
+Native class-only 경로는 pause에서 IntersectionObserver를 끊은 뒤 resume에서
+다시 연결하지 않았습니다. 정지 상태의 class 변경을 막고 필요한 관찰만 재개하도록
+수정했습니다. 일반·저성능 티어 각각의 once true/false, 반복 pause/resume,
+완료한 1회 진입 보존과 destroy 후 DOM 복원을 Chromium·Firefox·WebKit에서 확인했습니다.
+작성자가 연결한 CSS 애니메이션 자체의 정지는 이 기능에 포함되지 않습니다.
+
+패키지는 압축 533.0KiB·해제 1766.4KiB·77파일로 기존 상한을 통과했습니다.
+첫 통합 CI는 Vue Transition의 100ms 후 DOM 제거 단언에서 실패했습니다.
+이 실패를 Reveal 수정으로 해결했다고 주장하지 않으며, 별도 브라우저 검사와
+겹치지 않는 단독 통합 실행 결과를 아래에 기록합니다. 실제 모바일 기기는 미검증이며
+변경은 아직 게시하지 않았습니다.
+
+단독 재실행한 Node 24 `npm run ci`는 종료 코드 0으로 완료됐습니다.
+Vue Transition을 포함한 프레임워크·650개 데모 컨트롤·전체 Chromium 회귀와
+패키지 dry-run을 통과했습니다. 최초 실패의 원인은 확정하지 않았습니다.
+
 ### 후속: 저성능 Reveal 경로와 반복 작업 비용
 
 Core가 `fallback(el, options, Kineto)`로 전달한 context를 Reveal의 내부
