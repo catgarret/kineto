@@ -103,6 +103,14 @@ publication evidence is recorded. v0.9.8 does not close the documented Reveal
 mask-family repeat/callback or Glitch Wave option gaps, physical-device QA, or
 external case-study gates.
 
+The 2026-09-14 Unreleased batch addresses masked Reveal reversible playback,
+boundary callbacks and pause/resume, and Wave trigger/loop/duration/delay/
+randomness plus hidden-tab suspension. It adds a localized one-shot Wave card
+(199 playgrounds; 57/78 dedicated high-risk variants) and three-engine behavior
+tests. Wave colors/blendMode and generic native Reveal pause/resume remain open.
+Package growth is an explicit lifecycle cost, not a bundle-size optimization;
+see the current budget reports and QA evidence before releasing this batch.
+
 Always verify this summary against Git history because later commits supersede
 it.
 

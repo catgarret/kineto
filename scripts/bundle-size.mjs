@@ -123,10 +123,13 @@ const BUDGETS = {
   // readable ESM, 410.8/123.2 KB min ESM and 409.0/122.5 KB UMD. Account for
   // that requested behavior with rounded raw/gzip ceilings; keep variance,
   // CSS, dependencies and the public entry allowlist unchanged.
-  'kineto.js': { raw: 522, gz: 137, variance: 2 },
-  'kineto.min.js': { raw: 412, gz: 122, variance: 2 },
-  'kineto.umd.js': { raw: 410, gz: 122, variance: 1 },
-  'kineto.umd.min.js': { raw: 410, gz: 122, variance: 1 },
+  // 2026-09-14: reversible masked Reveal and Wave lifecycle measure
+  // 524.3/139.4 KB readable ESM, 413.1/124.5 KB min ESM, and 411.3/123.8 KB
+  // UMD. These are correctness bytes, not variance or bundled engines.
+  'kineto.js': { raw: 526, gz: 138, variance: 2 },
+  'kineto.min.js': { raw: 415, gz: 123, variance: 2 },
+  'kineto.umd.js': { raw: 413, gz: 123, variance: 1 },
+  'kineto.umd.min.js': { raw: 413, gz: 123, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

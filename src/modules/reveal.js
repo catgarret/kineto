@@ -1,4 +1,5 @@
 import { clamp, G, gsapEaseName, motionDefaults, observeOnce, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
+import { cubicBezierFn, fn as easingFn } from '../easings.js';
 
 const PRESETS = {
   fade: { opacity: 0 },
@@ -78,6 +79,206 @@ function setClasses(el, opts, active) {
 const addClasses = (el, opts) => setClasses(el, opts, true);
 const removeClasses = (el, opts) => setClasses(el, opts, false);
 
+// One reversible clock drives every mask and staggered child. Scroll boundaries
+// control the current run, so replay never revives an obsolete animation.
+function maskedReveal(el, opts, gsap, scrollTrigger, clock, clipAt) {
+  const preset = opts.preset || 'fade-up';
+  const nodes = revealTargets(el, opts);
+  const restore = snapshotTargets(el, nodes);
+  const once = opts.once !== false;
+  const watch = !once || opts.onEnter || opts.onLeave || opts.onEnterBack || opts.onLeaveBack;
+  const state = { time: 0 };
+  let destroyed = false;
+  let paused = false;
+  let played = false;
+  let phase = -1;
+  let rate = 1;
+  let duration, delays, total, ease;
+  let tween = null;
+  let raf = null;
+  let lastTime = null;
+  let trigger = null;
+  let observer = null;
+  let measureRaf = null;
+  let zone = null;
+  const stop = () => {
+    tween?.pause();
+    if (raf != null) cancelAnimationFrame(raf);
+    raf = lastTime = null;
+  };
+  const paint = () => {
+    if (destroyed) return;
+    nodes.forEach((node, index) => {
+      const progress = clamp(ease(clamp((state.time - delays[index]) / duration, 0, 1)), 0, 1);
+      node.style.opacity = !gsap && !clock && progress === 0 ? '0' : '1';
+      if (preset === 'clock') {
+        const sweep = progress * 360;
+        const stops = opts.clockDirection === 'ccw'
+          ? `transparent 0deg ${360 - sweep}deg, #000 ${360 - sweep}deg`
+          : `#000 ${sweep}deg, transparent ${sweep}deg`;
+        const mask = progress === 1 ? 'none' : `conic-gradient(from ${Number(opts.startAngle ?? 0)}deg, ${stops})`;
+        node.style.maskImage = node.style.webkitMaskImage = mask;
+      } else {
+        // Native IO must not mistake our own fully closed aperture for a scroll
+        // exit. Hidden endpoints retain their box through opacity instead.
+        const clip = progress >= .998 || (!gsap && progress === 0) ? 'none' : clipAt(1 - progress);
+        node.style.clipPath = node.style.webkitClipPath = clip;
+      }
+      node.style.willChange = progress > 0 && progress < 1 ? (clock ? 'mask-image' : 'clip-path') : '';
+    });
+  };
+  const complete = () => {
+    if (destroyed) return;
+    paint();
+    if (!watch) { observer?.disconnect(); trigger?.kill(); }
+    opts.onComplete?.(el);
+  };
+  const frame = (time) => {
+    raf = null;
+    if (destroyed || paused) return;
+    if (lastTime != null) state.time = clamp(state.time + (time - lastTime) * rate / 1000, 0, total);
+    lastTime = time;
+    paint();
+    if (rate > 0 ? state.time < total : state.time > 0) raf = requestAnimationFrame(frame);
+    else if (rate > 0) complete();
+  };
+  const drive = () => {
+    if (destroyed || paused) return;
+    if (gsap) { if (rate > 0) tween.play(); else tween.reverse(); }
+    else if (raf == null && (rate > 0 ? state.time < total : state.time > 0)) {
+      lastTime = null;
+      raf = requestAnimationFrame(frame);
+    }
+  };
+  const prepare = () => {
+    stop();
+    tween?.kill();
+    duration = Math.max(.05, Number(opts.duration ?? (clock ? 1.4 : gsap ? .8 : .55)));
+    const delay = Number(opts.delay ?? 0);
+    delays = staggerDelays(nodes.length, opts.stagger, opts.order).map((value) => value + (gsap && !clock ? delay : Math.max(0, delay)));
+    total = Math.max(.001, duration + Math.max(...delays));
+    const configuredEase = opts.enterEase ?? opts.ease;
+    const cssPoints = {
+      ease: [.25, .1, .25, 1], 'ease-in': [.42, 0, 1, 1],
+      'ease-out': [0, 0, .58, 1], 'ease-in-out': [.42, 0, .58, 1]
+    }[configuredEase || (clock ? 'linear' : 'ease')]
+      || String(configuredEase).match(/^cubic-bezier\(\s*([\d.+-]+)\s*,\s*([\d.+-]+)\s*,\s*([\d.+-]+)\s*,\s*([\d.+-]+)\s*\)$/)?.slice(1).map(Number);
+    ease = gsap
+      ? gsap.parseEase(configuredEase ? gsapEaseName(configuredEase) : clock ? 'power1.inOut' : (opts.spring ?? motionDefaults.spring) === true ? 'back.out(1.25)' : 'power3.out')
+      : cssPoints ? cubicBezierFn(...cssPoints) : easingFn(configuredEase);
+    state.time = 0;
+    rate = 1;
+    paint();
+    if (gsap) tween = gsap.to(state, { time: total, duration: total, ease: 'none', paused: true, onUpdate: paint, onComplete: complete });
+  };
+  const boundary = (next) => {
+    if (destroyed || phase === next) return;
+    phase = next;
+    if (next % 2 === 0 && (!played || !once)) {
+      played = true;
+      rate = 1;
+      addClasses(el, opts);
+      if (destroyed) return;
+      drive();
+    }
+    [opts.onEnter, opts.onLeave, opts.onEnterBack, opts.onLeaveBack][next]?.(el);
+    if (destroyed || next % 2 === 0 || once) return;
+    if (opts.removeClassOnLeave !== false) removeClasses(el, opts);
+    if (destroyed) return;
+    rate = -1;
+    drive();
+  };
+  prepare();
+
+  // IO supplies layout-change wakeups; passive, frame-coalesced scroll reads
+  // keep partially clipped/paused targets observable without wrapping their DOM.
+  const threshold = Number(opts.threshold ?? (clock ? .2 : .1));
+  const margin = String(opts.rootMargin || (clock ? '0px' : '0px 0px -10% 0px')).trim().split(/\s+/);
+  const measure = () => {
+    measureRaf = null;
+    if (destroyed) return;
+    const width = document.documentElement.clientWidth || window.innerWidth;
+    const height = document.documentElement.clientHeight || window.innerHeight;
+    const offsets = [0, 1, 2, 3].map((index) => {
+      const value = margin[index] || margin[index % 2] || margin[0];
+      return Number.parseFloat(value) * (value.endsWith('%') ? width / 100 : 1);
+    });
+    const rect = el.getBoundingClientRect();
+    let top = -offsets[0], bottom = height + offsets[2], left = -offsets[3], right = width + offsets[1];
+    for (let parent = el.parentElement; parent; parent = parent.parentElement) {
+      const style = getComputedStyle(parent);
+      if (!/(hidden|clip|auto|scroll)/.test(style.overflowX + style.overflowY)) continue;
+      const box = parent.getBoundingClientRect();
+      const scaleX = parent.offsetWidth ? box.width / parent.offsetWidth : 1;
+      const scaleY = parent.offsetHeight ? box.height / parent.offsetHeight : 1;
+      if (style.overflowX !== 'visible') {
+        left = Math.max(left, box.left + parent.clientLeft * scaleX);
+        right = Math.min(right, box.left + (parent.clientLeft + parent.clientWidth) * scaleX);
+      }
+      if (style.overflowY !== 'visible') {
+        top = Math.max(top, box.top + parent.clientTop * scaleY);
+        bottom = Math.min(bottom, box.top + (parent.clientTop + parent.clientHeight) * scaleY);
+      }
+    }
+    const area = Math.max(0, Math.min(rect.right, right) - Math.max(rect.left, left))
+      * Math.max(0, Math.min(rect.bottom, bottom) - Math.max(rect.top, top));
+    const visible = area > 0 && area / (rect.width * rect.height) >= threshold;
+    if (scrollTrigger) {
+      if (visible && !played) boundary(0);
+      return;
+    }
+    const next = visible ? 0 : rect.top >= (top + bottom - rect.height) / 2 ? 1 : -1;
+    const previous = zone;
+    zone = next;
+    if (previous == null && next !== 0) return;
+    if (previous === next) return;
+    if (previous === -1) boundary(2);
+    else if (previous === 1 || previous == null) boundary(0);
+    if (next === -1) boundary(1);
+    else if (next === 1) boundary(3);
+  };
+  const schedule = () => { if (!destroyed && measureRaf == null) measureRaf = requestAnimationFrame(measure); };
+  if (scrollTrigger) trigger = scrollTrigger.create({
+    trigger: el, start: opts.start || 'top 85%', end: opts.end,
+    onEnter: () => boundary(0), onLeave: () => boundary(1),
+    onEnterBack: () => boundary(2), onLeaveBack: () => boundary(3)
+  });
+  if (typeof IntersectionObserver !== 'undefined') {
+    observer = new IntersectionObserver(schedule, { threshold, rootMargin: margin.join(' ') });
+    observer.observe(el);
+  } else if (!scrollTrigger) boundary(0);
+  const track = !scrollTrigger && watch;
+  if (track) {
+    document.addEventListener('scroll', schedule, { passive: true, capture: true });
+    window.addEventListener('resize', schedule, { passive: true });
+  }
+  return {
+    el, type: 'reveal',
+    replay(nextOptions) {
+      if (destroyed) return;
+      Object.assign(opts, nextOptions || {});
+      prepare();
+      paused = false;
+      played = true;
+      addClasses(el, opts);
+      drive();
+    },
+    pause() { paused = true; stop(); },
+    resume() { paused = false; drive(); },
+    destroy() {
+      destroyed = true;
+      stop();
+      tween?.kill();
+      trigger?.kill();
+      observer?.disconnect();
+      if (measureRaf != null) cancelAnimationFrame(measureRaf);
+      document.removeEventListener('scroll', schedule, true);
+      window.removeEventListener('resize', schedule);
+      restore();
+    }
+  };
+}
+
 export { PRESETS, staggerDelays };
 
 export default {
@@ -152,113 +353,7 @@ export default {
       };
     }
 
-    if (preset === 'clock') {
-      // Clock wipe: a conic mask sweeps around like a watch hand until the
-      // content is fully revealed. A staggered container applies a separate
-      // clock mask to every direct child instead of masking the whole list.
-      const clockNodes = revealTargets(el, opts);
-      const restore = snapshotTargets(el, clockNodes);
-      const apply = (node, progress) => {
-        const startAngle = Number(opts.startAngle ?? 0);
-        const counter = opts.clockDirection === 'ccw';
-        const sweep = clamp(progress, 0, 1) * 360;
-        const gradient = counter
-          ? `conic-gradient(from ${startAngle}deg, transparent 0deg ${360 - sweep}deg, #000 ${360 - sweep}deg)`
-          : `conic-gradient(from ${startAngle}deg, #000 ${sweep}deg, transparent ${sweep}deg)`;
-        node.style.maskImage = gradient;
-        node.style.webkitMaskImage = gradient;
-        node.style.opacity = '1';
-      };
-      const finishNode = (node) => {
-        node.style.maskImage = 'none';
-        node.style.webkitMaskImage = 'none';
-      };
-      clockNodes.forEach((node) => apply(node, 0));
-      let clockTweens = [];
-      let clockRaf = null;
-      let clockObserver = null;
-      const stop = () => {
-        clockTweens.forEach((tween) => tween.kill?.());
-        clockTweens = [];
-        if (clockRaf != null) cancelAnimationFrame(clockRaf);
-        clockRaf = null;
-      };
-      const runRaf = () => {
-        const duration = Math.max(0.05, Number(opts.duration ?? 1.4));
-        const baseDelay = Math.max(0, Number(opts.delay ?? 0));
-        const delays = clockNodes.length > 1 ? staggerDelays(clockNodes.length, opts.stagger, opts.order) : [0];
-        let startTime = null;
-        const frame = (time) => {
-          if (startTime == null) startTime = time;
-          const elapsed = (time - startTime) / 1000;
-          let complete = 0;
-          clockNodes.forEach((node, index) => {
-            const progress = clamp((elapsed - baseDelay - delays[index]) / duration, 0, 1);
-            apply(node, progress);
-            if (progress >= 1) {
-              finishNode(node);
-              complete += 1;
-            }
-          });
-          if (complete < clockNodes.length) clockRaf = requestAnimationFrame(frame);
-          else {
-            clockRaf = null;
-            opts.onComplete?.(el);
-          }
-        };
-        clockRaf = requestAnimationFrame(frame);
-      };
-      const startClock = () => {
-        stop();
-        clockNodes.forEach((node) => apply(node, 0));
-        addClasses(el, opts);
-        if (gsap) {
-          const duration = Math.max(0.05, Number(opts.duration ?? 1.4));
-          const baseDelay = Math.max(0, Number(opts.delay ?? 0));
-          const delays = clockNodes.length > 1 ? staggerDelays(clockNodes.length, opts.stagger, opts.order) : [0];
-          let complete = 0;
-          clockTweens = clockNodes.map((node, index) => {
-            const state = { p: 0 };
-            return gsap.to(state, {
-              p: 1,
-              duration,
-              delay: baseDelay + delays[index],
-              ease: (opts.enterEase ?? opts.ease) ? gsapEaseName(opts.enterEase ?? opts.ease) : 'power1.inOut',
-              onUpdate: () => apply(node, state.p),
-              onComplete: () => {
-                finishNode(node);
-                complete += 1;
-                if (complete === clockNodes.length) opts.onComplete?.(el);
-              }
-            });
-          });
-        } else runRaf();
-      };
-      if (scrollTrigger) {
-        clockObserver = scrollTrigger.create({
-          trigger: el,
-          start: opts.start || 'top 85%',
-          once: true,
-          onEnter: startClock
-        });
-      } else clockObserver = observeOnce(el, startClock, { threshold: Number(opts.threshold ?? 0.2) });
-      return {
-        el,
-        type: 'reveal',
-        replay(nextOptions) {
-          Object.assign(opts, nextOptions || {});
-          startClock();
-        },
-        pause() { clockTweens.forEach((tween) => tween.pause?.()); },
-        resume() { clockTweens.forEach((tween) => tween.resume?.()); },
-        destroy() {
-          stop();
-          clockObserver?.kill?.();
-          clockObserver?.disconnect?.();
-          restore();
-        }
-      };
-    }
+    const clock = preset === 'clock';
 
     // Wipe/mask: gsap can't reliably tween a `clip-path: inset()` string, so we
     // animate the reveal via a numeric progress and build the inset ourselves in
@@ -271,6 +366,7 @@ export default {
       if (direction === 'right') return `inset(0px ${v} 0px 0px)`;
       return `inset(${v} 0px 0px 0px)`; // up (default)
     };
+    if (clock || isClip) return maskedReveal(el, opts, clock || scrollTrigger ? gsap : null, scrollTrigger, clock, clipAt);
     let from = PRESETS[resolvedPreset];
     // The historical slide presets use full-element percentages, which are good
     // for cards but too large for compact inline content. `distance` provides a
@@ -285,79 +381,12 @@ export default {
         if ('y' in from && !('yPercent' in PRESETS[resolvedPreset])) from.y = Math.sign(from.y || 1) * distance;
       }
     }
-    if (isClip) from = { opacity: 1, clipPath: clipAt(1) };
     if (!from) {
       console.warn(`[Kineto/reveal] Unknown preset: ${preset}`);
       return null;
     }
     if (!gsap || !scrollTrigger) return this.fallback(el, opts, from);
 
-    // Wipe/mask run on their own proxy-number tween — a real changing value that
-    // gsap always ticks — with the clip string built in onUpdate. Triggered by
-    // ScrollTrigger plus an IntersectionObserver backup (already-in-view / late
-    // layout), so the entrance never stays frozen at the clipped start.
-    if (isClip) {
-      // Stagger across children when asked (and they exist) so a list wipes in
-      // item-by-item; otherwise the whole element is one clip. `order` reshapes
-      // the per-child delays exactly like the transform path below.
-      const clipNodes = revealTargets(el, opts);
-      const staggered = clipNodes.length > 1;
-      const clipRestore = snapshotTargets(el, clipNodes);
-      const clipDuration = Math.max(0.05, Number(opts.duration ?? 0.8));
-      // Compute ease locally: the shared `const ease` below is declared after this
-      // branch's early return, so referencing it here would throw (TDZ).
-      const clipEase = (opts.enterEase ?? opts.ease) ? gsapEaseName(opts.enterEase ?? opts.ease) : ((opts.spring ?? motionDefaults.spring) === true ? 'back.out(1.25)' : 'power3.out');
-      const baseDelay = Number(opts.delay ?? 0);
-      const states = clipNodes.map(() => ({ p: 1 }));
-      // iOS Safari needs the -webkit- prefix to repaint clip-path each frame;
-      // without it the intermediate frames are skipped and the reveal just pops.
-      const applyNode = (i) => {
-        const value = states[i].p <= 0.002 ? 'none' : clipAt(states[i].p);
-        clipNodes[i].style.clipPath = value;
-        clipNodes[i].style.webkitClipPath = value;
-      };
-      clipNodes.forEach((node, i) => { node.style.willChange = 'clip-path'; applyNode(i); });
-      let clipTweens = [];
-      let played = false;
-      const play = () => {
-        clipTweens.forEach((tween) => tween.kill());
-        clipTweens = [];
-        states.forEach((state, i) => { state.p = 1; applyNode(i); });
-        addClasses(el, opts);
-        // Recalculate on every run so random order really shuffles on replay.
-        const delays = staggered ? staggerDelays(clipNodes.length, opts.stagger, opts.order) : [0];
-        const finalIndex = delays.indexOf(Math.max(...delays));
-        clipNodes.forEach((node, i) => {
-          clipTweens.push(gsap.to(states[i], {
-            p: 0, duration: clipDuration, ease: clipEase, delay: baseDelay + delays[i],
-            onUpdate: () => applyNode(i),
-            onComplete: () => { applyNode(i); node.style.willChange = ''; if (i === finalIndex) opts.onComplete?.(el); }
-          }));
-        });
-      };
-      const trigger = scrollTrigger.create({
-        trigger: el, start: opts.start || 'top 85%', once,
-        onEnter: () => { if (!played) { played = true; play(); } }
-      });
-      let clipIO = null;
-      if (typeof IntersectionObserver !== 'undefined') {
-        clipIO = new IntersectionObserver((entries) => {
-          if (!entries.some((e) => e.isIntersecting) || played) return;
-          played = true; clipIO.disconnect(); clipIO = null;
-          trigger?.disable(false);
-          play();
-        }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
-        clipIO.observe(el);
-      }
-      return {
-        el,
-        type: 'reveal',
-        replay(nextOptions) { Object.assign(opts, nextOptions || {}); played = true; play(); },
-        pause() { clipTweens.forEach((tween) => tween.pause()); },
-        resume() { clipTweens.forEach((tween) => tween.resume()); },
-        destroy() { clipIO?.disconnect(); trigger?.kill?.(); clipTweens.forEach((tween) => tween.kill()); clipRestore(); }
-      };
-    }
 
     const targets = revealTargets(el, opts);
     const restore = snapshotTargets(el, targets);

@@ -366,9 +366,9 @@
       sliceCount:(o)=>(o.preset)!=='rgb-slice-burst',
       duration:(o)=>(o.preset)!=='rgb-slice-burst',
       trigger:(o)=>(o.preset)!=='rgb-slice-burst',
-      // Burst-only knobs: meaningless for the continuous presets.
-      seed:(o)=>(o.preset)==='rgb-slice-burst',
-      channelOffset:(o)=>(o.preset)==='rgb-slice-burst',
+      // Wave also consumes the noise seed and displacement amplitude.
+      seed:(o)=>['rgb-slice-burst','wave'].includes(o.preset),
+      channelOffset:(o)=>['rgb-slice-burst','wave'].includes(o.preset),
       maxSliceOffset:(o)=>(o.preset)==='rgb-slice-burst',
       sliceCountMin:(o)=>(o.preset)==='rgb-slice-burst',
       sliceCountMax:(o)=>(o.preset)==='rgb-slice-burst',

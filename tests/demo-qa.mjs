@@ -716,6 +716,35 @@ try {
     + `${panelSweep.exercisedModules} modules and ${Object.keys(panelSweep.exercisedByType).length} control types.`
   );
 
+  const waveSettings=await page.evaluate(()=>{
+    const target=document.querySelector('[data-kt-glitch="wave"]');
+    const card=target?.closest('.card');
+    const panel=card?.querySelector(':scope > .kt-playground');
+    const body=panel?.__buildBody?.();
+    const keys=['seed','channelOffset','trigger','loop','duration','delay'];
+    return {
+      found:Boolean(target&&body),
+      visible:keys.filter((key)=>{
+        const field=body?.querySelector(`[data-module="glitch"][data-key="${key}"]`);
+        return field&&!field.hidden;
+      }),
+      once:body?.querySelector('[data-option="loop"]')?.checked===false,
+      duration:body?.querySelector('[data-option="duration"]')?.value,
+      html:panel?.dataset.htmlCode,
+      semantic:panel?.dataset.shareKey?.startsWith('glitch--')&&panel?.dataset.shareKey?.endsWith('--glitch-wave'),
+      legacy:panel?.dataset.shareLegacyKey||'',
+      noLegacy:card?.hasAttribute('data-demo-no-legacy-share')
+    };
+  });
+  assert.equal(waveSettings.found,true,'the dedicated Wave demo must expose live settings');
+  assert.deepEqual(waveSettings.visible,['seed','channelOffset','trigger','loop','duration','delay']);
+  assert.equal(waveSettings.once,true,'Wave example must use one-shot playback');
+  assert.equal(waveSettings.duration,'1.6','Wave example must expose its actual cycle duration');
+  assert.match(waveSettings.html,/data-kt-seed="7"/);
+  assert.match(waveSettings.html,/data-kt-channel-offset="12"/);
+  assert.equal(waveSettings.semantic,true,'new Wave example needs a semantic settings URL');
+  assert.ok(waveSettings.noLegacy&&!waveSettings.legacy,'new Wave example must not shift historical shared URLs');
+
   const loaderVisibility=await page.evaluate(async()=>{
     const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));
     const indicator=document.querySelector('[data-kt-loading-indicator="spinner"][data-kt-spinner-style="comet"]');

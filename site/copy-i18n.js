@@ -239,6 +239,14 @@ window.KINETO_COPY_I18N = {
     }
   },
   "cards": {
+    "물결 왜곡을 한 번 재생합니다. 설정에서 반복·시작 방식·지연을 조절합니다.": [
+      "Play the wave distortion once. Adjust looping, trigger and delay in settings.",
+      "波形のゆがみを1回再生します。設定で繰り返し・開始方法・遅延を調整できます。",
+      "播放一次波形扭曲。在设置中调整循环、触发方式和延迟。",
+      "播放一次波形扭曲。在設定中調整循環、觸發方式和延遲。",
+      "Волновое искажение воспроизводится один раз. Настройте повтор, запуск и задержку.",
+      "Riproduce la distorsione a onda una volta. Regola ripetizione, avvio e ritardo nelle impostazioni."
+    ],
     "CSS 진행률을 fallback·view·scroll timeline으로 비교합니다.": [
       "Compares CSS progress across fallback, view, and scroll timelines.",
       "CSS の進行率をフォールバック、view、scroll タイムラインで比較します。",

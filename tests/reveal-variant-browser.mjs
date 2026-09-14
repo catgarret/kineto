@@ -1,5 +1,5 @@
 // Actual rendered-state and lifecycle checks, not a claim of pixel/visual parity.
-// Run after installing Playwright: KT_BROWSER=chromium|firefox|webkit node tests/reveal-variant-browser.mjs
+// Direct source checks (no dist rebuild): KT_BROWSER=chromium|firefox|webkit node tests/reveal-variant-browser.mjs
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import http from 'node:http';
@@ -280,6 +280,214 @@ try {
     check(delayed.before.opacity === '0' && delayed.before.completed === 0, `${engine}: configured delay must keep the entrance pending`);
     check(delayed.after.opacity === '1' && delayed.after.completed === 1, `${engine}: delayed entrance must settle and complete once`);
     check(delayed.instances === 0 && delayed.triggers === 0, `${engine}: all follow-up fixtures must release records and triggers`);
+    const masks = await page.evaluate(async () => {
+      const { core } = window.__revealTest;
+      document.body.style.minHeight = '3000px';
+      window.scrollTo(0, 0);
+      const records = [];
+      const wait = (ms = 360) => new Promise((resolve) => setTimeout(resolve, ms));
+      const paint = (node) => {
+        const style = window.getComputedStyle(node);
+        return { opacity: Number(style.opacity), clip: style.clipPath, mask: style.maskImage || style.webkitMaskImage };
+      };
+      const shown = (node) => {
+        const state = paint(node);
+        return state.opacity === 1 && ['none', 'inset(0px)'].includes(state.clip) && state.mask === 'none';
+      };
+      for (const preset of ['mask', 'wipe', 'clock']) {
+        for (const count of [0, 1, 4]) {
+          const element = document.createElement('div');
+          element.className = 'probe';
+          element.style.cssText = 'position:absolute;top:1000px;color:rgb(10,20,30);height:auto';
+          element.innerHTML = count ? '<span style="display:block">First<br>Second</span>'.repeat(count) : 'First<br>Second';
+          document.body.append(element);
+          const record = { preset, count, element, original: element.outerHTML, events: [], complete: 0, premature: 0 };
+          record.nodes = count ? [...element.children] : [element];
+          record.instance = core.create('reveal', element, {
+            preset, once: false, duration: .12, delay: .03, stagger: count ? .025 : 0, order: 'edges',
+            start: 'top center', end: 'bottom top', rootMargin: '-100px 0px -100px', threshold: .2,
+            onEnter: () => record.events.push('enter'), onLeave: () => record.events.push('leave'),
+            onEnterBack: () => record.events.push('enterBack'), onLeaveBack: () => record.events.push('leaveBack'),
+            onComplete: () => { record.complete += 1; if (!record.nodes.every(shown)) record.premature += 1; }
+          });
+          records.push(record);
+        }
+      }
+      window.ScrollTrigger?.refresh();
+      const state = () => records.map((record) => ({
+        preset: record.preset, count: record.count, complete: record.complete, premature: record.premature,
+        events: [...record.events], shown: record.nodes.every(shown), paints: record.nodes.map(paint)
+      }));
+      window.scrollTo(0, 800);
+      await wait();
+      const entered = state();
+      records.forEach(({ instance }) => instance.replay());
+      await wait(70);
+      records.forEach(({ instance }) => instance.pause());
+      const paused = state();
+      await wait(100);
+      const held = state();
+      records.forEach(({ instance }) => instance.resume());
+      await wait();
+      const replayed = state();
+      window.scrollTo(0, 1300);
+      await wait();
+      const left = state();
+      window.scrollTo(0, 800);
+      await wait();
+      const enteredBack = state();
+      window.scrollTo(0, 0);
+      await wait();
+      const leftBack = state();
+      window.scrollTo(0, 800);
+      await wait();
+      const reentered = state();
+      records.forEach(({ instance }) => { instance.replay(); instance.destroy(); });
+      const completeAtDestroy = records.map(({ complete }) => complete);
+      await wait();
+      const restored = records.every((record, index) => record.element.outerHTML === record.original && record.complete === completeAtDestroy[index]);
+      records.forEach(({ element }) => element.remove());
+      return { entered, paused, held, replayed, left, enteredBack, leftBack, reentered, restored,
+        instances: core.instanceCount, triggers: window.ScrollTrigger?.getAll().length || 0 };
+    });
+    for (let index = 0; index < masks.entered.length; index += 1) {
+      const state = masks.entered[index];
+      const label = `${engine}/${state.preset}/${state.count} children`;
+      check(state.shown && state.complete === 1 && state.events.join() === 'enter', `${label}: first masked entrance completes and emits one enter`);
+      check(JSON.stringify(masks.paused[index].paints) === JSON.stringify(masks.held[index].paints), `${label}: pause freezes the active replay`);
+      check(masks.replayed[index].shown && masks.replayed[index].complete === 2, `${label}: resume completes replay without a fake viewport callback`);
+      const hidden = (record) => record.paints.every((paint) => paint.opacity === 0 || paint.clip.includes('100%')
+        || (paint.mask.includes('conic-gradient') && /transparent|rgba\(0, 0, 0, 0\)/.test(paint.mask)
+          && [...paint.mask.matchAll(/(-?[\d.]+)deg/g)].every((match) => Number(match[1]) === 0)));
+      check(hidden(masks.left[index]) && masks.left[index].events.join() === 'enter,leave', `${label}: forward leave reverses the current animation (${JSON.stringify(masks.left[index])})`);
+      check(masks.enteredBack[index].shown && masks.enteredBack[index].events.join() === 'enter,leave,enterBack', `${label}: backward re-entry plays again`);
+      check(hidden(masks.leftBack[index]) && masks.leftBack[index].events.join() === 'enter,leave,enterBack,leaveBack', `${label}: backward leave reverses again`);
+      check(masks.reentered[index].shown && masks.reentered[index].complete === 4 && masks.reentered[index].events.join() === 'enter,leave,enterBack,leaveBack,enter', `${label}: second forward entrance retains animation and callbacks`);
+      check(masks.reentered[index].premature === 0, `${label}: onComplete observes all staggered nodes fully shown`);
+    }
+    check(masks.restored && masks.instances === 0 && masks.triggers === 0, `${engine}: masked replay/destroy cancels work and restores root/child DOM`);
+
+    if (engine === 'native') {
+      const nested = await page.evaluate(async () => {
+        const { core } = window.__revealTest;
+        const results = [];
+        for (const preset of ['mask', 'wipe', 'clock']) {
+          const scroller = document.createElement('div');
+          scroller.style.cssText = 'position:fixed;left:20px;top:100px;width:200px;height:100px;overflow:auto;border:3px solid black;transform:scale(1.1);transform-origin:top left';
+          scroller.innerHTML = '<div style="height:450px;padding-top:150px;box-sizing:border-box"><div class="probe">Nested<br>reveal</div></div>';
+          document.body.append(scroller);
+          const element = scroller.querySelector('.probe');
+          const events = [];
+          const instance = core.create('reveal', element, {
+            preset, once: false, duration: .05, rootMargin: '0px', threshold: .2,
+            onEnter: () => events.push('enter'), onLeave: () => events.push('leave'),
+            onEnterBack: () => events.push('enterBack'), onLeaveBack: () => events.push('leaveBack')
+          });
+          const wait = () => new Promise((resolve) => setTimeout(resolve, 140));
+          await wait();
+          const initial = [...events];
+          for (const position of [100, 260, 100, 0]) { scroller.scrollTop = position; await wait(); }
+          results.push({ preset, initial, events: [...events] });
+          instance.destroy();
+          scroller.remove();
+        }
+        const easing = [];
+        for (const ease of ['linear', 'ease', 'cubic-bezier(.25,.1,.25,1)']) {
+          const element = document.createElement('div');
+          element.className = 'probe';
+          element.style.cssText = 'position:fixed;top:40px';
+          document.body.append(element);
+          const instance = core.create('reveal', element, { preset: 'mask', duration: .4, ease });
+          instance.replay();
+          easing.push({ element, instance });
+        }
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        const progress = easing.map(({ element, instance }) => {
+          instance.pause();
+          const value = 1 - Number(element.style.clipPath.match(/([\d.]+)%/)?.[1] ?? 0) / 100;
+          instance.destroy();
+          element.remove();
+          return value;
+        });
+        return { results, progress, instances: core.instanceCount };
+      });
+      for (const result of nested.results) {
+        check(result.initial.length === 0, `native/${result.preset}: clipping ancestor must not cause an invisible initial entrance`);
+        check(result.events.join() === 'enter,leave,enterBack,leaveBack', `native/${result.preset}: nested scrolling preserves all four clipped boundaries (${result.events.join()})`);
+      }
+      check(nested.progress[1] > nested.progress[0] + .05 && Math.abs(nested.progress[1] - nested.progress[2]) < .02,
+        `native: explicit ease and its cubic-bezier must retain the CSS curve (${nested.progress.join()})`);
+      check(nested.instances === 0, 'native: nested clipping/easing fixtures must release all instances');
+    }
+
+    const oneShot = await page.evaluate(async () => {
+      const { core } = window.__revealTest;
+      const records = [];
+      window.scrollTo(0, 0);
+      for (const preset of ['mask', 'wipe', 'clock']) {
+        const element = document.createElement('div');
+        element.className = 'probe';
+        element.style.cssText = 'position:absolute;top:1000px';
+        element.textContent = 'One-shot';
+        document.body.append(element);
+        const record = { element, complete: 0, preset };
+        record.instance = core.create('reveal', element, { preset, duration: .05, onComplete: () => { record.complete += 1; } });
+        records.push(record);
+      }
+      window.ScrollTrigger?.refresh();
+      const wait = () => new Promise((resolve) => setTimeout(resolve, 170));
+      window.scrollTo(0, 800);
+      await wait();
+      const retired = window.ScrollTrigger?.getAll().length || 0;
+      window.scrollTo(0, 0);
+      await wait();
+      window.scrollTo(0, 800);
+      await wait();
+      const automatic = records.map(({ complete }) => complete);
+      records.forEach(({ instance }) => instance.replay());
+      await wait();
+      const manual = records.map(({ complete }) => complete);
+      records.forEach(({ instance, element }) => { instance.destroy(); element.remove(); });
+      return { automatic, manual, retired, instances: core.instanceCount };
+    });
+    check(oneShot.automatic.every((count) => count === 1) && oneShot.manual.every((count) => count === 2), `${engine}: default once must stay one-shot while explicit replay remains available`);
+    check(oneShot.retired === 0 && oneShot.instances === 0, `${engine}: completed one-shot masks without boundary callbacks must retire their triggers`);
+
+    const maskReentrant = await page.evaluate(async () => {
+      const { core } = window.__revealTest;
+      const results = [];
+      for (const preset of ['mask', 'wipe', 'clock']) {
+        for (const hook of ['onEnter', 'onLeave', 'onEnterBack', 'onLeaveBack', 'onClassChange', 'onComplete']) {
+          window.scrollTo(0, 0);
+          const element = document.createElement('div');
+          element.className = 'probe';
+          element.style.cssText = 'position:absolute;top:1000px;color:maroon';
+          element.textContent = 'Destroy from callback';
+          document.body.append(element);
+          const original = element.outerHTML;
+          let instance;
+          let destroyed = false;
+          let late = 0;
+          const callback = () => { if (destroyed) late += 1; else { destroyed = true; instance.destroy(); } };
+          const options = { preset, once: false, duration: .03, start: 'top center', end: 'bottom top', [hook]: callback };
+          instance = core.create('reveal', element, options);
+          window.ScrollTrigger?.refresh();
+          for (const y of [800, 1300, 800, 0]) {
+            window.scrollTo(0, y);
+            await new Promise((resolve) => setTimeout(resolve, 90));
+          }
+          instance.replay();
+          await new Promise((resolve) => setTimeout(resolve, 70));
+          results.push({ preset, hook, destroyed, late, restored: element.outerHTML === original });
+          instance.destroy();
+          element.remove();
+        }
+      }
+      return { results, instances: core.instanceCount, triggers: window.ScrollTrigger?.getAll().length || 0 };
+    });
+    for (const result of maskReentrant.results) check(result.destroyed && result.late === 0 && result.restored,
+      `${engine}/${result.preset}/${result.hook}: callback destruction must prevent subsequent writes/callbacks`);
+    check(maskReentrant.instances === 0 && maskReentrant.triggers === 0, `${engine}: masked callback destruction must release every instance and trigger`);
     if (engine === 'gsap') {
       const repeating = await page.evaluate(async () => {
         const { core } = window.__revealTest;

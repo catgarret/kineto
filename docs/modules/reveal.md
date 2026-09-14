@@ -61,11 +61,18 @@ GSAP의 일반 transform/opacity 프리셋(`mask`·`wipe`·`clock`·`class` 제�
 진입/이탈 callback을 유지합니다.
 엔진 없는 일반 CSS 전환 경로의 `pause()`·`resume()`는 기존처럼 no-op입니다.
 
-별도 마스크 분기에는 기존 제한이 남아 있습니다. `mask`·`wipe`·`clock`은
-`once:false`를 지정해도 viewport 자동 진입은 한 번이며, 이탈 역재생과
-자동 재진입 반복은 아직 지원하지 않습니다. 이 세 프리셋의 `onEnter`·`onLeave`·
-`onEnterBack`·`onLeaveBack`도 현재 연결되어 있지 않습니다. 명시적인 `replay()`와
-`onComplete`는 사용할 수 있으며, 이 제한은 후속 개선 대상입니다.
+`mask`·`wipe`·`clock`은 GSAP과 native 경로 모두 `once:false`에서 진입·이탈·
+역진입·역이탈에 따라 현재 모션을 재생·역재생합니다. 네 경계 callback도 같은
+순서로 호출하며, `onComplete`는 모든 stagger 자식이 끝난 뒤 한 번 호출합니다.
+이 세 프리셋의 `pause()`·`resume()`는 중간 진행률을 보존하고, `replay()`는
+현재 실행을 교체하되 viewport 감지를 유지합니다. callback 내부 `destroy()`도
+후속 변경과 예약 작업을 막습니다. 기본 1회 재생에 경계 callback이 없으면
+완료 후 감지기를 해제합니다.
+
+Native 경로는 `threshold`·`rootMargin`과 overflow 조상의 가시 영역을 기준으로
+감지합니다. GSAP의 `start`·`end` 문자열 문법 전체를 대체하지는 않습니다.
+스크롤 측정은 passive 이벤트를 프레임당 한 번으로 모으며, 상시 측정 루프나
+추가 DOM wrapper를 만들지 않습니다.
 
 일반 `reveal`은 대상의 자식 DOM을 다시 만들지 않으므로 authored `<br>`와
 inline markup을 그대로 보존합니다. 글자·단어를 실제 span으로 나누는

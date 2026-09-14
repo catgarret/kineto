@@ -5,12 +5,20 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Unify Mask, Wipe, and Clock Reveal playback across GSAP/native paths: reversible re-entry, ordered boundary callbacks, stagger completion, pause/resume, clipped ancestor visibility, and safe replay/destroy.
+- Honor Glitch Wave trigger, one-shot looping, duration, delay, and randomness; preserve playback phase and original filter priority, stop hidden-tab work, and prevent destroyed instances from restarting.
+- Add a localized one-shot Wave demo and restore its seed/displacement controls and copied options; retain historical shared URLs and include Wave behavior checks in all browser gates.
+- Record the measured lifecycle cost (~1.2 KB full consumer gzip and ~4.2 KB packed archive), adjusting only affected budgets while preserving runner variance, modular budgets, zero required dependencies, and the 77-file package boundary.
 - Record the verified v0.9.8 release, byte-identical npm/GitHub packages and linked provenance metadata, successful CI, and canonical/backup parity for all twelve first-party scripts/styles and four click-media assets.
 - Preserve the QA report's source-package version marker for automated release preparation, separately from verified publication evidence.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- Mask·Wipe·Clock Reveal의 GSAP/native 재생을 통합해 역재생·재진입, 경계 callback, stagger 완료, 일시 정지·재개, 조상 clipping 감지와 안전한 replay/destroy를 지원합니다.
+- Glitch Wave의 시작·1회 반복·시간·지연·변화 폭 설정을 연결하고, 진행률과 원본 filter priority 보존·숨김 탭 연산 정지·destroy 후 재시작 차단을 적용했습니다.
+- 다국어 Wave 1회 재생 데모와 seed·왜곡량 설정 및 복사 옵션을 복구하고, 과거 공유 URL을 보존하며 모든 브라우저 gate에 Wave 동작 검사를 연결했습니다.
+- 상태 관리 보강 비용(전체 소비자 gzip 약 1.2KB·압축 패키지 약 4.2KB 증가)을 기록하고 해당 예산만 조정했습니다. 러너 오차·모듈 조합 예산·필수 의존성 0개·77개 파일 경계는 유지합니다.
 - v0.9.8 릴리스의 npm/GitHub 동일 패키지와 provenance metadata 연결, CI 성공, 두 도메인의 자체 JS/CSS 12개·클릭 미디어 4개 일치 근거를 기록했습니다.
 - 자동 릴리스 준비가 사용하는 QA 보고서의 소스 패키지 버전 표식을 실제 게시 증거와 구분해 유지했습니다.
 

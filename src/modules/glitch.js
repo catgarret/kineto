@@ -214,22 +214,76 @@ export default {
       //
       // Throttled to ~24fps on purpose: a glitch that updates every frame reads as
       // smooth noise, and the slight quantisation is part of the look.
-      const period = Math.max(600, 2600 / cadence);
+      const configuredDuration = Number(opts.duration);
+      const period = Number.isFinite(configuredDuration)
+        ? Math.max(42, configuredDuration * 1000 / cadence)
+        : Math.max(600, 2600 / cadence);
+      const rawDelay = Math.max(0, Number(opts.delay) || 0);
+      const delay = rawDelay <= 10 ? rawDelay * 1000 : rawDelay;
       const tickMs = 42;
-      let waveStart = performance.now();
+      const originalFilter = el.style.getPropertyValue('filter');
+      const originalPriority = el.style.getPropertyPriority('filter');
+      const hadStyle = el.hasAttribute('style');
+      let elapsed = -delay;
+      let last = null;
       let waveTimer = null;
-      const stepWave = () => {
-        const phase = ((performance.now() - waveStart) % period) / period;
-        // Triangle sweep low -> high -> low. Held near the low end most of the
-        // cycle so the element stays readable and only tears periodically; a
-        // constantly warped element just looks broken.
-        const ramp = phase < 0.5 ? phase * 2 : (1 - phase) * 2;
-        const eased = Math.pow(ramp, 1.6);
-        const y = (0.02 + eased * 0.07).toFixed(4);
-        turbulence.setAttribute('baseFrequency', `0.0008 ${y}`);
+      let alive = true;
+      let paused = false;
+      let engaged = trigger !== 'hover' && trigger !== 'scroll' && trigger !== 'view';
+      let complete = false;
+      let applied = false;
+      const restoreFilter = () => {
+        if (!applied) return;
+        if (originalFilter) el.style.setProperty('filter', originalFilter, originalPriority);
+        else el.style.removeProperty('filter');
+        if (!hadStyle && !el.style.length) el.removeAttribute('style');
+        applied = false;
       };
-      const startWave = () => { if (!waveTimer) waveTimer = setInterval(stepWave, tickMs); };
-      const stopWave = () => { clearInterval(waveTimer); waveTimer = null; };
+      const stopWave = () => {
+        clearTimeout(waveTimer);
+        waveTimer = null;
+        if (last !== null) elapsed += performance.now() - last;
+        last = null;
+      };
+      const stepWave = () => {
+        if (!alive || paused || !engaged || complete || document.hidden) return;
+        const now = performance.now();
+        if (last !== null) elapsed += now - last;
+        last = now;
+        if (!loop && elapsed >= period) {
+          complete = true;
+          last = null;
+          restoreFilter();
+          return;
+        }
+        if (elapsed >= 0) {
+          if (!applied) {
+            el.style.setProperty('filter', `${originalFilter ? originalFilter + ' ' : ''}url(#${uid})`, originalPriority);
+            applied = true;
+          }
+          const phase = (elapsed % period) / period;
+          // Triangle sweep low -> high -> low. Held near the low end most of the
+          // cycle so the element stays readable and only tears periodically; a
+          // constantly warped element just looks broken.
+          const ramp = phase < 0.5 ? phase * 2 : (1 - phase) * 2;
+          const eased = Math.pow(ramp, 1.6);
+          const value = `0.0008 ${(0.055 + (eased - 0.5) * 0.07 * randomness).toFixed(4)}`;
+          if (turbulence.getAttribute('baseFrequency') !== value) turbulence.setAttribute('baseFrequency', value);
+        }
+        waveTimer = setTimeout(() => { waveTimer = null; stepWave(); }, elapsed < 0 ? -elapsed : tickMs);
+      };
+      const startWave = () => { if (waveTimer === null) stepWave(); };
+      const setEngaged = (value) => {
+        if (!alive || engaged === value) return;
+        stopWave();
+        engaged = value;
+        if (engaged) { elapsed = -delay; complete = false; startWave(); }
+        else restoreFilter();
+      };
+      const enter = () => setEngaged(true);
+      const leave = () => setEngaged(false);
+      const visibility = () => { if (document.hidden) stopWave(); else startWave(); };
+      let observer = null;
       const displace = document.createElementNS(svgNS, 'feDisplacementMap');
       displace.setAttribute('in', 'SourceGraphic');
       displace.setAttribute('in2', 'noise');
@@ -240,20 +294,42 @@ export default {
       filter.appendChild(displace);
       svg.appendChild(filter);
       document.body.appendChild(svg);
-      stepWave();
+      if (trigger === 'hover') {
+        el.addEventListener('pointerenter', enter);
+        el.addEventListener('pointerleave', leave);
+      } else if (trigger === 'scroll' || trigger === 'view') {
+        if (typeof IntersectionObserver === 'function') {
+          observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => setEngaged(entry.isIntersecting));
+          }, { threshold: 0.4 });
+          observer.observe(el);
+        } else engaged = true;
+      }
+      document.addEventListener('visibilitychange', visibility);
       startWave();
-      const originalFilter = el.style.filter;
-      el.style.filter = `${originalFilter ? originalFilter + ' ' : ''}url(#${uid})`;
       return {
         el,
         type: 'glitch',
-        replay: () => { waveStart = performance.now(); stepWave(); },
-        pause: stopWave,
-        resume: startWave,
-        destroy: () => {
+        replay: () => {
+          if (!alive) return;
           stopWave();
+          elapsed = 0;
+          paused = complete = false;
+          engaged = true;
+          startWave();
+        },
+        pause: () => { if (alive && !paused) { stopWave(); paused = true; } },
+        resume: () => { if (alive && paused) { paused = false; startWave(); } },
+        destroy: () => {
+          if (!alive) return;
+          alive = false;
+          stopWave();
+          el.removeEventListener('pointerenter', enter);
+          el.removeEventListener('pointerleave', leave);
+          observer?.disconnect();
+          document.removeEventListener('visibilitychange', visibility);
           svg.remove();
-          if (originalFilter) el.style.filter = originalFilter; else el.style.removeProperty('filter');
+          restoreFilter();
         }
       };
     }

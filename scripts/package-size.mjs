@@ -108,8 +108,12 @@ const BUDGET = {
   // restoration, counter clipping and cssScroll guards measure 526.9 KB packed
   // / 1755.0 KB unpacked on Node 24/npm 11. This is measured feature/fix cost,
   // not compression variance; retain all 77 allowed files and round only bytes.
-  packedKb: 528,
-  unpackedKb: 1756,
+  // 2026-09-14: reversible masked Reveal, ancestor clipping, and Wave's finite
+  // playback/visibility lifecycle measure 532.2 KB packed / 1764.5 KB unpacked
+  // on Node 24/npm 11. This is explicit correctness cost, not compression
+  // variance. Retain all 77 files and bounded rounding/runner headroom.
+  packedKb: 534,
+  unpackedKb: 1766,
   files: 77
 };
 

@@ -3,6 +3,31 @@
 검증일: 2026-09-12
 대상: v0.9.8 공개 릴리스 `92bc1b6` · 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-14 Unreleased 검증
+
+아래 변경은 로컬 검증 완료 상태이며, v0.9.8 공개 릴리스에 포함된 것으로
+표시하지 않습니다. Node 24에서 `npm run ci`가 종료 코드 0으로 완료됐습니다.
+
+- Reveal: 23개 프리셋 × native/GSAP 검사, Mask·Wipe·Clock 반복 진입과 역재생,
+  네 경계 callback, pause/resume, stagger 완료, clipping 조상과 destroy 복원을
+  Chromium·Firefox·WebKit에서 통과했습니다.
+- Wave: 세 엔진에서 각각 65개 결정적 검사와 실제 hover/scroll·SVG 프레임·
+  reduced-motion·제거 검사를 통과했습니다. 숨김 탭 정지, 진행률·지연 보존,
+  1회 재생과 replay를 포함합니다.
+- 데모: Wave 1회 재생 카드, 7개 언어 설명, seed·왜곡량 표시와 복사 설정을
+  추가했습니다. 199개 playground와 기존 공유 링크를 전체 데모 QA로 검사했습니다.
+- 소비자: Vite·Rolldown 및 React·Vue SSR·hydration·lifecycle fixture를 통과했습니다.
+  전체 Vite gzip은 138.4KiB, min UMD gzip은 123.8KiB입니다.
+- 비용: 패키지는 약 532.3KiB/압축 해제 1764.7KiB·77파일입니다. 기존 용량
+  상한 초과를 확인한 뒤 상태 관리 보강 비용으로 해당 예산만 명시적으로
+  조정했습니다. 런타임 연산 감소와 별개로 번들 용량 최적화라고 주장하지 않습니다.
+  모듈 조합 예산, 허용 러너 오차, runtime 의존성 0개는 유지합니다.
+- 공급망: 추가 실행한 root `npm audit --json`의 취약점은 0건입니다.
+
+Wave의 `colors`·`blendMode`, 일반 native Reveal의 pause/resume, 실기기
+iOS/Android·스크린리더와 외부 프로젝트 장기 사용 증거는 남아 있습니다.
+이번 브라우저 자동 검사는 실기기 검증을 대신하지 않습니다.
+
 ## 2026-09-12 후속 변경 검증
 
 아래는 v0.9.8에 포함된 변경의 로컬 실행 근거입니다. 이후 완료한 원격
@@ -101,7 +126,7 @@ locale 전환에서 요청 실패·console 오류는 모두 0건입니다. 별�
 
 배포 전 `npm run test:package-tarball`로 실제 tarball을 별도 프로젝트에 설치해
 ESM, CommonJS, CSS와 adapter entry를 확인합니다. `npm run test:package-size`는
-압축 528 kB·해제 1756 kB·77개 파일의 상한과 배포 파일 allowlist를 검사합니다.
+압축 534 kB·해제 1766 kB·77개 파일의 상한과 배포 파일 allowlist를 검사합니다.
 v0.9.8의 Node 24 `npm pack --dry-run --json` 측정값은 77개 파일,
 압축 528.0 kB, 해제 1755.1 kB입니다. 실제 공개 tarball은 540,657 bytes,
 registry의 해제 크기는 1,797,191 bytes로 확인했습니다. 이 수치는 릴리스

@@ -75,4 +75,22 @@ assert.deepEqual(
 );
 assert.ok(fieldCount >= 500, `expected the complete runtime manifest, got only ${fieldCount} fields`);
 
+// Rendering the real panel also checks WHEN rules: the contract alone cannot
+// catch a valid Wave option silently dropped from settings and copied code.
+const waveCard = window.document.createElement('article');
+waveCard.className = 'card';
+waveCard.innerHTML = '<h3>Wave</h3><div data-kt-glitch="wave" data-kt-seed="7" data-kt-channel-offset="12">WAVE</div>';
+window.document.body.appendChild(waveCard);
+window.KinetoPlayground.capture();
+window.KinetoPlayground.mount();
+const wavePanel = waveCard.querySelector('.kt-playground');
+const waveBody = wavePanel.__buildBody();
+for (const key of ['seed', 'channelOffset', 'trigger', 'loop', 'duration', 'delay']) {
+  const field = waveBody.querySelector(`[data-module="glitch"][data-key="${key}"]`);
+  assert.ok(field && !field.hidden, `Wave ${key} must be available in its actual settings panel`);
+}
+assert.match(wavePanel.dataset.htmlCode, /data-kt-seed="7"/, 'copied Wave HTML must retain its noise seed');
+assert.match(wavePanel.dataset.htmlCode, /data-kt-channel-offset="12"/, 'copied Wave HTML must retain its displacement amount');
+window.close();
+
 console.log(`demo-control-contract OK — ${fieldCount} runtime fields across ${Object.keys(fields).length} modules and ${seenTypes.size} control types, with no duplicate keys.`);
