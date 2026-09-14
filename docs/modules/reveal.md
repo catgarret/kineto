@@ -19,6 +19,18 @@ Fade·Zoom In/Out·Flip X/Y도 같은 문구·크기·0.9초 재생 시간의 �
 비교합니다. 각 카드의 설정에서 시간을 바꾸고 Replay·Reset·코드 복사·설정
 공유를 사용할 수 있으며, 기존 설정 링크는 유지됩니다.
 
+Fade Down/Left/Right·Slide Down/Right도 전용 카드로 비교합니다. 카드의 이동량
+설명은 기본 설정 기준이며 `distance`를 지정하면 픽셀 단위 이동량을 덮어씁니다.
+기존 프리셋 이름을 바꾸지 않고 실제 시작 위치를 다음처럼 구분합니다.
+
+| 프리셋 | 기본 시작 위치 → 원래 위치 |
+|---|---|
+| `fade-down` | 위쪽 40px → 아래로 이동 |
+| `fade-left` | 왼쪽 40px → 오른쪽으로 이동 |
+| `fade-right` | 오른쪽 40px → 왼쪽으로 이동 |
+| `slide-down` | 위쪽 자기 높이 100% → 아래로 이동 |
+| `slide-right` | 오른쪽 자기 너비 100% → 왼쪽으로 이동 |
+
 ```html
 <section data-kt-reveal="slide-left">왼쪽에서 등장</section>
 <section data-kt-reveal="wipe" data-kt-direction="right">마스크 등장</section>

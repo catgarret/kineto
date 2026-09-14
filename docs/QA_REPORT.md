@@ -5,6 +5,25 @@
 
 ## 2026-09-14 Unreleased 검증
 
+### 후속: Reveal 방향 비교 카드 5개
+
+Fade Down/Left/Right·Slide Down/Right를 동일 문구·크기·0.9초 재생 시간의
+전용 카드로 추가했습니다. 기본 시작 위치는 Fade의 40px과 Slide의 자기
+크기 100%를 구분해 설명하며, 기존 프리셋 이름·방향·런타임은 변경하지
+않았습니다. `distance` 지정 시 픽셀 이동량으로 대체하는 기존 동작도 문서화했습니다.
+
+전용 고위험 variant markup은 67/78, Reveal은 19/23, 전체 playground는
+209개입니다. 165개 카드 설명·515개 옵션 도움말의 7개 언어 대응 검사를
+통과했습니다. 19개 Slider/Reveal 비교 카드의 설정 연결·고유 semantic 공유·
+복사 HTML 프리셋·Replay·작성한 줄바꿈·desktop/390px bounds·Reset 정리를
+검사했습니다. 새 카드는 과거 v1 공유 순번을 소비하지 않습니다.
+
+Node 24 전체 `npm run ci`가 종료 코드 0으로 완료됐습니다. 209개 playground와
+652개 고유 컨트롤 검사, Chromium의 Reveal 23개 프리셋 × native/GSAP·저성능
+경로의 중간 동작·재생·DOM 복원 검사를 포함합니다. 런타임 변경 없이 기존
+패키지 77파일과 번들 예산을 유지했습니다. 실제 모바일 기기와 공개 배포는
+이번 변경의 검증 범위가 아닙니다.
+
 ### 후속: Reveal 비교 카드 5개
 
 Fade·Zoom In·Zoom Out·Flip X·Flip Y에 동일한 문구·박스 크기·0.9초 재생

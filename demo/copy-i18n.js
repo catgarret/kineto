@@ -855,6 +855,11 @@ window.KINETO_COPY_I18N = {
       "Содержимое появится снизу.",
       "Il contenuto apparirà dal basso."
     ],
+    "위쪽 40px 위치에서 내려오며 선명해집니다.": ["Fade in while moving down from 40px above.", "40px上から下へ移動しながらフェードインします。", "从上方40px处向下移动并淡入。", "從上方40px處向下移動並淡入。", "Появляется, спускаясь с позиции на 40px выше.", "Appare scendendo da 40px sopra."],
+    "왼쪽 40px 위치에서 들어오며 선명해집니다.": ["Fade in from 40px to the left.", "40px左から移動しながらフェードインします。", "从左侧40px处移动并淡入。", "從左側40px處移動並淡入。", "Появляется с позиции на 40px левее.", "Appare entrando da 40px a sinistra."],
+    "오른쪽 40px 위치에서 들어오며 선명해집니다.": ["Fade in from 40px to the right.", "40px右から移動しながらフェードインします。", "从右侧40px处移动并淡入。", "從右側40px處移動並淡入。", "Появляется с позиции на 40px правее.", "Appare entrando da 40px a destra."],
+    "자기 높이만큼 위쪽에서 아래로 들어옵니다.": ["Slide down from one element-height above.", "要素の高さ分だけ上の位置から下へ入ります。", "从上方一个元素高度处向下进入。", "從上方一個元素高度處向下進入。", "Входит сверху вниз с расстояния в собственную высоту.", "Entra dall'alto verso il basso da una distanza pari alla propria altezza."],
+    "자기 너비만큼 오른쪽에서 왼쪽으로 들어옵니다.": ["Slide left from one element-width to the right.", "要素の幅分だけ右の位置から左へ入ります。", "从右侧一个元素宽度处向左进入。", "從右側一個元素寬度處向左進入。", "Входит справа налево с расстояния в собственную ширину.", "Entra da destra verso sinistra da una distanza pari alla propria larghezza."],
     "이동이나 크기 변화 없이 투명도만 바꾸며 나타납니다.": ["Appear through opacity alone, without movement or scaling.", "移動や拡大縮小なしで、透明度だけを変えて表示します。", "仅改变透明度显示，不移动或缩放。", "僅改變透明度顯示，不移動或縮放。", "Появляется только за счёт прозрачности, без перемещения и масштабирования.", "Appare variando solo l'opacità, senza movimento o ridimensionamento."],
     "작은 크기에서 원래 크기로 확대되며 나타납니다.": ["Appear by growing from a smaller size to the original size.", "小さい状態から元のサイズへ拡大して表示します。", "从较小尺寸放大至原始尺寸并显示。", "從較小尺寸放大至原始尺寸並顯示。", "Появляется, увеличиваясь от меньшего до исходного размера.", "Appare ingrandendosi da una dimensione minore a quella originale."],
     "큰 크기에서 원래 크기로 축소되며 나타납니다.": ["Appear by shrinking from a larger size to the original size.", "大きい状態から元のサイズへ縮小して表示します。", "从较大尺寸缩小至原始尺寸并显示。", "從較大尺寸縮小至原始尺寸並顯示。", "Появляется, уменьшаясь от большего до исходного размера.", "Appare riducendosi da una dimensione maggiore a quella originale."],
