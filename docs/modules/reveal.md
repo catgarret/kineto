@@ -17,7 +17,7 @@
 <span data-kt-reveal="slide-up" data-kt-distance="18">촘촘한 인라인 등장</span>
 ```
 
-자식 요소를 순차 노출할 때 `stagger`와 `order`를 함께 사용합니다. `order`는 `start`, `end`, `center`, `edges`, `random`을 지원하며 GSAP 경로와 CSS 대체 경로에서 같은 순서로 동작합니다. `random`은 `replay()`할 때마다 다시 섞입니다.
+자식 요소를 순차 노출할 때 `stagger`와 `order`를 함께 사용합니다. `order`는 `start`, `end`, `center`, `edges`, `random`을 지원하며 GSAP 경로와 native 대체 경로에서 같은 순서로 동작합니다. `random`은 `replay()`할 때마다 다시 섞입니다.
 
 ```html
 <ul data-kt-reveal="fade-up" data-kt-stagger="0.08" data-kt-order="edges">
@@ -59,7 +59,21 @@ GSAP 경로의 `pause()`·`resume()`는 Replay로 시작한 현재 tween에도 �
 GSAP의 일반 transform/opacity 프리셋(`mask`·`wipe`·`clock`·`class` 제외)은
 `once:false`에서 Replay 뒤에도 원래 스크롤 이탈·역재생·재진입과
 진입/이탈 callback을 유지합니다.
-엔진 없는 일반 CSS 전환 경로의 `pause()`·`resume()`는 기존처럼 no-op입니다.
+GSAP 없는 일반 프리셋은 Web Animations API가 있는 브라우저에서
+`pause()`·`resume()`로 진행률·시작 지연·자식 stagger를 보존합니다.
+완료 후 `resume()`는 처음부터 재생하지 않으며, `replay()`로 새 실행을 시작합니다.
+Kineto가 만든 애니메이션만 제어하므로 작성자의 별도 CSS/WAAPI 애니메이션은
+멈추거나 취소하지 않습니다. Web Animations API가 없는 환경은 기존 CSS 전환으로
+동작하며 이 경로의 일시 정지는 지원하지 않습니다. 일반 native 프리셋의
+viewport 진입은 여전히 1회 감지이며 GSAP의 반복 경계 callback과 동일하지 않습니다.
+
+```js
+const entrance = Kineto.create('reveal', document.querySelector('.content'), {
+  preset: 'fade-up', duration: 0.8, delay: 0.2, stagger: 0.08
+});
+entrance.pause(); // 대기 시간과 현재 진행률을 함께 정지
+entrance.resume(); // 같은 지점에서 계속
+```
 
 `mask`·`wipe`·`clock`은 GSAP과 native 경로 모두 `once:false`에서 진입·이탈·
 역진입·역이탈에 따라 현재 모션을 재생·역재생합니다. 네 경계 callback도 같은

@@ -1823,14 +1823,16 @@ var wt = {
 		};
 	},
 	fallback(e, t = {}, n = mt["fade-up"]) {
-		let r = gt(e, t), i = _t(e, r), a = Number(n.x ?? 0), o = Number(n.y ?? 0), s = Number(n.xPercent ?? 0), c = Number(n.yPercent ?? 0), l = Number(n.scale ?? 1), u = Number(n.rotate ?? n.rotation ?? 0), d = Number(n.rotationX ?? 0), f = Number(n.rotationY ?? 0), p = Number(n.skewX ?? 0), m = Number(n.skewY ?? 0), h = Number(n.transformPerspective ?? 0), g = Math.max(0, Number(t.duration ?? .55)), _ = [], v = !1, y = /* @__PURE__ */ new Set(), b = (e) => {
+		let r = gt(e, t), i = _t(e, r), a = Number(n.x ?? 0), o = Number(n.y ?? 0), s = Number(n.xPercent ?? 0), c = Number(n.yPercent ?? 0), l = Number(n.scale ?? 1), u = Number(n.rotate ?? n.rotation ?? 0), d = Number(n.rotationX ?? 0), f = Number(n.rotationY ?? 0), p = Number(n.skewX ?? 0), m = Number(n.skewY ?? 0), h = Number(n.transformPerspective ?? 0), g = Math.max(0, Number(t.duration ?? .55)), _ = [], v = !1, y = !1, b = [], x = /* @__PURE__ */ new Set(), S = (e) => {
 			let t = requestAnimationFrame(() => {
-				y.delete(t), v || e();
+				x.delete(t), v || e();
 			});
-			y.add(t);
-		}, x = () => {
-			_.forEach(clearTimeout), _ = [], y.forEach(cancelAnimationFrame), y.clear();
-		}, S = [
+			x.add(t);
+		}, C = () => {
+			b.forEach((e) => {
+				e.onfinish = null, e.cancel();
+			}), b = [], _.forEach(clearTimeout), _ = [], x.forEach(cancelAnimationFrame), x.clear();
+		}, w = [
 			h ? `perspective(${h}px)` : "",
 			`translate3d(${a}px,${o}px,0)`,
 			s || c ? `translate(${s}%,${c}%)` : "",
@@ -1840,24 +1842,45 @@ var wt = {
 			p ? `skewX(${p}deg)` : "",
 			m ? `skewY(${m}deg)` : "",
 			l === 1 ? "" : `scale(${l})`
-		].filter(Boolean).join(" "), C = (e) => {
-			e.style.transition = "none", e.style.opacity = String(n.opacity ?? 0), e.style.transform = S, n.transformOrigin && (e.style.transformOrigin = n.transformOrigin), n.filter && (e.style.filter = n.filter), n.clipPath && (e.style.clipPath = "none", e.style.opacity = "0");
+		].filter(Boolean).join(" "), T = (e) => {
+			e.style.transition = "none", e.style.opacity = String(n.opacity ?? 0), e.style.transform = w, n.transformOrigin && (e.style.transformOrigin = n.transformOrigin), n.filter && (e.style.filter = n.filter);
 		};
-		r.forEach(C);
-		let w = () => {
+		r.forEach(T);
+		let E = () => {
 			if (v) return;
-			x(), n.clipPath && (r.forEach((e) => {
-				e.style.clipPath = n.clipPath, e.style.opacity = "1";
-			}), e.offsetWidth);
+			C();
 			let i = yt(r.length, t.stagger, t.order), a = Math.max(0, Number(t.delay ?? 0)), o = i.indexOf(Math.max(...i));
-			xt(e, t), r.forEach((n, r) => {
-				_.push(setTimeout(() => b(() => {
-					n.style.transition = `opacity ${g}s ease,transform ${g}s ease,filter ${g}s ease,clip-path ${g}s ease`, n.style.opacity = "1", n.style.transform = "none", n.style.filter = "none", n.style.clipPath = "inset(0)", r === o && _.push(setTimeout(() => {
+			xt(e, t), !v && r.forEach((r, s) => {
+				let c = {
+					opacity: "1",
+					transform: "none",
+					filter: "none"
+				};
+				if (typeof r.animate == "function") {
+					let l = {
+						opacity: String(n.opacity ?? 0),
+						transform: w,
+						filter: n.filter || "none"
+					};
+					Object.assign(r.style, c);
+					let u = r.animate([l, c], {
+						duration: g * 1e3,
+						delay: (a + i[s]) * 1e3,
+						easing: "ease",
+						fill: "backwards"
+					});
+					b.push(u), y && u.pause(), u.onfinish = () => {
+						u.onfinish = null, b = b.filter((e) => e !== u), !v && s === o && t.onComplete?.(e);
+					};
+					return;
+				}
+				_.push(setTimeout(() => S(() => {
+					r.style.transition = `opacity ${g}s ease,transform ${g}s ease,filter ${g}s ease`, Object.assign(r.style, c), s === o && _.push(setTimeout(() => {
 						v || t.onComplete?.(e);
 					}, g * 1e3));
-				}), (a + i[r]) * 1e3));
+				}), (a + i[s]) * 1e3));
 			});
-		}, T = oe(e, w, {
+		}, D = oe(e, E, {
 			threshold: Number(t.threshold ?? .1),
 			rootMargin: t.rootMargin || "0px 0px -10% 0px"
 		});
@@ -1865,12 +1888,16 @@ var wt = {
 			el: e,
 			type: "reveal",
 			replay(e) {
-				v || (Object.assign(t, e || {}), T.disconnect(), x(), r.forEach(C), b(w));
+				v || (Object.assign(t, e || {}), y = !1, D.disconnect(), C(), r.forEach(T), S(E));
 			},
-			pause() {},
-			resume() {},
+			pause() {
+				v || (y = !0, b.forEach((e) => e.pause()));
+			},
+			resume() {
+				v || (y = !1, b.forEach((e) => e.play()));
+			},
 			destroy() {
-				v = !0, T.disconnect(), x(), i();
+				v = !0, D.disconnect(), C(), r.forEach((e) => e.getAttribute("style")), i();
 			}
 		};
 	}

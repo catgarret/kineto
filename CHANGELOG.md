@@ -5,6 +5,7 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Support native Reveal pause/resume through owned Web Animations, preserving entrance delay, stagger, and existing easing without stopping author animations; cancel pending playback on replay/destroy and retain the legacy CSS fallback.
 - Unify Mask, Wipe, and Clock Reveal playback across GSAP/native paths: reversible re-entry, ordered boundary callbacks, stagger completion, pause/resume, clipped ancestor visibility, and safe replay/destroy.
 - Honor Glitch Wave trigger, one-shot looping, duration, delay, and randomness; preserve playback phase and original filter priority, stop hidden-tab work, and prevent destroyed instances from restarting.
 - Add a localized one-shot Wave demo and restore its seed/displacement controls and copied options; retain historical shared URLs and include Wave behavior checks in all browser gates.
@@ -15,6 +16,7 @@
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- Native Reveal이 소유한 Web Animation으로 대기 시간·stagger·기존 easing을 보존하는 일시 정지·재개를 지원하고, 작성자의 애니메이션은 유지합니다. replay/destroy 취소 처리를 보강하며 구형 CSS 대체 경로는 보존합니다.
 - Mask·Wipe·Clock Reveal의 GSAP/native 재생을 통합해 역재생·재진입, 경계 callback, stagger 완료, 일시 정지·재개, 조상 clipping 감지와 안전한 replay/destroy를 지원합니다.
 - Glitch Wave의 시작·1회 반복·시간·지연·변화 폭 설정을 연결하고, 진행률과 원본 filter priority 보존·숨김 탭 연산 정지·destroy 후 재시작 차단을 적용했습니다.
 - 다국어 Wave 1회 재생 데모와 seed·왜곡량 설정 및 복사 옵션을 복구하고, 과거 공유 URL을 보존하며 모든 브라우저 gate에 Wave 동작 검사를 연결했습니다.

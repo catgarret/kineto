@@ -68,7 +68,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 - **테스트가 틀린 이유로 실패합니다.** v0.8.43 릴리스는 같은 assertion에서 반복 실패했는데, 원인은 스타일시트가 아니라 아직 레이아웃되지 않은 패널을 측정한 것이었습니다. `display:none` 요소의 `getComputedStyle`은 used value가 아니라 computed value(`repeat(2, minmax(0px, 1fr))`)를 돌려주고, 이 문자열을 공백으로 자르면 토큰이 정확히 3개가 나옵니다. 즉 **그럴듯하게 틀린 값**이 나왔고, 사람은 CSS를 세 번 고쳤습니다. 브라우저 QA에 “측정 대상이 실제로 레이아웃됐는가”를 먼저 확인하는 규칙이 없으면, 통과율 지표 자체를 신뢰할 수 없습니다.
 - **엔진 커버리지가 아직 균등하지 않습니다.** 일반 모듈은 Chromium 전체와 Firefox/WebKit smoke를 유지하지만, transform·clip·fixed/sticky·mask·3D 경계를 쓰는 고위험 목록은 `heavy-layout` 체크포인트로 세 엔진을 함께 검사합니다. `pageReveal`의 `zoom`은 transform이 걸린 `<body>`가 fixed/sticky 자손의 containing block이 되는 동작에서 Safari와 Chromium이 갈렸고, 커버를 `<html>`로 옮겨야 양쪽이 같아졌습니다. 남은 일반 모듈까지 전부 같은 깊이로 올리는 것은 실제 회귀 신호와 실행 비용을 비교해 단계적으로 결정합니다.
 - **variant 구분성은 정적 게이트와 실제 시각 검증을 분리해 관리합니다.** `pageReveal` 16개와 Reveal·Lazy·Cursor·Overflow Text·Glitch·Slider 78개는 contract·구현 branch/source fingerprint·생성 설정의 1:1 대응을 자동 검사합니다. 확대 범위 중 전용 데모 markup은 57/78이며 Slider 10개 효과는 전용 카드로 비교합니다. source fingerprint는 픽셀 단위 시각 회귀를 대신하지 않습니다. 남은 병목은 이름 수가 아니라 실제 회귀 신호가 있는 variant의 전용 비교 화면과 cross-browser 검증을 비용에 맞춰 확대하는 일입니다.
-- **분기별 옵션 의미 검증은 계속 필요합니다.** 2026-09-14 Unreleased에서 Reveal `mask`·`wipe`·`clock`의 반복·경계 callback·일시 정지와 Wave의 `trigger`·`loop`·`duration`·`delay`·`randomness`를 실제 브라우저 동작으로 검증했습니다. 남은 제한은 Wave의 `colors`·`blendMode`, 일반 native Reveal 경로의 pause/resume, 전용 데모가 없는 variant의 의미 검증입니다. Native Reveal에 GSAP의 전체 start/end 문법을 지원한다고 주장하지 않습니다. 단순 attribute 반영 검사를 이 의미 검증의 완료 근거로 집계하지 않습니다.
+- **분기별 옵션 의미 검증은 계속 필요합니다.** 2026-09-14 Unreleased에서 Reveal `mask`·`wipe`·`clock`의 반복·경계 callback·일시 정지와 Wave의 `trigger`·`loop`·`duration`·`delay`·`randomness`를 실제 브라우저 동작으로 검증했습니다. 일반 native Reveal도 Web Animations 경로에서 pause/resume를 지원합니다. 남은 제한은 Wave의 `colors`·`blendMode`, 일반 native Reveal 반복 경계 callback, 전용 데모가 없는 variant의 의미 검증입니다. Native Reveal에 GSAP의 전체 start/end 문법을 지원한다고 주장하지 않습니다. 단순 attribute 반영 검사를 이 의미 검증의 완료 근거로 집계하지 않습니다.
 
 ## 3. 제품 원칙과 하지 않을 일
 
@@ -435,7 +435,7 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 1.0 근거 최신화였으며 v0.9.8로 배포까지 완료했습니다. 아래 142~146번은 해당
 릴리스의 구현·회귀 검증, 147번은 원격 CI·npm·Pages와 공개 산출물 검증입니다.
 
-- 후속: Wave의 `colors`·`blendMode` 의미와 일반 native Reveal의 pause/resume 범위를 기존 시각 계약을 유지하며 검토. 148~152번 Unreleased 작업은 v0.9.8 배포 완료 근거에 합산하지 않음.
+- 후속: Wave의 `colors`·`blendMode` 의미와 일반 native Reveal의 반복 경계 callback 범위를 기존 시각 계약을 유지하며 검토. 일반 native pause/resume는 Web Animations 경로에 보강했으며, Unreleased 작업은 v0.9.8 배포 완료 근거에 합산하지 않음.
 - 후속: 전용 데모가 없는 variant 중 실제 적용·회귀 근거가 있는 항목의 비교 화면과 브라우저 검증 확대.
 - 외부 증거 필요: 실제 iOS Safari·Android Chrome·스크린리더 검사, 운영 앱의 장기 성능 측정, 공개 동의를 받은 외부 사용 사례 3개.
 - 증거 확보 후 결정: FLIP shared layout과 States·Presence 추가 확장. 현재 자동 검사나 데모를 외부 사용 증거로 집계하지 않습니다.
@@ -597,6 +597,8 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 150. 완료(Unreleased): Wave 숨김 탭 연산 정지·진행률과 남은 지연 보존·중복 SVG 쓰기 억제·destroy 후 재시작 차단
 151. 완료(Unreleased): Wave 전용 1회 재생 카드·7개 언어 설명·seed/왜곡량 설정 및 복사 옵션 추가. 199개 playground, 고위험 전용 데모 57/78, 과거 공유 URL 보존
 152. 완료(Unreleased 로컬 검증): Node 24 전체 CI, Reveal·Wave 세 엔진 회귀, 소비자·React/Vue fixture와 측정 보고서 완료. 패키지 증가를 명시적으로 검토해 해당 예산만 조정했으며 runtime 의존성 0개·77파일 유지. 공개 배포 근거와 구분
+
+153. 완료(Unreleased): 일반 native Reveal의 Web Animations 기반 pause/resume로 시작 지연·stagger·중간 진행률을 보존. 작성자 애니메이션 분리, 완료 후 재시작 방지, callback 내부 destroy와 빈 style 속성 복원 회귀를 추가하고, 기존 easing·구형 CSS 경로·용량 예산은 유지
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

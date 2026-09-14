@@ -597,6 +597,99 @@ try {
       }
       check(reentrant.instances === 0 && reentrant.triggers === 0, 'gsap: reentrant destruction must leave no instance or trigger');
     }
+    if (engine === 'native') {
+      const playback = await page.evaluate(async () => {
+        const { core } = window.__revealTest;
+        const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        const element = document.createElement('div');
+        element.style.cssText = 'position:fixed;top:20px;left:20px;color:red';
+        element.innerHTML = '<b>First</b><b>Second</b>';
+        document.body.append(element);
+        const original = element.outerHTML;
+        const authored = element.animate([{ color: 'red' }, { color: 'blue' }], { duration: 2000, iterations: Infinity });
+        let completed = 0;
+        const instance = core.create('reveal', element, {
+          preset: 'fade-up', duration: .24, delay: .16, stagger: .08,
+          ease: 'linear', onComplete: () => { completed += 1; }
+        });
+        instance.pause();
+        await wait(400);
+        const delayHeld = completed === 0 && [...element.children].every((child) => Number(window.getComputedStyle(child).opacity) === 0);
+        instance.resume();
+        await wait(240);
+        instance.pause();
+        await wait(40);
+        const sample = () => [...element.children].map((child) => Number(window.getComputedStyle(child).opacity));
+        const before = sample();
+        const authoredTime = authored.currentTime;
+        await wait(360);
+        const after = sample();
+        const phaseHeld = before.some((value) => value > 0 && value < 1)
+          && before.every((value, i) => Math.abs(value - after[i]) < .01) && completed === 0;
+        const isolated = authored.playState === 'running' && authored.currentTime > authoredTime;
+        instance.resume();
+        await wait(400);
+        const finished = completed === 1 && sample().every((value) => value === 1);
+        instance.resume();
+        await wait(100);
+        const noRestart = completed === 1;
+        instance.replay();
+        instance.pause();
+        await wait(50);
+        instance.destroy();
+        instance.resume();
+        instance.replay();
+        await wait(500);
+        const restored = element.outerHTML === original && completed === 1
+          && authored.playState === 'running' && element.getAnimations({ subtree: true }).length === 1;
+        authored.cancel();
+        element.remove();
+        return { delayHeld, phaseHeld, isolated, finished, noRestart, restored };
+      });
+      for (const [key, value] of Object.entries(playback)) check(value, `native playback: ${key}`);
+      const callbackCleanup = await page.evaluate(async () => {
+        const element = document.createElement('div');
+        element.innerHTML = '<b>First</b><b>Second</b>';
+        document.body.append(element);
+        const original = element.outerHTML;
+        let armed = false, completed = 0;
+        const instance = window.__revealTest.core.create('reveal', element, {
+          preset: 'fade', stagger: .02, duration: .05,
+          onClassChange: () => { if (armed) instance.destroy(); },
+          onComplete: () => { completed += 1; }
+        });
+        armed = true;
+        instance.replay();
+        await new Promise((resolve) => setTimeout(resolve, 250));
+        const restored = element.outerHTML === original && completed === 0
+          && element.getAnimations({ subtree: true }).length === 0;
+        instance.destroy();
+        element.remove();
+        return restored;
+      });
+      check(callbackCleanup, 'native: destroy inside class callback must not schedule new playback');
+      const legacy = await page.evaluate(async () => {
+        const element = document.createElement('div');
+        element.textContent = 'Legacy CSS';
+        element.style.cssText = 'position:fixed;top:20px;clip-path:inset(2px)';
+        element.animate = undefined;
+        document.body.append(element);
+        const original = element.outerHTML;
+        let completed = 0;
+        const instance = window.__revealTest.core.create('reveal', element, {
+          preset: 'fade-up', duration: .05, onComplete: () => { completed += 1; }
+        });
+        instance.replay();
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        const shown = completed === 1 && window.getComputedStyle(element).opacity === '1'
+          && element.style.clipPath === 'inset(2px)';
+        instance.destroy();
+        const restored = element.outerHTML === original;
+        element.remove();
+        return shown && restored;
+      });
+      check(legacy, 'native: no-WAAPI CSS fallback and authored clipping remain available');
+    }
     check(errors.length === 0, `${engine}: unexpected browser errors: ${errors.join('; ')}`);
     await page.close();
   }

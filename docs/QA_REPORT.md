@@ -5,6 +5,27 @@
 
 ## 2026-09-14 Unreleased 검증
 
+### 후속: 일반 native Reveal 재생 제어
+
+일반 native Reveal의 Web Animations 경로에서 pause/resume가 시작 지연·
+자식 stagger·중간 진행률을 보존하도록 보강했습니다. 작성자의 별도 애니메이션을
+유지하며, 완료 후 resume는 재시작하지 않습니다. replay/destroy는 소유한
+애니메이션만 취소합니다. 기존 `ease` 움직임과 API 없는 CSS 경로는 유지합니다.
+일반 native 반복 viewport callback 및 구형 CSS 경로의 pause/resume는 미지원입니다.
+
+Node 24 `npm run ci`가 종료 코드 0으로 완료됐습니다. 후속 빌드의 패키지는
+532.7KiB packed / 1765.9KiB unpacked·77파일이며, min UMD gzip은 123.9KiB입니다.
+Reveal의 23개 프리셋 × native/GSAP 및 추가 재생 제어·구형 CSS 경로를
+Chromium·Firefox·WebKit에서 검사했습니다.
+이번에는 번들·패키지 예산을 올리지 않았습니다. 기존 마스크 전용 경로로 이동한
+중복 clipping 처리를 일반 fallback에서 제거했습니다.
+
+이전 문서 수정 `a66de20`의 원격 CI `34805256180`과 canonical Pages
+`34806167009`는 성공한 것을 별도 확인했습니다. 이것은 이번 Unreleased 소스의
+원격 검사나 npm 게시 성공 근거가 아닙니다.
+
+### 앞선 Mask·Wave 묶음
+
 아래 변경은 로컬 검증 완료 상태이며, v0.9.8 공개 릴리스에 포함된 것으로
 표시하지 않습니다. Node 24에서 `npm run ci`가 종료 코드 0으로 완료됐습니다.
 
@@ -24,7 +45,7 @@
   모듈 조합 예산, 허용 러너 오차, runtime 의존성 0개는 유지합니다.
 - 공급망: 추가 실행한 root `npm audit --json`의 취약점은 0건입니다.
 
-Wave의 `colors`·`blendMode`, 일반 native Reveal의 pause/resume, 실기기
+현재 Wave의 `colors`·`blendMode`, 일반 native Reveal의 반복 경계 callback, 실기기
 iOS/Android·스크린리더와 외부 프로젝트 장기 사용 증거는 남아 있습니다.
 이번 브라우저 자동 검사는 실기기 검증을 대신하지 않습니다.
 

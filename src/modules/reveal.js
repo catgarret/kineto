@@ -540,12 +540,16 @@ export default {
     const duration = Math.max(0, Number(opts.duration ?? 0.55));
     let timers = [];
     let destroyed = false;
+    let paused = false;
+    let animations = [];
     const rafs = new Set();
     const frame = (callback) => {
       const id = requestAnimationFrame(() => { rafs.delete(id); if (!destroyed) callback(); });
       rafs.add(id);
     };
     const stop = () => {
+      animations.forEach((animation) => { animation.onfinish = null; animation.cancel(); });
+      animations = [];
       timers.forEach(clearTimeout);
       timers = [];
       rafs.forEach(cancelAnimationFrame);
@@ -570,30 +574,38 @@ export default {
       node.style.transform = transformFrom;
       if (from.transformOrigin) node.style.transformOrigin = from.transformOrigin;
       if (from.filter) node.style.filter = from.filter;
-      // Fully clipped targets do not intersect the viewport. Keep them hidden
-      // with opacity until the observer enters, then install the clip before
-      // starting its transition (without inserting an authored-DOM wrapper).
-      if (from.clipPath) { node.style.clipPath = 'none'; node.style.opacity = '0'; }
     };
     targets.forEach(initial);
     const enter = () => {
       if (destroyed) return;
       stop();
-      if (from.clipPath) {
-        targets.forEach((node) => { node.style.clipPath = from.clipPath; node.style.opacity = '1'; });
-        void el.offsetWidth;
-      }
       const delays = staggerDelays(targets.length, opts.stagger, opts.order);
       const baseDelay = Math.max(0, Number(opts.delay ?? 0));
       const finalIndex = delays.indexOf(Math.max(...delays));
       addClasses(el, opts);
+      if (destroyed) return;
       targets.forEach((node, index) => {
+        const end = { opacity: '1', transform: 'none', filter: 'none' };
+        if (typeof node.animate === 'function') {
+          const start = { opacity: String(from.opacity ?? 0), transform: transformFrom,
+            filter: from.filter || 'none' };
+          Object.assign(node.style, end);
+          const animation = node.animate([start, end], {
+            duration: duration * 1000, delay: (baseDelay + delays[index]) * 1000,
+            easing: 'ease', fill: 'backwards'
+          });
+          animations.push(animation);
+          if (paused) animation.pause();
+          animation.onfinish = () => {
+            animation.onfinish = null;
+            animations = animations.filter((item) => item !== animation);
+            if (!destroyed && index === finalIndex) opts.onComplete?.(el);
+          };
+          return;
+        }
         timers.push(setTimeout(() => frame(() => {
-          node.style.transition = `opacity ${duration}s ease,transform ${duration}s ease,filter ${duration}s ease,clip-path ${duration}s ease`;
-          node.style.opacity = '1';
-          node.style.transform = 'none';
-          node.style.filter = 'none';
-          node.style.clipPath = 'inset(0)';
+          node.style.transition = `opacity ${duration}s ease,transform ${duration}s ease,filter ${duration}s ease`;
+          Object.assign(node.style, end);
           if (index === finalIndex) timers.push(setTimeout(() => {
             if (!destroyed) opts.onComplete?.(el);
           }, duration * 1000));
@@ -607,17 +619,21 @@ export default {
       replay(nextOptions) {
         if (destroyed) return;
         Object.assign(opts, nextOptions || {});
+        paused = false;
         observer.disconnect();
         stop();
         targets.forEach(initial);
         frame(enter);
       },
-      pause() {},
-      resume() {},
+      pause() { if (!destroyed) { paused = true; animations.forEach((animation) => animation.pause()); } },
+      resume() { if (!destroyed) { paused = false; animations.forEach((animation) => animation.play()); } },
       destroy() {
         destroyed = true;
         observer.disconnect();
         stop();
+        // Flush the animation's inline declaration before restoring absent style
+        // attributes; Chromium can otherwise serialize them back as style="".
+        targets.forEach((node) => node.getAttribute('style'));
         restore();
       }
     };
