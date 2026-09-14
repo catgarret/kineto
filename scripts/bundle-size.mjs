@@ -126,10 +126,11 @@ const BUDGETS = {
   // 2026-09-14: reversible masked Reveal and Wave lifecycle measure
   // 524.3/139.4 KB readable ESM, 413.1/124.5 KB min ESM, and 411.3/123.8 KB
   // UMD. These are correctness bytes, not variance or bundled engines.
-  'kineto.js': { raw: 526, gz: 138, variance: 2 },
+  // Opt-in Wave colors/blending adds ~0.3 KB gzip; keep variance unchanged.
+  'kineto.js': { raw: 527, gz: 139, variance: 2 },
   'kineto.min.js': { raw: 415, gz: 123, variance: 2 },
-  'kineto.umd.js': { raw: 413, gz: 123, variance: 1 },
-  'kineto.umd.min.js': { raw: 413, gz: 123, variance: 1 },
+  'kineto.umd.js': { raw: 413, gz: 124, variance: 1 },
+  'kineto.umd.min.js': { raw: 413, gz: 124, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

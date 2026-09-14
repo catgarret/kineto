@@ -44,6 +44,8 @@
 | `trigger` | `auto`는 즉시 시작, `hover`는 포인터 진입, `scroll`/`view`는 viewport 진입 시 시작 |
 | `delay` | 시작 지연; 0–10은 초, 10보다 큰 값은 기존 Glitch와 동일하게 밀리초 |
 | `loop` | 기본 `true`; `false`는 한 주기 후 원본 필터로 복귀 |
+| `colors` | 선택 사항. CSS 색상 배열을 한 주기에 균등 분배해 35% 색조로 합성. 빈 배열은 기존 왜곡만 사용 |
+| `blendMode` | 선택 사항. 재생 중 요소의 CSS `mix-blend-mode`; 색상 배열 없이도 사용 가능 |
 
 ```js
 const wave = Kineto.create('glitch', element, {
@@ -62,7 +64,13 @@ const wave = Kineto.create('glitch', element, {
 인스턴스의 `resume()`/`replay()`는 아무 작업도 다시 시작하지 않습니다.
 `prefers-reduced-motion`과 저성능 fallback은 필터 없이 원본만 표시합니다.
 
-`colors`·`blendMode`는 Glitch의 색상 레이어 옵션입니다. 현재 Wave에는 색상
-레이어가 없어 적용되지 않으며, 기존 SVG 변형에 색상 효과를 임의로 덧붙이지
-않습니다. 이 두 옵션의 Wave 적용 여부는 공개 옵션 계약과 별도로 남은 검토
-사항입니다. 데모 설정의 Type에서 Wave를 선택할 수 있습니다.
+색상·합성 옵션을 생략하면 기존 Wave의 모양과 필터 구조를 유지합니다.
+`colors: ['#ff0040', 'rgb(0, 120, 255)']`처럼 지정할 수 있으며, CSS 변수와
+`currentColor`는 생성 시 대상 요소의 문맥으로 해석합니다. 잘못된 색상은
+제외합니다. 데모의 Color palette에는 JSON 배열을 입력합니다.
+색조는 기존 타이머를 공유하고 pause 시 함께 멈추며, 원본의 투명 영역을 채우지
+않습니다. 종료·이탈·destroy 시 원래 합성 값과 priority도 복원합니다.
+`blendMode`의 결과는 뒤쪽 배경과 stacking context에 따라 달라집니다.
+
+구현 기준: [SVG feFlood](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/feFlood),
+[feComposite atop](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/feComposite).

@@ -8746,54 +8746,71 @@ var di = "!@#$%^&*()<>?/|{}~ABCDEFGHIJabcdefghij0123456789", fi = {
 			});
 		}
 		if (n === "wave") {
-			let n = `kt-glitch-wave-${Math.random().toString(36).slice(2, 9)}`, i = Math.round(G(Number(t.channelOffset ?? 8), 1, 40) * r), a = "http://www.w3.org/2000/svg", s = document.createElementNS(a, "svg");
-			s.setAttribute("aria-hidden", "true"), s.setAttribute("focusable", "false"), s.style.cssText = "position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;";
-			let c = document.createElementNS(a, "filter");
-			c.setAttribute("id", n), c.setAttribute("x", "-15%"), c.setAttribute("y", "-15%"), c.setAttribute("width", "130%"), c.setAttribute("height", "130%");
-			let f = document.createElementNS(a, "feTurbulence");
-			f.setAttribute("type", "fractalNoise"), f.setAttribute("baseFrequency", "0.0008 0.06"), f.setAttribute("numOctaves", "1"), f.setAttribute("seed", String(Math.floor(Number(t.seed ?? 7)) || 7)), f.setAttribute("result", "noise");
-			let p = Number(t.duration), m = Number.isFinite(p) ? Math.max(42, p * 1e3 / l) : Math.max(600, 2600 / l), h = Math.max(0, Number(t.delay) || 0), g = h <= 10 ? h * 1e3 : h, _ = e.style.getPropertyValue("filter"), v = e.style.getPropertyPriority("filter"), y = e.hasAttribute("style"), b = -g, x = null, S = null, C = !0, w = !1, T = d !== "hover" && d !== "scroll" && d !== "view", E = !1, D = !1, O = () => {
-				D &&= (_ ? e.style.setProperty("filter", _, v) : e.style.removeProperty("filter"), !y && !e.style.length && e.removeAttribute("style"), !1);
-			}, k = () => {
-				clearTimeout(S), S = null, x !== null && (b += performance.now() - x), x = null;
-			}, A = () => {
-				if (!C || w || !T || E || document.hidden) return;
+			let n = Array.isArray(t.colors) ? t.colors.filter((e) => typeof e == "string" && CSS.supports("color", e)) : [];
+			if (n.length) {
+				let t = document.createElement("span");
+				t.style.display = "none", e.appendChild(t), n.forEach((e, r) => {
+					t.style.color = e, n[r] = getComputedStyle(t).color;
+				}), t.remove();
+			}
+			let i = typeof t.blendMode == "string" && CSS.supports("mix-blend-mode", t.blendMode) ? t.blendMode : null, a = e.style.getPropertyValue("mix-blend-mode"), s = e.style.getPropertyPriority("mix-blend-mode"), c = null, f = `kt-glitch-wave-${Math.random().toString(36).slice(2, 9)}`, p = Math.round(G(Number(t.channelOffset ?? 8), 1, 40) * r), m = "http://www.w3.org/2000/svg", h = document.createElementNS(m, "svg");
+			h.setAttribute("aria-hidden", "true"), h.setAttribute("focusable", "false"), h.style.cssText = "position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;";
+			let g = document.createElementNS(m, "filter");
+			g.setAttribute("id", f), g.setAttribute("x", "-15%"), g.setAttribute("y", "-15%"), g.setAttribute("width", "130%"), g.setAttribute("height", "130%");
+			let _ = document.createElementNS(m, "feTurbulence");
+			_.setAttribute("type", "fractalNoise"), _.setAttribute("baseFrequency", "0.0008 0.06"), _.setAttribute("numOctaves", "1"), _.setAttribute("seed", String(Math.floor(Number(t.seed ?? 7)) || 7)), _.setAttribute("result", "noise");
+			let v = Number(t.duration), y = Number.isFinite(v) ? Math.max(42, v * 1e3 / l) : Math.max(600, 2600 / l), b = Math.max(0, Number(t.delay) || 0), x = b <= 10 ? b * 1e3 : b, S = e.style.getPropertyValue("filter"), C = e.style.getPropertyPriority("filter"), w = e.hasAttribute("style"), T = -x, E = null, D = null, O = !0, k = !1, A = d !== "hover" && d !== "scroll" && d !== "view", j = !1, M = !1, N = () => {
+				M &&= (i !== null && (a ? e.style.setProperty("mix-blend-mode", a, s) : e.style.removeProperty("mix-blend-mode")), S ? e.style.setProperty("filter", S, C) : e.style.removeProperty("filter"), !w && !e.style.length && e.removeAttribute("style"), !1);
+			}, P = () => {
+				clearTimeout(D), D = null, E !== null && (T += performance.now() - E), E = null;
+			}, F = () => {
+				if (!O || k || !A || j || document.hidden) return;
 				let t = performance.now();
-				if (x !== null && (b += t - x), x = t, !u && b >= m) {
-					E = !0, x = null, O();
+				if (E !== null && (T += t - E), E = t, !u && T >= y) {
+					j = !0, E = null, N();
 					return;
 				}
-				if (b >= 0) {
-					D ||= (e.style.setProperty("filter", `${_ ? _ + " " : ""}url(#${n})`, v), !0);
-					let t = b % m / m, r = `0.0008 ${(.055 + ((t < .5 ? t * 2 : (1 - t) * 2) ** 1.6 - .5) * .07 * o).toFixed(4)}`;
-					f.getAttribute("baseFrequency") !== r && f.setAttribute("baseFrequency", r);
+				if (T >= 0) {
+					M ||= (e.style.setProperty("filter", `${S ? S + " " : ""}url(#${f})`, C), i !== null && e.style.setProperty("mix-blend-mode", i, s), !0);
+					let t = T % y / y;
+					if (c) {
+						let e = n[Math.floor(t * n.length)];
+						c.getAttribute("flood-color") !== e && c.setAttribute("flood-color", e);
+					}
+					let r = `0.0008 ${(.055 + ((t < .5 ? t * 2 : (1 - t) * 2) ** 1.6 - .5) * .07 * o).toFixed(4)}`;
+					_.getAttribute("baseFrequency") !== r && _.setAttribute("baseFrequency", r);
 				}
-				S = setTimeout(() => {
-					S = null, A();
-				}, b < 0 ? -b : 42);
-			}, j = () => {
-				S === null && A();
-			}, M = (e) => {
-				C && T !== e && (k(), T = e, T ? (b = -g, E = !1, j()) : O());
-			}, N = () => M(!0), P = () => M(!1), F = () => {
-				document.hidden ? k() : j();
-			}, I = null, L = document.createElementNS(a, "feDisplacementMap");
-			return L.setAttribute("in", "SourceGraphic"), L.setAttribute("in2", "noise"), L.setAttribute("scale", String(i)), L.setAttribute("xChannelSelector", "R"), L.setAttribute("yChannelSelector", "G"), c.appendChild(f), c.appendChild(L), s.appendChild(c), document.body.appendChild(s), d === "hover" ? (e.addEventListener("pointerenter", N), e.addEventListener("pointerleave", P)) : (d === "scroll" || d === "view") && (typeof IntersectionObserver == "function" ? (I = new IntersectionObserver((e) => {
-				e.forEach((e) => M(e.isIntersecting));
-			}, { threshold: .4 }), I.observe(e)) : T = !0), document.addEventListener("visibilitychange", F), j(), {
+				D = setTimeout(() => {
+					D = null, F();
+				}, T < 0 ? -T : 42);
+			}, I = () => {
+				D === null && F();
+			}, L = (e) => {
+				O && A !== e && (P(), A = e, A ? (T = -x, j = !1, I()) : N());
+			}, R = () => L(!0), z = () => L(!1), B = () => {
+				document.hidden ? P() : I();
+			}, V = null, H = document.createElementNS(m, "feDisplacementMap");
+			if (H.setAttribute("in", "SourceGraphic"), H.setAttribute("in2", "noise"), H.setAttribute("scale", String(p)), H.setAttribute("xChannelSelector", "R"), H.setAttribute("yChannelSelector", "G"), g.appendChild(_), g.appendChild(H), n.length) {
+				H.setAttribute("result", "warped"), c = document.createElementNS(m, "feFlood"), c.setAttribute("flood-opacity", "0.35"), c.setAttribute("flood-color", n[0]);
+				let e = document.createElementNS(m, "feComposite");
+				e.setAttribute("in2", "warped"), e.setAttribute("operator", "atop"), g.append(c, e);
+			}
+			return h.appendChild(g), document.body.appendChild(h), d === "hover" ? (e.addEventListener("pointerenter", R), e.addEventListener("pointerleave", z)) : (d === "scroll" || d === "view") && (typeof IntersectionObserver == "function" ? (V = new IntersectionObserver((e) => {
+				e.forEach((e) => L(e.isIntersecting));
+			}, { threshold: .4 }), V.observe(e)) : A = !0), document.addEventListener("visibilitychange", B), I(), {
 				el: e,
 				type: "glitch",
 				replay: () => {
-					C && (k(), b = 0, w = E = !1, T = !0, j());
+					O && (P(), T = 0, k = j = !1, A = !0, I());
 				},
 				pause: () => {
-					C && !w && (k(), w = !0);
+					O && !k && (P(), k = !0);
 				},
 				resume: () => {
-					C && w && (w = !1, j());
+					O && k && (k = !1, I());
 				},
 				destroy: () => {
-					C && (C = !1, k(), e.removeEventListener("pointerenter", N), e.removeEventListener("pointerleave", P), I?.disconnect(), document.removeEventListener("visibilitychange", F), s.remove(), O());
+					O && (O = !1, P(), e.removeEventListener("pointerenter", R), e.removeEventListener("pointerleave", z), V?.disconnect(), document.removeEventListener("visibilitychange", B), h.remove(), N());
 				}
 			};
 		}

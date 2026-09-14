@@ -5,6 +5,31 @@
 
 ## 2026-09-14 Unreleased 검증
 
+### 후속: Wave 색상과 합성 옵션
+
+기본 SVG 왜곡을 유지하면서 명시한 `colors` 배열만 35% 색조로 순환하고,
+`blendMode`는 재생 중 대상의 배경 합성으로 적용합니다. 색조는 원본 alpha
+안에서 합성하며 DOM/이미지를 복제하지 않습니다. CSS 변수·currentColor는
+생성 시 대상 문맥에서 해석합니다. 기존 타이머를 공유하며 종료·이탈·destroy
+시 원래 mix-blend-mode와 priority를 복원합니다.
+
+Chromium·Firefox·WebKit 각각 81개 결정적 검사와 실제 hover/scroll·재진입,
+원래 DOM 보존·reduced motion·렌더링 픽셀 차이 검사를 통과했습니다.
+기본/빨강/파랑/배경 difference 합성의 스크린샷 바이트를 비교해 옵션이
+실제 픽셀에 영향을 주는지 확인했습니다. 픽셀 차이는 시각 디자인 평가를
+대체하지 않으며, 실제 모바일 기기와 공개 배포는 이번 범위에서 미검증입니다.
+
+측정: 534.0KiB packed / 1770.3KiB unpacked / 77파일. UMD gzip은
+124.2KiB로 약 0.3KiB 증가했습니다. 패키지 상한은 535/1771KiB,
+readable ESM raw/gzip은 527/139KiB, UMD gzip은 124KiB로 조정했습니다.
+기존 runner variance·minified ESM·소비자 조합 예산은 그대로입니다.
+이 변경은 최적화 수치가 아니라 선택적 기능 구현 비용입니다.
+
+Node 24 전체 `npm run ci`가 종료 코드 0으로 완료됐습니다. 추가한 테스트의
+Event 전역 표기와 중국어 도움말 로캘 누락을 lint/번역 게이트가 잡아 수정한
+뒤 전체를 다시 실행했습니다. 652개 데모 컨트롤·515개 도움말 키, 프레임워크·
+SSR/hydration·Chromium 회귀·패키지 dry-run을 통과했습니다.
+
 ### 후속: 프레임워크 검사의 상태 기반 동기화
 
 React·Vue mount/update/재진입의 고정 100~120ms 대기를 최대 2초의

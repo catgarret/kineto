@@ -112,10 +112,12 @@ const BUDGET = {
   // playback/visibility lifecycle measure 532.2 KB packed / 1764.5 KB unpacked
   // on Node 24/npm 11. This is explicit correctness cost, not compression
   // variance. Retain all 77 files and bounded rounding/runner headroom.
-  packedKb: 534,
+  // Opt-in Wave palette/blending: Node 24 measures 534.0 KB packed /
+  // 1770.3 KB unpacked. This is feature cost, not runner variance.
+  packedKb: 535,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
-  unpackedKb: 1767,
+  unpackedKb: 1771,
   files: 77
 };
 

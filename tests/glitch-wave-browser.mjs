@@ -90,6 +90,7 @@ try {
     };
     try {
       const continuous = make();
+      check(!document.querySelector('feFlood') && !continuous.el.style.mixBlendMode, 'omitted color/blend options preserve the original filter graph and blending');
       check(continuous.active() && pending.size === 1, 'default starts continuously with one clock');
       advance(420);
       check(continuous.writes === 10, 'default makes at most one changed SVG write per 42ms tick');
@@ -157,6 +158,43 @@ try {
       check(!configured.active() && pending.size === 0, 'explicit duration combines with speed and frequency');
       configured.destroy();
 
+      const colored = make({ colors: ['#ff0000', 'invalid-color', '#0000ff'], blendMode: 'multiply', duration: .336, loop: false });
+      const tint = document.querySelector('feFlood');
+      check(tint?.getAttribute('flood-color') === 'rgb(255, 0, 0)', 'valid palette starts with its first color');
+      check(colored.el.style.mixBlendMode === 'multiply', 'explicit blend mode applies during playback');
+      advance(168);
+      check(tint?.getAttribute('flood-color') === 'rgb(0, 0, 255)', 'palette advances on the existing clock and skips invalid colors');
+      colored.instance.pause();
+      advance(1000);
+      check(tint?.getAttribute('flood-color') === 'rgb(0, 0, 255)', 'pause also holds the color phase');
+      colored.instance.resume();
+      advance(168);
+      check(!colored.active() && colored.el.style.mixBlendMode === '', 'one-shot completion restores the author blend mode');
+      colored.destroy();
+
+      const host = document.createElement('div');
+      host.style.setProperty('mix-blend-mode', 'screen', 'important');
+      document.body.append(host);
+      const blended = module.create(host, { preset: 'wave', blendMode: 'difference', trigger: 'hover' });
+      check(host.style.mixBlendMode === 'screen', 'waiting for hover preserves original blending');
+      host.dispatchEvent(new window.Event('pointerenter'));
+      check(host.style.mixBlendMode === 'difference', 'blend mode works without a color palette');
+      host.dispatchEvent(new window.Event('pointerleave'));
+      check(host.style.mixBlendMode === 'screen' && host.style.getPropertyPriority('mix-blend-mode') === 'important', 'hover leave restores blend value and priority');
+      blended.destroy();
+      host.remove();
+
+      const contextual = document.createElement('div');
+      contextual.style.cssText = 'color:rgb(20, 40, 60);--wave-color:rgb(80, 100, 120)';
+      document.body.append(contextual);
+      const contextualWave = module.create(contextual, { preset: 'wave', colors: ['var(--wave-color)', 'currentColor'], duration: .336 });
+      check(document.querySelector('feFlood')?.getAttribute('flood-color') === 'rgb(80, 100, 120)', 'palette resolves target-scoped CSS variables');
+      advance(168);
+      check(document.querySelector('feFlood')?.getAttribute('flood-color') === 'rgb(20, 40, 60)', 'palette resolves target currentColor');
+      contextualWave.destroy();
+      check(contextual.childElementCount === 0 && pending.size === 0, 'color resolution leaves no probe or timer');
+      contextual.remove();
+
       const legacyDelay = make({ delay: 80 });
       advance(79);
       check(!legacyDelay.active(), 'legacy millisecond delay remains pending');
@@ -207,6 +245,22 @@ try {
     return { failures, checks };
   }, origin);
   assert.deepEqual(timing.failures, [], `Wave timing/lifecycle failures (${browserName})`);
+
+  await page.setContent('<style>body{background:#aaa}#palette{width:240px;height:100px;background:#555;color:white;font:40px sans-serif}</style><div id="palette">WAVE</div>');
+  const shots = [];
+  for (const options of [{}, { colors: ['red'] }, { colors: ['blue'] }, { colors: ['blue'], blendMode: 'difference' }]) {
+    await page.evaluate(async ({ base, options }) => {
+      window.__palette?.destroy();
+      const module = (await import(`${base}/src/modules/glitch.js`)).default;
+      window.__palette = module.create(document.querySelector('#palette'), { preset: 'wave', randomness: 0, seed: 7, ...options });
+      window.__palette.pause();
+    }, { base: origin, options });
+    shots.push(await page.locator('#palette').screenshot());
+  }
+  assert.notDeepEqual(shots[0], shots[1], 'explicit palette changes rendered pixels');
+  assert.notDeepEqual(shots[1], shots[2], 'different palette colors produce different pixels');
+  assert.notDeepEqual(shots[2], shots[3], 'explicit blend mode changes rendered pixels against the page');
+  await page.evaluate(() => window.__palette.destroy());
 
   // Native events, IntersectionObserver and timer scheduling, not the fake clock.
   await page.setContent('<!doctype html><style>body{margin:0;min-height:3600px}#target{margin-top:2000px;width:240px;height:120px;background:#ace}</style><div id="target">Actual<br>SVG motion</div>');

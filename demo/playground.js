@@ -134,6 +134,8 @@
     blurText: [['duration','Duration','range',0.1,2.5,0.05],['stagger','Stagger','range',0,0.2,0.005],['once','Once','checkbox']]
   };
 
+  FIELDS.glitch.push(['colors','Color palette','text'], ['blendMode','Blend mode','select',['','normal','multiply','screen','overlay','difference','exclusion']]);
+
   const DEFAULTS = {
     fullpage:{duration:.75,mode:'transform',loop:false,dots:true,wheel:true,touch:true,keyboard:true,threshold:24,autoAdvance:0},
     counter:{duration:1.2,loops:2,popScale:2,popDuration:.3,stagger:.06,format:',',tileColor:'#191b20',tileTextColor:'#f6f7fb',gap:3,seconds:true,blink:true,blinkSeparators:false,clockStyle:'roll',rollDirection:'up',rollDuration:.28,daysLabel:'d'},
@@ -360,6 +362,8 @@
     },
     glitch: {
       preset: () => true,
+      colors:(o)=>o.preset==='wave',
+      blendMode:(o)=>o.preset==='wave',
       // Options this preset genuinely never reads. Leaving them on screen was the
       // real reason "옵션을 바꿔도 아무것도 안 달라진다" — Image slices, Randomness
       // (now honoured) and Duration simply were not part of the burst plan.

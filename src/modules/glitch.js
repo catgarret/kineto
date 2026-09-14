@@ -184,6 +184,18 @@ export default {
     // feDisplacementMap so rows shear by a smoothly varying amount, which is what
     // a real analogue signal does under interference.
     if (preset === 'wave') {
+      const palette = Array.isArray(opts.colors) ? opts.colors.filter((color) => typeof color === 'string' && CSS.supports('color', color)) : [];
+      if (palette.length) {
+        const probe = document.createElement('span');
+        probe.style.display = 'none';
+        el.appendChild(probe);
+        palette.forEach((color, index) => { probe.style.color = color; palette[index] = getComputedStyle(probe).color; });
+        probe.remove();
+      }
+      const blend = typeof opts.blendMode === 'string' && CSS.supports('mix-blend-mode', opts.blendMode) ? opts.blendMode : null;
+      const originalBlend = el.style.getPropertyValue('mix-blend-mode');
+      const blendPriority = el.style.getPropertyPriority('mix-blend-mode');
+      let tint = null;
       const uid = `kt-glitch-wave-${Math.random().toString(36).slice(2, 9)}`;
       const amount = Math.round(clamp(Number(opts.channelOffset ?? 8), 1, 40) * intensity);
       const svgNS = 'http://www.w3.org/2000/svg';
@@ -234,6 +246,10 @@ export default {
       let applied = false;
       const restoreFilter = () => {
         if (!applied) return;
+        if (blend !== null) {
+          if (originalBlend) el.style.setProperty('mix-blend-mode', originalBlend, blendPriority);
+          else el.style.removeProperty('mix-blend-mode');
+        }
         if (originalFilter) el.style.setProperty('filter', originalFilter, originalPriority);
         else el.style.removeProperty('filter');
         if (!hadStyle && !el.style.length) el.removeAttribute('style');
@@ -259,9 +275,14 @@ export default {
         if (elapsed >= 0) {
           if (!applied) {
             el.style.setProperty('filter', `${originalFilter ? originalFilter + ' ' : ''}url(#${uid})`, originalPriority);
+            if (blend !== null) el.style.setProperty('mix-blend-mode', blend, blendPriority);
             applied = true;
           }
           const phase = (elapsed % period) / period;
+          if (tint) {
+            const color = palette[Math.floor(phase * palette.length)];
+            if (tint.getAttribute('flood-color') !== color) tint.setAttribute('flood-color', color);
+          }
           // Triangle sweep low -> high -> low. Held near the low end most of the
           // cycle so the element stays readable and only tears periodically; a
           // constantly warped element just looks broken.
@@ -292,6 +313,16 @@ export default {
       displace.setAttribute('yChannelSelector', 'G');
       filter.appendChild(turbulence);
       filter.appendChild(displace);
+      if (palette.length) {
+        displace.setAttribute('result', 'warped');
+        tint = document.createElementNS(svgNS, 'feFlood');
+        tint.setAttribute('flood-opacity', '0.35');
+        tint.setAttribute('flood-color', palette[0]);
+        const composite = document.createElementNS(svgNS, 'feComposite');
+        composite.setAttribute('in2', 'warped');
+        composite.setAttribute('operator', 'atop');
+        filter.append(tint, composite);
+      }
       svg.appendChild(filter);
       document.body.appendChild(svg);
       if (trigger === 'hover') {

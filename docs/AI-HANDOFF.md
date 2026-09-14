@@ -109,7 +109,9 @@ randomness plus hidden-tab suspension. It adds a localized one-shot Wave card
 (199 playgrounds; 57/78 dedicated high-risk variants) and three-engine behavior
 tests. A subsequent Unreleased change adds generic native Reveal pause/resume
 when Web Animations is available, retaining delay/stagger and author animations.
-Wave colors/blendMode and generic native repeated viewport callbacks remain open.
+Wave colors/blendMode now have opt-in palette/backdrop rendering, author-state
+restoration and three-engine pixel tests. Generic native repeated viewport
+callbacks remain open.
 The next Unreleased correction resolves low-tier Reveal presets through the
 native backend before rendering; loaded GSAP/ScrollTrigger are not used there.
 Native completion tracking uses a Set and reuses keyframe input;

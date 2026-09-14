@@ -5,6 +5,8 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Honor opt-in Wave palettes and background blending without changing the default distortion; share the existing clock, resolve target-scoped CSS colors, restore author blending, and expose localized demo controls with rendered-pixel regressions.
+- Account for the measured Wave feature cost (~0.3 KiB UMD gzip, 534.0 KiB packed/1770.3 KiB unpacked), adjusting only affected ceilings while retaining 77 files and zero required runtime dependencies.
 - Synchronize React/Vue lifecycle QA with bounded state assertions instead of fixed mount/update sleeps; preserve completion, DOM removal and leak checks and test timeout diagnostics without changing the runtime package.
 - Restore native class-only Reveal observation after pause/resume; preserve completed once-only entrances and prevent destroyed instances from restarting, with normal/low-tier browser regressions.
 - Preserve all Reveal presets and class-only hooks in low-performance mode without using loaded GSAP/ScrollTrigger; avoid repeated full-list scans on native animation completion, batch class tokens, and correct the external-engine bundle documentation.
@@ -19,6 +21,8 @@
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 기본 왜곡을 유지하면서 Wave의 선택적 색상 배열·배경 합성을 연결했습니다. 기존 타이머 공유·대상 문맥의 CSS 색상 해석·원래 합성 스타일 복원과 다국어 데모 설정·렌더링 픽셀 회귀 검사를 추가했습니다.
+- Wave 기능 비용(UMD gzip 약 0.3KiB 증가, 패키지 압축 534.0KiB·해제 1770.3KiB)을 측정해 해당 상한만 조정하고 77개 파일·필수 런타임 의존성 0개를 유지했습니다.
 - React/Vue lifecycle QA의 고정 mount/update 대기를 제한 시간 내 상태 단언으로 교체했습니다. 완료·DOM 제거·누수 검사를 유지하고 시간 초과 진단을 검사하며, 런타임 패키지는 변경하지 않습니다.
 - Native class-only Reveal의 일시 정지 후 viewport 관찰을 복구하고, 완료한 1회 진입과 destroy 후 재시작 방지를 보존합니다. 일반·저성능 티어 브라우저 회귀 검사를 추가했습니다.
 - 저성능 모드에서 로드된 GSAP·ScrollTrigger를 사용하지 않으면서 Reveal 프리셋과 class-only hook을 보존합니다. Native 애니메이션 완료 시 전체 목록 재검색을 없애고 class token을 묶어 처리하며, 외부 엔진 번들 설명을 바로잡았습니다.

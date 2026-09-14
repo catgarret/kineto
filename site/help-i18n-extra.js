@@ -2209,4 +2209,17 @@
     sets[lang] = sets[lang] || {};
     sets[lang].dateTime = Object.assign({}, sets[lang].dateTime, values);
   }
+  const wave = {
+    ko: ['CSS 색상 JSON 배열입니다. Wave 한 주기 안에서 순서대로 색조를 적용하며 빈 배열은 색조를 끕니다.', '재생 중 배경과 합성할 CSS mix-blend-mode입니다. 빈 값은 원래 스타일을 유지합니다.'],
+    en: ['A JSON array of CSS colors. Wave cycles through the tints within one period; an empty array disables tinting.', 'CSS mix-blend-mode against the backdrop during playback. An empty value preserves author styling.'],
+    ja: ['CSS色のJSON配列です。Waveの1周期内で順番に色を重ねます。空の配列で着色を無効にします。', '再生中の背景とのCSS mix-blend-modeです。空欄は元のスタイルを維持します。'],
+    'zh-CN': ['CSS颜色的JSON数组。Wave在一个周期内依次着色；空数组禁用着色。', '播放时与背景合成的CSS mix-blend-mode。空值保留原始样式。'],
+    'zh-TW': ['CSS色彩的JSON陣列。Wave在一個週期內依序著色；空陣列停用著色。', '播放時與背景合成的CSS mix-blend-mode。空值保留原始樣式。'],
+    ru: ['JSON-массив цветов CSS. Wave меняет оттенки за один цикл; пустой массив отключает окраску.', 'CSS mix-blend-mode с фоном при воспроизведении. Пустое значение сохраняет исходный стиль.'],
+    it: ['Array JSON di colori CSS. Wave alterna le tinte in un ciclo; un array vuoto disattiva la tinta.', 'CSS mix-blend-mode con lo sfondo durante la riproduzione. Un valore vuoto conserva lo stile originale.']
+  };
+  for (const [lang, values] of Object.entries(wave)) {
+    sets[lang] = sets[lang] || {};
+    sets[lang].glitch = Object.assign({}, sets[lang].glitch, { colors: values[0], blendMode: values[1] });
+  }
 })();
