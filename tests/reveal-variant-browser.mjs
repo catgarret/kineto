@@ -115,6 +115,11 @@ try {
     check(near(byPreset['zoom-in'].matrix[0], .78, .01), `${engine}/zoom-in: must begin scaled down`);
     check(near(byPreset['zoom-out'].matrix[0], 1.16, .01), `${engine}/zoom-out: must begin scaled up`);
     check(byPreset.blur.filter === 'blur(20px)' && byPreset.soft.filter === 'blur(8px)', `${engine}: blur and soft must have different rendered blur strength`);
+    check(near(byPreset.rise.matrix[0], .96, .002), `${engine}/rise: must begin at 96% scale`);
+    const rotateRadians = -8 * Math.PI / 180;
+    check(near(byPreset.rotate.matrix[0], .92 * Math.cos(rotateRadians), .002)
+      && near(byPreset.rotate.matrix[1], .92 * Math.sin(rotateRadians), .002),
+    `${engine}/rotate: must retain its -8 degree rotation and 92% scale`);
     check(byPreset['flip-x'].transform.startsWith('matrix3d(') && byPreset['flip-y'].transform.startsWith('matrix3d(')
       && byPreset['flip-x'].transform !== byPreset['flip-y'].transform, `${engine}: flips must render different 3D axes`);
     check(near(byPreset.skew.matrix[1], Math.tan(7 * Math.PI / 180), .001), `${engine}/skew: must render a shear`);

@@ -855,6 +855,10 @@ window.KINETO_COPY_I18N = {
       "Содержимое появится снизу.",
       "Il contenuto apparirà dal basso."
     ],
+    "이동 없이 20px 흐림을 걷어내며 나타납니다.": ["Appear by clearing a 20px blur without movement.","移動せずに20pxのぼかしを解いて表示します。","消除20px模糊并显现，不发生位移。","消除20px模糊並顯現，不發生位移。","Появляется без перемещения, убирая размытие 20px.","Appare eliminando una sfocatura di 20px, senza spostarsi."],
+    "아래쪽 72px에서 96% 크기로 시작해 올라오며 커집니다.": ["Rise from 72px below while growing from 96% scale.","72px下・96%の大きさから、上昇しながら拡大します。","从下方72px、96%大小开始，上移并放大。","從下方72px、96%大小開始，上移並放大。","Поднимается с позиции на 72px ниже, увеличиваясь с 96% размера.","Sale da 72px sotto, ingrandendosi dal 96% delle dimensioni."],
+    "아래쪽 24px에서 올라오며 8px 흐림을 걷어냅니다.": ["Rise from 24px below while clearing an 8px blur.","24px下から上昇しながら8pxのぼかしを解きます。","从下方24px上移，同时消除8px模糊。","從下方24px上移，同時消除8px模糊。","Поднимается с позиции на 24px ниже, убирая размытие 8px.","Sale da 24px sotto eliminando una sfocatura di 8px."],
+    "중심축 기준 -8도 기울기와 92% 크기를 바로잡으며 나타납니다.": ["Appear by straightening a -8° center rotation and growing from 92% scale.","中心を軸にした-8度の傾きと92%の大きさを戻しながら表示します。","将绕中心的-8度旋转和92%大小恢复至原状并显现。","將繞中心的-8度旋轉和92%大小恢復至原狀並顯現。","Появляется, выравнивая поворот −8° вокруг центра и увеличиваясь с 92% размера.","Appare raddrizzando una rotazione centrale di -8° e crescendo dal 92% delle dimensioni."],
     "위쪽 40px 위치에서 내려오며 선명해집니다.": ["Fade in while moving down from 40px above.", "40px上から下へ移動しながらフェードインします。", "从上方40px处向下移动并淡入。", "從上方40px處向下移動並淡入。", "Появляется, спускаясь с позиции на 40px выше.", "Appare scendendo da 40px sopra."],
     "왼쪽 40px 위치에서 들어오며 선명해집니다.": ["Fade in from 40px to the left.", "40px左から移動しながらフェードインします。", "从左侧40px处移动并淡入。", "從左側40px處移動並淡入。", "Появляется с позиции на 40px левее.", "Appare entrando da 40px a sinistra."],
     "오른쪽 40px 위치에서 들어오며 선명해집니다.": ["Fade in from 40px to the right.", "40px右から移動しながらフェードインします。", "从右侧40px处移动并淡入。", "從右側40px處移動並淡入。", "Появляется с позиции на 40px правее.", "Appare entrando da 40px a destra."],

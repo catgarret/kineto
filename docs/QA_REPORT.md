@@ -5,6 +5,27 @@
 
 ## 2026-09-14 Unreleased 검증
 
+### 후속: Reveal 전용 예제 완성
+
+Blur·Rise·Soft·Rotate에 동일 문구·크기·0.9초 비교 카드를 추가했습니다.
+기존 19개와 합쳐 Reveal 23/23 프리셋에 전용 markup이 있으며, 공개 프리셋과
+전용 예제 집합이 정확히 같은지 검사해 누락을 방지합니다. 전체 playground는
+213개, 확대 감사 전용 예제는 71/78입니다. Lazy 2개·Cursor 1개·Glitch 4개의
+전용 예제는 남아 있습니다. 런타임·기본값·계약·번들 예산은 변경하지 않았습니다.
+
+169개 카드 설명·515개 옵션 도움말의 7개 언어 동기화 검사를 통과했습니다.
+로컬 Chromium의 reduced-motion 화면에서 새 카드가 같은 폭의 2열로 배치되고
+문구가 중앙에 놓이는 것을 캡처로 확인했습니다. 외부 CDN을 비운 로컬 캡처이므로
+외부 아이콘·폰트나 공개 사이트의 표시 검증을 뜻하지 않습니다.
+
+Node 24 전체 `npm run ci`가 종료 코드 0으로 통과했습니다. 213개 playground·
+652개 고유 컨트롤과 23개 Slider/Reveal 비교 카드의 설정 연결·복사 프리셋·
+Replay·줄바꿈·고유 semantic 공유·desktop/390px bounds·Reset 정리를 검사했습니다.
+Reveal 23개 프리셋의 native/GSAP·저성능·중간 동작·재생·destroy 검사는
+Chromium(전체 CI)과 Firefox·WebKit(별도 직접 실행)에서 모두 통과했습니다.
+Rise의 96% 크기와 Rotate의 -8도·92% 시작 변환 단언을 추가했습니다.
+실제 모바일 기기·공개 배포는 미검증이며 이번 변경은 Unreleased입니다.
+
 ### 후속: Reveal 방향 비교 카드 5개
 
 Fade Down/Left/Right·Slide Down/Right를 동일 문구·크기·0.9초 재생 시간의

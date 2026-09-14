@@ -116,6 +116,8 @@ Five additional Reveal comparison cards (Fade, Zoom In/Out, Flip X/Y) bring
 the demo to 204 playgrounds and 62/78 dedicated high-risk variants. Five directional
 comparisons (Fade Down/Left/Right and Slide Down/Right) now bring those counts to
 209 playgrounds and 67/78, without changing the historical preset directions.
+Blur, Rise, Soft and Rotate complete dedicated Reveal coverage at 23/23, bringing
+the current demo to 213 playgrounds and 71/78 dedicated high-risk variants.
 The next Unreleased correction resolves low-tier Reveal presets through the
 native backend before rendering; loaded GSAP/ScrollTrigger are not used there.
 Native completion tracking uses a Set and reuses keyframe input;

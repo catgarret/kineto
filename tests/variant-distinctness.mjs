@@ -167,6 +167,8 @@ assert.ok(revealSource.includes("preset === 'class'"), 'Reveal class variant nee
 assert.ok(revealSource.includes("preset === 'clock'"), 'Reveal clock variant needs its conic-mask branch');
 assert.deepEqual(demoChoices.reveal, reveal.variants, 'Reveal settings choices must mirror the public contract');
 const authoredReveal = authoredDemoVariants(reveal);
+assert.deepEqual([...authoredReveal].sort(), [...reveal.variants].sort(),
+  'every public Reveal preset must retain dedicated demo markup, not only a settings choice');
 for (const variant of authoredReveal) {
   assert.ok(reveal.variants.includes(variant), `Reveal demo authors stale variant "${variant}"`);
 }

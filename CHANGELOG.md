@@ -5,6 +5,7 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Complete dedicated Reveal demo coverage with Blur, Rise, Soft, and Rotate comparisons, seven-language descriptions, settings/replay/share regressions, and a gate preventing any of the 23 public presets from losing its example; preserve runtime behavior and package budgets.
 - Add five directional Reveal comparisons (Fade Down/Left/Right and Slide Down/Right), with seven-language descriptions of the actual starting positions, connected controls, replay/copy/share coverage, and unchanged runtime behavior.
 - Add five matched Reveal comparison demos for Fade, Zoom In/Out and Flip X/Y, with seven-language descriptions, connected settings and replay, unique semantic sharing, and desktop/mobile layout regressions; preserve historical share links and the runtime package.
 - Honor opt-in Wave palettes and background blending without changing the default distortion; share the existing clock, resolve target-scoped CSS colors, restore author blending, and expose localized demo controls with rendered-pixel regressions.
@@ -23,6 +24,7 @@
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- Blur·Rise·Soft·Rotate 비교 카드와 7개 언어 설명으로 Reveal 전용 데모 23개를 완성하고 설정·재생·공유 회귀 검사 및 예제 누락 방지 게이트를 추가했습니다. 런타임 동작과 패키지 예산은 유지합니다.
 - Fade Down/Left/Right·Slide Down/Right 방향 비교 데모 5개와 실제 시작 위치의 7개 언어 설명·설정·Replay·복사·공유 검사를 추가했습니다. 기존 런타임 동작은 변경하지 않습니다.
 - Fade·Zoom In/Out·Flip X/Y의 동일 조건 Reveal 비교 데모 5개와 7개 언어 설명·설정·Replay·고유 공유 링크·데스크톱/모바일 레이아웃 회귀 검사를 추가했습니다. 과거 공유 링크와 런타임 패키지는 유지합니다.
 - 기본 왜곡을 유지하면서 Wave의 선택적 색상 배열·배경 합성을 연결했습니다. 기존 타이머 공유·대상 문맥의 CSS 색상 해석·원래 합성 스타일 복원과 다국어 데모 설정·렌더링 픽셀 회귀 검사를 추가했습니다.

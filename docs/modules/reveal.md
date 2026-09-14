@@ -54,6 +54,13 @@ Fade Down/Left/Right·Slide Down/Right도 전용 카드로 비교합니다. 카�
 </ul>
 ```
 
+데모는 23개 공개 프리셋 모두 전용 예제를 제공합니다. Blur·Rise·Soft·Rotate도
+동일 문구·크기·0.9초 조건에서 비교하며 Replay와 개별 설정을 사용할 수 있습니다.
+기본값 기준 Blur는 이동 없이 20px 흐림을 해제하고, Rise는 아래쪽 72px·96%
+크기에서 올라옵니다. Soft는 아래쪽 24px 이동과 8px 흐림을 함께 해제하며,
+Rotate는 중심축 -8도·92% 크기에서 원래 상태로 돌아옵니다. 이동·크기·흐림을
+섞는 방식이 다르며 단순 이름 변경이나 동일 효과의 복제가 아닙니다.
+
 ## Class-only designer hook
 
 ```html

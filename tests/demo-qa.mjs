@@ -179,9 +179,9 @@ try {
     await new Promise((resolve)=>setTimeout(resolve,180));
     return results;
   });
-  const comparisonKeys=['slider:fade','slider:wipe','slider:flip','slider:cube','slider:cards','slider:creative','reveal:mask','reveal:swing','reveal:skew','reveal:fade','reveal:zoom-in','reveal:zoom-out','reveal:flip-x','reveal:flip-y','reveal:fade-down','reveal:fade-left','reveal:fade-right','reveal:slide-down','reveal:slide-right'];
+  const comparisonKeys=['slider:fade','slider:wipe','slider:flip','slider:cube','slider:cards','slider:creative','reveal:mask','reveal:swing','reveal:skew','reveal:fade','reveal:zoom-in','reveal:zoom-out','reveal:flip-x','reveal:flip-y','reveal:fade-down','reveal:fade-left','reveal:fade-right','reveal:slide-down','reveal:slide-right','reveal:blur','reveal:rise','reveal:soft','reveal:rotate'];
   assert.deepEqual(comparisonSettings.map(({key})=>key).sort(),[...comparisonKeys].sort(),
-    'all nineteen dedicated Slider/Reveal comparisons must mount exactly once');
+    'all dedicated Slider/Reveal comparisons must mount exactly once');
   assert.equal(new Set(comparisonSettings.map(({shareKey})=>shareKey)).size,comparisonKeys.length,
     'comparison cards must have distinct semantic settings links');
   for(const record of comparisonSettings){
