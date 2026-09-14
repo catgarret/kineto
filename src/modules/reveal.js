@@ -71,8 +71,8 @@ function setClasses(el, opts, active) {
   const enter = String(opts.enterClass || opts.activeClass || 'is-inview').split(/\s+/).filter(Boolean);
   const leave = String(opts.leaveClass || '').split(/\s+/).filter(Boolean);
   const [remove, add] = active ? [leave, enter] : [enter, leave];
-  remove.forEach((className) => el.classList.remove(className));
-  add.forEach((className) => el.classList.add(className));
+  el.classList.remove(...remove);
+  el.classList.add(...add);
   opts.onClassChange?.(active, el);
 }
 
@@ -282,9 +282,9 @@ function maskedReveal(el, opts, gsap, scrollTrigger, clock, clipAt) {
 export { PRESETS, staggerDelays };
 
 export default {
-  create(el, opts = {}) {
-    const gsap = G();
-    const scrollTrigger = ST();
+  create(el, opts = {}, context) {
+    const gsap = context?.performance === 'low' ? null : G();
+    const scrollTrigger = gsap && ST();
     const preset = opts.preset || 'fade-up';
     const presetDirection = preset.startsWith('slide-') ? preset.slice(6) : null;
     const direction = opts.direction || presetDirection || (preset === 'mask' ? 'right' : 'up');
@@ -519,8 +519,12 @@ export default {
   },
 
   fallback(el, opts = {}, from = PRESETS['fade-up']) {
+    // Core passes its context as the third argument; internal rendering passes
+    // a resolved preset instead. Resolve low-tier options before rendering them.
+    if (from.performance === 'low') return this.create(el, opts, from);
     const targets = revealTargets(el, opts);
     const restore = snapshotTargets(el, targets);
+    const opacity = String(from.opacity ?? 0);
     const x = Number(from.x ?? 0);
     const y = Number(from.y ?? 0);
     const xPercent = Number(from.xPercent ?? 0);
@@ -541,7 +545,7 @@ export default {
     let timers = [];
     let destroyed = false;
     let paused = false;
-    let animations = [];
+    const animations = new Set();
     const rafs = new Set();
     const frame = (callback) => {
       const id = requestAnimationFrame(() => { rafs.delete(id); if (!destroyed) callback(); });
@@ -549,7 +553,7 @@ export default {
     };
     const stop = () => {
       animations.forEach((animation) => { animation.onfinish = null; animation.cancel(); });
-      animations = [];
+      animations.clear();
       timers.forEach(clearTimeout);
       timers = [];
       rafs.forEach(cancelAnimationFrame);
@@ -568,9 +572,13 @@ export default {
       skewY ? `skewY(${skewY}deg)` : '',
       scale !== 1 ? `scale(${scale})` : ''
     ].filter(Boolean).join(' ');
+    const keyframes = [
+      { opacity, transform: transformFrom, filter: from.filter || 'none' },
+      { opacity: '1', transform: 'none', filter: 'none' }
+    ];
     const initial = (node) => {
       node.style.transition = 'none';
-      node.style.opacity = String(from.opacity ?? 0);
+      node.style.opacity = opacity;
       node.style.transform = transformFrom;
       if (from.transformOrigin) node.style.transformOrigin = from.transformOrigin;
       if (from.filter) node.style.filter = from.filter;
@@ -585,27 +593,24 @@ export default {
       addClasses(el, opts);
       if (destroyed) return;
       targets.forEach((node, index) => {
-        const end = { opacity: '1', transform: 'none', filter: 'none' };
         if (typeof node.animate === 'function') {
-          const start = { opacity: String(from.opacity ?? 0), transform: transformFrom,
-            filter: from.filter || 'none' };
-          Object.assign(node.style, end);
-          const animation = node.animate([start, end], {
+          Object.assign(node.style, keyframes[1]);
+          const animation = node.animate(keyframes, {
             duration: duration * 1000, delay: (baseDelay + delays[index]) * 1000,
             easing: 'ease', fill: 'backwards'
           });
-          animations.push(animation);
+          animations.add(animation);
           if (paused) animation.pause();
           animation.onfinish = () => {
             animation.onfinish = null;
-            animations = animations.filter((item) => item !== animation);
+            animations.delete(animation);
             if (!destroyed && index === finalIndex) opts.onComplete?.(el);
           };
           return;
         }
         timers.push(setTimeout(() => frame(() => {
           node.style.transition = `opacity ${duration}s ease,transform ${duration}s ease,filter ${duration}s ease`;
-          Object.assign(node.style, end);
+          Object.assign(node.style, keyframes[1]);
           if (index === finalIndex) timers.push(setTimeout(() => {
             if (!destroyed) opts.onComplete?.(el);
           }, duration * 1000));

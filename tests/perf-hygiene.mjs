@@ -87,6 +87,17 @@ typewriterEl.textContent = 'Original';
 const staticTypewriter = Kineto.create('typewriter', typewriterEl, { strings: ['Static', 'Animated'] });
 assert.equal(typewriterEl.textContent, 'Static', 'low tier must render the first typewriter value without starting its timer loop');
 staticTypewriter.destroy();
+// Core's fallback context must not be mistaken for Reveal's resolved geometry.
+const revealEl = w.document.body.appendChild(w.document.createElement('div'));
+revealEl.textContent = 'Keep the selected direction';
+const revealOriginal = revealEl.outerHTML;
+const lowReveal = Kineto.create('reveal', revealEl, { preset: 'slide-left', distance: 18 });
+assert.match(revealEl.style.transform, /translate3d\(-18px,0px,0\)/, 'low tier must preserve Reveal direction and distance');
+lowReveal.destroy();
+assert.equal(revealEl.outerHTML, revealOriginal, 'low-tier Reveal must restore authored DOM');
+const classReveal = Kineto.create('reveal', revealEl, { preset: 'class' });
+assert.equal(revealEl.outerHTML, revealOriginal, 'class-only low-tier Reveal must not add visual inline styles');
+classReveal.destroy();
 Kineto.config({ performance: 'auto' });
 
 // ---- 2. Static: scroll/wheel/touch listeners must be passive ------------------

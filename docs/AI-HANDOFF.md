@@ -110,6 +110,10 @@ randomness plus hidden-tab suspension. It adds a localized one-shot Wave card
 tests. A subsequent Unreleased change adds generic native Reveal pause/resume
 when Web Animations is available, retaining delay/stagger and author animations.
 Wave colors/blendMode and generic native repeated viewport callbacks remain open.
+The next Unreleased correction resolves low-tier Reveal presets through the
+native backend before rendering; loaded GSAP/ScrollTrigger are not used there.
+Native completion tracking uses a Set and reuses keyframe input;
+multi-token class hooks are batched. See QA_REPORT for the separate cost evidence.
 Package growth is an explicit lifecycle cost, not a bundle-size optimization;
 see the current budget reports and QA evidence before releasing this batch.
 

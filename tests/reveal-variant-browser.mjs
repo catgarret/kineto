@@ -690,11 +690,68 @@ try {
       });
       check(legacy, 'native: no-WAAPI CSS fallback and authored clipping remain available');
     }
+    const lowTier = await page.evaluate(async () => {
+      const { core, names, read } = window.__revealTest;
+      core.config({ performance: 'low' });
+      let engineCalls = 0;
+      const engineMethods = [[window.gsap, 'to'], [window.gsap, 'fromTo'], [window.ScrollTrigger, 'create']]
+        .filter(([owner]) => owner).map(([owner, key]) => {
+          const original = owner[key];
+          owner[key] = function (...args) { engineCalls += 1; return original.apply(this, args); };
+          return () => { owner[key] = original; };
+        });
+      const records = names.map((preset) => {
+        const element = document.createElement('div');
+        element.className = 'probe';
+        element.style.cssText = 'position:absolute;top:2400px;color:red';
+        element.innerHTML = 'First<br><strong>Second</strong>\nThird';
+        document.body.append(element);
+        const original = element.outerHTML;
+        let completed = 0;
+        const instance = core.create('reveal', element, {
+          preset, duration: .12, enterClass: 'arrived animated', leaveClass: 'pending invisible',
+          onComplete: () => { completed += 1; }
+        });
+        const initial = read(element);
+        return { preset, element, original, instance, initial, completed: () => completed };
+      });
+      records.forEach(({ instance }) => instance?.replay());
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const results = records.map(({ preset, element, original, instance, initial, completed }) => {
+        const final = read(element);
+        instance?.destroy();
+        const restored = element.outerHTML === original;
+        element.remove();
+        return { preset, created: !!instance, initial, final, restored, completed: completed() };
+      });
+      const triggers = window.ScrollTrigger?.getAll().length || 0;
+      engineMethods.forEach((restore) => restore());
+      core.config({ performance: 'high' });
+      return { results, triggers, engineCalls, instances: core.instanceCount };
+    });
+    for (const state of lowTier.results) {
+      const label = `${engine}/low/${state.preset}`;
+      check(state.created && state.restored, `${label}: create/replay/destroy must preserve authored DOM`);
+      check(state.final.className.includes('arrived') && state.final.className.includes('animated')
+        && !state.final.className.includes('pending') && !state.final.className.includes('invisible'), `${label}: multi-token class hooks must remain intact`);
+      if (expectedPositions[state.preset]) {
+        const [x, y] = expectedPositions[state.preset];
+        check(near(state.initial.matrix[4], x) && near(state.initial.matrix[5], y), `${label}: low tier must retain the preset's translation`);
+      }
+      if (state.preset === 'clock') check(state.initial.mask.includes('conic-gradient'), `${label}: must retain the clock mask`);
+      if (state.preset === 'class') check(state.initial.style === 'position: absolute; top: 2400px; color: red;' && state.completed === 0, `${label}: class-only must not install opacity/transform animation`);
+      else check(state.final.opacity === 1 && state.completed === 1, `${label}: entrance must finish exactly once`);
+    }
+    const lowByPreset = Object.fromEntries(lowTier.results.map((state) => [state.preset, state.initial]));
+    check(near(lowByPreset['zoom-in'].matrix[0], .78, .01) && near(lowByPreset['zoom-out'].matrix[0], 1.16, .01), `${engine}/low: zoom geometry must survive`);
+    check(lowByPreset.blur.filter === 'blur(20px)' && lowByPreset['flip-x'].transform.startsWith('matrix3d('), `${engine}/low: filter and 3D presets must survive`);
+    check(lowTier.instances === 0 && lowTier.triggers === 0, `${engine}/low: no instance or scroll trigger may remain`);
+    check(lowTier.engineCalls === 0, `${engine}/low: loaded GSAP/ScrollTrigger must not be used`);
     check(errors.length === 0, `${engine}: unexpected browser errors: ${errors.join('; ')}`);
     await page.close();
   }
   assert.equal(failures.length, 0, `Reveal rendering/lifecycle regressions (${browserName}):\n${failures.join('\n')}`);
-  console.log(`Reveal variants OK (${browserName}): ${variants.length} presets × native/GSAP; intermediate motion, authored text DOM, replay, reduced motion and delayed destroy restoration.`);
+  console.log(`Reveal variants OK (${browserName}): ${variants.length} presets × native/GSAP and low tier; intermediate motion, authored text DOM, replay, reduced motion and delayed destroy restoration.`);
 } finally {
   await browser?.close();
   await new Promise((resolve) => server.close(resolve));

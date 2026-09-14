@@ -5,6 +5,7 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Preserve all Reveal presets and class-only hooks in low-performance mode without using loaded GSAP/ScrollTrigger; avoid repeated full-list scans on native animation completion, batch class tokens, and correct the external-engine bundle documentation.
 - Support native Reveal pause/resume through owned Web Animations, preserving entrance delay, stagger, and existing easing without stopping author animations; cancel pending playback on replay/destroy and retain the legacy CSS fallback.
 - Unify Mask, Wipe, and Clock Reveal playback across GSAP/native paths: reversible re-entry, ordered boundary callbacks, stagger completion, pause/resume, clipped ancestor visibility, and safe replay/destroy.
 - Honor Glitch Wave trigger, one-shot looping, duration, delay, and randomness; preserve playback phase and original filter priority, stop hidden-tab work, and prevent destroyed instances from restarting.
@@ -16,6 +17,7 @@
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 저성능 모드에서 로드된 GSAP·ScrollTrigger를 사용하지 않으면서 Reveal 프리셋과 class-only hook을 보존합니다. Native 애니메이션 완료 시 전체 목록 재검색을 없애고 class token을 묶어 처리하며, 외부 엔진 번들 설명을 바로잡았습니다.
 - Native Reveal이 소유한 Web Animation으로 대기 시간·stagger·기존 easing을 보존하는 일시 정지·재개를 지원하고, 작성자의 애니메이션은 유지합니다. replay/destroy 취소 처리를 보강하며 구형 CSS 대체 경로는 보존합니다.
 - Mask·Wipe·Clock Reveal의 GSAP/native 재생을 통합해 역재생·재진입, 경계 callback, stagger 완료, 일시 정지·재개, 조상 clipping 감지와 안전한 replay/destroy를 지원합니다.
 - Glitch Wave의 시작·1회 반복·시간·지연·변화 폭 설정을 연결하고, 진행률과 원본 filter priority 보존·숨김 탭 연산 정지·destroy 후 재시작 차단을 적용했습니다.

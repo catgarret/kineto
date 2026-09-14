@@ -1528,7 +1528,7 @@ function yt(e, t, n) {
 }
 function bt(e, t, n) {
 	let r = String(t.enterClass || t.activeClass || "is-inview").split(/\s+/).filter(Boolean), i = String(t.leaveClass || "").split(/\s+/).filter(Boolean), [a, o] = n ? [i, r] : [r, i];
-	a.forEach((t) => e.classList.remove(t)), o.forEach((t) => e.classList.add(t)), t.onClassChange?.(n, e);
+	e.classList.remove(...a), e.classList.add(...o), t.onClassChange?.(n, e);
 }
 var xt = (e, t) => bt(e, t, !0), St = (e, t) => bt(e, t, !1);
 function Ct(e, t, n, r, i, a) {
@@ -1664,24 +1664,24 @@ function Ct(e, t, n, r, i, a) {
 	};
 }
 var wt = {
-	create(e, t = {}) {
-		let n = ie(), r = ae(), i = t.preset || "fade-up", a = i.startsWith("slide-") ? i.slice(6) : null, o = t.direction || a || (i === "mask" ? "right" : "up"), s = i.startsWith("slide-") && [
+	create(e, t = {}, n) {
+		let r = n?.performance === "low" ? null : ie(), i = r && ae(), a = t.preset || "fade-up", o = a.startsWith("slide-") ? a.slice(6) : null, s = t.direction || o || (a === "mask" ? "right" : "up"), c = a.startsWith("slide-") && [
 			"up",
 			"down",
 			"left",
 			"right"
-		].includes(o) ? `slide-${o}` : i, c = t.classOnly === !0 || i === "class", l = t.once !== !1, u = e.getAttribute("class");
-		if (c) {
-			let n = null, i = null, a = null, o = !1, s = () => {
+		].includes(s) ? `slide-${s}` : a, l = t.classOnly === !0 || a === "class", u = t.once !== !1, d = e.getAttribute("class");
+		if (l) {
+			let n = null, r = null, a = null, o = !1, s = () => {
 				o || (xt(e, t), o || t.onEnter?.(e));
 			}, c = () => {
 				o || t.removeClassOnLeave !== !1 && (St(e, t), o || t.onLeave?.(e));
 			};
-			return r ? i = r.create({
+			return i ? r = i.create({
 				trigger: e,
 				start: t.start || "top 85%",
 				end: t.end || "bottom 15%",
-				once: l,
+				once: u,
 				onEnter: s,
 				onEnterBack: () => {
 					s(), o || t.onEnterBack?.(e);
@@ -1690,7 +1690,7 @@ var wt = {
 				onLeaveBack: () => {
 					c(), o || t.onLeaveBack?.(e);
 				}
-			}) : l ? n = oe(e, s, {
+			}) : u ? n = oe(e, s, {
 				threshold: Number(t.threshold ?? .1),
 				rootMargin: t.rootMargin || "0px 0px -10% 0px"
 			}) : typeof IntersectionObserver < "u" ? (n = new IntersectionObserver(([e]) => e.isIntersecting ? s() : c(), {
@@ -1705,30 +1705,30 @@ var wt = {
 					})));
 				},
 				pause() {
-					i?.disable?.(), n?.disconnect?.();
+					r?.disable?.(), n?.disconnect?.();
 				},
 				resume() {
-					i?.enable?.();
+					r?.enable?.();
 				},
 				destroy() {
-					o = !0, a != null && cancelAnimationFrame(a), i?.kill?.(), n?.disconnect?.(), u == null ? e.removeAttribute("class") : e.setAttribute("class", u);
+					o = !0, a != null && cancelAnimationFrame(a), r?.kill?.(), n?.disconnect?.(), d == null ? e.removeAttribute("class") : e.setAttribute("class", d);
 				}
 			};
 		}
-		let d = i === "clock", f = s === "wipe" || s === "mask", p = (e) => {
+		let f = a === "clock", p = c === "wipe" || c === "mask", m = (e) => {
 			let t = `${(Math.max(0, Math.min(1, e)) * 100).toFixed(2)}%`;
-			return o === "down" ? `inset(0px 0px ${t} 0px)` : o === "left" ? `inset(0px 0px 0px ${t})` : o === "right" ? `inset(0px ${t} 0px 0px)` : `inset(${t} 0px 0px 0px)`;
+			return s === "down" ? `inset(0px 0px ${t} 0px)` : s === "left" ? `inset(0px 0px 0px ${t})` : s === "right" ? `inset(0px ${t} 0px 0px)` : `inset(${t} 0px 0px 0px)`;
 		};
-		if (d || f) return Ct(e, t, d || r ? n : null, r, d, p);
-		let m = mt[s];
-		if (m && t.distance != null && t.distance !== "") {
+		if (f || p) return Ct(e, t, f || i ? r : null, i, f, m);
+		let h = mt[c];
+		if (h && t.distance != null && t.distance !== "") {
 			let e = Math.max(0, Number(t.distance));
-			Number.isFinite(e) && (m = { ...m }, "xPercent" in m && (m.x = Math.sign(m.xPercent || 1) * e, delete m.xPercent), "yPercent" in m && (m.y = Math.sign(m.yPercent || 1) * e, delete m.yPercent), "x" in m && !("xPercent" in mt[s]) && (m.x = Math.sign(m.x || 1) * e), "y" in m && !("yPercent" in mt[s]) && (m.y = Math.sign(m.y || 1) * e));
+			Number.isFinite(e) && (h = { ...h }, "xPercent" in h && (h.x = Math.sign(h.xPercent || 1) * e, delete h.xPercent), "yPercent" in h && (h.y = Math.sign(h.yPercent || 1) * e, delete h.yPercent), "x" in h && !("xPercent" in mt[c]) && (h.x = Math.sign(h.x || 1) * e), "y" in h && !("yPercent" in mt[c]) && (h.y = Math.sign(h.y || 1) * e));
 		}
-		if (!m) return console.warn(`[Kineto/reveal] Unknown preset: ${i}`), null;
-		if (!n || !r) return this.fallback(e, t, m);
-		let h = gt(e, t), g = _t(e, h), _ = Math.max(0, Number(t.duration ?? .8)), v = t.enterEase ?? t.ease ? R(t.enterEase ?? t.ease) : (t.spring ?? z.spring) === !0 ? "back.out(1.25)" : "power3.out", y = !1, b = (n = Number(t.delay ?? 0)) => {
-			let r = yt(h.length, t.stagger, t.order);
+		if (!h) return console.warn(`[Kineto/reveal] Unknown preset: ${a}`), null;
+		if (!r || !i) return this.fallback(e, t, h);
+		let g = gt(e, t), _ = _t(e, g), v = Math.max(0, Number(t.duration ?? .8)), y = t.enterEase ?? t.ease ? R(t.enterEase ?? t.ease) : (t.spring ?? z.spring) === !0 ? "back.out(1.25)" : "power3.out", b = !1, x = (n = Number(t.delay ?? 0)) => {
+			let r = yt(g.length, t.stagger, t.order);
 			return {
 				x: 0,
 				y: 0,
@@ -1742,68 +1742,68 @@ var wt = {
 				skewY: 0,
 				opacity: 1,
 				filter: "blur(0px)",
-				duration: _,
+				duration: v,
 				delay: n,
-				ease: v,
+				ease: y,
 				stagger: t.stagger ? (e) => r[e] : void 0,
 				onStart: () => xt(e, t),
 				onComplete: () => {
-					h.forEach((e) => {
+					g.forEach((e) => {
 						e.style.willChange = "";
 					}), t.onComplete?.(e);
 				}
 			};
-		}, x = null, S = null, C = () => {
-			x && (S !== x && S?.kill(), S = x);
-		}, w = {
-			...b(),
+		}, S = null, C = null, w = () => {
+			S && (C !== S && C?.kill(), C = S);
+		}, T = {
+			...x(),
 			scrollTrigger: {
 				trigger: e,
 				start: t.start || "top 85%",
 				end: t.end,
-				toggleActions: l ? "play none none none" : "play reverse play reverse",
+				toggleActions: u ? "play none none none" : "play reverse play reverse",
 				onEnter: () => {
-					y || (C(), t.onEnter?.(e));
+					b || (w(), t.onEnter?.(e));
 				},
 				onLeave: () => {
-					y || (C(), t.onLeave?.(e), !y && !l && t.removeClassOnLeave !== !1 && St(e, t));
+					b || (w(), t.onLeave?.(e), !b && !u && t.removeClassOnLeave !== !1 && St(e, t));
 				},
 				onEnterBack: () => {
-					y || (C(), xt(e, t), y || t.onEnterBack?.(e));
+					b || (w(), xt(e, t), b || t.onEnterBack?.(e));
 				},
 				onLeaveBack: () => {
-					y || (C(), t.onLeaveBack?.(e), !y && !l && t.removeClassOnLeave !== !1 && St(e, t));
+					b || (w(), t.onLeaveBack?.(e), !b && !u && t.removeClassOnLeave !== !1 && St(e, t));
 				}
 			}
 		};
-		h.forEach((e) => {
+		g.forEach((e) => {
 			e.style.willChange = "transform,opacity,filter,clip-path";
-		}), x = n.fromTo(h, m, w), S = x;
-		let T = (e = 0) => {
-			y || (E?.disconnect(), E = null, l && x.scrollTrigger?.disable(!1), x.pause(), S !== x && S.kill(), S = n.fromTo(h, m, {
-				...b(e),
+		}), S = r.fromTo(g, h, T), C = S;
+		let E = (e = 0) => {
+			b || (D?.disconnect(), D = null, u && S.scrollTrigger?.disable(!1), S.pause(), C !== S && C.kill(), C = r.fromTo(g, h, {
+				...x(e),
 				overwrite: "auto"
 			}));
-		}, E = null;
-		return typeof IntersectionObserver < "u" && (E = new IntersectionObserver((e) => {
-			e.some((e) => e.isIntersecting) && (E.disconnect(), E = null, x.progress() === 0 && T(Number(t.delay ?? 0)));
+		}, D = null;
+		return typeof IntersectionObserver < "u" && (D = new IntersectionObserver((e) => {
+			e.some((e) => e.isIntersecting) && (D.disconnect(), D = null, S.progress() === 0 && E(Number(t.delay ?? 0)));
 		}, {
 			threshold: .12,
 			rootMargin: "0px 0px -8% 0px"
-		}), E.observe(e)), {
+		}), D.observe(e)), {
 			el: e,
 			type: "reveal",
 			replay(e) {
-				Object.assign(t, e || {}), T();
+				Object.assign(t, e || {}), E();
 			},
 			pause() {
-				S.pause();
+				C.pause();
 			},
 			resume() {
-				S.resume();
+				C.resume();
 			},
 			destroy() {
-				y = !0, E?.disconnect(), x.scrollTrigger?.kill?.(), S.kill(), x.kill(), g();
+				b = !0, D?.disconnect(), S.scrollTrigger?.kill?.(), C.kill(), S.kill(), _();
 			}
 		};
 	},
@@ -1823,64 +1823,63 @@ var wt = {
 		};
 	},
 	fallback(e, t = {}, n = mt["fade-up"]) {
-		let r = gt(e, t), i = _t(e, r), a = Number(n.x ?? 0), o = Number(n.y ?? 0), s = Number(n.xPercent ?? 0), c = Number(n.yPercent ?? 0), l = Number(n.scale ?? 1), u = Number(n.rotate ?? n.rotation ?? 0), d = Number(n.rotationX ?? 0), f = Number(n.rotationY ?? 0), p = Number(n.skewX ?? 0), m = Number(n.skewY ?? 0), h = Number(n.transformPerspective ?? 0), g = Math.max(0, Number(t.duration ?? .55)), _ = [], v = !1, y = !1, b = [], x = /* @__PURE__ */ new Set(), S = (e) => {
+		if (n.performance === "low") return this.create(e, t, n);
+		let r = gt(e, t), i = _t(e, r), a = String(n.opacity ?? 0), o = Number(n.x ?? 0), s = Number(n.y ?? 0), c = Number(n.xPercent ?? 0), l = Number(n.yPercent ?? 0), u = Number(n.scale ?? 1), d = Number(n.rotate ?? n.rotation ?? 0), f = Number(n.rotationX ?? 0), p = Number(n.rotationY ?? 0), m = Number(n.skewX ?? 0), h = Number(n.skewY ?? 0), g = Number(n.transformPerspective ?? 0), _ = Math.max(0, Number(t.duration ?? .55)), v = [], y = !1, b = !1, x = /* @__PURE__ */ new Set(), S = /* @__PURE__ */ new Set(), C = (e) => {
 			let t = requestAnimationFrame(() => {
-				x.delete(t), v || e();
+				S.delete(t), y || e();
 			});
-			x.add(t);
-		}, C = () => {
-			b.forEach((e) => {
+			S.add(t);
+		}, w = () => {
+			x.forEach((e) => {
 				e.onfinish = null, e.cancel();
-			}), b = [], _.forEach(clearTimeout), _ = [], x.forEach(cancelAnimationFrame), x.clear();
-		}, w = [
-			h ? `perspective(${h}px)` : "",
-			`translate3d(${a}px,${o}px,0)`,
-			s || c ? `translate(${s}%,${c}%)` : "",
-			u ? `rotate(${u}deg)` : "",
-			d ? `rotateX(${d}deg)` : "",
-			f ? `rotateY(${f}deg)` : "",
-			p ? `skewX(${p}deg)` : "",
-			m ? `skewY(${m}deg)` : "",
-			l === 1 ? "" : `scale(${l})`
-		].filter(Boolean).join(" "), T = (e) => {
-			e.style.transition = "none", e.style.opacity = String(n.opacity ?? 0), e.style.transform = w, n.transformOrigin && (e.style.transformOrigin = n.transformOrigin), n.filter && (e.style.filter = n.filter);
+			}), x.clear(), v.forEach(clearTimeout), v = [], S.forEach(cancelAnimationFrame), S.clear();
+		}, T = [
+			g ? `perspective(${g}px)` : "",
+			`translate3d(${o}px,${s}px,0)`,
+			c || l ? `translate(${c}%,${l}%)` : "",
+			d ? `rotate(${d}deg)` : "",
+			f ? `rotateX(${f}deg)` : "",
+			p ? `rotateY(${p}deg)` : "",
+			m ? `skewX(${m}deg)` : "",
+			h ? `skewY(${h}deg)` : "",
+			u === 1 ? "" : `scale(${u})`
+		].filter(Boolean).join(" "), E = [{
+			opacity: a,
+			transform: T,
+			filter: n.filter || "none"
+		}, {
+			opacity: "1",
+			transform: "none",
+			filter: "none"
+		}], D = (e) => {
+			e.style.transition = "none", e.style.opacity = a, e.style.transform = T, n.transformOrigin && (e.style.transformOrigin = n.transformOrigin), n.filter && (e.style.filter = n.filter);
 		};
-		r.forEach(T);
-		let E = () => {
-			if (v) return;
-			C();
-			let i = yt(r.length, t.stagger, t.order), a = Math.max(0, Number(t.delay ?? 0)), o = i.indexOf(Math.max(...i));
-			xt(e, t), !v && r.forEach((r, s) => {
-				let c = {
-					opacity: "1",
-					transform: "none",
-					filter: "none"
-				};
+		r.forEach(D);
+		let O = () => {
+			if (y) return;
+			w();
+			let n = yt(r.length, t.stagger, t.order), i = Math.max(0, Number(t.delay ?? 0)), a = n.indexOf(Math.max(...n));
+			xt(e, t), !y && r.forEach((r, o) => {
 				if (typeof r.animate == "function") {
-					let l = {
-						opacity: String(n.opacity ?? 0),
-						transform: w,
-						filter: n.filter || "none"
-					};
-					Object.assign(r.style, c);
-					let u = r.animate([l, c], {
-						duration: g * 1e3,
-						delay: (a + i[s]) * 1e3,
+					Object.assign(r.style, E[1]);
+					let s = r.animate(E, {
+						duration: _ * 1e3,
+						delay: (i + n[o]) * 1e3,
 						easing: "ease",
 						fill: "backwards"
 					});
-					b.push(u), y && u.pause(), u.onfinish = () => {
-						u.onfinish = null, b = b.filter((e) => e !== u), !v && s === o && t.onComplete?.(e);
+					x.add(s), b && s.pause(), s.onfinish = () => {
+						s.onfinish = null, x.delete(s), !y && o === a && t.onComplete?.(e);
 					};
 					return;
 				}
-				_.push(setTimeout(() => S(() => {
-					r.style.transition = `opacity ${g}s ease,transform ${g}s ease,filter ${g}s ease`, Object.assign(r.style, c), s === o && _.push(setTimeout(() => {
-						v || t.onComplete?.(e);
-					}, g * 1e3));
-				}), (a + i[s]) * 1e3));
+				v.push(setTimeout(() => C(() => {
+					r.style.transition = `opacity ${_}s ease,transform ${_}s ease,filter ${_}s ease`, Object.assign(r.style, E[1]), o === a && v.push(setTimeout(() => {
+						y || t.onComplete?.(e);
+					}, _ * 1e3));
+				}), (i + n[o]) * 1e3));
 			});
-		}, D = oe(e, E, {
+		}, k = oe(e, O, {
 			threshold: Number(t.threshold ?? .1),
 			rootMargin: t.rootMargin || "0px 0px -10% 0px"
 		});
@@ -1888,16 +1887,16 @@ var wt = {
 			el: e,
 			type: "reveal",
 			replay(e) {
-				v || (Object.assign(t, e || {}), y = !1, D.disconnect(), C(), r.forEach(T), S(E));
+				y || (Object.assign(t, e || {}), b = !1, k.disconnect(), w(), r.forEach(D), C(O));
 			},
 			pause() {
-				v || (y = !0, b.forEach((e) => e.pause()));
+				y || (b = !0, x.forEach((e) => e.pause()));
 			},
 			resume() {
-				v || (y = !1, b.forEach((e) => e.play()));
+				y || (b = !1, x.forEach((e) => e.play()));
 			},
 			destroy() {
-				v = !0, D.disconnect(), C(), r.forEach((e) => e.getAttribute("style")), i();
+				y = !0, k.disconnect(), w(), r.forEach((e) => e.getAttribute("style")), i();
 			}
 		};
 	}

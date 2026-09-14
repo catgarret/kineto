@@ -113,7 +113,9 @@ const BUDGET = {
   // on Node 24/npm 11. This is explicit correctness cost, not compression
   // variance. Retain all 77 files and bounded rounding/runner headroom.
   packedKb: 534,
-  unpackedKb: 1766,
+  // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
+  // packed ceiling and file allowlist; round only this measured source cost.
+  unpackedKb: 1767,
   files: 77
 };
 

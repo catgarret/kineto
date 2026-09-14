@@ -5,6 +5,27 @@
 
 ## 2026-09-14 Unreleased 검증
 
+### 후속: 저성능 Reveal 경로와 반복 작업 비용
+
+Core가 `fallback(el, options, Kineto)`로 전달한 context를 Reveal의 내부
+시작 geometry로 잘못 읽어 선택한 프리셋이 사라지는 문제를 재현했습니다.
+추가한 Chromium 검사에서 수정 전 32개 단언이 실패했고, 수정 후에는 저성능
+티어에서도 23개 프리셋·class-only·원본 DOM 복원이 통과했습니다.
+GSAP·ScrollTrigger가 로드된 경우에도 저성능 재생에서 해당 엔진을 호출하지
+않는지 검사하며 Firefox·WebKit에서도 통과했습니다.
+
+Native 완료 목록은 Set으로 관리해 완료마다 전체 배열을 복사·검색하던
+작업을 제거했습니다. 공통 keyframe 입력을 자식마다 다시 만들지 않고 재사용하며,
+여러 class token의 추가·제거를 각각 한 번의 DOM 호출로 처리합니다.
+FPS·배터리 사용량의 개선 수치는 측정하지 않았습니다.
+
+압축 패키지는 532.8KiB, 압축 해제는 1766.1KiB·77파일입니다. 해제 크기가
+이전 1766KiB 상한을 약 0.1KiB 초과해 해당 상한만 1767KiB로 조정했습니다.
+압축 상한 534KiB·소비자 번들 예산·runtime 의존성 0개는 유지합니다.
+이 변경은 아직 게시되지 않았으며 v0.9.8 배포 근거와 구분합니다.
+Node 24 전체 `npm run ci`가 종료 코드 0으로 완료됐고, 최종 Chromium
+Reveal 검사에도 23개 프리셋의 native/GSAP·저성능 경로가 포함됐습니다.
+
 ### 후속: 일반 native Reveal 재생 제어
 
 일반 native Reveal의 Web Animations 경로에서 pause/resume가 시작 지연·
@@ -147,7 +168,7 @@ locale 전환에서 요청 실패·console 오류는 모두 0건입니다. 별�
 
 배포 전 `npm run test:package-tarball`로 실제 tarball을 별도 프로젝트에 설치해
 ESM, CommonJS, CSS와 adapter entry를 확인합니다. `npm run test:package-size`는
-압축 534 kB·해제 1766 kB·77개 파일의 상한과 배포 파일 allowlist를 검사합니다.
+압축 534 kB·해제 1767 kB·77개 파일의 상한과 배포 파일 allowlist를 검사합니다.
 v0.9.8의 Node 24 `npm pack --dry-run --json` 측정값은 77개 파일,
 압축 528.0 kB, 해제 1755.1 kB입니다. 실제 공개 tarball은 540,657 bytes,
 registry의 해제 크기는 1,797,191 bytes로 확인했습니다. 이 수치는 릴리스

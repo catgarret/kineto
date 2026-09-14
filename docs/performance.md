@@ -28,6 +28,11 @@ Marquee, Overflow Text, Slider, Text Transition, Typewriter는 `low`에서 정�
 콘텐츠 또는 네이티브 스크롤 형태로 축소됩니다. 원본 콘텐츠와 접근 가능한
 텍스트는 유지됩니다.
 
+Reveal은 `low`에서도 선택한 방향·확대·회전·마스크·class-only 프리셋을
+유지하고 native 경로로 재생합니다. 이미 GSAP·ScrollTrigger가 로드돼 있어도
+해당 엔진을 호출하지 않습니다. 이 유한한 등장 모션은 `forceReducedMotion`
+설정에 따른 정적 최종 상태와 구분합니다.
+
 ## 수동 설정
 
 ```js
@@ -100,4 +105,7 @@ Kineto.setEngineSource({
 npm run build
 ```
 
-ESM은 GSAP/Lenis를 external로 두고, UMD는 브라우저 단독 사용을 위해 포함하므로 UMD가 더 큽니다.
+ESM과 UMD 모두 GSAP·ScrollTrigger·Lenis 본체를 포함하지 않습니다.
+필요한 외부 엔진은 runtime loader로 요청하거나 애플리케이션에서 주입합니다.
+엔진을 요청하지 않는 native 경로와, 별도 네트워크로 내려받는 엔진 비용은
+Kineto 번들 크기와 구분해야 합니다. 이 경계는 `npm run test:deps`로 검사합니다.

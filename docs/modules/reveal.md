@@ -2,6 +2,11 @@
 
 요소가 뷰포트에 진입할 때 실행되는 콘텐츠 등장 모션입니다. 이미지 다운로드·디코딩을 담당하는 Lazy와 분리합니다.
 
+`Kineto.config({ performance: 'low' })`에서도 선택한 프리셋과 `direction`·
+`distance`·class-only 의미를 보존합니다. 저성능 경로는 GSAP·ScrollTrigger가
+이미 로드돼 있어도 native 구현을 사용합니다. 모션을 정적 최종 상태로 표시하려면
+성능 티어 대신 reduced-motion 설정을 사용합니다.
+
 ## 프리셋
 
 `fade`, `fade-up/down/left/right`, `slide-up/down/left/right`, `zoom-in/out`, `blur`, `rise`, `soft`, `flip-x/y`, `rotate`, `swing`, `skew`, `mask`, `wipe`, `clock`, `class`
