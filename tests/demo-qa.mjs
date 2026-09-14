@@ -164,6 +164,9 @@ try {
       shareKey:panel?.dataset.shareKey||'',
       legacyShareKey:panel?.dataset.shareLegacyKey||'',
       preset:preset?.value,
+      copiedPreset:Boolean(panel?.dataset.htmlCode?.includes(`data-kt-${module}="${variant}"`)),
+      replayButton:Boolean(card?.querySelector(`[data-action="replay-parent"][data-module="${module}"]`)),
+      authoredBreak:Boolean(target.querySelector('br')),
       connected:Boolean(duration&&window.Kineto.getInstance(target,module)
         &&window.Kineto.getInstance(target,module)!==originalInstance
         &&Math.abs(Number(target.getAttribute('data-kt-duration'))-(Number(originalDuration)+.05))<.0001)
@@ -176,10 +179,10 @@ try {
     await new Promise((resolve)=>setTimeout(resolve,180));
     return results;
   });
-  const comparisonKeys=['slider:fade','slider:wipe','slider:flip','slider:cube','slider:cards','slider:creative','reveal:mask','reveal:swing','reveal:skew'];
+  const comparisonKeys=['slider:fade','slider:wipe','slider:flip','slider:cube','slider:cards','slider:creative','reveal:mask','reveal:swing','reveal:skew','reveal:fade','reveal:zoom-in','reveal:zoom-out','reveal:flip-x','reveal:flip-y'];
   assert.deepEqual(comparisonSettings.map(({key})=>key).sort(),[...comparisonKeys].sort(),
-    'all nine dedicated Slider/Reveal comparisons must mount exactly once');
-  assert.equal(new Set(comparisonSettings.map(({shareKey})=>shareKey)).size,9,
+    'all fourteen dedicated Slider/Reveal comparisons must mount exactly once');
+  assert.equal(new Set(comparisonSettings.map(({shareKey})=>shareKey)).size,comparisonKeys.length,
     'comparison cards must have distinct semantic settings links');
   for(const record of comparisonSettings){
     const [module,variant]=record.key.split(':');
@@ -189,6 +192,11 @@ try {
       `${record.key}: semantic share identity must encode its module and variant (${record.shareKey})`);
     assert.ok(record.noLegacy&&!record.legacyShareKey,`${record.key}: new comparisons must not allocate a legacy alias`);
     assert.equal(record.connected,true,`${record.key}: changing duration must initialize or rebuild its connected runtime target`);
+    assert.equal(record.copiedPreset,true,`${record.key}: copied HTML must retain the illustrated preset`);
+    if(module==='reveal'){
+      assert.ok(record.replayButton,`${record.key}: dedicated replay button must remain available`);
+      assert.ok(record.authoredBreak,`${record.key}: comparison must preserve its authored line break`);
+    }
   }
 
   for(const viewport of [comparisonViewport,{width:390,height:844}]){
@@ -239,7 +247,7 @@ try {
       openPanels:document.querySelectorAll('.kt-playground[open]').length,
       openDrawers:document.querySelectorAll('.kt-drawer-sheet.is-open,.kt-drawer-backdrop.is-open').length};
   },comparisonScroll);
-  assert.deepEqual(comparisonCleanup,{resetCount:9,bodies:0,openPanels:0,openDrawers:0},
+  assert.deepEqual(comparisonCleanup,{resetCount:comparisonKeys.length,bodies:0,openPanels:0,openDrawers:0},
     'comparison checks must restore lazy bodies and leave no shared drawer state for later tests');
   await page.waitForFunction(()=>!document.querySelector('.demo-toast'),null,{timeout:5000});
 

@@ -15,6 +15,9 @@
 `flip-x`·`flip-y` 중 의도한 동작을 지정합니다. `swing`은 왼쪽 위 모서리를
 축으로 회전하고, `skew`는 전단 변형을 바로잡습니다. 데모에서 Mask·Swing·Skew의
 독립 카드와 Replay로 원본 줄바꿈을 유지하는 진입 동작을 비교할 수 있습니다.
+Fade·Zoom In/Out·Flip X/Y도 같은 문구·크기·0.9초 재생 시간의 독립 카드로
+비교합니다. 각 카드의 설정에서 시간을 바꾸고 Replay·Reset·코드 복사·설정
+공유를 사용할 수 있으며, 기존 설정 링크는 유지됩니다.
 
 ```html
 <section data-kt-reveal="slide-left">왼쪽에서 등장</section>
