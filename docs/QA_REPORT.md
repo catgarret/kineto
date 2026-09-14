@@ -5,6 +5,21 @@
 
 ## 2026-09-14 Unreleased 검증
 
+### 후속: 프레임워크 검사의 상태 기반 동기화
+
+React·Vue mount/update/재진입의 고정 100~120ms 대기를 최대 2초의
+상태 단언으로 교체했습니다. 기존 단언 49개가 순서까지 동일한지 비교했고,
+callback·DOM 제거·상태 전파·누수 검사는 삭제하지 않았습니다.
+대기 helper는 즉시 성공, 반복 확인 후 성공, 기존 100ms보다 늦은 150ms 완료,
+미완료 시간 초과 및 원본 실패 원인 보존을 검사합니다. 런타임·공개 옵션은
+변경하지 않았습니다. 이는 이전 실패의 확정 원인 규명이 아니라, 고정 대기
+시간에 의존하던 검사 구조의 보강입니다.
+
+Node 24 전체 `npm run ci`가 첫 통합 실행에서 종료 코드 0으로 완료됐습니다.
+React/Vue/jQuery lifecycle, SSR/hydration, 데모·Chromium 회귀 및 패키지
+dry-run을 통과했습니다. 추가 브라우저 엔진·실기기·공개 배포는 이번 범위에서
+검증하지 않았습니다.
+
 ### 후속: class-only Reveal 관찰 재개
 
 Native class-only 경로는 pause에서 IntersectionObserver를 끊은 뒤 resume에서

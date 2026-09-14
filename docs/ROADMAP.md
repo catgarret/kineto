@@ -603,6 +603,8 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 
 155. 완료(Unreleased): Native class-only Reveal의 pause 후 관찰 재연결을 복구하고, 정지 중 class 변경·완료한 once 진입 재실행·destroy 후 재시작을 차단. 일반/저성능 × once true/false를 Chromium·Firefox·WebKit에서 검증. 기존 번들 예산 유지 및 Node 24 전체 CI 단독 재실행 통과. 최초 Vue Transition 타이밍 단언 실패는 원인 미확정으로 QA 보고서에 별도 기록
 
+156. 완료(Unreleased): React/Vue mount/update/재진입 QA의 고정 100~120ms 대기를 최대 2초 상태 단언으로 교체. 기존 단언 49개 보존, 지연 성공·timeout·오류 원인 보존 helper 검사와 Node 24 전체 CI 통과. 런타임/API 변경 없음. 이전 간헐 실패의 확정 원인 규명과는 구분
+
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 
 ## 11. 검토 의견 (2026-08-09)

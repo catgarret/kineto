@@ -7,6 +7,7 @@ import { KinetoPresence as ReactKinetoPresence, KinetoPresenceGroup as ReactKine
 import { KinetoPresence as VueKinetoPresence, KinetoPresenceGroup as VueKinetoPresenceGroup, vMotion, useKineto as useVueKineto, useKinetoPresence as useVueKinetoPresence, useKinetoTransition } from '@dong-gri/kineto/vue';
 import installJQueryKineto from '@dong-gri/kineto/jquery';
 import '@dong-gri/kineto/style.css';
+import { waitForAssertions } from './wait-for-assertions.mjs';
 
 const sleep = (ms = 50) => new Promise((resolve) => setTimeout(resolve, ms));
 const results = [];
@@ -81,27 +82,30 @@ async function testReact() {
   const host = document.querySelector('#react-root');
   const root = createRoot(host);
   root.render(<StrictMode><ReactHarness type="reveal" dependency={0} /></StrictMode>);
-  await sleep(120);
-  assert(Kineto.getInstance(document.querySelector('#react-motion-target'), 'reveal'), 'React Motion did not mount reveal');
-  assert(Kineto.getInstance(document.querySelector('#react-hook-target'), 'reveal'), 'React hook did not mount reveal');
-  assert(window.__reactHookInstanceRef?.current, 'React hook instance ref was not populated');
-  assert(window.__reactStatesActive === 1, 'React states controller did not mount exactly once');
-  assert(window.__reactPresenceActive === 1, 'React Presence controller did not mount exactly once');
-  assert(document.querySelectorAll('#react-presence-group [data-group-key]').length === 2, 'React keyed Presence group did not mount both children');
+  await waitForAssertions(() => {
+    assert(Kineto.getInstance(document.querySelector('#react-motion-target'), 'reveal'), 'React Motion did not mount reveal');
+    assert(Kineto.getInstance(document.querySelector('#react-hook-target'), 'reveal'), 'React hook did not mount reveal');
+    assert(window.__reactHookInstanceRef?.current, 'React hook instance ref was not populated');
+    assert(window.__reactStatesActive === 1, 'React states controller did not mount exactly once');
+    assert(window.__reactPresenceActive === 1, 'React Presence controller did not mount exactly once');
+    assert(document.querySelectorAll('#react-presence-group [data-group-key]').length === 2, 'React keyed Presence group did not mount both children');
+  });
 
   root.render(<StrictMode><ReactHarness type="counter" dependency={1} /></StrictMode>);
-  await sleep(120);
-  assert(!Kineto.getInstance(document.querySelector('#react-motion-target'), 'reveal'), 'React old module survived type update');
-  assert(Kineto.getInstance(document.querySelector('#react-motion-target'), 'counter'), 'React Motion did not update type');
-  assert(Kineto.getInstance(document.querySelector('#react-hook-target'), 'counter'), 'React hook did not update type');
-  assert(window.__reactStatesActive === 1, 'React states controller was not replaced cleanly');
-  assert(window.__reactPresenceLeaves >= 1, 'React Presence did not resolve the host-owned leave');
-  assert(!document.querySelector('[data-group-key="react-a"]'), 'React keyed Presence group removed child did not settle');
-  assert(document.querySelector('[data-group-key="react-c"]'), 'React keyed Presence group did not add the new child');
-  assert(document.querySelector('[data-group-key="react-nested-a"]')?.parentElement?.dataset.ktPresenceStatus === 'finished', 'React nested Presence child did not propagate parent exit');
+  await waitForAssertions(() => {
+    assert(!Kineto.getInstance(document.querySelector('#react-motion-target'), 'reveal'), 'React old module survived type update');
+    assert(Kineto.getInstance(document.querySelector('#react-motion-target'), 'counter'), 'React Motion did not update type');
+    assert(Kineto.getInstance(document.querySelector('#react-hook-target'), 'counter'), 'React hook did not update type');
+    assert(window.__reactStatesActive === 1, 'React states controller was not replaced cleanly');
+    assert(window.__reactPresenceLeaves >= 1, 'React Presence did not resolve the host-owned leave');
+    assert(!document.querySelector('[data-group-key="react-a"]'), 'React keyed Presence group removed child did not settle');
+    assert(document.querySelector('[data-group-key="react-c"]'), 'React keyed Presence group did not add the new child');
+    assert(document.querySelector('[data-group-key="react-nested-a"]')?.parentElement?.dataset.ktPresenceStatus === 'finished', 'React nested Presence child did not propagate parent exit');
+  });
   root.render(<StrictMode><ReactHarness type="counter" dependency={0} /></StrictMode>);
-  await sleep(120);
-  assert(document.querySelector('[data-group-key="react-nested-a"]'), 'React nested Presence child did not re-enter after parent propagation');
+  await waitForAssertions(() => {
+    assert(document.querySelector('[data-group-key="react-nested-a"]'), 'React nested Presence child did not re-enter after parent propagation');
+  });
 
   root.unmount();
   await sleep(80);
@@ -184,35 +188,38 @@ async function testVue() {
   });
   app.mount(host);
   await nextTick();
-  await sleep(100);
-  assert(Kineto.getInstance(document.querySelector('#vue-directive-target'), 'reveal'), 'Vue directive did not mount reveal');
-  assert(Kineto.getInstance(document.querySelector('#vue-composable-target'), 'reveal'), 'Vue composable did not mount reveal');
-  assert(window.__vueComposableInstance?.value, 'Vue composable instance ref was not populated');
-  assert(window.__vueStatesActive === 1, 'Vue states controller did not mount');
-  assert(window.__vuePresenceActive === 1, 'Vue Presence controller did not mount exactly once');
-  assert(document.querySelectorAll('#vue-presence-group [data-group-key]').length === 2, 'Vue keyed Presence group did not mount both children');
-  assert(document.querySelector('#vue-transition-target'), 'Vue Transition interop did not render the entering child');
-  assert(window.__vueTransitionEnter >= 1, 'Vue Transition interop did not settle the enter hook');
+  await waitForAssertions(() => {
+    assert(Kineto.getInstance(document.querySelector('#vue-directive-target'), 'reveal'), 'Vue directive did not mount reveal');
+    assert(Kineto.getInstance(document.querySelector('#vue-composable-target'), 'reveal'), 'Vue composable did not mount reveal');
+    assert(window.__vueComposableInstance?.value, 'Vue composable instance ref was not populated');
+    assert(window.__vueStatesActive === 1, 'Vue states controller did not mount');
+    assert(window.__vuePresenceActive === 1, 'Vue Presence controller did not mount exactly once');
+    assert(document.querySelectorAll('#vue-presence-group [data-group-key]').length === 2, 'Vue keyed Presence group did not mount both children');
+    assert(document.querySelector('#vue-transition-target'), 'Vue Transition interop did not render the entering child');
+    assert(window.__vueTransitionEnter >= 1, 'Vue Transition interop did not settle the enter hook');
+  });
 
   type.value = 'counter';
   presenceVisible.value = false;
   transitionVisible.value = false;
   await nextTick();
-  await sleep(100);
-  assert(!Kineto.getInstance(document.querySelector('#vue-directive-target'), 'reveal'), 'Vue directive old module survived update');
-  assert(Kineto.getInstance(document.querySelector('#vue-directive-target'), 'counter'), 'Vue directive did not update type');
-  assert(window.__vuePresenceLeaves >= 1, 'Vue Presence did not resolve the host-owned leave');
-  assert(!document.querySelector('[data-group-key="vue-a"]'), 'Vue keyed Presence group removed child did not settle');
-  assert(document.querySelector('[data-group-key="vue-c"]'), 'Vue keyed Presence group did not add the new child');
-  assert(document.querySelector('[data-group-key="vue-nested-a"]')?.parentElement?.dataset.ktPresenceStatus === 'finished', 'Vue nested Presence child did not propagate parent exit');
-  assert(!document.querySelector('#vue-transition-target'), 'Vue Transition interop did not remove the leaving child');
-  assert(window.__vueTransitionLeave >= 1, 'Vue Transition interop did not settle the leave hook');
+  await waitForAssertions(() => {
+    assert(!Kineto.getInstance(document.querySelector('#vue-directive-target'), 'reveal'), 'Vue directive old module survived update');
+    assert(Kineto.getInstance(document.querySelector('#vue-directive-target'), 'counter'), 'Vue directive did not update type');
+    assert(window.__vuePresenceLeaves >= 1, 'Vue Presence did not resolve the host-owned leave');
+    assert(!document.querySelector('[data-group-key="vue-a"]'), 'Vue keyed Presence group removed child did not settle');
+    assert(document.querySelector('[data-group-key="vue-c"]'), 'Vue keyed Presence group did not add the new child');
+    assert(document.querySelector('[data-group-key="vue-nested-a"]')?.parentElement?.dataset.ktPresenceStatus === 'finished', 'Vue nested Presence child did not propagate parent exit');
+    assert(!document.querySelector('#vue-transition-target'), 'Vue Transition interop did not remove the leaving child');
+    assert(window.__vueTransitionLeave >= 1, 'Vue Transition interop did not settle the leave hook');
+  });
   transitionVisible.value = true;
   presenceVisible.value = true;
   await nextTick();
-  await sleep(100);
-  assert(document.querySelector('[data-group-key="vue-nested-a"]'), 'Vue nested Presence child did not re-enter after parent propagation');
-  assert(document.querySelector('#vue-transition-target'), 'Vue Transition interop did not re-enter after cancellation/replay');
+  await waitForAssertions(() => {
+    assert(document.querySelector('[data-group-key="vue-nested-a"]'), 'Vue nested Presence child did not re-enter after parent propagation');
+    assert(document.querySelector('#vue-transition-target'), 'Vue Transition interop did not re-enter after cancellation/replay');
+  });
 
   app.unmount();
   await sleep(80);

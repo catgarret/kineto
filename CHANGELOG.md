@@ -5,6 +5,7 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Synchronize React/Vue lifecycle QA with bounded state assertions instead of fixed mount/update sleeps; preserve completion, DOM removal and leak checks and test timeout diagnostics without changing the runtime package.
 - Restore native class-only Reveal observation after pause/resume; preserve completed once-only entrances and prevent destroyed instances from restarting, with normal/low-tier browser regressions.
 - Preserve all Reveal presets and class-only hooks in low-performance mode without using loaded GSAP/ScrollTrigger; avoid repeated full-list scans on native animation completion, batch class tokens, and correct the external-engine bundle documentation.
 - Support native Reveal pause/resume through owned Web Animations, preserving entrance delay, stagger, and existing easing without stopping author animations; cancel pending playback on replay/destroy and retain the legacy CSS fallback.
@@ -18,6 +19,7 @@
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- React/Vue lifecycle QA의 고정 mount/update 대기를 제한 시간 내 상태 단언으로 교체했습니다. 완료·DOM 제거·누수 검사를 유지하고 시간 초과 진단을 검사하며, 런타임 패키지는 변경하지 않습니다.
 - Native class-only Reveal의 일시 정지 후 viewport 관찰을 복구하고, 완료한 1회 진입과 destroy 후 재시작 방지를 보존합니다. 일반·저성능 티어 브라우저 회귀 검사를 추가했습니다.
 - 저성능 모드에서 로드된 GSAP·ScrollTrigger를 사용하지 않으면서 Reveal 프리셋과 class-only hook을 보존합니다. Native 애니메이션 완료 시 전체 목록 재검색을 없애고 class token을 묶어 처리하며, 외부 엔진 번들 설명을 바로잡았습니다.
 - Native Reveal이 소유한 Web Animation으로 대기 시간·stagger·기존 easing을 보존하는 일시 정지·재개를 지원하고, 작성자의 애니메이션은 유지합니다. replay/destroy 취소 처리를 보강하며 구형 CSS 대체 경로는 보존합니다.

@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build && vite build --config vite.config.hydration.js",
-    "qa": "npm run build && node run-qa.mjs && node --preserve-symlinks run-hydration-qa.mjs && node --preserve-symlinks ssr-qa.mjs"
+    "qa": "node wait-for-assertions.test.mjs && npm run build && node run-qa.mjs && node --preserve-symlinks run-hydration-qa.mjs && node --preserve-symlinks ssr-qa.mjs"
   },
   "dependencies": {
     "@dong-gri/kineto": "file:../..",
