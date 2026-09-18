@@ -21,9 +21,14 @@ The public demo is deployed directly from the Kineto repository's GitHub Pages
 artifact. `pages.yml` accepts only a successful same-repository `push` CI run on
 `main`, rebuilds that exact commit, and deploys `site/`; no cross-repository
 token is required. The page executes the minified JavaScript and CSS copied from
-the same tested `dist/` into the Pages artifact. Public installation snippets
-still show the unversioned jsDelivr aliases, and the release workflow purges
-only the four files actually shipped to npm after publication.
+the same tested `dist/` into the Pages artifact. The demo's own scripts and
+stylesheets are minified on the way into `site/` (`scripts/build-demo-cdn.mjs`,
+deterministic, top-level bindings preserved); `demo/` stays the readable QA
+source, `npm run demo:cdn -- --check` and `test:site` prove that every deployed
+asset is the current minified build, and `tests/browser/site-smoke.mjs` boots the
+generated site in Chromium. Public installation snippets still show the
+unversioned jsDelivr aliases, and the release workflow purges only the four
+files actually shipped to npm after publication.
 
 The canonical demo URL is `https://kineto.dongri.me`. Enable GitHub Pages for
 the Kineto repository with the GitHub Actions source and keep

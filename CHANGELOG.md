@@ -5,6 +5,7 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Minify the demo's own scripts and stylesheets into the deployed `site/` (about 220 KB raw / 58 KB gzip less per visit) while `demo/` stays the readable QA source; `demo:cdn --check`, `test:site`, and a new Chromium `site-smoke` lane prove the deployed bytes are the current deterministic build and still boot, localize, open settings, apply live options, and restore share links.
 - Share one priority-preserving `snapshotInlineStyles()` across modules: restore keeps `!important`, removes properties the element never set, drops an empty `style` attribute the element did not have, and accepts camelCase or kebab-case names including vendor prefixes; Glitch uses it instead of a module-local copy.
 - Add `subscribe(listener)` to the Presence controller and keep the React/Vue `status`/`result` in sync through it, so a child driven by a parent's `propagate: true` exit reports `finished` instead of freezing at `leaving`; the framework QA nested-propagation assertion now passes deterministically instead of depending on timing. Record the measured package and Vue consumer cost of these correctness/security bytes by rounding the packed/unpacked and Vue ceilings by 1 KB with the same 77 files.
 - Treat demo `?kt=` settings links as untrusted input: fields a module renders as HTML (Tooltip content/html, Cursor templates, Toast icon, Overflow Text items) are never serialized into or restored from a link, and resource URLs (Cursor images/sprites, Ambient source) restore only when they stay on the demo origin. A crafted link could previously execute script on the public demo; `tests/browser/share-link-policy.mjs` proves the payloads are inert while benign fields still restore.
@@ -30,6 +31,7 @@
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 배포용 `site/`에 데모 자체 스크립트·스타일시트를 minify해 담습니다(방문당 약 220KB raw / 58KB gzip 절감). `demo/`는 읽기 쉬운 QA 원본으로 유지하고, `demo:cdn --check`·`test:site`·새 Chromium `site-smoke` 레인이 배포 바이트가 최신 결정적 빌드이며 부팅·다국어·설정 열기·실시간 옵션 적용·공유 링크 복원이 동작함을 검사합니다.
 - 우선순위를 보존하는 `snapshotInlineStyles()` 하나를 모듈이 공유합니다. 복원 시 `!important`를 유지하고, 요소가 설정하지 않았던 속성은 제거하며, 원래 없던 빈 `style` 속성을 남기지 않고, camelCase·kebab-case·vendor prefix 이름을 모두 받습니다. Glitch는 모듈 내부 복사본 대신 이 공용 함수를 사용합니다.
 - Presence 컨트롤러에 `subscribe(listener)`를 추가하고 React/Vue의 `status`·`result`를 이 구독으로 동기화합니다. 부모의 `propagate: true` exit로 끝난 자식이 `leaving`에 멈추지 않고 `finished`를 보고하며, framework QA의 중첩 전파 단언이 타이밍에 의존하지 않고 통과합니다. 이 정확성·보안 바이트의 측정된 패키지·Vue 소비자 비용을 기록해 packed/unpacked·Vue 상한만 1KB 반올림하고 77개 파일 범위는 유지합니다.
 - 데모의 `?kt=` 설정 링크를 신뢰할 수 없는 입력으로 다룹니다. 모듈이 HTML로 렌더링하는 필드(Tooltip content/html, Cursor 템플릿, Toast icon, Overflow Text items)는 링크에 담지도 복원하지도 않고, 리소스 URL(Cursor 이미지·스프라이트, Ambient 소스)은 데모와 같은 origin일 때만 복원합니다. 이전에는 조작된 링크가 공개 데모에서 스크립트를 실행할 수 있었으며, `tests/browser/share-link-policy.mjs`가 페이로드 무력화와 일반 필드 복원을 함께 검사합니다.

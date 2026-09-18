@@ -6,7 +6,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert';
-import { rewriteSiteHtml, assertSite } from '../scripts/build-demo-cdn.mjs';
+import { rewriteSiteHtml, assertSite, assertDemoAssets, listDemoAssets, minifyDemoScript, minifyDemoStylesheet } from '../scripts/build-demo-cdn.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
@@ -36,6 +36,27 @@ for (const asset of ['kineto.umd.min.js', 'kineto.min.css']) {
     fs.readFileSync(path.join(root, 'dist', asset)),
     `site/${asset} must byte-match dist/${asset}`
   );
+}
+
+// 2b. Demo-owned scripts/stylesheets ship minified, deterministically derived
+// from demo/ so a stale or hand-edited site/ copy fails the check. Classic
+// scripts keep their top-level bindings (the demo shares state through them),
+// so the deployed copy must still define the same globals as the source.
+assert.deepStrictEqual(assertDemoAssets(), [], 'site/ demo assets must be the current minified builds of demo/');
+const demoAssets = listDemoAssets();
+assert.ok(demoAssets.length >= 10, `expected the demo scripts and stylesheets to be listed (${demoAssets.length})`);
+for (const { file } of demoAssets) {
+  const source = fs.statSync(path.join(root, 'demo', file)).size;
+  const deployed = fs.statSync(path.join(root, 'site', file)).size;
+  assert.ok(deployed <= source, `site/${file} (${deployed}) must not be larger than demo/${file} (${source})`);
+}
+assert.strictEqual(minifyDemoScript('a.js', 'const a = 1;\nwindow.__ktTest = a;'), minifyDemoScript('a.js', 'const a = 1;\nwindow.__ktTest = a;'), 'script minification must be deterministic');
+assert.match(minifyDemoScript('shared.js', 'const sharedToken = 1;\nfunction sharedHelper(value) { return value + sharedToken; }\nwindow.sharedHelper = sharedHelper;'), /\bsharedToken\b[\s\S]*\bsharedHelper\b/, 'top-level bindings of classic demo scripts must keep their names');
+assert.strictEqual(minifyDemoStylesheet('a.css', '.a {\n  color: red;\n}\n'), '.a{color:red}', 'stylesheet minification must drop whitespace only');
+for (const file of ['playground.js', 'main.js', 'styles.css', 'playground.css']) {
+  const deployed = fs.readFileSync(path.join(root, 'site', file), 'utf8');
+  const source = fs.readFileSync(path.join(root, 'demo', file), 'utf8');
+  assert.ok(deployed.length < source.length * 0.8, `site/${file} should be meaningfully smaller than its source (${deployed.length} vs ${source.length})`);
 }
 
 // 3. The deploy source owns the GTM snippet, so every generated site/index.html

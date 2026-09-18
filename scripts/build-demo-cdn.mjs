@@ -4,10 +4,18 @@
 //
 // Run as part of `npm run build`, or on its own: `npm run demo:cdn`.
 // `--check` verifies an already-generated site/ instead of writing.
+//
+// The demo's own scripts and stylesheets are minified on the way into site/.
+// `demo/` stays the readable QA source (every browser test runs against it);
+// the deployed copy only drops whitespace, comments and local identifiers.
+// Both minifiers ship with the repository's Vite toolchain and are
+// deterministic, so `--check` can assert byte equality against a fresh pass.
 import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { minifySync } from 'rolldown/experimental';
+import { transform as transformCss } from 'lightningcss';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
@@ -19,6 +27,59 @@ const runtimeAssets = [
   ['kineto.umd.min.js', 'kineto.umd.min.js'],
   ['kineto.min.css', 'kineto.min.css']
 ];
+
+// Demo scripts are classic (non-module) scripts that share state through
+// top-level bindings and `window.*`, so top-level names are never mangled.
+// Only block-scoped and function-scoped identifiers are shortened.
+const JS_MINIFY_OPTIONS = Object.freeze({
+  compress: { target: 'es2020' },
+  mangle: { toplevel: false },
+  codegen: { removeWhitespace: true }
+});
+
+export function minifyDemoScript(name, source) {
+  const output = minifySync(name, source, JS_MINIFY_OPTIONS);
+  if (output.errors?.length) {
+    throw new Error(`demo-cdn: could not minify ${name}: ${output.errors.map((error) => error.message).join('; ')}`);
+  }
+  return output.code;
+}
+
+export function minifyDemoStylesheet(name, source) {
+  return transformCss({ filename: name, code: Buffer.from(source), minify: true }).code.toString();
+}
+
+// Every demo-owned asset in site/ and how its deployed bytes derive from the
+// demo/ source. The runtime files copied from dist/ are deliberately absent:
+// they must stay byte-identical to the tested build.
+export function listDemoAssets(sourceDir = SRC) {
+  return fs.readdirSync(sourceDir)
+    .filter((file) => /\.(?:js|css)$/.test(file))
+    .sort()
+    .map((file) => ({ file, minify: file.endsWith('.js') ? minifyDemoScript : minifyDemoStylesheet }));
+}
+
+function writeMinifiedDemoAssets() {
+  return listDemoAssets().map(({ file, minify }) => {
+    const source = fs.readFileSync(path.join(SRC, file), 'utf8');
+    const output = minify(file, source);
+    fs.writeFileSync(path.join(OUT, file), output);
+    return { file, sourceBytes: Buffer.byteLength(source), outputBytes: Buffer.byteLength(output) };
+  });
+}
+
+// `--check` support: the deployed copy of each demo asset must be exactly what
+// a fresh minification of the current demo/ source produces.
+export function assertDemoAssets() {
+  const errors = [];
+  for (const { file, minify } of listDemoAssets()) {
+    const output = path.join(OUT, file);
+    if (!fs.existsSync(output)) { errors.push(`site/${file} is missing`); continue; }
+    const expected = minify(file, fs.readFileSync(path.join(SRC, file), 'utf8'));
+    if (fs.readFileSync(output, 'utf8') !== expected) errors.push(`site/${file} is not the minified build of demo/${file}`);
+  }
+  return errors;
+}
 
 // Short build id for the footer/debug so a deployed page is traceable to a commit.
 function buildId() {
@@ -77,23 +138,26 @@ if (isMain) {
   const check = process.argv.includes('--check');
   if (check) {
     const html = fs.readFileSync(path.join(OUT, 'index.html'), 'utf8');
-    const errors = [...assertSite(html), ...assertRuntimeAssets()];
+    const errors = [...assertSite(html), ...assertRuntimeAssets(), ...assertDemoAssets()];
     if (errors.length) { console.error('demo-cdn --check FAILED:\n  - ' + errors.join('\n  - ')); process.exit(1); }
-    console.log(`demo-cdn --check OK — co-deployed runtime matches dist, public CDN snippets retained, 0 ../dist refs.`);
+    console.log(`demo-cdn --check OK — co-deployed runtime matches dist, demo assets are current minified builds, public CDN snippets retained, 0 ../dist refs.`);
   } else {
     fs.rmSync(OUT, { recursive: true, force: true });
     fs.cpSync(SRC, OUT, { recursive: true });
+    const minified = writeMinifiedDemoAssets();
     for (const [sourceName, outputName] of runtimeAssets) {
       fs.copyFileSync(path.join(root, 'dist', sourceName), path.join(OUT, outputName));
     }
     const indexPath = path.join(OUT, 'index.html');
     const { html, leftover } = rewriteSiteHtml(fs.readFileSync(indexPath, 'utf8'), { build: buildId() });
     fs.writeFileSync(indexPath, html);
-    const errors = [...assertSite(html), ...assertRuntimeAssets()];
+    const errors = [...assertSite(html), ...assertRuntimeAssets(), ...assertDemoAssets()];
     if (errors.length || leftover > 0) {
       console.error(`Generated site/ but assertions FAILED (leftover ../dist=${leftover}):\n  - ` + errors.join('\n  - '));
       process.exit(1);
     }
-    console.log(`Generated site/ from demo/ — co-deployed tested runtime (build ${buildId()}), public CDN snippets retained.`);
+    const sourceKb = minified.reduce((total, asset) => total + asset.sourceBytes, 0) / 1024;
+    const outputKb = minified.reduce((total, asset) => total + asset.outputBytes, 0) / 1024;
+    console.log(`Generated site/ from demo/ — co-deployed tested runtime (build ${buildId()}), public CDN snippets retained, ${minified.length} demo assets minified ${sourceKb.toFixed(1)} KB → ${outputKb.toFixed(1)} KB.`);
   }
 }
