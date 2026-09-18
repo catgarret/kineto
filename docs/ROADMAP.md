@@ -23,8 +23,8 @@ v0.9.9에서 공개 데모의 `?kt=` 공유 링크 XSS를 차단하고, SRI 검�
 재사용을 막았으며, Presence `subscribe()`로 React/Vue 상태를 부모 전파와 동기화했습니다.
 공용 인라인 스타일 스냅샷, 배포 사이트 minify(방문당 gzip 약 58KB 절감), GitHub Actions
 메이저 고정 갱신과 Glitch 종료 안전성 수정을 포함합니다. 로컬 검증은
-[QA 보고서](QA_REPORT.md)의 2026-09-18 항목에, 원격 CI·Release·두 사이트 배포 증거는
-완료 후 기록합니다.
+[QA 보고서](QA_REPORT.md)의 2026-09-18 항목에, 원격 CI·Release·npm 게시·canonical 배포
+증거는 [QA 보고서 v0.9.9](QA_REPORT.md#v099)에 기록했습니다(backup parity는 동기화 후 별도).
 
 ## 1. 결론
 

@@ -5,10 +5,12 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Record the verified v0.9.9 release: successful CI, Release, and canonical Pages runs on the new GitHub Actions majors, byte-identical npm/GitHub tarballs with matching provenance subject and release commit, and a canonical deployment whose 16 first-party assets (now including the minified demo bundle) byte-match the tested build.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 검증된 v0.9.9 릴리스를 기록했습니다: 새 GitHub Actions 메이저에서 성공한 CI·Release·canonical Pages 실행, provenance subject·릴리스 커밋이 일치하는 동일 바이트 npm/GitHub tarball, 그리고 (minify된 데모 번들을 포함한) 자체 자산 16개가 테스트된 빌드와 바이트 일치하는 canonical 배포.
 
 ## [0.9.9] - 2026-09-18
 

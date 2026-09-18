@@ -47,7 +47,7 @@ another agent's prose report are leads to verify, not evidence of completion.
 
 - Package: `@dong-gri/kineto`
 - Current source version: `0.9.9`
-- Latest published npm version at the time of this handoff: `0.9.8`
+- Latest published npm version at the time of this handoff: `0.9.9`
 - Public surface: 52 modules and 28 Core APIs
 - Primary branch: `main`
 - Remote: `https://github.com/catgarret/kineto`
@@ -143,6 +143,15 @@ majors with upstream-verified SHAs. Budgets absorb only measured costs
 verification ran on Node 22 with Chromium 141; `test:demo`'s animated-media
 step could not complete in that container on the published v0.9.8 baseline
 either, so remote CI is the authority for it. See QA_REPORT for the record.
+
+v0.9.9 shipped on 2026-09-18 (KST 2026-09-19 00:11): CI `35359625205`,
+Release `35359768823`, canonical Pages `35361162158`; npm and GitHub tarballs
+are byte-identical (`f9104ab4…10cd`), provenance points at release commit
+`ba0bb4bcfe51a3fc6919149f7ac1191da4d7a93d`, and kineto.dongri.me served that
+build's 16 first-party assets byte-matched at 15:18 UTC. Backup parity is
+recorded separately once the 15-minute sync catches up. Physical-device QA and
+external case studies remain open; the next batch (Lazy `dither`/`ascii`/
+`halftone` on a shared stylized-media renderer) targets v0.10.0.
 
 Environment note for agents: browser tests locate Chromium through
 `KT_CHROME` (most suites) and `MK_CHROMIUM` (demo/framework/browser-smoke);

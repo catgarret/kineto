@@ -1,7 +1,7 @@
 # Kineto v0.9.9 QA Report
 
 검증일: 2026-09-18
-대상: v0.9.9 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
+대상: v0.9.9 공개 릴리스 `ba0bb4b` · 이전 공개 배포 근거는 버전별로 유지
 
 ## 2026-09-18 Unreleased 검증
 
@@ -433,6 +433,29 @@ registry의 해제 크기는 1,797,191 bytes로 확인했습니다. 이 수치�
 | `kineto.umd.min.js` | `f50b7ab3506f57d6dc0933d7fdf29435c358e2052d6493e8ffc93b6aeb2b6332` |
 | `kineto.min.css` | `c777c609621d688ac6cebdc59d092d9455272348d55d94cabd01f33e10802e31` |
 | `main.js` | `7f8b0555c9893518d3799528b9bc07a7700dbd25c4ca1687001ef5423ab1ae93` |
+| `assets/click-burst.svg` | `596080f8bec342b88e30a336cebdcc976b0f1a6a538d2fdc3e260987e003931d` |
+| `assets/motion-demo.gif` | `c92c37f8a025be36660a05dfc11d5d12464ea0e929b3c6284252964718c4aac6` |
+| `assets/motion-demo.webp` | `68f2430e17b5e12c95aec32558aec30a589f2575c9d09007c70f57f697846e11` |
+| `assets/motion-demo.png` | `f841f7735a9c73a31b5aef162b84a372ce6dc6ed33cee0f249e1f91c76a603bc` |
+
+### v0.9.9
+
+- [CI `35359625205`](https://github.com/catgarret/kineto/actions/runs/35359625205)(release: prepare v0.9.9, 14m46s), [Release `35359768823`](https://github.com/catgarret/kineto/actions/runs/35359768823)(8m31s: Verify·Chromium·package 7m44s, Firefox/WebKit release gate, publish 28s), [canonical Pages `35361162158`](https://github.com/catgarret/kineto/actions/runs/35361162158)(25s, `github-pages` artifact 669 KB `sha256:900359019a7dbb06b559664dbc34face07153b09a48958af84bec601c7887244`)가 모두 성공했습니다. 앞선 [CI `35357144226`](https://github.com/catgarret/kineto/actions/runs/35357144226)(docs 커밋 `cc95f58`, 13m48s)과 [Pages `35358575972`](https://github.com/catgarret/kineto/actions/runs/35358575972)는 새 GitHub Actions 메이저(checkout 7·setup-node 7·upload-artifact 7·upload-pages-artifact 5·deploy-pages 5)로 처음 실행된 배치이며 Node 20.19·22.12·24, Firefox·WebKit 전부 통과했습니다.
+- npm `@dong-gri/kineto@0.9.9`의 게시 시각은 `2026-09-18T15:11:07.865Z`, 77개 파일, unpacked 1,816,800 bytes, integrity `sha512-b2P8XY1LiNCRZuAxjNa38dyhb1OKZ3wjTIwlEAN+d9fs9ggZsHI6TTzgFzDcQma4PBkkQaTAXWFGUBjroXW05A==`입니다. [GitHub Release v0.9.9](https://github.com/catgarret/kineto/releases/tag/v0.9.9)는 github-actions가 영문 → 한국어 순서의 노트와 tarball asset으로 생성했습니다.
+- npm registry tarball과 GitHub Release asset은 548,364 bytes, SHA-256 `f9104ab470361136d14fe9f01ff455ac97a717df456f3c985bd065779af210cd`로 byte-for-byte 일치합니다.
+- npm publish/v0.1·SLSA provenance/v1 attestation의 subject SHA512 `6f63fc5d…b4e4`가 실제 tarball과 일치합니다. source는 `git+https://github.com/catgarret/kineto@refs/tags/v0.9.9` commit `ba0bb4bcfe51a3fc6919149f7ac1191da4d7a93d`, workflow는 `.github/workflows/release.yml@refs/tags/v0.9.9`, invocation은 `35359768823/attempts/1`입니다. 서명·투명성 로그의 암호학적 신뢰 체인 검증은 별도로 수행하지 않았습니다.
+- `KT_EXPECTED_BUILD=ba0bb4bcfe51a3fc6919149f7ac1191da4d7a93d npm run test:live-site`가 `https://kineto.dongri.me`의 `v0.9.9 / 52 modules / GTM / build ba0bb4b`와 co-deployed UMD·CSS의 SHA-256 일치를 확인했습니다. 2026-09-19 00:18 KST(`2026-09-18 15:18 UTC`)에 공개 HTML이 실제 참조하는 자체 JS/CSS 12개(이번 릴리스부터 minify된 데모 자산 포함)와 클릭 미디어 4개가 로컬 `site/` 빌드와 byte 일치했습니다.
+- 확인 시점에 backup `git.dongri.me/example/kineto`는 아직 build `a66de20`(v0.9.8)을 서빙했습니다. 15분 주기 `sync-kineto.yml`이 따라잡은 뒤 `npm run test:live-site:parity`로 두 도메인 일치를 별도 확인합니다.
+
+주요 공개 asset SHA-256 (v0.9.9):
+
+| 파일 | SHA-256 |
+|---|---|
+| `kineto.umd.min.js` | `676c4517e50e84d47dc6bb9f4314818b1d9072b4e7fab733539dbc408860742b` |
+| `kineto.min.css` | `c777c609621d688ac6cebdc59d092d9455272348d55d94cabd01f33e10802e31` |
+| `main.js` | `f1c685cabc6d691b68b1d8dca898d49e2b66ef6093d75aa5923b63f903eea7d5` |
+| `playground.js` | `c6882f95c6788a8acf9e4dd8bc991bd24e9d99e1260c8abb8ed411bb2da7d7c6` |
+| `styles.css` | `51d90b3b2c30628338303724f8ce99c8e79c794cd9b6e9a37c193ac560850916` |
 | `assets/click-burst.svg` | `596080f8bec342b88e30a336cebdcc976b0f1a6a538d2fdc3e260987e003931d` |
 | `assets/motion-demo.gif` | `c92c37f8a025be36660a05dfc11d5d12464ea0e929b3c6284252964718c4aac6` |
 | `assets/motion-demo.webp` | `68f2430e17b5e12c95aec32558aec30a589f2575c9d09007c70f57f697846e11` |
