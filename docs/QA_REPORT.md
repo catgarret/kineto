@@ -3,6 +3,80 @@
 검증일: 2026-09-12
 대상: v0.9.8 공개 릴리스 `92bc1b6` · 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-18 Unreleased 검증
+
+소유자 체크아웃과 동기화한 클라우드 클론(Node 22.22 · npm 10.9 · Chromium 141)에서
+미커밋 Glitch 종료 안전성 작업을 검증해 커밋한 뒤 여섯 개 변경을 추가했습니다.
+원격 CI(Node 24 · 최신 Playwright Chromium · Firefox · WebKit)가 최종 권위입니다.
+
+### 데모 공유 링크 정책 (보안)
+
+`?kt=` 링크 하나로 Tooltip `html:true`+`content`, Cursor `template`/`hoverTemplate`,
+Toast `icon`, Overflow Text `items`에 마크업을 주입하면 공개 데모에서 `innerHTML`로
+스크립트가 실행되는 것을 재현했습니다(수정 전 검사에서 `<img onerror>` canary가
+실행됨). 이제 이 필드들은 링크에 직렬화되지도 복원되지도 않고, Cursor 이미지·스프라이트와
+Ambient 소스 URL은 데모와 같은 origin일 때만 복원합니다. 설정 패널의 직접 편집은
+바뀌지 않습니다. `tests/browser/share-link-policy.mjs`(14개 단언)가 정책 함수, 마크업
+페이로드 무력화, 외부·protocol-relative·`javascript:` URL 거부, 같은 링크의 일반 필드
+(placement·color·same-origin clickImage) 복원을 검사합니다.
+
+### SRI 검증 태그 재사용
+
+`src/runtime.js`는 같은 엔진 URL의 기존 `<script>`를 integrity가 일치할 때만 재사용합니다.
+`tests/engine-loader.mjs`에 검증되지 않은 GSAP 태그가 미리 있는 경우를 추가해, Kineto가
+자체 SHA-384 태그를 주입하고 기존 태그를 로드 완료로 채택하지 않음을 고정했습니다.
+
+### Presence 상태 구독과 어댑터 동기화
+
+이 환경에서 framework QA의 "React nested Presence child did not propagate parent exit"가
+2초 폴링에서도 항상 실패했습니다. 원인은 어댑터가 자기 `enter()`/`leave()` Promise가 끝날
+때만 상태를 갱신해, 부모 전파로 취소·재시작된 자식이 `leaving`에 고정되는 것이었습니다
+(v0.9.8 기준선은 120ms 고정 대기가 우연히 전환 창 안에 들어가 통과). Presence 컨트롤러에
+`subscribe(listener)`를 추가하고 React/Vue가 이를 통해 `status`/`result`를 갱신합니다.
+`tests/browser/presence.mjs`가 전파된 enter/leave의 알림 순서
+(`entering→finished→leaving→finished`)와 구독 해제를 검사하며, framework QA
+(React StrictMode·Vue·jQuery·hydration·SSR)는 이 환경에서 결정적으로 통과합니다.
+
+### 공용 인라인 스타일 스냅샷
+
+`utils.snapshotInlineStyles()`가 값과 우선순위를 CSSOM 이름으로 기록하고, camelCase·kebab-case·
+vendor prefix 이름을 받으며, DOM 어댑터가 노출하지 않는 vendor 멤버(`webkitUserDrag`)는
+멤버 값으로 복원하고, 원래 없던 `style` 속성을 남기지 않습니다. Glitch의 지역 복사본을 제거했고
+`tests/utils.mjs`에 우선순위·kebab·vendor 멤버·빈 속성 케이스를 추가했습니다. 모듈 lifecycle
+Node 검사(regressions·leak·audit·reduced·update)와 Glitch 렌더러 10개·Wave 81개 검사가 통과합니다.
+
+### 배포 사이트 minify
+
+`scripts/build-demo-cdn.mjs`가 데모 소유 JS/CSS 10개를 964.2KB → 745.6KB로 minify해 `site/`에
+담습니다(gzip 합계 약 296KB → 238KB). 최상위 바인딩은 mangle하지 않습니다. `demo:cdn --check`와
+`test:site`가 배포 바이트 == 현재 소스의 결정적 minify를 단언하고,
+`tests/browser/site-smoke.mjs`(17개 단언)가 생성된 사이트의 버전·모듈 수·빌드 스탬프·i18n 테이블·
+설정 드로어·실시간 옵션 변경·공유 링크 복원을 first-party 오류 0으로 검사합니다.
+`verify-live-site`가 해시 대조하는 런타임 2개 파일은 그대로 dist와 바이트 일치합니다.
+
+### GitHub Actions 고정 갱신
+
+Dependabot 제안 5건(checkout 7.0.1, setup-node 7.0.0, upload-artifact 7.0.1, upload-pages-artifact
+5.0.0, deploy-pages 5.0.1)의 SHA를 `git ls-remote --tags`로 업스트림 태그와 대조한 뒤 반영했습니다.
+upload-artifact 7은 `archive: true` 기본값을 유지해 검증 tarball 전달과 download-artifact 7이 그대로
+동작합니다. 실제 러너 호환성은 이 배치의 원격 CI·Pages 실행으로 확인합니다.
+
+### 측정과 예산
+
+Node 22 기준 release package 535.5KB packed / 1774.2KB unpacked / 77 files, UMD gzip 124.5KB,
+min ESM raw 415.1KB, Vite full 139.2KB, React 143.1KB, Vue 144.2KB, Rolldown full 138.9KB.
+정확성·보안 바이트의 측정 비용만 반영해 packed 536, unpacked 1775, min ESM raw 416, Vue 소비자
+144로 상한을 1KB씩 올렸고 runner variance·77개 파일·모듈 조합 경계는 유지합니다.
+`audit:lockfiles`는 3개 lockfile 모두 0 vulnerabilities입니다.
+
+### 이 환경에서 검증하지 못한 항목
+
+`test:demo`의 animated-media 단계(`tests/animated-media-helper.mjs` 7초 대기)와 `b2_navigation`의
+"focused skip link is visible in the viewport" 단언은 이 컨테이너의 Chromium 141에서 변경 전
+v0.9.8 기준선(`a66de20`)으로도 동일하게 실패해 환경 요인으로 분류했습니다. 그 외 Chromium 브라우저
+레인 17개 suite와 Node suite 전체가 통과했습니다. Firefox·WebKit·실기기·공개 배포는 원격 CI와
+배포 후 검증으로 확인합니다.
+
 ## 2026-09-14 Unreleased 검증
 
 ### 후속: Glitch 종료 후 재시작과 스타일 복원

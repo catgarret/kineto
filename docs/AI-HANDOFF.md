@@ -128,6 +128,26 @@ multi-token class hooks are batched. See QA_REPORT for the separate cost evidenc
 Package growth is an explicit lifecycle cost, not a bundle-size optimization;
 see the current budget reports and QA evidence before releasing this batch.
 
+The 2026-09-18 Unreleased batch (Claude, working from a cloud clone synced with
+the owner's checkout) verified and committed the pending Glitch teardown work,
+then added: a share-link policy that keeps markup-rendering fields and
+off-origin resource URLs out of `?kt=` restores (a crafted link could execute
+script on the public demo); SRI-verified reuse of pre-existing engine tags;
+`subscribe()` on the Presence controller so React/Vue `status`/`result` follow
+parent-propagated runs (the framework QA nested-propagation assertion was
+timing-dependent before); one shared priority-preserving `snapshotInlineStyles`
+(Glitch's local copy removed); minified demo assets in the deployed `site/`
+with a Chromium `site-smoke` gate; and the five Dependabot GitHub Actions
+majors with upstream-verified SHAs. Budgets absorb only measured costs
+(package 536/1775 KB, min ESM 416 KB raw, Vue consumer 144 KB). Local
+verification ran on Node 22 with Chromium 141; `test:demo`'s animated-media
+step could not complete in that container on the published v0.9.8 baseline
+either, so remote CI is the authority for it. See QA_REPORT for the record.
+
+Environment note for agents: browser tests locate Chromium through
+`KT_CHROME` (most suites) and `MK_CHROMIUM` (demo/framework/browser-smoke);
+set both when the installed Playwright browser revision differs.
+
 Always verify this summary against Git history because later commits supersede
 it.
 
