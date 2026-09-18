@@ -5,7 +5,7 @@
 ## 공개 범위
 
 - 라이브러리 버전: `0.9.9`
-- 기능 계약 버전: `1.3.0`
+- 기능 계약 버전: `1.4.0`
 - 동작 계약 버전: `1.2.0`
 - 공개 모듈: 정확히 **52개**
 - Core public property: **12개**
@@ -56,4 +56,4 @@
 npm run ci
 ```
 
-이 명령은 lint, ESM/UMD 빌드, 공개 surface, 48개 소유자 요구사항, 생성 문서, Chromium lifecycle, 애니메이션 미디어 연속성, 플레이그라운드, package surface와 tarball 내용을 검사합니다. 배포 전 `npm run verify`를 실행하면 의존성 보안 감사도 추가됩니다. 빌드 성공만으로는 완료가 아닙니다.
+이 명령은 lint, ESM/UMD 빌드, 공개 surface, 49개 소유자 요구사항, 생성 문서, Chromium lifecycle, 애니메이션 미디어 연속성, 플레이그라운드, package surface와 tarball 내용을 검사합니다. 배포 전 `npm run verify`를 실행하면 의존성 보안 감사도 추가됩니다. 빌드 성공만으로는 완료가 아닙니다.

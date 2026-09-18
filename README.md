@@ -205,7 +205,7 @@ Kineto.disableSmooth();
 | `glitch` | `data-kt-glitch` | RGB slice and glitch reveal |
 | `hold` | `data-kt-hold` | Hold / mash-to-confirm gauge |
 | `horizontalScroll` | `data-kt-horizontal-scroll` | Pinned horizontal scroll section |
-| `lazy` | `data-kt-lazy` | Image load effects (skeleton, pixelate, print, dissolve) |
+| `lazy` | `data-kt-lazy` | Image / video load effects (skeleton, pixelate, print, dissolve, dither, ASCII, halftone) |
 | `lightbox` | `data-kt-lightbox` | Full-screen viewer, groups, zoom, minimap, filmstrip |
 | `loader` | `data-kt-loader` | Loader bound to real progress sources |
 | `loadingIndicator` | `data-kt-loading-indicator` | Inline spinner, bar, shimmer, and symbol indicators |

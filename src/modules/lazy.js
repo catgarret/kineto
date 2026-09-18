@@ -1,7 +1,30 @@
 import { clamp, observeOnce } from '../utils.js';
 import { fn as easingFunction } from '../easings.js';
+import { coverMap, createStylizedRenderer, resolveStyleConfig } from './lazy/stylizedMedia.js';
 
 const ANIMATED_EXTENSIONS = /\.(?:gif|apng|webp)(?:$|[?#])/i;
+// Effects rendered by the shared stylized-media rasterizer. They accept <img>,
+// live GIF/APNG/WebP and <video> sources; see ./lazy/stylizedMedia.js.
+const STYLIZED_EFFECTS = new Set(['dither', 'ascii', 'halftone']);
+// Starting cell size (CSS px) per style when the author does not set `cellSize`.
+const STYLIZED_DEFAULT_CELL = { dither: 6, ascii: 12, halftone: 8 };
+// Cell size the reveal shrinks to before crossfading into the original media.
+const STYLIZED_HANDOFF_CELL = { dither: 2, ascii: 5, halftone: 3 };
+// Share of the eased reveal timeline spent shrinking cells; the rest crossfades.
+const STYLIZED_SHRINK_PORTION = 0.7;
+
+// One frame of the stylized reveal timeline, shared by the <img> and <video>
+// paths: cells shrink geometrically from `startCell` to `handoffCell` during the
+// first 70% of `progress` (0..1, already eased), then the stylized layer fades
+// out over the remaining 30% so the original media shows through.
+function stylizedRevealFrame(progress, startCell, handoffCell) {
+  const shrink = clamp(progress / STYLIZED_SHRINK_PORTION, 0, 1);
+  const fade = clamp((progress - STYLIZED_SHRINK_PORTION) / (1 - STYLIZED_SHRINK_PORTION), 0, 1);
+  return {
+    cell: startCell * Math.pow(handoffCell / startCell, shrink),
+    layerOpacity: 1 - fade
+  };
+}
 
 function sourceOf(el, opts = {}) {
   return opts.src || el.dataset.src || el.getAttribute('data-src') || el.currentSrc || el.getAttribute('src') || '';
@@ -54,13 +77,6 @@ function resolvePixelSteps(opts, width, height) {
 function visibleMosaicSteps(steps) {
   if (steps.length > 1 && steps[steps.length - 1] <= 1) return steps.slice(0, -1);
   return steps.length ? steps : [2];
-}
-
-function coverMap(sourceWidth, sourceHeight, boxWidth, boxHeight) {
-  const scale = Math.max(boxWidth / sourceWidth, boxHeight / sourceHeight);
-  const sw = Math.min(sourceWidth, boxWidth / scale);
-  const sh = Math.min(sourceHeight, boxHeight / scale);
-  return { sx: (sourceWidth - sw) / 2, sy: (sourceHeight - sh) / 2, sw, sh };
 }
 
 function ensureWrapper(el, opts) {
@@ -263,13 +279,177 @@ function createVideoReveal(el, opts = {}) {
   };
 }
 
+// Reads every option the stylized variants (dither / ascii / halftone) use, for
+// both the <img> and the <video> path, so a new option is added in exactly one
+// place. `defaults` lets each caller pick its own frame budget: a still image
+// only needs frames while revealing, a video renders for its whole playback.
+//
+// The `effect` comparison is always true for callers; it exists so the option
+// analysis (scripts/derive-variant-options.mjs) attributes these `opts.*` reads
+// to the three stylized variants instead of to every Lazy variant.
+function readStylizedSettings(effect, opts, { lowTier = false, persistFps = 24, revealFps = 24, maxDpr = 2 } = {}) {
+  const settings = {};
+  if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {
+    settings.persist = opts.persist === true;
+    settings.startCell = clamp(Number(opts.cellSize ?? STYLIZED_DEFAULT_CELL[effect]), 2, 64);
+    settings.handoffCell = Math.min(settings.startCell, STYLIZED_HANDOFF_CELL[effect]);
+    const styleInput = {
+      paperColor: opts.paperColor,
+      inkColor: opts.inkColor,
+      accentColor: opts.accentColor,
+      originalColors: opts.originalColors === true,
+      colorSteps: opts.colorSteps,
+      inverted: opts.inverted === true,
+      seed: opts.seed
+    };
+    if (effect === 'dither') styleInput.type = opts.ditherType;
+    if (effect === 'ascii') { styleInput.chars = opts.asciiChars; styleInput.font = opts.asciiFont; }
+    if (effect === 'halftone') styleInput.shape = opts.halftoneShape;
+    settings.styleConfig = resolveStyleConfig(effect, styleInput);
+    // Low-tier devices cap the canvas frame rate regardless of the request.
+    const requestedFps = opts.renderFps ?? (settings.persist ? persistFps : revealFps);
+    settings.fps = clamp(Number(requestedFps), 4, lowTier ? 12 : 60);
+    settings.maxDpr = clamp(Number(opts.maxDpr ?? maxDpr), 0.5, 4);
+  }
+  return settings;
+}
+
+// Creates the canvas overlay the stylized variants draw into. Both media paths
+// share it so the class names the tests and stylesheet rely on stay identical.
+function createStylizedCanvasLayer(wrapper, effect) {
+  const layer = createLayer(wrapper, `kt-lazy-${effect}-layer kt-lazy-stylized-layer`, 3);
+  const canvas = document.createElement('canvas');
+  canvas.className = `kt-lazy-${effect}-canvas kt-lazy-stylized-canvas`;
+  canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;';
+  layer.appendChild(canvas);
+  return { layer, canvas };
+}
+
+// Stylized <video>: the plain lazy video reveal handles loading/autoplay, and a
+// canvas overlay re-renders each playing frame through the shared rasterizer.
+// `persist` keeps the stylized look for the whole playback (a permanent filter);
+// otherwise the reveal shrinks its cells and crossfades into the raw video.
+function createStylizedVideo(el, opts, effect, kineto = null) {
+  const lowTier = kineto?.performance === 'low';
+  const { wrapper, created, originalWrapperStyle } = ensureWrapper(el, opts);
+  const originalStyle = el.getAttribute('style');
+  el.style.display = 'block';
+  el.style.width = '100%';
+  el.style.height = '100%';
+  el.style.objectFit = opts.objectFit || 'cover';
+  const { layer, canvas } = createStylizedCanvasLayer(wrapper, effect);
+
+  // Video renders every playing frame, so it starts from a lighter DPR budget.
+  const { persist, startCell, handoffCell, styleConfig, fps, maxDpr } =
+    readStylizedSettings(effect, opts, { lowTier, persistFps: 24, revealFps: 24, maxDpr: 1.5 });
+  const interval = 1000 / fps;
+  const renderer = createStylizedRenderer(canvas, styleConfig, { maxDpr });
+  const duration = Math.max(120, durationMs(opts.duration, 1.6));
+  const ease = easingFunction(opts.ease || 'cubic-out');
+
+  let rafId = null;
+  let destroyed = false;
+  let paused = false;
+  let revealStart = null;
+  let revealed = persist;
+  let lastDraw = -Infinity;
+
+  const paint = (cell) => {
+    if (el.readyState < 2) return false;
+    const box = wrapper.getBoundingClientRect();
+    renderer.sync(box.width, box.height);
+    return renderer.render(el, cell);
+  };
+  const frame = (time) => {
+    if (destroyed) return;
+    rafId = requestAnimationFrame(frame);
+    if (paused || el.paused || el.ended) return;
+    if (time - lastDraw < interval) return;
+    lastDraw = time;
+    if (persist) {
+      paint(startCell);
+      return;
+    }
+    if (revealStart == null) revealStart = time;
+    const raw = clamp((time - revealStart) / duration, 0, 1);
+    const { cell, layerOpacity } = stylizedRevealFrame(clamp(ease(raw), 0, 1), startCell, handoffCell);
+    const rendered = paint(cell);
+    layer.style.opacity = String(layerOpacity);
+    if (!rendered || raw >= 1) {
+      // Either the reveal finished or the frames cannot be read back: hand the
+      // viewport to the raw video and stop rendering.
+      revealed = true;
+      layer.remove();
+      cancelAnimationFrame(rafId);
+      rafId = null;
+      opts.onProgress?.(1, el);
+    } else {
+      opts.onProgress?.(raw, el);
+    }
+  };
+  const start = () => {
+    if (destroyed || rafId != null || (revealed && !persist)) return;
+    rafId = requestAnimationFrame(frame);
+  };
+
+  const inner = createVideoReveal(el, {
+    ...opts,
+    onReveal: (video) => {
+      opts.onReveal?.(video);
+      start();
+    }
+  });
+  el.addEventListener('playing', start);
+
+  return {
+    el,
+    type: 'lazy',
+    get animatedMedia() { return true; },
+    replay() {
+      revealStart = null;
+      revealed = persist;
+      lastDraw = -Infinity;
+      layer.style.opacity = '1';
+      if (!layer.isConnected) wrapper.appendChild(layer);
+      inner.replay();
+      start();
+    },
+    pause() { paused = true; inner.pause(); },
+    resume() { paused = false; inner.resume(); start(); },
+    destroy() {
+      destroyed = true;
+      if (rafId != null) cancelAnimationFrame(rafId);
+      rafId = null;
+      el.removeEventListener('playing', start);
+      renderer.destroy();
+      layer.remove();
+      inner.destroy();
+      if (created && wrapper.parentNode) {
+        wrapper.parentNode.insertBefore(el, wrapper);
+        wrapper.remove();
+      } else if (!created) {
+        if (originalWrapperStyle == null) wrapper.removeAttribute('style');
+        else wrapper.setAttribute('style', originalWrapperStyle);
+      }
+      if (originalStyle == null) el.removeAttribute('style');
+      else el.setAttribute('style', originalStyle);
+    }
+  };
+}
+
 export default {
-  create(el, opts = {}) {
+  create(el, opts = {}, kineto = null) {
     // Scroll video reveal: a <video> stays unloaded until it nears the viewport,
     // then its source is attached, it loads, fades in, and (muted) autoplays —
     // the "lazy video" pattern. Kept as a fully isolated branch so it never
-    // touches the well-tested <img> pixel/blur pipeline below.
-    if (el.tagName === 'VIDEO') return createVideoReveal(el, opts);
+    // touches the well-tested <img> pixel/blur pipeline below. The stylized
+    // effects layer their renderer on top of that same reveal.
+    if (el.tagName === 'VIDEO') {
+      const videoEffect = opts.preset || opts.effect || 'fade';
+      return STYLIZED_EFFECTS.has(videoEffect)
+        ? createStylizedVideo(el, opts, videoEffect, kineto)
+        : createVideoReveal(el, opts);
+    }
 
     const requested = opts.preset || opts.effect || 'fade';
     // zoom was a near-duplicate of blur-up; keep the API alive but route it.
@@ -303,6 +483,9 @@ export default {
     let paused = false;
     let started = false;
     let noise = null;
+    let stylized = null;
+    let resizeObserver = null;
+    const lowTier = kineto?.performance === 'low';
 
     const later = (callback, delay) => {
       const timer = setTimeout(() => {
@@ -316,6 +499,10 @@ export default {
       layers.splice(0).forEach((layer) => layer.remove());
       noise?.canvas.remove();
       noise = null;
+      stylized?.destroy();
+      stylized = null;
+      resizeObserver?.disconnect();
+      resizeObserver = null;
     };
     const expose = () => {
       const srcset = opts.srcset || el.getAttribute('data-srcset');
@@ -861,6 +1048,96 @@ export default {
         return;
       }
 
+      if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {
+        // Stylized reveal (or permanent stylization with `persist`). The
+        // original stays visible underneath the canvas so a source the canvas
+        // cannot read back (cross-origin without CORS) still shows the picture.
+        el.src = src;
+        el.style.opacity = '1';
+        const { layer, canvas } = createStylizedCanvasLayer(wrapper, effect);
+        layers.push(layer);
+        // A still image only animates while revealing, so the reveal gets a
+        // higher frame budget than a permanent (persist) stylization.
+        const { persist, startCell, handoffCell, styleConfig, fps, maxDpr } =
+          readStylizedSettings(effect, opts, { lowTier, persistFps: 24, revealFps: 30, maxDpr: 2 });
+        const interval = 1000 / fps;
+        const renderer = createStylizedRenderer(canvas, styleConfig, { maxDpr });
+        stylized = renderer;
+        const duration = Math.max(120, durationMs(opts.duration, 1.6));
+        const delayMs = Math.max(0, Number(opts.delay ?? 60));
+        const hold = Math.max(0, Number(opts.holdDuration ?? 0));
+        const ease = easingFunction(opts.ease || 'cubic-out');
+        const animatedSource = opts.animated === true || ANIMATED_EXTENSIONS.test(src);
+        // Drawing the live <img> each frame keeps GIF/APNG/animated WebP moving.
+        const drawable = () => (el.complete && el.naturalWidth ? el : image);
+        const paint = (cell) => {
+          const box = wrapper.getBoundingClientRect();
+          renderer.sync(box.width, box.height);
+          return renderer.render(drawable(), cell);
+        };
+        let lastDraw = -Infinity;
+
+        if (persist) {
+          // Permanent stylization: no hand-off to the original. Live sources
+          // need continuous frames; a still image only re-renders on resize.
+          const rendered = paint(startCell);
+          opts.onProgress?.(1, el);
+          opts.onLoad?.(el, image);
+          if (rendered && animatedSource) {
+            const frame = (time) => {
+              if (destroyed) return;
+              if (!paused && time - lastDraw >= interval) {
+                paint(startCell);
+                lastDraw = time;
+              }
+              rafId = requestAnimationFrame(frame);
+            };
+            rafId = requestAnimationFrame(frame);
+          } else if (rendered && typeof ResizeObserver !== 'undefined') {
+            resizeObserver = new ResizeObserver(() => { if (!destroyed) paint(startCell); });
+            resizeObserver.observe(wrapper);
+          }
+          return;
+        }
+
+        // Reveal: cells shrink for the first 70% of the timeline, then the
+        // stylized layer crossfades into the original for the remaining 30%
+        // (see stylizedRevealFrame). Pausing freezes the timeline in place.
+        let startTime = null;
+        let pausedAt = null;
+        const frame = (time) => {
+          if (destroyed) return;
+          if (paused) {
+            if (pausedAt == null) pausedAt = time;
+            rafId = requestAnimationFrame(frame);
+            return;
+          }
+          if (pausedAt != null && startTime != null) {
+            startTime += time - pausedAt;
+            pausedAt = null;
+          }
+          if (startTime == null) startTime = time;
+          const raw = clamp((time - startTime) / duration, 0, 1);
+          if (time - lastDraw >= interval || raw >= 1) {
+            const { cell, layerOpacity } = stylizedRevealFrame(clamp(ease(raw), 0, 1), startCell, handoffCell);
+            const rendered = paint(cell);
+            if (!rendered && lastDraw === -Infinity) {
+              // Unreadable source: skip the effect rather than hide the image.
+              finish();
+              return;
+            }
+            layer.style.opacity = String(layerOpacity);
+            opts.onProgress?.(raw, el);
+            lastDraw = time;
+          }
+          if (raw < 1) rafId = requestAnimationFrame(frame);
+          else later(finish, hold);
+        };
+        paint(startCell);
+        later(() => { rafId = requestAnimationFrame(frame); }, delayMs);
+        return;
+      }
+
       if (effect === 'print' || effect === 'dissolve') {
         el.src = src;
         el.style.opacity = '0';
@@ -938,7 +1215,7 @@ export default {
     };
 
     if (effect === 'skeleton') setupSkeleton();
-    else if (!['blur-up', 'polaroid', 'pixelate'].includes(effect)) el.style.opacity = '0';
+    else if (!['blur-up', 'polaroid', 'pixelate'].includes(effect) && !STYLIZED_EFFECTS.has(effect)) el.style.opacity = '0';
 
     observer = observeOnce(el, run, {
       threshold: Number(opts.threshold ?? 0.05),

@@ -3,7 +3,7 @@
 > 이 문서는 `kineto.features.json`에서 생성됩니다. 직접 수정하지 말고 계약 파일을 명시적으로 변경한 뒤 `npm run docs:contract`를 실행하세요.
 
 - Library: 0.9.9
-- Feature contract: 1.3.0
+- Feature contract: 1.4.0
 - Behavior contract: 1.2.0
 - Public modules: 52
 - Root properties: `version`, `easings`, `prefersReducedMotion`, `env`, `performance`, `registry`, `instanceCount`, `smoothEnabled`, `lenis`, `core`, `diagnostics`, `diagnosticCodes`
@@ -86,8 +86,8 @@
 
 - Attribute: `data-kt-lazy`
 - Default variant: `fade`
-- Variants: `fade`, `blur-up`, `wave`, `grain`, `skeleton`, `pixelate`, `print`, `dissolve`, `flicker`, `polaroid`, `crt`, `data-mosaic`, `rgb-slice-burst`
-- Public options: `animated`, `aspectRatio`, `autoplay`, `blur`, `colors`, `crossOrigin`, `delay`, `direction`, `display`, `duration`, `ease`, `edgeOpacity`, `edgeWidth`, `effect`, `fadeDuration`, `fallbackSrc`, `feather`, `flickerBackground`, `frame`, `frameColor`, `grain`, `glitchStrength`, `height`, `holdDuration`, `keepFrame`, `loop`, `maxDpr`, `minDuration`, `muted`, `nativeLazy`, `noise`, `noiseBlend`, `noiseContrast`, `noiseFps`, `noiseHeight`, `noiseWidth`, `objectFit`, `objectPosition`, `onError`, `onLoad`, `onProgress`, `onReveal`, `once`, `pixelEnd`, `pixelStart`, `pixelStepCount`, `playsinline`, `preload`, `preset`, `renderFps`, `rootMargin`, `rotate`, `seed`, `sizes`, `skeletonAngle`, `skeletonColor`, `skeletonHighlight`, `skeletonIcon`, `skeletonSpeed`, `skeletonVariant`, `sliceCount`, `src`, `srcset`, `startScale`, `stepCount`, `stepDuration`, `steps`, `threshold`, `tileMax`, `tileMin`, `variant`, `waveAmplitude`, `waveFrequency`, `waveSliceHeight`, `waveSpeed`
+- Variants: `fade`, `blur-up`, `wave`, `grain`, `skeleton`, `pixelate`, `print`, `dissolve`, `flicker`, `polaroid`, `crt`, `data-mosaic`, `rgb-slice-burst`, `dither`, `ascii`, `halftone`
+- Public options: `accentColor`, `animated`, `asciiChars`, `asciiFont`, `aspectRatio`, `autoplay`, `blur`, `cellSize`, `colorSteps`, `colors`, `crossOrigin`, `delay`, `direction`, `display`, `ditherType`, `duration`, `ease`, `edgeOpacity`, `edgeWidth`, `effect`, `fadeDuration`, `fallbackSrc`, `feather`, `flickerBackground`, `frame`, `frameColor`, `glitchStrength`, `grain`, `halftoneShape`, `height`, `holdDuration`, `inkColor`, `inverted`, `keepFrame`, `loop`, `maxDpr`, `minDuration`, `muted`, `nativeLazy`, `noise`, `noiseBlend`, `noiseContrast`, `noiseFps`, `noiseHeight`, `noiseWidth`, `objectFit`, `objectPosition`, `onError`, `onLoad`, `onProgress`, `onReveal`, `once`, `originalColors`, `paperColor`, `persist`, `pixelEnd`, `pixelStart`, `pixelStepCount`, `playsinline`, `preload`, `preset`, `renderFps`, `rootMargin`, `rotate`, `seed`, `sizes`, `skeletonAngle`, `skeletonColor`, `skeletonHighlight`, `skeletonIcon`, `skeletonSpeed`, `skeletonVariant`, `sliceCount`, `src`, `srcset`, `startScale`, `stepCount`, `stepDuration`, `steps`, `threshold`, `tileMax`, `tileMin`, `variant`, `waveAmplitude`, `waveFrequency`, `waveSliceHeight`, `waveSpeed`
 
 ## lightbox
 

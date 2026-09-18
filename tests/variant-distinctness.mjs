@@ -42,7 +42,12 @@ const MODULE_AUDITS = {
     polaroid: ['instant-film-development', "if (effect === 'polaroid') {", "createLayer(wrapper, 'kt-lazy-polaroid-frame', 6)"],
     crt: ['crt-power-on', "if (effect === 'crt') {", "createLayer(wrapper, 'kt-lazy-crt-beam', 7)"],
     'data-mosaic': ['seeded-tile-clear', "if (effect === 'data-mosaic') {", 'const tileMax = Math.max(8, Number(opts.tileMax ?? 44));'],
-    'rgb-slice-burst': ['one-shot-channel-slices', "effect === 'rgb-slice-burst'", 'const slices = Math.round(between(3, 7));']
+    'rgb-slice-burst': ['one-shot-channel-slices', "effect === 'rgb-slice-burst'", 'const slices = Math.round(between(3, 7));'],
+    // The three stylized variants share one canvas rasterizer (src/modules/lazy/stylizedMedia.js)
+    // but each keeps its own painter; the anchors below are the per-variant option hand-offs.
+    dither: ['threshold-matrix-dither-canvas', "if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {", "if (effect === 'dither') styleInput.type = opts.ditherType;"],
+    ascii: ['glyph-density-ramp-canvas', "if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {", "if (effect === 'ascii') { styleInput.chars = opts.asciiChars; styleInput.font = opts.asciiFont; }"],
+    halftone: ['dot-size-halftone-canvas', "if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {", "if (effect === 'halftone') styleInput.shape = opts.halftoneShape;"]
   },
   cursor: {
     dot: ['snapped-dot-follow-ring', "if (opts.follower !== false) addFollower(opts.shape || 'circle');"],

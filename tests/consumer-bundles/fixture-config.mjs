@@ -10,18 +10,26 @@ export const consumerFixtures = [
   // (Vite 138.4 KB). Account for code cost, not extra runner variance.
   // Terminal Glitch teardown measures 139.1 KB in Vite; round the product
   // ceiling by 1 KB, retaining the existing runner variance and modular limits.
-  { name: 'full', entry: 'full', budget: 136, variance: { vite: 4, rolldown: 4 } },
+  // 2026-09-19: the Lazy stylized-media rasterizer (dither / ascii / halftone
+  // for <img> and <video>) is full-runtime code: Vite measures 143.2 KB full,
+  // 147.1 KB React and 148.2 KB Vue (Rolldown 142.9 / 147.3 / 148.7 KB). The
+  // three full-runtime product ceilings absorb that measured cost, rounded to
+  // the next KB; runner variance and every core + selected-module boundary
+  // stay unchanged, so importing `core` + a few modules still costs the same.
+  { name: 'full', entry: 'full', budget: 144, variance: { vite: 4, rolldown: 4 } },
   { name: 'core-reveal', entry: 'core-reveal', budget: 30, variance: { rolldown: 1 } },
   { name: 'core-three', entry: 'core-three', budget: 65, variance: { rolldown: 1 } },
   { name: 'core-states', entry: 'core-states', budget: 35 },
   { name: 'core-presence', entry: 'core-presence', budget: 35 },
   // The same correction measures 143.1 KB in the Rolldown React entry.
-  { name: 'react-adapter', entry: 'react', budget: 143, variance: { vite: 1, rolldown: 1 } },
+  // See the 2026-09-19 note above: React measures 147.1 / 147.3 KB.
+  { name: 'react-adapter', entry: 'react', budget: 148, variance: { vite: 1, rolldown: 1 } },
   // 2026-09-18: the Presence status subscription that keeps both adapters in
   // sync with a propagating parent measures 144.1 KB in the Vite Vue entry
   // (React 143.x stays inside its ceiling). Round the Vue product ceiling by
   // 1 KB; runner variance and every modular boundary are unchanged.
-  { name: 'vue-adapter', entry: 'vue', budget: 144, variance: { vite: 1, rolldown: 2 } }
+  // See the 2026-09-19 note above: Vue measures 148.2 / 148.7 KB.
+  { name: 'vue-adapter', entry: 'vue', budget: 149, variance: { vite: 1, rolldown: 2 } }
 ];
 
 export const treeShakenEntries = [

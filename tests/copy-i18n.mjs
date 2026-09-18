@@ -66,7 +66,8 @@ assert.match(
 // the native Scroll Snap slider adds one translated description; CSS Scroll
 // adds one translated mixed-language title for its native/fallback comparison.
 // Six Slider and seventeen Reveal comparisons plus one Wave playback card.
-assert.equal(descriptions.length, 169);
+// The stylized Lazy variants add four cards (two Dither, ASCII, Halftone video).
+assert.equal(descriptions.length, 173);
 assert.equal(titles.length, 17);
 
 for (const [label, values, dictionary] of [

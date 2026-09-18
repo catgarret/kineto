@@ -115,7 +115,7 @@ Kineto.disableSmooth();
 | `cursor` | `data-kt-cursor` | 11 cursori personalizzati |
 | `fullpage` | `data-kt-fullpage` | Pagina intera asse verticale/orizzontale/misto |
 | `glitch` | `data-kt-glitch` | Problema relativo alla porzione/pixel RGB |
-| `lazy` | `data-kt-lazy` | Scheletro·Pixel·Stampa·Dissolvi caricamento |
+| `lazy` | `data-kt-lazy` | Scheletro·Pixel·Stampa·Dissolvi·Dither·ASCII·Mezzetinte caricamento (immagine·video) |
 | `lightbox` | `data-kt-lightbox` | Visualizzatore a schermo intero Gruppo/Zoom/Minimappa |
 | `loader` | `data-kt-loader` | Caricatore collegato al progresso reale |
 | `loadingIndicator` | `data-kt-loading-indicator` | Spinner, barre, riflessi e indicatori simbolici inline |

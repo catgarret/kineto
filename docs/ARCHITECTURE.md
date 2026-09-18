@@ -191,6 +191,7 @@ That knowledge lives in **one** place — `kineto.features.json`:
   "image": "Needs an <img> (the element itself or a descendant).",
   "text":  "Needs rendered text and no image to operate on.",
   "video": "Needs a <video> element.",
+  "media": "Needs an <img> or <video> (the element itself or a descendant).",
   "items": "Needs two or more element children to sequence.",
   "track": "Needs a .kt-slider-track descendant for track-based slider effects."
 },

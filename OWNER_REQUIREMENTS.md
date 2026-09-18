@@ -5,8 +5,8 @@
 ## 현재 계약
 
 - 라이브러리 버전: `0.9.9`
-- 요구사항 계약 버전: `3.1.0`
-- 고정 요구사항: **48개**
+- 요구사항 계약 버전: `3.2.0`
+- 고정 요구사항: **49개**
 - 변경 정책: 소유자의 명시적 승인 없이 요구사항을 제거하거나 의미를 바꿀 수 없습니다.
 
 ## 변경 원칙
@@ -54,6 +54,7 @@
 | `MK-LIFECYCLE-001` | `core` | No runtime or lifecycle leaks | Repeated create, replay and destroy leaves zero active instances, timers, generated UI or browser runtime errors in automated QA. |
 | `MK-LAZY-006` | `lazy` | Animated image continuity | GIF, APNG and animated WebP continue playing during lazy effects and after completion. |
 | `MK-LAZY-007` | `lazy` | Dynamic fine noise | Print and Dissolve noise changes continuously and does not expose an obvious repeating pattern. |
+| `MK-LAZY-008` | `lazy` | Stylized media reveal and filter | Dither, ASCII and Halftone are canvas-rendered lazy variants that reveal by shrinking their cells into the original image, keep the stylized look permanently with persist, apply to `<img>` (including animated formats) and `<video>`, and keep the original media visible when the source cannot be read back. |
 | `MK-OVERFLOW-004` | `overflowText` | Directional mask transitions | Rewind and Page accept top-to-bottom, bottom-to-top, left-to-right and right-to-left mask directions. |
 | `MK-OVERFLOW-005` | `overflowText` | Realtime ranking rolling | Rolling mode changes multiple items vertically like a legacy realtime-search ranking ticker. |
 | `MK-GLOW-002` | `cardGlow` | Surface reflection layer | Card glow optionally renders a configurable pointer-responsive surface reflection gradient. |

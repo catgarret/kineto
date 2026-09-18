@@ -86,10 +86,15 @@ for (const build of ['dist/kineto.js', 'dist/kineto.umd.js']) {
   assert.match(code, /cdn\.jsdelivr\.net\/npm\/gsap/, `${build} is missing the GSAP CDN loader — engines must be fetched on demand`);
   assert.match(code, /cdn\.jsdelivr\.net\/npm\/lenis/, `${build} is missing the Lenis CDN loader`);
 }
-// Reviewed masked Reveal/Wave lifecycle brings UMD to 411.3 KB (+2.4 KB).
-// Retain a narrow byte guard alongside the source-import prohibition;
-// the current distributable ceiling is shared with scripts/bundle-size.mjs.
+// Retain a narrow byte guard alongside the source-import prohibition. The
+// ceiling is the reviewed UMD raw budget in scripts/bundle-size.mjs — read from
+// there rather than repeated here, so a measured, commented budget change is
+// made in exactly one place and this guard cannot silently drift from it.
+const budgetSource = read('scripts/bundle-size.mjs');
+const umdBudgetMatch = budgetSource.match(/'kineto\.umd\.js':\s*\{\s*raw:\s*(\d+)/);
+assert.ok(umdBudgetMatch, 'scripts/bundle-size.mjs must declare a raw budget for kineto.umd.js');
+const umdBudgetKb = Number(umdBudgetMatch[1]);
 const umdBytes = fs.statSync(path.join(root, 'dist/kineto.umd.js')).size;
-assert.ok(umdBytes < 414 * 1024, `dist/kineto.umd.js is ${(umdBytes / 1024).toFixed(0)}KB — exceeds the reviewed dependency-free runtime budget of 414KB`);
+assert.ok(umdBytes < umdBudgetKb * 1024, `dist/kineto.umd.js is ${(umdBytes / 1024).toFixed(0)}KB — exceeds the reviewed dependency-free runtime budget of ${umdBudgetKb}KB`);
 
 console.log(`deps-boundary OK — zero runtime dependencies, ${Object.keys(packageJson.peerDependencies || {}).length} optional peers, reviewed browser network capability boundary, no gsap/lenis imports in ${srcFiles.length} source files; both builds use the on-demand CDN loader; UMD is ${(umdBytes / 1024).toFixed(0)}KB (engines not bundled).`);

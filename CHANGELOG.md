@@ -5,11 +5,19 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Add three stylized Lazy variants on one shared canvas rasterizer (`src/modules/lazy/stylizedMedia.js`): `dither` (Bayer 2×2/4×4/8×8, seeded random, Floyd–Steinberg and Atkinson error diffusion), `ascii` (a configurable glyph-density ramp), and `halftone` (dot, square, or line screens). Each reveals by shrinking its cells into the original picture and crossfading, or keeps the look permanently with `persist`; they apply to `<img>` (animated GIF/APNG/WebP keep re-rendering) and to `<video>` frame by frame, honour `paperColor`/`inkColor`/`accentColor`, `originalColors` + `colorSteps`, `inverted`, `cellSize`, `renderFps`/`maxDpr` and the low-performance frame cap, and leave the original media visible underneath when a cross-origin source cannot be read back. Locked as owner requirement MK-LAZY-008 (feature contract 1.4.0, requirements 3.2.0); proven by a three-engine pixel suite (`tests/browser/lazy-stylized.mjs`) and a Node unit suite for the rasterizer.
+- Declare a `media` variant capability (an `<img>` or a `<video>`) and use it for Lazy `fade`, `dither`, `ascii`, and `halftone`, so the demo drawer offers exactly the variants a `<video>` card can run.
+- Add four Lazy demo cards (two-tone dither reveal, colour error-diffusion reveal, persistent ASCII, persistent halftone video) with descriptions in seven languages, drawer controls and tooltips for the twelve new options, default values declared in the contract, and updated module docs; the cards opt out of legacy `?kt=` ordinals so historical share links stay stable.
+- Account for the measured cost of the stylized renderer (about 13 KB raw / 4.7 KB gzip in every full artifact): raise only the JS bundle, package and full/React/Vue consumer ceilings to the next measured KB; runner variance, CSS, modular core budgets and the 77-file package boundary are unchanged.
 - Record the verified v0.9.9 release: successful CI, Release, and canonical Pages runs on the new GitHub Actions majors, byte-identical npm/GitHub tarballs with matching provenance subject and release commit, and a canonical deployment whose 16 first-party assets (now including the minified demo bundle) byte-match the tested build.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 공용 canvas rasterizer(`src/modules/lazy/stylizedMedia.js`) 하나 위에 Lazy 스타일화 variant 세 개를 추가했습니다: `dither`(Bayer 2×2/4×4/8×8, seed 고정 random, Floyd–Steinberg·Atkinson 오차 확산), `ascii`(설정 가능한 글리프 밀도 ramp), `halftone`(점·사각·선 망점). 각 효과는 셀을 잘게 쪼개 원본으로 크로스페이드하는 리빌이거나 `persist`로 영구 필터가 되며, `<img>`(GIF/APNG/WebP는 계속 재렌더)와 `<video>`에 프레임 단위로 적용됩니다. `paperColor`/`inkColor`/`accentColor`, `originalColors`+`colorSteps`, `inverted`, `cellSize`, `renderFps`/`maxDpr`와 저성능 프레임 상한을 지원하고, CORS 없는 다른 origin 소스처럼 픽셀을 읽을 수 없으면 원본 미디어를 그대로 보여 줍니다. 소유자 요구사항 MK-LAZY-008로 고정했으며(기능 계약 1.4.0, 요구사항 3.2.0), 세 엔진 픽셀 검사(`tests/browser/lazy-stylized.mjs`)와 rasterizer Node 단위 검사로 증명합니다.
+- `media` variant 능력(`<img>` 또는 `<video>`)을 선언하고 Lazy `fade`·`dither`·`ascii`·`halftone`에 적용해, 데모 설정창이 `<video>` 카드에서 실제로 동작하는 variant만 제공합니다.
+- Lazy 데모 카드 4개(2색 디더 리빌, 원본색 오차 확산 리빌, ASCII 영구 필터, 망점 영상 영구 필터)와 7개 언어 설명, 새 옵션 12개의 설정창 컨트롤·도움말, 계약에 선언한 기본값, 모듈 문서를 추가했습니다. 새 카드는 과거 `?kt=` 순번을 쓰지 않아 기존 공유 링크가 유지됩니다.
+- 스타일화 렌더러의 측정 비용(모든 전체 산출물에서 약 13KB raw / 4.7KB gzip)을 반영해 JS 번들·패키지·full/React/Vue 소비자 상한만 다음 측정 KB로 올렸습니다. runner variance, CSS, 모듈형 core 예산과 77파일 패키지 경계는 그대로입니다.
 - 검증된 v0.9.9 릴리스를 기록했습니다: 새 GitHub Actions 메이저에서 성공한 CI·Release·canonical Pages 실행, provenance subject·릴리스 커밋이 일치하는 동일 바이트 npm/GitHub tarball, 그리고 (minify된 데모 번들을 포함한) 자체 자산 16개가 테스트된 빌드와 바이트 일치하는 canonical 배포.
 
 ## [0.9.9] - 2026-09-18

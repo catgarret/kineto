@@ -735,6 +735,38 @@ window.KINETO_COPY_I18N = {
       "Яркие горизонтальные линии открываются, линии развертки исчезают, и экран включается.",
       "Le linee orizzontali luminose si aprono, le linee di scansione scompaiono e lo schermo si accende."
     ],
+    "2색 디더링 점이 잘게 쪼개지며 원본 사진으로 이어집니다.": [
+      "Two-tone dither dots split ever finer, then hand off to the original photo.",
+      "2色のディザリングドットが細かく分割され、元の写真へとつながります。",
+      "双色抖动点逐渐细分，然后过渡到原始照片。",
+      "雙色抖動點逐漸細分，然後過渡到原始照片。",
+      "Двухцветные точки дизеринга дробятся всё мельче и переходят в исходное фото.",
+      "I punti di dithering a due toni si frammentano sempre di più, poi lasciano spazio alla foto originale."
+    ],
+    "오차 확산 디더링이 원본 색을 단계별로 살려 냅니다.": [
+      "Error-diffusion dithering restores the original colours step by step.",
+      "誤差拡散ディザリングが元の色を段階的に再現します。",
+      "误差扩散抖动逐步还原原始色彩。",
+      "誤差擴散抖動逐步還原原始色彩。",
+      "Дизеринг с диффузией ошибки поэтапно восстанавливает исходные цвета.",
+      "Il dithering a diffusione dell'errore ripristina i colori originali passo dopo passo."
+    ],
+    "사진을 문자 밀도로 그려 그대로 유지하는 텍스트 아트입니다.": [
+      "Text art that redraws the photo as character density and keeps that look.",
+      "写真を文字の密度で描き、その見た目を保つテキストアートです。",
+      "将照片绘制为字符密度并保持该外观的文字艺术。",
+      "將照片繪製為字元密度並保持該外觀的文字藝術。",
+      "Текстовый арт: фото перерисовывается плотностью символов и остаётся таким.",
+      "Text art che ridisegna la foto come densità di caratteri e mantiene quell'aspetto."
+    ],
+    "재생 중인 영상을 매 프레임 망점 인쇄처럼 그립니다.": [
+      "Draws every frame of the playing video like a halftone print.",
+      "再生中の動画を毎フレーム、網点印刷のように描きます。",
+      "将正在播放的视频每一帧绘制成半色调印刷效果。",
+      "將正在播放的影片每一幀繪製成半色調印刷效果。",
+      "Рисует каждый кадр воспроизводимого видео как полутоновую печать.",
+      "Disegna ogni fotogramma del video in riproduzione come una stampa a mezzetinte."
+    ],
     "화면에 가까워지면 영상을 불러와 자동 재생합니다.": [
       "Loads video near the viewport, then starts muted autoplay.",
       "ビューポートの近くにビデオをロードし、ミュートされた自動再生を開始します。",

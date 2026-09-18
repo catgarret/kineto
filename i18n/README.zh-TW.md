@@ -114,7 +114,7 @@ Kineto.disableSmooth();
 | `cursor` | `data-kt-cursor` | 11個自訂遊標 |
 | `fullpage` | `data-kt-fullpage` | 垂直/水平/混合軸整頁 |
 | `glitch` | `data-kt-glitch` | RGB 切片/像素故障 |
-| `lazy` | `data-kt-lazy` | 骨架·像素·列印·溶解載入 |
+| `lazy` | `data-kt-lazy` | 骨架·像素·列印·溶解·抖動·ASCII·半色調載入（圖片·影片） |
 | `lightbox` | `data-kt-lightbox` | 分組/縮放/小地圖全螢幕檢視器 |
 | `loader` | `data-kt-loader` | 真實進度連結載入程序 |
 | `loadingIndicator` | `data-kt-loading-indicator` | 行內旋轉器、進度列、流光和符號指示器 |

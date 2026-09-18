@@ -119,14 +119,19 @@ const BUDGET = {
   // priority-preserving inline-style snapshot measure 535.2 KB packed /
   // 1773.1 KB unpacked on Node 22/npm 10 with the same 77 files. These are
   // correctness/security bytes; round the ceilings by 1 KB each.
-  packedKb: 536,
+  // 2026-09-19: the Lazy stylized-media rasterizer (dither / ascii / halftone
+  // for <img> and <video>) ships in every JS artifact and the modular lazy
+  // entry: 549.9 KB packed / 1812.0 KB unpacked on Node 22/npm 10, still 77
+  // files. Requested feature bytes — round both ceilings to the next KB.
+  packedKb: 551,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
   // Node 24 measures 534.4 KB packed / 1771.4 KB unpacked, still 77 files.
   // See the 2026-09-18 note above for the 1773.1 KB measurement; the shared
   // priority-preserving inline-style snapshot then measures 1774.2 KB.
-  unpackedKb: 1775,
+  // See the 2026-09-19 note above for the 1812.0 KB stylized-media measurement.
+  unpackedKb: 1813,
   files: 77
 };
 

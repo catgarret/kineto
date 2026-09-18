@@ -156,7 +156,7 @@ Kineto.disableSmooth();
 | `cursor` | `data-kt-cursor` | 11가지 커스텀 커서 |
 | `fullpage` | `data-kt-fullpage` | 세로·가로·혼합축 풀페이지 |
 | `glitch` | `data-kt-glitch` | RGB 슬라이스·픽셀 글리치 |
-| `lazy` | `data-kt-lazy` | 스켈레톤·픽셀·프린트·디졸브 로딩 |
+| `lazy` | `data-kt-lazy` | 스켈레톤·픽셀·프린트·디졸브·디더·ASCII·망점 로딩 (이미지·영상) |
 | `lightbox` | `data-kt-lightbox` | 그룹·확대·미니맵 전체 화면 뷰어 |
 | `loader` | `data-kt-loader` | 실제 진행률 연동 로더 |
 | `loadingIndicator` | `data-kt-loading-indicator` | 인라인 스피너·바·시머·기호 인디케이터 |

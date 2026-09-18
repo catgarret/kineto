@@ -1,5 +1,5 @@
 {
-  "requirementsVersion": "3.1.0",
+  "requirementsVersion": "3.2.0",
   "libraryVersion": "0.9.9",
   "owner": "dongri.me",
   "changePolicy": "Requirements may only be removed or semantically changed with explicit owner approval.",
@@ -195,6 +195,12 @@
       "module": "lazy",
       "title": "Dynamic fine noise",
       "acceptance": "Print and Dissolve noise changes continuously and does not expose an obvious repeating pattern."
+    },
+    {
+      "id": "MK-LAZY-008",
+      "module": "lazy",
+      "title": "Stylized media reveal and filter",
+      "acceptance": "Dither, ASCII and Halftone are canvas-rendered lazy variants that reveal by shrinking their cells into the original image, keep the stylized look permanently with persist, apply to <img> (including animated formats) and <video>, and keep the original media visible when the source cannot be read back."
     },
     {
       "id": "MK-OVERFLOW-004",

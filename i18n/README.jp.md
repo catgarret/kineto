@@ -114,7 +114,7 @@ Kineto.disableSmooth();
 | `cursor` | `data-kt-cursor` | 11のカスタムカーソル |
 | `fullpage` | `data-kt-fullpage` | 縦・横・混合軸 フルページ |
 | `glitch` | `data-kt-glitch` | RGBスライス・ピクセルグリッチ |
-| `lazy` | `data-kt-lazy` | スケルトン・ピクセル・プリント・ディゾルブローディング |
+| `lazy` | `data-kt-lazy` | スケルトン・ピクセル・プリント・ディゾルブ・ディザ・ASCII・ハーフトーンローディング（画像・動画） |
 | `lightbox` | `data-kt-lightbox` | グループ・拡大・ミニマップ全画面ビューア |
 | `loader` | `data-kt-loader` | 実際の進行状況連動ローダー |
 | `loadingIndicator` | `data-kt-loading-indicator` | インラインのスピナー・バー・シマー・記号インジケーター |

@@ -114,7 +114,7 @@ Kineto.disableSmooth();
 | `cursor` | `data-kt-cursor` | 11个自定义光标 |
 | `fullpage` | `data-kt-fullpage` | 垂直/水平/混合轴整页 |
 | `glitch` | `data-kt-glitch` | RGB 切片/像素故障 |
-| `lazy` | `data-kt-lazy` | 骨架·像素·打印·溶解加载 |
+| `lazy` | `data-kt-lazy` | 骨架·像素·打印·溶解·抖动·ASCII·半色调加载（图片·视频） |
 | `lightbox` | `data-kt-lightbox` | 分组/缩放/小地图全屏查看器 |
 | `loader` | `data-kt-loader` | 真实进度链接加载程序 |
 | `loadingIndicator` | `data-kt-loading-indicator` | 内联旋转器、进度条、流光和符号指示器 |

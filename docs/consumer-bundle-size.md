@@ -5,13 +5,13 @@
 
 | Consumer entry | JS files | Raw | Gzip | Budget (gzip) |
 | --- | ---: | ---: | ---: | ---: |
-| full | 1 | 523.7 KB | 139.2 KB | ≤ 136 KB (+4 KB runner variance) |
+| full | 1 | 536.9 KB | 143.2 KB | ≤ 144 KB (+4 KB runner variance) |
 | core-reveal | 1 | 45.9 KB | 14.6 KB | ≤ 30 KB |
 | core-three | 1 | 104.5 KB | 29.8 KB | ≤ 65 KB |
 | core-states | 1 | 33.7 KB | 11.0 KB | ≤ 35 KB |
 | core-presence | 1 | 35.9 KB | 11.4 KB | ≤ 35 KB |
-| react-adapter | 1 | 536.9 KB | 143.1 KB | ≤ 143 KB (+1 KB runner variance) |
-| vue-adapter | 1 | 540.3 KB | 144.2 KB | ≤ 144 KB (+1 KB runner variance) |
+| react-adapter | 1 | 550.2 KB | 147.1 KB | ≤ 148 KB (+1 KB runner variance) |
+| vue-adapter | 1 | 553.5 KB | 148.2 KB | ≤ 149 KB (+1 KB runner variance) |
 
 The fixture test also requires `core + one module`, `core + three modules`, `core + states`, and `core + presence` to remain smaller than the full entry.
 
@@ -31,13 +31,13 @@ The fixture test also requires `core + one module`, `core + three modules`, `cor
 
 | Rolldown consumer entry | JS chunks | Raw | Gzip | Budget (gzip) |
 | --- | ---: | ---: | ---: | ---: |
-| full | 1 | 524.2 KB | 138.9 KB | ≤ 136 KB (+4 KB runner variance) |
+| full | 1 | 537.5 KB | 142.8 KB | ≤ 144 KB (+4 KB runner variance) |
 | core-reveal | 1 | 46.4 KB | 14.8 KB | ≤ 30 KB (+1 KB runner variance) |
 | core-three | 1 | 105.1 KB | 30.1 KB | ≤ 65 KB (+1 KB runner variance) |
 | core-states | 1 | 34.1 KB | 11.1 KB | ≤ 35 KB |
 | core-presence | 1 | 36.3 KB | 11.5 KB | ≤ 35 KB |
-| react-adapter | 1 | 539.4 KB | 143.3 KB | ≤ 143 KB (+1 KB runner variance) |
-| vue-adapter | 1 | 544.4 KB | 144.7 KB | ≤ 144 KB (+2 KB runner variance) |
+| react-adapter | 1 | 552.7 KB | 147.3 KB | ≤ 148 KB (+1 KB runner variance) |
+| vue-adapter | 1 | 557.7 KB | 148.7 KB | ≤ 149 KB (+2 KB runner variance) |
 
 This uses the same public-entry matrix, product gzip budgets, and modular tree-shaking boundaries as Vite. It is a second bundler signal, not a promise that every bundler produces identical bytes.
 <!-- rolldown-bundle-report:end -->

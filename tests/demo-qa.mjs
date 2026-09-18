@@ -1188,7 +1188,7 @@ try {
   await smokePage.close();
   await page.close();
   await runAnimatedMediaQa(browser, root);
-  console.log(`Demo QA OK: ${surface.panels} playgrounds, lifecycle/UMD smoke, and animated media continuity; 48 owner requirements represented.`);
+  console.log(`Demo QA OK: ${surface.panels} playgrounds, lifecycle/UMD smoke, and animated media continuity; 49 owner requirements represented.`);
   passed = true;
 } finally {
   killBrowserServer(browserServer);

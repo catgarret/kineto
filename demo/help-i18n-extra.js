@@ -2222,4 +2222,109 @@
     sets[lang] = sets[lang] || {};
     sets[lang].glitch = Object.assign({}, sets[lang].glitch, { colors: values[0], blendMode: values[1] });
   }
+  // Lazy dither / ascii / halftone — the shared stylized-media rasterizer.
+  const stylized = {
+    ko: {
+      persist: '켜면 원본으로 돌아가지 않고 디더·ASCII·하프톤 모습을 그대로 유지합니다. GIF·영상은 프레임마다 다시 그립니다.',
+      cellSize: '격자 한 칸의 크기(px)입니다. 리비얼은 이 크기에서 시작해 점점 촘촘해진 뒤 원본으로 전환합니다.',
+      ditherType: '디더 방식입니다. 8x8·4x4·2x2는 정렬(Bayer) 격자, random은 무작위 임계값, floyd-steinberg·atkinson은 오차 확산입니다.',
+      halftoneShape: '하프톤 한 칸에 그리는 도형입니다. 어두울수록 크게 그립니다.',
+      asciiChars: '어두운 칸부터 밝은 칸 순서로 쓰는 글자열입니다. 마지막 글자가 공백이면 밝은 부분을 비웁니다.',
+      asciiFont: 'ASCII 글리프에 쓰는 CSS font-family입니다. 고정폭 글꼴을 권장합니다.',
+      paperColor: '배경(종이) 색입니다. 원본 색 유지가 꺼져 있을 때 밝은 부분에 칠합니다.',
+      inkColor: '전경(잉크) 색입니다. 원본 색 유지가 꺼져 있을 때 어두운 부분에 칠합니다.',
+      accentColor: '종이와 잉크 사이 중간 톤에 쓰는 세 번째 색입니다. 비우면 두 색만 사용합니다.',
+      originalColors: '켜면 종이·잉크 색 대신 이미지의 원래 색을 색 단계 수만큼 포스터라이즈해 사용합니다.',
+      colorSteps: '톤(또는 원본 색의 채널별) 단계 수입니다. 2는 순수 2톤, 클수록 부드러워집니다.',
+      inverted: '밝기를 반전해 어두운 부분을 종이색, 밝은 부분을 잉크색으로 그립니다.'
+    },
+    en: {
+      persist: 'Keep the dither, ASCII, or halftone look instead of resolving to the original. Animated images and video re-render every frame.',
+      cellSize: 'Size of one grid cell in px. The reveal starts here, gets finer, then crossfades into the original.',
+      ditherType: 'Dithering method: 8x8, 4x4, and 2x2 are ordered (Bayer) grids, random uses random thresholds, floyd-steinberg and atkinson diffuse error.',
+      halftoneShape: 'Shape drawn in each halftone cell; darker cells draw larger shapes.',
+      asciiChars: 'Glyph ramp from the darkest to the brightest cell. A trailing space leaves bright areas empty.',
+      asciiFont: 'CSS font-family for the ASCII glyphs. A monospace font is recommended.',
+      paperColor: 'Background (paper) color painted on bright areas when original colors are off.',
+      inkColor: 'Foreground (ink) color painted on dark areas when original colors are off.',
+      accentColor: 'Third color for mid tones between paper and ink. Leave empty for a two-color palette.',
+      originalColors: 'Use the image’s own colors, posterized to the color steps, instead of the paper/ink palette.',
+      colorSteps: 'Number of tone levels (per channel with original colors). 2 is pure two-tone; higher is smoother.',
+      inverted: 'Invert brightness so dark areas take the paper color and bright areas the ink color.'
+    },
+    ja: {
+      persist: 'オンにすると元画像に戻らず、ディザ・ASCII・ハーフトーンの見た目を保ちます。GIFや動画は毎フレーム描き直します。',
+      cellSize: 'グリッド1マスの大きさ(px)です。リビールはこの大きさから細かくなり、最後に元画像へ切り替わります。',
+      ditherType: 'ディザ方式。8x8・4x4・2x2は規則(Bayer)格子、randomはランダム閾値、floyd-steinberg・atkinsonは誤差拡散です。',
+      halftoneShape: 'ハーフトーンの各マスに描く図形。暗いほど大きく描きます。',
+      asciiChars: '暗いマスから明るいマスの順に使う文字列。末尾が空白なら明部を空けます。',
+      asciiFont: 'ASCII文字に使うCSS font-family。等幅フォントを推奨します。',
+      paperColor: '背景(紙)色。元の色を使わない場合、明部に塗ります。',
+      inkColor: '前景(インク)色。元の色を使わない場合、暗部に塗ります。',
+      accentColor: '紙とインクの中間トーンに使う3色目。空なら2色のみです。',
+      originalColors: 'オンにすると紙・インク色の代わりに、画像本来の色を段階数でポスタライズして使います。',
+      colorSteps: 'トーン(元の色ではチャンネルごと)の段階数。2は純粋な2トーン、大きいほど滑らかです。',
+      inverted: '明るさを反転し、暗部を紙色、明部をインク色で描きます。'
+    },
+    'zh-CN': {
+      persist: '开启后不再还原为原图，保留抖动、ASCII 或半调外观。GIF 和视频逐帧重绘。',
+      cellSize: '网格单元大小(px)。显现从此大小开始逐渐变细，最后过渡到原图。',
+      ditherType: '抖动方式：8x8、4x4、2x2 为有序(Bayer)网格，random 为随机阈值，floyd-steinberg 和 atkinson 为误差扩散。',
+      halftoneShape: '半调每个单元绘制的形状；越暗绘制越大。',
+      asciiChars: '从最暗到最亮单元使用的字符序列。末尾为空格时亮部留空。',
+      asciiFont: 'ASCII 字形使用的 CSS font-family，推荐等宽字体。',
+      paperColor: '背景(纸)色。关闭原始颜色时涂在亮部。',
+      inkColor: '前景(墨)色。关闭原始颜色时涂在暗部。',
+      accentColor: '纸与墨之间中间色调使用的第三种颜色。留空则只用两色。',
+      originalColors: '开启后使用图像原本的颜色，并按颜色级数色调分离，而非纸/墨调色板。',
+      colorSteps: '色调(原始颜色时为每通道)级数。2 为纯双色，越大越平滑。',
+      inverted: '反转亮度，暗部用纸色、亮部用墨色绘制。'
+    },
+    'zh-TW': {
+      persist: '開啟後不再還原為原圖，保留抖動、ASCII 或半色調外觀。GIF 與影片逐幀重繪。',
+      cellSize: '網格單元大小(px)。顯現從此大小開始逐漸變細，最後過渡到原圖。',
+      ditherType: '抖動方式：8x8、4x4、2x2 為有序(Bayer)網格，random 為隨機閾值，floyd-steinberg 與 atkinson 為誤差擴散。',
+      halftoneShape: '半色調每個單元繪製的形狀；越暗繪製越大。',
+      asciiChars: '從最暗到最亮單元使用的字元序列。末尾為空格時亮部留空。',
+      asciiFont: 'ASCII 字形使用的 CSS font-family，建議等寬字型。',
+      paperColor: '背景(紙)色。關閉原始顏色時塗在亮部。',
+      inkColor: '前景(墨)色。關閉原始顏色時塗在暗部。',
+      accentColor: '紙與墨之間中間色調使用的第三種顏色。留空則只用兩色。',
+      originalColors: '開啟後使用圖像原本的顏色，並依顏色級數色調分離，而非紙/墨調色盤。',
+      colorSteps: '色調(原始顏色時為每通道)級數。2 為純雙色，越大越平滑。',
+      inverted: '反轉亮度，暗部用紙色、亮部用墨色繪製。'
+    },
+    ru: {
+      persist: 'Сохранять дизеринг, ASCII или полутон вместо возврата к оригиналу. Анимированные изображения и видео перерисовываются каждый кадр.',
+      cellSize: 'Размер одной ячейки сетки в px. Проявление начинается с него, становится мельче и переходит в оригинал.',
+      ditherType: 'Метод дизеринга: 8x8, 4x4 и 2x2 — упорядоченные (Bayer) сетки, random — случайные пороги, floyd-steinberg и atkinson — диффузия ошибки.',
+      halftoneShape: 'Фигура в каждой ячейке полутона; тёмные ячейки рисуются крупнее.',
+      asciiChars: 'Набор глифов от самой тёмной ячейки к самой светлой. Пробел в конце оставляет светлые области пустыми.',
+      asciiFont: 'CSS font-family для глифов ASCII. Рекомендуется моноширинный шрифт.',
+      paperColor: 'Цвет фона (бумаги) для светлых областей, когда исходные цвета выключены.',
+      inkColor: 'Цвет переднего плана (чернил) для тёмных областей, когда исходные цвета выключены.',
+      accentColor: 'Третий цвет для средних тонов между бумагой и чернилами. Пусто — только два цвета.',
+      originalColors: 'Использовать собственные цвета изображения, постеризованные по числу ступеней, вместо палитры бумага/чернила.',
+      colorSteps: 'Число ступеней тона (по каналам при исходных цветах). 2 — чистые два тона, больше — плавнее.',
+      inverted: 'Инвертировать яркость: тёмные области получают цвет бумаги, светлые — цвет чернил.'
+    },
+    it: {
+      persist: 'Mantiene l’aspetto dither, ASCII o mezzatinta invece di tornare all’originale. Immagini animate e video si ridisegnano a ogni frame.',
+      cellSize: 'Dimensione di una cella della griglia in px. Il reveal parte da qui, si affina e poi sfuma nell’originale.',
+      ditherType: 'Metodo di dithering: 8x8, 4x4 e 2x2 sono griglie ordinate (Bayer), random usa soglie casuali, floyd-steinberg e atkinson diffondono l’errore.',
+      halftoneShape: 'Forma disegnata in ogni cella della mezzatinta; le celle scure sono più grandi.',
+      asciiChars: 'Rampa di glifi dalla cella più scura alla più chiara. Uno spazio finale lascia vuote le aree chiare.',
+      asciiFont: 'CSS font-family per i glifi ASCII. Consigliato un font monospazio.',
+      paperColor: 'Colore di sfondo (carta) per le aree chiare quando i colori originali sono disattivati.',
+      inkColor: 'Colore di primo piano (inchiostro) per le aree scure quando i colori originali sono disattivati.',
+      accentColor: 'Terzo colore per i mezzitoni tra carta e inchiostro. Vuoto per una palette a due colori.',
+      originalColors: 'Usa i colori propri dell’immagine, posterizzati sui passi di colore, invece della palette carta/inchiostro.',
+      colorSteps: 'Numero di livelli di tono (per canale con i colori originali). 2 è un puro bitono; più alto è più morbido.',
+      inverted: 'Inverte la luminosità: le aree scure prendono il colore carta, quelle chiare il colore inchiostro.'
+    }
+  };
+  for (const [lang, values] of Object.entries(stylized)) {
+    sets[lang] = sets[lang] || {};
+    sets[lang].lazy = Object.assign({}, sets[lang].lazy, values);
+  }
 })();

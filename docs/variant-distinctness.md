@@ -1,6 +1,6 @@
 # 공개 variant 중복 감사
 
-기준 버전: v0.8.104 후속 · 수동 검토일: 2026-08-19
+기준 버전: v0.8.104 후속(pageReveal 16개 · 수동 검토일 2026-08-19) → v0.9.9 후속(Lazy `dither`·`ascii`·`halftone` 추가 · 검토일 2026-09-19)
 
 `pageReveal`의 공개 variant는 이름이나 색상만 다른 preset을 늘리는 대신, 화면에서
 구분되는 움직임의 메커니즘을 가져야 합니다. 아래 표는 공개 contract 16개를 현재
@@ -44,13 +44,13 @@ identity와 실제 source anchor 묶음에 연결합니다.
 | module | source mechanism | 전용 demo markup | 상태 |
 |---|---:|---:|---|
 | `reveal` | `23/23` | `23/23` | distinct |
-| `lazy` | `13/13` | `11/13` | distinct |
+| `lazy` | `16/16` | `14/16` | distinct |
 | `cursor` | `11/11` | `10/11` | distinct |
 | `overflowText` | `11/11` | `11/11` | distinct |
 | `glitch` | `10/10` | `6/10` | distinct |
 | `slider` | `10/10` | `10/10` | distinct |
 
-전용 markup 합계는 71/78입니다. Slider는 10개 효과를 모두 전용 카드로
+전용 markup 합계는 74/81입니다. Slider는 10개 효과를 모두 전용 카드로
 비교하고, Reveal은 `mask`, `swing`, `skew`의 줄바꿈을 포함한 예제를
 추가했습니다. Fade·Zoom In/Out·Flip X/Y도 동일 문구·크기·시간의 비교 카드로
 제공하며, Fade Down/Left/Right·Slide Down/Right의 시작 위치도 비교합니다.
@@ -62,7 +62,7 @@ Blur·Rise·Soft·Rotate도 동일 조건의 비교 카드로 추가해 Reveal�
 Glitch Wave는 1회 재생과 시작·반복·지연 설정을 확인하는
 전용 예제를 추가했습니다. 새 카드의 설정 공유는 semantic v2만 사용해 과거 v1 순번을
 바꾸지 않습니다. 전용 카드가 없는 variant도 생성된
-`PUBLIC_VARIANTS` 설정 선택지에는 78/78 모두 노출됩니다. 따라서 위 수치는 기능
+`PUBLIC_VARIANTS` 설정 선택지에는 81/81 모두 노출됩니다. 따라서 위 수치는 기능
 구현 여부를 낮춰 잡은 값이 아니라, 첫 화면에서 즉시 비교할 수 있는 시각 QA 표면의
 범위를 별도로 드러낸 값입니다. 데모가 계약에 없는 오래된 이름을 직접 작성하거나
 설정 선택지에서 공개 variant를 누락하면 CI가 실패합니다.
@@ -78,7 +78,13 @@ Glitch Wave는 1회 재생과 시작·반복·지연 설정을 확인하는
   `polaroid`, `crt`는 각각 placeholder, discrete resolution, blackout slice,
   instant-film, tube power-on 구조입니다. `print`는 방향성 sharp mask,
   `dissolve`는 전역 noise·blur 감소이며, `data-mosaic`와 `rgb-slice-burst`는 각각
-  seeded tile clear와 one-shot channel slice입니다.
+  seeded tile clear와 one-shot channel slice입니다. `dither`, `ascii`, `halftone`은
+  `src/modules/lazy/stylizedMedia.js`의 canvas rasterizer를 공유하지만 painter가
+  다릅니다. `dither`는 threshold matrix(Bayer/random) 또는 error diffusion으로
+  2~8단계 팔레트에 양자화하고, `ascii`는 밝기를 글리프 밀도 ramp로 바꿔 문자를
+  그리며, `halftone`은 셀 밝기를 점·사각·선의 크기로 바꿉니다. 세 variant는
+  `persist`로 리빌 없이 영구 스타일 필터가 되고 `<video>`에도 프레임 단위로
+  적용됩니다.
 - `cursor`: `dot`, `ring`, `blob`, `crosshair`, `text`, `trail`, `orbit`, `snake`,
   `sparkle`, `image`, `custom`을 점+추종 링, outline follower, filled blur,
   viewport/local axis, SVG text path, elastic chain, ellipse orbit, spaced glyph chase,

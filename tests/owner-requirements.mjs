@@ -14,8 +14,8 @@ const source = Object.fromEntries(await Promise.all([
 ].map(async (name) => [name, await read(`../src/modules/${name}.js`)])));
 
 assert.equal(requirements.libraryVersion, packageJson.version);
-assert.equal(requirements.requirements.length, 48, 'all 48 owner requirements must remain locked');
-assert.equal(new Set(requirements.requirements.map(({ id }) => id)).size, 48, 'requirement IDs must be unique');
+assert.equal(requirements.requirements.length, 49, 'all 49 owner requirements must remain locked');
+assert.equal(new Set(requirements.requirements.map(({ id }) => id)).size, 49, 'requirement IDs must be unique');
 assert.equal(features.moduleCount, 52);
 assert.ok(
   aiPromptGuide.indexOf('Canonical prompt for AI tools (English)')
@@ -35,8 +35,9 @@ for (const marker of [
 const module = (name) => features.modules.find((entry) => entry.name === name);
 
 assert.deepEqual(module('counter').variants, ['slot','plain','digit','pop','flip','clock']);
-// data-mosaic / rgb-slice-burst are shared with Page Reveal and Glitch.
-assert.deepEqual(module('lazy').variants, ['fade','blur-up','wave','grain','skeleton','pixelate','print','dissolve','flicker','polaroid','crt','data-mosaic','rgb-slice-burst']);
+// data-mosaic / rgb-slice-burst are shared with Page Reveal and Glitch;
+// dither / ascii / halftone are the stylized media variants (MK-LAZY-008).
+assert.deepEqual(module('lazy').variants, ['fade','blur-up','wave','grain','skeleton','pixelate','print','dissolve','flicker','polaroid','crt','data-mosaic','rgb-slice-burst','dither','ascii','halftone']);
 assert.ok(module('overflowText').variants.includes('rolling'));
 assert.ok(module('reveal').variants.includes('slide-down') && module('reveal').variants.includes('class'));
 assert.ok(module('cursor').variants.includes('custom'));
@@ -59,6 +60,11 @@ assert.match(source.lazy, /kt-lazy-skeleton/);
 assert.match(source.lazy, /Math\.random\(\)/);
 assert.match(source.lazy, /effect === 'print' \|\| effect === 'dissolve'/);
 assert.match(source.lazy, /ANIMATED_EXTENSIONS/);
+// MK-LAZY-008: the stylized variants share one rasterizer, cover <img> and
+// <video>, and can persist instead of revealing.
+assert.match(source.lazy, /createStylizedRenderer\(/);
+assert.match(source.lazy, /createStylizedVideo\(el, opts, videoEffect, kineto\)/);
+assert.match(source.lazy, /opts\.persist === true/);
 assert.match(source.overflowText, /mode === 'rolling'/);
 assert.match(source.overflowText, /maskDirection/);
 assert.match(source.reveal, /classOnly/);
@@ -82,7 +88,7 @@ assert.match(source.cursor, /type === 'custom'/);
 for (const marker of ['data-demo="counter"','data-demo="loader"','data-demo="lazy"','data-demo="overflow-text"','data-demo="card-glow"','data-demo="buttons"','data-demo="text-motion"','data-demo="content-reveal"','data-demo="scroll"','data-demo="media-ui"','data-demo="cursor-smooth"']) {
   assert.match(demo, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `demo marker missing: ${marker}`);
 }
-for (const marker of ['Skeleton — Pulse','Rolling Ticker','SURFACE + EDGE','Class Hook','motion-demo.gif','motion-demo.webp','motion-demo.png','Lightbox Viewer','Ring + Dot']) assert.match(demo, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+for (const marker of ['Skeleton — Pulse','Rolling Ticker','SURFACE + EDGE','Class Hook','motion-demo.gif','motion-demo.webp','motion-demo.png','Lightbox Viewer','Ring + Dot','data-kt-lazy="dither"','data-kt-lazy="ascii"','data-kt-lazy="halftone"']) assert.match(demo, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 assert.match(demo, /KinetoPlayground\.capture/);
 assert.match(demo, /KinetoPlayground\.mount/);
 assert.match(playground, /kt-playground__summary-label/);

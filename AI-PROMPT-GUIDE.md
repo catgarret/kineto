@@ -57,7 +57,9 @@ Choosing the correct boundary
   shimmer, or terminal-style indicator. It must not create a page overlay.
 - progress (data-kt-progress): document/element scroll progress and reading UI.
 - lazy (data-kt-lazy): media reveal while an image loads, including wave and
-  grain/noise variants. It is not a page loader.
+  grain/noise variants, plus dither / ascii / halftone stylized reveals that
+  also apply to <video> and can persist as a permanent look. It is not a page
+  loader.
 
 Progress and composition
 - For determinate progress, use setProgress(value), progress/ARIA/CSS outputs,

@@ -250,6 +250,7 @@ jobs:
           node tests/retry-browser-test.mjs tests/slider-variant-browser.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/reveal-variant-browser.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/glitch-wave-browser.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
+          node tests/retry-browser-test.mjs tests/browser/lazy-stylized.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
         env:
           KT_BROWSER: ${{ matrix.browser }}
 

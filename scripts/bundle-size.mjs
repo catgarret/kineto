@@ -127,15 +127,23 @@ const BUDGETS = {
   // 524.3/139.4 KB readable ESM, 413.1/124.5 KB min ESM, and 411.3/123.8 KB
   // UMD. These are correctness bytes, not variance or bundled engines.
   // Opt-in Wave colors/blending adds ~0.3 KB gzip; keep variance unchanged.
-  'kineto.js': { raw: 527, gz: 139, variance: 2 },
+  // 2026-09-19: Lazy `dither` / `ascii` / `halftone` add one shared canvas
+  // rasterizer (src/modules/lazy/stylizedMedia.js: Bayer + random + two
+  // error-diffusion ditherers, halftone dot/square/line, ASCII glyph ramp,
+  // palette/original-colour quantisation) plus the <img>/<video> reveal and
+  // persist paths. Measured 540.2/144.2 KB readable ESM, 424.5/128.7 KB min
+  // ESM and 422.6/128.0 KB UMD — about 13 KB raw / 4.7 KB gzip of requested
+  // feature code, not variance or a bundled engine. Ceilings round up to the
+  // next KB; variance, CSS, dependencies and the entry allowlist are unchanged.
+  'kineto.js': { raw: 541, gz: 145, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
   // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/
   // camelCase names, vendor members, `!important`) measures 415.1 KB raw in
   // the minified ESM while gzip stays inside the existing variance.
-  'kineto.min.js': { raw: 416, gz: 124, variance: 2 },
-  'kineto.umd.js': { raw: 414, gz: 124, variance: 1 },
-  'kineto.umd.min.js': { raw: 414, gz: 124, variance: 1 },
+  'kineto.min.js': { raw: 425, gz: 129, variance: 2 },
+  'kineto.umd.js': { raw: 423, gz: 129, variance: 1 },
+  'kineto.umd.min.js': { raw: 423, gz: 129, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.
