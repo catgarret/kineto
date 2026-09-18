@@ -124,8 +124,9 @@ const BUDGET = {
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
   // Node 24 measures 534.4 KB packed / 1771.4 KB unpacked, still 77 files.
-  // See the 2026-09-18 note above for the 1773.1 KB measurement.
-  unpackedKb: 1774,
+  // See the 2026-09-18 note above for the 1773.1 KB measurement; the shared
+  // priority-preserving inline-style snapshot then measures 1774.2 KB.
+  unpackedKb: 1775,
   files: 77
 };
 

@@ -1,13 +1,4 @@
-import { clamp, env, snapshotAttributes } from '../utils.js';
-
-function snapshotGlitchStyles(el, properties) {
-  const hadStyle = el.hasAttribute('style');
-  const values = properties.map((name) => [name, el.style.getPropertyValue(name), el.style.getPropertyPriority(name)]);
-  return () => {
-    values.forEach(([name, value, priority]) => value ? el.style.setProperty(name, value, priority) : el.style.removeProperty(name));
-    if (!hadStyle && !el.style.length) el.removeAttribute('style');
-  };
-}
+import { clamp, env, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
 
 function backgroundIsDark(el) {
   let node = el;
@@ -98,7 +89,7 @@ export default {
       };
 
       const host = el;
-      const restore = snapshotGlitchStyles(host, ['position', 'isolation']);
+      const restore = snapshotInlineStyles(host, ['position', 'isolation']);
       if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
       host.style.isolation = 'isolate';
       const stage = document.createElement('span');
@@ -381,8 +372,8 @@ export default {
       const host = el.tagName === 'IMG' ? el.parentElement : el;
       if (imageEl && host) {
         const isVcr = preset === 'vcr';
-        const restoreHost = snapshotGlitchStyles(host, ['position', 'overflow']);
-        const restoreImage = snapshotGlitchStyles(imageEl, ['filter', 'animation', 'animation-play-state']);
+        const restoreHost = snapshotInlineStyles(host, ['position', 'overflow']);
+        const restoreImage = snapshotInlineStyles(imageEl, ['filter', 'animation', 'animation-play-state']);
         const oImgFilter = imageEl.style.filter;
         if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
         host.style.overflow = 'hidden';
@@ -453,8 +444,8 @@ export default {
       if (!imageEl) return null;
       const host = el.tagName === 'IMG' ? el.parentElement : el;
       if (!host) return null;
-      const restoreHost = snapshotGlitchStyles(host, ['position']);
-      const restoreImage = snapshotGlitchStyles(imageEl, ['opacity']);
+      const restoreHost = snapshotInlineStyles(host, ['position']);
+      const restoreImage = snapshotInlineStyles(imageEl, ['opacity']);
       if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
       const canvas = document.createElement('canvas');
       canvas.className = 'kt-glitch-image-canvas';

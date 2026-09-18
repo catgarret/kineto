@@ -130,7 +130,10 @@ const BUDGETS = {
   'kineto.js': { raw: 527, gz: 139, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
-  'kineto.min.js': { raw: 415, gz: 124, variance: 2 },
+  // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/
+  // camelCase names, vendor members, `!important`) measures 415.1 KB raw in
+  // the minified ESM while gzip stays inside the existing variance.
+  'kineto.min.js': { raw: 416, gz: 124, variance: 2 },
   'kineto.umd.js': { raw: 414, gz: 124, variance: 1 },
   'kineto.umd.min.js': { raw: 414, gz: 124, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS

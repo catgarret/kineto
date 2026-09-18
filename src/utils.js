@@ -300,12 +300,49 @@ export function snapshotAttributes(el, names) {
   };
 }
 
+// CSS property names for `style.setProperty()`: camelCase (`willChange`,
+// `webkitUserDrag`) and kebab-case (`will-change`) both resolve to the
+// hyphenated form, including the leading dash of vendor prefixes.
+function cssPropertyName(property) {
+  if (property.includes('-')) return property;
+  return dash(property).replace(/^(webkit|moz|ms|o)-/, '-$1-');
+}
+
+function camelPropertyName(property) {
+  if (!property.includes('-')) return property;
+  return property.replace(/^-/, '').replace(/-([a-z])/g, (_match, letter) => letter.toUpperCase());
+}
+
+// Snapshot the listed inline style properties and return a restore function.
+// Restore puts back the exact prior value with its priority (`!important`),
+// removes properties the element did not set, and drops an empty `style`
+// attribute when the element had none before — so a module's destroy()
+// leaves the owned DOM state exactly as it found it.
+//
+// Browsers expose every declaration through the CSSOM name, which is the only
+// path that carries the priority. DOM adapters such as jsdom keep unsupported
+// vendor properties (`webkitUserDrag`) solely as camelCase members, so the
+// member value is recorded as well and re-applied when the CSSOM name did not
+// hold the declaration.
 export function snapshotInlineStyles(el, properties) {
-  const values = new Map(properties.map((property) => [property, el.style[property]]));
+  const hadStyleAttribute = el.hasAttribute('style');
+  const entries = properties.map((property) => {
+    const name = cssPropertyName(property);
+    const member = camelPropertyName(property);
+    return { name, member, value: el.style.getPropertyValue(name), priority: el.style.getPropertyPriority(name), memberValue: el.style[member] };
+  });
   return () => {
-    values.forEach((value, property) => {
-      el.style[property] = value;
+    entries.forEach(({ name, member, value, priority, memberValue }) => {
+      if (value) {
+        el.style.setProperty(name, value, priority);
+        return;
+      }
+      el.style.removeProperty(name);
+      if (el.style[member] === memberValue) return;
+      if (memberValue === undefined) delete el.style[member];
+      else el.style[member] = memberValue;
     });
+    if (!hadStyleAttribute && !el.style.length) el.removeAttribute('style');
   };
 }
 
