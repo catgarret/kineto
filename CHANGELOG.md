@@ -5,6 +5,16 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.9.9] - 2026-09-18
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Update the pinned GitHub Actions to checkout 7.0.1, setup-node 7.0.0, upload-artifact 7.0.1, upload-pages-artifact 5.0.0, and deploy-pages 5.0.1 — the open Dependabot proposals, with every SHA verified against the upstream tags before pinning.
 - Minify the demo's own scripts and stylesheets into the deployed `site/` (about 220 KB raw / 58 KB gzip less per visit) while `demo/` stays the readable QA source; `demo:cdn --check`, `test:site`, and a new Chromium `site-smoke` lane prove the deployed bytes are the current deterministic build and still boot, localize, open settings, apply live options, and restore share links.
 - Share one priority-preserving `snapshotInlineStyles()` across modules: restore keeps `!important`, removes properties the element never set, drops an empty `style` attribute the element did not have, and accepts camelCase or kebab-case names including vendor prefixes; Glitch uses it instead of a module-local copy.
@@ -55,7 +65,6 @@
 - 상태 관리 보강 비용(전체 소비자 gzip 약 1.2KB·압축 패키지 약 4.2KB 증가)을 기록하고 해당 예산만 조정했습니다. 러너 오차·모듈 조합 예산·필수 의존성 0개·77개 파일 경계는 유지합니다.
 - v0.9.8 릴리스의 npm/GitHub 동일 패키지와 provenance metadata 연결, CI 성공, 두 도메인의 자체 JS/CSS 12개·클릭 미디어 4개 일치 근거를 기록했습니다.
 - 자동 릴리스 준비가 사용하는 QA 보고서의 소스 패키지 버전 표식을 실제 게시 증거와 구분해 유지했습니다.
-
 ## [0.9.8] - 2026-09-12
 
 ### English

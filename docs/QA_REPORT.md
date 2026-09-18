@@ -1,7 +1,7 @@
-# Kineto v0.9.8 QA Report
+# Kineto v0.9.9 QA Report
 
-검증일: 2026-09-12
-대상: v0.9.8 공개 릴리스 `92bc1b6` · 이전 공개 배포 근거는 버전별로 유지
+검증일: 2026-09-18
+대상: v0.9.9 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
 ## 2026-09-18 Unreleased 검증
 
@@ -386,7 +386,9 @@ locale 전환에서 요청 실패·console 오류는 모두 0건입니다. 별�
 
 배포 전 `npm run test:package-tarball`로 실제 tarball을 별도 프로젝트에 설치해
 ESM, CommonJS, CSS와 adapter entry를 확인합니다. `npm run test:package-size`는
-압축 534 kB·해제 1767 kB·77개 파일의 상한과 배포 파일 allowlist를 검사합니다.
+압축 536 KiB·해제 1775 KiB·77개 파일의 상한과 배포 파일 allowlist를 검사합니다.
+v0.9.9 후보의 Node 22 `npm pack --dry-run` 측정값은 77개 파일, 압축 548.4 kB
+(535.5 KiB), 해제 약 1.8 MB(1774.2 KiB)입니다; 공개 tarball 수치는 게시 후 기록합니다.
 v0.9.8의 Node 24 `npm pack --dry-run --json` 측정값은 77개 파일,
 압축 528.0 kB, 해제 1755.1 kB입니다. 실제 공개 tarball은 540,657 bytes,
 registry의 해제 크기는 1,797,191 bytes로 확인했습니다. 이 수치는 릴리스
@@ -395,7 +397,7 @@ registry의 해제 크기는 1,797,191 bytes로 확인했습니다. 이 수치�
 
 <!-- release:prepare updates this source label, not the publication evidence below. -->
 현재 소스의 패키지명은
-`@dong-gri/kineto`, 버전은 `0.9.8`입니다.
+`@dong-gri/kineto`, 버전은 `0.9.9`입니다.
 
 ## 배포 후 확인
 
