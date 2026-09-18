@@ -5,6 +5,16 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.10.0] - 2026-09-18
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Add three stylized Lazy variants on one shared canvas rasterizer (`src/modules/lazy/stylizedMedia.js`): `dither` (Bayer 2×2/4×4/8×8, seeded random, Floyd–Steinberg and Atkinson error diffusion), `ascii` (a configurable glyph-density ramp), and `halftone` (dot, square, or line screens). Each reveals by shrinking its cells into the original picture and crossfading, or keeps the look permanently with `persist`; they apply to `<img>` (animated GIF/APNG/WebP keep re-rendering) and to `<video>` frame by frame, honour `paperColor`/`inkColor`/`accentColor`, `originalColors` + `colorSteps`, `inverted`, `cellSize`, `renderFps`/`maxDpr` and the low-performance frame cap, and leave the original media visible underneath when a cross-origin source cannot be read back. Locked as owner requirement MK-LAZY-008 (feature contract 1.4.0, requirements 3.2.0); proven by a three-engine pixel suite (`tests/browser/lazy-stylized.mjs`) and a Node unit suite for the rasterizer.
 - Declare a `media` variant capability (an `<img>` or a `<video>`) and use it for Lazy `fade`, `dither`, `ascii`, and `halftone`, so the demo drawer offers exactly the variants a `<video>` card can run.
 - Apply contract-derived variant gating the moment a settings drawer opens, not only after the first edit: opening the CRT card previously showed all 24 Lazy controls (pixelate steps, wave amplitude, …) and hid them on the first change. Groups whose every control is gated off no longer render an empty header. Guarded by two new `drawer-layout` checks.
@@ -23,7 +33,6 @@
 - 가이드: 실사용 근거의 정의와 variant가 독립 모듈로 승격되는 기준을 명시하고, “정본 문서가 AI의 디자인 시스템”·“데모는 검수 화면” 원칙(2026-09-18 서핏 매거진의 AI 시대 프로덕트 디자인 글에서 도출)을 추가했습니다. push와 release는 별도 승인이라는 점(push는 공개 데모를 재배포), `data-demo-no-legacy-share` 규칙, 로컬 Chromium 지정 변수 `KT_CHROME` 통일(`MK_CHROMIUM`은 별칭)을 문서화했습니다.
 - 스타일화 렌더러의 측정 비용(모든 전체 산출물에서 약 13KB raw / 4.7KB gzip)을 반영해 JS 번들·패키지·full/React/Vue 소비자 상한만 다음 측정 KB로 올렸습니다. runner variance, CSS, 모듈형 core 예산과 77파일 패키지 경계는 그대로입니다.
 - 검증된 v0.9.9 릴리스를 기록했습니다: 새 GitHub Actions 메이저에서 성공한 CI·Release·canonical Pages 실행, provenance subject·릴리스 커밋이 일치하는 동일 바이트 npm/GitHub tarball, 그리고 (minify된 데모 번들을 포함한) 자체 자산 16개가 테스트된 빌드와 바이트 일치하는 canonical 배포.
-
 ## [0.9.9] - 2026-09-18
 
 ### English

@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.9.9 · 작성일: 2026-08-02 · 검토: 2026-09-19
+> 기준 버전: v0.10.0 · 작성일: 2026-08-02 · 검토: 2026-09-19
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -26,12 +26,13 @@ v0.9.9에서 공개 데모의 `?kt=` 공유 링크 XSS를 차단하고, SRI 검�
 [QA 보고서](QA_REPORT.md)의 2026-09-18 항목에, 원격 CI·Release·npm 게시·canonical 배포
 증거는 [QA 보고서 v0.9.9](QA_REPORT.md#v099)에 기록했습니다(backup parity는 동기화 후 별도).
 
-v0.9.9 이후 Unreleased 묶음은 Lazy에 `dither`·`ascii`·`halftone`을 추가했습니다. 세 variant는
+v0.10.0에서 Lazy에 `dither`·`ascii`·`halftone`을 추가했습니다. 세 variant는
 `src/modules/lazy/stylizedMedia.js` 하나의 canvas rasterizer를 공유하고 `<img>`(GIF·APNG·WebP 포함)와
 `<video>`에 리빌 또는 `persist` 영구 필터로 적용됩니다. 새 모듈을 늘리지 않고 기존 모듈의 variant로
 효과를 도입하는 경로(§3 ‘하지 않을 일’의 승격 기준)를 처음 적용한 사례이며, 설정창이 열리는 순간부터
-variant 옵션 gating을 적용하도록 데모의 오래된 결함도 함께 고쳤습니다. 원격 CI·배포 증거는 v0.10.0 배포
-후 QA 보고서에 기록합니다.
+variant 옵션 gating을 적용하도록 데모의 오래된 결함도 함께 고쳤습니다. 로컬 검증은
+[QA 보고서](QA_REPORT.md)의 2026-09-19 항목에 있고, 원격 CI·Release·npm 게시·배포 증거는 v0.10.0
+배포 후 [QA 보고서](QA_REPORT.md#v0100)에 기록합니다.
 
 ## 1. 결론
 
@@ -610,30 +611,30 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 146. 완료(v0.9.8): 1.0 준비도의 배포 근거를 검증된 v0.9.7·후속 문서 배포로 동기화하고, package의 cross-browser 검사 목록이 CI·release 두 workflow에 누락되지 않는 게이트 추가. 실기기·외부 사용 사례는 미완료 상태 유지
 147. 완료(v0.9.8 배포): CI `34674057118`·Release `34674057605`·canonical Pages `34674519452`·backup sync `34674543935`·backup Pages `34674565133` 성공, npm/GitHub 540,657-byte tarball·provenance metadata 일치, 두 도메인의 v0.9.8·52개·GTM·배지 4개·build `92bc1b6` 및 자체 JS/CSS 12개·클릭 미디어 4개 byte 일치를 실제 공개 응답으로 확인
 
-148. 완료(Unreleased, 2026-09-14): Reveal Mask·Wipe·Clock의 native/GSAP 역재생·재진입, 네 경계 callback, stagger 완료·pause/resume와 안전한 Replay·destroy 통합
-149. 완료(Unreleased): Wave의 trigger·loop·duration·delay·randomness 설정을 연결하고 1회 재생·재진입·원본 filter priority 복원을 세 브라우저 엔진에서 검증
-150. 완료(Unreleased): Wave 숨김 탭 연산 정지·진행률과 남은 지연 보존·중복 SVG 쓰기 억제·destroy 후 재시작 차단
-151. 완료(Unreleased): Wave 전용 1회 재생 카드·7개 언어 설명·seed/왜곡량 설정 및 복사 옵션 추가. 199개 playground, 고위험 전용 데모 57/78, 과거 공유 URL 보존
-152. 완료(Unreleased 로컬 검증): Node 24 전체 CI, Reveal·Wave 세 엔진 회귀, 소비자·React/Vue fixture와 측정 보고서 완료. 패키지 증가를 명시적으로 검토해 해당 예산만 조정했으며 runtime 의존성 0개·77파일 유지. 공개 배포 근거와 구분
+148. 완료(v0.9.9): Reveal Mask·Wipe·Clock의 native/GSAP 역재생·재진입, 네 경계 callback, stagger 완료·pause/resume와 안전한 Replay·destroy 통합
+149. 완료(v0.9.9): Wave의 trigger·loop·duration·delay·randomness 설정을 연결하고 1회 재생·재진입·원본 filter priority 복원을 세 브라우저 엔진에서 검증
+150. 완료(v0.9.9): Wave 숨김 탭 연산 정지·진행률과 남은 지연 보존·중복 SVG 쓰기 억제·destroy 후 재시작 차단
+151. 완료(v0.9.9): Wave 전용 1회 재생 카드·7개 언어 설명·seed/왜곡량 설정 및 복사 옵션 추가. 199개 playground, 고위험 전용 데모 57/78, 과거 공유 URL 보존
+152. 완료(v0.9.9): Node 24 전체 CI, Reveal·Wave 세 엔진 회귀, 소비자·React/Vue fixture와 측정 보고서 완료. 패키지 증가를 명시적으로 검토해 해당 예산만 조정했으며 runtime 의존성 0개·77파일 유지. 공개 배포 근거와 구분
 
-153. 완료(Unreleased): 일반 native Reveal의 Web Animations 기반 pause/resume로 시작 지연·stagger·중간 진행률을 보존. 작성자 애니메이션 분리, 완료 후 재시작 방지, callback 내부 destroy와 빈 style 속성 복원 회귀를 추가하고, 기존 easing·구형 CSS 경로·용량 예산은 유지
-154. 완료(Unreleased): 저성능 Reveal의 Core context/시작 geometry 혼동을 수정해 23개 프리셋·class-only·direction/distance를 native 경로에서 보존. 로드된 GSAP/ScrollTrigger 미사용과 DOM 복원을 세 엔진에서 검증하고 Node 24 전체 CI 통과. 완료 목록 Set·공통 keyframe 재사용·class token 일괄 처리로 반복 작업을 줄이고 성능 문서의 UMD 엔진 포함 오류를 수정. 압축·소비자 예산은 유지하고 실측 1766.1KiB에 맞춰 해제 상한만 1767KiB로 조정
+153. 완료(v0.9.9): 일반 native Reveal의 Web Animations 기반 pause/resume로 시작 지연·stagger·중간 진행률을 보존. 작성자 애니메이션 분리, 완료 후 재시작 방지, callback 내부 destroy와 빈 style 속성 복원 회귀를 추가하고, 기존 easing·구형 CSS 경로·용량 예산은 유지
+154. 완료(v0.9.9): 저성능 Reveal의 Core context/시작 geometry 혼동을 수정해 23개 프리셋·class-only·direction/distance를 native 경로에서 보존. 로드된 GSAP/ScrollTrigger 미사용과 DOM 복원을 세 엔진에서 검증하고 Node 24 전체 CI 통과. 완료 목록 Set·공통 keyframe 재사용·class token 일괄 처리로 반복 작업을 줄이고 성능 문서의 UMD 엔진 포함 오류를 수정. 압축·소비자 예산은 유지하고 실측 1766.1KiB에 맞춰 해제 상한만 1767KiB로 조정
 
-155. 완료(Unreleased): Native class-only Reveal의 pause 후 관찰 재연결을 복구하고, 정지 중 class 변경·완료한 once 진입 재실행·destroy 후 재시작을 차단. 일반/저성능 × once true/false를 Chromium·Firefox·WebKit에서 검증. 기존 번들 예산 유지 및 Node 24 전체 CI 단독 재실행 통과. 최초 Vue Transition 타이밍 단언 실패는 원인 미확정으로 QA 보고서에 별도 기록
+155. 완료(v0.9.9): Native class-only Reveal의 pause 후 관찰 재연결을 복구하고, 정지 중 class 변경·완료한 once 진입 재실행·destroy 후 재시작을 차단. 일반/저성능 × once true/false를 Chromium·Firefox·WebKit에서 검증. 기존 번들 예산 유지 및 Node 24 전체 CI 단독 재실행 통과. 최초 Vue Transition 타이밍 단언 실패는 원인 미확정으로 QA 보고서에 별도 기록
 
-156. 완료(Unreleased): React/Vue mount/update/재진입 QA의 고정 100~120ms 대기를 최대 2초 상태 단언으로 교체. 기존 단언 49개 보존, 지연 성공·timeout·오류 원인 보존 helper 검사와 Node 24 전체 CI 통과. 런타임/API 변경 없음. 이전 간헐 실패의 확정 원인 규명과는 구분
+156. 완료(v0.9.9): React/Vue mount/update/재진입 QA의 고정 100~120ms 대기를 최대 2초 상태 단언으로 교체. 기존 단언 49개 보존, 지연 성공·timeout·오류 원인 보존 helper 검사와 Node 24 전체 CI 통과. 런타임/API 변경 없음. 이전 간헐 실패의 확정 원인 규명과는 구분
 
-157. 완료(Unreleased): Wave의 선택적 colors·blendMode를 기존 기본 왜곡을 유지하며 연결. 타이머 공유·대상 CSS 색상 해석·원본 합성 스타일 복원과 세 엔진 81개 검사·실제 픽셀 차이 확인. 데모 설정 2개·7개 언어 도움말 및 Node 24 전체 CI 통과. 측정한 기능 비용에 해당하는 번들/패키지 상한만 조정하며 실기기·게시 검증은 별도 유지
+157. 완료(v0.9.9): Wave의 선택적 colors·blendMode를 기존 기본 왜곡을 유지하며 연결. 타이머 공유·대상 CSS 색상 해석·원본 합성 스타일 복원과 세 엔진 81개 검사·실제 픽셀 차이 확인. 데모 설정 2개·7개 언어 도움말 및 Node 24 전체 CI 통과. 측정한 기능 비용에 해당하는 번들/패키지 상한만 조정하며 실기기·게시 검증은 별도 유지
 
-158. 완료(Unreleased): Reveal Fade·Zoom In/Out·Flip X/Y 전용 비교 카드 5개와 7개 언어 설명 추가. 동일 문구·크기·재생 시간으로 비교하며 설정·복사 프리셋·Replay·줄바꿈·고유 semantic 공유·desktop/390px 레이아웃·Reset 정리를 검증. 204개 playground, 전용 고위험 demo 62/78. Node 24 전체 CI와 최종 데모 재검사 통과, 런타임/번들 예산 변경 없음
+158. 완료(v0.9.9): Reveal Fade·Zoom In/Out·Flip X/Y 전용 비교 카드 5개와 7개 언어 설명 추가. 동일 문구·크기·재생 시간으로 비교하며 설정·복사 프리셋·Replay·줄바꿈·고유 semantic 공유·desktop/390px 레이아웃·Reset 정리를 검증. 204개 playground, 전용 고위험 demo 62/78. Node 24 전체 CI와 최종 데모 재검사 통과, 런타임/번들 예산 변경 없음
 
-159. 완료(Unreleased): Reveal Fade Down/Left/Right·Slide Down/Right 전용 비교 카드 5개와 7개 언어 설명 추가. 기존 방향을 유지하며 기본 시작 위치·픽셀/자기 크기 이동량을 구분. 설정·복사·Replay·공유·desktop/390px·Reset 검사를 19개 비교 카드로 확대. 209개 playground, 전용 고위험 demo 67/78. Node 24 전체 CI 통과, 런타임/번들 예산 변경 없음
+159. 완료(v0.9.9): Reveal Fade Down/Left/Right·Slide Down/Right 전용 비교 카드 5개와 7개 언어 설명 추가. 기존 방향을 유지하며 기본 시작 위치·픽셀/자기 크기 이동량을 구분. 설정·복사·Replay·공유·desktop/390px·Reset 검사를 19개 비교 카드로 확대. 209개 playground, 전용 고위험 demo 67/78. Node 24 전체 CI 통과, 런타임/번들 예산 변경 없음
 
-160. 완료(Unreleased): Reveal Blur·Rise·Soft·Rotate 전용 비교 카드와 7개 언어 설명을 추가해 23/23 예제 완성. 공개 프리셋의 전용 예제 누락을 막는 집합 검사, Rise·Rotate 실제 시작 크기/각도 단언 추가. 213개 playground·652개 고유 컨트롤·전용 고위험 demo 71/78. Node 24 전체 CI 및 Firefox/WebKit Reveal 검사 통과. 런타임/번들 예산 유지, 남은 전용 예제 7개와 실기기 검증은 별도
+160. 완료(v0.9.9): Reveal Blur·Rise·Soft·Rotate 전용 비교 카드와 7개 언어 설명을 추가해 23/23 예제 완성. 공개 프리셋의 전용 예제 누락을 막는 집합 검사, Rise·Rotate 실제 시작 크기/각도 단언 추가. 213개 playground·652개 고유 컨트롤·전용 고위험 demo 71/78. Node 24 전체 CI 및 Firefox/WebKit Reveal 검사 통과. 런타임/번들 예산 유지, 남은 전용 예제 7개와 실기기 검증은 별도
 
-161. 완료(Unreleased, 2026-09-19): Lazy `dither`(Bayer 2×2/4×4/8×8·seeded random·Floyd–Steinberg·Atkinson)·`ascii`(글리프 밀도 ramp)·`halftone`(점·사각·선) 추가. `src/modules/lazy/stylizedMedia.js` 공용 rasterizer, 셀 축소 70%→크로스페이드 30% 리빌, `persist` 영구 필터, GIF/APNG/WebP 연속 재렌더, `<video>` 프레임 단위 적용과 pause/resume/destroy 복원. 소유자 요구사항 MK-LAZY-008(49개), 기능 계약 1.4.0(variant `media` 능력 추가), variantOptions 파생, 7개 언어 도움말 12개, 데모 카드 4개(217개 playground)·전용 고위험 demo 74/81. Chromium·Firefox·WebKit 픽셀 검사와 Node 단위 검사 추가. 측정 비용(약 13KB raw / 4.7KB gzip)만큼 번들·패키지·소비자 예산 조정
-162. 완료(Unreleased, 2026-09-19): 설정창이 열리는 순간부터 variant 옵션 gating을 적용(이전에는 첫 옵션 변경 뒤에만 숨겨져 CRT 카드가 Lazy 옵션 24개를 모두 노출). 빈 그룹 헤더 숨김, drawer-layout 회귀 검사 2건. Lazy `fade`와 스타일화 variant는 `<video>`에서도 제공되도록 `media` 능력으로 선언
-163. 완료(Unreleased, 2026-09-19): 가이드 정비 — 실사용 근거의 정의와 variant→모듈 승격 기준, 정본 문서·미리보기 원칙(§3), 새 데모 카드의 `data-demo-no-legacy-share` 규칙, 로컬 Chromium 지정 변수 `KT_CHROME` 통일(`MK_CHROMIUM`은 별칭), `push`와 `release`의 승인 구분을 `AGENTS.md`·`CLAUDE.md`·`docs/AGENTS.md`에 명시
+161. 완료(v0.10.0): Lazy `dither`(Bayer 2×2/4×4/8×8·seeded random·Floyd–Steinberg·Atkinson)·`ascii`(글리프 밀도 ramp)·`halftone`(점·사각·선) 추가. `src/modules/lazy/stylizedMedia.js` 공용 rasterizer, 셀 축소 70%→크로스페이드 30% 리빌, `persist` 영구 필터, GIF/APNG/WebP 연속 재렌더, `<video>` 프레임 단위 적용과 pause/resume/destroy 복원. 소유자 요구사항 MK-LAZY-008(49개), 기능 계약 1.4.0(variant `media` 능력 추가), variantOptions 파생, 7개 언어 도움말 12개, 데모 카드 4개(217개 playground)·전용 고위험 demo 74/81. Chromium·Firefox·WebKit 픽셀 검사와 Node 단위 검사 추가. 측정 비용(약 13KB raw / 4.7KB gzip)만큼 번들·패키지·소비자 예산 조정
+162. 완료(v0.10.0): 설정창이 열리는 순간부터 variant 옵션 gating을 적용(이전에는 첫 옵션 변경 뒤에만 숨겨져 CRT 카드가 Lazy 옵션 24개를 모두 노출). 빈 그룹 헤더 숨김, drawer-layout 회귀 검사 2건. Lazy `fade`와 스타일화 variant는 `<video>`에서도 제공되도록 `media` 능력으로 선언
+163. 완료(v0.10.0): 가이드 정비 — 실사용 근거의 정의와 variant→모듈 승격 기준, 정본 문서·미리보기 원칙(§3), 새 데모 카드의 `data-demo-no-legacy-share` 규칙, 로컬 Chromium 지정 변수 `KT_CHROME` 통일(`MK_CHROMIUM`은 별칭), `push`와 `release`의 승인 구분을 `AGENTS.md`·`CLAUDE.md`·`docs/AGENTS.md`에 명시
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 
