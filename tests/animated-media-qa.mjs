@@ -9,7 +9,8 @@ let browser;
 let passed = false;
 try {
   browserServer = await chromium.launchServer({
-    ...(process.env.MK_CHROMIUM ? { executablePath: process.env.MK_CHROMIUM } : {}),
+    // KT_CHROME is the one local Chromium override every suite honours; MK_CHROMIUM stays as its legacy alias.
+    ...((process.env.KT_CHROME || process.env.MK_CHROMIUM) ? { executablePath: process.env.KT_CHROME || process.env.MK_CHROMIUM } : {}),
     headless: true,
     args: ['--no-sandbox', '--disable-dev-shm-usage', '--autoplay-policy=no-user-gesture-required']
   });

@@ -25,7 +25,8 @@ const port = server.address().port;
 
 const browser = await chromium.launch({
   headless: true,
-  ...(process.env.MK_CHROMIUM ? { executablePath: process.env.MK_CHROMIUM } : {}),
+  // KT_CHROME is the one local Chromium override every suite honours; MK_CHROMIUM stays as its legacy alias.
+  ...((process.env.KT_CHROME || process.env.MK_CHROMIUM) ? { executablePath: process.env.KT_CHROME || process.env.MK_CHROMIUM } : {}),
   args: ['--no-sandbox']
 });
 const page = await browser.newPage();

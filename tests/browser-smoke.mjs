@@ -35,7 +35,8 @@ try {
   const browserType = { chromium, firefox, webkit }[browserName];
   assert.ok(browserType, `Unsupported KT_BROWSER: ${browserName}`);
   browserServer = await browserType.launchServer({
-    ...(browserName === 'chromium' && process.env.MK_CHROMIUM ? { executablePath: process.env.MK_CHROMIUM } : {}),
+    // KT_CHROME is the one local Chromium override every suite honours; MK_CHROMIUM stays as its legacy alias.
+    ...(browserName === 'chromium' && (process.env.KT_CHROME || process.env.MK_CHROMIUM) ? { executablePath: process.env.KT_CHROME || process.env.MK_CHROMIUM } : {}),
     headless: true,
     ...(browserName === 'chromium' ? { args: ['--no-sandbox', '--disable-dev-shm-usage', '--allow-file-access-from-files'] } : {})
   });
