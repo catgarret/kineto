@@ -45,7 +45,14 @@ export function useKinetoPresence(present = true, options = {}, dependencies = [
     const controller = presence(element, parent && options.parent == null ? { ...options, parent } : options);
     controllerRef.current = controller;
     setStatus(controller.status);
+    // A propagating parent drives this controller's enter()/leave() directly,
+    // so mirror every Core status change — not only the runs started below.
+    const unsubscribe = controller.subscribe((nextStatus, nextResult) => {
+      setStatus(nextStatus);
+      if (nextResult) setResult(nextResult);
+    });
     return () => {
+      unsubscribe();
       controller.destroy();
       if (controllerRef.current === controller) controllerRef.current = null;
     };
@@ -58,10 +65,10 @@ export function useKinetoPresence(present = true, options = {}, dependencies = [
     if (!controller) return undefined;
     let active = true;
     const run = controller[present ? 'enter' : 'leave'](present ? options.enterOptions : options.exitOptions);
+    // status/result state follows the controller subscription above; only the
+    // host callback is scoped to runs this hook started itself.
     Promise.resolve(run).then((nextResult) => {
       if (!active) return;
-      setStatus(controller.status);
-      setResult(nextResult);
       options.onResult?.(nextResult);
     });
     return () => { active = false; };

@@ -23,6 +23,12 @@ const diagnostic: KinetoDiagnostic = Kineto.diagnostics.emit({
 Kineto.diagnostics.clear();
 const presenceController = modularPresence(target, { mode: 'wait', accessibility: 'managed' });
 presenceController.enter().cancel();
+const unsubscribePresence = presenceController.subscribe((status, presenceResult) => {
+  const nextStatus: 'idle' | 'entering' | 'leaving' | 'finished' | 'skipped' | 'error' | 'destroyed' = status;
+  void nextStatus;
+  void presenceResult?.reason;
+});
+unsubscribePresence();
 modularPresence(target).destroy();
 
 void result;

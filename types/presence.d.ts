@@ -1,6 +1,7 @@
 export type {
   KinetoOptions,
   KinetoPresenceController,
+  KinetoPresenceListener,
   KinetoPresenceOptions,
   KinetoPresenceResult,
   KinetoPresenceStatus,

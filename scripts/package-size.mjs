@@ -114,12 +114,18 @@ const BUDGET = {
   // variance. Retain all 77 files and bounded rounding/runner headroom.
   // Opt-in Wave palette/blending: Node 24 measures 534.0 KB packed /
   // 1770.3 KB unpacked. This is feature cost, not runner variance.
-  packedKb: 535,
+  // 2026-09-18: Presence status subscription (adapters stay in sync with a
+  // propagating parent), SRI-verified engine tag reuse, and the shared
+  // priority-preserving inline-style snapshot measure 535.2 KB packed /
+  // 1773.1 KB unpacked on Node 22/npm 10 with the same 77 files. These are
+  // correctness/security bytes; round the ceilings by 1 KB each.
+  packedKb: 536,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
   // Node 24 measures 534.4 KB packed / 1771.4 KB unpacked, still 77 files.
-  unpackedKb: 1772,
+  // See the 2026-09-18 note above for the 1773.1 KB measurement.
+  unpackedKb: 1774,
   files: 77
 };
 

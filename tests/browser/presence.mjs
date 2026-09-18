@@ -19,7 +19,7 @@ const server = http.createServer((req, res) => {
 });
 await new Promise((resolve) => server.listen(0, resolve));
 const port = server.address().port;
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-gpu'] });
+const browser = await chromium.launch({ headless: true, ...(process.env.KT_CHROME ? { executablePath: process.env.KT_CHROME } : {}), args: ['--no-sandbox', '--disable-gpu'] });
 try {
   const page = await browser.newPage();
   await page.setContent(`<!doctype html><script src="http://localhost:${port}/dist/kineto.umd.js"></script><script type="module">import presence from 'http://localhost:${port}/dist/modular/presence.js'; window.KinetoPresence = presence;</script>`, { waitUntil: 'load' });
@@ -112,18 +112,28 @@ try {
       parent,
       safeToRemove: () => { childSafeCalls += 1; propagationOrder.push('child'); }
     });
+    // A host that only awaits its own enter()/leave() never sees the runs a
+    // propagating parent starts; subscribe() must report them anyway.
+    const observed = [];
+    const unsubscribe = nested.subscribe((status, outcome) => observed.push([status, outcome?.status ?? null]));
+    let afterUnsubscribe = 0;
     await parent.enter();
     const propagationStarted = performance.now();
     const parentLeave = parent.leave();
     const parentResult = await parentLeave;
     const propagationElapsed = performance.now() - propagationStarted;
+    unsubscribe();
+    nested.subscribe(() => { afterUnsubscribe += 1; })();
+    await nested.enter();
     const propagation = {
       parentResult,
       nestedStatus: nested.status,
       parentSafeCalls,
       childSafeCalls,
       propagationOrder,
-      propagationElapsed
+      propagationElapsed,
+      observed,
+      afterUnsubscribe
     };
     nested.destroy();
     parent.destroy();
@@ -155,6 +165,8 @@ try {
   assert.equal(result.propagation.parentSafeCalls, 1);
   assert.equal(result.propagation.childSafeCalls, 1);
   assert.deepEqual(result.propagation.propagationOrder, ['child', 'parent']);
+  assert.deepEqual(result.propagation.observed, [['entering', null], ['finished', 'finished'], ['leaving', null], ['finished', 'finished']], 'subscribe() must report the propagated enter and leave runs');
+  assert.equal(result.propagation.afterUnsubscribe, 0, 'an unsubscribed listener must not be called again');
   console.log('Presence browser QA OK', JSON.stringify(result));
 
   const reducedContext = await browser.newContext({ reducedMotion: 'reduce' });

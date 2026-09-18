@@ -17,7 +17,11 @@ export const consumerFixtures = [
   { name: 'core-presence', entry: 'core-presence', budget: 35 },
   // The same correction measures 143.1 KB in the Rolldown React entry.
   { name: 'react-adapter', entry: 'react', budget: 143, variance: { vite: 1, rolldown: 1 } },
-  { name: 'vue-adapter', entry: 'vue', budget: 143, variance: { vite: 1, rolldown: 2 } }
+  // 2026-09-18: the Presence status subscription that keeps both adapters in
+  // sync with a propagating parent measures 144.1 KB in the Vite Vue entry
+  // (React 143.x stays inside its ceiling). Round the Vue product ceiling by
+  // 1 KB; runner variance and every modular boundary are unchanged.
+  { name: 'vue-adapter', entry: 'vue', budget: 144, variance: { vite: 1, rolldown: 2 } }
 ];
 
 export const treeShakenEntries = [

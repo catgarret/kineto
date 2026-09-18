@@ -103,6 +103,16 @@ export default function createPresence(target, defaults = {}, kineto = null) {
   let safeRemoval = typeof config.safeToRemove === 'function' ? config.safeToRemove : null;
   const childControllers = new Set();
   let unregisterParent = null;
+  // Status observers. A parent with `propagate: true` drives a child's
+  // enter()/leave() directly, so a host that only awaits its own calls would
+  // never learn about those runs; `subscribe()` reports every status change
+  // (and the settled result, when there is one) regardless of who started it.
+  const listeners = new Set();
+  const notify = (outcome = null) => {
+    listeners.forEach((listener) => {
+      try { listener(status, outcome); } catch (_error) { /* a broken observer must not break the lifecycle */ }
+    });
+  };
 
   const managed = config.accessibility === 'managed';
   const reduced = Boolean(config.reducedMotion === true || kineto?.prefersReducedMotion || runtime.reducedMotion);
@@ -165,6 +175,7 @@ export default function createPresence(target, defaults = {}, kineto = null) {
         try { safeRemoval(element, outcome); } catch (error) { outcome = result('error', 'safeToRemove', { error }); }
       }
     }
+    notify(outcome);
     run.resolve(outcome);
     if (queued && !destroyed && run.direction === 'leave' && outcome.status !== 'error') {
       const next = queued;
@@ -213,6 +224,7 @@ export default function createPresence(target, defaults = {}, kineto = null) {
     run.promise.cancel = () => cancel(run);
     active = run;
     status = direction === 'enter' ? 'entering' : 'leaving';
+    notify();
     applyManaged(direction, options);
     captureLayout(direction, options);
     if (config.propagate && childControllers.size) {
@@ -266,6 +278,15 @@ export default function createPresence(target, defaults = {}, kineto = null) {
       return () => childControllers.delete(child);
     },
     safeToRemove(callback) { safeRemoval = typeof callback === 'function' ? callback : null; return controller; },
+    // Observe status changes from every enter/leave run, including runs a
+    // propagating parent starts. `listener(status, result)` receives the
+    // settled result on completion and `null` for transitions. Returns an
+    // unsubscribe function; destroy() drops all observers.
+    subscribe(listener) {
+      if (typeof listener !== 'function' || destroyed) return () => {};
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
     get childCount() { return childControllers.size; },
     destroy() {
       if (destroyed) return controller;
@@ -282,6 +303,8 @@ export default function createPresence(target, defaults = {}, kineto = null) {
       restoreLayout();
       restoreManaged();
       status = 'destroyed';
+      notify();
+      listeners.clear();
       return controller;
     },
     get status() { return status; },

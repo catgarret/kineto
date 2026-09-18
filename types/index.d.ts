@@ -98,7 +98,9 @@ export interface KinetoStateDefinitions {
   };
 }
 
-export type KinetoPresenceStatus = 'idle' | 'entering' | 'leaving' | 'finished' | 'destroyed';
+export type KinetoPresenceStatus = 'idle' | 'entering' | 'leaving' | 'finished' | 'skipped' | 'error' | 'destroyed';
+/** Receives every status change; `result` is set when a run settled and `null` for transitions. */
+export type KinetoPresenceListener = (status: KinetoPresenceStatus, result: KinetoPresenceResult | null) => void;
 export type KinetoPresenceResult = {
   status: 'finished' | 'cancelled' | 'skipped' | 'error';
   reason?: string;
@@ -121,6 +123,8 @@ export interface KinetoPresenceController {
   cancel(reason?: string): this;
   registerChild(child: KinetoPresenceController): () => void;
   safeToRemove(callback?: (element: Element | null, result: KinetoPresenceResult) => void): this;
+  /** Observe status changes from every run, including runs a propagating parent starts. Returns an unsubscribe function. */
+  subscribe(listener: KinetoPresenceListener): () => void;
   destroy(): this;
   readonly status: KinetoPresenceStatus;
   readonly ssr: boolean;

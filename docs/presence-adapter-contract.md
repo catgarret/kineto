@@ -86,6 +86,14 @@ import { KinetoPresenceGroup } from '@dong-gri/kineto/react';
 </KinetoPresenceGroup>
 ```
 
+Both adapters keep `status` and `result` synchronized through the Core
+controller's `subscribe()` observer, not only through the promises of the runs
+they start themselves. When a parent with `propagate: true` drives a child's
+enter/leave, the child's `status` (and its `data-kt-presence-status`
+attribute) therefore follows the propagated run to `finished` instead of
+freezing at the last self-initiated state. `onResult` remains scoped to the
+runs the host itself requested.
+
 Vue provides the equivalent `useKinetoPresence` composable and
 `KinetoPresence` component. `present` may be a boolean, ref, or getter. The
 `useKinetoTransition(type, options)` composable returns Vue transition hooks;

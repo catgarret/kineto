@@ -65,6 +65,16 @@ if (result.status === 'finished') panel.remove();
 때만 자식 컨트롤러가 같은 취소 토큰으로 exit하고, 부모의 `safeToRemove`는
 모든 자식 결과가 끝난 뒤에 resolve합니다.
 
+## 상태 구독
+
+전파된 enter/exit는 자식의 `enter()`·`leave()` Promise를 기다리는 호스트에게는
+보이지 않습니다. 그래서 컨트롤러는 `subscribe(listener)`를 제공합니다.
+`listener(status, result)`는 누가 시작했든 모든 상태 변화마다 호출되며,
+전환(`entering`·`leaving`)에서는 `result`가 `null`, 실행이 끝나면 정착한 결과
+객체를 받습니다. 반환값은 해제 함수이고 `destroy()`는 모든 구독을 해제합니다.
+React·Vue 어댑터의 `status`·`result`는 이 구독으로 동기화되므로, 부모 전파로
+끝난 자식도 `data-kt-presence-status="finished"`를 표시합니다.
+
 ## focus·ARIA·inert 계약
 
 `accessibility: 'managed'`일 때만 Presence가 접근성 상태를 소유합니다.

@@ -153,13 +153,15 @@ export function useKinetoPresence(present = true, options = {}, watchSources = [
     : () => present;
   const sources = [presentSource, ...watchSources];
 
+  let unsubscribe = null;
+
   const run = () => {
     const lifecycle = controller.value;
     if (!lifecycle) return;
     const promise = lifecycle[unref(present) ? 'enter' : 'leave'](unref(present) ? options.enterOptions : options.exitOptions);
+    // status/result refs follow the controller subscription below; only the
+    // host callback is scoped to runs this composable started itself.
     Promise.resolve(promise).then((nextResult) => {
-      status.value = lifecycle.status;
-      result.value = nextResult;
       options.onResult?.(nextResult);
     });
   };
@@ -170,12 +172,20 @@ export function useKinetoPresence(present = true, options = {}, watchSources = [
     controller.value = presence(element.value, parent && options.parent == null ? { ...options, parent } : options);
     registeredAtCreate = Boolean(parent || options.parent);
     status.value = controller.value.status;
+    // A propagating parent drives this controller's enter()/leave() directly,
+    // so mirror every Core status change — not only the runs started by run().
+    unsubscribe = controller.value.subscribe((nextStatus, nextResult) => {
+      status.value = nextStatus;
+      if (nextResult) result.value = nextResult;
+    });
     run();
     bindParent();
   });
   if (parentRef && typeof parentRef === 'object' && 'value' in parentRef) watch(parentRef, bindParent);
   if (sources.length) watch(sources, run, { deep: true });
   onBeforeUnmount(() => {
+    unsubscribe?.();
+    unsubscribe = null;
     parentRegistration?.();
     parentRegistration = null;
     controller.value?.destroy();
