@@ -117,7 +117,9 @@ const BUDGET = {
   packedKb: 535,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
-  unpackedKb: 1771,
+  // Terminal Glitch guards and priority-preserving owned-style restoration:
+  // Node 24 measures 534.4 KB packed / 1771.4 KB unpacked, still 77 files.
+  unpackedKb: 1772,
   files: 77
 };
 

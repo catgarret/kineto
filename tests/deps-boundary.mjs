@@ -90,6 +90,6 @@ for (const build of ['dist/kineto.js', 'dist/kineto.umd.js']) {
 // Retain a narrow byte guard alongside the source-import prohibition;
 // the current distributable ceiling is shared with scripts/bundle-size.mjs.
 const umdBytes = fs.statSync(path.join(root, 'dist/kineto.umd.js')).size;
-assert.ok(umdBytes < 413 * 1024, `dist/kineto.umd.js is ${(umdBytes / 1024).toFixed(0)}KB — exceeds the reviewed dependency-free runtime budget of 413KB`);
+assert.ok(umdBytes < 414 * 1024, `dist/kineto.umd.js is ${(umdBytes / 1024).toFixed(0)}KB — exceeds the reviewed dependency-free runtime budget of 414KB`);
 
 console.log(`deps-boundary OK — zero runtime dependencies, ${Object.keys(packageJson.peerDependencies || {}).length} optional peers, reviewed browser network capability boundary, no gsap/lenis imports in ${srcFiles.length} source files; both builds use the on-demand CDN loader; UMD is ${(umdBytes / 1024).toFixed(0)}KB (engines not bundled).`);

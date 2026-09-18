@@ -29,6 +29,18 @@
 
 프리셋에 따라 `intensity`는 이동량·노이즈·블록 수, `speed`는 재생 속도, `frequency`는 반복 빈도, `randomness`는 패턴과 간격의 무작위성(0–1)을 제어합니다. 버스트 계열에서는 `trigger`(`auto`·`hover`·`scroll`)와 `loop`로 시작·반복을 설정합니다. 이미지 프리셋은 `sliceCount`, `pixel`·`datamosh`·`reveal`은 `duration`을 추가로 사용합니다. `replay()`, `pause()`, `resume()`, `destroy()`를 제공합니다.
 
+## 종료와 스타일 복원
+
+`destroy()`는 최종 종료입니다. 이전 인스턴스에 남아 있는 `replay()`·`resume()`·
+`pause()`·`fire()` 호출은 효과를 다시 예약하거나 복원된 DOM을 바꾸지 않습니다.
+같은 인스턴스의 `destroy()`를 다시 호출해도 새로 작성한 스타일을 덮어쓰지 않습니다.
+다시 적용하려면 Core의 `create()`/`replay()`로 새 인스턴스를 만듭니다.
+
+이미지·Datamosh·Reveal의 canvas와 CRT/VCR overlay를 제거할 때 소유한 스타일의
+값과 `!important`를 복원합니다. Reveal의 원래 이미지 투명도, CRT/VCR의 원래
+필터·애니메이션·재생 상태, RGB Slice Burst의 position·isolation도 보존합니다.
+이는 종료 처리 보강이며 효과의 기본 모양이나 재생 옵션을 바꾸지 않습니다.
+
 ## Wave 제어
 
 `wave`는 SVG 필터로 원본을 변형하며 이미지·자식 DOM을 복제하지 않습니다.

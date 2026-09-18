@@ -118,6 +118,9 @@ comparisons (Fade Down/Left/Right and Slide Down/Right) now bring those counts t
 209 playgrounds and 67/78, without changing the historical preset directions.
 Blur, Rise, Soft and Rotate complete dedicated Reveal coverage at 23/23, bringing
 the current demo to 213 playgrounds and 71/78 dedicated high-risk variants.
+Glitch text/image/CRT/VCR/seeded burst teardown now prevents retained instances
+from restarting and restores owned style priorities. Ten renderer cases exercise
+terminal teardown alongside the existing Wave checks; see QA_REPORT for size cost.
 The next Unreleased correction resolves low-tier Reveal presets through the
 native backend before rendering; loaded GSAP/ScrollTrigger are not used there.
 Native completion tracking uses a Set and reuses keyframe input;

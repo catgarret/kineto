@@ -5,6 +5,29 @@
 
 ## 2026-09-14 Unreleased 검증
 
+### 후속: Glitch 종료 후 재시작과 스타일 복원
+
+수정 전 직접 소스 회귀 검사에서 텍스트·이미지 계열의 종료 후 작업 재예약,
+두 번째 destroy의 후속 스타일 덮어쓰기, 이미지·CRT/VCR·RGB Slice Burst의
+소유 스타일 우선순위 손실을 재현했습니다. 종료 상태를 재생/정지 상태와
+구분하고 이미지 투명도·필터·애니메이션 재생 상태 및 호스트 스타일을 복원합니다.
+
+Chromium·Firefox·WebKit에서 10개 렌더링 경로(text RGB/Pixel/Noise/CRT,
+image CRT/VCR/Image/Datamosh/Reveal, RGB Slice Burst)의 종료 검사가 통과했습니다.
+타이머/RAF를 추적해 종료 후 공개 메서드 호출이 새 작업을 만들지 않고,
+반복 destroy가 후속 편집을 덮지 않으며 원래 CSS 값·priority가 복원됨을 검사합니다.
+기존 Wave 81개 결정적 검사와 실제 hover/scroll·픽셀 차이 검사도 유지합니다.
+이 종료 검사는 타이머를 실행하지 않는 계측이며 각 렌더러의 전체 시각 동작을
+추가 검증한 것으로 집계하지 않습니다. 실제 모바일 기기·공개 배포는 미검증입니다.
+
+첫 통합 시도는 해제 패키지 상한, 후속 측정은 전체 소비자·React·minified ESM·
+UMD raw 경계 초과를 잡았습니다. 실측은 534.4KiB packed / 1771.4KiB unpacked /
+77파일, UMD gzip 124.4KiB(약 0.2KiB 증가), Vite full 139.1KiB와 Rolldown
+React 143.1KiB입니다. 해제 상한 1772KiB, min ESM gzip 기본 상한 124KiB,
+UMD raw 414KiB, full/React 기본 상한 136/143KiB로 해당 항목만 조정했습니다.
+기존 runner variance·packed·modular/Vue 예산은 유지합니다. 최적화가 아닌
+종료 안전성 수정 비용이며, 정확한 최신 측정치는 생성된 번들 보고서에 기록합니다.
+
 ### 후속: Reveal 전용 예제 완성
 
 Blur·Rise·Soft·Rotate에 동일 문구·크기·0.9초 비교 카드를 추가했습니다.

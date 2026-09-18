@@ -1,4 +1,13 @@
-import { clamp, env, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
+import { clamp, env, snapshotAttributes } from '../utils.js';
+
+function snapshotGlitchStyles(el, properties) {
+  const hadStyle = el.hasAttribute('style');
+  const values = properties.map((name) => [name, el.style.getPropertyValue(name), el.style.getPropertyPriority(name)]);
+  return () => {
+    values.forEach(([name, value, priority]) => value ? el.style.setProperty(name, value, priority) : el.style.removeProperty(name));
+    if (!hadStyle && !el.style.length) el.removeAttribute('style');
+  };
+}
 
 function backgroundIsDark(el) {
   let node = el;
@@ -18,6 +27,7 @@ const NOISE_CHARS = '!@#$%^&*()<>?/|{}~ABCDEFGHIJabcdefghij0123456789';
 
 export default {
   create(el, opts) {
+    let destroyed = false;
     const type = opts.preset || opts.type || 'rgb';
     // `digital` used to redirect here to `noise` — an exact alias, so the two
     // presets produced identical output and the settings panel offered a choice
@@ -88,7 +98,7 @@ export default {
       };
 
       const host = el;
-      const restore = snapshotInlineStyles(host, ['position', 'isolation']);
+      const restore = snapshotGlitchStyles(host, ['position', 'isolation']);
       if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
       host.style.isolation = 'isolate';
       const stage = document.createElement('span');
@@ -161,9 +171,10 @@ export default {
         type: 'glitch',
         preset,
         fire: runBurst,
-        pause() { paused = true; clear(); },
-        resume() { paused = false; after(runBurst, between(gapMin, gapMax) / cadence); },
+        pause() { if (!alive) return; paused = true; clear(); },
+        resume() { if (!alive) return; paused = false; after(runBurst, between(gapMin, gapMax) / cadence); },
         destroy() {
+          if (!alive) return;
           alive = false;
           timers.forEach(clearTimeout);
           stage.remove();
@@ -370,10 +381,9 @@ export default {
       const host = el.tagName === 'IMG' ? el.parentElement : el;
       if (imageEl && host) {
         const isVcr = preset === 'vcr';
-        const oHostPos = host.style.position;
-        const oHostOvf = host.style.overflow;
+        const restoreHost = snapshotGlitchStyles(host, ['position', 'overflow']);
+        const restoreImage = snapshotGlitchStyles(imageEl, ['filter', 'animation', 'animation-play-state']);
         const oImgFilter = imageEl.style.filter;
-        const oImgAnim = imageEl.style.animation;
         if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
         host.style.overflow = 'hidden';
         const sl = 0.08 * intensity;   // scanline darkness (kept subtle)
@@ -415,7 +425,7 @@ export default {
           imageEl.style.animation = randomness > 0 ? `kt-vcr-jitter ${7 / cadence}s steps(1,end) infinite` : 'none';
         }
         host.appendChild(overlay);
-        const setPlay = (s) => { [overlay, roll, noise, track].forEach((n) => { if (n) n.style.animationPlayState = s; }); if (isVcr) imageEl.style.animationPlayState = s; };
+        const setPlay = (s) => { if (destroyed) return; [overlay, roll, noise, track].forEach((n) => { if (n) n.style.animationPlayState = s; }); if (isVcr) imageEl.style.animationPlayState = s; };
         return {
           el,
           type: 'glitch',
@@ -423,11 +433,11 @@ export default {
           pause: () => setPlay('paused'),
           resume: () => setPlay('running'),
           destroy: () => {
+            if (destroyed) return;
+            destroyed = true;
             overlay.remove();
-            host.style.position = oHostPos;
-            host.style.overflow = oHostOvf;
-            imageEl.style.filter = oImgFilter;
-            imageEl.style.animation = oImgAnim;
+            restoreHost();
+            restoreImage();
           }
         };
       }
@@ -443,7 +453,8 @@ export default {
       if (!imageEl) return null;
       const host = el.tagName === 'IMG' ? el.parentElement : el;
       if (!host) return null;
-      const originalHostPosition = host.style.position;
+      const restoreHost = snapshotGlitchStyles(host, ['position']);
+      const restoreImage = snapshotGlitchStyles(imageEl, ['opacity']);
       if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
       const canvas = document.createElement('canvas');
       canvas.className = 'kt-glitch-image-canvas';
@@ -629,25 +640,28 @@ export default {
       return {
         el,
         type: 'glitch',
-        replay: () => { imgAlive = true; if (revealMode) imageEl.style.opacity = '0'; imageBurst(); },
+        replay: () => { if (destroyed) return; imgAlive = true; if (revealMode) imageEl.style.opacity = '0'; imageBurst(); },
         pause: () => {
+          if (destroyed) return;
           imgAlive = false;
           imgTimers.forEach(clearTimeout);
           imgTimers.clear();
           if (imgRaf != null) cancelAnimationFrame(imgRaf);
           canvas.style.opacity = '0';
         },
-        resume: () => { if (!imgAlive) { imgAlive = true; imgLater(imageBurst, 200); } },
+        resume: () => { if (!destroyed && !imgAlive) { imgAlive = true; imgLater(imageBurst, 200); } },
         destroy: () => {
+          if (destroyed) return;
+          destroyed = true;
           imgAlive = false;
           imgTimers.forEach(clearTimeout);
           imgTimers.clear();
           if (imgRaf != null) cancelAnimationFrame(imgRaf);
           if (imgHoverEnter) host.removeEventListener('pointerenter', imgHoverEnter);
           if (imgHoverLeave) host.removeEventListener('pointerleave', imgHoverLeave);
-          if (revealMode) imageEl.style.opacity = '';
+          if (revealMode) restoreImage();
           canvas.remove();
-          host.style.position = originalHostPosition;
+          restoreHost();
         }
       };
     }
@@ -937,14 +951,16 @@ export default {
     return {
       el,
       type: 'glitch',
-      replay: () => { stopWork(); alive = true; burst(); },
-      pause: () => { alive = false; stopWork(); },
+      replay: () => { if (destroyed) return; stopWork(); alive = true; burst(); },
+      pause: () => { if (destroyed) return; alive = false; stopWork(); },
       resume: () => {
-        if (alive) return;
+        if (destroyed || alive) return;
         alive = true;
         later(burst, 120);
       },
       destroy: () => {
+        if (destroyed) return;
+        destroyed = true;
         alive = false;
         stopWork();
         if (hoverEnter) el.removeEventListener('pointerenter', hoverEnter);

@@ -8,12 +8,15 @@ export const consumerFixtures = [
   // and every core + selected-module budget/tree-shaking boundary.
   // 2026-09-14: masked Reveal/Wave lifecycle adds ~1.2 KB to full gzip
   // (Vite 138.4 KB). Account for code cost, not extra runner variance.
-  { name: 'full', entry: 'full', budget: 135, variance: { vite: 4, rolldown: 4 } },
+  // Terminal Glitch teardown measures 139.1 KB in Vite; round the product
+  // ceiling by 1 KB, retaining the existing runner variance and modular limits.
+  { name: 'full', entry: 'full', budget: 136, variance: { vite: 4, rolldown: 4 } },
   { name: 'core-reveal', entry: 'core-reveal', budget: 30, variance: { rolldown: 1 } },
   { name: 'core-three', entry: 'core-three', budget: 65, variance: { rolldown: 1 } },
   { name: 'core-states', entry: 'core-states', budget: 35 },
   { name: 'core-presence', entry: 'core-presence', budget: 35 },
-  { name: 'react-adapter', entry: 'react', budget: 142, variance: { vite: 1, rolldown: 1 } },
+  // The same correction measures 143.1 KB in the Rolldown React entry.
+  { name: 'react-adapter', entry: 'react', budget: 143, variance: { vite: 1, rolldown: 1 } },
   { name: 'vue-adapter', entry: 'vue', budget: 143, variance: { vite: 1, rolldown: 2 } }
 ];
 

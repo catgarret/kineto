@@ -5,6 +5,8 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Make Glitch teardown terminal across text, image, CRT/VCR, and RGB Slice Burst renderers: prevent retained instances from restarting work or overwriting later edits, and restore owned image/host styles with their original priorities, opacity, and animation play state.
+- Record the Glitch correctness cost (~0.2 KiB UMD gzip); adjust only exceeded package, minified ESM, UMD raw, full-consumer and React ceilings while retaining runner variance, modular/Vue budgets and the 77-file package boundary.
 - Complete dedicated Reveal demo coverage with Blur, Rise, Soft, and Rotate comparisons, seven-language descriptions, settings/replay/share regressions, and a gate preventing any of the 23 public presets from losing its example; preserve runtime behavior and package budgets.
 - Add five directional Reveal comparisons (Fade Down/Left/Right and Slide Down/Right), with seven-language descriptions of the actual starting positions, connected controls, replay/copy/share coverage, and unchanged runtime behavior.
 - Add five matched Reveal comparison demos for Fade, Zoom In/Out and Flip X/Y, with seven-language descriptions, connected settings and replay, unique semantic sharing, and desktop/mobile layout regressions; preserve historical share links and the runtime package.
@@ -24,6 +26,8 @@
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- Glitch 텍스트·이미지·CRT/VCR·RGB Slice Burst의 종료 후 재시작과 후속 편집 덮어쓰기를 막았습니다. 이미지·호스트의 소유 스타일을 원래 우선순위·투명도·애니메이션 재생 상태와 함께 복원합니다.
+- Glitch 수정 비용(UMD gzip 약 0.2KiB)을 기록하고 초과한 패키지·minified ESM·UMD raw·전체 소비자·React 상한만 조정했습니다. runner variance·모듈 조합/Vue 예산·77개 패키지 파일 범위는 유지합니다.
 - Blur·Rise·Soft·Rotate 비교 카드와 7개 언어 설명으로 Reveal 전용 데모 23개를 완성하고 설정·재생·공유 회귀 검사 및 예제 누락 방지 게이트를 추가했습니다. 런타임 동작과 패키지 예산은 유지합니다.
 - Fade Down/Left/Right·Slide Down/Right 방향 비교 데모 5개와 실제 시작 위치의 7개 언어 설명·설정·Replay·복사·공유 검사를 추가했습니다. 기존 런타임 동작은 변경하지 않습니다.
 - Fade·Zoom In/Out·Flip X/Y의 동일 조건 Reveal 비교 데모 5개와 7개 언어 설명·설정·Replay·고유 공유 링크·데스크톱/모바일 레이아웃 회귀 검사를 추가했습니다. 과거 공유 링크와 런타임 패키지는 유지합니다.

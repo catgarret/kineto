@@ -309,6 +309,59 @@ try {
     return { clean, instances: core.instanceCount };
   }, origin);
   assert.deepEqual(reduced, { clean: true, instances: 0 }, 'reduced motion creates no SVG animation and cleans up');
+  const terminal = await page.evaluate(async (base) => {
+    const module = (await import(`${base}/src/modules/glitch.js`)).default;
+    const originals = [window.setTimeout, window.clearTimeout, window.requestAnimationFrame, window.cancelAnimationFrame];
+    const pending = new Set();
+    let serial = 0;
+    window.setTimeout = window.requestAnimationFrame = () => { const id = ++serial; pending.add(id); return id; };
+    window.clearTimeout = window.cancelAnimationFrame = (id) => pending.delete(id);
+    const failures = [];
+    const cases = ['rgb', 'pixel', 'noise', 'crt-text', 'crt', 'vcr', 'image', 'datamosh', 'reveal', 'rgb-slice-burst'];
+    const snapshot = (host) => {
+      const clone = host.cloneNode(true);
+      const nodes = [clone, ...clone.querySelectorAll('*')];
+      const styles = nodes.map((node) => [...node.style].sort().map((property) =>
+        [property, node.style.getPropertyValue(property), node.style.getPropertyPriority(property)]));
+      nodes.forEach((node) => node.removeAttribute('style'));
+      return JSON.stringify([clone.outerHTML, styles]);
+    };
+    try {
+      for (const name of cases) {
+        const host = document.createElement('div');
+        host.style.cssText = 'position:relative!important;overflow:visible!important';
+        const image = ['crt', 'vcr', 'image', 'datamosh', 'reveal'].includes(name);
+        host.innerHTML = image ? '<img alt="fixture">' : 'Signal';
+        const target = image ? host.firstElementChild : host;
+        if (image) target.style.cssText = 'opacity:.6!important;filter:contrast(1.2)!important;animation:none!important;animation-play-state:paused!important';
+        document.body.append(host);
+        const before = snapshot(host);
+        const instance = module.create(host, { preset: name === 'crt-text' ? 'crt' : name, loop: true });
+        instance.pause();
+        instance.resume();
+        instance.destroy();
+        if (snapshot(host) !== before) failures.push(`${name}: destroy must restore authored styles and priorities`);
+        // Consumers may retain an old instance while attaching a replacement.
+        host.style.color = 'red';
+        const restored = snapshot(host);
+        instance.replay?.();
+        instance.fire?.();
+        instance.resume();
+        if (pending.size) failures.push(`${name}: destroyed instance scheduled ${pending.size} jobs`);
+        instance.pause();
+        instance.destroy();
+        if (snapshot(host) !== restored) failures.push(`${name}: destroyed instance mutated restored DOM`);
+        if (host.getAnimations({ subtree: true }).length) failures.push(`${name}: destroyed instance started animations`);
+        pending.clear();
+        host.remove();
+      }
+    } finally {
+      [window.setTimeout, window.clearTimeout, window.requestAnimationFrame, window.cancelAnimationFrame] = originals;
+    }
+    return { failures, count: cases.length };
+  }, origin);
+  assert.deepEqual(terminal.failures, [], 'all Glitch renderer families must have terminal, idempotent teardown');
+  console.log(`Glitch terminal lifecycle OK (${browserName}): ${terminal.count} renderer cases; no restart, pending work or author-style loss.`);
   assert.deepEqual(errors, [], 'no browser runtime errors');
   console.log(`Glitch Wave OK (${browserName}): ${timing.checks} deterministic checks; real hover/scroll/re-entry, SVG motion, reduced motion and cleanup.`);
 } finally {
