@@ -89,8 +89,12 @@ function loadScript(src, integrity, timeoutMs = 12000) {
   return new Promise((resolve, reject) => {
     if (!src) { reject(new Error('Kineto: engine disabled')); return; }
     if (typeof document === 'undefined') { reject(new Error('Kineto: no document to load ' + src)); return; }
-    // Reuse a matching tag if the page (or a previous call) already added it.
-    const existing = Array.from(document.getElementsByTagName('script')).find((s) => s.src === src && s.dataset.ktFailed !== '1');
+    // Reuse a matching tag if the page (or a previous call) already added it —
+    // but only when it carries the same subresource integrity we would inject.
+    // Trusting an unverified tag for the same URL would silently drop the SRI
+    // guarantee, so such tags are ignored and a verified copy is requested.
+    const existing = Array.from(document.getElementsByTagName('script'))
+      .find((s) => s.src === src && s.dataset.ktFailed !== '1' && (!integrity || s.integrity === integrity));
     if (existing) {
       if (existing.dataset.ktLoaded === '1') { resolve(); return; }
       let timer = null;

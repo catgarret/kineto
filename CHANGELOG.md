@@ -5,6 +5,8 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Treat demo `?kt=` settings links as untrusted input: fields a module renders as HTML (Tooltip content/html, Cursor templates, Toast icon, Overflow Text items) are never serialized into or restored from a link, and resource URLs (Cursor images/sprites, Ambient source) restore only when they stay on the demo origin. A crafted link could previously execute script on the public demo; `tests/browser/share-link-policy.mjs` proves the payloads are inert while benign fields still restore.
+- Reuse a pre-existing engine `<script>` tag only when it carries the same SHA-384 integrity Kineto would inject, so an unverified tag for the GSAP/ScrollTrigger/Lenis URL can no longer bypass subresource integrity.
 - Make Glitch teardown terminal across text, image, CRT/VCR, and RGB Slice Burst renderers: prevent retained instances from restarting work or overwriting later edits, and restore owned image/host styles with their original priorities, opacity, and animation play state.
 - Record the Glitch correctness cost (~0.2 KiB UMD gzip); adjust only exceeded package, minified ESM, UMD raw, full-consumer and React ceilings while retaining runner variance, modular/Vue budgets and the 77-file package boundary.
 - Complete dedicated Reveal demo coverage with Blur, Rise, Soft, and Rotate comparisons, seven-language descriptions, settings/replay/share regressions, and a gate preventing any of the 23 public presets from losing its example; preserve runtime behavior and package budgets.
@@ -26,6 +28,8 @@
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 데모의 `?kt=` 설정 링크를 신뢰할 수 없는 입력으로 다룹니다. 모듈이 HTML로 렌더링하는 필드(Tooltip content/html, Cursor 템플릿, Toast icon, Overflow Text items)는 링크에 담지도 복원하지도 않고, 리소스 URL(Cursor 이미지·스프라이트, Ambient 소스)은 데모와 같은 origin일 때만 복원합니다. 이전에는 조작된 링크가 공개 데모에서 스크립트를 실행할 수 있었으며, `tests/browser/share-link-policy.mjs`가 페이로드 무력화와 일반 필드 복원을 함께 검사합니다.
+- 기존 엔진 `<script>` 태그는 Kineto가 주입할 SHA-384 integrity와 같은 값을 가진 경우에만 재사용합니다. 검증되지 않은 GSAP/ScrollTrigger/Lenis 태그로 subresource integrity를 우회할 수 없습니다.
 - Glitch 텍스트·이미지·CRT/VCR·RGB Slice Burst의 종료 후 재시작과 후속 편집 덮어쓰기를 막았습니다. 이미지·호스트의 소유 스타일을 원래 우선순위·투명도·애니메이션 재생 상태와 함께 복원합니다.
 - Glitch 수정 비용(UMD gzip 약 0.2KiB)을 기록하고 초과한 패키지·minified ESM·UMD raw·전체 소비자·React 상한만 조정했습니다. runner variance·모듈 조합/Vue 예산·77개 패키지 파일 범위는 유지합니다.
 - Blur·Rise·Soft·Rotate 비교 카드와 7개 언어 설명으로 Reveal 전용 데모 23개를 완성하고 설정·재생·공유 회귀 검사 및 예제 누락 방지 게이트를 추가했습니다. 런타임 동작과 패키지 예산은 유지합니다.

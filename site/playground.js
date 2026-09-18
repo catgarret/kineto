@@ -997,6 +997,38 @@
   // deliberately never serializes callbacks, selectors outside the demo, or
   // arbitrary DOM — opening a link is a deterministic option restore, not a
   // remote code execution channel.
+  //
+  // The URL is untrusted input, so two field classes never travel through it,
+  // in either direction (they are neither serialized nor restored):
+  // 1. SHARE_MARKUP_FIELDS — values the module injects as HTML (`innerHTML`).
+  //    A crafted link could otherwise execute script in every visitor's browser.
+  // 2. SHARE_ASSET_URL_FIELDS — resource URLs the module fetches. They restore
+  //    only when they stay on this demo's own origin, so a link cannot make a
+  //    visitor's browser request a third-party host.
+  // The local settings panel is unaffected: a visitor editing their own
+  // controls still has every field available.
+  const SHARE_MARKUP_FIELDS = Object.freeze({
+    tooltip: ['content', 'html'],
+    cursor: ['template', 'hoverTemplate'],
+    toast: ['icon'],
+    overflowText: ['items']
+  });
+  const SHARE_ASSET_URL_FIELDS = Object.freeze({
+    cursor: ['src', 'hoverSrc', 'clickImage', 'clickSprite'],
+    ambientMedia: ['ambientSrc']
+  });
+  const isSameOriginAssetUrl = (value) => {
+    const raw = String(value ?? '').trim();
+    if (!raw) return true;
+    try { return new URL(raw, window.location.href).origin === window.location.origin; }
+    catch (_error) { return false; }
+  };
+  // True when `module.key = value` may be carried by a share URL.
+  function isShareableOption(module, key, value) {
+    if ((SHARE_MARKUP_FIELDS[module] || []).includes(key)) return false;
+    if ((SHARE_ASSET_URL_FIELDS[module] || []).includes(key)) return isSameOriginAssetUrl(value);
+    return true;
+  }
   const SHARE_PARAM = 'kt';
   const encodeShare = (value) => {
     const bytes = new window.TextEncoder().encode(JSON.stringify(value));
@@ -1020,6 +1052,7 @@
       const actualKey = descriptor.kind === 'loader' && key === 'preset' ? 'type' : key;
       const value = current[actualKey];
       if (value === undefined || typeof value === 'function' || JSON.stringify(value) === JSON.stringify(baseline[actualKey])) return;
+      if (!isShareableOption(descriptor.module, key, value)) return;
       if (['string', 'number', 'boolean'].includes(typeof value)) out[key] = value;
     });
     return out;
@@ -1053,6 +1086,7 @@
       const allowed = new Set((FIELDS[descriptor.module] || []).map((field) => field[0]));
       Object.entries(values).forEach(([key, value]) => {
         if (!allowed.has(key) || !['string', 'number', 'boolean'].includes(typeof value)) return;
+        if (!isShareableOption(descriptor.module, key, value)) return;
         if (descriptor.kind === 'loader' || descriptor.kind === 'pageReveal' || descriptor.kind === 'pageTransition') {
           descriptor.options[descriptor.kind === 'loader' && key === 'preset' ? 'type' : key] = value;
         } else setOption(descriptor, key, value, typeof value === 'boolean' ? 'checkbox' : typeof value === 'number' ? 'range' : 'text');
@@ -3040,6 +3074,9 @@
   }
 
   window.KinetoPlayground = {
+    // Read-only view of the share-link policy so QA can assert which
+    // (module, key, value) triples a `?kt=` link may carry.
+    isShareableOption,
     setHelpLang(lang){
       HELP_LANG = HELP_SETS[lang] ? lang : 'en';
       UI_LANG = UI_SETS[lang] ? lang : 'en';

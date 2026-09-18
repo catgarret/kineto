@@ -26,6 +26,12 @@ assert.match(defaults.scrollTrigger, /gsap@3\.15\.0/, 'default ScrollTrigger URL
 assert.equal(defaults.lenis, 'https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js', 'default Lenis URL must match the audited immutable CDN asset');
 assert.equal(defaults.lenisIntegrity, 'sha384-jqpi9VmOdhyLoLURgjCn7EpnG9BbnHW57ibIZoeaIU+erWDH3k8fQQg0xH2ySjnw', 'default Lenis SRI must match the audited 1.3.26 bytes');
 
+// An unverified tag for the same engine URL (added by another script, or
+// injected) must not be trusted in place of the SRI-protected injection.
+const unverified = w.document.createElement('script');
+unverified.src = defaults.gsap;
+w.document.head.appendChild(unverified);
+
 // A GSAP-backed effect (reveal) with no engine on the page → CDN inject.
 // A non-GSAP effect (switch) on the same page → must init immediately.
 w.document.body.innerHTML = '<div data-kt-reveal="fade">hi</div><button data-kt-switch></button>';
@@ -34,6 +40,10 @@ await new Promise((r) => setTimeout(r, 30));
 
 const scriptSrcs = Array.from(w.document.getElementsByTagName('script')).map((s) => s.src);
 assert.ok(scriptSrcs.some((s) => /cdn\.jsdelivr\.net\/npm\/gsap.*gsap\.min\.js/.test(s)), 'scanning a GSAP effect with no engine present must inject the GSAP CDN <script>');
+const verifiedGsapTags = Array.from(w.document.querySelectorAll('script[data-kt-engine]')).filter((script) => script.src === defaults.gsap);
+assert.equal(verifiedGsapTags.length, 1, 'Kineto must inject its own SRI-protected GSAP tag instead of reusing the unverified one');
+assert.equal(verifiedGsapTags[0].integrity, defaults.gsapIntegrity, 'the injected GSAP tag must carry the audited integrity hash');
+assert.equal(unverified.dataset.ktLoaded, undefined, 'the unverified tag must not be adopted as a Kineto engine load');
 assert.ok(Array.from(w.document.querySelectorAll('script[data-kt-engine]')).every((script) => script.async), 'engine scripts must download asynchronously');
 assert.ok(Array.from(w.document.querySelectorAll('script[data-kt-engine]')).every((script) => script.integrity.startsWith('sha384-')), 'default CDN engines must declare SHA-384 subresource integrity');
 assert.ok(Array.from(w.document.querySelectorAll('script[data-kt-engine]')).every((script) => script.crossOrigin === 'anonymous'), 'integrity-protected engines must use anonymous CORS');

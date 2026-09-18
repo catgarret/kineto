@@ -41,7 +41,7 @@ function h(e, t, n = 12e3) {
 			i(/* @__PURE__ */ Error("Kineto: no document to load " + e));
 			return;
 		}
-		let a = Array.from(document.getElementsByTagName("script")).find((t) => t.src === e && t.dataset.ktFailed !== "1");
+		let a = Array.from(document.getElementsByTagName("script")).find((n) => n.src === e && n.dataset.ktFailed !== "1" && (!t || n.integrity === t));
 		if (a) {
 			if (a.dataset.ktLoaded === "1") {
 				r();

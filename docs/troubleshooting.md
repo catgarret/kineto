@@ -133,6 +133,23 @@ https://kineto.dongri.me/?kt=<encoded-settings>#mod-textReveal
 레이아웃 측정이 끝나면 자동으로 해시 위치를 다시 맞춥니다. 사용자가 그 전에 직접
 스크롤하면 자동 이동을 취소하므로, 링크를 다시 열어 확인하십시오.
 
+## 설정 URL을 열었는데 일부 옵션이 복원되지 않음
+
+`?kt=` 쿼리는 누구나 만들 수 있는 신뢰할 수 없는 입력입니다. 그래서 데모는
+두 종류의 필드를 링크에 담지도, 링크에서 복원하지도 않습니다.
+
+- 모듈이 HTML로 렌더링하는 값 — Tooltip `content`·`html`, Cursor `template`·
+  `hoverTemplate`, Toast `icon`, Overflow Text `items`. 링크 하나로 방문자
+  브라우저에서 스크립트가 실행되는 것을 막기 위한 정책입니다.
+- 모듈이 내려받는 리소스 URL — Cursor `src`·`hoverSrc`·`clickImage`·
+  `clickSprite`, Ambient Media `ambientSrc`. 데모와 같은 origin의 경로(예:
+  `./assets/…`)만 복원하고 외부 호스트 URL은 무시합니다.
+
+설정 패널에서 직접 값을 바꾸는 것은 제한하지 않습니다. 이런 값을 공유해야 하면
+복사한 HTML/JS 코드 탭을 함께 전달하십시오. 정책의 판정 함수는
+`window.KinetoPlayground.isShareableOption(module, key, value)`로 확인할 수
+있으며 `tests/browser/share-link-policy.mjs`가 회귀를 검사합니다.
+
 ## Scroll Shadows가 너무 진하거나 자연스럽지 않음
 
 `mode: 'shadow'`는 그림자를 덧칠하고, `mode: 'mask'`는 가장자리를 그라데이션으로
