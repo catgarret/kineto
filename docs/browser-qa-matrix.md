@@ -81,6 +81,14 @@ matrix가 모두 성공해야 하며, tag release도 같은 두 cross-browser ga
 회귀를 잡는 검사입니다. `test:browser:cross`에 등록된 모든 파일이 일반 CI와
 release의 Firefox/WebKit job에도 등록돼야 하는 정적 게이트를 함께 둡니다.
 
+`tests/browser/lazy-stylized.mjs`는 Lazy `dither`·`ascii`·`halftone`의 canvas
+픽셀을 직접 읽어 팔레트(정확히 paper·ink 두 색), `ditherType`·`inverted`의
+실제 픽셀 변화, `persist`의 영구 유지, 리빌의 원본 노출, `<video>` 프레임
+재렌더와 `pause()` 정지, `destroy()` 후 canvas·wrapper·style 잔존 여부를
+세 엔진에서 검사합니다. 애니메이션 이미지 프레임 진행과 canvas stream 프레임
+전달은 headless 빌드에 따라 동작하지 않을 수 있어, 원본 요소를 먼저 샘플해
+환경이 프레임을 진행시킬 때만 해당 단언을 적용하고 생략 사실을 로그에 남깁니다.
+
 `demo-polish`의 `mobile-hero-scene`은 세 엔진에서 모바일 폭의 touch 입력 후
 내려가기·올라가기 위치를 연속 측정합니다. 한 제스처로 시작한 이동이 여러
 프레임으로 감속하고 방향 반전·오버슈트 없이 정착해야 합니다. Chromium의

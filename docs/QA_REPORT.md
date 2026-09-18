@@ -3,6 +3,64 @@
 검증일: 2026-09-18
 대상: v0.9.9 공개 릴리스 `ba0bb4b` · 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-19 Unreleased 검증 (v0.10.0 후보)
+
+v0.9.9 배포 직후 같은 클라우드 클론(Node 22.22 · npm 10.9 · Chromium 141 · Playwright
+Firefox 153 · WebKit 26.5)에서 Lazy 스타일화 미디어 variant와 데모 설정창 결함 수정을
+검증했습니다. 원격 CI(Node 24 · 최신 Playwright 세 엔진)가 최종 권위입니다.
+
+### Lazy `dither`·`ascii`·`halftone` (MK-LAZY-008)
+
+세 variant는 `src/modules/lazy/stylizedMedia.js` 하나의 canvas rasterizer를 공유하고,
+`src/modules/lazy.js`의 `<img>`·`<video>` 경로는 `readStylizedSettings()`·
+`createStylizedCanvasLayer()`·`stylizedRevealFrame()`을 함께 써서 옵션 읽기·레이어·리빌
+타임라인이 한 곳에만 있습니다. `tests/browser/lazy-stylized.mjs`가 Chromium·Firefox·WebKit
+에서 다음을 실제 픽셀로 확인했습니다: persist 2색 디더가 정확히 paper·ink 두 색만 칠함,
+`inverted`가 잉크 비율을 뒤집음, `ditherType`·`inverted`가 렌더 결과를 바꿈, ASCII·halftone이
+paper 위에 글리프·점을 그림, 오차 확산+`originalColors`가 원본 색을 유지함, 원본 미디어가
+canvas 아래에 남아 있음, 리빌이 레이어를 제거해 원본을 노출하고 `onProgress`가 1로 끝남,
+canvas stream `<video>`가 재생 중 다시 그려지고 `pause()`에서 멈춤, `destroy()` 뒤 인스턴스·
+wrapper·canvas 0개와 inline style 복원. 애니메이션 이미지 프레임 진행과 canvas stream 프레임
+전달은 headless 빌드에 따라 없을 수 있어 원본 요소를 먼저 샘플해 환경이 진행시킬 때만 단언하고
+생략 사실을 로그에 남깁니다(이 컨테이너의 세 엔진 모두 GIF 프레임을 진행시키지 않았고, WebKit은
+stream 프레임도 전달하지 않았습니다). `tests/lazy-stylized-media.mjs`는 threshold matrix·옵션
+정규화·cover 기하·색 파싱 fallback·가짜 2D context 페인팅을 Node에서 고정합니다. 데모 카드 4개는
+Chromium에서 리빌 중간·완료 화면을 캡처해 확인했습니다(영상 카드는 이 컨테이너의 Chromium이
+H.264를 재생하지 못해 비어 보이며, stream 기반 검사로 대신 검증).
+
+### 설정창 variant gating (데모 결함 수정)
+
+기준선 `9b9449e`에서 CRT 카드의 설정창을 열면 Lazy 컨트롤 24개가 모두 보였고 첫 옵션 변경
+뒤에만 숨겨졌습니다(`syncVisibility`가 변경 이벤트에서만 실행). `fieldIsVisible()` 하나가 초기
+빌드와 변경 시 모두 쓰이도록 고쳤고 모든 컨트롤이 숨겨진 그룹은 헤더를 그리지 않습니다.
+`drawer-layout` 38개 검사(신규 2개: CRT는 duration만 보이고 stepDuration·waveAmplitude·
+cellSize·ditherType은 숨김, ASCII 카드는 authored cellSize 10·persist·paper `#0b1220`을 보이고
+ditherType·halftoneShape는 숨김)가 통과합니다. Demo control QA는 664/664 컨트롤을 유지하며
+conditional-only 집계가 20→38로 늘어난 것은 gating이 열림 시점에 적용된 결과입니다.
+
+### 계약·문서·데모
+
+기능 계약 1.4.0(`media` 능력, 공개 옵션 12개·기본값 선언, variantOptions 파생), 요구사항 3.2.0
+(49개), variant 감사 81개(전용 demo 74/81), 설정 도움말 425 필드×7개 언어, 카드 설명 173개,
+README 7개 언어 표, module-reference 재생성, 217개 playground. `derive-variant-options --check`,
+`sync:options`, `docs:contract`, `generate-module-metadata --check`가 모두 현재 상태입니다.
+
+### 측정과 예산
+
+Node 22 기준 readable ESM 540.2/144.2KB, min ESM 424.5/128.7KB, UMD 422.7/128.1KB(raw/gzip),
+release package 549.9KB packed / 1812.0KB unpacked / 77 files, Vite full 143.2KB·React 147.1KB·
+Vue 148.2KB, Rolldown full 142.9KB·React 147.3KB·Vue 148.7KB. 스타일화 렌더러의 실측 비용
+(약 13KB raw / 4.7KB gzip)만 반영해 JS 번들·패키지·full/React/Vue 소비자 상한을 다음 KB로
+올렸고 runner variance·CSS·모듈형 core 예산·77개 파일은 유지합니다. `tests/deps-boundary.mjs`의
+UMD 상한은 `scripts/bundle-size.mjs`의 값을 읽어 중복 상수를 없앴습니다.
+
+### 이 환경에서 검증하지 못한 항목
+
+`test:demo`의 animated-media 단계는 v0.9.8·v0.9.9 기준선과 동일하게 이 컨테이너의 Chromium 141
+에서 실패해 환경 요인으로 분류했습니다. 그 외 lint·build·Node suite 전체·Chromium 브라우저 레인
+20개 suite·`npm pack --dry-run`이 통과했고, Lazy 스타일화 suite는 Firefox·WebKit에서도 통과했습니다.
+실기기·공개 배포·원격 CI는 v0.10.0 배포 시 확인합니다.
+
 ## 2026-09-18 Unreleased 검증
 
 소유자 체크아웃과 동기화한 클라우드 클론(Node 22.22 · npm 10.9 · Chromium 141)에서

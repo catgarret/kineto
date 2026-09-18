@@ -43,6 +43,25 @@ block and include them only after explicit owner approval.
 Use `fix:`, `feat:`, `docs:`, `test:`, `refactor:`, `perf:`, `build:`,
 `ci:`, or `release:` prefixes. Do not push ordinary work unless the user asks.
 
+Two separate approvals, because they have different consequences:
+
+- **Push** (`git push origin main`): starts CI and, when CI passes, the Pages
+  workflow redeploys the public demo site. Push only when the user asks for a
+  push, a deploy of the demo, or a release.
+- **Release** (`npm run release:ship -- v<version>`): also pushes the annotated
+  tag, which publishes the npm package and creates the GitHub Release. Only an
+  explicit "release/ship/publish" request covers this; a push request does not.
+
+Demo cards added to `demo/index.html` carry `data-demo-no-legacy-share` so the
+historical `?kt=` v1 share ordinals of every existing card stay stable; the new
+card still gets a semantic v2 share key. Run `npm run test:demo` to confirm.
+
+Browser suites locate a local Chromium through `KT_CHROME=<path>` when the
+installed Playwright revision differs from the expected one (`MK_CHROMIUM` is
+accepted as a legacy alias). Container Chromium builds without proprietary
+codecs or animated-image decoding fail the animated-media QA steps only; record
+such environment-only failures instead of weakening the checks.
+
 ## Release policy
 
 A normal code request is not permission to publish. Only release when the user

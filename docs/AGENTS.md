@@ -60,4 +60,14 @@ npm run ci
 이 명령이 통과하고, 실제 데모에서 요구된 시각 동작이 확인되며, 반복 생성·재생·파괴 후 active instance가 0이어야 완료입니다. 배포 전에는 `npm run verify`로 의존성 보안 감사까지 확인합니다.
 
 배포는 구현 작업과 분리합니다. 소유자가 승인하기 전에는 tag, push,
-`npm publish`, GitHub Release 생성을 실행하지 않습니다.
+`npm publish`, GitHub Release 생성을 실행하지 않습니다. 승인은 두 단계로
+구분합니다. `main` push는 CI 통과 시 공개 데모 사이트를 자동 재배포하므로
+“push·데모 배포·릴리스” 요청이 있을 때만 하고, `npm run release:ship`은 tag
+push로 npm 게시와 GitHub Release까지 이어지므로 명시적 “릴리스” 요청이 있을
+때만 실행합니다. push 요청이 릴리스 승인을 뜻하지는 않습니다.
+
+새 데모 카드는 `data-demo-no-legacy-share`를 붙여 기존 카드의 `?kt=` v1 공유
+순번을 바꾸지 않습니다(카드는 semantic v2 키로 공유됩니다). 로컬 Chromium
+지정은 `KT_CHROME` 하나로 통일하며(`MK_CHROMIUM`은 별칭), 코덱·애니메이션
+이미지 디코딩이 없는 컨테이너 Chromium의 animated-media 실패는 환경 실패로
+기록하고 검사를 완화하지 않습니다.

@@ -9,7 +9,10 @@ Important defaults:
 - Finish implementation tasks through documentation, bilingual changelog,
   integrated QA, and a scoped Git commit.
 - Preserve unrelated user changes in a dirty worktree.
-- Do not publish or push unless the user explicitly asks for a release.
+- Do not push unless the user explicitly asks for a push, a demo deploy, or a
+  release: a push to `main` redeploys the public demo site through CI.
+- Do not run `release:ship` (tag → npm publish → GitHub Release) unless the
+  user explicitly asks for a release; a push request alone is not enough.
 - When releasing, use `docs/RELEASING.md` and the repository scripts. GitHub
   Release notes must show English first and Korean second.
 

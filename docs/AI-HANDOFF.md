@@ -150,12 +150,32 @@ are byte-identical (`f9104ab4…10cd`), provenance points at release commit
 `ba0bb4bcfe51a3fc6919149f7ac1191da4d7a93d`, and kineto.dongri.me served that
 build's 16 first-party assets byte-matched at 15:18 UTC. Backup parity is
 recorded separately once the 15-minute sync catches up. Physical-device QA and
-external case studies remain open; the next batch (Lazy `dither`/`ascii`/
-`halftone` on a shared stylized-media renderer) targets v0.10.0.
+external case studies remain open.
 
-Environment note for agents: browser tests locate Chromium through
-`KT_CHROME` (most suites) and `MK_CHROMIUM` (demo/framework/browser-smoke);
-set both when the installed Playwright browser revision differs.
+The 2026-09-19 Unreleased batch (targeting v0.10.0) adds the Lazy stylized
+media variants `dither` / `ascii` / `halftone` on one shared canvas rasterizer
+(`src/modules/lazy/stylizedMedia.js`; option reading and canvas layering are
+shared by the `<img>` and `<video>` paths through `readStylizedSettings()` /
+`createStylizedCanvasLayer()` in `src/modules/lazy.js`). Contract: owner
+requirement MK-LAZY-008 (49 total, requirements 3.2.0), feature contract 1.4.0
+with a new `media` variant capability, twelve public options with declared
+defaults, and derived `variantOptions`. Demo: four cards (217 playgrounds,
+74/81 dedicated high-risk variants) plus seven-language copy and tooltips; the
+drawer now applies variant gating at open (a pre-existing bug fixed and
+regression-tested in `drawer-layout`). Tests: `tests/browser/lazy-stylized.mjs`
+(Chromium/Firefox/WebKit, environment-aware for headless builds that do not
+advance GIF frames or deliver canvas-stream video frames) is in `test:browser`
+and both cross-browser lanes, plus `tests/lazy-stylized-media.mjs` for the
+rasterizer's pure parts. Budgets absorb the measured ~13 KB raw / 4.7 KB gzip
+cost only. Guides changed: push vs release approvals, `data-demo-no-legacy-share`,
+`KT_CHROME` unification, real-usage evidence definition and variant→module
+promotion criteria in ROADMAP §3.
+
+Environment note for agents: every browser suite locates a local Chromium
+through `KT_CHROME` (`MK_CHROMIUM` remains a legacy alias for the demo /
+animated-media / browser-smoke / nav-parity suites); set it when the installed
+Playwright browser revision differs. `npx playwright install firefox webkit`
+downloads the other two engines for `KT_BROWSER=firefox|webkit` runs.
 
 Always verify this summary against Git history because later commits supersede
 it.

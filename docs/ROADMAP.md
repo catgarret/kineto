@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.9.9 · 작성일: 2026-08-02 · 검토: 2026-09-18
+> 기준 버전: v0.9.9 · 작성일: 2026-08-02 · 검토: 2026-09-19
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -25,6 +25,13 @@ v0.9.9에서 공개 데모의 `?kt=` 공유 링크 XSS를 차단하고, SRI 검�
 메이저 고정 갱신과 Glitch 종료 안전성 수정을 포함합니다. 로컬 검증은
 [QA 보고서](QA_REPORT.md)의 2026-09-18 항목에, 원격 CI·Release·npm 게시·canonical 배포
 증거는 [QA 보고서 v0.9.9](QA_REPORT.md#v099)에 기록했습니다(backup parity는 동기화 후 별도).
+
+v0.9.9 이후 Unreleased 묶음은 Lazy에 `dither`·`ascii`·`halftone`을 추가했습니다. 세 variant는
+`src/modules/lazy/stylizedMedia.js` 하나의 canvas rasterizer를 공유하고 `<img>`(GIF·APNG·WebP 포함)와
+`<video>`에 리빌 또는 `persist` 영구 필터로 적용됩니다. 새 모듈을 늘리지 않고 기존 모듈의 variant로
+효과를 도입하는 경로(§3 ‘하지 않을 일’의 승격 기준)를 처음 적용한 사례이며, 설정창이 열리는 순간부터
+variant 옵션 gating을 적용하도록 데모의 오래된 결함도 함께 고쳤습니다. 원격 CI·배포 증거는 v0.10.0 배포
+후 QA 보고서에 기록합니다.
 
 ## 1. 결론
 
@@ -86,13 +93,15 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 - 한 기능, 두 진입점: HTML 속성과 JavaScript API가 같은 옵션·동작을 사용합니다.
 - 작은 기본 엔진, 선택적 외부 엔진: transform·opacity 중심의 기본 동작은 브라우저 API로 처리하고 복잡한 timeline은 GSAP 등에 위임합니다.
 - 기능 추가보다 계약·테스트·데모·문서·삭제 가능한 lifecycle을 먼저 완성합니다.
+- **정본 문서가 AI 작업의 디자인 시스템입니다.** 계약(`kineto.features.json`·`kineto.requirements.json`)과 `AGENTS.md`·`docs/AI-HANDOFF.md`가 사람과 AI 모두의 유일한 기준이며, 파생 산출물(variantOptions·PUBLIC_DEFAULTS·module-reference)은 손으로 고치지 않고 스크립트로 다시 만듭니다. 정본이 없으면 AI는 매번 비슷하지만 조금씩 다른 구현을 만들어 내므로, 새 규칙은 코드 주석이 아니라 정본 문서에 먼저 적습니다.
+- **데모는 AI·사람이 결과를 검수하고 반복 요청하는 미리보기 화면입니다.** 한 모듈의 모든 공개 variant가 같은 소재로 한눈에 비교되고, 설정창은 열리는 순간부터 현재 variant가 실제로 읽는 옵션만 보여야 합니다. 재현 가능한 seed·Replay·공유 링크는 AI가 만든 결과를 100번 피드백하는 작업을 가능하게 하는 도구이므로 새 효과에도 항상 함께 제공합니다.
 
 ### 하지 않을 일
 
 - Motion의 모든 CSS 값·gesture·layout API를 복제하지 않습니다.
 - Swiper의 방대한 플러그인 목록을 따라 모듈 수를 늘리지 않습니다.
 - 기존 `flip`과 겹치는 새 `layout` 모듈을 만들지 않습니다.
-- 실제 사용 근거 없이 52개 공개 모듈을 더 늘리지 않습니다.
+- 실제 사용 근거 없이 52개 공개 모듈을 더 늘리지 않습니다. **‘실제 사용 근거’는 다음 셋 중 하나가 확인될 때만 인정합니다.** ① 데모가 아닌 외부 프로젝트 1건 이상이 그 기능을 사용하고 있음(공개 URL 또는 공개 동의를 받은 사례), ② GitHub issue·discussion에서 구체적 용도와 함께 요청됨, ③ 기존 variant의 사용이 원래 모듈의 목적(예: Lazy의 ‘로딩 중 노출’)과 무관하게 지속됨(`persist`처럼 로딩과 상관없는 옵션이 주 사용법이 됨). 이 근거가 없는 새 효과는 **새 모듈이 아니라 기존 모듈의 variant**로 먼저 들어가며, 렌더러는 `src/modules/<module>/` 하위 공용 파일로 두어 나중에 독립 모듈로 승격해도 구현을 옮기기만 하면 되게 합니다. 승격은 위 ①~③ 중 두 가지가 확인되고 단기 중단 기준(gzip 3KB·모듈형 분리)을 통과할 때 검토합니다. 2026-09-19의 Lazy `dither`·`ascii`·`halftone`이 이 경로의 첫 적용입니다.
 - 생태계 지표를 만들기 위해 품질이 낮은 예제·홍보성 패키지·의존성을 추가하지 않습니다.
 - **서로 구분되지 않는 variant를 개수 유지 목적으로 남겨두지 않습니다.** 나란히 재생했을 때 어느 쪽인지 말할 수 없으면 하나로 통합하고, 빈 자리는 다른 메커니즘으로 채우거나 비웁니다. 판정 기준은 “옵션이 다르다”가 아니라 “움직임의 메커니즘이 다르다”입니다.
 - **측정 대상이 레이아웃됐는지 확인하지 않는 브라우저 assertion을 추가하지 않습니다.** rect가 0이거나 computed value가 `repeat(`/`auto`/`none` 같은 미해석 문자열이면 그 시점의 측정은 버립니다.
@@ -444,6 +453,8 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 
 - 후속: 일반 native Reveal의 반복 경계 callback 범위를 기존 시각 계약을 유지하며 검토. Wave의 선택적 `colors`·`blendMode`는 세 엔진 픽셀 검사와 함께 구현했습니다. 일반 native pause/resume는 Web Animations 경로에 보강했으며, Unreleased 작업은 v0.9.8 배포 완료 근거에 합산하지 않음.
 - 후속: 전용 데모가 없는 variant 중 실제 적용·회귀 근거가 있는 항목의 비교 화면과 브라우저 검증 확대.
+- 후속(증거 게이트): 한 모듈의 모든 공개 variant를 같은 소재로 한 화면에 나열하는 비교 보기(예: Lazy 16개를 같은 사진으로). 비용은 데모 전용 코드이며 런타임 변경이 없을 때만 진행하고, 전용 카드 7개 잔여분을 먼저 채울지 비교 보기로 대체할지는 실제 회귀 신호로 결정합니다.
+- 후속(증거 게이트): 스타일화 렌더러의 `reveal`·`glitch` 등 다른 미디어 모듈 재사용은 §3 승격 기준 ①~③ 중 하나가 확인될 때 검토합니다. 그 전까지는 Lazy variant와 `persist`가 유일한 진입점입니다.
 - 외부 증거 필요: 실제 iOS Safari·Android Chrome·스크린리더 검사, 운영 앱의 장기 성능 측정, 공개 동의를 받은 외부 사용 사례 3개.
 - 증거 확보 후 결정: FLIP shared layout과 States·Presence 추가 확장. 현재 자동 검사나 데모를 외부 사용 증거로 집계하지 않습니다.
 
@@ -619,6 +630,10 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 159. 완료(Unreleased): Reveal Fade Down/Left/Right·Slide Down/Right 전용 비교 카드 5개와 7개 언어 설명 추가. 기존 방향을 유지하며 기본 시작 위치·픽셀/자기 크기 이동량을 구분. 설정·복사·Replay·공유·desktop/390px·Reset 검사를 19개 비교 카드로 확대. 209개 playground, 전용 고위험 demo 67/78. Node 24 전체 CI 통과, 런타임/번들 예산 변경 없음
 
 160. 완료(Unreleased): Reveal Blur·Rise·Soft·Rotate 전용 비교 카드와 7개 언어 설명을 추가해 23/23 예제 완성. 공개 프리셋의 전용 예제 누락을 막는 집합 검사, Rise·Rotate 실제 시작 크기/각도 단언 추가. 213개 playground·652개 고유 컨트롤·전용 고위험 demo 71/78. Node 24 전체 CI 및 Firefox/WebKit Reveal 검사 통과. 런타임/번들 예산 유지, 남은 전용 예제 7개와 실기기 검증은 별도
+
+161. 완료(Unreleased, 2026-09-19): Lazy `dither`(Bayer 2×2/4×4/8×8·seeded random·Floyd–Steinberg·Atkinson)·`ascii`(글리프 밀도 ramp)·`halftone`(점·사각·선) 추가. `src/modules/lazy/stylizedMedia.js` 공용 rasterizer, 셀 축소 70%→크로스페이드 30% 리빌, `persist` 영구 필터, GIF/APNG/WebP 연속 재렌더, `<video>` 프레임 단위 적용과 pause/resume/destroy 복원. 소유자 요구사항 MK-LAZY-008(49개), 기능 계약 1.4.0(variant `media` 능력 추가), variantOptions 파생, 7개 언어 도움말 12개, 데모 카드 4개(217개 playground)·전용 고위험 demo 74/81. Chromium·Firefox·WebKit 픽셀 검사와 Node 단위 검사 추가. 측정 비용(약 13KB raw / 4.7KB gzip)만큼 번들·패키지·소비자 예산 조정
+162. 완료(Unreleased, 2026-09-19): 설정창이 열리는 순간부터 variant 옵션 gating을 적용(이전에는 첫 옵션 변경 뒤에만 숨겨져 CRT 카드가 Lazy 옵션 24개를 모두 노출). 빈 그룹 헤더 숨김, drawer-layout 회귀 검사 2건. Lazy `fade`와 스타일화 variant는 `<video>`에서도 제공되도록 `media` 능력으로 선언
+163. 완료(Unreleased, 2026-09-19): 가이드 정비 — 실사용 근거의 정의와 variant→모듈 승격 기준, 정본 문서·미리보기 원칙(§3), 새 데모 카드의 `data-demo-no-legacy-share` 규칙, 로컬 Chromium 지정 변수 `KT_CHROME` 통일(`MK_CHROMIUM`은 별칭), `push`와 `release`의 승인 구분을 `AGENTS.md`·`CLAUDE.md`·`docs/AGENTS.md`에 명시
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 
