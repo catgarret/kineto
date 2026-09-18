@@ -287,6 +287,25 @@ const radialFields=await pg.evaluate(()=>{
 ck('radial demo offers only the compatible radial preset', radialFields.presets.length===1&&radialFields.presets[0]==='radial', radialFields.presets.join(','));
 ck('radial choices contain only supported align/loop values', radialFields.aligns.join(',')==='center,edge'&&radialFields.loops.join(',')==='off,infinite', JSON.stringify(radialFields));
 ck('radial hides track-only controls', radialFields.controlsHidden===false&&radialFields.perViewHidden===true&&radialFields.axisHidden===true, JSON.stringify(radialFields));
+// Variant gating must already hold when a drawer OPENS, not only after the
+// first edit: before this check the CRT card opened with every Lazy option
+// (pixelate steps, wave amplitude, ...) and hid them on the first change.
+await openCard('CRT Power-on');
+const crtFields=await pg.evaluate(()=>{
+  const sheet=document.querySelector('.kt-drawer-sheet');
+  const body=[...sheet.children].find((node)=>node.classList.contains('kt-playground__body')&&!node.hidden);
+  const hidden=(key)=>body.querySelector(`.kt-playground__field[data-module="lazy"][data-key="${key}"]`)?.hidden;
+  return {preset:body.querySelector('[data-module="lazy"][data-key="preset"] select')?.value,duration:hidden('duration'),stepDuration:hidden('stepDuration'),waveAmplitude:hidden('waveAmplitude'),cellSize:hidden('cellSize'),ditherType:hidden('ditherType')};
+});
+ck('lazy drawer opens with only the current variant\'s options', crtFields.preset==='crt'&&crtFields.duration===false&&crtFields.stepDuration===true&&crtFields.waveAmplitude===true&&crtFields.cellSize===true&&crtFields.ditherType===true, JSON.stringify(crtFields));
+await openCard('ASCII — Persist');
+const asciiFields=await pg.evaluate(()=>{
+  const sheet=document.querySelector('.kt-drawer-sheet');
+  const body=[...sheet.children].find((node)=>node.classList.contains('kt-playground__body')&&!node.hidden);
+  const field=(key)=>body.querySelector(`.kt-playground__field[data-module="lazy"][data-key="${key}"]`);
+  return {preset:field('preset')?.querySelector('select')?.value,cellSize:field('cellSize')?.querySelector('input')?.value,persist:field('persist')?.querySelector('input')?.checked,asciiChars:field('asciiChars')?.hidden,asciiFont:field('asciiFont')?.hidden,ditherType:field('ditherType')?.hidden,halftoneShape:field('halftoneShape')?.hidden,paperColor:field('paperColor')?.querySelector('input[type="color"]')?.value};
+});
+ck('ascii drawer shows the authored stylized options and hides dither/halftone-only ones', asciiFields.preset==='ascii'&&asciiFields.cellSize==='10'&&asciiFields.persist===true&&asciiFields.asciiChars===false&&asciiFields.asciiFont===false&&asciiFields.ditherType===true&&asciiFields.halftoneShape===true&&asciiFields.paperColor==='#0b1220', JSON.stringify(asciiFields));
 const sh=await pg.$('.kt-drawer-sheet'); if(sh) await sh.screenshot({path:path.join(root,'tests/browser/shots/drawer-tetris.png')});
 await br.close(); server.close();
 console.log(`\n===== DRAWER LAYOUT: ${pass} passed, ${fail} failed =====`); process.exit(fail?1:0);

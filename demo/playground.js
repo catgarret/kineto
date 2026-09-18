@@ -1496,6 +1496,23 @@
 
 
 
+  // The single answer to "should this field be shown for the options as they
+  // are right now": the module's WHEN cross-option dependency ("show tileColor
+  // when clockStyle is flip") plus the contract-derived variant gating (an
+  // option the current variant never reads stays hidden). Both the initial
+  // panel build and every later option change go through this one function,
+  // so the drawer never opens with controls the variant ignores and then
+  // hides them on the first edit.
+  function fieldIsVisible(descriptor, key, currentOptions) {
+    const rule = WHEN[descriptor.module]?.[key];
+    let show = true;
+    try { show = !rule || rule(currentOptions); } catch (_e) { show = true; }
+    if (!show) return false;
+    const variant = currentVariant(descriptor.module, currentOptions);
+    if (variant && !VARIANT_KEYS_ORDER.includes(key)) return variantReads(descriptor.module, variant, key);
+    return true;
+  }
+
   function syncVisibility(host, descriptors) {
     const panel = host.querySelector(':scope > .kt-playground');
     const body = panel?.__mkBody || panel;
@@ -1511,18 +1528,7 @@
               ...descriptorOptions(descriptor)
             };
       body.querySelectorAll(`[data-module="${descriptor.module}"][data-key]`).forEach((field) => {
-        const rule = WHEN[descriptor.module]?.[field.dataset.key];
-        let show = true;
-        try { show = !rule || rule(currentOptions); } catch (_e) { show = true; }
-        // Contract-derived variant gating runs in addition to the WHEN rules, which
-        // now only carry cross-option dependencies ("show tileColor when
-        // clockStyle is flip") rather than per-variant support.
-        if (show) {
-          const variant = currentVariant(descriptor.module, currentOptions);
-          if (variant && !VARIANT_KEYS_ORDER.includes(field.dataset.key)) {
-            show = variantReads(descriptor.module, variant, field.dataset.key);
-          }
-        }
+        const show = fieldIsVisible(descriptor, field.dataset.key, currentOptions);
         const choiceRule = CHOICE_WHEN[descriptor.module]?.[field.dataset.key];
         const select = field.querySelector('select[data-option]');
         if (choiceRule && select) {
@@ -2300,11 +2306,13 @@
           field.dataset.key = definition[0];
           field.dataset.label = definition[1];
           field.dataset.type = definition[2];
-          const rule = WHEN[descriptor.module]?.[definition[0]];
-          try { field.hidden = !!rule && !rule(currentOptions); } catch (_e) { field.hidden = false; }
+          field.hidden = !fieldIsVisible(descriptor, definition[0], currentOptions);
           controls.appendChild(field);
         });
         fieldset.append(legend, controls); groups.appendChild(fieldset);
+        // A group whose every field is gated off would render as an empty
+        // header; keep it out until an option change brings a field back.
+        fieldset.hidden = !controls.querySelector('.kt-playground__field:not([hidden])');
       });
     });
     syncGroupLayout(groups);
