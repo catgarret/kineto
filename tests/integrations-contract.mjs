@@ -23,6 +23,8 @@ const pkg = JSON.parse(read('package.json'));
 
 // 1. Top-level shape follows the schema's required/allowed keys (a light
 //    structural check — the schema file is the documented contract).
+//    `deprecations` is required rather than optional: a coding agent should be
+//    able to read it without a guard and learn what NOT to generate.
 assert.deepEqual(Object.keys(integrations).filter((key) => key !== '$schema').sort(), schema.required.slice().sort(), 'top-level keys must match the schema');
 assert.match(integrations.integrationsVersion, /^\d+\.\d+\.\d+$/);
 assert.equal(integrations.libraryVersion, pkg.version, 'integrations map must track the package version');
@@ -55,6 +57,30 @@ for (const [id, ecosystem] of Object.entries(integrations.ecosystems)) {
   for (const example of ecosystem.examples || []) {
     assert.ok(fs.existsSync(path.join(root, example.path)), `${id}.examples: ${example.path} is missing`);
     if (example.test) assert.ok(fs.existsSync(path.join(root, example.test)), `${id}.examples: ${example.test} is missing`);
+  }
+}
+
+// 2b. Deprecations name markup that still resolves to a public module, and a
+//     replacement that does too — otherwise the migration advice sends agents
+//     somewhere that does not exist.
+const moduleAttributes = new Set(features.modules.map((module) => module.attribute));
+const attributeOf = (markup) => (markup.match(/^(data-kt-[a-z-]+)/) || [])[1];
+for (const entry of integrations.deprecations) {
+  assert.ok(moduleAttributes.has(attributeOf(entry.use)), `deprecated markup names an unknown attribute: ${entry.use}`);
+  assert.ok(moduleAttributes.has(attributeOf(entry.instead)), `deprecation replacement names an unknown attribute: ${entry.instead}`);
+  assert.notEqual(entry.use, entry.instead, 'a deprecation must point somewhere else');
+  assert.ok(entry.why.length > 20, `deprecation ${entry.use} needs a reason an agent can act on`);
+}
+// The feature contract is the canonical list; the map carries the prose. Every
+// variant the contract deprecates must have advice here, or an agent reading
+// only the map would keep generating it.
+const documented = new Set(integrations.deprecations.map((entry) => entry.use));
+for (const module of features.modules) {
+  for (const variant of module.deprecatedVariants || []) {
+    assert.ok(
+      documented.has(`${module.attribute}="${variant}"`),
+      `kineto.features.json deprecates ${module.name}.${variant} but kineto.integrations.json gives agents no replacement for it`
+    );
   }
 }
 
@@ -144,4 +170,4 @@ for (const file of ['README.md', 'AI-PROMPT-GUIDE.md', 'examples/react/README.md
   assert.doesNotMatch(read(file), /from ['"]kineto(\/|['"])|npm install kineto\b|import ['"]kineto\//, `${file} still references the unscoped "kineto" package`);
 }
 
-console.log(`integrations-contract OK — ${ecosystemIds.length} ecosystems, ${integrations.intents.length} intents, ${recipeCount} recipes validated against ${features.moduleCount} modules; ${used.size} modules covered (${uncovered.length} without an intent: ${uncovered.join(', ') || 'none'}); generated docs, AI rules, llms.txt and the MCP contract copies are current.`);
+console.log(`integrations-contract OK — ${ecosystemIds.length} ecosystems, ${integrations.intents.length} intents, ${integrations.deprecations.length} deprecations, ${recipeCount} recipes validated against ${features.moduleCount} modules; ${used.size} modules covered (${uncovered.length} without an intent: ${uncovered.join(', ') || 'none'}); generated docs, AI rules, llms.txt and the MCP contract copies are current.`);

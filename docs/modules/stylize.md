@@ -115,7 +115,25 @@ const stylized = Kineto.stylize('#hero', { effect: 'dither', mode: 'reveal', tri
 stylized.replay();
 ```
 
-## 색
+## 색과 디자인 토큰
+
+`paperColor`·`inkColor`·`accentColor`는 **CSS 사용자 정의 속성을 그대로 받습니다.**
+디자인 시스템의 토큰을 hex로 베껴 적지 말고 그대로 가리키세요.
+
+```html
+<img data-kt-stylize="dither"
+     data-kt-paper-color="var(--surface)"
+     data-kt-ink-color="var(--fg, #111)"
+     src="photo.webp" alt="…">
+```
+
+토큰은 **효과가 붙은 요소 기준**으로 읽습니다. 섹션이 토큰을 덮어써 테마를
+바꾸면 그 안의 효과도 같은 테마를 따라갑니다. 정의되지 않은 토큰은 CSS와 똑같이
+`var(--x, 폴백)`의 폴백을 씁니다.
+
+> 색은 인스턴스를 만들 때 한 번 읽습니다. 런타임에 테마를 토글하는 페이지라면
+> 해당 요소를 `Kineto.destroyModule(el, 'stylize')` 후 다시 만들면 새 토큰으로
+> 그려집니다.
 
 `paperColor`와 `inkColor`는 밝은 부분과 어두운 부분에 칠할 두 색이고,
 `accentColor`를 주면 중간 톤에 쓰이는 세 번째 색이 됩니다. `originalColors`를

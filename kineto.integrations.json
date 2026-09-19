@@ -752,7 +752,13 @@
         "아스키",
         "망점",
         "질감",
-        "필터"
+        "필터",
+        "living texture",
+        "animated grain",
+        "interactive image",
+        "hover reveal image",
+        "살아있는",
+        "인터랙션"
       ],
       "figma": [
         "dither",
@@ -785,6 +791,35 @@
         },
         {
           "module": "stylize",
+          "variant": "dither",
+          "options": {
+            "contrast": 1.4,
+            "cellSize": 3,
+            "motion": "drift"
+          },
+          "why": "A dither that stays on the image while the grain crawls — alive without moving the layout."
+        },
+        {
+          "module": "stylize",
+          "variant": "ascii",
+          "options": {
+            "motion": "shuffle",
+            "motionAmount": 0.35
+          },
+          "why": "ASCII that keeps re-typing itself: the living-terminal look for a hero or an about page."
+        },
+        {
+          "module": "stylize",
+          "variant": "dither",
+          "options": {
+            "cellSize": 8,
+            "pointer": "lens",
+            "pointerCellSize": 2
+          },
+          "why": "The picture sharpens only under the pointer — an interaction, not just a filter."
+        },
+        {
+          "module": "stylize",
           "variant": "halftone",
           "why": "Permanent halftone print look on an image or video."
         },
@@ -802,8 +837,10 @@
       "provideWhenLibraryHas": null,
       "libraryEquivalents": {},
       "notes": [
+        "Raise `contrast` (1.3-1.6) before anything else: a photograph sits in the middle of the tonal range and dithers to grey mush at the default 1.",
         "Stylize redraws the pixels; it does not load anything. Pair it with the `image-loading` intent when the picture also needs lazy loading — both attributes can sit on one <img>.",
-        "A source the canvas cannot read back (cross-origin without CORS) simply shows unstyled, so the texture is never a hard dependency."
+        "A source the canvas cannot read back (cross-origin without CORS) simply shows unstyled, so the texture is never a hard dependency.",
+        "`motion` (drift/shuffle/scan/flow/pulse) keeps the look alive on a still picture and `pointer` (lens/spotlight/ripple) makes it react; both redraw every frame, so lower `renderFps` when several are on one screen."
       ]
     },
     {
@@ -1821,6 +1858,32 @@
         }
       ],
       "provideWhenLibraryHas": null
+    }
+  ],
+  "deprecations": [
+    {
+      "use": "data-kt-lazy=\"dither\"",
+      "instead": "data-kt-stylize=\"dither\"",
+      "since": "0.11.0",
+      "removal": "next major",
+      "why": "Lazy fetches an image; these redraw pixels that are already there. They are the Stylize module now, and Stylize adds the living look (motion, pointer) and the crisp dissolve reveal that the alias cannot reach.",
+      "note": "Stylize does not load anything: use src, not data-src, and data-kt-mode=\"persist|reveal\" instead of data-kt-persist. Both modules can sit on one element when the image also needs lazy loading."
+    },
+    {
+      "use": "data-kt-lazy=\"ascii\"",
+      "instead": "data-kt-stylize=\"ascii\"",
+      "since": "0.11.0",
+      "removal": "next major",
+      "why": "Lazy fetches an image; these redraw pixels that are already there. They are the Stylize module now, and Stylize adds the living look (motion, pointer) and the crisp dissolve reveal that the alias cannot reach.",
+      "note": "Stylize does not load anything: use src, not data-src, and data-kt-mode=\"persist|reveal\" instead of data-kt-persist. Both modules can sit on one element when the image also needs lazy loading."
+    },
+    {
+      "use": "data-kt-lazy=\"halftone\"",
+      "instead": "data-kt-stylize=\"halftone\"",
+      "since": "0.11.0",
+      "removal": "next major",
+      "why": "Lazy fetches an image; these redraw pixels that are already there. They are the Stylize module now, and Stylize adds the living look (motion, pointer) and the crisp dissolve reveal that the alias cannot reach.",
+      "note": "Stylize does not load anything: use src, not data-src, and data-kt-mode=\"persist|reveal\" instead of data-kt-persist. Both modules can sit on one element when the image also needs lazy loading."
     }
   ],
   "figmaHints": {

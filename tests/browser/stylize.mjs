@@ -153,6 +153,15 @@ const probe = async (reducedMotion) => {
     const flat = mount({ 'data-kt-stylize': 'dither', 'data-kt-cell-size': '4', 'data-kt-contrast': '1', 'data-kt-paper-color': '#ffffff', 'data-kt-ink-color': '#000000', src: source, alt: 'flat' });
     const punchy = mount({ 'data-kt-stylize': 'dither', 'data-kt-cell-size': '4', 'data-kt-contrast': '2', 'data-kt-paper-color': '#ffffff', 'data-kt-ink-color': '#000000', src: source, alt: 'punchy' });
     const lens = mount({ 'data-kt-stylize': 'dither', 'data-kt-cell-size': '10', 'data-kt-pointer': 'lens', 'data-kt-pointer-cell-size': '2', 'data-kt-pointer-radius': '60', src: source, alt: 'lens' });
+    // Design tokens: a page hands Kineto its own custom properties instead of
+    // repeating hex codes that then drift from the design system. The scoped
+    // element must win over the root so a re-themed section re-themes the look.
+    document.documentElement.style.setProperty('--kt-test-paper', '#ffffff');
+    document.documentElement.style.setProperty('--kt-test-ink', '#000000');
+    const tokened = mount({ 'data-kt-stylize': 'dither', 'data-kt-cell-size': '4', 'data-kt-paper-color': 'var(--kt-test-paper)', 'data-kt-ink-color': 'var(--kt-test-ink)', src: source, alt: 'tokens' });
+    const themed = mount({ 'data-kt-stylize': 'dither', 'data-kt-cell-size': '4', 'data-kt-paper-color': 'var(--kt-test-paper)', 'data-kt-ink-color': 'var(--kt-test-ink)', src: source, alt: 'themed tokens' });
+    themed.style.setProperty('--kt-test-paper', '#ff00ff');
+    themed.style.setProperty('--kt-test-ink', '#00ffff');
     const dissolve = mount({ 'data-kt-stylize': 'dither', 'data-kt-mode': 'reveal', 'data-kt-transition': 'dissolve', 'data-kt-duration': '4', 'data-kt-delay': '0', 'data-kt-cell-size': '4', src: source, alt: 'dissolve' });
     const gif = mount({ 'data-kt-stylize': 'dither', 'data-kt-cell-size': '5', src: `${base}/demo/assets/motion-demo.gif`, alt: 'animated' });
     const video = mount({ 'data-kt-stylize': 'halftone', 'data-kt-cell-size': '8', src: `${base}/demo/assets/motion-demo.mp4`, loop: '', playsinline: '', autoplay: '' }, 'video');
@@ -241,6 +250,16 @@ const probe = async (reducedMotion) => {
     await wait(1200);
     report.dissolveClears = clearShare() > clearedEarly + 0.05;
 
+    // The palette a token produced, as actually painted.
+    const palette = (media) => {
+      const canvas = canvasOf(media);
+      if (!canvas) return [];
+      return paletteOf(canvas).colors.slice(0, 2).map(([key]) => key).sort();
+    };
+    await waitFor(() => canvasOf(tokened) && canvasOf(themed), 5000);
+    report.tokenPalette = palette(tokened);
+    report.themedPalette = palette(themed);
+
     // 7. a live source keeps being redrawn while the look persists.
     await waitFor(() => canvasOf(gif) && paletteOf(canvasOf(gif)).opaque > 0, 5000);
     report.gifOpaque = canvasOf(gif) ? paletteOf(canvasOf(gif)).opaque : 0;
@@ -316,6 +335,15 @@ try {
   assert.equal(result.lensChanged, true, 'the pointer lens must redraw the area under the pointer');
   assert.equal(result.dissolveClears, true, 'a dissolve reveal must clear cells rather than blur them');
 
+  assert.deepEqual(
+    result.tokenPalette, ['0,0,0', '255,255,255'],
+    'a var(--token) colour must resolve against the page design tokens'
+  );
+  assert.deepEqual(
+    result.themedPalette, ['0,255,255', '255,0,255'],
+    'a token overridden on the element itself must win over the root value'
+  );
+
   assert.ok(result.gifOpaque > 0, 'an animated source must be drawn');
   if (result.environmentAnimatesImages) {
     assert.equal(result.gifRedrawn, true, 'an animated source must keep being redrawn while the look persists');
@@ -343,7 +371,7 @@ try {
   assert.equal(reduced.result.revealStarted, false, 'reduced motion must skip a reveal');
   assert.equal(reduced.result.manualStarted, false, 'reduced motion must not play a manual reveal');
 
-  console.log(`stylize OK (${browserName}) — persist/reveal modes, load/view/manual triggers, dissolve transition, motion on a still image, contrast levels, pointer lens, shared Lazy wrapper, deprecated alias + KT_DEPRECATED, video frames, destroy cleanup, reduced motion.`);
+  console.log(`stylize OK (${browserName}) — persist/reveal modes, load/view/manual triggers, dissolve transition, motion on a still image, contrast levels, pointer lens, design-token colours, shared Lazy wrapper, deprecated alias + KT_DEPRECATED, video frames, destroy cleanup, reduced motion.`);
 } finally {
   await browser.close();
   server.close();

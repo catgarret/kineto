@@ -164,6 +164,22 @@ function renderRules({ features, integrations, pkg }) {
     lines.push(`- **${id}** (${ecosystem.attach.pattern}; provides: ${ecosystem.provides.join(', ') || 'nothing — vanilla'})${bullets.length ? ': ' + bullets.join(' ') : ''}`);
   }
   lines.push('', '## Option lookup', '', `Exact option names, variants and defaults live in \`kineto.features.json\` (${RAW_URL}/kineto.features.json) and the generated reference (${REPO_URL}/blob/main/docs/module-reference.md). With the Kineto MCP server (\`npx @dong-gri/kineto-mcp\`) call \`kineto_suggest\`, \`kineto_snippet\` and \`kineto_validate_options\` instead of guessing.`, '');
+  // Without this block an agent keeps emitting markup that still works today
+  // but is already on its way out — the exact "AI reinvents a slightly
+  // different component every time" failure a canonical source exists to stop.
+  if (integrations.deprecations?.length) {
+    lines.push('## Do not generate these any more', '');
+    lines.push('| Instead of | Generate | Why |', '|---|---|---|');
+    for (const entry of integrations.deprecations) {
+      lines.push(`| \`${entry.use}\` | \`${entry.instead}\` | ${entry.why} |`);
+    }
+    lines.push('');
+    // Several aliases usually share one migration note; print it once.
+    for (const note of [...new Set(integrations.deprecations.map((entry) => entry.note).filter(Boolean))]) {
+      lines.push(`- ${note}`);
+    }
+    lines.push('', `The old markup keeps working until ${integrations.deprecations[0].removal} and emits a recoverable \`KT_DEPRECATED\` diagnostic when \`debug\` is on.`, '');
+  }
   lines.push('## Modules with their variant keys', '');
   const rows = features.modules.map((module) => `- \`${module.attribute}\` — variants: ${module.variants.join(', ')} (JS key \`${variantKey(module)}\`)`);
   lines.push(...rows, '');

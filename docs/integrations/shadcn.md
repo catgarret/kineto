@@ -297,6 +297,30 @@ export function KinetoProvider({ children }: { children: React.ReactNode }) {
   const { ref } = useKineto('stylize', { mode: "reveal", trigger: "view", cellSize: 10, preset: "dither" });
   ```
 
+- `stylize` · `dither` — A dither that stays on the image while the grain crawls — alive without moving the layout.
+
+  ```jsx
+  <div data-kt-stylize="dither" data-kt-contrast="1.4" data-kt-cell-size="3" data-kt-motion="drift">…</div>
+  // or, when you need the instance:
+  const { ref } = useKineto('stylize', { contrast: 1.4, cellSize: 3, motion: "drift", preset: "dither" });
+  ```
+
+- `stylize` · `ascii` — ASCII that keeps re-typing itself: the living-terminal look for a hero or an about page.
+
+  ```jsx
+  <div data-kt-stylize="ascii" data-kt-motion="shuffle" data-kt-motion-amount="0.35">…</div>
+  // or, when you need the instance:
+  const { ref } = useKineto('stylize', { motion: "shuffle", motionAmount: 0.35, preset: "ascii" });
+  ```
+
+- `stylize` · `dither` — The picture sharpens only under the pointer — an interaction, not just a filter.
+
+  ```jsx
+  <div data-kt-stylize="dither" data-kt-cell-size="8" data-kt-pointer="lens" data-kt-pointer-cell-size="2">…</div>
+  // or, when you need the instance:
+  const { ref } = useKineto('stylize', { cellSize: 8, pointer: "lens", pointerCellSize: 2, preset: "dither" });
+  ```
+
 - `stylize` · `halftone` — Permanent halftone print look on an image or video.
 
   ```jsx
@@ -321,9 +345,13 @@ export function KinetoProvider({ children }: { children: React.ReactNode }) {
   const { ref } = useKineto('glitch', { preset: "image" });
   ```
 
+> Raise `contrast` (1.3-1.6) before anything else: a photograph sits in the middle of the tonal range and dithers to grey mush at the default 1.
+
 > Stylize redraws the pixels; it does not load anything. Pair it with the `image-loading` intent when the picture also needs lazy loading — both attributes can sit on one <img>.
 
 > A source the canvas cannot read back (cross-origin without CORS) simply shows unstyled, so the texture is never a hard dependency.
+
+> `motion` (drift/shuffle/scan/flow/pulse) keeps the look alive on a still picture and `pointer` (lens/spotlight/ripple) makes it react; both redraw every frame, so lower `renderFps` when several are on one screen.
 
 ### 이미지 갤러리·라이트박스 (`gallery-lightbox`)
 

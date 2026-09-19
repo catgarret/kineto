@@ -94,6 +94,9 @@ export function resolveStylizedSettings(effect, input = {}, { lowTier = false, p
   const persist = input.persist === true;
   const startCell = clamp(Number(input.cellSize ?? DEFAULT_CELL[effect]), 2, 64);
   const styleInput = {
+    // The element the look belongs to, so `var(--token)` colours resolve
+    // against the page's own design tokens (including a section-scoped theme).
+    scope: input.scope,
     paperColor: input.paperColor,
     inkColor: input.inkColor,
     accentColor: input.accentColor,

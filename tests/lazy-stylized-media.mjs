@@ -20,6 +20,7 @@ import {
   parseColor,
   MOTION_TYPES,
   POINTER_TYPES,
+  resolveCssColorToken,
   resolveStyleConfig,
   sourceSize
 } from '../src/modules/media/rasterizer.js';
@@ -79,6 +80,21 @@ assert.equal(tuned.pointerRadius, 1200, 'pointer radius is clamped');
 assert.equal(tuned.pointerStrength, 1, 'pointer strength is clamped');
 assert.equal(tuned.pointerCellSize, 64, 'lens cell size is clamped');
 assert.equal(resolveStyleConfig('dither', { contrast: 'x' }).contrast, 1, 'a non-numeric level keeps the neutral default');
+
+// 2c. Design tokens. A page should be able to hand Kineto its own custom
+// properties (`var(--fg)`) instead of repeating hex codes that then drift from
+// the design system. Without a DOM the reference resolves to its CSS fallback.
+assert.equal(resolveCssColorToken('#ff0000'), '#ff0000', 'a plain colour passes through untouched');
+assert.equal(resolveCssColorToken('  var( --brand , #00ff00 ) '), '#00ff00', 'an unresolvable token falls back like CSS does');
+assert.equal(resolveCssColorToken('var(--brand)'), '', 'an unresolvable token with no fallback resolves to nothing');
+assert.equal(resolveCssColorToken(''), '', 'an empty value stays empty');
+assert.deepEqual(
+  resolveStyleConfig('dither', { inkColor: 'var(--nope)' }).ink,
+  [17, 17, 17],
+  'a token that resolves to nothing keeps the documented default'
+);
+// Parsing a resolved colour needs a real canvas, so the value a token actually
+// produces is checked in tests/browser/stylize.mjs against a live document.
 
 // 3. Cover-fit geometry crops the longer side and never exceeds the source.
 assert.deepEqual(coverMap(200, 100, 100, 100), { sx: 50, sy: 0, sw: 100, sh: 100 }, 'a wide source is cropped horizontally');

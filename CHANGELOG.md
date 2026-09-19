@@ -5,6 +5,9 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Let Stylize colours be design tokens: `data-kt-ink-color="var(--fg)"` now resolves against the page's own custom properties, read from the element the effect is on, so a section that re-themes its tokens re-themes the effect. `var(--x, fallback)` behaves exactly as CSS does. A design system should be pointed at, not transcribed into hex codes that drift.
+- Make the feature contract the single source for deprecated markup. `kineto.features.json` gains `deprecatedVariants`, `kineto.integrations.json` gains a required `deprecations` block with the replacement and the reason, the generated AI rules print a "do not generate these any more" table, and the module reference marks the variants inline. CI fails if the contract deprecates a variant the map gives agents no replacement for.
+- Add living-look recipes to the `media-texture` intent so an agent asked for an image that feels alive or reacts to the pointer finds `motion` and `pointer` instead of inventing a canvas effect of its own.
 - Make the stylized looks crisp. Cells are now laid out on whole device pixels: with a CSS-pixel grid one cell lands on 2.4 device pixels and nearest-neighbour upscaling gives some cells two pixels and their neighbours three, which is what made dither and halftone read as a blurry, shimmering screen. Every dot is now identical.
 - Add `contrast` and `brightness` to Stylize. A photograph sits in the middle of the tonal range and dithers to grey mush; pushing contrast is what gives the print look its snap, and it was the missing control rather than a rendering bug.
 - Add `motion` to Stylize — the look keeps moving on a still picture instead of being painted once: `drift` crawls the ordered matrix like film grain, `shuffle` keeps swapping glyphs of similar brightness (the living terminal), `scan` sweeps a band, `flow` slides the grid, `pulse` breathes the exposure, with `motionSpeed` and `motionAmount` to tune them. `drift` slides the matrix rather than re-rolling each cell's threshold, because a random threshold turns an ordered dither into a random one and dissolves the picture into noise.
@@ -21,6 +24,9 @@
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- Stylize의 색이 디자인 토큰을 그대로 받습니다. `data-kt-ink-color="var(--fg)"`가 페이지의 사용자 정의 속성으로 해석되며, 효과가 붙은 요소 기준으로 읽기 때문에 섹션이 토큰을 덮어써 테마를 바꾸면 그 안의 효과도 따라갑니다. `var(--x, 폴백)`도 CSS와 동일하게 동작합니다. 디자인 시스템은 hex로 베껴 적을 게 아니라 가리켜야 합니다.
+- deprecated 마크업의 원본을 기능 계약 하나로 모았습니다. `kineto.features.json`에 `deprecatedVariants`를 두고, `kineto.integrations.json`에는 대체 마크업과 이유를 담은 `deprecations` 블록을 필수로 추가했으며, 생성되는 AI 규칙에 "이제 이건 생성하지 마세요" 표가 들어가고 module reference에도 표시됩니다. 계약이 deprecated로 표시한 variant에 대해 지도가 대체안을 주지 않으면 CI가 실패합니다.
+- `media-texture` 의도에 살아 있는 효과 레시피를 추가했습니다. "살아 움직이는 이미지", "포인터에 반응하는" 같은 요청을 받은 에이전트가 직접 canvas 효과를 만들어 내는 대신 `motion`·`pointer`를 찾도록 했습니다.
 - 스타일 효과를 선명하게 만들었습니다. 격자를 항상 device pixel 정수 배로 배치합니다. CSS 픽셀 기준이면 한 셀이 2.4 device pixel에 걸쳐 어떤 셀은 2px, 옆 셀은 3px이 되고, 이 불균일이 디더·하프톤을 뿌옇고 어른거리게 만든 원인이었습니다. 이제 모든 점이 같은 크기입니다.
 - Stylize에 `contrast`·`brightness`를 추가했습니다. 사진은 대부분 중간 톤이라 그대로 디더하면 회색 죽이 됩니다. 인쇄물 같은 질감은 렌더링 문제가 아니라 이 조절값이 없어서 안 나오던 것이고, 대비를 올리는 것만으로 형태가 또렷해집니다.
 - Stylize에 `motion`을 추가했습니다. 정지 이미지에서도 효과가 한 번 그려지고 멈추는 대신 계속 움직입니다. `drift`는 정렬 행렬이 기어가며 필름 그레인처럼 일렁이고, `shuffle`은 밝기가 비슷한 글자끼리 계속 교체되며(살아 있는 터미널), `scan`은 밴드가 훑고, `flow`는 격자가 흐르고, `pulse`는 노출이 숨 쉽니다. 속도·세기는 `motionSpeed`·`motionAmount`로 조절합니다. `drift`가 셀마다 임계값을 다시 뽑지 않고 행렬을 이동시키는 이유는, 임계값을 무작위로 다시 뽑으면 정렬 디더가 랜덤 디더가 되어 사진이 노이즈로 녹아내리기 때문입니다.

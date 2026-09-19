@@ -26,7 +26,10 @@ for (const module of contract.modules) {
   lines.push('');
   lines.push(`- Attribute: \`${module.attribute}\``);
   lines.push(`- Default variant: \`${module.defaultVariant}\``);
-  lines.push(`- Variants: ${module.variants.map((value) => `\`${value}\``).join(', ')}`);
+  // A deprecated variant still works, so it stays in the list — but anyone
+  // (or any agent) reading the reference has to see which ones not to pick.
+  const deprecated = new Set(module.deprecatedVariants || []);
+  lines.push(`- Variants: ${module.variants.map((value) => (deprecated.has(value) ? `\`${value}\` (deprecated)` : `\`${value}\``)).join(', ')}`);
   lines.push(`- Public options: ${module.publicOptions.length ? module.publicOptions.map((value) => `\`${value}\``).join(', ') : '없음'}`);
   lines.push('');
 }

@@ -94,6 +94,18 @@ React: mount a client `KinetoProvider` that calls `Kineto.observe()` in an effec
 
 Exact option names, variants and defaults live in `kineto.features.json` (https://raw.githubusercontent.com/catgarret/kineto/main/kineto.features.json) and the generated reference (https://github.com/catgarret/kineto/blob/main/docs/module-reference.md). With the Kineto MCP server (`npx @dong-gri/kineto-mcp`) call `kineto_suggest`, `kineto_snippet` and `kineto_validate_options` instead of guessing.
 
+## Do not generate these any more
+
+| Instead of | Generate | Why |
+|---|---|---|
+| `data-kt-lazy="dither"` | `data-kt-stylize="dither"` | Lazy fetches an image; these redraw pixels that are already there. They are the Stylize module now, and Stylize adds the living look (motion, pointer) and the crisp dissolve reveal that the alias cannot reach. |
+| `data-kt-lazy="ascii"` | `data-kt-stylize="ascii"` | Lazy fetches an image; these redraw pixels that are already there. They are the Stylize module now, and Stylize adds the living look (motion, pointer) and the crisp dissolve reveal that the alias cannot reach. |
+| `data-kt-lazy="halftone"` | `data-kt-stylize="halftone"` | Lazy fetches an image; these redraw pixels that are already there. They are the Stylize module now, and Stylize adds the living look (motion, pointer) and the crisp dissolve reveal that the alias cannot reach. |
+
+- Stylize does not load anything: use src, not data-src, and data-kt-mode="persist|reveal" instead of data-kt-persist. Both modules can sit on one element when the image also needs lazy loading.
+
+The old markup keeps working until next major and emits a recoverable `KT_DEPRECATED` diagnostic when `debug` is on.
+
 ## Modules with their variant keys
 
 - `data-kt-ambient-media` — variants: image-clone, video-sample, color (JS key `preset`)

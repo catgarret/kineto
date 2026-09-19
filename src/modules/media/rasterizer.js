@@ -77,8 +77,34 @@ const COLOR_CACHE_LIMIT = 256;
 // it after the assignment, the input was not a valid CSS colour.
 const INVALID_COLOR_SENTINEL = '#010203';
 const colorCache = new Map();
-export function parseColor(value, fallback = [0, 0, 0]) {
+
+/**
+ * Resolve a CSS custom property so a page can hand Kineto its own design
+ * tokens: `data-kt-ink-color="var(--fg)"`. `scope` is the element the token is
+ * read from, which matters when a section overrides the token for a theme;
+ * it falls back to the document root, where most token sets live.
+ *
+ * Only the reference itself is resolved, once, with its `var(--a, fallback)`
+ * fallback honoured — the result still goes through the normal colour parser,
+ * so a token holding `hsl(...)` or a named colour works like any other value.
+ */
+const CSS_VARIABLE = /^var\(\s*(--[\w-]+)\s*(?:,\s*([\s\S]+?)\s*)?\)$/;
+export function resolveCssColorToken(value, scope = null) {
   const key = String(value ?? '').trim();
+  const match = CSS_VARIABLE.exec(key);
+  if (!match) return key;
+  if (typeof window === 'undefined' || typeof getComputedStyle !== 'function') return match[2] || '';
+  const element = (scope && scope.nodeType === 1 ? scope : null)
+    || (typeof document !== 'undefined' ? document.documentElement : null);
+  if (!element) return match[2] || '';
+  const resolved = getComputedStyle(element).getPropertyValue(match[1]).trim();
+  // An undefined token falls back to whatever the author wrote as the second
+  // argument, exactly like CSS would.
+  return resolved || match[2] || '';
+}
+
+export function parseColor(value, fallback = [0, 0, 0], scope = null) {
+  const key = resolveCssColorToken(value, scope);
   if (!key) return fallback;
   if (colorCache.has(key)) return colorCache.get(key);
   // No document (SSR) or no 2D context: answer with the fallback but do not
@@ -143,9 +169,11 @@ export function resolveStyleConfig(style, input = {}) {
     // Palette: `originalColors` keeps the sampled colours (posterised to
     // `colorSteps`); otherwise cells are painted between paper and ink.
     originalColors: input.originalColors === true,
-    paper: parseColor(input.paperColor, [244, 241, 234]),
-    ink: parseColor(input.inkColor, [17, 17, 17]),
-    accent: input.accentColor ? parseColor(input.accentColor) : null,
+    // `scope` is the element design tokens are read from (see
+    // resolveCssColorToken); the modules pass the media element they own.
+    paper: parseColor(input.paperColor, [244, 241, 234], input.scope),
+    ink: parseColor(input.inkColor, [17, 17, 17], input.scope),
+    accent: input.accentColor ? parseColor(input.accentColor, [0, 0, 0], input.scope) : null,
     colorSteps: clamp(Math.round(Number(input.colorSteps ?? (style === 'dither' ? 2 : 4))), 2, 8),
     inverted: input.inverted === true,
     seed: input.seed,

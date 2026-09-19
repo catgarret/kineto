@@ -44,8 +44,11 @@ function currentSource(media) {
 // The raw option values, read here so the feature contract can scan this
 // file for the options Stylize owns; the `effect` branches let
 // scripts/derive-variant-options.mjs attribute each one to its variant.
-function readStylizedInput(effect, opts, mode) {
+function readStylizedInput(effect, opts, mode, scope = null) {
   const input = {
+    // Design tokens (`var(--fg)`) are read from the element the look is on, so
+    // a section that re-themes its tokens re-themes the effect too.
+    scope,
     persist: mode === 'persist',
     cellSize: opts.cellSize,
     paperColor: opts.paperColor,
@@ -104,7 +107,7 @@ function createImageInstance(el, media, effect, opts, kineto) {
 
   // A still image only animates while revealing, so the reveal gets a higher
   // frame budget than a permanent (persist) look.
-  const settings = resolveStylizedSettings(effect, readStylizedInput(effect, opts, mode), { lowTier, persistFps: 24, revealFps: 30, maxDpr: 2 });
+  const settings = resolveStylizedSettings(effect, readStylizedInput(effect, opts, mode, media), { lowTier, persistFps: 24, revealFps: 30, maxDpr: 2 });
   const src = currentSource(media);
   const animatedSource = opts.animated === true || ANIMATED_EXTENSIONS.test(src);
   let stylizer = null;
@@ -187,7 +190,7 @@ function createVideoInstance(el, media, effect, opts, kineto) {
   media.style.objectFit = opts.objectFit || 'cover';
 
   // Video renders every playing frame, so it starts from a lighter DPR budget.
-  const settings = resolveStylizedSettings(effect, readStylizedInput(effect, opts, mode), { lowTier, persistFps: 24, revealFps: 24, maxDpr: 1.5 });
+  const settings = resolveStylizedSettings(effect, readStylizedInput(effect, opts, mode, media), { lowTier, persistFps: 24, revealFps: 24, maxDpr: 1.5 });
   const stylizer = createVideoStylizer({
     el: media, wrapper, effect, settings, prefix: 'kt-stylize',
     durationMs: readTiming(opts).durationMs,

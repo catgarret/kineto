@@ -29,12 +29,19 @@ for (const moduleContract of contract.modules) {
   // modules whose variants depend on a capability (an <img>, text, 2+ children),
   // the second only for options the demo markup does not spell out and whose
   // resting value the settings drawer therefore has to be told.
-  const OPTIONAL_KEYS = new Set(['variantRequires', 'optionDefaults', 'variantOptions']);
+  // `deprecatedVariants` is the canonical list of variants that still work but
+  // must not be generated any more; kineto.integrations.json carries the prose
+  // for coding agents and tests/integrations-contract.mjs checks it covers this.
+  const OPTIONAL_KEYS = new Set(['variantRequires', 'optionDefaults', 'variantOptions', 'deprecatedVariants']);
   const shape = Object.keys(moduleContract).filter((key) => !OPTIONAL_KEYS.has(key)).sort();
   assert.deepEqual(shape, expectedModuleKeys, `${moduleContract.name} contract shape drifted`);
   assert.equal(moduleContract.attribute, `data-kt-${dash(moduleContract.name)}`, `${moduleContract.name} activation attribute does not match its public name`);
   assert.ok(moduleContract.variants.includes(moduleContract.defaultVariant), `${moduleContract.name} defaultVariant must be listed in variants`);
   assert.equal(new Set(moduleContract.publicOptions).size, moduleContract.publicOptions.length, `${moduleContract.name} publicOptions must be unique`);
+  for (const variant of moduleContract.deprecatedVariants || []) {
+    assert.ok(moduleContract.variants.includes(variant), `${moduleContract.name} deprecates ${variant}, which is not one of its variants`);
+    assert.notEqual(variant, moduleContract.defaultVariant, `${moduleContract.name} cannot deprecate its own default variant`);
+  }
   const sourcePath = resolve(import.meta.dirname, `../src/modules/${moduleContract.name}.js`);
   const source = await readFile(sourcePath, 'utf8');
   assert.doesNotMatch(source, /opts\s*\[/, `${moduleContract.name} must use dot notation for contracted options`);

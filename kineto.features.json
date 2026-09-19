@@ -1,6 +1,6 @@
 {
   "$schema": "./kineto.features.schema.json",
-  "contractVersion": "1.6.0",
+  "contractVersion": "1.7.0",
   "libraryVersion": "0.11.0",
   "moduleCount": 53,
   "modules": [
@@ -1885,6 +1885,11 @@
         "crt",
         "data-mosaic",
         "rgb-slice-burst",
+        "dither",
+        "ascii",
+        "halftone"
+      ],
+      "deprecatedVariants": [
         "dither",
         "ascii",
         "halftone"

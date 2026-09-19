@@ -222,8 +222,9 @@ function createVideoReveal(el, opts = {}) {
 // this file (the feature contract scans each module for its own options) and
 // the `effect` branches let scripts/derive-variant-options.mjs attribute them
 // to dither / ascii / halftone instead of to every Lazy variant.
-function readStylizedInput(effect, opts) {
-  const input = {};
+function readStylizedInput(effect, opts, scope = null) {
+  // Same design-token scope as the Stylize module the aliases delegate to.
+  const input = { scope };
   if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {
     input.persist = opts.persist;
     input.cellSize = opts.cellSize;
@@ -257,7 +258,7 @@ function createStylizedVideo(el, opts, effect, kineto = null) {
   el.style.height = '100%';
   el.style.objectFit = opts.objectFit || 'cover';
   // Video renders every playing frame, so it starts from a lighter DPR budget.
-  const settings = resolveStylizedSettings(effect, readStylizedInput(effect, opts), { lowTier, persistFps: 24, revealFps: 24, maxDpr: 1.5 });
+  const settings = resolveStylizedSettings(effect, readStylizedInput(effect, opts, el), { lowTier, persistFps: 24, revealFps: 24, maxDpr: 1.5 });
   const stylizer = createVideoStylizer({
     el, wrapper, effect, settings, prefix: 'kt-lazy',
     durationMs: Math.max(120, durationMs(opts.duration, 1.6)),
@@ -926,7 +927,7 @@ export default {
         el.style.opacity = '1';
         // A still image only animates while revealing, so the reveal gets a
         // higher frame budget than a permanent (persist) stylization.
-        const settings = resolveStylizedSettings(effect, readStylizedInput(effect, opts), { lowTier, persistFps: 24, revealFps: 30, maxDpr: 2 });
+        const settings = resolveStylizedSettings(effect, readStylizedInput(effect, opts, el), { lowTier, persistFps: 24, revealFps: 30, maxDpr: 2 });
         stylized = createImageStylizer({
           el, wrapper, effect, settings, prefix: 'kt-lazy',
           // Drawing the live <img> each frame keeps GIF/APNG/animated WebP moving.

@@ -4,22 +4,61 @@
   "title": "Kineto integration map (UI libraries, design systems, AI tooling)",
   "type": "object",
   "additionalProperties": false,
-  "required": ["integrationsVersion", "libraryVersion", "description", "principles", "setup", "ecosystems", "intents", "figmaHints"],
+  "required": [
+    "integrationsVersion",
+    "libraryVersion",
+    "description",
+    "principles",
+    "setup",
+    "ecosystems",
+    "intents",
+    "deprecations",
+    "figmaHints"
+  ],
   "properties": {
-    "$schema": { "type": "string" },
-    "integrationsVersion": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
-    "libraryVersion": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
-    "description": { "type": "string" },
-    "principles": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "$schema": {
+      "type": "string"
+    },
+    "integrationsVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "libraryVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "description": {
+      "type": "string"
+    },
+    "principles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
     "setup": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["install", "css", "bootstrapScript", "cdn"],
+      "required": [
+        "install",
+        "css",
+        "bootstrapScript",
+        "cdn"
+      ],
       "properties": {
-        "install": { "type": "string" },
-        "css": { "type": "string" },
-        "bootstrapScript": { "type": "string" },
-        "cdn": { "type": "string" }
+        "install": {
+          "type": "string"
+        },
+        "css": {
+          "type": "string"
+        },
+        "bootstrapScript": {
+          "type": "string"
+        },
+        "cdn": {
+          "type": "string"
+        }
       }
     },
     "ecosystems": {
@@ -28,49 +67,121 @@
       "additionalProperties": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["title", "framework", "attach", "provides", "notes"],
+        "required": [
+          "title",
+          "framework",
+          "attach",
+          "provides",
+          "notes"
+        ],
         "properties": {
-          "title": { "type": "string" },
-          "framework": { "enum": ["html", "react", "vue"] },
+          "title": {
+            "type": "string"
+          },
+          "framework": {
+            "enum": [
+              "html",
+              "react",
+              "vue"
+            ]
+          },
           "attach": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["pattern", "summary", "example"],
+            "required": [
+              "pattern",
+              "summary",
+              "example"
+            ],
             "properties": {
-              "pattern": { "enum": ["data-attributes", "props-passthrough", "props-passthrough-or-wrapper", "attrs-fallthrough"] },
-              "summary": { "type": "string" },
-              "example": { "type": "string" }
+              "pattern": {
+                "enum": [
+                  "data-attributes",
+                  "props-passthrough",
+                  "props-passthrough-or-wrapper",
+                  "attrs-fallthrough"
+                ]
+              },
+              "summary": {
+                "type": "string"
+              },
+              "example": {
+                "type": "string"
+              }
             }
           },
           "registry": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["namespace", "url", "componentsJson", "install"],
+            "required": [
+              "namespace",
+              "url",
+              "componentsJson",
+              "install"
+            ],
             "properties": {
-              "namespace": { "type": "string", "pattern": "^@[a-z0-9-]+$" },
-              "url": { "type": "string", "pattern": "\\{name\\}" },
-              "componentsJson": { "type": "string" },
-              "install": { "type": "string" }
+              "namespace": {
+                "type": "string",
+                "pattern": "^@[a-z0-9-]+$"
+              },
+              "url": {
+                "type": "string",
+                "pattern": "\\{name\\}"
+              },
+              "componentsJson": {
+                "type": "string"
+              },
+              "install": {
+                "type": "string"
+              }
             }
           },
-          "plugin": { "type": "string" },
+          "plugin": {
+            "type": "string"
+          },
           "examples": {
             "type": "array",
             "description": "Runnable example pages in this repository that prove the attachment pattern; each path is asserted to exist by tests/integrations-contract.mjs.",
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["path", "title"],
+              "required": [
+                "path",
+                "title"
+              ],
               "properties": {
-                "path": { "type": "string", "pattern": "^examples/" },
-                "title": { "type": "string" },
-                "test": { "type": "string", "description": "The QA script that exercises the example in a real browser." }
+                "path": {
+                  "type": "string",
+                  "pattern": "^examples/"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "test": {
+                  "type": "string",
+                  "description": "The QA script that exercises the example in a real browser."
+                }
               }
             }
           },
-          "provides": { "type": "array", "items": { "type": "string" } },
-          "conflicts": { "type": "array", "items": { "type": "string" } },
-          "notes": { "type": "array", "items": { "type": "string" } }
+          "provides": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "conflicts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         }
       }
     },
@@ -80,53 +191,163 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "title", "ko", "keywords", "figma", "recipes", "provideWhenLibraryHas"],
+        "required": [
+          "id",
+          "title",
+          "ko",
+          "keywords",
+          "figma",
+          "recipes",
+          "provideWhenLibraryHas"
+        ],
         "properties": {
-          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
-          "title": { "type": "string" },
-          "ko": { "type": "string" },
-          "keywords": { "type": "array", "minItems": 1, "items": { "type": "string" } },
-          "figma": { "type": "array", "items": { "type": "string" }, "description": "Case-insensitive regular expressions matched against Figma layer names." },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "title": {
+            "type": "string"
+          },
+          "ko": {
+            "type": "string"
+          },
+          "keywords": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "figma": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Case-insensitive regular expressions matched against Figma layer names."
+          },
           "recipes": {
             "type": "array",
             "minItems": 1,
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["module", "why"],
+              "required": [
+                "module",
+                "why"
+              ],
               "properties": {
-                "module": { "type": "string" },
-                "variant": { "type": "string" },
-                "options": { "type": "object" },
-                "why": { "type": "string" }
+                "module": {
+                  "type": "string"
+                },
+                "variant": {
+                  "type": "string"
+                },
+                "options": {
+                  "type": "object"
+                },
+                "why": {
+                  "type": "string"
+                }
               }
             }
           },
           "provideWhenLibraryHas": {
             "description": "null: Kineto is the natural provider everywhere. prefer-library: use the UI library's component when its `provides` list covers it. enhance: keep the library component and add Kineto motion to its content.",
-            "enum": [null, "prefer-library", "enhance"]
+            "enum": [
+              null,
+              "prefer-library",
+              "enhance"
+            ]
           },
-          "libraryEquivalents": { "type": "object", "additionalProperties": { "type": "string" } },
-          "notes": { "type": "array", "items": { "type": "string" } }
+          "libraryEquivalents": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         }
       }
     },
     "figmaHints": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["description", "nodeTypeRules", "workflow"],
+      "required": [
+        "description",
+        "nodeTypeRules",
+        "workflow"
+      ],
       "properties": {
-        "description": { "type": "string" },
+        "description": {
+          "type": "string"
+        },
         "nodeTypeRules": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["when", "intent"],
-            "properties": { "when": { "type": "string" }, "intent": { "type": "string" } }
+            "required": [
+              "when",
+              "intent"
+            ],
+            "properties": {
+              "when": {
+                "type": "string"
+              },
+              "intent": {
+                "type": "string"
+              }
+            }
           }
         },
-        "workflow": { "type": "array", "items": { "type": "string" } }
+        "workflow": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "deprecations": {
+      "type": "array",
+      "description": "Public attributes that still work but should not be generated any more. Coding agents read this to avoid emitting markup the next major removes.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "use",
+          "instead",
+          "since",
+          "removal",
+          "why"
+        ],
+        "properties": {
+          "use": {
+            "type": "string",
+            "description": "The deprecated markup, as it appears today."
+          },
+          "instead": {
+            "type": "string",
+            "description": "The replacement markup to generate."
+          },
+          "since": {
+            "type": "string"
+          },
+          "removal": {
+            "type": "string"
+          },
+          "why": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
       }
     }
   }

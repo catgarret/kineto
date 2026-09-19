@@ -229,6 +229,24 @@ npm install @dong-gri/kineto
   <div data-kt-stylize="dither" data-kt-mode="reveal" data-kt-trigger="view" data-kt-cell-size="10">…</div>
   ```
 
+- `stylize` · `dither` — A dither that stays on the image while the grain crawls — alive without moving the layout.
+
+  ```html
+  <div data-kt-stylize="dither" data-kt-contrast="1.4" data-kt-cell-size="3" data-kt-motion="drift">…</div>
+  ```
+
+- `stylize` · `ascii` — ASCII that keeps re-typing itself: the living-terminal look for a hero or an about page.
+
+  ```html
+  <div data-kt-stylize="ascii" data-kt-motion="shuffle" data-kt-motion-amount="0.35">…</div>
+  ```
+
+- `stylize` · `dither` — The picture sharpens only under the pointer — an interaction, not just a filter.
+
+  ```html
+  <div data-kt-stylize="dither" data-kt-cell-size="8" data-kt-pointer="lens" data-kt-pointer-cell-size="2">…</div>
+  ```
+
 - `stylize` · `halftone` — Permanent halftone print look on an image or video.
 
   ```html
@@ -247,9 +265,13 @@ npm install @dong-gri/kineto
   <h2 data-kt-glitch="image">Text</h2>
   ```
 
+> Raise `contrast` (1.3-1.6) before anything else: a photograph sits in the middle of the tonal range and dithers to grey mush at the default 1.
+
 > Stylize redraws the pixels; it does not load anything. Pair it with the `image-loading` intent when the picture also needs lazy loading — both attributes can sit on one <img>.
 
 > A source the canvas cannot read back (cross-origin without CORS) simply shows unstyled, so the texture is never a hard dependency.
+
+> `motion` (drift/shuffle/scan/flow/pulse) keeps the look alive on a still picture and `pointer` (lens/spotlight/ripple) makes it react; both redraw every frame, so lower `renderFps` when several are on one screen.
 
 ### 이미지 갤러리·라이트박스 (`gallery-lightbox`)
 
