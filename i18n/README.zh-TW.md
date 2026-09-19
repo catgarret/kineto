@@ -189,7 +189,7 @@ $('.card').kineto('reveal', { preset: 'fade-up' });
 
 ## 設計系統、UI 函式庫與 AI 工具
 
-Kineto 放在你既有的元件函式庫*旁邊*使用：行為與無障礙由函式庫負責，Kineto 只透過同一元素上的 `data-kt-*` 屬性加入動態效果。
+Kineto 可以放在任何框架、設計系統或元件函式庫*旁邊*使用，融入而不是取代：行為與無障礙由函式庫負責，Kineto 只透過同一元素上的 `data-kt-*` 屬性加入動態效果。
 
 - **shadcn/ui** — 從 [shadcn 註冊表](https://kineto.dongri.me/r/registry.json)安裝 `KinetoProvider`、`KinetoReveal`、`KinetoCounter` 等具型別的包裝元件與 AI 規則項目（`npx shadcn@latest add @kineto/provider`）。
 - **Bootstrap 5、MUI、Mantine、Chakra UI、Ant Design、daisyUI、Nuxt UI、PrimeVue、Vuetify** — [`docs/integrations/`](../docs/integrations/README.md)為每個函式庫提供指南（掛載方式、函式庫已提供的功能、衝突規則、依意圖的配方），並在 `tests/integrations/` 以真實函式庫驗證。[Bootstrap 5 共存範例](../examples/bootstrap/index.html)在真實瀏覽器中檢查。

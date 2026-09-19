@@ -191,7 +191,7 @@ $('.card').kineto('reveal', { preset: 'fade-up' });
 
 ## Дизайн-системы, UI-библиотеки и AI-инструменты
 
-Kineto работает *рядом* с библиотекой компонентов, которую вы уже используете: поведение и доступность остаются за библиотекой, Kineto добавляет только движение через атрибуты `data-kt-*` на тех же элементах.
+Kineto создан для работы *рядом* с любым фреймворком, дизайн-системой или библиотекой компонентов — дополняя их, а не подменяя: поведение и доступность остаются за библиотекой, Kineto добавляет только движение через атрибуты `data-kt-*` на тех же элементах.
 
 - **shadcn/ui** — [реестр shadcn](https://kineto.dongri.me/r/registry.json) устанавливает типизированные обёртки `KinetoProvider`, `KinetoReveal`, `KinetoCounter` и правила для AI (`npx shadcn@latest add @kineto/provider`).
 - **Bootstrap 5, MUI, Mantine, Chakra UI, Ant Design, daisyUI, Nuxt UI, PrimeVue, Vuetify** — в [`docs/integrations/`](../docs/integrations/README.md) по одному руководству на библиотеку (способ подключения, что библиотека уже даёт, конфликты, рецепты по намерениям); утверждения проверяются на реальных библиотеках в `tests/integrations/`. [Пример совместной работы с Bootstrap 5](../examples/bootstrap/index.html) проверяется в настоящем браузере.

@@ -42,7 +42,7 @@ function decisionLabel(decision) {
 function renderIndex({ integrations, pkg }) {
   const lines = [];
   lines.push(GENERATED_NOTE, '', `# UI 라이브러리·디자인 시스템과 함께 쓰기 (v${pkg.version})`, '');
-  lines.push('Kineto는 이미 쓰고 있는 컴포넌트 라이브러리를 대체하지 않고, 그 위에 모션·미디어 효과를 얹습니다. 이 문서들은 `kineto.integrations.json`에서 생성되며, 같은 정보가 AI 도구용 규칙 파일([`ai/kineto.rules.md`](../../ai/kineto.rules.md))과 [Kineto MCP 서버](../../packages/kineto-mcp/README.md)에도 그대로 들어갑니다.', '');
+  lines.push('Kineto는 어떤 프레임워크·디자인 시스템·컴포넌트 라이브러리와도 함께 쓰이도록 만들었습니다. 라이브러리를 대체하지 않고 그 위에 모션·미디어 효과를 얹어 어울리게 합니다. 이 문서들은 `kineto.integrations.json`에서 생성되며, 같은 정보가 AI 도구용 규칙 파일([`ai/kineto.rules.md`](../../ai/kineto.rules.md))과 [Kineto MCP 서버](../../packages/kineto-mcp/README.md)에도 그대로 들어갑니다.', '');
   lines.push('## 원칙', '');
   integrations.principles.forEach((principle, index) => lines.push(`${index + 1}. ${principle}`));
   lines.push('', '## 공통 설정', '', code('bash', integrations.setup.install), '', code('js', `${integrations.setup.css}\n${integrations.setup.bootstrapScript}`), '');

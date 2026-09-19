@@ -235,8 +235,8 @@ $('.card').kineto('reveal', { preset: 'fade-up' });
 
 ## 디자인 시스템·UI 라이브러리·AI 도구
 
-Kineto는 이미 쓰고 있는 컴포넌트 라이브러리 *옆에* 붙입니다. 동작·접근성은 라이브러리가 맡고,
-Kineto는 같은 요소의 `data-kt-*` 속성으로 모션만 더합니다.
+Kineto는 어떤 프레임워크·디자인 시스템·컴포넌트 라이브러리 *옆에* 붙여도 동작하고 어울리도록 만들었습니다.
+동작·접근성은 라이브러리가 맡고, Kineto는 같은 요소의 `data-kt-*` 속성으로 모션만 더합니다.
 
 - **shadcn/ui** — [shadcn 레지스트리](https://kineto.dongri.me/r/registry.json)에서 `KinetoProvider`, `KinetoReveal`, `KinetoCounter` 같은 타입 지원 래퍼와 AI 규칙 항목을 설치합니다(`npx shadcn@latest add @kineto/provider`).
 - **Bootstrap 5, MUI, Mantine, Chakra UI, Ant Design, daisyUI, Nuxt UI, PrimeVue, Vuetify** — [`docs/integrations/`](../docs/integrations/README.md)에 라이브러리별 가이드(붙이는 방식, 라이브러리가 제공하는 것, 충돌 규칙, 의도별 레시피)가 있고, 실제 라이브러리로 `tests/integrations/`에서 검증합니다. [Bootstrap 5 공존 예제](../examples/bootstrap/index.html)는 실제 브라우저에서 확인합니다.

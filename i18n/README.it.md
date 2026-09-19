@@ -191,7 +191,7 @@ $('.card').kineto('reveal', { preset: 'fade-up' });
 
 ## Design system, librerie UI e strumenti AI
 
-Kineto si affianca alla libreria di componenti che già usi: comportamento e accessibilità restano alla libreria, Kineto aggiunge solo il movimento tramite attributi `data-kt-*` sugli stessi elementi.
+Kineto è pensato per affiancare qualsiasi framework, design system o libreria di componenti e integrarsi senza prendere il sopravvento: comportamento e accessibilità restano alla libreria, Kineto aggiunge solo il movimento tramite attributi `data-kt-*` sugli stessi elementi.
 
 - **shadcn/ui** — il [registry shadcn](https://kineto.dongri.me/r/registry.json) installa wrapper tipizzati come `KinetoProvider`, `KinetoReveal`, `KinetoCounter` e le regole per l'AI (`npx shadcn@latest add @kineto/provider`).
 - **Bootstrap 5, MUI, Mantine, Chakra UI, Ant Design, daisyUI, Nuxt UI, PrimeVue, Vuetify** — una guida per libreria in [`docs/integrations/`](../docs/integrations/README.md) (modalità di aggancio, cosa offre già la libreria, conflitti da evitare, ricette per intento); le affermazioni sono verificate sulle librerie reali in `tests/integrations/`. L'[esempio di convivenza con Bootstrap 5](../examples/bootstrap/index.html) viene controllato in un browser reale.

@@ -319,9 +319,10 @@ $('.card').kineto('reveal', { preset: 'fade-up' });
 
 ## Design systems, UI libraries and AI tools
 
-Kineto is meant to sit *next to* the component library you already use: the
-library owns behaviour and accessibility, Kineto adds motion through the same
-`data-kt-*` attributes on the same elements.
+Kineto is built to work *next to* any framework, design system or component
+library — and to fit in rather than take over: the library owns behaviour and
+accessibility, Kineto adds motion through the same `data-kt-*` attributes on
+the same elements.
 
 - **shadcn/ui** — a [shadcn registry](https://kineto.dongri.me/r/registry.json)
   serves typed wrappers (`KinetoProvider`, `KinetoReveal`, `KinetoCounter`,
