@@ -239,6 +239,46 @@ window.KINETO_COPY_I18N = {
     }
   },
   "cards": {
+    "2색 디더가 그대로 유지되고 격자가 미세하게 일렁입니다.": [
+      "A two-tone dither stays on the photo while the grid crawls underneath it.",
+      "2色のディザが残り続け、格子がゆっくりと這うように揺れます。",
+      "双色抖动一直保留，网格在下面缓缓爬行。",
+      "雙色抖動一直保留，網格在下面緩緩爬行。",
+      "Двухцветный дизеринг остаётся на снимке, а сетка под ним медленно ползёт.",
+      "Un dithering a due toni resta sulla foto mentre la griglia striscia sotto."
+    ],
+    "밝기가 비슷한 글자끼리 계속 교체되며 터미널처럼 살아 움직입니다.": [
+      "Glyphs of similar brightness keep swapping places, alive like a terminal.",
+      "明るさの近い文字が入れ替わり続け、ターミナルのように動きます。",
+      "亮度相近的字符不断互换，像终端一样鲜活。",
+      "亮度相近的字元不斷互換，像終端機一樣鮮活。",
+      "Символы близкой яркости постоянно меняются местами — живо, как терминал.",
+      "Glifi di luminosità simile continuano a scambiarsi, vivi come un terminale."
+    ],
+    "커서 주변만 촘촘한 격자로 다시 그려 선명해집니다.": [
+      "Only the area under the cursor is redrawn on a finer grid, so it sharpens.",
+      "カーソル周辺だけ細かい格子で描き直され、鮮明になります。",
+      "只有光标周围用更细的网格重绘，因此更清晰。",
+      "只有游標周圍用更細的網格重繪，因此更清晰。",
+      "Только область под курсором перерисовывается более мелкой сеткой и становится чётче.",
+      "Solo l'area sotto il cursore viene ridisegnata su una griglia più fitta e si fa nitida."
+    ],
+    "재생 중인 영상을 망점으로 그리고 스캔 밴드가 훑고 지나갑니다.": [
+      "The playing video is drawn as a halftone print with a scan band sweeping it.",
+      "再生中の映像を網点で描き、スキャンの帯が走り抜けます。",
+      "播放中的视频以网点呈现，扫描带掠过画面。",
+      "播放中的影片以網點呈現，掃描帶掠過畫面。",
+      "Видео рисуется растровой печатью, по нему проходит полоса сканирования.",
+      "Il video in riproduzione è reso a mezzetinte con una banda di scansione che lo percorre."
+    ],
+    "Lazy가 이미지를 불러오고, 디더가 셀 단위로 걷히며 원본이 드러납니다.": [
+      "Lazy fetches the image and the dither clears cell by cell to expose it.",
+      "Lazyが画像を読み込み、ディザがセル単位で消えて原画が現れます。",
+      "Lazy 负责加载图片，抖动按单元逐格消散，露出原图。",
+      "Lazy 負責載入圖片，抖動按單元逐格消散，露出原圖。",
+      "Lazy загружает изображение, а дизеринг исчезает по ячейкам, открывая его.",
+      "Lazy carica l'immagine e il dithering si libera cella per cella scoprendola."
+    ],
     "물결 왜곡을 한 번 재생합니다. 설정에서 반복·시작 방식·지연을 조절합니다.": [
       "Play the wave distortion once. Adjust looping, trigger and delay in settings.",
       "波形のゆがみを1回再生します。設定で繰り返し・開始方法・遅延を調整できます。",
@@ -1536,6 +1576,14 @@ window.KINETO_COPY_I18N = {
     ]
   },
   "titles": {
+    "지연 로딩 + 디더 리빌": [
+      "Lazy load + dither reveal",
+      "遅延読み込み + ディザリビール",
+      "懒加载 + 抖动显现",
+      "延遲載入 + 抖動顯現",
+      "Ленивая загрузка + дизер-раскрытие",
+      "Caricamento lazy + reveal dither"
+    ],
     "Radial (하위 호환 모듈)": [
       "Radial (compatibility module)",
       "Radial（後方互換モジュール）",

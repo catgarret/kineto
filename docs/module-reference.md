@@ -3,7 +3,7 @@
 > 이 문서는 `kineto.features.json`에서 생성됩니다. 직접 수정하지 말고 계약 파일을 명시적으로 변경한 뒤 `npm run docs:contract`를 실행하세요.
 
 - Library: 0.11.0
-- Feature contract: 1.5.0
+- Feature contract: 1.6.0
 - Behavior contract: 1.2.0
 - Public modules: 53
 - Root properties: `version`, `easings`, `prefersReducedMotion`, `env`, `performance`, `registry`, `instanceCount`, `smoothEnabled`, `lenis`, `core`, `diagnostics`, `diagnosticCodes`
@@ -94,7 +94,7 @@
 - Attribute: `data-kt-stylize`
 - Default variant: `dither`
 - Variants: `dither`, `ascii`, `halftone`
-- Public options: `accentColor`, `animated`, `asciiChars`, `asciiFont`, `aspectRatio`, `cellSize`, `colorSteps`, `delay`, `display`, `ditherType`, `duration`, `ease`, `effect`, `halftoneShape`, `height`, `holdDuration`, `inkColor`, `inverted`, `maxDpr`, `mode`, `objectFit`, `objectPosition`, `onComplete`, `onProgress`, `originalColors`, `paperColor`, `preset`, `renderFps`, `rootMargin`, `seed`, `threshold`, `trigger`
+- Public options: `accentColor`, `animated`, `asciiChars`, `asciiFont`, `aspectRatio`, `brightness`, `cellSize`, `colorSteps`, `contrast`, `delay`, `display`, `ditherType`, `duration`, `ease`, `effect`, `halftoneShape`, `height`, `holdDuration`, `inkColor`, `inverted`, `maxDpr`, `mode`, `motion`, `motionAmount`, `motionSpeed`, `objectFit`, `objectPosition`, `onComplete`, `onProgress`, `originalColors`, `paperColor`, `pointer`, `pointerCellSize`, `pointerRadius`, `pointerStrength`, `preset`, `renderFps`, `rootMargin`, `seed`, `threshold`, `transition`, `trigger`
 
 ## lightbox
 

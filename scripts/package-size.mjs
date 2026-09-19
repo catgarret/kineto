@@ -135,7 +135,9 @@ const BUDGET = {
   // enumerates 53 files instead of 52 and the package carries dist/modular
   // entries for the new module plus the shared media helpers. Measured
   // 560.2 KB packed / 1843.1 KB unpacked / 79 files on this runtime.
-  packedKb: 566,
+  // 2026-09-19 (quality pass): the Stylize living look measures 567.2 KB packed
+  // / 1860.8 KB unpacked across the same 79 files.
+  packedKb: 572,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -144,7 +146,7 @@ const BUDGET = {
   // priority-preserving inline-style snapshot then measures 1774.2 KB.
   // See the 2026-09-19 note above for the 1812.0 KB stylized-media measurement.
   // See the 2026-09-19 observe() note above for the 1820.6 KB measurement.
-  unpackedKb: 1856,
+  unpackedKb: 1872,
   files: 79
 };
 

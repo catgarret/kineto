@@ -18,6 +18,8 @@ import {
   coverMap,
   createStylizedRenderer,
   parseColor,
+  MOTION_TYPES,
+  POINTER_TYPES,
   resolveStyleConfig,
   sourceSize
 } from '../src/modules/media/rasterizer.js';
@@ -52,6 +54,31 @@ assert.equal(ascii.shape, 'dot', 'unknown halftone shape falls back');
 assert.equal(resolveStyleConfig('halftone', {}).colorSteps, 4, 'non-dither styles default to four palette steps');
 assert.equal(resolveStyleConfig('halftone', { colorSteps: 1 }).colorSteps, 2, 'colorSteps is clamped to at least 2');
 assert.equal(resolveStyleConfig('dither', { originalColors: 'true' }).originalColors, false, 'booleans must be real booleans (data attributes are coerced upstream)');
+
+// 2b. Levels, motion and pointer — the living look. Every one of these is a
+// public option, so an unknown value has to fall back instead of reaching the
+// painter and drawing nothing.
+const defaults = resolveStyleConfig('dither', {});
+assert.equal(defaults.contrast, 1, 'levels are neutral by default');
+assert.equal(defaults.brightness, 0);
+assert.equal(defaults.motion, 'none', 'a look holds still unless motion is asked for');
+assert.equal(defaults.pointer, 'none');
+assert.equal(resolveStyleConfig('dither', { motion: 'nope' }).motion, 'none', 'unknown motion falls back to none');
+assert.equal(resolveStyleConfig('dither', { pointer: 'nope' }).pointer, 'none', 'unknown pointer behaviour falls back to none');
+assert.deepEqual(MOTION_TYPES, ['none', 'drift', 'shuffle', 'scan', 'flow', 'pulse']);
+assert.deepEqual(POINTER_TYPES, ['none', 'lens', 'spotlight', 'ripple']);
+const tuned = resolveStyleConfig('ascii', {
+  contrast: 9, brightness: -4, motion: 'shuffle', motionSpeed: 99, motionAmount: 5,
+  pointer: 'lens', pointerRadius: 5000, pointerStrength: 3, pointerCellSize: 999
+});
+assert.equal(tuned.contrast, 3, 'contrast is clamped');
+assert.equal(tuned.brightness, -1, 'brightness is clamped');
+assert.equal(tuned.motionSpeed, 6, 'motion speed is clamped');
+assert.equal(tuned.motionAmount, 1, 'motion amount is clamped');
+assert.equal(tuned.pointerRadius, 1200, 'pointer radius is clamped');
+assert.equal(tuned.pointerStrength, 1, 'pointer strength is clamped');
+assert.equal(tuned.pointerCellSize, 64, 'lens cell size is clamped');
+assert.equal(resolveStyleConfig('dither', { contrast: 'x' }).contrast, 1, 'a non-numeric level keeps the neutral default');
 
 // 3. Cover-fit geometry crops the longer side and never exceeds the source.
 assert.deepEqual(coverMap(200, 100, 100, 100), { sx: 50, sy: 0, sw: 100, sh: 100 }, 'a wide source is cropped horizontally');

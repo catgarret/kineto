@@ -16,20 +16,26 @@ export const consumerFixtures = [
   // three full-runtime product ceilings absorb that measured cost, rounded to
   // the next KB; runner variance and every core + selected-module boundary
   // stay unchanged, so importing `core` + a few modules still costs the same.
-  { name: 'full', entry: 'full', budget: 144, variance: { vite: 4, rolldown: 4 } },
+  // 2026-09-19 (quality pass): the Stylize living look — integer device-pixel
+  // cells, contrast/brightness levels, six motion behaviours, four pointer
+  // reactions and the dissolve/wipe reveal — is full-runtime code inside the
+  // shared rasterizer. Raise only the three full-runtime product ceilings by
+  // the measured amount; runner variance and every core + selected-module
+  // boundary stay exactly as they were.
+  { name: 'full', entry: 'full', budget: 148, variance: { vite: 4, rolldown: 4 } },
   { name: 'core-reveal', entry: 'core-reveal', budget: 30, variance: { rolldown: 1 } },
   { name: 'core-three', entry: 'core-three', budget: 65, variance: { rolldown: 1 } },
   { name: 'core-states', entry: 'core-states', budget: 35 },
   { name: 'core-presence', entry: 'core-presence', budget: 35 },
   // The same correction measures 143.1 KB in the Rolldown React entry.
   // See the 2026-09-19 note above: React measures 147.1 / 147.3 KB.
-  { name: 'react-adapter', entry: 'react', budget: 148, variance: { vite: 1, rolldown: 1 } },
+  { name: 'react-adapter', entry: 'react', budget: 152, variance: { vite: 1, rolldown: 1 } },
   // 2026-09-18: the Presence status subscription that keeps both adapters in
   // sync with a propagating parent measures 144.1 KB in the Vite Vue entry
   // (React 143.x stays inside its ceiling). Round the Vue product ceiling by
   // 1 KB; runner variance and every modular boundary are unchanged.
   // See the 2026-09-19 note above: Vue measures 148.2 / 148.7 KB.
-  { name: 'vue-adapter', entry: 'vue', budget: 149, variance: { vite: 1, rolldown: 2 } }
+  { name: 'vue-adapter', entry: 'vue', budget: 153, variance: { vite: 1, rolldown: 2 } }
 ];
 
 export const treeShakenEntries = [

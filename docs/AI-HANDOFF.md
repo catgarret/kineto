@@ -157,7 +157,7 @@ media variants `dither` / `ascii` / `halftone` on one shared canvas rasterizer
 (`src/modules/lazy/stylizedMedia.js`; option reading and canvas layering are
 shared by the `<img>` and `<video>` paths through `readStylizedSettings()` /
 `createStylizedCanvasLayer()` in `src/modules/lazy.js`). Contract: owner
-requirements MK-LAZY-008 and MK-STYLIZE-001 (50 total, requirements 3.3.0), feature contract 1.5.0
+requirements MK-LAZY-008 and MK-STYLIZE-001 (50 total, requirements 3.3.0), feature contract 1.6.0
 with a new `media` variant capability, twelve public options with declared
 defaults, and derived `variantOptions`. Demo: four cards (217 playgrounds,
 74/81 dedicated high-risk variants) plus seven-language copy and tooltips; the

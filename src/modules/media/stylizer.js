@@ -24,7 +24,36 @@ const DEFAULT_CELL = { dither: 6, ascii: 12, halftone: 8 };
 const HANDOFF_CELL = { dither: 2, ascii: 5, halftone: 3 };
 // Cells shrink for the first 70% of a reveal, then the layer fades out.
 const SHRINK_PORTION = 0.7;
+export const REVEAL_TRANSITIONS = Object.freeze(['shrink', 'dissolve', 'wipe']);
 export const ANIMATED_EXTENSIONS = /\.(?:gif|apng|webp)(?:$|[?#])/i;
+
+/**
+ * Follow the pointer over the wrapper so the renderer can react to it. Returns
+ * a live `{ x, y, active }` in CSS pixels relative to the wrapper, plus the
+ * listener teardown. `active` stays true after a touch ends so the last touched
+ * spot keeps its effect instead of snapping back.
+ */
+export function trackPointer(wrapper) {
+  const state = { x: 0, y: 0, active: false };
+  const move = (event) => {
+    const box = wrapper.getBoundingClientRect();
+    state.x = event.clientX - box.left;
+    state.y = event.clientY - box.top;
+    state.active = true;
+  };
+  const leave = () => { state.active = false; };
+  wrapper.addEventListener('pointermove', move, { passive: true });
+  wrapper.addEventListener('pointerdown', move, { passive: true });
+  wrapper.addEventListener('pointerleave', leave, { passive: true });
+  return {
+    state,
+    destroy() {
+      wrapper.removeEventListener('pointermove', move);
+      wrapper.removeEventListener('pointerdown', move);
+      wrapper.removeEventListener('pointerleave', leave);
+    }
+  };
+}
 
 export function isStylizedEffect(name) {
   return EFFECT_SET.has(name);
@@ -71,18 +100,38 @@ export function resolveStylizedSettings(effect, input = {}, { lowTier = false, p
     originalColors: input.originalColors === true,
     colorSteps: input.colorSteps,
     inverted: input.inverted === true,
-    seed: input.seed
+    seed: input.seed,
+    contrast: input.contrast,
+    brightness: input.brightness,
+    motion: input.motion,
+    motionSpeed: input.motionSpeed,
+    motionAmount: input.motionAmount,
+    pointer: input.pointer,
+    pointerRadius: input.pointerRadius,
+    pointerStrength: input.pointerStrength,
+    pointerCellSize: input.pointerCellSize
   };
   if (effect === 'dither') styleInput.type = input.ditherType;
   if (effect === 'ascii') { styleInput.chars = input.asciiChars; styleInput.font = input.asciiFont; }
   if (effect === 'halftone') styleInput.shape = input.halftoneShape;
+  const styleConfig = resolveStyleConfig(effect, styleInput);
+  // A look is "live" when it keeps changing on its own (motion) or has to
+  // follow the pointer — a still image then needs the same continuous loop an
+  // animated source gets, instead of a single paint.
+  const live = styleConfig.motion !== 'none' || styleConfig.pointer !== 'none';
   // Low-tier devices cap the canvas frame rate regardless of the request.
   const requestedFps = input.renderFps ?? (persist ? persistFps : revealFps);
   return {
     persist,
+    live,
     startCell,
     handoffCell: Math.min(startCell, HANDOFF_CELL[effect]),
-    styleConfig: resolveStyleConfig(effect, styleInput),
+    // How a reveal hands the picture back. `dissolve`/`wipe` keep the look at
+    // its authored cell size and clear it cell by cell, so every frame is as
+    // crisp as the finished effect; `shrink` walks the cell size down, which is
+    // softer by nature and stays the default only for the deprecated aliases.
+    transition: REVEAL_TRANSITIONS.includes(input.transition) ? input.transition : 'shrink',
+    styleConfig,
     fps: clamp(Number(requestedFps), 4, lowTier ? 12 : 60),
     maxDpr: clamp(Number(input.maxDpr ?? maxDpr), 0.5, 4),
     ease: easingFunction(input.ease || 'cubic-out')
@@ -117,11 +166,13 @@ export function createImageStylizer({
   durationMs: duration = 1600, delayMs = 60, holdMs = 0,
   onProgress, onFinish, onRendered
 }) {
-  const { persist, startCell, handoffCell, styleConfig, fps, maxDpr, ease } = settings;
+  const { persist, live, startCell, handoffCell, transition, styleConfig, fps, maxDpr, ease } = settings;
   const { layer, canvas } = createStylizedCanvasLayer(wrapper, effect, prefix);
   const renderer = createStylizedRenderer(canvas, styleConfig, { maxDpr });
   const interval = 1000 / fps;
   const timers = new Set();
+  // Only attach pointer listeners when a pointer behaviour was asked for.
+  const pointer = styleConfig.pointer === 'none' ? null : trackPointer(wrapper);
   let rafId = null;
   let resizeObserver = null;
   let destroyed = false;
@@ -129,15 +180,24 @@ export function createImageStylizer({
   let startTime = null;
   let pausedAt = null;
   let lastDraw = -Infinity;
+  // Wall clock the living look runs on. It stops while paused so a resumed
+  // effect continues from where it was rather than jumping ahead.
+  let clock = 0;
+  let clockAt = null;
 
   const later = (callback, delay) => {
     const timer = setTimeout(() => { timers.delete(timer); if (!destroyed) callback(); }, Math.max(0, Number(delay) || 0));
     timers.add(timer);
   };
-  const paint = (cell) => {
+  const advance = (time) => {
+    if (clockAt != null && !paused) clock += time - clockAt;
+    clockAt = time;
+    return clock;
+  };
+  const paint = (cell, time = clock) => {
     const box = wrapper.getBoundingClientRect();
     renderer.sync(box.width, box.height);
-    return renderer.render(drawable(), cell);
+    return renderer.render(drawable(), cell, { time, pointer: pointer?.state });
   };
   const stopFrames = () => {
     if (rafId != null) cancelAnimationFrame(rafId);
@@ -150,10 +210,13 @@ export function createImageStylizer({
     const rendered = paint(startCell);
     onRendered?.(rendered);
     onProgress?.(1, el);
-    if (rendered && animatedSource) {
+    // A living look (motion / pointer) animates a still image too, so it needs
+    // the same continuous loop an animated source gets.
+    if (rendered && (animatedSource || live)) {
       const frame = (time) => {
+        const now = advance(time);
         if (destroyed) return;
-        if (!paused && time - lastDraw >= interval) { paint(startCell); lastDraw = time; }
+        if (!paused && time - lastDraw >= interval) { paint(startCell, now); lastDraw = time; }
         rafId = requestAnimationFrame(frame);
       };
       rafId = requestAnimationFrame(frame);
@@ -168,22 +231,33 @@ export function createImageStylizer({
       if (destroyed) return;
       if (paused) {
         if (pausedAt == null) pausedAt = time;
+        clockAt = time;
         rafId = requestAnimationFrame(frame);
         return;
       }
       if (pausedAt != null && startTime != null) { startTime += time - pausedAt; pausedAt = null; }
       if (startTime == null) startTime = time;
+      const now = advance(time);
       const raw = clamp((time - startTime) / duration, 0, 1);
       if (time - lastDraw >= interval || raw >= 1) {
-        const { cell, layerOpacity } = stylizedRevealFrame(clamp(ease(raw), 0, 1), startCell, handoffCell);
-        const rendered = paint(cell);
+        const eased = clamp(ease(raw), 0, 1);
+        let rendered;
+        if (transition === 'shrink') {
+          const { cell, layerOpacity } = stylizedRevealFrame(eased, startCell, handoffCell);
+          rendered = paint(cell, now);
+          layer.style.opacity = String(layerOpacity);
+        } else {
+          // Crisp hand-off: the look stays at its authored cell size and is
+          // cleared cell by cell, so no frame is a half-resolution blur.
+          rendered = paint(startCell, now);
+          if (rendered) renderer.mask(eased, transition, startCell);
+        }
         if (!rendered && lastDraw === -Infinity) {
           // Unreadable source: skip the effect rather than hide the picture.
           rafId = null;
           onFinish?.();
           return;
         }
-        layer.style.opacity = String(layerOpacity);
         onProgress?.(raw, el);
         lastDraw = time;
       }
@@ -224,6 +298,7 @@ export function createImageStylizer({
       stopFrames();
       timers.forEach(clearTimeout);
       timers.clear();
+      pointer?.destroy();
       renderer.destroy();
       layer.remove();
     }
@@ -242,35 +317,47 @@ export function createVideoStylizer({
   el, wrapper, effect, settings, prefix = 'kt-stylize',
   durationMs: duration = 1600, onProgress
 }) {
-  const { persist, startCell, handoffCell, styleConfig, fps, maxDpr, ease } = settings;
+  const { persist, startCell, handoffCell, transition, styleConfig, fps, maxDpr, ease } = settings;
   const { layer, canvas } = createStylizedCanvasLayer(wrapper, effect, prefix);
   const renderer = createStylizedRenderer(canvas, styleConfig, { maxDpr });
   const interval = 1000 / fps;
+  const pointer = styleConfig.pointer === 'none' ? null : trackPointer(wrapper);
   let rafId = null;
   let destroyed = false;
   let paused = false;
   let revealStart = null;
   let revealed = persist;
   let lastDraw = -Infinity;
+  let clock = 0;
 
-  const paint = (cell) => {
+  const paint = (cell, time = clock) => {
     if (el.readyState < 2) return false;
     const box = wrapper.getBoundingClientRect();
     renderer.sync(box.width, box.height);
-    return renderer.render(el, cell);
+    return renderer.render(el, cell, { time, pointer: pointer?.state });
   };
   const frame = (time) => {
     if (destroyed) return;
     rafId = requestAnimationFrame(frame);
     if (paused || el.paused || el.ended) return;
     if (time - lastDraw < interval) return;
+    // The video's own playback is the clock, so the living look advances with
+    // it and freezes when the video does.
+    clock = el.currentTime * 1000;
     lastDraw = time;
     if (persist) { paint(startCell); return; }
     if (revealStart == null) revealStart = time;
     const raw = clamp((time - revealStart) / duration, 0, 1);
-    const { cell, layerOpacity } = stylizedRevealFrame(clamp(ease(raw), 0, 1), startCell, handoffCell);
-    const rendered = paint(cell);
-    layer.style.opacity = String(layerOpacity);
+    const eased = clamp(ease(raw), 0, 1);
+    let rendered;
+    if (transition === 'shrink') {
+      const { cell, layerOpacity } = stylizedRevealFrame(eased, startCell, handoffCell);
+      rendered = paint(cell);
+      layer.style.opacity = String(layerOpacity);
+    } else {
+      rendered = paint(startCell);
+      if (rendered) renderer.mask(eased, transition, startCell);
+    }
     if (!rendered || raw >= 1) {
       // Either the reveal finished or the frames cannot be read back: hand the
       // viewport to the raw video and stop rendering.
@@ -311,6 +398,7 @@ export function createVideoStylizer({
       if (rafId != null) cancelAnimationFrame(rafId);
       rafId = null;
       el.removeEventListener('playing', start);
+      pointer?.destroy();
       renderer.destroy();
       layer.remove();
     }

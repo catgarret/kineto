@@ -2341,7 +2341,17 @@
           "holdDuration": "reveal이 끝난 뒤 원본으로 크로스페이드하기 전 머무는 시간(ms)입니다.",
           "renderFps": "초당 다시 그리는 횟수의 상한입니다. 낮출수록 가볍고, 움직이는 소스는 부드러움이 줄어듭니다.",
           "maxDpr": "그릴 때 쓰는 픽셀 밀도의 상한입니다. 낮추면 고해상도 화면에서 비용이 크게 줄어듭니다.",
-          "seed": "무작위 패턴의 시드입니다. 같은 값이면 같은 모양이 다시 나옵니다."
+          "seed": "무작위 패턴의 시드입니다. 같은 값이면 같은 모양이 다시 나옵니다.",
+          "transition": "리빌이 원본으로 넘어가는 방식입니다. dissolve는 셀 단위로 무작위로 걷히고, wipe는 대각선으로 훑으며, shrink는 셀을 점점 줄입니다(가장 부드럽지만 중간이 흐릿합니다).",
+          "contrast": "디더링 전에 명암을 키웁니다. 사진은 대개 중간 톤이라 그대로 디더하면 뭉개지는데, 이 값을 올리면 형태가 또렷해집니다.",
+          "brightness": "디더링 전에 밝기를 더하거나 뺍니다. 잉크가 너무 많거나 적을 때 조정합니다.",
+          "motion": "효과가 계속 움직이는 방식입니다. drift는 격자가 기어가고, shuffle은 셀이 계속 바뀌며, scan은 밴드가 훑고, flow는 격자가 흐르고, pulse는 노출이 숨 쉽니다.",
+          "motionSpeed": "움직임의 속도 배수입니다. 1이 기본이고 낮추면 느려집니다.",
+          "motionAmount": "움직임의 세기입니다. 0에 가까우면 거의 정지, 1이면 가장 강합니다.",
+          "pointer": "포인터에 반응하는 방식입니다. lens는 커서 주변을 다른 격자로 다시 그리고, spotlight는 잉크를 더하며, ripple은 물결이 퍼집니다.",
+          "pointerRadius": "포인터 효과가 미치는 반지름(px)입니다.",
+          "pointerStrength": "spotlight·ripple이 잉크를 바꾸는 세기입니다.",
+          "pointerCellSize": "lens 안쪽에 쓰는 격자 크기(px)입니다. 0이면 바깥 격자의 절반을 씁니다."
       },
       "en": {
           "preset": "Which look to apply: dither draws a dot pattern, ascii a glyph-density grid, halftone a print screen.",
@@ -2352,7 +2362,17 @@
           "holdDuration": "Hold at the end of a reveal before crossfading to the original (ms).",
           "renderFps": "Upper limit on repaints per second. Lower is cheaper; moving sources look less smooth.",
           "maxDpr": "Upper limit on the pixel density used to draw. Lowering it saves a lot on high-density screens.",
-          "seed": "Seed for the random patterns. The same value reproduces the same result."
+          "seed": "Seed for the random patterns. The same value reproduces the same result.",
+          "transition": "How a reveal hands the picture back: dissolve clears cells in a random order, wipe sweeps a diagonal edge, shrink walks the cell size down (softest, and blurry in between).",
+          "contrast": "Push the contrast before dithering. Photographs sit in the middle of the range and dither to mush; raising this is what makes shapes read.",
+          "brightness": "Add or remove brightness before dithering — use it when a picture comes out too inky or too empty.",
+          "motion": "How the look keeps moving: drift crawls the grid, shuffle keeps swapping cells, scan sweeps a band, flow slides the grid, pulse breathes the exposure.",
+          "motionSpeed": "Speed multiplier for the motion. 1 is the default; lower is slower.",
+          "motionAmount": "How strong the motion is. Near 0 is almost still, 1 is the strongest.",
+          "pointer": "How the look reacts to the pointer: lens redraws the area under it at another cell size, spotlight adds ink, ripple sends out waves.",
+          "pointerRadius": "Radius in px the pointer effect reaches.",
+          "pointerStrength": "How much spotlight and ripple change the ink.",
+          "pointerCellSize": "Cell size in px inside the lens. 0 uses half the outer cell."
       },
       "ja": {
           "preset": "適用する質感です。ditherは点のパターン、asciiは文字の密度、halftoneは印刷の網点で描きます。",
@@ -2363,7 +2383,17 @@
           "holdDuration": "reveal終了後、元画像へクロスフェードするまで留まる時間(ms)です。",
           "renderFps": "1秒あたりの再描画回数の上限です。下げるほど軽くなり、動く素材は滑らかさが減ります。",
           "maxDpr": "描画に使うピクセル密度の上限です。下げると高精細画面での負荷が大きく減ります。",
-          "seed": "ランダムパターンのシードです。同じ値なら同じ見た目が再現されます。"
+          "seed": "ランダムパターンのシードです。同じ値なら同じ見た目が再現されます。",
+          "transition": "リビールが元画像へ渡す方法です。dissolveはセル単位でランダムに消え、wipeは斜めに掃き、shrinkはセルを徐々に小さくします(最も滑らかですが途中がぼやけます)。",
+          "contrast": "ディザリング前にコントラストを上げます。写真は中間調に寄るためそのままでは潰れますが、上げると形がはっきりします。",
+          "brightness": "ディザリング前に明るさを足し引きします。インクが多すぎる/少なすぎるときに調整します。",
+          "motion": "効果が動き続ける方法です。driftは格子が這い、shuffleはセルが入れ替わり、scanは帯が走り、flowは格子が流れ、pulseは露出が呼吸します。",
+          "motionSpeed": "動きの速度倍率です。1が既定で、下げると遅くなります。",
+          "motionAmount": "動きの強さです。0に近いとほぼ静止、1が最も強くなります。",
+          "pointer": "ポインターへの反応方法です。lensはカーソル周辺を別の格子で描き直し、spotlightはインクを足し、rippleは波が広がります。",
+          "pointerRadius": "ポインター効果が届く半径(px)です。",
+          "pointerStrength": "spotlightとrippleがインクを変える強さです。",
+          "pointerCellSize": "lens内側で使う格子サイズ(px)。0なら外側の半分を使います。"
       },
       "zh-CN": {
           "preset": "要应用的质感：dither 画点阵图案，ascii 用字符密度，halftone 画印刷网点。",
@@ -2374,7 +2404,17 @@
           "holdDuration": "reveal 结束后、交叉淡入原图之前的停留时间（毫秒）。",
           "renderFps": "每秒重绘次数上限。数值越低越省性能，动态素材会不那么流畅。",
           "maxDpr": "绘制时使用的像素密度上限。降低后可显著减少高分屏上的开销。",
-          "seed": "随机图案的种子。相同数值会得到相同结果。"
+          "seed": "随机图案的种子。相同数值会得到相同结果。",
+          "transition": "reveal 交还原图的方式：dissolve 按单元随机消散，wipe 沿对角线扫过，shrink 逐渐缩小单元（最柔和，但中间会发虚）。",
+          "contrast": "抖动前提升对比度。照片多集中在中间调，直接抖动会糊成一片，提高该值能让形体清晰。",
+          "brightness": "抖动前增减亮度。画面墨色过重或过淡时调整。",
+          "motion": "效果持续运动的方式：drift 让网格缓慢爬行，shuffle 不断替换单元，scan 扫过一条带，flow 让网格流动，pulse 让曝光呼吸。",
+          "motionSpeed": "运动速度倍数。默认 1，调低则更慢。",
+          "motionAmount": "运动强度。接近 0 几乎静止，1 最强。",
+          "pointer": "对指针的反应方式：lens 用另一种网格重绘光标周围，spotlight 增加墨量，ripple 扩散波纹。",
+          "pointerRadius": "指针效果的作用半径（像素）。",
+          "pointerStrength": "spotlight 与 ripple 改变墨量的强度。",
+          "pointerCellSize": "lens 内部使用的网格大小（像素）。为 0 时使用外部网格的一半。"
       },
       "zh-TW": {
           "preset": "要套用的質感：dither 畫點陣圖案，ascii 用字元密度，halftone 畫印刷網點。",
@@ -2385,7 +2425,17 @@
           "holdDuration": "reveal 結束後、交叉淡入原圖之前的停留時間（毫秒）。",
           "renderFps": "每秒重繪次數上限。數值越低越省效能，動態素材會不那麼流暢。",
           "maxDpr": "繪製時使用的像素密度上限。降低後可顯著減少高解析度螢幕上的負擔。",
-          "seed": "隨機圖案的種子。相同數值會得到相同結果。"
+          "seed": "隨機圖案的種子。相同數值會得到相同結果。",
+          "transition": "reveal 交還原圖的方式：dissolve 依單元隨機消散，wipe 沿對角線掃過，shrink 逐漸縮小單元（最柔和，但中間會發虛）。",
+          "contrast": "抖動前提升對比。照片多集中在中間調，直接抖動會糊成一片，提高此值能讓形體清晰。",
+          "brightness": "抖動前增減亮度。畫面墨色過重或過淡時調整。",
+          "motion": "效果持續運動的方式：drift 讓網格緩慢爬行，shuffle 不斷替換單元，scan 掃過一條帶，flow 讓網格流動，pulse 讓曝光呼吸。",
+          "motionSpeed": "運動速度倍數。預設 1，調低則更慢。",
+          "motionAmount": "運動強度。接近 0 幾乎靜止，1 最強。",
+          "pointer": "對指標的反應方式：lens 用另一種網格重繪游標周圍，spotlight 增加墨量，ripple 擴散波紋。",
+          "pointerRadius": "指標效果的作用半徑（像素）。",
+          "pointerStrength": "spotlight 與 ripple 改變墨量的強度。",
+          "pointerCellSize": "lens 內部使用的網格大小（像素）。為 0 時使用外部網格的一半。"
       },
       "ru": {
           "preset": "Какой вид применить: dither рисует точечный узор, ascii — сетку плотности символов, halftone — печатный растр.",
@@ -2396,7 +2446,17 @@
           "holdDuration": "Задержка в конце reveal перед плавным переходом к оригиналу (мс).",
           "renderFps": "Верхний предел перерисовок в секунду. Меньше — дешевле, но движущийся источник будет менее плавным.",
           "maxDpr": "Верхний предел плотности пикселей при отрисовке. Снижение заметно экономит на плотных экранах.",
-          "seed": "Зерно случайных узоров. Одно и то же значение даёт один и тот же результат."
+          "seed": "Зерно случайных узоров. Одно и то же значение даёт один и тот же результат.",
+          "transition": "Как reveal возвращает картинку: dissolve убирает ячейки в случайном порядке, wipe проходит диагональной кромкой, shrink уменьшает ячейку (мягче всего, но промежуточные кадры размыты).",
+          "contrast": "Поднять контраст до дизеринга. Фотографии лежат в средних тонах и без этого превращаются в кашу; именно контраст делает формы читаемыми.",
+          "brightness": "Добавить или убрать яркость до дизеринга — когда краски слишком много или слишком мало.",
+          "motion": "Как эффект продолжает двигаться: drift ползёт сеткой, shuffle постоянно меняет ячейки, scan проводит полосу, flow сдвигает сетку, pulse «дышит» экспозицией.",
+          "motionSpeed": "Множитель скорости движения. По умолчанию 1, меньше — медленнее.",
+          "motionAmount": "Сила движения. Около 0 почти неподвижно, 1 — максимально.",
+          "pointer": "Как эффект реагирует на указатель: lens перерисовывает область под ним другой сеткой, spotlight добавляет краски, ripple расходится волнами.",
+          "pointerRadius": "Радиус действия указателя в пикселях.",
+          "pointerStrength": "Насколько сильно spotlight и ripple меняют краску.",
+          "pointerCellSize": "Размер ячейки внутри линзы в пикселях. 0 — половина внешней ячейки."
       },
       "it": {
           "preset": "Quale resa applicare: dither disegna un motivo a punti, ascii una griglia di densità di glifi, halftone un retino di stampa.",
@@ -2407,7 +2467,17 @@
           "holdDuration": "Pausa alla fine del reveal prima della dissolvenza verso l'originale (ms).",
           "renderFps": "Limite di ridisegni al secondo. Più basso costa meno; le sorgenti in movimento risultano meno fluide.",
           "maxDpr": "Limite della densità di pixel usata per disegnare. Abbassarlo fa risparmiare molto sugli schermi ad alta densità.",
-          "seed": "Seme dei motivi casuali. Lo stesso valore riproduce lo stesso risultato."
+          "seed": "Seme dei motivi casuali. Lo stesso valore riproduce lo stesso risultato.",
+          "transition": "Come il reveal restituisce l'immagine: dissolve libera le celle in ordine casuale, wipe passa con un bordo diagonale, shrink rimpicciolisce la cella (il più morbido, ma sfocato a metà strada).",
+          "contrast": "Alza il contrasto prima del dithering. Le fotografie stanno nei mezzi toni e senza questo diventano poltiglia: è il contrasto a far leggere le forme.",
+          "brightness": "Aggiunge o toglie luminosità prima del dithering — quando l'immagine risulta troppo carica o troppo vuota.",
+          "motion": "Come la resa continua a muoversi: drift fa strisciare la griglia, shuffle scambia le celle, scan fa passare una banda, flow fa scorrere la griglia, pulse fa respirare l'esposizione.",
+          "motionSpeed": "Moltiplicatore di velocità del movimento. 1 è il valore predefinito, più basso è più lento.",
+          "motionAmount": "Quanto è forte il movimento. Vicino a 0 è quasi fermo, 1 è il massimo.",
+          "pointer": "Come la resa reagisce al puntatore: lens ridisegna l'area sotto di esso con un'altra cella, spotlight aggiunge inchiostro, ripple propaga onde.",
+          "pointerRadius": "Raggio in px raggiunto dal puntatore.",
+          "pointerStrength": "Quanto spotlight e ripple cambiano l’inchiostro.",
+          "pointerCellSize": "Dimensione della cella dentro la lente, in px. 0 usa metà della cella esterna."
       }
   };
   for (const [lang, values] of Object.entries(stylized)) {

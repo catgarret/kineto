@@ -301,15 +301,16 @@ ck('lazy drawer opens with only the current variant\'s options', crtFields.prese
 // The stylized looks are the Stylize module now, so the drawer they open is
 // Stylize's: `mode` replaces Lazy's `persist`, and the reveal timing controls
 // only show up once the mode is switched.
-await openCard('ASCII — Persist');
+await openCard('ASCII — Shuffle');
 const asciiFields=await pg.evaluate(()=>{
   const sheet=document.querySelector('.kt-drawer-sheet');
   const body=[...sheet.children].find((node)=>node.classList.contains('kt-playground__body')&&!node.hidden);
   const field=(key)=>body.querySelector(`.kt-playground__field[data-module="stylize"][data-key="${key}"]`);
-  return {preset:field('preset')?.querySelector('select')?.value,mode:field('mode')?.querySelector('select')?.value,cellSize:field('cellSize')?.querySelector('input')?.value,asciiChars:field('asciiChars')?.hidden,asciiFont:field('asciiFont')?.hidden,ditherType:field('ditherType')?.hidden,halftoneShape:field('halftoneShape')?.hidden,duration:field('duration')?.hidden,trigger:field('trigger')?.hidden,paperColor:field('paperColor')?.querySelector('input[type="color"]')?.value};
+  return {preset:field('preset')?.querySelector('select')?.value,mode:field('mode')?.querySelector('select')?.value,cellSize:field('cellSize')?.querySelector('input')?.value,asciiChars:field('asciiChars')?.hidden,asciiFont:field('asciiFont')?.hidden,ditherType:field('ditherType')?.hidden,halftoneShape:field('halftoneShape')?.hidden,duration:field('duration')?.hidden,trigger:field('trigger')?.hidden,transition:field('transition')?.hidden,motion:field('motion')?.querySelector('select')?.value,motionAmount:field('motionAmount')?.hidden,pointerRadius:field('pointerRadius')?.hidden,pointerCellSize:field('pointerCellSize')?.hidden,paperColor:field('paperColor')?.querySelector('input[type="color"]')?.value};
 });
-ck('stylize drawer shows the authored options and hides the other looks\' shape controls', asciiFields.preset==='ascii'&&asciiFields.mode==='persist'&&asciiFields.cellSize==='10'&&asciiFields.asciiChars===false&&asciiFields.asciiFont===false&&asciiFields.ditherType===true&&asciiFields.halftoneShape===true&&asciiFields.paperColor==='#0b1220', JSON.stringify(asciiFields));
-ck('stylize drawer hides reveal-only timing while the look persists', asciiFields.duration===true&&asciiFields.trigger===true, JSON.stringify({duration:asciiFields.duration,trigger:asciiFields.trigger}));
+ck('stylize drawer shows the authored options and hides the other looks\' shape controls', asciiFields.preset==='ascii'&&asciiFields.mode==='persist'&&asciiFields.cellSize==='9'&&asciiFields.asciiChars===false&&asciiFields.asciiFont===false&&asciiFields.ditherType===true&&asciiFields.halftoneShape===true&&asciiFields.paperColor==='#0b1220', JSON.stringify(asciiFields));
+ck('stylize drawer hides reveal-only timing while the look persists', asciiFields.duration===true&&asciiFields.trigger===true&&asciiFields.transition===true, JSON.stringify({duration:asciiFields.duration,trigger:asciiFields.trigger,transition:asciiFields.transition}));
+ck('stylize drawer shows the motion knobs it uses and hides the pointer ones it does not', asciiFields.motion==='shuffle'&&asciiFields.motionAmount===false&&asciiFields.pointerRadius===true&&asciiFields.pointerCellSize===true, JSON.stringify({motion:asciiFields.motion,motionAmount:asciiFields.motionAmount,pointerRadius:asciiFields.pointerRadius,pointerCellSize:asciiFields.pointerCellSize}));
 const sh=await pg.$('.kt-drawer-sheet'); if(sh) await sh.screenshot({path:path.join(root,'tests/browser/shots/drawer-tetris.png')});
 await br.close(); server.close();
 console.log(`\n===== DRAWER LAYOUT: ${pass} passed, ${fail} failed =====`); process.exit(fail?1:0);

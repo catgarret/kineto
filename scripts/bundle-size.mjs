@@ -147,16 +147,21 @@ const BUDGETS = {
   // factories, plus the Effects wiring. Measured on this runtime: 549.0/146.5 KiB
   // readable ESM, 431.1/130.7 KiB minified ESM and 429.3/130.0 KiB UMD. The
   // ceilings below keep roughly 1 KiB of gzip headroom each.
-  'kineto.js': { raw: 551, gz: 148, variance: 2 },
+  // 2026-09-19 (quality pass): Stylize gained the living look — integer
+  // device-pixel cells, contrast/brightness levels, six motion behaviours, four
+  // pointer reactions and the dissolve/wipe reveal — all inside the shared
+  // rasterizer, so the cost lands once. Measured on this runtime: 555.0/148.6
+  // KiB readable ESM, 435.6/132.4 KiB minified ESM and 433.7/131.7 KiB UMD.
+  'kineto.js': { raw: 557, gz: 150, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
   // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/
   // camelCase names, vendor members, `!important`) measures 415.1 KB raw in
   // the minified ESM while gzip stays inside the existing variance.
   // See the 2026-09-19 observe() note above for the 425.7 / 423.9 KB raw values.
-  'kineto.min.js': { raw: 433, gz: 132, variance: 2 },
-  'kineto.umd.js': { raw: 431, gz: 132, variance: 1 },
-  'kineto.umd.min.js': { raw: 431, gz: 132, variance: 1 },
+  'kineto.min.js': { raw: 438, gz: 134, variance: 2 },
+  'kineto.umd.js': { raw: 436, gz: 133, variance: 1 },
+  'kineto.umd.min.js': { raw: 436, gz: 133, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

@@ -54,6 +54,22 @@ function readStylizedInput(effect, opts, mode) {
     originalColors: opts.originalColors,
     colorSteps: opts.colorSteps,
     inverted: opts.inverted,
+    // Levels first: a mid-toned photograph dithers to grey mush, and pushing
+    // contrast is what gives the print look its snap.
+    contrast: opts.contrast,
+    brightness: opts.brightness,
+    // The look keeps moving on its own.
+    motion: opts.motion,
+    motionSpeed: opts.motionSpeed,
+    motionAmount: opts.motionAmount,
+    // …and reacts to the pointer.
+    pointer: opts.pointer,
+    pointerRadius: opts.pointerRadius,
+    pointerStrength: opts.pointerStrength,
+    pointerCellSize: opts.pointerCellSize,
+    // How a reveal hands the picture back. Stylize defaults to the crisp
+    // cell-by-cell dissolve; `shrink` is the older, softer walk-down.
+    transition: opts.transition || 'dissolve',
     seed: opts.seed,
     renderFps: opts.renderFps,
     maxDpr: opts.maxDpr,
@@ -134,7 +150,9 @@ function createImageInstance(el, media, effect, opts, kineto) {
   return {
     el,
     type: 'stylize',
-    get animatedMedia() { return animatedSource; },
+    // True when frames keep coming: an animated source, or a look that moves
+    // (motion / pointer) on a still picture.
+    get animatedMedia() { return animatedSource || settings.live; },
     /** Play the reveal again (persist: re-paint from the current frame). */
     replay() {
       if (destroyed) return;

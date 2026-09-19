@@ -22,6 +22,71 @@
 <img data-kt-stylize="dither" data-kt-mode="reveal" data-kt-trigger="view" src="photo.webp" alt="…">
 ```
 
+## 선명함은 대비에서 나옵니다
+
+이 모듈로 처음 만들어 보면 대개 결과가 뿌옇습니다. 이유는 두 가지이고, 둘 다
+해결되어 있습니다.
+
+첫째, **격자는 항상 device pixel 정수 배로 그립니다.** CSS 픽셀 기준으로 셀을
+잡으면 한 셀이 2.4 device pixel에 걸쳐 어떤 셀은 2px, 옆 셀은 3px이 되어 점이
+고르지 않고 어른거립니다. Kineto는 `cellSize`를 화면 배율에 맞춰 정수로 반올림해
+모든 점을 같은 크기로 만듭니다. 별도 설정은 없습니다.
+
+둘째, **사진은 대부분 중간 톤입니다.** 그대로 2색으로 디더하면 회색 죽이 됩니다.
+`contrast`(기본 1)를 1.3~1.6으로 올리면 형태가 또렷해지고, `brightness`로 잉크
+양을 맞춥니다. 레퍼런스에서 보는 인쇄물 같은 질감은 거의 이 한 줄에서 나옵니다.
+
+```html
+<img data-kt-stylize="dither" data-kt-cell-size="3" data-kt-dither-type="4x4"
+     data-kt-contrast="1.45" src="photo.webp" alt="…">
+```
+
+작은 `cellSize`(2~4)와 올린 `contrast`의 조합이 기본 출발점입니다.
+
+## 계속 움직이는 효과 (`motion`)
+
+`persist`는 정지 화면이 아닙니다. `motion`을 주면 정지 이미지에서도 효과 자체가
+살아 움직입니다.
+
+| 값 | 동작 | 어울리는 곳 |
+|---|---|---|
+| `none`(기본) | 한 번 그리고 멈춤 | 조용한 배경, 저사양 |
+| `drift` | 정렬 격자가 천천히 기어가며 필름 그레인처럼 일렁임 | dither · halftone |
+| `shuffle` | 밝기가 비슷한 글자·패턴으로 셀이 계속 교체됨 | ascii(터미널 느낌) |
+| `scan` | 밴드가 훑고 지나가며 그 구간이 진해짐 | CRT·터미널 연출 |
+| `flow` | 격자가 대각선으로 흐름 | 인쇄기·스크롤 느낌 |
+| `pulse` | 노출이 숨 쉬듯 오르내림 | 은은한 배경 |
+
+`motionSpeed`(기본 1)가 속도, `motionAmount`(기본 0.5)가 세기입니다.
+
+```html
+<img data-kt-stylize="ascii" data-kt-motion="shuffle" data-kt-motion-amount="0.35"
+     src="portrait.webp" alt="…">
+```
+
+> `drift`는 셀마다 임계값을 다시 뽑는 대신 **정렬 행렬을 이동**시킵니다. 임계값을
+> 무작위로 다시 뽑으면 정렬 디더가 랜덤 디더가 되어 사진이 노이즈로 녹아내립니다.
+
+## 포인터 반응 (`pointer`)
+
+| 값 | 동작 |
+|---|---|
+| `none`(기본) | 반응하지 않음 |
+| `lens` | 커서 주변 원형 영역만 `pointerCellSize` 격자로 다시 그림(선명하게 또는 더 거칠게) |
+| `spotlight` | 커서 주변의 잉크를 더함 |
+| `ripple` | 커서에서 물결이 퍼지며 잉크가 오르내림 |
+
+`pointerRadius`(기본 140px)가 범위, `pointerStrength`(기본 0.6)가 spotlight·ripple의
+세기, `pointerCellSize`(기본 0 = 바깥 격자의 절반)가 lens 안쪽 격자입니다.
+
+```html
+<img data-kt-stylize="dither" data-kt-cell-size="8"
+     data-kt-pointer="lens" data-kt-pointer-cell-size="2" data-kt-pointer-radius="90"
+     src="photo.webp" alt="…">
+```
+
+포인터가 없는 기기에서는 아무 일도 일어나지 않고 기본 격자만 보입니다.
+
 ## 유지(persist)와 리빌(reveal)
 
 `mode`는 이 모듈에서 가장 중요한 선택입니다.
@@ -34,6 +99,16 @@
 `reveal`일 때만 `trigger`가 의미를 가집니다. `load`는 이미지가 준비되는 즉시,
 `view`는 화면에 들어올 때(`threshold`·`rootMargin`), `manual`은 인스턴스의
 `replay()`를 부를 때 시작합니다.
+
+`transition`은 리빌이 원본으로 넘어가는 방식입니다.
+
+| 값 | 동작 |
+|---|---|
+| `dissolve`(기본) | 셀 크기는 그대로 두고 셀이 무작위 순서로 걷힘 — 모든 프레임이 완성된 효과만큼 선명 |
+| `wipe` | 같은 방식이되 대각선 경계가 훑고 지나감 |
+| `shrink` | 셀을 점점 줄인 뒤 크로스페이드. 가장 부드럽지만 중간 해상도가 흐릿해 권하지 않음 |
+
+`shrink`는 0.10.0의 동작이라 deprecated Lazy alias의 기본값으로만 남아 있습니다.
 
 ```js
 const stylized = Kineto.stylize('#hero', { effect: 'dither', mode: 'reveal', trigger: 'manual' });
@@ -54,6 +129,11 @@ stylized.replay();
 `Kineto.performance === 'low'`인 기기에서는 두 값이 자동으로 더 낮아집니다.
 큰 영상에 작은 셀을 쓰는 조합은 실제 기기에서 먼저 측정하세요.
 
+`motion`이나 `pointer`를 켜면 정지 이미지도 매 프레임 다시 그립니다. 화면에 이런
+카드를 여러 장 놓을 때는 `renderFps`를 12~18로 낮추는 것만으로 비용이 크게
+줄어듭니다. 아무 것도 켜지 않으면 정지 이미지는 한 번만 그리고 크기가 바뀔 때만
+다시 그립니다.
+
 ## 접근성과 안전한 실패
 
 - 원본 요소는 숨기지 않습니다. canvas가 픽셀을 읽을 수 없는 소스(CORS 헤더가
@@ -62,13 +142,23 @@ stylized.replay();
 - `prefers-reduced-motion`에서 `persist`는 그대로 적용됩니다(질감 자체는
   움직임이 아니며, 움직이는 소스는 질감과 무관하게 움직입니다). `reveal`은
   재생하지 않고 건드리지 않은 원본을 보여 줍니다.
+- 다만 `motion`은 말 그대로 움직임입니다. 중요한 콘텐츠 위에 강한 `motion`을
+  상시로 두지 말고, 장식 이미지에 낮은 `motionAmount`로 쓰세요.
 
-## Lazy와 함께 쓰기
+## Lazy와 함께 쓰기 (지연 로딩 + 리빌)
 
-두 모듈을 한 요소에 붙일 수 있습니다. Lazy가 만든 wrapper를 Stylize가
-재사용하므로 레이어가 겹치지 않습니다.
+두 모듈을 한 요소에 붙일 수 있습니다. Lazy가 이미지를 **가져오고**, Stylize가
+가져온 픽셀을 **그립니다.** Lazy가 만든 wrapper를 Stylize가 재사용하므로 레이어가
+겹치지 않습니다.
 
 ```html
+<!-- 뷰포트 근처에서 로드하고, 디더가 셀 단위로 걷히며 사진이 드러남 -->
+<img data-kt-lazy="fade"
+     data-kt-stylize="dither" data-kt-mode="reveal" data-kt-transition="dissolve"
+     data-kt-cell-size="3" data-kt-contrast="1.45" data-kt-duration="2.2"
+     data-src="photo.webp" alt="…">
+
+<!-- 로드는 Lazy가, 질감은 계속 유지 -->
 <img data-kt-lazy="fade" data-kt-stylize="halftone" data-src="photo.webp" alt="…">
 ```
 
