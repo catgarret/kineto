@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.10.0 · 작성일: 2026-08-02 · 검토: 2026-09-19
+> 기준 버전: v0.11.0 · 작성일: 2026-08-02 · 검토: 2026-09-19
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -35,12 +35,15 @@ variant 옵션 gating을 적용하도록 데모의 오래된 결함도 함께 �
 [QA 보고서 v0.10.0](QA_REPORT.md#v0100)에 기록했습니다. canonical Pages 배포는 정적 concurrency 그룹
 때문에 취소됐고(원인·수정은 같은 항목), 다음 `main` 푸시가 재배포합니다.
 
-v0.10.0 이후 Unreleased 배치는 “이미 쓰는 컴포넌트 라이브러리 옆에 붙는 Kineto”를 목표로 합니다.
-`Kineto.observe()`가 나중에 렌더링되는 DOM을 자동으로 붙이고 정리하며, 하나의 연동 지도
+v0.11.0에서 “어떤 프레임워크·디자인 시스템·컴포넌트 라이브러리 옆에 붙여도 동작하고 어울리는 Kineto”를 목표로 연동 프로그램을 도입했습니다.
+`Kineto.observe()`(29번째 Core API)가 나중에 렌더링되는 DOM을 자동으로 붙이고 정리하며, 하나의 연동 지도
 `kineto.integrations.json`에서 shadcn/ui·Tailwind·Bootstrap 5·MUI·Mantine·Chakra·Ant Design·daisyUI·
 Nuxt UI·PrimeVue·Vuetify 가이드, AI 규칙 파일(`ai/`, `llms.txt`), shadcn 레지스트리(`@kineto/*`),
-Kineto MCP 서버(`packages/kineto-mcp`) 계약 사본을 생성합니다. 주장은 실제 라이브러리로
-`tests/integrations/`에서, Bootstrap 5 공존 예제는 실제 브라우저에서 검증합니다(§3 원칙 참조).
+Kineto MCP 서버(`packages/kineto-mcp`, 독립 태그 `mcp-v*`로 릴리스) 계약 사본을 생성합니다. 주장은 실제
+라이브러리로 `tests/integrations/`에서, Bootstrap 5 공존 예제는 실제 브라우저에서 검증합니다(§3 원칙 참조).
+Pages 배포 concurrency 그룹을 실제 배포 전용으로 좁혀 v0.10.0에서 취소됐던 canonical 배포 문제도 함께
+고쳤습니다. 로컬 검증은 [QA 보고서](QA_REPORT.md)의 2026-09-19 연동 배치 항목에 있고, 원격 CI·Release·npm
+게시·배포 증거는 v0.11.0 배포 후 [QA 보고서](QA_REPORT.md#v0110)에 기록합니다.
 
 ## 1. 결론
 

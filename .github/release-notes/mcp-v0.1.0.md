@@ -1,6 +1,6 @@
 # Kineto MCP mcp-v0.1.0
 
-`@dong-gri/kineto-mcp` 0.1.0 — generated from Kineto 0.10.0 (feature contract 1.4.0, integrations map 1.0.0).
+`@dong-gri/kineto-mcp` 0.1.0 — generated from Kineto 0.11.0 (feature contract 1.4.0, integrations map 1.0.0).
 
 ## English
 

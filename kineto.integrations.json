@@ -1,7 +1,7 @@
 {
   "$schema": "./kineto.integrations.schema.json",
   "integrationsVersion": "1.0.0",
-  "libraryVersion": "0.10.0",
+  "libraryVersion": "0.11.0",
   "description": "Machine-readable guidance for using Kineto next to popular UI libraries and design systems, and for AI tools (Codex, Claude Code, Cursor, Figma MCP flows) that decide which Kineto module fits a piece of UI. Every module, variant and option named here is validated against kineto.features.json by tests/integrations-contract.mjs. Human-readable docs under docs/integrations/ and the AI rule files under ai/ are generated from this file — edit here, then run `npm run integrations:build`.",
   "principles": [
     "Kineto adds motion and media effects to markup you already own; it does not replace the component library's behaviour (dialogs, menus, forms, routing).",

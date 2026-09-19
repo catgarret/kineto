@@ -15,7 +15,7 @@ names the Kineto contract version its bundled copies were generated from.
 
 ## [0.1.0] - 2026-09-19
 
-Generated from Kineto 0.10.0 (feature contract 1.4.0, integrations map 1.0.0).
+Generated from Kineto 0.11.0 (feature contract 1.4.0, integrations map 1.0.0).
 
 ### English
 

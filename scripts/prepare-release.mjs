@@ -74,6 +74,7 @@ const versionFiles = [
   'OWNER_REQUIREMENTS.md',
   'kineto.features.json',
   'kineto.requirements.json',
+  'kineto.integrations.json',
   'demo/index.html',
   'docs/README.md',
   'docs/getting-started.md',

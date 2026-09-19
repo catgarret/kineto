@@ -1,7 +1,7 @@
-# Kineto v0.10.0 QA Report
+# Kineto v0.11.0 QA Report
 
 검증일: 2026-09-19
-대상: v0.10.0 게시 소스 + 연동 배치(Unreleased) · 이전 공개 배포 근거는 버전별로 유지
+대상: v0.11.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
 ## 2026-09-19 Unreleased 검증 (연동 배치: observe · 연동 지도 · 레지스트리 · MCP)
 
@@ -64,6 +64,16 @@ release package 552.9KB packed / 1820.6KB unpacked / 77 files, Vite full 143.6KB
 Vue 148.6KB, Rolldown full 143.3KB·React 147.8KB·Vue 149.2KB. `observe()`의 실측 비용(약 1.7KB raw /
 0.5KB gzip)만 반영해 raw 번들·패키지 상한을 다음 KB로 올렸고 gzip 상한·runner variance·소비자
 예산·77개 파일은 유지합니다.
+
+### v0.11.0 후보 검증 (release:prepare 이후)
+
+`release:prepare -- minor`로 버전을 0.11.0으로 올린 소스(연동 지도 `libraryVersion`, MCP 계약 사본
+`kinetoVersion` 포함)에서 lint·build·Node suite 전체(`test:observe`·`test:integrations`·`test:mcp`·
+`test:release`의 mcp-v 경로 포함)·`npm pack --dry-run`(77개 파일)·lockfile 5개 감사(0 취약점)를
+다시 통과했습니다. 브라우저 레인은 `measure.mjs`의 “slider leave resumes from remaining time” 검사
+하나가 이 컨테이너에서 간헐적으로 실패합니다(같은 실행에서 hover 시점의 진행률이 0.009~1.0으로 흔들려
+autoplay 타이머 자체가 불안정한 환경 요인; 변경 전 checkout에서도 동일하게 재현). 나머지 suite는 통과했고
+검사는 완화하지 않았습니다. 원격 CI가 최종 권위입니다.
 
 ### 이 환경에서 검증하지 못한 항목
 
@@ -525,7 +535,7 @@ registry의 해제 크기는 1,797,191 bytes로 확인했습니다. 이 수치�
 
 <!-- release:prepare updates this source label, not the publication evidence below. -->
 현재 소스의 패키지명은
-`@dong-gri/kineto`, 버전은 `0.10.0`입니다.
+`@dong-gri/kineto`, 버전은 `0.11.0`입니다.
 
 ## 배포 후 확인
 

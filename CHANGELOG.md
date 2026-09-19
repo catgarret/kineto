@@ -5,6 +5,16 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.11.0] - 2026-09-19
+
+### English
+
+<!-- Add matching English release bullets here. -->
 - Add `Kineto.observe(root?, { scan, attributes })`, the 29th Core API: a MutationObserver-based live-DOM mode that scans the root once, attaches modules to `data-kt-*` elements added later (batched per microtask), releases the instances of elements that leave the DOM, optionally reacts to `data-kt-*` attribute changes, stays idempotent per root, returns an inert handle during SSR, and is disconnected by a global `destroy()`. Covered by `tests/observe.mjs` and typed in `types/index.d.ts`.
 - Add the integration map `kineto.integrations.json` (+ JSON schema): twelve ecosystems (vanilla, shadcn/ui, Tailwind, Bootstrap 5, MUI, Mantine, Chakra UI, Ant Design, daisyUI, Nuxt UI, PrimeVue, Vuetify) with attach patterns, what each library already provides and the combinations to avoid; thirty design intents (hero headline, section entrance, card hover, KPI number, image loading, dialog enter/exit, toast, marquee, page transition …) with contract-validated recipes, English/Korean keywords and Figma layer-name patterns; and a Figma MCP workflow. `npm run integrations:build` generates `docs/integrations/*.md`, the agent rules `ai/kineto.rules.md`, the Cursor rule `ai/cursor/kineto.mdc`, `site/llms.txt` and `site/ai/kineto.rules.md`; `tests/integrations-contract.mjs` checks every recipe, attribute and snippet against the feature contract and fails when a generated file is stale.
 - Publish a shadcn registry from the demo site (`registry/` → `site/r/registry.json` + `site/r/<name>.json`, namespace `@kineto` → `https://kineto.dongri.me/r/{name}.json`): typed React wrappers `provider` (mounts `Kineto.observe()`), `reveal`, `text-reveal`, `counter`, `image`, `marquee`, `tilt-card`, `magnetic-button`, `presence`, `page-reveal`, the shared `utils` lib and an `ai-rules` item that installs the Cursor rule and Markdown rules into a project. `scripts/build-registry.mjs` validates the sources (kebab names, `'use client'`, URL-form registry dependencies, scoped package imports) and `npm run build` regenerates the site copies.
@@ -29,7 +39,6 @@
 - 저장소 게이트를 새 패키지까지 넓혔습니다. 감사 대상 lockfile, Dependabot, lockfile 경계(게시용 패키지 종류), 공급망 하한(picomatch를 메이저 라인별로 검사 — shadcn CLI는 micromatch를 통해 패치된 2.3.2 라인이 여전히 필요), `test:node`와 두 워크플로우의 `test:observe`/`test:integrations`/`test:mcp`, fixture·MCP 패키지까지 ESLint, 그리고 README(7개 언어)·문서 인덱스·Getting Started·AI 프롬프트 가이드에 `observe()`·연동 가이드·레지스트리·MCP 서버를 반영했습니다. React/Vue/jQuery 예제 README는 unscoped 이름 대신 `@dong-gri/kineto`를 설치합니다.
 - 검증된 v0.10.0 릴리스를 기록했습니다: 성공한 CI·Release 실행, provenance subject·릴리스 커밋이 일치하는 동일 바이트 npm/GitHub tarball, 그리고 취소된 canonical Pages 배포의 원인과 수정.
 - MCP 서버에 독립 릴리스 경로를 만들었습니다. `scripts/release-targets.mjs`가 태그 접두사를 패키지에 매핑하고(`v*` → `@dong-gri/kineto`, `mcp-v*` → `@dong-gri/kineto-mcp`), `npm run release:ship`이 이를 거치며, `scripts/check-mcp-release.mjs`가 태그 ↔ 버전, 바이트 동일한 계약 사본, 패키지 changelog, 이중언어 노트를 검증하고, `.github/workflows/release-mcp.yml`이 태그 소스를 검증한 뒤 digest를 확인한 tarball 하나를 최소 권한 job에서 provenance와 함께 게시하고 GitHub Release를 만듭니다. `release:prepare`는 `tests/integrations/package-lock.json`의 링크된 root 버전도 함께 올립니다.
-
 ## [0.10.0] - 2026-09-18
 
 ### English
