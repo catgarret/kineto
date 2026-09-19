@@ -50,6 +50,12 @@ const compare = window.KINETO_COMPARE;
 assert.ok(compare, 'demo/compare.js must expose its helpers so this gate checks the real implementation');
 compare.snapshot();
 
+// 스냅샷은 페이지를 여는 순간 돌아갑니다. 능력 하나당 복제본 하나를 넘기면 쓰지도 않을
+// 복제본이 수백 개 생기므로, 그 상한을 여기서 지킵니다.
+const snapshotStats = compare.stats();
+assert.ok(snapshotStats.clones <= snapshotStats.needed,
+  `the compare sheet snapshots ${snapshotStats.clones} clones for ${snapshotStats.needed} needed capabilities — one per capability is the budget`);
+
 const catalog = window.KINETO_VARIANT_CATALOG;
 const expected = contract.modules.filter((module) => (module.variants || []).length > 1).map(({ name }) => name);
 assert.deepEqual(Object.keys(catalog.modules).sort(), Array.from(expected).sort(),
@@ -153,4 +159,5 @@ if (problems.length) {
 }
 
 console.log(`variant-compare OK — ${Object.keys(catalog.modules).length} modules / ${catalog.variantCount} variants:`
-  + ` ${gridVariants} live side by side, ${controlVariants} play through the demo's own controls, ${linkVariants} explain why they cannot.`);
+  + ` ${gridVariants} live side by side, ${controlVariants} play through the demo's own controls, ${linkVariants} explain why they cannot;`
+  + ` the page-load snapshot holds ${snapshotStats.clones} clones.`);

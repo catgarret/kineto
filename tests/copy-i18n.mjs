@@ -69,7 +69,10 @@ assert.match(
 // Stylize contributes six cards (living grain, ASCII shuffle, pointer lens,
 // colour diffusion, halftone video scan, and the lazy-load dither reveal), and
 // the `radial` compatibility module its own card next to Slider's radial effect.
-assert.equal(descriptions.length, 176);
+// The last seven variants without dedicated markup got cards of their own: Lazy
+// data-mosaic and rgb-slice-burst, Cursor blob, and Glitch noise, crt, reveal
+// and rgb-slice-burst (docs/variant-distinctness.md).
+assert.equal(descriptions.length, 183);
 assert.equal(titles.length, 19);
 
 for (const [label, values, dictionary] of [

@@ -125,11 +125,25 @@ function authoredDemoVariants(module) {
   return authored;
 }
 
+// 지원 중단 예정(deprecated) variant 는 전용 데모 카드를 **가지면 안 됩니다.** 한 minor 동안
+// 계속 동작하되 "이제 이건 쓰지 마세요"가 계약의 입장이므로, 데모에서 선택지처럼 보여 주면
+// 그 입장과 정면으로 어긋납니다. 대신 비교 시트가 "지원 중단 예정" 배지와 함께 보여 줍니다
+// (docs/variant-compare.md). 그래서 직접 마크업 목표치는 deprecated 를 뺀 수입니다.
+function liveVariants(module) {
+  const deprecated = module.deprecatedVariants || [];
+  return module.variants.filter((variant) => !deprecated.includes(variant));
+}
+
 function assertAuditSummary(module, authored) {
+  const target = liveVariants(module);
   const summary = new RegExp('\\| `' + module.name + '` \\| `'
     + module.variants.length + '/' + module.variants.length + '` \\| `'
-    + authored.size + '/' + module.variants.length + '` \\| distinct \\|');
+    + authored.size + '/' + target.length + '` \\| distinct \\|');
   assert.match(audit, summary, `${module.name} audit summary must record contract and direct-demo coverage`);
+  for (const variant of module.deprecatedVariants || []) {
+    assert.ok(!authored.has(variant),
+      `${module.name}.${variant} is deprecated — it must not keep a dedicated demo card that reads as a choice`);
+  }
 }
 
 for (const [moduleName, mechanisms] of Object.entries(MODULE_AUDITS)) {
@@ -160,7 +174,7 @@ for (const [moduleName, mechanisms] of Object.entries(MODULE_AUDITS)) {
     assert.ok(module.variants.includes(variant), `${moduleName} demo authors stale variant "${variant}"`);
   }
   assertAuditSummary(module, authored);
-  additionalVariants += module.variants.length;
+  additionalVariants += liveVariants(module).length;
   directDemoVariants += authored.size;
 }
 
@@ -181,14 +195,14 @@ assert.ok(revealSource.includes("preset === 'class'"), 'Reveal class variant nee
 assert.ok(revealSource.includes("preset === 'clock'"), 'Reveal clock variant needs its conic-mask branch');
 assert.deepEqual(demoChoices.reveal, reveal.variants, 'Reveal settings choices must mirror the public contract');
 const authoredReveal = authoredDemoVariants(reveal);
-assert.deepEqual([...authoredReveal].sort(), [...reveal.variants].sort(),
+assert.deepEqual([...authoredReveal].sort(), [...liveVariants(reveal)].sort(),
   'every public Reveal preset must retain dedicated demo markup, not only a settings choice');
 for (const variant of authoredReveal) {
   assert.ok(reveal.variants.includes(variant), `Reveal demo authors stale variant "${variant}"`);
 }
 assertAuditSummary(reveal, authoredReveal);
-additionalVariants += reveal.variants.length;
+additionalVariants += liveVariants(reveal).length;
 directDemoVariants += authoredReveal.size;
 
 assert.match(audit, /확대 검토일: 2026-09-06/);
-console.log(`variant-distinctness OK — ${pageReveal.variants.length} Page Reveal + ${additionalVariants} expanded mechanisms audited; ${directDemoVariants}/${additionalVariants} expanded variants have dedicated demo markup and all remain available in settings.`);
+console.log(`variant-distinctness OK — ${pageReveal.variants.length} Page Reveal + ${additionalVariants} live expanded mechanisms audited; ${directDemoVariants}/${additionalVariants} have dedicated demo markup, deprecated aliases deliberately have none, and all remain available in settings.`);

@@ -1573,6 +1573,62 @@ window.KINETO_COPY_I18N = {
       "超過指定時長後，從相對時間切換為原始日期。",
       "После заданного срока переключается с относительного времени на исходную дату.",
       "Dopo il limite scelto passa dal tempo relativo alla data originale."
+    ],
+    "타일이 정해진 순서로 지워지며 이미지가 드러납니다.": [
+      "Tiles clear in a fixed order until the image is there.",
+      "タイルが決まった順に消えて画像が現れます。",
+      "方块按固定顺序消失，图像随之显现。",
+      "方塊按固定順序消失，影像隨之顯現。",
+      "Плитки исчезают в заданном порядке, открывая изображение.",
+      "I riquadri si cancellano in ordine fisso finché l'immagine appare."
+    ],
+    "색 채널이 어긋난 슬라이스가 한 번 터지고 정렬됩니다.": [
+      "Channel-shifted slices burst once, then settle into place.",
+      "色ずれしたスライスが一度弾けてから整列します。",
+      "色彩偏移的切片爆开一次后归位。",
+      "色彩偏移的切片爆開一次後歸位。",
+      "Срезы со смещёнными каналами вспыхивают раз и встают на место.",
+      "Fette con canali sfalsati esplodono una volta, poi si allineano."
+    ],
+    "흐릿하게 채워진 원이 커서를 늦게 따라옵니다.": [
+      "A soft filled circle lags behind the pointer.",
+      "ぼかした円がカーソルを遅れて追います。",
+      "一个模糊的实心圆延迟跟随指针。",
+      "一個模糊的實心圓延遲跟隨指標。",
+      "Размытый круг следует за курсором с задержкой.",
+      "Un cerchio pieno e sfocato insegue il puntatore in ritardo."
+    ],
+    "글자가 노이즈 문자로 바뀌었다가 원문으로 돌아옵니다.": [
+      "Letters scramble into noise characters, then resolve.",
+      "文字がノイズ文字に変わってから元に戻ります。",
+      "文字先变成噪点字符，再回到原文。",
+      "文字先變成雜訊字元，再回到原文。",
+      "Буквы превращаются в шумовые символы и возвращаются.",
+      "Le lettere diventano caratteri di rumore, poi tornano."
+    ],
+    "주사선이 위아래로 흐르며 화면이 미세하게 떨립니다.": [
+      "Scanlines roll up and down while the picture jitters.",
+      "走査線が上下に流れ、画面が細かく揺れます。",
+      "扫描线上下滚动，画面轻微抖动。",
+      "掃描線上下捲動，畫面輕微抖動。",
+      "Строки развёртки бегут вверх-вниз, картинка слегка дрожит.",
+      "Le scanline scorrono su e giù mentre l'immagine vibra."
+    ],
+    "글리치가 한 번 지나가며 이미지가 확정됩니다.": [
+      "One pass of glitch and the image is settled.",
+      "グリッチが一度走り、画像が確定します。",
+      "故障效果掠过一次，图像随即确定。",
+      "故障效果掠過一次，影像隨即確定。",
+      "Глитч проходит один раз — и изображение закреплено.",
+      "Un passaggio di glitch e l'immagine è definita."
+    ],
+    "같은 seed에서 같은 슬라이스가 한 번 터집니다.": [
+      "The same seed bursts the same slices every time.",
+      "同じ seed なら同じスライスが一度だけ弾けます。",
+      "相同 seed 每次爆开相同的切片。",
+      "相同 seed 每次爆開相同的切片。",
+      "Один и тот же seed даёт одни и те же срезы.",
+      "Lo stesso seed fa esplodere sempre le stesse fette."
     ]
   },
   "titles": {

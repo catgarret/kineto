@@ -30,10 +30,6 @@
   var CATALOG = (typeof window !== 'undefined' && window.KINETO_VARIANT_CATALOG) || { modules: {}, capabilities: {} };
   var MODULE_META = (typeof window !== 'undefined' && window.KINETO_MODULE_METADATA) || {};
 
-  // 소재 후보를 모듈마다 몇 개까지 복제해 둘지. variant 별 요구 조건(텍스트/이미지/영상…)을
-  // 만족하는 소재를 찾기 위한 것이라, 데모에 있는 모든 인스턴스를 들고 있을 필요는 없습니다.
-  var MAX_SPECIMENS = 12;
-
   // 데모가 "부모 크기를 그대로 쓴다"고 표시해 둔 소재. 타일 무대에서는 확정 높이를 줘야 합니다.
   var FILL_CLASS = /(^|\s)u-fill(\s|$)/;
 
@@ -87,7 +83,12 @@
   // ── 2. 소재 스냅샷 ─────────────────────────────────────────────────────────
   // Kineto 가 초기화되기 전에 한 번만 돕니다. 초기화 뒤의 DOM 은 모듈이 만든 결과물이라
   // 그것을 복제하면 "이미 실행된 모습"을 복제하게 됩니다.
-  var specimens = {};      // { module: [clonedNode, …] }  우선순위 순서
+  //
+  // 복제는 필요한 만큼만 합니다. 한 모듈이 실제로 필요로 하는 소재는 "그 모듈의 variant 들이
+  // 요구하는 능력의 가짓수"만큼이고(대부분 1개, Glitch 처럼 텍스트와 이미지를 함께 쓰는
+  // 모듈만 2~3개), 후보 목록 전체를 복제하면 페이지를 여는 순간 쓸모없는 복제본이 수백 개
+  // 생깁니다. 그래서 능력별로 첫 번째로 맞는 후보 하나씩만 들고 있습니다.
+  var specimens = {};       // { module: { capability: clonedNode } }
   var authoredOptions = {}; // { module: { variant: { 속성이름: 값 } } }
   var snapshotDone = false;
 
@@ -133,6 +134,15 @@
     return options;
   }
 
+  /** 이 모듈의 variant 들이 요구하는 능력의 집합. 복제할 소재의 가짓수이기도 합니다. */
+  function neededCapabilities(entry) {
+    var seen = [];
+    entry.variants.forEach(function (variant) {
+      if (seen.indexOf(variant.requires) === -1) seen.push(variant.requires);
+    });
+    return seen;
+  }
+
   function snapshot() {
     if (snapshotDone) return;
     snapshotDone = true;
@@ -140,9 +150,18 @@
       var entry = CATALOG.modules[name];
       if (entry.preview !== 'grid') return;
       var candidates = specimenCandidates(name, entry);
-      specimens[name] = candidates.slice(0, MAX_SPECIMENS).map(function (node) { return node.cloneNode(true); });
-      // 각 variant 로 authoring 된 인스턴스가 있으면 그 옵션만 기억해 둡니다.
-      // 소재는 같게 두고 옵션만 그 variant 에 맞게 입히기 위한 것입니다.
+      // 능력마다 첫 번째로 맞는 후보 하나씩만 복제합니다.
+      var byCapability = {};
+      neededCapabilities(entry).forEach(function (capability) {
+        for (var index = 0; index < candidates.length; index += 1) {
+          if (!satisfies(candidates[index], capability)) continue;
+          byCapability[capability] = candidates[index].cloneNode(true);
+          return;
+        }
+      });
+      specimens[name] = byCapability;
+      // 각 variant 로 authoring 된 인스턴스가 있으면 그 옵션만 기억해 둡니다(복제는 하지
+      // 않습니다). 소재는 같게 두고 옵션만 그 variant 에 맞게 입히기 위한 것입니다.
       var perVariant = {};
       candidates.forEach(function (node) {
         var variant = variantOf(entry, node);
@@ -153,13 +172,23 @@
     });
   }
 
-  /** 이 variant 를 보여 줄 수 있는 첫 소재. 없으면 null. */
+  /**
+   * 스냅샷이 실제로 들고 있는 양. 페이지를 여는 순간 치르는 비용이라 게이트가 지켜봅니다
+   * (tests/variant-compare.mjs) — 능력 하나당 복제본 하나를 넘기면 실패합니다.
+   */
+  function stats() {
+    var clones = 0;
+    var needed = 0;
+    Object.keys(specimens).forEach(function (name) {
+      clones += Object.keys(specimens[name]).length;
+      needed += neededCapabilities(CATALOG.modules[name]).length;
+    });
+    return { modules: Object.keys(specimens).length, clones: clones, needed: needed };
+  }
+
+  /** 이 variant 를 보여 줄 수 있는 소재. 없으면 null. */
   function specimenFor(name, requires) {
-    var list = specimens[name] || [];
-    for (var index = 0; index < list.length; index += 1) {
-      if (satisfies(list[index], requires)) return list[index];
-    }
-    return null;
+    return (specimens[name] || {})[requires] || null;
   }
 
   // ── 3. 타일 만들기 ─────────────────────────────────────────────────────────
@@ -219,6 +248,22 @@
     return entry.attribute + ' ' + entry.carrierAttribute + '="' + variant.name + '"';
   }
 
+  /**
+   * 타일의 "다시 재생". 데모 카드가 쓰는 것과 **같은** 컨트롤입니다 — 무대 오른쪽 아래에
+   * 떠 있는 원형 아이콘 버튼(`.replay-fab`, styles.css). 시트만 다른 모양을 쓰면 같은 동작에
+   * 두 가지 디자인이 생기고, 좁은 타일에서는 아래 줄로 접혀 줄바꿈이 납니다.
+   */
+  function replayControl() {
+    var element = document.createElement('button');
+    element.type = 'button';
+    element.className = 'replay-fab variant-tile__replay';
+    element.innerHTML = '<i class="ph-bold ph-arrow-counter-clockwise" aria-hidden="true"></i>';
+    element.dataset.demoI18nAriaLabel = '다시 재생';
+    element.setAttribute('aria-label', t('다시 재생'));
+    element.title = t('다시 재생');
+    return element;
+  }
+
   function button(className, labelKey, iconClass) {
     var element = document.createElement('button');
     element.type = 'button';
@@ -271,6 +316,7 @@
         // 그 뒤에 무대 크기를 바꿔도 다시 재지 않기 때문입니다.
         if (FILL_CLASS.test(material.className || '')) stage.classList.add('is-filled');
         stage.appendChild(material);
+        stage.appendChild(replayControl());
         tile.dataset.variantPending = 'true';
       } else {
         // 여기 오면 안 됩니다 — tests/variant-compare.mjs 가 막습니다. 그래도 조용히
@@ -291,7 +337,6 @@
     var copy = button('variant-tile__copy', '복사', 'ph-bold ph-copy');
     copy.dataset.variantCopy = markup.textContent;
     footer.appendChild(copy);
-    if (entry.preview === 'grid') footer.appendChild(button('variant-tile__replay', '다시 재생', 'ph-bold ph-arrow-counter-clockwise'));
     tile.appendChild(footer);
     return tile;
   }
@@ -348,7 +393,7 @@
    * 데모는 인라인 스타일을 금지합니다(tests/no-inline-styles.mjs).
    */
   function fitToStage(stage) {
-    var material = stage.firstElementChild;
+    var material = materialOf(stage);
     if (!material || typeof material.getBoundingClientRect !== 'function') return;
     var measure = function () {
       var box = material.getBoundingClientRect();
@@ -484,12 +529,17 @@
     }
   }
 
+  /** 무대에 올라간 소재. 무대에는 소재와 다시 재생 버튼만 있습니다. */
+  function materialOf(stage) {
+    return stage ? stage.querySelector(':scope > *:not(.replay-fab):not(.variant-tile__missing)') : null;
+  }
+
   function replayTile(tile) {
     var stage = tile && tile.querySelector('.variant-tile__stage');
     if (!stage || !window.Kineto) return;
     if (tile.dataset.variantPending === 'true') { initTile(tile); return; }
     var name = tile.dataset.variantModule;
-    try { window.Kineto.replay(stage.firstElementChild, name); } catch (error) { /* 이 모듈은 replay 를 제공하지 않습니다 */ }
+    try { window.Kineto.replay(materialOf(stage), name); } catch (error) { /* 이 모듈은 replay 를 제공하지 않습니다 */ }
   }
 
   function replayAll(trigger) {
@@ -538,6 +588,7 @@
     attach: attach,
     snapshot: snapshot,
     // 테스트가 같은 구현을 그대로 확인할 수 있도록 내보냅니다(사본을 만들지 않기 위해서입니다).
+    stats: stats,
     satisfies: satisfies,
     specimenFor: specimenFor,
     specimenCandidates: specimenCandidates,

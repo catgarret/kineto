@@ -1343,9 +1343,12 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
     .variant-tile__action:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
     .variant-tile__foot{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
     .variant-tile__markup{flex:1 1 120px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font:500 10px/1.5 var(--font-mono)}
-    .variant-tile__copy,.variant-tile__replay{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--muted);font:600 10px/1 var(--font-sans);cursor:pointer}
-    .variant-tile__copy:hover,.variant-tile__replay:hover{border-color:var(--line);color:var(--text)}
-    .variant-tile__copy i,.variant-tile__replay i{font-size:11px}
+    .variant-tile__copy{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--muted);font:600 10px/1 var(--font-sans);cursor:pointer}
+    .variant-tile__copy:hover{border-color:var(--line);color:var(--text)}
+    .variant-tile__copy i{font-size:11px}
+    /* 다시 재생은 데모 카드와 같은 .replay-fab 를 씁니다. 타일이 좁아 한 치수 작게만 조정합니다. */
+    .variant-tile__stage .replay-fab{right:10px;bottom:10px;width:28px;height:28px}
+    .variant-tile__stage .replay-fab i{font-size:13px}
     @media (max-width:640px){
       .variant-compare__sheet{padding:var(--sp-3)}
       .variant-compare__grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}

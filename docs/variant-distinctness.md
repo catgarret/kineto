@@ -41,29 +41,34 @@
 경로가 소스에 남아 있다는 뜻입니다. 정적 검사는 각 공개 이름을 고유한 mechanism
 identity와 실제 source anchor 묶음에 연결합니다.
 
+“전용 demo markup”의 분모는 **지원 중단 예정이 아닌** variant 수입니다. deprecated alias
+(`lazy`의 `dither`·`ascii`·`halftone`)는 한 minor 동안 계속 동작하지만 계약의 입장이
+“이제 쓰지 마세요”이므로, 데모에서 선택지처럼 보이는 전용 카드를 **일부러 주지 않습니다**.
+대신 [variant 비교 시트](variant-compare.md)가 “지원 중단 예정” 배지와 함께 보여 줍니다.
+
 | module | source mechanism | 전용 demo markup | 상태 |
 |---|---:|---:|---|
 | `reveal` | `23/23` | `23/23` | distinct |
-| `lazy` | `16/16` | `11/16` | distinct |
+| `lazy` | `16/16` | `13/13` | distinct |
 | `stylize` | `3/3` | `3/3` | distinct |
-| `cursor` | `11/11` | `10/11` | distinct |
+| `cursor` | `11/11` | `11/11` | distinct |
 | `overflowText` | `11/11` | `11/11` | distinct |
-| `glitch` | `10/10` | `6/10` | distinct |
+| `glitch` | `10/10` | `10/10` | distinct |
 | `slider` | `10/10` | `10/10` | distinct |
 
-전용 markup 합계는 74/81입니다. Slider는 10개 효과를 모두 전용 카드로
+전용 markup 합계는 81/81입니다(지원 중단 예정 3개 제외). Slider는 10개 효과를 모두 전용 카드로
 비교하고, Reveal은 `mask`, `swing`, `skew`의 줄바꿈을 포함한 예제를
 추가했습니다. Fade·Zoom In/Out·Flip X/Y도 동일 문구·크기·시간의 비교 카드로
 제공하며, Fade Down/Left/Right·Slide Down/Right의 시작 위치도 비교합니다.
 실제 설정 연결·고유 공유 링크·데스크톱/390px 레이아웃을 검사합니다.
 Blur·Rise·Soft·Rotate도 동일 조건의 비교 카드로 추가해 Reveal의 23개
-프리셋 모두 전용 markup을 갖춥니다. 남은 전용 예제는 Lazy의 `data-mosaic`·
-`rgb-slice-burst`, Cursor의 `blob`, Glitch의 `noise`·`crt`·`reveal`·
-`rgb-slice-burst` 7개이며, 이 집계는 실기기 시각 검증 완료를 뜻하지 않습니다.
+프리셋 모두 전용 markup을 갖춥니다. 마지막까지 남아 있던 일곱 개 — Lazy의 `data-mosaic`·
+`rgb-slice-burst`, Cursor의 `blob`, Glitch의 `noise`·`crt`·`reveal`·`rgb-slice-burst` —
+도 전용 카드를 갖췄습니다. 이 집계는 실기기 시각 검증 완료를 뜻하지 않습니다.
 Glitch Wave는 1회 재생과 시작·반복·지연 설정을 확인하는
 전용 예제를 추가했습니다. 새 카드의 설정 공유는 semantic v2만 사용해 과거 v1 순번을
 바꾸지 않습니다. 전용 카드가 없는 variant도 생성된
-`PUBLIC_VARIANTS` 설정 선택지에는 81/81 모두 노출됩니다. 따라서 위 수치는 기능
+`PUBLIC_VARIANTS` 설정 선택지에는 84/84(지원 중단 예정 포함) 모두 노출되고, 비교 시트에도 모두 나타납니다. 따라서 위 수치는 기능
 구현 여부를 낮춰 잡은 값이 아니라, 첫 화면에서 즉시 비교할 수 있는 시각 QA 표면의
 범위를 별도로 드러낸 값입니다. 데모가 계약에 없는 오래된 이름을 직접 작성하거나
 설정 선택지에서 공개 variant를 누락하면 CI가 실패합니다.
