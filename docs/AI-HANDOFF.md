@@ -47,7 +47,7 @@ another agent's prose report are leads to verify, not evidence of completion.
 
 - Package: `@dong-gri/kineto`
 - Current source version: `0.10.0`
-- Latest published npm version at the time of this handoff: `0.9.9`
+- Latest published npm version at the time of this handoff: `0.10.0`
 - Public surface: 52 modules and 29 Core APIs
 - Primary branch: `main`
 - Remote: `https://github.com/catgarret/kineto`
@@ -170,6 +170,34 @@ rasterizer's pure parts. Budgets absorb the measured ~13 KB raw / 4.7 KB gzip
 cost only. Guides changed: push vs release approvals, `data-demo-no-legacy-share`,
 `KT_CHROME` unification, real-usage evidence definition and variant→module
 promotion criteria in ROADMAP §3.
+
+v0.10.0 shipped on 2026-09-19 04:22 UTC (KST 13:22): CI `35420646875` and
+Release `35420648097` succeeded; npm and GitHub tarballs are byte-identical
+(`50d6d0e0…658f`, 563,063 bytes), provenance points at release commit
+`3228d26cdd91380fdb08af59c2580b7876f6f59f`. The canonical Pages deploy
+(`35421347873`) was **cancelled** by the static `demo-site` concurrency group —
+Dependabot-branch CI completions create skipped `workflow_run` deploys that
+still entered the group — so kineto.dongri.me kept serving build `9b9449e`
+(v0.9.9) while the backup mirror already served `3228d26`. `pages.yml` now scopes
+the group to real deploys (`demo-site-main`) and `tests/release-automation.mjs`
+locks it; the next successful `main` push CI (or a `workflow_dispatch` of
+`pages.yml`) republishes the canonical site. See QA_REPORT `### v0.10.0`.
+
+The post-v0.10.0 Unreleased batch is the integration program: `Kineto.observe()`
+(29th Core API, MutationObserver-based live DOM attach/release),
+`kineto.integrations.json` (+ schema; 12 ecosystems, 30 intents, Figma hints)
+generating `docs/integrations/*.md`, `ai/kineto.rules.md`,
+`ai/cursor/kineto.mdc`, `site/llms.txt` and the MCP contract copies via
+`npm run integrations:build`; the shadcn registry (`registry/` → `site/r/*.json`,
+namespace `@kineto`); the real-library fixture `tests/integrations/` (MUI,
+Mantine, Chakra, Ant Design, Vuetify, PrimeVue attachment QA, strict TS +
+`shadcn add` registry QA incl. the namespaced form, and the Bootstrap 5
+coexistence page `examples/bootstrap/index.html` driven in Chromium); and the
+MCP server package `packages/kineto-mcp` (`@dong-gri/kineto-mcp`, seven tools,
+four resources, one prompt, stdio E2E test; publishing is the owner's call).
+All of it is contract-checked by `tests/integrations-contract.mjs` and wired
+into `test:node`, both workflow loops (`test:observe`, `test:integrations`,
+`test:mcp`), lockfile/audit/Dependabot coverage and lint.
 
 Environment note for agents: every browser suite locates a local Chromium
 through `KT_CHROME` (`MK_CHROMIUM` remains a legacy alias for the demo /

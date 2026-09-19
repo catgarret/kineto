@@ -1,7 +1,77 @@
 # Kineto v0.10.0 QA Report
 
-검증일: 2026-09-18
-대상: v0.10.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
+검증일: 2026-09-19
+대상: v0.10.0 게시 소스 + 연동 배치(Unreleased) · 이전 공개 배포 근거는 버전별로 유지
+
+## 2026-09-19 Unreleased 검증 (연동 배치: observe · 연동 지도 · 레지스트리 · MCP)
+
+v0.10.0 게시 직후 같은 클라우드 클론(Node 22.22 · npm 10.9 · Chromium 141)에서 검증했습니다.
+원격 CI(Node 24 · 최신 Playwright 세 엔진)가 최종 권위입니다.
+
+### `Kineto.observe()` (29번째 Core API)
+
+`tests/observe.mjs`(jsdom)가 root당 단일 observer(멱등), 마이크로태스크 배칭, 제거 시 인스턴스 정리,
+core teardown 이후 생존, `attributes` 옵션, `disconnect()`, 전역 `destroy()` 연동, SSR 비활성 핸들을
+검증합니다. `tests/types.ts`가 `KinetoObserveOptions`/`KinetoObserverHandle`을 strict로 컴파일합니다.
+실제 라이브러리 검증은 아래 attachment QA의 React client render 케이스가 담당합니다.
+
+### 연동 지도와 생성물
+
+`tests/integrations-contract.mjs`: 12개 생태계·30개 의도·85개 레시피가 기능 계약(52개 모듈)과 일치,
+53개 모듈 커버(의도 없는 모듈 0), Figma 규칙이 실제 의도를 가리킴, 생성 문서 18개·레지스트리 13개·MCP
+계약 사본 6개가 현재 상태, README·예제 README가 unscoped 패키지명을 쓰지 않음.
+
+### 실제 라이브러리 attachment QA (`tests/integrations/attachment-qa.mjs`)
+
+MUI 7.3.11·Mantine 8.3.18·Chakra 3.37.0·antd 5.29.3(React 19.3.0 SSR → jsdom → `Kineto.scan()`),
+React client render + `Kineto.observe()`(붙임·해제), Vuetify 3.13.4·PrimeVue 4.5.5(Vue 3.5.43 SSR)
+— 18개 검사 통과. GSAP 엔진이 필요한 모듈은 jsdom에서 초기화되지 않으므로 속성 전달만 확인하고,
+엔진이 필요 없는 모듈(tilt·magnetic·glitch·cardGlow)로 인스턴스 생성을 증명합니다.
+
+### shadcn 레지스트리 QA (`tests/integrations/registry-qa.mjs`)
+
+12개 항목 유효성, `site/r/*.json`이 원본과 바이트 일치, registry-item 스키마, 실제 `@types/react`로
+strict TypeScript 통과, shadcn CLI 3.8.5가 새 프로젝트에 URL 형식(provider·reveal·counter·utils·
+ai-rules)과 `@kineto` 네임스페이스(`registries` 템플릿, 로컬 HTTP 서버) 두 방식으로 설치, lib alias
+재작성과 `@dong-gri/kineto` 의존성 추가 확인.
+
+### Bootstrap 5 공존 QA (`tests/integrations/bootstrap-qa.mjs`, Chromium)
+
+bootstrap 5.3.8 CDN 파일 2개의 SRI가 설치 패키지와 일치(오프라인 검증), 원격 `<link>/<script>` 전부
+integrity 보유, `.carousel`+`data-kt-slider`·이중 툴팁·`.placeholder`+lazy 조합 없음. 실제 페이지에서
+모달(포커스 Bootstrap 소유, 본문 reveal 재생), 툴팁 1개(Kineto 0개), 아코디언(본문 reveal), 캐러셀
+(slider 인스턴스 없음), 동적 카드 tilt, 동적 토스트 textReveal 붙임·제거 시 해제, KPI 카운터
+`12,800`·`98%`·`42` 도달, `.row` display flex 유지, `Kineto.destroy()` 뒤 Bootstrap 모달 정상, 콘솔·
+페이지·요청 오류 0.
+
+### Kineto MCP 서버 (`packages/kineto-mcp`)
+
+`npm test`가 순수 로직(모듈 목록·필터, 영/한 의도 랭킹, 라이브러리 우선 판단, 스니펫, 옵션 검증
+did-you-mean, Figma 레이어 매핑·자동 이름 무시)과 stdio 왕복(도구 7개·리소스 4개·프롬프트 1개, 입력
+스키마가 경로 문자열·비식별자 옵션 키·400자 초과 질의를 거부)을 검증합니다. Kineto 0.10.0 계약 사본.
+
+### 게이트·문서
+
+lockfile 5개 경계(`lockfile-boundary`), 감사 5개 대상 0 취약점(`audit:lockfiles`), 공급망 하한
+(picomatch 4.0.7 / 2.3.2 라인별), Dependabot 5개 npm 디렉터리, `test:release`가 `test:node`의 모든
+단계(`test:observe`·`test:integrations`·`test:mcp`)가 두 워크플로우에 있음을 확인, `docs-navigation`이
+README 7개 언어·문서 인덱스·Getting Started·AI 프롬프트 가이드의 연동 링크와 생성 문서 표식을 확인.
+
+### 측정과 예산
+
+Node 22 기준 readable ESM 541.9/144.7KB, min ESM 425.7/129.1KB, UMD 423.9/128.5KB(raw/gzip),
+release package 552.9KB packed / 1820.6KB unpacked / 77 files, Vite full 143.6KB·React 147.5KB·
+Vue 148.6KB, Rolldown full 143.3KB·React 147.8KB·Vue 149.2KB. `observe()`의 실측 비용(약 1.7KB raw /
+0.5KB gzip)만 반영해 raw 번들·패키지 상한을 다음 KB로 올렸고 gzip 상한·runner variance·소비자
+예산·77개 파일은 유지합니다.
+
+### 이 환경에서 검증하지 못한 항목
+
+`test:demo`의 animated-media 단계는 v0.9.8·v0.9.9·v0.10.0 기준선과 동일하게 이 컨테이너의 Chromium
+141에서 실패해 환경 요인으로 분류했습니다. 그 외 lint·build·Node suite 전체(새 게이트 포함)·Chromium
+브라우저 레인 전체·`npm pack --dry-run`(77개 파일)이 통과했습니다. Nuxt UI·daisyUI·Tailwind는 문서
+전용(attachment는 Vue/React 공통 경로)이며, MCP 서버의 실제 에이전트 클라이언트 연결과 npm 게시는
+소유자 확인 항목입니다. 원격 CI는 다음 `main` 푸시에서 확인합니다.
 
 ## 2026-09-19 Unreleased 검증 (v0.10.0 후보)
 
@@ -495,6 +565,15 @@ registry의 해제 크기는 1,797,191 bytes로 확인했습니다. 이 수치�
 | `assets/motion-demo.gif` | `c92c37f8a025be36660a05dfc11d5d12464ea0e929b3c6284252964718c4aac6` |
 | `assets/motion-demo.webp` | `68f2430e17b5e12c95aec32558aec30a589f2575c9d09007c70f57f697846e11` |
 | `assets/motion-demo.png` | `f841f7735a9c73a31b5aef162b84a372ce6dc6ed33cee0f249e1f91c76a603bc` |
+
+### v0.10.0
+
+- [CI `35420646875`](https://github.com/catgarret/kineto/actions/runs/35420646875)(release: prepare v0.10.0, 15m41s: Node 24 full suite 8m16s, Node 20.19·22.12 엔진 계약, Firefox·WebKit smoke)와 [Release `35420648097`](https://github.com/catgarret/kineto/actions/runs/35420648097)(8m07s: Verify·Chromium·package 6m29s, Firefox/WebKit release gate, publish 30s; artifact `verified-package-v0.10.0` 550 KB `sha256:2a003c25e23f2ab13f7891a7ce689a37893fb12c6266cce1450b1dd51203d6ef`)는 성공했습니다.
+- **canonical Pages는 배포되지 않았습니다.** [Deploy demo site `35421347873`](https://github.com/catgarret/kineto/actions/runs/35421347873)(#217, 3228d26)는 14초 만에 `Canceling since a higher priority waiting request for demo-site exists`로 취소됐습니다. 원인은 `pages.yml`의 정적 `concurrency.group: demo-site`입니다. Dependabot 브랜치 CI가 완료될 때마다 `workflow_run`으로 만들어지는 Deploy 실행(#214–#216·#218, job 조건 불충족으로 skip)이 같은 그룹에 들어와 진행 중이던 실제 배포를 취소했습니다. 2026-09-19 05:29 UTC 기준 `https://kineto.dongri.me`는 여전히 build `9b9449e`(v0.9.9 UMD `676c4517…`)를 서빙하고, 15분 주기 backup `git.dongri.me/example/kineto`는 build `3228d26`·UMD `a4491a34…`(npm과 동일)를 서빙해 `test:live-site:parity`가 설계대로 불일치를 보고합니다. 수정: 실제 배포(main push·workflow_dispatch)만 `demo-site-main` 그룹을 공유하고 그 외 실행은 `run_id` 그룹을 쓰도록 바꿨으며(`tests/release-automation.mjs`가 고정), 다음 `main` 푸시의 CI → Deploy가 현재 코드로 canonical을 갱신합니다(또는 `pages.yml` `workflow_dispatch`).
+- npm `@dong-gri/kineto@0.10.0`의 게시 시각은 `2026-09-19T04:22:09.141Z`, 77개 파일, unpacked 1,855,536 bytes, shasum `239f5dbb305f7a80ea87ce050f60018729924f8f`, integrity `sha512-uNS/RcBMPqih1DiS+iLX7NAU2vm5Sl/mqFbZa7cpPhaJPU7DWmbDr+pE6lTvWyq8oxSHBRUPCsSd1MMD990jAw==`입니다. [GitHub Release v0.10.0](https://github.com/catgarret/kineto/releases/tag/v0.10.0)은 github-actions가 영문 → 한국어 순서의 노트와 tarball asset으로 생성했습니다.
+- npm registry tarball과 GitHub Release asset은 563,063 bytes, SHA-256 `50d6d0e0cbeb71ae8fa4b184a3fd2431ee792ff632b17014b2bb23b2584b658f`로 byte-for-byte 일치합니다. tarball 안의 `dist/kineto.umd.min.js`(432,902 bytes, SHA-256 `a4491a343cd5d42ac830b8d14adc34455f49e19f435394e70a4c2d063bd03b16`)와 `dist/kineto.min.css`(45,081 bytes, `c777c609…802e31`)는 릴리스 커밋 `3228d26`의 추적 `dist/`와 동일합니다.
+- npm publish/v0.1·SLSA provenance/v1 attestation의 subject SHA512 `b8d4bf45…`가 실제 tarball과 일치합니다. source는 `git+https://github.com/catgarret/kineto@refs/tags/v0.10.0` commit `3228d26cdd91380fdb08af59c2580b7876f6f59f`, workflow는 `.github/workflows/release.yml@refs/tags/v0.10.0`입니다. 서명·투명성 로그의 암호학적 신뢰 체인 검증은 별도로 수행하지 않았습니다.
+- 릴리스 커밋 체인은 저자 `Claude <noreply@anthropic.com>`으로 재구성한 커밋(트리는 원본과 동일)이며 `git ls-remote`로 `origin/main == 3228d26`, `v0.10.0 == fd9f01c`(annotated tag)임을 확인했습니다.
 
 ### v0.9.9
 
