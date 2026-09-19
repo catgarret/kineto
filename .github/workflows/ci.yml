@@ -45,6 +45,7 @@ jobs:
           npm run build
           npm run test:utils
           npm run test:states
+          npm run test:observe
           npm run test:presence
           npm run test:package
           npm run test:types
@@ -93,7 +94,7 @@ jobs:
       - name: Run Node tests · contracts and package
         run: |
           set -euo pipefail
-          for command in test:utils test:diagnostics test:states test:presence test:contract test:requirements test:docs test:docs-navigation test:roadmap-readiness test:readiness-gates test:readiness-evidence test:lockfile-boundary test:supply-chain-automation test:module-metadata test:module-status test:mobile-device-manifest test:package test:types test:package-size test:package-tarball; do
+          for command in test:utils test:diagnostics test:states test:observe test:presence test:contract test:requirements test:docs test:docs-navigation test:roadmap-readiness test:readiness-gates test:readiness-evidence test:lockfile-boundary test:supply-chain-automation test:module-metadata test:module-status test:mobile-device-manifest test:package test:types test:package-size test:package-tarball; do
             echo "::group::$command"
             node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a ci.log
             echo "::endgroup::"

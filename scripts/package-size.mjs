@@ -123,7 +123,12 @@ const BUDGET = {
   // for <img> and <video>) ships in every JS artifact and the modular lazy
   // entry: 549.9 KB packed / 1812.0 KB unpacked on Node 22/npm 10, still 77
   // files. Requested feature bytes — round both ceilings to the next KB.
-  packedKb: 551,
+  // 2026-09-19: `Kineto.observe()` (MutationObserver live-DOM attach/release,
+  // the 29th Core API) ships in the ESM/UMD/min bundles, the modular core and
+  // the type declarations: 552.9 KB packed / 1820.6 KB unpacked on Node
+  // 22/npm 10, still 77 files. Requested Core API bytes — round both ceilings
+  // to the next KB.
+  packedKb: 553,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -131,7 +136,8 @@ const BUDGET = {
   // See the 2026-09-18 note above for the 1773.1 KB measurement; the shared
   // priority-preserving inline-style snapshot then measures 1774.2 KB.
   // See the 2026-09-19 note above for the 1812.0 KB stylized-media measurement.
-  unpackedKb: 1813,
+  // See the 2026-09-19 observe() note above for the 1820.6 KB measurement.
+  unpackedKb: 1821,
   files: 77
 };
 

@@ -1,4 +1,4 @@
-import Kineto, { reveal, slider, states, type KinetoInstance, type KinetoModule, type KinetoDiagnostic } from '@dong-gri/kineto';
+import Kineto, { reveal, slider, states, type KinetoInstance, type KinetoModule, type KinetoDiagnostic, type KinetoObserverHandle } from '@dong-gri/kineto';
 import ModularCore from '@dong-gri/kineto/core';
 import sliderModule from '@dong-gri/kineto/modules/slider';
 import modularPresence from '@dong-gri/kineto/presence';
@@ -8,6 +8,10 @@ const result: KinetoInstance | KinetoInstance[] | null = reveal(target, { preset
 slider(target, { infinite: false });
 Kineto.create('reveal', target, { duration: 0.3 });
 Kineto.destroyModule(target, 'reveal').refresh();
+const liveDom: KinetoObserverHandle = Kineto.observe(document, { attributes: true });
+const liveRoot: KinetoObserverHandle = Kineto.observe('#app', { scan: false });
+void liveRoot.active;
+liveDom.disconnect();
 
 const moduleDefinition: KinetoModule = sliderModule;
 ModularCore.register('slider', moduleDefinition).slider(target);

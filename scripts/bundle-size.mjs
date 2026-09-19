@@ -135,15 +135,22 @@ const BUDGETS = {
   // ESM and 422.6/128.0 KB UMD — about 13 KB raw / 4.7 KB gzip of requested
   // feature code, not variance or a bundled engine. Ceilings round up to the
   // next KB; variance, CSS, dependencies and the entry allowlist are unchanged.
-  'kineto.js': { raw: 541, gz: 145, variance: 2 },
+  // 2026-09-19: `Kineto.observe()` (MutationObserver live-DOM attach/release:
+  // per-root observer registry, microtask batching, detached-record release,
+  // SSR-inert handle) measures 541.9/144.7 KB readable ESM, 425.7/129.1 KB
+  // min ESM and 423.9/128.5 KB UMD — about 1.7 KB raw / 0.5 KB gzip of a
+  // requested Core API. Raw ceilings round to the next KB; gzip stays within
+  // the existing ceilings + variance, which are unchanged.
+  'kineto.js': { raw: 542, gz: 145, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
   // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/
   // camelCase names, vendor members, `!important`) measures 415.1 KB raw in
   // the minified ESM while gzip stays inside the existing variance.
-  'kineto.min.js': { raw: 425, gz: 129, variance: 2 },
-  'kineto.umd.js': { raw: 423, gz: 129, variance: 1 },
-  'kineto.umd.min.js': { raw: 423, gz: 129, variance: 1 },
+  // See the 2026-09-19 observe() note above for the 425.7 / 423.9 KB raw values.
+  'kineto.min.js': { raw: 426, gz: 129, variance: 2 },
+  'kineto.umd.js': { raw: 424, gz: 129, variance: 1 },
+  'kineto.umd.min.js': { raw: 424, gz: 129, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

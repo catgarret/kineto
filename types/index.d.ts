@@ -158,6 +158,12 @@ export interface KinetoStatic {
   init(root?: ParentNode | Element | null): this;
   initModules(targets: KinetoTarget): this;
   autoInit(root?: ParentNode | Element | null): this;
+  /**
+   * Watch a root for markup added or removed after the first scan (React/Vue
+   * renders, UI-library portals and modals). Added subtrees are scanned;
+   * instances whose element left the document are destroyed.
+   */
+  observe(root?: ParentNode | Element | string | null, options?: KinetoObserveOptions): KinetoObserverHandle;
   getInstance(target: KinetoTarget, name?: string): KinetoInstance | KinetoInstance[] | null;
   updateModule(target: KinetoTarget, name: string, patch?: KinetoOptions): boolean;
   destroyModule(target: KinetoTarget, name: string): this;
@@ -168,6 +174,20 @@ export interface KinetoStatic {
   refresh(): this;
   states(definitions: KinetoStateDefinitions, options?: KinetoOptions): KinetoStateController;
   listTerminalFramePresets(): unknown;
+}
+
+export interface KinetoObserveOptions {
+  /** Scan the root immediately (default true). */
+  scan?: boolean;
+  /** Also react when a `data-kt-*` attribute is added to an existing element (default false). */
+  attributes?: boolean;
+}
+
+export interface KinetoObserverHandle {
+  root: ParentNode | Element | null;
+  active: boolean;
+  /** Stop watching. Existing instances stay alive. */
+  disconnect(): void;
 }
 
 declare const Kineto: KinetoStatic & Record<ModuleName, KinetoFactory>;

@@ -48,7 +48,7 @@ another agent's prose report are leads to verify, not evidence of completion.
 - Package: `@dong-gri/kineto`
 - Current source version: `0.10.0`
 - Latest published npm version at the time of this handoff: `0.9.9`
-- Public surface: 52 modules and 28 Core APIs
+- Public surface: 52 modules and 29 Core APIs
 - Primary branch: `main`
 - Remote: `https://github.com/catgarret/kineto`
 

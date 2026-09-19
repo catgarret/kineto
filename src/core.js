@@ -39,6 +39,10 @@ import { toCSS as easingToCSS, fn as easingFn, EASINGS } from './easings.js';
 const modules = new Map();
 const records = new Set();
 const byElement = new WeakMap();
+// Live-DOM watchers created by Kineto.observe(): one per root, so a framework
+// (React, Vue, Bootstrap's modals, PrimeVue dialogs …) can add or remove
+// `data-kt-*` markup at any time and Kineto follows without per-framework glue.
+const observers = new Map();
 
 let initialized = false;
 let domReadyScheduled = false;
@@ -201,6 +205,55 @@ function matchesRoot(record, roots) {
     return typeof root.contains === 'function' &&
       (root.contains(record.sourceEl) || root.contains(record.instance.el));
   });
+}
+
+// Destroy every instance whose element is no longer in the document. Called
+// after a watched subtree lost nodes; instances of detached elements would
+// otherwise keep listeners, observers and timers alive (a leak in SPAs).
+function releaseDetachedRecords() {
+  Array.from(records).forEach((record) => {
+    const el = record.sourceEl;
+    if (el && el.isConnected === false) removeRecord(record);
+  });
+}
+
+// Build the MutationObserver behind Kineto.observe(). Mutations are batched
+// into one microtask so a framework commit that touches hundreds of nodes
+// costs one scan pass, not one per node.
+function createLiveObserver(root, options) {
+  const watchAttributes = options.attributes === true;
+  let added = new Set();
+  let removed = false;
+  let scheduled = false;
+  const flush = () => {
+    scheduled = false;
+    const nodes = added;
+    added = new Set();
+    const hadRemoval = removed;
+    removed = false;
+    nodes.forEach((node) => {
+      if (node.isConnected) Kineto.scan(node);
+    });
+    if (hadRemoval) releaseDetachedRecords();
+  };
+  const schedule = () => {
+    if (scheduled) return;
+    scheduled = true;
+    Promise.resolve().then(flush);
+  };
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'attributes') {
+        if (String(mutation.attributeName || '').startsWith('data-kt-')) added.add(mutation.target);
+        return;
+      }
+      mutation.addedNodes.forEach((node) => { if (node.nodeType === 1) added.add(node); });
+      if (mutation.removedNodes.length) removed = true;
+    });
+    if (added.size || removed) schedule();
+  });
+  observer.observe(root, { childList: true, subtree: true, attributes: watchAttributes });
+  return { observer, flush: () => { if (scheduled) flush(); } };
 }
 
 function ensureCoreServices() {
@@ -656,6 +709,44 @@ const Kineto = {
     return this.scan(root);
   },
 
+  /**
+   * Watch `root` (default: the document) for markup added or removed after
+   * the first scan. Added subtrees are scanned for activation attributes and
+   * instances whose element left the document are destroyed. This is the
+   * one-line integration for React/Vue apps and for UI libraries that inject
+   * DOM (Bootstrap modals, shadcn/Radix portals, PrimeVue dialogs): put
+   * `data-kt-*` attributes on any element that reaches the DOM and call
+   * `Kineto.observe()` once at startup. Idempotent per root; returns a handle
+   * whose `disconnect()` stops watching (instances stay alive).
+   *
+   * `options.scan` (default true) scans the root immediately.
+   * `options.attributes` (default false) also reacts when a `data-kt-*`
+   * attribute is added to an existing element, at the cost of observing
+   * every attribute change under the root.
+   */
+  observe(root = typeof document !== 'undefined' ? document : null, options = {}) {
+    const target = typeof root === 'string' ? q(root)[0] : root;
+    const noop = { root: target || null, active: false, disconnect() {} };
+    if (this.env.ssr || !target || typeof MutationObserver === 'undefined') return noop;
+    const existing = observers.get(target);
+    if (existing) return existing.handle;
+    const live = createLiveObserver(target, options);
+    const handle = {
+      root: target,
+      active: true,
+      disconnect: () => {
+        const entry = observers.get(target);
+        if (!entry || entry.handle !== handle) return;
+        entry.live.observer.disconnect();
+        observers.delete(target);
+        handle.active = false;
+      }
+    };
+    observers.set(target, { live, handle });
+    if (options.scan !== false) this.scan(target);
+    return handle;
+  },
+
   getInstance(target, name) {
     const el = q(target)[0];
     if (!el) return null;
@@ -740,6 +831,7 @@ const Kineto = {
     }
 
     Array.from(records).forEach((record) => removeRecord(record));
+    Array.from(observers.values()).forEach(({ handle }) => handle.disconnect());
     teardownCoreServices();
     return this;
   },
