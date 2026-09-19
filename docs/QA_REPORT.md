@@ -1,6 +1,6 @@
 # Kineto v0.11.0 QA Report
 
-검증일: 2026-09-19
+검증일: 2026-09-20
 대상: v0.11.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
 ## 2026-09-20 Unreleased 검증 (Stylize 후속 검토)
@@ -26,6 +26,13 @@ Node 24에서 `tests/browser/stylize.mjs`가 Chromium·Firefox·WebKit 모두
 CONTEXT의 217개 집계를 수정했습니다. ROADMAP §10의 이미 완료된 전용 카드·
 비교 시트·Stylize 분리 항목을 정리하고, 영상 trigger/timing 및 pause 예약
 정책은 코드 검토상 남은 항목으로 명시했습니다(아직 동작 재현 전).
+
+Node 24.20.0에서 전체 `npm run ci`가 종료 코드 0으로 통과했습니다.
+React/Vue hydration·연동/레지스트리·MCP·데모·Chromium 회귀 및 패키지
+검사를 포함하며, 기존 번들·패키지 예산은 변경하지 않았습니다(배포 파일 79개).
+후속 `test:roadmap-readiness`·`test:docs`와 `git diff --check`도 통과했습니다.
+검증 중 공유 작업 트리의 수정분이 `23c8965`로 커밋된 것을 확인했으며,
+해당 코드에 대한 로컬 검증 근거입니다. 원격 CI·배포·npm 게시 성공을 뜻하지 않습니다.
 
 ## 2026-09-19 Unreleased 검증 (연동 배치: observe · 연동 지도 · 레지스트리 · MCP)
 

@@ -648,6 +648,8 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 162. 완료(v0.10.0): 설정창이 열리는 순간부터 variant 옵션 gating을 적용(이전에는 첫 옵션 변경 뒤에만 숨겨져 CRT 카드가 Lazy 옵션 24개를 모두 노출). 빈 그룹 헤더 숨김, drawer-layout 회귀 검사 2건. Lazy `fade`와 스타일화 variant는 `<video>`에서도 제공되도록 `media` 능력으로 선언
 163. 완료(v0.10.0): 가이드 정비 — 실사용 근거의 정의와 variant→모듈 승격 기준, 정본 문서·미리보기 원칙(§3), 새 데모 카드의 `data-demo-no-legacy-share` 규칙, 로컬 Chromium 지정 변수 `KT_CHROME` 통일(`MK_CHROMIUM`은 별칭), `push`와 `release`의 승인 구분을 `AGENTS.md`·`CLAUDE.md`·`docs/AGENTS.md`에 명시
 
+164. 완료(Unreleased, 2026-09-20): Stylize의 모션 축소 환경에서 추가 motion·pointer를 끄고 질감은 유지. 이미지·영상 직접 API의 중복 destroy와 이미지 렌더/진행 콜백 내부 destroy 이후 작업 재예약을 차단. Chromium·Firefox·WebKit 회귀 통과. 세 엔진의 오프스크린 GIF 프레임 검사는 환경 감지로 제외했으며 실기기·공개 배포 검증과 구분. §10의 완료된 비교 시트·전용 카드·모듈 분리를 잔여 목록에서 정리하고 영상 옵션·pause 정책을 후속으로 명시
+
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 
 ## 11. 검토 의견 (2026-08-09)
