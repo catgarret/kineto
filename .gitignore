@@ -18,6 +18,9 @@ tests/integrations/.tmp-shadcn/
 PUBLISH-GUIDE.md
 VSCODE-GUIDE.md
 
+# Claude 데스크톱 앱이 대화로 보낸 파일을 저장하는 폴더. 저장소 산출물이 아닙니다.
+/Claude outputs/
+
 # FUSE mount temp files (deleted-while-open artifacts)
 .fuse_hidden*
 **/.fuse_hidden*
