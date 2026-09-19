@@ -17,28 +17,53 @@
 // they want; this file only knows how to draw.
 import { clamp } from '../../utils.js';
 
-// Ordered-dither threshold matrices, normalised to 0..1. The classic Bayer
-// pattern: neighbouring cells get thresholds spread evenly across the range,
-// so flat areas turn into the familiar cross-hatch instead of banding.
-const BAYER_2 = [
-  [0, 2],
-  [3, 1]
-];
-const BAYER_4 = [
-  [0, 8, 2, 10],
-  [12, 4, 14, 6],
-  [3, 11, 1, 9],
-  [15, 7, 13, 5]
-];
-const BAYER_8 = [
-  [0, 32, 8, 40, 2, 34, 10, 42],
-  [48, 16, 56, 24, 50, 18, 58, 26],
-  [12, 44, 4, 36, 14, 46, 6, 38],
-  [60, 28, 52, 20, 62, 30, 54, 22],
-  [3, 35, 11, 43, 1, 33, 9, 41],
-  [51, 19, 59, 27, 49, 17, 57, 25],
-  [15, 47, 7, 39, 13, 45, 5, 37],
-  [63, 31, 55, 23, 61, 29, 53, 21]
+// Ordered-dither threshold matrices, normalised to 0..1.
+//
+// Two families, and they look nothing alike:
+//
+//   DISPERSED (Bayer) — neighbouring cells get thresholds spread as far apart as
+//     possible, so a flat tone turns into an even cross-hatch. Built by the
+//     recursive doubling rule below rather than typed out, so 2x2 through 16x16
+//     are one formula and a new size is one entry. The bigger the matrix the
+//     more tone steps it can express, and the less the weave reads as a pattern.
+//
+//   CLUSTERED (the print screen) — thresholds spiral outward from the middle of
+//     the tile, so ink grows as one blob per cell instead of scattered pixels.
+//     This is what a newspaper halftone is, and it is the pattern that reads as
+//     "printed" rather than "computed".
+//
+// `bayer(1)` is [[0]]; doubling quadruples the tile and offsets each quadrant,
+// which is the standard construction: M2n = [[4M, 4M+2], [4M+3, 4M+1]].
+const QUADRANT_OFFSET = [0, 2, 3, 1]; // top-left, top-right, bottom-left, bottom-right
+const doubleBayer = (matrix) => {
+  const size = matrix.length;
+  const next = [];
+  for (let y = 0; y < size * 2; y += 1) {
+    const row = [];
+    for (let x = 0; x < size * 2; x += 1) {
+      const quadrant = (y < size ? 0 : 2) + (x < size ? 0 : 1);
+      row.push(matrix[y % size][x % size] * 4 + QUADRANT_OFFSET[quadrant]);
+    }
+    next.push(row);
+  }
+  return next;
+};
+const bayer = (size) => {
+  let matrix = [[0]];
+  while (matrix.length < size) matrix = doubleBayer(matrix);
+  return matrix;
+};
+// Clustered-dot 8x8 screen: 0 in the middle, growing outward in a spiral, so a
+// cell fills as one round blob. Classic print halftone ordering.
+const CLUSTER_8 = [
+  [24, 10, 12, 26, 35, 47, 49, 37],
+  [8, 0, 2, 14, 45, 59, 61, 51],
+  [22, 6, 4, 16, 43, 57, 63, 53],
+  [30, 20, 18, 28, 33, 41, 55, 39],
+  [34, 46, 48, 36, 25, 11, 13, 27],
+  [44, 58, 60, 50, 9, 1, 3, 15],
+  [42, 56, 62, 52, 23, 7, 5, 17],
+  [32, 40, 54, 38, 31, 21, 19, 29]
 ];
 const normalizeMatrix = (matrix) => {
   const size = matrix.length;
@@ -46,13 +71,29 @@ const normalizeMatrix = (matrix) => {
   return matrix.map((row) => row.map((value) => (value + 0.5) / cells));
 };
 export const DITHER_MATRICES = Object.freeze({
-  '2x2': normalizeMatrix(BAYER_2),
-  '4x4': normalizeMatrix(BAYER_4),
-  '8x8': normalizeMatrix(BAYER_8)
+  '2x2': normalizeMatrix(bayer(2)),
+  '4x4': normalizeMatrix(bayer(4)),
+  '8x8': normalizeMatrix(bayer(8)),
+  '16x16': normalizeMatrix(bayer(16)),
+  cluster: normalizeMatrix(CLUSTER_8)
 });
-export const DITHER_TYPES = Object.freeze(['8x8', '4x4', '2x2', 'random', 'floyd-steinberg', 'atkinson']);
-export const HALFTONE_SHAPES = Object.freeze(['dot', 'square', 'line']);
-// Dense → sparse glyph ramp: dark cells get heavy glyphs, bright cells spaces.
+/**
+ * Interleaved gradient noise — a threshold field with no repeating tile.
+ *
+ * Bayer's weave is what makes a dithered photo look coarse: the eye finds the
+ * 8x8 grid before it finds the picture. This is the cheap, grid-free
+ * alternative used in real-time rendering; it gives blue-noise-like spacing
+ * from three constants, so a fine cell size reads as texture rather than as a
+ * pattern. `phase` lets the field crawl for the `drift` motion.
+ */
+const gradientNoise = (x, y, phase) => {
+  const value = 52.9829189 * (0.06711056 * (x + phase * 1.7) + 0.00583715 * (y + phase));
+  return value - Math.floor(value);
+};
+export const DITHER_TYPES = Object.freeze([
+  '8x8', '4x4', '2x2', '16x16', 'cluster', 'noise', 'random', 'floyd-steinberg', 'atkinson'
+]);
+export const HALFTONE_SHAPES = Object.freeze(['dot', 'square', 'line', 'cross', 'diamond', 'ring', 'triangle']);
 export const DEFAULT_ASCII_CHARS = '@%#*+=-:. ';
 
 // Deterministic pseudo-random for the `random` dither type so a seeded render is
@@ -179,6 +220,8 @@ export function resolveStyleConfig(style, input = {}) {
     seed: input.seed,
     type: DITHER_TYPES.includes(input.type) ? input.type : '8x8',
     shape: HALFTONE_SHAPES.includes(input.shape) ? input.shape : 'dot',
+    // 하프톤 스크린 각도(도). 0은 화면과 나란한 격자입니다.
+    angle: number(input.angle, 0, 0, 90),
     chars: typeof input.chars === 'string' && input.chars.length >= 2 ? input.chars : DEFAULT_ASCII_CHARS,
     font: input.font || 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
     // Levels. A photograph straight out of a camera sits in the middle of the
@@ -332,6 +375,16 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
     // and reads as the grain moving over the image.
     const driftX = motion === 'drift' ? Math.floor(phase * 3.1) : 0;
     const driftY = motion === 'drift' ? Math.floor(phase * 2.3) : 0;
+    // 행렬이 없는 룩에서는 기어갈 격자가 없습니다 — 오차 확산·random·noise 디더와
+    // halftone 이 그렇습니다. 이 셋에는 **부드럽게 이동하는 톤 파동**을 더해 같은 "그레인이
+    // 기어간다"는 인상을 만듭니다. 여기서 셀마다 난수를 뽑으면 정렬 디더가 랜덤 디더가 되어
+    // 그림이 노이즈로 녹습니다(2a60fa4에서 겪은 함정). 진폭을 작게 둬서 행렬이 있는 룩에
+    // 함께 적용돼도 무늬를 해치지 않습니다.
+    const driftWave = motion === 'drift'
+      ? (x, y) => Math.sin(x * 0.21 + y * 0.16 - phase * 2.6) * 0.05 * amount
+      : null;
+    // noise 디더의 필드를 흐르게 하는 위상. 타일이 없으므로 위상만 밀면 됩니다.
+    const noisePhase = motion === 'drift' ? phase * 5 : 0;
     const px = pointer && pointer.active ? pointer.x : null;
     const py = pointer && pointer.active ? pointer.y : null;
     const radius = config.pointerRadius * ratio;
@@ -339,6 +392,7 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
     const usePointer = config.pointer !== 'none' && px != null;
     return {
       pulse,
+      noisePhase,
       // 0 at the pointer, 1 outside its radius. Smoothstep so the edge of the
       // interaction is not a visible circle.
       falloff(cx, cy) {
@@ -353,6 +407,7 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
       driftY,
       inkShift(x, y, cx, cy) {
         let shift = pulse;
+        if (driftWave) shift += driftWave(x, y);
         if (motion === 'shuffle' && hash3(x, y, tick, seed ^ 0x51ed) < amount * 0.5) {
           shift += (hash3(x, y, tick + 1, seed) - 0.5) * 0.9;
         } else if (motion === 'scan') {
@@ -436,7 +491,9 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
         } else {
           const base = matrix
             ? matrix[(y + dynamics.driftY) % matrix.length][(x + dynamics.driftX) % matrix.length]
-            : random();
+            : config.type === 'noise'
+              ? gradientNoise(x, y, dynamics.noisePhase)
+              : random();
           const threshold = clamp(base + dynamics.thresholdShift(x, y), 0, 1);
           if (config.originalColors) {
             rgb = paletteColor(0, cellRgb, threshold);
@@ -460,31 +517,110 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
     context.drawImage(grid, 0, 0, cols, rows, originX, originY, cols * cell, rows * cell);
   };
 
-  // `halftone`: paper background plus one shape per cell whose size follows the
-  // ink amount — the print-screen look.
+  /**
+   * 한 셀에 찍는 도형. `ink`(0..1)가 크기를 정하고, 면적이 잉크 양에 비례하도록
+   * 반지름은 sqrt(ink)를 씁니다 — 선형으로 키우면 중간 톤이 실제보다 어둡게 보입니다.
+   */
+  const SHAPE_PAINTERS = {
+    square(ctx, cx, cy, cell, ink) {
+      const side = cell * Math.sqrt(ink);
+      ctx.fillRect(cx - side / 2, cy - side / 2, side, side);
+    },
+    line(ctx, cx, cy, cell, ink) {
+      const thickness = Math.max(0.5, cell * ink);
+      ctx.fillRect(cx - cell / 2, cy - thickness / 2, cell, thickness);
+    },
+    // 십자(+)가 잉크가 늘수록 두꺼워집니다. 인쇄 스크린보다 도트 매트릭스에 가까운 질감.
+    cross(ctx, cx, cy, cell, ink) {
+      const arm = cell * Math.sqrt(ink);
+      const thickness = Math.max(0.5, arm * 0.36);
+      ctx.fillRect(cx - arm / 2, cy - thickness / 2, arm, thickness);
+      ctx.fillRect(cx - thickness / 2, cy - arm / 2, thickness, arm);
+    },
+    diamond(ctx, cx, cy, cell, ink) {
+      const radius = (cell / 2) * Math.sqrt(ink) * 1.35;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - radius);
+      ctx.lineTo(cx + radius, cy);
+      ctx.lineTo(cx, cy + radius);
+      ctx.lineTo(cx - radius, cy);
+      ctx.closePath();
+      ctx.fill();
+    },
+    // 속이 빈 원. 밝은 쪽은 가는 링, 어두운 쪽은 꽉 찬 원으로 자연스럽게 메워집니다.
+    ring(ctx, cx, cy, cell, ink) {
+      const radius = (cell / 2) * Math.sqrt(ink);
+      const thickness = Math.max(0.5, radius * (1 - ink * 0.85));
+      ctx.beginPath();
+      ctx.arc(cx, cy, Math.max(thickness / 2, radius - thickness / 2), 0, Math.PI * 2);
+      ctx.lineWidth = thickness;
+      ctx.strokeStyle = ctx.fillStyle;
+      ctx.stroke();
+    },
+    triangle(ctx, cx, cy, cell, ink) {
+      const radius = (cell / 2) * Math.sqrt(ink) * 1.5;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - radius);
+      ctx.lineTo(cx + radius * 0.866, cy + radius * 0.5);
+      ctx.lineTo(cx - radius * 0.866, cy + radius * 0.5);
+      ctx.closePath();
+      ctx.fill();
+    },
+    dot(ctx, cx, cy, cell, ink) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, (cell / 2) * Math.sqrt(ink), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  };
+
+  /**
+   * `halftone`: 종이색 배경 위에 셀마다 도형 하나. 도형 크기가 잉크 양을 나타냅니다.
+   *
+   * `angle`이 0이면 샘플 격자를 그대로 씁니다. 0이 아니면 **회전한 격자** 위에 도형을
+   * 찍습니다 — 실제 인쇄 스크린이 격자 무늬를 눈에 덜 띄게 하려고 판을 기울이는 것과
+   * 같은 이유이고, 0도 격자가 주는 "표 같은" 인상을 없애 주는 가장 큰 요인입니다.
+   * 회전 격자의 각 점은 자기 위치에서 가장 가까운 샘플 셀의 잉크를 읽습니다.
+   */
   const renderHalftone = (frame, dynamics) => {
     const { cols, rows, cell, data, originX, originY } = frame;
     context.fillStyle = css(config.paper);
     context.fillRect(0, 0, pixelWidth, pixelHeight);
-    for (let y = 0; y < rows; y += 1) {
-      for (let x = 0; x < cols; x += 1) {
-        const index = (y * cols + x) * 4;
-        const cx = originX + x * cell + cell / 2;
-        const cy = originY + y * cell + cell / 2;
-        const ink = clamp(inkOf(data, index) + dynamics.inkShift(x, y, cx, cy), 0, 1);
-        if (ink <= 0.02) continue;
-        context.fillStyle = css(config.originalColors ? paletteColor(ink, [data[index], data[index + 1], data[index + 2]]) : paletteColor(1));
-        if (config.shape === 'square') {
-          const side = cell * Math.sqrt(ink);
-          context.fillRect(cx - side / 2, cy - side / 2, side, side);
-        } else if (config.shape === 'line') {
-          const thickness = Math.max(0.5, cell * ink);
-          context.fillRect(originX + x * cell, cy - thickness / 2, cell, thickness);
-        } else {
-          context.beginPath();
-          context.arc(cx, cy, (cell / 2) * Math.sqrt(ink), 0, Math.PI * 2);
-          context.fill();
+    const paintShape = SHAPE_PAINTERS[config.shape] || SHAPE_PAINTERS.dot;
+    const inkAt = (gx, gy, cx, cy) => {
+      const index = (clamp(gy, 0, rows - 1) * cols + clamp(gx, 0, cols - 1)) * 4;
+      return { index, ink: clamp(inkOf(data, index) + dynamics.inkShift(gx, gy, cx, cy), 0, 1) };
+    };
+    const paintCell = (gx, gy, cx, cy) => {
+      const { index, ink } = inkAt(gx, gy, cx, cy);
+      if (ink <= 0.02) return;
+      context.fillStyle = css(config.originalColors
+        ? paletteColor(ink, [data[index], data[index + 1], data[index + 2]])
+        : paletteColor(1));
+      paintShape(context, cx, cy, cell, ink);
+    };
+
+    if (!config.angle) {
+      for (let y = 0; y < rows; y += 1) {
+        for (let x = 0; x < cols; x += 1) {
+          paintCell(x, y, originX + x * cell + cell / 2, originY + y * cell + cell / 2);
         }
+      }
+      return;
+    }
+
+    // 회전 격자: 화면 중심에서 두 기저 벡터를 따라 걸어 다니며, 캔버스를 덮을 만큼만 돕니다.
+    const radians = (config.angle * Math.PI) / 180;
+    const cos = Math.cos(radians);
+    const sin = Math.sin(radians);
+    const centerX = pixelWidth / 2;
+    const centerY = pixelHeight / 2;
+    const reach = Math.ceil(Math.hypot(pixelWidth, pixelHeight) / (2 * cell)) + 1;
+    for (let j = -reach; j <= reach; j += 1) {
+      for (let i = -reach; i <= reach; i += 1) {
+        const cx = centerX + (i * cos - j * sin) * cell;
+        const cy = centerY + (i * sin + j * cos) * cell;
+        if (cx < -cell || cy < -cell || cx > pixelWidth + cell || cy > pixelHeight + cell) continue;
+        paintCell(Math.floor((cx - originX) / cell), Math.floor((cy - originY) / cell), cx, cy);
       }
     }
   };

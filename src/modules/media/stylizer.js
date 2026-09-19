@@ -116,7 +116,7 @@ export function resolveStylizedSettings(effect, input = {}, { lowTier = false, p
   };
   if (effect === 'dither') styleInput.type = input.ditherType;
   if (effect === 'ascii') { styleInput.chars = input.asciiChars; styleInput.font = input.asciiFont; }
-  if (effect === 'halftone') styleInput.shape = input.halftoneShape;
+  if (effect === 'halftone') { styleInput.shape = input.halftoneShape; styleInput.angle = input.halftoneAngle; }
   const styleConfig = resolveStyleConfig(effect, styleInput);
   // A look is "live" when it keeps changing on its own (motion) or has to
   // follow the pointer — a still image then needs the same continuous loop an

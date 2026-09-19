@@ -1629,6 +1629,22 @@ window.KINETO_COPY_I18N = {
       "相同 seed 每次爆開相同的切片。",
       "Один и тот же seed даёт одни и те же срезы.",
       "Lo stesso seed fa esplodere sempre le stesse fette."
+    ],
+    "반복 무늬가 없는 노이즈 디더가 천천히 흐릅니다.": [
+      "A noise dither with no repeating tile, drifting slowly.",
+      "繰り返しタイルのないノイズディザがゆっくり流れます。",
+      "没有重复图块的噪点抖动缓缓流动。",
+      "沒有重複圖塊的雜訊抖動緩緩流動。",
+      "Шумовой дизеринг без повторяющейся плитки, медленно плывущий.",
+      "Un dither a rumore senza piastrelle ripetute, che scorre lentamente."
+    ],
+    "망점을 기울여 찍어 신문 인쇄처럼 보이게 합니다.": [
+      "The dot screen is tilted, the way newspaper printing does it.",
+      "網点を傾けて打ち、新聞印刷のように見せます。",
+      "网点倾斜排布，看起来像报纸印刷。",
+      "網點傾斜排布，看起來像報紙印刷。",
+      "Растровая сетка наклонена — так печатают газеты.",
+      "Il reticolo di punti è inclinato, come nella stampa di giornale."
     ]
   },
   "titles": {

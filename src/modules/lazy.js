@@ -241,7 +241,7 @@ function readStylizedInput(effect, opts, scope = null) {
   }
   if (effect === 'dither') input.ditherType = opts.ditherType;
   if (effect === 'ascii') { input.asciiChars = opts.asciiChars; input.asciiFont = opts.asciiFont; }
-  if (effect === 'halftone') input.halftoneShape = opts.halftoneShape;
+  if (effect === 'halftone') { input.halftoneShape = opts.halftoneShape; input.halftoneAngle = opts.halftoneAngle; }
   return input;
 }
 

@@ -152,7 +152,11 @@ const BUDGETS = {
   // pointer reactions and the dissolve/wipe reveal — all inside the shared
   // rasterizer, so the cost lands once. Measured on this runtime: 555.0/148.6
   // KiB readable ESM, 435.6/132.4 KiB minified ESM and 433.7/131.7 KiB UMD.
-  'kineto.js': { raw: 557, gz: 150, variance: 2 },
+  // 2026-09-20: Stylize gains three dither patterns (Bayer 16x16 and the
+  // clustered print screen from one generator, plus a grid-free noise field),
+  // four halftone shapes and a rotated screen. Measured ESM 557.7 KB raw /
+  // 149.6 KB gzip, so only the raw ceiling moves, by one KB.
+  'kineto.js': { raw: 558, gz: 150, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
   // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/

@@ -49,14 +49,14 @@ const MODULE_AUDITS = {
     // src/modules/media/rasterizer.js, shared with Stylize.
     dither: ['threshold-matrix-dither-canvas', "if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {", "if (effect === 'dither') input.ditherType = opts.ditherType;"],
     ascii: ['glyph-density-ramp-canvas', "if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {", "if (effect === 'ascii') { input.asciiChars = opts.asciiChars; input.asciiFont = opts.asciiFont; }"],
-    halftone: ['dot-size-halftone-canvas', "if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {", "if (effect === 'halftone') input.halftoneShape = opts.halftoneShape;"]
+    halftone: ['dot-size-halftone-canvas', "if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {", "if (effect === 'halftone') { input.halftoneShape = opts.halftoneShape; input.halftoneAngle = opts.halftoneAngle; }"]
   },
   // Stylize owns the three looks; each variant contributes one shape control and
   // the shared rasterizer paints it.
   stylize: {
     dither: ['threshold-matrix-dither-canvas', "if (effect === 'dither') input.ditherType = opts.ditherType;"],
     ascii: ['glyph-density-ramp-canvas', "if (effect === 'ascii') { input.asciiChars = opts.asciiChars; input.asciiFont = opts.asciiFont; }"],
-    halftone: ['dot-size-halftone-canvas', "if (effect === 'halftone') input.halftoneShape = opts.halftoneShape;"]
+    halftone: ['dot-size-halftone-canvas', "if (effect === 'halftone') { input.halftoneShape = opts.halftoneShape; input.halftoneAngle = opts.halftoneAngle; }"]
   },
   cursor: {
     dot: ['snapped-dot-follow-ring', "if (opts.follower !== false) addFollower(opts.shape || 'circle');"],

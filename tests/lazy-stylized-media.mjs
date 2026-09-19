@@ -25,17 +25,35 @@ import {
   sourceSize
 } from '../src/modules/media/rasterizer.js';
 
-// 1. Threshold matrices are square, sized by name, and normalised to (0, 1).
+// 1. Threshold matrices are square and normalised to (0, 1). The Bayer sizes are
+//    generated from the recursive doubling rule, so this also proves the
+//    generator: `4x4` has to come out as the textbook table, and every matrix
+//    has to be a permutation of its cell range — a duplicate or a gap means some
+//    cells share a cut-off and the pattern loses a tone step.
+const NAMED_SIZE = { cluster: 8 };
 for (const [name, matrix] of Object.entries(DITHER_MATRICES)) {
-  const size = Number(name.split('x')[0]);
+  const size = NAMED_SIZE[name] || Number(name.split('x')[0]);
   assert.equal(matrix.length, size, `${name} must have ${size} rows`);
   const values = matrix.flat();
   assert.equal(values.length, size * size, `${name} must be square`);
   assert.ok(values.every((value) => value > 0 && value < 1), `${name} thresholds must sit strictly inside 0..1`);
   assert.equal(new Set(values).size, values.length, `${name} thresholds must be distinct so every cell has its own cut-off`);
+  const ranks = values.map((value) => Math.round(value * values.length - 0.5)).sort((a, b) => a - b);
+  assert.ok(ranks.every((rank, index) => rank === index), `${name} must use every threshold rank exactly once`);
 }
+// The textbook Bayer 4x4. If the doubling rule drifts, this is what catches it.
+assert.deepEqual(
+  DITHER_MATRICES['4x4'].map((row) => row.map((value) => Math.round(value * 16 - 0.5))),
+  [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]],
+  'the generated Bayer 4x4 must match the classic table'
+);
+// `cluster` is the print screen: its lowest thresholds sit in the middle of the
+// tile so ink grows as one blob, which is the opposite of Bayer's dispersal.
+const clusterCentre = DITHER_MATRICES.cluster[3][2];
+const clusterCorner = DITHER_MATRICES.cluster[0][7];
+assert.ok(clusterCentre < clusterCorner, 'cluster must fill from the middle of the tile outwards');
 assert.ok(DITHER_TYPES.includes('floyd-steinberg') && DITHER_TYPES.includes('atkinson'), 'both error-diffusion kernels stay public');
-assert.deepEqual([...HALFTONE_SHAPES], ['dot', 'square', 'line']);
+assert.deepEqual([...HALFTONE_SHAPES], ['dot', 'square', 'line', 'cross', 'diamond', 'ring', 'triangle']);
 assert.ok(DEFAULT_ASCII_CHARS.length >= 4 && DEFAULT_ASCII_CHARS.endsWith(' '), 'the default glyph ramp ends in a space so bright cells stay empty');
 
 // 2. Option normalisation: defaults, clamping and unknown values fall back.
@@ -47,11 +65,16 @@ assert.deepEqual(dither.ink, [17, 17, 17]);
 assert.equal(dither.accent, null);
 assert.equal(dither.originalColors, false);
 assert.equal(dither.inverted, false);
-const ascii = resolveStyleConfig('ascii', { chars: 'x', colorSteps: 99, type: 'nope', shape: 'triangle' });
+const ascii = resolveStyleConfig('ascii', { chars: 'x', colorSteps: 99, type: 'nope', shape: 'hexagon' });
 assert.equal(ascii.chars, DEFAULT_ASCII_CHARS, 'a one-character ramp cannot express tone and falls back');
 assert.equal(ascii.colorSteps, 8, 'colorSteps is clamped to 8');
 assert.equal(ascii.type, '8x8', 'unknown dither type falls back');
 assert.equal(ascii.shape, 'dot', 'unknown halftone shape falls back');
+assert.equal(resolveStyleConfig('halftone', {}).angle, 0, 'the halftone screen is square to the frame until asked otherwise');
+assert.equal(resolveStyleConfig('halftone', { angle: 45 }).angle, 45);
+assert.equal(resolveStyleConfig('halftone', { angle: 400 }).angle, 90, 'the screen angle is clamped to 0..90');
+assert.equal(resolveStyleConfig('dither', { type: 'noise' }).type, 'noise', 'the grid-free noise field is a public dither type');
+assert.equal(resolveStyleConfig('dither', { type: 'cluster' }).type, 'cluster', 'the clustered print screen is a public dither type');
 assert.equal(resolveStyleConfig('halftone', {}).colorSteps, 4, 'non-dither styles default to four palette steps');
 assert.equal(resolveStyleConfig('halftone', { colorSteps: 1 }).colorSteps, 2, 'colorSteps is clamped to at least 2');
 assert.equal(resolveStyleConfig('dither', { originalColors: 'true' }).originalColors, false, 'booleans must be real booleans (data attributes are coerced upstream)');
