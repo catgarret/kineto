@@ -165,6 +165,7 @@ function createImageInstance(el, media, effect, opts, kineto) {
     pause() { paused = true; stylizer?.pause(); },
     resume() { paused = false; stylizer?.resume(); },
     destroy() {
+      if (destroyed) return;
       destroyed = true;
       media.removeEventListener('load', onLoad);
       observer?.disconnect();
@@ -179,6 +180,7 @@ function createImageInstance(el, media, effect, opts, kineto) {
 }
 
 function createVideoInstance(el, media, effect, opts, kineto) {
+  let destroyed = false;
   const mode = opts.mode === 'reveal' ? 'reveal' : 'persist';
   const lowTier = kineto?.performance === 'low';
   const wrapping = ensureWrapper(media, wrapperBox(opts));
@@ -213,6 +215,8 @@ function createVideoInstance(el, media, effect, opts, kineto) {
     pause() { stylizer.pause(); },
     resume() { stylizer.resume(); },
     destroy() {
+      if (destroyed) return;
+      destroyed = true;
       media.removeEventListener('loadeddata', onData);
       stylizer.destroy();
       releaseWrapper(media, wrapping);
@@ -243,6 +247,6 @@ export default {
     if (opts.mode === 'reveal') {
       return { el, type: 'stylize', pause() {}, resume() {}, replay() {}, destroy() {} };
     }
-    return this.create(el, opts, kineto);
+    return this.create(el, { ...opts, motion: 'none', pointer: 'none' }, kineto);
   }
 };

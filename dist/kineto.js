@@ -3395,15 +3395,17 @@ function Fn({ el: e, wrapper: t, effect: n, settings: r, prefix: i = "kt-stylize
 		O != null && cancelAnimationFrame(O), O = null, k?.disconnect(), k = null;
 	}, V = () => {
 		let n = z(h);
-		if (f?.(n), u?.(1, e), n && (o || m)) {
-			let e = (t) => {
-				let n = R(t);
-				A || (!j && t - P >= T && (z(h, n), P = t), O = requestAnimationFrame(e));
-			};
-			O = requestAnimationFrame(e);
-		} else n && typeof ResizeObserver < "u" && (k = new ResizeObserver(() => {
-			A || z(h);
-		}), k.observe(t));
+		if (f?.(n), !A && (u?.(1, e), !A)) {
+			if (n && (o || m)) {
+				let e = (t) => {
+					let n = R(t);
+					A || (!j && t - P >= T && (z(h, n), P = t), O = requestAnimationFrame(e));
+				};
+				O = requestAnimationFrame(e);
+			} else n && typeof ResizeObserver < "u" && (k = new ResizeObserver(() => {
+				A || z(h);
+			}), k.observe(t));
+		}
 	}, H = () => {
 		let t = (n) => {
 			if (A) return;
@@ -3423,7 +3425,8 @@ function Fn({ el: e, wrapper: t, effect: n, settings: r, prefix: i = "kt-stylize
 					O = null, d?.();
 					return;
 				}
-				u?.(i, e), P = n;
+				if (u?.(i, e), A) return;
+				P = n;
 			}
 			i < 1 ? O = requestAnimationFrame(t) : (O = null, L(() => d?.(), l));
 		};
@@ -4179,19 +4182,19 @@ function ir(e, t, n, r, i) {
 			_ = !1, m?.resume();
 		},
 		destroy() {
-			g = !0, t.removeEventListener("load", C), h?.disconnect(), h = null, m?.destroy(), m = null, bn(t, c), u == null ? t.removeAttribute("style") : t.setAttribute("style", u);
+			g || (g = !0, t.removeEventListener("load", C), h?.disconnect(), h = null, m?.destroy(), m = null, bn(t, c), u == null ? t.removeAttribute("style") : t.setAttribute("style", u));
 		}
 	};
 }
 function ar(e, t, n, r, i) {
-	let a = r.mode === "reveal" ? "reveal" : "persist", o = i?.performance === "low", s = yn(t, $n(r)), { wrapper: c } = s, l = t.getAttribute("style");
+	let a = !1, o = r.mode === "reveal" ? "reveal" : "persist", s = i?.performance === "low", c = yn(t, $n(r)), { wrapper: l } = c, u = t.getAttribute("style");
 	t.style.display = "block", t.style.width = "100%", t.style.height = "100%", t.style.objectFit = r.objectFit || "cover";
-	let u = In({
+	let d = In({
 		el: t,
-		wrapper: c,
+		wrapper: l,
 		effect: n,
-		settings: Nn(n, nr(n, r, a, t), {
-			lowTier: o,
+		settings: Nn(n, nr(n, r, o, t), {
+			lowTier: s,
 			persistFps: 24,
 			revealFps: 24,
 			maxDpr: 1.5
@@ -4199,28 +4202,28 @@ function ar(e, t, n, r, i) {
 		prefix: "kt-stylize",
 		durationMs: rr(r).durationMs,
 		onProgress: (e, n) => {
-			r.onProgress?.(e, n), e >= 1 && a === "reveal" && r.onComplete?.(t);
+			r.onProgress?.(e, n), e >= 1 && o === "reveal" && r.onComplete?.(t);
 		}
-	}), d = () => {
-		t.removeEventListener("loadeddata", d), u.start();
+	}), f = () => {
+		t.removeEventListener("loadeddata", f), d.start();
 	};
-	return t.readyState >= 2 ? u.start() : t.addEventListener("loadeddata", d), {
+	return t.readyState >= 2 ? d.start() : t.addEventListener("loadeddata", f), {
 		el: e,
 		type: "stylize",
 		get animatedMedia() {
 			return !0;
 		},
 		replay() {
-			u.replay();
+			d.replay();
 		},
 		pause() {
-			u.pause();
+			d.pause();
 		},
 		resume() {
-			u.resume();
+			d.resume();
 		},
 		destroy() {
-			t.removeEventListener("loadeddata", d), u.destroy(), bn(t, s), l == null ? t.removeAttribute("style") : t.setAttribute("style", l);
+			a || (a = !0, t.removeEventListener("loadeddata", f), d.destroy(), bn(t, c), u == null ? t.removeAttribute("style") : t.setAttribute("style", u));
 		}
 	};
 }
@@ -4239,7 +4242,11 @@ var or = {
 			resume() {},
 			replay() {},
 			destroy() {}
-		} : this.create(e, t, n);
+		} : this.create(e, {
+			...t,
+			motion: "none",
+			pointer: "none"
+		}, n);
 	}
 }, sr = {
 	rise: {

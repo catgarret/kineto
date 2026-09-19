@@ -464,9 +464,10 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 릴리스의 구현·회귀 검증, 147번은 원격 CI·npm·Pages와 공개 산출물 검증입니다.
 
 - 후속: 일반 native Reveal의 반복 경계 callback 범위를 기존 시각 계약을 유지하며 검토. Wave의 선택적 `colors`·`blendMode`는 세 엔진 픽셀 검사와 함께 구현했습니다. 일반 native pause/resume는 Web Animations 경로에 보강했으며, Unreleased 작업은 v0.9.8 배포 완료 근거에 합산하지 않음.
-- 후속: 전용 데모가 없는 variant 중 실제 적용·회귀 근거가 있는 항목의 비교 화면과 브라우저 검증 확대.
-- 후속(증거 게이트): 한 모듈의 모든 공개 variant를 같은 소재로 한 화면에 나열하는 비교 보기(예: Lazy 16개를 같은 사진으로). 비용은 데모 전용 코드이며 런타임 변경이 없을 때만 진행하고, 전용 카드 7개 잔여분을 먼저 채울지 비교 보기로 대체할지는 실제 회귀 신호로 결정합니다.
-- 후속(증거 게이트): 스타일화 렌더러의 `reveal`·`glitch` 등 다른 미디어 모듈 재사용은 §3 승격 기준 ①~③ 중 하나가 확인될 때 검토합니다. 그 전까지는 Lazy variant와 `persist`가 유일한 진입점입니다.
+- 구현 완료(Unreleased): 공개 variant 비교 시트와 잔여 전용 카드 7개가 추가되었습니다(`dc022d4`·`686e41c`). 현재 전용 markup은 deprecated alias를 제외한 81/81입니다. 카드 수와 실제 시각·실기기 검증 완료는 구분합니다.
+- 구현 완료(Unreleased): Stylize가 별도 모듈로 분리되고 Lazy의 세 스타일화 이름은 deprecated alias로 유지됩니다(`123cc55`). 다른 모듈로의 추가 재사용은 여전히 §3 증거 게이트를 따릅니다.
+- 후속(2026-09-20 코드 검토): Stylize 영상 경로의 `trigger:view/manual`·`delay`·`holdDuration` 전달 및 실제 동작 검증이 필요합니다. 현재 `createVideoInstance`는 재생 이벤트/loadeddata와 duration만 연결합니다. 이미지 경로의 테스트 통과를 영상 옵션 지원의 근거로 사용하지 않습니다.
+- 후속(2026-09-20 코드 검토): Stylize pause/숨김 탭의 RAF 예약 중단과 영상 reveal 진행률 보존을 검증·보강합니다. 현재 컨트롤러는 pause 중에도 RAF를 예약하고 영상 reveal은 벽시계 기준이므로 재개 시 진행률이 건너뛸 가능성이 있습니다. 이 항목은 아직 브라우저 재현 전입니다.
 - 외부 증거 필요: 실제 iOS Safari·Android Chrome·스크린리더 검사, 운영 앱의 장기 성능 측정, 공개 동의를 받은 외부 사용 사례 3개.
 - 증거 확보 후 결정: FLIP shared layout과 States·Presence 추가 확장. 현재 자동 검사나 데모를 외부 사용 증거로 집계하지 않습니다.
 

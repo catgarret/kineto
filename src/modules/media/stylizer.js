@@ -212,7 +212,9 @@ export function createImageStylizer({
   const runPersist = () => {
     const rendered = paint(startCell);
     onRendered?.(rendered);
+    if (destroyed) return;
     onProgress?.(1, el);
+    if (destroyed) return;
     // A living look (motion / pointer) animates a still image too, so it needs
     // the same continuous loop an animated source gets.
     if (rendered && (animatedSource || live)) {
@@ -262,6 +264,7 @@ export function createImageStylizer({
           return;
         }
         onProgress?.(raw, el);
+        if (destroyed) return;
         lastDraw = time;
       }
       if (raw < 1) rafId = requestAnimationFrame(frame);

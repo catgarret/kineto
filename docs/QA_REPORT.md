@@ -3,6 +3,30 @@
 검증일: 2026-09-19
 대상: v0.11.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-20 Unreleased 검증 (Stylize 후속 검토)
+
+`ed12b0d`까지의 Stylize·비교 시트 작업을 검토했습니다. 모션 축소 환경에서
+`motion: drift`가 정지 이미지의 픽셀을 계속 바꾸는 것을 새 브라우저 단언으로
+재현했습니다. persist 질감과 원본 미디어 재생은 유지하고 Kineto가 더하는
+`motion`·`pointer`만 비활성화했습니다.
+
+직접 모듈 API의 이미지·영상 destroy를 멱등 처리해 종료 후 수정한 스타일을
+반복 destroy가 덮지 않게 했습니다. 이미지 컨트롤러의 onRendered/onProgress
+안에서 destroy할 때 이후 RAF·ResizeObserver·후속 콜백을 예약하지 않도록
+종료 상태를 다시 확인합니다. 렌더러·프리셋·공개 API·기본값은 유지합니다.
+
+Node 24에서 `tests/browser/stylize.mjs`가 Chromium·Firefox·WebKit 모두
+통과했습니다. 기존 픽셀/팔레트·pointer·reveal·video 검사와 함께, 모션 축소
+픽셀 정지·직접 API의 반복 종료·3개 콜백 종료 경로의 잔여 작업 0을 검사합니다.
+세 엔진 모두 raw GIF 오프스크린 프레임 변화가 감지되지 않아 기존 환경 감지에
+따라 GIF redraw 검사는 건너뛰었습니다. 이를 GIF 연속성 검증 완료로 집계하지
+않습니다. 실제 iOS/Android·스크린리더·공개 배포는 이번 범위에서 미검증입니다.
+
+`test:structure` 실측은 227개 settings host와 53개 모듈 인덱스이며 오래된
+CONTEXT의 217개 집계를 수정했습니다. ROADMAP §10의 이미 완료된 전용 카드·
+비교 시트·Stylize 분리 항목을 정리하고, 영상 trigger/timing 및 pause 예약
+정책은 코드 검토상 남은 항목으로 명시했습니다(아직 동작 재현 전).
+
 ## 2026-09-19 Unreleased 검증 (연동 배치: observe · 연동 지도 · 레지스트리 · MCP)
 
 v0.10.0 게시 직후 같은 클라우드 클론(Node 22.22 · npm 10.9 · Chromium 141)에서 검증했습니다.

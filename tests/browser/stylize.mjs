@@ -370,6 +370,65 @@ try {
   assert.ok(reduced.result.persistOpaque > 0, 'reduced motion must keep a persistent filter');
   assert.equal(reduced.result.revealStarted, false, 'reduced motion must skip a reveal');
   assert.equal(reduced.result.manualStarted, false, 'reduced motion must not play a manual reveal');
+  assert.equal(reduced.result.motionAnimatesStillImage, false, 'reduced motion must disable added living-look motion');
+  assert.equal(reduced.result.lensChanged, false, 'reduced motion must disable added pointer animation');
+
+  const lifecyclePage = await browser.newPage();
+  await lifecyclePage.goto(`${origin}${FIXTURE_PATH}`);
+  const lifecycle = await lifecyclePage.evaluate(async (base) => {
+    const [{ default: stylize }, { createImageStylizer, resolveStylizedSettings }] = await Promise.all([
+      import(`${base}/src/modules/stylize.js`), import(`${base}/src/modules/media/stylizer.js`)
+    ]);
+    const host = document.createElement('div');
+    host.className = 'cell';
+    const img = new Image();
+    img.src = `${base}/demo/assets/gallery-01.webp`;
+    host.append(img);
+    document.body.append(host);
+    await img.decode();
+    const failures = [];
+    for (const media of [img, document.createElement('video')]) {
+      if (!media.isConnected) host.append(media);
+      const instance = stylize.create(media);
+      instance.destroy();
+      media.style.color = 'red';
+      const before = host.outerHTML;
+      instance.destroy(); instance.replay(); instance.resume(); instance.pause();
+      if (host.outerHTML !== before) failures.push(`${media.tagName}: stale instance changed restored DOM`);
+    }
+    const originals = [window.requestAnimationFrame, window.cancelAnimationFrame, window.setTimeout, window.clearTimeout, window.ResizeObserver];
+    const frames = new Map(), timers = new Map(), observers = new Set();
+    let serial = 0;
+    window.requestAnimationFrame = (fn) => { const id = ++serial; frames.set(id, fn); return id; };
+    window.cancelAnimationFrame = (id) => frames.delete(id);
+    window.setTimeout = (fn) => { const id = ++serial; timers.set(id, fn); return id; };
+    window.clearTimeout = (id) => timers.delete(id);
+    window.ResizeObserver = class { observe() { observers.add(this); } disconnect() { observers.delete(this); } };
+    try {
+      for (const point of ['rendered', 'persist-progress', 'reveal-progress']) {
+        let controller;
+        controller = createImageStylizer({
+          el: img, wrapper: host, effect: 'dither',
+          settings: resolveStylizedSettings('dither', { persist: point !== 'reveal-progress', motion: 'drift' }),
+          onRendered: () => { if (point === 'rendered') controller.destroy(); },
+          onProgress: () => { if (point !== 'rendered') controller.destroy(); }
+        });
+        controller.start();
+        if (point === 'reveal-progress') {
+          for (const [id, fn] of [...timers]) { timers.delete(id); fn(); }
+          for (const [id, fn] of [...frames]) { frames.delete(id); fn(100); }
+        }
+        if (frames.size || timers.size || observers.size || host.querySelector('canvas')) failures.push(`${point}: callback destroy left scheduled work or a layer`);
+        controller.destroy();
+        frames.clear(); timers.clear(); observers.clear();
+      }
+    } finally {
+      [window.requestAnimationFrame, window.cancelAnimationFrame, window.setTimeout, window.clearTimeout, window.ResizeObserver] = originals;
+    }
+    return failures;
+  }, origin);
+  assert.deepEqual(lifecycle, [], 'Stylize direct and callback teardown must be terminal');
+  await lifecyclePage.close();
 
   console.log(`stylize OK (${browserName}) — persist/reveal modes, load/view/manual triggers, dissolve transition, motion on a still image, contrast levels, pointer lens, design-token colours, shared Lazy wrapper, deprecated alias + KT_DEPRECATED, video frames, destroy cleanup, reduced motion.`);
 } finally {

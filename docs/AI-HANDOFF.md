@@ -208,6 +208,11 @@ downloads the other two engines for `KT_BROWSER=firefox|webkit` runs.
 Always verify this summary against Git history because later commits supersede
 it.
 
+The 2026-09-20 review hardens Stylize reduced-motion handling (keep the texture,
+disable added motion/pointer reactions), repeated image/video teardown, and
+callback-triggered image-controller teardown. ROADMAP §10 now separates completed
+comparison/Stylize work from open video trigger/timing and pause-scheduling gaps.
+
 ## Required end-of-task record
 
 Every implementation commit must leave enough evidence for the next agent:
