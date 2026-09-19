@@ -1,0 +1,265 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "kineto",
+  "homepage": "https://kineto.dongri.me",
+  "items": [
+    {
+      "name": "utils",
+      "type": "registry:lib",
+      "title": "Kineto utils",
+      "description": "Small helpers shared by the Kineto registry components.",
+      "dependencies": [
+        "@dong-gri/kineto"
+      ],
+      "files": [
+        {
+          "path": "registry/items/utils/kineto-utils.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "provider",
+      "type": "registry:component",
+      "title": "Kineto provider",
+      "description": "Mount once in the root layout: loads the stylesheet and starts Kineto.observe() so any data-kt-* element that reaches the DOM is animated and cleaned up automatically.",
+      "dependencies": [
+        "@dong-gri/kineto"
+      ],
+      "docs": "Add <KinetoProvider> around your app once (a client component). Then put data-kt-* attributes on any shadcn component, e.g. <Card data-kt-tilt=\"tilt-glare\">.",
+      "categories": [
+        "kineto",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/items/provider/kineto-provider.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "reveal",
+      "type": "registry:component",
+      "title": "Kineto reveal",
+      "description": "Viewport entrance for sections, cards and lists (fade/slide/zoom/mask/wipe/clock presets, stagger, once).",
+      "dependencies": [
+        "@dong-gri/kineto"
+      ],
+      "registryDependencies": [
+        "https://kineto.dongri.me/r/utils.json"
+      ],
+      "categories": [
+        "kineto",
+        "motion",
+        "scroll"
+      ],
+      "files": [
+        {
+          "path": "registry/items/reveal/kineto-reveal.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "text-reveal",
+      "type": "registry:component",
+      "title": "Kineto text reveal",
+      "description": "Headline entrance where characters resolve into place; includes Korean jamo assembly (hangul) and decode/flicker/shuffle presets.",
+      "dependencies": [
+        "@dong-gri/kineto"
+      ],
+      "registryDependencies": [
+        "https://kineto.dongri.me/r/utils.json"
+      ],
+      "categories": [
+        "kineto",
+        "motion",
+        "typography"
+      ],
+      "files": [
+        {
+          "path": "registry/items/text-reveal/kineto-text-reveal.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "counter",
+      "type": "registry:component",
+      "title": "Kineto counter",
+      "description": "Animated KPI numbers: slot reels, pop landing, plain count-up, digit cycling and flip.",
+      "dependencies": [
+        "@dong-gri/kineto"
+      ],
+      "registryDependencies": [
+        "https://kineto.dongri.me/r/utils.json"
+      ],
+      "categories": [
+        "kineto",
+        "data-display"
+      ],
+      "files": [
+        {
+          "path": "registry/items/counter/kineto-counter.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "image",
+      "type": "registry:component",
+      "title": "Kineto image",
+      "description": "Lazy-loaded <img> with a loading reveal (skeleton, blur-up, pixelate, print, dissolve, crt …) or a persistent dither/ASCII/halftone filter.",
+      "dependencies": [
+        "@dong-gri/kineto"
+      ],
+      "registryDependencies": [
+        "https://kineto.dongri.me/r/utils.json"
+      ],
+      "categories": [
+        "kineto",
+        "media"
+      ],
+      "files": [
+        {
+          "path": "registry/items/image/kineto-image.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "marquee",
+      "type": "registry:component",
+      "title": "Kineto marquee",
+      "description": "Seamless logo wall / announcement band with pause-on-hover and scroll-aware direction.",
+      "dependencies": [
+        "@dong-gri/kineto"
+      ],
+      "registryDependencies": [
+        "https://kineto.dongri.me/r/utils.json"
+      ],
+      "categories": [
+        "kineto",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/items/marquee/kineto-marquee.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "tilt-card",
+      "type": "registry:component",
+      "title": "Kineto tilt card",
+      "description": "Pointer-following 3D tilt with glare, or a pointer glow (spotlight, edge, border, comet, aurora, shine) for cards.",
+      "dependencies": [
+        "@dong-gri/kineto"
+      ],
+      "registryDependencies": [
+        "https://kineto.dongri.me/r/utils.json"
+      ],
+      "categories": [
+        "kineto",
+        "hover"
+      ],
+      "files": [
+        {
+          "path": "registry/items/tilt-card/kineto-tilt-card.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "magnetic-button",
+      "type": "registry:component",
+      "title": "Kineto magnetic button",
+      "description": "Button that leans toward the pointer and springs back, with an optional click ripple.",
+      "dependencies": [
+        "@dong-gri/kineto"
+      ],
+      "registryDependencies": [
+        "https://kineto.dongri.me/r/utils.json"
+      ],
+      "categories": [
+        "kineto",
+        "hover",
+        "button"
+      ],
+      "files": [
+        {
+          "path": "registry/items/magnetic-button/kineto-magnetic-button.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "presence",
+      "type": "registry:component",
+      "title": "Kineto presence",
+      "description": "Enter/exit motion for mounted content (dialog bodies, panels, route content) with named presets; the host keeps owning DOM removal.",
+      "dependencies": [
+        "@dong-gri/kineto"
+      ],
+      "categories": [
+        "kineto",
+        "motion",
+        "dialog"
+      ],
+      "files": [
+        {
+          "path": "registry/items/presence/kineto-presence.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "page-reveal",
+      "type": "registry:component",
+      "title": "Kineto page reveal",
+      "description": "First-paint overlay (curtain, iris, blinds, data-mosaic …) that opens once the page is ready.",
+      "dependencies": [
+        "@dong-gri/kineto"
+      ],
+      "registryDependencies": [
+        "https://kineto.dongri.me/r/utils.json"
+      ],
+      "categories": [
+        "kineto",
+        "motion",
+        "page"
+      ],
+      "files": [
+        {
+          "path": "registry/items/page-reveal/kineto-page-reveal.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "ai-rules",
+      "type": "registry:item",
+      "title": "Kineto AI rules",
+      "description": "Rules for coding agents (Cursor rule + Markdown): when to use which Kineto module next to shadcn/ui, Bootstrap, MUI, Mantine, Chakra, Ant Design, daisyUI, Nuxt UI, PrimeVue and Vuetify, and how to map Figma layers to intents.",
+      "docs": "Cursor reads .cursor/rules/kineto.mdc automatically. For Claude Code or Codex, reference docs/kineto-ai-rules.md from CLAUDE.md / AGENTS.md.",
+      "categories": [
+        "kineto",
+        "ai"
+      ],
+      "files": [
+        {
+          "path": "ai/cursor/kineto.mdc",
+          "type": "registry:file",
+          "target": "~/.cursor/rules/kineto.mdc"
+        },
+        {
+          "path": "ai/kineto.rules.md",
+          "type": "registry:file",
+          "target": "~/docs/kineto-ai-rules.md"
+        }
+      ]
+    }
+  ]
+}

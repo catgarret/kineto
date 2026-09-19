@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "presence",
+  "type": "registry:component",
+  "title": "Kineto presence",
+  "description": "Enter/exit motion for mounted content (dialog bodies, panels, route content) with named presets; the host keeps owning DOM removal.",
+  "author": "dongri <official@dongri.me>",
+  "dependencies": [
+    "@dong-gri/kineto"
+  ],
+  "files": [
+    {
+      "path": "registry/items/presence/kineto-presence.tsx",
+      "type": "registry:component",
+      "content": "'use client';\n\n// KinetoPresence (preset flavour) — animate a block in when it mounts and out\n// before it unmounts, with named presets instead of hand-written states.\n//   const [open, setOpen] = useState(false);\n//   <KinetoPresence present={open} enter=\"fade-up\" exit=\"fade\" onExited={() => setMounted(false)}>\n//     <DialogBody />\n//   </KinetoPresence>\n// Kineto never removes the element itself: keep it rendered until `onExited`\n// fires, then drop it from state. Works inside shadcn/Radix Dialog content —\n// the library keeps owning open/close and focus.\nimport { useMemo, type ElementType, type ReactNode } from 'react';\nimport { states, type KinetoStateDefinitions } from '@dong-gri/kineto';\nimport { KinetoPresence as PresenceHost } from '@dong-gri/kineto/react';\n\nexport type KinetoPresencePreset = 'fade' | 'fade-up' | 'fade-down' | 'zoom' | 'slide-left' | 'slide-right';\n\ntype StateShape = KinetoStateDefinitions[string];\nconst PRESETS: Record<KinetoPresencePreset, { hidden: StateShape; visible: StateShape }> = {\n  'fade': { hidden: { opacity: 0 }, visible: { opacity: 1 } },\n  'fade-up': { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } },\n  'fade-down': { hidden: { opacity: 0, y: -16 }, visible: { opacity: 1, y: 0 } },\n  'zoom': { hidden: { opacity: 0, scale: 0.94 }, visible: { opacity: 1, scale: 1 } },\n  'slide-left': { hidden: { opacity: 0, x: 24 }, visible: { opacity: 1, x: 0 } },\n  'slide-right': { hidden: { opacity: 0, x: -24 }, visible: { opacity: 1, x: 0 } }\n};\n\nexport interface KinetoPresenceProps extends Omit<React.HTMLAttributes<HTMLElement>, 'children'> {\n  as?: ElementType;\n  present?: boolean;\n  enter?: KinetoPresencePreset;\n  exit?: KinetoPresencePreset;\n  /** Seconds (Motion States run in milliseconds internally; converted here). */\n  duration?: number;\n  /** Called after a leave finished; remove the element from your state here. */\n  onExited?: () => void;\n  children?: ReactNode;\n}\n\nexport function KinetoPresence({ as = 'div', present = true, enter = 'fade-up', exit = 'fade', duration = 0.3, onExited, children, ...props }: KinetoPresenceProps) {\n  const options = useMemo(() => {\n    const enterStates = states({ hidden: PRESETS[enter].hidden, visible: PRESETS[enter].visible });\n    const exitStates = states({ hidden: PRESETS[exit].hidden, visible: PRESETS[exit].visible });\n    return {\n      mode: 'wait' as const,\n      // `initial: 'hidden'` renders the hidden state first, so the enter is a\n      // real motion from hidden → visible instead of a no-op on visible markup.\n      enter: { state: enterStates, name: 'visible', options: { duration: duration * 1000, initial: 'hidden' } },\n      exit: { state: exitStates, name: 'hidden', options: { duration: duration * 1000 } },\n      safeToRemove: () => { onExited?.(); }\n    };\n  }, [enter, exit, duration, onExited]);\n\n  return (\n    <PresenceHost as={as} present={present} options={options} dependencies={[enter, exit, duration]} {...props}>\n      {children}\n    </PresenceHost>\n  );\n}\n\nexport default KinetoPresence;\n"
+    }
+  ],
+  "categories": [
+    "kineto",
+    "motion",
+    "dialog"
+  ]
+}

@@ -9,7 +9,9 @@ const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url))
 export const auditTargets = Object.freeze([
   Object.freeze({ name: 'root', directory: '.', report: 'npm-audit-root.json' }),
   Object.freeze({ name: 'consumer-bundles', directory: 'tests/consumer-bundles', report: 'npm-audit-consumer-bundles.json' }),
-  Object.freeze({ name: 'framework-qa', directory: 'tests/framework-qa', report: 'npm-audit-framework-qa.json' })
+  Object.freeze({ name: 'framework-qa', directory: 'tests/framework-qa', report: 'npm-audit-framework-qa.json' }),
+  Object.freeze({ name: 'integrations', directory: 'tests/integrations', report: 'npm-audit-integrations.json' }),
+  Object.freeze({ name: 'kineto-mcp', directory: 'packages/kineto-mcp', report: 'npm-audit-kineto-mcp.json' })
 ]);
 
 const npmExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm';

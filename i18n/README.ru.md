@@ -10,7 +10,7 @@
 
 <p><a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="../LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
-[Живое демо](https://kineto.dongri.me) · [Справочник модулей](../docs/module-reference.md) · [Устранение неполадок](../docs/troubleshooting.md) · [Контракт возможностей](../FEATURE_CONTRACT.md)
+[Живое демо](https://kineto.dongri.me) · [Справочник модулей](../docs/module-reference.md) · [Интеграции](../docs/integrations/README.md) · [Устранение неполадок](../docs/troubleshooting.md) · [Контракт возможностей](../FEATURE_CONTRACT.md)
 
 </div>
 
@@ -188,6 +188,16 @@ import installKineto from '@dong-gri/kineto/jquery';
 installKineto(window.jQuery);
 $('.card').kineto('reveal', { preset: 'fade-up' });
 ```
+
+## Дизайн-системы, UI-библиотеки и AI-инструменты
+
+Kineto работает *рядом* с библиотекой компонентов, которую вы уже используете: поведение и доступность остаются за библиотекой, Kineto добавляет только движение через атрибуты `data-kt-*` на тех же элементах.
+
+- **shadcn/ui** — [реестр shadcn](https://kineto.dongri.me/r/registry.json) устанавливает типизированные обёртки `KinetoProvider`, `KinetoReveal`, `KinetoCounter` и правила для AI (`npx shadcn@latest add @kineto/provider`).
+- **Bootstrap 5, MUI, Mantine, Chakra UI, Ant Design, daisyUI, Nuxt UI, PrimeVue, Vuetify** — в [`docs/integrations/`](../docs/integrations/README.md) по одному руководству на библиотеку (способ подключения, что библиотека уже даёт, конфликты, рецепты по намерениям); утверждения проверяются на реальных библиотеках в `tests/integrations/`. [Пример совместной работы с Bootstrap 5](../examples/bootstrap/index.html) проверяется в настоящем браузере.
+- **Агенты для кода** — [`ai/kineto.rules.md`](../ai/kineto.rules.md) (`kineto.dongri.me/llms.txt`) и [MCP-сервер Kineto](../packages/kineto-mcp/README.md) (`npx @dong-gri/kineto-mcp`) подсказывают, какой модуль когда использовать, исходя из реального контракта возможностей; пользователи Figma MCP сопоставляют слои с намерениями через `kineto_figma_layers`.
+
+DOM, который появляется позже (деревья React/Vue, тосты, модальные окна), подхватывается и очищается автоматически после одного вызова `Kineto.observe()`.
 
 ## Поддержка браузеров
 

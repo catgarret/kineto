@@ -1,12 +1,12 @@
 # React adapter example
 
 ```bash
-npm install kineto react
+npm install @dong-gri/kineto react
 ```
 
 ```jsx
-import 'kineto/style.css';
-import { Motion, useKineto } from 'kineto/react';
+import '@dong-gri/kineto/style.css';
+import { Motion, useKineto } from '@dong-gri/kineto/react';
 
 export function Hero() {
   const counter = useKineto('counter', {
@@ -47,8 +47,8 @@ Kineto을 사용하는 컴포넌트는 client component로 둡니다.
 ```jsx
 'use client';
 
-import 'kineto/style.css';
-import { Motion } from 'kineto/react';
+import '@dong-gri/kineto/style.css';
+import { Motion } from '@dong-gri/kineto/react';
 
 export default function Title() {
   return <Motion as="h1" type="reveal" options={{ preset: 'fade-up' }}>Hello</Motion>;

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kineto · Bootstrap 5 Example</title>
+
+  <!--
+    Bootstrap 5 + Kineto 공존 예제.
+    규칙은 docs/integrations/bootstrap.md(= kineto.integrations.json)에 있고,
+    이 페이지가 그 규칙을 실제로 지키는지 tests/integrations/bootstrap-qa.mjs가
+    진짜 브라우저에서 검증합니다.
+
+    - 동작·접근성(모달, 툴팁, 토스트, 아코디언, 캐러셀)은 Bootstrap이 담당하고
+      Kineto는 같은 요소에 모션만 더합니다. data-bs-* 와 data-kt-* 는 충돌하지 않습니다.
+    - Kineto.observe() 한 번이면 지금 있는 요소를 스캔하고, 나중에 추가되는
+      토스트·카드도 자동으로 붙이고 제거 시 정리합니다.
+  -->
+
+  <!-- Bootstrap CSS (버전을 올리면 integrity 값도 함께 바꿉니다) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+  <!-- Kineto CSS. 배포 시에는 https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.min.css -->
+  <link rel="stylesheet" href="../../dist/kineto.css">
+
+  <style>
+    /* 페이지 고유 스타일만 둡니다. 레이아웃은 전부 Bootstrap 그리드/유틸리티. */
+    .reading-progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: linear-gradient(90deg, #ff5b1c, #ffd166); transform-origin: left; }
+    .hero { min-height: 80vh; display: flex; align-items: center; }
+    .hero h1 { font-size: clamp(40px, 7vw, 88px); font-weight: 300; letter-spacing: -0.03em; }
+    .kpi { font-size: 56px; font-weight: 300; font-variant-numeric: tabular-nums; }
+    .card-img-top { aspect-ratio: 16 / 10; object-fit: cover; }
+    .logo-strip span { display: inline-block; margin: 0 24px; opacity: .6; letter-spacing: .1em; text-transform: uppercase; font-size: 13px; }
+    .spacer { height: 40vh; }
+  </style>
+</head>
+<body>
+
+  <!-- 헤더: 고정은 Bootstrap(.sticky-top), 읽기 진행 막대는 Kineto(progress) -->
+  <nav class="navbar navbar-expand-lg bg-body-tertiary sticky-top position-relative">
+    <div class="container">
+      <a class="navbar-brand" href="#">Kineto × Bootstrap</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="메뉴 열기"><span class="navbar-toggler-icon"></span></button>
+      <div class="collapse navbar-collapse" id="nav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#kpi">지표</a></li>
+          <li class="nav-item"><a class="nav-link" href="#cards">카드</a></li>
+          <li class="nav-item"><a class="nav-link" href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="reading-progress" data-kt-progress></div>
+  </nav>
+
+  <!-- 히어로: 헤드라인은 Kineto textSplit, 버튼은 Bootstrap 모달 트리거 + Kineto ripple/magnetic -->
+  <header class="hero">
+    <div class="container text-center">
+      <h1 data-kt-text-split="word" data-kt-stagger="0.06">Bootstrap 위에 모션을 얹는 가장 짧은 길</h1>
+      <p class="lead text-body-secondary mt-3" data-kt-reveal="fade-up" data-kt-delay="0.2">
+        컴포넌트는 Bootstrap이, 움직임은 Kineto가. 같은 요소에 <code>data-bs-*</code>와 <code>data-kt-*</code>를 나란히 씁니다.
+      </p>
+      <div class="d-flex gap-3 justify-content-center mt-4" data-kt-reveal="fade-up" data-kt-delay="0.35">
+        <!-- Bootstrap이 모달을 열고, Kineto가 클릭 리플과 자석 효과를 더합니다. -->
+        <button id="open-offer" type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#offerModal"
+                data-kt-ripple data-kt-magnetic data-kt-strength="0.3">런칭 혜택 보기</button>
+        <!-- 툴팁은 Bootstrap 것만 사용합니다. 같은 요소에 data-kt-tooltip을 붙이면 툴팁이 두 개가 됩니다. -->
+        <button id="tooltip-button" type="button" class="btn btn-outline-light btn-lg" data-bs-toggle="tooltip" data-bs-placement="bottom"
+                data-bs-title="Bootstrap 툴팁 — Kineto 툴팁은 붙이지 않습니다" data-kt-ripple>자세히</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- KPI: Bootstrap .card 그리드 + Kineto counter. 부모에 stagger를 두면 자식 카드가 순서대로 등장합니다. -->
+  <section id="kpi" class="container py-5">
+    <div class="row g-4 text-center" data-kt-reveal="fade-up" data-kt-stagger="0.12" data-kt-once>
+      <div class="col-md-4"><div class="card p-4"><div class="kpi text-warning"><span data-kt-counter="pop" data-kt-to="12800" data-kt-format=",">0</span></div><div class="text-body-secondary">월간 활성 사용자</div></div></div>
+      <div class="col-md-4"><div class="card p-4"><div class="kpi text-warning"><span data-kt-counter="slot" data-kt-to="98" data-kt-suffix="%">0</span></div><div class="text-body-secondary">만족도</div></div></div>
+      <div class="col-md-4"><div class="card p-4"><div class="kpi text-warning"><span data-kt-counter="plain" data-kt-to="42" data-kt-duration="1.2">0</span></div><div class="text-body-secondary">지원 국가</div></div></div>
+    </div>
+  </section>
+
+  <!-- 카드: hover 모션은 Kineto tilt / cardGlow, 이미지 로딩은 Kineto lazy(blur-up).
+       .placeholder 를 함께 쓰지 않습니다(플레이스홀더는 하나만). -->
+  <section id="cards" class="container py-5">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <h2 class="h3 m-0">쇼케이스</h2>
+      <!-- 나중에 추가되는 카드도 Kineto.observe()가 자동으로 붙입니다. -->
+      <button id="add-card" type="button" class="btn btn-sm btn-outline-secondary" data-kt-ripple>카드 추가</button>
+    </div>
+    <div id="card-grid" class="row g-4">
+      <div class="col-md-4"><div class="card h-100" data-kt-tilt="tilt-glare" data-kt-max="8"><img class="card-img-top" alt="갤러리 1" data-kt-lazy="blur-up" data-src="../../demo/assets/gallery-01.webp"><div class="card-body"><h3 class="h5">틸트 + 글레어</h3><p class="card-text text-body-secondary">포인터를 따라 기울어지는 카드.</p></div></div></div>
+      <div class="col-md-4"><div class="card h-100" data-kt-card-glow="spotlight"><img class="card-img-top" alt="갤러리 2" data-kt-lazy="blur-up" data-src="../../demo/assets/gallery-02.webp"><div class="card-body"><h3 class="h5">스포트라이트</h3><p class="card-text text-body-secondary">포인터 위치를 따라 빛이 번지는 카드.</p></div></div></div>
+      <div class="col-md-4"><div class="card h-100" data-kt-card-glow="border"><img class="card-img-top" alt="갤러리 3" data-kt-lazy="blur-up" data-src="../../demo/assets/gallery-03.webp"><div class="card-body"><h3 class="h5">그라디언트 보더</h3><p class="card-text text-body-secondary">가격표·기능 카드에 어울리는 빛나는 테두리.</p></div></div></div>
+    </div>
+    <template id="card-template">
+      <div class="col-md-4"><div class="card h-100" data-kt-tilt="tilt" data-kt-max="6"><div class="card-body"><h3 class="h5">동적으로 추가된 카드</h3><p class="card-text text-body-secondary">DOM에 들어오는 순간 Kineto가 붙습니다.</p></div></div></div>
+    </template>
+  </section>
+
+  <!-- 캐러셀: Bootstrap .carousel 그대로. 같은 요소에 data-kt-slider 를 붙이지 않습니다(둘 중 하나만). -->
+  <section class="container py-5">
+    <div id="story" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
+      <div class="carousel-inner rounded-3 overflow-hidden">
+        <div class="carousel-item active"><img class="d-block w-100" src="../../demo/assets/gallery-04.webp" alt="슬라이드 1"><div class="carousel-caption"><h5>Bootstrap이 넘기고</h5></div></div>
+        <div class="carousel-item"><img class="d-block w-100" src="../../demo/assets/gallery-05.webp" alt="슬라이드 2"><div class="carousel-caption"><h5>Kineto는 손대지 않습니다</h5></div></div>
+        <div class="carousel-item"><img class="d-block w-100" src="../../demo/assets/gallery-06.webp" alt="슬라이드 3"><div class="carousel-caption"><h5>커버플로·큐브가 필요하면 data-kt-slider</h5></div></div>
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#story" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">이전</span></button>
+      <button class="carousel-control-next" type="button" data-bs-target="#story" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">다음</span></button>
+    </div>
+  </section>
+
+  <!-- FAQ: 열고 닫기는 Bootstrap 아코디언. Kineto reveal은 패널 안 내용에만 붙입니다. -->
+  <section id="faq" class="container py-5">
+    <h2 class="h3 mb-4">FAQ</h2>
+    <div class="accordion" id="faq-accordion">
+      <div class="accordion-item">
+        <h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-1" aria-expanded="false" aria-controls="faq-1">Bootstrap 아코디언과 data-kt-accordion을 같이 써도 되나요?</button></h3>
+        <div id="faq-1" class="accordion-collapse collapse" data-bs-parent="#faq-accordion">
+          <div class="accordion-body" data-kt-reveal="fade-up" data-kt-once="false">아니요. 열고 닫는 동작은 하나만 담당해야 합니다. Bootstrap이 열면 Kineto는 이 본문처럼 <em>내용</em>만 등장시킵니다.</div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-2" aria-expanded="false" aria-controls="faq-2">Bootstrap 그리드가 깨지지 않나요?</button></h3>
+        <div id="faq-2" class="accordion-collapse collapse" data-bs-parent="#faq-accordion">
+          <div class="accordion-body" data-kt-reveal="fade-up" data-kt-once="false">Kineto는 호스트에 레이아웃 속성(display, width, flex …)을 쓰지 않습니다. transform/opacity/clip-path만 다룹니다.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 로고 스트립: Bootstrap에는 없는 마퀴를 Kineto가 채웁니다. -->
+  <section class="border-top border-bottom py-3 logo-strip">
+    <div data-kt-marquee data-kt-speed="40" data-kt-pause-on-hover="true">
+      <span>Design</span><span>Craft</span><span>Motion</span><span>Bootstrap 5</span><span>Kineto</span><span>Figma</span>
+    </div>
+  </section>
+
+  <div class="spacer"></div>
+
+  <!-- 토스트: Bootstrap 토스트를 동적으로 만듭니다. 안쪽 텍스트의 data-kt-text-reveal 은 observe()가 붙입니다. -->
+  <div class="position-fixed bottom-0 end-0 p-3 toast-container" id="toasts"></div>
+  <div class="container pb-5 text-center">
+    <button id="show-toast" type="button" class="btn btn-success" data-kt-ripple>토스트 띄우기</button>
+  </div>
+
+  <!-- 모달: 열고 닫기·포커스·페이드는 Bootstrap. 본문 항목은 Kineto reveal이 순서대로 등장. -->
+  <div class="modal fade" id="offerModal" tabindex="-1" aria-labelledby="offerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="offerModalLabel">런칭 혜택</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+        </div>
+        <ul class="modal-body list-unstyled m-0" data-kt-reveal="fade-up" data-kt-stagger="0.1" data-kt-once="false">
+          <li class="py-2">첫 달 무료</li>
+          <li class="py-2">팀 좌석 3개 추가</li>
+          <li class="py-2">Figma 플러그인 얼리 액세스</li>
+        </ul>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+          <button type="button" class="btn btn-primary" data-kt-ripple data-bs-dismiss="modal">신청</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS (Popper 포함). 버전을 올리면 integrity 값도 함께 바꿉니다. -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+  <!-- Kineto UMD. 배포 시에는 https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.umd.min.js -->
+  <script src="../../dist/kineto.umd.js"></script>
+
+  <script>
+    // Bootstrap 툴팁은 opt-in이라 직접 초기화합니다(Bootstrap 문서 그대로).
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => bootstrap.Tooltip.getOrCreateInstance(el));
+
+    // 한 줄: 지금 있는 data-kt-* 요소를 붙이고, 이후 DOM에 들어오는 요소도 자동으로 붙이고 정리합니다.
+    Kineto.observe();
+
+    // 동적 카드: 템플릿을 복제해 그리드에 넣기만 하면 tilt가 붙습니다.
+    document.getElementById('add-card').addEventListener('click', () => {
+      const card = document.getElementById('card-template').content.firstElementChild.cloneNode(true);
+      document.getElementById('card-grid').appendChild(card);
+    });
+
+    // 동적 토스트: Bootstrap이 보여주고 숨기며, 숨겨진 뒤 DOM에서 제거하면 Kineto 인스턴스도 함께 정리됩니다.
+    document.getElementById('show-toast').addEventListener('click', () => {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
+      toast.setAttribute('aria-atomic', 'true');
+      toast.innerHTML = '<div class="toast-body"><strong data-kt-text-reveal="stream" data-kt-speed="30">저장되었습니다.</strong> 변경 사항이 반영됐어요.</div>';
+      document.getElementById('toasts').appendChild(toast);
+      toast.addEventListener('hidden.bs.toast', () => toast.remove());
+      bootstrap.Toast.getOrCreateInstance(toast, { delay: 4000 }).show();
+    });
+  </script>
+</body>
+</html>

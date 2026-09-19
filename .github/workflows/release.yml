@@ -65,7 +65,7 @@ jobs:
       - name: Run Node tests · consumers and frameworks
         run: |
           set -euo pipefail
-          for command in test:consumer-bundles test:framework; do
+          for command in test:consumer-bundles test:framework test:integrations test:mcp; do
             echo "::group::$command"
             node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log
             echo "::endgroup::"

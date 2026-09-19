@@ -10,7 +10,7 @@ HTML属性または JavaScript API で制御するWebインタラクションツ
 
 <p><a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="../LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
-[ライブデモ](https://kineto.dongri.me) · [モジュールリファレンス](../docs/module-reference.md) · [トラブルシューティング](../docs/troubleshooting.md) · [AIプロンプトガイド](../AI-PROMPT-GUIDE.md) · [機能コントラクト](../FEATURE_CONTRACT.md)
+[ライブデモ](https://kineto.dongri.me) · [モジュールリファレンス](../docs/module-reference.md) · [連携ガイド](../docs/integrations/README.md) · [トラブルシューティング](../docs/troubleshooting.md) · [AIプロンプトガイド](../AI-PROMPT-GUIDE.md) · [機能コントラクト](../FEATURE_CONTRACT.md)
 
 </div>
 
@@ -191,6 +191,16 @@ import installKineto from '@dong-gri/kineto/jquery';
 installKineto(window.jQuery);
 $('.card').kineto('reveal', { preset: 'fade-up' });
 ```
+
+## デザインシステム・UIライブラリ・AIツール
+
+Kineto は既存のコンポーネントライブラリの*隣*に置いて使います。挙動とアクセシビリティはライブラリが担当し、Kineto は同じ要素の `data-kt-*` 属性でモーションだけを加えます。
+
+- **shadcn/ui** — [shadcn レジストリ](https://kineto.dongri.me/r/registry.json)から `KinetoProvider`、`KinetoReveal`、`KinetoCounter` などの型付きラッパーと AI ルールをインストールできます（`npx shadcn@latest add @kineto/provider`）。
+- **Bootstrap 5、MUI、Mantine、Chakra UI、Ant Design、daisyUI、Nuxt UI、PrimeVue、Vuetify** — [`docs/integrations/`](../docs/integrations/README.md)にライブラリごとのガイド（付け方、ライブラリが提供するもの、競合ルール、意図別レシピ）があり、`tests/integrations/` で実際のライブラリに対して検証しています。[Bootstrap 5 共存サンプル](../examples/bootstrap/index.html)は実ブラウザで確認します。
+- **コーディングエージェント** — [`ai/kineto.rules.md`](../ai/kineto.rules.md)（`kineto.dongri.me/llms.txt`）と [Kineto MCP サーバー](../packages/kineto-mcp/README.md)（`npx @dong-gri/kineto-mcp`）が、実際の機能コントラクトに基づいてどのモジュールをいつ使うかを答えます。Figma MCP の利用者は `kineto_figma_layers` でレイヤーを意図にマッピングできます。
+
+後からレンダリングされる DOM（React/Vue ツリー、トースト、モーダル）は `Kineto.observe()` を一度呼ぶだけで自動的に適用・後始末されます。
 
 ## ブラウザ対応
 

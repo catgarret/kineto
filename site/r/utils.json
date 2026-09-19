@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "utils",
+  "type": "registry:lib",
+  "title": "Kineto utils",
+  "description": "Small helpers shared by the Kineto registry components.",
+  "author": "dongri <official@dongri.me>",
+  "dependencies": [
+    "@dong-gri/kineto"
+  ],
+  "files": [
+    {
+      "path": "registry/items/utils/kineto-utils.ts",
+      "type": "registry:lib",
+      "content": "// Small helpers shared by the Kineto registry components.\nimport type { KinetoOptions } from '@dong-gri/kineto';\n\n/**\n * Drop `undefined` entries so an unset prop never overrides a module default\n * (`{ duration: undefined }` would otherwise reach the module as an explicit\n * value in some code paths).\n */\nexport function compact<T extends KinetoOptions>(options: T): KinetoOptions {\n  return Object.fromEntries(Object.entries(options).filter(([, value]) => value !== undefined));\n}\n"
+    }
+  ]
+}

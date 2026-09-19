@@ -1,0 +1,50 @@
+{
+  "name": "@dong-gri/kineto-mcp",
+  "version": "0.1.0",
+  "description": "MCP server that lets coding agents (Claude Code, Cursor, Codex, Figma MCP flows) pick, configure and validate Kineto motion modules from the real feature contract instead of guessing.",
+  "license": "MIT",
+  "author": "dongri <official@dongri.me>",
+  "type": "module",
+  "bin": {
+    "kineto-mcp": "bin/kineto-mcp.mjs"
+  },
+  "exports": {
+    ".": "./src/server.mjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "bin",
+    "src",
+    "contracts",
+    "README.md"
+  ],
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "start": "node bin/kineto-mcp.mjs",
+    "test": "node test/server.test.mjs"
+  },
+  "keywords": [
+    "kineto",
+    "mcp",
+    "model-context-protocol",
+    "motion",
+    "animation",
+    "shadcn",
+    "figma"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/catgarret/kineto.git",
+    "directory": "packages/kineto-mcp"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://kineto.dongri.me",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.1.0"
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dongri.me/schemas/kineto.integrations.schema.json",
+  "title": "Kineto integration map (UI libraries, design systems, AI tooling)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["integrationsVersion", "libraryVersion", "description", "principles", "setup", "ecosystems", "intents", "figmaHints"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "integrationsVersion": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "libraryVersion": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "description": { "type": "string" },
+    "principles": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "setup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["install", "css", "bootstrapScript", "cdn"],
+      "properties": {
+        "install": { "type": "string" },
+        "css": { "type": "string" },
+        "bootstrapScript": { "type": "string" },
+        "cdn": { "type": "string" }
+      }
+    },
+    "ecosystems": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "framework", "attach", "provides", "notes"],
+        "properties": {
+          "title": { "type": "string" },
+          "framework": { "enum": ["html", "react", "vue"] },
+          "attach": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["pattern", "summary", "example"],
+            "properties": {
+              "pattern": { "enum": ["data-attributes", "props-passthrough", "props-passthrough-or-wrapper", "attrs-fallthrough"] },
+              "summary": { "type": "string" },
+              "example": { "type": "string" }
+            }
+          },
+          "registry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["namespace", "url", "componentsJson", "install"],
+            "properties": {
+              "namespace": { "type": "string", "pattern": "^@[a-z0-9-]+$" },
+              "url": { "type": "string", "pattern": "\\{name\\}" },
+              "componentsJson": { "type": "string" },
+              "install": { "type": "string" }
+            }
+          },
+          "plugin": { "type": "string" },
+          "examples": {
+            "type": "array",
+            "description": "Runnable example pages in this repository that prove the attachment pattern; each path is asserted to exist by tests/integrations-contract.mjs.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["path", "title"],
+              "properties": {
+                "path": { "type": "string", "pattern": "^examples/" },
+                "title": { "type": "string" },
+                "test": { "type": "string", "description": "The QA script that exercises the example in a real browser." }
+              }
+            }
+          },
+          "provides": { "type": "array", "items": { "type": "string" } },
+          "conflicts": { "type": "array", "items": { "type": "string" } },
+          "notes": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "intents": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "ko", "keywords", "figma", "recipes", "provideWhenLibraryHas"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "title": { "type": "string" },
+          "ko": { "type": "string" },
+          "keywords": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "figma": { "type": "array", "items": { "type": "string" }, "description": "Case-insensitive regular expressions matched against Figma layer names." },
+          "recipes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["module", "why"],
+              "properties": {
+                "module": { "type": "string" },
+                "variant": { "type": "string" },
+                "options": { "type": "object" },
+                "why": { "type": "string" }
+              }
+            }
+          },
+          "provideWhenLibraryHas": {
+            "description": "null: Kineto is the natural provider everywhere. prefer-library: use the UI library's component when its `provides` list covers it. enhance: keep the library component and add Kineto motion to its content.",
+            "enum": [null, "prefer-library", "enhance"]
+          },
+          "libraryEquivalents": { "type": "object", "additionalProperties": { "type": "string" } },
+          "notes": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "figmaHints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "nodeTypeRules", "workflow"],
+      "properties": {
+        "description": { "type": "string" },
+        "nodeTypeRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["when", "intent"],
+            "properties": { "when": { "type": "string" }, "intent": { "type": "string" } }
+          }
+        },
+        "workflow": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

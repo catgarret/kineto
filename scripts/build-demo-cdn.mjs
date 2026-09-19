@@ -16,6 +16,8 @@ import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { minifySync } from 'rolldown/experimental';
 import { transform as transformCss } from 'lightningcss';
+import { renderSiteExtras } from './generate-integrations.mjs';
+import { renderRegistrySite } from './build-registry.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
@@ -81,6 +83,34 @@ export function assertDemoAssets() {
   return errors;
 }
 
+// Files the deployed site serves beyond the demo itself: the AI-facing
+// `llms.txt` + rules (from kineto.integrations.json) and the shadcn registry
+// (`r/*.json`, from registry/). Both are pure renders, so `--check` can assert
+// byte equality exactly like the minified demo assets.
+export function listSiteExtras() {
+  return { ...renderSiteExtras(), ...renderRegistrySite() };
+}
+
+function writeSiteExtras() {
+  const extras = listSiteExtras();
+  for (const [file, content] of Object.entries(extras)) {
+    const target = path.join(root, file);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, content);
+  }
+  return Object.keys(extras).length;
+}
+
+export function assertSiteExtras() {
+  const errors = [];
+  for (const [file, content] of Object.entries(listSiteExtras())) {
+    const target = path.join(root, file);
+    if (!fs.existsSync(target)) { errors.push(`${file} is missing`); continue; }
+    if (fs.readFileSync(target, 'utf8') !== content) errors.push(`${file} is stale (regenerate with npm run build)`);
+  }
+  return errors;
+}
+
 // Short build id for the footer/debug so a deployed page is traceable to a commit.
 function buildId() {
   try { return execSync('git rev-parse --short=7 HEAD', { cwd: root }).toString().trim(); }
@@ -138,9 +168,9 @@ if (isMain) {
   const check = process.argv.includes('--check');
   if (check) {
     const html = fs.readFileSync(path.join(OUT, 'index.html'), 'utf8');
-    const errors = [...assertSite(html), ...assertRuntimeAssets(), ...assertDemoAssets()];
+    const errors = [...assertSite(html), ...assertRuntimeAssets(), ...assertDemoAssets(), ...assertSiteExtras()];
     if (errors.length) { console.error('demo-cdn --check FAILED:\n  - ' + errors.join('\n  - ')); process.exit(1); }
-    console.log(`demo-cdn --check OK — co-deployed runtime matches dist, demo assets are current minified builds, public CDN snippets retained, 0 ../dist refs.`);
+    console.log(`demo-cdn --check OK — co-deployed runtime matches dist, demo assets are current minified builds, llms.txt/AI rules/registry are current, public CDN snippets retained, 0 ../dist refs.`);
   } else {
     fs.rmSync(OUT, { recursive: true, force: true });
     fs.cpSync(SRC, OUT, { recursive: true });
@@ -148,16 +178,17 @@ if (isMain) {
     for (const [sourceName, outputName] of runtimeAssets) {
       fs.copyFileSync(path.join(root, 'dist', sourceName), path.join(OUT, outputName));
     }
+    const extras = writeSiteExtras();
     const indexPath = path.join(OUT, 'index.html');
     const { html, leftover } = rewriteSiteHtml(fs.readFileSync(indexPath, 'utf8'), { build: buildId() });
     fs.writeFileSync(indexPath, html);
-    const errors = [...assertSite(html), ...assertRuntimeAssets(), ...assertDemoAssets()];
+    const errors = [...assertSite(html), ...assertRuntimeAssets(), ...assertDemoAssets(), ...assertSiteExtras()];
     if (errors.length || leftover > 0) {
       console.error(`Generated site/ but assertions FAILED (leftover ../dist=${leftover}):\n  - ` + errors.join('\n  - '));
       process.exit(1);
     }
     const sourceKb = minified.reduce((total, asset) => total + asset.sourceBytes, 0) / 1024;
     const outputKb = minified.reduce((total, asset) => total + asset.outputBytes, 0) / 1024;
-    console.log(`Generated site/ from demo/ — co-deployed tested runtime (build ${buildId()}), public CDN snippets retained, ${minified.length} demo assets minified ${sourceKb.toFixed(1)} KB → ${outputKb.toFixed(1)} KB.`);
+    console.log(`Generated site/ from demo/ — co-deployed tested runtime (build ${buildId()}), public CDN snippets retained, ${minified.length} demo assets minified ${sourceKb.toFixed(1)} KB → ${outputKb.toFixed(1)} KB, ${extras} AI/registry files.`);
   }
 }

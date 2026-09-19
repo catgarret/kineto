@@ -30,6 +30,26 @@ updates:
     open-pull-requests-limit: 5
     versioning-strategy: increase-if-necessary
 
+  - package-ecosystem: npm
+    directory: /tests/integrations
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:06"
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 5
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: /packages/kineto-mcp
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:11"
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 5
+    versioning-strategy: increase-if-necessary
+
   - package-ecosystem: github-actions
     directory: /
     schedule:

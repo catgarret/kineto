@@ -1,13 +1,13 @@
 # jQuery adapter example
 
 ```bash
-npm install kineto jquery
+npm install @dong-gri/kineto jquery
 ```
 
 ```js
 import $ from 'jquery';
-import installKineto from 'kineto/jquery';
-import 'kineto/style.css';
+import installKineto from '@dong-gri/kineto/jquery';
+import '@dong-gri/kineto/style.css';
 
 installKineto($);
 

@@ -26,11 +26,13 @@ export default [
     rules: baseRules
   },
   {
-    files: ['tests/*.mjs', 'scripts/*.mjs', 'vite.config*.js'],
+    files: ['tests/*.mjs', 'scripts/**/*.mjs', 'vite.config*.js', 'tests/integrations/*.mjs', 'packages/kineto-mcp/**/*.mjs'],
+    ignores: ['packages/kineto-mcp/src/lib.mjs'], // generated copy of scripts/integrations/lib.mjs (linted at its source)
     languageOptions: {
       ecmaVersion: 2024,
       sourceType: 'module',
-      globals: { console: 'readonly', process: 'readonly', fetch: 'readonly', setTimeout: 'readonly', clearTimeout: 'readonly', URL: 'readonly', window: 'readonly', document: 'readonly' }
+      // Node scripts and QA fixtures; the browser names cover jsdom/Playwright page code.
+      globals: { console: 'readonly', process: 'readonly', fetch: 'readonly', setTimeout: 'readonly', clearTimeout: 'readonly', URL: 'readonly', window: 'readonly', document: 'readonly', Buffer: 'readonly', AbortSignal: 'readonly', globalThis: 'readonly', getComputedStyle: 'readonly', Element: 'readonly', MutationObserver: 'readonly' }
     },
     rules: baseRules
   }

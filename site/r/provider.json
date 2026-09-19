@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "provider",
+  "type": "registry:component",
+  "title": "Kineto provider",
+  "description": "Mount once in the root layout: loads the stylesheet and starts Kineto.observe() so any data-kt-* element that reaches the DOM is animated and cleaned up automatically.",
+  "author": "dongri <official@dongri.me>",
+  "dependencies": [
+    "@dong-gri/kineto"
+  ],
+  "files": [
+    {
+      "path": "registry/items/provider/kineto-provider.tsx",
+      "type": "registry:component",
+      "content": "'use client';\n\n// KinetoProvider — mount once in the root layout (Next.js App Router, Vite,\n// Remix …). It loads Kineto's stylesheet and starts `Kineto.observe()`, so any\n// element that reaches the DOM with a `data-kt-*` attribute — shadcn Cards,\n// Radix portals, dialogs, lists rendered later — is animated automatically and\n// cleaned up when it unmounts. Nothing else is required in child components.\nimport { useEffect, type ReactNode } from 'react';\nimport Kineto from '@dong-gri/kineto';\nimport '@dong-gri/kineto/style.css';\n\nexport interface KinetoProviderProps {\n  children?: ReactNode;\n  /** Passed to `Kineto.config()` before observing (smooth scroll, performance tier, debug …). */\n  config?: Parameters<typeof Kineto.config>[0];\n  /** Also react when a `data-kt-*` attribute is added to an existing element (default false). */\n  watchAttributes?: boolean;\n}\n\nexport function KinetoProvider({ children, config, watchAttributes = false }: KinetoProviderProps) {\n  useEffect(() => {\n    if (config) Kineto.config(config);\n    const handle = Kineto.observe(document, { attributes: watchAttributes });\n    return () => handle.disconnect();\n    // `config` is applied once at mount; pass a new key to remount if it must change.\n    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, [watchAttributes]);\n  return <>{children}</>;\n}\n\nexport default KinetoProvider;\n"
+    }
+  ],
+  "docs": "Add <KinetoProvider> around your app once (a client component). Then put data-kt-* attributes on any shadcn component, e.g. <Card data-kt-tilt=\"tilt-glare\">.",
+  "categories": [
+    "kineto",
+    "motion"
+  ]
+}

@@ -96,7 +96,9 @@ for (const relative of linkedDocs) {
   const source = fs.readFileSync(path.join(root, relative), 'utf8');
   assert.ok(source.includes('https://kineto.dongri.me'), `${relative} must use the canonical demo URL`);
   assert.doesNotMatch(source, /https:\/\/git\.dongri\.me\/example\/kineto/);
-  assert.doesNotMatch(source, /https:\/\/kineto\.dongri\.me\//);
+  // The demo link itself stays the bare canonical URL (no trailing slash);
+  // deployed sub-resources such as /r/registry.json and /llms.txt are allowed.
+  assert.doesNotMatch(source, /https:\/\/kineto\.dongri\.me\/(?![a-z0-9])/i, `${relative} must not add a trailing slash to the canonical demo URL`);
 }
 
 console.log(`site-deploy OK — co-deployed runtime matches dist, public CDN snippets remain, canonical URL/GTM/version(${version})/count/build hooks present.`);

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "reveal",
+  "type": "registry:component",
+  "title": "Kineto reveal",
+  "description": "Viewport entrance for sections, cards and lists (fade/slide/zoom/mask/wipe/clock presets, stagger, once).",
+  "author": "dongri <official@dongri.me>",
+  "dependencies": [
+    "@dong-gri/kineto"
+  ],
+  "registryDependencies": [
+    "https://kineto.dongri.me/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "registry/items/reveal/kineto-reveal.tsx",
+      "type": "registry:component",
+      "content": "'use client';\n\n// KinetoReveal — viewport entrance for a section, card or list.\n//   <KinetoReveal preset=\"fade-up\" once>…</KinetoReveal>\n//   <KinetoReveal as=\"ul\" preset=\"slide-up\" stagger={0.08}>…</KinetoReveal>\n// A typed wrapper over `Motion` from the React adapter: the instance is created\n// on mount and replaced only when a motion prop changes.\nimport { forwardRef, type ElementType, type ReactNode } from 'react';\nimport { Motion, type MotionHandle } from '@dong-gri/kineto/react';\nimport { compact } from '@/lib/kineto-utils';\n\nexport type KinetoRevealPreset =\n  | 'fade' | 'fade-up' | 'fade-down' | 'fade-left' | 'fade-right'\n  | 'slide-up' | 'slide-down' | 'slide-left' | 'slide-right'\n  | 'zoom-in' | 'zoom-out' | 'blur' | 'rise' | 'soft' | 'flip-x' | 'flip-y'\n  | 'rotate' | 'mask' | 'wipe' | 'class' | 'clock' | 'swing' | 'skew';\n\nexport interface KinetoRevealProps extends Omit<React.HTMLAttributes<HTMLElement>, 'children'> {\n  as?: ElementType;\n  preset?: KinetoRevealPreset;\n  /** Seconds. */\n  duration?: number;\n  /** Seconds. */\n  delay?: number;\n  /** Seconds between children when the element is a list/grid. */\n  stagger?: number;\n  /** Named easing (`'cubic-out'`, `'spring'`) or a cubic-bezier string. */\n  ease?: string;\n  /** Play once (default) or every time the element re-enters the viewport. */\n  once?: boolean;\n  /** Direction for `mask` / `wipe` presets. */\n  direction?: 'up' | 'down' | 'left' | 'right';\n  children?: ReactNode;\n}\n\nexport const KinetoReveal = forwardRef<MotionHandle, KinetoRevealProps>(function KinetoReveal(\n  { as = 'div', preset = 'fade-up', duration, delay, stagger, ease, once = true, direction, children, ...props },\n  ref\n) {\n  const options = compact({ preset, duration, delay, stagger, ease, once, direction });\n  return (\n    <Motion ref={ref} as={as} type=\"reveal\" options={options} dependencies={[preset, duration, delay, stagger, ease, once, direction]} {...props}>\n      {children}\n    </Motion>\n  );\n});\n\nexport default KinetoReveal;\n"
+    }
+  ],
+  "categories": [
+    "kineto",
+    "motion",
+    "scroll"
+  ]
+}

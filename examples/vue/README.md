@@ -1,15 +1,15 @@
 # Vue 3 adapter example
 
 ```bash
-npm install kineto vue
+npm install @dong-gri/kineto vue
 ```
 
 ```js
 // main.js
 import { createApp } from 'vue';
 import App from './App.vue';
-import KinetoVue from 'kineto/vue';
-import 'kineto/style.css';
+import KinetoVue from '@dong-gri/kineto/vue';
+import '@dong-gri/kineto/style.css';
 
 createApp(App)
   .use(KinetoVue)
@@ -33,7 +33,7 @@ Composable도 사용할 수 있습니다.
 ```vue
 <script setup>
 import { ref } from 'vue';
-import { useKineto } from 'kineto/vue';
+import { useKineto } from '@dong-gri/kineto/vue';
 
 const preset = ref('fade-up');
 const { element, replay } = useKineto(

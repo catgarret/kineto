@@ -1,0 +1,31 @@
+{
+  "name": "kineto-integrations",
+  "private": true,
+  "type": "module",
+  "description": "Proves the attachment patterns documented in kineto.integrations.json against the real UI libraries (SSR render + jsdom scan), type-checks the shadcn registry items, installs registry items with the shadcn CLI, and runs the Bootstrap 5 coexistence example in a real browser.",
+  "scripts": {
+    "qa": "node attachment-qa.mjs && node registry-qa.mjs && node bootstrap-qa.mjs"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^3.24.2",
+    "@dong-gri/kineto": "file:../..",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mantine/core": "^8.3.0",
+    "@mantine/hooks": "^8.3.0",
+    "@mui/material": "^7.3.2",
+    "antd": "^5.27.4",
+    "bootstrap": "^5.3.8",
+    "primevue": "^4.3.9",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "vue": "^3.5.42",
+    "vuetify": "^3.10.4"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "shadcn": "^3.4.0",
+    "typescript": "^5.9.2"
+  }
+}

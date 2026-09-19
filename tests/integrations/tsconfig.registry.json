@@ -1,0 +1,51 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [
+      "react",
+      "react-dom"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@dong-gri/kineto": [
+        "../../types/index.d.ts"
+      ],
+      "@dong-gri/kineto/react": [
+        "../../types/react.d.ts"
+      ],
+      "@dong-gri/kineto/style.css": [
+        "./css.d.ts"
+      ],
+      "@/lib/kineto-utils": [
+        "../../registry/items/utils/kineto-utils.ts"
+      ],
+      "react": [
+        "./node_modules/@types/react/index.d.ts"
+      ],
+      "react/jsx-runtime": [
+        "./node_modules/@types/react/jsx-runtime.d.ts"
+      ],
+      "react-dom": [
+        "./node_modules/@types/react-dom/index.d.ts"
+      ]
+    }
+  },
+  "include": [
+    "../../registry/items/**/*.ts",
+    "../../registry/items/**/*.tsx",
+    "./css.d.ts"
+  ]
+}

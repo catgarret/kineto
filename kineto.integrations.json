@@ -1,0 +1,1815 @@
+{
+  "$schema": "./kineto.integrations.schema.json",
+  "integrationsVersion": "1.0.0",
+  "libraryVersion": "0.10.0",
+  "description": "Machine-readable guidance for using Kineto next to popular UI libraries and design systems, and for AI tools (Codex, Claude Code, Cursor, Figma MCP flows) that decide which Kineto module fits a piece of UI. Every module, variant and option named here is validated against kineto.features.json by tests/integrations-contract.mjs. Human-readable docs under docs/integrations/ and the AI rule files under ai/ are generated from this file — edit here, then run `npm run integrations:build`.",
+  "principles": [
+    "Kineto adds motion and media effects to markup you already own; it does not replace the component library's behaviour (dialogs, menus, forms, routing).",
+    "Prefer the library's own component when it already provides the behaviour (toast, tooltip, tabs, accordion, dialog, carousel). Use Kineto for what the library does not ship: entrance motion, text motion, counters, image loading effects, hover/pointer effects, marquee, page reveal, cursor, scroll storytelling.",
+    "Never put two things that animate the same property on one element: a Tailwind/tw-animate-css enter animation plus a Kineto reveal, a Bootstrap carousel plus a Kineto slider, two Kineto modules that both write transform (see docs/rfc/module-composition.md).",
+    "Attach with `data-kt-*` attributes on the element that reaches the DOM, call `Kineto.observe()` once at startup so markup added later (framework renders, portals, modals) is picked up and cleaned up, and reach for the React/Vue adapters only when you need the instance (replay, pause, presence).",
+    "Respect `prefers-reduced-motion`: Kineto already renders the meaningful end state for every module, so do not add a second reduced-motion branch around it.",
+    "Read the exact option names from kineto.features.json (or `npx @dong-gri/kineto-mcp`); do not invent options."
+  ],
+  "setup": {
+    "install": "npm install @dong-gri/kineto",
+    "css": "import '@dong-gri/kineto/style.css';",
+    "bootstrapScript": "import Kineto from '@dong-gri/kineto';\nKineto.observe(); // scans now and follows later DOM changes",
+    "cdn": "<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.min.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.umd.min.js\"></script>\n<script>Kineto.observe();</script>"
+  },
+  "ecosystems": {
+    "vanilla": {
+      "title": "Vanilla HTML / CSS",
+      "framework": "html",
+      "attach": {
+        "pattern": "data-attributes",
+        "summary": "Put `data-kt-<module>=\"<variant>\"` and `data-kt-<option>` attributes on the element. Call `Kineto.observe()` (or `Kineto.autoInit()` for static pages) once.",
+        "example": "<h1 data-kt-text-reveal=\"stream\">Headline</h1>\n<img data-kt-lazy=\"blur-up\" data-src=\"hero.webp\" alt=\"\">\n<script type=\"module\">\n  import Kineto from '@dong-gri/kineto';\n  Kineto.observe();\n</script>"
+      },
+      "provides": [],
+      "notes": [
+        "Every Kineto module is available; there is no library component to defer to.",
+        "Multi-page sites can add `data-kt-page-transition` on <body> for same-origin page transitions and `data-kt-page-reveal` for the first-paint overlay."
+      ]
+    },
+    "shadcn": {
+      "title": "shadcn/ui (Radix / Base UI + Tailwind)",
+      "framework": "react",
+      "attach": {
+        "pattern": "props-passthrough",
+        "summary": "shadcn components spread extra props onto their root DOM node, so `data-kt-*` props reach the DOM unchanged. Add `<KinetoProvider>` (registry item `@kineto/provider`) once in the root layout; it imports the stylesheet and calls `Kineto.observe()` on the client. Use `useKineto` / `<Motion>` from `@dong-gri/kineto/react` only when the code needs the instance.",
+        "example": "import { Card } from '@/components/ui/card';\n\n<Card data-kt-tilt=\"tilt-glare\" data-kt-max=\"8\">…</Card>\n<h1 data-kt-text-reveal=\"stream\" className=\"text-5xl font-semibold\">Launch week</h1>"
+      },
+      "registry": {
+        "namespace": "@kineto",
+        "url": "https://kineto.dongri.me/r/{name}.json",
+        "componentsJson": "{\n  \"registries\": {\n    \"@kineto\": \"https://kineto.dongri.me/r/{name}.json\"\n  }\n}",
+        "install": "npx shadcn@latest add @kineto/provider @kineto/reveal"
+      },
+      "provides": [
+        "accordion",
+        "tabs",
+        "tooltip",
+        "toast",
+        "dialog",
+        "sheet",
+        "carousel",
+        "skeleton",
+        "progress",
+        "switch",
+        "navigation-menu",
+        "scroll-area"
+      ],
+      "conflicts": [
+        "tw-animate-css (`animate-in`, `fade-in-0`, `zoom-in-95` …) already animates Dialog/Sheet/Popover content — do not add a Kineto reveal to the same node; animate the children instead.",
+        "shadcn `Carousel` (Embla) owns the track; put Kineto reveal/tilt on the slides, never `data-kt-slider` on the same container.",
+        "shadcn `Skeleton` is a layout placeholder; for images prefer `data-kt-lazy=\"skeleton\"` on the `<img>` itself so the placeholder resolves into the real picture."
+      ],
+      "notes": [
+        "Next.js App Router: the provider is a client component; server components can still render `data-kt-*` attributes.",
+        "Tailwind v4 utilities and Kineto never fight over layout: Kineto only writes transform/opacity/filter/clip on the host and creates its own wrapper layers."
+      ]
+    },
+    "tailwind": {
+      "title": "Tailwind CSS (no component library)",
+      "framework": "html",
+      "attach": {
+        "pattern": "data-attributes",
+        "summary": "Same as vanilla: `data-kt-*` attributes on utility-styled markup. Keep Tailwind `transition-*`/`animate-*` classes off elements that carry a Kineto reveal/gesture.",
+        "example": "<article class=\"rounded-2xl bg-white p-6 shadow\" data-kt-reveal=\"fade-up\" data-kt-once>…</article>"
+      },
+      "provides": [],
+      "conflicts": [
+        "`animate-*` keyframe utilities and `transition-transform` on the same element as `data-kt-reveal`, `data-kt-gesture` or `data-kt-tilt` double-animate the host."
+      ],
+      "notes": [
+        "daisyUI, Flowbite and Preline are plain class-based markup on top of Tailwind; everything in this entry applies to them."
+      ]
+    },
+    "bootstrap": {
+      "title": "Bootstrap 5",
+      "framework": "html",
+      "attach": {
+        "pattern": "data-attributes",
+        "summary": "`data-bs-*` (Bootstrap) and `data-kt-*` (Kineto) live on the same element without conflict. Load Bootstrap's bundle and Kineto's UMD (or ESM) and call `Kineto.observe()`; toasts, popovers and dynamically shown modals are picked up automatically.",
+        "example": "<button class=\"btn btn-primary\" data-bs-toggle=\"modal\" data-bs-target=\"#offer\" data-kt-ripple data-kt-magnetic>Open</button>\n<div class=\"card\" data-kt-reveal=\"fade-up\">…</div>"
+      },
+      "provides": [
+        "accordion",
+        "collapse",
+        "tabs",
+        "tooltip",
+        "popover",
+        "toast",
+        "modal",
+        "offcanvas",
+        "carousel",
+        "placeholder",
+        "spinner",
+        "progress",
+        "dropdown",
+        "navbar"
+      ],
+      "conflicts": [
+        "`.carousel` (Bootstrap) and `data-kt-slider` on the same element: choose one. Bootstrap carousel for content slides, Kineto slider when you want coverflow/cube/cards effects.",
+        "`.placeholder` / `.placeholder-glow` and `data-kt-lazy=\"skeleton\"`: choose one placeholder per image.",
+        "`data-bs-toggle=\"tooltip\"` and `data-kt-tooltip` on one element create two tooltips.",
+        "`.accordion` (Bootstrap collapse) and `data-kt-accordion`: Bootstrap owns open/close; add Kineto reveal to the panel content instead."
+      ],
+      "examples": [
+        {
+          "path": "examples/bootstrap/index.html",
+          "title": "Bootstrap 5 coexistence page — modal, toast, tooltip, carousel, cards and KPI counters with Kineto attached, plus the conflict rules applied.",
+          "test": "tests/integrations/bootstrap-qa.mjs"
+        }
+      ],
+      "notes": [
+        "Bootstrap's `.fade` modal transition stays; animate the modal body with `data-kt-reveal` or `data-kt-text-split` for richer entrances.",
+        "Bootstrap's grid and utilities are unaffected; Kineto never sets layout properties on the host."
+      ]
+    },
+    "mui": {
+      "title": "Material UI (MUI)",
+      "framework": "react",
+      "attach": {
+        "pattern": "props-passthrough",
+        "summary": "MUI components forward unknown props (including `data-kt-*`) and refs to their root element. Mount `<KinetoProvider>` once, then add attributes on `Card`, `Button`, `Typography`, `Box` …",
+        "example": "import Card from '@mui/material/Card';\n\n<Card data-kt-card-glow=\"spotlight\" data-kt-color=\"#7c4dff\">…</Card>\n<Typography variant=\"h2\" data-kt-text-reveal=\"stream\">Report</Typography>"
+      },
+      "provides": [
+        "accordion",
+        "tabs",
+        "tooltip",
+        "snackbar",
+        "dialog",
+        "drawer",
+        "skeleton",
+        "progress",
+        "switch",
+        "menu"
+      ],
+      "conflicts": [
+        "MUI `Grow`/`Fade`/`Slide` transitions wrap Dialog and Menu content; do not add a Kineto reveal to the same node.",
+        "MUI `ButtonBase` already renders a Material ripple (`TouchRipple`); use `data-kt-magnetic` or `data-kt-gesture` on buttons, not `data-kt-ripple`."
+      ],
+      "notes": [
+        "Emotion class names are left untouched; Kineto writes inline styles it later restores on destroy."
+      ]
+    },
+    "mantine": {
+      "title": "Mantine",
+      "framework": "react",
+      "attach": {
+        "pattern": "props-passthrough",
+        "summary": "Mantine components spread `...others` onto the root node and forward refs, so `data-kt-*` props work everywhere. Mount `<KinetoProvider>` once.",
+        "example": "import { Card, Title } from '@mantine/core';\n\n<Card data-kt-tilt=\"tilt\" data-kt-max=\"6\">…</Card>\n<Title order={1} data-kt-text-split=\"word\" data-kt-stagger=\"0.06\">Spring collection</Title>"
+      },
+      "provides": [
+        "accordion",
+        "tabs",
+        "tooltip",
+        "notifications",
+        "modal",
+        "drawer",
+        "skeleton",
+        "progress",
+        "switch",
+        "carousel"
+      ],
+      "conflicts": [
+        "`@mantine/carousel` (Embla) and `data-kt-slider` on one element: choose one.",
+        "Mantine `Transition`/`Collapse` already animate their child; add Kineto to the content, not the transition node."
+      ],
+      "notes": []
+    },
+    "chakra": {
+      "title": "Chakra UI v3",
+      "framework": "react",
+      "attach": {
+        "pattern": "props-passthrough",
+        "summary": "Chakra v3 components are Ark UI + style props; unknown `data-kt-*` props reach the DOM. Mount `<KinetoProvider>` once. For `asChild` compositions put the attribute on the element that renders.",
+        "example": "import { Card, Heading } from '@chakra-ui/react';\n\n<Card.Root data-kt-card-glow=\"edge\">…</Card.Root>\n<Heading size=\"4xl\" data-kt-text-reveal=\"stream\">Ready to ship</Heading>"
+      },
+      "provides": [
+        "accordion",
+        "tabs",
+        "tooltip",
+        "toaster",
+        "dialog",
+        "drawer",
+        "skeleton",
+        "progress",
+        "switch",
+        "menu"
+      ],
+      "conflicts": [
+        "Chakra `Presence`/`Dialog` animate their positioner via `data-state` keyframes; do not add a Kineto reveal to the same node."
+      ],
+      "notes": []
+    },
+    "antd": {
+      "title": "Ant Design",
+      "framework": "react",
+      "attach": {
+        "pattern": "props-passthrough-or-wrapper",
+        "summary": "Most Ant Design components pass extra HTML attributes to their root (`Button`, `Card`, `Typography.Title`, `Statistic` wrapper). When a component does not forward `data-kt-*` (check the rendered DOM), wrap it in a plain `<div data-kt-…>` or use `useKineto` with a `ref`. Mount `<KinetoProvider>` once.",
+        "example": "import { Card, Statistic } from 'antd';\n\n<Card data-kt-reveal=\"fade-up\" data-kt-once>\n  <span data-kt-counter=\"pop\" data-kt-to=\"128000\" data-kt-format=\",\">128,000</span>\n</Card>"
+      },
+      "provides": [
+        "collapse",
+        "tabs",
+        "tooltip",
+        "message",
+        "notification",
+        "modal",
+        "drawer",
+        "skeleton",
+        "progress",
+        "switch",
+        "carousel",
+        "dropdown"
+      ],
+      "conflicts": [
+        "Ant Design `Carousel` (react-slick) and `data-kt-slider` on one element: choose one.",
+        "`Statistic` has its own count-up animation when `formatter` uses CountUp; use either that or `data-kt-counter`, not both."
+      ],
+      "notes": []
+    },
+    "daisyui": {
+      "title": "daisyUI",
+      "framework": "html",
+      "attach": {
+        "pattern": "data-attributes",
+        "summary": "daisyUI is CSS classes only, so attach exactly like vanilla HTML. daisyUI ships static `skeleton`, `toast`, `tooltip`, `tabs` and `collapse` classes without JavaScript; Kineto can supply the behaviour where you need motion or live state.",
+        "example": "<div class=\"card bg-base-100 shadow-xl\" data-kt-tilt=\"tilt-glare\">…</div>\n<span class=\"stat-value\" data-kt-counter=\"slot\" data-kt-to=\"89400\" data-kt-format=\",\">89,400</span>"
+      },
+      "provides": [
+        "skeleton",
+        "tooltip",
+        "tabs",
+        "collapse",
+        "toast",
+        "carousel",
+        "progress",
+        "modal",
+        "drawer"
+      ],
+      "conflicts": [
+        "daisyUI `carousel` is CSS scroll-snap; `data-kt-slider` on the same element takes over the track — choose one."
+      ],
+      "notes": [
+        "daisyUI `skeleton` boxes stay for text; use `data-kt-lazy=\"skeleton\"` on images."
+      ]
+    },
+    "nuxt-ui": {
+      "title": "Nuxt UI (Reka UI + Tailwind)",
+      "framework": "vue",
+      "attach": {
+        "pattern": "attrs-fallthrough",
+        "summary": "Vue attribute fallthrough puts `data-kt-*` on the component's root element. Register a client plugin (`plugins/kineto.client.ts`) that imports the stylesheet and calls `Kineto.observe()`; use `v-motion` / `useKineto` from `@dong-gri/kineto/vue` when you need the instance.",
+        "example": "<UCard data-kt-reveal=\"fade-up\" data-kt-once>…</UCard>\n<h1 data-kt-text-reveal=\"stream\" class=\"text-5xl font-semibold\">Nuxt launch</h1>"
+      },
+      "plugin": "// plugins/kineto.client.ts\nimport Kineto from '@dong-gri/kineto';\nimport '@dong-gri/kineto/style.css';\n\nexport default defineNuxtPlugin(() => {\n  const handle = Kineto.observe();\n  if (import.meta.hot) import.meta.hot.dispose(() => handle.disconnect());\n});",
+      "provides": [
+        "accordion",
+        "tabs",
+        "tooltip",
+        "toast",
+        "modal",
+        "slideover",
+        "skeleton",
+        "progress",
+        "switch",
+        "carousel",
+        "navigation-menu"
+      ],
+      "conflicts": [
+        "Nuxt UI `UCarousel` (Embla) and `data-kt-slider`: choose one per container.",
+        "Reka UI content nodes animate through `data-state`; add Kineto to their children."
+      ],
+      "notes": [
+        "Components rendered on the server keep the attributes, so hydration sees the same markup the observer will scan."
+      ]
+    },
+    "primevue": {
+      "title": "PrimeVue v4",
+      "framework": "vue",
+      "attach": {
+        "pattern": "attrs-fallthrough",
+        "summary": "PrimeVue components fall attributes through to the root (or accept `pt` pass-through for inner parts). `Dialog`, `Toast` and `Sidebar` teleport to `<body>`, which `Kineto.observe()` on the document already covers.",
+        "example": "<Card data-kt-card-glow=\"spotlight\">…</Card>\n<Button label=\"Buy\" data-kt-magnetic data-kt-strength=\"0.3\" />"
+      },
+      "provides": [
+        "accordion",
+        "tabs",
+        "tooltip",
+        "toast",
+        "dialog",
+        "sidebar",
+        "skeleton",
+        "progress",
+        "toggleswitch",
+        "carousel",
+        "galleria",
+        "megamenu"
+      ],
+      "conflicts": [
+        "PrimeVue `Carousel`/`Galleria` and `data-kt-slider` on the same element: choose one.",
+        "PrimeVue `Ripple` directive and `data-kt-ripple` on one button: choose one."
+      ],
+      "notes": []
+    },
+    "vuetify": {
+      "title": "Vuetify 3",
+      "framework": "vue",
+      "attach": {
+        "pattern": "attrs-fallthrough",
+        "summary": "Vuetify components pass `data-kt-*` attributes to their root element. Register a plugin that calls `Kineto.observe()` after the app mounts; overlays (`v-dialog`, `v-snackbar`) render into the overlay container and are observed like any other DOM.",
+        "example": "<v-card data-kt-tilt=\"tilt\" data-kt-max=\"5\">…</v-card>\n<v-btn data-kt-magnetic>Start</v-btn>"
+      },
+      "provides": [
+        "expansion-panels",
+        "tabs",
+        "tooltip",
+        "snackbar",
+        "dialog",
+        "navigation-drawer",
+        "skeleton-loader",
+        "progress",
+        "switch",
+        "carousel",
+        "menu"
+      ],
+      "conflicts": [
+        "`v-carousel` and `data-kt-slider` on one element: choose one.",
+        "`v-btn` already has a ripple; use `data-kt-magnetic`/`data-kt-gesture` instead of `data-kt-ripple`."
+      ],
+      "notes": []
+    }
+  },
+  "intents": [
+    {
+      "id": "hero-headline",
+      "title": "Hero headline entrance",
+      "ko": "히어로 헤드라인 등장",
+      "keywords": [
+        "hero",
+        "headline",
+        "key visual",
+        "kv",
+        "title",
+        "campaign title",
+        "타이틀",
+        "헤드라인",
+        "키비주얼"
+      ],
+      "figma": [
+        "hero",
+        "kv",
+        "key ?visual",
+        "headline",
+        "title",
+        "h1"
+      ],
+      "recipes": [
+        {
+          "module": "textReveal",
+          "variant": "stream",
+          "options": {
+            "speed": 30
+          },
+          "why": "Characters resolve left to right — the default look for launch pages."
+        },
+        {
+          "module": "textReveal",
+          "variant": "hangul",
+          "why": "Korean copy: assembles jamo into syllables instead of flashing random glyphs."
+        },
+        {
+          "module": "textSplit",
+          "variant": "word",
+          "options": {
+            "stagger": 0.06
+          },
+          "why": "Word-by-word rise for editorial headlines."
+        },
+        {
+          "module": "glitch",
+          "variant": "rgb",
+          "options": {
+            "duration": 1.2
+          },
+          "why": "Game/tech key art: RGB slice burst on the title."
+        },
+        {
+          "module": "blurText",
+          "variant": "blur",
+          "why": "Blurred lines sharpen into place — soft, editorial headlines."
+        }
+      ],
+      "provideWhenLibraryHas": null
+    },
+    {
+      "id": "section-entrance",
+      "title": "Section / card entrance on scroll",
+      "ko": "스크롤 진입 시 섹션·카드 등장",
+      "keywords": [
+        "fade in",
+        "scroll reveal",
+        "entrance",
+        "appear",
+        "on scroll",
+        "등장",
+        "스크롤 리빌",
+        "페이드인"
+      ],
+      "figma": [
+        "section",
+        "card",
+        "feature",
+        "grid",
+        "list item",
+        "row"
+      ],
+      "recipes": [
+        {
+          "module": "reveal",
+          "variant": "fade-up",
+          "options": {
+            "once": true,
+            "duration": 0.7
+          },
+          "why": "Default entrance for sections and cards."
+        },
+        {
+          "module": "reveal",
+          "variant": "mask",
+          "options": {
+            "direction": "up"
+          },
+          "why": "Editorial mask wipe for images and quotes."
+        },
+        {
+          "module": "reveal",
+          "variant": "class",
+          "why": "Designer-owned CSS: Kineto only toggles the class, the stylesheet animates."
+        },
+        {
+          "module": "coverReveal",
+          "variant": "block",
+          "options": {
+            "direction": "left"
+          },
+          "why": "Colour block wipes across an image or heading."
+        }
+      ],
+      "provideWhenLibraryHas": null,
+      "notes": [
+        "For lists, add `data-kt-stagger` on the parent so children cascade instead of animating each item separately."
+      ]
+    },
+    {
+      "id": "card-hover",
+      "title": "Card hover: tilt, glow, spring",
+      "ko": "카드 호버 (틸트·글로우·스프링)",
+      "keywords": [
+        "card hover",
+        "3d tilt",
+        "glow",
+        "spotlight",
+        "hover effect",
+        "카드 호버",
+        "틸트",
+        "글로우"
+      ],
+      "figma": [
+        "card",
+        "product card",
+        "tile",
+        "thumbnail"
+      ],
+      "recipes": [
+        {
+          "module": "tilt",
+          "variant": "tilt-glare",
+          "options": {
+            "max": 8
+          },
+          "why": "Pointer-following 3D tilt with a glare; showcase and product cards."
+        },
+        {
+          "module": "cardGlow",
+          "variant": "spotlight",
+          "why": "Spotlight that follows the pointer inside the card (works on dark UIs)."
+        },
+        {
+          "module": "cardGlow",
+          "variant": "border",
+          "why": "Luminous gradient border for pricing/feature cards."
+        },
+        {
+          "module": "gesture",
+          "variant": "spring",
+          "options": {
+            "hoverScale": 1.02
+          },
+          "why": "Subtle spring lift for dense lists where 3D would be noisy."
+        }
+      ],
+      "provideWhenLibraryHas": null,
+      "notes": [
+        "Pick one transform-writing module per element (tilt, gesture, magnetic all write transform)."
+      ]
+    },
+    {
+      "id": "cta-button",
+      "title": "Call-to-action button feedback",
+      "ko": "CTA 버튼 피드백",
+      "keywords": [
+        "button",
+        "cta",
+        "click feedback",
+        "ripple",
+        "magnetic",
+        "버튼",
+        "클릭 피드백"
+      ],
+      "figma": [
+        "button",
+        "cta",
+        "primary button"
+      ],
+      "recipes": [
+        {
+          "module": "magnetic",
+          "variant": "pointer",
+          "options": {
+            "strength": 0.3
+          },
+          "why": "Button leans toward the pointer; landing-page CTAs."
+        },
+        {
+          "module": "ripple",
+          "variant": "material",
+          "why": "Click ripple for libraries without one (Bootstrap, daisyUI, Nuxt UI)."
+        },
+        {
+          "module": "gesture",
+          "variant": "spring",
+          "options": {
+            "tapScale": 0.96
+          },
+          "why": "Hover/press spring for any button."
+        },
+        {
+          "module": "vibrate",
+          "variant": "tap",
+          "why": "Haptic tap on supported mobile devices (progressive)."
+        }
+      ],
+      "provideWhenLibraryHas": null,
+      "libraryEquivalents": {
+        "mui": "ButtonBase ripple",
+        "vuetify": "v-btn ripple",
+        "primevue": "Ripple directive"
+      },
+      "notes": [
+        "Skip `ripple` where the library button already ripples (MUI, Vuetify, PrimeVue)."
+      ]
+    },
+    {
+      "id": "kpi-number",
+      "title": "KPI / statistic count-up",
+      "ko": "KPI·통계 숫자 카운트",
+      "keywords": [
+        "counter",
+        "count up",
+        "kpi",
+        "stat",
+        "statistic",
+        "number",
+        "metric",
+        "카운터",
+        "통계",
+        "숫자"
+      ],
+      "figma": [
+        "stat",
+        "kpi",
+        "number",
+        "metric",
+        "counter",
+        "\\d{2,}"
+      ],
+      "recipes": [
+        {
+          "module": "counter",
+          "variant": "slot",
+          "options": {
+            "to": 128000,
+            "format": ","
+          },
+          "why": "Slot-machine reels for dashboard stats."
+        },
+        {
+          "module": "counter",
+          "variant": "pop",
+          "options": {
+            "to": 98760,
+            "format": ","
+          },
+          "why": "Final digits land one by one — hero stats."
+        },
+        {
+          "module": "counter",
+          "variant": "plain",
+          "options": {
+            "to": 4.9,
+            "decimals": 1
+          },
+          "why": "Plain count-up for ratings and small numbers."
+        }
+      ],
+      "provideWhenLibraryHas": null,
+      "libraryEquivalents": {
+        "antd": "Statistic countUp"
+      }
+    },
+    {
+      "id": "countdown",
+      "title": "Countdown / elapsed clock",
+      "ko": "카운트다운·경과 시계",
+      "keywords": [
+        "countdown",
+        "timer",
+        "until",
+        "clock",
+        "launch in",
+        "카운트다운",
+        "타이머",
+        "D-day"
+      ],
+      "figma": [
+        "countdown",
+        "timer",
+        "d-day",
+        "clock"
+      ],
+      "recipes": [
+        {
+          "module": "counter",
+          "variant": "clock",
+          "options": {
+            "until": "2026-12-31T00:00:00+09:00",
+            "showDays": true
+          },
+          "why": "Countdown to a launch/event date."
+        },
+        {
+          "module": "dateTime",
+          "variant": "relative",
+          "options": {
+            "live": true
+          },
+          "why": "\"3 minutes ago\" style relative time from a server date."
+        }
+      ],
+      "provideWhenLibraryHas": null
+    },
+    {
+      "id": "image-loading",
+      "title": "Image loading effect / placeholder",
+      "ko": "이미지 로딩 효과·플레이스홀더",
+      "keywords": [
+        "lazy load",
+        "skeleton",
+        "blur up",
+        "placeholder",
+        "image reveal",
+        "lqip",
+        "지연 로딩",
+        "스켈레톤",
+        "블러업"
+      ],
+      "figma": [
+        "image",
+        "photo",
+        "thumbnail",
+        "cover",
+        "gallery"
+      ],
+      "recipes": [
+        {
+          "module": "lazy",
+          "variant": "skeleton",
+          "options": {
+            "skeletonVariant": "shimmer"
+          },
+          "why": "Shimmer placeholder that resolves into the image."
+        },
+        {
+          "module": "lazy",
+          "variant": "blur-up",
+          "why": "Blurred preview sharpening — content sites."
+        },
+        {
+          "module": "lazy",
+          "variant": "dither",
+          "options": {
+            "cellSize": 8,
+            "ditherType": "4x4"
+          },
+          "why": "Retro two-tone dither that resolves into the photo (brand/showcase)."
+        },
+        {
+          "module": "lazy",
+          "variant": "halftone",
+          "options": {
+            "persist": true
+          },
+          "why": "Permanent halftone print look on an image or video."
+        },
+        {
+          "module": "lazy",
+          "variant": "ascii",
+          "options": {
+            "persist": true
+          },
+          "why": "ASCII-art filter for terminal/tech aesthetics."
+        }
+      ],
+      "provideWhenLibraryHas": null,
+      "libraryEquivalents": {
+        "shadcn": "Skeleton (static box only)",
+        "mui": "Skeleton",
+        "mantine": "Skeleton",
+        "chakra": "Skeleton",
+        "antd": "Skeleton",
+        "bootstrap": ".placeholder",
+        "daisyui": ".skeleton",
+        "nuxt-ui": "USkeleton",
+        "primevue": "Skeleton",
+        "vuetify": "v-skeleton-loader"
+      },
+      "notes": [
+        "Library skeletons are layout boxes for text; Kineto's lazy skeleton sits on the `<img>` and hands off to the real picture with no layout shift."
+      ]
+    },
+    {
+      "id": "gallery-lightbox",
+      "title": "Image gallery with lightbox",
+      "ko": "이미지 갤러리·라이트박스",
+      "keywords": [
+        "lightbox",
+        "gallery",
+        "zoom",
+        "viewer",
+        "갤러리",
+        "라이트박스",
+        "확대"
+      ],
+      "figma": [
+        "gallery",
+        "lightbox",
+        "grid",
+        "masonry",
+        "photo"
+      ],
+      "recipes": [
+        {
+          "module": "lightbox",
+          "variant": "grouped",
+          "options": {
+            "group": "gallery"
+          },
+          "why": "Grouped viewer with zoom, pan, minimap and keyboard navigation."
+        }
+      ],
+      "provideWhenLibraryHas": null,
+      "libraryEquivalents": {
+        "primevue": "Galleria",
+        "antd": "Image.PreviewGroup"
+      }
+    },
+    {
+      "id": "interactive-reveal",
+      "title": "Brush / scratch-to-reveal media",
+      "ko": "브러시·긁어서 드러내는 미디어",
+      "keywords": [
+        "brush reveal",
+        "scratch",
+        "scratch card",
+        "drag to reveal",
+        "브러시",
+        "긁기",
+        "스크래치"
+      ],
+      "figma": [
+        "scratch",
+        "brush",
+        "reveal",
+        "mask"
+      ],
+      "recipes": [
+        {
+          "module": "brushReveal",
+          "variant": "brush",
+          "options": {
+            "radius": 48,
+            "softness": 0.6
+          },
+          "why": "Pointer/touch brush uncovers the image — event pages and scratch cards."
+        },
+        {
+          "module": "coverReveal",
+          "variant": "block",
+          "why": "Automatic cover wipe when no interaction is wanted."
+        }
+      ],
+      "provideWhenLibraryHas": null
+    },
+    {
+      "id": "carousel",
+      "title": "Carousel / slider",
+      "ko": "캐러셀·슬라이더",
+      "keywords": [
+        "carousel",
+        "slider",
+        "swiper",
+        "slides",
+        "coverflow",
+        "캐러셀",
+        "슬라이더"
+      ],
+      "figma": [
+        "carousel",
+        "slider",
+        "swiper",
+        "slides"
+      ],
+      "recipes": [
+        {
+          "module": "slider",
+          "variant": "slide",
+          "options": {
+            "loop": true,
+            "autoplay": 4000
+          },
+          "why": "Default content slider with drag, keyboard and dots."
+        },
+        {
+          "module": "slider",
+          "variant": "coverflow",
+          "why": "3D coverflow for showcases and app screenshots."
+        },
+        {
+          "module": "slider",
+          "variant": "cards",
+          "why": "Stacked cards for testimonials."
+        },
+        {
+          "module": "radial",
+          "variant": "bottom",
+          "why": "Circular carousel for hero character/product pickers."
+        }
+      ],
+      "provideWhenLibraryHas": "prefer-library",
+      "libraryEquivalents": {
+        "shadcn": "Carousel (Embla)",
+        "bootstrap": ".carousel",
+        "mantine": "@mantine/carousel",
+        "antd": "Carousel",
+        "daisyui": ".carousel",
+        "nuxt-ui": "UCarousel",
+        "primevue": "Carousel",
+        "vuetify": "v-carousel"
+      },
+      "notes": [
+        "Use the library carousel for plain content slides; switch to Kineto slider when the design asks for coverflow, cube, cards, flip or radial motion."
+      ]
+    },
+    {
+      "id": "marquee-ticker",
+      "title": "Marquee / ticker",
+      "ko": "마퀴·티커",
+      "keywords": [
+        "marquee",
+        "ticker",
+        "logo wall",
+        "scrolling text",
+        "ranking",
+        "마퀴",
+        "티커",
+        "흐르는 텍스트",
+        "실시간 순위"
+      ],
+      "figma": [
+        "marquee",
+        "ticker",
+        "logo",
+        "partners",
+        "ranking"
+      ],
+      "recipes": [
+        {
+          "module": "marquee",
+          "variant": "left",
+          "options": {
+            "speed": 60,
+            "pauseOnHover": true
+          },
+          "why": "Seamless logo wall or announcement band."
+        },
+        {
+          "module": "marquee",
+          "variant": "reverse-on-scroll",
+          "why": "Direction follows scroll — showcase sites."
+        },
+        {
+          "module": "overflowText",
+          "variant": "rolling",
+          "why": "Vertical rolling list like a realtime ranking ticker."
+        }
+      ],
+      "provideWhenLibraryHas": null
+    },
+    {
+      "id": "toast",
+      "title": "Toast notification",
+      "ko": "토스트 알림",
+      "keywords": [
+        "toast",
+        "snackbar",
+        "notification",
+        "알림",
+        "토스트"
+      ],
+      "figma": [
+        "toast",
+        "snackbar",
+        "notification",
+        "alert"
+      ],
+      "recipes": [
+        {
+          "module": "toast",
+          "variant": "stack",
+          "options": {
+            "position": "bottom-right",
+            "duration": 4000
+          },
+          "why": "Stacked corner toasts with progress bar."
+        }
+      ],
+      "provideWhenLibraryHas": "prefer-library",
+      "libraryEquivalents": {
+        "shadcn": "Sonner / Toast",
+        "bootstrap": ".toast",
+        "mui": "Snackbar",
+        "mantine": "@mantine/notifications",
+        "chakra": "Toaster",
+        "antd": "message / notification",
+        "daisyui": ".toast (static)",
+        "nuxt-ui": "useToast",
+        "primevue": "Toast",
+        "vuetify": "v-snackbar"
+      }
+    },
+    {
+      "id": "tooltip",
+      "title": "Tooltip",
+      "ko": "툴팁",
+      "keywords": [
+        "tooltip",
+        "hint",
+        "툴팁"
+      ],
+      "figma": [
+        "tooltip",
+        "hint"
+      ],
+      "recipes": [
+        {
+          "module": "tooltip",
+          "variant": "default",
+          "options": {
+            "placement": "top"
+          },
+          "why": "Pointer/focus/click tooltip with placement."
+        }
+      ],
+      "provideWhenLibraryHas": "prefer-library",
+      "libraryEquivalents": {
+        "shadcn": "Tooltip",
+        "bootstrap": "data-bs-toggle=\"tooltip\"",
+        "mui": "Tooltip",
+        "mantine": "Tooltip",
+        "chakra": "Tooltip",
+        "antd": "Tooltip",
+        "daisyui": ".tooltip",
+        "nuxt-ui": "UTooltip",
+        "primevue": "v-tooltip",
+        "vuetify": "v-tooltip"
+      }
+    },
+    {
+      "id": "dialog-enter-exit",
+      "title": "Dialog / modal enter-exit motion",
+      "ko": "다이얼로그·모달 등장/퇴장 모션",
+      "keywords": [
+        "dialog",
+        "modal",
+        "enter exit",
+        "mount unmount",
+        "presence",
+        "animate presence",
+        "모달",
+        "다이얼로그"
+      ],
+      "figma": [
+        "modal",
+        "dialog",
+        "overlay",
+        "popup"
+      ],
+      "recipes": [
+        {
+          "module": "presence",
+          "why": "Host-owned enter/leave: `<KinetoPresence>` (React) or `useKinetoTransition` (Vue) around the dialog body."
+        },
+        {
+          "module": "reveal",
+          "variant": "zoom-in",
+          "options": {
+            "duration": 0.35
+          },
+          "why": "One-shot entrance for the modal body when the library only fades the overlay."
+        },
+        {
+          "module": "pageReveal",
+          "variant": "iris",
+          "why": "Full-screen takeover transitions (showcase/event sites)."
+        }
+      ],
+      "provideWhenLibraryHas": "enhance",
+      "libraryEquivalents": {
+        "shadcn": "Dialog (tw-animate-css)",
+        "bootstrap": ".modal.fade",
+        "mui": "Dialog + Grow",
+        "mantine": "Modal",
+        "chakra": "Dialog",
+        "antd": "Modal",
+        "nuxt-ui": "UModal",
+        "primevue": "Dialog",
+        "vuetify": "v-dialog"
+      },
+      "notes": [
+        "The library owns open/close and focus; Kineto animates the content inside."
+      ]
+    },
+    {
+      "id": "bottom-sheet",
+      "title": "Mobile bottom sheet",
+      "ko": "모바일 바텀시트",
+      "keywords": [
+        "bottom sheet",
+        "drawer",
+        "sheet",
+        "바텀시트",
+        "드로어"
+      ],
+      "figma": [
+        "bottom sheet",
+        "sheet",
+        "drawer"
+      ],
+      "recipes": [
+        {
+          "module": "bottomSheet",
+          "variant": "sheet",
+          "options": {
+            "resizable": true,
+            "handle": true
+          },
+          "why": "Draggable, resizable mobile sheet with backdrop."
+        }
+      ],
+      "provideWhenLibraryHas": "prefer-library",
+      "libraryEquivalents": {
+        "shadcn": "Drawer (vaul) / Sheet",
+        "bootstrap": ".offcanvas",
+        "mui": "SwipeableDrawer",
+        "mantine": "Drawer",
+        "chakra": "Drawer",
+        "antd": "Drawer",
+        "nuxt-ui": "USlideover",
+        "primevue": "Sidebar",
+        "vuetify": "v-bottom-sheet"
+      }
+    },
+    {
+      "id": "page-transition",
+      "title": "Page transition and first-paint reveal",
+      "ko": "페이지 전환·첫 진입 리빌",
+      "keywords": [
+        "page transition",
+        "route transition",
+        "page reveal",
+        "curtain",
+        "loading screen",
+        "페이지 전환",
+        "인트로",
+        "커튼"
+      ],
+      "figma": [
+        "intro",
+        "splash",
+        "loading",
+        "transition"
+      ],
+      "recipes": [
+        {
+          "module": "pageReveal",
+          "variant": "curtain",
+          "options": {
+            "color": "#0a0908"
+          },
+          "why": "First-paint curtain that opens once the page is ready."
+        },
+        {
+          "module": "pageTransition",
+          "variant": "same-origin",
+          "options": {
+            "container": "main"
+          },
+          "why": "Multi-page sites: fetch same-origin pages and animate between them."
+        },
+        {
+          "module": "loader",
+          "variant": "bar",
+          "options": {
+            "source": "window"
+          },
+          "why": "Full-screen loader bound to real load progress."
+        }
+      ],
+      "provideWhenLibraryHas": null,
+      "notes": [
+        "SPA routers (Next.js, Nuxt, React Router) own navigation — use `pageReveal` on first paint and presence for route content, never `pageTransition`."
+      ]
+    },
+    {
+      "id": "scroll-progress",
+      "title": "Reading / scroll progress",
+      "ko": "읽기·스크롤 진행률",
+      "keywords": [
+        "scroll progress",
+        "reading progress",
+        "progress bar",
+        "back to top",
+        "진행률",
+        "맨 위로"
+      ],
+      "figma": [
+        "progress",
+        "reading bar",
+        "back to top"
+      ],
+      "recipes": [
+        {
+          "module": "progress",
+          "variant": "page:scaleX",
+          "options": {
+            "position": "top"
+          },
+          "why": "Top-of-page reading bar."
+        },
+        {
+          "module": "progress",
+          "variant": "element:width",
+          "options": {
+            "ui": "ring",
+            "clickToTop": true
+          },
+          "why": "Back-to-top ring with progress."
+        }
+      ],
+      "provideWhenLibraryHas": null
+    },
+    {
+      "id": "sticky-header",
+      "title": "Sticky header that shrinks or hides on scroll",
+      "ko": "스크롤에 반응하는 고정 헤더",
+      "keywords": [
+        "sticky header",
+        "navbar",
+        "shrink",
+        "hide on scroll",
+        "헤더",
+        "네비게이션"
+      ],
+      "figma": [
+        "header",
+        "navbar",
+        "gnb",
+        "top bar"
+      ],
+      "recipes": [
+        {
+          "module": "stickyHeader",
+          "variant": "shrink",
+          "options": {
+            "distance": 80
+          },
+          "why": "Compact header after the first scroll."
+        },
+        {
+          "module": "stickyHeader",
+          "variant": "toggle",
+          "why": "Hide on scroll down, show on scroll up."
+        },
+        {
+          "module": "megaMenu",
+          "variant": "dropdown",
+          "why": "GNB dropdown / mega panel for sites without a navigation component."
+        }
+      ],
+      "provideWhenLibraryHas": "enhance",
+      "libraryEquivalents": {
+        "bootstrap": ".navbar",
+        "shadcn": "NavigationMenu",
+        "mui": "AppBar",
+        "vuetify": "v-app-bar"
+      }
+    },
+    {
+      "id": "parallax-depth",
+      "title": "Parallax and pointer depth",
+      "ko": "패럴랙스·포인터 깊이감",
+      "keywords": [
+        "parallax",
+        "depth",
+        "layers",
+        "mouse parallax",
+        "gyro",
+        "패럴랙스",
+        "깊이감"
+      ],
+      "figma": [
+        "layer",
+        "bg",
+        "background",
+        "fg",
+        "foreground",
+        "parallax"
+      ],
+      "recipes": [
+        {
+          "module": "parallax",
+          "variant": "y",
+          "options": {
+            "speed": 0.3
+          },
+          "why": "Scroll parallax per layer."
+        },
+        {
+          "module": "mouseParallax",
+          "variant": "pointer",
+          "options": {
+            "sensitivity": 1
+          },
+          "why": "Layers follow the pointer (gyro on mobile)."
+        },
+        {
+          "module": "ambientMedia",
+          "variant": "image-clone",
+          "why": "Ambient glow sampled from the media behind it."
+        }
+      ],
+      "provideWhenLibraryHas": null
+    },
+    {
+      "id": "scroll-storytelling",
+      "title": "Scroll storytelling (sequence, pinned stacks, horizontal)",
+      "ko": "스크롤 스토리텔링",
+      "keywords": [
+        "scrollytelling",
+        "image sequence",
+        "pinned",
+        "sticky stack",
+        "horizontal scroll",
+        "text fill",
+        "스크롤 스토리",
+        "이미지 시퀀스"
+      ],
+      "figma": [
+        "sequence",
+        "frames",
+        "pinned",
+        "story",
+        "horizontal"
+      ],
+      "recipes": [
+        {
+          "module": "scrollSequence",
+          "variant": "cover",
+          "options": {
+            "frames": 120
+          },
+          "why": "Scrub an image sequence with scroll (product reveals)."
+        },
+        {
+          "module": "stickyStack",
+          "variant": "vertical",
+          "why": "Cards pin and stack while scrolling."
+        },
+        {
+          "module": "horizontalScroll",
+          "variant": "pin",
+          "why": "Vertical scroll drives a horizontal track."
+        },
+        {
+          "module": "textFill",
+          "variant": "scroll-fill",
+          "why": "Copy fills with colour as it scrolls into view."
+        },
+        {
+          "module": "cssScroll",
+          "variant": "progress-property",
+          "why": "Expose scroll progress as a CSS custom property for your own animations."
+        },
+        {
+          "module": "scrollVelocity",
+          "variant": "skew",
+          "why": "Elements skew, rotate or scale with scroll velocity for kinetic type."
+        }
+      ],
+      "provideWhenLibraryHas": null
+    },
+    {
+      "id": "loading-state",
+      "title": "Inline loading indicator / real progress",
+      "ko": "인라인 로딩 인디케이터·실제 진행률",
+      "keywords": [
+        "spinner",
+        "loading",
+        "progress",
+        "shimmer",
+        "terminal",
+        "로딩",
+        "스피너",
+        "프로그레스"
+      ],
+      "figma": [
+        "spinner",
+        "loading",
+        "loader",
+        "progress"
+      ],
+      "recipes": [
+        {
+          "module": "loadingIndicator",
+          "variant": "spinner",
+          "why": "Inline spinner (with the library's spinner absent or when a determinate source exists)."
+        },
+        {
+          "module": "loadingIndicator",
+          "variant": "terminal",
+          "why": "Terminal-style frames for developer/AI products."
+        },
+        {
+          "module": "loader",
+          "variant": "circular",
+          "options": {
+            "source": "fetch"
+          },
+          "why": "Full-screen loader bound to fetch/promise/resource progress."
+        }
+      ],
+      "provideWhenLibraryHas": "prefer-library",
+      "libraryEquivalents": {
+        "shadcn": "Spinner / Progress",
+        "bootstrap": ".spinner-border",
+        "mui": "CircularProgress",
+        "mantine": "Loader",
+        "chakra": "Spinner",
+        "antd": "Spin",
+        "daisyui": ".loading",
+        "nuxt-ui": "UProgress",
+        "primevue": "ProgressSpinner",
+        "vuetify": "v-progress-circular"
+      },
+      "notes": [
+        "Use the library spinner for indeterminate waits; use Kineto `loader` when you can bind a real progress source (`trackPromise`, `trackFetch`, resources)."
+      ]
+    },
+    {
+      "id": "text-rotation",
+      "title": "Rotating words / typewriter",
+      "ko": "단어 교체·타이프라이터",
+      "keywords": [
+        "rotating text",
+        "typewriter",
+        "word swap",
+        "typing",
+        "타이핑",
+        "단어 교체"
+      ],
+      "figma": [
+        "typing",
+        "rotating",
+        "tagline"
+      ],
+      "recipes": [
+        {
+          "module": "textTransition",
+          "variant": "slide-up",
+          "options": {
+            "texts": [
+              "design",
+              "motion",
+              "ship"
+            ],
+            "hold": 1.4
+          },
+          "why": "Cycles words in a headline."
+        },
+        {
+          "module": "typewriter",
+          "variant": "type-erase",
+          "options": {
+            "strings": [
+              "Hello",
+              "안녕하세요"
+            ],
+            "hangul": true
+          },
+          "why": "Types and erases strings, composing Korean jamo."
+        }
+      ],
+      "provideWhenLibraryHas": null
+    },
+    {
+      "id": "glitch-accent",
+      "title": "Glitch / CRT accent",
+      "ko": "글리치·CRT 악센트",
+      "keywords": [
+        "glitch",
+        "crt",
+        "vhs",
+        "datamosh",
+        "cyber",
+        "게임",
+        "글리치"
+      ],
+      "figma": [
+        "glitch",
+        "crt",
+        "vhs",
+        "neon",
+        "cyber",
+        "game"
+      ],
+      "recipes": [
+        {
+          "module": "glitch",
+          "variant": "rgb",
+          "why": "RGB slice bursts on text (game titles, event banners)."
+        },
+        {
+          "module": "glitch",
+          "variant": "crt",
+          "why": "CRT scan and roll on images."
+        },
+        {
+          "module": "glitch",
+          "variant": "vcr",
+          "why": "VHS tracking band on key art."
+        },
+        {
+          "module": "lazy",
+          "variant": "crt",
+          "why": "CRT power-on reveal while an image loads."
+        }
+      ],
+      "provideWhenLibraryHas": null
+    },
+    {
+      "id": "custom-cursor",
+      "title": "Custom cursor",
+      "ko": "커스텀 커서",
+      "keywords": [
+        "cursor",
+        "custom cursor",
+        "pointer",
+        "커서"
+      ],
+      "figma": [
+        "cursor"
+      ],
+      "recipes": [
+        {
+          "module": "cursor",
+          "variant": "ring",
+          "why": "Dot + eased ring for showcase and portfolio sites."
+        },
+        {
+          "module": "cursor",
+          "variant": "text",
+          "options": {
+            "rotateText": "VIEW · VIEW · "
+          },
+          "why": "Rotating text ring over hoverable media."
+        },
+        {
+          "module": "cursor",
+          "variant": "image",
+          "options": {
+            "src": "./cursor.webp"
+          },
+          "why": "Image or sprite cursor (must be same-origin for demos)."
+        }
+      ],
+      "provideWhenLibraryHas": null,
+      "notes": [
+        "Desktop pointer only; Kineto keeps the native cursor on touch devices."
+      ]
+    },
+    {
+      "id": "celebration",
+      "title": "Success celebration",
+      "ko": "성공 축하 효과",
+      "keywords": [
+        "confetti",
+        "celebrate",
+        "success",
+        "reward",
+        "축하",
+        "컨페티"
+      ],
+      "figma": [
+        "success",
+        "complete",
+        "reward",
+        "confetti"
+      ],
+      "recipes": [
+        {
+          "module": "confetti",
+          "variant": "burst",
+          "options": {
+            "trigger": "click"
+          },
+          "why": "Confetti burst on a button or when a section enters view."
+        },
+        {
+          "module": "vibrate",
+          "variant": "success",
+          "why": "Success haptic on supported devices."
+        }
+      ],
+      "provideWhenLibraryHas": null
+    },
+    {
+      "id": "overflow-shadows",
+      "title": "Scrollable area edge shadows",
+      "ko": "스크롤 영역 가장자리 그림자",
+      "keywords": [
+        "scroll shadow",
+        "overflow",
+        "scroll area",
+        "fade edges",
+        "스크롤 그림자"
+      ],
+      "figma": [
+        "list",
+        "scroll area",
+        "table",
+        "chips"
+      ],
+      "recipes": [
+        {
+          "module": "scrollShadows",
+          "variant": "horizontal",
+          "why": "Edge shadows on horizontally scrolling chip rows."
+        },
+        {
+          "module": "scrollShadows",
+          "variant": "mask",
+          "why": "Fade masks for vertical lists."
+        }
+      ],
+      "provideWhenLibraryHas": "enhance",
+      "libraryEquivalents": {
+        "shadcn": "ScrollArea",
+        "mantine": "ScrollArea",
+        "chakra": "ScrollArea"
+      }
+    },
+    {
+      "id": "confirm-hold",
+      "title": "Hold-to-confirm and mash gauges",
+      "ko": "길게 눌러 확인",
+      "keywords": [
+        "hold to confirm",
+        "long press",
+        "mash",
+        "confirm",
+        "길게 누르기"
+      ],
+      "figma": [
+        "confirm",
+        "delete",
+        "hold"
+      ],
+      "recipes": [
+        {
+          "module": "hold",
+          "variant": "confirm",
+          "options": {
+            "duration": 1.2
+          },
+          "why": "Destructive actions confirmed by holding the button."
+        }
+      ],
+      "provideWhenLibraryHas": null
+    },
+    {
+      "id": "disclosure",
+      "title": "Accordion, tabs, switch, mega menu (behaviour components)",
+      "ko": "아코디언·탭·스위치·메가메뉴",
+      "keywords": [
+        "accordion",
+        "tabs",
+        "switch",
+        "toggle",
+        "mega menu",
+        "faq",
+        "아코디언",
+        "탭",
+        "스위치",
+        "메뉴"
+      ],
+      "figma": [
+        "accordion",
+        "faq",
+        "tabs",
+        "segmented",
+        "switch",
+        "toggle",
+        "menu"
+      ],
+      "recipes": [
+        {
+          "module": "accordion",
+          "variant": "panel",
+          "options": {
+            "single": true
+          },
+          "why": "`<details>`-based accordion with animated height."
+        },
+        {
+          "module": "tabs",
+          "variant": "line",
+          "why": "WAI-ARIA tabs with a sliding indicator."
+        },
+        {
+          "module": "switch",
+          "variant": "toggle",
+          "why": "Form-connected toggle switch."
+        },
+        {
+          "module": "megaMenu",
+          "variant": "mega",
+          "why": "Mega menu with touch/mobile handling."
+        }
+      ],
+      "provideWhenLibraryHas": "prefer-library",
+      "libraryEquivalents": {
+        "shadcn": "Accordion / Tabs / Switch / NavigationMenu",
+        "bootstrap": ".accordion / .nav-tabs / .form-switch / .navbar",
+        "mui": "Accordion / Tabs / Switch / Menu",
+        "mantine": "Accordion / Tabs / Switch",
+        "chakra": "Accordion / Tabs / Switch",
+        "antd": "Collapse / Tabs / Switch / Menu",
+        "daisyui": ".collapse / .tabs / .toggle",
+        "nuxt-ui": "UAccordion / UTabs / USwitch",
+        "primevue": "Accordion / Tabs / ToggleSwitch / MegaMenu",
+        "vuetify": "v-expansion-panels / v-tabs / v-switch"
+      },
+      "notes": [
+        "Use the library's component for behaviour and accessibility; use Kineto's only in vanilla/Bootstrap-less pages."
+      ]
+    },
+    {
+      "id": "layout-change",
+      "title": "Animated reorder / add / remove (FLIP)",
+      "ko": "재정렬·추가·삭제 애니메이션 (FLIP)",
+      "keywords": [
+        "flip",
+        "reorder",
+        "list animation",
+        "layout animation",
+        "재정렬",
+        "리스트 애니메이션"
+      ],
+      "figma": [
+        "list",
+        "grid",
+        "kanban",
+        "board"
+      ],
+      "recipes": [
+        {
+          "module": "flip",
+          "variant": "layout",
+          "options": {
+            "watch": true
+          },
+          "why": "Animates items between layout states when the DOM changes."
+        },
+        {
+          "module": "flip",
+          "variant": "crossfade",
+          "why": "Items that swap content crossfade in place."
+        }
+      ],
+      "provideWhenLibraryHas": null
+    },
+    {
+      "id": "drag-and-fullpage",
+      "title": "Draggable elements and fullpage sections",
+      "ko": "드래그·풀페이지 섹션",
+      "keywords": [
+        "drag",
+        "draggable",
+        "fullpage",
+        "snap sections",
+        "드래그",
+        "풀페이지"
+      ],
+      "figma": [
+        "draggable",
+        "fullpage",
+        "sections"
+      ],
+      "recipes": [
+        {
+          "module": "drag",
+          "variant": "free",
+          "options": {
+            "inertia": true,
+            "snapBack": true
+          },
+          "why": "Inertia drag with bounds and keyboard arrows."
+        },
+        {
+          "module": "fullpage",
+          "variant": "snap",
+          "why": "One-section-per-screen paging for showcases."
+        }
+      ],
+      "provideWhenLibraryHas": null
+    }
+  ],
+  "figmaHints": {
+    "description": "How to map a Figma node (via the Figma MCP `get_design_context` / `get_metadata`) to an intent. Match node names case-insensitively against `figma` patterns of each intent; then use the node type as a tiebreaker.",
+    "nodeTypeRules": [
+      {
+        "when": "node is a TEXT layer with font size ≥ 40 or named like a heading",
+        "intent": "hero-headline"
+      },
+      {
+        "when": "node is an IMAGE fill (RECTANGLE/FRAME with image paint) or named image/photo/thumbnail",
+        "intent": "image-loading"
+      },
+      {
+        "when": "node repeats as a grid/list of similar frames (auto-layout children with the same component)",
+        "intent": "section-entrance"
+      },
+      {
+        "when": "node is a COMPONENT INSTANCE named Button/CTA",
+        "intent": "cta-button"
+      },
+      {
+        "when": "node text is mostly digits (counts, KRW/USD, percentages)",
+        "intent": "kpi-number"
+      },
+      {
+        "when": "frame is wider than the viewport and clips horizontally repeating children",
+        "intent": "marquee-ticker"
+      },
+      {
+        "when": "frame has prototype interaction 'On drag' or scroll horizontally",
+        "intent": "carousel"
+      }
+    ],
+    "workflow": [
+      "Read the frame with the Figma MCP and list its top-level layers.",
+      "For each layer, match names against the intents' `figma` patterns and the node type rules above.",
+      "Build the layer with the project's component library first (shadcn, Bootstrap, …).",
+      "Add the Kineto attribute from the matching intent's first recipe unless the ecosystem's `provides` list already covers that behaviour (then prefer the library component and only add motion to its content).",
+      "Never add more than one transform-writing module per element; prefer one reveal per section rather than per element."
+    ]
+  }
+}

@@ -10,7 +10,7 @@ English · [한국어](i18n/README.ko.md) · [日本語](i18n/README.jp.md) · [
 
 <p><a href="https://github.com/catgarret/kineto/actions/workflows/ci.yml"><img src="https://github.com/catgarret/kineto/actions/workflows/ci.yml/badge.svg" alt="CI" height="20"></a>&nbsp;&nbsp;<a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
-[Live demo](https://kineto.dongri.me) · [Module reference](docs/module-reference.md) · [Usage and quality matrix](docs/module-usage-matrix.md) · [Troubleshooting](docs/troubleshooting.md) · [AI prompt guide](AI-PROMPT-GUIDE.md) · [Feature contract](FEATURE_CONTRACT.md)
+[Live demo](https://kineto.dongri.me) · [Module reference](docs/module-reference.md) · [Usage and quality matrix](docs/module-usage-matrix.md) · [Integrations](docs/integrations/README.md) · [Troubleshooting](docs/troubleshooting.md) · [AI prompt guide](AI-PROMPT-GUIDE.md) · [Feature contract](FEATURE_CONTRACT.md)
 
 </div>
 
@@ -110,6 +110,24 @@ Kineto.counter('#total', { preset: 'pop', to: 98760, format: ',' });
 Kineto.reveal('.card', { preset: 'fade-up', stagger: 0.06 });
 const lightbox = Kineto.lightbox('.gallery img', { group: 'work', minimap: true });
 ```
+
+### Live DOM: `Kineto.observe()`
+
+Apps that render later — React/Vue trees, Bootstrap toasts and modals,
+infinite lists — call `observe()` once instead of re-running `scan()` after
+every change. It scans the root now, attaches modules to `data-kt-*` elements
+added later (batched per microtask), and destroys the instances of elements
+that leave the DOM.
+
+```js
+const live = Kineto.observe();            // document by default
+// later, on teardown:
+live.disconnect();                        // or Kineto.destroy() to drop everything
+```
+
+`observe(root, { attributes: true })` also reacts to `data-kt-*` attribute
+changes. The handle is inert (`active: false`) during SSR, so the call is safe
+in shared code.
 
 ### Named Motion States
 
@@ -298,6 +316,42 @@ import installKineto from '@dong-gri/kineto/jquery';
 installKineto(window.jQuery);
 $('.card').kineto('reveal', { preset: 'fade-up' });
 ```
+
+## Design systems, UI libraries and AI tools
+
+Kineto is meant to sit *next to* the component library you already use: the
+library owns behaviour and accessibility, Kineto adds motion through the same
+`data-kt-*` attributes on the same elements.
+
+- **shadcn/ui** — a [shadcn registry](https://kineto.dongri.me/r/registry.json)
+  serves typed wrappers (`KinetoProvider`, `KinetoReveal`, `KinetoCounter`,
+  `KinetoImage`, `KinetoPresence`, …) and an AI rules item:
+
+  ```bash
+  npx shadcn@latest add https://kineto.dongri.me/r/provider.json https://kineto.dongri.me/r/reveal.json
+  # or, with "@kineto": "https://kineto.dongri.me/r/{name}.json" in components.json registries:
+  npx shadcn@latest add @kineto/provider @kineto/reveal @kineto/ai-rules
+  ```
+
+- **Bootstrap 5, MUI, Mantine, Chakra UI, Ant Design, daisyUI, Nuxt UI,
+  PrimeVue, Vuetify** — one guide each in
+  [`docs/integrations/`](docs/integrations/README.md): attach pattern, what the
+  library already provides, conflicts to avoid and per-intent recipes. The
+  claims are verified against the real libraries in `tests/integrations/`
+  (SSR → jsdom → `Kineto.scan()`, `Kineto.observe()` with React client renders,
+  and a [Bootstrap 5 coexistence page](examples/bootstrap/index.html) driven in
+  a real browser).
+- **Coding agents** — [`ai/kineto.rules.md`](ai/kineto.rules.md) (also served as
+  [`/llms.txt`](https://kineto.dongri.me/llms.txt)) tells Claude Code, Cursor
+  or Codex when to use which module, and the
+  [Kineto MCP server](packages/kineto-mcp/README.md) (`npx @dong-gri/kineto-mcp`)
+  answers `kineto_suggest` / `kineto_snippet` / `kineto_validate_options` from
+  the real feature contract. Figma MCP users map layers to intents with
+  `kineto_figma_layers`; see [`docs/integrations/figma-mcp.md`](docs/integrations/figma-mcp.md).
+
+Everything above is generated from one machine-readable map,
+[`kineto.integrations.json`](kineto.integrations.json), which is validated
+against the feature contract on every CI run.
 
 ## Modular imports
 

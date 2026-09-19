@@ -10,13 +10,17 @@ const packageJson = readJson('package.json');
 const lockfiles = [
   { file: 'package-lock.json', kind: 'root' },
   { file: 'tests/consumer-bundles/package-lock.json', kind: 'fixture' },
-  { file: 'tests/framework-qa/package-lock.json', kind: 'fixture' }
+  { file: 'tests/framework-qa/package-lock.json', kind: 'fixture' },
+  { file: 'tests/integrations/package-lock.json', kind: 'fixture' },
+  // A publishable workspace package: pinned registry dependencies only, no
+  // link back to the repository (it ships contract copies instead).
+  { file: 'packages/kineto-mcp/package-lock.json', kind: 'package', name: '@dong-gri/kineto-mcp' }
 ];
 
 let registryPackages = 0;
 let localLinks = 0;
 
-for (const { file, kind } of lockfiles) {
+for (const { file, kind, name } of lockfiles) {
   const lockfile = readJson(file);
   assert.equal(lockfile.lockfileVersion, 3, `${file} must use npm lockfileVersion 3`);
   assert.ok(lockfile.packages && typeof lockfile.packages === 'object', `${file} must contain package entries`);
@@ -26,6 +30,9 @@ for (const { file, kind } of lockfiles) {
   if (kind === 'root') {
     assert.equal(rootPackage.name, packageJson.name, `${file} root name must match package.json`);
     assert.equal(rootPackage.version, packageJson.version, `${file} root version must match package.json`);
+  } else if (kind === 'package') {
+    assert.equal(rootPackage.name, name, `${file} root name must match the package`);
+    assert.equal(lockfile.packages['node_modules/@dong-gri/kineto'], undefined, `${file} must not link the repository — the package bundles contract copies`);
   } else {
     const linkedPackage = lockfile.packages['node_modules/@dong-gri/kineto'];
     assert.ok(linkedPackage, `${file} must link the local Kineto package`);
@@ -52,7 +59,8 @@ for (const { file, kind } of lockfiles) {
   }
 }
 
-assert.equal(localLinks, 2, 'consumer fixtures must contain exactly one local Kineto link each');
+const fixtureCount = lockfiles.filter(({ kind }) => kind === 'fixture').length;
+assert.equal(localLinks, fixtureCount, `consumer fixtures must contain exactly one local Kineto link each (${fixtureCount} fixtures)`);
 assert.ok(registryPackages > 0, 'lockfiles must contain registry package entries to audit');
 
 console.log(`lockfile-boundary OK — ${lockfiles.length} lockfiles, ${registryPackages} registry packages, ${localLinks} fixture links.`);

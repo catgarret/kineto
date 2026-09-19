@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "tilt-card",
+  "type": "registry:component",
+  "title": "Kineto tilt card",
+  "description": "Pointer-following 3D tilt with glare, or a pointer glow (spotlight, edge, border, comet, aurora, shine) for cards.",
+  "author": "dongri <official@dongri.me>",
+  "dependencies": [
+    "@dong-gri/kineto"
+  ],
+  "registryDependencies": [
+    "https://kineto.dongri.me/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "registry/items/tilt-card/kineto-tilt-card.tsx",
+      "type": "registry:component",
+      "content": "'use client';\n\n// KinetoTiltCard — pointer-following 3D tilt (with glare) or a pointer glow.\n//   <KinetoTiltCard>…</KinetoTiltCard>                              // tilt + glare\n//   <KinetoTiltCard effect=\"glow\" glow=\"border\">…</KinetoTiltCard>  // luminous border\n// Wrap a shadcn <Card> (or any block) — the wrapper is the element that tilts.\n// Tilt writes `transform`; do not combine it with other transform effects\n// (magnetic, gesture) on the same element.\nimport { forwardRef, type ElementType, type ReactNode } from 'react';\nimport { Motion, type MotionHandle } from '@dong-gri/kineto/react';\nimport { compact } from '@/lib/kineto-utils';\n\nexport interface KinetoTiltCardProps extends Omit<React.HTMLAttributes<HTMLElement>, 'children'> {\n  as?: ElementType;\n  /** `tilt` (default) uses the tilt module; `glow` uses the cardGlow module. */\n  effect?: 'tilt' | 'glow';\n  /** Max tilt angle in degrees. */\n  max?: number;\n  /** Show the moving glare highlight (tilt). */\n  glare?: boolean;\n  /** Scale while hovered (tilt). */\n  scale?: number;\n  /** Glow preset when `effect=\"glow\"`. */\n  glow?: 'spotlight' | 'edge' | 'border' | 'comet' | 'aurora' | 'shine';\n  /** Glow colour, e.g. `#7c4dff`. */\n  color?: string;\n  children?: ReactNode;\n}\n\nexport const KinetoTiltCard = forwardRef<MotionHandle, KinetoTiltCardProps>(function KinetoTiltCard(\n  { as = 'div', effect = 'tilt', max, glare = true, scale, glow = 'spotlight', color, children, ...props },\n  ref\n) {\n  const type = effect === 'glow' ? 'cardGlow' : 'tilt';\n  const options = effect === 'glow'\n    ? compact({ preset: glow, color })\n    : compact({ preset: glare ? 'tilt-glare' : 'tilt', max, scale });\n  return (\n    <Motion ref={ref} as={as} type={type} options={options} dependencies={[effect, max, glare, scale, glow, color]} {...props}>\n      {children}\n    </Motion>\n  );\n});\n\nexport default KinetoTiltCard;\n"
+    }
+  ],
+  "categories": [
+    "kineto",
+    "hover"
+  ]
+}

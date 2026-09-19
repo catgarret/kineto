@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "magnetic-button",
+  "type": "registry:component",
+  "title": "Kineto magnetic button",
+  "description": "Button that leans toward the pointer and springs back, with an optional click ripple.",
+  "author": "dongri <official@dongri.me>",
+  "dependencies": [
+    "@dong-gri/kineto"
+  ],
+  "registryDependencies": [
+    "https://kineto.dongri.me/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "registry/items/magnetic-button/kineto-magnetic-button.tsx",
+      "type": "registry:component",
+      "content": "'use client';\n\n// KinetoMagneticButton — a button that leans toward the pointer and springs\n// back, with an optional click ripple. Renders a plain <button>; pass `as` to\n// use another element (an <a>, a shadcn <Button> …).\n//   <KinetoMagneticButton className=\"btn\">Get started</KinetoMagneticButton>\n//   <KinetoMagneticButton as={Button} ripple={false} strength={0.4}>Buy</KinetoMagneticButton>\n// The magnetic pull writes `transform`, so the component never also applies\n// gesture/tilt to the same element; the ripple is drawn in its own layer.\nimport { forwardRef, useEffect, useRef, type ElementType, type ReactNode } from 'react';\nimport Kineto from '@dong-gri/kineto';\nimport { compact } from '@/lib/kineto-utils';\n\nexport interface KinetoMagneticButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {\n  as?: ElementType;\n  /** 0–1: how far the element follows the pointer (default 0.3). */\n  strength?: number;\n  /** Pointer distance in px that starts the pull. */\n  radius?: number;\n  /** Add a Material-style click ripple (default true). Turn off with MUI/Vuetify/PrimeVue buttons, which ripple already. */\n  ripple?: boolean;\n  children?: ReactNode;\n}\n\nexport const KinetoMagneticButton = forwardRef<HTMLButtonElement, KinetoMagneticButtonProps>(function KinetoMagneticButton(\n  { as: Component = 'button', strength = 0.3, radius, ripple = true, children, ...props },\n  forwardedRef\n) {\n  const localRef = useRef<HTMLButtonElement | null>(null);\n  const setRef = (node: HTMLButtonElement | null) => {\n    localRef.current = node;\n    if (typeof forwardedRef === 'function') forwardedRef(node);\n    else if (forwardedRef) forwardedRef.current = node;\n  };\n\n  useEffect(() => {\n    const element = localRef.current;\n    if (!element) return undefined;\n    Kineto.create('magnetic', element, compact({ strength, radius }));\n    if (ripple) Kineto.create('ripple', element, {});\n    return () => {\n      Kineto.destroyModule(element, 'magnetic');\n      Kineto.destroyModule(element, 'ripple');\n    };\n  }, [strength, radius, ripple]);\n\n  return <Component ref={setRef} {...props}>{children}</Component>;\n});\n\nexport default KinetoMagneticButton;\n"
+    }
+  ],
+  "categories": [
+    "kineto",
+    "hover",
+    "button"
+  ]
+}

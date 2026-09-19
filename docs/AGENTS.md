@@ -66,6 +66,15 @@ npm run ci
 push로 npm 게시와 GitHub Release까지 이어지므로 명시적 “릴리스” 요청이 있을
 때만 실행합니다. push 요청이 릴리스 승인을 뜻하지는 않습니다.
 
+연동 프로그램은 원본 하나에서 생성합니다. `kineto.integrations.json`(스키마
+`kineto.integrations.schema.json`)과 `registry/` 원본을 고친 뒤
+`npm run integrations:build`를 실행합니다. `docs/integrations/*.md`, `ai/`,
+`site/llms.txt`, `site/r/*.json`, `packages/kineto-mcp/contracts/*`·`src/lib.mjs`는
+생성물이므로 손으로 고치지 않으며, `tests/integrations-contract.mjs`가 어긋남을
+잡습니다. 지도에 적는 모든 주장은 실제 라이브러리로 증명합니다
+(`tests/integrations/`의 attachment·registry·Bootstrap QA, `packages/kineto-mcp/test`).
+`@dong-gri/kineto-mcp` 게시는 소유자의 명시적 요청이 있을 때만 합니다.
+
 새 데모 카드는 `data-demo-no-legacy-share`를 붙여 기존 카드의 `?kt=` v1 공유
 순번을 바꾸지 않습니다(카드는 semantic v2 키로 공유됩니다). 로컬 Chromium
 지정은 `KT_CHROME` 하나로 통일하며(`MK_CHROMIUM`은 별칭), 코덱·애니메이션

@@ -15,7 +15,7 @@ const gitignore = read('.gitignore');
 const packageJson = JSON.parse(read('package.json'));
 const consumerPackage = JSON.parse(read('tests/consumer-bundles/package.json'));
 const frameworkPackage = JSON.parse(read('tests/framework-qa/package.json'));
-const auditedLockfiles = ['package-lock.json', 'tests/consumer-bundles/package-lock.json', 'tests/framework-qa/package-lock.json'];
+const auditedLockfiles = ['package-lock.json', 'tests/consumer-bundles/package-lock.json', 'tests/framework-qa/package-lock.json', 'tests/integrations/package-lock.json', 'packages/kineto-mcp/package-lock.json'];
 
 assert.match(workflow, /workflow_dispatch:/);
 assert.match(workflow, /cron:\s*"41 3 \* \* 1"/);
@@ -42,14 +42,14 @@ assert.match(workflow, /steps\.lockfile_audit\.outcome == 'failure'/);
 assert.match(gitignore, /^\/artifacts\/$/m,
   'local audit reports must not dirty the release-preparation worktree');
 
-for (const directory of ['/', '/tests/consumer-bundles', '/tests/framework-qa']) {
+for (const directory of ['/', '/tests/consumer-bundles', '/tests/framework-qa', '/tests/integrations', '/packages/kineto-mcp']) {
   assert.match(
     dependabot,
     new RegExp(`package-ecosystem: npm\\s+directory: ${directory.replaceAll('/', '\\/')}`),
     `Dependabot must cover ${directory}`
   );
 }
-assert.equal((dependabot.match(/package-ecosystem:\s*npm/g) || []).length, 3);
+assert.equal((dependabot.match(/package-ecosystem:\s*npm/g) || []).length, 5);
 assert.match(dependabot, /package-ecosystem:\s*github-actions/);
 assert.match(dependabot, /interval:\s*weekly/);
 assert.match(dependabot, /timezone:\s*Asia\/Seoul/);
@@ -94,16 +94,31 @@ assertDependencyFloor(frameworkPackage.dependencies.vue, '^3.5.42', 'framework V
 assertDependencyFloor(frameworkPackage.devDependencies['playwright-core'], '^1.62.1', 'framework playwright-core');
 assertDependencyFloor(frameworkPackage.devDependencies.vite, '^8.2.2', 'framework vite');
 
+// Every picomatch copy in an audited lockfile must sit on a patched line.
+// The 4.x line (Vite, fdir, tinyglobby) is held at >= 4.0.7. The 2.x line is
+// still required by micromatch 4 → fast-glob 3, which the shadcn CLI in
+// tests/integrations uses, and was patched in 2.3.2 for GHSA-3v7f-55p6-f55p
+// (POSIX class method injection) and GHSA-c2c7-rcm5-vvqj (extglob ReDoS).
+// A major outside this table is a new line that needs its own review.
+const PICOMATCH_FLOORS = { 2: [2, 3, 2], 4: [4, 0, 7] };
+const atLeast = ([major, minor, patch], [floorMajor, floorMinor, floorPatch]) =>
+  major === floorMajor && (minor > floorMinor || (minor === floorMinor && patch >= floorPatch));
+// The MCP server has no glob tooling at all; every other lockfile pulls
+// picomatch through Vite/rolldown, so its absence there would mean the check
+// silently stopped covering anything.
+const PICOMATCH_FREE_LOCKFILES = new Set(['packages/kineto-mcp/package-lock.json']);
+
 for (const lockfile of auditedLockfiles) {
   const lock = JSON.parse(read(lockfile));
   const picomatchVersions = Object.entries(lock.packages)
     .filter(([packagePath]) => packagePath.endsWith('node_modules/picomatch'))
     .map(([, metadata]) => metadata.version);
-  assert.ok(picomatchVersions.length > 0, `${lockfile} must resolve picomatch`);
+  if (!PICOMATCH_FREE_LOCKFILES.has(lockfile)) assert.ok(picomatchVersions.length > 0, `${lockfile} must resolve picomatch`);
   for (const version of picomatchVersions) {
-    const [major, minor, patch] = version.split('.').map(Number);
-    assert.ok(major > 4 || (major === 4 && (minor > 0 || patch >= 7)),
-      `${lockfile} must resolve picomatch >=4.0.7, received ${version}`);
+    const parsed = version.split('.').map(Number);
+    const floor = PICOMATCH_FLOORS[parsed[0]];
+    assert.ok(floor, `${lockfile} resolves picomatch ${version} from an unreviewed major line (known lines: ${Object.keys(PICOMATCH_FLOORS).join(', ')})`);
+    assert.ok(atLeast(parsed, floor), `${lockfile} must resolve picomatch >=${floor.join('.')} on the ${parsed[0]}.x line, received ${version}`);
   }
 }
 
@@ -112,7 +127,9 @@ assert.deepEqual(
   [
     { name: 'root', directory: '.', report: 'npm-audit-root.json' },
     { name: 'consumer-bundles', directory: 'tests/consumer-bundles', report: 'npm-audit-consumer-bundles.json' },
-    { name: 'framework-qa', directory: 'tests/framework-qa', report: 'npm-audit-framework-qa.json' }
+    { name: 'framework-qa', directory: 'tests/framework-qa', report: 'npm-audit-framework-qa.json' },
+    { name: 'integrations', directory: 'tests/integrations', report: 'npm-audit-integrations.json' },
+    { name: 'kineto-mcp', directory: 'packages/kineto-mcp', report: 'npm-audit-kineto-mcp.json' }
   ]
 );
 
@@ -147,7 +164,7 @@ try {
     }
   });
 
-  assert.deepEqual(visited, ['root', 'consumer-bundles', 'framework-qa']);
+  assert.deepEqual(visited, ['root', 'consumer-bundles', 'framework-qa', 'integrations', 'kineto-mcp']);
   assert.deepEqual(results.filter(({ status }) => status !== 0).map(({ name }) => name), ['framework-qa']);
   for (const target of auditTargets) {
     const report = JSON.parse(fs.readFileSync(path.join(temp, target.report), 'utf8'));

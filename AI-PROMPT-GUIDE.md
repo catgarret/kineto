@@ -32,8 +32,20 @@ Implementation rules
 - Prefer semantic HTML plus data-kt-* activation attributes.
 - Use Kineto.<module>(element, options) when runtime state or methods are needed.
 - Call Kineto.autoInit() once after the initial DOM is ready. For content added
-  later, call Kineto.init(container). Destroy instances before permanently
-  removing or replacing initialized DOM.
+  later, call Kineto.init(container) — or call Kineto.observe() once in apps
+  that render continuously (React/Vue trees, toasts, modals, infinite lists);
+  it attaches to elements that arrive later and destroys the instances of
+  elements that leave. Destroy instances before permanently removing or
+  replacing initialized DOM when observe() is not in use.
+- When the project uses a UI library or design system (shadcn/ui, Bootstrap,
+  MUI, Mantine, Chakra, Ant Design, daisyUI, Nuxt UI, PrimeVue, Vuetify), the
+  library owns behaviour and accessibility (dialogs, tooltips, tabs, toasts);
+  add Kineto only for motion, on the same element, following
+  docs/integrations/<library>.md and its conflict list. Never mount two
+  implementations of one behaviour on one element.
+- If the Kineto MCP server (@dong-gri/kineto-mcp) is available, call
+  kineto_suggest / kineto_snippet / kineto_validate_options instead of writing
+  attributes from memory; for a Figma frame, call kineto_figma_layers.
 - Reuse an existing Kineto module instead of adding equivalent CSS keyframes,
   requestAnimationFrame loops, observers, or scroll/pointer listeners.
 - Do not add GSAP, Lenis, or another optional integration unless the selected
@@ -104,6 +116,25 @@ After editing:
    dynamic cleanup, and mobile behavior.
 3. Report any unsupported or intentionally deferred behavior.
 ```
+
+## Next to a UI library, a shadcn registry, or an MCP-capable agent
+
+[`docs/integrations/README.md`](docs/integrations/README.md) holds one guide
+per ecosystem (attach pattern, what the library provides, conflicts, recipes)
+and [`docs/integrations/figma-mcp.md`](docs/integrations/figma-mcp.md) the Figma
+MCP workflow. The same rules are packaged for agents:
+
+- [`ai/kineto.rules.md`](ai/kineto.rules.md) — reference it from `CLAUDE.md` /
+  `AGENTS.md` (also served at <https://kineto.dongri.me/llms.txt>);
+  `ai/cursor/kineto.mdc` is the Cursor rule file.
+- shadcn registry — `npx shadcn@latest add @kineto/ai-rules` installs both
+  files into a project after adding
+  `"@kineto": "https://kineto.dongri.me/r/{name}.json"` to `components.json`
+  `registries`; `@kineto/provider`, `@kineto/reveal`, `@kineto/counter` … add
+  typed React wrappers.
+- [Kineto MCP server](packages/kineto-mcp/README.md) —
+  `claude mcp add kineto -- npx -y @dong-gri/kineto-mcp` (Claude Code) or the
+  equivalent `mcpServers` entry for Cursor, Codex and Claude Desktop.
 
 ## Installation patterns
 

@@ -56,6 +56,23 @@ Kineto.scan(document.querySelector('#new-section'));
 
 같은 요소와 같은 모듈을 다시 스캔해도 중복 인스턴스를 만들지 않습니다.
 
+### 나중에 렌더링되는 DOM: `Kineto.observe()`
+
+React/Vue 트리, Bootstrap 토스트·모달, 무한 스크롤 목록처럼 요소가 나중에 들어오는 앱은
+변경 때마다 `scan()`을 다시 부르는 대신 `observe()`를 한 번만 호출합니다. 지금 있는 요소를
+스캔하고, 이후 추가되는 `data-kt-*` 요소는 마이크로태스크 단위로 묶어 붙이며, DOM에서 빠진
+요소의 인스턴스는 정리합니다.
+
+```js
+const live = Kineto.observe();                       // 기본 root는 document
+Kineto.observe('#app', { attributes: true });        // data-kt-* 속성 변경에도 반응
+live.disconnect();                                   // 감시만 중단 (인스턴스는 유지)
+Kineto.destroy();                                    // 전체 정리 시 observer도 함께 해제
+```
+
+같은 root에 두 번 호출해도 하나의 observer만 유지되고, SSR에서는 `active: false`인 빈 핸들을
+돌려주므로 공용 코드에서 안전하게 호출할 수 있습니다.
+
 ## 4. 모듈 조합
 
 ```html
@@ -125,6 +142,7 @@ Kineto.destroy();
 ## 9. 다음 문서
 
 - [정확한 Module Reference](module-reference.md)
+- [디자인 시스템·UI 라이브러리 연동 가이드](integrations/README.md) — shadcn/ui 레지스트리, Bootstrap 5, MUI·Mantine·Chakra·Ant Design, Nuxt UI·PrimeVue·Vuetify, Figma MCP, Kineto MCP 서버
 - [공통 옵션과 데이터 속성](common-options.md)
 - [접근성](accessibility.md)
 - [기능 계약](../FEATURE_CONTRACT.md)

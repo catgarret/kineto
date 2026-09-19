@@ -104,7 +104,7 @@ jobs:
         run: |
           set -uo pipefail
           failures=()
-          for command in test:consumer-bundles test:framework; do
+          for command in test:consumer-bundles test:framework test:integrations test:mcp; do
             echo "::group::$command"
             if ! node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a ci.log; then
               echo "::error title=Consumer/framework test failed::$command"

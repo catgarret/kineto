@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "marquee",
+  "type": "registry:component",
+  "title": "Kineto marquee",
+  "description": "Seamless logo wall / announcement band with pause-on-hover and scroll-aware direction.",
+  "author": "dongri <official@dongri.me>",
+  "dependencies": [
+    "@dong-gri/kineto"
+  ],
+  "registryDependencies": [
+    "https://kineto.dongri.me/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "registry/items/marquee/kineto-marquee.tsx",
+      "type": "registry:component",
+      "content": "'use client';\n\n// KinetoMarquee — seamless logo wall / announcement band.\n//   <KinetoMarquee speed={60} pauseOnHover>\n//     <img src=\"/logos/a.svg\" alt=\"A\" /> <img src=\"/logos/b.svg\" alt=\"B\" /> …\n//   </KinetoMarquee>\n// Children are cloned by Kineto to fill the track; keep them presentational.\nimport { forwardRef, type ElementType, type ReactNode } from 'react';\nimport { Motion, type MotionHandle } from '@dong-gri/kineto/react';\nimport { compact } from '@/lib/kineto-utils';\n\nexport interface KinetoMarqueeProps extends Omit<React.HTMLAttributes<HTMLElement>, 'children'> {\n  as?: ElementType;\n  direction?: 'left' | 'right';\n  /** Pixels per second. */\n  speed?: number;\n  pauseOnHover?: boolean;\n  /** Flip direction when the page scrolls up. */\n  reverseOnScrollUp?: boolean;\n  /** Fade the track edges (px). */\n  fade?: number;\n  children?: ReactNode;\n}\n\nexport const KinetoMarquee = forwardRef<MotionHandle, KinetoMarqueeProps>(function KinetoMarquee(\n  { as = 'div', direction, speed, pauseOnHover, reverseOnScrollUp, fade, children, ...props },\n  ref\n) {\n  const options = compact({ direction, speed, pauseOnHover, reverseOnScrollUp, fade });\n  return (\n    <Motion ref={ref} as={as} type=\"marquee\" options={options} dependencies={[direction, speed, pauseOnHover, reverseOnScrollUp, fade]} {...props}>\n      {children}\n    </Motion>\n  );\n});\n\nexport default KinetoMarquee;\n"
+    }
+  ],
+  "categories": [
+    "kineto",
+    "motion"
+  ]
+}

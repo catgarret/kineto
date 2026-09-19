@@ -10,7 +10,7 @@ Un toolkit di interazioni web guidato da attributi HTML o da un'API JavaScript
 
 <p><a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="../LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
-[Demo dal vivo](https://kineto.dongri.me) · [Riferimento moduli](../docs/module-reference.md) · [Risoluzione dei problemi](../docs/troubleshooting.md) · [Contratto delle funzionalità](../FEATURE_CONTRACT.md)
+[Demo dal vivo](https://kineto.dongri.me) · [Riferimento moduli](../docs/module-reference.md) · [Integrazioni](../docs/integrations/README.md) · [Risoluzione dei problemi](../docs/troubleshooting.md) · [Contratto delle funzionalità](../FEATURE_CONTRACT.md)
 
 </div>
 
@@ -188,6 +188,16 @@ import installKineto from '@dong-gri/kineto/jquery';
 installKineto(window.jQuery);
 $('.card').kineto('reveal', { preset: 'fade-up' });
 ```
+
+## Design system, librerie UI e strumenti AI
+
+Kineto si affianca alla libreria di componenti che già usi: comportamento e accessibilità restano alla libreria, Kineto aggiunge solo il movimento tramite attributi `data-kt-*` sugli stessi elementi.
+
+- **shadcn/ui** — il [registry shadcn](https://kineto.dongri.me/r/registry.json) installa wrapper tipizzati come `KinetoProvider`, `KinetoReveal`, `KinetoCounter` e le regole per l'AI (`npx shadcn@latest add @kineto/provider`).
+- **Bootstrap 5, MUI, Mantine, Chakra UI, Ant Design, daisyUI, Nuxt UI, PrimeVue, Vuetify** — una guida per libreria in [`docs/integrations/`](../docs/integrations/README.md) (modalità di aggancio, cosa offre già la libreria, conflitti da evitare, ricette per intento); le affermazioni sono verificate sulle librerie reali in `tests/integrations/`. L'[esempio di convivenza con Bootstrap 5](../examples/bootstrap/index.html) viene controllato in un browser reale.
+- **Agenti di codice** — [`ai/kineto.rules.md`](../ai/kineto.rules.md) (`kineto.dongri.me/llms.txt`) e il [server MCP di Kineto](../packages/kineto-mcp/README.md) (`npx @dong-gri/kineto-mcp`) indicano quale modulo usare e quando, partendo dal contratto reale delle funzionalità; chi usa Figma MCP mappa i layer agli intenti con `kineto_figma_layers`.
+
+Il DOM renderizzato in seguito (alberi React/Vue, toast, modali) viene agganciato e ripulito automaticamente con una sola chiamata a `Kineto.observe()`.
 
 ## Supporto browser
 

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "text-reveal",
+  "type": "registry:component",
+  "title": "Kineto text reveal",
+  "description": "Headline entrance where characters resolve into place; includes Korean jamo assembly (hangul) and decode/flicker/shuffle presets.",
+  "author": "dongri <official@dongri.me>",
+  "dependencies": [
+    "@dong-gri/kineto"
+  ],
+  "registryDependencies": [
+    "https://kineto.dongri.me/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "registry/items/text-reveal/kineto-text-reveal.tsx",
+      "type": "registry:component",
+      "content": "'use client';\n\n// KinetoTextReveal — headline entrance where characters resolve into place.\n//   <KinetoTextReveal as=\"h1\" preset=\"stream\">Launch week</KinetoTextReveal>\n//   <KinetoTextReveal preset=\"hangul\">안녕하세요</KinetoTextReveal>   // Korean jamo assembly\n// The text content is read from the element, so the children must be plain text.\nimport { forwardRef, type ElementType } from 'react';\nimport { Motion, type MotionHandle } from '@dong-gri/kineto/react';\nimport { compact } from '@/lib/kineto-utils';\n\nexport type KinetoTextRevealPreset = 'stream' | 'char' | 'word' | 'line' | 'bounce' | 'hangul' | 'decode' | 'flicker' | 'shuffle';\n\nexport interface KinetoTextRevealProps extends Omit<React.HTMLAttributes<HTMLElement>, 'children'> {\n  as?: ElementType;\n  preset?: KinetoTextRevealPreset;\n  /** Milliseconds per character for the streaming presets. */\n  speed?: number;\n  /** Seconds between characters/words for the staggered presets. */\n  stagger?: number;\n  /** Seconds. */\n  duration?: number;\n  /** Seconds. */\n  delay?: number;\n  /** Replay every time the element re-enters the viewport. */\n  loop?: boolean;\n  children: string;\n}\n\nexport const KinetoTextReveal = forwardRef<MotionHandle, KinetoTextRevealProps>(function KinetoTextReveal(\n  { as = 'h1', preset = 'stream', speed, stagger, duration, delay, loop, children, ...props },\n  ref\n) {\n  const options = compact({ preset, speed, stagger, duration, delay, loop });\n  return (\n    <Motion ref={ref} as={as} type=\"textReveal\" options={options} dependencies={[preset, speed, stagger, duration, delay, loop, children]} {...props}>\n      {children}\n    </Motion>\n  );\n});\n\nexport default KinetoTextReveal;\n"
+    }
+  ],
+  "categories": [
+    "kineto",
+    "motion",
+    "typography"
+  ]
+}

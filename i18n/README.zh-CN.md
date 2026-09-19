@@ -10,7 +10,7 @@
 
 <p><a href="https://www.npmjs.com/package/@dong-gri/kineto"><img src="https://img.shields.io/npm/v/@dong-gri/kineto.svg" alt="npm" height="20"></a>&nbsp;&nbsp;<a href="../LICENSE"><img src="https://img.shields.io/npm/l/@dong-gri/kineto.svg" alt="license" height="20"></a>&nbsp;&nbsp;<a href="https://www.jsdelivr.com/package/npm/@dong-gri/kineto"><img src="https://img.shields.io/jsdelivr/npm/hm/@dong-gri/kineto.svg" alt="jsDelivr" height="20"></a></p>
 
-[在线演示](https://kineto.dongri.me) · [模块参考](../docs/module-reference.md) · [问题排查](../docs/troubleshooting.md) · [功能契约](../FEATURE_CONTRACT.md)
+[在线演示](https://kineto.dongri.me) · [模块参考](../docs/module-reference.md) · [集成指南](../docs/integrations/README.md) · [问题排查](../docs/troubleshooting.md) · [功能契约](../FEATURE_CONTRACT.md)
 
 </div>
 
@@ -186,6 +186,16 @@ import installKineto from '@dong-gri/kineto/jquery';
 installKineto(window.jQuery);
 $('.card').kineto('reveal', { preset: 'fade-up' });
 ```
+
+## 设计系统、UI 库与 AI 工具
+
+Kineto 放在你已有的组件库*旁边*使用：行为与无障碍由组件库负责，Kineto 只通过同一元素上的 `data-kt-*` 属性添加动效。
+
+- **shadcn/ui** — 从 [shadcn 注册表](https://kineto.dongri.me/r/registry.json)安装 `KinetoProvider`、`KinetoReveal`、`KinetoCounter` 等带类型的封装组件和 AI 规则条目（`npx shadcn@latest add @kineto/provider`）。
+- **Bootstrap 5、MUI、Mantine、Chakra UI、Ant Design、daisyUI、Nuxt UI、PrimeVue、Vuetify** — [`docs/integrations/`](../docs/integrations/README.md)为每个库提供指南（挂载方式、库已提供的能力、冲突规则、按意图划分的配方），并在 `tests/integrations/` 中用真实库验证。[Bootstrap 5 共存示例](../examples/bootstrap/index.html)在真实浏览器中检查。
+- **编码代理** — [`ai/kineto.rules.md`](../ai/kineto.rules.md)（`kineto.dongri.me/llms.txt`）与 [Kineto MCP 服务器](../packages/kineto-mcp/README.md)（`npx @dong-gri/kineto-mcp`）基于真实功能契约告诉代理何时使用哪个模块；Figma MCP 用户可用 `kineto_figma_layers` 把图层映射到意图。
+
+稍后渲染的 DOM（React/Vue 树、toast、模态框）只需调用一次 `Kineto.observe()` 即可自动挂载和清理。
 
 ## 浏览器支持
 

@@ -1,0 +1,238 @@
+// Shared logic behind the integration map (kineto.integrations.json).
+//
+// Three consumers read this file so they can never disagree:
+//   - scripts/generate-integrations.mjs  → docs/integrations/*.md, ai/*, site/llms.txt
+//   - tests/integrations-contract.mjs    → validates the map against the feature contract
+//   - packages/kineto-mcp                → the MCP server AI agents call
+//
+// Everything here is pure: it takes the parsed JSON contracts and returns
+// strings or plain objects. No file writes, no DOM.
+
+const VARIANT_KEYS = ['preset', 'effect', 'type', 'mode', 'variant', 'style'];
+// Core primitives that are not modules but still valid recipe targets.
+const CORE_PRIMITIVES = new Set(['presence', 'states']);
+
+export function dash(value) {
+  return String(value).replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+}
+
+/** `data-kt-textReveal` → `data-kt-text-reveal`. */
+export function attributeName(moduleName) {
+  return `data-kt-${dash(moduleName)}`;
+}
+
+export function findModule(features, name) {
+  return features.modules.find((module) => module.name === name) || null;
+}
+
+export function isCorePrimitive(name) {
+  return CORE_PRIMITIVES.has(name);
+}
+
+/** The option key a module reads its variant from (`preset` for most). */
+export function variantKey(module) {
+  if (!module) return 'preset';
+  return VARIANT_KEYS.find((key) => module.publicOptions.includes(key)) || 'preset';
+}
+
+/** Serialise one option value for a `data-kt-*` attribute. */
+function attributeValue(value) {
+  if (value === true) return '';
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+}
+
+function escapeAttribute(value) {
+  return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+
+/**
+ * The `data-kt-*` attribute list for a recipe:
+ *   data-kt-lazy="skeleton" data-kt-skeleton-variant="shimmer"
+ * Booleans become bare attributes; objects/arrays are JSON (Kineto coerces them).
+ */
+export function attributeList(recipe, features = null) {
+  const parts = [];
+  const activation = attributeName(recipe.module);
+  // A module with a single variant (magnetic, ripple, tooltip …) is clearer as
+  // a bare attribute; the value only matters when there is a choice.
+  const module = features ? findModule(features, recipe.module) : null;
+  const singleVariant = module && module.variants.length === 1 && recipe.variant === module.defaultVariant;
+  parts.push(recipe.variant && !singleVariant ? `${activation}="${escapeAttribute(recipe.variant)}"` : activation);
+  for (const [key, value] of Object.entries(recipe.options || {})) {
+    if (value === false || value == null) continue;
+    const name = `data-kt-${dash(key)}`;
+    const serialised = attributeValue(value);
+    parts.push(serialised === '' ? name : `${name}="${escapeAttribute(serialised)}"`);
+  }
+  return parts.join(' ');
+}
+
+/** JS options object literal for a recipe (variant folded in under its key). */
+export function optionsLiteral(recipe, features) {
+  const module = findModule(features, recipe.module);
+  const options = { ...(recipe.options || {}) };
+  if (recipe.variant) options[variantKey(module)] = recipe.variant;
+  const entries = Object.entries(options);
+  if (!entries.length) return '{}';
+  return `{ ${entries.map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join(', ')} }`;
+}
+
+const TAG_BY_MODULE = {
+  lazy: 'img', counter: 'span', textReveal: 'h1', textSplit: 'h2', textTransition: 'h2', typewriter: 'p',
+  blurText: 'p', textFill: 'p', marquee: 'div', overflowText: 'div', slider: 'div', radial: 'div',
+  tilt: 'article', cardGlow: 'article', gesture: 'button', magnetic: 'button', ripple: 'button',
+  vibrate: 'button', hold: 'button', confetti: 'button', switch: 'button', tooltip: 'button',
+  lightbox: 'img', ambientMedia: 'img', brushReveal: 'img', scrollSequence: 'div', stickyStack: 'section',
+  horizontalScroll: 'section', parallax: 'div', mouseParallax: 'div', cursor: 'body', pageReveal: 'body',
+  pageTransition: 'body', progress: 'div', stickyHeader: 'header', megaMenu: 'nav', accordion: 'div',
+  tabs: 'div', bottomSheet: 'div', toast: 'div', loader: 'div', loadingIndicator: 'span', flip: 'ul',
+  drag: 'div', fullpage: 'main', scrollShadows: 'div', cssScroll: 'div', glitch: 'h2', dateTime: 'time',
+  reveal: 'section', coverReveal: 'div', scrollVelocity: 'div'
+};
+
+const INNER_BY_TAG = { img: null, body: '…', main: '…', ul: '<li>…</li>', time: '2026-09-19T09:00:00Z', div: '…', section: '…', article: '…', header: '…', nav: '…' };
+
+/** Plain HTML snippet for a recipe. */
+export function htmlSnippet(recipe, features) {
+  if (isCorePrimitive(recipe.module)) return primitiveSnippet(recipe, 'html');
+  const tag = TAG_BY_MODULE[recipe.module] || 'div';
+  const attrs = attributeList(recipe, features);
+  if (tag === 'img') return `<img ${attrs} data-src="./photo.webp" alt="">`;
+  const inner = INNER_BY_TAG[tag] ?? 'Text';
+  return `<${tag} ${attrs}>${inner}</${tag}>`;
+}
+
+/** JSX snippet: attribute passthrough (works with any component that spreads props). */
+export function reactSnippet(recipe, features, { component = null } = {}) {
+  if (isCorePrimitive(recipe.module)) return primitiveSnippet(recipe, 'react');
+  const tag = component || TAG_BY_MODULE[recipe.module] || 'div';
+  const attrs = attributeList(recipe, features);
+  if (tag === 'img') return `<img ${attrs} data-src="/photo.webp" alt="" />`;
+  const inner = INNER_BY_TAG[tag] ?? 'Text';
+  const hook = `// or, when you need the instance:\nconst { ref } = useKineto('${recipe.module}', ${optionsLiteral(recipe, features)});`;
+  return `<${tag} ${attrs}>${inner}</${tag}>\n${hook}`;
+}
+
+/** Vue snippet: attribute fallthrough plus the v-motion directive form. */
+export function vueSnippet(recipe, features, { component = null } = {}) {
+  if (isCorePrimitive(recipe.module)) return primitiveSnippet(recipe, 'vue');
+  const tag = component || TAG_BY_MODULE[recipe.module] || 'div';
+  const attrs = attributeList(recipe, features);
+  if (tag === 'img') return `<img ${attrs} data-src="/photo.webp" alt="">`;
+  const inner = INNER_BY_TAG[tag] ?? 'Text';
+  return `<${tag} ${attrs}>${inner}</${tag}>\n<!-- or: <${tag} v-motion="{ type: '${recipe.module}', options: ${optionsLiteral(recipe, features)} }"> -->`;
+}
+
+/** Imperative JavaScript snippet. */
+export function jsSnippet(recipe, features) {
+  if (isCorePrimitive(recipe.module)) return primitiveSnippet(recipe, 'js');
+  return `Kineto.create('${recipe.module}', element, ${optionsLiteral(recipe, features)});`;
+}
+
+// Presence and Motion States are Core primitives (not `data-kt-*` modules), so
+// their snippets are hand-written per flavour instead of derived from options.
+const PANEL_STATES = "const panel = states({ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } });";
+function primitiveSnippet(recipe, flavour) {
+  if (recipe.module === 'presence') {
+    if (flavour === 'react') {
+      return [
+        "import { states } from '@dong-gri/kineto';",
+        "import { KinetoPresence } from '@dong-gri/kineto/react';",
+        PANEL_STATES,
+        "<KinetoPresence present={open} options={{ enter: { state: panel, name: 'visible' }, exit: { state: panel, name: 'hidden' }, mode: 'wait' }}>…</KinetoPresence>"
+      ].join('\n');
+    }
+    if (flavour === 'vue') {
+      return [
+        "import { Transition } from 'vue';",
+        "import { useKinetoTransition } from '@dong-gri/kineto/vue';",
+        "const transition = useKinetoTransition('reveal', { enterOptions: { preset: 'fade-up', duration: 0.35 }, leaveOptions: { preset: 'fade', duration: 0.2 } });",
+        "<Transition v-bind=\"transition\"><div v-if=\"open\">…</div></Transition>"
+      ].join('\n');
+    }
+    return [
+      "import { states } from '@dong-gri/kineto';",
+      "import presence from '@dong-gri/kineto/presence';",
+      PANEL_STATES,
+      "const lifecycle = presence(element, { enter: { state: panel, name: 'visible' }, exit: { state: panel, name: 'hidden' }, mode: 'wait' });",
+      "await lifecycle.enter(); // later: const result = await lifecycle.leave(); if (result.status === 'finished') element.remove();"
+    ].join('\n');
+  }
+  return ["import { states } from '@dong-gri/kineto';", PANEL_STATES, "panel.apply(element, 'visible');"].join('\n');
+}
+
+export function snippetFor(recipe, features, framework, extra = {}) {
+  if (framework === 'react') return reactSnippet(recipe, features, extra);
+  if (framework === 'vue') return vueSnippet(recipe, features, extra);
+  if (framework === 'js') return jsSnippet(recipe, features);
+  return htmlSnippet(recipe, features);
+}
+
+/**
+ * Validate an options object against a module's public contract.
+ * Returns { ok, unknown, variantOk, variants } — never throws, so an AI
+ * tool can show the problem instead of guessing.
+ */
+export function validateOptions(features, moduleName, options = {}) {
+  const module = findModule(features, moduleName);
+  if (!module) return { ok: false, unknown: [], variantOk: false, variants: [], error: `unknown module "${moduleName}"` };
+  const unknown = Object.keys(options).filter((key) => !module.publicOptions.includes(key));
+  const key = variantKey(module);
+  const variant = options[key];
+  const variantOk = variant == null || module.variants.includes(String(variant));
+  return { ok: unknown.length === 0 && variantOk, unknown, variantKey: key, variantOk, variants: module.variants };
+}
+
+/**
+ * How an intent should be handled in one ecosystem:
+ *   kineto          → Kineto is the natural provider
+ *   prefer-library  → the library ships this; use theirs, Kineto only when absent
+ *   enhance         → keep the library component, add Kineto motion to its content
+ */
+export function guidanceFor(intent, ecosystemId, integrations) {
+  const ecosystem = integrations.ecosystems[ecosystemId];
+  const equivalent = intent.libraryEquivalents?.[ecosystemId] || null;
+  const mode = intent.provideWhenLibraryHas;
+  if (!ecosystem || !mode || !equivalent) return { decision: 'kineto', equivalent };
+  return { decision: mode, equivalent };
+}
+
+const normalise = (text) => String(text || '').toLowerCase();
+
+/**
+ * Rank intents for a free-text query, a component name or a Figma layer name.
+ * Keyword hits score 3, Figma pattern hits score 4, title/id substrings score 2.
+ */
+export function suggest(integrations, query, { limit = 5 } = {}) {
+  const text = normalise(query).trim();
+  if (!text) return [];
+  const scored = integrations.intents.map((intent) => {
+    let score = 0;
+    const reasons = [];
+    for (const keyword of intent.keywords) {
+      if (text.includes(normalise(keyword))) { score += 3; reasons.push(`keyword "${keyword}"`); }
+    }
+    for (const pattern of intent.figma) {
+      let matches = false;
+      try { matches = new RegExp(pattern, 'i').test(text); } catch (_error) { matches = false; }
+      if (matches) { score += 4; reasons.push(`layer pattern /${pattern}/`); }
+    }
+    if (text.includes(normalise(intent.id).replace(/-/g, ' ')) || text.includes(normalise(intent.title))) { score += 2; reasons.push('title'); }
+    return { intent, score, reasons };
+  }).filter((entry) => entry.score > 0);
+  scored.sort((a, b) => b.score - a.score || a.intent.id.localeCompare(b.intent.id));
+  return scored.slice(0, limit);
+}
+
+/** Every module named by the map, with the intents that use it. */
+export function modulesInMap(integrations) {
+  const used = new Map();
+  for (const intent of integrations.intents) {
+    for (const recipe of intent.recipes) {
+      if (!used.has(recipe.module)) used.set(recipe.module, new Set());
+      used.get(recipe.module).add(intent.id);
+    }
+  }
+  return used;
+}

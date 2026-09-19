@@ -5,6 +5,7 @@ tests/browser/shots/
 tests/framework-qa/node_modules/
 tests/framework-qa/dist-iife/
 tests/consumer-bundles/.output/
+tests/integrations/.tmp-shadcn/
 /artifacts/
 *.tgz
 *.log

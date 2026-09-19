@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "counter",
+  "type": "registry:component",
+  "title": "Kineto counter",
+  "description": "Animated KPI numbers: slot reels, pop landing, plain count-up, digit cycling and flip.",
+  "author": "dongri <official@dongri.me>",
+  "dependencies": [
+    "@dong-gri/kineto"
+  ],
+  "registryDependencies": [
+    "https://kineto.dongri.me/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "registry/items/counter/kineto-counter.tsx",
+      "type": "registry:component",
+      "content": "'use client';\n\n// KinetoCounter — animated numbers for KPI tiles and hero stats.\n//   <KinetoCounter to={128000} format=\",\" />                 // slot reels\n//   <KinetoCounter preset=\"pop\" to={98760} format=\",\" />      // final digits land one by one\n//   <KinetoCounter preset=\"plain\" to={4.9} decimals={1} />\n// Render the final value as children so the number is readable before\n// JavaScript runs (and for crawlers); Kineto animates from `from` to `to`.\nimport { forwardRef, type ElementType, type ReactNode } from 'react';\nimport { Motion, type MotionHandle } from '@dong-gri/kineto/react';\nimport { compact } from '@/lib/kineto-utils';\n\nexport type KinetoCounterPreset = 'slot' | 'plain' | 'digit' | 'pop' | 'flip';\n\nexport interface KinetoCounterProps extends Omit<React.HTMLAttributes<HTMLElement>, 'children'> {\n  as?: ElementType;\n  preset?: KinetoCounterPreset;\n  from?: number;\n  to: number;\n  /** Thousands separator, e.g. `\",\"`. */\n  format?: string;\n  decimals?: number;\n  prefix?: string;\n  suffix?: string;\n  /** Seconds. */\n  duration?: number;\n  /** Count only the first time the element enters the viewport (default true). */\n  once?: boolean;\n  children?: ReactNode;\n}\n\nexport const KinetoCounter = forwardRef<MotionHandle, KinetoCounterProps>(function KinetoCounter(\n  { as = 'span', preset = 'slot', from, to, format, decimals, prefix, suffix, duration, once = true, children, ...props },\n  ref\n) {\n  const options = compact({ preset, from, to, format, decimals, prefix, suffix, duration, once });\n  return (\n    <Motion ref={ref} as={as} type=\"counter\" options={options} dependencies={[preset, from, to, format, decimals, prefix, suffix, duration, once]} {...props}>\n      {children ?? to}\n    </Motion>\n  );\n});\n\nexport default KinetoCounter;\n"
+    }
+  ],
+  "categories": [
+    "kineto",
+    "data-display"
+  ]
+}
