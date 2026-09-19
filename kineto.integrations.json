@@ -758,7 +758,17 @@
         "interactive image",
         "hover reveal image",
         "살아있는",
-        "인터랙션"
+        "인터랙션",
+        "newspaper print",
+        "risograph",
+        "screen angle",
+        "fine grain photo",
+        "photographic dither",
+        "신문",
+        "인쇄물",
+        "망점 각도",
+        "거친 격자",
+        "사진 디더"
       ],
       "figma": [
         "dither",
@@ -767,7 +777,10 @@
         "texture",
         "grain",
         "duotone",
-        "poster"
+        "poster",
+        "print",
+        "newsprint",
+        "screen"
       ],
       "recipes": [
         {
@@ -788,6 +801,47 @@
             "cellSize": 10
           },
           "why": "Dither that shrinks into the original photo once it scrolls into view."
+        },
+        {
+          "module": "stylize",
+          "variant": "dither",
+          "options": {
+            "ditherType": "noise",
+            "cellSize": 3,
+            "contrast": 1.4
+          },
+          "why": "The dither to reach for on a photograph: `noise` has no repeating tile, so a fine cell reads as texture instead of as an 8x8 weave. Use this before reaching for a smaller cell size."
+        },
+        {
+          "module": "stylize",
+          "variant": "dither",
+          "options": {
+            "ditherType": "cluster",
+            "cellSize": 2,
+            "contrast": 1.5
+          },
+          "why": "Clustered-dot print screen: ink grows as one blob per cell, the way newsprint and risograph do. Keep the cell small (1-3px) or the blobs read as a checkerboard."
+        },
+        {
+          "module": "stylize",
+          "variant": "halftone",
+          "options": {
+            "halftoneShape": "dot",
+            "halftoneAngle": 45,
+            "cellSize": 6,
+            "contrast": 1.35
+          },
+          "why": "Newspaper halftone. The angle is the part that matters: a screen square to the frame reads as a table, and tilting it 15-45 degrees is what makes it read as print."
+        },
+        {
+          "module": "stylize",
+          "variant": "halftone",
+          "options": {
+            "halftoneShape": "ring",
+            "halftoneAngle": 30,
+            "cellSize": 8
+          },
+          "why": "Open-ring screen: thin outlines in the highlights that close up in the shadows. A graphic, editorial texture rather than a photographic one."
         },
         {
           "module": "stylize",
@@ -838,6 +892,7 @@
       "libraryEquivalents": {},
       "notes": [
         "Raise `contrast` (1.3-1.6) before anything else: a photograph sits in the middle of the tonal range and dithers to grey mush at the default 1.",
+        "Pick `ditherType` by the subject, not by taste: `noise` for a photograph (no repeating tile, so a fine cell reads as texture), `cluster` or a rotated `halftone` for a print look, `8x8`/`16x16` for a graphic two-tone treatment, and `floyd-steinberg`/`atkinson` when the original colours have to survive.",
         "Stylize redraws the pixels; it does not load anything. Pair it with the `image-loading` intent when the picture also needs lazy loading — both attributes can sit on one <img>.",
         "A source the canvas cannot read back (cross-origin without CORS) simply shows unstyled, so the texture is never a hard dependency.",
         "`motion` (drift/shuffle/scan/flow/pulse) keeps the look alive on a still picture and `pointer` (lens/spotlight/ripple) makes it react; both redraw every frame, so lower `renderFps` when several are on one screen."

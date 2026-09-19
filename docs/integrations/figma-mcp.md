@@ -37,7 +37,7 @@ How to map a Figma node (via the Figma MCP `get_design_context` / `get_metadata`
 | `kpi-number` | `/stat/i`, `/kpi/i`, `/number/i`, `/metric/i`, `/counter/i`, `/\d{2,}/i` |
 | `countdown` | `/countdown/i`, `/timer/i`, `/d-day/i`, `/clock/i` |
 | `image-loading` | `/image/i`, `/photo/i`, `/thumbnail/i`, `/cover/i`, `/gallery/i` |
-| `media-texture` | `/dither/i`, `/halftone/i`, `/ascii/i`, `/texture/i`, `/grain/i`, `/duotone/i`, `/poster/i` |
+| `media-texture` | `/dither/i`, `/halftone/i`, `/ascii/i`, `/texture/i`, `/grain/i`, `/duotone/i`, `/poster/i`, `/print/i`, `/newsprint/i`, `/screen/i` |
 | `gallery-lightbox` | `/gallery/i`, `/lightbox/i`, `/grid/i`, `/masonry/i`, `/photo/i` |
 | `interactive-reveal` | `/scratch/i`, `/brush/i`, `/reveal/i`, `/mask/i` |
 | `carousel` | `/carousel/i`, `/slider/i`, `/swiper/i`, `/slides/i` |

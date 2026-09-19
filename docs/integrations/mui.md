@@ -283,6 +283,38 @@ export function KinetoProvider({ children }: { children: React.ReactNode }) {
   const { ref } = useKineto('stylize', { mode: "reveal", trigger: "view", cellSize: 10, preset: "dither" });
   ```
 
+- `stylize` · `dither` — The dither to reach for on a photograph: `noise` has no repeating tile, so a fine cell reads as texture instead of as an 8x8 weave. Use this before reaching for a smaller cell size.
+
+  ```jsx
+  <div data-kt-stylize="dither" data-kt-dither-type="noise" data-kt-cell-size="3" data-kt-contrast="1.4">…</div>
+  // or, when you need the instance:
+  const { ref } = useKineto('stylize', { ditherType: "noise", cellSize: 3, contrast: 1.4, preset: "dither" });
+  ```
+
+- `stylize` · `dither` — Clustered-dot print screen: ink grows as one blob per cell, the way newsprint and risograph do. Keep the cell small (1-3px) or the blobs read as a checkerboard.
+
+  ```jsx
+  <div data-kt-stylize="dither" data-kt-dither-type="cluster" data-kt-cell-size="2" data-kt-contrast="1.5">…</div>
+  // or, when you need the instance:
+  const { ref } = useKineto('stylize', { ditherType: "cluster", cellSize: 2, contrast: 1.5, preset: "dither" });
+  ```
+
+- `stylize` · `halftone` — Newspaper halftone. The angle is the part that matters: a screen square to the frame reads as a table, and tilting it 15-45 degrees is what makes it read as print.
+
+  ```jsx
+  <div data-kt-stylize="halftone" data-kt-halftone-shape="dot" data-kt-halftone-angle="45" data-kt-cell-size="6" data-kt-contrast="1.35">…</div>
+  // or, when you need the instance:
+  const { ref } = useKineto('stylize', { halftoneShape: "dot", halftoneAngle: 45, cellSize: 6, contrast: 1.35, preset: "halftone" });
+  ```
+
+- `stylize` · `halftone` — Open-ring screen: thin outlines in the highlights that close up in the shadows. A graphic, editorial texture rather than a photographic one.
+
+  ```jsx
+  <div data-kt-stylize="halftone" data-kt-halftone-shape="ring" data-kt-halftone-angle="30" data-kt-cell-size="8">…</div>
+  // or, when you need the instance:
+  const { ref } = useKineto('stylize', { halftoneShape: "ring", halftoneAngle: 30, cellSize: 8, preset: "halftone" });
+  ```
+
 - `stylize` · `dither` — A dither that stays on the image while the grain crawls — alive without moving the layout.
 
   ```jsx
@@ -332,6 +364,8 @@ export function KinetoProvider({ children }: { children: React.ReactNode }) {
   ```
 
 > Raise `contrast` (1.3-1.6) before anything else: a photograph sits in the middle of the tonal range and dithers to grey mush at the default 1.
+
+> Pick `ditherType` by the subject, not by taste: `noise` for a photograph (no repeating tile, so a fine cell reads as texture), `cluster` or a rotated `halftone` for a print look, `8x8`/`16x16` for a graphic two-tone treatment, and `floyd-steinberg`/`atkinson` when the original colours have to survive.
 
 > Stylize redraws the pixels; it does not load anything. Pair it with the `image-loading` intent when the picture also needs lazy loading — both attributes can sit on one <img>.
 

@@ -59,7 +59,7 @@ Kineto.observe(); // scans now and follows later DOM changes
 | **KPI·통계 숫자 카운트**<br>`kpi-number` | `counter` · `slot` | `counter` · `pop`<br>`counter` · `plain` | Kineto 사용 |
 | **카운트다운·경과 시계**<br>`countdown` | `counter` · `clock` | `dateTime` · `relative` | Kineto 사용 |
 | **이미지 로딩 효과·플레이스홀더**<br>`image-loading` | `lazy` · `skeleton` | `lazy` · `blur-up`<br>`lazy` · `pixelate` | Kineto 사용 |
-| **이미지·영상 그래픽 질감**<br>`media-texture` | `stylize` · `dither` | `stylize` · `dither`<br>`stylize` · `dither`<br>`stylize` · `ascii`<br>`stylize` · `dither`<br>`stylize` · `halftone`<br>`stylize` · `ascii`<br>`glitch` · `image` | Kineto 사용 |
+| **이미지·영상 그래픽 질감**<br>`media-texture` | `stylize` · `dither` | `stylize` · `dither`<br>`stylize` · `dither`<br>`stylize` · `dither`<br>`stylize` · `halftone`<br>`stylize` · `halftone`<br>`stylize` · `dither`<br>`stylize` · `ascii`<br>`stylize` · `dither`<br>`stylize` · `halftone`<br>`stylize` · `ascii`<br>`glitch` · `image` | Kineto 사용 |
 | **이미지 갤러리·라이트박스**<br>`gallery-lightbox` | `lightbox` · `grouped` | — | Kineto 사용 |
 | **브러시·긁어서 드러내는 미디어**<br>`interactive-reveal` | `brushReveal` · `brush` | `coverReveal` · `block` | Kineto 사용 |
 | **캐러셀·슬라이더**<br>`carousel` | `slider` · `slide` | `slider` · `coverflow`<br>`slider` · `cards`<br>`radial` · `bottom` | 라이브러리 컴포넌트 우선 |
