@@ -57,7 +57,8 @@ fs.writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`);
 
 for (const relative of [
   'tests/consumer-bundles/package-lock.json',
-  'tests/framework-qa/package-lock.json'
+  'tests/framework-qa/package-lock.json',
+  'tests/integrations/package-lock.json'
 ]) {
   const fixtureLockPath = path.join(root, relative);
   const fixtureLock = JSON.parse(fs.readFileSync(fixtureLockPath, 'utf8'));

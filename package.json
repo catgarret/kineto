@@ -172,6 +172,7 @@
     "test:framework": "node scripts/npm-ci-retry.mjs tests/framework-qa && npm --prefix tests/framework-qa run qa",
     "release:prepare": "node scripts/prepare-release.mjs",
     "release:check": "node scripts/check-release.mjs",
+    "release:check:mcp": "node scripts/check-mcp-release.mjs",
     "release:ship": "node scripts/ship-release.mjs",
     "test:variants": "node tests/variant-capabilities.mjs",
     "test:help": "node tests/help-coverage.mjs",

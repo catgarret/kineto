@@ -1,0 +1,210 @@
+name: Release MCP
+
+# Publishes @dong-gri/kineto-mcp (packages/kineto-mcp) from an annotated
+# `mcp-vX.Y.Z` tag, mirroring release.yml: one verify job builds and tests the
+# exact tagged source and packs a single tarball; a separate least-privilege
+# job publishes that verified tarball with npm provenance (Trusted Publishing,
+# no long-lived token) and creates the bilingual GitHub Release. Re-running a
+# tag is safe: an already published identical version is skipped, a different
+# one fails, and an existing GitHub Release is left untouched.
+
+on:
+  push:
+    tags:
+      - "mcp-v[0-9]+.[0-9]+.[0-9]+"
+
+concurrency:
+  group: release-mcp-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify · contracts · package
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+          registry-url: https://registry.npmjs.org
+
+      - name: Use npm with Trusted Publishing support
+        run: npm install --global npm@11
+
+      - name: Validate tag, package version, contract copies and bilingual notes
+        run: npm run release:check:mcp -- "$GITHUB_REF_NAME"
+
+      - name: Install repository dependencies
+        run: npm ci --prefer-offline --fetch-retries=3 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=5000 --fetch-timeout=30000
+
+      - name: Run lint
+        run: |
+          set -o pipefail
+          node scripts/retry-command.mjs npm run lint 2>&1 | tee -a release-mcp.log
+
+      - name: Verify the integration map and generated artefacts
+        run: |
+          set -euo pipefail
+          for command in integrations:check test:contract; do
+            echo "::group::$command"
+            node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release-mcp.log
+            echo "::endgroup::"
+          done
+          echo "::group::integrations-contract"
+          node scripts/retry-command.mjs node tests/integrations-contract.mjs 2>&1 | tee -a release-mcp.log
+          echo "::endgroup::"
+
+      - name: Run the MCP server test over stdio
+        run: |
+          set -o pipefail
+          node scripts/retry-command.mjs npm run test:mcp 2>&1 | tee -a release-mcp.log
+
+      - name: Audit the MCP lockfile
+        run: |
+          set -o pipefail
+          node scripts/retry-command.mjs npm run audit:lockfiles -- --output-dir release-mcp-audit 2>&1 | tee -a release-mcp.log
+
+      - name: Upload verification log on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-mcp-verification-log
+          path: |
+            release-mcp.log
+            release-mcp-audit/
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: true
+
+      - name: Pack the verified MCP package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-artifact
+          mapfile -d '' -t existing < <(find release-artifact -mindepth 1 -maxdepth 1 -print0)
+          if [ "${#existing[@]}" -ne 0 ]; then
+            printf 'Release artifact directory must start empty; found %s files.\n' "${#existing[@]}"
+            exit 1
+          fi
+          (cd packages/kineto-mcp && npm pack --pack-destination ../../release-artifact)
+          mapfile -d '' -t tarballs < <(find release-artifact -maxdepth 1 -type f -name '*.tgz' -print0)
+          if [ "${#tarballs[@]}" -ne 1 ]; then
+            printf 'Expected exactly one package tarball, found %s.\n' "${#tarballs[@]}"
+            exit 1
+          fi
+          tarball="$(basename "${tarballs[0]}")"
+          (cd release-artifact && sha256sum -- "$tarball" > "$tarball.sha256")
+          mapfile -d '' -t artifacts < <(find release-artifact -mindepth 1 -maxdepth 1 -print0)
+          if [ "${#artifacts[@]}" -ne 2 ]; then
+            printf 'Expected only the tarball and checksum, found %s files.\n' "${#artifacts[@]}"
+            exit 1
+          fi
+
+      - name: Upload the verified package
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: verified-mcp-package-${{ github.ref_name }}
+          path: release-artifact/
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: true
+
+  publish:
+    name: Publish verified npm and GitHub artifacts
+    needs: [verify]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+          registry-url: https://registry.npmjs.org
+
+      - name: Use npm with Trusted Publishing support
+        run: npm install --global npm@11
+
+      - name: Download the verified package
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: verified-mcp-package-${{ github.ref_name }}
+          path: release-artifact
+
+      - name: Verify artifact digest
+        id: verified_artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -d '' -t artifacts < <(find release-artifact -mindepth 1 -maxdepth 1 -print0)
+          mapfile -d '' -t tarballs < <(find release-artifact -maxdepth 1 -type f -name '*.tgz' -print0)
+          mapfile -d '' -t checksums < <(find release-artifact -maxdepth 1 -type f -name '*.sha256' -print0)
+          if [ "${#artifacts[@]}" -ne 2 ] || [ "${#tarballs[@]}" -ne 1 ] || [ "${#checksums[@]}" -ne 1 ]; then
+            printf 'Expected only one tarball and one checksum; found %s total, %s tarballs, and %s checksums.\n' "${#artifacts[@]}" "${#tarballs[@]}" "${#checksums[@]}"
+            exit 1
+          fi
+          tarball="${tarballs[0]}"
+          checksum="${checksums[0]}"
+          if [ "$checksum" != "$tarball.sha256" ]; then
+            printf 'Checksum file %s does not belong to %s.\n' "$checksum" "$tarball"
+            exit 1
+          fi
+          (cd release-artifact && sha256sum --check --strict -- "$(basename "$checksum")")
+          # npm treats an unprefixed "owner/repo"-shaped value as a Git spec.
+          # Keep the verified artifact explicitly relative for every consumer.
+          printf 'tarball=./%s\n' "$tarball" >> "$GITHUB_OUTPUT"
+
+      - name: Publish package with provenance
+        shell: bash
+        env:
+          RELEASE_TARBALL: ${{ steps.verified_artifact.outputs.tarball }}
+        run: |
+          set -euo pipefail
+          PACKAGE_NAME="$(node -p "require('./packages/kineto-mcp/package.json').name")"
+          PACKAGE_VERSION="$(node -p "require('./packages/kineto-mcp/package.json').version")"
+          test -f "$RELEASE_TARBALL"
+          TARBALL_INTEGRITY="sha512-$(node -e 'const { createHash } = require("node:crypto"); const { readFileSync } = require("node:fs"); process.stdout.write(createHash("sha512").update(readFileSync(process.argv[1])).digest("base64"));' "$RELEASE_TARBALL")"
+          if PUBLISHED_INTEGRITY="$(npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" dist.integrity 2>/dev/null)"; then
+            if [ "$PUBLISHED_INTEGRITY" != "$TARBALL_INTEGRITY" ]; then
+              echo "Published package integrity does not match the verified release tarball."
+              exit 1
+            fi
+            echo "${PACKAGE_NAME}@${PACKAGE_VERSION} is already published; skipping npm publish."
+          else
+            # Trusted Publishing must be configured for this workflow file on
+            # npmjs.com (Packages → kineto-mcp → Settings → Trusted publishing)
+            # before this step can succeed; see docs/RELEASING.md.
+            npm publish "$RELEASE_TARBALL" --access public --provenance
+          fi
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TARBALL: ${{ steps.verified_artifact.outputs.tarball }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "GitHub Release $GITHUB_REF_NAME already exists; leaving the immutable release unchanged."
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --title "Kineto MCP $GITHUB_REF_NAME" \
+              --notes-file ".github/release-notes/$GITHUB_REF_NAME.md" \
+              "$RELEASE_TARBALL"
+          fi

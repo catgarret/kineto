@@ -51,6 +51,9 @@ Two separate approvals, because they have different consequences:
 - **Release** (`npm run release:ship -- v<version>`): also pushes the annotated
   tag, which publishes the npm package and creates the GitHub Release. Only an
   explicit "release/ship/publish" request covers this; a push request does not.
+  The MCP server has its own tag (`npm run release:ship -- mcp-v<version>`,
+  `release-mcp.yml`) under the same rule; the two packages are released
+  separately.
 
 Demo cards added to `demo/index.html` carry `data-demo-no-legacy-share` so the
 historical `?kt=` v1 share ordinals of every existing card stay stable; the new

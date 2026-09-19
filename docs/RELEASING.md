@@ -143,6 +143,48 @@ has been tested against current main.
 The publish step is idempotent: a workflow retry detects an already published
 version and skips the duplicate npm publish.
 
+## Releasing the MCP server (`@dong-gri/kineto-mcp`)
+
+`packages/kineto-mcp` is a second npm package released from the same `main`
+branch by its own tag prefix, so its versions move independently of the
+runtime while its bundled contract copies always match the source they were
+generated from:
+
+```bash
+# 1) bump packages/kineto-mcp/package.json + package-lock.json, add a section to
+#    packages/kineto-mcp/CHANGELOG.md and write .github/release-notes/mcp-vX.Y.Z.md
+#    (English first, 한국어 second), then regenerate and verify the copies:
+npm run integrations:build
+npm run release:check:mcp -- mcp-vX.Y.Z
+npm run test:mcp
+# 2) after an explicit release request:
+npm run release:ship -- mcp-vX.Y.Z
+```
+
+`release:ship` resolves the tag through `scripts/release-targets.mjs` (the table
+of packages and their tag prefixes), runs `scripts/check-mcp-release.mjs`
+(tag ↔ package version, contract copies byte-identical to the current
+`scripts/build-mcp.mjs` render, `contracts/meta.json` generated from the
+current Kineto version, changelog section, bilingual note), pushes `main`,
+creates the annotated tag and pushes it. `.github/workflows/release-mcp.yml`
+then verifies the tagged source (lint, `integrations:check`, feature and
+integration contracts, the stdio server test, lockfile audit), packs one
+tarball with its SHA-256 and hands only that artifact to a separate
+`contents: write` + `id-token: write` job, which publishes with provenance
+(skipping an identical already published version, failing on a different one)
+and creates the `Kineto MCP mcp-vX.Y.Z` GitHub Release.
+
+One-time setup: npm Trusted Publishing is configured per package on
+npmjs.com (Packages → `kineto-mcp` → Settings → Trusted publishing:
+owner `catgarret`, repository `kineto`, workflow `release-mcp.yml`). That page
+exists only once the package does, so the very first version is a bootstrap
+publish by the owner from a logged-in terminal (`cd packages/kineto-mcp &&
+npm publish`, the tarball equals the workflow's), after which the trusted
+publisher is added and every later version goes through the tag. The
+`release-mcp.yml` run for that first tag still verifies the source, sees the
+identical published integrity, skips `npm publish` and creates the GitHub
+Release. Never `npm publish` the MCP package manually after that bootstrap.
+
 ## Release package policy
 
 The Git repository intentionally keeps full sources, demos, tests, translations,

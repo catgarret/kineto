@@ -311,4 +311,72 @@ execFileSync(process.execPath, [path.join(root, 'tests/cdn-purge.mjs')], {
   stdio: 'inherit'
 });
 
-console.log('release-automation OK — gated least-privilege publish, verified tarball reuse, rerun safety, pinned actions, engine CI, and CDN failure handling.');
+// ----------------------------------------------------------- MCP package release
+// packages/kineto-mcp ships from `mcp-vX.Y.Z` tags through release-mcp.yml
+// with the same shape as the root release: verify → single verified tarball →
+// least-privilege publish with provenance → immutable GitHub Release.
+const { RELEASE_TARGETS, resolveReleaseTarget } = await import('../scripts/release-targets.mjs');
+const mcpPkg = JSON.parse(read('packages/kineto-mcp/package.json'));
+const mcpWorkflow = read('.github/workflows/release-mcp.yml');
+const mcpVerifyJob = mappingBlock(mcpWorkflow, 'verify');
+const mcpPublishJob = mappingBlock(mcpWorkflow, 'publish');
+const mcpNpmPublish = stepBlock(mcpPublishJob, 'Publish package with provenance');
+const mcpGithubRelease = stepBlock(mcpPublishJob, 'Create GitHub Release');
+const mcpArtifactVerification = stepBlock(mcpPublishJob, 'Verify artifact digest');
+
+assert.deepEqual(RELEASE_TARGETS.map((target) => [target.id, target.packageDir, target.workflow]), [
+  ['kineto', '.', '.github/workflows/release.yml'],
+  ['kineto-mcp', 'packages/kineto-mcp', '.github/workflows/release-mcp.yml']
+]);
+assert.equal(resolveReleaseTarget(`v${pkg.version}`).id, 'kineto');
+assert.equal(resolveReleaseTarget(`mcp-v${mcpPkg.version}`).id, 'kineto-mcp');
+assert.equal(resolveReleaseTarget(`mcp-v${mcpPkg.version}`).version, mcpPkg.version);
+for (const invalid of ['mcp-0.1.0', 'v0.1', 'mcp-v0.1.0-beta', 'kineto-mcp-v0.1.0', '']) {
+  assert.equal(resolveReleaseTarget(invalid), null, `${invalid} must not resolve to a release target`);
+}
+assert.match(shipReleaseScript, /resolveReleaseTarget\(tag\)/, 'shipping must route the tag through the release-target table');
+assert.match(shipReleaseScript, /target\.checkScript/, 'shipping must run the target-specific validation before pushing');
+assert.doesNotMatch(shipReleaseScript, /check-release\.mjs'\), tag\]/, 'the root check must not be hard-wired for every tag');
+assert.equal(pkg.scripts['release:check:mcp'], 'node scripts/check-mcp-release.mjs');
+for (const target of RELEASE_TARGETS) assert.ok(fs.existsSync(path.join(root, target.checkScript)) && fs.existsSync(path.join(root, target.workflow)), `${target.id} check script and workflow must exist`);
+
+assert.match(mcpWorkflow, /tags:\s*\n\s*- "mcp-v\[0-9\]\+\.\[0-9\]\+\.\[0-9\]\+"/);
+assert.match(mcpWorkflow, /concurrency:\s*\n\s*group: release-mcp-\$\{\{ github\.ref \}\}\s*\n\s*cancel-in-progress: false/);
+assert.match(mcpWorkflow, /^permissions:\s*\n\s{2}contents:\s*read$/m);
+assert.equal((mcpWorkflow.match(/^\s+contents:\s*write$/gm) || []).length, 1, 'only the MCP publish job may write repository contents');
+assert.equal((mcpWorkflow.match(/^\s+id-token:\s*write$/gm) || []).length, 1, 'only the MCP publish job may request OIDC');
+assert.doesNotMatch(mcpVerifyJob, /contents:\s*write|id-token:\s*write/);
+assert.match(mcpPublishJob, /needs:\s*\[verify\]/);
+assert.doesNotMatch(mcpPublishJob, /if:\s*always\(\)/);
+assert.match(mcpVerifyJob, /npm run release:check:mcp -- "\$GITHUB_REF_NAME"/);
+for (const command of ['integrations:check', 'test:contract', 'tests/integrations-contract.mjs', 'test:mcp', 'audit:lockfiles', 'npm run lint']) {
+  assert.ok(mcpVerifyJob.includes(command), `MCP verify must run ${command}`);
+}
+assert.match(mcpVerifyJob, /cd packages\/kineto-mcp && npm pack --pack-destination \.\.\/\.\.\/release-artifact/);
+assert.match(mcpVerifyJob, /Expected exactly one package tarball/);
+assert.match(mcpVerifyJob, /sha256sum -- "\$tarball" > "\$tarball\.sha256"/);
+assert.match(stepBlock(mcpVerifyJob, 'Upload the verified package'), /name:\s*verified-mcp-package-\$\{\{ github\.ref_name \}\}/);
+assert.match(stepBlock(mcpPublishJob, 'Download the verified package'), /name:\s*verified-mcp-package-\$\{\{ github\.ref_name \}\}/);
+assertPinnedAction(mcpPublishJob, 'actions/download-artifact');
+assert.match(mcpArtifactVerification, /sha256sum --check --strict --/);
+assert.match(mcpArtifactVerification, /tarball=\.\/%s/);
+assert.match(mcpNpmPublish, /require\('\.\/packages\/kineto-mcp\/package\.json'\)\.name/, 'the publish step must read the MCP package, not the root package');
+assert.match(mcpNpmPublish, /npm view "\$\{PACKAGE_NAME\}@\$\{PACKAGE_VERSION\}" dist\.integrity/);
+assert.match(mcpNpmPublish, /"\$PUBLISHED_INTEGRITY" != "\$TARBALL_INTEGRITY"/);
+assert.match(mcpNpmPublish, /npm publish "\$RELEASE_TARBALL" --access public --provenance/);
+assert.equal((mcpPublishJob.match(/\$\{\{ steps\.verified_artifact\.outputs\.tarball \}\}/g) || []).length, 2);
+assert.match(mcpGithubRelease, /gh release view "\$GITHUB_REF_NAME"/);
+assert.match(mcpGithubRelease, /gh release create "\$GITHUB_REF_NAME"/);
+assert.match(mcpGithubRelease, /--title "Kineto MCP \$GITHUB_REF_NAME"/);
+assert.match(mcpGithubRelease, /--notes-file "\.github\/release-notes\/\$GITHUB_REF_NAME\.md"/);
+assert.doesNotMatch(mcpGithubRelease, /gh release (edit|upload|delete)/);
+assert.doesNotMatch(mcpWorkflow, /npm run purge|softprops\/action-gh-release/, 'the MCP package is not served from the CDN aliases');
+assert.equal(mcpPkg.publishConfig?.access, 'public');
+assert.ok(mcpPkg.files.includes('CHANGELOG.md') && mcpPkg.files.includes('contracts'), 'the MCP tarball must ship its changelog and contract copies');
+assert.match(read('docs/RELEASING.md'), /release:ship -- mcp-v/, 'RELEASING must document the MCP release path');
+execFileSync(process.execPath, [path.join(root, 'scripts/check-mcp-release.mjs'), `mcp-v${mcpPkg.version}`], {
+  cwd: root,
+  stdio: 'inherit'
+});
+
+console.log('release-automation OK — gated least-privilege publish, verified tarball reuse, rerun safety, pinned actions, engine CI, CDN failure handling, and the mcp-v release path.');

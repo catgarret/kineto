@@ -16,7 +16,8 @@
     "bin",
     "src",
     "contracts",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
