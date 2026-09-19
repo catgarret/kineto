@@ -534,6 +534,10 @@
             quality.className='module-block-quality';
             quality.innerHTML=qualityMeta(n);
             block.append(quality);
+            // "모든 variant 비교" — 이 모듈의 공개 variant를 같은 소재 위에 한 번에
+            // 펼쳐 보여 주는 패널입니다(demo/compare.js). variant가 하나뿐인 모듈은
+            // compare.js가 알아서 건너뜁니다.
+            window.KINETO_COMPARE?.attach(block,n);
             // Some modules ship far too many demos for one flat grid (Loading
             // Indicator alone has 40+). Those declare a sub-grouping so the
             // block reads as a few short, labelled sets instead of one wall.

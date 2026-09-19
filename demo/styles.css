@@ -1305,3 +1305,49 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
         grid-template-columns:repeat(2,minmax(0,1fr))!important;
       }
     }
+
+    /* ── Variant compare sheet ────────────────────────────────────────────────
+       모듈 블록마다 붙는 "모든 variant 비교" 패널입니다. 마크업은 demo/compare.js 가
+       만들고, 크기·색은 전부 여기서만 정합니다(데모는 인라인 스타일을 금지합니다). */
+    .variant-compare{margin:-8px 0 18px}
+    .variant-compare__toggle{display:inline-flex;align-items:center;gap:var(--sp-2);padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:color-mix(in srgb,var(--panel) 80%,transparent);color:var(--muted);font:600 12px/1 var(--font-sans);cursor:pointer;transition:color .16s ease,border-color .16s ease,background-color .16s ease}
+    .variant-compare__toggle:hover{color:var(--text);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+    .variant-compare__toggle i{font-size:13px}
+    .variant-compare.is-open .variant-compare__toggle{color:var(--text);border-color:color-mix(in srgb,var(--accent) 60%,var(--line));background:color-mix(in srgb,var(--accent) 12%,transparent)}
+    .variant-compare__count{padding:2px 6px;border-radius:999px;background:color-mix(in srgb,var(--line) 70%,transparent);color:var(--text);font:700 10px/1.3 var(--font-mono)}
+    .variant-compare__sheet{margin-top:var(--sp-3);padding:var(--sp-4);border:1px solid var(--line);border-radius:var(--r-card);background:color-mix(in srgb,var(--panel) 55%,transparent)}
+    .variant-compare__sheet[hidden]{display:none}
+    .variant-compare__note{margin:0 0 var(--sp-3);color:var(--muted);font-size:13px;line-height:1.6;max-width:80ch}
+    .variant-compare__tools{display:flex;justify-content:flex-end;margin:0 0 var(--sp-3)}
+    .variant-compare__replay-all{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--muted);font:600 11px/1 var(--font-sans);cursor:pointer}
+    .variant-compare__replay-all:hover{color:var(--text);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+    .variant-compare__grid{display:grid;gap:var(--sp-3);grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+    .variant-tile{display:flex;flex-direction:column;gap:var(--sp-2);padding:var(--sp-3);border:1px solid var(--line);border-radius:var(--r-stage);background:var(--panel);min-width:0}
+    .variant-tile__head{display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-height:20px}
+    .variant-tile__name{font:700 12px/1.2 var(--font-mono);color:var(--text);word-break:break-all}
+    .variant-tile__badge{padding:2px 6px;border:1px solid color-mix(in srgb,var(--line) 80%,transparent);border-radius:5px;color:var(--muted);font:600 9px/1.3 var(--font-sans);letter-spacing:.02em}
+    .variant-tile__badge--deprecated{border-style:dashed;border-color:color-mix(in srgb,var(--accent) 50%,var(--line));color:var(--accent)}
+    /* 소재가 무엇이든 같은 크기의 무대 위에 올려야 "나란히 비교"가 됩니다. */
+    .variant-tile__stage{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:132px;padding:var(--sp-2);border-radius:8px;background:color-mix(in srgb,var(--panel2) 80%,transparent);text-align:center}
+    .variant-tile__stage>*{max-width:100%;max-height:220px}
+    /* 데모 카드 폭에 맞춰 authoring 된 소재가 타일보다 넓을 때만 줄입니다. 비율은 compare.js가
+       --variant-fit 으로 내보내고, 선언은 여기에만 있습니다. */
+    .variant-tile__stage.is-fitted>*{transform:scale(var(--variant-fit,1));transform-origin:center}
+    /* 부모 크기를 받아 쓰는 소재(원형 캐러셀처럼 절대 배치하는 모듈)를 위한 확정 높이. */
+    .variant-tile__stage.is-filled{height:244px}
+    .variant-tile__stage.is-filled>*{position:absolute;inset:var(--sp-2);max-height:none}
+    /* 재생 버튼만 있는 타일(control·link)은 큰 빈 상자가 될 이유가 없습니다. */
+    .variant-tile__stage--action{min-height:0;padding:var(--sp-3)}
+    .variant-tile__missing{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+    .variant-tile__action{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);font:600 12px/1 var(--font-sans);cursor:pointer}
+    .variant-tile__action:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
+    .variant-tile__foot{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .variant-tile__markup{flex:1 1 120px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font:500 10px/1.5 var(--font-mono)}
+    .variant-tile__copy,.variant-tile__replay{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--muted);font:600 10px/1 var(--font-sans);cursor:pointer}
+    .variant-tile__copy:hover,.variant-tile__replay:hover{border-color:var(--line);color:var(--text)}
+    .variant-tile__copy i,.variant-tile__replay i{font-size:11px}
+    @media (max-width:640px){
+      .variant-compare__sheet{padding:var(--sp-3)}
+      .variant-compare__grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+      .variant-tile__stage{min-height:96px}
+    }

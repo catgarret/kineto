@@ -120,7 +120,7 @@ jobs:
       - name: Run Node tests · demo surface
         run: |
           set -euo pipefail
-          for command in test:parity test:structure test:copy test:lazy test:options test:demo-controls test:variants test:help test:inline test:defaults test:variant-options test:variant-distinctness; do
+          for command in test:parity test:structure test:copy test:lazy test:options test:demo-controls test:variants test:help test:inline test:defaults test:variant-options test:variant-distinctness test:variant-compare; do
             echo "::group::$command"
             node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a ci.log
             echo "::endgroup::"

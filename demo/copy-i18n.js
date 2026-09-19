@@ -2009,6 +2009,158 @@ window.KINETO_COPY_I18N = {
       "已完成 {value}%",
       "Готово на {value}%",
       "{value}% completato"
+    ],
+    "모든 variant 비교": [
+      "Compare all variants",
+      "すべての variant を比較",
+      "比较所有 variant",
+      "比較所有 variant",
+      "Сравнить все варианты",
+      "Confronta tutte le varianti"
+    ],
+    "기본값": [
+      "Default",
+      "既定値",
+      "默认",
+      "預設",
+      "По умолчанию",
+      "Predefinito"
+    ],
+    "지원 중단 예정": [
+      "Deprecated",
+      "非推奨",
+      "已弃用",
+      "已棄用",
+      "Устарело",
+      "Deprecato"
+    ],
+    "복사": [
+      "Copy",
+      "コピー",
+      "复制",
+      "複製",
+      "Копировать",
+      "Copia"
+    ],
+    "복사됨": [
+      "Copied",
+      "コピーしました",
+      "已复制",
+      "已複製",
+      "Скопировано",
+      "Copiato"
+    ],
+    "재생": [
+      "Play",
+      "再生",
+      "播放",
+      "播放",
+      "Воспроизвести",
+      "Riproduci"
+    ],
+    "데모에서 보기": [
+      "Open in the demo",
+      "デモで見る",
+      "在演示中查看",
+      "在示範中查看",
+      "Открыть в демо",
+      "Apri nella demo"
+    ],
+    "이 variant를 보여 줄 소재가 데모에 없습니다": [
+      "No demo material can show this variant",
+      "この variant を表示できる素材がデモにありません",
+      "演示中没有可展示该 variant 的素材",
+      "示範中沒有可展示該 variant 的素材",
+      "В демо нет материала, на котором можно показать этот вариант",
+      "Nella demo non c'è materiale per mostrare questa variante"
+    ],
+    "variant 가 소스 종류(복제할 이미지·샘플링할 영상·단색)에서 파생됩니다. 옵션 하나로 바꿀 수 없어 모듈 데모의 세 카드가 그대로 비교 화면입니다.": [
+      "The variant follows from the source — an image to clone, a video to sample, or a flat colour — not from one option you can switch. The module's three demo cards are the comparison.",
+      "variant はソースの種類（複製する画像・サンプリングする動画・単色）から決まります。1 つのオプションでは切り替えられないため、モジュールの 3 枚のデモカードがそのまま比較画面です。",
+      "variant 由来源类型（要复制的图片、要采样的视频、纯色）决定，无法用单个选项切换。模块的三张演示卡片就是比较界面。",
+      "variant 由來源類型（要複製的圖片、要取樣的影片、純色）決定，無法用單一選項切換。模組的三張示範卡片就是比較畫面。",
+      "Вариант определяется типом источника (изображение для копии, видео для сэмплирования или сплошной цвет), а не одним переключаемым параметром. Сравнением служат три демо-карточки модуля.",
+      "La variante dipende dal tipo di sorgente (un'immagine da clonare, un video da campionare o una tinta piatta), non da una singola opzione. Le tre card della demo sono il confronto."
+    ],
+    "variant 는 어떤 타임라인 옵션을 채웠는지의 결과입니다. 속성 값은 이름표일 뿐이라 값만 바꿔서는 다른 variant 가 되지 않습니다.": [
+      "The variant is the result of which timeline options you filled in. The attribute value is only a label, so changing it alone does not switch variants.",
+      "variant はどのタイムラインオプションを設定したかの結果です。属性の値はラベルにすぎず、値だけ変えても別の variant にはなりません。",
+      "variant 取决于你填写了哪些时间线选项。属性值只是标签，单改属性值不会切换 variant。",
+      "variant 取決於你填寫了哪些時間軸選項。屬性值只是標籤，單改屬性值不會切換 variant。",
+      "Вариант — это результат того, какие параметры таймлайна заданы. Значение атрибута лишь метка, и его изменение само по себе не меняет вариант.",
+      "La variante è il risultato di quali opzioni di timeline hai impostato. Il valore dell'attributo è solo un'etichetta: cambiarlo da solo non cambia variante."
+    ],
+    "페이지 전체의 스크롤을 가져가는 모듈이라 한 페이지에 여러 개를 둘 수 없습니다.": [
+      "It takes over the whole page's scrolling, so a page cannot hold more than one.",
+      "ページ全体のスクロールを引き受けるモジュールのため、1 ページに複数を置けません。",
+      "该模块会接管整页滚动，因此一个页面不能放置多个。",
+      "此模組會接管整頁捲動，因此一個頁面不能放置多個。",
+      "Модуль забирает прокрутку всей страницы, поэтому на одной странице он может быть только один.",
+      "Prende il controllo dello scorrimento dell'intera pagina, quindi non se ne può avere più di uno."
+    ],
+    "viewer 와 grouped 는 `data-kt-group` 을 함께 쓰는지의 차이입니다. 갤러리 전체가 하나의 소재라 카드 단위로 복제되지 않습니다.": [
+      "viewer and grouped differ only by whether data-kt-group is used alongside. The gallery as a whole is the material, so it does not clone card by card.",
+      "viewer と grouped の違いは data-kt-group を併用するかどうかだけです。ギャラリー全体が 1 つの素材なので、カード単位では複製できません。",
+      "viewer 与 grouped 的差别仅在于是否同时使用 data-kt-group。整个图库才是一份素材，无法按卡片复制。",
+      "viewer 與 grouped 的差別僅在於是否同時使用 data-kt-group。整個圖庫才是一份素材，無法按卡片複製。",
+      "viewer и grouped различаются лишь тем, используется ли рядом data-kt-group. Материалом служит вся галерея, поэтому её нельзя скопировать по карточкам.",
+      "viewer e grouped differiscono solo per l'uso o meno di data-kt-group. Il materiale è l'intera galleria, quindi non si clona card per card."
+    ],
+    "전체 화면 로더라 한 번에 하나만 띄울 수 있습니다. 데모의 로더 카드를 그대로 사용합니다.": [
+      "A full-screen loader, so only one can run at a time. The sheet uses the demo's own loader buttons.",
+      "全画面ローダーのため、一度に 1 つしか表示できません。デモのローダーボタンをそのまま使います。",
+      "这是全屏加载器，一次只能显示一个。此处直接使用演示自带的加载器按钮。",
+      "這是全螢幕載入器，一次只能顯示一個。此處直接使用示範自帶的載入器按鈕。",
+      "Это полноэкранный загрузчик, одновременно может работать только один. Лист использует кнопки загрузчика самой демонстрации.",
+      "È un loader a tutto schermo: ne può girare solo uno alla volta. Il pannello usa i pulsanti loader della demo."
+    ],
+    "화면 전체를 덮는 오버레이라 한 페이지에 여러 개를 띄울 수 없습니다. 데모의 재생 버튼을 그대로 사용합니다.": [
+      "A full-screen overlay, so a page can only ever run one at a time. The sheet uses the demo's own play buttons.",
+      "画面全体を覆うオーバーレイのため、1 ページに複数を同時に出せません。デモの再生ボタンをそのまま使います。",
+      "这是覆盖整屏的遮罩，一个页面同时只能运行一个。此处直接使用演示自带的播放按钮。",
+      "這是覆蓋整個畫面的遮罩，一個頁面一次只能執行一個。此處直接使用示範自帶的播放按鈕。",
+      "Это полноэкранное наложение, поэтому на странице одновременно работает только одно. Лист использует кнопки воспроизведения самой демонстрации.",
+      "È un overlay a tutto schermo, quindi una pagina può eseguirne solo uno alla volta. Il pannello usa i pulsanti di riproduzione della demo."
+    ],
+    "variant 가 대상(page·element)과 표현(scaleX·width) 두 옵션의 조합이고, page 계열은 문서 전체에 하나만 존재할 수 있습니다.": [
+      "The variant is a pair of options — the target (page or element) and the rendering (scaleX or width) — and the page ones can only exist once per document.",
+      "variant は対象（page・element）と表現（scaleX・width）という 2 つのオプションの組み合わせで、page 系は文書全体に 1 つしか置けません。",
+      "variant 是目标（page 或 element）与呈现方式（scaleX 或 width）两个选项的组合，而 page 系列在整个文档中只能有一个。",
+      "variant 是目標（page 或 element）與呈現方式（scaleX 或 width）兩個選項的組合，而 page 系列在整份文件中只能有一個。",
+      "Вариант — это сочетание двух параметров: цели (page или element) и отображения (scaleX или width); варианты page могут существовать в документе лишь в одном экземпляре.",
+      "La variante è la combinazione di due opzioni — il bersaglio (page o element) e la resa (scaleX o width) — e quelle page possono esistere una sola volta per documento."
+    ],
+    "variant 가 maxX·maxY·glare·reverse 옵션의 조합에서 파생됩니다. 옵션 하나로 순회할 수 없습니다.": [
+      "The variant follows from a combination of the maxX, maxY, glare and reverse options, so a single option cannot cycle through them.",
+      "variant は maxX・maxY・glare・reverse オプションの組み合わせから決まるため、1 つのオプションでは順に切り替えられません。",
+      "variant 由 maxX、maxY、glare、reverse 选项的组合决定，无法用单个选项依次切换。",
+      "variant 由 maxX、maxY、glare、reverse 選項的組合決定，無法用單一選項依序切換。",
+      "Вариант складывается из сочетания параметров maxX, maxY, glare и reverse, поэтому одним параметром их не перебрать.",
+      "La variante nasce dalla combinazione delle opzioni maxX, maxY, glare e reverse, quindi una sola opzione non basta a scorrerle."
+    ],
+    "variant 는 축(vertical·horizontal)과 모드(mask)가 섞인 조합이라 옵션 하나로 순회할 수 없습니다.": [
+      "The variant mixes an axis (vertical or horizontal) with a mode (mask), so a single option cannot cycle through them.",
+      "variant は軸（vertical・horizontal）とモード（mask）が混ざった組み合わせのため、1 つのオプションでは順に切り替えられません。",
+      "variant 混合了轴向（vertical、horizontal）与模式（mask），无法用单个选项依次切换。",
+      "variant 混合了軸向（vertical、horizontal）與模式（mask），無法用單一選項依序切換。",
+      "Вариант смешивает ось (vertical или horizontal) и режим (mask), поэтому одним параметром их не перебрать.",
+      "La variante mescola un asse (vertical o horizontal) e una modalità (mask), quindi una sola opzione non basta a scorrerle."
+    ],
+    "뷰포트에 고정되는 헤더라 한 페이지에 여러 개를 나란히 둘 수 없습니다.": [
+      "It is a header pinned to the viewport, so a page cannot line several up side by side.",
+      "ビューポートに固定されるヘッダーのため、1 ページに複数を並べられません。",
+      "这是固定在视口上的页眉，无法在同一页面并排放置多个。",
+      "這是固定在視窗上的頁首，無法在同一頁面並排放置多個。",
+      "Это шапка, закреплённая во вьюпорте, поэтому несколько таких нельзя расположить рядом.",
+      "È un header fissato al viewport, quindi non se ne possono affiancare più d'uno."
+    ],
+    "전체 다시 재생": [
+      "Replay all",
+      "すべて再生",
+      "全部重播",
+      "全部重播",
+      "Повторить все",
+      "Riproduci tutto"
     ]
   }
 };

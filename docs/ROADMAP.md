@@ -106,7 +106,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 - 작은 기본 엔진, 선택적 외부 엔진: transform·opacity 중심의 기본 동작은 브라우저 API로 처리하고 복잡한 timeline은 GSAP 등에 위임합니다.
 - 기능 추가보다 계약·테스트·데모·문서·삭제 가능한 lifecycle을 먼저 완성합니다.
 - **정본 문서가 AI 작업의 디자인 시스템입니다.** 계약(`kineto.features.json`·`kineto.requirements.json`)과 `AGENTS.md`·`docs/AI-HANDOFF.md`가 사람과 AI 모두의 유일한 기준이며, 파생 산출물(variantOptions·PUBLIC_DEFAULTS·module-reference)은 손으로 고치지 않고 스크립트로 다시 만듭니다. 정본이 없으면 AI는 매번 비슷하지만 조금씩 다른 구현을 만들어 내므로, 새 규칙은 코드 주석이 아니라 정본 문서에 먼저 적습니다.
-- **데모는 AI·사람이 결과를 검수하고 반복 요청하는 미리보기 화면입니다.** 한 모듈의 모든 공개 variant가 같은 소재로 한눈에 비교되고, 설정창은 열리는 순간부터 현재 variant가 실제로 읽는 옵션만 보여야 합니다. 재현 가능한 seed·Replay·공유 링크는 AI가 만든 결과를 100번 피드백하는 작업을 가능하게 하는 도구이므로 새 효과에도 항상 함께 제공합니다.
+- **데모는 AI·사람이 결과를 검수하고 반복 요청하는 미리보기 화면입니다.** 한 모듈의 모든 공개 variant가 같은 소재로 한눈에 비교되고(모듈 블록의 **모든 variant 비교** 시트 — `docs/variant-compare.md`, `npm run test:variant-compare`가 누락을 막습니다), 설정창은 열리는 순간부터 현재 variant가 실제로 읽는 옵션만 보여야 합니다. 재현 가능한 seed·Replay·공유 링크는 AI가 만든 결과를 100번 피드백하는 작업을 가능하게 하는 도구이므로 새 효과에도 항상 함께 제공합니다.
 
 ### 하지 않을 일
 

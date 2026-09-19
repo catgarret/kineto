@@ -1,0 +1,2650 @@
+/* Generated from kineto.features.json by scripts/generate-variant-catalog.mjs. Do not edit directly. */
+/* global window */
+window.KINETO_VARIANT_CATALOG = Object.freeze({
+  "schemaVersion": "1.0.0",
+  "libraryVersion": "0.11.0",
+  "moduleCount": 34,
+  "variantCount": 211,
+  "capabilities": {
+    "any": "No requirement — works on any element.",
+    "image": "Needs an <img> (the element itself or a descendant).",
+    "text": "Needs rendered text and no image to operate on.",
+    "video": "Needs a <video> element.",
+    "media": "Needs an <img> or <video> (the element itself or a descendant).",
+    "items": "Needs two or more element children to sequence.",
+    "track": "Needs a .kt-slider-track descendant for track-based slider effects."
+  },
+  "modules": {
+    "ambientMedia": {
+      "attribute": "data-kt-ambient-media",
+      "category": "effects",
+      "preview": "link",
+      "reason": "variant 가 소스 종류(복제할 이미지·샘플링할 영상·단색)에서 파생됩니다. 옵션 하나로 바꿀 수 없어 모듈 데모의 세 카드가 그대로 비교 화면입니다.",
+      "carrier": "",
+      "carrierAttribute": "",
+      "clearAttributes": [],
+      "defaultVariant": "image-clone",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-allow-overflow",
+        "data-kt-ambient-src",
+        "data-kt-ambient-srcset",
+        "data-kt-blur",
+        "data-kt-brightness",
+        "data-kt-color",
+        "data-kt-fallback-color",
+        "data-kt-hide-on-pause",
+        "data-kt-inset",
+        "data-kt-opacity",
+        "data-kt-radius",
+        "data-kt-sample-fps",
+        "data-kt-sample-height",
+        "data-kt-sample-width",
+        "data-kt-saturation",
+        "data-kt-scale",
+        "data-kt-source",
+        "data-kt-src"
+      ],
+      "variants": [
+        {
+          "name": "image-clone",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "video-sample",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "color",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "cardGlow": {
+      "attribute": "data-kt-card-glow",
+      "category": "pointer",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-mode"
+      ],
+      "defaultVariant": "spotlight",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-always-on",
+        "data-kt-blend-mode",
+        "data-kt-blur",
+        "data-kt-border-blur",
+        "data-kt-border-color",
+        "data-kt-border-color2",
+        "data-kt-border-glow",
+        "data-kt-border-inset",
+        "data-kt-border-opacity",
+        "data-kt-border-radius",
+        "data-kt-border-width",
+        "data-kt-color",
+        "data-kt-color1",
+        "data-kt-color2",
+        "data-kt-cycle-duration",
+        "data-kt-disable-on-mobile",
+        "data-kt-duration",
+        "data-kt-ease",
+        "data-kt-follow",
+        "data-kt-halo",
+        "data-kt-intensity",
+        "data-kt-luminous-border",
+        "data-kt-mode",
+        "data-kt-opacity",
+        "data-kt-preset",
+        "data-kt-radius",
+        "data-kt-reflection",
+        "data-kt-sensitivity",
+        "data-kt-shadow",
+        "data-kt-shadow-blur",
+        "data-kt-shadow-color",
+        "data-kt-shadow-css",
+        "data-kt-shadow-follow",
+        "data-kt-shadow-hover-only",
+        "data-kt-shadow-inset",
+        "data-kt-shadow-opacity",
+        "data-kt-shadow-spread",
+        "data-kt-shadow-x",
+        "data-kt-shadow-y",
+        "data-kt-smoothing",
+        "data-kt-speed",
+        "data-kt-spread",
+        "data-kt-surface",
+        "data-kt-surface-blend",
+        "data-kt-surface-blur",
+        "data-kt-surface-color",
+        "data-kt-surface-color2",
+        "data-kt-surface-gradient",
+        "data-kt-surface-inset",
+        "data-kt-surface-opacity",
+        "data-kt-surface-size"
+      ],
+      "variants": [
+        {
+          "name": "spotlight",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "edge",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "border",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "comet",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "aurora",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "shine",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "counter": {
+      "attribute": "data-kt-counter",
+      "category": "text",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-mode",
+        "data-kt-style"
+      ],
+      "defaultVariant": "slot",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-blink",
+        "data-kt-blink-separators",
+        "data-kt-clock-separator",
+        "data-kt-clock-style",
+        "data-kt-comma",
+        "data-kt-days-label",
+        "data-kt-decimals",
+        "data-kt-delay",
+        "data-kt-duration",
+        "data-kt-ease",
+        "data-kt-format",
+        "data-kt-from",
+        "data-kt-gap",
+        "data-kt-grouping",
+        "data-kt-hour12",
+        "data-kt-line-height",
+        "data-kt-locale",
+        "data-kt-loops",
+        "data-kt-mode",
+        "data-kt-on-complete",
+        "data-kt-once",
+        "data-kt-pop-align",
+        "data-kt-pop-duration",
+        "data-kt-pop-scale",
+        "data-kt-prefix",
+        "data-kt-preset",
+        "data-kt-roll-direction",
+        "data-kt-roll-duration",
+        "data-kt-seam-color",
+        "data-kt-seconds",
+        "data-kt-seconds-digits",
+        "data-kt-seconds-label",
+        "data-kt-seconds-only",
+        "data-kt-separator",
+        "data-kt-separator-color",
+        "data-kt-shadow",
+        "data-kt-show-days",
+        "data-kt-since",
+        "data-kt-stagger",
+        "data-kt-start",
+        "data-kt-style",
+        "data-kt-suffix",
+        "data-kt-tile-color",
+        "data-kt-tile-radius",
+        "data-kt-tile-text-color",
+        "data-kt-to",
+        "data-kt-until"
+      ],
+      "variants": [
+        {
+          "name": "slot",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "plain",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "digit",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "pop",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "flip",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "clock",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "dateTime": {
+      "attribute": "data-kt-date-time",
+      "category": "text",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-mode"
+      ],
+      "defaultVariant": "relative",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-date",
+        "data-kt-date-style",
+        "data-kt-datetime",
+        "data-kt-fallback",
+        "data-kt-live",
+        "data-kt-locale",
+        "data-kt-mode",
+        "data-kt-now",
+        "data-kt-numeric",
+        "data-kt-preset",
+        "data-kt-relative-cutoff",
+        "data-kt-relative-cutoff-unit",
+        "data-kt-relative-rounding",
+        "data-kt-relative-style",
+        "data-kt-relative-unit",
+        "data-kt-source",
+        "data-kt-time-style",
+        "data-kt-time-zone",
+        "data-kt-update-interval",
+        "data-kt-value"
+      ],
+      "variants": [
+        {
+          "name": "relative",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "absolute",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "both",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "cssScroll": {
+      "attribute": "data-kt-css-scroll",
+      "category": "scroll",
+      "preview": "link",
+      "reason": "variant 는 어떤 타임라인 옵션을 채웠는지의 결과입니다. 속성 값은 이름표일 뿐이라 값만 바꿔서는 다른 variant 가 되지 않습니다.",
+      "carrier": "",
+      "carrierAttribute": "",
+      "clearAttributes": [],
+      "defaultVariant": "progress-property",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-axis",
+        "data-kt-css-animation",
+        "data-kt-end",
+        "data-kt-on-update",
+        "data-kt-property",
+        "data-kt-range-end",
+        "data-kt-range-start",
+        "data-kt-start",
+        "data-kt-timeline"
+      ],
+      "variants": [
+        {
+          "name": "progress-property",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "css-animation-timeline",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "scroll-timeline",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "cursor": {
+      "attribute": "data-kt-cursor",
+      "category": "pointer",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-type"
+      ],
+      "defaultVariant": "dot",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-backdrop-filter",
+        "data-kt-background",
+        "data-kt-blur",
+        "data-kt-border-color",
+        "data-kt-border-width",
+        "data-kt-class-name",
+        "data-kt-click-image",
+        "data-kt-click-image-duration",
+        "data-kt-click-image-size",
+        "data-kt-click-sprite",
+        "data-kt-click-sprite-duration",
+        "data-kt-click-sprite-frames",
+        "data-kt-click-sprite-height",
+        "data-kt-click-sprite-width",
+        "data-kt-color",
+        "data-kt-crosshair-size",
+        "data-kt-dot",
+        "data-kt-dot-color",
+        "data-kt-dot-shadow",
+        "data-kt-dot-size",
+        "data-kt-ease",
+        "data-kt-follower",
+        "data-kt-follower-size",
+        "data-kt-full",
+        "data-kt-global",
+        "data-kt-height",
+        "data-kt-hidden-selector",
+        "data-kt-hide-dot-on-hover",
+        "data-kt-hover-background",
+        "data-kt-hover-class",
+        "data-kt-hover-color",
+        "data-kt-hover-dot-opacity",
+        "data-kt-hover-dot-size",
+        "data-kt-hover-effect",
+        "data-kt-hover-label",
+        "data-kt-hover-scale",
+        "data-kt-hover-selector",
+        "data-kt-hover-shadow",
+        "data-kt-hover-src",
+        "data-kt-hover-template",
+        "data-kt-html",
+        "data-kt-label",
+        "data-kt-label-color",
+        "data-kt-label-size",
+        "data-kt-mix-blend-mode",
+        "data-kt-on-enter",
+        "data-kt-on-leave",
+        "data-kt-opacity",
+        "data-kt-orbit-hover-scale",
+        "data-kt-orbit-radius",
+        "data-kt-orbit-speed",
+        "data-kt-orbit-squash",
+        "data-kt-orbit-text",
+        "data-kt-preset",
+        "data-kt-press-scale",
+        "data-kt-radius",
+        "data-kt-rotate",
+        "data-kt-rotate-duration",
+        "data-kt-rotate-text",
+        "data-kt-shadow",
+        "data-kt-shape",
+        "data-kt-smoothing",
+        "data-kt-snake-gap",
+        "data-kt-snake-min-scale",
+        "data-kt-snake-scale-ease",
+        "data-kt-snake-text",
+        "data-kt-sparkle-color",
+        "data-kt-sparkle-color2",
+        "data-kt-sparkle-duration",
+        "data-kt-sparkle-size",
+        "data-kt-sparkle-symbols",
+        "data-kt-sparkle-throttle",
+        "data-kt-speed",
+        "data-kt-spring",
+        "data-kt-src",
+        "data-kt-template",
+        "data-kt-text",
+        "data-kt-text-color",
+        "data-kt-trail-color",
+        "data-kt-trail-count",
+        "data-kt-trail-size",
+        "data-kt-type",
+        "data-kt-width",
+        "data-kt-z-index"
+      ],
+      "variants": [
+        {
+          "name": "dot",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "ring",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "blob",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "crosshair",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "text",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "trail",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "orbit",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "snake",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "sparkle",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "image",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "custom",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "fullpage": {
+      "attribute": "data-kt-fullpage",
+      "category": "scroll",
+      "preview": "link",
+      "reason": "페이지 전체의 스크롤을 가져가는 모듈이라 한 페이지에 여러 개를 둘 수 없습니다.",
+      "carrier": "",
+      "carrierAttribute": "",
+      "clearAttributes": [],
+      "defaultVariant": "transform",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-auto-advance",
+        "data-kt-axis",
+        "data-kt-dots",
+        "data-kt-drag",
+        "data-kt-duration",
+        "data-kt-ease",
+        "data-kt-height",
+        "data-kt-initial",
+        "data-kt-keyboard",
+        "data-kt-loop",
+        "data-kt-mode",
+        "data-kt-on-change",
+        "data-kt-on-leave",
+        "data-kt-section-selector",
+        "data-kt-threshold",
+        "data-kt-touch",
+        "data-kt-wheel"
+      ],
+      "variants": [
+        {
+          "name": "transform",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "snap",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "glitch": {
+      "attribute": "data-kt-glitch",
+      "category": "effects",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-type"
+      ],
+      "defaultVariant": "rgb",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-artifact-count",
+        "data-kt-artifact-max-size",
+        "data-kt-artifact-min-size",
+        "data-kt-blend-mode",
+        "data-kt-burst-duration-max",
+        "data-kt-burst-duration-min",
+        "data-kt-channel-offset",
+        "data-kt-colors",
+        "data-kt-delay",
+        "data-kt-duration",
+        "data-kt-frequency",
+        "data-kt-intensity",
+        "data-kt-interval-max",
+        "data-kt-interval-min",
+        "data-kt-loop",
+        "data-kt-max-slice-offset",
+        "data-kt-preset",
+        "data-kt-randomness",
+        "data-kt-seed",
+        "data-kt-slice-count",
+        "data-kt-slice-count-max",
+        "data-kt-slice-count-min",
+        "data-kt-speed",
+        "data-kt-trigger",
+        "data-kt-type"
+      ],
+      "variants": [
+        {
+          "name": "rgb",
+          "requires": "text",
+          "deprecated": false
+        },
+        {
+          "name": "pixel",
+          "requires": "text",
+          "deprecated": false
+        },
+        {
+          "name": "noise",
+          "requires": "text",
+          "deprecated": false
+        },
+        {
+          "name": "crt",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "wave",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "image",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "datamosh",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "reveal",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "vcr",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "rgb-slice-burst",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "lazy": {
+      "attribute": "data-kt-lazy",
+      "category": "media",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-effect",
+        "data-kt-variant"
+      ],
+      "defaultVariant": "fade",
+      "deprecatedVariants": [
+        "dither",
+        "ascii",
+        "halftone"
+      ],
+      "optionAttributes": [
+        "data-kt-accent-color",
+        "data-kt-animated",
+        "data-kt-ascii-chars",
+        "data-kt-ascii-font",
+        "data-kt-aspect-ratio",
+        "data-kt-autoplay",
+        "data-kt-blur",
+        "data-kt-cell-size",
+        "data-kt-color-steps",
+        "data-kt-colors",
+        "data-kt-cross-origin",
+        "data-kt-delay",
+        "data-kt-direction",
+        "data-kt-display",
+        "data-kt-dither-type",
+        "data-kt-duration",
+        "data-kt-ease",
+        "data-kt-edge-opacity",
+        "data-kt-edge-width",
+        "data-kt-effect",
+        "data-kt-fade-duration",
+        "data-kt-fallback-src",
+        "data-kt-feather",
+        "data-kt-flicker-background",
+        "data-kt-frame",
+        "data-kt-frame-color",
+        "data-kt-glitch-strength",
+        "data-kt-grain",
+        "data-kt-halftone-shape",
+        "data-kt-height",
+        "data-kt-hold-duration",
+        "data-kt-ink-color",
+        "data-kt-inverted",
+        "data-kt-keep-frame",
+        "data-kt-loop",
+        "data-kt-max-dpr",
+        "data-kt-min-duration",
+        "data-kt-muted",
+        "data-kt-native-lazy",
+        "data-kt-noise",
+        "data-kt-noise-blend",
+        "data-kt-noise-contrast",
+        "data-kt-noise-fps",
+        "data-kt-noise-height",
+        "data-kt-noise-width",
+        "data-kt-object-fit",
+        "data-kt-object-position",
+        "data-kt-on-error",
+        "data-kt-on-load",
+        "data-kt-on-progress",
+        "data-kt-on-reveal",
+        "data-kt-once",
+        "data-kt-original-colors",
+        "data-kt-paper-color",
+        "data-kt-persist",
+        "data-kt-pixel-end",
+        "data-kt-pixel-start",
+        "data-kt-pixel-step-count",
+        "data-kt-playsinline",
+        "data-kt-preload",
+        "data-kt-preset",
+        "data-kt-render-fps",
+        "data-kt-root-margin",
+        "data-kt-rotate",
+        "data-kt-seed",
+        "data-kt-sizes",
+        "data-kt-skeleton-angle",
+        "data-kt-skeleton-color",
+        "data-kt-skeleton-highlight",
+        "data-kt-skeleton-icon",
+        "data-kt-skeleton-speed",
+        "data-kt-skeleton-variant",
+        "data-kt-slice-count",
+        "data-kt-src",
+        "data-kt-srcset",
+        "data-kt-start-scale",
+        "data-kt-step-count",
+        "data-kt-step-duration",
+        "data-kt-steps",
+        "data-kt-threshold",
+        "data-kt-tile-max",
+        "data-kt-tile-min",
+        "data-kt-variant",
+        "data-kt-wave-amplitude",
+        "data-kt-wave-frequency",
+        "data-kt-wave-slice-height",
+        "data-kt-wave-speed"
+      ],
+      "variants": [
+        {
+          "name": "fade",
+          "requires": "media",
+          "deprecated": false
+        },
+        {
+          "name": "blur-up",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "wave",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "grain",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "skeleton",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "pixelate",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "print",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "dissolve",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "flicker",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "polaroid",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "crt",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "data-mosaic",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "rgb-slice-burst",
+          "requires": "image",
+          "deprecated": false
+        },
+        {
+          "name": "dither",
+          "requires": "media",
+          "deprecated": true
+        },
+        {
+          "name": "ascii",
+          "requires": "media",
+          "deprecated": true
+        },
+        {
+          "name": "halftone",
+          "requires": "media",
+          "deprecated": true
+        }
+      ]
+    },
+    "stylize": {
+      "attribute": "data-kt-stylize",
+      "category": "effects",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-mode",
+        "data-kt-effect"
+      ],
+      "defaultVariant": "dither",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-accent-color",
+        "data-kt-animated",
+        "data-kt-ascii-chars",
+        "data-kt-ascii-font",
+        "data-kt-aspect-ratio",
+        "data-kt-brightness",
+        "data-kt-cell-size",
+        "data-kt-color-steps",
+        "data-kt-contrast",
+        "data-kt-delay",
+        "data-kt-display",
+        "data-kt-dither-type",
+        "data-kt-duration",
+        "data-kt-ease",
+        "data-kt-effect",
+        "data-kt-halftone-shape",
+        "data-kt-height",
+        "data-kt-hold-duration",
+        "data-kt-ink-color",
+        "data-kt-inverted",
+        "data-kt-max-dpr",
+        "data-kt-mode",
+        "data-kt-motion",
+        "data-kt-motion-amount",
+        "data-kt-motion-speed",
+        "data-kt-object-fit",
+        "data-kt-object-position",
+        "data-kt-on-complete",
+        "data-kt-on-progress",
+        "data-kt-original-colors",
+        "data-kt-paper-color",
+        "data-kt-pointer",
+        "data-kt-pointer-cell-size",
+        "data-kt-pointer-radius",
+        "data-kt-pointer-strength",
+        "data-kt-preset",
+        "data-kt-render-fps",
+        "data-kt-root-margin",
+        "data-kt-seed",
+        "data-kt-threshold",
+        "data-kt-transition",
+        "data-kt-trigger"
+      ],
+      "variants": [
+        {
+          "name": "dither",
+          "requires": "media",
+          "deprecated": false
+        },
+        {
+          "name": "ascii",
+          "requires": "media",
+          "deprecated": false
+        },
+        {
+          "name": "halftone",
+          "requires": "media",
+          "deprecated": false
+        }
+      ]
+    },
+    "lightbox": {
+      "attribute": "data-kt-lightbox",
+      "category": "media",
+      "preview": "link",
+      "reason": "viewer 와 grouped 는 `data-kt-group` 을 함께 쓰는지의 차이입니다. 갤러리 전체가 하나의 소재라 카드 단위로 복제되지 않습니다.",
+      "carrier": "",
+      "carrierAttribute": "",
+      "clearAttributes": [],
+      "defaultVariant": "viewer",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-alt",
+        "data-kt-backdrop-blur",
+        "data-kt-backdrop-color",
+        "data-kt-backdrop-opacity",
+        "data-kt-caption",
+        "data-kt-class-name",
+        "data-kt-close-on-backdrop",
+        "data-kt-cursor",
+        "data-kt-description",
+        "data-kt-double-click-zoom",
+        "data-kt-download",
+        "data-kt-duration",
+        "data-kt-exif",
+        "data-kt-group",
+        "data-kt-info",
+        "data-kt-lazy-effect",
+        "data-kt-lazy-options",
+        "data-kt-lightbox-duration",
+        "data-kt-max-zoom",
+        "data-kt-metadata",
+        "data-kt-min-zoom",
+        "data-kt-minimap",
+        "data-kt-on-change",
+        "data-kt-on-close",
+        "data-kt-on-load",
+        "data-kt-on-open",
+        "data-kt-radius",
+        "data-kt-render-u-i",
+        "data-kt-share",
+        "data-kt-src",
+        "data-kt-thumbnails",
+        "data-kt-title",
+        "data-kt-toolbar",
+        "data-kt-transition",
+        "data-kt-ui-template",
+        "data-kt-wheel-step",
+        "data-kt-zoom",
+        "data-kt-zoom-step"
+      ],
+      "variants": [
+        {
+          "name": "viewer",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "grouped",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "loader": {
+      "attribute": "data-kt-loader",
+      "category": "system",
+      "preview": "control",
+      "reason": "전체 화면 로더라 한 번에 하나만 띄울 수 있습니다. 데모의 로더 카드를 그대로 사용합니다.",
+      "carrier": "",
+      "carrierAttribute": "",
+      "clearAttributes": [],
+      "defaultVariant": "bar",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-announce",
+        "data-kt-aria-label",
+        "data-kt-bar-height",
+        "data-kt-bar-width",
+        "data-kt-class-name",
+        "data-kt-color",
+        "data-kt-complete-hold",
+        "data-kt-complete-on-error",
+        "data-kt-duration",
+        "data-kt-exit",
+        "data-kt-exit-direction",
+        "data-kt-exit-duration",
+        "data-kt-expected-resources",
+        "data-kt-fetch",
+        "data-kt-fetch-options",
+        "data-kt-fill",
+        "data-kt-fill-color",
+        "data-kt-hide-scrollbar",
+        "data-kt-label",
+        "data-kt-label-blend",
+        "data-kt-label-color",
+        "data-kt-linecap",
+        "data-kt-manual-duration",
+        "data-kt-min-duration",
+        "data-kt-on-cancel",
+        "data-kt-on-complete",
+        "data-kt-on-error",
+        "data-kt-on-hide",
+        "data-kt-on-progress",
+        "data-kt-on-show",
+        "data-kt-on-start",
+        "data-kt-on-state-change",
+        "data-kt-percent",
+        "data-kt-preset",
+        "data-kt-progress",
+        "data-kt-progress-output",
+        "data-kt-progress-scope",
+        "data-kt-progress-source",
+        "data-kt-progress-template",
+        "data-kt-promise",
+        "data-kt-promise-ceiling",
+        "data-kt-promise-start",
+        "data-kt-radius",
+        "data-kt-render-u-i",
+        "data-kt-resource-selector",
+        "data-kt-resources",
+        "data-kt-reveal-effect",
+        "data-kt-show-percent",
+        "data-kt-size",
+        "data-kt-smoothing",
+        "data-kt-source",
+        "data-kt-stroke",
+        "data-kt-track-color",
+        "data-kt-transition",
+        "data-kt-type",
+        "data-kt-url"
+      ],
+      "variants": [
+        {
+          "name": "slot",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "circular",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "bar",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "loadingIndicator": {
+      "attribute": "data-kt-loading-indicator",
+      "category": "system",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-type"
+      ],
+      "defaultVariant": "spinner",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-aria-label",
+        "data-kt-ascii-only",
+        "data-kt-auto-complete",
+        "data-kt-bar-height",
+        "data-kt-bar-mode",
+        "data-kt-bar-width",
+        "data-kt-base-color",
+        "data-kt-class-name",
+        "data-kt-color",
+        "data-kt-complete-hold",
+        "data-kt-complete-on-error",
+        "data-kt-cursor-char",
+        "data-kt-direction",
+        "data-kt-dot-count",
+        "data-kt-dot-gap",
+        "data-kt-dot-size",
+        "data-kt-dot-style",
+        "data-kt-empty-char",
+        "data-kt-exit-duration",
+        "data-kt-fill-char",
+        "data-kt-fixed-width",
+        "data-kt-font-family",
+        "data-kt-font-weight",
+        "data-kt-frame-interval",
+        "data-kt-frames",
+        "data-kt-glow",
+        "data-kt-glow-color",
+        "data-kt-glow-size",
+        "data-kt-hide-on-complete",
+        "data-kt-highlight-color",
+        "data-kt-indeterminate",
+        "data-kt-label",
+        "data-kt-letter-spacing",
+        "data-kt-line-height",
+        "data-kt-motion-duration",
+        "data-kt-on-complete",
+        "data-kt-on-error",
+        "data-kt-on-hide",
+        "data-kt-on-progress",
+        "data-kt-on-show",
+        "data-kt-on-start",
+        "data-kt-on-state-change",
+        "data-kt-preset",
+        "data-kt-progress",
+        "data-kt-progress-output",
+        "data-kt-progress-scope",
+        "data-kt-progress-source",
+        "data-kt-progress-template",
+        "data-kt-render-u-i",
+        "data-kt-rotate-spokes",
+        "data-kt-secondary-color",
+        "data-kt-show-label",
+        "data-kt-show-spinner",
+        "data-kt-show-status",
+        "data-kt-size",
+        "data-kt-spinner-mode",
+        "data-kt-spinner-style",
+        "data-kt-spread",
+        "data-kt-step-total",
+        "data-kt-stroke",
+        "data-kt-terminal-style",
+        "data-kt-text",
+        "data-kt-text-size",
+        "data-kt-track",
+        "data-kt-track-color",
+        "data-kt-transform-origin",
+        "data-kt-type",
+        "data-kt-viewport-width"
+      ],
+      "variants": [
+        {
+          "name": "spinner",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "dots",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "bar",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "shimmer",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "shimmer-wave",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "terminal",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "marquee": {
+      "attribute": "data-kt-marquee",
+      "category": "text",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "direction",
+      "carrierAttribute": "data-kt-direction",
+      "clearAttributes": [
+        "data-kt-direction"
+      ],
+      "defaultVariant": "left",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-clones",
+        "data-kt-direction",
+        "data-kt-fade",
+        "data-kt-pause-on-hover",
+        "data-kt-reverse-on-scroll-up",
+        "data-kt-scroll-acceleration",
+        "data-kt-skew",
+        "data-kt-speed"
+      ],
+      "variants": [
+        {
+          "name": "left",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "right",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "reverse-on-scroll",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "mouseParallax": {
+      "attribute": "data-kt-mouse-parallax",
+      "category": "pointer",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-mode"
+      ],
+      "defaultVariant": "pointer",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-compass-range",
+        "data-kt-ease",
+        "data-kt-global",
+        "data-kt-gyro",
+        "data-kt-max-x",
+        "data-kt-max-y",
+        "data-kt-mode",
+        "data-kt-preset",
+        "data-kt-rotate-offset",
+        "data-kt-sensitivity",
+        "data-kt-smoothing",
+        "data-kt-speed"
+      ],
+      "variants": [
+        {
+          "name": "pointer",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "gyro",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "compass",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "overflowText": {
+      "attribute": "data-kt-overflow-text",
+      "category": "text",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-mode"
+      ],
+      "defaultVariant": "loop",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-aria-live",
+        "data-kt-crossfade",
+        "data-kt-delay",
+        "data-kt-direction",
+        "data-kt-dissolve-duration",
+        "data-kt-easing",
+        "data-kt-ellipsis",
+        "data-kt-end-pause",
+        "data-kt-flip-direction",
+        "data-kt-flip-duration",
+        "data-kt-force",
+        "data-kt-gap",
+        "data-kt-hold-duration",
+        "data-kt-hover-target",
+        "data-kt-items",
+        "data-kt-jitter",
+        "data-kt-loop-on-hover",
+        "data-kt-mask-direction",
+        "data-kt-mask-duration",
+        "data-kt-mask-ease",
+        "data-kt-mode",
+        "data-kt-on-change",
+        "data-kt-on-page",
+        "data-kt-page-duration",
+        "data-kt-page-overlap",
+        "data-kt-pause-on-hover",
+        "data-kt-perspective",
+        "data-kt-preset",
+        "data-kt-repeat",
+        "data-kt-restart-delay",
+        "data-kt-restore-direction",
+        "data-kt-restore-on-leave",
+        "data-kt-role",
+        "data-kt-roll-direction",
+        "data-kt-roll-duration",
+        "data-kt-speed",
+        "data-kt-text",
+        "data-kt-threshold",
+        "data-kt-title",
+        "data-kt-transition-direction",
+        "data-kt-trigger"
+      ],
+      "variants": [
+        {
+          "name": "loop",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "bounce",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "rewind",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "once",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "page",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "flip",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "dissolve",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "page-roll",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "rolling",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "fade",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "scroll-fade",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "pageReveal": {
+      "attribute": "data-kt-page-reveal",
+      "category": "system",
+      "preview": "control",
+      "reason": "화면 전체를 덮는 오버레이라 한 페이지에 여러 개를 띄울 수 없습니다. 데모의 재생 버튼을 그대로 사용합니다.",
+      "carrier": "",
+      "carrierAttribute": "",
+      "clearAttributes": [],
+      "defaultVariant": "curtain",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-angle",
+        "data-kt-axis",
+        "data-kt-cleanup-duration",
+        "data-kt-color",
+        "data-kt-color2",
+        "data-kt-count",
+        "data-kt-delay",
+        "data-kt-density",
+        "data-kt-direction",
+        "data-kt-duration",
+        "data-kt-ease",
+        "data-kt-effect",
+        "data-kt-horizontal-duration",
+        "data-kt-large-tile-chance",
+        "data-kt-line-height",
+        "data-kt-line-width",
+        "data-kt-noise-duration",
+        "data-kt-on-complete",
+        "data-kt-overscan",
+        "data-kt-preset",
+        "data-kt-reverse",
+        "data-kt-seed",
+        "data-kt-small-tile-chance",
+        "data-kt-stagger",
+        "data-kt-tile-max",
+        "data-kt-tile-min",
+        "data-kt-vertical-duration"
+      ],
+      "variants": [
+        {
+          "name": "curtain",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "split",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "blinds",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "diagonal",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "shutter",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "fade",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "zoom",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "iris",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "flash",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "center-slit",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "data-mosaic",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "curve",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "dissolve",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "push",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "grid",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "fold",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "parallax": {
+      "attribute": "data-kt-parallax",
+      "category": "scroll",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "axis",
+      "carrierAttribute": "data-kt-axis",
+      "clearAttributes": [
+        "data-kt-axis"
+      ],
+      "defaultVariant": "y",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-axis",
+        "data-kt-distance",
+        "data-kt-end",
+        "data-kt-on-update",
+        "data-kt-scrub",
+        "data-kt-speed",
+        "data-kt-start"
+      ],
+      "variants": [
+        {
+          "name": "x",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "y",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "progress": {
+      "attribute": "data-kt-progress",
+      "category": "scroll",
+      "preview": "link",
+      "reason": "variant 가 대상(page·element)과 표현(scaleX·width) 두 옵션의 조합이고, page 계열은 문서 전체에 하나만 존재할 수 있습니다.",
+      "carrier": "",
+      "carrierAttribute": "",
+      "clearAttributes": [],
+      "defaultVariant": "page:scaleX",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-attach",
+        "data-kt-click-to-top",
+        "data-kt-color",
+        "data-kt-color2",
+        "data-kt-hide-at-end",
+        "data-kt-label",
+        "data-kt-offset",
+        "data-kt-on-update",
+        "data-kt-position",
+        "data-kt-property",
+        "data-kt-radius",
+        "data-kt-show-after",
+        "data-kt-show-percent",
+        "data-kt-size",
+        "data-kt-smoothing",
+        "data-kt-stroke",
+        "data-kt-target",
+        "data-kt-thickness",
+        "data-kt-track-color",
+        "data-kt-ui",
+        "data-kt-z-index"
+      ],
+      "variants": [
+        {
+          "name": "page:scaleX",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "page:width",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "element:scaleX",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "element:width",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "reveal": {
+      "attribute": "data-kt-reveal",
+      "category": "scroll",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset"
+      ],
+      "defaultVariant": "fade-up",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-active-class",
+        "data-kt-class-only",
+        "data-kt-clock-direction",
+        "data-kt-delay",
+        "data-kt-direction",
+        "data-kt-distance",
+        "data-kt-duration",
+        "data-kt-ease",
+        "data-kt-end",
+        "data-kt-enter-class",
+        "data-kt-enter-ease",
+        "data-kt-leave-class",
+        "data-kt-on-class-change",
+        "data-kt-on-complete",
+        "data-kt-on-enter",
+        "data-kt-on-enter-back",
+        "data-kt-on-leave",
+        "data-kt-on-leave-back",
+        "data-kt-once",
+        "data-kt-order",
+        "data-kt-preset",
+        "data-kt-remove-class-on-leave",
+        "data-kt-root-margin",
+        "data-kt-spring",
+        "data-kt-stagger",
+        "data-kt-start",
+        "data-kt-start-angle",
+        "data-kt-threshold"
+      ],
+      "variants": [
+        {
+          "name": "fade",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "fade-up",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "fade-down",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "fade-left",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "fade-right",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "slide-up",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "slide-down",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "slide-left",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "slide-right",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "zoom-in",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "zoom-out",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "blur",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "rise",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "soft",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "flip-x",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "flip-y",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "rotate",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "mask",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "wipe",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "class",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "clock",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "swing",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "skew",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "radial": {
+      "attribute": "data-kt-radial",
+      "category": "media",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-position"
+      ],
+      "defaultVariant": "bottom",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-active-angle",
+        "data-kt-active-class",
+        "data-kt-align",
+        "data-kt-autoplay",
+        "data-kt-controls",
+        "data-kt-damping",
+        "data-kt-drag",
+        "data-kt-duration",
+        "data-kt-loop",
+        "data-kt-mass",
+        "data-kt-position",
+        "data-kt-radius",
+        "data-kt-smoothing",
+        "data-kt-spring",
+        "data-kt-step",
+        "data-kt-stiffness"
+      ],
+      "variants": [
+        {
+          "name": "bottom",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "top",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "left",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "right",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "scrollSequence": {
+      "attribute": "data-kt-scroll-sequence",
+      "category": "scroll",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "fit",
+      "carrierAttribute": "data-kt-fit",
+      "clearAttributes": [
+        "data-kt-fit"
+      ],
+      "defaultVariant": "cover",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-cross-origin",
+        "data-kt-end",
+        "data-kt-extension",
+        "data-kt-fit",
+        "data-kt-frames",
+        "data-kt-height",
+        "data-kt-max-dpr",
+        "data-kt-on-error",
+        "data-kt-on-frame",
+        "data-kt-padding",
+        "data-kt-preload-radius",
+        "data-kt-scroll-length",
+        "data-kt-scrub",
+        "data-kt-start",
+        "data-kt-top",
+        "data-kt-url-prefix",
+        "data-kt-urls",
+        "data-kt-vh-per-frame"
+      ],
+      "variants": [
+        {
+          "name": "cover",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "contain",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "scrollVelocity": {
+      "attribute": "data-kt-scroll-velocity",
+      "category": "scroll",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-mode",
+        "data-kt-effect"
+      ],
+      "defaultVariant": "skew",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-axis",
+        "data-kt-damping",
+        "data-kt-decay",
+        "data-kt-distance",
+        "data-kt-effect",
+        "data-kt-elastic",
+        "data-kt-end",
+        "data-kt-global",
+        "data-kt-mass",
+        "data-kt-max-blur",
+        "data-kt-max-rotate",
+        "data-kt-max-scale",
+        "data-kt-max-skew",
+        "data-kt-mode",
+        "data-kt-on-direction",
+        "data-kt-on-update",
+        "data-kt-preset",
+        "data-kt-response",
+        "data-kt-reverse",
+        "data-kt-smoothing",
+        "data-kt-spring",
+        "data-kt-start",
+        "data-kt-stiffness",
+        "data-kt-velocity-divisor"
+      ],
+      "variants": [
+        {
+          "name": "skew",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "rotate",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "scale",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "blur",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "translate",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "slider": {
+      "attribute": "data-kt-slider",
+      "category": "media",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-effect"
+      ],
+      "defaultVariant": "slide",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-active-angle",
+        "data-kt-active-class",
+        "data-kt-active-shadow",
+        "data-kt-active-shadow-opacity",
+        "data-kt-align",
+        "data-kt-auto-height",
+        "data-kt-autoplay",
+        "data-kt-axis",
+        "data-kt-bounce",
+        "data-kt-breakpoints",
+        "data-kt-controls",
+        "data-kt-damping",
+        "data-kt-depth",
+        "data-kt-dots",
+        "data-kt-drag",
+        "data-kt-duration",
+        "data-kt-effect",
+        "data-kt-effect-direction",
+        "data-kt-effect-intensity",
+        "data-kt-enabled",
+        "data-kt-gap",
+        "data-kt-grab-cursor",
+        "data-kt-index",
+        "data-kt-initial",
+        "data-kt-initial-index",
+        "data-kt-keyboard",
+        "data-kt-label",
+        "data-kt-loop",
+        "data-kt-mass",
+        "data-kt-min-opacity",
+        "data-kt-min-scale",
+        "data-kt-momentum",
+        "data-kt-next-selector",
+        "data-kt-on-before-change",
+        "data-kt-on-change",
+        "data-kt-on-init",
+        "data-kt-opacity-step",
+        "data-kt-pause-button",
+        "data-kt-pause-on-hover",
+        "data-kt-pause-when-offscreen",
+        "data-kt-per-group",
+        "data-kt-per-view",
+        "data-kt-perspective",
+        "data-kt-position",
+        "data-kt-preset",
+        "data-kt-prev-selector",
+        "data-kt-progress",
+        "data-kt-progress-type",
+        "data-kt-radius",
+        "data-kt-rotate",
+        "data-kt-scale-step",
+        "data-kt-scroll-snap",
+        "data-kt-slide-to-clicked-slide",
+        "data-kt-smoothing",
+        "data-kt-spacing",
+        "data-kt-speed",
+        "data-kt-spring",
+        "data-kt-step",
+        "data-kt-sticky-snap",
+        "data-kt-stiffness",
+        "data-kt-sync",
+        "data-kt-touch",
+        "data-kt-velocity-influence",
+        "data-kt-wheel"
+      ],
+      "variants": [
+        {
+          "name": "slide",
+          "requires": "track",
+          "deprecated": false
+        },
+        {
+          "name": "fade",
+          "requires": "track",
+          "deprecated": false
+        },
+        {
+          "name": "dissolve",
+          "requires": "track",
+          "deprecated": false
+        },
+        {
+          "name": "wipe",
+          "requires": "track",
+          "deprecated": false
+        },
+        {
+          "name": "coverflow",
+          "requires": "track",
+          "deprecated": false
+        },
+        {
+          "name": "flip",
+          "requires": "track",
+          "deprecated": false
+        },
+        {
+          "name": "cube",
+          "requires": "track",
+          "deprecated": false
+        },
+        {
+          "name": "cards",
+          "requires": "track",
+          "deprecated": false
+        },
+        {
+          "name": "creative",
+          "requires": "track",
+          "deprecated": false
+        },
+        {
+          "name": "radial",
+          "requires": "items",
+          "deprecated": false
+        }
+      ]
+    },
+    "stickyStack": {
+      "attribute": "data-kt-sticky-stack",
+      "category": "scroll",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-mode",
+        "data-kt-type",
+        "data-kt-effect"
+      ],
+      "defaultVariant": "vertical",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-align",
+        "data-kt-blur",
+        "data-kt-bottom-space",
+        "data-kt-distance",
+        "data-kt-ease",
+        "data-kt-effect",
+        "data-kt-end",
+        "data-kt-fade-previous",
+        "data-kt-gap",
+        "data-kt-item-duration",
+        "data-kt-item-height",
+        "data-kt-min-height",
+        "data-kt-mode",
+        "data-kt-offset",
+        "data-kt-offset-top",
+        "data-kt-offset-y",
+        "data-kt-on-progress",
+        "data-kt-overlap",
+        "data-kt-panel-width",
+        "data-kt-perspective",
+        "data-kt-pin",
+        "data-kt-pin-spacing",
+        "data-kt-preset",
+        "data-kt-previous-blur",
+        "data-kt-previous-opacity",
+        "data-kt-previous-scale",
+        "data-kt-previous-y",
+        "data-kt-reverse-z",
+        "data-kt-rotate",
+        "data-kt-scale-from",
+        "data-kt-scale-previous",
+        "data-kt-scroll-length",
+        "data-kt-scrub",
+        "data-kt-snap",
+        "data-kt-start",
+        "data-kt-top",
+        "data-kt-transform-origin",
+        "data-kt-transition-start-offset",
+        "data-kt-type"
+      ],
+      "variants": [
+        {
+          "name": "vertical",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "horizontal",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "zindex",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "floating",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "textReveal": {
+      "attribute": "data-kt-text-reveal",
+      "category": "text",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-mode"
+      ],
+      "defaultVariant": "stream",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-chars",
+        "data-kt-delay",
+        "data-kt-duration",
+        "data-kt-ease",
+        "data-kt-flicker-count",
+        "data-kt-flicker-loop",
+        "data-kt-hold",
+        "data-kt-loop",
+        "data-kt-mode",
+        "data-kt-on-complete",
+        "data-kt-preset",
+        "data-kt-rainbow",
+        "data-kt-rainbow-colors",
+        "data-kt-reveal-rate",
+        "data-kt-root-margin",
+        "data-kt-scramble-fade",
+        "data-kt-speed",
+        "data-kt-stagger",
+        "data-kt-text",
+        "data-kt-threshold"
+      ],
+      "variants": [
+        {
+          "name": "stream",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "char",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "word",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "line",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "bounce",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "hangul",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "decode",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "flicker",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "shuffle",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "textSplit": {
+      "attribute": "data-kt-text-split",
+      "category": "text",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "by",
+      "carrierAttribute": "data-kt-by",
+      "clearAttributes": [
+        "data-kt-by",
+        "data-kt-preset"
+      ],
+      "defaultVariant": "char",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-animation",
+        "data-kt-by",
+        "data-kt-delay",
+        "data-kt-duration",
+        "data-kt-ease",
+        "data-kt-hold",
+        "data-kt-on-complete",
+        "data-kt-on-swap",
+        "data-kt-once",
+        "data-kt-pause",
+        "data-kt-perspective",
+        "data-kt-preset",
+        "data-kt-stagger",
+        "data-kt-start",
+        "data-kt-swap-ease",
+        "data-kt-swap-out",
+        "data-kt-texts"
+      ],
+      "variants": [
+        {
+          "name": "char",
+          "requires": "text",
+          "deprecated": false
+        },
+        {
+          "name": "word",
+          "requires": "text",
+          "deprecated": false
+        }
+      ]
+    },
+    "textTransition": {
+      "attribute": "data-kt-text-transition",
+      "category": "text",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-effect"
+      ],
+      "defaultVariant": "slide-up",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-aria-live",
+        "data-kt-base-color",
+        "data-kt-blur",
+        "data-kt-char-direction",
+        "data-kt-char-mode",
+        "data-kt-duration",
+        "data-kt-ease",
+        "data-kt-effect",
+        "data-kt-end-scale",
+        "data-kt-hold",
+        "data-kt-jitter",
+        "data-kt-loop",
+        "data-kt-min-height",
+        "data-kt-on-change",
+        "data-kt-on-complete",
+        "data-kt-pause",
+        "data-kt-preset",
+        "data-kt-shim-color",
+        "data-kt-shim-speed",
+        "data-kt-stagger",
+        "data-kt-start-scale",
+        "data-kt-texts"
+      ],
+      "variants": [
+        {
+          "name": "slide-up",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "flip",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "rise",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "fade",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "blur",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "scale",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "clip",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "dissolve",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "shimmer",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "tilt": {
+      "attribute": "data-kt-tilt",
+      "category": "pointer",
+      "preview": "link",
+      "reason": "variant 가 maxX·maxY·glare·reverse 옵션의 조합에서 파생됩니다. 옵션 하나로 순회할 수 없습니다.",
+      "carrier": "",
+      "carrierAttribute": "",
+      "clearAttributes": [],
+      "defaultVariant": "tilt-glare",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-axis",
+        "data-kt-disable-on-mobile",
+        "data-kt-ease",
+        "data-kt-glare",
+        "data-kt-glare-blur",
+        "data-kt-glare-color",
+        "data-kt-glare-opacity",
+        "data-kt-glare-radius",
+        "data-kt-gyro",
+        "data-kt-max",
+        "data-kt-max-x",
+        "data-kt-max-y",
+        "data-kt-perspective",
+        "data-kt-reset",
+        "data-kt-reverse",
+        "data-kt-scale",
+        "data-kt-sensitivity",
+        "data-kt-smoothing",
+        "data-kt-tilt-shadow",
+        "data-kt-tilt-shadow-blur",
+        "data-kt-tilt-shadow-color",
+        "data-kt-tilt-shadow-css",
+        "data-kt-tilt-shadow-follow",
+        "data-kt-tilt-shadow-hover-only",
+        "data-kt-tilt-shadow-inset",
+        "data-kt-tilt-shadow-opacity",
+        "data-kt-tilt-shadow-spread",
+        "data-kt-tilt-shadow-x",
+        "data-kt-tilt-shadow-y"
+      ],
+      "variants": [
+        {
+          "name": "tilt-glare",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "tilt",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "x-only",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "y-only",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "reverse",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "vibrate": {
+      "attribute": "data-kt-vibrate",
+      "category": "feedback",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset"
+      ],
+      "defaultVariant": "tap",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-haptic",
+        "data-kt-pattern",
+        "data-kt-preset",
+        "data-kt-threshold",
+        "data-kt-trigger"
+      ],
+      "variants": [
+        {
+          "name": "tap",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "double-tap",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "soft",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "rigid",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "heavy",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "success",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "warning",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "error",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "ratchet",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "heartbeat",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "long-press",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "megaMenu": {
+      "attribute": "data-kt-mega-menu",
+      "category": "components",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "layout",
+      "carrierAttribute": "data-kt-layout",
+      "clearAttributes": [
+        "data-kt-layout"
+      ],
+      "defaultVariant": "dropdown",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-close-delay",
+        "data-kt-duration",
+        "data-kt-indicator",
+        "data-kt-layout",
+        "data-kt-open-delay",
+        "data-kt-responsive",
+        "data-kt-trigger"
+      ],
+      "variants": [
+        {
+          "name": "dropdown",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "mega",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "flip": {
+      "attribute": "data-kt-flip",
+      "category": "components",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "mode",
+      "carrierAttribute": "data-kt-mode",
+      "clearAttributes": [
+        "data-kt-mode"
+      ],
+      "defaultVariant": "layout",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-duration",
+        "data-kt-ease",
+        "data-kt-item",
+        "data-kt-mode",
+        "data-kt-stagger",
+        "data-kt-view-transition",
+        "data-kt-watch"
+      ],
+      "variants": [
+        {
+          "name": "layout",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "none",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "slide",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "fade",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "crossfade",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "fade-slide",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "scale",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "scrollShadows": {
+      "attribute": "data-kt-scroll-shadows",
+      "category": "scroll",
+      "preview": "link",
+      "reason": "variant 는 축(vertical·horizontal)과 모드(mask)가 섞인 조합이라 옵션 하나로 순회할 수 없습니다.",
+      "carrier": "",
+      "carrierAttribute": "",
+      "clearAttributes": [],
+      "defaultVariant": "vertical",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-axis",
+        "data-kt-color",
+        "data-kt-ease",
+        "data-kt-mode",
+        "data-kt-on-change",
+        "data-kt-opacity",
+        "data-kt-shadow",
+        "data-kt-shape",
+        "data-kt-size",
+        "data-kt-transition",
+        "data-kt-transition-duration",
+        "data-kt-transition-mode"
+      ],
+      "variants": [
+        {
+          "name": "vertical",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "horizontal",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "mask",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "stickyHeader": {
+      "attribute": "data-kt-sticky-header",
+      "category": "scroll",
+      "preview": "link",
+      "reason": "뷰포트에 고정되는 헤더라 한 페이지에 여러 개를 나란히 둘 수 없습니다.",
+      "carrier": "",
+      "carrierAttribute": "",
+      "clearAttributes": [],
+      "defaultVariant": "shrink",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-active-class",
+        "data-kt-distance",
+        "data-kt-offset",
+        "data-kt-on-change",
+        "data-kt-shadow",
+        "data-kt-shrink"
+      ],
+      "variants": [
+        {
+          "name": "shrink",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "toggle",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    }
+  }
+});

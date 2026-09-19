@@ -36,6 +36,9 @@ const noop = () => {};
 run(`const R=${JSON.stringify(REGISTRY)};window.Kineto={registry:Object.fromEntries(R.map(m=>[m,{}])),config:${noop},init:${noop},replay:${noop},destroyModule:${noop},pageReveal:${noop},loader:()=>({destroy:()=>{}}),enableSmooth:${noop},disableSmooth:${noop},getInstance:()=>null};`);
 try { run(fs.readFileSync(path.join(root, 'demo/help-i18n.js'), 'utf8')); } catch (_) {}
 run(fs.readFileSync(path.join(root, 'demo/module-metadata.js'), 'utf8'));
+// 비교 시트는 블록을 만들 때 main.js가 직접 부르므로, 구조 검사에서도 실제로 실행합니다.
+run(fs.readFileSync(path.join(root, 'demo/variant-catalog.js'), 'utf8'));
+run(fs.readFileSync(path.join(root, 'demo/compare.js'), 'utf8'));
 run(fs.readFileSync(path.join(root, 'demo/playground.js'), 'utf8'));
 run(fs.readFileSync(path.join(root, 'demo/main.js'), 'utf8'));
 

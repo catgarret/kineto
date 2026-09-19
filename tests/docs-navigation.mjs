@@ -49,6 +49,7 @@ for (const [label, file] of [
   ['브라우저 레이어 QA 이력', 'browser-qa-history.md'],
   ['실기기 브라우저 QA 실행표', 'browser-device-qa.md'],
   ['Page Reveal variant 중복 감사', 'variant-distinctness.md'],
+  ['Variant 비교 시트', 'variant-compare.md'],
   ['FLIP shared layout 범위', 'flip-shared-layout.md'],
   ['Slider physics RFC', 'slider-physics-rfc.md'],
   ['1.0 계약 준비도', '1.0-readiness.md'],

@@ -33,7 +33,7 @@ if (handlers.length) {
 // ── 2. demo JS: no direct style property writes, no cssText ──────────────────
 // `setProperty('--custom')` is the sanctioned escape hatch and is not matched by
 // the pattern below, which only looks for `.style.<prop> =`.
-for (const file of ['demo/main.js', 'demo/playground.js']) {
+for (const file of ['demo/main.js', 'demo/playground.js', 'demo/compare.js']) {
   const source = fs.readFileSync(path.join(root, file), 'utf8');
   const lines = source.split('\n');
   lines.forEach((line, index) => {

@@ -59,6 +59,15 @@ Demo cards added to `demo/index.html` carry `data-demo-no-legacy-share` so the
 historical `?kt=` v1 share ordinals of every existing card stay stable; the new
 card still gets a semantic v2 share key. Run `npm run test:demo` to confirm.
 
+Every public variant has to be reachable from the demo's **Compare all variants**
+sheet. Adding a variant to `kineto.features.json` is not enough on its own: run
+`npm run test:variant-compare`, and when it fails do one of the three things it
+names — add demo material that satisfies the variant's requirement, tag the
+control the demo already has with `data-demo-variant="<module>:<variant>"`, or
+record in `scripts/generate-variant-catalog.mjs` why those variants cannot sit
+side by side. Never hand-edit `demo/variant-catalog.js` or `docs/variant-compare.md`;
+both are generated (`npm run catalog:variants`). Details: `docs/variant-compare.md`.
+
 Integration program (one source, many generated artefacts): edit
 `kineto.integrations.json` (schema: `kineto.integrations.schema.json`) and the
 registry sources under `registry/`, then run `npm run integrations:build`. Never
