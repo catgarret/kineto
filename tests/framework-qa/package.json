@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@dong-gri/kineto": "file:../..",
-    "jquery": "^3.7.1",
+    "jquery": "^4.0.0",
     "picomatch": "4.0.7",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
