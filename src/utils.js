@@ -30,14 +30,18 @@ export function env() {
     };
   }
 
-  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  // `window` without `navigator` happens in DOM shims and Node < 21 test
+  // runtimes (Node 21+ defines a global navigator); treat it as a plain
+  // capable browser instead of throwing on the first env() read.
+  const nav = typeof navigator !== 'undefined' && navigator ? navigator : {};
+  const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
   const reducedMotion = typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
     : false;
   const saveData = Boolean(connection?.saveData);
   const slowNetwork = /(^|-)2g|slow-2g/.test(connection?.effectiveType || '');
-  const lowMemory = (navigator.deviceMemory || 8) < 4;
-  const lowCpu = (navigator.hardwareConcurrency || 8) < 4;
+  const lowMemory = (nav.deviceMemory || 8) < 4;
+  const lowCpu = (nav.hardwareConcurrency || 8) < 4;
   const perf = saveData || slowNetwork ? 'low' : (lowMemory || lowCpu ? 'mid' : 'high');
 
   return {
@@ -45,9 +49,9 @@ export function env() {
     reducedMotion,
     perf,
     saveData,
-    touch: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+    touch: 'ontouchstart' in window || (nav.maxTouchPoints || 0) > 0,
     hasGyro: typeof DeviceOrientationEvent !== 'undefined',
-    canVibrate: typeof navigator.vibrate === 'function'
+    canVibrate: typeof nav.vibrate === 'function'
   };
 }
 

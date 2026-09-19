@@ -128,7 +128,10 @@ const BUDGET = {
   // the type declarations: 552.9 KB packed / 1820.6 KB unpacked on Node
   // 22/npm 10, still 77 files. Requested Core API bytes — round both ceilings
   // to the next KB.
-  packedKb: 553,
+  // 2026-09-19: the env() navigator guard (window without navigator must not
+  // throw) measures 553.1 KB packed on Node 22/npm 10; correctness bytes,
+  // rounded to the next KB. Unpacked stays within 1821 KB.
+  packedKb: 554,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:

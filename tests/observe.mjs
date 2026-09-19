@@ -16,6 +16,9 @@ const dom = new JSDOM('<!doctype html><body><main id="app"></main></body>', { ur
 const { window: w } = dom;
 globalThis.window = w;
 globalThis.document = w.document;
+// Node 21+ ships a read-only global navigator; older Node has none. Expose
+// jsdom's so the test sees the same shape a browser gives the runtime.
+try { Object.defineProperty(globalThis, 'navigator', { value: w.navigator, configurable: true }); } catch (_) { /* read-only navigator */ }
 for (const key of ['Element', 'Node', 'NodeList', 'HTMLCollection', 'HTMLElement', 'Event', 'CustomEvent', 'getComputedStyle', 'MutationObserver']) {
   try { globalThis[key] = w[key]; } catch (_) { /* read-only globals in some runtimes */ }
 }

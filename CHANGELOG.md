@@ -5,10 +5,14 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Fix `Kineto.env` throwing `ReferenceError: navigator is not defined` when a `window` exists without a `navigator` global (DOM shims and Node < 21 test runtimes; Node 21+ defines one): the environment probe now treats a missing navigator as a plain capable browser. This is what failed the Node 20.19 engine-contract job on the first v0.11.0 CI run via `tests/observe.mjs`; the test now also exposes jsdom's navigator like a browser would.
+- Dependabot no longer proposes major bumps for the `tests/integrations` fixture: the UI-library majors there are the ones the integration map documents, so a new major is reviewed together with the docs and tests instead of landing as a failing automatic PR.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- `window`는 있는데 `navigator` 전역이 없는 환경(DOM shim, Node 21 미만 테스트 런타임; Node 21+는 전역 navigator를 제공)에서 `Kineto.env`가 `ReferenceError: navigator is not defined`를 던지던 문제를 고쳤습니다. 환경 감지가 navigator 부재를 일반 브라우저로 취급합니다. 첫 v0.11.0 CI에서 `tests/observe.mjs`를 통해 Node 20.19 엔진 계약 job이 실패한 원인이며, 테스트도 브라우저처럼 jsdom의 navigator를 노출합니다.
+- Dependabot이 `tests/integrations` fixture의 메이저 업데이트를 제안하지 않습니다. 그 fixture의 UI 라이브러리 메이저는 연동 지도가 문서화한 버전이므로, 새 메이저는 실패하는 자동 PR 대신 문서·테스트와 함께 수동으로 검토합니다.
 
 ## [0.11.0] - 2026-09-19
 

@@ -386,15 +386,15 @@ function V() {
 		canVibrate: !1,
 		saveData: !1
 	};
-	let e = navigator.connection || navigator.mozConnection || navigator.webkitConnection, t = typeof window.matchMedia == "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches, n = !!e?.saveData, r = /(^|-)2g|slow-2g/.test(e?.effectiveType || ""), i = (navigator.deviceMemory || 8) < 4, a = (navigator.hardwareConcurrency || 8) < 4;
+	let e = typeof navigator < "u" && navigator ? navigator : {}, t = e.connection || e.mozConnection || e.webkitConnection, n = typeof window.matchMedia == "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches, r = !!t?.saveData, i = /(^|-)2g|slow-2g/.test(t?.effectiveType || ""), a = (e.deviceMemory || 8) < 4, o = (e.hardwareConcurrency || 8) < 4;
 	return {
 		ssr: !1,
-		reducedMotion: t,
-		perf: n || r ? "low" : i || a ? "mid" : "high",
-		saveData: n,
-		touch: "ontouchstart" in window || navigator.maxTouchPoints > 0,
+		reducedMotion: n,
+		perf: r || i ? "low" : a || o ? "mid" : "high",
+		saveData: r,
+		touch: "ontouchstart" in window || (e.maxTouchPoints || 0) > 0,
 		hasGyro: typeof DeviceOrientationEvent < "u",
-		canVibrate: typeof navigator.vibrate == "function"
+		canVibrate: typeof e.vibrate == "function"
 	};
 }
 var H = null;

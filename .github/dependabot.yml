@@ -39,6 +39,13 @@ updates:
       timezone: Asia/Seoul
     open-pull-requests-limit: 5
     versioning-strategy: increase-if-necessary
+    # The fixture pins the UI-library majors the integration map documents
+    # (MUI 7, Mantine 8, Chakra 3, antd 5, Vuetify 3, PrimeVue 4, shadcn 3,
+    # Bootstrap 5). A new major changes the attachment claims and is reviewed
+    # by hand (docs + tests together), not by an automatic bump that fails CI.
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
     directory: /packages/kineto-mcp

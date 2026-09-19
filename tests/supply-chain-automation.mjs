@@ -50,6 +50,10 @@ for (const directory of ['/', '/tests/consumer-bundles', '/tests/framework-qa', 
   );
 }
 assert.equal((dependabot.match(/package-ecosystem:\s*npm/g) || []).length, 5);
+// UI-library majors in the integration fixture are reviewed with the map,
+// not bumped automatically into a failing CI run.
+assert.match(dependabot, /directory: \/tests\/integrations[\s\S]*?ignore:\s*\n\s*- dependency-name: "\*"\s*\n\s*update-types: \["version-update:semver-major"\]/,
+  'the integrations fixture must ignore automatic major bumps');
 assert.match(dependabot, /package-ecosystem:\s*github-actions/);
 assert.match(dependabot, /interval:\s*weekly/);
 assert.match(dependabot, /timezone:\s*Asia\/Seoul/);
