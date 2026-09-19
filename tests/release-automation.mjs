@@ -267,6 +267,11 @@ assert.match(demoWorkflow, /workflow_run\.event == 'push'/);
 assert.match(demoWorkflow, /workflow_run\.head_repository\.full_name == github\.repository/);
 assert.match(demoWorkflow, /workflow_run\.head_branch == 'main'/);
 assert.match(demoWorkflow, /workflow_run\.conclusion == 'success'/);
+// Skipped workflow_run deploys (Dependabot/PR branches) must not share the
+// concurrency group with a real main deploy, or they cancel it.
+assert.match(demoWorkflow, /concurrency:\s*\n\s*group: demo-site-\$\{\{ \(github\.event_name == 'workflow_dispatch' \|\| \(github\.event\.workflow_run\.event == 'push' && github\.event\.workflow_run\.head_branch == 'main'\)\) && 'main' \|\| github\.run_id \}\}/,
+  'only main deploys may share the demo-site concurrency group');
+assert.doesNotMatch(demoWorkflow, /group: demo-site\s*$/m, 'a static demo-site group lets skipped runs cancel a real deploy');
 assert.doesNotMatch(demoWorkflow, /gh run view|CI_RUN_ID|actions:\s*read/);
 assert.match(demoWorkflow, /permissions:[\s\S]*pages:\s*write/);
 assertPinnedAction(demoWorkflow, 'actions/configure-pages');

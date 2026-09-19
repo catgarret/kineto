@@ -41,6 +41,16 @@ This avoids a cross-repository token in Kineto while keeping the backup
 automatic. Do not change the `CNAME` file in `catgarret.github.io`, because that
 would change the custom domain for the whole personal Pages site.
 
+Only real deploys share the `demo-site-main` concurrency group (a newer `main`
+build supersedes an older one). Every other CI completion that reaches
+`pages.yml` — Dependabot and pull-request branches, failed runs — is skipped by
+the job condition and gets a run-scoped group, so it can no longer cancel an
+in-flight deploy. (The v0.10.0 deploy, run #217, was cancelled exactly that way
+by a Dependabot-branch CI completion; the site kept serving the previous build
+until the next successful `main` deploy.) If a deploy was cancelled or skipped,
+re-run it with `workflow_dispatch` on `pages.yml`; it rebuilds the current
+`main` commit and verifies the live site with `KT_EXPECTED_BUILD`.
+
 After Pages deploys, `npm run test:live-site` re-fetches the canonical URL and
 checks the live response for the expected commit, version, module count, GTM,
 and public CDN installation snippet. It also downloads the JavaScript and CSS

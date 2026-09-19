@@ -11,8 +11,14 @@ permissions:
   pages: write
   id-token: write
 
+# Only real deploys (main pushes, manual dispatch) share the group, so a newer
+# main build supersedes an older one. Every other CI completion (Dependabot and
+# pull-request branches, failed runs) is skipped by the job condition below and
+# must not enter the group: on 2026-09-19 such a skipped run cancelled the
+# v0.10.0 deploy ("a higher priority waiting request for demo-site exists") and
+# the live site stayed on the previous build.
 concurrency:
-  group: demo-site
+  group: demo-site-${{ (github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main')) && 'main' || github.run_id }}
   cancel-in-progress: true
 
 jobs:
