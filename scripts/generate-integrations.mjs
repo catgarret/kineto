@@ -138,7 +138,7 @@ function renderFigma({ integrations }) {
 function renderRules({ features, integrations, pkg }) {
   const lines = [];
   lines.push(`# Kineto rules for coding agents (v${pkg.version})`, '');
-  lines.push('Kineto (`@dong-gri/kineto`) is a vanilla-first motion/effects library: 52 modules activated by `data-kt-*` attributes or `Kineto.create()`, with React/Vue/jQuery adapters. Use these rules whenever you generate UI with any component library (shadcn/ui, Bootstrap, MUI, Mantine, Chakra, Ant Design, daisyUI, Nuxt UI, PrimeVue, Vuetify) or from a Figma frame.', '');
+  lines.push('Kineto (`@dong-gri/kineto`) is a vanilla-first motion/effects library: 53 modules activated by `data-kt-*` attributes or `Kineto.create()`, with React/Vue/jQuery adapters. Use these rules whenever you generate UI with any component library (shadcn/ui, Bootstrap, MUI, Mantine, Chakra, Ant Design, daisyUI, Nuxt UI, PrimeVue, Vuetify) or from a Figma frame.', '');
   lines.push('## Principles', '');
   integrations.principles.forEach((principle) => lines.push(`- ${principle}`));
   lines.push('', '## Setup (once per app)', '', code('js', `${integrations.setup.css}\n${integrations.setup.bootstrapScript}`), '');
@@ -176,7 +176,7 @@ function renderCursorRule(rules) {
 
 function renderLlmsTxt({ integrations, pkg }) {
   const lines = [];
-  lines.push('# Kineto', '', `> @dong-gri/kineto v${pkg.version} — vanilla-first web motion & media effects library (52 modules, React/Vue/jQuery adapters, zero runtime dependencies). Attach effects with data-kt-* attributes on any markup, including shadcn/ui, Bootstrap, MUI, Mantine, Chakra, Ant Design, daisyUI, Nuxt UI, PrimeVue and Vuetify components.`, '');
+  lines.push('# Kineto', '', `> @dong-gri/kineto v${pkg.version} — vanilla-first web motion & media effects library (53 modules, React/Vue/jQuery adapters, zero runtime dependencies). Attach effects with data-kt-* attributes on any markup, including shadcn/ui, Bootstrap, MUI, Mantine, Chakra, Ant Design, daisyUI, Nuxt UI, PrimeVue and Vuetify components.`, '');
   lines.push('## Start here', '', `- [Rules for coding agents](${SITE_URL}/ai/kineto.rules.md): principles, attachment grammar, intent → module table, per-library notes`, `- [Feature contract (JSON)](${RAW_URL}/kineto.features.json): every module, variant, public option and default`, `- [Integration map (JSON)](${RAW_URL}/kineto.integrations.json): ecosystems, intents, Figma hints`, `- [Module reference](${REPO_URL}/blob/main/docs/module-reference.md)`, `- [Getting started](${REPO_URL}/blob/main/docs/getting-started.md)`, '');
   lines.push('## Integrations', '');
   for (const [id, ecosystem] of Object.entries(integrations.ecosystems)) lines.push(`- [${ecosystem.title}](${REPO_URL}/blob/main/docs/integrations/${id}.md)`);

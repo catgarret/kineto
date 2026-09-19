@@ -222,28 +222,39 @@
       pageLoaded.then(()=>setTimeout(finishIntro,2200));
       setTimeout(finishIntro,9000); // absolute backstop regardless of load
     })();
-    const MODULE_GROUPS={
-      'Text':['textSplit','blurText','typewriter','textReveal','textTransition','textFill','overflowText','glitch','counter','dateTime'],
-      'Media':['lazy','lightbox','slider','ambientMedia','brushReveal','scrollSequence','marquee','coverReveal'],
-      'Scroll':['parallax','reveal','stickyStack','scrollVelocity','cssScroll','scrollShadows','stickyHeader','horizontalScroll','progress','fullpage'],
-      'Pointer':['cursor','tilt','cardGlow','magnetic','ripple','vibrate','mouseParallax','gesture','drag'],
-      'Components':['accordion','megaMenu','tabs','bottomSheet','tooltip','switch','flip'],
-      'Feedback':['confetti','hold','toast'],
-      'System':['loader','loadingIndicator','pageReveal','pageTransition']
-    };
-    // Modules whose data-kt-* attribute isn't inside a demo section (button-
-    // triggered / body-level) map to their section by id instead.
-    const SECTION_FALLBACK={loader:'loading',pageReveal:'content-reveal',pageTransition:'module-index',marquee:'text-effects',confetti:'buttons-feedback',hold:'buttons-feedback',toast:'buttons-feedback',gesture:'buttons-feedback',drag:'buttons-feedback',bottomSheet:'components',switch:'components'};
+    // Category membership is GENERATED, never hand-written here. A hand-written
+    // list is exactly how `marquee` came to sit under Media in this nav while its
+    // cards lived in the Text section, and how the dither/ASCII/halftone effects
+    // ended up filed as lazy-loading. The one source of truth is the `category`
+    // each module declares in scripts/generate-module-metadata.mjs, published to
+    // demo/module-metadata.js. See docs/module-taxonomy.md.
+    const TAXONOMY=window.KINETO_MODULE_TAXONOMY||{displayOrder:[],categories:{}};
+    const CATEGORY_OF=window.KINETO_MODULE_METADATA||{};
+    // This list only chooses the ORDER inside a category — it cannot move a
+    // module between categories, and tests/module-taxonomy.mjs fails if it drifts
+    // from the generated membership (a missing or unknown name).
+    const MODULE_ORDER=['textSplit','blurText','typewriter','textReveal','textTransition','textFill','overflowText','counter','dateTime','marquee',
+      'lazy','lightbox','slider','radial',
+      'stylize','glitch','brushReveal','ambientMedia',
+      'parallax','reveal','stickyStack','scrollVelocity','cssScroll','scrollShadows','stickyHeader','horizontalScroll','scrollSequence','coverReveal','progress','fullpage',
+      'cursor','tilt','cardGlow','magnetic','mouseParallax','gesture','drag',
+      'accordion','megaMenu','tabs','bottomSheet','tooltip','switch','flip',
+      'confetti','hold','toast','vibrate','ripple',
+      'loader','loadingIndicator','pageReveal','pageTransition'];
+    const orderOf=(n)=>{const at=MODULE_ORDER.indexOf(n);return at<0?MODULE_ORDER.length:at;};
+    const MODULE_GROUPS=Object.fromEntries((TAXONOMY.displayOrder||[]).map((key)=>[
+      TAXONOMY.categories[key]?.label||key,
+      Object.keys(CATEGORY_OF).filter((n)=>CATEGORY_OF[n].category===key).sort((a,b)=>orderOf(a)-orderOf(b))
+    ]));
     const registered=new Set(Object.keys(Kineto.registry));
     // #module-list (Module Index) is rendered from the same manifest inside the
     // nav builder below, with a one-line description under each module name.
     // Shared: scroll to a module's live demo (used by the sidebar + Module Index).
-    const targetSectionFor=(name)=>{
-      const attr='data-kt-'+name.replace(/[A-Z]/g,m=>'-'+m.toLowerCase());
-      let node=[...document.querySelectorAll('['+attr+']')].map(el=>el.closest('section[id]')).find(Boolean);
-      if(!node&&SECTION_FALLBACK[name])node=document.getElementById(SECTION_FALLBACK[name]);
-      return node;
-    };
+    // Every module marks exactly ONE home card in demo/index.html with
+    // data-demo-home, so "where does this module live" has a single answer and
+    // no longer depends on which section happens to mention its attribute first.
+    const homeCardFor=(name)=>document.querySelector('[data-demo-home="'+CSS.escape(name)+'"]');
+    const targetSectionFor=(name)=>homeCardFor(name)?.closest('section[id]')||null;
     // Scroll to the module's actual demo CARD (not just the category section),
     // so e.g. clicking "Counter" lands on the counter demo, centred in view.
     // B-2: single navigation function — every entry point (nav click, module
@@ -252,9 +263,7 @@
     const moduleTargetEl=(name)=>{
       const sub=document.getElementById('mod-'+name);
       if(sub) return sub;
-      const attr='data-kt-'+name.replace(/[A-Z]/g,m=>'-'+m.toLowerCase());
-      const elx=document.querySelector('main section[id] ['+attr+']')||document.querySelector('['+attr+']');
-      return (elx&&(elx.closest('.card')||elx.closest('article')||elx))||targetSectionFor(name)||null;
+      return homeCardFor(name)||targetSectionFor(name)||null;
     };
     const setActiveNav=(name)=>{
       document.querySelectorAll('#side-nav-modules .nav-mod.active').forEach(a=>a.classList.remove('active'));
@@ -336,7 +345,7 @@
       };
       const SUBS={
         textSplit:'문장을 글자·단어 단위로 쪼개 3D로 등장·교체.',blurText:'흐림에서 또렷하게, 스태거로 등장.',shuffle:'랜덤 글리프로 흩뿌린 뒤 확정.',typewriter:'타이핑·한글 자모 조합·캐럿.',textReveal:'글자별 점멸 후 확정되는 등장.',textTransition:'문장을 글자 단위로 교체.',textFill:'스크롤 진행률로 글자에 색이 차오름.',overflowText:'컨테이너보다 긴 텍스트의 여덟 가지 순환.',glitch:'RGB 분리·픽셀 시프트·데이터모시.',counter:'카운트업·플립·시계·카운트다운.',dateTime:'서버 날짜를 상대 시간·절대 시간으로 표시.',
-        lazy:'이미지 로딩 중 재생되는 전환들.',lightbox:'전체화면 그룹 뷰어 — 줌·미니맵·필름스트립.',slider:'커버플로우 슬라이더.',ambientMedia:'재생 프레임을 샘플링한 주변광.',brushReveal:'포인터로 문질러 드러내는 브러시 마스크.',scrollSequence:'스크롤로 이미지 프레임을 스크럽.',marquee:'무한 흐름 마퀴.',radial:'원형 캐러셀(도크형).',coverReveal:'커버가 걷히며 콘텐츠 등장.',
+        lazy:'이미지 로딩 중 재생되는 전환들.',stylize:'이미지·영상에 디더·ASCII·하프톤 질감을 입히는 캔버스 필터.',lightbox:'전체화면 그룹 뷰어 — 줌·미니맵·필름스트립.',slider:'커버플로우 슬라이더.',ambientMedia:'재생 프레임을 샘플링한 주변광.',brushReveal:'포인터로 문질러 드러내는 브러시 마스크.',scrollSequence:'스크롤로 이미지 프레임을 스크럽.',marquee:'무한 흐름 마퀴.',radial:'원형 캐러셀(도크형).',coverReveal:'커버가 걷히며 콘텐츠 등장.',
         parallax:'레이어가 다른 속도로 움직여 깊이를 만듦.',reveal:'진입 시 방향·마스크·클록 등장.',stickyStack:'핀 고정 스택 — 세로·가로·플로팅.',scrollVelocity:'스크롤 속도·방향에 반응.',cssScroll:'CSS 애니메이션 타임라인에 연결.',scrollShadows:'스크롤 가능 영역에 엣지 그림자.',stickyHeader:'스크롤에 반응하는 고정 헤더.',horizontalScroll:'세로 스크롤로 가로 이동.',progress:'읽기 진행률 바·링.',fullpage:'한 화면씩 넘기는 풀페이지.',
         cursor:'커스텀 커서 프리셋.',tilt:'포인터 추종 3D 틸트 + 글레어.',cardGlow:'표면 반사·외곽 광택 글로우.',magnetic:'포인터로 끌려오는 자석 버튼.',ripple:'클릭 지점에서 퍼지는 리플.',vibrate:'햅틱 진동 패턴.',mouseParallax:'마우스·자이로 시차 이동.',gesture:'hover·press 스프링 제스처.',drag:'관성·경계·키보드 드래그.',
         accordion:'접근성 details 아코디언.',megaMenu:'GNB 드롭다운·메가메뉴.',tabs:'WAI-ARIA 탭·세그먼트.',bottomSheet:'드래그 바텀시트.',tooltip:'자동 배치 툴팁.',switch:'폼 연동 토글 스위치.',flip:'레이아웃 변화 FLIP 애니메이션.',
@@ -386,7 +395,11 @@
       // EXPLICIT (data-demo-module) or unambiguous (a unit with exactly one
       // module); it is never guessed from attribute order.
       (function buildContent(){
-        const CAT_SECTION={Text:'counter',Media:'lazy',Scroll:'content-reveal',Pointer:'pointer',Components:'components',Feedback:'buttons-feedback',System:'loading'};
+        // Which source section hosts each category's rebuilt blocks. Read from
+        // the page's own data-demo-category markers rather than repeated here,
+        // so adding a category cannot leave its modules block-less.
+        const CAT_SECTION=Object.fromEntries([...document.querySelectorAll('section[data-demo-category][id]')]
+          .map((sec)=>[TAXONOMY.categories?.[sec.dataset.demoCategory]?.label||sec.dataset.demoCategory,sec.id]));
         const attr2mod={}; registered.forEach(m=>{attr2mod[attrOf(m)]=m;});
         const modsIn=(el)=>{const s=new Set();const scan=n=>{for(const a of n.getAttributeNames())if(attr2mod[a])s.add(attr2mod[a]);};scan(el);el.querySelectorAll('*').forEach(scan);
           if(el.matches('[data-loader-type]')||el.querySelector('[data-loader-type]'))s.add('loader');

@@ -44,7 +44,8 @@ identity와 실제 source anchor 묶음에 연결합니다.
 | module | source mechanism | 전용 demo markup | 상태 |
 |---|---:|---:|---|
 | `reveal` | `23/23` | `23/23` | distinct |
-| `lazy` | `16/16` | `14/16` | distinct |
+| `lazy` | `16/16` | `11/16` | distinct |
+| `stylize` | `3/3` | `3/3` | distinct |
 | `cursor` | `11/11` | `10/11` | distinct |
 | `overflowText` | `11/11` | `11/11` | distinct |
 | `glitch` | `10/10` | `6/10` | distinct |
@@ -79,12 +80,15 @@ Glitch Wave는 1회 재생과 시작·반복·지연 설정을 확인하는
   instant-film, tube power-on 구조입니다. `print`는 방향성 sharp mask,
   `dissolve`는 전역 noise·blur 감소이며, `data-mosaic`와 `rgb-slice-burst`는 각각
   seeded tile clear와 one-shot channel slice입니다. `dither`, `ascii`, `halftone`은
-  `src/modules/lazy/stylizedMedia.js`의 canvas rasterizer를 공유하지만 painter가
-  다릅니다. `dither`는 threshold matrix(Bayer/random) 또는 error diffusion으로
-  2~8단계 팔레트에 양자화하고, `ascii`는 밝기를 글리프 밀도 ramp로 바꿔 문자를
-  그리며, `halftone`은 셀 밝기를 점·사각·선의 크기로 바꿉니다. 세 variant는
-  `persist`로 리빌 없이 영구 스타일 필터가 되고 `<video>`에도 프레임 단위로
-  적용됩니다.
+  v0.11.0에서 Stylize 모듈로 옮겨 갔고, Lazy에는 한 마이너 동안 유지되는 deprecated
+  alias로만 남습니다. 데모는 더 이상 이 셋을 Lazy로 표시하지 않으므로 전용 demo
+  markup은 16개 중 11개입니다.
+- `stylize`: `dither`, `ascii`, `halftone`은 `src/modules/media/rasterizer.js`의 canvas
+  rasterizer를 공유하지만 painter가 다릅니다. `dither`는 threshold matrix(Bayer/random)
+  또는 error diffusion으로 2~8단계 팔레트에 양자화하고, `ascii`는 밝기를 글리프 밀도
+  ramp로 바꿔 문자를 그리며, `halftone`은 셀 밝기를 점·사각·선의 크기로 바꿉니다.
+  세 variant는 기본값인 `mode: persist`에서 리빌 없이 영구 필터가 되고 `<video>`에도
+  프레임 단위로 적용되며, `mode: reveal`에서는 셀을 줄여 원본으로 크로스페이드합니다.
 - `cursor`: `dot`, `ring`, `blob`, `crosshair`, `text`, `trail`, `orbit`, `snake`,
   `sparkle`, `image`, `custom`을 점+추종 링, outline follower, filled blur,
   viewport/local axis, SVG text path, elastic chain, ellipse orbit, spaced glyph chase,

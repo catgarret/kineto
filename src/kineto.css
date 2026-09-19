@@ -484,7 +484,8 @@
   animation: kt-caret 0.8s step-end infinite;
 }
 
-.kt-lazy-wrap {
+.kt-lazy-wrap,
+.kt-stylize-wrap {
   position: relative;
   overflow: hidden;
   display: block;

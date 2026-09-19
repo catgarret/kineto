@@ -1,5 +1,5 @@
 {
-  "requirementsVersion": "3.2.0",
+  "requirementsVersion": "3.3.0",
   "libraryVersion": "0.11.0",
   "owner": "dongri.me",
   "changePolicy": "Requirements may only be removed or semantically changed with explicit owner approval.",
@@ -199,8 +199,14 @@
     {
       "id": "MK-LAZY-008",
       "module": "lazy",
-      "title": "Stylized media reveal and filter",
-      "acceptance": "Dither, ASCII and Halftone are canvas-rendered lazy variants that reveal by shrinking their cells into the original image, keep the stylized look permanently with persist, apply to <img> (including animated formats) and <video>, and keep the original media visible when the source cannot be read back."
+      "title": "Stylized media aliases delegate to Stylize",
+      "acceptance": "data-kt-lazy=\"dither|ascii|halftone\" keep working for one minor release as deprecated aliases: they render through the same rasterizer and controllers as the Stylize module (shrinking-cell reveal into the original, persist, <img> including animated formats, <video>, original visible when the source cannot be read back) and emit a recoverable KT_DEPRECATED diagnostic naming data-kt-stylize as the replacement."
+    },
+    {
+      "id": "MK-STYLIZE-001",
+      "module": "stylize",
+      "title": "Stylized media filter module",
+      "acceptance": "Stylize renders an <img> or <video> as Dither, ASCII or Halftone on a canvas layer: mode persist keeps the look for the media's whole life (still images re-render on resize, animated formats and video frame by frame), mode reveal plays the look once and shrinks its cells into the original picture on load, in view, or manually; paperColor, inkColor, accentColor, originalColors, colorSteps, inverted, cellSize, renderFps and maxDpr are honoured, the original media stays visible when the source cannot be read back, and a reveal under prefers-reduced-motion skips to the untouched original while persist still applies."
     },
     {
       "id": "MK-OVERFLOW-004",

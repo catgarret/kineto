@@ -3,7 +3,7 @@ export type KinetoOptions = Record<string, unknown>;
 
 export type ModuleName =
   | 'ambientMedia' | 'blurText' | 'brushReveal' | 'cardGlow' | 'counter' | 'dateTime'
-  | 'cssScroll' | 'cursor' | 'fullpage' | 'glitch' | 'lazy' | 'lightbox'
+  | 'cssScroll' | 'cursor' | 'fullpage' | 'glitch' | 'lazy' | 'stylize' | 'lightbox'
   | 'loader' | 'loadingIndicator' | 'magnetic' | 'marquee' | 'mouseParallax'
   | 'overflowText' | 'pageReveal' | 'pageTransition' | 'parallax' | 'progress'
   | 'reveal' | 'radial' | 'ripple' | 'scrollSequence' | 'scrollVelocity'
@@ -53,7 +53,8 @@ export type KinetoDiagnosticCode =
   | 'KT_UPDATE_FAILED'
   | 'KT_DESTROY_FAILED'
   | 'KT_LIFECYCLE_FAILED'
-  | 'KT_TRANSFORM_CONFLICT';
+  | 'KT_TRANSFORM_CONFLICT'
+  | 'KT_DEPRECATED';
 
 export interface KinetoDiagnostic {
   readonly code: KinetoDiagnosticCode | (string & {});
@@ -208,6 +209,7 @@ export const cursor: KinetoFactory;
 export const fullpage: KinetoFactory;
 export const glitch: KinetoFactory;
 export const lazy: KinetoFactory;
+export const stylize: KinetoFactory;
 export const lightbox: KinetoFactory;
 export const loader: KinetoFactory;
 export const loadingIndicator: KinetoFactory;

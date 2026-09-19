@@ -1,6 +1,6 @@
 # Module Catalog
 
-공개 모듈은 정확히 **52개**입니다. 각 모듈은 `Kineto.<name>(target, options)`와 대응하는 `data-kt-*` 활성화 속성을 제공합니다. 전체 옵션·변형은 [module-reference.md](../module-reference.md)와 `kineto.features.json`을 참고하세요.
+공개 모듈은 정확히 **53개**입니다. 각 모듈은 `Kineto.<name>(target, options)`와 대응하는 `data-kt-*` 활성화 속성을 제공합니다. 전체 옵션·변형은 [module-reference.md](../module-reference.md)와 `kineto.features.json`을 참고하세요.
 
 | 모듈 | 속성 | 핵심 역할 |
 |---|---|---|
@@ -10,6 +10,7 @@
 | `counter` | `data-kt-counter` | slot/plain/digit/final-value pop |
 | `dateTime` | `data-kt-date-time` | relative/absolute server timestamp |
 | `lazy` | `data-kt-lazy` | image loading/reveal effects |
+| `stylize` | `data-kt-stylize` | dither / ASCII / halftone canvas filter for images and video |
 | `textSplit` | `data-kt-text-split` | character/word split motion |
 | `blurText` | `data-kt-blur-text` | [blur text reveal](blur-text.md) |
 | `typewriter` | `data-kt-typewriter` | type/erase loop |

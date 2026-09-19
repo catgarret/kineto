@@ -20,7 +20,7 @@ import {
   parseColor,
   resolveStyleConfig,
   sourceSize
-} from '../src/modules/lazy/stylizedMedia.js';
+} from '../src/modules/media/rasterizer.js';
 
 // 1. Threshold matrices are square, sized by name, and normalised to (0, 1).
 for (const [name, matrix] of Object.entries(DITHER_MATRICES)) {

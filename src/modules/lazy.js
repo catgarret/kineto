@@ -1,39 +1,24 @@
 import { clamp, observeOnce } from '../utils.js';
 import { fn as easingFunction } from '../easings.js';
-import { coverMap, createStylizedRenderer, resolveStyleConfig } from './lazy/stylizedMedia.js';
+import { coverMap } from './media/rasterizer.js';
+import { createLayer, ensureWrapper, releaseWrapper } from './media/wrapper.js';
+import {
+  ANIMATED_EXTENSIONS, createImageStylizer, createVideoStylizer, durationMs, isStylizedEffect, resolveStylizedSettings
+} from './media/stylizer.js';
 
-const ANIMATED_EXTENSIONS = /\.(?:gif|apng|webp)(?:$|[?#])/i;
-// Effects rendered by the shared stylized-media rasterizer. They accept <img>,
-// live GIF/APNG/WebP and <video> sources; see ./lazy/stylizedMedia.js.
-const STYLIZED_EFFECTS = new Set(['dither', 'ascii', 'halftone']);
-// Starting cell size (CSS px) per style when the author does not set `cellSize`.
-const STYLIZED_DEFAULT_CELL = { dither: 6, ascii: 12, halftone: 8 };
-// Cell size the reveal shrinks to before crossfading into the original media.
-const STYLIZED_HANDOFF_CELL = { dither: 2, ascii: 5, halftone: 3 };
-// Share of the eased reveal timeline spent shrinking cells; the rest crossfades.
-const STYLIZED_SHRINK_PORTION = 0.7;
+// `dither` / `ascii` / `halftone` were Lazy variants in 0.10.0. They are now
+// the Stylize module (`data-kt-stylize`); Lazy keeps them for one minor as
+// deprecated aliases — lazy-load first, then the same stylizer controller —
+// and reports KT_DEPRECATED through the opt-in diagnostics.
+const STYLIZED_ALIAS_REPLACEMENT = 'stylize';
 
-// One frame of the stylized reveal timeline, shared by the <img> and <video>
-// paths: cells shrink geometrically from `startCell` to `handoffCell` during the
-// first 70% of `progress` (0..1, already eased), then the stylized layer fades
-// out over the remaining 30% so the original media shows through.
-function stylizedRevealFrame(progress, startCell, handoffCell) {
-  const shrink = clamp(progress / STYLIZED_SHRINK_PORTION, 0, 1);
-  const fade = clamp((progress - STYLIZED_SHRINK_PORTION) / (1 - STYLIZED_SHRINK_PORTION), 0, 1);
-  return {
-    cell: startCell * Math.pow(handoffCell / startCell, shrink),
-    layerOpacity: 1 - fade
-  };
+/** The wrapper box options Lazy exposes (`display`, `aspectRatio`, `height`). */
+function wrapperBox(opts) {
+  return { display: opts.display, aspectRatio: opts.aspectRatio, height: opts.height };
 }
 
 function sourceOf(el, opts = {}) {
   return opts.src || el.dataset.src || el.getAttribute('data-src') || el.currentSrc || el.getAttribute('src') || '';
-}
-
-function durationMs(value, fallbackSeconds) {
-  const number = Number(value ?? fallbackSeconds);
-  if (!Number.isFinite(number)) return fallbackSeconds * 1000;
-  return number <= 30 ? number * 1000 : number;
 }
 
 /*
@@ -77,52 +62,6 @@ function resolvePixelSteps(opts, width, height) {
 function visibleMosaicSteps(steps) {
   if (steps.length > 1 && steps[steps.length - 1] <= 1) return steps.slice(0, -1);
   return steps.length ? steps : [2];
-}
-
-function ensureWrapper(el, opts) {
-  let wrapper = el.parentElement;
-  let created = false;
-  const elementRadius = getComputedStyle(el).borderRadius;
-  const originalWrapperStyle = wrapper?.getAttribute('style') ?? null;
-  if (!wrapper?.classList.contains('kt-lazy-wrap')) {
-    wrapper = document.createElement('span');
-    wrapper.className = 'kt-lazy-wrap';
-    el.parentNode?.insertBefore(wrapper, el);
-    wrapper.appendChild(el);
-    created = true;
-  }
-  const computed = getComputedStyle(wrapper);
-  if (computed.position === 'static') wrapper.style.position = 'relative';
-  wrapper.style.overflow = 'hidden';
-  wrapper.style.display = opts.display || 'block';
-  wrapper.style.lineHeight = '0';
-  // Keep rounded media rounded during skeleton/print/dissolve. The generated
-  // wrapper is the clipping box while lazy layers are active, so leaving the
-  // radius only on the original image briefly exposes square corners.
-  if (elementRadius && elementRadius !== '0px') wrapper.style.borderRadius = elementRadius;
-  // The wrapper must occupy the same box as the image it replaces: fill the
-  // parent when the parent already defines a box (fixes skeleton showing as a
-  // thin bar inside aspect-ratio stages), otherwise fall back to aspect-ratio.
-  const parentBox = wrapper.parentElement?.getBoundingClientRect();
-  const ratio = opts.aspectRatio || el.getAttribute('data-aspect-ratio');
-  const width = Number(el.getAttribute('width'));
-  const height = Number(el.getAttribute('height'));
-  wrapper.style.width = '100%';
-  if (ratio) wrapper.style.aspectRatio = String(ratio).replace(':', ' / ');
-  else if (width > 0 && height > 0) wrapper.style.aspectRatio = `${width} / ${height}`;
-  else if (created && parentBox && parentBox.height > 2) wrapper.style.height = '100%';
-  else if (wrapper.getBoundingClientRect().height < 2) wrapper.style.aspectRatio = '16 / 9';
-  if (opts.height) wrapper.style.height = typeof opts.height === 'number' ? `${opts.height}px` : String(opts.height);
-  return { wrapper, created, originalWrapperStyle };
-}
-
-function createLayer(wrapper, className, zIndex = 2) {
-  const layer = document.createElement('span');
-  layer.className = className;
-  layer.setAttribute('aria-hidden', 'true');
-  layer.style.cssText = `position:absolute;inset:0;z-index:${zIndex};display:block;overflow:hidden;pointer-events:none;border-radius:inherit;`;
-  wrapper.appendChild(layer);
-  return layer;
 }
 
 function createLiveImage(src, el, opts = {}) {
@@ -279,162 +218,91 @@ function createVideoReveal(el, opts = {}) {
   };
 }
 
-// Reads every option the stylized variants (dither / ascii / halftone) use, for
-// both the <img> and the <video> path, so a new option is added in exactly one
-// place. `defaults` lets each caller pick its own frame budget: a still image
-// only needs frames while revealing, a video renders for its whole playback.
-//
-// The `effect` comparison is always true for callers; it exists so the option
-// analysis (scripts/derive-variant-options.mjs) attributes these `opts.*` reads
-// to the three stylized variants instead of to every Lazy variant.
-function readStylizedSettings(effect, opts, { lowTier = false, persistFps = 24, revealFps = 24, maxDpr = 2 } = {}) {
-  const settings = {};
+// The raw option values the deprecated stylized aliases read. Reads stay in
+// this file (the feature contract scans each module for its own options) and
+// the `effect` branches let scripts/derive-variant-options.mjs attribute them
+// to dither / ascii / halftone instead of to every Lazy variant.
+function readStylizedInput(effect, opts) {
+  const input = {};
   if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {
-    settings.persist = opts.persist === true;
-    settings.startCell = clamp(Number(opts.cellSize ?? STYLIZED_DEFAULT_CELL[effect]), 2, 64);
-    settings.handoffCell = Math.min(settings.startCell, STYLIZED_HANDOFF_CELL[effect]);
-    const styleInput = {
-      paperColor: opts.paperColor,
-      inkColor: opts.inkColor,
-      accentColor: opts.accentColor,
-      originalColors: opts.originalColors === true,
-      colorSteps: opts.colorSteps,
-      inverted: opts.inverted === true,
-      seed: opts.seed
-    };
-    if (effect === 'dither') styleInput.type = opts.ditherType;
-    if (effect === 'ascii') { styleInput.chars = opts.asciiChars; styleInput.font = opts.asciiFont; }
-    if (effect === 'halftone') styleInput.shape = opts.halftoneShape;
-    settings.styleConfig = resolveStyleConfig(effect, styleInput);
-    // Low-tier devices cap the canvas frame rate regardless of the request.
-    const requestedFps = opts.renderFps ?? (settings.persist ? persistFps : revealFps);
-    settings.fps = clamp(Number(requestedFps), 4, lowTier ? 12 : 60);
-    settings.maxDpr = clamp(Number(opts.maxDpr ?? maxDpr), 0.5, 4);
+    input.persist = opts.persist;
+    input.cellSize = opts.cellSize;
+    input.paperColor = opts.paperColor;
+    input.inkColor = opts.inkColor;
+    input.accentColor = opts.accentColor;
+    input.originalColors = opts.originalColors;
+    input.colorSteps = opts.colorSteps;
+    input.inverted = opts.inverted;
+    input.seed = opts.seed;
+    input.renderFps = opts.renderFps;
+    input.maxDpr = opts.maxDpr;
+    input.ease = opts.ease;
   }
-  return settings;
+  if (effect === 'dither') input.ditherType = opts.ditherType;
+  if (effect === 'ascii') { input.asciiChars = opts.asciiChars; input.asciiFont = opts.asciiFont; }
+  if (effect === 'halftone') input.halftoneShape = opts.halftoneShape;
+  return input;
 }
 
-// Creates the canvas overlay the stylized variants draw into. Both media paths
-// share it so the class names the tests and stylesheet rely on stay identical.
-function createStylizedCanvasLayer(wrapper, effect) {
-  const layer = createLayer(wrapper, `kt-lazy-${effect}-layer kt-lazy-stylized-layer`, 3);
-  const canvas = document.createElement('canvas');
-  canvas.className = `kt-lazy-${effect}-canvas kt-lazy-stylized-canvas`;
-  canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;';
-  layer.appendChild(canvas);
-  return { layer, canvas };
-}
-
-// Stylized <video>: the plain lazy video reveal handles loading/autoplay, and a
-// canvas overlay re-renders each playing frame through the shared rasterizer.
-// `persist` keeps the stylized look for the whole playback (a permanent filter);
-// otherwise the reveal shrinks its cells and crossfades into the raw video.
+// Deprecated stylized <video> alias: the plain lazy video reveal handles
+// loading/autoplay and the shared video stylizer re-renders each playing frame.
 function createStylizedVideo(el, opts, effect, kineto = null) {
+  reportDeprecatedAlias(kineto, effect);
   const lowTier = kineto?.performance === 'low';
-  const { wrapper, created, originalWrapperStyle } = ensureWrapper(el, opts);
+  const wrapping = ensureWrapper(el, wrapperBox(opts));
+  const { wrapper } = wrapping;
   const originalStyle = el.getAttribute('style');
   el.style.display = 'block';
   el.style.width = '100%';
   el.style.height = '100%';
   el.style.objectFit = opts.objectFit || 'cover';
-  const { layer, canvas } = createStylizedCanvasLayer(wrapper, effect);
-
   // Video renders every playing frame, so it starts from a lighter DPR budget.
-  const { persist, startCell, handoffCell, styleConfig, fps, maxDpr } =
-    readStylizedSettings(effect, opts, { lowTier, persistFps: 24, revealFps: 24, maxDpr: 1.5 });
-  const interval = 1000 / fps;
-  const renderer = createStylizedRenderer(canvas, styleConfig, { maxDpr });
-  const duration = Math.max(120, durationMs(opts.duration, 1.6));
-  const ease = easingFunction(opts.ease || 'cubic-out');
-
-  let rafId = null;
-  let destroyed = false;
-  let paused = false;
-  let revealStart = null;
-  let revealed = persist;
-  let lastDraw = -Infinity;
-
-  const paint = (cell) => {
-    if (el.readyState < 2) return false;
-    const box = wrapper.getBoundingClientRect();
-    renderer.sync(box.width, box.height);
-    return renderer.render(el, cell);
-  };
-  const frame = (time) => {
-    if (destroyed) return;
-    rafId = requestAnimationFrame(frame);
-    if (paused || el.paused || el.ended) return;
-    if (time - lastDraw < interval) return;
-    lastDraw = time;
-    if (persist) {
-      paint(startCell);
-      return;
-    }
-    if (revealStart == null) revealStart = time;
-    const raw = clamp((time - revealStart) / duration, 0, 1);
-    const { cell, layerOpacity } = stylizedRevealFrame(clamp(ease(raw), 0, 1), startCell, handoffCell);
-    const rendered = paint(cell);
-    layer.style.opacity = String(layerOpacity);
-    if (!rendered || raw >= 1) {
-      // Either the reveal finished or the frames cannot be read back: hand the
-      // viewport to the raw video and stop rendering.
-      revealed = true;
-      layer.remove();
-      cancelAnimationFrame(rafId);
-      rafId = null;
-      opts.onProgress?.(1, el);
-    } else {
-      opts.onProgress?.(raw, el);
-    }
-  };
-  const start = () => {
-    if (destroyed || rafId != null || (revealed && !persist)) return;
-    rafId = requestAnimationFrame(frame);
-  };
-
+  const settings = resolveStylizedSettings(effect, readStylizedInput(effect, opts), { lowTier, persistFps: 24, revealFps: 24, maxDpr: 1.5 });
+  const stylizer = createVideoStylizer({
+    el, wrapper, effect, settings, prefix: 'kt-lazy',
+    durationMs: Math.max(120, durationMs(opts.duration, 1.6)),
+    onProgress: (progress, target) => opts.onProgress?.(progress, target)
+  });
   const inner = createVideoReveal(el, {
     ...opts,
     onReveal: (video) => {
       opts.onReveal?.(video);
-      start();
+      stylizer.start();
     }
   });
-  el.addEventListener('playing', start);
 
   return {
     el,
     type: 'lazy',
     get animatedMedia() { return true; },
-    replay() {
-      revealStart = null;
-      revealed = persist;
-      lastDraw = -Infinity;
-      layer.style.opacity = '1';
-      if (!layer.isConnected) wrapper.appendChild(layer);
-      inner.replay();
-      start();
-    },
-    pause() { paused = true; inner.pause(); },
-    resume() { paused = false; inner.resume(); start(); },
+    replay() { inner.replay(); stylizer.replay(); },
+    pause() { stylizer.pause(); inner.pause(); },
+    resume() { stylizer.resume(); inner.resume(); },
     destroy() {
-      destroyed = true;
-      if (rafId != null) cancelAnimationFrame(rafId);
-      rafId = null;
-      el.removeEventListener('playing', start);
-      renderer.destroy();
-      layer.remove();
+      stylizer.destroy();
       inner.destroy();
-      if (created && wrapper.parentNode) {
-        wrapper.parentNode.insertBefore(el, wrapper);
-        wrapper.remove();
-      } else if (!created) {
-        if (originalWrapperStyle == null) wrapper.removeAttribute('style');
-        else wrapper.setAttribute('style', originalWrapperStyle);
-      }
+      releaseWrapper(el, wrapping);
       if (originalStyle == null) el.removeAttribute('style');
       else el.setAttribute('style', originalStyle);
     }
   };
+}
+
+// Opt-in deprecation notice (Kineto.config({ debug: true }) or a diagnostics
+// subscriber); silent otherwise, exactly like every other diagnostic.
+function reportDeprecatedAlias(kineto, effect) {
+  const diagnostics = kineto?.diagnostics;
+  const code = kineto?.diagnosticCodes?.DEPRECATED;
+  if (!diagnostics || !code) return;
+  try {
+    diagnostics.emit(diagnostics.create({
+      code,
+      module: 'lazy',
+      phase: 'create',
+      recoverable: true,
+      detail: { variant: effect, replacement: `data-kt-${STYLIZED_ALIAS_REPLACEMENT}="${effect}"`, removal: 'next major' }
+    }));
+  } catch (_error) { /* diagnostics must never break creation */ }
 }
 
 export default {
@@ -446,7 +314,7 @@ export default {
     // effects layer their renderer on top of that same reveal.
     if (el.tagName === 'VIDEO') {
       const videoEffect = opts.preset || opts.effect || 'fade';
-      return STYLIZED_EFFECTS.has(videoEffect)
+      return isStylizedEffect(videoEffect)
         ? createStylizedVideo(el, opts, videoEffect, kineto)
         : createVideoReveal(el, opts);
     }
@@ -465,7 +333,9 @@ export default {
       loading: el.getAttribute('loading'),
       decoding: el.getAttribute('decoding')
     };
-    const { wrapper, created, originalWrapperStyle } = ensureWrapper(el, opts);
+    const wrapping = ensureWrapper(el, wrapperBox(opts));
+    const { wrapper } = wrapping;
+    if (isStylizedEffect(effect)) reportDeprecatedAlias(kineto, effect);
 
     el.loading = opts.nativeLazy === false ? 'eager' : 'lazy';
     el.decoding = 'async';
@@ -484,7 +354,6 @@ export default {
     let started = false;
     let noise = null;
     let stylized = null;
-    let resizeObserver = null;
     const lowTier = kineto?.performance === 'low';
 
     const later = (callback, delay) => {
@@ -501,8 +370,6 @@ export default {
       noise = null;
       stylized?.destroy();
       stylized = null;
-      resizeObserver?.disconnect();
-      resizeObserver = null;
     };
     const expose = () => {
       const srcset = opts.srcset || el.getAttribute('data-srcset');
@@ -1048,93 +915,32 @@ export default {
         return;
       }
 
+      // Spelled out per variant so scripts/derive-variant-options.mjs can
+      // attribute the timing reads below to these three aliases only.
       if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {
-        // Stylized reveal (or permanent stylization with `persist`). The
-        // original stays visible underneath the canvas so a source the canvas
-        // cannot read back (cross-origin without CORS) still shows the picture.
+        // Deprecated alias of the Stylize module: reveal into the original (or
+        // keep the look with `persist`). The original stays visible underneath
+        // the canvas so a source the canvas cannot read back (cross-origin
+        // without CORS) still shows the picture.
         el.src = src;
         el.style.opacity = '1';
-        const { layer, canvas } = createStylizedCanvasLayer(wrapper, effect);
-        layers.push(layer);
         // A still image only animates while revealing, so the reveal gets a
         // higher frame budget than a permanent (persist) stylization.
-        const { persist, startCell, handoffCell, styleConfig, fps, maxDpr } =
-          readStylizedSettings(effect, opts, { lowTier, persistFps: 24, revealFps: 30, maxDpr: 2 });
-        const interval = 1000 / fps;
-        const renderer = createStylizedRenderer(canvas, styleConfig, { maxDpr });
-        stylized = renderer;
-        const duration = Math.max(120, durationMs(opts.duration, 1.6));
-        const delayMs = Math.max(0, Number(opts.delay ?? 60));
-        const hold = Math.max(0, Number(opts.holdDuration ?? 0));
-        const ease = easingFunction(opts.ease || 'cubic-out');
-        const animatedSource = opts.animated === true || ANIMATED_EXTENSIONS.test(src);
-        // Drawing the live <img> each frame keeps GIF/APNG/animated WebP moving.
-        const drawable = () => (el.complete && el.naturalWidth ? el : image);
-        const paint = (cell) => {
-          const box = wrapper.getBoundingClientRect();
-          renderer.sync(box.width, box.height);
-          return renderer.render(drawable(), cell);
-        };
-        let lastDraw = -Infinity;
-
-        if (persist) {
-          // Permanent stylization: no hand-off to the original. Live sources
-          // need continuous frames; a still image only re-renders on resize.
-          const rendered = paint(startCell);
-          opts.onProgress?.(1, el);
-          opts.onLoad?.(el, image);
-          if (rendered && animatedSource) {
-            const frame = (time) => {
-              if (destroyed) return;
-              if (!paused && time - lastDraw >= interval) {
-                paint(startCell);
-                lastDraw = time;
-              }
-              rafId = requestAnimationFrame(frame);
-            };
-            rafId = requestAnimationFrame(frame);
-          } else if (rendered && typeof ResizeObserver !== 'undefined') {
-            resizeObserver = new ResizeObserver(() => { if (!destroyed) paint(startCell); });
-            resizeObserver.observe(wrapper);
-          }
-          return;
-        }
-
-        // Reveal: cells shrink for the first 70% of the timeline, then the
-        // stylized layer crossfades into the original for the remaining 30%
-        // (see stylizedRevealFrame). Pausing freezes the timeline in place.
-        let startTime = null;
-        let pausedAt = null;
-        const frame = (time) => {
-          if (destroyed) return;
-          if (paused) {
-            if (pausedAt == null) pausedAt = time;
-            rafId = requestAnimationFrame(frame);
-            return;
-          }
-          if (pausedAt != null && startTime != null) {
-            startTime += time - pausedAt;
-            pausedAt = null;
-          }
-          if (startTime == null) startTime = time;
-          const raw = clamp((time - startTime) / duration, 0, 1);
-          if (time - lastDraw >= interval || raw >= 1) {
-            const { cell, layerOpacity } = stylizedRevealFrame(clamp(ease(raw), 0, 1), startCell, handoffCell);
-            const rendered = paint(cell);
-            if (!rendered && lastDraw === -Infinity) {
-              // Unreadable source: skip the effect rather than hide the image.
-              finish();
-              return;
-            }
-            layer.style.opacity = String(layerOpacity);
-            opts.onProgress?.(raw, el);
-            lastDraw = time;
-          }
-          if (raw < 1) rafId = requestAnimationFrame(frame);
-          else later(finish, hold);
-        };
-        paint(startCell);
-        later(() => { rafId = requestAnimationFrame(frame); }, delayMs);
+        const settings = resolveStylizedSettings(effect, readStylizedInput(effect, opts), { lowTier, persistFps: 24, revealFps: 30, maxDpr: 2 });
+        stylized = createImageStylizer({
+          el, wrapper, effect, settings, prefix: 'kt-lazy',
+          // Drawing the live <img> each frame keeps GIF/APNG/animated WebP moving.
+          drawable: () => (el.complete && el.naturalWidth ? el : image),
+          animatedSource: opts.animated === true || ANIMATED_EXTENSIONS.test(src),
+          durationMs: Math.max(120, durationMs(opts.duration, 1.6)),
+          delayMs: Math.max(0, Number(opts.delay ?? 60)),
+          holdMs: Math.max(0, Number(opts.holdDuration ?? 0)),
+          onProgress: (progress, target) => opts.onProgress?.(progress, target),
+          onFinish: finish
+        });
+        layers.push(stylized.layer);
+        if (settings.persist) opts.onLoad?.(el, image);
+        stylized.start();
         return;
       }
 
@@ -1215,7 +1021,7 @@ export default {
     };
 
     if (effect === 'skeleton') setupSkeleton();
-    else if (!['blur-up', 'polaroid', 'pixelate'].includes(effect) && !STYLIZED_EFFECTS.has(effect)) el.style.opacity = '0';
+    else if (!['blur-up', 'polaroid', 'pixelate'].includes(effect) && !isStylizedEffect(effect)) el.style.opacity = '0';
 
     observer = observeOnce(el, run, {
       threshold: Number(opts.threshold ?? 0.05),
@@ -1232,8 +1038,8 @@ export default {
         if (effect === 'skeleton') setupSkeleton();
         run();
       },
-      pause() { paused = true; },
-      resume() { paused = false; },
+      pause() { paused = true; stylized?.pause(); },
+      resume() { paused = false; stylized?.resume(); },
       destroy() {
         destroyed = true;
         paused = false;
@@ -1242,13 +1048,7 @@ export default {
         timers.forEach(clearTimeout);
         timers.clear();
         removeLayers();
-        if (created && wrapper.parentNode) {
-          wrapper.parentNode.insertBefore(el, wrapper);
-          wrapper.remove();
-        } else if (!created) {
-          if (originalWrapperStyle == null) wrapper.removeAttribute('style');
-          else wrapper.setAttribute('style', originalWrapperStyle);
-        }
+        releaseWrapper(el, wrapping);
         const restore = (name, value) => value == null ? el.removeAttribute(name) : el.setAttribute(name, value);
         restore('style', original.style);
         restore('src', original.src);

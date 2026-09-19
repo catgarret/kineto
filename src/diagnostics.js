@@ -9,7 +9,10 @@ export const DIAGNOSTIC_CODES = Object.freeze({
   UPDATE_FAILED: 'KT_UPDATE_FAILED',
   DESTROY_FAILED: 'KT_DESTROY_FAILED',
   LIFECYCLE_FAILED: 'KT_LIFECYCLE_FAILED',
-  TRANSFORM_CONFLICT: 'KT_TRANSFORM_CONFLICT'
+  TRANSFORM_CONFLICT: 'KT_TRANSFORM_CONFLICT',
+  // A still-working public API that has a replacement and a removal release;
+  // `detail` names the replacement (docs/diagnostics-and-deprecation.md).
+  DEPRECATED: 'KT_DEPRECATED'
 });
 
 export function createDiagnostic({ code, module = 'core', phase = 'runtime', recoverable = false, cause, detail } = {}) {

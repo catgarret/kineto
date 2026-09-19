@@ -8,8 +8,8 @@
 |---|---|---|
 | public error code | 구현 | `Kineto.diagnosticCodes`와 `Kineto.diagnostics.create()`가 `KT_*` 코드와 공통 shape를 제공합니다. |
 | opt-in debug output | 구현 | `Kineto.config({ debug: true, debugSink })` 또는 `Kineto.diagnostics.subscribe()`로 명시적으로 켭니다. 기본값은 비활성입니다. |
-| deprecated public API | 없음 | 소유자 승인 없이 deprecated로 표시하지 않음 |
-| migration fixture | 준비 전 | 실제 deprecated API가 생기는 release에서 추가 |
+| deprecated public API | 1건 | `data-kt-lazy="dither|ascii|halftone"` (v0.11.0에서 Stylize로 이관, 한 minor 유예) |
+| migration fixture | 구현 | `KT_DEPRECATED` 진단과 아래 migration 예제, `tests/lazy-stylized-media.mjs`의 alias 검사 |
 
 ## 제안하는 오류 shape
 
@@ -65,7 +65,51 @@ URL, 서버 응답을 자동 수집하지 않으며, 최근 50개 이벤트만 o
 3. 최소 한 minor 동안 동작을 유지하고, 개발 환경에서만 opt-in 경고를 허용합니다.
 4. major에서 제거할 때 old/new fixture와 변경 전후 번들·lifecycle 결과를 함께 기록합니다.
 
-현재 공개 API에는 deprecation을 시작할 항목이 없습니다. 진단 API는 Core와
-어댑터가 공유하는 sink·shape만 제공하며, 어댑터가 임의로 다른 오류 의미를
-만들지 않습니다. 실제 deprecated API가 생기면 이 문서의 migration fixture와
-minor 유예 기간을 함께 갱신합니다.
+진단 API는 Core와 어댑터가 공유하는 sink·shape만 제공하며, 어댑터가 임의로
+다른 오류 의미를 만들지 않습니다.
+
+## 현재 deprecated 목록
+
+### `data-kt-lazy="dither|ascii|halftone"` → `data-kt-stylize`
+
+v0.11.0에서 이 세 variant는 Lazy를 떠나 Stylize 모듈이 되었습니다. 이유는
+분류입니다. Lazy가 하는 일은 이미지를 *가져오는* 것이고, 이 셋이 하는 일은
+이미 있는 픽셀을 *다시 그리는* 것입니다. 자세한 근거는
+[`module-taxonomy.md`](module-taxonomy.md)에 있습니다.
+
+Lazy의 세 값은 **한 minor 동안 그대로 동작합니다.** 같은 rasterizer와 같은
+lifecycle을 쓰므로 결과 픽셀도 동일하며, 사용 시 `debug`를 켠 소비자에게만
+`KT_DEPRECATED` 진단을 한 번 보냅니다.
+
+```js
+Kineto.config({ debug: true }); // 진단은 opt-in입니다
+Kineto.diagnostics.subscribe((entry) => {
+  if (entry.code === Kineto.diagnosticCodes.DEPRECATED) console.warn(entry);
+});
+// { code: 'KT_DEPRECATED', module: 'lazy', phase: 'create', recoverable: true,
+//   detail: { variant: 'dither', replacement: 'data-kt-stylize="dither"', removal: 'next major' } }
+```
+
+migration은 속성 이름만 바꾸면 됩니다. 다만 Stylize는 로딩을 다루지 않으므로
+`data-src`가 아니라 `src`를 쓰고, `data-kt-persist` 대신 `data-kt-mode`로
+유지(`persist`, 기본값)와 리빌(`reveal`)을 고릅니다.
+
+```html
+<!-- before (v0.10.x) -->
+<img data-kt-lazy="dither" data-src="photo.webp" data-kt-cell-size="8" alt="…">
+<img data-kt-lazy="ascii" data-src="photo.webp" data-kt-persist alt="…">
+
+<!-- after (v0.11.0+) -->
+<img data-kt-stylize="dither" data-kt-mode="reveal" src="photo.webp" data-kt-cell-size="8" alt="…">
+<img data-kt-stylize="ascii" src="photo.webp" alt="…">
+```
+
+로딩 전환과 질감을 함께 쓰고 싶다면 두 모듈을 한 요소에 붙이면 됩니다. Stylize는
+Lazy가 만든 wrapper를 재사용하므로 레이어가 겹치지 않습니다.
+
+```html
+<img data-kt-lazy="fade" data-kt-stylize="halftone" data-src="photo.webp" alt="…">
+```
+
+major에서 제거할 때 old/new fixture와 변경 전후 번들·lifecycle 결과를 함께
+기록합니다.

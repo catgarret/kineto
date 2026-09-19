@@ -17,7 +17,7 @@ core teardown 이후 생존, `attributes` 옵션, `disconnect()`, 전역 `destro
 
 ### 연동 지도와 생성물
 
-`tests/integrations-contract.mjs`: 12개 생태계·30개 의도·85개 레시피가 기능 계약(52개 모듈)과 일치,
+`tests/integrations-contract.mjs`: 12개 생태계·31개 의도·88개 레시피가 기능 계약(53개 모듈)과 일치,
 53개 모듈 커버(의도 없는 모듈 0), Figma 규칙이 실제 의도를 가리킴, 생성 문서 18개·레지스트리 13개·MCP
 계약 사본 6개가 현재 상태, README·예제 README가 unscoped 패키지명을 쓰지 않음.
 
@@ -30,7 +30,7 @@ React client render + `Kineto.observe()`(붙임·해제), Vuetify 3.13.4·PrimeV
 
 ### shadcn 레지스트리 QA (`tests/integrations/registry-qa.mjs`)
 
-12개 항목 유효성, `site/r/*.json`이 원본과 바이트 일치, registry-item 스키마, 실제 `@types/react`로
+13개 항목 유효성, `site/r/*.json`이 원본과 바이트 일치, registry-item 스키마, 실제 `@types/react`로
 strict TypeScript 통과, shadcn CLI 3.8.5가 새 프로젝트에 URL 형식(provider·reveal·counter·utils·
 ai-rules)과 `@kineto` 네임스페이스(`registries` 템플릿, 로컬 HTTP 서버) 두 방식으로 설치, lib alias
 재작성과 `@dong-gri/kineto` 의존성 추가 확인.
@@ -439,7 +439,7 @@ v0.9.7 공개 릴리스 근거는 보존하며, 후속 Unreleased 소스의 검�
 | 데모 | 통과 | 198개 playground, 650/650 고유 설정(렌더된 control 5,122개), 신규 비교 카드 9개, 390px 배치, 기존 공유 URL, 7개 locale의 실행 중 hero text·ARIA |
 | 공급망 | 통과 | Node 24에서 root·consumer·framework 3개 lockfile 각각 취약점 0건 |
 | 통합 CI·릴리스 검증 | 통과 | Node 24.20.0 `npm run ci` 및 v0.9.8 `npm run verify`: lint·build·전체 Node·데모·Chromium·npm pack·3개 lockfile 감사, 기존 번들·패키지 상한 유지 |
-| 공개 범위 | 유지 | 52개 모듈·29개 Core API·49개 요구사항, runtime 의존성 0개·npm 파일 77개 |
+| 공개 범위 | 확대 | 53개 모듈·29개 Core API·50개 요구사항, runtime 의존성 0개·npm 파일 77개 |
 
 비교 카드 검사의 숨겨진 drawer 본문이 후속 공유 링크 검사에 간섭한 문제는
 기존 Reset 경로로 정리해 해결했습니다. 이후 드러난 hero의 이전 언어 ARIA는
@@ -460,7 +460,7 @@ Slider의 소유 상태 복원 중복을 통합했습니다. 기존 예산·77�
 |---|---|---|
 | Lint | 통과 | source, tests, 모든 demo 스크립트 |
 | Build | 통과 | ESM, UMD, minified JS/CSS |
-| Feature contract | 통과 | 52 modules, 29 Core APIs |
+| Feature contract | 통과 | 53 modules, 29 Core APIs |
 | Owner requirements | 통과 | 48 locked requirements |
 | Docs / options parity | 통과 | 생성 문서와 설정 필드 계약 동기화 |
 | Package surface | 통과 | ESM, CommonJS, CSS, React/Vue/jQuery entry |

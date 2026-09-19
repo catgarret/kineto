@@ -116,11 +116,10 @@ try {
     )
   }));
   assert.equal(surface.version,contract.libraryVersion);
-  // Radial remains a public compatibility module but intentionally shares the
-  // Slider section, so the demo has one fewer navigation chip than registry
-  // entries. tests/nav-parity.mjs verifies that exact grouped relationship.
+  // Every public module now has its own nav chip — `radial` used to be the one
+  // exception, demoed only through Slider's radial effect.
   assert.ok(surface.modules>=contract.moduleCount,`registry entries ${surface.modules}`);
-  assert.equal(surface.chips + 1,contract.moduleCount);
+  assert.equal(surface.chips,contract.moduleCount);
   assert.ok(surface.categories>=6,`categories ${surface.categories}`);
   assert.ok(surface.panels>=55,`expected at least 55 playground panels, got ${surface.panels}`);
   assert.equal(surface.codeBlocks,0,'playground bodies should stay lazy until opened'); assert.equal(surface.notice,1);
@@ -1189,7 +1188,7 @@ try {
   await smokePage.close();
   await page.close();
   await runAnimatedMediaQa(browser, root);
-  console.log(`Demo QA OK: ${surface.panels} playgrounds, lifecycle/UMD smoke, and animated media continuity; 49 owner requirements represented.`);
+  console.log(`Demo QA OK: ${surface.panels} playgrounds, lifecycle/UMD smoke, and animated media continuity; 50 owner requirements represented.`);
   passed = true;
 } finally {
   killBrowserServer(browserServer);

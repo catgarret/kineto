@@ -16,7 +16,7 @@ English · [한국어](i18n/README.ko.md) · [日本語](i18n/README.jp.md) · [
 
 ---
 
-Kineto provides 52 modules for motion, media, scroll, text, and UI.
+Kineto provides 53 modules for motion, media, scroll, text, and UI.
 Use a single `data-kt-*` attribute or control the same feature through the
 JavaScript API.
 Unsupported environments disable the effect while keeping the content intact.
@@ -54,7 +54,7 @@ direction.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/lightbox.gif" width="620" alt="Lightbox">
 
-See the [full module list](#modules) below for all 52 modules.
+See the [full module list](#modules) below for all 53 modules.
 
 ## Installation
 
@@ -71,7 +71,7 @@ import '@dong-gri/kineto/style.css';
 Kineto.autoInit();
 ```
 
-기본 엔트리는 52개 모듈을 한 번에 등록하는 가장 간단한 경로입니다. 초기 번들 비용이
+기본 엔트리는 53개 모듈을 한 번에 등록하는 가장 간단한 경로입니다. 초기 번들 비용이
 중요한 제품에서는 아래의 `core` + 모듈 엔트리를 기본 선택으로 두고, 실제 사용하는
 모듈만 등록하십시오. 소비자별 측정값과 gzip 예산은
 [`docs/consumer-bundle-size.md`](docs/consumer-bundle-size.md)에 공개합니다.
@@ -223,7 +223,8 @@ Kineto.disableSmooth();
 | `glitch` | `data-kt-glitch` | RGB slice and glitch reveal |
 | `hold` | `data-kt-hold` | Hold / mash-to-confirm gauge |
 | `horizontalScroll` | `data-kt-horizontal-scroll` | Pinned horizontal scroll section |
-| `lazy` | `data-kt-lazy` | Image / video load effects (skeleton, pixelate, print, dissolve, dither, ASCII, halftone) |
+| `lazy` | `data-kt-lazy` | Image / video load effects (skeleton, blur-up, pixelate, print, dissolve) |
+| `stylize` | `data-kt-stylize` | Dither / ASCII / halftone canvas filter for images and video |
 | `lightbox` | `data-kt-lightbox` | Full-screen viewer, groups, zoom, minimap, filmstrip |
 | `loader` | `data-kt-loader` | Loader bound to real progress sources |
 | `loadingIndicator` | `data-kt-loading-indicator` | Inline spinner, bar, shimmer, and symbol indicators |

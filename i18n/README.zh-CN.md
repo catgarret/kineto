@@ -16,7 +16,7 @@
 
 ---
 
-Kineto 是一个包含 52 个交互模块（动效、媒体、滚动、加载器、文本）的库，你可以用一个 `data-kt-*` 属性直接挂载，或通过 JavaScript API 精细控制。核心无任何必需依赖；在不支持的浏览器或低端设备上，效果会自动关闭而内容保持完整。
+Kineto 是一个包含 53 个交互模块（动效、媒体、滚动、加载器、文本）的库，你可以用一个 `data-kt-*` 属性直接挂载，或通过 JavaScript API 精细控制。核心无任何必需依赖；在不支持的浏览器或低端设备上，效果会自动关闭而内容保持完整。
 
 > 使用 AI 编程工具（Cursor、Claude 等）？请参阅 [AI 提示词指南](../AI-PROMPT-GUIDE.md)——其中包含可直接粘贴的指令，让助手在处理动效与交互时优先使用 Kineto 模块。
 
@@ -114,7 +114,8 @@ Kineto.disableSmooth();
 | `cursor` | `data-kt-cursor` | 11个自定义光标 |
 | `fullpage` | `data-kt-fullpage` | 垂直/水平/混合轴整页 |
 | `glitch` | `data-kt-glitch` | RGB 切片/像素故障 |
-| `lazy` | `data-kt-lazy` | 骨架·像素·打印·溶解·抖动·ASCII·半色调加载（图片·视频） |
+| `lazy` | `data-kt-lazy` | 骨架·模糊放大·像素·打印·溶解加载（图片·视频） |
+| `stylize` | `data-kt-stylize` | 抖动·ASCII·半色调画布滤镜（图片·视频） |
 | `lightbox` | `data-kt-lightbox` | 分组/缩放/小地图全屏查看器 |
 | `loader` | `data-kt-loader` | 真实进度链接加载程序 |
 | `loadingIndicator` | `data-kt-loading-indicator` | 内联旋转器、进度条、流光和符号指示器 |

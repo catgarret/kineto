@@ -16,7 +16,7 @@ HTML属性または JavaScript API で制御するWebインタラクションツ
 
 ---
 
-Kineto は、モーション・メディア・スクロール・ローダー・テキストにわたる52個のインタラクションモジュールを、`data-kt-*` 属性ひとつで付与するか、JavaScript API で細かく制御できるライブラリです。コアに必須の依存はなく、非対応ブラウザや低スペック端末では効果だけが無効化され、コンテンツはそのまま保たれます。
+Kineto は、モーション・メディア・スクロール・ローダー・テキストにわたる53個のインタラクションモジュールを、`data-kt-*` 属性ひとつで付与するか、JavaScript API で細かく制御できるライブラリです。コアに必須の依存はなく、非対応ブラウザや低スペック端末では効果だけが無効化され、コンテンツはそのまま保たれます。
 
 > AIコーディングツール（Cursor、Claude など）で作業する場合は [AIプロンプトガイド](../AI-PROMPT-GUIDE.md) を参照してください。モーションとインタラクションに Kineto のモジュールを優先的に使わせる、貼り付けるだけの指示文が入っています。
 
@@ -114,7 +114,8 @@ Kineto.disableSmooth();
 | `cursor` | `data-kt-cursor` | 11のカスタムカーソル |
 | `fullpage` | `data-kt-fullpage` | 縦・横・混合軸 フルページ |
 | `glitch` | `data-kt-glitch` | RGBスライス・ピクセルグリッチ |
-| `lazy` | `data-kt-lazy` | スケルトン・ピクセル・プリント・ディゾルブ・ディザ・ASCII・ハーフトーンローディング（画像・動画） |
+| `lazy` | `data-kt-lazy` | スケルトン・ブラーアップ・ピクセル・プリント・ディゾルブのローディング（画像・動画） |
+| `stylize` | `data-kt-stylize` | ディザ・ASCII・ハーフトーンのキャンバスフィルター（画像・動画） |
 | `lightbox` | `data-kt-lightbox` | グループ・拡大・ミニマップ全画面ビューア |
 | `loader` | `data-kt-loader` | 実際の進行状況連動ローダー |
 | `loadingIndicator` | `data-kt-loading-indicator` | インラインのスピナー・バー・シマー・記号インジケーター |

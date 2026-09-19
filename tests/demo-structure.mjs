@@ -11,7 +11,11 @@ import { JSDOM } from 'jsdom';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRY = fs.readdirSync(path.join(root, 'src/modules')).filter((f) => f.endsWith('.js')).map((f) => f.replace('.js', ''));
-const GROUPED_MODULES = { radial: 'slider' };
+// `radial` used to have no nav entry of its own — it was only demoed through
+// Slider's radial effect, so the counts here had to add it back by hand. It now
+// carries a data-kt-radial card and is listed like every other module, so the
+// index count is simply the registry count.
+const COMPAT_DEMOS = { radial: 'slider' };
 const html = fs.readFileSync(path.join(root, 'demo/index.html'), 'utf8').replace(/<script[\s\S]*?<\/script>/gi, '');
 
 // Count top-level demo units the way buildContent does, so we can prove none are
@@ -48,12 +52,13 @@ ok(sourceDocument.querySelectorAll('style').length === 0, 'demo contains inline 
 
 // 1. Module Index
 const items = [...d.querySelectorAll('#module-list .mod-index-item')];
-ok(items.length + Object.keys(GROUPED_MODULES).length === REGISTRY.length, `module-index/group count ${items.length} + ${Object.keys(GROUPED_MODULES).length}, expected ${REGISTRY.length}`);
+ok(items.length === REGISTRY.length, `module-index count ${items.length}, expected ${REGISTRY.length}`);
 ok(items.every((i) => i.querySelector('.mii-sub')?.textContent.trim()), 'some module-index items have no description');
 const idxModules = items.map((i) => i.dataset.module);
 ok(new Set(idxModules).size === idxModules.length, 'duplicate module in index');
-for (const [moduleName, hostModule] of Object.entries(GROUPED_MODULES)) {
-  ok(idxModules.includes(hostModule), `module-index group host ${hostModule} is missing for ${moduleName}`);
+for (const [moduleName, hostModule] of Object.entries(COMPAT_DEMOS)) {
+  ok(idxModules.includes(moduleName), `module-index is missing ${moduleName}`);
+  ok(idxModules.includes(hostModule), `module-index is missing ${hostModule}, which shares ${moduleName}'s engine`);
 }
 
 // 2. Settings triggers below demos (pinned ones especially)

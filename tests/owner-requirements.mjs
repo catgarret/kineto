@@ -10,13 +10,13 @@ const demo = (await read('../demo/index.html')) + (await read('../demo/main.js')
 const playground = await read('../demo/playground.js');
 const playgroundI18n = await read('../demo/playground-i18n.js');
 const source = Object.fromEntries(await Promise.all([
-  'counter','loader','loadingIndicator','lazy','reveal','textReveal','textTransition','glitch','ripple','overflowText','lightbox','slider','ambientMedia','cardGlow','cursor','scrollVelocity','stickyStack'
+  'counter','loader','loadingIndicator','lazy','stylize','reveal','textReveal','textTransition','glitch','ripple','overflowText','lightbox','slider','ambientMedia','cardGlow','cursor','scrollVelocity','stickyStack'
 ].map(async (name) => [name, await read(`../src/modules/${name}.js`)])));
 
 assert.equal(requirements.libraryVersion, packageJson.version);
-assert.equal(requirements.requirements.length, 49, 'all 49 owner requirements must remain locked');
-assert.equal(new Set(requirements.requirements.map(({ id }) => id)).size, 49, 'requirement IDs must be unique');
-assert.equal(features.moduleCount, 52);
+assert.equal(requirements.requirements.length, 50, 'all 50 owner requirements must remain locked');
+assert.equal(new Set(requirements.requirements.map(({ id }) => id)).size, 50, 'requirement IDs must be unique');
+assert.equal(features.moduleCount, 53);
 assert.ok(
   aiPromptGuide.indexOf('Canonical prompt for AI tools (English)')
     < aiPromptGuide.indexOf('## 한국어 사용 안내'),
@@ -60,11 +60,24 @@ assert.match(source.lazy, /kt-lazy-skeleton/);
 assert.match(source.lazy, /Math\.random\(\)/);
 assert.match(source.lazy, /effect === 'print' \|\| effect === 'dissolve'/);
 assert.match(source.lazy, /ANIMATED_EXTENSIONS/);
-// MK-LAZY-008: the stylized variants share one rasterizer, cover <img> and
-// <video>, and can persist instead of revealing.
-assert.match(source.lazy, /createStylizedRenderer\(/);
+// MK-LAZY-008: the stylized aliases render through the shared media
+// controllers (the same ones Stylize uses), cover <img> and <video>, still
+// honour `persist`, and announce their replacement through a diagnostic.
+assert.match(source.lazy, /createImageStylizer\(\{/);
 assert.match(source.lazy, /createStylizedVideo\(el, opts, videoEffect, kineto\)/);
-assert.match(source.lazy, /opts\.persist === true/);
+assert.match(source.lazy, /input\.persist = opts\.persist/);
+assert.match(source.lazy, /reportDeprecatedAlias\(kineto, effect\)/);
+assert.match(source.lazy, /replacement: `data-kt-\$\{STYLIZED_ALIAS_REPLACEMENT\}="\$\{effect\}"`/);
+// MK-STYLIZE-001: Stylize is the owner of the look — persist or reveal, image
+// or video, with the reveal honouring load / view / manual triggers and
+// reduced motion skipping straight to the original.
+assert.deepEqual(module('stylize').variants, ['dither','ascii','halftone']);
+assert.equal(module('stylize').defaultVariant, 'dither');
+assert.match(source.stylize, /createImageStylizer\(\{/);
+assert.match(source.stylize, /createVideoStylizer\(\{/);
+assert.match(source.stylize, /opts\.mode === 'reveal' \? 'reveal' : 'persist'/);
+assert.match(source.stylize, /TRIGGERS = new Set\(\['load', 'view', 'manual'\]\)/);
+assert.match(source.stylize, /reduced\(el, opts = \{\}, kineto = null\)/);
 assert.match(source.overflowText, /mode === 'rolling'/);
 assert.match(source.overflowText, /maskDirection/);
 assert.match(source.reveal, /classOnly/);
@@ -88,7 +101,9 @@ assert.match(source.cursor, /type === 'custom'/);
 for (const marker of ['data-demo="counter"','data-demo="loader"','data-demo="lazy"','data-demo="overflow-text"','data-demo="card-glow"','data-demo="buttons"','data-demo="text-motion"','data-demo="content-reveal"','data-demo="scroll"','data-demo="media-ui"','data-demo="cursor-smooth"']) {
   assert.match(demo, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `demo marker missing: ${marker}`);
 }
-for (const marker of ['Skeleton — Pulse','Rolling Ticker','SURFACE + EDGE','Class Hook','motion-demo.gif','motion-demo.webp','motion-demo.png','Lightbox Viewer','Ring + Dot','data-kt-lazy="dither"','data-kt-lazy="ascii"','data-kt-lazy="halftone"']) assert.match(demo, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+for (const marker of ['Skeleton — Pulse','Rolling Ticker','SURFACE + EDGE','Class Hook','motion-demo.gif','motion-demo.webp','motion-demo.png','Lightbox Viewer','Ring + Dot','data-kt-stylize="dither"','data-kt-stylize="ascii"','data-kt-stylize="halftone"']) assert.match(demo, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+// The demo classifies the looks as Stylize, not as lazy-loading variants.
+assert.doesNotMatch(demo, /data-kt-lazy="(?:dither|ascii|halftone)"/, 'demo must not present the stylized looks as Lazy variants');
 assert.match(demo, /KinetoPlayground\.capture/);
 assert.match(demo, /KinetoPlayground\.mount/);
 assert.match(playground, /kt-playground__summary-label/);

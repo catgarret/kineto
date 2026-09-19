@@ -9,7 +9,8 @@ import { chromium } from 'playwright';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const REGISTRY = fs.readdirSync(path.join(root, 'src/modules')).filter((f) => f.endsWith('.js')).length;
-const GROUPED_MODULE_COUNT = 1; // radial is represented inside the Slider block
+// Every public module has its own nav entry and block. `radial` used to be the
+// exception — it was only demoed through Slider's radial effect.
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.png': 'image/png', '.gif': 'image/gif' };
 
 const server = http.createServer((req, res) => {
@@ -54,7 +55,7 @@ const arrEq = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
 const fails = [];
 if (!arrEq(data.left, data.right)) fails.push('left !== right');
 if (new Set(data.left).size !== data.left.length) fails.push('duplicate nav module');
-if (data.left.length + GROUPED_MODULE_COUNT !== data.registry) fails.push(`nav ${data.left.length} + grouped ${GROUPED_MODULE_COUNT} !== registry ${data.registry}`);
+if (data.left.length !== data.registry) fails.push(`nav ${data.left.length} !== registry ${data.registry}`);
 if (data.registry !== REGISTRY) fails.push(`registry ${data.registry} !== module files ${REGISTRY}`);
 if (!data.radialRegistered || !data.radialDemo) fails.push('grouped radial module or Slider demo is missing');
 data.hrefIds.forEach((h) => {

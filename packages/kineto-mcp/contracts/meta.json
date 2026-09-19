@@ -1,10 +1,10 @@
 {
   "generatedBy": "scripts/build-mcp.mjs",
   "kinetoVersion": "0.11.0",
-  "featureContractVersion": "1.4.0",
+  "featureContractVersion": "1.5.0",
   "integrationsVersion": "1.0.0",
-  "moduleCount": 52,
-  "intentCount": 30,
+  "moduleCount": 53,
+  "intentCount": 31,
   "ecosystems": [
     "vanilla",
     "shadcn",
@@ -30,6 +30,7 @@
     "cursor": "docs/modules/cursor.md",
     "glitch": "docs/modules/glitch.md",
     "lazy": "docs/modules/lazy.md",
+    "stylize": "docs/modules/stylize.md",
     "lightbox": "docs/modules/lightbox.md",
     "loader": "docs/modules/loader.md",
     "loadingIndicator": "docs/modules/loadingIndicator.md",

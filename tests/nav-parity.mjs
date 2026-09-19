@@ -21,7 +21,10 @@ const mainJs = fs.readFileSync(path.join(root, 'demo/main.js'), 'utf8');
 const helpJs = fs.readFileSync(path.join(root, 'demo/help-i18n.js'), 'utf8');
 const REGISTRY = fs.readdirSync(path.join(root, 'src/modules'))
   .filter((f) => f.endsWith('.js')).map((f) => f.replace('.js', ''));
-const GROUPED_MODULES = { radial: 'slider' };
+// `radial` is a backward-compatible entry point onto Slider's radial effect.
+// Both are public modules and both are listed in the nav; this map only records
+// that they share one engine, so each keeps a working demo.
+const COMPAT_DEMOS = { radial: 'slider' };
 
 // Drop the page's own <script> tags (external bundle + demo scripts); we inject
 // controlled stubs + main.js ourselves so nothing depends on network fetches.
@@ -44,6 +47,7 @@ const stub = `
 `;
 const run = (code) => { const s = doc.createElement('script'); s.textContent = code; doc.body.appendChild(s); };
 run(stub);
+run(fs.readFileSync(path.join(root, 'demo/module-metadata.js'), 'utf8'));
 try { run(helpJs); } catch (_) {}
 run(mainJs);
 
@@ -58,14 +62,15 @@ ok(leftOrder.length > 0, 'nav produced no links (builder did not run)');
 ok(arrEq(leftOrder, rightOrder), 'leftOrder !== rightOrder');
 ok(new Set(leftOrder).size === leftOrder.length, 'duplicate module in nav');
 ok(new Set(rightOrder).size === rightOrder.length, 'duplicate module block');
-ok(leftOrder.length + Object.keys(GROUPED_MODULES).length === REGISTRY.length, `nav/group count ${leftOrder.length} + ${Object.keys(GROUPED_MODULES).length} !== registry ${REGISTRY.length}`);
-const missing = REGISTRY.filter((m) => !leftOrder.includes(m) && !GROUPED_MODULES[m]);
+ok(leftOrder.length === REGISTRY.length, `nav count ${leftOrder.length} !== registry ${REGISTRY.length}`);
+const missing = REGISTRY.filter((m) => !leftOrder.includes(m));
 ok(missing.length === 0, 'modules missing from nav: ' + missing.join(', '));
-for (const [moduleName, hostModule] of Object.entries(GROUPED_MODULES)) {
-  ok(REGISTRY.includes(moduleName), `grouped module ${moduleName} is not registered`);
-  ok(leftOrder.includes(hostModule), `group host ${hostModule} is missing for ${moduleName}`);
+for (const [moduleName, hostModule] of Object.entries(COMPAT_DEMOS)) {
+  ok(REGISTRY.includes(moduleName), `compat module ${moduleName} is not registered`);
+  ok(leftOrder.includes(hostModule), `${hostModule} is missing from the nav for ${moduleName}`);
   if (moduleName === 'radial') {
-    ok(!!doc.querySelector('#mod-slider [data-kt-slider="radial"]'), 'radial compatibility demo is missing from the slider section');
+    ok(!!doc.querySelector('#mod-radial [data-kt-radial]'), 'radial has no demo of its own');
+    ok(!!doc.querySelector('#mod-slider [data-kt-slider="radial"]'), 'slider lost its radial effect demo');
   }
 }
 for (const a of doc.querySelectorAll('#side-nav-modules .nav-mod')) {

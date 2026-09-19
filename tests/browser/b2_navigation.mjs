@@ -7,10 +7,12 @@ const CHROME = process.env.KT_CHROME || undefined;
 const MODULE_COUNT = JSON.parse(fs.readFileSync(path.join(root, 'kineto.features.json'), 'utf8')).moduleCount;
 // Radial remains a public compatibility module, but its demo is intentionally
 // grouped into the Slider block instead of duplicating the same carousel UI.
-const DEMO_BLOCK_COUNT = MODULE_COUNT - 1;
+// Every public module now gets its own block; `radial` used to be the one
+// exception, demoed only through Slider's radial effect.
+const DEMO_BLOCK_COUNT = MODULE_COUNT;
 const shareToken=(payload)=>Buffer.from(JSON.stringify(payload),'utf8').toString('base64url');
 const MIME={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.gif':'image/gif','.woff2':'font/woff2'};
-const server=http.createServer((q,s)=>{const requestUrl=new URL(q.url,'http://localhost');let p=decodeURIComponent(requestUrl.pathname);let fp=path.join(root,p);if(fp.endsWith('/'))fp=path.join(fp,'index.html');fs.readFile(fp,(e,b)=>{if(e){s.writeHead(404);s.end();return;}if(requestUrl.searchParams.has('share-order-fixture')&&fp===path.join(root,'demo/index.html')){const marker='<article class="card wide"><h3>Typewriter</h3>';const fixture='<article class="card" data-demo-module="textSplit" data-share-order-fixture><h3>Unrelated ordering fixture</h3><p>Only shifts the legacy mount ordinal.</p><div class="demo-stage"><div data-kt-text-split="word">ORDER FIXTURE</div></div></article>';b=Buffer.from(b.toString().replace(marker,fixture+marker));}s.writeHead(200,{'content-type':MIME[path.extname(fp)]||'application/octet-stream'});s.end(b);});});
+const server=http.createServer((q,s)=>{const requestUrl=new URL(q.url,'http://localhost');let p=decodeURIComponent(requestUrl.pathname);let fp=path.join(root,p);if(fp.endsWith('/'))fp=path.join(fp,'index.html');fs.readFile(fp,(e,b)=>{if(e){s.writeHead(404);s.end();return;}if(requestUrl.searchParams.has('share-order-fixture')&&fp===path.join(root,'demo/index.html')){const heading='<h3>Typewriter</h3>';const html=b.toString();const at=html.indexOf(heading);const marker=at<0?heading:html.slice(html.lastIndexOf('<article',at),at+heading.length);const fixture='<article class="card" data-demo-module="textSplit" data-share-order-fixture><h3>Unrelated ordering fixture</h3><p>Only shifts the legacy mount ordinal.</p><div class="demo-stage"><div data-kt-text-split="word">ORDER FIXTURE</div></div></article>';b=Buffer.from(html.replace(marker,fixture+marker));}s.writeHead(200,{'content-type':MIME[path.extname(fp)]||'application/octet-stream'});s.end(b);});});
 await new Promise(r=>server.listen(0,r)); const PORT=server.address().port;
 const browser=await chromium.launch({headless:true,...(CHROME?{executablePath:CHROME}:{}),args:['--no-sandbox','--disable-gpu']});
 const page=await browser.newPage({viewport:{width:1280,height:900}});

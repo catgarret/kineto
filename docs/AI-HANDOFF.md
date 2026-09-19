@@ -48,7 +48,7 @@ another agent's prose report are leads to verify, not evidence of completion.
 - Package: `@dong-gri/kineto`
 - Current source version: `0.11.0`
 - Latest published npm version at the time of this handoff: `0.10.0`
-- Public surface: 52 modules and 29 Core APIs
+- Public surface: 53 modules and 29 Core APIs
 - Primary branch: `main`
 - Remote: `https://github.com/catgarret/kineto`
 
@@ -68,7 +68,7 @@ Read:
 
 At this handoff, the most recent completed work includes:
 
-- settings and demo hardening across the 52-module playground;
+- settings and demo hardening across the 53-module playground;
 - composable Tilt/Card Glow shadows;
 - Cover Reveal single/pair/palette/automatic colour modes;
 - CSS colour inputs that preserve HEX, RGB(A), HSL(A), and custom properties;
@@ -157,7 +157,7 @@ media variants `dither` / `ascii` / `halftone` on one shared canvas rasterizer
 (`src/modules/lazy/stylizedMedia.js`; option reading and canvas layering are
 shared by the `<img>` and `<video>` paths through `readStylizedSettings()` /
 `createStylizedCanvasLayer()` in `src/modules/lazy.js`). Contract: owner
-requirement MK-LAZY-008 (49 total, requirements 3.2.0), feature contract 1.4.0
+requirements MK-LAZY-008 and MK-STYLIZE-001 (50 total, requirements 3.3.0), feature contract 1.5.0
 with a new `media` variant capability, twelve public options with declared
 defaults, and derived `variantOptions`. Demo: four cards (217 playgrounds,
 74/81 dedicated high-risk variants) plus seven-language copy and tooltips; the
@@ -185,7 +185,7 @@ locks it; the next successful `main` push CI (or a `workflow_dispatch` of
 
 The post-v0.10.0 Unreleased batch is the integration program: `Kineto.observe()`
 (29th Core API, MutationObserver-based live DOM attach/release),
-`kineto.integrations.json` (+ schema; 12 ecosystems, 30 intents, Figma hints)
+`kineto.integrations.json` (+ schema; 12 ecosystems, 31 intents, Figma hints)
 generating `docs/integrations/*.md`, `ai/kineto.rules.md`,
 `ai/cursor/kineto.mdc`, `site/llms.txt` and the MCP contract copies via
 `npm run integrations:build`; the shadcn registry (`registry/` → `site/r/*.json`,

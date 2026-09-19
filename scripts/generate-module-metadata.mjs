@@ -32,6 +32,7 @@ const definitions = {
   fullpage: ['scroll', '한 화면 단위의 섹션 전환과 관성을 제공합니다.', '짧은 내러티브·프레젠테이션형 섹션을 구성할 때', '긴 문서·게시판처럼 자유로운 스크롤이 필요한 화면에'],
   glitch: ['text', 'RGB 분리와 픽셀 시프트로 글리치 전환을 만듭니다.', '짧은 브랜드 타이틀이나 오류·상태 연출에', '지속적으로 읽어야 하는 본문이나 광과민성 우려가 있는 화면에'],
   lazy: ['media', '이미지 로딩 시점에 전환과 fallback을 연결합니다.', '이미지가 많은 목록에서 초기 비용을 줄일 때', '이미지가 즉시 노출되어야 하는 LCP 핵심 이미지에'],
+  stylize: ['mediaHeavy', '이미지·영상을 dither·ASCII·halftone 질감으로 보여 주는 canvas 필터입니다.', '히어로·포스터·아트워크에 인쇄물 같은 스타일을 입히거나 리빌 한 번으로 원본을 드러낼 때', '픽셀을 읽을 수 없는 cross-origin 소스, 저사양 기기의 큰 영상, 이미지 자체가 정보인 사진에'],
   lightbox: ['media', '이미지 그룹을 확대·탐색하는 접근 가능한 뷰어입니다.', '갤러리·포트폴리오의 상세 보기를 제공할 때', '단일 장식 이미지나 라우팅이 필요한 복잡한 미디어 뷰어에'],
   loader: ['system', '전체 화면 로딩과 실제 진행률을 연결합니다.', '앱 초기화처럼 콘텐츠를 잠시 차단해야 할 때', '짧은 작업이나 콘텐츠를 가리는 불필요한 대기 화면에'],
   loadingIndicator: ['system', '콘텐츠 안에 놓는 스피너·바·텍스트 인디케이터입니다.', '비동기 작업의 현재 상태를 인라인으로 알릴 때', '진행률을 알 수 있는데 불확정 스피너만 사용할 때'],
@@ -76,6 +77,64 @@ const definitions = {
 };
 
 const requiredKeys = ['summary', 'useWhen', 'avoidWhen', 'accessibility', 'performance', 'reducedMotion', 'browserCoverage'];
+// ─── Module taxonomy ────────────────────────────────────────────────────────
+// ONE category per module. This map is the single source of truth: the demo's
+// sections, its sidebar groups and the module index are all generated from it,
+// so a module can never end up filed under two different categories again.
+//
+// Pick a category with the FIRST rule that matches, top to bottom. The order is
+// what makes the answer unambiguous — see docs/module-taxonomy.md.
+const CATEGORY_ORDER = ['system', 'media', 'effects', 'components', 'text', 'scroll', 'pointer', 'feedback'];
+// CATEGORY_ORDER is the DECISION order (first matching rule wins). How the demo
+// presents the categories is a separate question — a showcase should not open
+// with `system` — so the reading order is declared on its own.
+const CATEGORY_DISPLAY_ORDER = ['text', 'media', 'effects', 'scroll', 'pointer', 'components', 'feedback', 'system'];
+const CATEGORY_RULES = {
+  system: ['System', '콘텐츠를 덮거나 문서 사이의 전환을 다루는, 페이지 전체 수준의 모듈.'],
+  media: ['Media', '이미지·영상을 가져오고(로딩) 보여주고 탐색하는 모듈. 픽셀을 다시 그리지는 않습니다.'],
+  effects: ['Effects', '이미 렌더된 대상의 픽셀을 캔버스로 다시 그리는 그래픽 효과 모듈.'],
+  components: ['Components', '키보드와 ARIA 상태를 가진 UI 위젯.'],
+  text: ['Text', '글자 자체를 다루는 모듈.'],
+  scroll: ['Scroll', '스크롤 위치나 속도가 구동하는 모듈.'],
+  pointer: ['Pointer', '포인터·기기 입력이 구동하는 모듈.'],
+  feedback: ['Feedback', '사용자 행동의 결과와 상태를 알리는 모듈.']
+};
+// Why the borderline ones landed where they did:
+// - lazy vs stylize: lazy는 이미지를 "가져오는" 일(media), stylize는 이미 있는
+//   픽셀을 "다시 그리는" 일(effects). dither/ascii/halftone이 lazy에 있으면
+//   안 됐던 이유가 이 한 줄입니다.
+// - glitch: 텍스트 variant도 있지만 image/reveal/datamosh/crt/vcr가 캔버스로
+//   픽셀을 다시 그리므로 effects. 데모는 한 섹션 안에서 텍스트/이미지로 나눠
+//   보여 주고, 계약의 variantRequires가 그 구분의 원본입니다.
+// - cardGlow/tilt: 캔버스로 픽셀을 다시 그리지 않고 포인터 입력이 있어야
+//   성립하므로 effects가 아니라 pointer.
+// - ripple: 포인터가 구동하지만 "눌렸다"는 결과를 알리는 것이 목적이라 feedback.
+// - fullpage: 페이지를 차지하지만 구동은 스크롤이므로 system이 아니라 scroll.
+const CATEGORIES = {
+  // system
+  loader: 'system', loadingIndicator: 'system', pageReveal: 'system', pageTransition: 'system',
+  // media
+  lazy: 'media', lightbox: 'media', slider: 'media', radial: 'media',
+  // effects
+  stylize: 'effects', glitch: 'effects', brushReveal: 'effects', ambientMedia: 'effects',
+  // components
+  accordion: 'components', megaMenu: 'components', tabs: 'components', bottomSheet: 'components',
+  tooltip: 'components', switch: 'components', flip: 'components',
+  // text
+  blurText: 'text', counter: 'text', dateTime: 'text', marquee: 'text', overflowText: 'text',
+  textFill: 'text', textReveal: 'text', textSplit: 'text', textTransition: 'text', typewriter: 'text',
+  // scroll
+  cssScroll: 'scroll', coverReveal: 'scroll', fullpage: 'scroll', horizontalScroll: 'scroll',
+  scrollSequence: 'scroll',
+  parallax: 'scroll', progress: 'scroll', reveal: 'scroll', scrollShadows: 'scroll',
+  scrollVelocity: 'scroll', stickyHeader: 'scroll', stickyStack: 'scroll',
+  // pointer
+  cardGlow: 'pointer', cursor: 'pointer', drag: 'pointer', gesture: 'pointer',
+  magnetic: 'pointer', mouseParallax: 'pointer', tilt: 'pointer',
+  // feedback
+  confetti: 'feedback', hold: 'feedback', ripple: 'feedback', toast: 'feedback', vibrate: 'feedback'
+};
+
 const allowed = {
   accessibility: new Set(['native', 'managed', 'manual', 'visual-only']),
   performance: new Set(['light', 'medium', 'heavy']),
@@ -86,8 +145,19 @@ const metadata = Object.fromEntries(contract.modules.map(({ name }) => {
   const definition = definitions[name];
   if (!definition) throw new Error(`Missing module metadata definition: ${name}`);
   const [profileName, summary, useWhen, avoidWhen] = definition;
-  return [name, { summary, useWhen, avoidWhen, ...profiles[profileName] }];
+  const category = CATEGORIES[name];
+  if (!category) throw new Error(`Missing module category: ${name} (add it to CATEGORIES in this file)`);
+  if (!CATEGORY_ORDER.includes(category)) throw new Error(`${name} has unknown category ${category}`);
+  return [name, { category, summary, useWhen, avoidWhen, ...profiles[profileName] }];
 }));
+
+// A category nobody uses is a sign the taxonomy drifted away from the library.
+for (const category of CATEGORY_ORDER) {
+  if (!Object.values(CATEGORIES).includes(category)) throw new Error(`category ${category} has no modules`);
+}
+if ([...CATEGORY_DISPLAY_ORDER].sort().join() !== [...CATEGORY_ORDER].sort().join()) {
+  throw new Error('CATEGORY_DISPLAY_ORDER must list exactly the same categories as CATEGORY_ORDER');
+}
 
 for (const [name, value] of Object.entries(metadata)) {
   for (const key of requiredKeys) {
@@ -99,7 +169,12 @@ for (const [name, value] of Object.entries(metadata)) {
 }
 
 const output = {
-  schemaVersion: '1.0.0',
+  schemaVersion: '1.1.0',
+  taxonomy: {
+    order: CATEGORY_ORDER,
+    displayOrder: CATEGORY_DISPLAY_ORDER,
+    categories: Object.fromEntries(CATEGORY_ORDER.map((key) => [key, { label: CATEGORY_RULES[key][0], rule: CATEGORY_RULES[key][1] }]))
+  },
   libraryVersion: contract.libraryVersion,
   moduleCount: contract.moduleCount,
   statusLegend: {
@@ -112,11 +187,18 @@ const output = {
 
 const jsonText = `${JSON.stringify(output, null, 2)}\n`;
 const demoStatus = Object.fromEntries(Object.entries(metadata).map(([name, value]) => [name, {
+  category: value.category,
   accessibility: value.accessibility,
   performance: value.performance,
   reducedMotion: value.reducedMotion
 }]));
-const demoText = `/* Generated from kineto.module-metadata.json. Do not edit directly. */\n/* global window */\nwindow.KINETO_MODULE_METADATA = Object.freeze(${JSON.stringify(demoStatus, null, 2)});\n`;
+const demoText = [
+  '/* Generated from kineto.module-metadata.json. Do not edit directly. */',
+  '/* global window */',
+  `window.KINETO_MODULE_TAXONOMY = Object.freeze(${JSON.stringify(output.taxonomy, null, 2)});`,
+  `window.KINETO_MODULE_METADATA = Object.freeze(${JSON.stringify(demoStatus, null, 2)});`,
+  ''
+].join('\n');
 
 const esc = (value) => String(value).replaceAll('|', '\\|').replaceAll('\n', ' ');
 const tick = String.fromCharCode(96);
@@ -135,11 +217,22 @@ const docsLines = [
   ...Object.entries(output.statusLegend.performance).map(([key, value]) => `| 성능 | ${tick}${key}${tick} | ${value} |`),
   ...Object.entries(output.statusLegend.reducedMotion).map(([key, value]) => `| reduced motion | ${tick}${key}${tick} | ${value} |`),
   '',
+  '## 카테고리',
+  '',
+  '모듈마다 카테고리는 정확히 하나입니다. 위에서부터 먼저 맞는 규칙이 이깁니다 — 자세한 근거는 [`module-taxonomy.md`](module-taxonomy.md).',
+  '',
+  '| 순서 | 카테고리 | 규칙 | 모듈 |',
+  '|---|---|---|---|',
+  ...CATEGORY_ORDER.map((key, index) => {
+    const members = Object.entries(metadata).filter(([, value]) => value.category === key).map(([name]) => `${tick}${name}${tick}`);
+    return `| ${index + 1} | **${CATEGORY_RULES[key][0]}** (${tick}${key}${tick}) | ${esc(CATEGORY_RULES[key][1])} | ${members.join(', ')} |`;
+  }),
+  '',
   '## 모듈별 판단',
   '',
-  '| 모듈 | 요약 | 언제 사용 | 피해야 할 때 | 접근성 | 성능 | reduced motion | 브라우저 기준 |',
-  '|---|---|---|---|---|---|---|---|',
-  ...Object.entries(metadata).map(([name, value]) => `| ${tick}${name}${tick} | ${esc(value.summary)} | ${esc(value.useWhen)} | ${esc(value.avoidWhen)} | ${tick}${value.accessibility}${tick} | ${tick}${value.performance}${tick} | ${tick}${value.reducedMotion}${tick} | ${tick}${value.browserCoverage}${tick} |`),
+  '| 모듈 | 카테고리 | 요약 | 언제 사용 | 피해야 할 때 | 접근성 | 성능 | reduced motion | 브라우저 기준 |',
+  '|---|---|---|---|---|---|---|---|---|',
+  ...Object.entries(metadata).map(([name, value]) => `| ${tick}${name}${tick} | ${tick}${value.category}${tick} | ${esc(value.summary)} | ${esc(value.useWhen)} | ${esc(value.avoidWhen)} | ${tick}${value.accessibility}${tick} | ${tick}${value.performance}${tick} | ${tick}${value.reducedMotion}${tick} | ${tick}${value.browserCoverage}${tick} |`),
   '',
   '새 모듈은 이 표의 필수 필드를 채운 뒤 `npm run test:module-metadata`와 `npm run test:docs-navigation`을 통과해야 합니다.',
   ''

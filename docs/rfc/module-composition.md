@@ -35,7 +35,7 @@
 
 ## 3. 측정: 합성이 깨지는 곳
 
-52개 모듈 중 **14개가 호스트 요소의 `transform`을 직접 씁니다.**
+53개 모듈 중 **14개가 호스트 요소의 `transform`을 직접 씁니다.**
 
 ```
 lazy(8) bottomSheet(2+2) loader(2+1) drag(2) gesture(2) marquee(2) parallax(2)

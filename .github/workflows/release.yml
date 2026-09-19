@@ -56,7 +56,7 @@ jobs:
       - name: Run Node tests · contracts and package
         run: |
           set -euo pipefail
-          for command in test:utils test:diagnostics test:states test:observe test:presence test:contract test:requirements test:docs test:docs-navigation test:roadmap-readiness test:readiness-gates test:readiness-evidence test:lockfile-boundary test:supply-chain-automation test:module-metadata test:module-status test:mobile-device-manifest test:package test:types test:package-size test:package-tarball; do
+          for command in test:utils test:diagnostics test:states test:observe test:presence test:contract test:requirements test:docs test:docs-navigation test:roadmap-readiness test:readiness-gates test:readiness-evidence test:lockfile-boundary test:supply-chain-automation test:module-metadata test:module-status test:taxonomy test:mobile-device-manifest test:package test:types test:package-size test:package-tarball; do
             echo "::group::$command"
             node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log
             echo "::endgroup::"
@@ -234,6 +234,7 @@ jobs:
           node tests/retry-browser-test.mjs tests/reveal-variant-browser.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/glitch-wave-browser.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/browser/lazy-stylized.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
+          node tests/retry-browser-test.mjs tests/browser/stylize.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
         env:
           KT_BROWSER: ${{ matrix.browser }}

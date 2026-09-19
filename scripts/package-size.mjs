@@ -131,7 +131,11 @@ const BUDGET = {
   // 2026-09-19: the env() navigator guard (window without navigator must not
   // throw) measures 553.1 KB packed on Node 22/npm 10; correctness bytes,
   // rounded to the next KB. Unpacked stays within 1821 KB.
-  packedKb: 554,
+  // 2026-09-19: Stylize ships as its own module entry, so the modular build
+  // enumerates 53 files instead of 52 and the package carries dist/modular
+  // entries for the new module plus the shared media helpers. Measured
+  // 560.2 KB packed / 1843.1 KB unpacked / 79 files on this runtime.
+  packedKb: 566,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -140,8 +144,8 @@ const BUDGET = {
   // priority-preserving inline-style snapshot then measures 1774.2 KB.
   // See the 2026-09-19 note above for the 1812.0 KB stylized-media measurement.
   // See the 2026-09-19 observe() note above for the 1820.6 KB measurement.
-  unpackedKb: 1821,
-  files: 77
+  unpackedKb: 1856,
+  files: 79
 };
 
 console.log(`release package: ${packedKb.toFixed(1)} KB packed · ${unpackedKb.toFixed(1)} KB unpacked · ${files.length} files`);

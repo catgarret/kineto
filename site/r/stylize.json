@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "stylize",
+  "type": "registry:component",
+  "title": "Kineto stylize",
+  "description": "Draws an <img> or <video> as dither, ASCII or halftone on a canvas layer — a permanent filter, or a one-shot reveal into the original.",
+  "author": "dongri <official@dongri.me>",
+  "dependencies": [
+    "@dong-gri/kineto"
+  ],
+  "registryDependencies": [
+    "https://kineto.dongri.me/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "registry/items/stylize/kineto-stylize.tsx",
+      "type": "registry:component",
+      "content": "'use client';\n\n// KinetoStylize — draws an <img> or <video> as dither, ASCII or halftone on a\n// canvas layer. This is a filter, not a loading effect: by default the look\n// stays for the media's whole life. For lazy loading use KinetoImage; both can\n// sit on one element, and the wrapper is shared.\n//   <KinetoStylize src=\"/cover.webp\" alt=\"\" effect=\"dither\" cellSize={8} ditherType=\"4x4\" />\n//   <KinetoStylize src=\"/portrait.webp\" alt=\"\" effect=\"ascii\" paperColor=\"#0b1220\" inkColor=\"#7cf29a\" />\n//   <KinetoStylize src=\"/hero.webp\" alt=\"\" effect=\"dither\" mode=\"reveal\" trigger=\"view\" />\n//   <KinetoStylize as=\"video\" src=\"/clip.mp4\" effect=\"halftone\" muted loop playsInline autoPlay />\n// The original element is never hidden, so a source the canvas cannot read back\n// (cross-origin without CORS) simply shows as-is.\nimport { forwardRef, useEffect, useRef, type ImgHTMLAttributes, type VideoHTMLAttributes } from 'react';\nimport Kineto from '@dong-gri/kineto';\nimport { compact } from '@/lib/kineto-utils';\n\nexport type KinetoStylizeEffect = 'dither' | 'ascii' | 'halftone';\n\ninterface KinetoStylizeOwnProps {\n  src: string;\n  /** Which look to draw. */\n  effect?: KinetoStylizeEffect;\n  /** `persist` (default) keeps the look; `reveal` plays it once into the original. */\n  mode?: 'persist' | 'reveal';\n  /** When a reveal starts. Ignored when the look persists. */\n  trigger?: 'load' | 'view' | 'manual';\n  /** Reveal length in seconds. */\n  duration?: number;\n  /** Grid cell size in px — smaller means far more cells to draw. */\n  cellSize?: number;\n  ditherType?: '8x8' | '4x4' | '2x2' | 'random' | 'floyd-steinberg' | 'atkinson';\n  halftoneShape?: 'dot' | 'square' | 'line';\n  /** Glyph ramp from the darkest to the brightest cell. */\n  asciiChars?: string;\n  paperColor?: string;\n  inkColor?: string;\n  accentColor?: string;\n  /** Use the image's own colors, posterized to `colorSteps`, instead of paper/ink. */\n  originalColors?: boolean;\n  colorSteps?: number;\n  inverted?: boolean;\n  /** Repaint ceiling per second, and pixel-density ceiling, for heavy sources. */\n  renderFps?: number;\n  maxDpr?: number;\n}\n\nexport type KinetoStylizeProps =\n  | ({ as?: 'img' } & KinetoStylizeOwnProps & Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'>)\n  | ({ as: 'video' } & KinetoStylizeOwnProps & Omit<VideoHTMLAttributes<HTMLVideoElement>, 'src'>);\n\nexport const KinetoStylize = forwardRef<HTMLImageElement | HTMLVideoElement, KinetoStylizeProps>(\n  function KinetoStylize(props, forwardedRef) {\n    const {\n      as = 'img', src, effect = 'dither', mode, trigger, duration, cellSize, ditherType, halftoneShape,\n      asciiChars, paperColor, inkColor, accentColor, originalColors, colorSteps, inverted, renderFps, maxDpr,\n      ...rest\n    } = props as { as?: 'img' | 'video' } & KinetoStylizeOwnProps & Record<string, unknown>;\n\n    const localRef = useRef<HTMLImageElement | HTMLVideoElement | null>(null);\n    const setRef = (node: HTMLImageElement | HTMLVideoElement | null) => {\n      localRef.current = node;\n      if (typeof forwardedRef === 'function') forwardedRef(node);\n      else if (forwardedRef) forwardedRef.current = node;\n    };\n\n    useEffect(() => {\n      const element = localRef.current;\n      if (!element) return undefined;\n      Kineto.create('stylize', element, compact({\n        effect, mode, trigger, duration, cellSize, ditherType, halftoneShape, asciiChars,\n        paperColor, inkColor, accentColor, originalColors, colorSteps, inverted, renderFps, maxDpr\n      }));\n      return () => { Kineto.destroyModule(element, 'stylize'); };\n    }, [effect, mode, trigger, duration, cellSize, ditherType, halftoneShape, asciiChars,\n      paperColor, inkColor, accentColor, originalColors, colorSteps, inverted, renderFps, maxDpr]);\n\n    // Stylize does not load anything, so the source is a real `src` attribute.\n    return as === 'video'\n      ? <video ref={setRef as (node: HTMLVideoElement | null) => void} src={src} {...(rest as VideoHTMLAttributes<HTMLVideoElement>)} />\n      : <img ref={setRef as (node: HTMLImageElement | null) => void} src={src} decoding=\"async\" alt={(rest as { alt?: string }).alt ?? ''} {...(rest as ImgHTMLAttributes<HTMLImageElement>)} />;\n  }\n);\n\nexport default KinetoStylize;\n"
+    }
+  ],
+  "categories": [
+    "kineto",
+    "media",
+    "effects"
+  ]
+}

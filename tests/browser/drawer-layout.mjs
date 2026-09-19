@@ -298,14 +298,18 @@ const crtFields=await pg.evaluate(()=>{
   return {preset:body.querySelector('[data-module="lazy"][data-key="preset"] select')?.value,duration:hidden('duration'),stepDuration:hidden('stepDuration'),waveAmplitude:hidden('waveAmplitude'),cellSize:hidden('cellSize'),ditherType:hidden('ditherType')};
 });
 ck('lazy drawer opens with only the current variant\'s options', crtFields.preset==='crt'&&crtFields.duration===false&&crtFields.stepDuration===true&&crtFields.waveAmplitude===true&&crtFields.cellSize===true&&crtFields.ditherType===true, JSON.stringify(crtFields));
+// The stylized looks are the Stylize module now, so the drawer they open is
+// Stylize's: `mode` replaces Lazy's `persist`, and the reveal timing controls
+// only show up once the mode is switched.
 await openCard('ASCII — Persist');
 const asciiFields=await pg.evaluate(()=>{
   const sheet=document.querySelector('.kt-drawer-sheet');
   const body=[...sheet.children].find((node)=>node.classList.contains('kt-playground__body')&&!node.hidden);
-  const field=(key)=>body.querySelector(`.kt-playground__field[data-module="lazy"][data-key="${key}"]`);
-  return {preset:field('preset')?.querySelector('select')?.value,cellSize:field('cellSize')?.querySelector('input')?.value,persist:field('persist')?.querySelector('input')?.checked,asciiChars:field('asciiChars')?.hidden,asciiFont:field('asciiFont')?.hidden,ditherType:field('ditherType')?.hidden,halftoneShape:field('halftoneShape')?.hidden,paperColor:field('paperColor')?.querySelector('input[type="color"]')?.value};
+  const field=(key)=>body.querySelector(`.kt-playground__field[data-module="stylize"][data-key="${key}"]`);
+  return {preset:field('preset')?.querySelector('select')?.value,mode:field('mode')?.querySelector('select')?.value,cellSize:field('cellSize')?.querySelector('input')?.value,asciiChars:field('asciiChars')?.hidden,asciiFont:field('asciiFont')?.hidden,ditherType:field('ditherType')?.hidden,halftoneShape:field('halftoneShape')?.hidden,duration:field('duration')?.hidden,trigger:field('trigger')?.hidden,paperColor:field('paperColor')?.querySelector('input[type="color"]')?.value};
 });
-ck('ascii drawer shows the authored stylized options and hides dither/halftone-only ones', asciiFields.preset==='ascii'&&asciiFields.cellSize==='10'&&asciiFields.persist===true&&asciiFields.asciiChars===false&&asciiFields.asciiFont===false&&asciiFields.ditherType===true&&asciiFields.halftoneShape===true&&asciiFields.paperColor==='#0b1220', JSON.stringify(asciiFields));
+ck('stylize drawer shows the authored options and hides the other looks\' shape controls', asciiFields.preset==='ascii'&&asciiFields.mode==='persist'&&asciiFields.cellSize==='10'&&asciiFields.asciiChars===false&&asciiFields.asciiFont===false&&asciiFields.ditherType===true&&asciiFields.halftoneShape===true&&asciiFields.paperColor==='#0b1220', JSON.stringify(asciiFields));
+ck('stylize drawer hides reveal-only timing while the look persists', asciiFields.duration===true&&asciiFields.trigger===true, JSON.stringify({duration:asciiFields.duration,trigger:asciiFields.trigger}));
 const sh=await pg.$('.kt-drawer-sheet'); if(sh) await sh.screenshot({path:path.join(root,'tests/browser/shots/drawer-tetris.png')});
 await br.close(); server.close();
 console.log(`\n===== DRAWER LAYOUT: ${pass} passed, ${fail} failed =====`); process.exit(fail?1:0);

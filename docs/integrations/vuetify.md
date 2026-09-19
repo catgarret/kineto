@@ -223,25 +223,54 @@ Kineto.observe();
   <img data-kt-lazy="blur-up" data-src="/photo.webp" alt="">
   ```
 
-- `lazy` · `dither` — Retro two-tone dither that resolves into the photo (brand/showcase).
+- `lazy` · `pixelate` — Stepped pixel mosaic settling into the image — editorial/product shots.
 
   ```vue
-  <img data-kt-lazy="dither" data-kt-cell-size="8" data-kt-dither-type="4x4" data-src="/photo.webp" alt="">
-  ```
-
-- `lazy` · `halftone` — Permanent halftone print look on an image or video.
-
-  ```vue
-  <img data-kt-lazy="halftone" data-kt-persist data-src="/photo.webp" alt="">
-  ```
-
-- `lazy` · `ascii` — ASCII-art filter for terminal/tech aesthetics.
-
-  ```vue
-  <img data-kt-lazy="ascii" data-kt-persist data-src="/photo.webp" alt="">
+  <img data-kt-lazy="pixelate" data-src="/photo.webp" alt="">
   ```
 
 > Library skeletons are layout boxes for text; Kineto's lazy skeleton sits on the `<img>` and hands off to the real picture with no layout shift.
+
+### 이미지·영상 그래픽 질감 (`media-texture`)
+
+- `stylize` · `dither` — Retro two-tone dither kept on the image (brand/showcase).
+
+  ```vue
+  <div data-kt-stylize="dither" data-kt-cell-size="8" data-kt-dither-type="4x4">…</div>
+  <!-- or: <div v-motion="{ type: 'stylize', options: { cellSize: 8, ditherType: "4x4", preset: "dither" } }"> -->
+  ```
+
+- `stylize` · `dither` — Dither that shrinks into the original photo once it scrolls into view.
+
+  ```vue
+  <div data-kt-stylize="dither" data-kt-mode="reveal" data-kt-trigger="view" data-kt-cell-size="10">…</div>
+  <!-- or: <div v-motion="{ type: 'stylize', options: { mode: "reveal", trigger: "view", cellSize: 10, preset: "dither" } }"> -->
+  ```
+
+- `stylize` · `halftone` — Permanent halftone print look on an image or video.
+
+  ```vue
+  <div data-kt-stylize="halftone">…</div>
+  <!-- or: <div v-motion="{ type: 'stylize', options: { preset: "halftone" } }"> -->
+  ```
+
+- `stylize` · `ascii` — ASCII-art filter for terminal/tech aesthetics.
+
+  ```vue
+  <div data-kt-stylize="ascii">…</div>
+  <!-- or: <div v-motion="{ type: 'stylize', options: { preset: "ascii" } }"> -->
+  ```
+
+- `glitch` · `image` — Chromatic-aberration glitch bursts over a photo — louder than a texture.
+
+  ```vue
+  <h2 data-kt-glitch="image">Text</h2>
+  <!-- or: <h2 v-motion="{ type: 'glitch', options: { preset: "image" } }"> -->
+  ```
+
+> Stylize redraws the pixels; it does not load anything. Pair it with the `image-loading` intent when the picture also needs lazy loading — both attributes can sit on one <img>.
+
+> A source the canvas cannot read back (cross-origin without CORS) simply shows unstyled, so the texture is never a hard dependency.
 
 ### 이미지 갤러리·라이트박스 (`gallery-lightbox`)
 

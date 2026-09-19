@@ -322,6 +322,11 @@ const PINS = {
     noiseHeight: ['grain', 'dissolve', 'print'], noiseContrast: ['grain', 'dissolve', 'print'],
     noiseBlend: ['grain', 'dissolve', 'print'], noiseFps: ['grain', 'dissolve', 'print']
   },
+  stylize: {
+    // Each look owns one shape control; everything else (colours, cell size,
+    // timing, trigger) is common to the three effects.
+    ditherType: ['dither'], asciiChars: ['ascii'], asciiFont: ['ascii'], halftoneShape: ['halftone']
+  },
   pageReveal: {
     // `play()` reads `ease` (and `delay`/`duration`) once from the factory
     // closure, so no variant branch contains the read and the analysis dropped

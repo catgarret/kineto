@@ -2327,4 +2327,93 @@
     sets[lang] = sets[lang] || {};
     sets[lang].lazy = Object.assign({}, sets[lang].lazy, values);
   }
+  // Stylize owns the same looks as a standalone module, so it reuses the
+  // shared texture copy above (minus `persist`, which became `mode`) and adds
+  // the controls only it has: what to apply, whether it stays, and when a
+  // reveal runs.
+  const stylizeOnly = {
+      "ko": {
+          "preset": "입힐 질감입니다. dither는 점 패턴, ascii는 글자 밀도, halftone은 인쇄 망점으로 그립니다.",
+          "mode": "persist는 효과를 계속 유지하고, reveal은 한 번 재생한 뒤 원본 사진으로 넘어갑니다.",
+          "trigger": "reveal을 언제 시작할지 정합니다. load는 이미지가 준비되는 즉시, view는 화면에 들어올 때, manual은 replay()를 호출할 때입니다.",
+          "duration": "reveal이 원본으로 넘어가기까지 걸리는 시간(초)입니다. persist에서는 쓰이지 않습니다.",
+          "delay": "reveal을 시작하기 전에 기다리는 시간(ms)입니다.",
+          "holdDuration": "reveal이 끝난 뒤 원본으로 크로스페이드하기 전 머무는 시간(ms)입니다.",
+          "renderFps": "초당 다시 그리는 횟수의 상한입니다. 낮출수록 가볍고, 움직이는 소스는 부드러움이 줄어듭니다.",
+          "maxDpr": "그릴 때 쓰는 픽셀 밀도의 상한입니다. 낮추면 고해상도 화면에서 비용이 크게 줄어듭니다.",
+          "seed": "무작위 패턴의 시드입니다. 같은 값이면 같은 모양이 다시 나옵니다."
+      },
+      "en": {
+          "preset": "Which look to apply: dither draws a dot pattern, ascii a glyph-density grid, halftone a print screen.",
+          "mode": "persist keeps the look for good; reveal plays it once and then hands off to the original picture.",
+          "trigger": "When a reveal starts: load as soon as the image is ready, view when it scrolls into sight, manual on replay().",
+          "duration": "How long a reveal takes to reach the original (s). Unused when the look persists.",
+          "delay": "Wait before a reveal starts (ms).",
+          "holdDuration": "Hold at the end of a reveal before crossfading to the original (ms).",
+          "renderFps": "Upper limit on repaints per second. Lower is cheaper; moving sources look less smooth.",
+          "maxDpr": "Upper limit on the pixel density used to draw. Lowering it saves a lot on high-density screens.",
+          "seed": "Seed for the random patterns. The same value reproduces the same result."
+      },
+      "ja": {
+          "preset": "適用する質感です。ditherは点のパターン、asciiは文字の密度、halftoneは印刷の網点で描きます。",
+          "mode": "persistは効果を保ち続け、revealは一度再生してから元の写真に引き継ぎます。",
+          "trigger": "revealを開始するタイミング。loadは画像の準備ができ次第、viewは画面に入ったとき、manualはreplay()の呼び出し時です。",
+          "duration": "revealが元画像に到達するまでの時間(秒)。persistでは使いません。",
+          "delay": "revealを始める前に待つ時間(ms)です。",
+          "holdDuration": "reveal終了後、元画像へクロスフェードするまで留まる時間(ms)です。",
+          "renderFps": "1秒あたりの再描画回数の上限です。下げるほど軽くなり、動く素材は滑らかさが減ります。",
+          "maxDpr": "描画に使うピクセル密度の上限です。下げると高精細画面での負荷が大きく減ります。",
+          "seed": "ランダムパターンのシードです。同じ値なら同じ見た目が再現されます。"
+      },
+      "zh-CN": {
+          "preset": "要应用的质感：dither 画点阵图案，ascii 用字符密度，halftone 画印刷网点。",
+          "mode": "persist 会一直保持效果；reveal 播放一次后切换到原图。",
+          "trigger": "reveal 的开始时机：load 为图片就绪后立即开始，view 为进入视口时，manual 为调用 replay() 时。",
+          "duration": "reveal 过渡到原图所需的时间（秒）。persist 模式不使用。",
+          "delay": "开始 reveal 之前的等待时间（毫秒）。",
+          "holdDuration": "reveal 结束后、交叉淡入原图之前的停留时间（毫秒）。",
+          "renderFps": "每秒重绘次数上限。数值越低越省性能，动态素材会不那么流畅。",
+          "maxDpr": "绘制时使用的像素密度上限。降低后可显著减少高分屏上的开销。",
+          "seed": "随机图案的种子。相同数值会得到相同结果。"
+      },
+      "zh-TW": {
+          "preset": "要套用的質感：dither 畫點陣圖案，ascii 用字元密度，halftone 畫印刷網點。",
+          "mode": "persist 會一直保持效果；reveal 播放一次後切換到原圖。",
+          "trigger": "reveal 的開始時機：load 為圖片就緒後立即開始，view 為進入視窗時，manual 為呼叫 replay() 時。",
+          "duration": "reveal 過渡到原圖所需的時間（秒）。persist 模式不使用。",
+          "delay": "開始 reveal 之前的等待時間（毫秒）。",
+          "holdDuration": "reveal 結束後、交叉淡入原圖之前的停留時間（毫秒）。",
+          "renderFps": "每秒重繪次數上限。數值越低越省效能，動態素材會不那麼流暢。",
+          "maxDpr": "繪製時使用的像素密度上限。降低後可顯著減少高解析度螢幕上的負擔。",
+          "seed": "隨機圖案的種子。相同數值會得到相同結果。"
+      },
+      "ru": {
+          "preset": "Какой вид применить: dither рисует точечный узор, ascii — сетку плотности символов, halftone — печатный растр.",
+          "mode": "persist сохраняет эффект насовсем; reveal проигрывает его один раз и передаёт картинку оригиналу.",
+          "trigger": "Когда начинается reveal: load — как только изображение готово, view — при появлении в поле зрения, manual — по вызову replay().",
+          "duration": "Сколько длится reveal до перехода к оригиналу (с). При постоянном эффекте не используется.",
+          "delay": "Пауза перед началом reveal (мс).",
+          "holdDuration": "Задержка в конце reveal перед плавным переходом к оригиналу (мс).",
+          "renderFps": "Верхний предел перерисовок в секунду. Меньше — дешевле, но движущийся источник будет менее плавным.",
+          "maxDpr": "Верхний предел плотности пикселей при отрисовке. Снижение заметно экономит на плотных экранах.",
+          "seed": "Зерно случайных узоров. Одно и то же значение даёт один и тот же результат."
+      },
+      "it": {
+          "preset": "Quale resa applicare: dither disegna un motivo a punti, ascii una griglia di densità di glifi, halftone un retino di stampa.",
+          "mode": "persist mantiene la resa per sempre; reveal la riproduce una volta e poi lascia spazio alla foto originale.",
+          "trigger": "Quando parte il reveal: load appena l'immagine è pronta, view quando entra in vista, manual alla chiamata di replay().",
+          "duration": "Quanto dura il reveal prima di arrivare all'originale (s). Non usato quando la resa è permanente.",
+          "delay": "Attesa prima che il reveal inizi (ms).",
+          "holdDuration": "Pausa alla fine del reveal prima della dissolvenza verso l'originale (ms).",
+          "renderFps": "Limite di ridisegni al secondo. Più basso costa meno; le sorgenti in movimento risultano meno fluide.",
+          "maxDpr": "Limite della densità di pixel usata per disegnare. Abbassarlo fa risparmiare molto sugli schermi ad alta densità.",
+          "seed": "Seme dei motivi casuali. Lo stesso valore riproduce lo stesso risultato."
+      }
+  };
+  for (const [lang, values] of Object.entries(stylized)) {
+    const { persist, ...shared } = values;
+    void persist;
+    sets[lang] = sets[lang] || {};
+    sets[lang].stylize = Object.assign({}, sets[lang].stylize, shared, stylizeOnly[lang] || stylizeOnly.en);
+  }
 })();

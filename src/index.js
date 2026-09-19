@@ -6,6 +6,7 @@ import revealModule from './modules/reveal.js';
 import counterModule from './modules/counter.js';
 import dateTimeModule from './modules/dateTime.js';
 import lazyModule from './modules/lazy.js';
+import stylizeModule from './modules/stylize.js';
 import textSplitModule from './modules/textSplit.js';
 import blurTextModule from './modules/blurText.js';
 import typewriterModule from './modules/typewriter.js';
@@ -62,6 +63,7 @@ const moduleEntries = {
   counter: counterModule,
   dateTime: dateTimeModule,
   lazy: lazyModule,
+  stylize: stylizeModule,
   textSplit: textSplitModule,
   blurText: blurTextModule,
   typewriter: typewriterModule,
@@ -120,6 +122,7 @@ export const reveal = call('reveal');
 export const counter = call('counter');
 export const dateTime = call('dateTime');
 export const lazy = call('lazy');
+export const stylize = call('stylize');
 export const textSplit = call('textSplit');
 export const blurText = call('blurText');
 export const typewriter = call('typewriter');

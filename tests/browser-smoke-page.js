@@ -95,6 +95,12 @@ async function runSmoke() {
       el.setAttribute('data-src', svg);
       return { el, options: { preset: 'pixelate', duration: 0.01, delay: 0, steps: [0.2, 1] } };
     },
+    stylize: () => {
+      // Stylize draws the media itself, so the source is a real `src`.
+      const el = make('img', '');
+      el.src = svg;
+      return { el, options: { effect: 'dither', cellSize: 8 } };
+    },
     lightbox: () => {
       const el = make('img', '');
       el.src = svg;

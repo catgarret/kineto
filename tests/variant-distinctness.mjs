@@ -43,11 +43,20 @@ const MODULE_AUDITS = {
     crt: ['crt-power-on', "if (effect === 'crt') {", "createLayer(wrapper, 'kt-lazy-crt-beam', 7)"],
     'data-mosaic': ['seeded-tile-clear', "if (effect === 'data-mosaic') {", 'const tileMax = Math.max(8, Number(opts.tileMax ?? 44));'],
     'rgb-slice-burst': ['one-shot-channel-slices', "effect === 'rgb-slice-burst'", 'const slices = Math.round(between(3, 7));'],
-    // The three stylized variants share one canvas rasterizer (src/modules/lazy/stylizedMedia.js)
-    // but each keeps its own painter; the anchors below are the per-variant option hand-offs.
-    dither: ['threshold-matrix-dither-canvas', "if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {", "if (effect === 'dither') styleInput.type = opts.ditherType;"],
-    ascii: ['glyph-density-ramp-canvas', "if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {", "if (effect === 'ascii') { styleInput.chars = opts.asciiChars; styleInput.font = opts.asciiFont; }"],
-    halftone: ['dot-size-halftone-canvas', "if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {", "if (effect === 'halftone') styleInput.shape = opts.halftoneShape;"]
+    // Deprecated aliases of the Stylize module. They still have to read their own
+    // options here (the feature contract scans each module file for the options it
+    // owns), and each alias keeps its own hand-off; the painting itself lives in
+    // src/modules/media/rasterizer.js, shared with Stylize.
+    dither: ['threshold-matrix-dither-canvas', "if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {", "if (effect === 'dither') input.ditherType = opts.ditherType;"],
+    ascii: ['glyph-density-ramp-canvas', "if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {", "if (effect === 'ascii') { input.asciiChars = opts.asciiChars; input.asciiFont = opts.asciiFont; }"],
+    halftone: ['dot-size-halftone-canvas', "if (effect === 'dither' || effect === 'ascii' || effect === 'halftone') {", "if (effect === 'halftone') input.halftoneShape = opts.halftoneShape;"]
+  },
+  // Stylize owns the three looks; each variant contributes one shape control and
+  // the shared rasterizer paints it.
+  stylize: {
+    dither: ['threshold-matrix-dither-canvas', "if (effect === 'dither') input.ditherType = opts.ditherType;"],
+    ascii: ['glyph-density-ramp-canvas', "if (effect === 'ascii') { input.asciiChars = opts.asciiChars; input.asciiFont = opts.asciiFont; }"],
+    halftone: ['dot-size-halftone-canvas', "if (effect === 'halftone') input.halftoneShape = opts.halftoneShape;"]
   },
   cursor: {
     dot: ['snapped-dot-follow-ring', "if (opts.follower !== false) addFollower(opts.shape || 'circle');"],

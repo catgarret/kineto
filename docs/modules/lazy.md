@@ -19,13 +19,24 @@
 | `crt` | CRT 전원 켜짐과 주사선 정착 |
 | `data-mosaic` | 크기가 다른 데이터 타일 제거 |
 | `rgb-slice-burst` | 짧은 RGB 슬라이스 버스트 후 정착 |
-| `dither` | 2~8단계 팔레트 디더링(Bayer·random·오차 확산) 셀이 잘게 쪼개지며 원본으로 이어짐 |
-| `ascii` | 밝기를 문자 밀도로 바꾼 텍스트 아트가 원본으로 이어짐 |
-| `halftone` | 망점(점·사각·선) 크기로 밝기를 표현한 인쇄 질감이 원본으로 이어짐 |
+| `dither` | **deprecated** → [Stylize](stylize.md) |
+| `ascii` | **deprecated** → [Stylize](stylize.md) |
+| `halftone` | **deprecated** → [Stylize](stylize.md) |
 
 `zoom`과 `noise`는 기존 사용자를 위해 각각 `blur-up`, `dissolve`로
-연결되는 호환 별칭입니다. `dither`, `ascii`, `halftone`은 `<img>`와
-`<video>` 모두에 적용되며 `persist`로 리빌 대신 영구 스타일 필터가 됩니다.
+연결되는 호환 별칭입니다.
+
+## deprecated: `dither` · `ascii` · `halftone`
+
+v0.11.0에서 이 셋은 [Stylize](stylize.md) 모듈이 되었습니다. Lazy가 하는 일은
+이미지를 *가져오는* 것이고 이 셋이 하는 일은 이미 있는 픽셀을 *다시 그리는*
+것이라, 애초에 로딩 효과가 아니었습니다(분류 근거는
+[module-taxonomy.md](../module-taxonomy.md)).
+
+기존 속성은 **한 minor 동안 그대로 동작**하며 같은 rasterizer를 쓰므로 결과도
+같습니다. 다만 `debug`를 켠 소비자에게 `KT_DEPRECATED` 진단을 한 번 보냅니다.
+이전 방법은 [diagnostics-and-deprecation.md](../diagnostics-and-deprecation.md)에
+예제와 함께 있습니다.
 
 ## Wave와 Film Grain
 

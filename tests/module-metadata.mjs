@@ -16,7 +16,7 @@ assert.equal(metadata.moduleCount, contract.moduleCount, 'metadata count must ma
 assert.deepEqual(Object.keys(metadata.modules), names, 'metadata order and module coverage must match contract');
 for (const name of names) {
   const item = metadata.modules[name];
-  for (const key of ['summary', 'useWhen', 'avoidWhen', 'accessibility', 'performance', 'reducedMotion', 'browserCoverage']) {
+  for (const key of ['category', 'summary', 'useWhen', 'avoidWhen', 'accessibility', 'performance', 'reducedMotion', 'browserCoverage']) {
     assert.equal(typeof item[key], 'string', `${name}.${key} must be a string`);
     assert.ok(item[key].trim(), `${name}.${key} must not be empty`);
   }
@@ -29,10 +29,19 @@ const demoContext = { window: {} };
 vm.runInNewContext(read('demo/module-metadata.js'), demoContext);
 assert.deepEqual(Object.keys(demoContext.window.KINETO_MODULE_METADATA), names, 'demo metadata map must cover every module');
 for (const name of names) assert.equal(JSON.stringify(demoContext.window.KINETO_MODULE_METADATA[name]), JSON.stringify({
+  category: metadata.modules[name].category,
   accessibility: metadata.modules[name].accessibility,
   performance: metadata.modules[name].performance,
   reducedMotion: metadata.modules[name].reducedMotion
 }), `${name}: demo status map is stale`);
+
+// The taxonomy travels with the metadata: the demo builds its sections and its
+// sidebar from it, so a missing displayOrder silently empties both.
+assert.deepEqual(
+  [...(demoContext.window.KINETO_MODULE_TAXONOMY?.displayOrder || [])].sort(),
+  [...(metadata.taxonomy?.order || [])].sort(),
+  'demo taxonomy map is stale'
+);
 
 const matrix = read('docs/module-usage-matrix.md');
 for (const name of names) assert.ok(matrix.includes(`| ${tick}${name}${tick} |`), `${name}: usage matrix row is missing`);

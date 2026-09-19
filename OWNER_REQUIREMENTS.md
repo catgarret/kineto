@@ -5,8 +5,8 @@
 ## 현재 계약
 
 - 라이브러리 버전: `0.11.0`
-- 요구사항 계약 버전: `3.2.0`
-- 고정 요구사항: **49개**
+- 요구사항 계약 버전: `3.3.0`
+- 고정 요구사항: **50개**
 - 변경 정책: 소유자의 명시적 승인 없이 요구사항을 제거하거나 의미를 바꿀 수 없습니다.
 
 ## 변경 원칙
@@ -54,7 +54,8 @@
 | `MK-LIFECYCLE-001` | `core` | No runtime or lifecycle leaks | Repeated create, replay and destroy leaves zero active instances, timers, generated UI or browser runtime errors in automated QA. |
 | `MK-LAZY-006` | `lazy` | Animated image continuity | GIF, APNG and animated WebP continue playing during lazy effects and after completion. |
 | `MK-LAZY-007` | `lazy` | Dynamic fine noise | Print and Dissolve noise changes continuously and does not expose an obvious repeating pattern. |
-| `MK-LAZY-008` | `lazy` | Stylized media reveal and filter | Dither, ASCII and Halftone are canvas-rendered lazy variants that reveal by shrinking their cells into the original image, keep the stylized look permanently with persist, apply to `<img>` (including animated formats) and `<video>`, and keep the original media visible when the source cannot be read back. |
+| `MK-LAZY-008` | `lazy` | Stylized media aliases delegate to Stylize | `data-kt-lazy="dither\|ascii\|halftone"` keep working for one minor release as deprecated aliases: they render through the same rasterizer and controllers as the Stylize module (shrinking-cell reveal into the original, `persist`, `<img>` including animated formats, `<video>`, original visible when the source cannot be read back) and emit a recoverable `KT_DEPRECATED` diagnostic naming `data-kt-stylize` as the replacement. |
+| `MK-STYLIZE-001` | `stylize` | Stylized media filter module | Stylize renders an `<img>` or `<video>` as Dither, ASCII or Halftone on a canvas layer: `mode: persist` keeps the look for the media's whole life (still images re-render on resize, animated formats and video frame by frame), `mode: reveal` plays the look once and shrinks its cells into the original picture on load, in view, or manually; `paperColor`, `inkColor`, `accentColor`, `originalColors`, `colorSteps`, `inverted`, `cellSize`, `renderFps` and `maxDpr` are honoured, the original media stays visible when the source cannot be read back, and a reveal under `prefers-reduced-motion` skips to the untouched original while `persist` still applies. |
 | `MK-OVERFLOW-004` | `overflowText` | Directional mask transitions | Rewind and Page accept top-to-bottom, bottom-to-top, left-to-right and right-to-left mask directions. |
 | `MK-OVERFLOW-005` | `overflowText` | Realtime ranking rolling | Rolling mode changes multiple items vertically like a legacy realtime-search ranking ticker. |
 | `MK-GLOW-002` | `cardGlow` | Surface reflection layer | Card glow optionally renders a configurable pointer-responsive surface reflection gradient. |

@@ -55,7 +55,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 
 앞으로의 우선순위는 모듈 수를 늘리는 것이 아니라 아래 네 가지입니다.
 
-1. 기존 52개 모듈의 신뢰도와 일관성
+1. 기존 53개 모듈의 신뢰도와 일관성
 2. 실제 소비자 기준의 초기 로드 비용
 3. Vanilla에서 먼저 성립하는 상태·Presence·레이아웃 primitive
 4. 외부 사용 사례와 문서로 증명되는 제품 신뢰
@@ -64,15 +64,15 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 
 ### 확인된 강점
 
-- 52개 모듈을 `data-kt-*`, JavaScript API, `core`와 `modules/*` 엔트리로 제공합니다.
+- 53개 모듈을 `data-kt-*`, JavaScript API, `core`와 `modules/*` 엔트리로 제공합니다.
 - TypeScript 선언이 전체·모듈형·React·Vue·jQuery 표면에 제공됩니다.
 - npm 자기 의존성을 제거했고, 설치 tarball과 타입 표면을 CI에서 검사합니다.
 - GSAP·ScrollTrigger·Lenis 기본 CDN에는 고정 버전과 SHA-384 SRI가 적용됩니다.
-- Chromium 전체 QA와 Chromium·Firefox·WebKit 52/52 공개 모듈 lifecycle smoke가 있으며, transform·clip·fixed/sticky 의존 모듈은 세 엔진의 `heavy-layout` 체크포인트로 별도 검증합니다. lifecycle·패키지·번들 예산·npm provenance 검증도 함께 유지합니다.
+- Chromium 전체 QA와 Chromium·Firefox·WebKit 53/53 공개 모듈 lifecycle smoke가 있으며, transform·clip·fixed/sticky 의존 모듈은 세 엔진의 `heavy-layout` 체크포인트로 별도 검증합니다. lifecycle·패키지·번들 예산·npm provenance 검증도 함께 유지합니다.
 - reduced motion, 저사양 fallback, 키보드·ARIA, `destroy()` 복원을 제품 원칙으로 관리합니다.
 - v0.9.3은 Node 24/npm 11 전체 검증, npm provenance 공개, GitHub Release와 Pages 배포를 통과했습니다. 배포용 gzip 상한은 유지하고 Node 24 zlib 경계 차이만 별도 variance로 흡수합니다.
 - v0.8.104에서 숨겨진 Tabs 패널을 다시 열 때 WebKit의 지연된 `hidden` 반영까지 포함해 indicator를 재측정하고, `tabs.refresh()` 공개 메서드와 bounded follow-up 측정을 추가했습니다. canonical demo에서 52개 모듈·GTM·unversioned CDN 경로를 다시 확인했습니다.
-- 52개 모듈의 사용 시점·피해야 할 상황·접근성·성능·reduced motion 상태를 단일 생성 원본과 데모 뱃지, 문서 매트릭스, CI completeness 검사로 연결했습니다.
+- 53개 모듈의 사용 시점·피해야 할 상황·접근성·성능·reduced motion 상태를 단일 생성 원본과 데모 뱃지, 문서 매트릭스, CI completeness 검사로 연결했습니다.
 - v0.8.104 후속으로 `pageReveal`, `pageTransition`, `slider`, `stickyStack`, `stickyHeader`, `lightbox`, `cursor`, `fullpage`의 레이어·클리핑·sticky/fixed 경계를 `demo-polish`의 `heavy-layout` 체크포인트로 고정하고 Chromium·Firefox·WebKit에서 모두 통과시켰습니다.
 - v0.8.105에서 소수 초가 포함된 ISO 날짜 입력을 보존 파싱하도록 수정해 Date Time의 `Both · relative + absolute` 데모가 상대 시각과 절대 시각을 함께 표시합니다. 배포 후 canonical demo의 CDN 경로까지 확인합니다.
 - v0.9.0에서 단순 Slider에 `scrollSnap:true` native CSS Scroll Snap 경로를 추가하고, 조건 밖 transform fallback과 Chromium·Firefox·WebKit smoke, 소비자 번들·패키지 예산을 함께 검증했습니다.
@@ -88,12 +88,12 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 
 - Vite·Rolldown 소비자 fixture가 full·core+1·core+3·States·Presence·React·Vue 비용과 tree-shaking을 예산으로 관리합니다. 남은 병목은 전체 entry가 제품 상한에 가깝고, 실제 운영 앱의 장기 로딩·캐시·조합 비용 증거가 아직 없다는 점입니다.
 - React·Vue 기본 어댑터의 Strict lifecycle·SSR·실제 브라우저 hydration은 자동 검증합니다. 남은 확장은 새 wrapper를 늘리는 일이 아니라 nested keyed transition과 shared-layout 요구 증거·identity/focus 정책을 먼저 확보하는 일입니다.
-- 52개 모듈과 7개 언어는 유지 비용이 큽니다. 새 기능이 기존 기능의 품질과 문서화를 밀어낼 위험이 있습니다.
+- 53개 모듈과 7개 언어는 유지 비용이 큽니다. 새 기능이 기존 기능의 품질과 문서화를 밀어낼 위험이 있습니다.
 - 공개 저장소 지표는 2026-08-31 확인 기준 star 0, fork 0, 공개 issue 0입니다. 코드 품질과 별개로 외부 검증과 사용 사례가 없는 상태입니다.
 - Socket 경고를 줄이는 기술 조치는 진행됐지만, 공급망 신뢰는 특정 점수 하나가 아니라 릴리스 provenance, 의존성 최소화, 변경 이력, 대응 절차를 함께 유지해야 합니다. Socket도 경고 심각도와 공급망 위험을 종합해 점수를 계산한다고 설명합니다([Socket package scores](https://docs.socket.dev/docs/package-scores)).
 - **테스트가 틀린 이유로 실패합니다.** v0.8.43 릴리스는 같은 assertion에서 반복 실패했는데, 원인은 스타일시트가 아니라 아직 레이아웃되지 않은 패널을 측정한 것이었습니다. `display:none` 요소의 `getComputedStyle`은 used value가 아니라 computed value(`repeat(2, minmax(0px, 1fr))`)를 돌려주고, 이 문자열을 공백으로 자르면 토큰이 정확히 3개가 나옵니다. 즉 **그럴듯하게 틀린 값**이 나왔고, 사람은 CSS를 세 번 고쳤습니다. 브라우저 QA에 “측정 대상이 실제로 레이아웃됐는가”를 먼저 확인하는 규칙이 없으면, 통과율 지표 자체를 신뢰할 수 없습니다.
 - **엔진 커버리지가 아직 균등하지 않습니다.** 일반 모듈은 Chromium 전체와 Firefox/WebKit smoke를 유지하지만, transform·clip·fixed/sticky·mask·3D 경계를 쓰는 고위험 목록은 `heavy-layout` 체크포인트로 세 엔진을 함께 검사합니다. `pageReveal`의 `zoom`은 transform이 걸린 `<body>`가 fixed/sticky 자손의 containing block이 되는 동작에서 Safari와 Chromium이 갈렸고, 커버를 `<html>`로 옮겨야 양쪽이 같아졌습니다. 남은 일반 모듈까지 전부 같은 깊이로 올리는 것은 실제 회귀 신호와 실행 비용을 비교해 단계적으로 결정합니다.
-- **variant 구분성은 정적 게이트와 실제 시각 검증을 분리해 관리합니다.** `pageReveal` 16개와 Reveal·Lazy·Cursor·Overflow Text·Glitch·Slider 81개는 contract·구현 branch/source fingerprint·생성 설정의 1:1 대응을 자동 검사합니다. 확대 범위 중 전용 데모 markup은 74/81이며 Slider 10개 효과는 전용 카드로 비교합니다. source fingerprint는 픽셀 단위 시각 회귀를 대신하지 않습니다. 남은 병목은 이름 수가 아니라 실제 회귀 신호가 있는 variant의 전용 비교 화면과 cross-browser 검증을 비용에 맞춰 확대하는 일입니다.
+- **variant 구분성은 정적 게이트와 실제 시각 검증을 분리해 관리합니다.** `pageReveal` 16개와 Reveal·Lazy·Stylize·Cursor·Overflow Text·Glitch·Slider 84개는 contract·구현 branch/source fingerprint·생성 설정의 1:1 대응을 자동 검사합니다. 확대 범위 중 전용 데모 markup은 74/84이며 Slider 10개 효과는 전용 카드로 비교합니다. source fingerprint는 픽셀 단위 시각 회귀를 대신하지 않습니다. 남은 병목은 이름 수가 아니라 실제 회귀 신호가 있는 variant의 전용 비교 화면과 cross-browser 검증을 비용에 맞춰 확대하는 일입니다.
 - **분기별 옵션 의미 검증은 계속 필요합니다.** 2026-09-14 Unreleased에서 Reveal `mask`·`wipe`·`clock`의 반복·경계 callback·일시 정지와 Wave의 `trigger`·`loop`·`duration`·`delay`·`randomness`를 실제 브라우저 동작으로 검증했습니다. Wave의 선택적 `colors`·`blendMode`도 세 엔진의 픽셀 차이 검사로 보강했습니다. 일반 native Reveal도 Web Animations 경로에서 pause/resume를 지원합니다. 남은 제한은 일반 native Reveal 반복 경계 callback, 전용 데모가 없는 variant의 의미 검증입니다. Native Reveal에 GSAP의 전체 start/end 문법을 지원한다고 주장하지 않습니다. 단순 attribute 반영 검사를 이 의미 검증의 완료 근거로 집계하지 않습니다.
 
 ## 3. 제품 원칙과 하지 않을 일
@@ -113,7 +113,7 @@ Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이�
 - Motion의 모든 CSS 값·gesture·layout API를 복제하지 않습니다.
 - Swiper의 방대한 플러그인 목록을 따라 모듈 수를 늘리지 않습니다.
 - 기존 `flip`과 겹치는 새 `layout` 모듈을 만들지 않습니다.
-- 실제 사용 근거 없이 52개 공개 모듈을 더 늘리지 않습니다. **‘실제 사용 근거’는 다음 셋 중 하나가 확인될 때만 인정합니다.** ① 데모가 아닌 외부 프로젝트 1건 이상이 그 기능을 사용하고 있음(공개 URL 또는 공개 동의를 받은 사례), ② GitHub issue·discussion에서 구체적 용도와 함께 요청됨, ③ 기존 variant의 사용이 원래 모듈의 목적(예: Lazy의 ‘로딩 중 노출’)과 무관하게 지속됨(`persist`처럼 로딩과 상관없는 옵션이 주 사용법이 됨). 이 근거가 없는 새 효과는 **새 모듈이 아니라 기존 모듈의 variant**로 먼저 들어가며, 렌더러는 `src/modules/<module>/` 하위 공용 파일로 두어 나중에 독립 모듈로 승격해도 구현을 옮기기만 하면 되게 합니다. 승격은 위 ①~③ 중 두 가지가 확인되고 단기 중단 기준(gzip 3KB·모듈형 분리)을 통과할 때 검토합니다. 2026-09-19의 Lazy `dither`·`ascii`·`halftone`이 이 경로의 첫 적용입니다.
+- 실제 사용 근거 없이 53개 공개 모듈을 더 늘리지 않습니다. **‘실제 사용 근거’는 다음 셋 중 하나가 확인될 때만 인정합니다.** ① 데모가 아닌 외부 프로젝트 1건 이상이 그 기능을 사용하고 있음(공개 URL 또는 공개 동의를 받은 사례), ② GitHub issue·discussion에서 구체적 용도와 함께 요청됨, ③ 기존 variant의 사용이 원래 모듈의 목적(예: Lazy의 ‘로딩 중 노출’)과 무관하게 지속됨(`persist`처럼 로딩과 상관없는 옵션이 주 사용법이 됨). 이 근거가 없는 새 효과는 **새 모듈이 아니라 기존 모듈의 variant**로 먼저 들어가며, 렌더러는 `src/modules/<module>/` 하위 공용 파일로 두어 나중에 독립 모듈로 승격해도 구현을 옮기기만 하면 되게 합니다. 승격은 위 ①~③ 중 두 가지가 확인되고 단기 중단 기준(gzip 3KB·모듈형 분리)을 통과할 때 검토합니다. 2026-09-19의 Lazy `dither`·`ascii`·`halftone`이 이 경로의 첫 적용입니다.
 - 생태계 지표를 만들기 위해 품질이 낮은 예제·홍보성 패키지·의존성을 추가하지 않습니다.
 - **서로 구분되지 않는 variant를 개수 유지 목적으로 남겨두지 않습니다.** 나란히 재생했을 때 어느 쪽인지 말할 수 없으면 하나로 통합하고, 빈 자리는 다른 메커니즘으로 채우거나 비웁니다. 판정 기준은 “옵션이 다르다”가 아니라 “움직임의 메커니즘이 다르다”입니다.
 - **측정 대상이 레이아웃됐는지 확인하지 않는 브라우저 assertion을 추가하지 않습니다.** rect가 0이거나 computed value가 `repeat(`/`auto`/`none` 같은 미해석 문자열이면 그 시점의 측정은 버립니다.
@@ -203,7 +203,7 @@ npm provenance는 패키지가 어느 저장소와 빌드 환경에서 만들어
 #### 5) 문서 정보 구조
 
 - “처음 10분”, “모듈 선택”, “조합”, “프레임워크”, “문제 해결” 경로로 재구성합니다.
-- 52개 reference와 별도로 문제 중심 가이드를 만듭니다.
+- 53개 reference와 별도로 문제 중심 가이드를 만듭니다.
 - public option에는 타입, 기본값, 적용 대상, live update 가능 여부를 자동 생성합니다.
 - CDN 실패, CSP/SRI, SSR, 숨겨진 컨테이너 초기화, Safari 레이아웃 문제를 troubleshooting에 모읍니다.
 

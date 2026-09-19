@@ -3,9 +3,9 @@
 > 이 문서는 `kineto.features.json`에서 생성됩니다. 직접 수정하지 말고 계약 파일을 명시적으로 변경한 뒤 `npm run docs:contract`를 실행하세요.
 
 - Library: 0.11.0
-- Feature contract: 1.4.0
+- Feature contract: 1.5.0
 - Behavior contract: 1.2.0
-- Public modules: 52
+- Public modules: 53
 - Root properties: `version`, `easings`, `prefersReducedMotion`, `env`, `performance`, `registry`, `instanceCount`, `smoothEnabled`, `lenis`, `core`, `diagnostics`, `diagnosticCodes`
 - Core methods: `autoInit()`, `config()`, `create()`, `destroy()`, `destroyModule()`, `disableSmooth()`, `easing()`, `easingFn()`, `enableSmooth()`, `getEngineSource()`, `getInstance()`, `init()`, `initModules()`, `listTerminalFramePresets()`, `observe()`, `pause()`, `refresh()`, `register()`, `replay()`, `resume()`, `scan()`, `scrollTo()`, `setAnimationEngine()`, `setEngineSource()`, `setReducedMotion()`, `states()`, `toggleSmooth()`, `unregister()`, `updateModule()`
 - Additional named exports: `modules`, `listTerminalFramePresets`, `states`
@@ -88,6 +88,13 @@
 - Default variant: `fade`
 - Variants: `fade`, `blur-up`, `wave`, `grain`, `skeleton`, `pixelate`, `print`, `dissolve`, `flicker`, `polaroid`, `crt`, `data-mosaic`, `rgb-slice-burst`, `dither`, `ascii`, `halftone`
 - Public options: `accentColor`, `animated`, `asciiChars`, `asciiFont`, `aspectRatio`, `autoplay`, `blur`, `cellSize`, `colorSteps`, `colors`, `crossOrigin`, `delay`, `direction`, `display`, `ditherType`, `duration`, `ease`, `edgeOpacity`, `edgeWidth`, `effect`, `fadeDuration`, `fallbackSrc`, `feather`, `flickerBackground`, `frame`, `frameColor`, `glitchStrength`, `grain`, `halftoneShape`, `height`, `holdDuration`, `inkColor`, `inverted`, `keepFrame`, `loop`, `maxDpr`, `minDuration`, `muted`, `nativeLazy`, `noise`, `noiseBlend`, `noiseContrast`, `noiseFps`, `noiseHeight`, `noiseWidth`, `objectFit`, `objectPosition`, `onError`, `onLoad`, `onProgress`, `onReveal`, `once`, `originalColors`, `paperColor`, `persist`, `pixelEnd`, `pixelStart`, `pixelStepCount`, `playsinline`, `preload`, `preset`, `renderFps`, `rootMargin`, `rotate`, `seed`, `sizes`, `skeletonAngle`, `skeletonColor`, `skeletonHighlight`, `skeletonIcon`, `skeletonSpeed`, `skeletonVariant`, `sliceCount`, `src`, `srcset`, `startScale`, `stepCount`, `stepDuration`, `steps`, `threshold`, `tileMax`, `tileMin`, `variant`, `waveAmplitude`, `waveFrequency`, `waveSliceHeight`, `waveSpeed`
+
+## stylize
+
+- Attribute: `data-kt-stylize`
+- Default variant: `dither`
+- Variants: `dither`, `ascii`, `halftone`
+- Public options: `accentColor`, `animated`, `asciiChars`, `asciiFont`, `aspectRatio`, `cellSize`, `colorSteps`, `delay`, `display`, `ditherType`, `duration`, `ease`, `effect`, `halftoneShape`, `height`, `holdDuration`, `inkColor`, `inverted`, `maxDpr`, `mode`, `objectFit`, `objectPosition`, `onComplete`, `onProgress`, `originalColors`, `paperColor`, `preset`, `renderFps`, `rootMargin`, `seed`, `threshold`, `trigger`
 
 ## lightbox
 

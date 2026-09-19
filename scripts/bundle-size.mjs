@@ -141,16 +141,22 @@ const BUDGETS = {
   // min ESM and 423.9/128.5 KB UMD — about 1.7 KB raw / 0.5 KB gzip of a
   // requested Core API. Raw ceilings round to the next KB; gzip stays within
   // the existing ceilings + variance, which are unchanged.
-  'kineto.js': { raw: 542, gz: 145, variance: 2 },
+  // 2026-09-19: Stylize became its own module. The rasterizer and the reveal
+  // lifecycle are shared with Lazy's deprecated aliases rather than duplicated,
+  // so the cost is the module's own option surface and its two instance
+  // factories, plus the Effects wiring. Measured on this runtime: 549.0/146.5 KiB
+  // readable ESM, 431.1/130.7 KiB minified ESM and 429.3/130.0 KiB UMD. The
+  // ceilings below keep roughly 1 KiB of gzip headroom each.
+  'kineto.js': { raw: 551, gz: 148, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
   // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/
   // camelCase names, vendor members, `!important`) measures 415.1 KB raw in
   // the minified ESM while gzip stays inside the existing variance.
   // See the 2026-09-19 observe() note above for the 425.7 / 423.9 KB raw values.
-  'kineto.min.js': { raw: 426, gz: 129, variance: 2 },
-  'kineto.umd.js': { raw: 424, gz: 129, variance: 1 },
-  'kineto.umd.min.js': { raw: 424, gz: 129, variance: 1 },
+  'kineto.min.js': { raw: 433, gz: 132, variance: 2 },
+  'kineto.umd.js': { raw: 431, gz: 132, variance: 1 },
+  'kineto.umd.min.js': { raw: 431, gz: 132, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

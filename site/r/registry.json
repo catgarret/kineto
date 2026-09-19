@@ -110,7 +110,7 @@
       "name": "image",
       "type": "registry:component",
       "title": "Kineto image",
-      "description": "Lazy-loaded <img> with a loading reveal (skeleton, blur-up, pixelate, print, dissolve, crt …) or a persistent dither/ASCII/halftone filter.",
+      "description": "Lazy-loaded <img> with a loading reveal (skeleton, blur-up, pixelate, print, dissolve, crt …). For dither/ASCII/halftone textures use the `stylize` item.",
       "dependencies": [
         "@dong-gri/kineto"
       ],
@@ -124,6 +124,29 @@
       "files": [
         {
           "path": "registry/items/image/kineto-image.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "stylize",
+      "type": "registry:component",
+      "title": "Kineto stylize",
+      "description": "Draws an <img> or <video> as dither, ASCII or halftone on a canvas layer — a permanent filter, or a one-shot reveal into the original.",
+      "dependencies": [
+        "@dong-gri/kineto"
+      ],
+      "registryDependencies": [
+        "https://kineto.dongri.me/r/utils.json"
+      ],
+      "categories": [
+        "kineto",
+        "media",
+        "effects"
+      ],
+      "files": [
+        {
+          "path": "registry/items/stylize/kineto-stylize.tsx",
           "type": "registry:component"
         }
       ]

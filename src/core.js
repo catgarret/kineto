@@ -293,7 +293,7 @@ function ensureCoreServices() {
 // two Lenis instances.
 
 // Modules that assign the host element's own `transform`. Derived by inspection
-// of src/modules/*.js (14 of 52 at the time of writing); anything that only
+// of src/modules/*.js (14 of 53 at the time of writing); anything that only
 // transforms a child it created is deliberately absent, because those compose.
 const HOST_TRANSFORM_MODULES = new Set([
   'bottomSheet', 'drag', 'gesture', 'lazy', 'loader', 'magnetic', 'marquee',

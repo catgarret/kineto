@@ -14,7 +14,7 @@ variant와 입력을 같은 깊이로 검사한다는 뜻은 아니며, 브라�
 
 | 기준 | 자동 증거 | 공개 의미 | 현재 한계 |
 |---|---|---|---|
-| `evergreen` | Chromium 전체 + 세 엔진 52/52 lifecycle smoke | 최신 evergreen 브라우저의 일반 DOM·CSS 경로 | 모든 variant를 세 엔진에서 같은 깊이로 검사하지 않음 |
+| `evergreen` | Chromium 전체 + 세 엔진 53/53 lifecycle smoke | 최신 evergreen 브라우저의 일반 DOM·CSS 경로 | 모든 variant를 세 엔진에서 같은 깊이로 검사하지 않음 |
 | `evergreen-pointer` | Chromium 포인터·pointer-events 검사 + 세 엔진 전체 module lifecycle + 대표 입력 smoke | 데스크톱 포인터 입력을 보조 기능으로 지원 | 터치 전용 기기의 실제 센서·포인터 조합은 별도 확인 필요 |
 | `evergreen-scroll` | Chromium 스크롤/레이아웃 검사 + 세 엔진 전체 module lifecycle + 대표 스크롤 smoke | 최신 스크롤 API가 있는 브라우저에서 동작, 미지원 시 정적·기본 흐름 유지 | 실제 iOS Safari/Android Chrome 실기기 검증은 아직 릴리스 증거에 포함하지 않음 |
 | `evergreen-touch` | Chromium touch 에뮬레이션 + 모바일 레이아웃 검사 | 키보드·touch fallback과 native semantics를 우선 | 제조사 WebView와 실기기 IME/viewport 차이는 [실기기 실행표](browser-device-qa.md)로 별도 기록 |

@@ -16,7 +16,7 @@ Un toolkit di interazioni web guidato da attributi HTML o da un'API JavaScript
 
 ---
 
-Kineto è una libreria di 52 moduli di interazione — movimento, media, scroll, loader e testo — che colleghi con un solo attributo `data-kt-*` o controlli con precisione tramite un'API JavaScript. Il core non ha dipendenze obbligatorie e, su browser non supportati o dispositivi datati, gli effetti si disattivano mentre il contenuto resta intatto.
+Kineto è una libreria di 53 moduli di interazione — movimento, media, scroll, loader e testo — che colleghi con un solo attributo `data-kt-*` o controlli con precisione tramite un'API JavaScript. Il core non ha dipendenze obbligatorie e, su browser non supportati o dispositivi datati, gli effetti si disattivano mentre il contenuto resta intatto.
 
 > Lavori con strumenti di coding AI (Cursor, Claude, ecc.)? Vedi la [guida ai prompt AI](../AI-PROMPT-GUIDE.md): contiene un'istruzione pronta da incollare che indica all'assistente di usare prima i moduli Kineto per movimento e interazioni.
 
@@ -115,7 +115,8 @@ Kineto.disableSmooth();
 | `cursor` | `data-kt-cursor` | 11 cursori personalizzati |
 | `fullpage` | `data-kt-fullpage` | Pagina intera asse verticale/orizzontale/misto |
 | `glitch` | `data-kt-glitch` | Problema relativo alla porzione/pixel RGB |
-| `lazy` | `data-kt-lazy` | Scheletro·Pixel·Stampa·Dissolvi·Dither·ASCII·Mezzetinte caricamento (immagine·video) |
+| `lazy` | `data-kt-lazy` | Scheletro·Sfocatura·Pixel·Stampa·Dissolvenza al caricamento (immagine·video) |
+| `stylize` | `data-kt-stylize` | Filtro canvas dither·ASCII·mezzetinte (immagine·video) |
 | `lightbox` | `data-kt-lightbox` | Visualizzatore a schermo intero Gruppo/Zoom/Minimappa |
 | `loader` | `data-kt-loader` | Caricatore collegato al progresso reale |
 | `loadingIndicator` | `data-kt-loading-indicator` | Spinner, barre, riflessi e indicatori simbolici inline |

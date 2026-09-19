@@ -33,7 +33,12 @@ if (physicalEvidenceEntries.length === 0) {
 if (caseStudyCount < 3) assert.match(readiness, /외부 실제 사용 사례 \| 조건/);
 
 assert.match(moduleStatus, /\| `deprecated` \| 0 \|/);
-assert.match(diagnostics, /migration fixture \| 준비 전/);
+// v0.11.0 introduced the first deprecation (the stylized Lazy aliases), so the
+// migration fixture row can no longer say "준비 전" — the doc has to carry the
+// replacement, the diagnostic code and a before/after example.
+assert.match(diagnostics, /migration fixture \| 구현/);
+assert.match(diagnostics, /data-kt-stylize/);
+assert.match(diagnostics, /KT_DEPRECATED/);
 assert.match(readiness, /deprecation 정책 \| 진행/);
 assert.match(flip, /실제 keyed child 전환 요구가 최소 두 건/);
 assert.match(flip, /새 `layout` 모듈로 만들지 않습니다/);

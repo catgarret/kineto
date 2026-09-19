@@ -17,7 +17,7 @@
 
 ---
 
-Kineto는 모션·미디어·스크롤·텍스트·UI를 다루는 52개 모듈을
+Kineto는 모션·미디어·스크롤·텍스트·UI를 다루는 53개 모듈을
 제공합니다.
 `data-kt-*` 속성 하나로 적용하거나 JavaScript API로 세밀하게
 제어할 수 있습니다.
@@ -59,7 +59,7 @@ Kineto는 모션·미디어·스크롤·텍스트·UI를 다루는 52개 모듈�
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/lightbox.gif" width="620" alt="Lightbox">
 
-전체 52개 모듈은 아래 [모듈 목록](#모듈)을 참고하세요.
+전체 53개 모듈은 아래 [모듈 목록](#모듈)을 참고하세요.
 
 ## 설치
 
@@ -156,7 +156,8 @@ Kineto.disableSmooth();
 | `cursor` | `data-kt-cursor` | 11가지 커스텀 커서 |
 | `fullpage` | `data-kt-fullpage` | 세로·가로·혼합축 풀페이지 |
 | `glitch` | `data-kt-glitch` | RGB 슬라이스·픽셀 글리치 |
-| `lazy` | `data-kt-lazy` | 스켈레톤·픽셀·프린트·디졸브·디더·ASCII·망점 로딩 (이미지·영상) |
+| `lazy` | `data-kt-lazy` | 스켈레톤·블러업·픽셀·프린트·디졸브 로딩 (이미지·영상) |
+| `stylize` | `data-kt-stylize` | 디더·ASCII·망점 캔버스 필터 (이미지·영상) |
 | `lightbox` | `data-kt-lightbox` | 그룹·확대·미니맵 전체 화면 뷰어 |
 | `loader` | `data-kt-loader` | 실제 진행률 연동 로더 |
 | `loadingIndicator` | `data-kt-loading-indicator` | 인라인 스피너·바·시머·기호 인디케이터 |

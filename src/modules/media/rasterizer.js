@@ -11,10 +11,10 @@
 //                 draw shapes/glyphs per cell (halftone / ASCII) on the display
 //                 canvas.
 //
-// The Lazy module owns the DOM (wrapper, layers, lifecycle) and calls
-// `renderer.render(source, cellSize)` for every frame it wants; this file only
-// knows how to draw. Keeping the rasterizers here lets a future standalone
-// "stylize" module reuse them without touching Lazy.
+// The Stylize module (and, for one deprecation cycle, Lazy's stylized
+// aliases) own the DOM — wrapper, layers, lifecycle — through
+// ./stylizer.js and call `renderer.render(source, cellSize)` for every frame
+// they want; this file only knows how to draw.
 import { clamp } from '../../utils.js';
 
 // Ordered-dither threshold matrices, normalised to 0..1. The classic Bayer

@@ -714,28 +714,8 @@
         },
         {
           "module": "lazy",
-          "variant": "dither",
-          "options": {
-            "cellSize": 8,
-            "ditherType": "4x4"
-          },
-          "why": "Retro two-tone dither that resolves into the photo (brand/showcase)."
-        },
-        {
-          "module": "lazy",
-          "variant": "halftone",
-          "options": {
-            "persist": true
-          },
-          "why": "Permanent halftone print look on an image or video."
-        },
-        {
-          "module": "lazy",
-          "variant": "ascii",
-          "options": {
-            "persist": true
-          },
-          "why": "ASCII-art filter for terminal/tech aesthetics."
+          "variant": "pixelate",
+          "why": "Stepped pixel mosaic settling into the image — editorial/product shots."
         }
       ],
       "provideWhenLibraryHas": null,
@@ -753,6 +733,77 @@
       },
       "notes": [
         "Library skeletons are layout boxes for text; Kineto's lazy skeleton sits on the `<img>` and hands off to the real picture with no layout shift."
+      ]
+    },
+    {
+      "id": "media-texture",
+      "title": "Graphic texture on an image or video",
+      "ko": "이미지·영상 그래픽 질감",
+      "keywords": [
+        "dither",
+        "ascii art",
+        "halftone",
+        "duotone",
+        "posterize",
+        "retro filter",
+        "print texture",
+        "canvas filter",
+        "디더",
+        "아스키",
+        "망점",
+        "질감",
+        "필터"
+      ],
+      "figma": [
+        "dither",
+        "halftone",
+        "ascii",
+        "texture",
+        "grain",
+        "duotone",
+        "poster"
+      ],
+      "recipes": [
+        {
+          "module": "stylize",
+          "variant": "dither",
+          "options": {
+            "cellSize": 8,
+            "ditherType": "4x4"
+          },
+          "why": "Retro two-tone dither kept on the image (brand/showcase)."
+        },
+        {
+          "module": "stylize",
+          "variant": "dither",
+          "options": {
+            "mode": "reveal",
+            "trigger": "view",
+            "cellSize": 10
+          },
+          "why": "Dither that shrinks into the original photo once it scrolls into view."
+        },
+        {
+          "module": "stylize",
+          "variant": "halftone",
+          "why": "Permanent halftone print look on an image or video."
+        },
+        {
+          "module": "stylize",
+          "variant": "ascii",
+          "why": "ASCII-art filter for terminal/tech aesthetics."
+        },
+        {
+          "module": "glitch",
+          "variant": "image",
+          "why": "Chromatic-aberration glitch bursts over a photo — louder than a texture."
+        }
+      ],
+      "provideWhenLibraryHas": null,
+      "libraryEquivalents": {},
+      "notes": [
+        "Stylize redraws the pixels; it does not load anything. Pair it with the `image-loading` intent when the picture also needs lazy loading — both attributes can sit on one <img>.",
+        "A source the canvas cannot read back (cross-origin without CORS) simply shows unstyled, so the texture is never a hard dependency."
       ]
     },
     {
