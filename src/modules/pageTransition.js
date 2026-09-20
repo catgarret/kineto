@@ -127,9 +127,15 @@ export default {
       return true;
     };
 
+    // The path+query this instance is currently showing. A popstate that leaves
+    // it unchanged is the browser moving *inside* the page we already have.
+    const pageOf = (url) => url.pathname + url.search;
+    let shownPage = pageOf(window.location);
+
     const navigate = async (url, popState = false) => {
       if (navigating || destroyed) return;
       navigating = true;
+      shownPage = pageOf(new URL(url, window.location.href));
       const html = document.documentElement;
       html.classList.add('kt-is-animating', 'kt-is-leaving');
       html.classList.remove('kt-is-entering');
@@ -153,7 +159,20 @@ export default {
       opts.onClick?.(link, event);
       navigate(link.href);
     };
-    const onPopState = () => navigate(window.location.href, true);
+    /**
+     * Back/Forward. A history entry that differs only by its hash is a move
+     * within this document: an in-page anchor, a hash edit, or Back across one.
+     * The browser has already done the whole job. Fetching the page again would
+     * replace the container and throw away everything the page built after
+     * load — generated sections, mounted panels, anything a framework rendered.
+     * Clicks already refuse a hash-only URL in shouldHandle(); this is the same
+     * rule for history moves.
+     */
+    const onPopState = () => {
+      const next = pageOf(window.location);
+      if (next === shownPage) return;
+      navigate(window.location.href, true);
+    };
 
     if (!history.state?.kinetoUrl) history.replaceState({ ...(history.state || {}), kinetoUrl: window.location.href }, document.title, window.location.href);
     document.addEventListener('click', onClick);

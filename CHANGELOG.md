@@ -5,6 +5,8 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Fix Page Transition destroying the page on Back. A history entry that differs only by its hash is a move inside the document the browser has already made, but the module refetched the URL anyway and swapped the container — so everything the page built after load was gone. On the demo that was two clicks away: open a module from the sidebar, press Back, and 53 module blocks, 227 settings panels and 34 compare sheets all became zero. Clicks already refused a hash-only URL; history moves now follow the same rule, and a real path change still transitions both ways. `tests/browser/page-transition-hash.mjs` holds both halves.
+- Make a compare sheet addressable. Opening one puts `#cmp-<module>` in the address bar and closing it restores `#mod-<module>`, so "look at all 23 Reveal presets and tell me which" is a link you can send. The sheet is a labelled region, Escape closes it and returns focus to the button, and the scroll observer no longer overwrites the hash of an open sheet.
 - Preserve image Stylize delay, reveal and hold time across pause/hidden tabs; suspend RAF/timers, defer static resize and paused replay, and guard callback re-entry. Core now keeps explicit instance/global pause separate from visibility suspension, including public API teardown.
 - Honor Stylize video reveal triggers, queued manual replay, delay and hold duration. Suspend video-effect RAF work during module/media pause or hidden tabs, preserve active reveal time, and prevent callback teardown from completing or rescheduling a destroyed effect; keep existing defaults and Lazy aliases.
 - Teach the integration map the new textures. The `media-texture` intent gains four recipes — the `noise` dither for photographs, the `cluster` print screen, a 45° newspaper halftone and an open-ring editorial screen — plus a note on picking `ditherType` by subject rather than taste, and the keywords an agent actually types (newsprint, risograph, screen angle, 신문, 인쇄물). Without this an agent asked for a print-looking photo had no way to know `cluster` or `halftoneAngle` existed, and would have reached for a smaller cell size instead.
@@ -35,6 +37,8 @@
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 뒤로가기가 페이지를 파괴하던 Page Transition 버그를 고쳤습니다. 해시만 다른 history 항목은 브라우저가 이미 끝낸 같은 문서 안의 이동인데, 모듈이 그때도 URL을 다시 가져와 컨테이너를 갈아 끼웠습니다. 그래서 로드 이후에 페이지가 만든 것이 전부 사라졌습니다. 데모에서는 두 번의 클릭이면 재현됐습니다 — 사이드바에서 모듈을 열고 뒤로가기를 누르면 모듈 블록 53개·설정 패널 227개·비교 시트 34개가 전부 0이 됐습니다. 클릭 경로에는 원래부터 해시 전용 URL을 거르는 규칙이 있었고, 이제 history 이동도 같은 규칙을 따릅니다. 경로가 실제로 바뀌면 여전히 전환합니다. `tests/browser/page-transition-hash.mjs`가 양쪽을 함께 지킵니다.
+- 비교 시트를 주소로 가리킬 수 있게 했습니다. 열면 주소가 `#cmp-<모듈>`이 되고 닫으면 `#mod-<모듈>`로 돌아옵니다. "Reveal 프리셋 23개 다 보고 뭐가 나은지 얘기하자"를 링크 하나로 보낼 수 있습니다. 시트는 이름이 있는 region이고 Esc로 닫으면 포커스가 버튼으로 돌아오며, 스크롤 관찰자가 열린 시트의 주소를 덮어쓰지 않습니다.
 - 이미지 Stylize의 지연·재생·완료 대기 시간을 일시정지와 숨김 탭에서 보존하고 RAF·타이머를 중단합니다. 정지 이미지 크기 변경·중단 중 재재생을 재개까지 보류하고 콜백 재진입을 보호합니다. Core는 명시적 인스턴스/전체 일시정지를 탭 숨김과 구분하며, 종료한 공개 API의 재실행도 차단합니다.
 - Stylize 영상 리빌의 실행 조건, 로드 전 수동 재생 요청, 지연·완료 대기 시간을 반영했습니다. 모듈·영상 일시정지와 숨김 탭에서 RAF를 중단하고 진행 시간을 보존하며, 콜백에서 종료한 효과의 완료·재예약을 차단했습니다. 기존 기본값과 Lazy 별칭은 유지합니다.
 - 연동 지도에 새 질감을 가르쳤습니다. `media-texture` 의도에 레시피 4개(사진용 `noise` 디더, `cluster` 인쇄 스크린, 45도 신문 망점, 속이 빈 링 스크린)와 "취향이 아니라 대상에 따라 `ditherType`을 고르라"는 지침, 그리고 에이전트가 실제로 입력하는 키워드(newsprint·risograph·screen angle·신문·인쇄물)를 추가했습니다. 이게 없으면 "인쇄물처럼 보이는 사진" 요청을 받은 에이전트가 `cluster`나 `halftoneAngle`의 존재를 알 길이 없어 셀 크기만 줄이게 됩니다.

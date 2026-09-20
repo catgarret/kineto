@@ -63,7 +63,7 @@
     // B-2: when the page opens with a #mod-… deep link, don't let the scroll
     // observer clear the hash before the initial restore scroll runs. Unlocked
     // after the restore settles or on first user scroll.
-    let allowHashClear=!/^#mod-/.test(location.hash||'');
+    let allowHashClear=!/^(?:#mod-|#cmp-)/.test(location.hash||'');
     const enableHashClear=()=>{ allowHashClear=true; };
     window.addEventListener('wheel',enableHashClear,{passive:true,once:true});
     window.addEventListener('touchmove',enableHashClear,{passive:true,once:true});
@@ -141,7 +141,7 @@
         // lands in the wrong place. Re-scroll a few times as things settle, and
         // bail the moment the visitor scrolls themselves.
         const hash=location.hash;
-        const initMod=/^#mod-([A-Za-z0-9]+)$/.exec(hash||'');
+        const initMod=/^#(?:mod|cmp)-([A-Za-z0-9]+)$/.exec(hash||'');
         if(initMod){
           // Deep link to a module: route through the unified navigator so scroll,
           // active nav and hash all land together (retry as late layout settles).
@@ -272,6 +272,9 @@
     };
     const writeModuleHash=(name,mode)=>{
       if(mode==='none') return;
+      // 비교 시트가 열려 있으면 주소는 `#cmp-<모듈>` 입니다(demo/compare.js). 스크롤 관찰자가
+      // 그것을 `#mod-`으로 되돌리면 주소창을 복사해도 시트가 닫힌 링크가 됩니다.
+      if(location.hash==='#cmp-'+name) return;
       const h='#mod-'+name;
       if(location.hash===h) return;
       try{ if(mode==='push') history.pushState({ktModule:name},'',h); else history.replaceState({ktModule:name},'',h); }catch(_){/* file:// */}
@@ -294,7 +297,7 @@
       writeModuleHash(name,mode);
     };
     // Back/Forward and manual hash edits — move without pushing new history.
-    const moduleFromHash=()=>{ const h=location.hash; const m=/^#mod-([A-Za-z0-9]+)$/.exec(h); return m?m[1]:null; };
+    const moduleFromHash=()=>{ const h=location.hash; const m=/^#(?:mod|cmp)-([A-Za-z0-9]+)$/.exec(h); return m?m[1]:null; };
     window.addEventListener('popstate',()=>{ const n=moduleFromHash(); if(n) navigateToModule(n,{source:'history',history:'none'}); });
     window.addEventListener('hashchange',()=>{ const n=moduleFromHash(); if(n && !navScrollLock) navigateToModule(n,{source:'history',history:'none'}); });
     // Back-compat alias used by older call sites.

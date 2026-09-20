@@ -486,6 +486,8 @@
     sheet.id = 'cmp-' + name;
     sheet.dataset.variantSheet = name;
     sheet.dataset.variantBuilt = 'false';
+    sheet.setAttribute('role', 'region');
+    sheet.setAttribute('aria-label', t('모든 variant 비교') + ' — ' + name);
     sheet.hidden = true;
     wrapper.appendChild(sheet);
 
@@ -493,14 +495,26 @@
     var anchor = block.querySelector('.module-block-quality') || block.querySelector('.module-block-sub');
     if (anchor && anchor.parentNode === block) block.insertBefore(wrapper, anchor.nextSibling);
     else block.appendChild(wrapper);
+    // `#cmp-<모듈>` 로 들어온 방문자에게는 블록이 만들어지는 즉시 시트가 열려 있어야 합니다.
+    if (window.location.hash === '#cmp-' + name) setSheetOpen(wrapper, true, { hash: false });
     return wrapper;
   }
 
-  function toggleSheet(toggle) {
-    var wrapper = toggle.closest('[data-variant-compare]');
+  /**
+   * 열린 시트는 주소로 가리킬 수 있어야 합니다. "Reveal의 23개를 다 보고 얘기하자"를
+   * 링크 하나로 보낼 수 있어야 검수 화면이기 때문입니다. `#cmp-<모듈>` 이 그 주소이고,
+   * demo/main.js 의 해시 내비게이션이 `#mod-` 과 똑같이 취급합니다.
+   */
+  function writeHash(name, open) {
+    var next = (open ? '#cmp-' : '#mod-') + name;
+    if (window.location.hash === next) return;
+    try { window.history.replaceState(window.history.state, '', next); } catch (error) { /* file:// */ }
+  }
+
+  function setSheetOpen(wrapper, open, options) {
     var sheet = wrapper && wrapper.querySelector('.variant-compare__sheet');
-    if (!sheet) return;
-    var open = sheet.hidden;
+    var toggle = wrapper && wrapper.querySelector('.variant-compare__toggle');
+    if (!sheet || !toggle || sheet.hidden !== open) return false;
     if (open) {
       buildSheet(sheet);
       sheet.hidden = false;
@@ -510,6 +524,27 @@
     }
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     wrapper.classList.toggle('is-open', open);
+    if (!options || options.hash !== false) writeHash(wrapper.dataset.variantCompare, open);
+    return true;
+  }
+
+  function toggleSheet(toggle) {
+    var wrapper = toggle.closest('[data-variant-compare]');
+    var sheet = wrapper && wrapper.querySelector('.variant-compare__sheet');
+    if (!sheet) return;
+    setSheetOpen(wrapper, sheet.hidden);
+  }
+
+  /** 주소가 `#cmp-<모듈>` 이면 그 시트를 엽니다. 열려 있던 다른 시트는 닫습니다. */
+  function syncFromHash() {
+    var match = /^#cmp-([A-Za-z0-9]+)$/.exec(window.location.hash || '');
+    var wanted = match ? match[1] : null;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-variant-compare]'), function (wrapper) {
+      var open = wrapper.dataset.variantCompare === wanted;
+      var sheet = wrapper.querySelector('.variant-compare__sheet');
+      if (!sheet || sheet.hidden !== open) return;
+      setSheetOpen(wrapper, open, { hash: false });
+    });
   }
 
   function copyMarkup(trigger) {
@@ -577,8 +612,18 @@
     if (action) runAction(action);
   }
 
+  function onKeydown(event) {
+    if (event.key !== 'Escape') return;
+    var wrapper = event.target.closest && event.target.closest('[data-variant-compare].is-open');
+    if (!wrapper) return;
+    setSheetOpen(wrapper, false);
+    wrapper.querySelector('.variant-compare__toggle')?.focus();
+  }
+
   if (typeof document !== 'undefined') {
     document.addEventListener('click', onClick);
+    document.addEventListener('keydown', onKeydown);
+    window.addEventListener('hashchange', syncFromHash);
     // Kineto 가 초기화되기 전에 소재를 복제해 둡니다. 이 스크립트는 </body> 앞에서 읽히고
     // autoInit 은 DOMContentLoaded 를 기다리므로, 여기가 마지막이자 가장 안전한 시점입니다.
     if (document.readyState === 'loading') snapshot();
@@ -587,6 +632,7 @@
   window.KINETO_COMPARE = {
     attach: attach,
     snapshot: snapshot,
+    syncFromHash: syncFromHash,
     // 테스트가 같은 구현을 그대로 확인할 수 있도록 내보냅니다(사본을 만들지 않기 위해서입니다).
     stats: stats,
     satisfies: satisfies,

@@ -139,7 +139,10 @@ const BUDGET = {
   // / 1860.8 KB unpacked across the same 79 files.
   // 2026-09-20 image timers + explicit Core pause: 572.9 / 1874.9 KiB,
   // same 79 files. Absorb only the measured lifecycle correction.
-  packedKb: 573,
+  // 2026-09-20 (page-transition): ignoring a hash-only history move costs a few
+  // hundred bytes of guard and measures 573.1 KB packed on the same 79 files.
+  // A Back press destroying the page is a correctness bug, not a feature.
+  packedKb: 574,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -151,7 +154,8 @@ const BUDGET = {
   // 2026-09-20: video trigger/active-clock guards measure 1872.1 KB unpacked
   // after sharing media styles and stop-event wiring (initially 1872.7 KB).
   // Round only this measured correctness cost; packed/files budgets stay fixed.
-  unpackedKb: 1875,
+  // 2026-09-20 (page-transition): the same guard measures 1875.4 KB unpacked.
+  unpackedKb: 1876,
   files: 79
 };
 

@@ -11158,9 +11158,9 @@ var Fa = {
 			return c.classList.remove("kt-is-leaving"), c.classList.add("kt-is-entering"), Q.scan(o), Q.refresh(), t.onEnter?.(o, a), requestAnimationFrame(() => requestAnimationFrame(() => {
 				c.classList.remove("kt-is-animating", "kt-is-entering");
 			})), !0;
-		}, h = async (e, n = !1) => {
+		}, h = (e) => e.pathname + e.search, g = h(window.location), _ = async (e, n = !1) => {
 			if (l || c) return;
-			l = !0;
+			l = !0, g = h(new URL(e, window.location.href));
 			let r = document.documentElement;
 			r.classList.add("kt-is-animating", "kt-is-leaving"), r.classList.remove("kt-is-entering"), t.onLeave?.(e);
 			let i = Na(t), a = i ? i.coverIn() : f(), [o] = await Promise.all([d(e), a]);
@@ -11170,21 +11170,23 @@ var Fa = {
 			}
 			let s = o && m(o, e, n);
 			i && (await i.coverOut(), i.remove()), l = !1, s || window.location.assign(e);
-		}, g = (e) => {
+		}, v = (e) => {
 			let n = e.target.closest?.(r);
-			u(e, n) && (e.preventDefault(), t.onClick?.(n, e), h(n.href));
-		}, _ = () => h(window.location.href, !0);
+			u(e, n) && (e.preventDefault(), t.onClick?.(n, e), _(n.href));
+		}, y = () => {
+			h(window.location) !== g && _(window.location.href, !0);
+		};
 		return history.state?.kinetoUrl || history.replaceState({
 			...history.state || {},
 			kinetoUrl: window.location.href
-		}, document.title, window.location.href), document.addEventListener("click", g), window.addEventListener("popstate", _), ja = {
+		}, document.title, window.location.href), document.addEventListener("click", v), window.addEventListener("popstate", y), ja = {
 			el: document.documentElement,
 			type: "pageTransition",
-			navigate: h,
+			navigate: _,
 			pause() {},
 			resume() {},
 			destroy() {
-				c = !0, s?.abort(), document.removeEventListener("click", g), window.removeEventListener("popstate", _), document.documentElement.classList.remove("kt-is-animating", "kt-is-leaving", "kt-is-entering"), ja === this && (ja = null);
+				c = !0, s?.abort(), document.removeEventListener("click", v), window.removeEventListener("popstate", y), document.documentElement.classList.remove("kt-is-animating", "kt-is-leaving", "kt-is-entering"), ja === this && (ja = null);
 			}
 		}, ja;
 	},

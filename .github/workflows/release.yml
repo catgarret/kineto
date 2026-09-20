@@ -228,6 +228,7 @@ jobs:
         run: |
           set -o pipefail
           node tests/retry-browser-test.mjs tests/browser-smoke.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
+          node tests/retry-browser-test.mjs tests/browser/page-transition-hash.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/browser/css-scroll.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/browser/cursor-click-media.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/slider-variant-browser.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
