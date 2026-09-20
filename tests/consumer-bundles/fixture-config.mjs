@@ -41,7 +41,11 @@ export const consumerFixtures = [
   // 1 KB; runner variance and every modular boundary are unchanged.
   // See the 2026-09-19 note above: Vue measures 148.2 / 148.7 KB.
   // The same lifecycle correction measures 154.2 KiB in Vite Vue.
-  { name: 'vue-adapter', entry: 'vue', budget: 154, variance: { vite: 1, rolldown: 2 } }
+  // 2026-09-20 (shared-element teardown): closing an instance's toasts, dropping
+  // the empty notification region and removing the viewer stylesheet measures
+  // 155.0 KiB gzip in the Vite Vue entry. Restoring the document a module
+  // changed is the destroy contract; round only this measured cost.
+  { name: 'vue-adapter', entry: 'vue', budget: 155, variance: { vite: 1, rolldown: 2 } }
 ];
 
 export const treeShakenEntries = [

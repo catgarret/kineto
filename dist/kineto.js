@@ -10603,6 +10603,7 @@ var ka = {
 	zoomReset: "Reset zoom",
 	zoomHint: "Click to type an exact zoom %",
 	zoomInput: "Zoom percent",
+	thumbnail: "Item {n} of {total}",
 	share: "Share",
 	download: "Download"
 };
@@ -10691,18 +10692,21 @@ function Aa(e) {
 		counter: a,
 		filmstrip: k
 	}, te = () => {
-		let e = A?.thumbnails === !0 && j.length > 1;
-		if (k.hidden = !e, _.style.maxHeight = e ? "calc(100vh - 320px)" : "calc(100vh - 230px)", !e) {
+		let t = A?.thumbnails === !0 && j.length > 1;
+		if (k.hidden = !t, _.style.maxHeight = t ? "calc(100vh - 320px)" : "calc(100vh - 230px)", !t) {
 			k.innerHTML = "";
 			return;
 		}
-		k.innerHTML = "", j.forEach((e, t) => {
-			let n = document.createElement("button");
-			n.type = "button", n.className = "kt-lightbox-thumb" + (t === M ? " kt-active" : ""), n.setAttribute("aria-label", `${t + 1}`), n.style.cssText = `flex:0 0 auto;width:64px;height:44px;border-radius:6px;overflow:hidden;padding:0;cursor:pointer;background:#111;border:2px solid ${t === M ? "var(--kt-lightbox-accent,#ff5b1c)" : "transparent"};opacity:${t === M ? "1" : ".55"};transition:opacity .16s var(--kt-ease-ui, ease),border-color .16s var(--kt-ease-ui, ease);`;
-			let r = document.createElement("img");
-			r.src = e.thumb, r.alt = e.alt || "", r.loading = "lazy", r.style.cssText = "width:100%;height:100%;object-fit:cover;", n.appendChild(r), n.addEventListener("click", (e) => {
-				e.stopPropagation(), ae(t);
-			}), k.appendChild(n);
+		k.innerHTML = "", j.forEach((t, n) => {
+			let r = document.createElement("button");
+			r.type = "button", r.className = "kt-lightbox-thumb" + (n === M ? " kt-active" : ""), r.setAttribute("aria-label", e("thumbnail", {
+				n: n + 1,
+				total: j.length
+			})), r.style.cssText = `flex:0 0 auto;width:64px;height:44px;border-radius:6px;overflow:hidden;padding:0;cursor:pointer;background:#111;border:2px solid ${n === M ? "var(--kt-lightbox-accent,#ff5b1c)" : "transparent"};opacity:${n === M ? "1" : ".55"};transition:opacity .16s var(--kt-ease-ui, ease),border-color .16s var(--kt-ease-ui, ease);`;
+			let i = document.createElement("img");
+			i.src = t.thumb, i.alt = t.alt || "", i.loading = "lazy", i.style.cssText = "width:100%;height:100%;object-fit:cover;", r.appendChild(i), r.addEventListener("click", (e) => {
+				e.stopPropagation(), ae(n);
+			}), k.appendChild(r);
 		});
 	}, ne = () => {
 		k.hidden || Array.from(k.children).forEach((e, t) => {
@@ -10973,7 +10977,7 @@ function Aa(e) {
 			J(Number(e));
 		},
 		destroy() {
-			W?.destroy?.(), document.removeEventListener("keydown", se), document.body.style.overflow = N, t.remove();
+			W?.destroy?.(), document.removeEventListener("keydown", se), document.body.style.overflow = N, t.remove(), document.getElementById("kt-lightbox-style")?.remove();
 		}
 	};
 }

@@ -182,8 +182,11 @@ const BUDGETS = {
   // closing an instance's toasts on destroy measures 441.2 KiB raw minified;
   // gzip stays inside the existing variance. Round only this raw ceiling.
   'kineto.min.js': { raw: 442, gz: 134, variance: 2 },
-  'kineto.umd.js': { raw: 440, gz: 133, variance: 1 },
-  'kineto.umd.min.js': { raw: 440, gz: 133, variance: 1 },
+  // 2026-09-20 (shared-element teardown): the UMD gzip crosses its exact 133 KB
+  // boundary at a measured 134.0 KB while raw stays inside 440 KB. Round only
+  // the compressed ceiling; runner variance and consumer budgets are unchanged.
+  'kineto.umd.js': { raw: 440, gz: 134, variance: 1 },
+  'kineto.umd.min.js': { raw: 440, gz: 134, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

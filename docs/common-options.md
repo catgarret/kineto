@@ -92,7 +92,7 @@ Kineto.reveal('.hero', { preset: 'fade-up', spring: false }); // 이 요소만 �
 | `slider` | `dot` `'Go to slide {n}'` · `slide` `'{n} of {total}'` · `pause` `'Pause carousel autoplay'` · `resume` `'Resume carousel autoplay'` · `carouselRole` `'carousel'` · `slideRole` `'slide'` |
 | `fullpage` | `dot` `'Go to section {n}'` |
 | `toast` | `region` `'Notifications'` · `dismiss` `'Dismiss'` |
-| `lightbox` | `viewer` `'Media viewer'` · `backdrop`·`close` `'Close viewer'` · `previous` `'Previous item'` · `next` `'Next item'` · `zoomIn` `'Zoom in'` · `zoomOut` `'Zoom out'` · `zoomReset` `'Reset zoom'` · `zoomHint` `'Click to type an exact zoom %'` · `zoomInput` `'Zoom percent'` · `share` `'Share'` · `download` `'Download'` |
+| `lightbox` | `viewer` `'Media viewer'` · `backdrop`·`close` `'Close viewer'` · `previous` `'Previous item'` · `next` `'Next item'` · `zoomIn` `'Zoom in'` · `zoomOut` `'Zoom out'` · `zoomReset` `'Reset zoom'` · `zoomHint` `'Click to type an exact zoom %'` · `zoomInput` `'Zoom percent'` · `thumbnail` `'Item {n} of {total}'` · `share` `'Share'` · `download` `'Download'` |
 
 `{n}`·`{total}` 자리표시자는 값이 있을 때만 바뀝니다. 이름을 잘못 적으면 `{dot}`처럼 그대로
 보이므로, 오타가 조용히 빈칸이 되지 않습니다.

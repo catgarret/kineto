@@ -29,6 +29,8 @@ const DEFAULT_LABELS = {
   zoomReset: 'Reset zoom',
   zoomHint: 'Click to type an exact zoom %',
   zoomInput: 'Zoom percent',
+  // 썸네일 이름이 숫자 하나면 스크린 리더가 "3, 버튼"이라고만 읽습니다.
+  thumbnail: 'Item {n} of {total}',
   share: 'Share',
   download: 'Download'
 };
@@ -226,7 +228,7 @@ function createManager(label) {
       const thumb = document.createElement('button');
       thumb.type = 'button';
       thumb.className = 'kt-lightbox-thumb' + (i === activeIndex ? ' kt-active' : '');
-      thumb.setAttribute('aria-label', `${i + 1}`);
+      thumb.setAttribute('aria-label', label('thumbnail', { n: i + 1, total: activeList.length }));
       thumb.style.cssText = `flex:0 0 auto;width:64px;height:44px;border-radius:6px;overflow:hidden;padding:0;cursor:pointer;background:#111;border:2px solid ${i === activeIndex ? 'var(--kt-lightbox-accent,#ff5b1c)' : 'transparent'};opacity:${i === activeIndex ? '1' : '.55'};transition:opacity .16s var(--kt-ease-ui, ease),border-color .16s var(--kt-ease-ui, ease);`;
       const ti = document.createElement('img');
       ti.src = item.thumb; ti.alt = item.alt || ''; ti.loading = 'lazy';
@@ -643,6 +645,9 @@ function createManager(label) {
       document.removeEventListener('keydown', onKeyDown);
       document.body.style.overflow = previousOverflow;
       root.remove();
+      // 뷰어와 같이 들어온 것이므로 같이 나갑니다. 이 destroy 는 마지막 lightbox 가
+      // 사라질 때만 불리므로, 다음에 열리면 createManager 가 다시 넣어 줍니다.
+      document.getElementById('kt-lightbox-style')?.remove();
     }
   };
 }
