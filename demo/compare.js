@@ -479,6 +479,10 @@
     toggle.appendChild(count);
     toggle.setAttribute('aria-expanded', 'false');
     toggle.setAttribute('aria-controls', 'cmp-' + name);
+    var label = toggle.querySelector('[data-demo-i18n-text]');
+    label.id = 'cmp-' + name + '-label';
+    var heading = block.querySelector('.module-block-title');
+    if (heading && !heading.id) heading.id = 'cmp-' + name + '-module';
     wrapper.appendChild(toggle);
 
     var sheet = document.createElement('div');
@@ -487,7 +491,8 @@
     sheet.dataset.variantSheet = name;
     sheet.dataset.variantBuilt = 'false';
     sheet.setAttribute('role', 'region');
-    sheet.setAttribute('aria-label', t('모든 variant 비교') + ' — ' + name);
+    // Reference the live, translated text instead of freezing the initial locale.
+    sheet.setAttribute('aria-labelledby', (heading ? heading.id + ' ' : '') + label.id);
     sheet.hidden = true;
     wrapper.appendChild(sheet);
 

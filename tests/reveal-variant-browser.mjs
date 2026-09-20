@@ -603,6 +603,11 @@ try {
       check(reentrant.instances === 0 && reentrant.triggers === 0, 'gsap: reentrant destruction must leave no instance or trigger');
     }
     if (engine === 'native') {
+      const repeatFailures = await page.evaluate(async (base) => {
+        const { probeNativeRepeat } = await import(`${base}/tests/browser/reveal-native-repeat-probe.js`);
+        return probeNativeRepeat(window.__revealTest.core);
+      }, origin);
+      for (const failure of repeatFailures) check(false, `native repeated reveal: ${failure}`);
       const classControl = await page.evaluate(async () => {
         const { core } = window.__revealTest;
         const wait = () => new Promise((resolve) => setTimeout(resolve, 100));

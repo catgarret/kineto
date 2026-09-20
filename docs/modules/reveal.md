@@ -96,8 +96,17 @@ GSAP 없는 일반 프리셋은 Web Animations API가 있는 브라우저에서
 완료 후 `resume()`는 처음부터 재생하지 않으며, `replay()`로 새 실행을 시작합니다.
 Kineto가 만든 애니메이션만 제어하므로 작성자의 별도 CSS/WAAPI 애니메이션은
 멈추거나 취소하지 않습니다. Web Animations API가 없는 환경은 기존 CSS 전환으로
-동작하며 이 경로의 일시 정지는 지원하지 않습니다. 일반 native 프리셋의
-viewport 진입은 여전히 1회 감지이며 GSAP의 반복 경계 callback과 동일하지 않습니다.
+동작하며 이 경로의 일시 정지는 지원하지 않습니다.
+
+일반 native 프리셋도 `once:false`에서 진입·이탈·역진입·역이탈을 감지하며,
+Web Animations 경로에서는 현재 진행률에서 재생 방향을 바꿉니다. 네 경계
+콜백은 `onEnter` → `onLeave` → `onEnterBack` → `onLeaveBack`으로 구분됩니다.
+`once:true`는 모션만 한 번 실행하며 명시한 경계 콜백은 계속 관찰합니다.
+Replay는 경계 콜백을 가짜로 호출하거나 반복 감지를 끊지 않습니다.
+중단 중 지나간 경계의 재생 방향은 보존하고 `resume()` 때 적용합니다.
+자체 transform은 감지 기준에서 제외하므로 경계 근처에서 역재생 때문에
+진입·이탈이 반복되지 않습니다. 새 wrapper나 상시 RAF 측정 루프는 없습니다.
+기존 데모 설정의 **Once**를 끄면 같은 동작을 확인할 수 있습니다.
 
 ```js
 const entrance = Kineto.create('reveal', document.querySelector('.content'), {

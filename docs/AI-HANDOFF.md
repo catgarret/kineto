@@ -55,6 +55,15 @@ another agent's prose report are leads to verify, not evidence of completion.
 The exact current version and public surface are authoritative in
 `package.json`, `kineto.features.json`, and `kineto.requirements.json`.
 
+### Current owner workflow (2026-09-20)
+
+The owner explicitly requested that completed improvement batches include a
+public demo deployment, not only a local commit. This authorizes the main push
+and Pages verification for that ongoing work, not an npm/MCP release or tag.
+Claude may be working concurrently: use an isolated checkout, preserve its
+changes, recheck remote main before pushing, and verify the deployed commit's
+own artefacts rather than a different agent's moving working tree.
+
 ## How to recover project history
 
 Read:
@@ -222,6 +231,12 @@ The image batch also preserves delay/hold timers and reveal progress across
 pause/visibility, defers static resize and paused replay, and guards callback
 re-entry. Core tracks explicit pause separately from visibility suspension so
 the same behavior holds through the public API, not only direct module calls.
+
+The native transform/opacity Reveal path now shares the mask family's boundary
+observer: repeat/reverse, all four boundary callbacks, nested clipping and
+replay retain their lifecycle. Own transforms are excluded from trigger bounds
+to prevent edge oscillation. This supersedes the earlier generic-native repeat
+gap; class-only hooks and no-WAAPI pause limitations are unchanged.
 
 ## Required end-of-task record
 

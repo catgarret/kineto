@@ -2493,4 +2493,16 @@
     sets[lang] = sets[lang] || {};
     sets[lang].stylize = Object.assign({}, sets[lang].stylize, shared, stylizeOnly[lang] || stylizeOnly.en);
   }
+  const revealOnce = {
+    ko: '켜면 등장 모션을 한 번만 실행합니다. 끄면 이탈 시 역재생하고 재진입 시 다시 재생합니다. Native와 GSAP 모두 지원합니다.',
+    en: 'Play the entrance once. Turn off to reverse on exit and play again on re-entry, with either native animation or GSAP.',
+    ja: 'オンなら登場モーションを一度だけ再生します。オフなら退出時に逆再生し、再進入時に再生します。NativeとGSAPの両方に対応します。',
+    'zh-CN': '开启时只播放一次入场动画；关闭后离开时倒放，重新进入时再次播放。支持原生动画和 GSAP。',
+    'zh-TW': '開啟時只播放一次入場動畫；關閉後離開時倒放，重新進入時再次播放。支援原生動畫和 GSAP。',
+    ru: 'Воспроизвести появление один раз. Выключите для обратного воспроизведения при выходе и повтора при возвращении. Работает с native и GSAP.',
+    it: 'Riproduce l’entrata una sola volta. Disattiva per invertire all’uscita e ripetere al rientro, con animazioni native o GSAP.'
+  };
+  for (const [lang, once] of Object.entries(revealOnce)) {
+    sets[lang].reveal = Object.assign({}, sets[lang].reveal, { once });
+  }
 })();

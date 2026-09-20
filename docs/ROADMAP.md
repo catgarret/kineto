@@ -463,7 +463,7 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 1.0 근거 최신화였으며 v0.9.8로 배포까지 완료했습니다. 아래 142~146번은 해당
 릴리스의 구현·회귀 검증, 147번은 원격 CI·npm·Pages와 공개 산출물 검증입니다.
 
-- 후속: 일반 native Reveal의 반복 경계 callback 범위를 기존 시각 계약을 유지하며 검토. Wave의 선택적 `colors`·`blendMode`는 세 엔진 픽셀 검사와 함께 구현했습니다. 일반 native pause/resume는 Web Animations 경로에 보강했으며, Unreleased 작업은 v0.9.8 배포 완료 근거에 합산하지 않음.
+- 구현 완료(Unreleased, 2026-09-20): 일반 native Reveal의 반복·역재생과 네 경계 callback, 중첩 스크롤·Replay 후 감지 유지·자체 transform 경계 진동 방지. 기존 Web Animations pause/resume와 작성자 DOM 복원을 유지합니다. Wave의 선택적 `colors`·`blendMode`도 세 엔진 픽셀 검사와 함께 구현했습니다. Unreleased 작업은 v0.9.8 배포 완료 근거에 합산하지 않음.
 - 구현 완료(Unreleased): 공개 variant 비교 시트와 잔여 전용 카드 7개가 추가되었습니다(`dc022d4`·`686e41c`). 현재 전용 markup은 deprecated alias를 제외한 81/81입니다. 카드 수와 실제 시각·실기기 검증 완료는 구분합니다.
 - 구현 완료(Unreleased): Stylize가 별도 모듈로 분리되고 Lazy의 세 스타일화 이름은 deprecated alias로 유지됩니다(`123cc55`). 다른 모듈로의 추가 재사용은 여전히 §3 증거 게이트를 따릅니다.
 - 구현 완료(Unreleased, 2026-09-20): Stylize 영상 `trigger:view/manual`·로드 전 replay·`delay`·`holdDuration`을 연결하고 모듈/영상 pause·숨김 탭에서 RAF와 리빌 시간을 정지합니다. 실제 디코딩 영상과 제어된 프레임 시계로 실행 조건·시간 보존·콜백 종료를 검사합니다. 실기기 검증은 별도입니다.

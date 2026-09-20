@@ -3,6 +3,39 @@
 검증일: 2026-09-20
 대상: v0.11.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-20 Unreleased 검증 (Native Reveal 반복 경계)
+
+Claude의 페이지 전환·비교 화면 작업과 분리한 worktree에서 수정했습니다.
+`once:false`도 `observeOnce`만 사용하던 native 일반 프리셋은 새 실제 스크롤
+검사에서 수정 전 13개 항목이 실패했습니다. 마스크 계열 감지기를 공유해
+진입·이탈·역진입·역이탈, 현재 진행률의 역재생, Replay 후 감지 유지와
+중단 중 경계 변경 후 재개를 연결했습니다. `once:true`에서도 요청한 경계
+콜백은 관찰하되 모션은 한 번만 실행합니다.
+
+자체 transform을 감지 기준에서 제외하여 역재생이 스스로 재진입을 만드는
+경계 진동을 막습니다. 중첩 overflow 스크롤, 다섯 transform 프리셋의 경계,
+여섯 콜백 안의 destroy와 작성자 DOM 복원을 검사합니다. 새 wrapper·상시
+측정 RAF·공개 옵션·의존성은 없습니다. 기존 마스크/GSAP/저성능 검사를 포함한
+Reveal 23종은 Chromium·Firefox·WebKit 모두 통과했습니다.
+
+Node 24 산출물: 574.5KiB 압축 / 1879.6KiB 해제 / 79개 파일,
+ESM raw 561.2KiB / min ESM 440.2KiB / UMD 438.3KiB입니다.
+측정된 추가 구현 비용만 상한에 반영했으며 gzip·runner variance·소비자 예산은
+유지합니다. Once 도움말 7개 언어와 모듈 문서·로드맵을 갱신했습니다.
+실기기와 no-WAAPI 일시정지 지원은 이번 자동 검사로 완료 처리하지 않습니다.
+
+통합 검사에서 기반 커밋 `ee9d8c0`의 비교 영역 ARIA 라벨이 언어 변경 후에도
+한국어로 남는 실패를 확인했습니다. 정적 `aria-label` 대신 실제 모듈 제목과
+번역되는 버튼 문구를 `aria-labelledby`로 참조합니다. 기존 번역 검사는 유지하고
+34개 비교 영역의 이름 참조 및 7개 언어 변경 검사를 추가했습니다.
+
+최종 Node 24.20.0 `npm run ci`는 종료 코드 0으로 통과했습니다. React/Vue
+SSR·hydration·반복 mount/unmount, 연동·MCP, 실제 tarball 설치, 전체 데모와
+Chromium 회귀를 포함합니다. 추가 Reveal 검사는 Firefox·WebKit에서도 통과했고,
+5개 잠금파일 감사는 취약점 0건입니다. 문서·로드맵·diff 공백 검사도 통과했습니다.
+기존 Lazy/Stylize의 오프스크린 GIF 검사는 환경 감지로 제외된 상태이며,
+별도 클릭 미디어 GIF/APNG/WebP 1회 재생 검사는 통과했습니다.
+
 ## 2026-09-20 Unreleased 검증 (이미지 시간 보존·Core 정지 소유권)
 
 소스와 공개 번들에서 지연·리빌·완료 대기 중 pause/숨김 전환, 정지 이미지

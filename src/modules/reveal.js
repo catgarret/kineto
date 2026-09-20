@@ -79,6 +79,70 @@ function setClasses(el, opts, active) {
 const addClasses = (el, opts) => setClasses(el, opts, true);
 const removeClasses = (el, opts) => setClasses(el, opts, false);
 
+// A shared, frame-coalesced boundary observer for native timelines. IO wakes it
+// on layout changes; captured scroll events include nested scrolling containers.
+function observeBoundaries(el, opts, clock, boundary, watch, visibleOnly, bounds = () => el.getBoundingClientRect()) {
+  let stopped = false, raf = null, zone = null, observer = null;
+  const threshold = Number(opts.threshold ?? (clock ? .2 : .1));
+  const margin = String(opts.rootMargin || (clock ? '0px' : '0px 0px -10% 0px')).trim().split(/\s+/);
+  const measure = () => {
+    raf = null;
+    if (stopped) return;
+    const width = document.documentElement.clientWidth || window.innerWidth;
+    const height = document.documentElement.clientHeight || window.innerHeight;
+    const offsets = [0, 1, 2, 3].map((index) => {
+      const value = margin[index] || margin[index % 2] || margin[0];
+      return Number.parseFloat(value) * (value.endsWith('%') ? width / 100 : 1);
+    });
+    const rect = bounds();
+    let top = -offsets[0], bottom = height + offsets[2], left = -offsets[3], right = width + offsets[1];
+    for (let parent = el.parentElement; parent; parent = parent.parentElement) {
+      const style = getComputedStyle(parent);
+      if (!/(hidden|clip|auto|scroll)/.test(style.overflowX + style.overflowY)) continue;
+      const box = parent.getBoundingClientRect();
+      const scaleX = parent.offsetWidth ? box.width / parent.offsetWidth : 1;
+      const scaleY = parent.offsetHeight ? box.height / parent.offsetHeight : 1;
+      if (style.overflowX !== 'visible') {
+        left = Math.max(left, box.left + parent.clientLeft * scaleX);
+        right = Math.min(right, box.left + (parent.clientLeft + parent.clientWidth) * scaleX);
+      }
+      if (style.overflowY !== 'visible') {
+        top = Math.max(top, box.top + parent.clientTop * scaleY);
+        bottom = Math.min(bottom, box.top + (parent.clientTop + parent.clientHeight) * scaleY);
+      }
+    }
+    const area = Math.max(0, Math.min(rect.right, right) - Math.max(rect.left, left))
+      * Math.max(0, Math.min(rect.bottom, bottom) - Math.max(rect.top, top));
+    const visible = area > 0 && area / (rect.width * rect.height) >= threshold;
+    if (visibleOnly) { if (visible) visibleOnly(); return; }
+    const next = visible ? 0 : rect.top >= (top + bottom - rect.height) / 2 ? 1 : -1;
+    const previous = zone;
+    zone = next;
+    if ((previous == null && next !== 0) || previous === next) return;
+    if (previous === -1) boundary(2);
+    else if (previous === 1 || previous == null) boundary(0);
+    if (stopped) return;
+    if (next === -1) boundary(1);
+    else if (next === 1) boundary(3);
+  };
+  const schedule = () => { if (!stopped && raf == null) raf = requestAnimationFrame(measure); };
+  if (typeof IntersectionObserver !== 'undefined') {
+    observer = new IntersectionObserver(schedule, { threshold, rootMargin: margin.join(' ') });
+    observer.observe(el);
+  } else if (!visibleOnly) boundary(0);
+  if (watch && !visibleOnly) {
+    document.addEventListener('scroll', schedule, { passive: true, capture: true });
+    window.addEventListener('resize', schedule, { passive: true });
+  }
+  return { disconnect() {
+    stopped = true;
+    observer?.disconnect();
+    if (raf != null) cancelAnimationFrame(raf);
+    document.removeEventListener('scroll', schedule, true);
+    window.removeEventListener('resize', schedule);
+  } };
+}
+
 // One reversible clock drives every mask and staggered child. Scroll boundaries
 // control the current run, so replay never revives an obsolete animation.
 function maskedReveal(el, opts, gsap, scrollTrigger, clock, clipAt) {
@@ -99,8 +163,6 @@ function maskedReveal(el, opts, gsap, scrollTrigger, clock, clipAt) {
   let lastTime = null;
   let trigger = null;
   let observer = null;
-  let measureRaf = null;
-  let zone = null;
   const stop = () => {
     tween?.pause();
     if (raf != null) cancelAnimationFrame(raf);
@@ -190,68 +252,13 @@ function maskedReveal(el, opts, gsap, scrollTrigger, clock, clipAt) {
   };
   prepare();
 
-  // IO supplies layout-change wakeups; passive, frame-coalesced scroll reads
-  // keep partially clipped/paused targets observable without wrapping their DOM.
-  const threshold = Number(opts.threshold ?? (clock ? .2 : .1));
-  const margin = String(opts.rootMargin || (clock ? '0px' : '0px 0px -10% 0px')).trim().split(/\s+/);
-  const measure = () => {
-    measureRaf = null;
-    if (destroyed) return;
-    const width = document.documentElement.clientWidth || window.innerWidth;
-    const height = document.documentElement.clientHeight || window.innerHeight;
-    const offsets = [0, 1, 2, 3].map((index) => {
-      const value = margin[index] || margin[index % 2] || margin[0];
-      return Number.parseFloat(value) * (value.endsWith('%') ? width / 100 : 1);
-    });
-    const rect = el.getBoundingClientRect();
-    let top = -offsets[0], bottom = height + offsets[2], left = -offsets[3], right = width + offsets[1];
-    for (let parent = el.parentElement; parent; parent = parent.parentElement) {
-      const style = getComputedStyle(parent);
-      if (!/(hidden|clip|auto|scroll)/.test(style.overflowX + style.overflowY)) continue;
-      const box = parent.getBoundingClientRect();
-      const scaleX = parent.offsetWidth ? box.width / parent.offsetWidth : 1;
-      const scaleY = parent.offsetHeight ? box.height / parent.offsetHeight : 1;
-      if (style.overflowX !== 'visible') {
-        left = Math.max(left, box.left + parent.clientLeft * scaleX);
-        right = Math.min(right, box.left + (parent.clientLeft + parent.clientWidth) * scaleX);
-      }
-      if (style.overflowY !== 'visible') {
-        top = Math.max(top, box.top + parent.clientTop * scaleY);
-        bottom = Math.min(bottom, box.top + (parent.clientTop + parent.clientHeight) * scaleY);
-      }
-    }
-    const area = Math.max(0, Math.min(rect.right, right) - Math.max(rect.left, left))
-      * Math.max(0, Math.min(rect.bottom, bottom) - Math.max(rect.top, top));
-    const visible = area > 0 && area / (rect.width * rect.height) >= threshold;
-    if (scrollTrigger) {
-      if (visible && !played) boundary(0);
-      return;
-    }
-    const next = visible ? 0 : rect.top >= (top + bottom - rect.height) / 2 ? 1 : -1;
-    const previous = zone;
-    zone = next;
-    if (previous == null && next !== 0) return;
-    if (previous === next) return;
-    if (previous === -1) boundary(2);
-    else if (previous === 1 || previous == null) boundary(0);
-    if (next === -1) boundary(1);
-    else if (next === 1) boundary(3);
-  };
-  const schedule = () => { if (!destroyed && measureRaf == null) measureRaf = requestAnimationFrame(measure); };
   if (scrollTrigger) trigger = scrollTrigger.create({
     trigger: el, start: opts.start || 'top 85%', end: opts.end,
     onEnter: () => boundary(0), onLeave: () => boundary(1),
     onEnterBack: () => boundary(2), onLeaveBack: () => boundary(3)
   });
-  if (typeof IntersectionObserver !== 'undefined') {
-    observer = new IntersectionObserver(schedule, { threshold, rootMargin: margin.join(' ') });
-    observer.observe(el);
-  } else if (!scrollTrigger) boundary(0);
-  const track = !scrollTrigger && watch;
-  if (track) {
-    document.addEventListener('scroll', schedule, { passive: true, capture: true });
-    window.addEventListener('resize', schedule, { passive: true });
-  }
+  observer = observeBoundaries(el, opts, clock, boundary, watch,
+    scrollTrigger ? () => { if (!played) boundary(0); } : null);
   return {
     el, type: 'reveal',
     replay(nextOptions) {
@@ -271,9 +278,6 @@ function maskedReveal(el, opts, gsap, scrollTrigger, clock, clipAt) {
       tween?.kill();
       trigger?.kill();
       observer?.disconnect();
-      if (measureRaf != null) cancelAnimationFrame(measureRaf);
-      document.removeEventListener('scroll', schedule, true);
-      window.removeEventListener('resize', schedule);
       restore();
     }
   };
@@ -552,22 +556,41 @@ export default {
     const skewY = Number(from.skewY ?? 0);
     const perspective = Number(from.transformPerspective ?? 0);
     const duration = Math.max(0, Number(opts.duration ?? 0.55));
+    const once = opts.once !== false;
+    const watch = !once || opts.onEnter || opts.onLeave || opts.onEnterBack || opts.onLeaveBack;
     let timers = [];
     let destroyed = false;
     let paused = false;
+    let played = false, rate = 1, generation = 0;
+    let observer = null;
     const animations = new Set();
+    const pending = new Set();
     const rafs = new Set();
     const frame = (callback) => {
       const id = requestAnimationFrame(() => { rafs.delete(id); if (!destroyed) callback(); });
       rafs.add(id);
     };
     const stop = () => {
+      generation++;
       animations.forEach((animation) => { animation.onfinish = null; animation.cancel(); });
       animations.clear();
+      pending.clear();
       timers.forEach(clearTimeout);
       timers = [];
       rafs.forEach(cancelAnimationFrame);
       rafs.clear();
+    };
+    const complete = () => {
+      if (destroyed || rate < 0) return;
+      if (!watch) observer?.disconnect();
+      opts.onComplete?.(el);
+    };
+    const drive = () => {
+      animations.forEach((animation) => {
+        animation.playbackRate = rate;
+        const end = animation.effect.getComputedTiming().endTime;
+        if (!paused && (rate > 0 ? animation.currentTime < end : animation.currentTime > 0)) animation.play();
+      });
     };
     // `perspective()` must come FIRST in the transform list or it does not apply
     // to the rotations that follow it.
@@ -597,24 +620,28 @@ export default {
     const enter = () => {
       if (destroyed) return;
       stop();
+      const run = generation;
+      played = true;
+      rate = 1;
       const delays = staggerDelays(targets.length, opts.stagger, opts.order);
       const baseDelay = Math.max(0, Number(opts.delay ?? 0));
       const finalIndex = delays.indexOf(Math.max(...delays));
       addClasses(el, opts);
-      if (destroyed) return;
+      if (destroyed || run !== generation) return;
       targets.forEach((node, index) => {
         if (typeof node.animate === 'function') {
           Object.assign(node.style, keyframes[1]);
           const animation = node.animate(keyframes, {
             duration: duration * 1000, delay: (baseDelay + delays[index]) * 1000,
-            easing: 'ease', fill: 'backwards'
+            easing: 'ease', fill: once ? 'backwards' : 'both'
           });
           animations.add(animation);
+          pending.add(animation);
           if (paused) animation.pause();
           animation.onfinish = () => {
-            animation.onfinish = null;
-            animations.delete(animation);
-            if (!destroyed && index === finalIndex) opts.onComplete?.(el);
+            if (destroyed || run !== generation || rate < 0 || !pending.delete(animation)) return;
+            if (once) { animation.onfinish = null; animations.delete(animation); }
+            if (!pending.size) complete();
           };
           return;
         }
@@ -622,12 +649,51 @@ export default {
           node.style.transition = `opacity ${duration}s ease,transform ${duration}s ease,filter ${duration}s ease`;
           Object.assign(node.style, keyframes[1]);
           if (index === finalIndex) timers.push(setTimeout(() => {
-            if (!destroyed) opts.onComplete?.(el);
+            complete();
           }, duration * 1000));
         }), (baseDelay + delays[index]) * 1000));
       });
     };
-    const observer = observeOnce(el, enter, { threshold: Number(opts.threshold ?? 0.1), rootMargin: opts.rootMargin || '0px 0px -10% 0px' });
+    const boundary = (next) => {
+      if (destroyed) return;
+      if (next % 2 === 0 && (!played || !once)) {
+        if (!played || !animations.size) enter();
+        else {
+          rate = 1;
+          animations.forEach(animation => pending.add(animation));
+          addClasses(el, opts);
+          if (!destroyed) drive();
+        }
+      }
+      if (destroyed) return;
+      const run = generation;
+      [opts.onEnter, opts.onLeave, opts.onEnterBack, opts.onLeaveBack][next]?.(el);
+      if (destroyed || run !== generation || next % 2 === 0 || once) return;
+      if (opts.removeClassOnLeave !== false) removeClasses(el, opts);
+      if (destroyed || run !== generation) return;
+      rate = -1;
+      if (animations.size) drive();
+      else {
+        stop();
+        targets.forEach(node => {
+          node.style.transition = `opacity ${duration}s ease,transform ${duration}s ease,filter ${duration}s ease`;
+          Object.assign(node.style, keyframes[0]);
+        });
+      }
+    };
+    // Measure the layout box, not the translation/rotation we animate. Otherwise
+    // reversing near an edge can move the target back inside and retrigger it.
+    const bounds = () => {
+      if (targets[0] !== el) return el.getBoundingClientRect();
+      const value = el.style.getPropertyValue('transform');
+      const priority = el.style.getPropertyPriority('transform');
+      el.style.setProperty('transform', 'none', 'important');
+      const rect = el.getBoundingClientRect();
+      if (value) el.style.setProperty('transform', value, priority);
+      else el.style.removeProperty('transform');
+      return rect;
+    };
+    observer = observeBoundaries(el, opts, false, boundary, watch, null, bounds);
     return {
       el,
       type: 'reveal',
@@ -635,13 +701,13 @@ export default {
         if (destroyed) return;
         Object.assign(opts, nextOptions || {});
         paused = false;
-        observer.disconnect();
+        if (!watch) observer.disconnect();
         stop();
         targets.forEach(initial);
         frame(enter);
       },
       pause() { if (!destroyed) { paused = true; animations.forEach((animation) => animation.pause()); } },
-      resume() { if (!destroyed) { paused = false; animations.forEach((animation) => animation.play()); } },
+      resume() { if (!destroyed) { paused = false; drive(); } },
       destroy() {
         destroyed = true;
         observer.disconnect();

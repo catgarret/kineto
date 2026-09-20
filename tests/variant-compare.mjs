@@ -149,6 +149,23 @@ for (const key of new Set(uiKeys)) {
   if (!ui[key] || ui[key].length !== languageCount) problems.push(`demo copy is missing a translation for: ${key}`);
 }
 
+// Region names follow the same live label that language switching updates.
+for (const name of Object.keys(catalog.modules)) {
+  const block = window.document.createElement('section');
+  block.innerHTML = `<h3 class="module-block-title">${name}</h3>`;
+  window.document.body.append(block);
+  const wrapper = compare.attach(block, name);
+  const sheet = wrapper.querySelector('[role="region"]');
+  assert.equal(sheet.hasAttribute('aria-label'), false, `${name}: do not freeze a localized region label`);
+  const references = sheet.getAttribute('aria-labelledby').split(/\s+/).map(id => window.document.getElementById(id));
+  assert.ok(references.length === 2 && references.every(Boolean), `${name}: region names resolve to the heading and translated label`);
+  for (const translation of ['모든 variant 비교', ...ui['모든 variant 비교']]) {
+    wrapper.querySelector('[data-demo-i18n-text]').textContent = translation;
+    assert.equal(references.map(node => node.textContent).join(' '), `${name} ${translation}`);
+  }
+  block.remove();
+}
+
 if (problems.length) {
   console.error('variant-compare FAILED:\n' + problems.map((line) => `  - ${line}`).join('\n')
     + '\n\nFix one of these three ways (docs/variant-compare.md):\n'
