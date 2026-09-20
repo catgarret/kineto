@@ -29,11 +29,24 @@ export default {
     const stagger = opts.stagger ?? 0.03;
     let observer = null;
     let tween = null;
-    const timers = new Set();
+    // native 경로는 글자를 setTimeout 으로 차례로 띄웁니다. 일시정지가 그 예약을 멈추지
+    // 않으면, 탭을 숨겨도(Kineto 는 그때 인스턴스를 멈춘다고 약속합니다) 글자는 계속
+    // 나타납니다. 그래서 예약을 **남은 지연과 함께** 들고 있다가 resume 때 그만큼만
+    // 다시 겁니다 — 처음부터 다시 시작하면 이미 나타난 글자가 다시 튑니다.
+    const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    const pending = new Set();
+    let pausedAt = 0;
+
+    const schedule = (run, delay) => {
+      const entry = { run, runAt: now() + delay };
+      entry.id = setTimeout(() => { pending.delete(entry); run(); }, delay);
+      pending.add(entry);
+    };
 
     const clearTimers = () => {
-      timers.forEach(clearTimeout);
-      timers.clear();
+      pending.forEach((entry) => clearTimeout(entry.id));
+      pending.clear();
+      pausedAt = 0;
     };
 
     // Release the compositor hint once the one-shot entrance is done so it isn't
@@ -48,14 +61,12 @@ export default {
         return;
       }
       chars.forEach((char, index) => {
-        const timer = setTimeout(() => {
-          timers.delete(timer);
+        schedule(() => {
           char.style.transition = `filter ${duration}s ease, opacity ${duration}s ease`;
           char.style.filter = 'blur(0)';
           char.style.opacity = '1';
           if (index === chars.length - 1) { releaseWillChange(); opts.onComplete?.(); }
         }, stagger * index * 1000);
-        timers.add(timer);
       });
     };
 
@@ -93,8 +104,22 @@ export default {
       el,
       type: 'blurText',
       replay,
-      pause: () => tween?.pause(),
-      resume: () => tween?.resume(),
+      pause: () => {
+        tween?.pause();
+        if (pausedAt || !pending.size) return;
+        pausedAt = now();
+        pending.forEach((entry) => clearTimeout(entry.id));
+      },
+      resume: () => {
+        tween?.resume();
+        if (!pausedAt) return;
+        const held = now() - pausedAt;
+        pausedAt = 0;
+        pending.forEach((entry) => {
+          entry.runAt += held;
+          entry.id = setTimeout(() => { pending.delete(entry); entry.run(); }, Math.max(0, entry.runAt - now()));
+        });
+      },
       destroy: () => {
         observer?.disconnect();
         clearTimers();

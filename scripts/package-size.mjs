@@ -179,7 +179,10 @@ const BUDGET = {
   // module declines to attach measures 1888.2 KB unpacked; packed stays inside
   // its ceiling. "Nothing happened and nobody knows why" is a correctness gap
   // in the developer experience, so round only this measured cost.
-  unpackedKb: 1889,
+  // 2026-09-20 (blur-text pause): holding the native stagger with its remaining
+  // delay measures 1889.4 KB unpacked; packed stays inside its ceiling. A pause
+  // that does not pause is a correctness gap, not a feature.
+  unpackedKb: 1890,
   files: 79
 };
 

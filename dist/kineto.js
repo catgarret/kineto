@@ -4609,22 +4609,29 @@ var hr = {
 			}
 			let n = document.createElement("span");
 			return n.style.cssText = "display:inline-block;filter:blur(8px);opacity:0;will-change:filter,opacity;", n.setAttribute("aria-hidden", "true"), n.textContent = t, e.appendChild(n), n;
-		}).filter(Boolean), c = t.duration ?? .6, l = t.stagger ?? .03, u = null, d = null, f = /* @__PURE__ */ new Set(), p = () => {
-			f.forEach(clearTimeout), f.clear();
-		}, m = () => {
+		}).filter(Boolean), c = t.duration ?? .6, l = t.stagger ?? .03, u = null, d = null, f = () => typeof performance < "u" ? performance.now() : Date.now(), p = /* @__PURE__ */ new Set(), m = 0, h = (e, t) => {
+			let n = {
+				run: e,
+				runAt: f() + t
+			};
+			n.id = setTimeout(() => {
+				p.delete(n), e();
+			}, t), p.add(n);
+		}, g = () => {
+			p.forEach((e) => clearTimeout(e.id)), p.clear(), m = 0;
+		}, _ = () => {
 			t.once !== !1 && s.forEach((e) => {
 				e.style.willChange = "";
 			});
-		}, h = () => {
-			if (p(), !s.length) {
+		}, v = () => {
+			if (g(), !s.length) {
 				t.onComplete?.();
 				return;
 			}
 			s.forEach((e, n) => {
-				let r = setTimeout(() => {
-					f.delete(r), e.style.transition = `filter ${c}s ease, opacity ${c}s ease`, e.style.filter = "blur(0)", e.style.opacity = "1", n === s.length - 1 && (m(), t.onComplete?.());
+				h(() => {
+					e.style.transition = `filter ${c}s ease, opacity ${c}s ease`, e.style.filter = "blur(0)", e.style.opacity = "1", n === s.length - 1 && (_(), t.onComplete?.());
 				}, l * n * 1e3);
-				f.add(r);
 			});
 		};
 		return n && r ? d = n.to(s, {
@@ -4634,14 +4641,14 @@ var hr = {
 			stagger: l,
 			ease: t.ease ? R(t.ease) : "power2.out",
 			onComplete: () => {
-				m(), t.onComplete?.();
+				_(), t.onComplete?.();
 			},
 			scrollTrigger: {
 				trigger: e,
 				start: t.start || "top 85%",
 				toggleActions: t.once === !1 ? "play reverse play reverse" : "play none none none"
 			}
-		}) : u = oe(e, h, { threshold: .1 }), {
+		}) : u = oe(e, v, { threshold: .1 }), {
 			el: e,
 			type: "blurText",
 			replay: () => {
@@ -4651,12 +4658,22 @@ var hr = {
 				}
 				s.forEach((e) => {
 					e.style.filter = "blur(8px)", e.style.opacity = "0";
-				}), h();
+				}), v();
 			},
-			pause: () => d?.pause(),
-			resume: () => d?.resume(),
+			pause: () => {
+				d?.pause(), !m && p.size && (m = f(), p.forEach((e) => clearTimeout(e.id)));
+			},
+			resume: () => {
+				if (d?.resume(), !m) return;
+				let e = f() - m;
+				m = 0, p.forEach((t) => {
+					t.runAt += e, t.id = setTimeout(() => {
+						p.delete(t), t.run();
+					}, Math.max(0, t.runAt - f()));
+				});
+			},
 			destroy: () => {
-				u?.disconnect(), p(), d?.scrollTrigger?.kill(), d?.kill(), i(), a();
+				u?.disconnect(), g(), d?.scrollTrigger?.kill(), d?.kill(), i(), a();
 			}
 		};
 	},

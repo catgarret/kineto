@@ -173,7 +173,9 @@ const BUDGETS = {
   // switch, scrollShadows and cardGlow write, so destroy can put it back,
   // measures 563.4 KiB raw ESM and 440.0 KiB raw UMD. Round only the raw
   // ceilings; gzip, runner variance and consumer budgets stay fixed.
-  'kineto.js': { raw: 564, gz: 150, variance: 2 },
+  // 2026-09-20 (blur-text pause): holding the native stagger with its remaining
+  // delay measures 564.3 KiB raw ESM; gzip stays inside the variance.
+  'kineto.js': { raw: 565, gz: 150, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
   // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/

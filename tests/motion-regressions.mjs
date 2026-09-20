@@ -407,6 +407,36 @@ class TestIntersectionObserver {
 }
 globalThis.IntersectionObserver = window.IntersectionObserver = TestIntersectionObserver;
 
+// ── Blur Text: 일시정지가 native 경로의 글자 예약을 실제로 멈추는가 ──────────
+//
+// GSAP 이 있으면 tween 이 일시정지를 맡지만, GSAP 을 아직 불러오지 않은(= 흔한) 상태의
+// native 경로는 글자를 setTimeout 으로 차례로 띄웁니다. 예전에는 `pause()` 가
+// `tween?.pause()` 뿐이어서 native 경로에서는 아무 일도 하지 않았고, 탭을 숨겨도
+// (Kineto 는 그때 인스턴스를 멈춘다고 약속합니다) 글자가 계속 나타났습니다.
+// 다시 시작할 때는 **남은 지연만큼만** 기다려야 합니다 — 처음부터 다시 걸면 이미 나타난
+// 글자가 다시 튑니다.
+const blurTextNativeModule = (await import('../src/modules/blurText.js')).default;
+const blurHost = document.createElement('p');
+blurHost.textContent = 'abcdefghij';
+document.body.appendChild(blurHost);
+const blurInstance = blurTextNativeModule.create(blurHost, { stagger: 0.05, duration: 0.01 });
+const revealed = () => [...blurHost.querySelectorAll('span')].filter((span) => span.style.opacity === '1').length;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+await sleep(120);
+const revealedBeforePause = revealed();
+assert.ok(revealedBeforePause > 0 && revealedBeforePause < 10,
+  `the staggered reveal should be mid-flight to test pause (revealed ${revealedBeforePause}/10)`);
+blurInstance.pause();
+await sleep(400);
+assert.equal(revealed(), revealedBeforePause,
+  'pause() must stop the native stagger — a hidden tab should not keep revealing characters');
+blurInstance.resume();
+await sleep(400);
+assert.equal(revealed(), 10, 'resume() must let the remaining characters finish');
+blurInstance.destroy();
+blurHost.remove();
+
 const brushHost = document.createElement('div');
 brushHost.innerHTML = '<img src="base.png" alt="">';
 document.body.appendChild(brushHost);
@@ -1775,4 +1805,4 @@ window.HTMLElement.prototype.animate = textRevealAnimate;
 
 dom.window.close();
 
-console.log('Motion regressions OK — reveal order; fullpage handoff; bounded composition APIs; interaction shadows; Bottom Sheet resizing; loading indicators; Cover Reveal combinations; bounded counter line boxes; multiline text motion; slider progress and activation collisions.');
+console.log('Motion regressions OK — reveal order; fullpage handoff; bounded composition APIs; interaction shadows; Bottom Sheet resizing; loading indicators; Cover Reveal combinations; bounded counter line boxes; multiline text motion; slider progress and activation collisions; Blur Text pause holding the native stagger.');
