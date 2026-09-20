@@ -1,4 +1,4 @@
-import { env } from '../utils.js';
+import { env, snapshotAttributes } from '../utils.js';
 
 // Switch — an accessible animated toggle. Attach `data-kt-switch` to a
 // <button> (or any element). It becomes role="switch" with aria-checked, a
@@ -28,6 +28,8 @@ export default {
     const travel = Math.round(size * 0.8);
     el.classList.add('kt-switch');
     el.setAttribute('role', 'switch');
+    // input 의 tabindex 는 아래에서 지우고 있었지만 요소 자신의 것은 남았습니다.
+    const restoreFocusability = snapshotAttributes(el, ['tabindex']);
     if (el.tagName !== 'BUTTON' && el.tagName !== 'INPUT' && !el.hasAttribute('tabindex')) el.tabIndex = 0;
     el.style.display = 'inline-flex';
     el.style.alignItems = 'center';
@@ -88,6 +90,7 @@ export default {
         el.classList.remove('kt-switch', 'kt-on');
         el.removeAttribute('role');
         el.removeAttribute('aria-checked');
+        restoreFocusability();
         if (prevStyle == null) el.removeAttribute('style'); else el.setAttribute('style', prevStyle);
       }
     };

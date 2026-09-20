@@ -119,9 +119,15 @@ export default {
 
     el.insertBefore(root, el.firstChild);
     // Track the children we promote to positioned so destroy() can undo it.
+    // 공용 스냅샷을 씁니다. 직접 `child.style.position = ''` 로 되돌리면 원래 style 속성이
+    // 없던 자식에게 `style=""` 라는 빈 껍데기가 남습니다 — 스냅샷의 복원은 그 경우 속성째
+    // 지워 주므로, 자식도 만나기 전과 똑같은 모습으로 돌아갑니다.
     const promotedChildren = [];
     Array.from(el.children).forEach((child) => {
-      if (child !== root && getComputedStyle(child).position === 'static') { child.style.position = 'relative'; promotedChildren.push(child); }
+      if (child !== root && getComputedStyle(child).position === 'static') {
+        promotedChildren.push(snapshotInlineStyles(child, ['position']));
+        child.style.position = 'relative';
+      }
     });
 
     let targetX = el.clientWidth / 2;
@@ -263,7 +269,7 @@ export default {
         el.removeEventListener('pointerleave', onLeave);
         el.removeEventListener('pointerdown', onPress);
         root.remove();
-        promotedChildren.forEach((child) => { child.style.position = ''; });
+        promotedChildren.forEach((restoreChild) => restoreChild());
         shadow.destroy();
         restore();
       }

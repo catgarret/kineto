@@ -77,6 +77,10 @@ for (const [name, make] of Object.entries(fixtures)) {
   // 실제로 그랬습니다 — 토스트가 없는 페이지에 빈 랜드마크가 영원히 남았습니다).
   const beforeBody = new Set(document.body.children);
   const beforeHead = new Set(document.head.children);
+  // 요소 자신도 만나기 전 모습 그대로 돌려줘야 합니다. 리스너·RAF·노드만 보면
+  // 남은 `tabindex`(탭 순서에 계속 남음)·`aria-label`(라이브러리가 지은 이름이 계속 붙음)·
+  // `overflow-y:auto`(스크롤 컨테이너가 아니던 요소가 계속 컨테이너)를 놓칩니다.
+  const beforeMarkup = el.outerHTML;
   let inst;
   try { inst = Kineto.create(name, el, opts); } catch (e) { fails.push(`${name}: create threw ${e.message}`); el.remove(); continue; }
   if (!inst) { fails.push(`${name}: create returned null (fixture invalid)`); el.remove(); continue; }
@@ -101,6 +105,16 @@ for (const [name, make] of Object.entries(fixtures)) {
       + `[${strayNodes.map((node) => node.tagName.toLowerCase() + '.' + (String(node.className).trim().split(/\s+/)[0] || '')).join(', ')}]`);
     strayNodes.forEach((node) => node.remove());
   }
+  const afterMarkup = el.outerHTML;
+  if (afterMarkup !== beforeMarkup) {
+    const rootOf = (markup) => markup.slice(0, markup.indexOf('>') + 1);
+    fails.push(rootOf(afterMarkup) !== rootOf(beforeMarkup)
+      ? `${name}: destroy left the element changed — ${rootOf(beforeMarkup)} became ${rootOf(afterMarkup)}`
+      : `${name}: destroy left the element's contents changed (${beforeMarkup.length} -> ${afterMarkup.length} chars)`);
+  }
+  // 두 번 불러도 터지지 않아야 합니다 — 프레임워크 어댑터가 unmount 와 명시적 destroy 로
+  // 두 번 부르는 경우가 실제로 있습니다.
+  try { inst.destroy?.(); } catch (e) { fails.push(`${name}: a second destroy() threw ${e.message}`); }
   el.remove();
 }
 

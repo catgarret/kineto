@@ -1,4 +1,4 @@
-import { cssEase } from '../utils.js';
+import { cssEase, dropEmptyAttributes } from '../utils.js';
 
 // Accordion — animates native <details>/<summary> open & close with a springy
 // height morph and a blur-in on the content, keeping the browser's built-in
@@ -78,6 +78,8 @@ export default {
           stop();
           summary.removeEventListener('click', onClick);
           summary.classList.remove('kt-accordion-summary');
+          // 모듈이 손댄 자손이므로 빈 껍데기도 모듈이 치웁니다(core 는 뿌리만 봅니다).
+          dropEmptyAttributes(summary);
           details.classList.remove(...openClasses);
           Array.from(panel.childNodes).forEach((node) => details.insertBefore(node, panel));
           panel.remove();

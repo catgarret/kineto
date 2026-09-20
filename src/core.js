@@ -8,7 +8,7 @@
 // ensureLenis() (page global or official CDN) the first time enableSmooth() is
 // called. Smooth scroll is opt-in and off by default, so a page that never
 // enables it never fetches Lenis. See src/runtime.js for the engine loader.
-import { dash, env, G, noopInstance, q, readOpts, ST, setMotionDefaults } from './utils.js';
+import { dash, dropEmptyAttributes, env, G, noopInstance, q, readOpts, ST, setMotionDefaults } from './utils.js';
 import { setAnimationEngine, setEngineSource, getEngineSource, ensureGSAP, ensureLenis, gsapReady } from './runtime.js';
 import { createDiagnosticHub, DIAGNOSTIC_CODES } from './diagnostics.js';
 
@@ -210,6 +210,11 @@ function removeRecord(record, destroy = true, teardownIfEmpty = true) {
       console.error(`[Kineto/${record.name}] destroy() failed:`, error);
       emitDiagnostic({ code: DIAGNOSTIC_CODES.DESTROY_FAILED, module: record.name, phase: 'destroy', recoverable: true, cause: error });
     }
+    // 모듈이 클래스와 인라인 스타일을 되돌리고 나면 `class=""` · `style=""` 라는 빈
+    // 껍데기가 남습니다. 동작은 같지만 요소가 "만나기 전과 같은 모습"이 아니게 되고,
+    // 복원이 끝났는지 눈으로도 검사로도 확인하기 어려워집니다. **비어 있을 때만** 지우므로
+    // 같은 요소에 살아 있는 다른 모듈이나 페이지가 넣은 값은 건드리지 않습니다.
+    dropEmptyAttributes(record.sourceEl);
   }
   if (teardownIfEmpty && records.size === 0) teardownCoreServices();
 }

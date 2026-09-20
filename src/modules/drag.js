@@ -1,4 +1,4 @@
-import { clamp } from '../utils.js';
+import { clamp, snapshotAttributes } from '../utils.js';
 
 // Drag — make an element draggable with a pointer. Axis lock (`axis`),
 // containment to the offset parent (`bounds:"parent"`), spring-back to origin
@@ -95,6 +95,9 @@ export default {
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onUp);
+    // 초점을 열어 줬다면 destroy 때 닫아야 합니다 — 그러지 않으면 드래그가 사라진 뒤에도
+    // 요소가 계속 탭 순서에 남습니다.
+    const restoreFocusability = snapshotAttributes(el, ['tabindex']);
     if (!el.hasAttribute('tabindex')) el.tabIndex = 0;
     el.addEventListener('keydown', onKey);
 
@@ -110,6 +113,7 @@ export default {
         window.removeEventListener('pointerup', onUp);
         window.removeEventListener('pointercancel', onUp);
         el.removeEventListener('keydown', onKey);
+        restoreFocusability();
         el.style.transform = prevTransform;
         el.style.transition = prevTransition;
         el.style.touchAction = prevTouch;

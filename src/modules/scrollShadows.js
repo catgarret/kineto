@@ -71,12 +71,17 @@ export default {
       return state;
     };
 
+    // 스냅샷은 **바꾸기 전에** 찍어야 합니다. 아래 두 갈래의 snapshotInlineStyles 는 이
+    // 줄들보다 뒤에서 실행되므로, 여기서 넣은 `auto` 를 "원래 값"으로 기억해 destroy 뒤에도
+    // 남겼습니다 — 스크롤 컨테이너가 아니던 요소가 계속 스크롤 컨테이너로 남았습니다.
+    // overflow 두 속성의 주인은 이 스냅샷 하나뿐이라, 갈래별 스냅샷에서는 뺐습니다.
+    const restoreOverflow = snapshotInlineStyles(el, ['overflowX', 'overflowY']);
     if (horizontal) { if (getComputedStyle(el).overflowX === 'visible') el.style.overflowX = 'auto'; }
     else if (getComputedStyle(el).overflowY === 'visible') el.style.overflowY = 'auto';
 
     // ── Mask mode: dissolve the edges, scroll-aware ─────────────────────────
     if (mode === 'mask') {
-      const restore = snapshotInlineStyles(el, ['maskImage', 'webkitMaskImage', 'overflowX', 'overflowY']);
+      const restore = snapshotInlineStyles(el, ['maskImage', 'webkitMaskImage']);
       const dir = horizontal ? 'to right' : 'to bottom';
       let frame = null;
       let currentStart = null;
@@ -148,6 +153,7 @@ export default {
           el.style.removeProperty('--kt-scroll-shadow-start');
           el.style.removeProperty('--kt-scroll-shadow-end');
           restore();
+          restoreOverflow();
         }
       };
     }
@@ -167,7 +173,7 @@ export default {
 
     const restore = snapshotInlineStyles(el, [
       'backgroundImage', 'backgroundRepeat', 'backgroundSize', 'backgroundPosition',
-      'backgroundAttachment', 'backgroundColor', 'overflowX', 'overflowY'
+      'backgroundAttachment', 'backgroundColor'
     ]);
 
     const covers = horizontal
@@ -217,6 +223,7 @@ export default {
         el.classList.remove('kt-at-start', 'kt-at-end', 'kt-can-scroll-start', 'kt-can-scroll-end');
         el.style.removeProperty('--kt-scroll-shadow-progress');
         restore();
+        restoreOverflow();
       }
     };
   },

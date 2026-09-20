@@ -325,6 +325,22 @@ export function observeOnce(el, callback, options = {}) {
 }
 
 
+/**
+ * `class=""` · `style=""` 처럼 **값이 빈 속성**을 지웁니다.
+ *
+ * `classList.remove(...)` 나 `style.removeProperty(...)` 로 마지막 값을 없애도 속성 자체는
+ * 남습니다. 동작은 같지만 요소가 "만나기 전과 같은 모습"이 아니게 되고, 복원이 끝났는지
+ * 눈으로도 검사로도 확인하기 어려워집니다(`tests/leak.mjs` 가 이것을 봅니다).
+ * **비어 있을 때만** 지우므로, 같은 요소에 살아 있는 다른 모듈이나 페이지가 넣은 값은
+ * 건드리지 않습니다. 모듈이 손댄 **자손**은 모듈이 직접 이 함수를 부르면 됩니다.
+ */
+export function dropEmptyAttributes(el, names = ['class', 'style']) {
+  if (!el || typeof el.getAttribute !== 'function') return;
+  for (const name of names) {
+    if (el.getAttribute(name) === '') el.removeAttribute(name);
+  }
+}
+
 export function snapshotAttributes(el, names) {
   const values = new Map(names.map((name) => [name, el.getAttribute(name)]));
   return () => {

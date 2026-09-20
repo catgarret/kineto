@@ -152,7 +152,12 @@ const BUDGET = {
   // closing an instance's toasts on destroy measures 576.2 KB packed / 1884.1 KB
   // unpacked on the same 79 files. Restoring the document a module changed is
   // the destroy contract, not a feature.
-  packedKb: 577,
+  // 2026-09-20 (element restoration): snapshotting what tabs, bottomSheet, drag,
+  // switch, scrollShadows and cardGlow write before they write it measures
+  // 577.1 KB packed / 1886.8 KB unpacked on the same 79 files. Handing the
+  // element back as it was found is the destroy contract; these are the bytes
+  // that remember what "as it was found" means.
+  packedKb: 578,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -169,7 +174,8 @@ const BUDGET = {
   // default label maps in four modules and the shared helper. Round only this
   // measured accessibility cost; packed/files budgets follow their own notes.
   // See the toast-region note above for the 1884.1 KB measurement.
-  unpackedKb: 1885,
+  // See the element-restoration note above for the 1886.8 KB measurement.
+  unpackedKb: 1887,
   files: 79
 };
 

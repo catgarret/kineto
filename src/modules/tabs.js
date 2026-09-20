@@ -1,4 +1,4 @@
-import { clamp, env } from '../utils.js';
+import { clamp, dropEmptyAttributes, env, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
 
 // Tabs — accessible tabbed interface following the WAI-ARIA / KRDS tab pattern.
 // Markup: a container with `data-kt-tabs`, a tablist (`[role=tablist]` or
@@ -33,6 +33,17 @@ export default {
       .filter((node) => node.closest('[role="tablist"], .kt-tablist') === list);
     const panels = Array.from(el.querySelectorAll('[role="tabpanel"], .kt-tabpanel, [data-kt-tabpanel]'));
     if (!tabs.length || !panels.length) return null;
+
+    // 쓰기 **전에** 전부 기억합니다. 되돌리지 않으면 destroy 한 뒤에도 마크업이 완전한
+    // 탭 위젯으로 남습니다 — role·id·aria-controls·aria-selected·tabindex 가 그대로라
+    // 스크린 리더에는 동작하는 위젯으로 들리는데 아무 반응도 하지 않습니다.
+    // 손대지 않은 것보다 나쁜 상태이므로, 손댄 것은 전부 주인이 있어야 합니다.
+    const restoreList = snapshotAttributes(list, ['role', 'aria-orientation']);
+    const restoreListStyle = snapshotInlineStyles(list, ['position']);
+    const restoreTabs = tabs.map((tab) => snapshotAttributes(tab,
+      ['role', 'id', 'aria-controls', 'aria-selected', 'tabindex', 'data-kt-label']));
+    const restorePanels = panels.map((panel) => snapshotAttributes(panel,
+      ['role', 'id', 'aria-labelledby', 'tabindex']));
 
     el.classList.add('kt-tabs', `kt-tabs--${orientation}`);
     if (effect === 'none') el.classList.add('kt-tabs--instant');
@@ -212,10 +223,24 @@ export default {
         if (!indicatorObserver) window.removeEventListener('resize', moveIndicator);
         indicatorObserver?.disconnect();
         hiddenObserver?.disconnect();
-        tabs.forEach((tab) => { tab.removeEventListener('click', onClick); tab.removeEventListener('keydown', onKey); tab.removeAttribute('data-kt-label'); });
+        tabs.forEach((tab, i) => {
+          tab.removeEventListener('click', onClick);
+          tab.removeEventListener('keydown', onKey);
+          tab.classList.remove('kt-active');
+          restoreTabs[i]();
+          // 모듈이 손댄 자손이므로 빈 껍데기도 모듈이 치웁니다(core 는 뿌리만 봅니다).
+          dropEmptyAttributes(tab);
+        });
         indicator?.remove();
         el.classList.remove('kt-tabs', `kt-tabs--${orientation}`, 'kt-tabs--ind-none', 'kt-tabs--instant');
-        panels.forEach((panel) => { panel.hidden = false; });
+        panels.forEach((panel, i) => {
+          panel.hidden = false;
+          panel.classList.remove('kt-active');
+          restorePanels[i]();
+          dropEmptyAttributes(panel);
+        });
+        restoreListStyle();
+        restoreList();
       }
     };
   },

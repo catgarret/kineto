@@ -3,7 +3,7 @@ import { chromium } from 'playwright';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { labeller } from '../../src/utils.js';
+import { labeller, snapshotAttributes } from '../../src/utils.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const chromePath = process.env.KT_CHROME || undefined;
@@ -12,13 +12,30 @@ const css = await readFile(path.join(root, 'src', 'kineto.css'), 'utf8');
 // 지우세요 — 예전에는 한 줄을 글자 그대로 지우고 있어서, 모듈이 헬퍼를 하나 더 가져오는
 // 순간 지우지 못한 `import` 가 남아 페이지가 통째로 죽었습니다(원인이 안 보이는 타임아웃).
 const withoutImports = (source) => source.replace(/^import[^;]*from '[^']*';\s*$/gm, '');
-// labeller 는 흉내 내지 않고 **진짜 구현**을 넣습니다. 검사 대상이 이 동작이기 때문입니다.
+// 헬퍼는 흉내 내지 않고 **진짜 구현**을 넣습니다. 검사 대상이 이 동작이기 때문입니다.
+// 모듈이 utils 에서 새 헬퍼를 가져오면 여기에도 더해야 합니다 — 빠뜨리면 페이지에서
+// 그 이름이 정의되지 않아 스크립트가 죽고, 원인이 보이지 않는 타임아웃으로 나타납니다.
 const stub = "const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));const env=()=>({reducedMotion:false});"
-  + `const labeller = ${labeller.toString()};`;
-const bottomSource = withoutImports(await readFile(path.join(root, 'src', 'modules', 'bottomSheet.js'), 'utf8'))
-  .replace('export default {', 'window.__bottomSheetModule = {');
-const toastSource = withoutImports(await readFile(path.join(root, 'src', 'modules', 'toast.js'), 'utf8'))
-  .replace('export default {', 'window.__toastModule = {');
+  + `const labeller = ${labeller.toString()};`
+  + `const snapshotAttributes = ${snapshotAttributes.toString()};`;
+
+// 모듈이 utils 에서 가져오는 이름이 stub 에 다 있는지 **먼저** 확인합니다.
+// 빠진 이름이 있으면 페이지 안에서 그 식별자가 정의되지 않아 스크립트가 통째로 죽고,
+// 겉으로는 `waitForFunction` 타임아웃으로만 보입니다 — 실제로 두 번 그렇게 시간을
+// 버렸습니다. 여기서 이름을 대며 즉시 실패하면 고칠 곳이 바로 보입니다.
+const rawBottom = await readFile(path.join(root, 'src', 'modules', 'bottomSheet.js'), 'utf8');
+const rawToast = await readFile(path.join(root, 'src', 'modules', 'toast.js'), 'utf8');
+for (const source of [rawBottom, rawToast]) {
+  for (const match of source.matchAll(/import \{([^}]*)\} from '\.\.\/utils\.js';/g)) {
+    for (const name of match[1].split(',').map((part) => part.trim()).filter(Boolean)) {
+      assert.match(stub, new RegExp(`\\b(?:const|function)\\s+${name}\\b`),
+        `this suite hand-stubs the utils helpers: add \`${name}\` to the stub above (import the real one from src/utils.js when it is self-contained)`);
+    }
+  }
+}
+
+const bottomSource = withoutImports(rawBottom).replace('export default {', 'window.__bottomSheetModule = {');
+const toastSource = withoutImports(rawToast).replace('export default {', 'window.__toastModule = {');
 
 const browser = await chromium.launch({ headless:true, ...(chromePath ? { executablePath:chromePath } : {}), args:['--no-sandbox','--disable-setuid-sandbox','--disable-gpu'] });
 const page = await browser.newPage({ viewport:{ width:1000, height:800 } });

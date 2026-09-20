@@ -1,4 +1,4 @@
-import { clamp, env } from '../utils.js';
+import { clamp, env, snapshotAttributes } from '../utils.js';
 
 // Bottom sheet — a panel that slides up from the bottom edge with an optional
 // backdrop and drag-to-dismiss handle. Put `data-kt-bottom-sheet` on the panel;
@@ -26,6 +26,9 @@ export default {
     el.setAttribute('aria-modal', 'true');
     // A dialog needs an accessible name: honour an existing label, else derive
     // one from a heading inside the sheet, else a sensible default.
+    // 아래에서 이름을 붙일 수 있으므로 **붙이기 전에** 원래 상태를 기억합니다.
+    // 그러지 않으면 destroy 한 뒤에도 라이브러리가 지은 이름이 요소에 남습니다.
+    const restoreNaming = snapshotAttributes(el, ['aria-label', 'aria-labelledby']);
     if (!el.hasAttribute('aria-label') && !el.hasAttribute('aria-labelledby')) {
       const heading = el.querySelector('h1,h2,h3,h4,[data-kt-sheet-title]');
       if (heading) {
@@ -267,6 +270,7 @@ export default {
         el.classList.remove('kt-sheet', 'kt-open', 'kt-sheet--resizable', 'kt-sheet--resize-handle', 'kt-sheet--resize-header', 'kt-sheet--dragging');
         delete el.dataset.ktSheetResizeArea;
         el.removeAttribute('role'); el.removeAttribute('aria-modal'); el.hidden = false;
+        restoreNaming();
       }
     };
   },
