@@ -124,7 +124,42 @@ for (const m of ['horizontalScroll', 'stickyStack', 'scrollSequence']) {
   ok(body && !body.classList.contains('grid'), `${m}: standalone demo is inside a forced grid`);
 }
 
+// 5. 모션 토글 — 질감 카드에서 움직임을 켜고 끌 수 있어야 합니다. 버튼 하나가
+//    라벨 두 개(끄기/켜기)를 품고 한 번에 하나만 보여 주는 구조라, 여기서는 그
+//    약속이 지켜지는지 확인합니다: 대상이 실제로 있고, 켤 때 쓸 모션 이름이
+//    있고, aria-pressed 와 보이는 라벨이 카드의 현재 상태와 일치하는지.
+const motionToggles = [...d.querySelectorAll('[data-action="toggle-motion"]')];
+ok(motionToggles.length >= 4, `motion toggles: ${motionToggles.length}, expected at least 4`);
+const MOTIONS = ['drift', 'shuffle', 'scan', 'flow', 'pulse'];
+for (const button of motionToggles) {
+  const card = button.closest('.card');
+  const target = card?.querySelector('[data-kt-stylize]');
+  const title = card?.querySelector('h3')?.textContent?.trim() || '(untitled)';
+  ok(!!target, `${title}: motion toggle has no [data-kt-stylize] target in its card`);
+  if (!target) continue;
+  const on = (target.getAttribute('data-kt-motion') || 'none') !== 'none';
+  ok(MOTIONS.includes(button.dataset.motionOn), `${title}: data-motion-on must name a real motion, got "${button.dataset.motionOn}"`);
+  ok(button.getAttribute('aria-pressed') === String(on), `${title}: aria-pressed must match the card's authored motion`);
+  const labels = [...button.querySelectorAll('[data-demo-i18n-text]')];
+  ok(labels.length === 2, `${title}: a motion toggle needs exactly two labels (off/on), got ${labels.length}`);
+  if (labels.length === 2) {
+    ok(labels.filter((label) => !label.hidden).length === 1, `${title}: exactly one motion label may be visible`);
+    ok(labels[on ? 1 : 0].hidden, `${title}: the visible label must describe what pressing the button does`);
+  }
+}
+// 켜기만 있고 끄기가 없으면 요청의 절반만 지킨 셈이라, 두 방향이 모두 있는지 봅니다.
+ok(
+  motionToggles.some((button) => button.getAttribute('aria-pressed') === 'true')
+  && motionToggles.some((button) => button.getAttribute('aria-pressed') === 'false'),
+  'the demo must show both directions: a moving texture that can stop and a still one that can start'
+);
+ok(
+  /dataset\.action==='toggle-motion'/.test(fs.readFileSync(path.join(root, 'demo/main.js'), 'utf8')),
+  'demo/main.js must handle the motion toggle'
+);
+
 console.log('demo units:', unitsBefore, '-> ', unitsAfter.length, '| orphans:', w.__ktDemoOrphans, '| loose:', loose.length);
+console.log('motion toggles:', motionToggles.length);
 console.log('module-index items:', items.length, '| settings hosts:', d.querySelectorAll('[data-settings-for]').length);
 if (fails.length) { console.error('\nFAILED:\n - ' + fails.join('\n - ')); process.exit(1); }
 console.log('demo-structure OK — index groups cover registry, every settings trigger is below its demo.');

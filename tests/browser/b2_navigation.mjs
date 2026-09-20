@@ -35,7 +35,15 @@ const hash=()=>page.evaluate(()=>location.hash);
     const candidates=[...document.querySelectorAll('a[href],button:not([disabled]),select,input:not([disabled]),[tabindex]:not([tabindex="-1"])')];
     const first=candidates.find((node)=>!node.closest('[hidden]')&&getComputedStyle(node).display!=='none'&&getComputedStyle(node).visibility!=='hidden');
     skip.focus();
-    await new Promise((resolve)=>setTimeout(resolve,180));
+    // 스킵 링크는 포커스를 받으면 transition 으로 미끄러져 들어옵니다. 예전에는 180ms 만
+    // 기다렸는데, 그건 전환 시간(0.15s)과 경주를 하는 것이라 메인 스레드가 조금만 바빠도
+    // 전환이 아직 진행 중인 위치를 재게 됩니다. 실제로 확인할 것은 "180ms 안에"가 아니라
+    // "결국 화면 안으로 들어오는가"이므로, 위치가 멈출 때까지 기다립니다(상한 2초).
+    await new Promise((resolve)=>{
+      const done=()=>{skip.removeEventListener('transitionend',done);clearTimeout(bail);requestAnimationFrame(resolve);};
+      const bail=setTimeout(done,2000);
+      skip.addEventListener('transitionend',done);
+    });
     const rect=skip.getBoundingClientRect();
     skip.click();
     await new Promise((resolve)=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));

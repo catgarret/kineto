@@ -19,7 +19,8 @@
 import { observeOnce } from '../utils.js';
 import { ensureWrapper, releaseWrapper } from './media/wrapper.js';
 import {
-  ANIMATED_EXTENSIONS, STYLIZED_EFFECTS, createImageStylizer, createVideoStylizer, durationMs, isStylizedEffect, resolveStylizedSettings
+  ANIMATED_EXTENSIONS, LIVE_LOOK_KEYS, STYLIZED_EFFECTS, createImageStylizer, createVideoStylizer,
+  durationMs, isStylizedEffect, resolveStylizedSettings, updateLiveLook
 } from './media/stylizer.js';
 
 const TRIGGERS = new Set(['load', 'view', 'manual']);
@@ -94,6 +95,24 @@ function readStylizedInput(effect, opts, mode, scope = null) {
   return input;
 }
 
+/**
+ * Split an update patch into "can be applied to the running effect" and the
+ * rest. Only the living-look settings (motion, pointer and their strengths)
+ * can change without rebuilding the canvas — everything else decides how the
+ * canvas is set up in the first place.
+ *
+ * Returns null when the patch touches anything else, which is Kineto.updateModule's
+ * signal to recreate the instance instead.
+ */
+function liveLookPatch(patch = {}) {
+  const live = {};
+  for (const key of Object.keys(patch)) {
+    if (!LIVE_LOOK_KEYS.includes(key)) return null;
+    live[key] = patch[key];
+  }
+  return live;
+}
+
 function readTiming(opts) {
   return {
     durationMs: Math.max(120, durationMs(opts.duration, 1.6)),
@@ -161,6 +180,27 @@ function createImageInstance(el, media, effect, opts, kineto) {
     // True when frames keep coming: an animated source, or a look that moves
     // (motion / pointer) on a still picture.
     get animatedMedia() { return animatedSource || settings.live; },
+    /**
+     * The motion actually in effect, which is not always the one that was
+     * asked for: reduced motion drops it, and update() can change it later. A
+     * page that offers a motion switch reads this so its button tells the
+     * truth.
+     */
+    get motion() { return settings.styleConfig.motion; },
+    /**
+     * Turn the living look on or off while the effect is on screen — the whole
+     * point of `Kineto.updateModule(img, 'stylize', { motion: 'none' })`. The
+     * picture never blinks, because nothing is torn down.
+     *
+     * Any other option still needs a fresh instance, so the patch is declined
+     * (`false`) and the core recreates it.
+     */
+    update(patch = {}) {
+      const live = liveLookPatch(patch);
+      if (!live) return false;
+      updateLiveLook(settings, live, stylizer);
+      return true;
+    },
     /** Play the reveal again (persist: re-paint from the current frame). */
     replay() {
       if (destroyed) return;
@@ -228,6 +268,15 @@ function createVideoInstance(el, media, effect, opts, kineto) {
     el,
     type: 'stylize',
     get animatedMedia() { return true; },
+    /** The motion actually in effect — see the image instance's getter. */
+    get motion() { return settings.styleConfig.motion; },
+    /** Same live-look swap as the image instance — see its update(). */
+    update(patch = {}) {
+      const live = liveLookPatch(patch);
+      if (!live) return false;
+      updateLiveLook(settings, live, stylizer);
+      return true;
+    },
     replay() {
       if (destroyed) return;
       requested = true;
@@ -268,7 +317,9 @@ export default {
   // straight to its end state — the untouched original.
   reduced(el, opts = {}, kineto = null) {
     if (opts.mode === 'reveal') {
-      return { el, type: 'stylize', pause() {}, resume() {}, replay() {}, destroy() {} };
+      // Nothing runs, so nothing moves — say so, rather than leaving a page's
+      // motion switch to guess from the markup it asked for.
+      return { el, type: 'stylize', motion: 'none', pause() {}, resume() {}, replay() {}, destroy() {} };
     }
     return this.create(el, { ...opts, motion: 'none', pointer: 'none' }, kineto);
   }

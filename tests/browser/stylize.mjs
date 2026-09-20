@@ -149,6 +149,12 @@ const probe = async (reducedMotion) => {
     // `motion`, and the thing a single-paint persist could not do.
     const moving = mount({ 'data-kt-stylize': 'dither', 'data-kt-cell-size': '4', 'data-kt-motion': 'drift', 'data-kt-motion-speed': '2', src: source, alt: 'living' });
     const still = mount({ 'data-kt-stylize': 'dither', 'data-kt-cell-size': '4', src: source, alt: 'still' });
+    // The motion toggle is measured on a PNG on purpose: a GIF/APNG/WebP is
+    // treated as a possibly-animated source and keeps its frame loop whatever
+    // the motion does, which would hide a loop that failed to stop.
+    const stillSource = `${base}/demo/assets/motion-demo.png`;
+    const toggleRunning = mount({ 'data-kt-stylize': 'dither', 'data-kt-cell-size': '4', 'data-kt-motion': 'drift', 'data-kt-motion-speed': '2', src: stillSource, alt: 'toggle off' });
+    const toggleFrozen = mount({ 'data-kt-stylize': 'dither', 'data-kt-cell-size': '4', src: stillSource, alt: 'toggle on' });
     // Levels: the same picture at two contrasts must not paint the same cells.
     const flat = mount({ 'data-kt-stylize': 'dither', 'data-kt-cell-size': '4', 'data-kt-contrast': '1', 'data-kt-paper-color': '#ffffff', 'data-kt-ink-color': '#000000', src: source, alt: 'flat' });
     const punchy = mount({ 'data-kt-stylize': 'dither', 'data-kt-cell-size': '4', 'data-kt-contrast': '2', 'data-kt-paper-color': '#ffffff', 'data-kt-ink-color': '#000000', src: source, alt: 'punchy' });
@@ -281,7 +287,61 @@ const probe = async (reducedMotion) => {
       report.videoStillDrawing = Boolean(canvasOf(video));
     }
 
-    // 9. destroy() puts the media back exactly as it was.
+    // 9. switching the living look ON and OFF while the effect is on screen.
+    //    This is `Kineto.updateModule(img, 'stylize', { motion })`, and the
+    //    promise is that nothing is torn down: the SAME canvas node keeps
+    //    drawing, so the picture never blinks. A rebuild would swap the node,
+    //    which is exactly what `sameCanvas` catches.
+    //    A stopped look must also stop COSTING anything. The pixels alone
+    //    cannot show that: with motion off every frame redraws the same
+    //    picture, so a loop left running looks identical to one that stopped.
+    //    So count real draws — the renderer clears the canvas once per frame.
+    const draws = new WeakMap();
+    const nativeClearRect = CanvasRenderingContext2D.prototype.clearRect;
+    CanvasRenderingContext2D.prototype.clearRect = function countedClearRect(...args) {
+      draws.set(this.canvas, (draws.get(this.canvas) || 0) + 1);
+      return nativeClearRect.apply(this, args);
+    };
+    const drawsOf = (media) => draws.get(canvasOf(media)) || 0;
+
+    await waitFor(() => canvasOf(toggleRunning) && canvasOf(toggleFrozen), 5000);
+    const stopTarget = canvasOf(toggleRunning);
+    Kineto.updateModule(toggleRunning, 'stylize', { motion: 'none' });
+    report.stopKeepsCanvas = canvasOf(toggleRunning) === stopTarget;
+    await wait(200);
+    const stoppedFirst = fingerprint(canvasOf(toggleRunning));
+    const stoppedDraws = drawsOf(toggleRunning);
+    await wait(600);
+    report.motionStops = fingerprint(canvasOf(toggleRunning)) === stoppedFirst;
+    report.stoppedFrames = drawsOf(toggleRunning) - stoppedDraws;
+    report.stopReportsStill = Kineto.getInstance(toggleRunning, 'stylize')?.animatedMedia === false;
+
+    const startTarget = canvasOf(toggleFrozen);
+    const startedDraws = drawsOf(toggleFrozen);
+    Kineto.updateModule(toggleFrozen, 'stylize', { motion: 'drift', motionSpeed: 2 });
+    report.startKeepsCanvas = canvasOf(toggleFrozen) === startTarget;
+    const startedFirst = fingerprint(canvasOf(toggleFrozen));
+    await wait(600);
+    report.motionStarts = fingerprint(canvasOf(toggleFrozen)) !== startedFirst;
+    report.startedFrames = drawsOf(toggleFrozen) - startedDraws;
+    report.startReportsMoving = Kineto.getInstance(toggleFrozen, 'stylize')?.animatedMedia === true;
+
+    // …and back off again, because a toggle has to survive being pressed twice.
+    Kineto.updateModule(toggleFrozen, 'stylize', { motion: 'none' });
+    await wait(200);
+    const reStoppedDraws = drawsOf(toggleFrozen);
+    await wait(500);
+    report.stoppedFramesAgain = drawsOf(toggleFrozen) - reStoppedDraws;
+
+    // An option the running effect cannot change live (the cell size decides how
+    // the canvas is built) must still work — the instance is recreated instead.
+    const beforeRebuild = canvasOf(flat);
+    Kineto.updateModule(flat, 'stylize', { cellSize: 16 });
+    await waitFor(() => canvasOf(flat) && canvasOf(flat) !== beforeRebuild, 3000);
+    report.nonLiveOptionRecreates = canvasOf(flat) !== beforeRebuild;
+    report.nonLiveOptionApplied = await waitFor(() => uniformity(flat) > report.flatUniformity + 0.05, 3000);
+
+    // 10. destroy() puts the media back exactly as it was.
     Kineto.destroyModule(persist, 'stylize');
     report.destroyedCanvas = Boolean(canvasOf(persist));
     report.destroyedWrapper = Boolean(persist.closest('.kt-stylize-wrap'));
@@ -328,6 +388,19 @@ try {
 
   assert.equal(result.motionAnimatesStillImage, true, 'motion must keep redrawing a still picture');
   assert.equal(result.stillStaysStill, true, 'a still picture with no motion must be painted once');
+  // A look that moves has to be stoppable, and a still one has to be startable —
+  // in place, without rebuilding the canvas (the picture would blink).
+  assert.equal(result.stopKeepsCanvas, true, 'stopping the motion must reuse the running canvas, not rebuild it');
+  assert.equal(result.motionStops, true, 'motion: none must stop a living look that was already running');
+  assert.equal(result.stoppedFrames, 0, `a stopped look must stop drawing frames, drew ${result.stoppedFrames}`);
+  assert.equal(result.stopReportsStill, true, 'a stopped look must report itself as no longer animated');
+  assert.ok(result.startedFrames > 5, `a look switched on must draw frames, drew ${result.startedFrames}`);
+  assert.equal(result.startReportsMoving, true, 'a look switched on must report itself as animated');
+  assert.equal(result.startKeepsCanvas, true, 'starting the motion must reuse the running canvas, not rebuild it');
+  assert.equal(result.motionStarts, true, 'a still look must start moving when motion is switched on');
+  assert.equal(result.stoppedFramesAgain, 0, `the motion must stop again on a second toggle, drew ${result.stoppedFramesAgain}`);
+  assert.equal(result.nonLiveOptionRecreates, true, 'an option that cannot change live must recreate the instance');
+  assert.equal(result.nonLiveOptionApplied, true, 'a recreated instance must actually use the new option');
   assert.equal(
     result.contrastChangesStructure, true,
     `raising contrast must consolidate mid tones into solid areas (flat ${result.flatUniformity?.toFixed(3)} vs punchy ${result.punchyUniformity?.toFixed(3)})`
@@ -446,6 +519,62 @@ try {
     console.log(`stylize video lifecycle OK (${browserName}) — triggers, queued replay, active delay/duration/hold, playback/visibility suspension and callback teardown.`);
   }
   await lifecyclePage.close();
+
+  // The demo is Stylize's flagship consumer, and the motion switch on its
+  // texture cards is the reason update() exists. Unit-testing the library alone
+  // would not notice the button being wired to nothing, so press it for real on
+  // the actual demo page, with the demo's own scripts running.
+  const demoPage = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  try {
+    await demoPage.goto(`${origin}/demo/index.html`, { waitUntil: 'load' });
+    await demoPage.waitForSelector('[data-action="toggle-motion"]', { timeout: 15000 });
+    const toggles = await demoPage.evaluate(() => (
+      [...document.querySelectorAll('[data-action="toggle-motion"]')].map((button, index) => {
+        button.dataset.probeIndex = String(index);
+        return index;
+      })
+    ));
+    assert.ok(toggles.length >= 4, `the demo must offer motion switches, found ${toggles.length}`);
+    const pressed = [];
+    for (const index of toggles) {
+      const selector = `[data-action="toggle-motion"][data-probe-index="${index}"]`;
+      // Each card owns one stylized media element; scroll it in so the module
+      // is running before the switch is pressed.
+      await demoPage.locator(selector).scrollIntoViewIfNeeded();
+      // The module attaches once its media is ready, which is a load away.
+      const ready = await demoPage.waitForFunction((css) => {
+        const media = document.querySelector(css).closest('.card').querySelector('[data-kt-stylize]');
+        return Boolean(window.Kineto.getInstance(media, 'stylize'));
+      }, selector, { timeout: 10000 }).then(() => true, () => false);
+      if (!ready) continue; // this engine never got the media ready
+      const before = await demoPage.evaluate((css) => {
+        const button = document.querySelector(css);
+        const media = button.closest('.card').querySelector('[data-kt-stylize]');
+        return { motion: window.Kineto.getInstance(media, 'stylize')?.motion ?? null, pressed: button.getAttribute('aria-pressed') };
+      }, selector);
+      await demoPage.click(selector);
+      const after = await demoPage.evaluate((css) => {
+        const button = document.querySelector(css);
+        const media = button.closest('.card').querySelector('[data-kt-stylize]');
+        const labels = [...button.querySelectorAll('[data-demo-i18n-text]')];
+        return {
+          motion: window.Kineto.getInstance(media, 'stylize')?.motion ?? null,
+          pressed: button.getAttribute('aria-pressed'),
+          visibleLabels: labels.filter((label) => !label.hidden).length
+        };
+      }, selector);
+      pressed.push({ index, before, after });
+      assert.notEqual(after.motion, before.motion, `demo motion switch ${index} did not change the applied motion`);
+      assert.equal(after.pressed, String(after.motion !== 'none'), `demo motion switch ${index} reports the wrong state`);
+      assert.equal(after.visibleLabels, 1, `demo motion switch ${index} must show exactly one label`);
+    }
+    assert.ok(pressed.length >= 4, `the demo motion switches must be operable, only ${pressed.length} responded`);
+    assert.ok(pressed.some((entry) => entry.after.motion === 'none'), 'a moving demo texture must be stoppable');
+    assert.ok(pressed.some((entry) => entry.after.motion !== 'none'), 'a still demo texture must be startable');
+    console.log(`stylize demo switches OK (${browserName}) — ${pressed.length} texture cards start and stop their motion from the page.`);
+  } finally {
+    await demoPage.close();
+  }
 
   console.log(`stylize OK (${browserName}) — persist/reveal modes, load/view/manual triggers, dissolve transition, motion on a still image, contrast levels, pointer lens, design-token colours, shared Lazy wrapper, deprecated alias + KT_DEPRECATED, video frames, destroy cleanup, reduced motion.`);
 } finally {

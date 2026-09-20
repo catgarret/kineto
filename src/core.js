@@ -807,6 +807,11 @@ const Kineto = {
   // implements `update(patch, mergedOptions)` mutates its existing DOM/animation
   // (e.g. a colour, speed or label change) with no teardown; modules that don't
   // fall back to recreate. Returns whether at least one instance updated live.
+  //
+  // `update()` may return `false` for a patch it cannot apply live (Stylize
+  // does this for anything but its motion/pointer settings) — that is a normal
+  // answer, not a failure, and the instance is recreated quietly. Throwing is
+  // reserved for a genuine error and is reported as one.
   updateModule(target, name, patch = {}) {
     const els = q(target);
     let liveCount = 0;
@@ -815,10 +820,11 @@ const Kineto = {
       if (record && typeof record.instance.update === 'function') {
         const merged = { ...record.options, ...patch };
         try {
-          record.instance.update(patch, merged);
-          record.options = merged;
-          liveCount += 1;
-          return;
+          if (record.instance.update(patch, merged) !== false) {
+            record.options = merged;
+            liveCount += 1;
+            return;
+          }
         } catch (error) {
           console.error(`[Kineto/${name}] update() failed, recreating:`, error);
           emitDiagnostic({ code: DIAGNOSTIC_CODES.UPDATE_FAILED, module: name, phase: 'update', recoverable: true, cause: error });

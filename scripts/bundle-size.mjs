@@ -182,7 +182,11 @@ const BUDGETS = {
   // 135.8 / 135.2 KB. These are the bytes of the effects doing what their names
   // claim. Round only these measured ceilings; runner variance and the consumer
   // budgets follow their own notes.
-  'kineto.js': { raw: 568, gz: 153, variance: 2 },
+  // 2026-09-20 (live motion switching): making a running Stylize effect able to
+  // start or stop its motion in place measures 568.9 KiB raw ESM, 445.8 KiB raw
+  // minified and 444.0 KiB raw UMD; gzip stays inside the existing variance.
+  // Round only these measured raw ceilings.
+  'kineto.js': { raw: 569, gz: 153, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
   // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/
@@ -196,12 +200,14 @@ const BUDGETS = {
   // gzip stays inside the existing variance. Round only this raw ceiling.
   // 2026-09-20 (declined-init diagnostic): the element descriptor and the new
   // code measure 442.2 KiB raw minified; gzip stays inside the variance.
-  'kineto.min.js': { raw: 445, gz: 136, variance: 2 },
+  // See the live-motion-switching note above for the 445.8 KiB measurement.
+  'kineto.min.js': { raw: 446, gz: 136, variance: 2 },
   // 2026-09-20 (shared-element teardown): the UMD gzip crosses its exact 133 KB
   // boundary at a measured 134.0 KB while raw stays inside 440 KB. Round only
   // the compressed ceiling; runner variance and consumer budgets are unchanged.
-  'kineto.umd.js': { raw: 443, gz: 136, variance: 1 },
-  'kineto.umd.min.js': { raw: 443, gz: 136, variance: 1 },
+  // See the live-motion-switching note above for the 444.0 KiB measurement.
+  'kineto.umd.js': { raw: 445, gz: 136, variance: 1 },
+  'kineto.umd.min.js': { raw: 445, gz: 136, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

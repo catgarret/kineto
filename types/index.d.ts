@@ -22,7 +22,12 @@ export interface KinetoInstance {
   resume(): void;
   destroy(): void;
   replay?(): void;
-  update?(patch: KinetoOptions, mergedOptions?: KinetoOptions): void;
+  /**
+   * Apply an option change to the running instance. Return `false` for a patch
+   * this module cannot apply without rebuilding — `updateModule()` then
+   * recreates the instance instead, which is a normal outcome, not an error.
+   */
+  update?(patch: KinetoOptions, mergedOptions?: KinetoOptions): boolean | void;
   [key: string]: unknown;
 }
 
@@ -166,6 +171,10 @@ export interface KinetoStatic {
    */
   observe(root?: ParentNode | Element | string | null, options?: KinetoObserveOptions): KinetoObserverHandle;
   getInstance(target: KinetoTarget, name?: string): KinetoInstance | KinetoInstance[] | null;
+  /**
+   * Change an instance's options. Returns true when at least one instance took
+   * the change in place; false when it had to be recreated to apply it.
+   */
   updateModule(target: KinetoTarget, name: string, patch?: KinetoOptions): boolean;
   destroyModule(target: KinetoTarget, name: string): this;
   replay(target: KinetoTarget, name: string, options?: KinetoOptions): KinetoResult;

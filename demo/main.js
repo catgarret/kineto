@@ -657,6 +657,22 @@
       }));
     })();
 
+    // 모션 토글의 현재 상태는 마크업이 아니라 **실제로 적용된 모션**에서 읽습니다.
+    // 사용자가 '동작 줄이기'를 켜 두었으면 라이브러리가 모션을 빼고 시작하는데,
+    // 마크업만 보면 버튼이 "켜짐"이라고 거짓말을 하게 됩니다.
+    const appliedMotion=(el)=>Kineto.getInstance(el,'stylize')?.motion ?? el.getAttribute('data-kt-motion') ?? 'none';
+    const syncMotionToggle=(button)=>{
+      const el=button.closest('.card')?.querySelector('[data-kt-stylize]');
+      if(!el)return;
+      const on=appliedMotion(el)!=='none';
+      button.setAttribute('aria-pressed',String(on));
+      // 라벨 두 개(끄기/켜기) 중 하나만 보이게 합니다 — 번역은 기존 i18n 패스가 맡습니다.
+      button.querySelectorAll('[data-demo-i18n-text]').forEach((label,index)=>{label.hidden=on?index===1:index===0;});
+    };
+    // 인스턴스는 이미지가 로드된 뒤에 생기므로, 한 박자 뒤에 한 번 맞춰 줍니다.
+    const syncAllMotionToggles=()=>document.querySelectorAll('[data-action="toggle-motion"]').forEach(syncMotionToggle);
+    setTimeout(syncAllMotionToggles,600);
+
     document.addEventListener('click',(event)=>{
       const button=event.target.closest('[data-action]');
       if(!button)return;
@@ -665,6 +681,19 @@
       }
       if(button.dataset.action==='replay-parent'){
         const card=button.closest('.card'); const el=card?.querySelector(`[data-kt-${button.dataset.module.replace(/[A-Z]/g,m=>'-'+m.toLowerCase())}]`); if(el) Kineto.replay(el,button.dataset.module);
+      }
+      // 모션 토글 — 움직이는 질감은 멈출 수 있고, 멈춰 있는 질감은 움직이게 할 수 있습니다.
+      // 라이브러리가 motion 을 제자리에서 바꿔 주므로(updateModule) 캔버스를 다시 만들지
+      // 않고, 그림이 깜빡이지 않습니다. 켤 때 쓸 모션 이름은 카드가 data-motion-on 으로 정합니다.
+      if(button.dataset.action==='toggle-motion'){
+        const el=button.closest('.card')?.querySelector('[data-kt-stylize]');
+        if(el){
+          const next=appliedMotion(el)==='none'?(button.dataset.motionOn||'drift'):'none';
+          // 마크업도 같이 갱신해 두면 설정 서랍이 이 카드를 다시 만들 때 현재 상태를 씁니다.
+          el.setAttribute('data-kt-motion',next);
+          Kineto.updateModule(el,'stylize',{motion:next});
+          syncMotionToggle(button);
+        }
       }
     });
 

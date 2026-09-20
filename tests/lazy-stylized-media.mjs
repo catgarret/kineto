@@ -18,6 +18,8 @@ import {
   HALFTONE_SHAPES,
   coverMap,
   createStylizedRenderer,
+  LIVE_LOOK_KEYS,
+  resolveLiveLook,
   parseColor,
   MOTION_TYPES,
   POINTER_TYPES,
@@ -252,4 +254,46 @@ console.log('lazy-stylized-media OK — matrices, option normalisation, cover ge
     const order = dissolveOrder(x, y, patch, seed);
     assert.ok(order >= 0 && order <= 1, `dissolve order must stay in 0..1 (got ${order} at ${x},${y})`);
   }
+}
+
+
+// 살아 있는 룩(모션 / 포인터)만 따로 푸는 해석기. 이 부분이 따로 있는 이유는,
+// 효과가 이미 돌아가는 중에도 바꿀 수 있는 설정이 딱 이것들뿐이기 때문입니다 —
+// 셀 크기나 색은 캔버스를 세우는 단계에서 쓰이므로 인스턴스를 다시 만들어야 합니다.
+//
+// 여기서 지키는 약속은 두 가지입니다. (1) 일부만 담긴 패치를 줘도 빠진 값이
+// 기본값으로 채워진 **완전한** 블록이 나온다 — 그래야 살아 있는 설정에 그대로
+// 덮어써도 반쯤 적용된 상태가 남지 않습니다. (2) 값의 해석 규칙이 전체 해석기와
+// 똑같다 — 한쪽만 고쳐서 의미가 갈라지는 일이 없어야 합니다.
+{
+  const full = resolveLiveLook({});
+  assert.deepEqual(Object.keys(full).sort(), [...LIVE_LOOK_KEYS].sort(),
+    'resolveLiveLook must always return the complete live-look block');
+  assert.equal(full.motion, 'none');
+  assert.equal(full.pointer, 'none');
+
+  // 알 수 없는 이름과 범위를 벗어난 숫자는 전체 해석기와 똑같이 처리돼야 합니다.
+  for (const input of [
+    {},
+    { motion: 'drift', motionSpeed: 2, motionAmount: 0.3 },
+    { motion: 'nope', motionSpeed: 99, motionAmount: -4 },
+    { pointer: 'lens', pointerRadius: 60, pointerStrength: 0.4, pointerCellSize: 2 },
+    { pointer: 'sideways', pointerRadius: 'abc', pointerStrength: 5 }
+  ]) {
+    const whole = resolveStyleConfig('dither', input);
+    const part = resolveLiveLook(input);
+    for (const key of LIVE_LOOK_KEYS) {
+      assert.equal(part[key], whole[key], `resolveLiveLook and resolveStyleConfig disagree about ${key}`);
+    }
+  }
+
+  // 이미 해석된 설정 위에 모션만 끄면, 나머지(속도 등)는 그대로 남아 있어야
+  // 다시 켤 때 같은 속도로 이어집니다.
+  const running = resolveStyleConfig('dither', { motion: 'drift', motionSpeed: 2.5, pointer: 'lens', pointerRadius: 55 });
+  const stopped = { ...running, ...resolveLiveLook({ ...running, motion: 'none' }) };
+  assert.equal(stopped.motion, 'none', 'switching the motion off must take effect');
+  assert.equal(stopped.motionSpeed, 2.5, 'switching the motion off must keep the speed for when it comes back');
+  assert.equal(stopped.pointer, 'lens', 'switching the motion off must not disturb the pointer behaviour');
+  assert.equal(stopped.style, 'dither', 'a live-look patch must leave the rest of the look alone');
+  assert.equal(stopped.pointerRadius, 55);
 }

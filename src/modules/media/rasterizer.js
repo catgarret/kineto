@@ -222,15 +222,21 @@ export const MOTION_TYPES = Object.freeze(['none', 'drift', 'shuffle', 'scan', '
 export const POINTER_TYPES = Object.freeze(['none', 'lens', 'spotlight', 'ripple']);
 
 /**
+ * Read one numeric option: a finite number is clamped into `min..max`, anything
+ * else (missing, empty, "abc") falls back. Shared by the two resolvers below so
+ * an option means the same thing wherever it is read.
+ */
+function number(value, fallback, min, max) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? clamp(parsed, min, max) : fallback;
+}
+
+/**
  * Normalise author options into a renderer config. The modules read `opts.*`
  * themselves (so the option analysis can attribute each one to its variant) and
  * pass the plain values here.
  */
 export function resolveStyleConfig(style, input = {}) {
-  const number = (value, fallback, min, max) => {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? clamp(parsed, min, max) : fallback;
-  };
   const config = {
     style,
     // Palette: `originalColors` keeps the sampled colours (posterised to
@@ -255,19 +261,41 @@ export function resolveStyleConfig(style, input = {}) {
     // print look its snap.
     contrast: number(input.contrast, 1, 0, 3),
     brightness: number(input.brightness, 0, -1, 1),
-    // Living look: how the pattern moves while it stays on the media.
+    // Living look: how the pattern moves, and how it answers the pointer.
+    // Resolved apart from the rest because these are the settings a running
+    // effect can swap without rebuilding its canvas (see resolveLiveLook).
+    ...resolveLiveLook(input)
+  };
+  return config;
+}
+
+/**
+ * The subset of the look that can change WHILE the effect runs: the motion and
+ * the pointer reaction. Everything else (cell size, palette, contrast…) decides
+ * how the canvas is built, so changing it needs a fresh instance.
+ *
+ * Every key is always present, so assigning the result over a live config never
+ * leaves a half-applied state — `{ motion: 'drift' }` in gives a full, valid
+ * live-look block out, with the defaults for what the caller left out.
+ */
+export function resolveLiveLook(input = {}) {
+  return {
     motion: MOTION_TYPES.includes(input.motion) ? input.motion : 'none',
     motionSpeed: number(input.motionSpeed, 1, 0.05, 6),
     motionAmount: number(input.motionAmount, 0.5, 0, 1),
-    // Pointer reaction.
     pointer: POINTER_TYPES.includes(input.pointer) ? input.pointer : 'none',
     pointerRadius: number(input.pointerRadius, 140, 10, 1200),
     pointerStrength: number(input.pointerStrength, 0.6, 0, 1),
     // 0 means "half the cell size", resolved per frame against the live cell.
     pointerCellSize: number(input.pointerCellSize, 0, 0, 64)
   };
-  return config;
 }
+
+/** The option names resolveLiveLook owns — what a live update may contain. */
+export const LIVE_LOOK_KEYS = Object.freeze([
+  'motion', 'motionSpeed', 'motionAmount',
+  'pointer', 'pointerRadius', 'pointerStrength', 'pointerCellSize'
+]);
 
 /**
  * Create a renderer bound to a display canvas.
@@ -685,6 +713,22 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
     // Resize the canvas to `width × height` CSS pixels (call before render when
     // the box may have changed).
     sync,
+    /**
+     * Swap the living-look settings of a renderer that is already drawing —
+     * the motion and the pointer reaction — so an effect can start or stop
+     * moving without being rebuilt. `patch` holds any of LIVE_LOOK_KEYS; the
+     * whole block is re-resolved from the current values so a partial patch
+     * (`{ motion: 'none' }`) can never leave an invalid combination behind.
+     *
+     * Only these keys: the others (cell size, palette, contrast…) are read
+     * while the canvas is set up, so changing them needs a new renderer.
+     */
+    configure(patch = {}) {
+      Object.assign(config, resolveLiveLook({ ...config, ...patch }));
+      return config;
+    },
+    /** The settings a live update may change, for callers that want to check. */
+    get live() { return config.motion !== 'none' || config.pointer !== 'none'; },
     /**
      * Draw one frame. `frame` carries the living-look state:
      * `{ time }` in ms and `{ pointer: { x, y, active } }` in CSS pixels.

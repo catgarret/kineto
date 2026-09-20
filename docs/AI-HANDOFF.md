@@ -238,6 +238,23 @@ replay retain their lifecycle. Own transforms are excluded from trigger bounds
 to prevent edge oscillation. This supersedes the earlier generic-native repeat
 gap; class-only hooks and no-WAAPI pause limitations are unchanged.
 
+Stylize can now be switched between a moving and a still look WHILE it runs.
+`update()` accepts the living-look options only (`motion`, `motionSpeed`,
+`motionAmount`, `pointer`, `pointerRadius`, `pointerStrength`,
+`pointerCellSize` — `LIVE_LOOK_KEYS` in `src/modules/media/rasterizer.js`) and
+returns `false` for anything else, which is now a normal answer:
+`Kineto.updateModule()` recreates the instance quietly instead of logging an
+error, so a module no longer has to throw to decline a patch. The renderer gained
+`configure()` (re-resolves the live-look block in place) and each stylizer gained
+`setLiveLook()`; on `persist` the frame loop is started or stopped so a stopped
+look also stops costing frames. Instances expose `motion`, the motion actually in
+effect, because reduced motion can differ from what the markup asked for — the
+demo's per-card motion switch reads that rather than the attribute. Covered by
+`tests/browser/stylize.mjs` (canvas identity, measured frame counts, and the
+demo's own switches pressed on the real page), `tests/update-model.mjs` (the
+declined-patch contract), `tests/lazy-stylized-media.mjs` (the resolver) and
+`tests/demo-structure.mjs` (the demo switches' markup contract).
+
 ## Required end-of-task record
 
 Every implementation commit must leave enough evidence for the next agent:

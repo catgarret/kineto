@@ -162,7 +162,13 @@ const BUDGET = {
   // the clustered dissolve order measure 581.1 KB packed / 1898.1 KB unpacked
   // on the same 79 files. These are the bytes of the effects doing what their
   // names claim; the file allowlist is unchanged.
-  packedKb: 582,
+  // 2026-09-20 (live motion switching): letting a running Stylize effect start
+  // or stop its motion in place — the live-look resolver, the renderer's
+  // configure(), setLiveLook() on both stylizers and the declined-patch path in
+  // updateModule() — measures 582.9 KB packed / 1903.0 KB unpacked on the same
+  // 79 files. Rebuilding the effect to change one option re-decodes the picture
+  // and blinks, so these are the bytes of the option being usable at all.
+  packedKb: 583,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -188,7 +194,8 @@ const BUDGET = {
   // delay measures 1889.4 KB unpacked; packed stays inside its ceiling. A pause
   // that does not pause is a correctness gap, not a feature.
   // See the effect-quality note above for the 1898.1 KB measurement.
-  unpackedKb: 1899,
+  // See the live-motion-switching note above for the 1903.0 KB measurement.
+  unpackedKb: 1903,
   files: 79
 };
 

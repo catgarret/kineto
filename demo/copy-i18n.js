@@ -1898,6 +1898,22 @@ window.KINETO_COPY_I18N = {
       "Выбрать язык",
       "Seleziona lingua"
     ],
+    "모션 끄기": [
+      "Stop motion",
+      "モーションを止める",
+      "停止动效",
+      "停止動態",
+      "Остановить движение",
+      "Ferma il movimento"
+    ],
+    "모션 켜기": [
+      "Start motion",
+      "モーションを動かす",
+      "开启动效",
+      "開啟動態",
+      "Запустить движение",
+      "Avvia il movimento"
+    ],
     "모듈 목록": [
       "Module list",
       "モジュール一覧",

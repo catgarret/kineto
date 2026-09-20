@@ -40,6 +40,32 @@ assert.equal(liveSwitch, false, 'a module without update() must report NO live u
 const sw2 = Kineto.getInstance(box, 'switch');
 assert.ok(sw2 && sw2 !== sw1, 'switch should have been recreated as a fresh instance');
 
+// A module MAY answer `false` to a patch it cannot apply without a rebuild.
+// That is a normal answer, not a failure: the instance is recreated quietly and
+// updateModule reports "not live", exactly like a module with no update() at
+// all. Stylize uses this — it swaps motion in place but rebuilds for cell size.
+let seen = null;
+Kineto.register('partialUpdate', { create: () => ({
+  applied: [],
+  // Only `colour` can change in place; anything else needs a fresh instance.
+  update(patch) { if (Object.keys(patch).some((key) => key !== 'colour')) return false; this.applied.push(patch.colour); seen = this; return true; },
+  destroy() {}
+}) });
+const partial = w.document.body.appendChild(w.document.createElement('div'));
+const first = Kineto.create('partialUpdate', partial, { colour: 'red' });
+assert.equal(Kineto.updateModule(partial, 'partialUpdate', { colour: 'blue' }), true, 'an accepted patch must report a live update');
+assert.equal(Kineto.getInstance(partial, 'partialUpdate'), first, 'an accepted patch must keep the same instance');
+assert.deepEqual(first.applied, ['blue'], 'the accepted patch must reach the instance');
+assert.equal(Kineto.updateModule(partial, 'partialUpdate', { size: 4 }), false, 'a declined patch must report NO live update');
+const rebuilt = Kineto.getInstance(partial, 'partialUpdate');
+assert.ok(rebuilt && rebuilt !== first, 'a declined patch must recreate the instance');
+// The recreate has to carry the merged options, or a declined patch would be
+// silently dropped — the bug this fallback exists to avoid.
+assert.equal(Kineto.updateModule(partial, 'partialUpdate', { colour: 'green' }), true, 'the recreated instance must accept live patches again');
+assert.deepEqual(seen.applied, ['green'], 'the recreated instance must be the one now receiving patches');
+Kineto.destroyModule(partial, 'partialUpdate');
+Kineto.unregister('partialUpdate');
+
 const radial = w.document.body.appendChild(w.document.createElement('div'));
 radial.innerHTML = '<div>A</div><div>B</div><div>C</div><div>D</div><div>E</div>';
 const radialLoop = Kineto.create('slider', radial, { effect: 'radial', loop: 'infinite', controls: false });

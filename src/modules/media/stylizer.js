@@ -14,7 +14,7 @@
 import { clamp } from '../../utils.js';
 import { fn as easingFunction } from '../../easings.js';
 import { createLayer } from './wrapper.js';
-import { createStylizedRenderer, resolveStyleConfig } from './rasterizer.js';
+import { LIVE_LOOK_KEYS, createStylizedRenderer, resolveLiveLook, resolveStyleConfig } from './rasterizer.js';
 
 export const STYLIZED_EFFECTS = Object.freeze(['dither', 'ascii', 'halftone']);
 const EFFECT_SET = new Set(STYLIZED_EFFECTS);
@@ -141,6 +141,25 @@ export function resolveStylizedSettings(effect, input = {}, { lowTier = false, p
   };
 }
 
+/**
+ * Change the living look (motion / pointer) of an effect that already exists,
+ * keeping `settings` and the running stylizer in step.
+ *
+ * `stylizer` may be null — an effect whose trigger has not fired yet has no
+ * renderer, and the new look is resolved into the settings so it is already in
+ * place when the effect finally runs.
+ */
+export { LIVE_LOOK_KEYS };
+
+export function updateLiveLook(settings, patch = {}, stylizer = null) {
+  // A running stylizer's renderer holds `settings.styleConfig` itself, so
+  // configuring it updates both at once; without one we resolve in place.
+  if (stylizer) stylizer.setLiveLook(patch);
+  else Object.assign(settings.styleConfig, resolveLiveLook({ ...settings.styleConfig, ...patch }));
+  settings.live = settings.styleConfig.motion !== 'none' || settings.styleConfig.pointer !== 'none';
+  return settings.live;
+}
+
 /** The canvas overlay a stylizer draws into (`<prefix>-<effect>-layer` etc.). */
 export function createStylizedCanvasLayer(wrapper, effect, prefix = 'kt-stylize') {
   const layer = createLayer(wrapper, `${prefix}-${effect}-layer ${prefix}-stylized-layer`, 3);
@@ -169,12 +188,20 @@ export function createImageStylizer({
   durationMs: duration = 1600, delayMs = 60, holdMs = 0,
   onProgress, onFinish, onRendered
 }) {
-  const { persist, live, startCell, handoffCell, transition, styleConfig, fps, maxDpr, ease } = settings;
+  const { persist, startCell, handoffCell, transition, styleConfig, fps, maxDpr, ease } = settings;
   const { layer, canvas } = createStylizedCanvasLayer(wrapper, effect, prefix);
   const renderer = createStylizedRenderer(canvas, styleConfig, { maxDpr });
   const interval = 1000 / fps;
-  // Only attach pointer listeners when a pointer behaviour was asked for.
-  const pointer = styleConfig.pointer === 'none' ? null : trackPointer(wrapper);
+  // "Live" = the look keeps changing on its own. Not a const: setLiveLook()
+  // can switch the motion on or off while the effect is running.
+  let live = settings.live;
+  // Pointer listeners are attached only once a pointer behaviour is actually
+  // asked for — at creation, or later through setLiveLook().
+  let pointer = styleConfig.pointer === 'none' ? null : trackPointer(wrapper);
+  const syncPointer = () => {
+    if (styleConfig.pointer === 'none') { pointer?.destroy(); pointer = null; }
+    else if (!pointer) pointer = trackPointer(wrapper);
+  };
   let rafId = null;
   let resizeObserver = null;
   let destroyed = false;
@@ -254,22 +281,40 @@ export function createImageStylizer({
     if (destroyed || run !== generation) return;
     // A living look (motion / pointer) animates a still image too, so it needs
     // the same continuous loop an animated source gets.
-    if (rendered && (animatedSource || live)) {
-      frameTask = (time) => {
-        const now = advance(time);
-        if (time - lastDraw >= interval) { paint(startCell, now); lastDraw = time; }
-        requestFrame();
-      };
-      requestFrame();
-    } else if (rendered && typeof ResizeObserver !== 'undefined') {
-      resizeObserver = new ResizeObserver(() => {
-        if (destroyed) return;
-        if (active()) paint(startCell);
-        else resizePending = true;
-      });
-      resizeObserver.observe(wrapper);
-    }
+    if (rendered) syncPersistLoop();
   };
+
+  // Persist has two resting states, and which one it is in depends only on
+  // whether frames keep coming. This switches between them, so turning the
+  // motion on or off later lands in exactly the same state as starting there.
+  const persistLoop = (time) => {
+    const now = advance(time);
+    if (time - lastDraw >= interval) { paint(startCell, now); lastDraw = time; }
+    requestFrame();
+  };
+  const watchResize = () => {
+    if (resizeObserver || typeof ResizeObserver === 'undefined') return;
+    resizeObserver = new ResizeObserver(() => {
+      if (destroyed) return;
+      if (active()) paint(startCell);
+      else resizePending = true;
+    });
+    resizeObserver.observe(wrapper);
+  };
+  function syncPersistLoop() {
+    if (animatedSource || live) {
+      // Moving: one continuous loop, and no resize watcher — every frame
+      // already re-measures the box.
+      resizeObserver?.disconnect();
+      resizeObserver = null;
+      if (!frameTask) { frameTask = persistLoop; requestFrame(); }
+      return;
+    }
+    // Still: stop the loop, leave the last frame on screen, and go back to
+    // repainting only when the box changes size.
+    if (frameTask === persistLoop) { suspend(); frameTask = null; }
+    watchResize();
+  }
 
   const runReveal = () => {
     const frame = (time) => {
@@ -325,6 +370,27 @@ export function createImageStylizer({
     canvas,
     renderer,
     get persist() { return persist; },
+    /**
+     * Start or stop the living look on a running effect — no teardown, so the
+     * picture never blinks. `patch` holds any of the rasterizer's
+     * LIVE_LOOK_KEYS (motion, motionSpeed, motionAmount, pointer…).
+     *
+     * A still picture that starts moving gets the continuous loop; one that
+     * stops keeps the frame it was on, exactly as if it had been created that
+     * way. An animated source keeps its loop either way.
+     */
+    setLiveLook(patch = {}) {
+      if (destroyed) return;
+      renderer.configure(patch);
+      live = renderer.live;
+      syncPointer();
+      // Only `persist` has a loop that depends on this; a reveal is running its
+      // own timeline and simply draws the new look from its next frame on.
+      if (persist && started) syncPersistLoop();
+      // Stopped and idle: repaint once so the change shows immediately instead
+      // of waiting for the next resize.
+      if (persist && started && !frameTask && active()) paint(startCell);
+    },
     start() {
       if (destroyed || started) return;
       started = true;
@@ -371,7 +437,8 @@ export function createVideoStylizer({
   const { layer, canvas } = createStylizedCanvasLayer(wrapper, effect, prefix);
   const renderer = createStylizedRenderer(canvas, styleConfig, { maxDpr });
   const interval = 1000 / fps;
-  const pointer = styleConfig.pointer === 'none' ? null : trackPointer(wrapper);
+  // Attached only once a pointer behaviour is asked for — see setLiveLook().
+  let pointer = styleConfig.pointer === 'none' ? null : trackPointer(wrapper);
   let rafId = null;
   let destroyed = false;
   let paused = false;
@@ -449,6 +516,19 @@ export function createVideoStylizer({
     canvas,
     renderer,
     get persist() { return persist; },
+    /**
+     * Same contract as the image stylizer's: swap the living look in place.
+     * A video redraws every playing frame anyway, so there is no loop to
+     * start or stop — only the settings and the pointer listeners change.
+     */
+    setLiveLook(patch = {}) {
+      if (destroyed) return;
+      renderer.configure(patch);
+      if (styleConfig.pointer === 'none') { pointer?.destroy(); pointer = null; }
+      else if (!pointer) pointer = trackPointer(wrapper);
+      // A paused or ended video is not redrawing, so repaint the new look once.
+      if (started && !runnable()) paint(startCell);
+    },
     start,
     pause() { paused = true; stop(); },
     resume() { paused = false; schedule(); },
