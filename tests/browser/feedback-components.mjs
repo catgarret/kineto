@@ -51,6 +51,26 @@ try {
   assert.equal(sheetResult.handleCursor,'ns-resize');
   assert.equal(sheetResult.headerCursor,'ns-resize');
 
+  // 그립 툴팁은 라이브러리가 문구를 정하지 않습니다. 예전에는 한국어 한 줄이 박혀 있어서,
+  // resizable 을 켠 모든 사이트가 방문자 언어와 무관하게 한국어 툴팁을 보여 줬습니다.
+  const labels = await page.evaluate(() => {
+    const mount=(options)=>{
+      const node=document.createElement('section');
+      node.innerHTML='<div>body</div>';
+      document.body.appendChild(node);
+      window.__bottomSheetModule.create(node,{backdrop:false,resizable:true,duration:.05,...options});
+      return node.querySelector('.kt-sheet__handle').title;
+    };
+    return {
+      fallback:document.getElementById('sheet').querySelector('.kt-sheet__handle').title,
+      authored:mount({resizeLabel:'Ziehen zum Anpassen'}),
+      silent:mount({resizeLabel:''})
+    };
+  });
+  assert.equal(labels.fallback,'Drag to resize · Double-click to reset','the default grip tooltip must be the documented English one, not any one page\'s language');
+  assert.equal(labels.authored,'Ziehen zum Anpassen','resizeLabel must decide the grip tooltip');
+  assert.equal(labels.silent,'','an empty resizeLabel must leave the grip without a tooltip');
+
   await page.evaluate(() => window.toastApi.show());
   await page.waitForSelector('.kt-toast__ring-fill');
   await page.waitForTimeout(1060);

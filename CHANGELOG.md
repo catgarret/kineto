@@ -2,6 +2,31 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **Bottom Sheet no longer ships a Korean tooltip to every page.** The resize
+  grip hard-coded a Korean `title`, so any site using `resizable` showed Korean
+  to all of its readers. The text is now the public `resizeLabel` option with an
+  English default (`''` turns the tooltip off), matching how `label` already
+  works. The demo supplies the Korean copy itself.
+- **Demo tooltips follow the language switch.** The demo had translation paths
+  for text and accessible names but none for `title`, so three replay tooltips
+  and the sheet grip stayed Korean in the other six languages — a mouse user and
+  a screen-reader user were given different names for the same button. Tooltips
+  now use the same declarative path, and the demo QA guards `title` the way it
+  already guarded `aria-label`.
+
+- **Bottom Sheet가 모든 페이지에 한국어 툴팁을 보내던 문제를 고쳤습니다.** 높이 조절
+  그립의 `title`이 한국어로 하드코딩되어 있어, `resizable`을 쓰는 모든 사이트가 방문자
+  언어와 무관하게 한국어를 보여 주었습니다. 이제 공개 옵션 `resizeLabel`로 문구를 정하고
+  기본값은 영어입니다(`''`이면 툴팁을 달지 않습니다). 기존 `label` 옵션과 같은 규칙이며,
+  한국어 문구는 데모가 직접 지정합니다.
+- **데모 툴팁이 언어 전환을 따라갑니다.** 데모에는 본문과 접근성 이름을 번역하는 경로는
+  있었지만 `title` 경로가 없어, 재생 버튼 3개와 시트 그립의 툴팁이 나머지 6개 언어에서
+  한국어로 남았습니다. 같은 버튼인데 마우스 사용자와 스크린 리더 사용자가 서로 다른 이름을
+  받던 셈입니다. 이제 툴팁도 같은 선언형 경로를 쓰고, 데모 QA가 `aria-label`과 같은
+  방식으로 `title`을 검사합니다.
+
 ### English
 
 <!-- Add matching English release bullets here. -->

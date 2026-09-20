@@ -404,6 +404,12 @@ try {
             const key=node.dataset.demoI18nAriaLabel;
             return {key,actual:node.getAttribute('aria-label'),expected:expected(key)};
           });
+          // 툴팁을 선언한 노드는 위치와 상관없이 chrome 입니다 — 데모 무대 안의 재생
+          // 버튼도 데모가 만든 컨트롤이지 예제 소재가 아니기 때문입니다.
+          for(const node of document.querySelectorAll('[data-demo-i18n-title]')){
+            const key=node.dataset.demoI18nTitle;
+            checks.push({key,actual:node.getAttribute('title'),expected:expected(key)});
+          }
           checks.push({key:'본문으로 건너뛰기',actual:document.querySelector('.skip-link')?.textContent,expected:expected('본문으로 건너뛰기')});
           checks.push({key:'sitemap-title',actual:document.getElementById('sitemap-title')?.textContent,expected:`Kineto — ${expected('사이트맵')}`});
           // Animated examples intentionally preserve their authored Korean
@@ -417,12 +423,21 @@ try {
             .map((node)=>node.getAttribute('aria-label'))
             .filter((label)=>/[가-힣]/.test(label))
             .sort();
+          // 툴팁도 같은 규칙으로 봅니다. 접근성 이름만 번역되고 title 이 한국어로 남으면
+          // 마우스를 쓰는 사람과 스크린 리더를 쓰는 사람이 서로 다른 이름을 받게 됩니다.
+          // `data-kt-title` 로 연출한 Tooltip 예제처럼 무대 안의 한국어 소재는 그대로 둡니다.
+          const remainingKoreanTitles=language==='ko'?[]:[...document.querySelectorAll('[title]')]
+            .filter((node)=>!node.closest('.demo-stage')&&/[가-힣]/.test(node.getAttribute('title')))
+            .map((node)=>`${node.getAttribute('title')} @ ${node.tagName.toLowerCase()}.${String(node.className||'').trim().split(/\s+/)[0]||'(no class)'} ${JSON.stringify(node.dataset)}`)
+            .sort();
           return {
             ok:document.documentElement.lang===language
               &&checks.every(({actual,expected:value})=>actual===value)
-              &&remainingKorean.length===0,
+              &&remainingKorean.length===0
+              &&remainingKoreanTitles.length===0,
             checks,
-            remainingKorean
+            remainingKorean,
+            remainingKoreanTitles
           };
         })(),
         moduleIndexKorean:language==='ko'?[]:[...document.querySelectorAll('.mod-index-item .mii-sub')]

@@ -28,6 +28,23 @@
 
 상호작용 요소나 별도의 제외 영역에는 `data-kt-sheet-no-resize`를 붙일 수 있습니다.
 
+### 그립 툴팁 문구
+
+- `resizeLabel`: 상단 그립에 붙는 `title` 문구입니다. 기본값은
+  `'Drag to resize · Double-click to reset'` 입니다.
+- 빈 문자열(`resizeLabel:''`)을 주면 툴팁을 달지 않습니다.
+- 라이브러리는 읽는 사람의 언어를 알 수 없으므로 문구를 대신 정하지 않습니다.
+  `label`과 같은 규칙으로, 화면에 보이는 문구는 페이지가 정합니다.
+
+```html
+<div data-kt-bottom-sheet
+     data-kt-resizable="true"
+     data-kt-resize-label="드래그: 높이 조절 · 더블클릭: 초기화">
+```
+
+여러 언어를 쓰는 페이지라면 언어를 바꿀 때 이 옵션 값도 함께 바꿔 주세요. 이미 만들어진
+그립의 `title`은 초기화 시점의 값이라 옵션만 바꾸면 갱신되지 않습니다.
+
 ## API와 이벤트
 
 ```js

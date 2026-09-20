@@ -12519,7 +12519,12 @@ var Za = {
 		let D = () => {
 			e.style.height = "", e.style.maxHeight = "", C && w();
 		}, O = [];
-		d && y && (d.style.cursor = "ns-resize", d.style.touchAction = "none", e.classList.add("kt-sheet--resizable"), d.title = d.title || "드래그: 높이 조절 · 더블클릭: 초기화"), y && (e.classList.add(`kt-sheet--resize-${b}`), e.dataset.ktSheetResizeArea = b);
+		if (d && y) {
+			d.style.cursor = "ns-resize", d.style.touchAction = "none", e.classList.add("kt-sheet--resizable");
+			let n = t.resizeLabel ?? "Drag to resize · Double-click to reset";
+			d.title = d.title || n;
+		}
+		y && (e.classList.add(`kt-sheet--resize-${b}`), e.dataset.ktSheetResizeArea = b);
 		let k = e.querySelector("[data-kt-sheet-header],.kt-sheet__header,header"), A = y && b === "header" ? [d, k].filter((e, t, n) => e && n.indexOf(e) === t) : [d].filter(Boolean), j = "button,a,input,select,textarea,label,[contenteditable=\"true\"],[data-kt-sheet-no-resize]";
 		A.forEach((r) => {
 			let i = 0, a = 0, o = !1, c = !1, l = 0, u = r === d ? "handle" : "header";

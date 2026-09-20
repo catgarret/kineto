@@ -1994,6 +1994,30 @@ window.KINETO_COPY_I18N = {
       "Повторить",
       "Riproduci di nuovo"
     ],
+    "드래그: 높이 조절 · 더블클릭: 초기화": [
+      "Drag to resize \u00b7 Double-click to reset",
+      "\u30c9\u30e9\u30c3\u30b0\u3067\u8abf\u6574 \u00b7 \u30c0\u30d6\u30eb\u30af\u30ea\u30c3\u30af\u3067\u30ea\u30bb\u30c3\u30c8",
+      "\u62d6\u52a8\u8c03\u6574 \u00b7 \u53cc\u51fb\u91cd\u7f6e",
+      "\u62d6\u66f3\u8abf\u6574 \u00b7 \u96d9\u64ca\u91cd\u8a2d",
+      "\u041f\u0435\u0440\u0435\u0442\u0430\u0449\u0438\u0442\u044c \u0434\u043b\u044f \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f \u00b7 \u0414\u0432\u043e\u0439\u043d\u043e\u0439 \u0449\u0435\u043b\u0447\u043e\u043a \u0434\u043b\u044f \u0441\u0431\u0440\u043e\u0441\u0430",
+      "Trascina per ridimensionare \u00b7 Doppio clic per ripristinare"
+    ],
+    "섞어 다시 재생": [
+      "Shuffle and replay",
+      "シャッフルして再生",
+      "随机排列并重新播放",
+      "隨機排列並重新播放",
+      "Перемешать и повторить",
+      "Mescola e riproduci"
+    ],
+    "순서 섞기": [
+      "Shuffle order",
+      "順序をシャッフル",
+      "随机排列顺序",
+      "隨機排列順序",
+      "Перемешать порядок",
+      "Mescola l'ordine"
+    ],
     "갤러리 순서를 섞어 다시 재생": [
       "Shuffle the gallery and replay",
       "ギャラリーを並べ替えて再生",

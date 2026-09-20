@@ -152,7 +152,10 @@ export default {
     const dragBindings = [];
     if (handle && resizable) {
       handle.style.cursor = 'ns-resize'; handle.style.touchAction = 'none'; el.classList.add('kt-sheet--resizable');
-      handle.title = handle.title || '드래그: 높이 조절 · 더블클릭: 초기화';
+      // 손잡이 툴팁. 라이브러리가 쓰는 사람의 언어를 알 수는 없으므로, `label` 과 같은
+      // 규칙으로 영어 기본값을 두고 문구는 페이지가 정합니다. 빈 문자열이면 툴팁을 끕니다.
+      const resizeLabel = opts.resizeLabel ?? 'Drag to resize · Double-click to reset';
+      handle.title = handle.title || resizeLabel;
     }
     if (resizable) {
       el.classList.add(`kt-sheet--resize-${resizeArea}`);

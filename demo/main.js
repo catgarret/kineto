@@ -761,18 +761,31 @@
       ['.footer-logo','Kineto 맨 위로'],
       ['.footer-links','푸터 탐색']
     ];
+    // 라이브러리가 직접 만든 요소의 툴팁. 옵션으로 넘긴 문구는 초기화 시점의 언어로
+    // 굳으므로, 언어를 바꾸면 이미 만들어진 요소도 함께 다시 씁니다.
+    const DEMO_CONTROL_TITLE_SELECTORS=[
+      ['.kt-sheet--resizable .kt-sheet__handle','드래그: 높이 조절 · 더블클릭: 초기화']
+    ];
     const refreshDemoControlNames=(root=document,language=document.documentElement.lang||'ko')=>{
-      // Keep the declarative source option in sync as well as the currently
-      // generated button. A broad demo mutation may cause auto-init to replace
-      // the ring after this function returns; the replacement must inherit the
-      // selected locale instead of falling back to the authored Korean label.
-      const progressSource=root.querySelector('[data-kt-progress][data-kt-click-to-top="true"]');
-      if(progressSource)progressSource.dataset.ktLabel=localizedDemoUi('맨 위로',language);
+      // 모듈 옵션으로 들어가는 문구. 어떤 속성이 문구를 나르는지 마크업이 선언하면, 언어를
+      // 바꿀 때 옵션 값 자체를 번역해 다시 씁니다. 데모가 크게 바뀌어 auto-init 이 컨트롤을
+      // 다시 만들어도 새 컨트롤이 이 값을 물려받으므로, 작성 당시의 한국어로 돌아가지 않습니다.
+      root.querySelectorAll('[data-demo-i18n-option]').forEach((node)=>{
+        node.setAttribute(node.dataset.demoI18nOptionAttr,localizedDemoUi(node.dataset.demoI18nOption,language));
+      });
       DEMO_CONTROL_NAME_SELECTORS.forEach(([selector,key])=>{
         root.querySelectorAll(selector).forEach((node)=>{node.dataset.demoI18nAriaLabel=key;});
       });
+      DEMO_CONTROL_TITLE_SELECTORS.forEach(([selector,key])=>{
+        root.querySelectorAll(selector).forEach((node)=>{node.dataset.demoI18nTitle=key;});
+      });
       root.querySelectorAll('[data-demo-i18n-aria-label]').forEach((node)=>{
         node.setAttribute('aria-label',localizedDemoUi(node.dataset.demoI18nAriaLabel,language));
+      });
+      // 툴팁도 접근성 이름과 같은 규칙을 따릅니다. 이 경로가 없을 때는 마우스를 올린
+      // 사람만 한국어를 보고 스크린 리더는 번역을 읽는, 두 이름이 갈리는 상태였습니다.
+      root.querySelectorAll('[data-demo-i18n-title]').forEach((node)=>{
+        node.title=localizedDemoUi(node.dataset.demoI18nTitle,language);
       });
       root.querySelectorAll('[data-demo-i18n-text]').forEach((node)=>{
         const prefix=node.dataset.demoI18nPrefix||'';

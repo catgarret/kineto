@@ -56,10 +56,27 @@ assert.match(
   /\['button\.kt-progress-ring','맨 위로'\]/,
   'the generated back-to-top ring must join the locale refresh contract'
 );
+// 모듈 옵션으로 들어가는 문구는 마크업이 선언하고, main.js 의 한 패스가 언어를 바꿀 때마다
+// 그 값을 다시 씁니다. 예전에는 모듈마다 JS 에 선택자를 적어 두었는데, 그러면 새 사례가
+// 생길 때마다 특수 처리가 하나씩 늘고 빠뜨리기도 쉬웠습니다. 여기서는 구현 한 줄이 아니라
+// **약속**을 검사합니다 — 선언이 실제로 있고, 그 문구가 모든 언어로 번역되어 있는지.
 assert.match(
   demoMain,
-  /progressSource\.dataset\.ktLabel=localizedDemoUi\('맨 위로',language\)/,
-  'the declarative progress source must retain the locale across auto-init replacement'
+  /querySelectorAll\('\[data-demo-i18n-option\]'\)/,
+  'main.js must apply the declared option translations on every language change'
+);
+const optionDeclarations = [...document.querySelectorAll('[data-demo-i18n-option]')];
+assert.ok(optionDeclarations.length > 0, 'the demo must declare at least one translated module option');
+for (const node of optionDeclarations) {
+  const key = node.getAttribute('data-demo-i18n-option');
+  const attribute = node.getAttribute('data-demo-i18n-option-attr');
+  assert.ok(attribute?.startsWith('data-kt-'), `data-demo-i18n-option="${key}" must name the data-kt-* option that carries it`);
+  assert.equal(node.getAttribute(attribute), key, `${attribute} must start out holding the authored Korean copy for "${key}"`);
+  assert.equal(copy.ui[key]?.length, languages.length, `a translated module option needs every language: ${key}`);
+}
+assert.ok(
+  optionDeclarations.some((node) => node.getAttribute('data-demo-i18n-option-attr') === 'data-kt-label' && node.hasAttribute('data-kt-click-to-top')),
+  'the back-to-top ring must retain the locale across auto-init replacement'
 );
 // Two tabbed pairs replace four descriptions with two; Wave and Film Grain add
 // two dedicated Lazy examples; the date-time demo now has four explicit modes;

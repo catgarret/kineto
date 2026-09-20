@@ -311,7 +311,7 @@
 - Attribute: `data-kt-bottom-sheet`
 - Default variant: `sheet`
 - Variants: `sheet`
-- Public options: `autoHeight`, `backdrop`, `backdropOpacity`, `dismissible`, `duration`, `handle`, `label`, `maxHeight`, `minHeight`, `onResize`, `resizable`, `resizeArea`, `trigger`
+- Public options: `autoHeight`, `backdrop`, `backdropOpacity`, `dismissible`, `duration`, `handle`, `label`, `maxHeight`, `minHeight`, `onResize`, `resizable`, `resizeArea`, `resizeLabel`, `trigger`
 
 ## tabs
 

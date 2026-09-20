@@ -259,6 +259,7 @@
     element.className = 'replay-fab variant-tile__replay';
     element.innerHTML = '<i class="ph-bold ph-arrow-counter-clockwise" aria-hidden="true"></i>';
     element.dataset.demoI18nAriaLabel = '다시 재생';
+    element.dataset.demoI18nTitle = '다시 재생';
     element.setAttribute('aria-label', t('다시 재생'));
     element.title = t('다시 재생');
     return element;
