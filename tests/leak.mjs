@@ -51,6 +51,10 @@ const fails = [];
 for (const [name, make] of Object.entries(fixtures)) {
   const [el, opts] = make();
   const beforeSet = new Set(listeners); const beforeR = rafPending.size; const beforeO = obsLive;
+  // 문서에 직접 붙인 것도 destroy 가 되돌려야 합니다. 리스너·RAF·observer 만 보면
+  // 공유 오버레이·region 처럼 body 에 남는 요소를 놓칩니다(Toast 의 알림 region 이
+  // 실제로 그랬습니다 — 토스트가 없는 페이지에 빈 랜드마크가 영원히 남았습니다).
+  const beforeBody = new Set(document.body.children);
   let inst;
   try { inst = Kineto.create(name, el, opts); } catch (e) { fails.push(`${name}: create threw ${e.message}`); el.remove(); continue; }
   if (!inst) { fails.push(`${name}: create returned null (fixture invalid)`); el.remove(); continue; }
@@ -64,8 +68,36 @@ for (const [name, make] of Object.entries(fixtures)) {
   if (elLeaks.length > 0) fails.push(`${name}: ${elLeaks.length} element listener(s) leaked after destroy [${elLeaks.map((r) => r.type).join(',')}]`);
   if (dR > 0) fails.push(`${name}: ${dR} rAF handle(s) leaked after destroy`);
   if (dO > 0) fails.push(`${name}: ${dO} observer(s) leaked after destroy`);
+  const strayNodes = [...document.body.children].filter((node) => node !== el && !beforeBody.has(node));
+  if (strayNodes.length) {
+    fails.push(`${name}: ${strayNodes.length} node(s) left in document.body after destroy `
+      + `[${strayNodes.map((node) => node.tagName.toLowerCase() + '.' + (String(node.className).trim().split(/\s+/)[0] || '')).join(', ')}]`);
+    strayNodes.forEach((node) => node.remove());
+  }
   el.remove();
 }
+
+// 공유 요소의 수명. Toast 의 알림 region 은 자리마다 하나를 여러 인스턴스가 함께 쓰므로
+// 인스턴스 하나가 사라졌다고 지울 수 없고, **마지막 하나까지 사라졌을 때** 지워야 합니다.
+// 예전에는 아예 지우지 않아서, 토스트를 한 번 띄운 페이지에는 그 뒤로 토스트가 하나도
+// 없어도 빈 `role="region"` 랜드마크가 영원히 남았습니다. 위 fixture 루프는 show() 를
+// 부르지 않아 region 이 만들어지지도 않으므로, 실제 순서를 여기서 따로 재현합니다.
+const regionCount = () => document.querySelectorAll('.kt-toast-region').length;
+const toastHostA = document.body.appendChild(document.createElement('button'));
+const toastHostB = document.body.appendChild(document.createElement('button'));
+const toastA = Kineto.create('toast', toastHostA, { message: 'A', duration: 1000 });
+const toastB = Kineto.create('toast', toastHostB, { message: 'B', duration: 1000 });
+if (regionCount() !== 0) fails.push('toast: a region appeared before any toast was shown');
+const shownToast = toastA.show();
+if (regionCount() !== 1) fails.push('toast: showing a toast must create exactly one region');
+toastA.destroy();
+if (regionCount() !== 1) fails.push('toast: the shared region must survive while another instance still uses it');
+shownToast.dismiss();
+if (regionCount() !== 1) fails.push('toast: the region must stay while a live instance can still show into it');
+toastB.destroy();
+if (regionCount() !== 0) fails.push('toast: the region must go once the last instance is destroyed — otherwise an empty "Notifications" landmark stays in the page forever');
+toastHostA.remove();
+toastHostB.remove();
 
 // Live reduced-motion re-application (audit D-1/J-5): flipping the policy must
 // recreate the instances already on the page, not drop them or throw.
@@ -80,6 +112,6 @@ Kineto.destroyModule(rb, 'tooltip');
 
 console.log(`leak check ran on ${Object.keys(fixtures).length} DOM modules.`);
 if (fails.length) { console.error('FAILED:\n - ' + fails.join('\n - ')); process.exit(1); }
-console.log('leak OK — no net event listeners / rAF handles / observers left after destroy().');
+console.log('leak OK — no net event listeners / rAF handles / observers / document.body nodes left after destroy().');
 // Exit synchronously: any leaked rAF would otherwise re-arm forever and hang.
 process.exit(0);

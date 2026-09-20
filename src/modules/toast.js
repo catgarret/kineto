@@ -21,6 +21,22 @@ const TYPE_ICON = {
 // 모듈이 만드는 컨트롤의 이름. 기본값은 영어이고 `labels` 로 덮어씁니다(utils.labeller).
 const DEFAULT_LABELS = { region: 'Notifications', dismiss: 'Dismiss' };
 
+// region 은 자리마다 하나를 여러 인스턴스가 함께 씁니다. 그래서 인스턴스 하나가
+// destroy 됐다고 지울 수 없고, **마지막 하나까지 사라졌을 때** 지워야 합니다.
+// Lightbox 가 공유 뷰어에 쓰는 것과 같은 방식입니다(거기서는 `entries`).
+// 지우지 않으면 토스트가 하나도 없는 페이지에 `role="region"` 랜드마크가 영원히 남아,
+// 스크린 리더 사용자에게 빈 "Notifications" 영역이 계속 들립니다.
+const liveInstances = new Set();
+const dropEmptyRegions = () => {
+  if (liveInstances.size) return;
+  for (const [position, region] of Object.entries(REGIONS)) {
+    // 아직 떠 있는 토스트가 있으면 두고, 그 토스트가 사라질 때 다시 확인합니다.
+    if (region.children.length) continue;
+    region.remove();
+    delete REGIONS[position];
+  }
+};
+
 const regionFor = (position, label) => {
   if (REGIONS[position]) return REGIONS[position];
   const region = document.createElement('div');
@@ -46,6 +62,10 @@ export default {
     const maxVisible = Math.max(1, Number(opts.max ?? 5));
     const iconOpt = opts.icon; // undefined → default glyph; false → none; string → custom
     const label = labeller(DEFAULT_LABELS, opts.labels);
+    // 이 인스턴스가 띄워 둔 토스트들. destroy 될 때 함께 걷어냅니다 — SPA 에서 화면을
+    // 떠난 컴포넌트의 알림이 계속 떠 있으면 안 되고, 남겨 두면 teardown 이 "언젠가
+    // 타이머가 정리해 주겠지"에 기대게 됩니다.
+    const liveToasts = new Set();
 
     const show = (message, overrides = {}) => {
       const kind = overrides.type || type;
@@ -68,7 +88,7 @@ export default {
       toast.appendChild(body);
 
       let closed = false;
-      const removeNow = () => toast.remove();
+      const removeNow = () => { liveToasts.delete(closeNow); toast.remove(); dropEmptyRegions(); };
       const stopProgressAnimation = () => {
         if (!barAnim) return;
         // WAAPI animations without a fill mode snap back to their authored
@@ -77,6 +97,15 @@ export default {
         try { barAnim.commitStyles?.(); } catch (_) {}
         barAnim.cancel();
       };
+      // 애니메이션 없이 즉시 걷어내기. destroy 가 씁니다.
+      const closeNow = () => {
+        if (closed) return;
+        closed = true;
+        clearTimeout(timerId);
+        stopProgressAnimation();
+        removeNow();
+      };
+      liveToasts.add(closeNow);
       const dismiss = () => {
         if (closed) return;
         closed = true;
@@ -173,13 +202,20 @@ export default {
     const onTrigger = () => show();
     el.addEventListener('click', onTrigger);
 
-    return {
+    const instance = {
       el,
       type: 'toast',
       show,
       pause() {}, resume() {},
-      destroy() { el.removeEventListener('click', onTrigger); }
+      destroy() {
+        el.removeEventListener('click', onTrigger);
+        liveInstances.delete(instance);
+        [...liveToasts].forEach((closeNow) => closeNow());
+        dropEmptyRegions();
+      }
     };
+    liveInstances.add(instance);
+    return instance;
   },
   reduced(el, opts) { return this.create(el, opts); }
 };

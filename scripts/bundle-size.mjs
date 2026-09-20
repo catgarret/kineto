@@ -178,7 +178,10 @@ const BUDGETS = {
   // See the 2026-09-19 observe() note above for the 425.7 / 423.9 KB raw values.
   // 2026-09-20: the page-transition guard that ignores a hash-only history
   // move measures 439.1 KB raw minified; gzip is unchanged at 133.8 KB.
-  'kineto.min.js': { raw: 441, gz: 134, variance: 2 },
+  // 2026-09-20 (toast region lifetime): reference-counting the shared region and
+  // closing an instance's toasts on destroy measures 441.2 KiB raw minified;
+  // gzip stays inside the existing variance. Round only this raw ceiling.
+  'kineto.min.js': { raw: 442, gz: 134, variance: 2 },
   'kineto.umd.js': { raw: 440, gz: 133, variance: 1 },
   'kineto.umd.min.js': { raw: 440, gz: 133, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS

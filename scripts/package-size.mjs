@@ -148,7 +148,11 @@ const BUDGET = {
   // library was announcing invented English (and one Korean) string to every
   // consumer's readers; letting the page name its own controls is an
   // accessibility correction, not a new surface.
-  packedKb: 576,
+  // 2026-09-20 (toast region lifetime): reference-counting the shared region and
+  // closing an instance's toasts on destroy measures 576.2 KB packed / 1884.1 KB
+  // unpacked on the same 79 files. Restoring the document a module changed is
+  // the destroy contract, not a feature.
+  packedKb: 577,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -164,7 +168,8 @@ const BUDGET = {
   // 2026-09-20 (control labels): the same change measures 1883.1 KB unpacked —
   // default label maps in four modules and the shared helper. Round only this
   // measured accessibility cost; packed/files budgets follow their own notes.
-  unpackedKb: 1884,
+  // See the toast-region note above for the 1884.1 KB measurement.
+  unpackedKb: 1885,
   files: 79
 };
 

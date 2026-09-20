@@ -12368,33 +12368,41 @@ var $a = {
 }, ro = {
 	region: "Notifications",
 	dismiss: "Dismiss"
-}, io = (e, t) => {
+}, io = /* @__PURE__ */ new Set(), ao = () => {
+	if (!io.size) for (let [e, t] of Object.entries(eo)) t.children.length || (t.remove(), delete eo[e]);
+}, oo = (e, t) => {
 	if (eo[e]) return eo[e];
 	let n = document.createElement("div");
 	return n.className = `kt-toast-region kt-toast-region--${e}`, n.setAttribute("role", "region"), n.setAttribute("aria-label", t("region")), document.body.appendChild(n), eo[e] = n, n;
-}, ao = {
+}, so = {
 	create(e, t = {}) {
-		let n = V().reducedMotion, r = t.position || "bottom-right", i = t.type || "info", a = G(Number(t.duration ?? 5e3), 1e3, 3e4), o = t.dismissible !== !1, s = t.message || e.getAttribute("data-kt-message") || e.textContent.trim() || "Done", c = t.progressBar === "ring" ? "ring" : t.progressBar === "fill" ? "fill" : t.progressBar === !0 || t.progressBar === "bar" ? "bar" : "none", l = Math.max(1, Number(t.max ?? 5)), u = t.icon, d = ee(ro, t.labels), f = (e, f = {}) => {
-			let p = f.type || i, m = io(f.position || r, d);
-			for (; m.children.length >= l;) m.firstElementChild?.remove();
-			let h = document.createElement("div");
-			h.className = `kt-toast kt-toast--${p}`, h.setAttribute("role", p === "error" || p === "warning" ? "alert" : "status"), t.barColor && h.style.setProperty("--kt-toast-bar", t.barColor);
-			let g = p !== "none" && u !== !1 ? typeof u == "string" ? u : no[p] || "" : "", _ = document.createElement("span");
-			_.className = "kt-toast__msg", _.textContent = e ?? s, h.appendChild(_);
-			let v = !1, y = () => h.remove(), b = () => {
-				if (T) {
-					try {
-						T.commitStyles?.();
-					} catch {}
-					T.cancel();
-				}
+		let n = V().reducedMotion, r = t.position || "bottom-right", i = t.type || "info", a = G(Number(t.duration ?? 5e3), 1e3, 3e4), o = t.dismissible !== !1, s = t.message || e.getAttribute("data-kt-message") || e.textContent.trim() || "Done", c = t.progressBar === "ring" ? "ring" : t.progressBar === "fill" ? "fill" : t.progressBar === !0 || t.progressBar === "bar" ? "bar" : "none", l = Math.max(1, Number(t.max ?? 5)), u = t.icon, d = ee(ro, t.labels), f = /* @__PURE__ */ new Set(), p = (e, p = {}) => {
+			let m = p.type || i, h = oo(p.position || r, d);
+			for (; h.children.length >= l;) h.firstElementChild?.remove();
+			let g = document.createElement("div");
+			g.className = `kt-toast kt-toast--${m}`, g.setAttribute("role", m === "error" || m === "warning" ? "alert" : "status"), t.barColor && g.style.setProperty("--kt-toast-bar", t.barColor);
+			let _ = m !== "none" && u !== !1 ? typeof u == "string" ? u : no[m] || "" : "", v = document.createElement("span");
+			v.className = "kt-toast__msg", v.textContent = e ?? s, g.appendChild(v);
+			let y = !1, b = () => {
+				f.delete(S), g.remove(), ao();
 			}, x = () => {
-				if (v) return;
-				if (v = !0, clearTimeout(w), b(), n || !h.animate) {
-					y();
+				if (D) {
+					try {
+						D.commitStyles?.();
+					} catch {}
+					D.cancel();
+				}
+			}, S = () => {
+				y || (y = !0, clearTimeout(E), x(), b());
+			};
+			f.add(S);
+			let C = () => {
+				if (y) return;
+				if (y = !0, clearTimeout(E), x(), n || !g.animate) {
+					b();
 					return;
 				}
-				let e = h.animate([{
+				let e = g.animate([{
 					opacity: 1,
 					transform: "none"
 				}, {
@@ -12404,13 +12412,13 @@ var $a = {
 					duration: 200,
 					easing: "ease"
 				});
-				e.onfinish = y, e.oncancel = y;
+				e.onfinish = b, e.oncancel = b;
 			};
 			if (o) {
 				let e = document.createElement("button");
-				e.type = "button", e.className = "kt-toast__close", e.setAttribute("aria-label", d("dismiss")), e.innerHTML = "&times;", e.addEventListener("click", x), h.appendChild(e);
+				e.type = "button", e.className = "kt-toast__close", e.setAttribute("aria-label", d("dismiss")), e.innerHTML = "&times;", e.addEventListener("click", C), g.appendChild(e);
 			}
-			m.appendChild(h), !n && h.animate && h.animate([{
+			h.appendChild(g), !n && g.animate && g.animate([{
 				opacity: 0,
 				transform: "translateY(10px)"
 			}, {
@@ -12420,70 +12428,72 @@ var $a = {
 				duration: 240,
 				easing: "cubic-bezier(.22,.8,.3,1)"
 			});
-			let S = Math.max(1e3, Number(f.duration ?? a)), C = 0, w = null, T = null, E = () => {
-				v || (C = performance.now(), clearTimeout(w), w = setTimeout(x, Math.max(300, S)));
-			}, D = () => {
-				!v && C && (clearTimeout(w), S = Math.max(300, S - (performance.now() - C)), C = 0);
+			let w = Math.max(1e3, Number(p.duration ?? a)), T = 0, E = null, D = null, O = () => {
+				y || (T = performance.now(), clearTimeout(E), E = setTimeout(C, Math.max(300, w)));
+			}, k = () => {
+				!y && T && (clearTimeout(E), w = Math.max(300, w - (performance.now() - T)), T = 0);
 			};
-			if (c === "ring" && !n && h.animate) {
+			if (c === "ring" && !n && g.animate) {
 				let e = document.createElement("span");
 				e.className = "kt-toast__ring", e.setAttribute("aria-hidden", "true");
 				let t = 2 * Math.PI * 9;
-				if (e.innerHTML = `<svg viewBox="0 0 24 24"><circle class="kt-toast__ring-track" cx="12" cy="12" r="9"></circle><circle class="kt-toast__ring-fill" cx="12" cy="12" r="9" transform="rotate(-90 12 12)" stroke-dasharray="${t}" stroke-dashoffset="0"></circle></svg>`, g) {
+				if (e.innerHTML = `<svg viewBox="0 0 24 24"><circle class="kt-toast__ring-track" cx="12" cy="12" r="9"></circle><circle class="kt-toast__ring-fill" cx="12" cy="12" r="9" transform="rotate(-90 12 12)" stroke-dasharray="${t}" stroke-dashoffset="0"></circle></svg>`, _) {
 					let t = document.createElement("span");
-					t.className = "kt-toast__ring-icon", t.setAttribute("aria-hidden", "true"), t.innerHTML = g, e.appendChild(t);
+					t.className = "kt-toast__ring-icon", t.setAttribute("aria-hidden", "true"), t.innerHTML = _, e.appendChild(t);
 				}
-				h.insertBefore(e, h.firstChild), T = e.querySelector(".kt-toast__ring-fill").animate([{ strokeDashoffset: 0 }, { strokeDashoffset: t }], {
-					duration: S,
+				g.insertBefore(e, g.firstChild), D = e.querySelector(".kt-toast__ring-fill").animate([{ strokeDashoffset: 0 }, { strokeDashoffset: t }], {
+					duration: w,
 					easing: "linear",
 					fill: "forwards"
 				});
 			} else {
-				if (g) {
+				if (_) {
 					let e = document.createElement("span");
-					e.className = "kt-toast__icon", e.setAttribute("aria-hidden", "true"), e.innerHTML = g, h.insertBefore(e, h.firstChild);
+					e.className = "kt-toast__icon", e.setAttribute("aria-hidden", "true"), e.innerHTML = _, g.insertBefore(e, g.firstChild);
 				}
-				if (c === "bar" && !n && h.animate) {
+				if (c === "bar" && !n && g.animate) {
 					let e = document.createElement("span");
-					e.className = "kt-toast__bar", e.setAttribute("aria-hidden", "true"), h.appendChild(e), T = e.animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
-						duration: S,
+					e.className = "kt-toast__bar", e.setAttribute("aria-hidden", "true"), g.appendChild(e), D = e.animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
+						duration: w,
 						easing: "linear",
 						fill: "forwards"
 					});
-				} else if (c === "fill" && !n && h.animate) {
+				} else if (c === "fill" && !n && g.animate) {
 					let e = document.createElement("span");
-					e.className = "kt-toast__fill", e.setAttribute("aria-hidden", "true"), h.insertBefore(e, h.firstChild), T = e.animate([{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], {
-						duration: S,
+					e.className = "kt-toast__fill", e.setAttribute("aria-hidden", "true"), g.insertBefore(e, g.firstChild), D = e.animate([{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], {
+						duration: w,
 						easing: "linear",
 						fill: "forwards"
 					});
 				}
 			}
-			let O = () => {
-				D(), T && T.pause();
-			}, k = () => {
-				E(), T && T.play();
+			let A = () => {
+				k(), D && D.pause();
+			}, j = () => {
+				O(), D && D.play();
 			};
-			return h.addEventListener("mouseenter", O), h.addEventListener("mouseleave", k), h.addEventListener("focusin", O), h.addEventListener("focusout", k), E(), {
-				dismiss: x,
-				el: h
+			return g.addEventListener("mouseenter", A), g.addEventListener("mouseleave", j), g.addEventListener("focusin", A), g.addEventListener("focusout", j), O(), {
+				dismiss: C,
+				el: g
 			};
-		}, p = () => f();
-		return e.addEventListener("click", p), {
+		}, m = () => p();
+		e.addEventListener("click", m);
+		let h = {
 			el: e,
 			type: "toast",
-			show: f,
+			show: p,
 			pause() {},
 			resume() {},
 			destroy() {
-				e.removeEventListener("click", p);
+				e.removeEventListener("click", m), io.delete(h), [...f].forEach((e) => e()), ao();
 			}
 		};
+		return io.add(h), h;
 	},
 	reduced(e, t) {
 		return this.create(e, t);
 	}
-}, oo = {
+}, co = {
 	create(e, t = {}) {
 		let n = (t, n) => {
 			let r = e.ownerDocument?.defaultView?.CustomEvent || globalThis.CustomEvent;
@@ -12637,7 +12647,7 @@ var $a = {
 	reduced(e, t) {
 		return this.create(e, t);
 	}
-}, so = {
+}, lo = {
 	create(e, t = {}) {
 		let n = V().reducedMotion, r = t.activation === "manual" ? "manual" : "automatic", i = t.orientation === "vertical" ? "vertical" : "horizontal", a = Math.max(0, Number(t.duration ?? .28)), o = t.indicator !== !1, s = t.effect || "fade", c = (t.activeClass || "").trim(), l = [
 			"slide",
@@ -12781,7 +12791,7 @@ var $a = {
 };
 //#endregion
 //#region src/modules/radial.js
-function co(e, t = {}) {
+function uo(e, t = {}) {
 	let n = t.position, r = {
 		preset: "radial",
 		position: [
@@ -12811,15 +12821,15 @@ function co(e, t = {}) {
 	});
 	return i && (i.type = "radial"), i;
 }
-var lo = {
-	create: co,
-	reduced: co
-}, uo = /* @__PURE__ */ new Set([
+var fo = {
+	create: uo,
+	reduced: uo
+}, po = /* @__PURE__ */ new Set([
 	"single",
 	"pair",
 	"palette",
 	"auto"
-]), fo = (e) => {
+]), mo = (e) => {
 	if (Array.isArray(e)) return e.map(String).map((e) => e.trim()).filter(Boolean);
 	let t = String(e || "").trim();
 	if (!t) return [];
@@ -12830,7 +12840,7 @@ var lo = {
 		a === "(" ? r += 1 : a === ")" ? r = Math.max(0, r - 1) : a === "," && r === 0 && (n.push(t.slice(i, e).trim()), i = e + 1);
 	}
 	return n.push(t.slice(i).trim()), n.filter(Boolean);
-}, po = (e) => {
+}, ho = (e) => {
 	let t = String(e || "").trim(), n = t.match(/^rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/i);
 	if (n) return [
 		Number(n[1]),
@@ -12845,7 +12855,7 @@ var lo = {
 		2,
 		4
 	].map((e) => Number.parseInt(i.slice(e, e + 2), 16));
-}, mo = ([e, t, n]) => {
+}, go = ([e, t, n]) => {
 	let r = e / 255, i = t / 255, a = n / 255, o = Math.max(r, i, a), s = Math.min(r, i, a), c = (o + s) / 2;
 	if (o === s) return [
 		0,
@@ -12858,7 +12868,7 @@ var lo = {
 		u * 100,
 		c * 100
 	];
-}, ho = (e) => {
+}, _o = (e) => {
 	let t = e?.tagName === "IMG" ? e : e?.querySelector?.("img");
 	if (!t || !t.complete || !t.naturalWidth) return null;
 	try {
@@ -12880,7 +12890,7 @@ var lo = {
 	} catch {
 		return null;
 	}
-}, go = (e) => {
+}, vo = (e) => {
 	let t = e?.tagName === "IMG" ? e : e?.querySelector?.("img");
 	if (!t || !t.complete || !t.naturalWidth) return null;
 	try {
@@ -12921,16 +12931,16 @@ var lo = {
 	} catch {
 		return null;
 	}
-}, _o = (e) => {
+}, yo = (e) => {
 	let t = e?.parentElement;
 	for (; t;) {
-		let e = getComputedStyle(t).backgroundColor, n = Number(e.match(/rgba?\([^/]*[,/]\s*([\d.]+)\s*\)$/)?.[1] ?? 1), r = po(e);
+		let e = getComputedStyle(t).backgroundColor, n = Number(e.match(/rgba?\([^/]*[,/]\s*([\d.]+)\s*\)$/)?.[1] ?? 1), r = ho(e);
 		if (r && n > .05) return r;
 		t = t.parentElement;
 	}
 	return null;
-}, vo = (e) => {
-	let [t, n, r] = mo(ho(e) || _o(e) || [
+}, bo = (e) => {
+	let [t, n, r] = go(_o(e) || yo(e) || [
 		255,
 		91,
 		28
@@ -12940,9 +12950,9 @@ var lo = {
 		`hsl(${Math.round((t + 28 + o + 360) % 360)} ${Math.round(G(i + 7, 48, 88))}% ${Math.round(G(a + 7, 38, 72))}%)`,
 		`hsl(${Math.round((t - 34 + o + 360) % 360)} ${Math.round(G(i - 4, 44, 80))}% ${Math.round(G(a - 6, 32, 64))}%)`
 	];
-}, yo = {
+}, xo = {
 	create(e, t = {}) {
-		let n = V().reducedMotion, r = t.color || "#ff5b1c", i = t.color2 || "#12141a", a = uo.has(t.colorMode) ? t.colorMode : fo(t.colors).length ? "palette" : "pair", o = fo(t.colors), s = [
+		let n = V().reducedMotion, r = t.color || "#ff5b1c", i = t.color2 || "#12141a", a = po.has(t.colorMode) ? t.colorMode : mo(t.colors).length ? "palette" : "pair", o = mo(t.colors), s = [
 			"left",
 			"right",
 			"up",
@@ -12958,7 +12968,7 @@ var lo = {
 			left: "translateX(-101%)",
 			down: "translateY(101%)",
 			up: "translateY(-101%)"
-		})[e], v = [], y = [], b = e, x = null, S = !0, C = (t) => a === "single" ? [r] : a === "pair" ? [r, i] : a === "palette" ? o.length ? o : [r, i] : go(t) || go(e) || vo(t || e), w = (e) => {
+		})[e], v = [], y = [], b = e, x = null, S = !0, C = (t) => a === "single" ? [r] : a === "pair" ? [r, i] : a === "palette" ? o.length ? o : [r, i] : vo(t) || vo(e) || bo(t || e), w = (e) => {
 			let t = C(e.container), n = a === "palette" ? Math.floor(Math.random() * t.length) : 0;
 			e.panels.forEach((e, r) => {
 				let i = a === "pair" ? d > 1 && r === d - 1 ? t[1] : t[0] : t[(n + r) % t.length];
@@ -13112,7 +13122,7 @@ var lo = {
 	reduced(e, t) {
 		return this.create(e, t);
 	}
-}, bo = {
+}, So = {
 	create(e, t = {}) {
 		if (V().reducedMotion) return {
 			el: e,
@@ -13162,7 +13172,7 @@ var lo = {
 			destroy() {}
 		};
 	}
-}, xo = {
+}, Co = {
 	create(e, t = {}) {
 		let n = [
 			"x",
@@ -13222,7 +13232,7 @@ var lo = {
 	reduced(e, t) {
 		return this.create(e, t);
 	}
-}, So = {
+}, wo = {
 	create(e, t = {}) {
 		let n = V().reducedMotion, r = e.getAttribute("title"), i = t.content || e.getAttribute("data-kt-title") || r || e.getAttribute("aria-label") || "";
 		if (!i) return null;
@@ -13314,7 +13324,7 @@ var lo = {
 	reduced(e, t) {
 		return this.create(e, t);
 	}
-}, Co = {
+}, To = {
 	create(e, t = {}) {
 		let n = V().reducedMotion, r = Math.max(14, Number(t.size ?? 24)), i = t.onColor || "var(--kt-switch-on, #ff5b1c)", a = t.offColor || "var(--kt-switch-off, color-mix(in srgb, currentColor 26%, transparent))", o = t.thumbColor || "var(--kt-switch-thumb, #fff)", s = Math.max(0, Number(t.duration ?? .22)), c = e.tagName === "INPUT" ? null : e.querySelector("input[type=\"checkbox\"], input[type=\"radio\"]");
 		c && (c.style.position = "absolute", c.style.opacity = "0", c.style.pointerEvents = "none", c.style.width = "0", c.style.height = "0", c.tabIndex = -1);
@@ -13362,7 +13372,7 @@ var lo = {
 	reduced(e, t) {
 		return this.create(e, t);
 	}
-}, wo = {
+}, Eo = {
 	create(e, t = {}) {
 		let n = V().reducedMotion, r = Math.max(0, Number(t.duration ?? .4)), i = t.ease || "cubic-bezier(.22,.8,.3,1)", a = Math.max(0, Number(t.stagger ?? 0)), o = t.item || null, s = () => o ? Array.from(e.querySelectorAll(o)) : Array.from(e.children), c = /* @__PURE__ */ new Set(), l = (e, t) => {
 			let n = e.cloneNode(!0);
@@ -13567,13 +13577,13 @@ var lo = {
 };
 //#endregion
 //#region src/modules/scrollShadows.js
-function To(e) {
+function Do(e) {
 	let t = String(e || "cubic-out").trim(), n = t.match(/^cubic-bezier\(\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\)$/i);
 	return n ? I(...n.slice(1).map(Number)) : t === "ease" ? I(.25, .1, .25, 1) : t === "ease-in" ? I(.42, 0, 1, 1) : t === "ease-out" ? I(0, 0, .58, 1) : t === "ease-in-out" ? I(.42, 0, .58, 1) : F(t);
 }
-var Eo = {
+var Oo = {
 	create(e, t = {}) {
-		let n = t.axis === "horizontal" || t.axis === "x" ? "horizontal" : "vertical", r = Math.max(4, Number(t.size ?? 44)), i = t.mode === "mask" ? "mask" : "shadow", a = n === "horizontal", o = t.transitionMode === "instant" ? "instant" : "smooth", s = Number(t.transition), c = o === "instant" ? 0 : Math.max(0, Number(t.transitionDuration ?? (Number.isFinite(s) ? s / 1e3 : .18))) * 1e3, l = To(t.ease || "cubic-out"), u = null, d = () => {
+		let n = t.axis === "horizontal" || t.axis === "x" ? "horizontal" : "vertical", r = Math.max(4, Number(t.size ?? 44)), i = t.mode === "mask" ? "mask" : "shadow", a = n === "horizontal", o = t.transitionMode === "instant" ? "instant" : "smooth", s = Number(t.transition), c = o === "instant" ? 0 : Math.max(0, Number(t.transitionDuration ?? (Number.isFinite(s) ? s / 1e3 : .18))) * 1e3, l = Do(t.ease || "cubic-out"), u = null, d = () => {
 			let t = a ? e.scrollLeft : e.scrollTop, r = Math.max(0, a ? e.scrollWidth - e.clientWidth : e.scrollHeight - e.clientHeight);
 			return {
 				axis: n,
@@ -13664,7 +13674,7 @@ var Eo = {
 	reduced(e, t) {
 		return this.create(e, t);
 	}
-}, Do = { create(e, t = {}) {
+}, ko = { create(e, t = {}) {
 	let n = Math.max(0, Number(t.offset ?? 8)), r = Math.max(1, Number(t.distance ?? 120)), i = t.shrink !== !1, a = t.shadow !== !1, o = t.activeClass || "kt-stuck";
 	e.classList.add("kt-sticky-header"), i && e.classList.add("kt-sh-shrink"), a && e.classList.add("kt-sh-shadow");
 	let s = ((e) => {
@@ -13697,7 +13707,7 @@ var Eo = {
 			s.removeEventListener("scroll", f), window.removeEventListener("resize", f), e.classList.remove("kt-sticky-header", "kt-sh-shrink", "kt-sh-shadow", o), e.style.removeProperty("--kt-header-progress");
 		}
 	};
-} }, Oo = {
+} }, Ao = {
 	create(e, t = {}) {
 		let n = t.height || "100vh", r = t.top || `calc((100svh - ${n}) / 2)`, i = t.smooth === !0 ? .12 : typeof t.smooth == "number" ? G(t.smooth, .02, 1) : 0;
 		if (!e.parentNode) return null;
@@ -13749,22 +13759,22 @@ var Eo = {
 			}
 		};
 	}
-}, ko = (e, t = 0) => Number.isFinite(Number(e)) ? Number(e) : t, Ao = (e) => `${ko(e)}px`;
-function jo(e = {}) {
+}, jo = (e, t = 0) => Number.isFinite(Number(e)) ? Number(e) : t, Mo = (e) => `${jo(e)}px`;
+function No(e = {}) {
 	if (!e || typeof e != "object") throw TypeError("Kineto.states state values must be objects.");
 	let t = {};
-	e.opacity != null && (t.opacity = String(Math.max(0, Math.min(1, ko(e.opacity, 1)))));
+	e.opacity != null && (t.opacity = String(Math.max(0, Math.min(1, jo(e.opacity, 1)))));
 	let n = [];
-	e.x != null && n.push(`translateX(${Ao(e.x)})`), e.y != null && n.push(`translateY(${Ao(e.y)})`), e.scale != null && n.push(`scale(${ko(e.scale, 1)})`), e.rotate != null && n.push(`rotate(${ko(e.rotate)}deg)`), e.skewX != null && n.push(`skewX(${ko(e.skewX)}deg)`), e.skewY != null && n.push(`skewY(${ko(e.skewY)}deg)`), e.transform != null && n.push(String(e.transform)), n.length && (t.transform = n.join(" "));
+	e.x != null && n.push(`translateX(${Mo(e.x)})`), e.y != null && n.push(`translateY(${Mo(e.y)})`), e.scale != null && n.push(`scale(${jo(e.scale, 1)})`), e.rotate != null && n.push(`rotate(${jo(e.rotate)}deg)`), e.skewX != null && n.push(`skewX(${jo(e.skewX)}deg)`), e.skewY != null && n.push(`skewY(${jo(e.skewY)}deg)`), e.transform != null && n.push(String(e.transform)), n.length && (t.transform = n.join(" "));
 	let r = [];
-	return e.blur != null && r.push(`blur(${Ao(e.blur)})`), e.brightness != null && r.push(`brightness(${ko(e.brightness, 1)})`), e.filter != null && r.push(String(e.filter)), r.length && (t.filter = r.join(" ")), t;
+	return e.blur != null && r.push(`blur(${Mo(e.blur)})`), e.brightness != null && r.push(`brightness(${jo(e.brightness, 1)})`), e.filter != null && r.push(String(e.filter)), r.length && (t.filter = r.join(" ")), t;
 }
-function Mo(e) {
+function Po(e) {
 	return K(e).filter((e) => e?.nodeType === 1);
 }
-function No(e, t) {
+function Fo(e, t) {
 	if (!t) return [];
-	if (typeof t != "string") return Mo(t);
+	if (typeof t != "string") return Po(t);
 	let n = [];
 	return e.forEach((e) => {
 		try {
@@ -13772,26 +13782,26 @@ function No(e, t) {
 		} catch {}
 	}), [...new Set(n)];
 }
-function Po(e, t) {
+function Io(e, t) {
 	let n = {
 		...t,
 		...e
 	};
 	return {
-		duration: Math.max(0, ko(n.duration, 300)),
-		delay: Math.max(0, ko(n.delay, 0)),
-		stagger: Math.max(0, ko(n.stagger, 0)),
+		duration: Math.max(0, jo(n.duration, 300)),
+		delay: Math.max(0, jo(n.delay, 0)),
+		stagger: Math.max(0, jo(n.stagger, 0)),
 		ease: L(n.ease || "ease"),
 		initial: n.initial,
 		beforeChildren: n.beforeChildren === !0,
 		afterChildren: n.afterChildren === !0,
-		delayChildren: Math.max(0, ko(n.delayChildren, 0)),
+		delayChildren: Math.max(0, jo(n.delayChildren, 0)),
 		reducedMotion: n.reducedMotion
 	};
 }
-function Fo(e = {}, t = {}, n = null) {
+function Lo(e = {}, t = {}, n = null) {
 	if (!e || typeof e != "object" || Array.isArray(e)) throw TypeError("Kineto.states() expects a named state object.");
-	let r = new Map(Object.entries(e).map(([e, t]) => [e, jo(t)]));
+	let r = new Map(Object.entries(e).map(([e, t]) => [e, No(t)]));
 	if (!r.size) throw TypeError("Kineto.states() needs at least one named state.");
 	let i = /* @__PURE__ */ new Map(), a = /* @__PURE__ */ new Map(), o = /* @__PURE__ */ new Set(), s = null, c = !1, l = (e) => {
 		i.has(e) || i.set(e, e.getAttribute("style"));
@@ -13848,7 +13858,7 @@ function Fo(e = {}, t = {}, n = null) {
 		if (c) return Promise.resolve({ status: "cancelled" });
 		let l = r.get(i);
 		if (!l) return Promise.reject(/* @__PURE__ */ RangeError(`Unknown Kineto state: ${i}`));
-		let d = Mo(e), f = No(d, a.children), h = Po(a, t), g = h.beforeChildren ? [...f, ...d] : [...d, ...f], _ = [...new Set(g)], v = h.initial, y = v && v !== !1 ? r.get(v) : null;
+		let d = Po(e), f = Fo(d, a.children), h = Io(a, t), g = h.beforeChildren ? [...f, ...d] : [...d, ...f], _ = [...new Set(g)], v = h.initial, y = v && v !== !1 ? r.get(v) : null;
 		if (y && _.forEach((e) => u(e, y)), !_.length) return Promise.resolve({ status: "finished" });
 		let b = {
 			entries: [],
@@ -13904,7 +13914,7 @@ function Fo(e = {}, t = {}, n = null) {
 }
 //#endregion
 //#region src/index.js
-var Io = {
+var Ro = {
 	parallax: vt,
 	mouseParallax: yt,
 	reveal: jt,
@@ -13945,23 +13955,23 @@ var Io = {
 	accordion: Ya,
 	hold: Xa,
 	megaMenu: $a,
-	toast: ao,
-	bottomSheet: oo,
-	tabs: so,
-	radial: lo,
-	coverReveal: yo,
-	gesture: bo,
-	drag: xo,
-	tooltip: So,
-	switch: Co,
-	flip: wo,
-	scrollShadows: Eo,
-	stickyHeader: Do,
-	horizontalScroll: Oo
+	toast: so,
+	bottomSheet: co,
+	tabs: lo,
+	radial: fo,
+	coverReveal: xo,
+	gesture: So,
+	drag: Co,
+	tooltip: wo,
+	switch: To,
+	flip: Eo,
+	scrollShadows: Oo,
+	stickyHeader: ko,
+	horizontalScroll: Ao
 };
-Object.entries(Io).forEach(([e, t]) => Q.register(e, t));
-var $ = (e) => (t, n) => Q[e](t, n), Lo = $("parallax"), Ro = $("mouseParallax"), zo = $("reveal"), Bo = $("counter"), Vo = $("dateTime"), Ho = $("lazy"), Uo = $("stylize"), Wo = $("textSplit"), Go = $("blurText"), Ko = $("typewriter"), qo = $("textReveal"), Jo = $("textTransition"), Yo = $("magnetic"), Xo = $("marquee"), Zo = $("overflowText"), Qo = $("loader"), $o = $("loadingIndicator"), es = $("tilt"), ts = $("cursor"), ns = $("textFill"), rs = $("stickyStack"), is = $("scrollVelocity"), as = $("progress"), os = $("slider"), ss = $("ambientMedia"), cs = $("pageReveal"), ls = $("glitch"), us = $("cardGlow"), ds = $("lightbox"), fs = $("pageTransition"), ps = $("vibrate"), ms = $("ripple"), hs = $("cssScroll"), gs = $("scrollSequence"), _s = $("brushReveal"), vs = $("fullpage"), ys = $("confetti"), bs = $("accordion"), xs = $("hold"), Ss = $("megaMenu"), Cs = $("toast"), ws = $("bottomSheet"), Ts = $("tabs"), Es = $("radial"), Ds = $("coverReveal"), Os = $("gesture"), ks = $("drag"), As = $("tooltip"), js = $("switch"), Ms = $("flip"), Ns = $("scrollShadows"), Ps = $("stickyHeader"), Fs = $("horizontalScroll");
-Q.listTerminalFramePresets = ri, Q.states = (e, t = {}) => Fo(e, t, Q);
-var Is = (e, t = {}) => Fo(e, t, Q), Ls = Q;
+Object.entries(Ro).forEach(([e, t]) => Q.register(e, t));
+var $ = (e) => (t, n) => Q[e](t, n), zo = $("parallax"), Bo = $("mouseParallax"), Vo = $("reveal"), Ho = $("counter"), Uo = $("dateTime"), Wo = $("lazy"), Go = $("stylize"), Ko = $("textSplit"), qo = $("blurText"), Jo = $("typewriter"), Yo = $("textReveal"), Xo = $("textTransition"), Zo = $("magnetic"), Qo = $("marquee"), $o = $("overflowText"), es = $("loader"), ts = $("loadingIndicator"), ns = $("tilt"), rs = $("cursor"), is = $("textFill"), as = $("stickyStack"), os = $("scrollVelocity"), ss = $("progress"), cs = $("slider"), ls = $("ambientMedia"), us = $("pageReveal"), ds = $("glitch"), fs = $("cardGlow"), ps = $("lightbox"), ms = $("pageTransition"), hs = $("vibrate"), gs = $("ripple"), _s = $("cssScroll"), vs = $("scrollSequence"), ys = $("brushReveal"), bs = $("fullpage"), xs = $("confetti"), Ss = $("accordion"), Cs = $("hold"), ws = $("megaMenu"), Ts = $("toast"), Es = $("bottomSheet"), Ds = $("tabs"), Os = $("radial"), ks = $("coverReveal"), As = $("gesture"), js = $("drag"), Ms = $("tooltip"), Ns = $("switch"), Ps = $("flip"), Fs = $("scrollShadows"), Is = $("stickyHeader"), Ls = $("horizontalScroll");
+Q.listTerminalFramePresets = ri, Q.states = (e, t = {}) => Lo(e, t, Q);
+var Rs = (e, t = {}) => Lo(e, t, Q), zs = Q;
 //#endregion
-export { bs as accordion, ss as ambientMedia, Go as blurText, ws as bottomSheet, _s as brushReveal, us as cardGlow, ys as confetti, Bo as counter, Ds as coverReveal, hs as cssScroll, ts as cursor, Vo as dateTime, Ls as default, ks as drag, Ms as flip, vs as fullpage, Os as gesture, ls as glitch, xs as hold, Fs as horizontalScroll, Ho as lazy, ds as lightbox, ri as listTerminalFramePresets, Qo as loader, $o as loadingIndicator, Yo as magnetic, Xo as marquee, Ss as megaMenu, Io as modules, Ro as mouseParallax, Zo as overflowText, cs as pageReveal, fs as pageTransition, Lo as parallax, as as progress, Es as radial, zo as reveal, ms as ripple, gs as scrollSequence, Ns as scrollShadows, is as scrollVelocity, os as slider, Is as states, Ps as stickyHeader, rs as stickyStack, Uo as stylize, js as switch, Ts as tabs, ns as textFill, qo as textReveal, Wo as textSplit, Jo as textTransition, es as tilt, Cs as toast, As as tooltip, Ko as typewriter, ps as vibrate };
+export { Ss as accordion, ls as ambientMedia, qo as blurText, Es as bottomSheet, ys as brushReveal, fs as cardGlow, xs as confetti, Ho as counter, ks as coverReveal, _s as cssScroll, rs as cursor, Uo as dateTime, zs as default, js as drag, Ps as flip, bs as fullpage, As as gesture, ds as glitch, Cs as hold, Ls as horizontalScroll, Wo as lazy, ps as lightbox, ri as listTerminalFramePresets, es as loader, ts as loadingIndicator, Zo as magnetic, Qo as marquee, ws as megaMenu, Ro as modules, Bo as mouseParallax, $o as overflowText, us as pageReveal, ms as pageTransition, zo as parallax, ss as progress, Os as radial, Vo as reveal, gs as ripple, vs as scrollSequence, Fs as scrollShadows, os as scrollVelocity, cs as slider, Rs as states, Is as stickyHeader, as as stickyStack, Go as stylize, Ns as switch, Ds as tabs, is as textFill, Yo as textReveal, Ko as textSplit, Xo as textTransition, ns as tilt, Ts as toast, Ms as tooltip, Jo as typewriter, hs as vibrate };
