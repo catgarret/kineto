@@ -5,6 +5,7 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Preserve image Stylize delay, reveal and hold time across pause/hidden tabs; suspend RAF/timers, defer static resize and paused replay, and guard callback re-entry. Core now keeps explicit instance/global pause separate from visibility suspension, including public API teardown.
 - Honor Stylize video reveal triggers, queued manual replay, delay and hold duration. Suspend video-effect RAF work during module/media pause or hidden tabs, preserve active reveal time, and prevent callback teardown from completing or rescheduling a destroyed effect; keep existing defaults and Lazy aliases.
 - Teach the integration map the new textures. The `media-texture` intent gains four recipes — the `noise` dither for photographs, the `cluster` print screen, a 45° newspaper halftone and an open-ring editorial screen — plus a note on picking `ditherType` by subject rather than taste, and the keywords an agent actually types (newsprint, risograph, screen angle, 신문, 인쇄물). Without this an agent asked for a print-looking photo had no way to know `cluster` or `halftoneAngle` existed, and would have reached for a smaller cell size instead.
 - Keep Stylize's persistent texture static under reduced motion by disabling added motion/pointer effects; make image/video teardown idempotent and stop image-controller scheduling when a rendering/progress callback destroys it, with browser regressions.
@@ -34,6 +35,7 @@
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 이미지 Stylize의 지연·재생·완료 대기 시간을 일시정지와 숨김 탭에서 보존하고 RAF·타이머를 중단합니다. 정지 이미지 크기 변경·중단 중 재재생을 재개까지 보류하고 콜백 재진입을 보호합니다. Core는 명시적 인스턴스/전체 일시정지를 탭 숨김과 구분하며, 종료한 공개 API의 재실행도 차단합니다.
 - Stylize 영상 리빌의 실행 조건, 로드 전 수동 재생 요청, 지연·완료 대기 시간을 반영했습니다. 모듈·영상 일시정지와 숨김 탭에서 RAF를 중단하고 진행 시간을 보존하며, 콜백에서 종료한 효과의 완료·재예약을 차단했습니다. 기존 기본값과 Lazy 별칭은 유지합니다.
 - 연동 지도에 새 질감을 가르쳤습니다. `media-texture` 의도에 레시피 4개(사진용 `noise` 디더, `cluster` 인쇄 스크린, 45도 신문 망점, 속이 빈 링 스크린)와 "취향이 아니라 대상에 따라 `ditherType`을 고르라"는 지침, 그리고 에이전트가 실제로 입력하는 키워드(newsprint·risograph·screen angle·신문·인쇄물)를 추가했습니다. 이게 없으면 "인쇄물처럼 보이는 사진" 요청을 받은 에이전트가 `cluster`나 `halftoneAngle`의 존재를 알 길이 없어 셀 크기만 줄이게 됩니다.
 - 모션 축소 환경에서 Stylize의 질감은 유지하고 추가 모션·포인터 반응은 비활성화했습니다. 이미지·영상의 중복 종료를 막고 렌더링·진행 콜백에서 종료한 이미지 컨트롤러가 작업을 재예약하지 않도록 브라우저 회귀 검사를 추가했습니다.

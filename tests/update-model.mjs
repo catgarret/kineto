@@ -49,5 +49,28 @@ const radialFinite = Kineto.getInstance(radial, 'slider');
 assert.equal(radialFinite.index, 4, 'radial recreate must retain its active index when infinite mode is disabled');
 assert.equal(radial.querySelector('.kt-active')?.textContent, 'E', 'the retained radial item must remain visually active');
 
-console.log('update-model OK — update()-capable modules live-update in place; others fall back to recreate via updateModule().');
+Kineto.destroy();
+let hidden = false, pauses = 0, resumes = 0;
+Object.defineProperty(w.document, 'hidden', { configurable: true, get: () => hidden });
+Kineto.register('visibilityProbe', { create: () => ({
+  pause() { pauses++; return 'paused'; }, resume() { resumes++; return 'resumed'; }, destroy() {}
+}) });
+const probe = Kineto.create('visibilityProbe', btn);
+const visibility = value => { hidden = value; w.document.dispatchEvent(new w.Event('visibilitychange')); };
+assert.equal(probe.pause(), 'paused'); visibility(true); visibility(false);
+assert.equal(resumes, 0, 'page visibility must preserve explicit instance pause');
+assert.equal(probe.resume(), 'resumed'); assert.equal(resumes, 1, 'explicit resume releases the pause');
+visibility(true); probe.resume();
+assert.equal(resumes, 1, 'resume in a hidden tab waits for visibility');
+visibility(false); assert.equal(resumes, 2, 'visibility resumes a released pause');
+Kineto.pause(); visibility(true); visibility(false);
+assert.equal(resumes, 2, 'global pause survives page visibility');
+Kineto.resume(); assert.equal(resumes, 3, 'global resume releases explicit pause');
+probe.destroy(); const counts = [pauses, resumes];
+probe.pause(); probe.resume(); visibility(true); visibility(false);
+assert.deepEqual([pauses, resumes], counts, 'destroyed normalized instances remain terminal');
+assert.equal(Kineto.instanceCount, 0);
+Kineto.unregister('visibilityProbe');
+
+console.log('update-model OK — in-place update/recreate and explicit pause versus page visibility verified.');
 process.exit(0);

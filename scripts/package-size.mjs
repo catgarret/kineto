@@ -137,7 +137,9 @@ const BUDGET = {
   // 560.2 KB packed / 1843.1 KB unpacked / 79 files on this runtime.
   // 2026-09-19 (quality pass): the Stylize living look measures 567.2 KB packed
   // / 1860.8 KB unpacked across the same 79 files.
-  packedKb: 572,
+  // 2026-09-20 image timers + explicit Core pause: 572.9 / 1874.9 KiB,
+  // same 79 files. Absorb only the measured lifecycle correction.
+  packedKb: 573,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -149,7 +151,7 @@ const BUDGET = {
   // 2026-09-20: video trigger/active-clock guards measure 1872.1 KB unpacked
   // after sharing media styles and stop-event wiring (initially 1872.7 KB).
   // Round only this measured correctness cost; packed/files budgets stay fixed.
-  unpackedKb: 1873,
+  unpackedKb: 1875,
   files: 79
 };
 

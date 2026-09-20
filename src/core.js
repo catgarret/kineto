@@ -167,7 +167,24 @@ function getElementMap(el, create = false) {
 function addRecord(sourceEl, name, instance, options) {
   const normalized = normalizeInstance(instance, sourceEl, name, options);
   const destroyImplementation = normalized.destroy;
-  const record = { sourceEl, name, instance: normalized, options, destroyImplementation, destroying: false };
+  const pauseImplementation = normalized.pause;
+  const resumeImplementation = normalized.resume;
+  const record = { sourceEl, name, instance: normalized, options, destroyImplementation, destroying: false,
+    visibility: false, paused: false };
+
+  // User pause is independent of the temporary page-visibility suspension.
+  normalized.pause = () => {
+    if (!records.has(record)) return;
+    if (!record.visibility) record.paused = true;
+    record.visibility = false;
+    return pauseImplementation();
+  };
+  normalized.resume = () => {
+    if (!records.has(record)) return;
+    if (!record.visibility) record.paused = false;
+    record.visibility = false;
+    if (!document.hidden) return resumeImplementation();
+  };
 
   // Calling instance.destroy() must also remove the core registry record.
   // Otherwise a later create() returns a stale, already-destroyed instance.
@@ -274,11 +291,15 @@ function ensureCoreServices() {
 
   visibilityHandler = () => {
     const method = document.hidden ? 'pause' : 'resume';
-    records.forEach(({ instance, name }) => {
+    records.forEach((record) => {
+      if (!document.hidden && record.paused) return;
       try {
-        instance[method]();
+        record.visibility = true;
+        record.instance[method]();
       } catch (error) {
-        console.error(`[Kineto/${name}] ${method}() failed:`, error);
+        console.error(`[Kineto/${record.name}] ${method}() failed:`, error);
+      } finally {
+        record.visibility = false;
       }
     });
   };

@@ -159,7 +159,9 @@ const BUDGETS = {
   // 2026-09-20: reviewed video trigger/timing/suspension fixes measure raw
   // ESM 558.8, min ESM 438.3, UMD 436.4 KiB. Round only raw ceilings;
   // gzip, runner variance, dependency boundary and consumer budgets stay fixed.
-  'kineto.js': { raw: 559, gz: 150, variance: 2 },
+  // Image pausable timers and explicit Core pause ownership: ESM 559.7 KiB,
+  // UMD 437.2 KiB raw; retain compressed/variance/consumer limits.
+  'kineto.js': { raw: 560, gz: 150, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
   // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/
@@ -167,8 +169,8 @@ const BUDGETS = {
   // the minified ESM while gzip stays inside the existing variance.
   // See the 2026-09-19 observe() note above for the 425.7 / 423.9 KB raw values.
   'kineto.min.js': { raw: 439, gz: 134, variance: 2 },
-  'kineto.umd.js': { raw: 437, gz: 133, variance: 1 },
-  'kineto.umd.min.js': { raw: 437, gz: 133, variance: 1 },
+  'kineto.umd.js': { raw: 438, gz: 133, variance: 1 },
+  'kineto.umd.min.js': { raw: 438, gz: 133, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

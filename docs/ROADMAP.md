@@ -467,7 +467,7 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 - 구현 완료(Unreleased): 공개 variant 비교 시트와 잔여 전용 카드 7개가 추가되었습니다(`dc022d4`·`686e41c`). 현재 전용 markup은 deprecated alias를 제외한 81/81입니다. 카드 수와 실제 시각·실기기 검증 완료는 구분합니다.
 - 구현 완료(Unreleased): Stylize가 별도 모듈로 분리되고 Lazy의 세 스타일화 이름은 deprecated alias로 유지됩니다(`123cc55`). 다른 모듈로의 추가 재사용은 여전히 §3 증거 게이트를 따릅니다.
 - 구현 완료(Unreleased, 2026-09-20): Stylize 영상 `trigger:view/manual`·로드 전 replay·`delay`·`holdDuration`을 연결하고 모듈/영상 pause·숨김 탭에서 RAF와 리빌 시간을 정지합니다. 실제 디코딩 영상과 제어된 프레임 시계로 실행 조건·시간 보존·콜백 종료를 검사합니다. 실기기 검증은 별도입니다.
-- 후속: 이미지 Stylize의 pause/숨김 탭 RAF 예약 중단과 지연·hold 시간 보존. 영상 컨트롤러 수정만으로 이미지 경로까지 완료로 집계하지 않습니다.
+- 구현 완료(Unreleased, 2026-09-20): 이미지 Stylize의 pause/숨김 탭 RAF·타이머 중단과 지연·hold 시간 보존, 정지 이미지 resize 보류, 콜백 재진입 보호. Core의 명시적 pause를 탭 자동 정지와 분리해 공개 API에서도 보존합니다. 영상/이미지 각각의 회귀 검사로 구분합니다.
 - 외부 증거 필요: 실제 iOS Safari·Android Chrome·스크린리더 검사, 운영 앱의 장기 성능 측정, 공개 동의를 받은 외부 사용 사례 3개.
 - 증거 확보 후 결정: FLIP shared layout과 States·Presence 추가 확장. 현재 자동 검사나 데모를 외부 사용 증거로 집계하지 않습니다.
 
@@ -651,6 +651,8 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 164. 완료(Unreleased, 2026-09-20): Stylize의 모션 축소 환경에서 추가 motion·pointer를 끄고 질감은 유지. 이미지·영상 직접 API의 중복 destroy와 이미지 렌더/진행 콜백 내부 destroy 이후 작업 재예약을 차단. Chromium·Firefox·WebKit 회귀 통과. 세 엔진의 오프스크린 GIF 프레임 검사는 환경 감지로 제외했으며 실기기·공개 배포 검증과 구분. §10의 완료된 비교 시트·전용 카드·모듈 분리를 잔여 목록에서 정리하고 영상 옵션·pause 정책을 후속으로 명시
 
 165. 완료(Unreleased, 2026-09-20): Stylize 영상 실행 조건·로드 전 수동 replay·delay/hold 연결. 모듈/영상 pause·숨김 탭의 RAF 취소와 활성 시간 보존, 콜백 종료 가드를 추가하고 실제 영상 픽셀을 사용하는 직접 소스/공개 번들 회귀 검사로 검증. 데모 도움말 7개 언어 교정. 중복 코드를 줄인 후 측정된 해제 비용 1872.1KiB에 맞춰 상한만 1873KiB로 반영하며 압축·소비자 예산과 79개 파일은 유지. 이미지 타이밍·실기기·공개 배포 검증은 별도
+
+166. 완료(Unreleased, 2026-09-20): 이미지 Stylize의 지연·리빌·hold 중 pause/숨김 탭 시간 보존과 RAF·타이머 해제, 정지 resize 보류·중단 중 replay·콜백 재진입 보호. Core의 명시적 인스턴스/전역 pause와 자동 탭 정지를 분리해 공개 API에서도 유지. 소스/공개 번들 브라우저 probe와 Core 회귀, 도움말 7개 언어 및 측정 비용을 QA 보고서에 기록. 실기기 검증·npm 출시는 별도
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

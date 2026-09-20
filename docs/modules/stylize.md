@@ -144,6 +144,12 @@ Kineto는 영상 자체의 재생을 강제하지 않습니다. `<video>`의 재
 RAF를 취소하고 남은 시간을 보존합니다. 재개해도 완료 지점으로 건너뛰지 않으며,
 종료 콜백은 한 번만 호출됩니다. 완료 후에는 `replay()`로 다시 시작할 수 있습니다.
 
+이미지도 `pause()`·숨김 탭에서 RAF와 지연/완료 대기 타이머를 취소하고 남은
+시간을 보존합니다. 정지 이미지의 크기가 중단 중 바뀌면 재개 시 한 번 다시
+그리며, 계속 도는 RAF는 만들지 않습니다. 숨김 탭에서 처음 생성한 효과와
+일시정지 중 요청한 `replay()`도 실행 가능한 시점까지 기다립니다.
+명시적으로 `pause()`한 인스턴스는 탭이 다시 보여도 `resume()` 전까지 멈춥니다.
+
 ```html
 <video data-kt-stylize="halftone" data-kt-mode="reveal" data-kt-trigger="view"
        data-kt-delay="0.3" data-kt-duration="1.6" data-kt-hold-duration="0.4"

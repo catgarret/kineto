@@ -375,6 +375,12 @@ try {
 
   const lifecyclePage = await browser.newPage();
   await lifecyclePage.goto(`${origin}${FIXTURE_PATH}`);
+  const imageLifecycle = await lifecyclePage.evaluate(async (base) => {
+    const { probeImageLifecycle } = await import(`${base}/tests/browser/stylize-image-probe.js`);
+    return { source: await probeImageLifecycle(base), bundle: await probeImageLifecycle(base, true) };
+  }, origin);
+  assert.deepEqual(imageLifecycle, { source: [], bundle: [] }, 'Stylize image active timing and pending work must survive suspension');
+  console.log(`stylize image lifecycle OK (${browserName}) — delay/reveal/hold suspension, hidden initialization, static resize, callback replay and teardown.`);
   const lifecycle = await lifecyclePage.evaluate(async (base) => {
     const [{ default: stylize }, { createImageStylizer, resolveStylizedSettings }] = await Promise.all([
       import(`${base}/src/modules/stylize.js`), import(`${base}/src/modules/media/stylizer.js`)

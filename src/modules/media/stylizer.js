@@ -173,27 +173,51 @@ export function createImageStylizer({
   const { layer, canvas } = createStylizedCanvasLayer(wrapper, effect, prefix);
   const renderer = createStylizedRenderer(canvas, styleConfig, { maxDpr });
   const interval = 1000 / fps;
-  const timers = new Set();
   // Only attach pointer listeners when a pointer behaviour was asked for.
   const pointer = styleConfig.pointer === 'none' ? null : trackPointer(wrapper);
   let rafId = null;
   let resizeObserver = null;
   let destroyed = false;
   let paused = false;
+  let started = false;
+  let startPending = true;
+  let generation = 0;
+  let frameTask = null;
+  let waiting = null;
+  let resizePending = false;
   let startTime = null;
-  let pausedAt = null;
   let lastDraw = -Infinity;
   // Wall clock the living look runs on. It stops while paused so a resumed
   // effect continues from where it was rather than jumping ahead.
   let clock = 0;
   let clockAt = null;
 
+  const active = () => started && !destroyed && !paused && !document.hidden;
+  const requestFrame = () => {
+    if (!active() || !frameTask || rafId != null) return;
+    rafId = requestAnimationFrame(time => {
+      rafId = null;
+      if (active()) frameTask?.(time);
+    });
+  };
+  const armTimer = () => {
+    if (!active() || !waiting || waiting.id != null) return;
+    const task = waiting;
+    task.at = performance.now();
+    task.id = setTimeout(() => {
+      task.id = null;
+      task.remaining = 0;
+      if (!active() || waiting !== task) return;
+      waiting = null;
+      task.callback();
+    }, task.remaining);
+  };
   const later = (callback, delay) => {
-    const timer = setTimeout(() => { timers.delete(timer); if (!destroyed) callback(); }, Math.max(0, Number(delay) || 0));
-    timers.add(timer);
+    waiting = { callback, remaining: Math.max(0, Number(delay) || 0), id: null, at: 0 };
+    armTimer();
   };
   const advance = (time) => {
-    if (clockAt != null && !paused) clock += time - clockAt;
+    if (clockAt != null) clock += time - clockAt;
     clockAt = time;
     return clock;
   };
@@ -202,48 +226,57 @@ export function createImageStylizer({
     renderer.sync(box.width, box.height);
     return renderer.render(drawable(), cell, { time, pointer: pointer?.state });
   };
-  const stopFrames = () => {
+  const suspend = () => {
     if (rafId != null) cancelAnimationFrame(rafId);
     rafId = null;
+    clockAt = null;
+    if (waiting?.id != null) {
+      clearTimeout(waiting.id);
+      waiting.remaining = Math.max(0, waiting.remaining - (performance.now() - waiting.at));
+      waiting.id = null;
+    }
+  };
+  const stopFrames = () => {
+    suspend();
+    waiting = null;
+    frameTask = null;
     resizeObserver?.disconnect();
     resizeObserver = null;
+    resizePending = false;
   };
 
   const runPersist = () => {
+    const run = generation;
     const rendered = paint(startCell);
     onRendered?.(rendered);
-    if (destroyed) return;
+    if (destroyed || run !== generation) return;
     onProgress?.(1, el);
-    if (destroyed) return;
+    if (destroyed || run !== generation) return;
     // A living look (motion / pointer) animates a still image too, so it needs
     // the same continuous loop an animated source gets.
     if (rendered && (animatedSource || live)) {
-      const frame = (time) => {
+      frameTask = (time) => {
         const now = advance(time);
-        if (destroyed) return;
-        if (!paused && time - lastDraw >= interval) { paint(startCell, now); lastDraw = time; }
-        rafId = requestAnimationFrame(frame);
+        if (time - lastDraw >= interval) { paint(startCell, now); lastDraw = time; }
+        requestFrame();
       };
-      rafId = requestAnimationFrame(frame);
+      requestFrame();
     } else if (rendered && typeof ResizeObserver !== 'undefined') {
-      resizeObserver = new ResizeObserver(() => { if (!destroyed) paint(startCell); });
+      resizeObserver = new ResizeObserver(() => {
+        if (destroyed) return;
+        if (active()) paint(startCell);
+        else resizePending = true;
+      });
       resizeObserver.observe(wrapper);
     }
   };
 
   const runReveal = () => {
     const frame = (time) => {
-      if (destroyed) return;
-      if (paused) {
-        if (pausedAt == null) pausedAt = time;
-        clockAt = time;
-        rafId = requestAnimationFrame(frame);
-        return;
-      }
-      if (pausedAt != null && startTime != null) { startTime += time - pausedAt; pausedAt = null; }
-      if (startTime == null) startTime = time;
+      const run = generation;
       const now = advance(time);
-      const raw = clamp((time - startTime) / duration, 0, 1);
+      if (startTime == null) startTime = now;
+      const raw = clamp((now - startTime) / duration, 0, 1);
       if (time - lastDraw >= interval || raw >= 1) {
         const eased = clamp(ease(raw), 0, 1);
         let rendered;
@@ -259,20 +292,33 @@ export function createImageStylizer({
         }
         if (!rendered && lastDraw === -Infinity) {
           // Unreadable source: skip the effect rather than hide the picture.
-          rafId = null;
+          frameTask = null;
           onFinish?.();
           return;
         }
         onProgress?.(raw, el);
-        if (destroyed) return;
+        if (destroyed || run !== generation) return;
         lastDraw = time;
       }
-      if (raw < 1) rafId = requestAnimationFrame(frame);
-      else { rafId = null; later(() => onFinish?.(), holdMs); }
+      if (raw < 1) requestFrame();
+      else { frameTask = null; later(() => onFinish?.(), holdMs); }
     };
     paint(startCell);
-    later(() => { rafId = requestAnimationFrame(frame); }, delayMs);
+    later(() => { frameTask = frame; requestFrame(); }, delayMs);
   };
+  const wake = () => {
+    if (!active()) return;
+    if (startPending) {
+      startPending = false;
+      if (persist) runPersist();
+      else runReveal();
+    }
+    if (resizePending) { resizePending = false; paint(startCell); }
+    armTimer();
+    requestFrame();
+  };
+  const visibility = () => { if (document.hidden) suspend(); else wake(); };
+  document.addEventListener('visibilitychange', visibility);
 
   return {
     layer,
@@ -280,30 +326,30 @@ export function createImageStylizer({
     renderer,
     get persist() { return persist; },
     start() {
-      if (destroyed) return;
-      if (persist) runPersist();
-      else runReveal();
+      if (destroyed || started) return;
+      started = true;
+      wake();
     },
-    pause() { paused = true; },
-    resume() { paused = false; },
+    pause() { paused = true; suspend(); },
+    resume() { paused = false; wake(); },
     /** Reset the reveal timeline and run again (persist re-paints). */
     replay() {
       if (destroyed) return;
       stopFrames();
-      timers.forEach(clearTimeout);
-      timers.clear();
+      generation++;
+      started = false;
+      startPending = true;
       startTime = null;
-      pausedAt = null;
       lastDraw = -Infinity;
       layer.style.opacity = '1';
       if (!layer.isConnected) wrapper.appendChild(layer);
       this.start();
     },
     destroy() {
+      if (destroyed) return;
       destroyed = true;
       stopFrames();
-      timers.forEach(clearTimeout);
-      timers.clear();
+      document.removeEventListener('visibilitychange', visibility);
       pointer?.destroy();
       renderer.destroy();
       layer.remove();

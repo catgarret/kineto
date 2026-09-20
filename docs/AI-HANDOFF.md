@@ -216,8 +216,12 @@ comparison/Stylize work from open video trigger/timing and pause-scheduling gaps
 The follow-up completes video reveal trigger/timing and active-time suspension:
 manual/view gating, queued pre-load replay, delay/hold, module/media pause and
 hidden-tab RAF cancellation. Source and public-bundle browser regressions share
-a decoded-video probe. Image pause/timer scheduling remains open; see QA_REPORT
-for the measured raw/package cost, unchanged gzip limits and environment gaps.
+a decoded-video probe. See QA_REPORT for the measured raw/package cost,
+unchanged gzip limits and environment gaps.
+The image batch also preserves delay/hold timers and reveal progress across
+pause/visibility, defers static resize and paused replay, and guards callback
+re-entry. Core tracks explicit pause separately from visibility suspension so
+the same behavior holds through the public API, not only direct module calls.
 
 ## Required end-of-task record
 
