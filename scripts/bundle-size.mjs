@@ -163,7 +163,13 @@ const BUDGETS = {
   // UMD 437.2 KiB raw; retain compressed/variance/consumer limits.
   // Native Reveal boundaries/reverse: 561.2 / 440.2 / 438.3 KiB raw;
   // compressed ceilings, runner variance and consumer budgets stay unchanged.
-  'kineto.js': { raw: 562, gz: 150, variance: 2 },
+  // 2026-09-20 (control labels): default label maps in slider, lightbox,
+  // fullpage and toast plus the shared `labeller` helper measure 562.3 KiB raw
+  // ESM and 439.1 KiB raw UMD. The strings themselves already shipped as inline
+  // literals; the added bytes are what makes them replaceable by the page.
+  // Round only the raw ceilings; gzip, runner variance, dependency boundary and
+  // consumer budgets stay fixed.
+  'kineto.js': { raw: 563, gz: 150, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
   // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/
@@ -173,8 +179,8 @@ const BUDGETS = {
   // 2026-09-20: the page-transition guard that ignores a hash-only history
   // move measures 439.1 KB raw minified; gzip is unchanged at 133.8 KB.
   'kineto.min.js': { raw: 441, gz: 134, variance: 2 },
-  'kineto.umd.js': { raw: 439, gz: 133, variance: 1 },
-  'kineto.umd.min.js': { raw: 439, gz: 133, variance: 1 },
+  'kineto.umd.js': { raw: 440, gz: 133, variance: 1 },
+  'kineto.umd.min.js': { raw: 440, gz: 133, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

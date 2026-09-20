@@ -1,3 +1,5 @@
+import { labeller } from '../utils.js';
+
 const entries = new Set();
 let manager = null;
 
@@ -14,14 +16,31 @@ function createButton(className, label, text) {
   return button;
 }
 
-function createManager() {
+// 뷰어는 페이지에 하나만 만들어 공유하므로, **처음 여는 lightbox 의 문구**가 이름이 됩니다.
+// 기본값은 영어이고 `labels` 로 덮어씁니다(utils.labeller).
+const DEFAULT_LABELS = {
+  viewer: 'Media viewer',
+  backdrop: 'Close viewer',
+  close: 'Close viewer',
+  previous: 'Previous item',
+  next: 'Next item',
+  zoomIn: 'Zoom in',
+  zoomOut: 'Zoom out',
+  zoomReset: 'Reset zoom',
+  zoomHint: 'Click to type an exact zoom %',
+  zoomInput: 'Zoom percent',
+  share: 'Share',
+  download: 'Download'
+};
+
+function createManager(label) {
   const root = document.createElement('div');
   root.id = 'kt-lightbox';
   root.className = 'kt-lightbox';
   root.hidden = true;
   root.setAttribute('role', 'dialog');
   root.setAttribute('aria-modal', 'true');
-  root.setAttribute('aria-label', 'Media viewer');
+  root.setAttribute('aria-label', label('viewer'));
   // Stay below Kineto cursors (default z 2147483000) so the custom pointer
   // remains visible above the dimmed backdrop.
   root.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;margin:0;padding:0;z-index:2147482000;display:none;overflow:hidden;';
@@ -54,7 +73,7 @@ function createManager() {
   const backdrop = document.createElement('button');
   backdrop.type = 'button';
   backdrop.className = 'kt-lightbox-backdrop';
-  backdrop.setAttribute('aria-label', 'Close viewer');
+  backdrop.setAttribute('aria-label', label('backdrop'));
   // Visual styling reads CSS custom properties first so designers can retheme
   // the viewer from a stylesheet (.kt-lightbox{--kt-lightbox-*:...}) without
   // touching JS. Options still win when passed explicitly.
@@ -74,12 +93,12 @@ function createManager() {
   actions.className = 'kt-lightbox-actions';
   // A single translucent cluster (segmented control) instead of scattered buttons.
   actions.style.cssText = 'display:flex;align-items:center;gap:2px;padding:4px;background:rgba(20,20,26,.5);border:1px solid rgba(255,255,255,.12);border-radius:13px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);';
-  const zoomOut = createButton('kt-lightbox-zoom-out', 'Zoom out', '−');
-  const zoomReset = createButton('kt-lightbox-zoom-reset', 'Reset zoom', '100%');
-  const zoomIn = createButton('kt-lightbox-zoom-in', 'Zoom in', '+');
-  const shareButton = createButton('kt-lightbox-share', 'Share', '↗');
-  const downloadButton = createButton('kt-lightbox-download', 'Download', '');
-  const closeButton = createButton('kt-lightbox-close', 'Close viewer', '×');
+  const zoomOut = createButton('kt-lightbox-zoom-out', label('zoomOut'), '−');
+  const zoomReset = createButton('kt-lightbox-zoom-reset', label('zoomReset'), '100%');
+  const zoomIn = createButton('kt-lightbox-zoom-in', label('zoomIn'), '+');
+  const shareButton = createButton('kt-lightbox-share', label('share'), '↗');
+  const downloadButton = createButton('kt-lightbox-download', label('download'), '');
+  const closeButton = createButton('kt-lightbox-close', label('close'), '×');
   [zoomOut, zoomReset, zoomIn, shareButton, downloadButton, closeButton].forEach((button) => {
     button.style.cssText = 'min-width:34px;height:34px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:9px;background:var(--kt-lightbox-button-bg,transparent);color:var(--kt-lightbox-button-color,white);font:600 15px/1 sans-serif;cursor:pointer;transition:background-color .15s var(--kt-ease-ui, ease);';
   });
@@ -87,12 +106,12 @@ function createManager() {
   const divider = document.createElement('span');
   divider.style.cssText = 'width:1px;height:18px;margin:0 8px;background:rgba(255,255,255,.16);flex:0 0 auto;';
   zoomReset.style.minWidth = '54px';
-  zoomReset.title = 'Click to type an exact zoom %';
+  zoomReset.title = label('zoomHint');
   shareButton.hidden = true;
-  shareButton.title = 'Share';
+  shareButton.title = label('share');
   shareButton.innerHTML = "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx='18' cy='5' r='3'/><circle cx='6' cy='12' r='3'/><circle cx='18' cy='19' r='3'/><path d='M8.6 13.5l6.8 4M15.4 6.5l-6.8 4'/></svg>";
   downloadButton.hidden = true;
-  downloadButton.title = 'Download';
+  downloadButton.title = label('download');
   downloadButton.innerHTML = "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M12 3v12'/><path d='M7 11l5 5 5-5'/><path d='M5 21h14'/></svg>";
   closeButton.style.fontSize = '22px';
   actions.append(zoomOut, zoomReset, zoomIn, divider, shareButton, downloadButton, closeButton);
@@ -118,8 +137,8 @@ function createManager() {
   stageContent.appendChild(mediaHost);
   stage.appendChild(stageContent);
 
-  const previous = createButton('kt-lightbox-prev', 'Previous item', '‹');
-  const next = createButton('kt-lightbox-next', 'Next item', '›');
+  const previous = createButton('kt-lightbox-prev', label('previous'), '‹');
+  const next = createButton('kt-lightbox-next', label('next'), '›');
   [previous, next].forEach((button) => {
     button.style.cssText = 'position:absolute;top:50%;z-index:4;width:48px;height:48px;border:1px solid var(--kt-lightbox-button-border,rgba(255,255,255,.14));border-radius:999px;background:var(--kt-lightbox-button-bg,rgba(255,255,255,.08));backdrop-filter:blur(10px);color:var(--kt-lightbox-button-color,white);font:300 30px/1 sans-serif;transform:translateY(-50%);cursor:pointer;pointer-events:auto;display:grid;place-items:center;padding-bottom:4px;';
     stage.appendChild(button);
@@ -544,7 +563,7 @@ function createManager() {
     if (activeEntry?.zoom === false || zoomReset.querySelector('input')) return;
     const input = document.createElement('input');
     input.type = 'text'; input.inputMode = 'numeric'; input.value = String(Math.round(scale * 100));
-    input.setAttribute('aria-label', 'Zoom percent');
+    input.setAttribute('aria-label', label('zoomInput'));
     input.style.cssText = 'width:46px;background:transparent;border:0;color:inherit;font:inherit;text-align:center;outline:none;';
     zoomReset.textContent = ''; zoomReset.appendChild(input); input.focus(); input.select();
     const done = (apply) => { if (apply) { const v = parseFloat(input.value); if (!isNaN(v) && v > 0) setScale(v / 100); } if (input.isConnected) input.remove(); applyTransform(); };
@@ -686,7 +705,7 @@ export default {
   create(el, opts = {}, Kineto) {
     const src = sourceOf(el, opts);
     if (!src) return null;
-    if (!manager) manager = createManager();
+    if (!manager) manager = createManager(labeller(DEFAULT_LABELS, opts.labels));
     const originalCursor = el.style.cursor;
     const imageEl = el.tagName === 'IMG' ? el : el.querySelector?.('img');
     const entry = {

@@ -31,7 +31,10 @@ export const consumerFixtures = [
   // See the 2026-09-19 note above: React measures 147.1 / 147.3 KB.
   // 2026-09-20: image timer/Core pause guards measure 153.1 KiB in Vite
   // React. Absorb this measured boundary; keep bundler variance unchanged.
-  { name: 'react-adapter', entry: 'react', budget: 153, variance: { vite: 1, rolldown: 1 } },
+  // 2026-09-20 (control labels): letting the page name the controls the library
+  // creates measures 154.0 KiB gzip in the Rolldown React entry. Round this
+  // measured accessibility cost only; bundler variance stays unchanged.
+  { name: 'react-adapter', entry: 'react', budget: 154, variance: { vite: 1, rolldown: 1 } },
   // 2026-09-18: the Presence status subscription that keeps both adapters in
   // sync with a propagating parent measures 144.1 KB in the Vite Vue entry
   // (React 143.x stays inside its ceiling). Round the Vue product ceiling by

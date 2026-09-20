@@ -108,6 +108,8 @@ native 경로에서도 API·키보드·휠·touch·마우스 드래그가 같은
 지원 범위와 브라우저 검증 기준은 [`docs/slider-physics-rfc.md`](../slider-physics-rfc.md)를
 참조하세요.
 
+점·일시정지 버튼의 접근성 이름은 `labels` 지도로 바꿉니다 — [공통 옵션](../common-options.md#컨트롤-이름--labels).
+
 ## API와 이벤트
 
 ```js

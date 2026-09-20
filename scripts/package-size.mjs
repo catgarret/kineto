@@ -143,7 +143,12 @@ const BUDGET = {
   // hundred bytes of guard and measures 573.1 KB packed on the same 79 files.
   // A Back press destroying the page is a correctness bug, not a feature.
   // Native Reveal boundary/reverse lifecycle: 574.5 / 1879.6 KiB, still 79 files.
-  packedKb: 575,
+  // 2026-09-20 (control labels): one `labels` map per module plus the shared
+  // `labeller` helper measures 575.7 KB packed on the same 79 files. The
+  // library was announcing invented English (and one Korean) string to every
+  // consumer's readers; letting the page name its own controls is an
+  // accessibility correction, not a new surface.
+  packedKb: 576,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -156,7 +161,10 @@ const BUDGET = {
   // after sharing media styles and stop-event wiring (initially 1872.7 KB).
   // Round only this measured correctness cost; packed/files budgets stay fixed.
   // 2026-09-20 (page-transition): the same guard measures 1875.4 KB unpacked.
-  unpackedKb: 1880,
+  // 2026-09-20 (control labels): the same change measures 1883.1 KB unpacked —
+  // default label maps in four modules and the shared helper. Round only this
+  // measured accessibility cost; packed/files budgets follow their own notes.
+  unpackedKb: 1884,
   files: 79
 };
 

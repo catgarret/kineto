@@ -8,8 +8,12 @@
 // - mode:'snap' opts into native CSS scroll-snap instead of transforms
 //   (progressive enhancement); reduced motion falls back to it automatically.
 
+import { labeller } from '../utils.js';
+
 export default {
   create(el, opts) {
+    // 모듈이 만드는 점 버튼의 이름. 기본값은 영어이고 `labels` 로 덮어씁니다(utils.labeller).
+    const label = labeller({ dot: 'Go to section {n}' }, opts.labels);
     const originalHTML = el.innerHTML;
     const originalStyle = el.getAttribute('style');
     const sections = opts.sectionSelector
@@ -163,7 +167,7 @@ export default {
         const dot = document.createElement('button');
         dot.type = 'button';
         dot.className = 'kt-fullpage-dot';
-        dot.setAttribute('aria-label', `Go to section ${dotIndex + 1}`);
+        dot.setAttribute('aria-label', label('dot', { n: dotIndex + 1 }));
         dot.style.cssText = 'width:8px;height:8px;border-radius:50%;border:0;padding:0;cursor:pointer;background:var(--kt-fullpage-dot,currentColor);opacity:.45;transition:transform .25s var(--kt-ease-ui, ease),opacity .25s var(--kt-ease-ui, ease);';
         dot.addEventListener('click', () => go(dotIndex));
         dotsWrap.appendChild(dot);

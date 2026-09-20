@@ -1,4 +1,4 @@
-import { clamp, env } from '../utils.js';
+import { clamp, env, labeller } from '../utils.js';
 
 // Toast — transient status messages in a shared live region (role="status", or
 // "alert" for warning/error) so screen readers announce them. Auto-dismisses
@@ -18,12 +18,15 @@ const TYPE_ICON = {
   error: svg('<path d="M7.5 7.5l9 9"/><path d="M16.5 7.5l-9 9"/>')
 };
 
-const regionFor = (position) => {
+// 모듈이 만드는 컨트롤의 이름. 기본값은 영어이고 `labels` 로 덮어씁니다(utils.labeller).
+const DEFAULT_LABELS = { region: 'Notifications', dismiss: 'Dismiss' };
+
+const regionFor = (position, label) => {
   if (REGIONS[position]) return REGIONS[position];
   const region = document.createElement('div');
   region.className = `kt-toast-region kt-toast-region--${position}`;
   region.setAttribute('role', 'region');
-  region.setAttribute('aria-label', 'Notifications');
+  region.setAttribute('aria-label', label('region'));
   document.body.appendChild(region);
   REGIONS[position] = region;
   return region;
@@ -42,10 +45,12 @@ export default {
       : (opts.progressBar === true || opts.progressBar === 'bar') ? 'bar' : 'none';
     const maxVisible = Math.max(1, Number(opts.max ?? 5));
     const iconOpt = opts.icon; // undefined → default glyph; false → none; string → custom
+    const label = labeller(DEFAULT_LABELS, opts.labels);
 
     const show = (message, overrides = {}) => {
       const kind = overrides.type || type;
-      const region = regionFor(overrides.position || position);
+      // 자리마다 region 은 하나뿐이라 그 자리에 처음 뜬 토스트의 문구가 이름이 됩니다.
+      const region = regionFor(overrides.position || position, label);
       while (region.children.length >= maxVisible) region.firstElementChild?.remove();
 
       const toast = document.createElement('div');
@@ -89,7 +94,7 @@ export default {
         const close = document.createElement('button');
         close.type = 'button';
         close.className = 'kt-toast__close';
-        close.setAttribute('aria-label', 'Dismiss');
+        close.setAttribute('aria-label', label('dismiss'));
         close.innerHTML = '&times;';
         close.addEventListener('click', dismiss);
         toast.appendChild(close);

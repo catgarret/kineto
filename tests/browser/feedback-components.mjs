@@ -3,16 +3,21 @@ import { chromium } from 'playwright';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { labeller } from '../../src/utils.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const chromePath = process.env.KT_CHROME || undefined;
 const css = await readFile(path.join(root, 'src', 'kineto.css'), 'utf8');
-const stub = "const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));const env=()=>({reducedMotion:false});";
-const bottomSource = (await readFile(path.join(root, 'src', 'modules', 'bottomSheet.js'), 'utf8'))
-  .replace("import { clamp, env } from '../utils.js';", '')
+// 모듈 소스를 그대로 페이지에 넣고 돌립니다. import 줄은 정확한 문자열이 아니라 패턴으로
+// 지우세요 — 예전에는 한 줄을 글자 그대로 지우고 있어서, 모듈이 헬퍼를 하나 더 가져오는
+// 순간 지우지 못한 `import` 가 남아 페이지가 통째로 죽었습니다(원인이 안 보이는 타임아웃).
+const withoutImports = (source) => source.replace(/^import[^;]*from '[^']*';\s*$/gm, '');
+// labeller 는 흉내 내지 않고 **진짜 구현**을 넣습니다. 검사 대상이 이 동작이기 때문입니다.
+const stub = "const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));const env=()=>({reducedMotion:false});"
+  + `const labeller = ${labeller.toString()};`;
+const bottomSource = withoutImports(await readFile(path.join(root, 'src', 'modules', 'bottomSheet.js'), 'utf8'))
   .replace('export default {', 'window.__bottomSheetModule = {');
-const toastSource = (await readFile(path.join(root, 'src', 'modules', 'toast.js'), 'utf8'))
-  .replace("import { clamp, env } from '../utils.js';", '')
+const toastSource = withoutImports(await readFile(path.join(root, 'src', 'modules', 'toast.js'), 'utf8'))
   .replace('export default {', 'window.__toastModule = {');
 
 const browser = await chromium.launch({ headless:true, ...(chromePath ? { executablePath:chromePath } : {}), args:['--no-sandbox','--disable-setuid-sandbox','--disable-gpu'] });

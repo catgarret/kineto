@@ -34,6 +34,8 @@ Kineto.lightbox('.gallery-item', {
 
 Lightbox 내부 이미지도 Lazy 효과를 사용할 수 있으며 GIF·APNG·animated WebP는 live `<img>`로 재생을 유지합니다.
 
+도구 모음 버튼의 접근성 이름은 `labels` 지도로 바꿉니다 — [공통 옵션](../common-options.md#컨트롤-이름--labels).
+
 ## UI 커스텀
 
 ```js

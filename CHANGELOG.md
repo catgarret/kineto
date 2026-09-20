@@ -2,34 +2,11 @@
 
 ## [Unreleased]
 
-### Fixed
-
-- **Bottom Sheet no longer ships a Korean tooltip to every page.** The resize
-  grip hard-coded a Korean `title`, so any site using `resizable` showed Korean
-  to all of its readers. The text is now the public `resizeLabel` option with an
-  English default (`''` turns the tooltip off), matching how `label` already
-  works. The demo supplies the Korean copy itself.
-- **Demo tooltips follow the language switch.** The demo had translation paths
-  for text and accessible names but none for `title`, so three replay tooltips
-  and the sheet grip stayed Korean in the other six languages — a mouse user and
-  a screen-reader user were given different names for the same button. Tooltips
-  now use the same declarative path, and the demo QA guards `title` the way it
-  already guarded `aria-label`.
-
-- **Bottom Sheet가 모든 페이지에 한국어 툴팁을 보내던 문제를 고쳤습니다.** 높이 조절
-  그립의 `title`이 한국어로 하드코딩되어 있어, `resizable`을 쓰는 모든 사이트가 방문자
-  언어와 무관하게 한국어를 보여 주었습니다. 이제 공개 옵션 `resizeLabel`로 문구를 정하고
-  기본값은 영어입니다(`''`이면 툴팁을 달지 않습니다). 기존 `label` 옵션과 같은 규칙이며,
-  한국어 문구는 데모가 직접 지정합니다.
-- **데모 툴팁이 언어 전환을 따라갑니다.** 데모에는 본문과 접근성 이름을 번역하는 경로는
-  있었지만 `title` 경로가 없어, 재생 버튼 3개와 시트 그립의 툴팁이 나머지 6개 언어에서
-  한국어로 남았습니다. 같은 버튼인데 마우스 사용자와 스크린 리더 사용자가 서로 다른 이름을
-  받던 셈입니다. 이제 툴팁도 같은 선언형 경로를 쓰고, 데모 QA가 `aria-label`과 같은
-  방식으로 `title`을 검사합니다.
-
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Stop inventing user-visible words the page cannot change. Bottom Sheet's resize grip hard-coded a Korean `title`, so every site using `resizable` showed Korean to all of its readers regardless of language; it was the last user-facing Korean string in `src/`. Slider dots ("Go to slide 3"), the autoplay pause button, Fullpage dots, Toast's region and dismiss button and the Lightbox's twelve control names were hard-coded English, which a screen reader then read out in the middle of a Korean or Japanese page. Each module now publishes one `labels` map (`utils.labeller`) whose defaults are the documented English, so nothing changes unless a page asks; `{n}`/`{total}` placeholders follow the existing `{value}` convention and a JSON attribute works from markup: `data-kt-labels='{"dot":"Go to slide {n}"}'`. Bottom Sheet's tooltip is the separate `resizeLabel` option (`''` turns it off) because it has no other controls. `tests/control-labels.mjs` gates both halves: a source scan that fails the build the moment a module invents a word, and mounted checks that the defaults ship and a supplied map wins.
+- Translate the demo's tooltips. The demo could translate body text and accessible names but had no path for `title`, so three replay tooltips and the sheet grip stayed Korean in the other six languages — the same button gave a screen reader one name and a mouse user another. Tooltips now travel the declarative `data-demo-i18n-title` path beside the accessible-name one, module option strings are declared with `data-demo-i18n-option`, and the hand-written per-module special case that kept the back-to-top ring localized is gone. Demo QA checks `title` the way it already checked `aria-label`, naming the offending element when it fails.
 - Honor native Reveal repetition and all four viewport boundary callbacks, keep reverse playback and observation through replay/pause, and prevent self-triggering at transformed edges. Share the existing clipped-boundary observer and retain authored DOM and animation cleanup.
 - Keep comparison-region accessible names synchronized with language changes by referencing their live module heading and translated toggle label.
 - Fix Page Transition destroying the page on Back. A history entry that differs only by its hash is a move inside the document the browser has already made, but the module refetched the URL anyway and swapped the container — so everything the page built after load was gone. On the demo that was two clicks away: open a module from the sidebar, press Back, and 53 module blocks, 227 settings panels and 34 compare sheets all became zero. Clicks already refused a hash-only URL; history moves now follow the same rule, and a real path change still transitions both ways. `tests/browser/page-transition-hash.mjs` holds both halves.
@@ -64,6 +41,8 @@
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- 라이브러리가 페이지가 바꿀 수 없는 문구를 지어내지 않게 했습니다. Bottom Sheet의 높이 조절 그립이 한국어 `title`을 하드코딩하고 있어서, `resizable`을 켠 모든 사이트가 방문자 언어와 무관하게 한국어를 보여 주었습니다 — `src/`에 남아 있던 마지막 사용자 대면 한국어 문자열이었습니다. 슬라이더 점("Go to slide 3")·자동재생 일시정지 버튼·Fullpage 점·Toast의 region과 닫기 버튼·Lightbox의 컨트롤 이름 12개는 영어로 박혀 있어, 한국어나 일본어 페이지 한가운데에서 스크린 리더가 영어를 읽었습니다. 이제 모듈마다 `labels` 지도 하나를 공개하고(`utils.labeller`) 기본값은 문서에 적힌 영어 그대로라 페이지가 요구하지 않으면 아무것도 달라지지 않습니다. `{n}`·`{total}` 자리표시자는 기존 `{value}` 규칙을 따르고, 마크업에서는 JSON 속성으로 바로 됩니다: `data-kt-labels='{"dot":"슬라이드 {n}으로 이동"}'`. Bottom Sheet는 다른 컨트롤이 없어 툴팁만 있는 `resizeLabel` 옵션으로 두었습니다(`''`이면 툴팁 없음). `tests/control-labels.mjs`가 양쪽을 지킵니다 — 모듈이 말을 지어내는 순간 빌드를 떨어뜨리는 소스 검사와, 기본값이 실제로 나가고 넘긴 지도가 이기는지 보는 실제 마운트 검사입니다.
+- 데모의 툴팁을 번역합니다. 데모에는 본문과 접근성 이름을 번역하는 경로는 있었지만 `title` 경로가 없어서, 재생 버튼 3개와 시트 그립의 툴팁이 나머지 6개 언어에서 한국어로 남았습니다 — 같은 버튼인데 스크린 리더와 마우스 사용자가 서로 다른 이름을 받았습니다. 이제 툴팁도 접근성 이름 바로 옆의 선언형 경로 `data-demo-i18n-title`을 쓰고, 모듈 옵션으로 들어가는 문구는 `data-demo-i18n-option`으로 선언하며, back-to-top 링만을 위해 손으로 적어 두었던 모듈별 특수 처리는 사라졌습니다. 데모 QA는 `aria-label`과 똑같이 `title`을 검사하고, 실패하면 어느 요소인지 함께 알려 줍니다.
 - Native Reveal의 반복과 네 방향 viewport 경계 콜백을 연결하고 Replay·일시정지 후에도 역재생과 감지를 유지합니다. 자체 transform으로 경계에서 재진입이 반복되지 않도록 하고, 기존 잘림 영역 감지기를 공유하며 작성자 DOM과 애니메이션 정리를 보존합니다.
 - 비교 영역의 접근성 이름이 모듈 제목과 번역된 버튼 문구를 참조하도록 하여 언어 변경 후에도 처음 언어로 남지 않게 수정했습니다.
 - 뒤로가기가 페이지를 파괴하던 Page Transition 버그를 고쳤습니다. 해시만 다른 history 항목은 브라우저가 이미 끝낸 같은 문서 안의 이동인데, 모듈이 그때도 URL을 다시 가져와 컨테이너를 갈아 끼웠습니다. 그래서 로드 이후에 페이지가 만든 것이 전부 사라졌습니다. 데모에서는 두 번의 클릭이면 재현됐습니다 — 사이드바에서 모듈을 열고 뒤로가기를 누르면 모듈 블록 53개·설정 패널 227개·비교 시트 34개가 전부 0이 됐습니다. 클릭 경로에는 원래부터 해시 전용 URL을 거르는 규칙이 있었고, 이제 history 이동도 같은 규칙을 따릅니다. 경로가 실제로 바뀌면 여전히 전환합니다. `tests/browser/page-transition-hash.mjs`가 양쪽을 함께 지킵니다.

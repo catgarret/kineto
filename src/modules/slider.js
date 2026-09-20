@@ -1,4 +1,4 @@
-import { clamp, env, lerp, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
+import { clamp, env, labeller, lerp, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
 
 // Do not rewind presentation owned by a composing module or application.
 const snapshotPresentation = (el, properties, classes = [], attributes = []) => {
@@ -48,6 +48,17 @@ const preventImageDrag = (root, items) => {
  */
 export default {
   create(el, opts = {}) {
+    // 슬라이더가 스스로 만드는 컨트롤의 이름(점·재생/일시정지)과 ARIA role 설명.
+    // 라이브러리는 읽는 사람의 언어를 모르므로 기본값만 영어로 두고, 문구는 `labels` 로
+    // 덮어쓸 수 있게 합니다. 캐러셀 자체의 이름은 기존 `label` 옵션이 그대로 맡습니다.
+    const label = labeller({
+      dot: 'Go to slide {n}',
+      slide: '{n} of {total}',
+      pause: 'Pause carousel autoplay',
+      resume: 'Resume carousel autoplay',
+      carouselRole: 'carousel',
+      slideRole: 'slide'
+    }, opts.labels);
     // `radial` is a genuinely different layout — items orbit a hub instead of
     // travelling along a track — so it gets its own engine rather than being
     // bent onto the linear one. The public `radial` module remains as a
@@ -110,7 +121,7 @@ export default {
       el.style.setProperty('--kt-radial-radius', `${radius}px`);
       el.style.touchAction = position === 'bottom' || position === 'top' ? 'pan-y' : 'pan-x';
       el.setAttribute('role', 'group');
-      el.setAttribute('aria-roledescription', 'carousel');
+      el.setAttribute('aria-roledescription', label('carouselRole'));
 
       // Rotation hub: a zero-size point the preset positions at an edge; items
       // orbit around it so only the focal arc shows.
@@ -551,7 +562,7 @@ export default {
     let resetProgressSafe = () => {};
 
     wrap.setAttribute('role', 'region');
-    wrap.setAttribute('aria-roledescription', 'carousel');
+    wrap.setAttribute('aria-roledescription', label('carouselRole'));
     wrap.setAttribute('aria-label', opts.label || 'Carousel');
     if (!wrap.hasAttribute('tabindex')) wrap.tabIndex = 0;
     // `visible` let the shadow through but also stopped clipping the off-screen
@@ -626,8 +637,8 @@ export default {
       slide.style.transition = 'none';
       if (nativeScrollSnap) slide.style.transform = 'none';
       slide.setAttribute('role', 'group');
-      slide.setAttribute('aria-roledescription', 'slide');
-      slide.setAttribute('aria-label', `${slideIndex + 1} of ${slides.length}`);
+      slide.setAttribute('aria-roledescription', label('slideRole'));
+      slide.setAttribute('aria-label', label('slide', { n: slideIndex + 1, total: slides.length }));
     });
 
     const metrics = () => {
@@ -1169,7 +1180,7 @@ export default {
         const dot = document.createElement('button');
         dot.type = 'button';
         dot.className = 'kt-slider-dot';
-        dot.setAttribute('aria-label', `Go to slide ${dotIndex + 1}`);
+        dot.setAttribute('aria-label', label('dot', { n: dotIndex + 1 }));
         dot.addEventListener('pointerdown', (event) => event.stopPropagation());
         dot.addEventListener('click', (event) => {
           event.stopPropagation();
@@ -1218,7 +1229,7 @@ export default {
     const syncPauseButton = () => {
       if (!pauseButton) return;
       pauseButton.dataset.paused = String(paused);
-      pauseButton.setAttribute('aria-label', paused ? 'Resume carousel autoplay' : 'Pause carousel autoplay');
+      pauseButton.setAttribute('aria-label', paused ? label('resume') : label('pause'));
       pauseButton.setAttribute('aria-pressed', String(paused));
       pauseButton.innerHTML = paused ? playIcon : pauseIcon;
     };

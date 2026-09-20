@@ -73,7 +73,7 @@
 - Attribute: `data-kt-fullpage`
 - Default variant: `transform`
 - Variants: `transform`, `snap`
-- Public options: `autoAdvance`, `axis`, `dots`, `drag`, `duration`, `ease`, `height`, `initial`, `keyboard`, `loop`, `mode`, `onChange`, `onLeave`, `sectionSelector`, `threshold`, `touch`, `wheel`
+- Public options: `autoAdvance`, `axis`, `dots`, `drag`, `duration`, `ease`, `height`, `initial`, `keyboard`, `labels`, `loop`, `mode`, `onChange`, `onLeave`, `sectionSelector`, `threshold`, `touch`, `wheel`
 
 ## glitch
 
@@ -101,7 +101,7 @@
 - Attribute: `data-kt-lightbox`
 - Default variant: `viewer`
 - Variants: `viewer`, `grouped`
-- Public options: `alt`, `backdropBlur`, `backdropColor`, `backdropOpacity`, `caption`, `className`, `closeOnBackdrop`, `cursor`, `description`, `doubleClickZoom`, `download`, `duration`, `exif`, `group`, `info`, `lazyEffect`, `lazyOptions`, `lightboxDuration`, `maxZoom`, `metadata`, `minZoom`, `minimap`, `onChange`, `onClose`, `onLoad`, `onOpen`, `radius`, `renderUI`, `share`, `src`, `thumbnails`, `title`, `toolbar`, `transition`, `uiTemplate`, `wheelStep`, `zoom`, `zoomStep`
+- Public options: `alt`, `backdropBlur`, `backdropColor`, `backdropOpacity`, `caption`, `className`, `closeOnBackdrop`, `cursor`, `description`, `doubleClickZoom`, `download`, `duration`, `exif`, `group`, `info`, `labels`, `lazyEffect`, `lazyOptions`, `lightboxDuration`, `maxZoom`, `metadata`, `minZoom`, `minimap`, `onChange`, `onClose`, `onLoad`, `onOpen`, `radius`, `renderUI`, `share`, `src`, `thumbnails`, `title`, `toolbar`, `transition`, `uiTemplate`, `wheelStep`, `zoom`, `zoomStep`
 
 ## loader
 
@@ -213,7 +213,7 @@
 - Attribute: `data-kt-slider`
 - Default variant: `slide`
 - Variants: `slide`, `fade`, `dissolve`, `wipe`, `coverflow`, `flip`, `cube`, `cards`, `creative`, `radial`
-- Public options: `activeAngle`, `activeClass`, `activeShadow`, `activeShadowOpacity`, `align`, `autoHeight`, `autoplay`, `axis`, `bounce`, `breakpoints`, `controls`, `depth`, `dots`, `drag`, `duration`, `effect`, `effectDirection`, `effectIntensity`, `enabled`, `gap`, `grabCursor`, `index`, `initial`, `initialIndex`, `keyboard`, `label`, `loop`, `minOpacity`, `minScale`, `nextSelector`, `onBeforeChange`, `onChange`, `onInit`, `opacityStep`, `pauseButton`, `pauseWhenOffscreen`, `pauseOnHover`, `perGroup`, `perView`, `perspective`, `position`, `preset`, `prevSelector`, `progress`, `progressType`, `radius`, `rotate`, `scaleStep`, `scrollSnap`, `slideToClickedSlide`, `smoothing`, `spacing`, `speed`, `step`, `spring`, `stiffness`, `damping`, `mass`, `momentum`, `sync`, `stickySnap`, `velocityInfluence`, `touch`, `wheel`
+- Public options: `activeAngle`, `activeClass`, `activeShadow`, `activeShadowOpacity`, `align`, `autoHeight`, `autoplay`, `axis`, `bounce`, `breakpoints`, `controls`, `depth`, `dots`, `drag`, `duration`, `effect`, `effectDirection`, `effectIntensity`, `enabled`, `gap`, `grabCursor`, `index`, `initial`, `initialIndex`, `keyboard`, `label`, `labels`, `loop`, `minOpacity`, `minScale`, `nextSelector`, `onBeforeChange`, `onChange`, `onInit`, `opacityStep`, `pauseButton`, `pauseWhenOffscreen`, `pauseOnHover`, `perGroup`, `perView`, `perspective`, `position`, `preset`, `prevSelector`, `progress`, `progressType`, `radius`, `rotate`, `scaleStep`, `scrollSnap`, `slideToClickedSlide`, `smoothing`, `spacing`, `speed`, `step`, `spring`, `stiffness`, `damping`, `mass`, `momentum`, `sync`, `stickySnap`, `velocityInfluence`, `touch`, `wheel`
 
 ## stickyStack
 
@@ -304,7 +304,7 @@
 - Attribute: `data-kt-toast`
 - Default variant: `stack`
 - Variants: `stack`
-- Public options: `barColor`, `dismissible`, `duration`, `icon`, `max`, `message`, `position`, `progressBar`, `type`
+- Public options: `barColor`, `dismissible`, `duration`, `icon`, `labels`, `max`, `message`, `position`, `progressBar`, `type`
 
 ## bottomSheet
 

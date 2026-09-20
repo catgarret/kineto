@@ -103,6 +103,37 @@ export function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+/**
+ * 모듈이 **스스로 만든** 컨트롤의 접근성 이름을 페이지가 정할 수 있게 합니다.
+ *
+ * 라이브러리는 읽는 사람의 언어를 알 수 없습니다. 그런데 슬라이더 점, 토스트 닫기 버튼처럼
+ * 모듈이 직접 만드는 컨트롤에는 이름이 **있어야** 하므로, 기본값은 영어로 두되 문구는
+ * 언제든 페이지가 덮어쓸 수 있어야 합니다. 문자열 하나마다 공개 옵션을 만들면 옵션이
+ * 금방 열 개씩 늘어나므로, 모듈마다 `labels` 지도 하나만 공개합니다.
+ *
+ * 마크업에서도 그대로 됩니다 — `readOpts` 가 JSON 속성 값을 객체로 바꿔 줍니다:
+ *   data-kt-labels='{"dot":"슬라이드 {n}으로 이동"}'
+ *
+ * `{이름}` 자리표시자는 호출할 때 넘긴 값으로 바뀝니다(progress 의 `{value}` 와 같은 규칙).
+ * 값이 없는 자리표시자는 건드리지 않아서, 오타가 조용히 빈칸이 되지 않습니다.
+ *
+ * @param {Record<string,string>} defaults 모듈이 정의한 영어 기본 문구
+ * @param {unknown} provided `opts.labels` (객체가 아니면 무시합니다)
+ * @returns {(key: string, values?: Record<string, unknown>) => string}
+ */
+export function labeller(defaults, provided) {
+  const supplied = provided && typeof provided === 'object' && !Array.isArray(provided) ? provided : {};
+  return (key, values) => {
+    const custom = supplied[key];
+    const template = typeof custom === 'string' && custom !== '' ? custom : defaults[key];
+    if (template == null) return '';
+    if (!values) return String(template);
+    return String(template).replace(/\{(\w+)\}/g, (match, name) => (
+      Object.prototype.hasOwnProperty.call(values, name) ? String(values[name]) : match
+    ));
+  };
+}
+
 export function coerce(value) {
   if (typeof value !== 'string') return value;
   const trimmed = value.trim();
