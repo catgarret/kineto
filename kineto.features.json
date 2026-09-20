@@ -2,7 +2,7 @@
   "$schema": "./kineto.features.schema.json",
   "contractVersion": "1.7.0",
   "libraryVersion": "0.11.0",
-  "moduleCount": 53,
+  "moduleCount": 54,
   "modules": [
     {
       "name": "ambientMedia",
@@ -7135,6 +7135,27 @@
           "transitionMode"
         ]
       }
+    },
+    {
+      "name": "squircle",
+      "attribute": "data-kt-squircle",
+      "defaultVariant": "squircle",
+      "variants": [
+        "squircle",
+        "round",
+        "bevel",
+        "scoop",
+        "notch",
+        "square"
+      ],
+      "publicOptions": [
+        "borderFollow",
+        "cornerRadius",
+        "cornerSamples",
+        "nativeShape",
+        "preset",
+        "superellipse"
+      ]
     },
     {
       "name": "stickyHeader",

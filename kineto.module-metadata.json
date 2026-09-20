@@ -57,7 +57,7 @@
     }
   },
   "libraryVersion": "0.11.0",
-  "moduleCount": 53,
+  "moduleCount": 54,
   "statusLegend": {
     "accessibility": {
       "native": "native semantics/keyboard",
@@ -585,6 +585,16 @@
       "performance": "medium",
       "reducedMotion": "final-state",
       "browserCoverage": "evergreen-scroll"
+    },
+    "squircle": {
+      "category": "effects",
+      "summary": "CSS corner-shape의 모서리 곡선(스퀘어클·베벨·스쿠프 등)을 모든 브라우저에서 같게 그립니다.",
+      "useWhen": "iOS처럼 보여야 하는 카드·버튼 모서리를 브라우저와 무관하게 맞출 때",
+      "avoidWhen": "요소에 box-shadow가 있고 Safari·Firefox에서도 그림자를 유지해야 할 때",
+      "accessibility": "visual-only",
+      "performance": "light",
+      "reducedMotion": "static",
+      "browserCoverage": "evergreen"
     },
     "stickyHeader": {
       "category": "scroll",

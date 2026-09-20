@@ -57,6 +57,7 @@ How to map a Figma node (via the Figma MCP `get_design_context` / `get_metadata`
 | `custom-cursor` | `/cursor/i` |
 | `celebration` | `/success/i`, `/complete/i`, `/reward/i`, `/confetti/i` |
 | `overflow-shadows` | `/list/i`, `/scroll area/i`, `/table/i`, `/chips/i` |
+| `corner-shape` | `/card/i`, `/button/i`, `/app icon/i`, `/avatar/i`, `/tile/i`, `/sheet/i` |
 | `confirm-hold` | `/confirm/i`, `/delete/i`, `/hold/i` |
 | `disclosure` | `/accordion/i`, `/faq/i`, `/tabs/i`, `/segmented/i`, `/switch/i`, `/toggle/i`, `/menu/i` |
 | `layout-change` | `/list/i`, `/grid/i`, `/kanban/i`, `/board/i` |

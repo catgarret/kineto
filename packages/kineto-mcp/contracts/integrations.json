@@ -1750,6 +1750,54 @@
       }
     },
     {
+      "id": "corner-shape",
+      "title": "iOS-style corner shape (squircle)",
+      "ko": "iOS 스타일 모서리(스퀘어클)",
+      "keywords": [
+        "squircle",
+        "superellipse",
+        "corner shape",
+        "corner smoothing",
+        "rounded corners",
+        "ios corner",
+        "continuous corner",
+        "스퀘어클",
+        "모서리",
+        "초타원"
+      ],
+      "figma": [
+        "card",
+        "button",
+        "app icon",
+        "avatar",
+        "tile",
+        "sheet"
+      ],
+      "recipes": [
+        {
+          "module": "squircle",
+          "variant": "squircle",
+          "why": "Figma's corner smoothing and iOS icons are superellipses, not circles. `border-radius` alone cannot draw one, and CSS `corner-shape` is Chromium-only — this uses it there and draws the same curve everywhere else."
+        },
+        {
+          "module": "squircle",
+          "variant": "bevel",
+          "why": "A straight diagonal cut, for ticket stubs, tags and cut-corner panels."
+        },
+        {
+          "module": "squircle",
+          "variant": "notch",
+          "why": "A square bite out of each corner, for coupon and stamp shapes."
+        }
+      ],
+      "provideWhenLibraryHas": "enhance",
+      "libraryEquivalents": {
+        "tailwind": "rounded-* (circular corners only)",
+        "shadcn": "--radius (circular corners only)",
+        "mui": "shape.borderRadius (circular corners only)"
+      }
+    },
+    {
       "id": "confirm-hold",
       "title": "Hold-to-confirm and mash gauges",
       "ko": "길게 눌러 확인",

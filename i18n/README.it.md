@@ -156,6 +156,7 @@ Kineto.disableSmooth();
 | `switch` | `data-kt-switch` | Interruttori di accessibilità utilizzati nei moduli |
 | `flip` | `data-kt-flip` | Ordina/Aggiungi/Elimina conversione FLIP |
 | `scrollShadows` | `data-kt-scroll-shadows` | ombra del bordo di scorrimento |
+| `squircle` | `data-kt-squircle` | angoli superellisse su ogni browser |
 | `stickyHeader` | `data-kt-sticky-header` | Testata fissa pieghevole/con copertura |
 | `horizontalScroll` | `data-kt-horizontal-scroll` | Corretto lo scorrimento orizzontale |
 

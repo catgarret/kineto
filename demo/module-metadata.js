@@ -363,6 +363,12 @@ window.KINETO_MODULE_METADATA = Object.freeze({
     "performance": "medium",
     "reducedMotion": "final-state"
   },
+  "squircle": {
+    "category": "effects",
+    "accessibility": "visual-only",
+    "performance": "light",
+    "reducedMotion": "static"
+  },
   "stickyHeader": {
     "category": "scroll",
     "accessibility": "manual",

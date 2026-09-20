@@ -197,6 +197,7 @@ Kineto.disableSmooth();
 | `switch` | `data-kt-switch` | 폼에서 사용하는 접근성 스위치 |
 | `flip` | `data-kt-flip` | 정렬·추가·삭제 FLIP 전환 |
 | `scrollShadows` | `data-kt-scroll-shadows` | 스크롤 가장자리 그림자 |
+| `squircle` | `data-kt-squircle` | 모든 브라우저에서 같은 초타원 모서리 |
 | `stickyHeader` | `data-kt-sticky-header` | 축소·커버형 고정 헤더 |
 | `horizontalScroll` | `data-kt-horizontal-scroll` | 고정형 가로 스크롤 |
 

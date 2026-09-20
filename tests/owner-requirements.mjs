@@ -14,9 +14,9 @@ const source = Object.fromEntries(await Promise.all([
 ].map(async (name) => [name, await read(`../src/modules/${name}.js`)])));
 
 assert.equal(requirements.libraryVersion, packageJson.version);
-assert.equal(requirements.requirements.length, 50, 'all 50 owner requirements must remain locked');
-assert.equal(new Set(requirements.requirements.map(({ id }) => id)).size, 50, 'requirement IDs must be unique');
-assert.equal(features.moduleCount, 53);
+assert.equal(requirements.requirements.length, 51, 'all 51 owner requirements must remain locked');
+assert.equal(new Set(requirements.requirements.map(({ id }) => id)).size, 51, 'requirement IDs must be unique');
+assert.equal(features.moduleCount, 54);
 assert.ok(
   aiPromptGuide.indexOf('Canonical prompt for AI tools (English)')
     < aiPromptGuide.indexOf('## 한국어 사용 안내'),

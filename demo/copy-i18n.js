@@ -17,9 +17,9 @@ window.KINETO_COPY_I18N = {
       "components": "UI components with keyboard and screen-reader support.<br>Includes accordions, mega menus, tabs, sheets, tooltips, and switches.",
       "buttons-feedback": "Feedback for input and status changes.<br>Includes confetti, hold, toast, and vibration effects.",
       "loading": "Motion applied across the page.<br>Includes loaders, page reveals, and page transitions.",
-      "module-index": "The 53 public modules in the current release.",
+      "module-index": "The 54 public modules in the current release.",
       "_hero": [
-        "Explore 53 motion modules on one page.",
+        "Explore 54 motion modules on one page.",
         "Tune the options, then copy finished HTML, JS, React, or Vue code."
       ],
       "_chips": [
@@ -55,9 +55,9 @@ window.KINETO_COPY_I18N = {
       "components": "キーボードとスクリーンリーダーをサポートするUIです。<br>アコーディオン・メガメニュー・タブ・ボトムシート・ツールチップ・スイッチを提供します。",
       "buttons-feedback": "入力結果と状態を通知するモジュールです。<br>紙吹雪・長押し・トースト・振動効果を提供します。",
       "loading": "ページ全体に適用するモジュールです。<br>ローディング・画面進入・ページ切り替え効果を提供します。",
-      "module-index": "現在配布に含まれている53のパブリックモジュールです。",
+      "module-index": "現在配布に含まれている54のパブリックモジュールです。",
       "_hero": [
-        "53のモーションモジュールを1ページで見てください。",
+        "54のモーションモジュールを1ページで見てください。",
         "オプションを調整し、HTML・JavaScript・React・Vueコードをコピーできます。"
       ],
       "_chips": [
@@ -83,7 +83,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "コア単独動作",
-      "_footerBrand": "HTMLプロパティとJavaScript APIとして使用するWebモーションライブラリ。<br>53個のモジュールで必要な機能のみを選択して使用できます。"
+      "_footerBrand": "HTMLプロパティとJavaScript APIとして使用するWebモーションライブラリ。<br>54個のモジュールで必要な機能のみを選択して使用できます。"
     },
     "zh-CN": {
       "counter": "这是一个移动数字和字母的模块。<br>提供计数器、溢出、分割、打字和故障。",
@@ -93,9 +93,9 @@ window.KINETO_COPY_I18N = {
       "components": "此 UI 支持键盘和屏幕阅读器。<br>它提供了手风琴、大型菜单、选项卡、底部工作表、工具提示和开关。",
       "buttons-feedback": "这是一个报告输入结果和状态的模块。<br>提供五彩纸屑、长按、吐司和振动效果。",
       "loading": "该模块适用于整个页面。<br>提供加载、入屏、页面切换效果。",
-      "module-index": "当前发行版中包含 53 个公共模块。",
+      "module-index": "当前发行版中包含 54 个公共模块。",
       "_hero": [
-        "在一页上探索 53 个运动模块。",
+        "在一页上探索 54 个运动模块。",
         "您可以调整选项并复制完整的 HTML、JavaScript、React 或 Vue 代码。"
       ],
       "_chips": [
@@ -121,7 +121,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "核心独立运营",
-      "_footerBrand": "它是一个用作 HTML 属性和 JavaScript API 的 Web 动作库。<br>您可以从 53 个模块中仅选择和使用您需要的功能。"
+      "_footerBrand": "它是一个用作 HTML 属性和 JavaScript API 的 Web 动作库。<br>您可以从 54 个模块中仅选择和使用您需要的功能。"
     },
     "zh-TW": {
       "counter": "這是一個移動數字和字母的模組。<br>提供計數器、溢出、分割、打字和故障。",
@@ -131,9 +131,9 @@ window.KINETO_COPY_I18N = {
       "components": "此 UI 支援鍵盤和螢幕閱讀器。<br>它提供了手風琴、大型菜單、選項卡、底部工作表、工具提示和開關。",
       "buttons-feedback": "這是一個報告輸入結果和狀態的模組。<br>提供五彩紙屑、長按、吐司和振動效果。",
       "loading": "此模組適用於整個頁面。<br>提供載入、入屏、頁面切換效果。",
-      "module-index": "目前發行版中包含 53 個公共模組。",
+      "module-index": "目前發行版中包含 54 個公共模組。",
       "_hero": [
-        "在一頁上探索 53 個運動模組。",
+        "在一頁上探索 54 個運動模組。",
         "您可以調整選項並複製完整的 HTML、JavaScript、React 或 Vue 程式碼。"
       ],
       "_chips": [
@@ -159,7 +159,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "核心獨立營運",
-      "_footerBrand": "它是一個用作 HTML 屬性和 JavaScript API 的 Web 動作庫。<br>您可以從 53 個模組中僅選擇和使用您需要的功能。"
+      "_footerBrand": "它是一個用作 HTML 屬性和 JavaScript API 的 Web 動作庫。<br>您可以從 54 個模組中僅選擇和使用您需要的功能。"
     },
     "ru": {
       "counter": "Это модуль, который перемещает цифры и буквы.<br>Обеспечивает счетчик, переполнение, разделение, ввод текста и сбои.",
@@ -169,9 +169,9 @@ window.KINETO_COPY_I18N = {
       "components": "Этот пользовательский интерфейс поддерживает программы чтения с клавиатуры и экрана.<br>Он предоставляет аккордеон, мегаменю, вкладку, нижний лист, всплывающую подсказку и переключатель.",
       "buttons-feedback": "Это модуль, который сообщает о результатах ввода и состоянии.<br>Обеспечивает эффекты конфетти, длительного нажатия, тоста и вибрации.",
       "loading": "Этот модуль применяется ко всей странице.<br>Обеспечивает эффекты загрузки, входа на экран и перехода между страницами.",
-      "module-index": "В текущий дистрибутив включено 53 общедоступных модуля.",
+      "module-index": "В текущий дистрибутив включено 54 общедоступных модуля.",
       "_hero": [
-        "Изучите 53 модуля движения на одной странице.",
+        "Изучите 54 модуля движения на одной странице.",
         "Настройте параметры и скопируйте готовый код HTML, JavaScript, React или Vue."
       ],
       "_chips": [
@@ -197,7 +197,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "Независимая работа ядра",
-      "_footerBrand": "Это библиотека веб-анимации для HTML-атрибутов и JavaScript API.<br>Из 53 модулей можно выбрать только нужные функции."
+      "_footerBrand": "Это библиотека веб-анимации для HTML-атрибутов и JavaScript API.<br>Из 54 модулей можно выбрать только нужные функции."
     },
     "it": {
       "counter": "Questo è un modulo che muove numeri e lettere.<br>Fornisce contatore, overflow, suddivisione, digitazione e problemi tecnici.",
@@ -207,9 +207,9 @@ window.KINETO_COPY_I18N = {
       "components": "Questa interfaccia utente supporta tastiera e lettori di schermo.<br>Fornisce fisarmonica, mega menu, scheda, foglio inferiore, descrizione comando e interruttore.",
       "buttons-feedback": "Questo è un modulo che riporta i risultati e lo stato degli input.<br>Fornisce effetti di coriandoli, pressione prolungata, toast e vibrazione.",
       "loading": "Questo modulo si applica all'intera pagina.<br>Fornisce effetti di caricamento, immissione sullo schermo e transizione della pagina.",
-      "module-index": "La versione attuale include 53 moduli pubblici.",
+      "module-index": "La versione attuale include 54 moduli pubblici.",
       "_hero": [
-        "Esplora 53 moduli di movimento in una pagina.",
+        "Esplora 54 moduli di movimento in una pagina.",
         "Modifica le opzioni e copia il codice HTML, JavaScript, React o Vue pronto."
       ],
       "_chips": [
@@ -235,10 +235,26 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "Funzionamento indipendente dal nucleo",
-      "_footerBrand": "Una libreria di motion per attributi HTML e API JavaScript.<br>Scegli solo le funzioni necessarie tra 53 moduli."
+      "_footerBrand": "Una libreria di motion per attributi HTML e API JavaScript.<br>Scegli solo le funzioni necessarie tra 54 moduli."
     }
   },
   "cards": {
+    "애플의 모서리는 원이 아니라 초타원입니다. 같은 반지름인데 곡선이 다릅니다.": [
+      "Apple's corners are superellipses, not circles. Same radius, different curve.",
+      "アップルの角は円ではなく超楕円です。同じ半径でも曲線が違います。",
+      "苹果的圆角是超椭圆而非圆形。半径相同，曲线不同。",
+      "蘋果的圓角是超橢圓而非圓形。半徑相同，曲線不同。",
+      "Углы Apple — суперэллипс, а не круг. Тот же радиус, другая кривая.",
+      "Gli angoli Apple sono superellissi, non cerchi. Stesso raggio, curva diversa."
+    ],
+    "corner-shape의 나머지 모서리들. 지원 안 되는 브라우저에서도 같게 그립니다.": [
+      "The rest of corner-shape, drawn the same way where the browser has no support.",
+      "corner-shape の残りの角。未対応のブラウザでも同じに描きます。",
+      "corner-shape 的其余角形。在不支持的浏览器中也画得一样。",
+      "corner-shape 的其餘角形。在不支援的瀏覽器中也畫得一樣。",
+      "Остальные значения corner-shape — так же там, где поддержки нет.",
+      "Le altre forme di corner-shape, identiche anche dove manca il supporto."
+    ],
     "2색 디더가 그대로 유지되고 격자가 미세하게 일렁입니다.": [
       "A two-tone dither stays on the photo while the grid crawls underneath it.",
       "2色のディザが残り続け、格子がゆっくりと這うように揺れます。",
@@ -1648,6 +1664,14 @@ window.KINETO_COPY_I18N = {
     ]
   },
   "titles": {
+    "Squircle — iOS 모서리": [
+      "Squircle — the iOS corner",
+      "Squircle — iOS の角",
+      "Squircle — iOS 圆角",
+      "Squircle — iOS 圓角",
+      "Squircle — угол как в iOS",
+      "Squircle — l'angolo iOS"
+    ],
     "지연 로딩 + 디더 리빌": [
       "Lazy load + dither reveal",
       "遅延読み込み + ディザリビール",

@@ -303,6 +303,12 @@
       "module": "core",
       "title": "Optional Lenis smooth scrolling",
       "acceptance": "Smooth scrolling is disabled or enabled explicitly and exposes runtime enable, disable, toggle and scrollTo APIs."
+    },
+    {
+      "id": "MK-SQUIRCLE-001",
+      "module": "squircle",
+      "title": "One corner shape on every browser",
+      "acceptance": "Squircle draws CSS corner-shape's curve — squircle, round, bevel, scoop, notch, square and any superellipse(K) between them — using the native property where the browser has it and the identical outline everywhere else, redrawing on resize and restoring the element on destroy."
     }
   ]
 }

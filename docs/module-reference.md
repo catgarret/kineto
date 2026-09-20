@@ -5,7 +5,7 @@
 - Library: 0.11.0
 - Feature contract: 1.7.0
 - Behavior contract: 1.2.0
-- Public modules: 53
+- Public modules: 54
 - Root properties: `version`, `easings`, `prefersReducedMotion`, `env`, `performance`, `registry`, `instanceCount`, `smoothEnabled`, `lenis`, `core`, `diagnostics`, `diagnosticCodes`
 - Core methods: `autoInit()`, `config()`, `create()`, `destroy()`, `destroyModule()`, `disableSmooth()`, `easing()`, `easingFn()`, `enableSmooth()`, `getEngineSource()`, `getInstance()`, `init()`, `initModules()`, `listTerminalFramePresets()`, `observe()`, `pause()`, `refresh()`, `register()`, `replay()`, `resume()`, `scan()`, `scrollTo()`, `setAnimationEngine()`, `setEngineSource()`, `setReducedMotion()`, `states()`, `toggleSmooth()`, `unregister()`, `updateModule()`
 - Additional named exports: `modules`, `listTerminalFramePresets`, `states`
@@ -368,6 +368,13 @@
 - Default variant: `vertical`
 - Variants: `vertical`, `horizontal`, `mask`
 - Public options: `axis`, `color`, `ease`, `mode`, `onChange`, `opacity`, `shadow`, `shape`, `size`, `transition`, `transitionDuration`, `transitionMode`
+
+## squircle
+
+- Attribute: `data-kt-squircle`
+- Default variant: `squircle`
+- Variants: `squircle`, `round`, `bevel`, `scoop`, `notch`, `square`
+- Public options: `borderFollow`, `cornerRadius`, `cornerSamples`, `nativeShape`, `preset`, `superellipse`
 
 ## stickyHeader
 

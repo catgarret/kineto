@@ -6,7 +6,7 @@
 
 | 상태 | 현재 수 | 의미 |
 |---|---:|---|
-| `stable` | 53 | 공개 feature contract와 semver 변경 정책의 적용을 받는 모듈 |
+| `stable` | 54 | 공개 feature contract와 semver 변경 정책의 적용을 받는 모듈 |
 | `maintenance` | 0 | 새 기능보다 버그·보안·호환성 수정만 우선하는 모듈 |
 | `experimental` | 0 | 공개 계약에 포함하기 전 opt-in으로 검증하는 경로 |
 | `deprecated` | 0 | migration 문서와 최소 한 minor의 이행 기간을 거치는 모듈 |
@@ -24,4 +24,4 @@
 
 ## 다음 갱신 조건
 
-실제 issue·case study·공급망 대응 기록이 생길 때만 해당 모듈의 행을 `maintenance`로 세분화합니다. 그 전까지는 53개 공개 모듈을 계약상 `stable`로 유지하고, 품질 차이는 [사용·품질 매트릭스](module-usage-matrix.md)의 접근성·성능·reduced-motion 기준으로 표시합니다.
+실제 issue·case study·공급망 대응 기록이 생길 때만 해당 모듈의 행을 `maintenance`로 세분화합니다. 그 전까지는 54개 공개 모듈을 계약상 `stable`로 유지하고, 품질 차이는 [사용·품질 매트릭스](module-usage-matrix.md)의 접근성·성능·reduced-motion 기준으로 표시합니다.

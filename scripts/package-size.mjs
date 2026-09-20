@@ -168,7 +168,13 @@ const BUDGET = {
   // updateModule() — measures 582.9 KB packed / 1903.0 KB unpacked on the same
   // 79 files. Rebuilding the effect to change one option re-decodes the picture
   // and blinks, so these are the bytes of the option being usable at all.
-  packedKb: 583,
+  // 2026-09-21 (squircle, module 54): the corner-shape polyfill, its shared
+  // superellipse geometry and the docs and contract rows that come with a public
+  // module measure 589.2 KB packed / 1920.1 KB unpacked across 80 files — one
+  // more modular entry, since the module ships as its own chunk. The shape is
+  // what CSS cannot draw outside Chromium, so this is the cost of the feature
+  // existing at all rather than of the same feature growing.
+  packedKb: 590,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -195,8 +201,9 @@ const BUDGET = {
   // that does not pause is a correctness gap, not a feature.
   // See the effect-quality note above for the 1898.1 KB measurement.
   // See the live-motion-switching note above for the 1903.0 KB measurement.
-  unpackedKb: 1903,
-  files: 79
+  // See the squircle note above for the 1920.1 KB measurement.
+  unpackedKb: 1921,
+  files: 80
 };
 
 console.log(`release package: ${packedKb.toFixed(1)} KB packed · ${unpackedKb.toFixed(1)} KB unpacked · ${files.length} files`);

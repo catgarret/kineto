@@ -41,6 +41,7 @@
 | `brushReveal` | `data-kt-brush-reveal` | brush-mask reveal / scratch card |
 | `fullpage` | `data-kt-fullpage` | fullpage section paging |
 | `scrollShadows` | `data-kt-scroll-shadows` | CSS edge shadows on scroll containers |
+| `squircle` | `data-kt-squircle` | Superellipse corners (CSS `corner-shape`) on every browser |
 | `stickyHeader` | `data-kt-sticky-header` | shrinking / cover-to-fixed sticky header |
 | `horizontalScroll` | `data-kt-horizontal-scroll` | pinned horizontal scroll section |
 | `accordion` | `data-kt-accordion` | accessible details accordion |

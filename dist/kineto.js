@@ -13867,7 +13867,180 @@ var Io = {
 	reduced(e, t) {
 		return this.create(e, t);
 	}
-}, Lo = { create(e, t = {}) {
+}, Lo = Object.freeze([
+	"squircle",
+	"round",
+	"bevel",
+	"scoop",
+	"notch",
+	"square"
+]), Ro = Object.freeze({
+	square: Infinity,
+	squircle: 2,
+	round: 1,
+	bevel: 0,
+	scoop: -1,
+	notch: -Infinity
+}), zo = 12;
+function Bo(e, t) {
+	let n = Number.isFinite(Number(t)) ? Number(t) : Ro[e] ?? Ro.squircle;
+	return Math.max(-12, Math.min(zo, n));
+}
+function Vo(e) {
+	let t = 2 / 2 ** Math.abs(e), n = e < 0;
+	return {
+		concave: n,
+		at(e, r) {
+			let i = e === 0 ? 1 : e === r ? 0 : Math.cos(e / r * (Math.PI / 2)), a = e === 0 ? 0 : e === r ? 1 : Math.sin(e / r * (Math.PI / 2));
+			return n ? [1 - a ** +t, 1 - i ** +t] : [i ** +t, a ** +t];
+		}
+	};
+}
+function Ho(e) {
+	return e >= 0 ? 1 - 2 ** (-1 / 2 ** e) : 2 ** (-1 / 2 ** -e);
+}
+function Uo(e, t, n, r, i, a, o, s, c, l) {
+	for (let u = 0; u <= l; u += 1) {
+		let [d, f] = c.at(s ? l - u : u, l);
+		e.push([t + a * r * d, n + o * i * f]);
+	}
+}
+function Wo(e, t, n) {
+	let [r, i, a, o] = e, s = Math.min(1, t / Math.max(1e-6, r + i), t / Math.max(1e-6, o + a), n / Math.max(1e-6, r + o), n / Math.max(1e-6, i + a));
+	return e.map((e) => Math.max(0, e * s));
+}
+function Go(e, t, n, r, i) {
+	let [a, o, s, c] = Wo(n, e, t), l = Math.max(2, Math.round(i ?? Math.min(48, Math.max(8, Math.ceil(Math.max(a, o, s, c) / 2))))), u = Vo(r), d = [];
+	return Uo(d, a, a, a, a, -1, -1, !1, u, l), Uo(d, e - o, o, o, o, 1, -1, !0, u, l), Uo(d, e - s, t - s, s, s, 1, 1, !1, u, l), Uo(d, c, t - c, c, c, -1, 1, !0, u, l), d;
+}
+function Ko(e, t, n, r, i) {
+	return `polygon(${Go(e, t, n, r, i).map(([e, t]) => `${e.toFixed(2)}px ${t.toFixed(2)}px`).join(",")})`;
+}
+function qo(e, t, n, r, i) {
+	let [a, ...o] = Go(e, t, n, r, i);
+	return `M${a[0].toFixed(2)} ${a[1].toFixed(2)}${o.map(([e, t]) => `L${e.toFixed(2)} ${t.toFixed(2)}`).join("")}Z`;
+}
+//#endregion
+//#region src/modules/squircle.js
+var Jo = "kt-squircle-border", Yo = "http://www.w3.org/2000/svg";
+function Xo() {
+	return typeof CSS < "u" && typeof CSS.supports == "function" && CSS.supports("corner-shape", "squircle");
+}
+function Zo(e, t, n) {
+	if (e == null || e === "" || e === "auto") return null;
+	let r = String(e).trim().split(/\s+/).slice(0, 4), i = (e, t) => {
+		let n = /%$/.test(e), r = parseFloat(e);
+		return Number.isFinite(r) ? n ? r / 100 * t : r : null;
+	}, a = Math.min(t, n), o = r.map((e) => i(e, a));
+	if (o.some((e) => e == null)) return null;
+	let [s, c = s, l = s, u = c] = o;
+	return [
+		s,
+		c,
+		l,
+		u
+	];
+}
+function Qo(e, t, n) {
+	let r = Math.min(t, n), i = (e) => {
+		let t = String(e || "0").trim().split(/\s+/)[0], n = parseFloat(t);
+		return Number.isFinite(n) ? /%$/.test(t) ? n / 100 * r : n : 0;
+	};
+	return [
+		i(e.borderTopLeftRadius),
+		i(e.borderTopRightRadius),
+		i(e.borderBottomRightRadius),
+		i(e.borderBottomLeftRadius)
+	];
+}
+function $o(e, t) {
+	return Number.isFinite(Number(t)) ? `superellipse(${Number(t)})` : e;
+}
+function es() {
+	let e = document.createElementNS(Yo, "svg");
+	e.setAttribute("class", Jo), e.setAttribute("aria-hidden", "true"), e.setAttribute("preserveAspectRatio", "none"), e.style.cssText = "position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;";
+	let t = document.createElementNS(Yo, "path");
+	return t.setAttribute("fill", "none"), e.appendChild(t), {
+		svg: e,
+		path: t
+	};
+}
+var ts = {
+	create(e, t = {}) {
+		let n = Lo.includes(t.preset) ? t.preset : "squircle", r = t.superellipse, i = Bo(n, r), a = t.nativeShape !== "off" && t.nativeShape !== !1 && Xo(), o = t.borderFollow !== "off" && t.borderFollow !== !1, s = Number.isFinite(Number(t.cornerSamples)) ? Math.round(Number(t.cornerSamples)) : void 0, c = X(e, [
+			"border-radius",
+			"corner-shape",
+			"clip-path",
+			"position",
+			"border-color"
+		]), l = null, u = null, d = !1, f = "", p = {
+			width: 0,
+			height: 0,
+			radii: [
+				0,
+				0,
+				0,
+				0
+			]
+		}, m = () => {
+			let n = e.getBoundingClientRect(), r = getComputedStyle(e), i = Math.max(0, n.width), a = Math.max(0, n.height), o = Zo(t.cornerRadius, i, a), s = Qo(r, i, a);
+			return {
+				width: i,
+				height: a,
+				radii: o || (s.some((e) => e > 0) ? s : [
+					24,
+					24,
+					24,
+					24
+				]),
+				computed: r
+			};
+		}, h = ({ width: t, height: n, radii: r, computed: c }) => {
+			let u = parseFloat(c.borderTopWidth) || 0;
+			if (!(o && !a && u > 0 && c.borderTopStyle !== "none")) {
+				l &&= (l.svg.remove(), null);
+				return;
+			}
+			l || (c.position === "static" && (e.style.position = "relative"), l = es(), e.appendChild(l.svg)), l.svg.setAttribute("viewBox", `0 0 ${t} ${n}`), l.path.setAttribute("d", qo(t, n, r, i, s)), l.path.setAttribute("stroke", c.borderTopColor), l.path.setAttribute("stroke-width", String(u * 2)), e.style.borderColor = "transparent";
+		}, g = () => {
+			if (d) return;
+			let t = m(), { width: o, height: c, radii: l } = t;
+			if (o <= 0 || c <= 0) return;
+			let u = `${o}x${c}|${l.join(",")}`;
+			u !== f && (f = u, p = {
+				width: o,
+				height: c,
+				radii: [...l]
+			}, a ? (e.style.borderRadius = l.map((e) => `${e}px`).join(" "), e.style.cornerShape = $o(n, r)) : (e.style.borderRadius = "0px", e.style.clipPath = Ko(o, c, l, i, s)), h(t));
+		};
+		return g(), !a && typeof ResizeObserver < "u" && (u = new ResizeObserver(() => g()), u.observe(e)), {
+			el: e,
+			type: "squircle",
+			get renderer() {
+				return a ? "native" : "polyfill";
+			},
+			get shape() {
+				return {
+					preset: n,
+					k: i,
+					diagonal: Ho(i),
+					...p
+				};
+			},
+			refresh() {
+				f = "", g();
+			},
+			pause() {},
+			resume() {},
+			destroy() {
+				d || (d = !0, u?.disconnect(), u = null, l?.svg.remove(), l = null, c());
+			}
+		};
+	},
+	reduced(e, t) {
+		return this.create(e, t);
+	}
+}, ns = { create(e, t = {}) {
 	let n = Math.max(0, Number(t.offset ?? 8)), r = Math.max(1, Number(t.distance ?? 120)), i = t.shrink !== !1, a = t.shadow !== !1, o = t.activeClass || "kt-stuck";
 	e.classList.add("kt-sticky-header"), i && e.classList.add("kt-sh-shrink"), a && e.classList.add("kt-sh-shadow");
 	let s = ((e) => {
@@ -13900,7 +14073,7 @@ var Io = {
 			s.removeEventListener("scroll", f), window.removeEventListener("resize", f), e.classList.remove("kt-sticky-header", "kt-sh-shrink", "kt-sh-shadow", o), e.style.removeProperty("--kt-header-progress");
 		}
 	};
-} }, Ro = {
+} }, rs = {
 	create(e, t = {}) {
 		let n = t.height || "100vh", r = t.top || `calc((100svh - ${n}) / 2)`, i = t.smooth === !0 ? .12 : typeof t.smooth == "number" ? G(t.smooth, .02, 1) : 0;
 		if (!e.parentNode) return null;
@@ -13952,22 +14125,22 @@ var Io = {
 			}
 		};
 	}
-}, zo = (e, t = 0) => Number.isFinite(Number(e)) ? Number(e) : t, Bo = (e) => `${zo(e)}px`;
-function Vo(e = {}) {
+}, is = (e, t = 0) => Number.isFinite(Number(e)) ? Number(e) : t, as = (e) => `${is(e)}px`;
+function os(e = {}) {
 	if (!e || typeof e != "object") throw TypeError("Kineto.states state values must be objects.");
 	let t = {};
-	e.opacity != null && (t.opacity = String(Math.max(0, Math.min(1, zo(e.opacity, 1)))));
+	e.opacity != null && (t.opacity = String(Math.max(0, Math.min(1, is(e.opacity, 1)))));
 	let n = [];
-	e.x != null && n.push(`translateX(${Bo(e.x)})`), e.y != null && n.push(`translateY(${Bo(e.y)})`), e.scale != null && n.push(`scale(${zo(e.scale, 1)})`), e.rotate != null && n.push(`rotate(${zo(e.rotate)}deg)`), e.skewX != null && n.push(`skewX(${zo(e.skewX)}deg)`), e.skewY != null && n.push(`skewY(${zo(e.skewY)}deg)`), e.transform != null && n.push(String(e.transform)), n.length && (t.transform = n.join(" "));
+	e.x != null && n.push(`translateX(${as(e.x)})`), e.y != null && n.push(`translateY(${as(e.y)})`), e.scale != null && n.push(`scale(${is(e.scale, 1)})`), e.rotate != null && n.push(`rotate(${is(e.rotate)}deg)`), e.skewX != null && n.push(`skewX(${is(e.skewX)}deg)`), e.skewY != null && n.push(`skewY(${is(e.skewY)}deg)`), e.transform != null && n.push(String(e.transform)), n.length && (t.transform = n.join(" "));
 	let r = [];
-	return e.blur != null && r.push(`blur(${Bo(e.blur)})`), e.brightness != null && r.push(`brightness(${zo(e.brightness, 1)})`), e.filter != null && r.push(String(e.filter)), r.length && (t.filter = r.join(" ")), t;
+	return e.blur != null && r.push(`blur(${as(e.blur)})`), e.brightness != null && r.push(`brightness(${is(e.brightness, 1)})`), e.filter != null && r.push(String(e.filter)), r.length && (t.filter = r.join(" ")), t;
 }
-function Ho(e) {
+function ss(e) {
 	return K(e).filter((e) => e?.nodeType === 1);
 }
-function Uo(e, t) {
+function cs(e, t) {
 	if (!t) return [];
-	if (typeof t != "string") return Ho(t);
+	if (typeof t != "string") return ss(t);
 	let n = [];
 	return e.forEach((e) => {
 		try {
@@ -13975,26 +14148,26 @@ function Uo(e, t) {
 		} catch {}
 	}), [...new Set(n)];
 }
-function Wo(e, t) {
+function ls(e, t) {
 	let n = {
 		...t,
 		...e
 	};
 	return {
-		duration: Math.max(0, zo(n.duration, 300)),
-		delay: Math.max(0, zo(n.delay, 0)),
-		stagger: Math.max(0, zo(n.stagger, 0)),
+		duration: Math.max(0, is(n.duration, 300)),
+		delay: Math.max(0, is(n.delay, 0)),
+		stagger: Math.max(0, is(n.stagger, 0)),
 		ease: L(n.ease || "ease"),
 		initial: n.initial,
 		beforeChildren: n.beforeChildren === !0,
 		afterChildren: n.afterChildren === !0,
-		delayChildren: Math.max(0, zo(n.delayChildren, 0)),
+		delayChildren: Math.max(0, is(n.delayChildren, 0)),
 		reducedMotion: n.reducedMotion
 	};
 }
-function Go(e = {}, t = {}, n = null) {
+function us(e = {}, t = {}, n = null) {
 	if (!e || typeof e != "object" || Array.isArray(e)) throw TypeError("Kineto.states() expects a named state object.");
-	let r = new Map(Object.entries(e).map(([e, t]) => [e, Vo(t)]));
+	let r = new Map(Object.entries(e).map(([e, t]) => [e, os(t)]));
 	if (!r.size) throw TypeError("Kineto.states() needs at least one named state.");
 	let i = /* @__PURE__ */ new Map(), a = /* @__PURE__ */ new Map(), o = /* @__PURE__ */ new Set(), s = null, c = !1, l = (e) => {
 		i.has(e) || i.set(e, e.getAttribute("style"));
@@ -14051,7 +14224,7 @@ function Go(e = {}, t = {}, n = null) {
 		if (c) return Promise.resolve({ status: "cancelled" });
 		let l = r.get(i);
 		if (!l) return Promise.reject(/* @__PURE__ */ RangeError(`Unknown Kineto state: ${i}`));
-		let d = Ho(e), f = Uo(d, a.children), h = Wo(a, t), g = h.beforeChildren ? [...f, ...d] : [...d, ...f], _ = [...new Set(g)], v = h.initial, y = v && v !== !1 ? r.get(v) : null;
+		let d = ss(e), f = cs(d, a.children), h = ls(a, t), g = h.beforeChildren ? [...f, ...d] : [...d, ...f], _ = [...new Set(g)], v = h.initial, y = v && v !== !1 ? r.get(v) : null;
 		if (y && _.forEach((e) => u(e, y)), !_.length) return Promise.resolve({ status: "finished" });
 		let b = {
 			entries: [],
@@ -14107,7 +14280,7 @@ function Go(e = {}, t = {}, n = null) {
 }
 //#endregion
 //#region src/index.js
-var Ko = {
+var ds = {
 	parallax: bt,
 	mouseParallax: xt,
 	reveal: Nt,
@@ -14159,12 +14332,13 @@ var Ko = {
 	switch: No,
 	flip: Po,
 	scrollShadows: Io,
-	stickyHeader: Lo,
-	horizontalScroll: Ro
+	squircle: ts,
+	stickyHeader: ns,
+	horizontalScroll: rs
 };
-Object.entries(Ko).forEach(([e, t]) => Q.register(e, t));
-var $ = (e) => (t, n) => Q[e](t, n), qo = $("parallax"), Jo = $("mouseParallax"), Yo = $("reveal"), Xo = $("counter"), Zo = $("dateTime"), Qo = $("lazy"), $o = $("stylize"), es = $("textSplit"), ts = $("blurText"), ns = $("typewriter"), rs = $("textReveal"), is = $("textTransition"), as = $("magnetic"), os = $("marquee"), ss = $("overflowText"), cs = $("loader"), ls = $("loadingIndicator"), us = $("tilt"), ds = $("cursor"), fs = $("textFill"), ps = $("stickyStack"), ms = $("scrollVelocity"), hs = $("progress"), gs = $("slider"), _s = $("ambientMedia"), vs = $("pageReveal"), ys = $("glitch"), bs = $("cardGlow"), xs = $("lightbox"), Ss = $("pageTransition"), Cs = $("vibrate"), ws = $("ripple"), Ts = $("cssScroll"), Es = $("scrollSequence"), Ds = $("brushReveal"), Os = $("fullpage"), ks = $("confetti"), As = $("accordion"), js = $("hold"), Ms = $("megaMenu"), Ns = $("toast"), Ps = $("bottomSheet"), Fs = $("tabs"), Is = $("radial"), Ls = $("coverReveal"), Rs = $("gesture"), zs = $("drag"), Bs = $("tooltip"), Vs = $("switch"), Hs = $("flip"), Us = $("scrollShadows"), Ws = $("stickyHeader"), Gs = $("horizontalScroll");
-Q.listTerminalFramePresets = di, Q.states = (e, t = {}) => Go(e, t, Q);
-var Ks = (e, t = {}) => Go(e, t, Q), qs = Q;
+Object.entries(ds).forEach(([e, t]) => Q.register(e, t));
+var $ = (e) => (t, n) => Q[e](t, n), fs = $("parallax"), ps = $("mouseParallax"), ms = $("reveal"), hs = $("counter"), gs = $("dateTime"), _s = $("lazy"), vs = $("stylize"), ys = $("textSplit"), bs = $("blurText"), xs = $("typewriter"), Ss = $("textReveal"), Cs = $("textTransition"), ws = $("magnetic"), Ts = $("marquee"), Es = $("overflowText"), Ds = $("loader"), Os = $("loadingIndicator"), ks = $("tilt"), As = $("cursor"), js = $("textFill"), Ms = $("stickyStack"), Ns = $("scrollVelocity"), Ps = $("progress"), Fs = $("slider"), Is = $("ambientMedia"), Ls = $("pageReveal"), Rs = $("glitch"), zs = $("cardGlow"), Bs = $("lightbox"), Vs = $("pageTransition"), Hs = $("vibrate"), Us = $("ripple"), Ws = $("cssScroll"), Gs = $("scrollSequence"), Ks = $("brushReveal"), qs = $("fullpage"), Js = $("confetti"), Ys = $("accordion"), Xs = $("hold"), Zs = $("megaMenu"), Qs = $("toast"), $s = $("bottomSheet"), ec = $("tabs"), tc = $("radial"), nc = $("coverReveal"), rc = $("gesture"), ic = $("drag"), ac = $("tooltip"), oc = $("switch"), sc = $("flip"), cc = $("scrollShadows"), lc = $("squircle"), uc = $("stickyHeader"), dc = $("horizontalScroll");
+Q.listTerminalFramePresets = di, Q.states = (e, t = {}) => us(e, t, Q);
+var fc = (e, t = {}) => us(e, t, Q), pc = Q;
 //#endregion
-export { As as accordion, _s as ambientMedia, ts as blurText, Ps as bottomSheet, Ds as brushReveal, bs as cardGlow, ks as confetti, Xo as counter, Ls as coverReveal, Ts as cssScroll, ds as cursor, Zo as dateTime, qs as default, zs as drag, Hs as flip, Os as fullpage, Rs as gesture, ys as glitch, js as hold, Gs as horizontalScroll, Qo as lazy, xs as lightbox, di as listTerminalFramePresets, cs as loader, ls as loadingIndicator, as as magnetic, os as marquee, Ms as megaMenu, Ko as modules, Jo as mouseParallax, ss as overflowText, vs as pageReveal, Ss as pageTransition, qo as parallax, hs as progress, Is as radial, Yo as reveal, ws as ripple, Es as scrollSequence, Us as scrollShadows, ms as scrollVelocity, gs as slider, Ks as states, Ws as stickyHeader, ps as stickyStack, $o as stylize, Vs as switch, Fs as tabs, fs as textFill, rs as textReveal, es as textSplit, is as textTransition, us as tilt, Ns as toast, Bs as tooltip, ns as typewriter, Cs as vibrate };
+export { Ys as accordion, Is as ambientMedia, bs as blurText, $s as bottomSheet, Ks as brushReveal, zs as cardGlow, Js as confetti, hs as counter, nc as coverReveal, Ws as cssScroll, As as cursor, gs as dateTime, pc as default, ic as drag, sc as flip, qs as fullpage, rc as gesture, Rs as glitch, Xs as hold, dc as horizontalScroll, _s as lazy, Bs as lightbox, di as listTerminalFramePresets, Ds as loader, Os as loadingIndicator, ws as magnetic, Ts as marquee, Zs as megaMenu, ds as modules, ps as mouseParallax, Es as overflowText, Ls as pageReveal, Vs as pageTransition, fs as parallax, Ps as progress, tc as radial, ms as reveal, Us as ripple, Gs as scrollSequence, cc as scrollShadows, Ns as scrollVelocity, Fs as slider, lc as squircle, fc as states, uc as stickyHeader, Ms as stickyStack, vs as stylize, oc as switch, ec as tabs, js as textFill, Ss as textReveal, ys as textSplit, Cs as textTransition, ks as tilt, Qs as toast, ac as tooltip, xs as typewriter, Hs as vibrate };

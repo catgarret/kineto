@@ -138,7 +138,9 @@ function renderFigma({ integrations }) {
 function renderRules({ features, integrations, pkg }) {
   const lines = [];
   lines.push(`# Kineto rules for coding agents (v${pkg.version})`, '');
-  lines.push('Kineto (`@dong-gri/kineto`) is a vanilla-first motion/effects library: 53 modules activated by `data-kt-*` attributes or `Kineto.create()`, with React/Vue/jQuery adapters. Use these rules whenever you generate UI with any component library (shadcn/ui, Bootstrap, MUI, Mantine, Chakra, Ant Design, daisyUI, Nuxt UI, PrimeVue, Vuetify) or from a Figma frame.', '');
+  // The module count comes from the contract, never a number typed here: a
+  // hand-written one silently goes stale the day a module is added.
+  lines.push(`Kineto (\`@dong-gri/kineto\`) is a vanilla-first motion/effects library: ${features.moduleCount} modules activated by \`data-kt-*\` attributes or \`Kineto.create()\`, with React/Vue/jQuery adapters. Use these rules whenever you generate UI with any component library (shadcn/ui, Bootstrap, MUI, Mantine, Chakra, Ant Design, daisyUI, Nuxt UI, PrimeVue, Vuetify) or from a Figma frame.`, '');
   lines.push('## Principles', '');
   integrations.principles.forEach((principle) => lines.push(`- ${principle}`));
   lines.push('', '## Setup (once per app)', '', code('js', `${integrations.setup.css}\n${integrations.setup.bootstrapScript}`), '');

@@ -818,6 +818,34 @@ export function KinetoProvider({ children }: { children: React.ReactNode }) {
   const { ref } = useKineto('scrollShadows', { mode: "mask" });
   ```
 
+### iOS 스타일 모서리(스퀘어클) (`corner-shape`)
+
+**shape.borderRadius (circular corners only)**가 열림·닫힘과 포커스를 소유합니다. Kineto는 그 안의 콘텐츠에만 모션을 더합니다.
+
+- `squircle` · `squircle` — Figma's corner smoothing and iOS icons are superellipses, not circles. `border-radius` alone cannot draw one, and CSS `corner-shape` is Chromium-only — this uses it there and draws the same curve everywhere else.
+
+  ```jsx
+  <div data-kt-squircle="squircle">…</div>
+  // or, when you need the instance:
+  const { ref } = useKineto('squircle', { preset: "squircle" });
+  ```
+
+- `squircle` · `bevel` — A straight diagonal cut, for ticket stubs, tags and cut-corner panels.
+
+  ```jsx
+  <div data-kt-squircle="bevel">…</div>
+  // or, when you need the instance:
+  const { ref } = useKineto('squircle', { preset: "bevel" });
+  ```
+
+- `squircle` · `notch` — A square bite out of each corner, for coupon and stamp shapes.
+
+  ```jsx
+  <div data-kt-squircle="notch">…</div>
+  // or, when you need the instance:
+  const { ref } = useKineto('squircle', { preset: "notch" });
+  ```
+
 ### 길게 눌러 확인 (`confirm-hold`)
 
 - `hold` · `confirm` — Destructive actions confirmed by holding the button.

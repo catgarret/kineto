@@ -17,7 +17,10 @@ const profiles = {
   media: { accessibility: 'managed', performance: 'medium', reducedMotion: 'static', browserCoverage: 'evergreen' },
   mediaHeavy: { accessibility: 'manual', performance: 'heavy', reducedMotion: 'static', browserCoverage: 'evergreen-canvas' },
   system: { accessibility: 'managed', performance: 'medium', reducedMotion: 'final-state', browserCoverage: 'evergreen' },
-  systemHeavy: { accessibility: 'managed', performance: 'heavy', reducedMotion: 'final-state', browserCoverage: 'evergreen' }
+  systemHeavy: { accessibility: 'managed', performance: 'heavy', reducedMotion: 'final-state', browserCoverage: 'evergreen' },
+  // A look that is drawn once and then just sits there: no timeline to reduce,
+  // no semantics of its own, and its cost is one style write per resize.
+  surface: { accessibility: 'visual-only', performance: 'light', reducedMotion: 'static', browserCoverage: 'evergreen' }
 };
 
 const definitions = {
@@ -72,6 +75,7 @@ const definitions = {
   switch: ['component', '폼과 연결되는 키보드·ARIA 토글 스위치입니다.', '두 상태를 즉시 바꾸는 설정에', '세 가지 이상 상태나 단순 링크 이동에'],
   flip: ['component', '레이아웃 변화 전후 위치를 FLIP으로 보간합니다.', '카드 정렬·필터 결과가 자연스럽게 이동해야 할 때', '개수가 많거나 레이아웃 측정이 잦은 저사양 목록에'],
   scrollShadows: ['scroll', '스크롤 가능 영역의 가장자리에 그림자·마스크를 표시합니다.', '긴 패널의 더 많은 콘텐츠가 있음을 알려줄 때', '배경 대비가 약하거나 고정 높이가 없는 영역에'],
+  squircle: ['surface', 'CSS corner-shape의 모서리 곡선(스퀘어클·베벨·스쿠프 등)을 모든 브라우저에서 같게 그립니다.', 'iOS처럼 보여야 하는 카드·버튼 모서리를 브라우저와 무관하게 맞출 때', '요소에 box-shadow가 있고 Safari·Firefox에서도 그림자를 유지해야 할 때'],
   stickyHeader: ['scroll', '스크롤 방향에 반응하는 고정 헤더입니다.', '긴 페이지에서 탐색을 계속 노출할 때', '헤더가 콘텐츠를 가리거나 전체 화면 내러티브가 필요한 곳에'],
   horizontalScroll: ['scroll', '세로 스크롤을 가로 이동으로 매핑합니다.', '가로 갤러리·스토리텔링 구간을 구성할 때', '일반 목록·키보드 탐색·모바일 세로 흐름이 우선인 곳에']
 };
@@ -127,6 +131,8 @@ const CATEGORIES = {
   cssScroll: 'scroll', coverReveal: 'scroll', fullpage: 'scroll', horizontalScroll: 'scroll',
   scrollSequence: 'scroll',
   parallax: 'scroll', progress: 'scroll', reveal: 'scroll', scrollShadows: 'scroll',
+  // effects (a drawn look rather than a movement)
+  squircle: 'effects',
   scrollVelocity: 'scroll', stickyHeader: 'scroll', stickyStack: 'scroll',
   // pointer
   cardGlow: 'pointer', cursor: 'pointer', drag: 'pointer', gesture: 'pointer',

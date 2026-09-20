@@ -632,6 +632,28 @@ npm install @dong-gri/kineto
   <div data-kt-scroll-shadows="mask">…</div>
   ```
 
+### iOS 스타일 모서리(스퀘어클) (`corner-shape`)
+
+**rounded-* (circular corners only)**가 열림·닫힘과 포커스를 소유합니다. Kineto는 그 안의 콘텐츠에만 모션을 더합니다.
+
+- `squircle` · `squircle` — Figma's corner smoothing and iOS icons are superellipses, not circles. `border-radius` alone cannot draw one, and CSS `corner-shape` is Chromium-only — this uses it there and draws the same curve everywhere else.
+
+  ```html
+  <div data-kt-squircle="squircle">…</div>
+  ```
+
+- `squircle` · `bevel` — A straight diagonal cut, for ticket stubs, tags and cut-corner panels.
+
+  ```html
+  <div data-kt-squircle="bevel">…</div>
+  ```
+
+- `squircle` · `notch` — A square bite out of each corner, for coupon and stamp shapes.
+
+  ```html
+  <div data-kt-squircle="notch">…</div>
+  ```
+
 ### 길게 눌러 확인 (`confirm-hold`)
 
 - `hold` · `confirm` — Destructive actions confirmed by holding the button.

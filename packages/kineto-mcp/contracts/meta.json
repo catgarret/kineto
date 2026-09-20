@@ -3,8 +3,8 @@
   "kinetoVersion": "0.11.0",
   "featureContractVersion": "1.7.0",
   "integrationsVersion": "1.0.0",
-  "moduleCount": 53,
-  "intentCount": 31,
+  "moduleCount": 54,
+  "intentCount": 32,
   "ecosystems": [
     "vanilla",
     "shadcn",

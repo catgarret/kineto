@@ -3,6 +3,58 @@
 검증일: 2026-09-20
 대상: v0.11.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-21 Unreleased 검증 (Squircle — 54번째 모듈)
+
+### 새 모듈 추가 근거 (ROADMAP §3 ④)
+
+소유자 요청 원문: **“단순 css는 squircle radius안되는데 그거 적용가능하게 지원해주면 좋겠음.”**
+구체적 막힘: 디자인에서 쓰는 모서리 곡선을 `border-radius`로는 그릴 수 없고,
+CSS `corner-shape`는 2026-09 기준 **크로미엄 전용**(약 65%)이라 Safari·Firefox에는
+대안이 아예 없습니다. 이 문장이 근거 ④의 감사 기록입니다.
+요구사항 `MK-SQUIRCLE-001`로 잠갔습니다.
+
+### 측정으로만 알 수 있던 것 셋
+
+크로미엄의 `corner-shape`를 옆에 놓고 비교하면서 찾았고, 셋 다 명세를 읽어서는
+나오지 않았습니다.
+
+1. **폴리필이 `border-radius`를 지우지 않으면 스퀘어클이 둥글게 나옵니다.** 클립과
+   반지름이 **교집합**으로 적용되어 더 깊게 자르는 쪽이 이깁니다. 원보다 평평한
+   모양(squircle·square), 즉 사람들이 실제로 요청하는 그 둘이 조용히 무효가 됩니다.
+2. **음수 `superellipse(K)`는 지수를 분수로 넣는 게 아니라 거울상입니다.** 측정:
+   `scoop`이 45° 대각선과 만나는 지점이 반지름의 **70.7%**(분수 지수 해석은 75%).
+3. **양 끝에서 `Math.cos(Math.PI / 2)`는 0이 아니라 6.1e-17** 이고 아주 작은 지수를
+   씌우면 0.98이 됩니다. 사분원이 끝점에 닿지 못해 `notch`가 막대로 무너졌습니다.
+   끝점을 계산하지 않고 적어 두는 것으로 해결했습니다.
+
+### 검증
+
+`tests/browser/squircle.mjs` — 6개 모양(square·squircle·round·bevel·scoop·notch)을
+크로미엄의 `corner-shape`와 **모서리 면적**과 **대각선 교차점**으로 비교합니다.
+가로 방향 거리로 비교하지 않는 이유는 모서리 양 끝에서 곡선이 거의 수평이라
+히트테스트의 2px 오차가 수십 px로 증폭되기 때문입니다(실측: squircle 행 하나에서만
+13px). 면적 불일치 1.4~2.0%, 대각선 교차점은 해석해와 0.5px 이내
+(squircle 15.5/15.9, round 29/29.3, bevel 49.5/50, scoop 74.5/75).
+테두리 다시 그리기와 destroy 복원도 같은 파일에서 확인합니다.
+
+### 서랍 툴팁 검사의 사각지대
+
+`tests/help-coverage.mjs`가 `demo/playground.js`의 **첫 `FIELDS` 리터럴**만 읽어
+서랍이 실제로 만드는 50개 모듈 중 32개만 검사하고 있었습니다. 나머지는 아래쪽
+`Object.assign`으로 붙으며, 거기 추가된 옵션은 (?)가 없어도 “0 gaps”로 통과했습니다.
+실제 스크립트를 실행해 `KinetoPlayground.fields`를 읽도록 바꾸자 **16개 모듈 110개
+옵션**이 한 번도 툴팁을 가진 적이 없음이 드러났습니다. 목록은 줄어들기만 하는
+래칫(`KNOWN_GAPS`)으로 고정했고, 툴팁을 쓴 뒤 목록에서 지우지 않아도 실패합니다.
+
+### 예산
+
+| 항목 | 이전 | 이후 |
+|---|---|---|
+| `kineto.umd.js` raw | 445 KB | **448.0 KB** |
+| `kineto.js` gzip | 153.1 KB | **154.7 KB** |
+| full consumer bundle gzip | 153.5 KB | **153.5 KB** |
+| 패키지 packed / unpacked / 파일 | 582.9 / 1903.0 KB / 79 | **588.7 / 1919.1 KB / 80** |
+
 ## 2026-09-20 Unreleased 검증 (Native Reveal 반복 경계)
 
 Claude의 페이지 전환·비교 화면 작업과 분리한 worktree에서 수정했습니다.
@@ -588,7 +640,7 @@ Slider의 소유 상태 복원 중복을 통합했습니다. 기존 예산·77�
 |---|---|---|
 | Lint | 통과 | source, tests, 모든 demo 스크립트 |
 | Build | 통과 | ESM, UMD, minified JS/CSS |
-| Feature contract | 통과 | 53 modules, 29 Core APIs |
+| Feature contract | 통과 | 54 modules, 29 Core APIs |
 | Owner requirements | 통과 | 48 locked requirements |
 | Docs / options parity | 통과 | 생성 문서와 설정 필드 계약 동기화 |
 | Package surface | 통과 | ESM, CommonJS, CSS, React/Vue/jQuery entry |

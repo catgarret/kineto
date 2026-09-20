@@ -155,6 +155,7 @@ Kineto.disableSmooth();
 | `switch` | `data-kt-switch` | フォームで使用されるアクセシビリティスイッチ |
 | `flip` | `data-kt-flip` | 整列・追加・削除 FLIP切り替え |
 | `scrollShadows` | `data-kt-scroll-shadows` | スクロールエッジシャドウ |
+| `squircle` | `data-kt-squircle` | どのブラウザでも同じ超楕円の角 |
 | `stickyHeader` | `data-kt-sticky-header` | 縮小・カバー型固定ヘッダ |
 | `horizontalScroll` | `data-kt-horizontal-scroll` | 固定型水平スクロール |
 

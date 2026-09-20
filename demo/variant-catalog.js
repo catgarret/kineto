@@ -3,8 +3,8 @@
 window.KINETO_VARIANT_CATALOG = Object.freeze({
   "schemaVersion": "1.0.0",
   "libraryVersion": "0.11.0",
-  "moduleCount": 34,
-  "variantCount": 211,
+  "moduleCount": 35,
+  "variantCount": 217,
   "capabilities": {
     "any": "No requirement — works on any element.",
     "image": "Needs an <img> (the element itself or a descendant).",
@@ -2615,6 +2615,59 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
         },
         {
           "name": "mask",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "squircle": {
+      "attribute": "data-kt-squircle",
+      "category": "effects",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset"
+      ],
+      "defaultVariant": "squircle",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-border-follow",
+        "data-kt-corner-radius",
+        "data-kt-corner-samples",
+        "data-kt-native-shape",
+        "data-kt-preset",
+        "data-kt-superellipse"
+      ],
+      "variants": [
+        {
+          "name": "squircle",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "round",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "bevel",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "scoop",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "notch",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "square",
           "requires": "any",
           "deprecated": false
         }

@@ -8,13 +8,13 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const contract = JSON.parse(read('kineto.features.json'));
 const status = read('docs/module-status.md');
 
-assert.match(status, /\| `stable` \| 53 \|/);
+assert.match(status, /\| `stable` \| 54 \|/);
 assert.match(status, /\| `maintenance` \| 0 \|/);
 assert.match(status, /\| `experimental` \| 0 \|/);
 assert.match(status, /\| `deprecated` \| 0 \|/);
-assert.match(status, new RegExp(`53개 공개 모듈`));
+assert.match(status, new RegExp(`54개 공개 모듈`));
 assert.match(status, /CHANGELOG\.md/);
 assert.match(status, /reduced motion/);
-assert.equal(contract.moduleCount, 53, 'module status baseline must track the public contract count');
+assert.equal(contract.moduleCount, 54, 'module status baseline must track the public contract count');
 
 console.log(`module-status OK — ${contract.moduleCount} contract modules remain stable; no unapproved lifecycle status changes.`);

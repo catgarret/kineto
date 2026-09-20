@@ -155,6 +155,7 @@ Kineto.disableSmooth();
 | `switch` | `data-kt-switch` | 表单中使用的辅助开关 |
 | `flip` | `data-kt-flip` | 排序/添加/删除 FLIP 转换 |
 | `scrollShadows` | `data-kt-scroll-shadows` | 滚动边缘阴影 |
+| `squircle` | `data-kt-squircle` | 所有浏览器一致的超椭圆圆角 |
 | `stickyHeader` | `data-kt-sticky-header` | 折叠式/盖式固定头 |
 | `horizontalScroll` | `data-kt-horizontal-scroll` | 固定水平滚动 |
 

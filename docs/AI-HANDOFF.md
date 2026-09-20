@@ -48,7 +48,7 @@ another agent's prose report are leads to verify, not evidence of completion.
 - Package: `@dong-gri/kineto`
 - Current source version: `0.11.0`
 - Latest published npm version at the time of this handoff: `0.10.0`
-- Public surface: 53 modules and 29 Core APIs
+- Public surface: 54 modules and 29 Core APIs
 - Primary branch: `main`
 - Remote: `https://github.com/catgarret/kineto`
 
@@ -254,6 +254,31 @@ demo's per-card motion switch reads that rather than the attribute. Covered by
 demo's own switches pressed on the real page), `tests/update-model.mjs` (the
 declined-patch contract), `tests/lazy-stylized-media.mjs` (the resolver) and
 `tests/demo-structure.mjs` (the demo switches' markup contract).
+
+Squircle is the 54th public module, and the first added under ROADMAP §3's new
+evidence ④ (owner asked, with a concrete blocker: `border-radius` cannot draw
+the corner their design uses). The geometry lives in
+`src/modules/surface/superellipse.js` so other looks can share it — `cornerProfile(k)`
+returns how a quadrant is walked and `diagonalFraction(k)` the one number that
+identifies a shape. Two facts there are measured, not read: CSS's
+`superellipse(K)` means exponent `2^K`, and a NEGATIVE K is the mirror of the
+positive curve rather than that formula with a fractional exponent (Chromium's
+`scoop` meets the 45° diagonal at 70.7% of the radius; the fractional-exponent
+curve would be at 75%). Quadrant endpoints are written down rather than computed
+because `Math.cos(Math.PI / 2)` is 6.1e-17, which at the extreme K values raises
+to 0.98 and collapses `notch` into a bar. On the polyfill path the module must
+CLEAR `border-radius`: left in place it is a second clip intersected with the
+outline, and a squircle comes out round. `tests/browser/squircle.mjs` compares
+against the browser's own `corner-shape` by corner area and diagonal crossing,
+never by horizontal edge distance — near the ends of a corner the curve is almost
+horizontal, so the 2px slop in Chromium's hit test becomes tens of pixels there
+and the number stops meaning anything.
+
+`tests/help-coverage.mjs` now runs `demo/playground.js` and reads
+`KinetoPlayground.fields` instead of parsing the first `FIELDS` literal, which
+was 32 of 50 modules. The 110 options it uncovered without tooltips are listed
+in `KNOWN_GAPS` as a ratchet: the list may only shrink, and an entry left in
+after its tooltip is written fails the build.
 
 ## Required end-of-task record
 

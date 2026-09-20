@@ -732,6 +732,29 @@ export default defineNuxtPlugin(() => {
   <!-- or: <div v-motion="{ type: 'scrollShadows', options: { mode: "mask" } }"> -->
   ```
 
+### iOS 스타일 모서리(스퀘어클) (`corner-shape`)
+
+- `squircle` · `squircle` — Figma's corner smoothing and iOS icons are superellipses, not circles. `border-radius` alone cannot draw one, and CSS `corner-shape` is Chromium-only — this uses it there and draws the same curve everywhere else.
+
+  ```vue
+  <div data-kt-squircle="squircle">…</div>
+  <!-- or: <div v-motion="{ type: 'squircle', options: { preset: "squircle" } }"> -->
+  ```
+
+- `squircle` · `bevel` — A straight diagonal cut, for ticket stubs, tags and cut-corner panels.
+
+  ```vue
+  <div data-kt-squircle="bevel">…</div>
+  <!-- or: <div v-motion="{ type: 'squircle', options: { preset: "bevel" } }"> -->
+  ```
+
+- `squircle` · `notch` — A square bite out of each corner, for coupon and stamp shapes.
+
+  ```vue
+  <div data-kt-squircle="notch">…</div>
+  <!-- or: <div v-motion="{ type: 'squircle', options: { preset: "notch" } }"> -->
+  ```
+
 ### 길게 눌러 확인 (`confirm-hold`)
 
 - `hold` · `confirm` — Destructive actions confirmed by holding the button.

@@ -11,7 +11,7 @@
       transitionMode: 'smooth는 마스크 가장자리를 보간하고, instant는 즉시 바꿉니다.',
       transitionDuration: '마스크 가장자리가 바뀌는 시간(초)입니다.',
       ease: '마스크 전환의 가속과 감속 곡선입니다.',
-      opacity: '그림자 불투명도입니다.',
+      opacity: '그림자를 얼마나 진하게 그릴지입니다. 0이면 가장자리 효과가 보이지 않습니다.',
       shadow: '그림자 색상입니다. CSS 변수 --kt-scroll-shadow로도 바꿀 수 있습니다.',
       color: '그림자를 가리는 컨테이너 배경색입니다.'
     },
@@ -23,7 +23,7 @@
       transitionMode: 'Smooth interpolates mask edges; instant changes them immediately.',
       transitionDuration: 'Mask edge transition duration in seconds.',
       ease: 'Acceleration curve of the mask transition.',
-      opacity: 'Shadow opacity.',
+      opacity: 'How strongly the edge is drawn. At 0 the effect is there but invisible.',
       shadow: 'Shadow color. You can also set --kt-scroll-shadow in CSS.',
       color: 'Container background color used to cover the shadow.'
     },
@@ -35,7 +35,7 @@
       transitionMode: 'smoothはマスク端を補間し、instantは即座に切り替えます。',
       transitionDuration: 'マスク端の切り替え時間(秒)です。',
       ease: 'マスク切り替えのイージングです。',
-      opacity: '影の不透明度です。',
+      opacity: '縁をどれだけ濃く描くかです。0 では効果はあっても見えません。',
       shadow: '影の色。CSS変数--kt-scroll-shadowでも変更できます。',
       color: '影を覆うコンテナの背景色です。'
     },
@@ -47,7 +47,7 @@
       transitionMode: 'smooth 对遮罩边缘进行插值，instant 立即切换。',
       transitionDuration: '遮罩边缘切换时长（秒）。',
       ease: '遮罩切换的缓动曲线。',
-      opacity: '阴影不透明度。',
+      opacity: '边缘绘制的浓度。为 0 时效果存在但看不见。',
       shadow: '阴影颜色，也可通过 CSS 变量 --kt-scroll-shadow 设置。',
       color: '用于覆盖阴影的容器背景色。'
     },
@@ -59,7 +59,7 @@
       transitionMode: 'smooth 會補間遮罩邊緣，instant 會立即切換。',
       transitionDuration: '遮罩邊緣切換時間（秒）。',
       ease: '遮罩切換的緩動曲線。',
-      opacity: '陰影不透明度。',
+      opacity: '邊緣繪製的濃度。為 0 時效果存在但看不見。',
       shadow: '陰影顏色，也可透過 CSS 變數 --kt-scroll-shadow 設定。',
       color: '用來覆蓋陰影的容器背景色。'
     },
@@ -71,7 +71,7 @@
       transitionMode: 'Smooth интерполирует край маски, instant меняет его сразу.',
       transitionDuration: 'Длительность перехода края маски в секундах.',
       ease: 'Кривая ускорения перехода маски.',
-      opacity: 'Непрозрачность тени.',
+      opacity: 'Насколько плотно рисуется край. При 0 эффект есть, но не виден.',
       shadow: 'Цвет тени. Также доступна CSS-переменная --kt-scroll-shadow.',
       color: 'Фон контейнера, перекрывающий тень.'
     },
@@ -83,7 +83,7 @@
       transitionMode: 'Smooth interpola il bordo della maschera; instant lo cambia subito.',
       transitionDuration: 'Durata della transizione del bordo, in secondi.',
       ease: 'Curva di accelerazione della transizione.',
-      opacity: 'Opacità dell’ombra.',
+      opacity: 'Quanto è marcato il bordo. A 0 l’effetto c’è ma non si vede.',
       shadow: 'Colore dell’ombra. Puoi usare anche la variabile CSS --kt-scroll-shadow.',
       color: 'Sfondo del contenitore usato per coprire l’ombra.'
     }
@@ -2492,6 +2492,68 @@
     void persist;
     sets[lang] = sets[lang] || {};
     sets[lang].stylize = Object.assign({}, sets[lang].stylize, shared, stylizeOnly[lang] || stylizeOnly.en);
+  }
+  const squircle = {
+    "ko": {
+      "preset": "모서리 곡선의 종류입니다. squircle은 애플이 쓰는 초타원, bevel은 직선으로 깎기, scoop은 안쪽으로 파기, notch는 사각으로 도려내기입니다.",
+      "cornerRadius": "모서리가 차지하는 길이(px)입니다. 비워 두면 요소에 이미 걸려 있는 border-radius를 그대로 씁니다.",
+      "superellipse": "CSS superellipse(K)의 K값입니다. 1이면 원, 2면 스퀘어클, 0이면 직선, 음수면 안쪽으로 휩니다. 프리셋보다 우선합니다.",
+      "borderFollow": "요소에 테두리가 있을 때 그 테두리도 같은 곡선으로 다시 그릴지입니다. corner-shape를 지원하는 브라우저에서는 필요 없습니다.",
+      "nativeShape": "off로 두면 지원하는 브라우저에서도 직접 그린 곡선을 씁니다. 두 방식을 비교할 때만 쓰세요.",
+      "cornerSamples": "곡선을 몇 개의 점으로 그릴지입니다. 기본값은 반지름에 맞춰 자동으로 정해집니다."
+    },
+    "en": {
+      "preset": "Which corner curve to draw: squircle is the superellipse Apple uses, bevel cuts a straight diagonal, scoop curves inward, notch bites a square out.",
+      "cornerRadius": "How far the corner reaches, in px. Leave it unset to keep whatever border-radius the element already has.",
+      "superellipse": "The K of CSS superellipse(K): 1 is a circle, 2 a squircle, 0 a straight line, negative values curve inward. Overrides the preset.",
+      "borderFollow": "Redraw the element border along the same curve. Browsers with native corner-shape do this themselves and ignore it.",
+      "nativeShape": "Set to off to draw the curve here even where the browser could do it. Only useful for comparing the two.",
+      "cornerSamples": "How many points the curve is drawn from. Left alone it scales with the radius."
+    },
+    "ja": {
+      "preset": "角の曲線の種類です。squircle はアップルが使う超楕円、bevel は直線で削り、scoop は内側にえぐり、notch は四角く切り取ります。",
+      "cornerRadius": "角が占める長さ（px）です。未指定なら要素にすでにある border-radius をそのまま使います。",
+      "superellipse": "CSS superellipse(K) の K です。1 で円、2 でスクワークル、0 で直線、マイナスで内側に反ります。プリセットより優先します。",
+      "borderFollow": "要素に枠線があるとき、その枠線も同じ曲線で描き直すかどうかです。corner-shape 対応ブラウザでは不要です。",
+      "nativeShape": "off にすると対応ブラウザでも自前の曲線を使います。二つを比べるときだけ使ってください。",
+      "cornerSamples": "曲線を何点で描くかです。既定では半径に応じて自動で決まります。"
+    },
+    "zh-CN": {
+      "preset": "角的曲线类型：squircle 是苹果所用的超椭圆，bevel 直线切角，scoop 向内凹，notch 方形缺口。",
+      "cornerRadius": "角占据的长度（px）。留空则沿用元素本来的 border-radius。",
+      "superellipse": "CSS superellipse(K) 的 K 值：1 为圆，2 为超椭圆方圆，0 为直线，负值向内凹。优先于预设。",
+      "borderFollow": "元素有边框时，是否用同一条曲线重画边框。原生支持 corner-shape 的浏览器会自行处理。",
+      "nativeShape": "设为 off 时，即使浏览器支持也用自绘曲线。仅用于对比两种画法。",
+      "cornerSamples": "曲线由多少个点绘制。默认随半径自动决定。"
+    },
+    "zh-TW": {
+      "preset": "角的曲線類型：squircle 是蘋果所用的超橢圓，bevel 直線切角，scoop 向內凹，notch 方形缺口。",
+      "cornerRadius": "角佔據的長度（px）。留空則沿用元素原本的 border-radius。",
+      "superellipse": "CSS superellipse(K) 的 K 值：1 為圓，2 為超橢圓方圓，0 為直線，負值向內凹。優先於預設。",
+      "borderFollow": "元素有邊框時，是否用同一條曲線重畫邊框。原生支援 corner-shape 的瀏覽器會自行處理。",
+      "nativeShape": "設為 off 時，即使瀏覽器支援也用自繪曲線。僅用於比較兩種畫法。",
+      "cornerSamples": "曲線由多少個點繪製。預設隨半徑自動決定。"
+    },
+    "ru": {
+      "preset": "Какую кривую рисовать в углу: squircle — суперэллипс Apple, bevel срезает по прямой, scoop выгибается внутрь, notch вырезает квадрат.",
+      "cornerRadius": "Насколько далеко заходит угол, в px. Оставьте пустым, чтобы сохранить border-radius, который уже есть у элемента.",
+      "superellipse": "Параметр K из CSS superellipse(K): 1 — круг, 2 — squircle, 0 — прямая, отрицательные значения гнут внутрь. Важнее пресета.",
+      "borderFollow": "Перерисовывать ли рамку элемента по той же кривой. Браузеры с родным corner-shape делают это сами.",
+      "nativeShape": "off рисует кривую здесь даже там, где браузер умеет сам. Нужно только для сравнения двух способов.",
+      "cornerSamples": "Из скольких точек строится кривая. По умолчанию зависит от радиуса."
+    },
+    "it": {
+      "preset": "Quale curva disegnare nell’angolo: squircle è la superellisse di Apple, bevel taglia in diagonale, scoop rientra, notch morde un quadrato.",
+      "cornerRadius": "Quanto si estende l’angolo, in px. Lascialo vuoto per mantenere il border-radius che l’elemento ha già.",
+      "superellipse": "La K di CSS superellipse(K): 1 è un cerchio, 2 una squircle, 0 una retta, i negativi curvano verso l’interno. Ha la precedenza sul preset.",
+      "borderFollow": "Ridisegna il bordo dell’elemento lungo la stessa curva. I browser con corner-shape nativo se ne occupano da soli.",
+      "nativeShape": "Con off la curva viene disegnata qui anche dove il browser saprebbe farlo. Serve solo per confrontare i due modi.",
+      "cornerSamples": "Da quanti punti viene disegnata la curva. Lasciato stare, scala con il raggio."
+    }
+  };
+  for (const [lang, values] of Object.entries(squircle)) {
+    sets[lang] = sets[lang] || {};
+    sets[lang].squircle = Object.assign({}, sets[lang].squircle, values);
   }
   const revealOnce = {
     ko: '켜면 등장 모션을 한 번만 실행합니다. 끄면 이탈 시 역재생하고 재진입 시 다시 재생합니다. Native와 GSAP 모두 지원합니다.',

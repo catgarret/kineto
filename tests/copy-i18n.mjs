@@ -93,9 +93,11 @@ assert.ok(
 // data-mosaic and rgb-slice-burst, Cursor blob, and Glitch noise, crt, reveal
 // and rgb-slice-burst (docs/variant-distinctness.md). Stylize adds a rotated
 // print screen so the halftone angle has a card of its own.
-assert.equal(descriptions.length, 183);
+// 2026-09-20: the Squircle module adds two cards — the iOS corner comparison
+// and the other corner-shape keywords.
+assert.equal(descriptions.length, 185);
 // 18 since the Korean-titled `radial` compatibility card was removed (see above).
-assert.equal(titles.length, 18);
+assert.equal(titles.length, 19);
 
 for (const [label, values, dictionary] of [
   ['card description', descriptions, copy.cards],

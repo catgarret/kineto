@@ -7,6 +7,10 @@ const MIME={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json
 const server=http.createServer((req,res)=>{let p=decodeURIComponent(req.url.split('?')[0]);let fp=path.join(root,p);if(fp.endsWith('/'))fp=path.join(fp,'index.html');fs.readFile(fp,(e,b)=>{if(e){res.writeHead(404);res.end();return;}res.writeHead(200,{'content-type':MIME[path.extname(fp)]||'application/octet-stream'});res.end(b);});});
 await new Promise(r=>server.listen(0,r)); const PORT=server.address().port;
 const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')).version;
+// Read the expected module count from the contract rather than typing it here:
+// a number written into a test goes stale the day a module is added, and then
+// says the demo is wrong when it is the test that is.
+const moduleCount=String(JSON.parse(fs.readFileSync(path.join(root,'kineto.features.json'),'utf8')).moduleCount);
 const browser=await chromium.launch({headless:true,...(CHROME?{executablePath:CHROME}:{}),args:['--no-sandbox','--disable-gpu']});
 const page=await browser.newPage();
 await page.goto(`http://localhost:${PORT}/demo/index.html`,{waitUntil:'load'});
@@ -27,7 +31,7 @@ let pass=0,fail=0; const ck=(n,c,d)=>{console.log(`  [${c?'PASS':'FAIL'}] ${n}${
 console.log('  measured:', JSON.stringify(r));
 ck('runtime version == package', r.runtime===pkg, `${r.runtime} vs ${pkg}`);
 ck('all displayed versions == runtime', r.allVersions.every(v=>v===r.runtime), JSON.stringify(r.allVersions));
-ck('module count == 53', r.moduleCount==='53', r.moduleCount);
+ck(`module count == ${moduleCount}`, r.moduleCount===moduleCount, r.moduleCount);
 ck('no stale "34" in body text', r.has34===false);
 ck('build id stamped', /^\S+$/.test((r.build||'').trim()) && /build/i.test(r.buildLabel||''), `${r.buildLabel}=${r.build}`);
 await browser.close(); server.close();

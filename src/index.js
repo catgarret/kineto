@@ -51,6 +51,7 @@ import tooltipModule from './modules/tooltip.js';
 import switchModule from './modules/switch.js';
 import flipModule from './modules/flip.js';
 import scrollShadowsModule from './modules/scrollShadows.js';
+import squircleModule from './modules/squircle.js';
 import stickyHeaderModule from './modules/stickyHeader.js';
 import horizontalScrollModule from './modules/horizontalScroll.js';
 import { listTerminalFramePresets } from './modules/loadingIndicator/terminalFramePresets.js';
@@ -108,6 +109,7 @@ const moduleEntries = {
   switch: switchModule,
   flip: flipModule,
   scrollShadows: scrollShadowsModule,
+  squircle: squircleModule,
   stickyHeader: stickyHeaderModule,
   horizontalScroll: horizontalScrollModule
 };
@@ -170,6 +172,7 @@ const switchApi = call('switch');
 export { switchApi as switch };
 export const flip = call('flip');
 export const scrollShadows = call('scrollShadows');
+export const squircle = call('squircle');
 export const stickyHeader = call('stickyHeader');
 export const horizontalScroll = call('horizontalScroll');
 
