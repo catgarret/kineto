@@ -312,16 +312,14 @@ export function createImageStylizer({
 }
 
 /**
- * Playing <video>: every frame goes through the rasterizer while the video
- * plays. Reveal shrinks cells over `duration` from the first painted frame and
- * then hands the viewport to the raw video; persist keeps the look for the
- * whole playback. The caller decides when the video is ready (Lazy after its
- * lazy load, Stylize on `loadeddata`) and calls `start()`; `playing` events
- * are wired here so a paused/resumed video keeps rendering.
+ * Video frames share the rasterizer with images. The caller activates start()
+ * after loading/trigger selection; playback events only resume an active run.
+ * Reveal delay/duration/hold advance on visible, unpaused playback time.
+ * Persist keeps rendering until paused or destroyed.
  */
 export function createVideoStylizer({
   el, wrapper, effect, settings, prefix = 'kt-stylize',
-  durationMs: duration = 1600, onProgress
+  durationMs: duration = 1600, delayMs = 0, holdMs = 0, onProgress, onFinish
 }) {
   const { persist, startCell, handoffCell, transition, styleConfig, fps, maxDpr, ease } = settings;
   const { layer, canvas } = createStylizedCanvasLayer(wrapper, effect, prefix);
@@ -331,8 +329,11 @@ export function createVideoStylizer({
   let rafId = null;
   let destroyed = false;
   let paused = false;
-  let revealStart = null;
-  let revealed = persist;
+  let started = false;
+  let revealed = false;
+  let elapsed = 0;
+  let tickAt = null;
+  let generation = 0;
   let lastDraw = -Infinity;
   let clock = 0;
 
@@ -342,18 +343,35 @@ export function createVideoStylizer({
     renderer.sync(box.width, box.height);
     return renderer.render(el, cell, { time, pointer: pointer?.state });
   };
+  const runnable = () => started && !destroyed && !paused && !document.hidden && !el.paused && !el.ended && !revealed && el.readyState >= 2;
+  const stop = () => {
+    if (rafId != null) cancelAnimationFrame(rafId);
+    rafId = null;
+    // Count only active frame intervals, never the time spent suspended.
+    tickAt = null;
+  };
+  const schedule = () => {
+    if (runnable() && rafId == null) rafId = requestAnimationFrame(frame);
+  };
+  const finish = () => {
+    revealed = true;
+    stop();
+    layer.remove();
+    onFinish?.();
+  };
   const frame = (time) => {
-    if (destroyed) return;
-    rafId = requestAnimationFrame(frame);
-    if (paused || el.paused || el.ended) return;
-    if (time - lastDraw < interval) return;
+    rafId = null;
+    if (!runnable()) { tickAt = null; return; }
+    if (tickAt != null) elapsed += time - tickAt;
+    tickAt = time;
+    if (time - lastDraw < interval) { schedule(); return; }
     // The video's own playback is the clock, so the living look advances with
     // it and freezes when the video does.
     clock = el.currentTime * 1000;
     lastDraw = time;
-    if (persist) { paint(startCell); return; }
-    if (revealStart == null) revealStart = time;
-    const raw = clamp((time - revealStart) / duration, 0, 1);
+    if (persist) { paint(startCell); schedule(); return; }
+    const run = generation;
+    const raw = clamp((elapsed - delayMs) / duration, 0, 1);
     const eased = clamp(ease(raw), 0, 1);
     let rendered;
     if (transition === 'shrink') {
@@ -364,23 +382,21 @@ export function createVideoStylizer({
       rendered = paint(startCell);
       if (rendered) renderer.mask(eased, transition, startCell);
     }
-    if (!rendered || raw >= 1) {
-      // Either the reveal finished or the frames cannot be read back: hand the
-      // viewport to the raw video and stop rendering.
-      revealed = true;
-      layer.remove();
-      cancelAnimationFrame(rafId);
-      rafId = null;
-      onProgress?.(1, el);
-    } else {
-      onProgress?.(raw, el);
-    }
+    onProgress?.(rendered ? raw : 1, el);
+    if (destroyed || run !== generation) return;
+    if (!rendered || elapsed >= delayMs + duration + holdMs) finish();
+    else schedule();
   };
   const start = () => {
-    if (destroyed || rafId != null || (revealed && !persist)) return;
-    rafId = requestAnimationFrame(frame);
+    if (destroyed || revealed) return;
+    started = true;
+    schedule();
   };
-  el.addEventListener('playing', start);
+  const visibility = () => { if (document.hidden) stop(); else schedule(); };
+  const stopEvents = ['pause', 'ended', 'waiting'];
+  el.addEventListener('playing', schedule);
+  stopEvents.forEach(event => el.addEventListener(event, stop));
+  document.addEventListener('visibilitychange', visibility);
 
   return {
     layer,
@@ -388,22 +404,26 @@ export function createVideoStylizer({
     renderer,
     get persist() { return persist; },
     start,
-    pause() { paused = true; },
-    resume() { paused = false; start(); },
+    pause() { paused = true; stop(); },
+    resume() { paused = false; schedule(); },
     replay() {
       if (destroyed) return;
-      revealStart = null;
-      revealed = persist;
+      stop();
+      generation++;
+      elapsed = 0;
+      revealed = false;
       lastDraw = -Infinity;
       layer.style.opacity = '1';
       if (!layer.isConnected) wrapper.appendChild(layer);
       start();
     },
     destroy() {
+      if (destroyed) return;
       destroyed = true;
-      if (rafId != null) cancelAnimationFrame(rafId);
-      rafId = null;
-      el.removeEventListener('playing', start);
+      stop();
+      el.removeEventListener('playing', schedule);
+      stopEvents.forEach(event => el.removeEventListener(event, stop));
+      document.removeEventListener('visibilitychange', visibility);
       pointer?.destroy();
       renderer.destroy();
       layer.remove();

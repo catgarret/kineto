@@ -466,8 +466,8 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 - 후속: 일반 native Reveal의 반복 경계 callback 범위를 기존 시각 계약을 유지하며 검토. Wave의 선택적 `colors`·`blendMode`는 세 엔진 픽셀 검사와 함께 구현했습니다. 일반 native pause/resume는 Web Animations 경로에 보강했으며, Unreleased 작업은 v0.9.8 배포 완료 근거에 합산하지 않음.
 - 구현 완료(Unreleased): 공개 variant 비교 시트와 잔여 전용 카드 7개가 추가되었습니다(`dc022d4`·`686e41c`). 현재 전용 markup은 deprecated alias를 제외한 81/81입니다. 카드 수와 실제 시각·실기기 검증 완료는 구분합니다.
 - 구현 완료(Unreleased): Stylize가 별도 모듈로 분리되고 Lazy의 세 스타일화 이름은 deprecated alias로 유지됩니다(`123cc55`). 다른 모듈로의 추가 재사용은 여전히 §3 증거 게이트를 따릅니다.
-- 후속(2026-09-20 코드 검토): Stylize 영상 경로의 `trigger:view/manual`·`delay`·`holdDuration` 전달 및 실제 동작 검증이 필요합니다. 현재 `createVideoInstance`는 재생 이벤트/loadeddata와 duration만 연결합니다. 이미지 경로의 테스트 통과를 영상 옵션 지원의 근거로 사용하지 않습니다.
-- 후속(2026-09-20 코드 검토): Stylize pause/숨김 탭의 RAF 예약 중단과 영상 reveal 진행률 보존을 검증·보강합니다. 현재 컨트롤러는 pause 중에도 RAF를 예약하고 영상 reveal은 벽시계 기준이므로 재개 시 진행률이 건너뛸 가능성이 있습니다. 이 항목은 아직 브라우저 재현 전입니다.
+- 구현 완료(Unreleased, 2026-09-20): Stylize 영상 `trigger:view/manual`·로드 전 replay·`delay`·`holdDuration`을 연결하고 모듈/영상 pause·숨김 탭에서 RAF와 리빌 시간을 정지합니다. 실제 디코딩 영상과 제어된 프레임 시계로 실행 조건·시간 보존·콜백 종료를 검사합니다. 실기기 검증은 별도입니다.
+- 후속: 이미지 Stylize의 pause/숨김 탭 RAF 예약 중단과 지연·hold 시간 보존. 영상 컨트롤러 수정만으로 이미지 경로까지 완료로 집계하지 않습니다.
 - 외부 증거 필요: 실제 iOS Safari·Android Chrome·스크린리더 검사, 운영 앱의 장기 성능 측정, 공개 동의를 받은 외부 사용 사례 3개.
 - 증거 확보 후 결정: FLIP shared layout과 States·Presence 추가 확장. 현재 자동 검사나 데모를 외부 사용 증거로 집계하지 않습니다.
 
@@ -649,6 +649,8 @@ View Transitions API는 SPA DOM 변경뿐 아니라 문서 간 전환에도 사�
 163. 완료(v0.10.0): 가이드 정비 — 실사용 근거의 정의와 variant→모듈 승격 기준, 정본 문서·미리보기 원칙(§3), 새 데모 카드의 `data-demo-no-legacy-share` 규칙, 로컬 Chromium 지정 변수 `KT_CHROME` 통일(`MK_CHROMIUM`은 별칭), `push`와 `release`의 승인 구분을 `AGENTS.md`·`CLAUDE.md`·`docs/AGENTS.md`에 명시
 
 164. 완료(Unreleased, 2026-09-20): Stylize의 모션 축소 환경에서 추가 motion·pointer를 끄고 질감은 유지. 이미지·영상 직접 API의 중복 destroy와 이미지 렌더/진행 콜백 내부 destroy 이후 작업 재예약을 차단. Chromium·Firefox·WebKit 회귀 통과. 세 엔진의 오프스크린 GIF 프레임 검사는 환경 감지로 제외했으며 실기기·공개 배포 검증과 구분. §10의 완료된 비교 시트·전용 카드·모듈 분리를 잔여 목록에서 정리하고 영상 옵션·pause 정책을 후속으로 명시
+
+165. 완료(Unreleased, 2026-09-20): Stylize 영상 실행 조건·로드 전 수동 replay·delay/hold 연결. 모듈/영상 pause·숨김 탭의 RAF 취소와 활성 시간 보존, 콜백 종료 가드를 추가하고 실제 영상 픽셀을 사용하는 직접 소스/공개 번들 회귀 검사로 검증. 데모 도움말 7개 언어 교정. 중복 코드를 줄인 후 측정된 해제 비용 1872.1KiB에 맞춰 상한만 1873KiB로 반영하며 압축·소비자 예산과 79개 파일은 유지. 이미지 타이밍·실기기·공개 배포 검증은 별도
 
 가장 중요한 원칙은 명확합니다. **다음 10개 효과보다, 기존 효과를 작은 비용으로 안전하게 도입하고 조합할 수 있게 만드는 한 단계가 더 가치가 큽니다.**
 

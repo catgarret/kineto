@@ -428,6 +428,17 @@ try {
     return failures;
   }, origin);
   assert.deepEqual(lifecycle, [], 'Stylize direct and callback teardown must be terminal');
+  if (!result.videoUnsupported) {
+    const videoLifecycle = await lifecyclePage.evaluate(async (base) => {
+      const { probeVideoLifecycle } = await import(`${base}/tests/browser/stylize-video-probe.js`);
+      return {
+        source: await probeVideoLifecycle(base),
+        bundle: await probeVideoLifecycle(base, true)
+      };
+    }, origin);
+    assert.deepEqual(videoLifecycle, { source: [], bundle: [] }, 'Stylize video triggers, active timing and teardown must agree with the contract');
+    console.log(`stylize video lifecycle OK (${browserName}) — triggers, queued replay, active delay/duration/hold, playback/visibility suspension and callback teardown.`);
+  }
   await lifecyclePage.close();
 
   console.log(`stylize OK (${browserName}) — persist/reveal modes, load/view/manual triggers, dissolve transition, motion on a still image, contrast levels, pointer lens, design-token colours, shared Lazy wrapper, deprecated alias + KT_DEPRECATED, video frames, destroy cleanup, reduced motion.`);

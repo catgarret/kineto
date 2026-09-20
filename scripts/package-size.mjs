@@ -146,7 +146,10 @@ const BUDGET = {
   // priority-preserving inline-style snapshot then measures 1774.2 KB.
   // See the 2026-09-19 note above for the 1812.0 KB stylized-media measurement.
   // See the 2026-09-19 observe() note above for the 1820.6 KB measurement.
-  unpackedKb: 1872,
+  // 2026-09-20: video trigger/active-clock guards measure 1872.1 KB unpacked
+  // after sharing media styles and stop-event wiring (initially 1872.7 KB).
+  // Round only this measured correctness cost; packed/files budgets stay fixed.
+  unpackedKb: 1873,
   files: 79
 };
 

@@ -127,12 +127,32 @@
 
 - `persist`(기본값) — 질감을 계속 유지합니다. 정지 이미지는 크기가 바뀔 때
   다시 그리고, GIF·APNG·애니메이션 WebP와 `<video>`는 프레임마다 다시 그립니다.
-- `reveal` — 질감을 한 번 재생합니다. 셀이 점점 잘게 쪼개지다가 마지막 30%
-  구간에서 원본으로 크로스페이드한 뒤, 레이어를 지우고 `onComplete`를 부릅니다.
+- `reveal` — 질감을 한 번 재생합니다. 아래 `transition` 방식으로 원본을 드러낸
+  뒤 `holdDuration`이 지나면 레이어를 지우고 `onComplete`를 부릅니다.
 
-`reveal`일 때만 `trigger`가 의미를 가집니다. `load`는 이미지가 준비되는 즉시,
+`reveal`일 때만 `trigger`가 의미를 가집니다. `load`는 이미지·영상이 준비되는 즉시,
 `view`는 화면에 들어올 때(`threshold`·`rootMargin`), `manual`은 인스턴스의
 `replay()`를 부를 때 시작합니다.
+
+영상도 같은 실행 조건을 따릅니다. `manual`에서 재생 이벤트나 `resume()`만으로
+효과가 시작되지는 않으며, 데이터 준비 전 `replay()`를 호출하면 준비 후 시작합니다.
+Kineto는 영상 자체의 재생을 강제하지 않습니다. `<video>`의 재생은 `autoplay`나
+사용자의 재생 버튼으로 제어하세요.
+
+영상의 `delay` → `duration` → `holdDuration`은 **효과와 영상이 모두 실행 중이고
+탭이 보이는 시간**으로 계산합니다. 모듈 `pause()`·영상 일시정지·숨김 탭에서는
+RAF를 취소하고 남은 시간을 보존합니다. 재개해도 완료 지점으로 건너뛰지 않으며,
+종료 콜백은 한 번만 호출됩니다. 완료 후에는 `replay()`로 다시 시작할 수 있습니다.
+
+```html
+<video data-kt-stylize="halftone" data-kt-mode="reveal" data-kt-trigger="view"
+       data-kt-delay="0.3" data-kt-duration="1.6" data-kt-hold-duration="0.4"
+       src="clip.mp4" muted loop playsinline autoplay></video>
+```
+
+데모의 **Halftone Video — Scan** 설정에서 Mode를 Reveal로 바꾸고 Trigger·Delay·
+Reveal duration·Hold (ms)을 조절해 확인할 수 있습니다. 기본 Persist 모드에는
+리빌의 실행 조건과 시간 옵션이 적용되지 않습니다.
 
 `transition`은 리빌이 원본으로 넘어가는 방식입니다.
 

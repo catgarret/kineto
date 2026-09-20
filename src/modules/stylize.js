@@ -30,6 +30,16 @@ function wrapperBox(opts) {
   return { className: WRAPPER_CLASS, display: opts.display, aspectRatio: opts.aspectRatio, height: opts.height };
 }
 
+function styleMedia(media, opts) {
+  const original = media.getAttribute('style');
+  media.style.display = 'block';
+  media.style.width = '100%';
+  media.style.height = '100%';
+  media.style.objectFit = opts.objectFit || 'cover';
+  if (media.tagName === 'IMG') media.style.objectPosition = opts.objectPosition || '50% 50%';
+  return original;
+}
+
 /** The media element the module works on: the element itself or a descendant. */
 function mediaOf(el) {
   if (el.tagName === 'IMG' || el.tagName === 'VIDEO') return el;
@@ -98,12 +108,7 @@ function createImageInstance(el, media, effect, opts, kineto) {
   const lowTier = kineto?.performance === 'low';
   const wrapping = ensureWrapper(media, wrapperBox(opts));
   const { wrapper } = wrapping;
-  const originalStyle = media.getAttribute('style');
-  media.style.display = 'block';
-  media.style.width = '100%';
-  media.style.height = '100%';
-  media.style.objectFit = opts.objectFit || 'cover';
-  media.style.objectPosition = opts.objectPosition || '50% 50%';
+  const originalStyle = styleMedia(media, opts);
 
   // A still image only animates while revealing, so the reveal gets a higher
   // frame budget than a permanent (persist) look.
@@ -181,44 +186,62 @@ function createImageInstance(el, media, effect, opts, kineto) {
 
 function createVideoInstance(el, media, effect, opts, kineto) {
   let destroyed = false;
+  let paused = false;
+  let requested = false;
+  let observer = null;
+  let stylizer = null;
   const mode = opts.mode === 'reveal' ? 'reveal' : 'persist';
+  const trigger = TRIGGERS.has(opts.trigger) ? opts.trigger : 'load';
   const lowTier = kineto?.performance === 'low';
   const wrapping = ensureWrapper(media, wrapperBox(opts));
   const { wrapper } = wrapping;
-  const originalStyle = media.getAttribute('style');
-  media.style.display = 'block';
-  media.style.width = '100%';
-  media.style.height = '100%';
-  media.style.objectFit = opts.objectFit || 'cover';
+  const originalStyle = styleMedia(media, opts);
 
   // Video renders every playing frame, so it starts from a lighter DPR budget.
   const settings = resolveStylizedSettings(effect, readStylizedInput(effect, opts, mode, media), { lowTier, persistFps: 24, revealFps: 24, maxDpr: 1.5 });
-  const stylizer = createVideoStylizer({
-    el: media, wrapper, effect, settings, prefix: 'kt-stylize',
-    durationMs: readTiming(opts).durationMs,
-    onProgress: (progress, target) => {
-      opts.onProgress?.(progress, target);
-      if (progress >= 1 && mode === 'reveal') opts.onComplete?.(media);
+  const run = () => {
+    if (destroyed || stylizer || media.readyState < 2) return;
+    observer?.disconnect();
+    observer = null;
+    stylizer = createVideoStylizer({
+      el: media, wrapper, effect, settings, prefix: 'kt-stylize',
+      ...readTiming(opts),
+      onProgress: (progress, target) => opts.onProgress?.(progress, target),
+      onFinish: () => opts.onComplete?.(media)
+    });
+    if (paused) stylizer.pause();
+    stylizer.start();
+  };
+  const arm = () => {
+    if (destroyed) return;
+    if (requested || mode === 'persist' || trigger === 'load') { run(); return; }
+    if (trigger === 'view') {
+      observer = observeOnce(media, run, { threshold: Number(opts.threshold ?? 0.05), rootMargin: opts.rootMargin || '0px' });
     }
-  });
-  // `playing` is wired inside the stylizer; `loadeddata` covers a video that
-  // is already playing (or autoplaying) before the module attached.
-  const onData = () => { media.removeEventListener('loadeddata', onData); stylizer.start(); };
-  if (media.readyState >= 2) stylizer.start();
+  };
+  // Playback events may resume an armed controller, never bypass its trigger.
+  const onData = () => { media.removeEventListener('loadeddata', onData); arm(); };
+  if (media.readyState >= 2) arm();
   else media.addEventListener('loadeddata', onData);
 
   return {
     el,
     type: 'stylize',
     get animatedMedia() { return true; },
-    replay() { stylizer.replay(); },
-    pause() { stylizer.pause(); },
-    resume() { stylizer.resume(); },
+    replay() {
+      if (destroyed) return;
+      requested = true;
+      if (stylizer) stylizer.replay();
+      else run();
+    },
+    pause() { paused = true; stylizer?.pause(); },
+    resume() { paused = false; stylizer?.resume(); },
     destroy() {
       if (destroyed) return;
       destroyed = true;
       media.removeEventListener('loadeddata', onData);
-      stylizer.destroy();
+      observer?.disconnect();
+      stylizer?.destroy();
       releaseWrapper(media, wrapping);
       if (originalStyle == null) media.removeAttribute('style');
       else media.setAttribute('style', originalStyle);
