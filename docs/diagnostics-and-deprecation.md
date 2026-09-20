@@ -44,6 +44,22 @@ unsubscribe();
 Kineto.diagnostics.clear();
 ```
 
+### `KT_NOT_APPLICABLE` — 요청했는데 붙지 못한 경우
+
+요소가 `data-kt-*` 로 모듈을 요청했는데 모듈이 그 마크업에는 붙을 수 없다고 판단하면
+(필수 자식이 없는 등) `create()` 는 `null` 을 돌려줍니다. 오류가 아니므로 예외도 콘솔
+출력도 없고, 화면에도 아무 변화가 없습니다. 신호가 없으면 작성자에게는 "동작하지 않는다"로만
+보이므로, 이때 `KT_NOT_APPLICABLE` 을 한 번 보냅니다.
+
+```js
+// { code: 'KT_NOT_APPLICABLE', module: 'tabs', phase: 'create',
+//   recoverable: true, detail: 'div#pricing.card' }
+```
+
+`detail` 은 `태그#id.첫-클래스` 형태의 짧은 식별자입니다. 페이지의 텍스트나 속성 값은
+담지 않습니다 — 진단이 페이지 내용을 실어 나르지 않게 하기 위해서입니다.
+사용자용 안내는 [문제 해결](troubleshooting.md#속성을-붙였는데-아무-일도-일어나지-않음)에 있습니다.
+
 `debugSink`를 주입하면 콘솔 대신 소비자 sink로만 전달됩니다. Kineto는 DOM,
 URL, 서버 응답을 자동 수집하지 않으며, 최근 50개 이벤트만 opt-in 상태에서
 메모리에 보관합니다. `cause`는 원래 오류 객체를 그대로 전달하므로 소비자가

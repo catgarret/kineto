@@ -6,6 +6,11 @@ export const DIAGNOSTIC_CODES = Object.freeze({
   INVALID_MODULE: 'KT_INVALID_MODULE',
   UNKNOWN_MODULE: 'KT_UNKNOWN_MODULE',
   CREATE_FAILED: 'KT_CREATE_FAILED',
+  // 요소가 `data-kt-*` 로 모듈을 **요청했는데** 모듈이 붙을 수 없다고 판단한 경우.
+  // 오류가 아니라 "이 마크업에는 해당 없음"이고, 화면에는 아무 일도 일어나지 않습니다.
+  // 그래서 신호가 없으면 "동작을 안 하는데 이유를 모르겠다"가 됩니다. `detail` 이
+  // 어느 요소인지 알려 줍니다(진단은 debug 일 때만 나가므로 기본 소음은 없습니다).
+  NOT_APPLICABLE: 'KT_NOT_APPLICABLE',
   UPDATE_FAILED: 'KT_UPDATE_FAILED',
   DESTROY_FAILED: 'KT_DESTROY_FAILED',
   LIFECYCLE_FAILED: 'KT_LIFECYCLE_FAILED',

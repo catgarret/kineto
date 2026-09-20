@@ -195,6 +195,16 @@ function addRecord(sourceEl, name, instance, options) {
   return normalized;
 }
 
+// 진단에 넣을 짧은 요소 식별자. 작성자가 페이지에서 바로 찾을 수 있을 만큼만 담고,
+// 텍스트나 속성 값은 넣지 않습니다(진단이 페이지 내용을 실어 나르면 안 됩니다).
+function describeElement(el) {
+  if (!el || typeof el.tagName !== 'string') return 'unknown element';
+  const tag = el.tagName.toLowerCase();
+  const id = el.id ? `#${el.id}` : '';
+  const className = typeof el.className === 'string' ? el.className.trim().split(/\s+/).filter(Boolean)[0] : '';
+  return `${tag}${id}${className ? `.${className}` : ''}`;
+}
+
 function removeRecord(record, destroy = true, teardownIfEmpty = true) {
   if (!record || !records.has(record) || record.destroying) return;
   record.destroying = true;
@@ -649,7 +659,19 @@ const Kineto = {
           instance = module.create(el, options, this);
         }
 
-        if (!instance) return null;
+        if (!instance) {
+          // 모듈이 "이 마크업에는 붙을 수 없다"고 한 경우입니다(필수 자식이 없다든지).
+          // 오류가 아니지만 화면에는 아무 일도 일어나지 않으므로, 어느 요소였는지
+          // 남깁니다 — 없으면 작성자도 AI 도구도 왜 안 되는지 알 길이 없습니다.
+          emitDiagnostic({
+            code: DIAGNOSTIC_CODES.NOT_APPLICABLE,
+            module: name,
+            phase: 'create',
+            recoverable: true,
+            detail: describeElement(el)
+          });
+          return null;
+        }
         return addRecord(el, name, instance, options);
       } catch (error) {
         console.error(`[Kineto/${name}] create() failed:`, error);

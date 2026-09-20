@@ -175,7 +175,11 @@ const BUDGET = {
   // measured accessibility cost; packed/files budgets follow their own notes.
   // See the toast-region note above for the 1884.1 KB measurement.
   // See the element-restoration note above for the 1886.8 KB measurement.
-  unpackedKb: 1887,
+  // 2026-09-20 (declined-init diagnostic): naming the module and element when a
+  // module declines to attach measures 1888.2 KB unpacked; packed stays inside
+  // its ceiling. "Nothing happened and nobody knows why" is a correctness gap
+  // in the developer experience, so round only this measured cost.
+  unpackedKb: 1889,
   files: 79
 };
 

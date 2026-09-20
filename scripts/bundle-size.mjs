@@ -185,7 +185,9 @@ const BUDGETS = {
   // 2026-09-20 (toast region lifetime): reference-counting the shared region and
   // closing an instance's toasts on destroy measures 441.2 KiB raw minified;
   // gzip stays inside the existing variance. Round only this raw ceiling.
-  'kineto.min.js': { raw: 442, gz: 134, variance: 2 },
+  // 2026-09-20 (declined-init diagnostic): the element descriptor and the new
+  // code measure 442.2 KiB raw minified; gzip stays inside the variance.
+  'kineto.min.js': { raw: 443, gz: 134, variance: 2 },
   // 2026-09-20 (shared-element teardown): the UMD gzip crosses its exact 133 KB
   // boundary at a measured 134.0 KB while raw stays inside 440 KB. Round only
   // the compressed ceiling; runner variance and consumer budgets are unchanged.

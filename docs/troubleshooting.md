@@ -4,6 +4,30 @@
 가이드입니다. 효과를 숨기거나 모듈을 제거하는 방식으로 문제를 피하지 말고, 먼저
 레이아웃·입력·라이프사이클을 확인하십시오.
 
+## 속성을 붙였는데 아무 일도 일어나지 않음
+
+`data-kt-tabs`·`data-kt-slider` 처럼 속성은 분명히 붙였는데 화면에 아무 변화가 없다면,
+대부분 **모듈이 그 마크업에는 붙을 수 없다고 판단하고 물러난 경우**입니다. 오류가 아니라서
+콘솔에도 아무것도 나오지 않습니다. 예를 들어 Tabs 는 안에 `[role="tablist"]`(또는
+`.kt-tablist`)와 패널이 있어야 하고, Slider 는 슬라이드가 있어야 합니다.
+
+어느 모듈이 어느 요소에서 물러났는지는 진단을 켜면 바로 보입니다.
+
+```js
+Kineto.config({ debug: true });
+Kineto.diagnostics.subscribe((event) => {
+  if (event.code === 'KT_NOT_APPLICABLE') console.warn(event.module, '←', event.detail);
+});
+Kineto.init(document);
+// tabs ← div#pricing.card
+```
+
+`detail` 은 `태그#id.첫-클래스` 형태라 페이지에서 바로 찾을 수 있습니다. 해당 모듈의
+`docs/modules/<모듈>.md` 에서 필요한 마크업을 확인한 뒤 맞춰 주세요.
+
+진단은 `debug` 를 켜거나 `debugSink` 를 넘겼을 때만 나갑니다. 켜지 않은 페이지에서는
+아무것도 수집하지 않고 콘솔에도 찍지 않습니다.
+
 ## 모듈형 엔트리가 동작하지 않음
 
 `@dong-gri/kineto/core`는 모듈을 자동 등록하지 않습니다. 사용하는 모듈 엔트리를
