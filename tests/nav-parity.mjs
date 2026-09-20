@@ -23,7 +23,14 @@ const REGISTRY = fs.readdirSync(path.join(root, 'src/modules'))
   .filter((f) => f.endsWith('.js')).map((f) => f.replace('.js', ''));
 // `radial` is a backward-compatible entry point onto Slider's radial effect.
 // Both are public modules and both are listed in the nav; this map only records
-// that they share one engine, so each keeps a working demo.
+// that they share one engine.
+//
+// 2026-09-20: the demo used to carry a card for each, which showed the same
+// carousel twice — the second card said only "this is another way in". One card
+// now serves both, so what has to hold is no longer "each has its own card" but
+// "the shared engine is still demonstrated, and the compare sheet still has
+// material for the compatibility attribute". The sheet's material is declared
+// with `data-demo-specimen`, which is why that declaration is checked here.
 const COMPAT_DEMOS = { radial: 'slider' };
 
 // Drop the page's own <script> tags (external bundle + demo scripts); we inject
@@ -69,8 +76,10 @@ for (const [moduleName, hostModule] of Object.entries(COMPAT_DEMOS)) {
   ok(REGISTRY.includes(moduleName), `compat module ${moduleName} is not registered`);
   ok(leftOrder.includes(hostModule), `${hostModule} is missing from the nav for ${moduleName}`);
   if (moduleName === 'radial') {
-    ok(!!doc.querySelector('#mod-radial [data-kt-radial]'), 'radial has no demo of its own');
     ok(!!doc.querySelector('#mod-slider [data-kt-slider="radial"]'), 'slider lost its radial effect demo');
+    ok(!!doc.querySelector('[data-demo-home="radial"]'), 'radial has nowhere for the nav to send a reader');
+    ok(!!doc.querySelector('[data-demo-specimen="radial"]'),
+      'the compare sheet has no material for data-kt-radial — declare it with data-demo-specimen="radial"');
   }
 }
 for (const a of doc.querySelectorAll('#side-nav-modules .nav-mod')) {

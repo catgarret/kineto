@@ -157,7 +157,12 @@ const BUDGET = {
   // 577.1 KB packed / 1886.8 KB unpacked on the same 79 files. Handing the
   // element back as it was found is the destroy contract; these are the bytes
   // that remember what "as it was found" means.
-  packedKb: 578,
+  // 2026-09-20 (effect quality): Pixel Shift bounded to the glyph runs, Data
+  // Mosaic's recursive subdivision, RGB Slice Burst rebuilt from the photo and
+  // the clustered dissolve order measure 581.1 KB packed / 1898.1 KB unpacked
+  // on the same 79 files. These are the bytes of the effects doing what their
+  // names claim; the file allowlist is unchanged.
+  packedKb: 582,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -182,7 +187,8 @@ const BUDGET = {
   // 2026-09-20 (blur-text pause): holding the native stagger with its remaining
   // delay measures 1889.4 KB unpacked; packed stays inside its ceiling. A pause
   // that does not pause is a correctness gap, not a feature.
-  unpackedKb: 1890,
+  // See the effect-quality note above for the 1898.1 KB measurement.
+  unpackedKb: 1899,
   files: 79
 };
 

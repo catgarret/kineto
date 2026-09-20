@@ -364,6 +364,58 @@ try {
   console.log(`Glitch terminal lifecycle OK (${browserName}): ${terminal.count} renderer cases; no restart, pending work or author-style loss.`);
   assert.deepEqual(errors, [], 'no browser runtime errors');
   console.log(`Glitch Wave OK (${browserName}): ${timing.checks} deterministic checks; real hover/scroll/re-entry, SVG motion, reduced motion and cleanup.`);
+// ── Pixel Shift 는 글자에만 걸려야 합니다 ────────────────────────────────────
+//
+// 블록은 100% 폭이라 `PIXEL ERROR` 가 두 줄로 접히면 글자 오른쪽에 빈 공간이 남습니다.
+// 예전에는 조각과 노이즈를 **요소 상자** 기준으로 뿌려서 그 빈 공간에서도 픽셀이 터졌고,
+// 효과가 글자가 아니라 블록에 걸린 것처럼 보였습니다. 이제 Range 의 줄 단위 사각형 안에서만
+// 만듭니다. 프레임을 찍어 눈으로 보는 대신 **조각의 좌표**를 재므로 타이밍에 흔들리지 않습니다.
+const pixelBounds = await page.evaluate(async (base) => {
+  const module = (await import(`${base}/src/modules/glitch.js`)).default;
+  const host = document.createElement('div');
+  // 글자보다 확실히 넓은 상자 + 두 줄로 접히는 텍스트.
+  host.style.cssText = 'position:relative;width:340px;font:700 64px/1.05 system-ui;letter-spacing:0';
+  host.textContent = 'PIXEL ERROR';
+  document.body.append(host);
+  // 버스트가 시작되면 글자 레이어 자체가 몇 px 흔들리므로, 줄 상자는 **흔들리기 전에**
+  // 재야 합니다. 그래서 일부러 늦은 delay 로 만들고 측정한 뒤 replay 로 터뜨립니다.
+  const instance = module.create(host, { preset: 'pixel', intensity: 1.2, delay: 30 });
+  const wrapper = host.firstElementChild;
+  const box = wrapper.getBoundingClientRect();
+  const range = document.createRange();
+  range.selectNodeContents(wrapper.firstElementChild);
+  const lines = [...range.getClientRects()].filter((line) => line.width > 1).map((line) => ({
+    left: line.left - box.left, right: line.right - box.left,
+    top: line.top - box.top, bottom: line.bottom - box.top
+  }));
+  instance.replay();
+  await new Promise((resolve) => setTimeout(resolve, 80));
+  const bits = [...wrapper.querySelectorAll('span')]
+    .map((node) => /inset\(([\d.]+)px ([\d.]+)px ([\d.]+)px ([\d.]+)px\)/.exec(node.style.clipPath || ''))
+    .filter(Boolean)
+    .map((match) => {
+      const [top, right, bottom, left] = match.slice(1).map(Number);
+      return { left, top, right: box.width - right, bottom: box.height - bottom };
+    });
+  const inside = (bit) => lines.some((line) => bit.left >= line.left - 1 && bit.right <= line.right + 1
+    && bit.top >= line.top - 1 && bit.bottom <= line.bottom + 1);
+  const widestLine = lines.reduce((widest, line) => Math.max(widest, line.right - line.left), 0);
+  const result = {
+    lineCount: lines.length,
+    slackPx: Math.round(box.width - widestLine),
+    bitCount: bits.length,
+    strays: bits.filter((bit) => !inside(bit)).length
+  };
+  instance.destroy();
+  host.remove();
+  return result;
+}, origin);
+assert.ok(pixelBounds.lineCount >= 2, `the fixture must wrap so there is empty space to stray into (lines: ${pixelBounds.lineCount})`);
+assert.ok(pixelBounds.slackPx > 40, `the fixture must leave real empty space beside the text (slack: ${pixelBounds.slackPx}px)`);
+assert.ok(pixelBounds.bitCount > 8, `the burst must actually produce slices (got ${pixelBounds.bitCount})`);
+assert.equal(pixelBounds.strays, 0,
+  `Pixel Shift must stay on the glyphs: ${pixelBounds.strays} of ${pixelBounds.bitCount} slices landed in the ${pixelBounds.slackPx}px of empty space beside the text`);
+
 } finally {
   await browser?.close();
   await new Promise((resolve) => server.close(resolve));

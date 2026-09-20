@@ -14,6 +14,7 @@ import {
   DEFAULT_ASCII_CHARS,
   DITHER_MATRICES,
   DITHER_TYPES,
+  dissolveOrder,
   HALFTONE_SHAPES,
   coverMap,
   createStylizedRenderer,
@@ -216,3 +217,39 @@ try {
 }
 
 console.log('lazy-stylized-media OK — matrices, option normalisation, cover geometry, colour fallbacks and fake-context painting.');
+
+// ── dissolve 는 점이 아니라 덩어리로 걷혀야 합니다 ───────────────────────────
+//
+// 예전에는 셀마다 독립 난수로 순서를 정해, 전환 중간에 원본 위에 고립된 흑백 점만 흩어져
+// 남았습니다. 디더가 걷히는 것이 아니라 사진에 때가 낀 것처럼 보였습니다(사용자 표현:
+// "어색하다"). 지금은 굵은 격자에서 보간한 값을 써서 이웃 셀이 비슷한 차례를 받습니다.
+//
+// 그 성질을 바로 잽니다 — **이웃끼리의 차례 차이**. 독립 난수라면 평균 1/3 에 가깝고,
+// 덩어리라면 훨씬 작아야 합니다. 동시에 0 이어서도 안 됩니다: 가장자리가 완전히 매끈하면
+// 디더 특유의 자글자글한 경계가 사라지고 그냥 얼룩이 번지는 것이 됩니다.
+{
+  const seed = 20260920;
+  const patch = 6;
+  let neighbourGap = 0;
+  let samples = 0;
+  for (let y = 0; y < 48; y += 1) {
+    for (let x = 0; x < 48; x += 1) {
+      neighbourGap += Math.abs(dissolveOrder(x, y, patch, seed) - dissolveOrder(x + 1, y, patch, seed));
+      neighbourGap += Math.abs(dissolveOrder(x, y, patch, seed) - dissolveOrder(x, y + 1, patch, seed));
+      samples += 2;
+    }
+  }
+  const averageGap = neighbourGap / samples;
+  assert.ok(averageGap < 0.12,
+    `dissolve must clear in patches, not speck by speck — neighbouring cells differ by ${averageGap.toFixed(3)} on average `
+    + '(independent per-cell noise averages about 0.33, which is what left dirt scattered over the photo)');
+  assert.ok(averageGap > 0.02,
+    `dissolve must keep a dithery fringe — at ${averageGap.toFixed(3)} the boundary is a smooth blob, not a dither edge`);
+  // 같은 좌표는 항상 같은 차례여야 합니다. 프레임마다 흔들리면 이미 사라진 셀이 되살아납니다.
+  assert.equal(dissolveOrder(9, 4, patch, seed), dissolveOrder(9, 4, patch, seed));
+  assert.notEqual(dissolveOrder(9, 4, patch, seed), dissolveOrder(9, 4, patch, seed ^ 0x2b));
+  for (const [x, y] of [[0, 0], [7, 31], [47, 12]]) {
+    const order = dissolveOrder(x, y, patch, seed);
+    assert.ok(order >= 0 && order <= 1, `dissolve order must stay in 0..1 (got ${order} at ${x},${y})`);
+  }
+}

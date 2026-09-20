@@ -42,7 +42,7 @@ const MODULE_AUDITS = {
     polaroid: ['instant-film-development', "if (effect === 'polaroid') {", "createLayer(wrapper, 'kt-lazy-polaroid-frame', 6)"],
     crt: ['crt-power-on', "if (effect === 'crt') {", "createLayer(wrapper, 'kt-lazy-crt-beam', 7)"],
     'data-mosaic': ['seeded-tile-clear', "if (effect === 'data-mosaic') {", 'const tileMax = Math.max(8, Number(opts.tileMax ?? 44));'],
-    'rgb-slice-burst': ['one-shot-channel-slices', "effect === 'rgb-slice-burst'", 'const slices = Math.round(between(3, 7));'],
+    'rgb-slice-burst': ['one-shot-channel-slices', "effect === 'rgb-slice-burst'", 'background-blend-mode:multiply'],
     // Deprecated aliases of the Stylize module. They still have to read their own
     // options here (the feature contract scans each module file for the options it
     // owns), and each alias keeps its own hand-off; the painting itself lives in

@@ -355,6 +355,9 @@ export default {
     let started = false;
     let noise = null;
     let stylized = null;
+    // 타일/슬라이스 구성을 버스트마다 다르게 하려고 셉니다. 첫 번째는 선언된 seed 그대로라
+    // 재현이 되고, 다시 재생하면 같은 그림이 아니라 새 배치가 나옵니다.
+    let burstIndex = 0;
     const lowTier = kineto?.performance === 'low';
 
     const later = (callback, delay) => {
@@ -570,7 +573,9 @@ export default {
         const box = wrapper.getBoundingClientRect();
         const width = box.width || el.naturalWidth || 300;
         const height = box.height || el.naturalHeight || 200;
-        let seedState = (Math.floor(Number(opts.seed ?? 20260729)) || 1) >>> 0;
+        const burst = burstIndex;
+        burstIndex += 1;
+        let seedState = (((Math.floor(Number(opts.seed ?? 20260729)) || 1) >>> 0) + Math.imul(burst, 0x9E3779B1)) >>> 0;
         const rnd = () => {
           seedState = (seedState + 0x6D2B79F5) >>> 0;
           let t = seedState;
@@ -585,24 +590,35 @@ export default {
           const tileMax = Math.max(8, Number(opts.tileMax ?? 44));
           const tileMin = Math.max(3, Number(opts.tileMin ?? 8));
           const cover = String(opts.skeletonColor || '#0a0908');
-          const cols = Math.ceil(width / tileMax);
-          const rows = Math.ceil(height / tileMax);
-          const maxSplit = Math.max(1, Math.min(5, Math.round(tileMax / tileMin)));
+          // 타일을 **재귀 분할**로 만듭니다. 예전에는 tileMax 격자의 칸마다 같은 배율로
+          // 쪼개서 결과가 거의 한 가지 크기로 수렴했고, 그래서 모자이크가 아니라 규칙적인
+          // 격자로 읽혔습니다("랜덤해 보이지 않는다"의 진짜 원인). 칸마다 더 쪼갤지를 따로
+          // 굴리면 큰 타일과 작은 타일이 한 화면에 섞여 크기가 실제로 흩어집니다.
+          // `tileMax` 가 가장 굵은 눈금, `tileMin` 이 더 이상 쪼개지 않는 바닥입니다.
           const nodes = [];
-          for (let row = 0; row < rows; row += 1) {
-            for (let col = 0; col < cols; col += 1) {
-              const split = rnd() < 0.55 ? maxSplit : rnd() < 0.75 ? 2 : 1;
-              const size = tileMax / split;
-              for (let sy = 0; sy < split; sy += 1) {
-                for (let sx = 0; sx < split; sx += 1) {
-                  const tile = document.createElement('span');
-                  tile.style.cssText = `position:absolute;left:${col * tileMax + sx * size}px;top:${row * tileMax + sy * size}px;`
-                    + `width:${Math.ceil(size)}px;height:${Math.ceil(size)}px;background:${cover}`;
-                  layer.appendChild(tile);
-                  nodes.push({ tile, weight: rnd() * 0.72 + (size / tileMax) * 0.28 });
-                }
-              }
+          const place = (x, y, size) => {
+            if (x >= width || y >= height) return;
+            if (size / 2 >= tileMin && rnd() < 0.68) {
+              const half = size / 2;
+              place(x, y, half);
+              place(x + half, y, half);
+              place(x, y + half, half);
+              place(x + half, y + half, half);
+              return;
             }
+            const tileWidth = Math.ceil(Math.min(size, width - x));
+            const tileHeight = Math.ceil(Math.min(size, height - y));
+            if (tileWidth <= 0 || tileHeight <= 0) return;
+            const tile = document.createElement('span');
+            tile.style.cssText = `position:absolute;left:${x}px;top:${y}px;`
+              + `width:${tileWidth}px;height:${tileHeight}px;background:${cover}`;
+            layer.appendChild(tile);
+            // 작은 타일이 먼저, 큰 덩어리가 나중에 걷힙니다 — 세부부터 드러나야 사진이
+            // "조립되는" 인상이 나고, 반대로 하면 그냥 덩어리가 사라지는 것으로 보입니다.
+            nodes.push({ tile, weight: rnd() * 0.66 + (size / tileMax) * 0.34 });
+          };
+          for (let y = 0; y < height; y += tileMax) {
+            for (let x = 0; x < width; x += tileMax) place(x, y, tileMax);
           }
           nodes.sort((a, b) => a.weight - b.weight);
           nodes.forEach((entry, index) => {
@@ -614,23 +630,66 @@ export default {
           });
           later(() => { layer.remove(); finish(); }, duration * 1000 + 200);
         } else {
-          // One burst as the image lands: channel split + a few shoved slices,
-          // then a clean frame. Deliberately a single burst, not a loop.
-          const palette = (Array.isArray(opts.colors) && opts.colors.length)
-            ? opts.colors : ['#ff2e2e', '#00e07a', '#2b6bff'];
-          const slices = Math.round(between(3, 7));
-          for (let index = 0; index < slices; index += 1) {
-            const bandHeight = between(height * 0.03, height * 0.18);
-            const band = document.createElement('span');
-            band.style.cssText = `position:absolute;left:0;right:0;top:${between(0, Math.max(0, height - bandHeight))}px;`
-              + `height:${bandHeight}px;background:${palette[Math.floor(rnd() * palette.length)]};`
-              + `mix-blend-mode:screen;opacity:${between(0.4, 0.85)};transform:translateX(${between(-26, 26)}px)`;
-            layer.appendChild(band);
+          // 이미지가 막 올라올 때 한 번 터지는 채널 분리. 반복이 아니라 단발입니다.
+          //
+          // 예전에는 **단색 띠**를 얹고 통째로 사라지게 했습니다. 움직임이 없어서 사진과
+          // 아무 관계 없는 디버그 오버레이처럼 보였고, 그래서 "퀄이 떨어진다"가 됩니다.
+          // RGB 슬라이스는 원래 **사진 자신**을 채널로 나눠 어긋나게 미는 것이므로, 사진을
+          // 채널 색으로 곱한 사본(background-blend-mode:multiply)을 가로 띠로 잘라 좌우로
+          // 밀고 몇 프레임 튀게 합니다. 색이 사진에서 나오므로 화면과 따로 놀지 않습니다.
+          const palette = (Array.isArray(opts.colors) && opts.colors.length >= 3)
+            ? opts.colors : ['#ff2020', '#20ff40', '#2060ff'];
+          const sliceCount = Math.round(between(4, 7));
+          const shove = Math.max(6, width * 0.05);
+          // 레인 번호를 섞어 앞에서부터 sliceCount 개만 씁니다 — 위치는 흩어지되 규칙적이지 않게.
+          const laneOrder = Array.from({ length: sliceCount * 2 }, (_unused, lane) => lane);
+          for (let index = laneOrder.length - 1; index > 0; index -= 1) {
+            const swap = Math.floor(rnd() * (index + 1));
+            const held = laneOrder[index];
+            laneOrder[index] = laneOrder[swap];
+            laneOrder[swap] = held;
           }
-          later(() => {
-            layer.style.transition = 'opacity 120ms linear';
-            layer.style.opacity = '0';
-          }, Math.max(60, duration * 220));
+          for (let index = 0; index < sliceCount; index += 1) {
+            // 레인을 슬라이스 수의 **두 배**로 잘라 그중 일부만 씁니다. 완전히 무작위로 뿌리면
+            // 한쪽에 몰려 "아래쪽만 색이 뜬" 것처럼 보이고, 레인마다 하나씩 채우면 일정한
+            // 줄무늬(블라인드)가 되어 글리치가 아니라 테스트 패턴으로 읽힙니다. 절반만 채우면
+            // 프레임 대부분은 깨끗한 채로 몇 군데가 불규칙하게 튑니다.
+            const lane = height / laneOrder.length;
+            const bandHeight = Math.max(6, Math.min(lane * 1.4, between(height * 0.035, height * 0.12)));
+            const top = Math.min(height - bandHeight, laneOrder[index] * lane + between(0, lane * 0.5));
+            const band = document.createElement('span');
+            band.style.cssText = `position:absolute;left:0;right:0;top:${top}px;height:${bandHeight}px;`
+              + 'overflow:hidden;mix-blend-mode:screen;pointer-events:none;'
+              + `opacity:${between(0.32, 0.6).toFixed(2)}`;
+            // 띠 안에서 사진을 원래 위치 그대로 보이게 올려 두면, 띠는 사진의 그 부분을
+            // 잘라 든 것이 됩니다 — 그래야 밀었을 때 "찢겨 어긋난" 것으로 읽힙니다.
+            const skin = document.createElement('span');
+            skin.style.cssText = `position:absolute;left:0;top:${-top}px;width:100%;height:${height}px;`
+              + `background-image:url("${String(src).replace(/["\\]/g, '\\$&')}");`
+              + 'background-size:cover;background-position:center;'
+              + `background-color:${palette[index % palette.length]};background-blend-mode:multiply;`;
+            band.appendChild(skin);
+            layer.appendChild(band);
+            // 대부분은 몇 px 만 어긋나 **색 테두리**로 읽히고(채널 분리의 본모습), 가끔 하나가
+            // 크게 밀려 찢어집니다. 전부 크게 밀면 사진과 무관한 색 막대가 늘어설 뿐입니다.
+            const torn = rnd() < 0.3;
+            const offset = (rnd() < 0.5 ? -1 : 1) * (torn ? between(shove * 0.5, shove) : between(2, 9));
+            const frames = [
+              { transform: `translateX(${offset.toFixed(1)}px)`, opacity: band.style.opacity },
+              { transform: `translateX(${(-offset * 0.55).toFixed(1)}px)`, opacity: band.style.opacity, offset: 0.45 },
+              { transform: `translateX(${(offset * 0.22).toFixed(1)}px)`, opacity: '0.35', offset: 0.75 },
+              { transform: 'translateX(0)', opacity: '0' }
+            ];
+            const burstMs = Math.max(220, duration * 520);
+            if (typeof band.animate === 'function') {
+              // 계단 이징이라 부드럽게 흐르지 않고 프레임 단위로 튑니다 — 글리치의 핵심입니다.
+              band.animate(frames, { duration: burstMs, easing: 'steps(5, end)', fill: 'forwards' });
+            } else {
+              band.style.transition = `transform ${burstMs}ms steps(5, end), opacity ${burstMs}ms linear`;
+              band.style.transform = 'translateX(0)';
+              band.style.opacity = '0';
+            }
+          }
           later(() => { layer.remove(); finish(); }, duration * 1000 + 200);
         }
         return;

@@ -259,7 +259,66 @@ try {
     result.video.unsupported ? 'video skipped: captureStream unsupported here' : '',
     !result.video.unsupported && !result.video.environmentAdvancesFrames ? 'video re-render skipped: this browser build does not deliver new canvas-stream frames' : ''
   ].filter(Boolean);
-  console.log(`Lazy stylized OK (${browserName}): dither/ascii/halftone persist + reveal, palette/type/inverted pixels, live-source re-render, pause freeze, full cleanup${skipped.length ? ` (${skipped.join('; ')})` : ''}.`);
+// ── Data Mosaic 은 격자가 아니라 모자이크여야 합니다 ─────────────────────────
+//
+// 예전에는 `tileMax` 격자의 칸마다 같은 배율로 쪼개서 타일이 거의 한 가지 크기로 수렴했고,
+// 결과가 모자이크가 아니라 규칙적인 격자로 읽혔습니다. 그리고 버스트마다 씨앗을 처음부터
+// 다시 잡아 **다시 재생해도 같은 그림**이었습니다. 두 가지를 함께 지킵니다.
+const mosaic = await page.evaluate(async () => {
+  const cell = document.createElement('div');
+  cell.className = 'cell';
+  const image = document.createElement('img');
+  image.dataset.src = './demo/assets/gallery-04.webp';
+  cell.appendChild(image);
+  document.querySelector('main').appendChild(cell);
+  const instance = window.Kineto.create('lazy', image, { preset: 'data-mosaic', duration: 0.6, tileMax: 48, tileMin: 6 });
+  const layerOf = () => cell.querySelector('[class*="data-mosaic-layer"]');
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 140));
+  // 첫 버스트가 **끝난 뒤에** 다시 재생해야 합니다. 도는 중에 부르면 같은 레이어가 그대로
+  // 남아 두 번 다 같은 그림을 읽게 됩니다(테스트가 실제로 그렇게 속았습니다).
+  const finished = () => new Promise((resolve) => setTimeout(resolve, 900));
+  await settle();
+  const read = () => {
+    const tiles = [...(layerOf()?.children || [])];
+    const tally = new Map();
+    tiles.forEach((tile) => tally.set(tile.style.width, (tally.get(tile.style.width) || 0) + 1));
+    return {
+      count: tiles.length,
+      sizes: [...tally.keys()],
+      // 큰 타일이 **면적으로** 얼마나 차지하는가. 개수로 세면 작은 타일이 당연히 많아서
+      // (한 칸을 넷으로 쪼개면 4개가 되니까) 분포가 왜곡됩니다. 눈에 "큰 덩어리와 작은
+      // 알갱이가 섞여 있다"로 읽히려면 가장 큰 크기가 면적의 한 자리 수 이상은 되어야 합니다.
+      largestAreaShare: (() => {
+        const area = (size) => Number.parseFloat(size) ** 2;
+        const total = tiles.reduce((sum, tile) => sum + area(tile.style.width), 0) || 1;
+        const largest = Math.max(...[...tally.keys()].map(Number.parseFloat));
+        return tiles.filter((tile) => Number.parseFloat(tile.style.width) === largest)
+          .reduce((sum, tile) => sum + area(tile.style.width), 0) / total;
+      })(),
+      layout: tiles.map((tile) => `${tile.style.left}/${tile.style.top}/${tile.style.width}`).join(',')
+    };
+  };
+  const first = read();
+  await finished();
+  // 데모의 Replay 버튼이 실제로 부르는 경로로 다시 재생합니다.
+  window.Kineto.replay(image, 'lazy');
+  await settle();
+  const second = read();
+  instance.destroy();
+  cell.remove();
+  return { first, second };
+});
+
+assert.ok(mosaic.first.count > 30, `the mosaic must cover the image with tiles (got ${mosaic.first.count})`);
+assert.ok(mosaic.first.sizes.length >= 3,
+  `tiles must come in several sizes (sizes: ${mosaic.first.sizes.join(', ')})`);
+assert.ok(mosaic.first.largestAreaShare > 0.08,
+  `the coarsest tiles must hold real estate, or every cell has split to the floor and the cover is a plain fine grid `
+  + `(largest size covers ${(mosaic.first.largestAreaShare * 100).toFixed(0)}% of the area; sizes: ${mosaic.first.sizes.join(', ')})`);
+assert.notEqual(mosaic.first.layout, mosaic.second.layout,
+  `replaying must lay the tiles out afresh — replaying into the identical pattern is what made the effect look canned (${mosaic.first.count} then ${mosaic.second.count} tiles)`);
+
+  console.log(`Lazy stylized OK (${browserName}): dither/ascii/halftone persist + reveal, palette/type/inverted pixels, live-source re-render, pause freeze, mosaic tile variety, full cleanup${skipped.length ? ` (${skipped.join('; ')})` : ''}.`);
 } finally {
   await browser.close();
   server.close();

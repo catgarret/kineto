@@ -192,6 +192,32 @@ function hash3(x, y, tick, seed) {
   return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
 
+/**
+ * `dissolve` 전환에서 셀이 걷히는 **차례**(0..1). 작을수록 먼저 사라집니다.
+ *
+ * 셀마다 독립 난수를 쓰면 중간 단계에서 원본 위에 고립된 흑백 점만 남아, 디더가 걷히는
+ * 것이 아니라 사진에 때가 낀 것처럼 보입니다. 굵은 격자에서 값을 뽑아 부드럽게 보간하면
+ * 이웃 셀이 비슷한 차례를 받아 **지역 단위**로 걷히고, 남은 쪽과 드러난 쪽이 각각 온전한
+ * 그림으로 읽힙니다. 거기에 셀 단위 흔들림을 조금 섞어, 경계가 매끈한 얼룩이 아니라 디더
+ * 특유의 자글자글한 가장자리가 되게 합니다.
+ *
+ * 순수 함수라 이웃 간 차이를 바로 잴 수 있습니다(tests/lazy-stylized-media.mjs).
+ */
+export function dissolveOrder(x, y, patch, seed) {
+  const size = Math.max(3, patch);
+  const smooth = (t) => t * t * (3 - 2 * t);
+  const gx = x / size;
+  const gy = y / size;
+  const x0 = Math.floor(gx);
+  const y0 = Math.floor(gy);
+  const u = smooth(gx - x0);
+  const v = smooth(gy - y0);
+  const top = hash3(x0, y0, 0, seed) * (1 - u) + hash3(x0 + 1, y0, 0, seed) * u;
+  const bottom = hash3(x0, y0 + 1, 0, seed) * (1 - u) + hash3(x0 + 1, y0 + 1, 0, seed) * u;
+  const clumped = top * (1 - v) + bottom * v;
+  return clamp(clumped * 0.82 + hash3(x, y, 0, seed) * 0.18, 0, 1);
+}
+
 export const MOTION_TYPES = Object.freeze(['none', 'drift', 'shuffle', 'scan', 'flow', 'pulse']);
 export const POINTER_TYPES = Object.freeze(['none', 'lens', 'spotlight', 'ripple']);
 
@@ -714,6 +740,8 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
       const cell = Math.max(1, Math.round(Math.max(1, cellSize) * ratio));
       const cols = Math.max(1, Math.ceil(pixelWidth / cell));
       const rows = Math.max(1, Math.ceil(pixelHeight / cell));
+      // 덩어리 크기는 화면에 비례합니다 — 셀 수가 많을수록 덩어리도 커야 같은 인상이 납니다.
+      const patch = Math.max(3, Math.round(Math.min(cols, rows) / 12));
       context.save();
       context.globalCompositeOperation = 'destination-out';
       context.fillStyle = '#000';
@@ -723,7 +751,7 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
             // A pure diagonal edge reads as a hard line, so blend in a little
             // per-cell noise to break it up.
             ? clamp((x / cols) * 0.55 + (y / rows) * 0.45 + (hash3(x, y, 0, seed) - 0.5) * 0.22, 0, 1)
-            : hash3(x, y, 0, seed);
+            : dissolveOrder(x, y, patch, seed);
           if (order < amount) context.fillRect(x * cell, y * cell, cell, cell);
         }
       }

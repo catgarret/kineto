@@ -84,14 +84,18 @@ assert.ok(
 // adds one translated mixed-language title for its native/fallback comparison.
 // Six Slider and seventeen Reveal comparisons plus one Wave playback card.
 // Stylize contributes six cards (living grain, ASCII shuffle, pointer lens,
-// colour diffusion, halftone video scan, and the lazy-load dither reveal), and
-// the `radial` compatibility module its own card next to Slider's radial effect.
+// colour diffusion, halftone video scan, and the lazy-load dither reveal).
+// 2026-09-20: the `radial` compatibility card is gone. It only restated that
+// `data-kt-radial` is another way into Slider's radial effect, which made the
+// demo show the same carousel twice; the Radial Carousel card now carries the
+// `radial` home and declares itself that module's comparison material.
 // The last seven variants without dedicated markup got cards of their own: Lazy
 // data-mosaic and rgb-slice-burst, Cursor blob, and Glitch noise, crt, reveal
 // and rgb-slice-burst (docs/variant-distinctness.md). Stylize adds a rotated
 // print screen so the halftone angle has a card of its own.
-assert.equal(descriptions.length, 184);
-assert.equal(titles.length, 19);
+assert.equal(descriptions.length, 183);
+// 18 since the Korean-titled `radial` compatibility card was removed (see above).
+assert.equal(titles.length, 18);
 
 for (const [label, values, dictionary] of [
   ['card description', descriptions, copy.cards],

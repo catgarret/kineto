@@ -910,10 +910,20 @@
           } else node.textContent=value;
         });
         refreshDemoControlNames(document,lang);
+        // 모듈 설명은 그 모듈의 **대표 카드**(data-demo-home)에서 가져옵니다. 예전에는 모듈
+        // 블록 안의 첫 카드를 긁었는데, 대표 카드가 다른 블록에 있는 모듈(radial 은 Slider
+        // 블록의 원형 캐러셀 카드가 대표입니다)은 블록이 비어 설명을 못 찾고 한국어로 남았습니다.
+        const localizedSub=(moduleName,block)=>{
+          const home=moduleName?document.querySelector(`[data-demo-home="${moduleName}"]`):null;
+          const selector='.card > p, .glow-demo > div > p, .scroll-demo-unit > p, .hscroll-demo-unit > p, .sticky-stack-unit > p';
+          return (home?.querySelector(':scope > p')?.textContent
+            ||home?.closest('.card')?.querySelector(':scope > p')?.textContent
+            ||block?.querySelector(selector)?.textContent||'').trim();
+        };
         document.querySelectorAll('[data-module-block] .module-block-sub').forEach((subtitle)=>{
           const block=subtitle.closest('[data-module-block]');
           if(!subtitle.dataset.koSub)subtitle.dataset.koSub=subtitle.textContent;
-          const localizedDescription=block?.querySelector('.card > p, .glow-demo > div > p, .scroll-demo-unit > p, .hscroll-demo-unit > p, .sticky-stack-unit > p')?.textContent?.trim();
+          const localizedDescription=localizedSub(block?.dataset.moduleBlock,block);
           subtitle.textContent=dict?(localizedDescription||subtitle.dataset.koSub):subtitle.dataset.koSub;
         });
         document.querySelectorAll('.mod-index-item[data-module]').forEach((button)=>{
@@ -921,7 +931,7 @@
           if(!subtitle)return;
           if(!button.dataset.koSub)button.dataset.koSub=subtitle.textContent;
           const block=document.getElementById(`mod-${button.dataset.module}`);
-          const localizedDescription=block?.querySelector('.card > p, .glow-demo > div > p, .scroll-demo-unit > p, .hscroll-demo-unit > p, .sticky-stack-unit > p')?.textContent?.trim();
+          const localizedDescription=localizedSub(button.dataset.module,block);
           subtitle.textContent=dict?(localizedDescription||button.dataset.koSub):button.dataset.koSub;
           button.title=window.KINETO_PLAYGROUND_I18N?.[lang]?.demoLink
             ||window.KINETO_PLAYGROUND_I18N?.ko?.demoLink

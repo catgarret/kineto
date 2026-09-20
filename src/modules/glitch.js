@@ -795,6 +795,37 @@ export default {
     };
 
     // ── Pixel shift: square glyph fragments on a visible pixel grid ─────────
+    /**
+     * 글자가 **실제로 차지하는 줄 상자들**. base 기준 좌표입니다.
+     *
+     * 요소 상자를 쓰면 안 됩니다. `PIXEL ERROR` 가 두 줄로 접히면 블록은 여전히 100% 폭이라,
+     * 요소 상자에 조각과 노이즈를 뿌리면 글자가 없는 빈 곳에서도 픽셀이 터집니다 — 효과가
+     * 글자가 아니라 블록에 걸린 것처럼 보입니다. Range 의 줄 단위 사각형은 글리프를 바짝
+     * 감싸므로, 짧은 줄은 짧은 만큼만 대상이 됩니다.
+     */
+    const textBoxes = () => {
+      const box = base.getBoundingClientRect();
+      const whole = [{ left: 0, top: 0, width: box.width, height: box.height }];
+      if (typeof document.createRange !== 'function') return whole;
+      let rects = [];
+      try {
+        const range = document.createRange();
+        range.selectNodeContents(source);
+        rects = Array.from(range.getClientRects());
+      } catch (_error) {
+        return whole;
+      }
+      const lines = rects
+        .filter((line) => line.width > 1 && line.height > 1)
+        .map((line) => ({
+          left: line.left - box.left,
+          top: line.top - box.top,
+          width: line.width,
+          height: line.height
+        }));
+      return lines.length ? lines : whole;
+    };
+
     const pixelBurst = () => {
       if (!alive) return;
       const duration = Math.max(180, Number(opts.duration ?? 0.42) * 1000) / speed;
@@ -807,20 +838,33 @@ export default {
       ], { duration, easing: `steps(${steps}, end)` });
 
       const rect = base.getBoundingClientRect();
-      const unit = Math.max(4, Math.round(Math.min(rect.height || 24, 40) / 7));
-      const columns = Math.max(1, Math.ceil(rect.width / unit));
-      const rows = Math.max(1, Math.ceil(rect.height / unit));
-      const bitCount = Math.min(columns * rows, Math.max(14, Math.round(18 + intensity * 8)));
+      const lines = textBoxes();
+      // 격자 눈금은 한 줄의 높이에서 옵니다. 전체 높이를 쓰면 여러 줄일 때 눈금이 글자보다
+      // 커져 조각이 줄을 통째로 집어 버립니다.
+      const lineHeight = lines.reduce((smallest, line) => Math.min(smallest, line.height), Infinity);
+      const unit = Math.max(4, Math.round(Math.min(lineHeight || rect.height || 24, 40) / 7));
+      const cellsIn = (line) => Math.max(1, Math.ceil(line.width / unit)) * Math.max(1, Math.ceil(line.height / unit));
+      const totalCells = lines.reduce((sum, line) => sum + cellsIn(line), 0);
+      const bitCount = Math.min(totalCells, Math.max(14, Math.round(18 + intensity * 8)));
       for (let index = 0; index < bitCount; index += 1) {
         const bit = document.createElement('span');
+        // 줄은 글자 수에 비례해 고릅니다 — 긴 줄에서 더 자주 터지는 편이 자연스럽습니다.
+        let pick = random() * totalCells;
+        let line = lines[lines.length - 1];
+        for (const candidate of lines) {
+          pick -= cellsIn(candidate);
+          if (pick <= 0) { line = candidate; break; }
+        }
+        const columns = Math.max(1, Math.ceil(line.width / unit));
+        const rows = Math.max(1, Math.ceil(line.height / unit));
         const col = Math.floor(random() * columns);
         const row = Math.floor(random() * rows);
         const widthUnits = 1 + Math.floor(random() * 3);
         const heightUnits = 1 + Math.floor(random() * 2);
-        const left = col * unit;
-        const top = row * unit;
-        const width = Math.min(rect.width - left, widthUnits * unit);
-        const height = Math.min(rect.height - top, heightUnits * unit);
+        const left = line.left + col * unit;
+        const top = line.top + row * unit;
+        const width = Math.min(line.left + line.width - left, widthUnits * unit);
+        const height = Math.min(line.top + line.height - top, heightUnits * unit);
         const right = Math.max(0, rect.width - left - width);
         const bottom = Math.max(0, rect.height - top - height);
         bit.textContent = text;
@@ -864,17 +908,36 @@ export default {
         const noiseColors = dark
           ? ['#ffffff', '#00f5d4', '#ff2d95', '#6c7dff', '#050505']
           : ['#111111', '#00a98f', '#e60065', '#3155df', '#ffffff'];
-        const count = Math.max(18, Math.round((noiseWidth * noiseHeight) / 260));
+        // 노이즈도 글자 줄 안에서만 칩니다. 캔버스는 요소 전체를 덮고 있으므로, 줄 상자를
+        // 벗어나 그리면 빈 공간에 점이 뜹니다 — 조각을 가둔 이유와 같습니다.
+        const inkArea = lines.reduce((sum, line) => sum + line.width * line.height, 0);
+        const count = Math.max(18, Math.round(inkArea / 260));
+        const pickLine = () => {
+          let remaining = random() * inkArea;
+          for (const candidate of lines) {
+            remaining -= candidate.width * candidate.height;
+            if (remaining <= 0) return candidate;
+          }
+          return lines[lines.length - 1];
+        };
         for (let index = 0; index < count; index += 1) {
-          const nx = Math.floor(random() * columns) * unit;
-          const ny = Math.floor(random() * rows) * unit;
+          const line = pickLine();
+          const nx = line.left + Math.floor(random() * Math.max(1, Math.ceil(line.width / unit))) * unit;
+          const ny = line.top + Math.floor(random() * Math.max(1, Math.ceil(line.height / unit))) * unit;
           noiseContext.globalAlpha = 0.15 + random() * 0.55;
           noiseContext.fillStyle = noiseColors[Math.floor(random() * noiseColors.length)];
-          noiseContext.fillRect(nx, ny, unit * (1 + Math.floor(random() * 3)), unit);
+          noiseContext.fillRect(nx, ny, Math.min(unit * (1 + Math.floor(random() * 3)), line.left + line.width - nx), unit);
         }
+        // 가로로 지나가는 스캔선도 한 줄의 폭 안에서만 긋습니다.
+        const scan = pickLine();
         noiseContext.globalAlpha = 0.28;
         noiseContext.fillStyle = noiseColors[Math.floor(random() * noiseColors.length)];
-        noiseContext.fillRect(0, Math.floor(random() * rows) * unit, noiseWidth, Math.max(1, Math.round(unit / 2)));
+        noiseContext.fillRect(
+          scan.left,
+          scan.top + Math.floor(random() * Math.max(1, Math.ceil(scan.height / unit))) * unit,
+          scan.width,
+          Math.max(1, Math.round(unit / 2))
+        );
         noiseContext.globalAlpha = 1;
         noiseRaf = requestAnimationFrame(drawNoise);
         pixelRafs.add(noiseRaf);
