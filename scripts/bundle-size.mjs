@@ -211,7 +211,9 @@ const BUDGETS = {
   // 2026-09-20 (declined-init diagnostic): the element descriptor and the new
   // code measure 442.2 KiB raw minified; gzip stays inside the variance.
   // See the live-motion-switching note above for the 445.8 KiB measurement.
-  'kineto.min.js': { raw: 454, gz: 139, variance: 2 },
+  // 2026-09-21 (fold): FLIP's fold move style measures 454.3 KiB raw / 139.0
+  // KiB gzip minified — the raw ceiling is what moves.
+  'kineto.min.js': { raw: 455, gz: 139, variance: 2 },
   // 2026-09-20 (shared-element teardown): the UMD gzip crosses its exact 133 KB
   // boundary at a measured 134.0 KB while raw stays inside 440 KB. Round only
   // the compressed ceiling; runner variance and consumer budgets are unchanged.

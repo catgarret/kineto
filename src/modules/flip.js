@@ -56,9 +56,18 @@ export default {
     //   'crossfade' — the old and new layout dissolve through each other
     //   'fade-slide'— glides AND cross-fades, softening long jumps
     //   'scale'     — shrinks away and pops back at the new position
+    //   'fold'      — the two layouts blur THROUGH each other while the old one
+    //                 holds its place in space, the way a folding phone hands
+    //                 its cover screen over to the inner one: nothing jumps at
+    //                 a threshold, the picture goes soft in the middle and comes
+    //                 back sharp somewhere else
     // Anything other than 'slide' means the eye doesn't have to track a moving
     // tile across the layout, which reads calmer on big reorders.
-    const mode = ['none', 'slide', 'fade', 'crossfade', 'fade-slide', 'scale'].includes(opts.mode) ? opts.mode : 'slide';
+    const mode = ['none', 'slide', 'fade', 'crossfade', 'fade-slide', 'scale', 'fold'].includes(opts.mode) ? opts.mode : 'slide';
+    // How soft the middle of a `fold` gets. This is the whole trick: a straight
+    // crossfade between two layouts reads as two pictures swapping, and the blur
+    // is what makes it read as one thing being re-formed.
+    const foldBlur = Math.max(0, Number(opts.foldBlur ?? 12));
     const enterFrames = () => (mode === 'fade' || mode === 'crossfade'
       ? [{ opacity: 0 }, { opacity: 1 }]
       : [{ opacity: 0, transform: 'scale(.92)' }, { opacity: 1, transform: 'none' }]);
@@ -106,11 +115,29 @@ export default {
         const sx = last.width ? first.width / last.width : 1;
         const sy = last.height ? first.height / last.height : 1;
         if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sx - 1) < 0.01 && Math.abs(sy - 1) < 0.01) return;
-        if (mode === 'crossfade') {
+        if (mode === 'crossfade' || mode === 'fold') {
           const timing = { duration: duration * 1000, easing: ease, delay: i * stagger * 1000 };
+          // The old box, expressed as a transform of the new one — the same
+          // "invert" every other mode starts from.
+          const from = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
           const ghost = visualClone(item, first);
-          const outgoing = ghost.animate([{ opacity: 1 }, { opacity: 0 }], timing);
-          const incoming = item.animate([{ opacity: 0 }, { opacity: 1 }], timing);
+          // The ghost is pinned to the OLD rect, so in `fold` the outgoing
+          // layout holds its place in space while the new one is built around
+          // it — that is what stops the hand-over from reading as a cut.
+          const outgoing = ghost.animate(mode === 'fold'
+            ? [
+              { opacity: 1, filter: 'blur(0px)', offset: 0 },
+              { opacity: 0, filter: `blur(${foldBlur}px)`, offset: 0.62 },
+              { opacity: 0, filter: `blur(${foldBlur}px)`, offset: 1 }
+            ]
+            : [{ opacity: 1 }, { opacity: 0 }], timing);
+          const incoming = item.animate(mode === 'fold'
+            ? [
+              { transform: from, opacity: 0, filter: `blur(${foldBlur}px)`, offset: 0 },
+              { opacity: 1, offset: 0.62 },
+              { transform: 'none', opacity: 1, filter: 'blur(0px)', offset: 1 }
+            ]
+            : [{ opacity: 0 }, { opacity: 1 }], timing);
           Promise.allSettled([outgoing.finished, incoming.finished]).then(() => { ghosts.delete(ghost); ghost.remove(); });
           i += 1;
           return;

@@ -179,7 +179,9 @@ const BUDGET = {
   // files. A backdrop blur alone is a CSS one-liner; these are the bytes of the
   // displacement map, the lit rim and the tiering that keeps the look on
   // engines with no SVG backdrop-filter.
-  packedKb: 594,
+  // 2026-09-21 (fold): FLIP's `fold` move style measures 594.1 KB packed /
+  // 1937.0 KB unpacked on the same 80 files.
+  packedKb: 595,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -208,7 +210,7 @@ const BUDGET = {
   // See the live-motion-switching note above for the 1903.0 KB measurement.
   // See the squircle note above for the 1920.1 KB measurement, and the liquid
   // glass note for 1935.4 KB.
-  unpackedKb: 1936,
+  unpackedKb: 1938,
   files: 80
 };
 

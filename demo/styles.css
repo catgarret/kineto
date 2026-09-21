@@ -1367,3 +1367,12 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
    image beside it is what shows the blur, the saturation and the lit rim. */
 .glass-stage{position:relative;padding:0;overflow:hidden}
 .glass-pane{position:absolute;left:11%;right:11%;top:17%;bottom:17%;border-radius:28px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;letter-spacing:.06em;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+
+/* Fold demo — a compact "cover" layout that opens into a wide "inner" one. The
+   two states are only a grid change apart; the module is what makes the change
+   read as one surface being re-formed instead of a cut. */
+.fold-stage{display:flex;flex-direction:column;align-items:center;gap:var(--sp-4)}
+.fold-panel{display:grid;grid-template-columns:repeat(2,96px);gap:var(--sp-3);justify-content:center;transition:none}
+.fold-panel.is-open{grid-template-columns:repeat(3,120px)}
+.fold-tile{display:flex;align-items:center;justify-content:center;height:72px;border-radius:16px;background:var(--panel2);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:13px}
+.fold-panel.is-open .fold-tile{height:96px}

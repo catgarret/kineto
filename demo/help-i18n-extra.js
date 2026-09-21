@@ -2631,6 +2631,33 @@
     sets[lang] = sets[lang] || {};
     sets[lang].cardGlow = Object.assign({}, sets[lang].cardGlow, values);
   }
+  const flipFold = {
+    "ko": {
+      "foldBlur": "바뀌는 도중 얼마나 흐려질지(px)입니다. 흐림이 없으면 두 배치가 그냥 교차되는 것으로 보이고, 흐림이 있으면 하나의 화면이 다시 짜이는 것처럼 보입니다."
+    },
+    "en": {
+      "foldBlur": "How soft the middle of the change gets, in px. Without it the two layouts read as two pictures swapping; with it they read as one surface being re-formed."
+    },
+    "ja": {
+      "foldBlur": "切り替わる途中でどれだけぼかすか（px）。ぼかしがないと二つの配置が入れ替わって見え、あると一つの画面が組み直されて見えます。"
+    },
+    "zh-CN": {
+      "foldBlur": "变化过程中的模糊程度（px）。没有模糊时像两张图在互换；有模糊时像同一块界面在重新排布。"
+    },
+    "zh-TW": {
+      "foldBlur": "變化過程中的模糊程度（px）。沒有模糊時像兩張圖在互換；有模糊時像同一塊介面在重新排布。"
+    },
+    "ru": {
+      "foldBlur": "Насколько размягчается середина перехода, в px. Без этого две раскладки читаются как подмена картинок; с этим — как одна поверхность, собирающаяся заново."
+    },
+    "it": {
+      "foldBlur": "Quanto si ammorbidisce il centro del cambio, in px. Senza, i due layout sembrano due immagini che si scambiano; con, sembrano una sola superficie che si ricompone."
+    }
+  };
+  for (const [lang, values] of Object.entries(flipFold)) {
+    sets[lang] = sets[lang] || {};
+    sets[lang].flip = Object.assign({}, sets[lang].flip, values);
+  }
   const revealOnce = {
     ko: '켜면 등장 모션을 한 번만 실행합니다. 끄면 이탈 시 역재생하고 재진입 시 다시 재생합니다. Native와 GSAP 모두 지원합니다.',
     en: 'Play the entrance once. Turn off to reverse on exit and play again on re-entry, with either native animation or GSAP.',

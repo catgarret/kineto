@@ -164,7 +164,7 @@ The old markup keeps working until next major and emits a recoverable `KT_DEPREC
 - `data-kt-drag` — variants: free (JS key `preset`)
 - `data-kt-tooltip` — variants: default (JS key `effect`)
 - `data-kt-switch` — variants: toggle (JS key `preset`)
-- `data-kt-flip` — variants: layout, none, slide, fade, crossfade, fade-slide, scale (JS key `mode`)
+- `data-kt-flip` — variants: layout, none, slide, fade, crossfade, fade-slide, scale, fold (JS key `mode`)
 - `data-kt-scroll-shadows` — variants: vertical, horizontal, mask (JS key `mode`)
 - `data-kt-squircle` — variants: squircle, round, bevel, scoop, notch, square (JS key `preset`)
 - `data-kt-sticky-header` — variants: shrink, toggle (JS key `preset`)

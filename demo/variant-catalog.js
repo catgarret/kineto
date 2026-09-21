@@ -4,7 +4,7 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
   "schemaVersion": "1.0.0",
   "libraryVersion": "0.11.0",
   "moduleCount": 35,
-  "variantCount": 218,
+  "variantCount": 219,
   "capabilities": {
     "any": "No requirement — works on any element.",
     "image": "Needs an <img> (the element itself or a descendant).",
@@ -2547,6 +2547,7 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
       "optionAttributes": [
         "data-kt-duration",
         "data-kt-ease",
+        "data-kt-fold-blur",
         "data-kt-item",
         "data-kt-mode",
         "data-kt-stagger",
@@ -2586,6 +2587,11 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
         },
         {
           "name": "scale",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "fold",
           "requires": "any",
           "deprecated": false
         }

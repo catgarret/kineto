@@ -682,6 +682,22 @@
       if(button.dataset.action==='replay-parent'){
         const card=button.closest('.card'); const el=card?.querySelector(`[data-kt-${button.dataset.module.replace(/[A-Z]/g,m=>'-'+m.toLowerCase())}]`); if(el) Kineto.replay(el,button.dataset.module);
       }
+      // 폴딩 토글 — 접힌 배치와 펼친 배치 사이를 오갑니다. flip 의 수동 API 를
+      // 쓰는 이유는, 바뀌는 것이 자식의 추가·삭제가 아니라 **클래스 하나**라서
+      // MutationObserver 가 볼 수 없기 때문입니다: 바꾸기 전에 record(), 바꾼 뒤에
+      // play() 를 부르면 모듈이 옛 배치와 새 배치를 이어 줍니다.
+      if(button.dataset.action==='toggle-fold'){
+        const panel=document.getElementById(button.getAttribute('aria-controls'));
+        const instance=panel&&Kineto.getInstance(panel,'flip');
+        if(instance){
+          const open=!panel.classList.contains('is-open');
+          instance.record();
+          panel.classList.toggle('is-open',open);
+          instance.play();
+          button.setAttribute('aria-expanded',String(open));
+          button.querySelectorAll('[data-demo-i18n-text]').forEach((label,index)=>{label.hidden=open?index===0:index===1;});
+        }
+      }
       // 모션 토글 — 움직이는 질감은 멈출 수 있고, 멈춰 있는 질감은 움직이게 할 수 있습니다.
       // 라이브러리가 motion 을 제자리에서 바꿔 주므로(updateModule) 캔버스를 다시 만들지
       // 않고, 그림이 깜빡이지 않습니다. 켤 때 쓸 모션 이름은 카드가 data-motion-on 으로 정합니다.

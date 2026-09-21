@@ -13655,14 +13655,15 @@ var wo = {
 			"fade",
 			"crossfade",
 			"fade-slide",
-			"scale"
-		].includes(t.mode) ? t.mode : "slide", m = () => p === "fade" || p === "crossfade" ? [{ opacity: 0 }, { opacity: 1 }] : [{
+			"scale",
+			"fold"
+		].includes(t.mode) ? t.mode : "slide", m = Math.max(0, Number(t.foldBlur ?? 12)), h = () => p === "fade" || p === "crossfade" ? [{ opacity: 0 }, { opacity: 1 }] : [{
 			opacity: 0,
 			transform: "scale(.92)"
 		}, {
 			opacity: 1,
 			transform: "none"
-		}], h = (e, t, n, r) => {
+		}], g = (e, t, n, r) => {
 			let i = `translate(${e}px, ${t}px) scale(${n}, ${r})`;
 			return p === "fade" ? [
 				{
@@ -13709,7 +13710,7 @@ var wo = {
 					offset: 1
 				}
 			] : [{ transform: i }, { transform: "none" }];
-		}, g = () => {
+		}, _ = () => {
 			if (n || r === 0 || p === "none") {
 				f();
 				return;
@@ -13718,42 +13719,75 @@ var wo = {
 			s().forEach((t) => {
 				let n = u.get(t), o = t.getBoundingClientRect();
 				if (!n || !d.has(t)) {
-					t.animate(m(), {
+					t.animate(h(), {
 						duration: r * 1e3,
 						easing: i,
 						delay: e * a * 1e3
 					}), e += 1;
 					return;
 				}
-				let s = n.left - o.left, f = n.top - o.top, g = o.width ? n.width / o.width : 1, _ = o.height ? n.height / o.height : 1;
-				if (!(Math.abs(s) < 1 && Math.abs(f) < 1 && Math.abs(g - 1) < .01 && Math.abs(_ - 1) < .01)) {
-					if (p === "crossfade") {
+				let s = n.left - o.left, f = n.top - o.top, _ = o.width ? n.width / o.width : 1, v = o.height ? n.height / o.height : 1;
+				if (!(Math.abs(s) < 1 && Math.abs(f) < 1 && Math.abs(_ - 1) < .01 && Math.abs(v - 1) < .01)) {
+					if (p === "crossfade" || p === "fold") {
 						let o = {
 							duration: r * 1e3,
 							easing: i,
 							delay: e * a * 1e3
-						}, s = l(t, n), u = s.animate([{ opacity: 1 }, { opacity: 0 }], o), d = t.animate([{ opacity: 0 }, { opacity: 1 }], o);
-						Promise.allSettled([u.finished, d.finished]).then(() => {
-							c.delete(s), s.remove();
+						}, u = `translate(${s}px, ${f}px) scale(${_}, ${v})`, d = l(t, n), h = d.animate(p === "fold" ? [
+							{
+								opacity: 1,
+								filter: "blur(0px)",
+								offset: 0
+							},
+							{
+								opacity: 0,
+								filter: `blur(${m}px)`,
+								offset: .62
+							},
+							{
+								opacity: 0,
+								filter: `blur(${m}px)`,
+								offset: 1
+							}
+						] : [{ opacity: 1 }, { opacity: 0 }], o), g = t.animate(p === "fold" ? [
+							{
+								transform: u,
+								opacity: 0,
+								filter: `blur(${m}px)`,
+								offset: 0
+							},
+							{
+								opacity: 1,
+								offset: .62
+							},
+							{
+								transform: "none",
+								opacity: 1,
+								filter: "blur(0px)",
+								offset: 1
+							}
+						] : [{ opacity: 0 }, { opacity: 1 }], o);
+						Promise.allSettled([h.finished, g.finished]).then(() => {
+							c.delete(d), d.remove();
 						}), e += 1;
 						return;
 					}
-					t.animate(h(s, f, g, _), {
+					t.animate(g(s, f, _, v), {
 						duration: r * 1e3,
 						easing: i,
 						delay: e * a * 1e3
 					}), e += 1;
 				}
 			}), f();
-		}, _ = null, v = () => {
-			_ && t.watch !== !1 && _.observe(e, {
+		}, v = null, y = () => {
+			v && t.watch !== !1 && v.observe(e, {
 				childList: !0,
 				subtree: !1
 			});
 		};
-		t.watch !== !1 && typeof MutationObserver < "u" && (_ = new MutationObserver(() => g()), v()), f();
-		let y = (r) => {
-			_?.disconnect(), f();
+		t.watch !== !1 && typeof MutationObserver < "u" && (v = new MutationObserver(() => _()), y()), f();
+		let b = (r) => {
+			v?.disconnect(), f();
 			let i = document.createDocumentFragment();
 			r.forEach((e) => i.appendChild(e));
 			let a = t.viewTransition === !0 && !n && typeof document.startViewTransition == "function", o = [], s = /* @__PURE__ */ new Set();
@@ -13772,7 +13806,7 @@ var wo = {
 				let e = !1;
 				try {
 					let t = document.startViewTransition(() => {
-						e = !0, c(), f(), v();
+						e = !0, c(), f(), y();
 					});
 					return Promise.resolve(t?.finished).catch(() => {}).finally(() => {
 						o.forEach(({ item: e, authored: t }) => {
@@ -13786,26 +13820,26 @@ var wo = {
 				}
 			} else c();
 			return requestAnimationFrame(() => {
-				g(), v();
+				_(), y();
 			}), r;
 		};
 		return {
 			el: e,
 			type: "flip",
 			record: f,
-			play: g,
-			reorder: y,
+			play: _,
+			reorder: b,
 			shuffle: () => {
 				let e = s();
 				for (let t = e.length - 1; t > 0; --t) {
 					let n = Math.floor(Math.random() * (t + 1));
 					[e[t], e[n]] = [e[n], e[t]];
 				}
-				return y(e);
+				return b(e);
 			},
 			sort: (e = "asc", t = {}) => {
 				let n = s();
-				if (typeof e == "function") return y(n.sort(e));
+				if (typeof e == "function") return b(n.sort(e));
 				let r = String(e || "asc").toLowerCase(), i = (t.order || (r === "desc" ? "desc" : "asc")) === "desc" ? -1 : 1, a = t.key || (r === "date" ? "date" : r === "category" ? "category" : ""), o = t.getValue || ((e) => a ? e.dataset?.[a] ?? e.getAttribute(`data-${a}`) ?? "" : e.textContent?.trim() || ""), c = Array.isArray(t.categoryOrder) ? t.categoryOrder : null, l = new Intl.Collator(t.locale, {
 					numeric: !0,
 					sensitivity: "base"
@@ -13818,16 +13852,16 @@ var wo = {
 						if (r !== o) return (r - o) * i;
 					}
 					return l.compare(String(n), String(a)) * i;
-				}), y(n);
+				}), b(n);
 			},
 			pause() {
-				_?.disconnect();
+				v?.disconnect();
 			},
 			resume() {
-				v();
+				y();
 			},
 			destroy() {
-				_?.disconnect(), _ = null, c.forEach((e) => e.remove()), c.clear();
+				v?.disconnect(), v = null, c.forEach((e) => e.remove()), c.clear();
 			}
 		};
 	},

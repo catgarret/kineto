@@ -7134,17 +7134,97 @@
         "fade",
         "crossfade",
         "fade-slide",
-        "scale"
+        "scale",
+        "fold"
       ],
       "publicOptions": [
         "duration",
         "ease",
+        "foldBlur",
         "item",
         "mode",
         "stagger",
         "viewTransition",
         "watch"
-      ]
+      ],
+      "optionDefaults": {
+        "foldBlur": 12
+      },
+      "variantOptions": {
+        "layout": [
+          "duration",
+          "ease",
+          "item",
+          "mode",
+          "stagger",
+          "viewTransition",
+          "watch"
+        ],
+        "none": [
+          "duration",
+          "ease",
+          "item",
+          "mode",
+          "stagger",
+          "viewTransition",
+          "watch"
+        ],
+        "slide": [
+          "duration",
+          "ease",
+          "item",
+          "mode",
+          "stagger",
+          "viewTransition",
+          "watch"
+        ],
+        "fade": [
+          "duration",
+          "ease",
+          "item",
+          "mode",
+          "stagger",
+          "viewTransition",
+          "watch"
+        ],
+        "crossfade": [
+          "duration",
+          "ease",
+          "item",
+          "mode",
+          "stagger",
+          "viewTransition",
+          "watch"
+        ],
+        "fade-slide": [
+          "duration",
+          "ease",
+          "item",
+          "mode",
+          "stagger",
+          "viewTransition",
+          "watch"
+        ],
+        "scale": [
+          "duration",
+          "ease",
+          "item",
+          "mode",
+          "stagger",
+          "viewTransition",
+          "watch"
+        ],
+        "fold": [
+          "duration",
+          "ease",
+          "foldBlur",
+          "item",
+          "mode",
+          "stagger",
+          "viewTransition",
+          "watch"
+        ]
+      }
     },
     {
       "name": "scrollShadows",

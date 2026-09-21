@@ -239,6 +239,14 @@ window.KINETO_COPY_I18N = {
     }
   },
   "cards": {
+    "접히는 화면이 펴질 때처럼, 두 배치가 흐려지며 서로를 통과합니다.": [
+      "Like a folding screen opening: the two layouts blur through each other.",
+      "折りたたみ画面が開くように、二つの配置がぼけながら交差します。",
+      "像折叠屏展开那样，两种布局在模糊中彼此穿过。",
+      "像摺疊螢幕展開那樣，兩種佈局在模糊中彼此穿過。",
+      "Как раскрывается складной экран: две раскладки размываются одна сквозь другую.",
+      "Come uno schermo pieghevole che si apre: i due layout si sfocano l'uno nell'altro."
+    ],
     "뒤가 비쳐 흐려지고, 빛 들어오는 쪽 테두리가 밝게 섭니다.": [
       "What is behind shows through, blurred, and the lit edge catches a bright rim.",
       "背景が透けてぼけ、光の当たる縁が明るく立ちます。",
@@ -1672,6 +1680,14 @@ window.KINETO_COPY_I18N = {
     ]
   },
   "titles": {
+    "Fold — 화면이 열릴 때": [
+      "Fold — when the screen opens",
+      "Fold — 画面が開くとき",
+      "Fold — 屏幕展开时",
+      "Fold — 螢幕展開時",
+      "Fold — когда экран раскрывается",
+      "Fold — quando lo schermo si apre"
+    ],
     "Squircle — iOS 모서리": [
       "Squircle — the iOS corner",
       "Squircle — iOS の角",
@@ -1866,6 +1882,22 @@ window.KINETO_COPY_I18N = {
     ]
   },
   "ui": {
+    "펼치기": [
+      "Open",
+      "開く",
+      "展开",
+      "展開",
+      "Раскрыть",
+      "Apri"
+    ],
+    "접기": [
+      "Close",
+      "閉じる",
+      "收起",
+      "收起",
+      "Сложить",
+      "Chiudi"
+    ],
     "대체 경로": [
       "Fallback",
       "フォールバック",
