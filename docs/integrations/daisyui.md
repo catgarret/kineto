@@ -670,7 +670,7 @@ npm install @dong-gri/kineto
 - `hold` · `confirm` — Destructive actions confirmed by holding the button.
 
   ```html
-  <button data-kt-hold data-kt-duration="1.2">Text</button>
+  <button data-kt-hold="confirm" data-kt-duration="1.2">Text</button>
   ```
 
 ### 아코디언·탭·스위치·메가메뉴 (`disclosure`)

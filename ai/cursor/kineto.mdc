@@ -66,7 +66,7 @@ React: mount a client `KinetoProvider` that calls `Kineto.observe()` in an effec
 | celebration — Success celebration (confetti, celebrate, success, reward) | `data-kt-confetti data-kt-trigger="click"` | Kineto provides it |
 | overflow-shadows — Scrollable area edge shadows (scroll shadow, overflow, scroll area, fade edges) | `data-kt-scroll-shadows="horizontal"` | keep the library component, animate its content (shadcn: ScrollArea; mantine: ScrollArea; chakra: ScrollArea) |
 | corner-shape — iOS-style corner shape (squircle) (squircle, superellipse, corner shape, corner smoothing) | `data-kt-squircle="squircle"` | keep the library component, animate its content (tailwind: rounded-* (circular corners only); shadcn: --radius (circular corners only); mui: shape.borderRadius (circular corners only)) |
-| confirm-hold — Hold-to-confirm and mash gauges (hold to confirm, long press, mash, confirm) | `data-kt-hold data-kt-duration="1.2"` | Kineto provides it |
+| confirm-hold — Hold-to-confirm and mash gauges (hold to confirm, long press, mash, confirm) | `data-kt-hold="confirm" data-kt-duration="1.2"` | Kineto provides it |
 | disclosure — Accordion, tabs, switch, mega menu (behaviour components) (accordion, tabs, switch, toggle) | `data-kt-accordion data-kt-single` | prefer the library (shadcn: Accordion / Tabs / Switch / NavigationMenu; bootstrap: .accordion / .nav-tabs / .form-switch / .navbar; mui: Accordion / Tabs / Switch / Menu; mantine: Accordion / Tabs / Switch; chakra: Accordion / Tabs / Switch; antd: Collapse / Tabs / Switch / Menu; daisyui: .collapse / .tabs / .toggle; nuxt-ui: UAccordion / UTabs / USwitch; primevue: Accordion / Tabs / ToggleSwitch / MegaMenu; vuetify: v-expansion-panels / v-tabs / v-switch) |
 | layout-change — Animated reorder / add / remove (FLIP) (flip, reorder, list animation, layout animation) | `data-kt-flip="layout" data-kt-watch` | Kineto provides it |
 | drag-and-fullpage — Draggable elements and fullpage sections (drag, draggable, fullpage, snap sections) | `data-kt-drag data-kt-inertia data-kt-snap-back` | Kineto provides it |
@@ -154,7 +154,7 @@ The old markup keeps working until next major and emits a recoverable `KT_DEPREC
 - `data-kt-vibrate` — variants: tap, double-tap, soft, rigid, heavy, success, warning, error, ratchet, heartbeat, long-press (JS key `preset`)
 - `data-kt-confetti` — variants: burst (JS key `preset`)
 - `data-kt-accordion` — variants: panel (JS key `effect`)
-- `data-kt-hold` — variants: confirm (JS key `mode`)
+- `data-kt-hold` — variants: confirm, tap (JS key `mode`)
 - `data-kt-mega-menu` — variants: dropdown, mega (JS key `preset`)
 - `data-kt-toast` — variants: stack (JS key `type`)
 - `data-kt-bottom-sheet` — variants: sheet (JS key `preset`)

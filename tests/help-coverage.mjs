@@ -53,6 +53,7 @@ const fieldCount = Object.values(FIELDS).reduce((sum, rows) => sum + rows.length
 // Fields that have never had a tooltip. Widening the audit above from the first
 // source literal to the drawer's real manifest uncovered these 110 at once —
 // they were always unexplained, the old audit simply could not see them.
+// (109 now: `hold.mode` was written when tap-to-confirm was added.)
 //
 // This list is a RATCHET, not an exemption: it may only shrink. Writing a
 // tooltip and leaving the entry here fails the test just as loudly as a new gap,
@@ -65,7 +66,7 @@ const KNOWN_GAPS = {
   coverReveal: ['color', 'delay', 'direction', 'duration', 'layers', 'lines', 'maskDirection', 'stagger', 'waitForImage', 'watch'],
   drag: ['axis', 'bounds', 'inertia', 'snapBack'],
   gesture: ['duration', 'hoverScale', 'lift', 'origin', 'tapScale'],
-  hold: ['action', 'blend', 'color', 'decay', 'duration', 'mode', 'step', 'submit'],
+  hold: ['action', 'blend', 'color', 'decay', 'duration', 'step', 'submit'],
   lightbox: ['download', 'thumbnails', 'transition'],
   loadingIndicator: ['barHeight', 'barWidth', 'color', 'preset', 'progressOutput', 'progressSource', 'progressTemplate', 'showLabel', 'showSpinner', 'showStatus', 'size', 'stepTotal', 'stroke', 'trackColor'],
   megaMenu: ['closeDelay', 'duration', 'indicator', 'layout', 'openDelay', 'trigger'],

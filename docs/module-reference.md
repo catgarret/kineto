@@ -289,8 +289,8 @@
 
 - Attribute: `data-kt-hold`
 - Default variant: `confirm`
-- Variants: `confirm`
-- Public options: `action`, `blend`, `color`, `decay`, `duration`, `mode`, `onComplete`, `step`, `submit`
+- Variants: `confirm`, `tap`
+- Public options: `action`, `blend`, `color`, `decay`, `duration`, `labels`, `mode`, `onComplete`, `step`, `submit`
 
 ## megaMenu
 

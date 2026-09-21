@@ -198,7 +198,9 @@ const BUDGETS = {
   // strict upper bound on the shipped file.
   // 2026-09-21 (dock): Magnetic's dock behaviour then measures 582.9 / 157.2
   // ESM, 456.7 / 139.8 minified and 454.8 / 139.2 UMD.
-  'kineto.js': { raw: 583, gz: 158, variance: 2 },
+  // 2026-09-21 (tap-to-confirm): Hold's third mode measures 584.1 / 157.4 ESM,
+  // 457.7 / 140.1 minified and 455.8 / 139.4 UMD.
+  'kineto.js': { raw: 585, gz: 158, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
   // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/
@@ -215,7 +217,7 @@ const BUDGETS = {
   // See the live-motion-switching note above for the 445.8 KiB measurement.
   // 2026-09-21 (fold): FLIP's fold move style measures 454.3 KiB raw / 139.0
   // KiB gzip minified — the raw ceiling is what moves.
-  'kineto.min.js': { raw: 457, gz: 140, variance: 2 },
+  'kineto.min.js': { raw: 458, gz: 141, variance: 2 },
   // 2026-09-20 (shared-element teardown): the UMD gzip crosses its exact 133 KB
   // boundary at a measured 134.0 KB while raw stays inside 440 KB. Round only
   // the compressed ceiling; runner variance and consumer budgets are unchanged.

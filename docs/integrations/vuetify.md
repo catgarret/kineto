@@ -758,7 +758,7 @@ Kineto.observe();
 - `hold` · `confirm` — Destructive actions confirmed by holding the button.
 
   ```vue
-  <button data-kt-hold data-kt-duration="1.2">Text</button>
+  <button data-kt-hold="confirm" data-kt-duration="1.2">Text</button>
   <!-- or: <button v-motion="{ type: 'hold', options: { duration: 1.2, mode: "confirm" } }"> -->
   ```
 

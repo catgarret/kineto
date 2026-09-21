@@ -96,7 +96,7 @@ assert.ok(
 // 2026-09-20: the Squircle module adds two cards — the iOS corner comparison
 // and the other corner-shape keywords. 2026-09-21: Card Glow's `glass` variant
 // adds the Liquid Glass pane, and FLIP's `fold` adds the opening-panel card.
-assert.equal(descriptions.length, 188);
+assert.equal(descriptions.length, 189);
 // 18 since the Korean-titled `radial` compatibility card was removed (see above).
 assert.equal(titles.length, 21);
 

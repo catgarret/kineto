@@ -3,8 +3,8 @@
 window.KINETO_VARIANT_CATALOG = Object.freeze({
   "schemaVersion": "1.0.0",
   "libraryVersion": "0.11.0",
-  "moduleCount": 36,
-  "variantCount": 221,
+  "moduleCount": 37,
+  "variantCount": 223,
   "capabilities": {
     "any": "No requirement — works on any element.",
     "image": "Needs an <img> (the element itself or a descendant).",
@@ -2531,6 +2531,43 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
         },
         {
           "name": "long-press",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "hold": {
+      "attribute": "data-kt-hold",
+      "category": "feedback",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "mode",
+      "carrierAttribute": "data-kt-mode",
+      "clearAttributes": [
+        "data-kt-mode"
+      ],
+      "defaultVariant": "confirm",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-action",
+        "data-kt-blend",
+        "data-kt-color",
+        "data-kt-decay",
+        "data-kt-duration",
+        "data-kt-labels",
+        "data-kt-mode",
+        "data-kt-on-complete",
+        "data-kt-step",
+        "data-kt-submit"
+      ],
+      "variants": [
+        {
+          "name": "confirm",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "tap",
           "requires": "any",
           "deprecated": false
         }

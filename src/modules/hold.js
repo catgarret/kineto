@@ -1,14 +1,25 @@
-import { clamp } from '../utils.js';
+import { clamp, labeller, snapshotChildNodes } from '../utils.js';
 
-// Hold-to-confirm — press and hold (mode:"hold", default) for `duration` ms to
-// confirm, or button-mash (mode:"mash") where each tap adds `step` and the fill
-// slowly `decay`s between taps, so repeated taps climb it to full (game-style).
+// Hold-to-confirm — a control that asks for a deliberate second act before it
+// does the irreversible thing. Three ways of asking:
+//
+//   hold (default)  press and hold for `duration` ms while a fill sweeps across
+//   mash            each tap adds `step` and the fill `decay`s between taps, so
+//                   repeated taps climb it to full (game-style)
+//   tap             the button ARMS itself in place — its label becomes "Sure?"
+//                   and a second click within `duration` confirms. No dialog, no
+//                   gauge; the question is asked where the answer is given, and
+//                   anything else (Escape, blur, a click elsewhere, the timeout)
+//                   puts the button back exactly as it was.
 // A fill sweeps across; on success it fires a cancelable `kt-hold-confirm`
 // event + opts.onComplete and performs the element's action (link/submit/click).
 // Pointer + keyboard (Enter/Space). API: instance.reset() / progress().
 export default {
   create(el, opts = {}) {
-    const mode = opts.mode === 'mash' ? 'mash' : 'hold';
+    // `confirm` is the contract's name for the gauge (it covers both `hold` and
+    // `mash`), so it is accepted here and means the default — otherwise the
+    // published variant name would not be a value you can actually write.
+    const mode = opts.mode === 'mash' || opts.mode === 'tap' ? opts.mode : 'hold';
     const duration = Math.max(120, Number(opts.duration ?? 1000));
     // Fill is themeable: `color` option or the --kt-hold-fill CSS variable, and
     // an optional `blend` (mix-blend-mode). It also carries the `.kt-hold-fill`
@@ -18,16 +29,22 @@ export default {
     const step = clamp(Number(opts.step ?? 0.08), 0.01, 1); // mash: per-tap gain
     const decay = Math.max(0, Number(opts.decay ?? 0.4));   // mash: per-second drain
 
+    // `tap` has no gauge, so it neither positions the element nor inserts a
+    // layer — the whole effect is the label, and a button that silently became
+    // `position:relative` would be a change nobody asked for.
+    const gauged = mode !== 'tap';
     const prevPosition = el.style.position;
     const prevOverflow = el.style.overflow;
-    if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
-    el.style.overflow = el.style.overflow || 'hidden';
+    if (gauged) {
+      if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+      el.style.overflow = el.style.overflow || 'hidden';
+    }
 
     const fill = document.createElement('span');
     fill.className = 'kt-hold-fill';
     fill.setAttribute('aria-hidden', 'true');
     fill.style.cssText = `position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);background:${color};mix-blend-mode:${blend};pointer-events:none;border-radius:0;z-index:0;`;
-    el.insertBefore(fill, el.firstChild);
+    if (gauged) el.insertBefore(fill, el.firstChild);
 
     let rafId = null;
     let holding = false;
@@ -104,13 +121,59 @@ export default {
       if (rafId == null) rafId = requestAnimationFrame(decayTick);
     };
 
+    // ── Tap mode ─────────────────────────────────────────────────────────────
+    // The button asks the question in its own place. First click arms it and
+    // swaps the label; a second click within `duration` confirms; Escape, blur,
+    // a click anywhere else or the timeout put it back.
+    //
+    // The label is a `labels` map like every other user-visible string in the
+    // library: the default is documented English and the page owns the words,
+    // because a library cannot know what language its host page is in.
+    const label = labeller({ confirm: 'Sure?' }, opts.labels);
+    const restoreLabel = snapshotChildNodes(el);
+    let armed = false;
+    let armTimer = null;
+
+    const disarm = () => {
+      if (!armed) return;
+      armed = false;
+      clearTimeout(armTimer);
+      armTimer = null;
+      restoreLabel();
+      el.classList.remove('kt-hold-armed');
+      el.removeAttribute('aria-pressed');
+    };
+    const arm = () => {
+      if (armed || confirmed) return;
+      armed = true;
+      el.textContent = label('confirm');
+      el.classList.add('kt-hold-armed');
+      // The name has changed under a focused control, so a screen reader that
+      // is on this button re-announces it — which is the announcement.
+      el.setAttribute('aria-pressed', 'false');
+      clearTimeout(armTimer);
+      armTimer = setTimeout(disarm, duration);
+    };
+    // Clicking anywhere else is an answer too, and it is "no".
+    const onDocumentDown = (event) => { if (armed && !el.contains(event.target)) disarm(); };
+    const onEscape = (event) => { if (armed && event.key === 'Escape') disarm(); };
+
     const onDown = (event) => {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
+      if (mode === 'tap') { if (armed) { disarm(); confirm(); } else arm(); return; }
       if (mode === 'mash') tap(); else start();
+    };
+    // A click that only armed the button must not also do the thing the button
+    // does. This is why `tap` blocks the click rather than listening for it.
+    const onClickGuard = (event) => {
+      if (mode !== 'tap' || confirmed) return;
+      event.preventDefault();
+      event.stopPropagation();
     };
     const onKey = (event) => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
       event.preventDefault();
+      if (mode === 'tap') { if (!event.repeat) { if (armed) { disarm(); confirm(); } else arm(); } return; }
       if (mode === 'mash') { if (!event.repeat) tap(); } else start();
     };
     const onKeyUp = (event) => { if (mode === 'hold' && (event.key === 'Enter' || event.key === ' ')) release(); };
@@ -121,6 +184,12 @@ export default {
       el.addEventListener('pointerleave', release);
       el.addEventListener('pointercancel', release);
     }
+    if (mode === 'tap') {
+      el.addEventListener('click', onClickGuard, true);
+      el.addEventListener('blur', disarm);
+      document.addEventListener('pointerdown', onDocumentDown, true);
+      document.addEventListener('keydown', onEscape);
+    }
     el.addEventListener('keydown', onKey);
     el.addEventListener('keyup', onKeyUp);
 
@@ -128,11 +197,19 @@ export default {
       el,
       type: 'hold',
       progress: () => progress,
-      reset() { confirmed = false; el.classList.remove('kt-hold-confirmed'); el.removeAttribute('aria-pressed'); cancelRaf(); lastT = 0; fill.style.transition = 'transform .2s var(--kt-ease-ui, ease)'; setProgress(0); },
+      /** True while `tap` is waiting for its second click. */
+      get armed() { return armed; },
+      reset() { disarm(); confirmed = false; el.classList.remove('kt-hold-confirmed'); el.removeAttribute('aria-pressed'); cancelRaf(); lastT = 0; fill.style.transition = 'transform .2s var(--kt-ease-ui, ease)'; setProgress(0); },
       pause() {},
       resume() {},
       destroy() {
         cancelRaf();
+        disarm();
+        el.removeEventListener('click', onClickGuard, true);
+        el.removeEventListener('blur', disarm);
+        document.removeEventListener('pointerdown', onDocumentDown, true);
+        document.removeEventListener('keydown', onEscape);
+        el.classList.remove('kt-hold-armed');
         el.removeEventListener('pointerdown', onDown);
         el.removeEventListener('pointerup', release);
         el.removeEventListener('pointerleave', release);

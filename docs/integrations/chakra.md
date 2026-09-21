@@ -844,7 +844,7 @@ export function KinetoProvider({ children }: { children: React.ReactNode }) {
 - `hold` · `confirm` — Destructive actions confirmed by holding the button.
 
   ```jsx
-  <button data-kt-hold data-kt-duration="1.2">Text</button>
+  <button data-kt-hold="confirm" data-kt-duration="1.2">Text</button>
   // or, when you need the instance:
   const { ref } = useKineto('hold', { duration: 1.2, mode: "confirm" });
   ```

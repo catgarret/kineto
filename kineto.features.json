@@ -6959,7 +6959,8 @@
       "attribute": "data-kt-hold",
       "defaultVariant": "confirm",
       "variants": [
-        "confirm"
+        "confirm",
+        "tap"
       ],
       "publicOptions": [
         "action",
@@ -6967,11 +6968,16 @@
         "color",
         "decay",
         "duration",
+        "labels",
         "mode",
         "onComplete",
         "step",
         "submit"
-      ]
+      ],
+      "optionDefaults": {
+        "duration": 1000,
+        "mode": "hold"
+      }
     },
     {
       "name": "megaMenu",

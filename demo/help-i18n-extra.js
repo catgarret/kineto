@@ -2720,6 +2720,33 @@
     sets[lang] = sets[lang] || {};
     sets[lang].magnetic = Object.assign({}, sets[lang].magnetic, values);
   }
+  const holdTap = {
+    "ko": {
+      "mode": "확인을 어떻게 받을지입니다. hold 는 길게 누르는 동안 게이지가 차고, mash 는 연타로 채우며, tap 은 게이지 없이 버튼이 제자리에서 한 번 더 묻습니다."
+    },
+    "en": {
+      "mode": "How the confirmation is asked for. `hold` fills a gauge while pressed, `mash` fills it by repeated taps, and `tap` drops the gauge entirely: the button asks again in its own place."
+    },
+    "ja": {
+      "mode": "確認の取り方です。hold は長押し中にゲージが溜まり、mash は連打で溜め、tap はゲージなしでボタンがその場で聞き直します。"
+    },
+    "zh-CN": {
+      "mode": "如何取得确认。hold 在长按时填充进度条，mash 靠连击填满，tap 则不用进度条——按钮就地再问一次。"
+    },
+    "zh-TW": {
+      "mode": "如何取得確認。hold 在長按時填充進度條，mash 靠連擊填滿，tap 則不用進度條——按鈕就地再問一次。"
+    },
+    "ru": {
+      "mode": "Как запрашивается подтверждение. hold заполняет шкалу удержанием, mash — частыми нажатиями, tap обходится без шкалы: кнопка переспрашивает на своём месте."
+    },
+    "it": {
+      "mode": "Come viene chiesta la conferma. `hold` riempie una barra mentre premi, `mash` la riempie a colpi ripetuti, `tap` fa a meno della barra: il pulsante richiede conferma lì dov'è."
+    }
+  };
+  for (const [lang, values] of Object.entries(holdTap)) {
+    sets[lang] = sets[lang] || {};
+    sets[lang].hold = Object.assign({}, sets[lang].hold, values);
+  }
   const revealOnce = {
     ko: '켜면 등장 모션을 한 번만 실행합니다. 끄면 이탈 시 역재생하고 재진입 시 다시 재생합니다. Native와 GSAP 모두 지원합니다.',
     en: 'Play the entrance once. Turn off to reverse on exit and play again on re-entry, with either native animation or GSAP.',

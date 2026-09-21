@@ -12431,15 +12431,15 @@ var so = {
 	}
 }, fo = {
 	create(e, t = {}) {
-		let n = t.mode === "mash" ? "mash" : "hold", r = Math.max(120, Number(t.duration ?? 1e3)), i = t.color || "var(--kt-hold-fill, color-mix(in srgb, currentColor 22%, transparent))", a = t.blend || "var(--kt-hold-blend, normal)", o = G(Number(t.step ?? .08), .01, 1), s = Math.max(0, Number(t.decay ?? .4)), c = e.style.position, l = e.style.overflow;
-		getComputedStyle(e).position === "static" && (e.style.position = "relative"), e.style.overflow = e.style.overflow || "hidden";
-		let u = document.createElement("span");
-		u.className = "kt-hold-fill", u.setAttribute("aria-hidden", "true"), u.style.cssText = `position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);background:${i};mix-blend-mode:${a};pointer-events:none;border-radius:0;z-index:0;`, e.insertBefore(u, e.firstChild);
-		let d = null, f = !1, p = !1, m = 0, h = (e) => {
-			m = G(e, 0, 1), u.style.transform = `scaleX(${m})`;
-		}, g = () => {
-			d != null && (cancelAnimationFrame(d), d = null);
+		let n = t.mode === "mash" || t.mode === "tap" ? t.mode : "hold", r = Math.max(120, Number(t.duration ?? 1e3)), i = t.color || "var(--kt-hold-fill, color-mix(in srgb, currentColor 22%, transparent))", a = t.blend || "var(--kt-hold-blend, normal)", o = G(Number(t.step ?? .08), .01, 1), s = Math.max(0, Number(t.decay ?? .4)), c = n !== "tap", l = e.style.position, u = e.style.overflow;
+		c && (getComputedStyle(e).position === "static" && (e.style.position = "relative"), e.style.overflow = e.style.overflow || "hidden");
+		let d = document.createElement("span");
+		d.className = "kt-hold-fill", d.setAttribute("aria-hidden", "true"), d.style.cssText = `position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);background:${i};mix-blend-mode:${a};pointer-events:none;border-radius:0;z-index:0;`, c && e.insertBefore(d, e.firstChild);
+		let f = null, p = !1, m = !1, h = 0, g = (e) => {
+			h = G(e, 0, 1), d.style.transform = `scaleX(${h})`;
 		}, _ = () => {
+			f != null && (cancelAnimationFrame(f), f = null);
+		}, v = () => {
 			if (t.submit === !1) return;
 			let n = t.action || e.getAttribute("data-kt-hold-action");
 			if (n) {
@@ -12452,9 +12452,9 @@ var so = {
 			}
 			let r = e.closest?.("form"), i = t.submit === !0 || e.type === "submit" || e.getAttribute("data-kt-hold-submit") != null;
 			r && i && (typeof r.requestSubmit == "function" ? r.requestSubmit(e.type === "submit" ? e : void 0) : r.submit());
-		}, v = () => {
-			if (p) return;
-			p = !0, f = !1, g(), h(1), e.classList.add("kt-hold-confirmed"), e.setAttribute("aria-pressed", "true");
+		}, y = () => {
+			if (m) return;
+			m = !0, p = !1, _(), g(1), e.classList.add("kt-hold-confirmed"), e.setAttribute("aria-pressed", "true");
 			let n = !0;
 			try {
 				n = e.dispatchEvent(new CustomEvent("kt-hold-confirm", {
@@ -12462,51 +12462,76 @@ var so = {
 					cancelable: !0
 				}));
 			} catch {}
-			t.onComplete?.(e), n && _();
-		}, y = 0, b = (e) => {
-			let t = G((e - y) / r, 0, 1);
-			if (h(t), t >= 1) {
-				d = null, v();
+			t.onComplete?.(e), n && v();
+		}, b = 0, x = (e) => {
+			let t = G((e - b) / r, 0, 1);
+			if (g(t), t >= 1) {
+				f = null, y();
 				return;
 			}
-			d = requestAnimationFrame(b);
-		}, x = () => {
-			f || p || (f = !0, y = performance.now(), u.style.transition = "none", g(), d = requestAnimationFrame(b));
+			f = requestAnimationFrame(x);
 		}, S = () => {
-			f = !1, g(), !p && (u.style.transition = `transform ${Math.min(.35, r / 3e3)}s ease`, h(0));
-		}, C = 0, w = (e) => {
-			let t = C ? (e - C) / 1e3 : 0;
-			if (C = e, h(m - s * t), m <= 0) {
-				d = null, C = 0;
+			p || m || (p = !0, b = performance.now(), d.style.transition = "none", _(), f = requestAnimationFrame(x));
+		}, C = () => {
+			p = !1, _(), !m && (d.style.transition = `transform ${Math.min(.35, r / 3e3)}s ease`, g(0));
+		}, w = 0, T = (e) => {
+			let t = w ? (e - w) / 1e3 : 0;
+			if (w = e, g(h - s * t), h <= 0) {
+				f = null, w = 0;
 				return;
 			}
-			d = requestAnimationFrame(w);
-		}, T = () => {
-			if (!p) {
-				if (u.style.transition = "none", h(m + o), m >= 1) {
-					v();
+			f = requestAnimationFrame(T);
+		}, E = () => {
+			if (!m) {
+				if (d.style.transition = "none", g(h + o), h >= 1) {
+					y();
 					return;
 				}
-				C = 0, d ??= requestAnimationFrame(w);
+				w = 0, f ??= requestAnimationFrame(T);
 			}
-		}, E = (e) => {
-			(e.pointerType !== "mouse" || e.button === 0) && (n === "mash" ? T() : x());
-		}, D = (e) => {
-			(e.key === "Enter" || e.key === " ") && (e.preventDefault(), n === "mash" ? e.repeat || T() : x());
-		}, O = (e) => {
-			n === "hold" && (e.key === "Enter" || e.key === " ") && S();
+		}, D = ee({ confirm: "Sure?" }, t.labels), O = ve(e), k = !1, A = null, j = () => {
+			k && (k = !1, clearTimeout(A), A = null, O(), e.classList.remove("kt-hold-armed"), e.removeAttribute("aria-pressed"));
+		}, M = () => {
+			k || m || (k = !0, e.textContent = D("confirm"), e.classList.add("kt-hold-armed"), e.setAttribute("aria-pressed", "false"), clearTimeout(A), A = setTimeout(j, r));
+		}, N = (t) => {
+			k && !e.contains(t.target) && j();
+		}, P = (e) => {
+			k && e.key === "Escape" && j();
+		}, F = (e) => {
+			if (e.pointerType !== "mouse" || e.button === 0) {
+				if (n === "tap") {
+					k ? (j(), y()) : M();
+					return;
+				}
+				n === "mash" ? E() : S();
+			}
+		}, I = (e) => {
+			n !== "tap" || m || (e.preventDefault(), e.stopPropagation());
+		}, L = (e) => {
+			if (e.key === "Enter" || e.key === " ") {
+				if (e.preventDefault(), n === "tap") {
+					e.repeat || (k ? (j(), y()) : M());
+					return;
+				}
+				n === "mash" ? e.repeat || E() : S();
+			}
+		}, R = (e) => {
+			n === "hold" && (e.key === "Enter" || e.key === " ") && C();
 		};
-		return e.addEventListener("pointerdown", E), n === "hold" && (e.addEventListener("pointerup", S), e.addEventListener("pointerleave", S), e.addEventListener("pointercancel", S)), e.addEventListener("keydown", D), e.addEventListener("keyup", O), {
+		return e.addEventListener("pointerdown", F), n === "hold" && (e.addEventListener("pointerup", C), e.addEventListener("pointerleave", C), e.addEventListener("pointercancel", C)), n === "tap" && (e.addEventListener("click", I, !0), e.addEventListener("blur", j), document.addEventListener("pointerdown", N, !0), document.addEventListener("keydown", P)), e.addEventListener("keydown", L), e.addEventListener("keyup", R), {
 			el: e,
 			type: "hold",
-			progress: () => m,
+			progress: () => h,
+			get armed() {
+				return k;
+			},
 			reset() {
-				p = !1, e.classList.remove("kt-hold-confirmed"), e.removeAttribute("aria-pressed"), g(), C = 0, u.style.transition = "transform .2s var(--kt-ease-ui, ease)", h(0);
+				j(), m = !1, e.classList.remove("kt-hold-confirmed"), e.removeAttribute("aria-pressed"), _(), w = 0, d.style.transition = "transform .2s var(--kt-ease-ui, ease)", g(0);
 			},
 			pause() {},
 			resume() {},
 			destroy() {
-				g(), e.removeEventListener("pointerdown", E), e.removeEventListener("pointerup", S), e.removeEventListener("pointerleave", S), e.removeEventListener("pointercancel", S), e.removeEventListener("keydown", D), e.removeEventListener("keyup", O), u.remove(), e.style.position = c, e.style.overflow = l, e.classList.remove("kt-hold-confirmed"), e.removeAttribute("aria-pressed");
+				_(), j(), e.removeEventListener("click", I, !0), e.removeEventListener("blur", j), document.removeEventListener("pointerdown", N, !0), document.removeEventListener("keydown", P), e.classList.remove("kt-hold-armed"), e.removeEventListener("pointerdown", F), e.removeEventListener("pointerup", C), e.removeEventListener("pointerleave", C), e.removeEventListener("pointercancel", C), e.removeEventListener("keydown", L), e.removeEventListener("keyup", R), d.remove(), e.style.position = l, e.style.overflow = u, e.classList.remove("kt-hold-confirmed"), e.removeAttribute("aria-pressed");
 			}
 		};
 	},

@@ -239,6 +239,14 @@ window.KINETO_COPY_I18N = {
     }
   },
   "cards": {
+    "모달 없이 버튼이 제자리에서 다시 묻고, 다른 곳을 누르면 원래대로 돌아갑니다.": [
+      "No dialog: the button asks again in place, and anything else puts it back.",
+      "ダイアログなしで、ボタンがその場で聞き直します。他を押せば元に戻ります。",
+      "不用弹窗：按钮就地再问一次，点别处就恢复原样。",
+      "不用彈窗：按鈕就地再問一次，點別處就恢復原樣。",
+      "Без диалога: кнопка переспрашивает на месте, а любой другой клик её возвращает.",
+      "Niente dialogo: il pulsante richiede conferma lì dov'è, e ogni altro clic lo riporta com'era."
+    ],
     "가까운 아이콘이 커지고 나머지는 자리를 내주며 밀려납니다.": [
       "The nearest icon grows and the rest slide aside to make room.",
       "近いアイコンが大きくなり、残りは場所を空けて押しのけられます。",
@@ -1898,6 +1906,14 @@ window.KINETO_COPY_I18N = {
     ]
   },
   "ui": {
+    "{\"confirm\":\"정말 삭제할까요?\"}": [
+      "{\"confirm\":\"Delete this?\"}",
+      "{\"confirm\":\"削除しますか？\"}",
+      "{\"confirm\":\"确认删除？\"}",
+      "{\"confirm\":\"確認刪除？\"}",
+      "{\"confirm\":\"Удалить?\"}",
+      "{\"confirm\":\"Eliminare?\"}"
+    ],
     "펼치기": [
       "Open",
       "開く",

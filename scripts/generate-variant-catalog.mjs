@@ -62,7 +62,10 @@ const VARIANT_CARRIERS = {
   parallax: 'axis',
   scrollSequence: 'fit',
   megaMenu: 'layout',
-  flip: 'mode'
+  flip: 'mode',
+  // hold 의 `confirm` 은 게이지(길게 누르기·연타), `tap` 은 제자리 확인입니다.
+  // 둘을 가르는 것은 `mode` 옵션입니다(src/modules/hold.js).
+  hold: 'mode'
 };
 
 // 데모가 variant마다 전용 컨트롤을 이미 갖고 있는 모듈. 값은 그 컨트롤이 무엇인지에 대한
