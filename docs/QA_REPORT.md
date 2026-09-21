@@ -3,6 +3,55 @@
 검증일: 2026-09-20
 대상: v0.11.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-21 CI 복구 — 배포가 세 커밋 동안 멈춰 있던 이유
+
+`30d057f`(squircle) 부터 CI 가 계속 실패했고, `Deploy demo site` 는 CI 성공에 달려 있어
+그동안 전부 `skipped` 였습니다. 즉 glass·fold·dock·tap·pull 은 **공개 데모에 올라간 적이
+없었습니다.** 마지막 초록불은 `70c3100`(2026-09-20 20:05 UTC) 입니다.
+
+원인은 두 층이었습니다.
+
+**1층 — `Run demo QA`:** `tests/browser-smoke-page.js` 의 `smokeCases` 에 squircle
+픽스처가 없어 `smoke registry mismatch; missing: squircle` 로 떨어졌습니다. 이 블록이
+`demo-qa.mjs` 의 맨 끝이라 그 앞은 전부 초록으로 보였고, 로컬에서 `test:node` 만 돌리면
+잡히지 않습니다(`test:demo` 는 별도 스크립트). → `ad772aa`.
+
+**2층 — 크로스브라우저 레인:** 1층이 실패하면 이 잡은 `skipped` 되므로, glass·fold·dock·
+tap·pull 은 크로미엄 밖에서 **한 번도 검증되지 않은 채** 있었습니다. 1층을 고치자 레인이
+처음 돌면서 셋이 걸렸습니다.
+
+| 증상 | 정체 |
+|---|---|
+| webkit: `destroy() must leave the panel exactly as it found it` | **라이브러리 버그.** 아래 참조 |
+| webkit: `the lit edge must follow the pointer` | **테스트 문제.** 손으로 만든 `new PointerEvent('pointermove', { clientX })` 는 웹킷에서 좌표가 전달되지 않습니다. Playwright 의 실제 입력 경로로 교체 |
+| firefox·webkit: `the backdrop must actually be blurred` | **환경.** 헤드리스 파이어폭스·웹킷은 `backdrop-filter` 선언을 받고도 합성을 하지 않습니다. 같은 줄무늬 위에 인라인 `backdrop-filter` 를 건 대조용 div 로 먼저 재고, 실제로 그리는 엔진에서만 픽셀을 단언하도록 변경(대조군 실측: 크로미엄 12.9배, 나머지 1.0배) |
+
+### 라이브러리 버그: `style` 속성은 한 번 지워서는 지워지지 않습니다
+
+세 엔진에서 같은 최소 예제로 측정했습니다 — 요소를 새로 만들고 `el.style.setProperty()`
+한 뒤 `removeAttribute('style')`:
+
+| 엔진 | 결과 |
+|---|---|
+| Chromium | `<div style="">x</div>` |
+| WebKit | `<div style="">x</div>` |
+| Firefox | `<div>x</div>` |
+
+크로미엄과 웹킷은 속성 제거 요청에 대해 선언 블록을 비운 다음 **그 빈 블록을 다시
+직렬화**합니다. 두 번째 `removeAttribute` 는 깨끗하게 지웁니다. `snapshotAttributes` 가
+이걸 몰랐으므로, **속성을 스냅샷하고 인라인 스타일을 쓰는 모든 모듈**이 `destroy()` 후
+`style=""` 를 남기고 있었습니다. 크로미엄 전용 테스트로는 보이지 않았습니다 — 라디얼
+메뉴가 마크업을 글자 단위로 비교하기 전까지는요.
+
+`src/utils.js` 한 곳에서 고쳤고(`tests/utils.mjs` 가 가드 자체를 검사합니다), 역검증으로
+가드를 빼면 그 테스트가 실패하는 것을 확인했습니다.
+
+### 이 컨테이너에서만 실패하는 것(회귀 아님)
+
+`tests/browser/lazy-stylized.mjs` 의 webkit 비디오 검사(코덱), `tests/browser/measure.mjs`
+의 슬라이더 타이밍, `tests/animated-media-qa.mjs` 의 7초 대기. 셋 다 `HEAD` 워크트리에서도
+같게 실패하며, 앞의 것은 마지막 초록불 CI(`70c3100`)에서 통과했습니다.
+
 ## 2026-09-21 Unreleased 검증 (Radial menu — 메가메뉴 세 번째 레이아웃)
 
 ### 새 모듈이 아니라 레이아웃인 이유

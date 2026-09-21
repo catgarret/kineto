@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import Kineto from '../src/core.js';
 import { JSDOM } from 'jsdom';
-import { coerce, dash, decomposeHangul, hangulFrames, numberOption, q, readOpts, segmentText, snapshotInlineStyles } from '../src/utils.js';
+import { coerce, dash, decomposeHangul, hangulFrames, numberOption, q, readOpts, segmentText, snapshotAttributes, snapshotInlineStyles } from '../src/utils.js';
 
 assert.equal(dash('scrollSequence'), 'scroll-sequence');
 assert.equal(coerce('true'), true);
@@ -26,6 +26,32 @@ assert.equal(numberOption(0, 5), 0, 'zero is a value, not a missing option');
 assert.equal(numberOption(99, 5, 0, 10), 10, 'a finite value is clamped into range');
 assert.equal(numberOption(-99, 5, 0, 10), 0, 'clamping works at the bottom too');
 assert.equal(numberOption('nope', -7, 0, 10), -7, 'the fallback is returned as written');
+
+// snapshotAttributes must hand the element back exactly as it found it. The
+// trap is `style`: once the CSSOM has written to it, Chromium and WebKit both
+// answer a `removeAttribute('style')` by emptying the declaration block and
+// serialising it straight back, so the element keeps a `style=""` it never had.
+// jsdom does not reproduce that, so this checks the guard itself — the restore
+// must leave no empty husk even when one is planted underneath it.
+{
+  const { JSDOM: SnapshotDom } = await import('jsdom');
+  const page = new SnapshotDom('<main><div id="probe">x</div></main>');
+  const probe = page.window.document.getElementById('probe');
+  const restore = snapshotAttributes(probe, ['class', 'style']);
+  probe.style.setProperty('--kt-probe', '1s');
+  probe.classList.add('kt-probe');
+  assert.ok(probe.hasAttribute('style'), 'the fixture must actually write an inline style');
+  // Stand in for the engine behaviour: removing the attribute leaves the husk.
+  const nativeRemove = probe.removeAttribute.bind(probe);
+  let planted = false;
+  probe.removeAttribute = (name) => {
+    nativeRemove(name);
+    if (name === 'style' && !planted) { planted = true; probe.setAttribute('style', ''); }
+  };
+  restore();
+  assert.equal(probe.hasAttribute('style'), false, 'restore must not leave an empty style attribute behind');
+  assert.equal(probe.hasAttribute('class'), false, 'and the same for any other attribute it removed');
+}
 
 const mockElement = {
   dataset: {

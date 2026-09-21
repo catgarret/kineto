@@ -72,7 +72,8 @@ const report = await page.evaluate(async () => {
   document.querySelector('main').innerHTML = `
     <div class="pane" id="glass" style="left:40px" data-kt-card-glow="glass" data-kt-glass-blur="12" data-kt-glass-depth="24"></div>
     <div class="pane" id="flat" style="left:330px" data-kt-card-glow="glass" data-kt-glass-blur="12" data-kt-glass-depth="24" data-kt-glass-refraction="off"></div>
-    <div class="pane" id="bare" style="left:620px"><b>content</b></div>`;
+    <div class="pane" id="bare" style="left:620px"><b>content</b></div>
+    <div id="control" style="position:absolute;top:244px;left:40px;width:120px;height:72px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)"></div>`;
   Kineto.init();
   await new Promise((resolve) => setTimeout(resolve, 400));
 
@@ -83,23 +84,17 @@ const report = await page.evaluate(async () => {
   const rim = glassLayer.querySelector('.kt-card-glow-spotlight');
   const sheen = glassLayer.querySelector('.kt-card-glow-sheen');
   const rimBefore = rim?.style.background || '';
-  // Move the pointer to the opposite corner: the lit edge has to follow it.
-  const box = document.getElementById('glass').getBoundingClientRect();
-  document.getElementById('glass').dispatchEvent(new PointerEvent('pointerenter', {
-    bubbles: true, clientX: box.left + 12, clientY: box.top + 12
-  }));
-  document.getElementById('glass').dispatchEvent(new PointerEvent('pointermove', {
-    bubbles: true, clientX: box.right - 12, clientY: box.bottom - 12
-  }));
-  await new Promise((resolve) => setTimeout(resolve, 400));
-  const rimAfter = rim?.style.background || '';
+  window.__glassRim = () => rim?.style.background || '';
 
   return {
+    rimBefore,
+    box: (({ left, top, right, bottom }) => ({ left, top, right, bottom }))(
+      document.getElementById('glass').getBoundingClientRect()
+    ),
     filter,
     refracting: /url\(/.test(filter),
     flatFilter: getComputedStyle(layerOf('flat')).backdropFilter || getComputedStyle(layerOf('flat')).webkitBackdropFilter,
     hasRim: Boolean(rim) && /linear-gradient/.test(rimBefore),
-    rimFollowsPointer: Boolean(rimBefore) && rimBefore !== rimAfter,
     hasSheen: Boolean(sheen) && /linear-gradient/.test(sheen.style.background || ''),
     // The pane is the material, not a hover reaction: it must be opaque at rest.
     opacityAtRest: layerOf('flat').style.opacity,
@@ -114,11 +109,21 @@ const report = await page.evaluate(async () => {
 });
 
 assert.deepEqual(errors, [], 'glass must not raise page errors');
+// The lit edge has to follow the pointer. This drives the REAL input pipeline
+// rather than dispatching a synthetic PointerEvent: a hand-built
+// `new PointerEvent('pointermove', { clientX })` arrives without usable
+// coordinates in WebKit, so the module had nothing to move the rim to and the
+// check failed on a browser where the feature actually works.
+await page.mouse.move(report.box.left + 12, report.box.top + 12);
+await page.mouse.move(report.box.right - 12, report.box.bottom - 12);
+await page.waitForTimeout(400);
+const rimAfter = await page.evaluate(() => window.__glassRim());
+assert.notEqual(rimAfter, report.rimBefore, 'the lit edge must follow the pointer');
+
 assert.match(report.filter, /blur\(12px\)/, 'the pane must blur its backdrop by the requested amount');
 assert.match(report.filter, /saturate\(/, 'the pane must push the colour behind it');
 assert.equal(report.hasRim, true, 'the pane must draw a lit rim');
 assert.equal(report.hasSheen, true, 'the pane must draw an inner sheen');
-assert.equal(report.rimFollowsPointer, true, 'the lit edge must follow the pointer');
 assert.equal(report.opacityAtRest, '1', 'glass is the material, so it must stay on when the pointer leaves');
 assert.notEqual(report.isolation, 'isolate', 'an isolated card has no backdrop to filter — glass must not isolate');
 assert.equal(report.bare, false, 'a card without the module must be left alone');
@@ -137,12 +142,33 @@ if (report.refracting) {
 const clip = (left) => page.screenshot({ clip: { x: left, y: 110, width: 120, height: 80 } });
 const [inside, outside] = await Promise.all([clip(100), clip(760)]);
 const blurRatio = inside.length / outside.length;
-assert.ok(
-  blurRatio > 3,
-  `the backdrop must actually be blurred: a PNG of the pane is only ${blurRatio.toFixed(1)}x the size of `
-  + `one of the bare stripes beside it (${inside.length} vs ${outside.length} bytes) — at about 1 the pane `
-  + 'is passing the stripes through untouched, and below 1 it is painting over them instead of filtering them'
-);
+
+// Does this engine PAINT a backdrop-filter here, or only accept the
+// declaration? Headless Firefox and WebKit accept `backdrop-filter: blur(12px)`
+// and composite nothing at all, so the pixel check below would be measuring the
+// runner rather than the module. The control is a plain div with an inline
+// backdrop-filter over the same stripes — no Kineto anywhere near it — so a
+// Chromium run cannot take the skip branch by accident: measured on this
+// fixture it lands at 12.9x there, against 1.0x in both of the others.
+const low = (left) => page.screenshot({ clip: { x: left, y: 244, width: 120, height: 72 } });
+const [control, controlStripes] = await Promise.all([low(40), low(200)]);
+const controlRatio = control.length / controlStripes.length;
+
+if (controlRatio > 3) {
+  assert.ok(
+    blurRatio > 3,
+    `the backdrop must actually be blurred: a PNG of the pane is only ${blurRatio.toFixed(1)}x the size of `
+    + `one of the bare stripes beside it (${inside.length} vs ${outside.length} bytes) — at about 1 the pane `
+    + 'is passing the stripes through untouched, and below 1 it is painting over them instead of filtering them'
+  );
+} else {
+  console.log(
+    `card-glass note (${browserName}) — a plain control div with an inline backdrop-filter measures `
+    + `${controlRatio.toFixed(2)}x the bare stripes here, so this engine is not compositing backdrop-filter `
+    + 'at all in this run and the pixel check would say nothing about the module. The declaration, the rim, '
+    + 'the sheen and the teardown are all still checked above.'
+  );
+}
 
 // The bend, the same way: at the rim, refraction moves the stripes, so the two
 // panes cannot paint the same pixels there.
@@ -150,7 +176,7 @@ const [bentRim, flatRim] = await Promise.all([
   page.screenshot({ clip: { x: 44, y: 110, width: 28, height: 80 } }),
   page.screenshot({ clip: { x: 334, y: 110, width: 28, height: 80 } })
 ]);
-if (report.refracting) {
+if (report.refracting && controlRatio > 3) {
   assert.ok(
     !bentRim.equals(flatRim),
     'with refraction on, the rim must not paint the same pixels as the pane with it off'
@@ -174,4 +200,4 @@ assert.doesNotMatch(after.style || '', /backdrop-filter|isolation/, 'destroy() m
 await page.close();
 await browser.close();
 server.close();
-console.log(`card-glass OK (${browserName}) — measured backdrop blur (${blurRatio.toFixed(1)}x the PNG of the bare stripes) and saturation, pointer-lit rim, inner sheen, ${report.refracting ? 'edge refraction' : 'refraction correctly skipped'}, no stacking-context trap, clean teardown.`);
+console.log(`card-glass OK (${browserName}) — ${controlRatio > 3 ? `measured backdrop blur (${blurRatio.toFixed(1)}x the PNG of the bare stripes)` : 'declared backdrop blur (this engine composites none here)'} and saturation, pointer-lit rim, inner sheen, ${report.refracting ? 'edge refraction' : 'refraction correctly skipped'}, no stacking-context trap, clean teardown.`);

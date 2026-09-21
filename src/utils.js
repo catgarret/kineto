@@ -373,8 +373,21 @@ export function snapshotAttributes(el, names) {
   const values = new Map(names.map((name) => [name, el.getAttribute(name)]));
   return () => {
     values.forEach((value, name) => {
-      if (value == null) el.removeAttribute(name);
-      else el.setAttribute(name, value);
+      if (value != null) {
+        el.setAttribute(name, value);
+        return;
+      }
+      el.removeAttribute(name);
+      // Removing `style` ONCE is not enough once the CSSOM has written to it.
+      // Measured in all three engines: after `el.style.setProperty(...)`, a
+      // `removeAttribute('style')` leaves `style=""` behind in Chromium and
+      // WebKit — the declaration block is emptied and serialised straight back
+      // — while Firefox drops the attribute outright. A second call removes the
+      // husk. It lives here rather than in each caller so that every module
+      // that snapshots an attribute hands the element back the way it found it;
+      // `dropEmptyAttributes` does the same thing for the husks a
+      // `classList.remove()` leaves.
+      if (el.getAttribute(name) === '') el.removeAttribute(name);
     });
   };
 }

@@ -541,7 +541,11 @@ function se(e, t) {
 	let n = new Map(t.map((t) => [t, e.getAttribute(t)]));
 	return () => {
 		n.forEach((t, n) => {
-			t == null ? e.removeAttribute(n) : e.setAttribute(n, t);
+			if (t != null) {
+				e.setAttribute(n, t);
+				return;
+			}
+			e.removeAttribute(n), e.getAttribute(n) === "" && e.removeAttribute(n);
 		});
 	};
 }
