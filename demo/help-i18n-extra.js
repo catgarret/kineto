@@ -2555,6 +2555,82 @@
     sets[lang] = sets[lang] || {};
     sets[lang].squircle = Object.assign({}, sets[lang].squircle, values);
   }
+  const cardGlass = {
+    "ko": {
+      "glassBlur": "뒤에 있는 것을 얼마나 흐리게 볼지입니다(px). 0이면 유리가 투명해져 색만 얹힙니다.",
+      "glassSaturate": "뒤에 비치는 색의 채도입니다. 1보다 크면 색이 진해져 유리를 통과한 느낌이 납니다.",
+      "glassDepth": "테두리에서 안쪽으로 몇 px까지 빛이 휘는지 — 유리의 두께입니다. 깊을수록 가장자리가 많이 굴절됩니다.",
+      "glassRefraction": "가장자리에서 배경이 실제로 휘게 할지입니다. SVG 필터를 backdrop-filter로 쓸 수 있는 브라우저(현재 크로미엄)에서만 동작하고, 나머지는 자동으로 빠집니다.",
+      "glassTint": "유리 자체의 색입니다. 반투명한 값이어야 뒤가 비칩니다.",
+      "glassRim": "빛을 받는 테두리 선의 굵기(px)입니다.",
+      "glassRimOpacity": "테두리 선이 얼마나 밝은지입니다. 0이면 테두리 없이 흐림만 남습니다.",
+      "glassSheen": "유리 안쪽 윗면에 도는 은은한 반사의 세기입니다."
+    },
+    "en": {
+      "glassBlur": "How far the backdrop is blurred, in px. At 0 the pane is clear and only the tint remains.",
+      "glassSaturate": "How much the colour behind is pushed. Above 1 it deepens, which is what reads as looking through glass.",
+      "glassDepth": "How far in from the rim the light bends — the thickness of the glass. Deeper bends more of the edge.",
+      "glassRefraction": "Whether the backdrop actually bends at the rim. Needs an SVG filter used as a backdrop-filter (Chromium today); elsewhere it is dropped automatically.",
+      "glassTint": "The colour of the glass itself. Keep it translucent or nothing shows through.",
+      "glassRim": "Width of the lit edge line, in px.",
+      "glassRimOpacity": "How bright the lit edge is. At 0 the pane keeps the blur and loses its rim.",
+      "glassSheen": "Strength of the soft reflection inside the top of the pane."
+    },
+    "ja": {
+      "glassBlur": "背景をどれだけぼかすか（px）。0 なら透明になり色味だけが残ります。",
+      "glassSaturate": "透けて見える色の彩度です。1 より大きいと色が濃くなり、ガラス越しらしくなります。",
+      "glassDepth": "縁から内側へ何 px まで光が曲がるか — ガラスの厚みです。深いほど縁が大きく屈折します。",
+      "glassRefraction": "縁で背景を実際に曲げるかどうか。SVG フィルターを backdrop-filter に使えるブラウザ（現状は Chromium）だけで動き、他では自動的に外れます。",
+      "glassTint": "ガラス自体の色です。半透明にしないと背景が見えません。",
+      "glassRim": "光を受ける縁の線の太さ（px）です。",
+      "glassRimOpacity": "縁の線の明るさです。0 ならぼかしだけが残ります。",
+      "glassSheen": "ガラス内側の上面に乗る、やわらかな反射の強さです。"
+    },
+    "zh-CN": {
+      "glassBlur": "背后内容的模糊程度（px）。为 0 时玻璃变透明，只留下色调。",
+      "glassSaturate": "透出的颜色的饱和度。大于 1 时颜色更浓，像是隔着玻璃看。",
+      "glassDepth": "光线从边缘向内弯折的距离 —— 玻璃的厚度。越深，边缘折射越明显。",
+      "glassRefraction": "是否让背景在边缘真正弯折。需要浏览器支持把 SVG 滤镜用作 backdrop-filter（目前只有 Chromium），其他浏览器会自动省略。",
+      "glassTint": "玻璃本身的颜色。要保持半透明，否则背后看不见。",
+      "glassRim": "受光边缘线的宽度（px）。",
+      "glassRimOpacity": "受光边缘的亮度。为 0 时只剩模糊，没有边缘线。",
+      "glassSheen": "玻璃内侧上方那层柔和反射的强度。"
+    },
+    "zh-TW": {
+      "glassBlur": "背後內容的模糊程度（px）。為 0 時玻璃變透明，只留下色調。",
+      "glassSaturate": "透出的顏色的飽和度。大於 1 時顏色更濃，像是隔著玻璃看。",
+      "glassDepth": "光線從邊緣向內彎折的距離 —— 玻璃的厚度。越深，邊緣折射越明顯。",
+      "glassRefraction": "是否讓背景在邊緣真正彎折。需要瀏覽器支援把 SVG 濾鏡用作 backdrop-filter（目前只有 Chromium），其他瀏覽器會自動省略。",
+      "glassTint": "玻璃本身的顏色。要保持半透明，否則背後看不見。",
+      "glassRim": "受光邊緣線的寬度（px）。",
+      "glassRimOpacity": "受光邊緣的亮度。為 0 時只剩模糊，沒有邊緣線。",
+      "glassSheen": "玻璃內側上方那層柔和反射的強度。"
+    },
+    "ru": {
+      "glassBlur": "Насколько размыт фон, в px. При 0 панель прозрачная и остаётся только оттенок.",
+      "glassSaturate": "Насколько усилен цвет за панелью. Больше 1 — цвет глубже, и это читается как взгляд сквозь стекло.",
+      "glassDepth": "Как далеко от кромки внутрь гнётся свет — толщина стекла. Глубже — сильнее преломление по краю.",
+      "glassRefraction": "Гнуть ли фон у кромки по-настоящему. Нужен SVG-фильтр в backdrop-filter (сегодня только Chromium); в остальных он отбрасывается сам.",
+      "glassTint": "Цвет самого стекла. Держите его полупрозрачным, иначе фон не просвечивает.",
+      "glassRim": "Толщина освещённой кромки, в px.",
+      "glassRimOpacity": "Насколько ярка освещённая кромка. При 0 остаётся размытие без кромки.",
+      "glassSheen": "Сила мягкого отражения внутри верхней части панели."
+    },
+    "it": {
+      "glassBlur": "Quanto è sfocato ciò che sta dietro, in px. A 0 il pannello è limpido e resta solo la tinta.",
+      "glassSaturate": "Quanto viene spinto il colore dietro. Sopra 1 si intensifica, ed è ciò che fa sembrare di guardare attraverso il vetro.",
+      "glassDepth": "Quanto la luce si piega dal bordo verso l’interno — lo spessore del vetro. Più è profondo, più il bordo rifrange.",
+      "glassRefraction": "Se il fondo debba davvero piegarsi sul bordo. Richiede un filtro SVG usato come backdrop-filter (oggi solo Chromium); altrove viene tolto da solo.",
+      "glassTint": "Il colore del vetro stesso. Tienilo traslucido o non traspare nulla.",
+      "glassRim": "Spessore della linea di bordo illuminata, in px.",
+      "glassRimOpacity": "Quanto è luminoso il bordo. A 0 resta la sfocatura senza bordo.",
+      "glassSheen": "Intensità del riflesso morbido nella parte alta del pannello."
+    }
+  };
+  for (const [lang, values] of Object.entries(cardGlass)) {
+    sets[lang] = sets[lang] || {};
+    sets[lang].cardGlow = Object.assign({}, sets[lang].cardGlow, values);
+  }
   const revealOnce = {
     ko: '켜면 등장 모션을 한 번만 실행합니다. 끄면 이탈 시 역재생하고 재진입 시 다시 재생합니다. Native와 GSAP 모두 지원합니다.',
     en: 'Play the entrance once. Turn off to reverse on exit and play again on re-entry, with either native animation or GSAP.',

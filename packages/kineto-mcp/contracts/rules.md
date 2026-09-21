@@ -112,7 +112,7 @@ The old markup keeps working until next major and emits a recoverable `KT_DEPREC
 - `data-kt-ambient-media` — variants: image-clone, video-sample, color (JS key `preset`)
 - `data-kt-blur-text` — variants: blur (JS key `preset`)
 - `data-kt-brush-reveal` — variants: brush (JS key `preset`)
-- `data-kt-card-glow` — variants: spotlight, edge, border, comet, aurora, shine (JS key `preset`)
+- `data-kt-card-glow` — variants: spotlight, edge, border, comet, aurora, shine, glass (JS key `preset`)
 - `data-kt-counter` — variants: slot, plain, digit, pop, flip, clock (JS key `preset`)
 - `data-kt-date-time` — variants: relative, absolute, both (JS key `preset`)
 - `data-kt-css-scroll` — variants: progress-property, css-animation-timeline, scroll-timeline (JS key `preset`)

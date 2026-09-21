@@ -239,6 +239,14 @@ window.KINETO_COPY_I18N = {
     }
   },
   "cards": {
+    "뒤가 비쳐 흐려지고, 빛 들어오는 쪽 테두리가 밝게 섭니다.": [
+      "What is behind shows through, blurred, and the lit edge catches a bright rim.",
+      "背景が透けてぼけ、光の当たる縁が明るく立ちます。",
+      "背后的内容透出并模糊，受光的边缘亮起一圈。",
+      "背後的內容透出並模糊，受光的邊緣亮起一圈。",
+      "Фон просвечивает размытым, а освещённый край ловит яркую кромку.",
+      "Ciò che sta dietro traspare sfocato e il bordo illuminato si accende."
+    ],
     "애플의 모서리는 원이 아니라 초타원입니다. 같은 반지름인데 곡선이 다릅니다.": [
       "Apple's corners are superellipses, not circles. Same radius, different curve.",
       "アップルの角は円ではなく超楕円です。同じ半径でも曲線が違います。",

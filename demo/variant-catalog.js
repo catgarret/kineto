@@ -4,7 +4,7 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
   "schemaVersion": "1.0.0",
   "libraryVersion": "0.11.0",
   "moduleCount": 35,
-  "variantCount": 217,
+  "variantCount": 218,
   "capabilities": {
     "any": "No requirement — works on any element.",
     "image": "Needs an <img> (the element itself or a descendant).",
@@ -96,6 +96,14 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
         "data-kt-duration",
         "data-kt-ease",
         "data-kt-follow",
+        "data-kt-glass-blur",
+        "data-kt-glass-depth",
+        "data-kt-glass-refraction",
+        "data-kt-glass-rim",
+        "data-kt-glass-rim-opacity",
+        "data-kt-glass-saturate",
+        "data-kt-glass-sheen",
+        "data-kt-glass-tint",
         "data-kt-halo",
         "data-kt-intensity",
         "data-kt-luminous-border",
@@ -157,6 +165,11 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
         },
         {
           "name": "shine",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "glass",
           "requires": "any",
           "deprecated": false
         }

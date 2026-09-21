@@ -174,7 +174,12 @@ const BUDGET = {
   // more modular entry, since the module ships as its own chunk. The shape is
   // what CSS cannot draw outside Chromium, so this is the cost of the feature
   // existing at all rather than of the same feature growing.
-  packedKb: 590,
+  // 2026-09-21 (liquid glass): Card Glow's seventh look and its shared glass
+  // surface helper measure 593.7 KB packed / 1935.4 KB unpacked on the same 80
+  // files. A backdrop blur alone is a CSS one-liner; these are the bytes of the
+  // displacement map, the lit rim and the tiering that keeps the look on
+  // engines with no SVG backdrop-filter.
+  packedKb: 594,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -201,8 +206,9 @@ const BUDGET = {
   // that does not pause is a correctness gap, not a feature.
   // See the effect-quality note above for the 1898.1 KB measurement.
   // See the live-motion-switching note above for the 1903.0 KB measurement.
-  // See the squircle note above for the 1920.1 KB measurement.
-  unpackedKb: 1921,
+  // See the squircle note above for the 1920.1 KB measurement, and the liquid
+  // glass note for 1935.4 KB.
+  unpackedKb: 1936,
   files: 80
 };
 

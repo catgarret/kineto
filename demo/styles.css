@@ -1362,3 +1362,8 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 .sq-tile span{opacity:.85}
 .sq-plain{background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
 .sq-outline{width:96px;height:96px;background:var(--panel2);color:var(--text);border:4px solid var(--accent);border-radius:26px}
+
+/* Liquid Glass demo — the pane covers only part of the picture, so the sharp
+   image beside it is what shows the blur, the saturation and the lit rim. */
+.glass-stage{position:relative;padding:0;overflow:hidden}
+.glass-pane{position:absolute;left:11%;right:11%;top:17%;bottom:17%;border-radius:28px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;letter-spacing:.06em;text-shadow:0 1px 3px rgba(0,0,0,.5)}

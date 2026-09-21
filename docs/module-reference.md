@@ -37,8 +37,8 @@
 
 - Attribute: `data-kt-card-glow`
 - Default variant: `spotlight`
-- Variants: `spotlight`, `edge`, `border`, `comet`, `aurora`, `shine`
-- Public options: `alwaysOn`, `blendMode`, `blur`, `borderBlur`, `borderColor`, `borderColor2`, `borderGlow`, `borderInset`, `borderOpacity`, `borderRadius`, `borderWidth`, `color`, `color1`, `color2`, `cycleDuration`, `disableOnMobile`, `duration`, `ease`, `follow`, `halo`, `intensity`, `luminousBorder`, `mode`, `opacity`, `preset`, `radius`, `reflection`, `sensitivity`, `shadow`, `shadowBlur`, `shadowColor`, `shadowCss`, `shadowFollow`, `shadowHoverOnly`, `shadowInset`, `shadowOpacity`, `shadowSpread`, `shadowX`, `shadowY`, `smoothing`, `speed`, `spread`, `surface`, `surfaceBlend`, `surfaceBlur`, `surfaceColor`, `surfaceColor2`, `surfaceGradient`, `surfaceInset`, `surfaceOpacity`, `surfaceSize`
+- Variants: `spotlight`, `edge`, `border`, `comet`, `aurora`, `shine`, `glass`
+- Public options: `alwaysOn`, `blendMode`, `blur`, `borderBlur`, `borderColor`, `borderColor2`, `borderGlow`, `borderInset`, `borderOpacity`, `borderRadius`, `borderWidth`, `color`, `color1`, `color2`, `cycleDuration`, `disableOnMobile`, `duration`, `ease`, `follow`, `glassBlur`, `glassDepth`, `glassRefraction`, `glassRim`, `glassRimOpacity`, `glassSaturate`, `glassSheen`, `glassTint`, `halo`, `intensity`, `luminousBorder`, `mode`, `opacity`, `preset`, `radius`, `reflection`, `sensitivity`, `shadow`, `shadowBlur`, `shadowColor`, `shadowCss`, `shadowFollow`, `shadowHoverOnly`, `shadowInset`, `shadowOpacity`, `shadowSpread`, `shadowX`, `shadowY`, `smoothing`, `speed`, `spread`, `surface`, `surfaceBlend`, `surfaceBlur`, `surfaceColor`, `surfaceColor2`, `surfaceGradient`, `surfaceInset`, `surfaceOpacity`, `surfaceSize`
 
 ## counter
 

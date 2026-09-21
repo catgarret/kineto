@@ -27,7 +27,10 @@ export const consumerFixtures = [
   // the shape at all. Vite measures 153.5 KB full. Raise only the measured
   // product ceilings; runner variance and every core + selected-module boundary
   // stay exactly as they were.
-  { name: 'full', entry: 'full', budget: 154, variance: { vite: 4, rolldown: 4 } },
+  // 2026-09-21 (liquid glass): Card Glow's glass look and the shared glass
+  // surface helper are full-runtime code too. Vite measures 154.9 KB full,
+  // 158.9 KB React and 159.9 KB Vue (Rolldown 159.1 KB React). Same rule.
+  { name: 'full', entry: 'full', budget: 155, variance: { vite: 4, rolldown: 4 } },
   { name: 'core-reveal', entry: 'core-reveal', budget: 30, variance: { rolldown: 1 } },
   { name: 'core-three', entry: 'core-three', budget: 65, variance: { rolldown: 1 } },
   { name: 'core-states', entry: 'core-states', budget: 35 },
@@ -42,7 +45,7 @@ export const consumerFixtures = [
   // 2026-09-20 (effect quality): the four effect rewrites measure 155.4 KiB gzip
   // in the Vite React entry. Round only this measured cost; variance unchanged.
   // See the squircle note above: Vite measures 157.5 KB in the React entry.
-  { name: 'react-adapter', entry: 'react', budget: 158, variance: { vite: 1, rolldown: 1 } },
+  { name: 'react-adapter', entry: 'react', budget: 160, variance: { vite: 1, rolldown: 1 } },
   // 2026-09-18: the Presence status subscription that keeps both adapters in
   // sync with a propagating parent measures 144.1 KB in the Vite Vue entry
   // (React 143.x stays inside its ceiling). Round the Vue product ceiling by
@@ -54,7 +57,7 @@ export const consumerFixtures = [
   // 155.0 KiB gzip in the Vite Vue entry. Restoring the document a module
   // changed is the destroy contract; round only this measured cost.
   // See the squircle note above: the Vue entry follows it by the same amount.
-  { name: 'vue-adapter', entry: 'vue', budget: 159, variance: { vite: 1, rolldown: 2 } }
+  { name: 'vue-adapter', entry: 'vue', budget: 160, variance: { vite: 1, rolldown: 2 } }
 ];
 
 export const treeShakenEntries = [

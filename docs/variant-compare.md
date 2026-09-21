@@ -1,6 +1,6 @@
 # Variant 비교 시트
 
-> Generated from `scripts/generate-variant-catalog.mjs` · library v0.11.0 · 35 modules / 217 variants.
+> Generated from `scripts/generate-variant-catalog.mjs` · library v0.11.0 · 35 modules / 218 variants.
 
 데모의 모듈 블록마다 **"모든 variant 비교"** 버튼이 있습니다. 열면 그 모듈의 공개 variant가
 전부 같은 소재 위에 한 번에 펼쳐지고, 타일마다 그대로 붙여넣을 수 있는 마크업이 붙습니다.
@@ -12,18 +12,18 @@
 
 | 방식 | 뜻 | 모듈 | variant |
 |---|---|---|---|
-| `grid` (나란히) | 같은 소재를 variant 수만큼 복제해 살아 있는 상태로 나란히 보여 줍니다. | 25개 | 174개 |
+| `grid` (나란히) | 같은 소재를 variant 수만큼 복제해 살아 있는 상태로 나란히 보여 줍니다. | 25개 | 175개 |
 | `control` (데모 컨트롤) | 데모가 이미 variant마다 컨트롤을 갖고 있어, 시트가 그 컨트롤을 대신 눌러 줍니다. | 2개 | 19개 |
 | `link` (모듈 데모) | 한 페이지에 여러 개를 둘 수 없거나 옵션 하나로 켤 수 없어, 이유를 적고 모듈 데모로 보냅니다. | 8개 | 24개 |
 
-174/217 variant가 시트 안에서 그대로 살아 움직입니다. 나머지는 왜 그럴 수 없는지가 아래 표에 적혀 있습니다.
+175/218 variant가 시트 안에서 그대로 살아 움직입니다. 나머지는 왜 그럴 수 없는지가 아래 표에 적혀 있습니다.
 
 ## 모듈별
 
 | 모듈 | 방식 | variant를 켜는 법 | variant 수 | 비고 |
 |---|---|---|---|---|
 | `ambientMedia` | `link` | — | 3 | variant 가 소스 종류(복제할 이미지·샘플링할 영상·단색)에서 파생됩니다. 옵션 하나로 바꿀 수 없어 모듈 데모의 세 카드가 그대로 비교 화면입니다. |
-| `cardGlow` | `grid` | `data-kt-card-glow="<variant>"` | 6 |  |
+| `cardGlow` | `grid` | `data-kt-card-glow="<variant>"` | 7 |  |
 | `counter` | `grid` | `data-kt-counter="<variant>"` | 6 |  |
 | `dateTime` | `grid` | `data-kt-date-time="<variant>"` | 3 |  |
 | `cssScroll` | `link` | — | 3 | variant 는 어떤 타임라인 옵션을 채웠는지의 결과입니다. 속성 값은 이름표일 뿐이라 값만 바꿔서는 다른 variant 가 되지 않습니다. |

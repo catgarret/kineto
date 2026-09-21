@@ -94,8 +94,9 @@ assert.ok(
 // and rgb-slice-burst (docs/variant-distinctness.md). Stylize adds a rotated
 // print screen so the halftone angle has a card of its own.
 // 2026-09-20: the Squircle module adds two cards — the iOS corner comparison
-// and the other corner-shape keywords.
-assert.equal(descriptions.length, 185);
+// and the other corner-shape keywords. 2026-09-21: Card Glow's `glass` variant
+// adds the Liquid Glass pane.
+assert.equal(descriptions.length, 186);
 // 18 since the Korean-titled `radial` compatibility card was removed (see above).
 assert.equal(titles.length, 19);
 
