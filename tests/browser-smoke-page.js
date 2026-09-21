@@ -83,6 +83,15 @@ async function runSmoke() {
       options: { value: '2026-01-02T03:04:05Z', now: '2026-01-02T03:05:05Z', live: false }
     }),
     cssScroll: () => ({ el: make() }),
+    // Squircle reads the element's own `border-radius` when it has no radius of
+    // its own, and its two paths (the native `corner-shape` property and the
+    // `clip-path` polyfill) both need a box with a real size to draw into — a
+    // zero-height fixture would let a broken outline pass unnoticed.
+    squircle: () => {
+      const el = make('div', 'Squircle');
+      el.style.cssText = 'width:120px;height:80px;border-radius:24px;background:#888;';
+      return { el, options: { preset: 'squircle' } };
+    },
     cursor: () => ({ el: make(), options: { clickImage: svg } }),
     fullpage: () => {
       const el = withMarkup('<section>One</section><section>Two</section>');
