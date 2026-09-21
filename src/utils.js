@@ -104,6 +104,34 @@ export function clamp(value, min, max) {
 }
 
 /**
+ * 숫자 옵션 하나를 읽습니다. 유한한 숫자면 `min..max` 안으로 가두고, 숫자가 아니면
+ * (없거나, 빈 문자열이거나, `"abc"` 같은 오타면) `fallback` 을 그대로 돌려줍니다.
+ * 빈 문자열은 "0" 이 아니라 "아무도 주지 않은 값" 으로 봅니다 — `labeller` 와 같은 규칙입니다.
+ *
+ * 왜 공용 함수인가: 모듈마다 이 세 줄을 각자 다시 쓰고 있었고(overflowText·rasterizer·
+ * states·presence), 복사본마다 "범위를 벗어난 값"을 조금씩 다르게 다뤘습니다. 옵션의
+ * 의미는 어디서 읽든 같아야 하므로 한 곳에 둡니다.
+ *
+ * `fallback` 은 일부러 가두지 않습니다. 기본값이 자기 범위 밖에 있다면 그건 모듈의
+ * 버그이고, 조용히 고쳐 주는 쪽이 더 찾기 어렵습니다.
+ *
+ * @param {unknown} value 작성자가 준 값(`opts.x` 또는 data 속성)
+ * @param {number} fallback 숫자가 아닐 때 쓸 기본값
+ * @param {number} [min] 최소값(생략하면 아래쪽 제한 없음)
+ * @param {number} [max] 최대값(생략하면 위쪽 제한 없음)
+ * @returns {number}
+ */
+export function numberOption(value, fallback = 0, min = -Infinity, max = Infinity) {
+  // `Number('')` is 0, so a `data-kt-speed=""` written by a template that had
+  // nothing to put there used to mean "speed zero" — an animation that never
+  // moved, from an attribute that looks empty. An empty string is a value
+  // nobody supplied, which is the same rule `labeller` uses for its strings.
+  if (typeof value === 'string' && value.trim() === '') return fallback;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? clamp(parsed, min, max) : fallback;
+}
+
+/**
  * 모듈이 **스스로 만든** 컨트롤의 접근성 이름을 페이지가 정할 수 있게 합니다.
  *
  * 라이브러리는 읽는 사람의 언어를 알 수 없습니다. 그런데 슬라이더 점, 토스트 닫기 버튼처럼

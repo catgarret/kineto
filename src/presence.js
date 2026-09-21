@@ -1,6 +1,4 @@
-import { env, q } from './utils.js';
-
-const number = (value, fallback = 0) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+import { env, numberOption as number, q } from './utils.js';
 
 function result(status, reason, extra = {}) {
   const output = { status };

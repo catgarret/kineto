@@ -59,7 +59,11 @@ export const consumerFixtures = [
   // 155.0 KiB gzip in the Vite Vue entry. Restoring the document a module
   // changed is the destroy contract; round only this measured cost.
   // See the squircle note above: the Vue entry follows it by the same amount.
-  { name: 'vue-adapter', entry: 'vue', budget: 162, variance: { vite: 1, rolldown: 2 } }
+  // 2026-09-21 (radial menu): Mega-menu's radial layout is full-runtime code —
+  // Vue measures 163.2 KiB gzip in Vite (163.8 in Rolldown, inside its own
+  // variance), while full at 158.2 and React at 162.4 stay inside theirs.
+  // Round only the ceiling that actually moved.
+  { name: 'vue-adapter', entry: 'vue', budget: 163, variance: { vite: 1, rolldown: 2 } }
 ];
 
 export const treeShakenEntries = [

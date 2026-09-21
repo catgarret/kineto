@@ -6985,7 +6985,8 @@
       "defaultVariant": "dropdown",
       "variants": [
         "dropdown",
-        "mega"
+        "mega",
+        "radial"
       ],
       "publicOptions": [
         "closeDelay",
@@ -6993,7 +6994,11 @@
         "indicator",
         "layout",
         "openDelay",
+        "radius",
         "responsive",
+        "stagger",
+        "startAngle",
+        "sweep",
         "trigger"
       ],
       "optionDefaults": {
@@ -7002,8 +7007,45 @@
         "indicator": "none",
         "layout": "dropdown",
         "openDelay": 60,
+        "radius": 104,
         "responsive": "wrap",
+        "stagger": 40,
+        "startAngle": -90,
+        "sweep": 180,
         "trigger": "hover"
+      },
+      "variantOptions": {
+        "dropdown": [
+          "closeDelay",
+          "duration",
+          "indicator",
+          "layout",
+          "openDelay",
+          "responsive",
+          "trigger"
+        ],
+        "mega": [
+          "closeDelay",
+          "duration",
+          "indicator",
+          "layout",
+          "openDelay",
+          "responsive",
+          "trigger"
+        ],
+        "radial": [
+          "closeDelay",
+          "duration",
+          "indicator",
+          "layout",
+          "openDelay",
+          "radius",
+          "responsive",
+          "stagger",
+          "startAngle",
+          "sweep",
+          "trigger"
+        ]
       }
     },
     {

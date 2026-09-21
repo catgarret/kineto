@@ -149,7 +149,7 @@ The old markup keeps working until next major and emits a recoverable `KT_DEPREC
 - `data-kt-confetti` — variants: burst (JS key `preset`)
 - `data-kt-accordion` — variants: panel (JS key `effect`)
 - `data-kt-hold` — variants: confirm, tap (JS key `mode`)
-- `data-kt-mega-menu` — variants: dropdown, mega (JS key `preset`)
+- `data-kt-mega-menu` — variants: dropdown, mega, radial (JS key `preset`)
 - `data-kt-toast` — variants: stack (JS key `type`)
 - `data-kt-bottom-sheet` — variants: sheet (JS key `preset`)
 - `data-kt-tabs` — variants: line (JS key `effect`)

@@ -40,7 +40,11 @@ const contract = JSON.parse(fs.readFileSync(contractPath, 'utf8'));
 // the local variable's name, because modules do not agree on the name: Lazy uses
 // `const requested = opts.effect || opts.preset || 'fade'`, which a name-based
 // rule (`effect`/`preset`/`type`/...) would miss entirely.
-const VARIANT_OPTIONS = new Set(['type', 'preset', 'effect', 'variant', 'mode', 'style', 'kind']);
+// `layout` joined this list when Mega-menu grew its radial layout: the ring's
+// geometry options are read only inside `layout === 'radial'`, and without the
+// key here nothing recognised `layout` as the variant, so a plain dropdown's
+// settings drawer offered a `sweep` control it never reads.
+const VARIANT_OPTIONS = new Set(['type', 'preset', 'effect', 'variant', 'mode', 'style', 'kind', 'layout']);
 
 function walk(node, visit, parents = []) {
   if (!node || typeof node.type !== 'string') return;

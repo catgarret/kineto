@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import Kineto from '../src/core.js';
 import { JSDOM } from 'jsdom';
-import { coerce, dash, decomposeHangul, hangulFrames, q, readOpts, segmentText, snapshotInlineStyles } from '../src/utils.js';
+import { coerce, dash, decomposeHangul, hangulFrames, numberOption, q, readOpts, segmentText, snapshotInlineStyles } from '../src/utils.js';
 
 assert.equal(dash('scrollSequence'), 'scroll-sequence');
 assert.equal(coerce('true'), true);
@@ -12,6 +12,20 @@ assert.deepEqual(hangulFrames('강'), ['ㄱ', '가', '강']);
 assert.deepEqual(decomposeHangul('A'), null);
 assert.deepEqual(segmentText('가A'), ['가', 'A']);
 assert.deepEqual(q('#missing'), [], 'q() must be SSR-safe');
+
+// numberOption — the one numeric-option reader the modules share. A finite
+// number is clamped; anything that is not a number falls back UNCLAMPED, so a
+// module whose default sits outside its own bounds shows the bug instead of
+// having it quietly corrected.
+assert.equal(numberOption('12', 5), 12, 'a numeric string is a number');
+assert.equal(numberOption(undefined, 5), 5, 'a missing value falls back');
+assert.equal(numberOption('', 5), 5, 'an empty attribute falls back, it is not zero');
+assert.equal(numberOption('abc', 5), 5, 'a typo falls back');
+assert.equal(numberOption(Infinity, 5), 5, 'infinity is not a usable option value');
+assert.equal(numberOption(0, 5), 0, 'zero is a value, not a missing option');
+assert.equal(numberOption(99, 5, 0, 10), 10, 'a finite value is clamped into range');
+assert.equal(numberOption(-99, 5, 0, 10), 0, 'clamping works at the bottom too');
+assert.equal(numberOption('nope', -7, 0, 10), -7, 'the fallback is returned as written');
 
 const mockElement = {
   dataset: {

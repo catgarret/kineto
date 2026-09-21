@@ -239,6 +239,14 @@ window.KINETO_COPY_I18N = {
     }
   },
   "cards": {
+    "버튼을 누르면 항목이 그 둘레로 부채꼴을 그리며 펼쳐집니다.": [
+      "Press the button and the items fan out on an arc around it.",
+      "ボタンを押すと、項目がその周りに扇状に広がります。",
+      "按下按钮，选项就绕着它呈扇形展开。",
+      "按下按鈕，選項就繞著它呈扇形展開。",
+      "Нажмите кнопку — пункты веером раскрываются вокруг неё.",
+      "Premi il pulsante e le voci si aprono a ventaglio attorno a lui."
+    ],
     "맨 위에서 아래로 당기면 저항이 걸리고, 놓으면 새로고침합니다.": [
       "Pull down from the very top and it resists; let go past the mark to refresh.",
       "一番上から下に引くと抵抗がかかり、離すと更新します。",

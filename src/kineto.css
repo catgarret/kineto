@@ -841,6 +841,43 @@ html.kt-preload [data-kt-text-transition] {
 .kt-menu .kt-menu-mega { position: static; }
 .kt-menu--mega .kt-menu-panel,
 .kt-menu .kt-menu-mega > .kt-menu-panel { left: 0; right: 0; width: 100%; }
+/* Radial layout — the panel's links fan out on an arc around their own trigger
+   instead of stacking under it. The module publishes only what it had to
+   measure: each item's offset from the centre (--kt-menu-x/y), its share of the
+   stagger (--kt-menu-delay) and the travel time (--kt-menu-ring-duration).
+   Everything below is an ordinary declaration, so a page can restyle the ring
+   without touching JavaScript.
+
+   The panel itself becomes a zero-size point at the middle of its <li>, which is
+   what the items are positioned against; `overflow: visible` is what lets them
+   sit outside it. `.kt-menu-ring-open` (not `.kt-open`) is the open state,
+   because the items must be laid out collapsed for one frame BEFORE the class
+   arrives or the transition has nothing to start from. */
+.kt-menu--radial .kt-menu-panel {
+  top: 50%; left: 50%; width: 0; height: 0;
+  margin: 0; padding: 0; overflow: visible;
+}
+.kt-menu--radial .kt-menu-item {
+  position: absolute; top: 0; left: 0;
+  margin: 0; white-space: nowrap;
+  /* Collapsed: every item sits on the trigger, small and invisible. */
+  transform: translate(-50%, -50%) scale(var(--kt-menu-ring-collapsed, .55));
+  opacity: 0;
+  transition:
+    transform var(--kt-menu-ring-duration, .24s) var(--kt-ease-ui, cubic-bezier(.22,.8,.3,1)) var(--kt-menu-delay, 0ms),
+    opacity var(--kt-menu-ring-duration, .24s) ease var(--kt-menu-delay, 0ms);
+}
+.kt-menu--radial .kt-menu-ring-open .kt-menu-item {
+  /* `--kt-menu-ring-scale` resizes the whole ring from CSS alone. The module
+     cannot do this itself — `radius` is fixed when the menu is built — but a
+     narrow phone needs a smaller ring than the desktop it was authored for, and
+     that is a media query's job, not JavaScript's. */
+  transform: translate(-50%, -50%) translate(
+    calc(var(--kt-menu-x, 0px) * var(--kt-menu-ring-scale, 1)),
+    calc(var(--kt-menu-y, 0px) * var(--kt-menu-ring-scale, 1))
+  );
+  opacity: 1;
+}
 /* Optional indicator icons — state hook is the trigger's aria-expanded. */
 .kt-menu--ind-chevron .kt-menu-trigger::after {
   content: ""; flex: 0 0 auto; width: .9em; height: .9em; margin-left: 4px;
@@ -875,8 +912,12 @@ html.kt-preload [data-kt-text-transition] {
   .kt-menu--responsive-scroll > ul > li {
     flex: 0 0 auto; scroll-snap-align: start;
   }
-  .kt-menu--responsive-scroll .kt-menu-panel,
-  .kt-menu--responsive-wrap .kt-menu-panel {
+  /* `:not(.kt-menu--radial)` — pinning a panel to the top of the viewport is
+     what a stacked dropdown needs on a phone. A ring is already centred on its
+     own trigger, and a fixed, full-width box would throw its items across the
+     screen. */
+  .kt-menu--responsive-scroll:not(.kt-menu--radial) .kt-menu-panel,
+  .kt-menu--responsive-wrap:not(.kt-menu--radial) .kt-menu-panel {
     position: fixed;
     inset: var(--kt-menu-panel-top, 72px) 12px auto;
     width: auto;
@@ -889,6 +930,9 @@ html.kt-preload [data-kt-text-transition] {
 }
 @media (prefers-reduced-motion: reduce) {
   .kt-menu-trigger::after { transition: none; }
+  /* The ring still opens and still works — the items simply arrive where they
+     belong instead of travelling there. */
+  .kt-menu--radial .kt-menu-item { transition: none; }
 }
 
 /* ── Toast ───────────────────────────────────────────────────────────────────

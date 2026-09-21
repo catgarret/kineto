@@ -2795,6 +2795,96 @@
     sets[lang] = sets[lang] || {};
     sets[lang].gesture = Object.assign({}, sets[lang].gesture, values);
   }
+  const megaMenuLayouts = {
+    "ko": {
+      "layout": "메뉴가 어떤 모양으로 열리는지입니다. dropdown 은 항목 바로 아래 패널, mega 는 바 전체 폭을 쓰는 패널, radial 은 트리거 둘레로 펼쳐지는 부채꼴입니다.",
+      "trigger": "패널을 무엇으로 여는지입니다. hover 는 마우스를 올리면 열리고, click 은 눌러야 열립니다. 터치 기기는 어느 쪽이든 탭으로 엽니다.",
+      "openDelay": "마우스를 올린 뒤 열릴 때까지 기다리는 시간(ms)입니다. 지나가는 커서에 메뉴가 튀어나오지 않게 해 줍니다.",
+      "closeDelay": "커서가 벗어난 뒤 닫힐 때까지 기다리는 시간(ms)입니다. 트리거에서 패널로 비스듬히 이동할 틈을 줍니다.",
+      "duration": "패널이 열리고 닫히는 데 걸리는 시간(초)입니다. radial 에서는 항목 하나가 제자리까지 날아가는 시간입니다.",
+      "indicator": "트리거 옆에 붙는 여닫기 표시입니다. chevron 은 화살표가 돌아가고, plus 는 + 가 × 로 바뀌며, none 은 아무것도 붙이지 않습니다.",
+      "radius": "트리거 중심에서 항목까지의 거리(px)입니다. 부채꼴의 크기를 정합니다.",
+      "startAngle": "첫 항목이 놓이는 각도입니다. 0 이 12시 방향이고 시계 방향으로 커집니다 — -90 이면 9시에서 시작합니다.",
+      "sweep": "항목이 퍼지는 전체 각도입니다. 180 이면 반원, 360 이면 완전한 원이 되고, 음수면 반시계 방향으로 돕니다.",
+      "stagger": "항목 사이의 출발 시차(ms)입니다. 0 이면 전부 동시에 움직이고, 키울수록 하나씩 차례로 펼쳐집니다."
+    },
+    "en": {
+      "layout": "What shape the menu opens into. `dropdown` is a panel right under the item, `mega` is a panel the full width of the bar, and `radial` fans the items out around the trigger.",
+      "trigger": "What opens a panel. `hover` opens on the pointer arriving, `click` waits for a press. A touch device taps either way.",
+      "openDelay": "How long to wait after the pointer arrives before opening, in ms. It keeps a menu from leaping out at a cursor that was only passing through.",
+      "closeDelay": "How long to wait after the pointer leaves before closing, in ms. It leaves room to cut diagonally from the trigger to its panel.",
+      "duration": "How long the panel takes to open and close, in seconds. On `radial` it is how long one item takes to fly to its place.",
+      "indicator": "The open/close mark beside the trigger. `chevron` rotates an arrow, `plus` turns a + into a ×, and `none` adds nothing at all.",
+      "radius": "How far each item sits from the centre of the trigger, in px. This is the size of the ring.",
+      "startAngle": "Where the first item goes. 0 is straight up and the angle grows clockwise, so -90 starts at nine o'clock.",
+      "sweep": "The whole arc the items spread over. 180 is a half circle, 360 is a full one, and a negative value fans them anticlockwise.",
+      "stagger": "The head start between one item and the next, in ms. 0 moves them all together; raise it and they open one after another."
+    },
+    "ja": {
+      "layout": "メニューがどんな形で開くかです。dropdown は項目のすぐ下のパネル、mega はバー全幅のパネル、radial はトリガーの周りに扇状に広がります。",
+      "trigger": "パネルを何で開くかです。hover はマウスを乗せると開き、click は押して開きます。タッチ端末はどちらでもタップで開きます。",
+      "openDelay": "マウスが乗ってから開くまで待つ時間（ms）です。通り過ぎるだけのカーソルにメニューが飛び出さないようにします。",
+      "closeDelay": "カーソルが離れてから閉じるまで待つ時間（ms）です。トリガーからパネルへ斜めに移動する余裕を与えます。",
+      "duration": "パネルが開閉するのにかかる時間（秒）です。radial では項目ひとつが定位置まで飛ぶ時間になります。",
+      "indicator": "トリガーの横に付く開閉マークです。chevron は矢印が回り、plus は + が × に変わり、none は何も付けません。",
+      "radius": "トリガーの中心から項目までの距離（px）です。扇の大きさを決めます。",
+      "startAngle": "最初の項目を置く角度です。0 が真上で、時計回りに大きくなります（-90 なら9時の方向から）。",
+      "sweep": "項目が広がる全体の角度です。180 なら半円、360 なら完全な円、マイナスなら反時計回りに広がります。",
+      "stagger": "項目どうしの出発のずれ（ms）です。0 なら全部同時に動き、大きくするほど順に開きます。"
+    },
+    "zh-CN": {
+      "layout": "菜单以什么形态展开。dropdown 是项目正下方的面板，mega 是占满整条栏宽的面板，radial 则让项目绕着触发按钮呈扇形散开。",
+      "trigger": "用什么打开面板。hover 是指针移上去就开，click 要按一下。触摸设备两种都靠点按。",
+      "openDelay": "指针移入后等多久才打开，单位毫秒。避免只是路过的光标把菜单勾出来。",
+      "closeDelay": "指针离开后等多久才关闭，单位毫秒。留出从触发器斜着移到面板的余地。",
+      "duration": "面板开合所需的时间，单位秒。在 radial 下是单个项目飞到位所需的时间。",
+      "indicator": "触发器旁边的开合标记。chevron 让箭头旋转，plus 把 + 变成 ×，none 什么都不加。",
+      "radius": "每个项目离触发器中心的距离，单位像素，也就是这个圆环的大小。",
+      "startAngle": "第一个项目所在的角度。0 是正上方，顺时针递增，-90 就是从九点方向开始。",
+      "sweep": "项目铺开的整段弧度。180 是半圆，360 是整圆，负值则逆时针展开。",
+      "stagger": "相邻项目之间的出发时差，单位毫秒。0 表示一起动，调大就会一个接一个地展开。"
+    },
+    "zh-TW": {
+      "layout": "選單以什麼形態展開。dropdown 是項目正下方的面板，mega 是佔滿整條列寬的面板，radial 則讓項目繞著觸發按鈕呈扇形散開。",
+      "trigger": "用什麼打開面板。hover 是指標移上去就開，click 要按一下。觸控裝置兩種都靠點按。",
+      "openDelay": "指標移入後等多久才打開，單位毫秒。避免只是路過的游標把選單勾出來。",
+      "closeDelay": "指標離開後等多久才關閉，單位毫秒。留出從觸發器斜著移到面板的餘地。",
+      "duration": "面板開合所需的時間，單位秒。在 radial 下是單個項目飛到定位所需的時間。",
+      "indicator": "觸發器旁邊的開合標記。chevron 讓箭頭旋轉，plus 把 + 變成 ×，none 什麼都不加。",
+      "radius": "每個項目離觸發器中心的距離，單位像素，也就是這個圓環的大小。",
+      "startAngle": "第一個項目所在的角度。0 是正上方，順時針遞增，-90 就是從九點方向開始。",
+      "sweep": "項目鋪開的整段弧度。180 是半圓，360 是整圓，負值則逆時針展開。",
+      "stagger": "相鄰項目之間的出發時差，單位毫秒。0 表示一起動，調大就會一個接一個地展開。"
+    },
+    "ru": {
+      "layout": "В какой форме открывается меню. dropdown — панель прямо под пунктом, mega — панель во всю ширину полосы, radial — веер пунктов вокруг триггера.",
+      "trigger": "Чем открывается панель. hover — по наведению, click — по нажатию. На сенсорном экране в обоих случаях это касание.",
+      "openDelay": "Сколько ждать после наведения перед открытием, в мс. Не даёт меню выскакивать под курсор, который просто проходил мимо.",
+      "closeDelay": "Сколько ждать после ухода курсора перед закрытием, в мс. Оставляет запас, чтобы пройти от триггера к панели по диагонали.",
+      "duration": "Сколько панель открывается и закрывается, в секундах. В radial это время полёта одного пункта на своё место.",
+      "indicator": "Значок открытия рядом с триггером. chevron поворачивает стрелку, plus превращает + в ×, none не добавляет ничего.",
+      "radius": "На каком расстоянии от центра триггера стоят пункты, в px. Это размер кольца.",
+      "startAngle": "Где встанет первый пункт. 0 — строго вверх, угол растёт по часовой стрелке: -90 начинает с девяти часов.",
+      "sweep": "Вся дуга, по которой расходятся пункты. 180 — полукруг, 360 — полный круг, отрицательное значение разворачивает их против часовой.",
+      "stagger": "Задержка между соседними пунктами, в мс. 0 — все трогаются разом; больше — раскрываются по очереди."
+    },
+    "it": {
+      "layout": "In che forma si apre il menu. `dropdown` è un pannello subito sotto la voce, `mega` un pannello largo quanto la barra, `radial` apre le voci a ventaglio attorno al pulsante.",
+      "trigger": "Cosa apre un pannello. `hover` apre al passaggio del puntatore, `click` aspetta una pressione. Su touch si tocca in entrambi i casi.",
+      "openDelay": "Quanto attendere dopo il passaggio del puntatore prima di aprire, in ms. Evita che il menu salti fuori per un cursore che passava e basta.",
+      "closeDelay": "Quanto attendere dopo l'uscita del puntatore prima di chiudere, in ms. Lascia spazio per tagliare in diagonale dal pulsante al pannello.",
+      "duration": "Quanto impiega il pannello ad aprirsi e chiudersi, in secondi. In `radial` è il tempo di volo di una singola voce.",
+      "indicator": "Il segno di apertura accanto al pulsante. `chevron` ruota una freccia, `plus` trasforma un + in ×, `none` non aggiunge nulla.",
+      "radius": "Quanto distano le voci dal centro del pulsante, in px. È la dimensione dell'anello.",
+      "startAngle": "Dove va la prima voce. 0 è dritto in alto e l'angolo cresce in senso orario: -90 parte dalle nove.",
+      "sweep": "L'arco complessivo su cui si distribuiscono le voci. 180 è mezzo cerchio, 360 uno intero, un valore negativo le apre in senso antiorario.",
+      "stagger": "Lo scarto di partenza fra una voce e la successiva, in ms. 0 le muove insieme; alzandolo si aprono una dopo l'altra."
+    }
+  };
+  for (const [lang, values] of Object.entries(megaMenuLayouts)) {
+    sets[lang] = sets[lang] || {};
+    sets[lang].megaMenu = Object.assign({}, sets[lang].megaMenu, values);
+  }
   const revealOnce = {
     ko: '켜면 등장 모션을 한 번만 실행합니다. 끄면 이탈 시 역재생하고 재진입 시 다시 재생합니다. Native와 GSAP 모두 지원합니다.',
     en: 'Play the entrance once. Turn off to reverse on exit and play again on re-entry, with either native animation or GSAP.',

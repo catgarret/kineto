@@ -53,7 +53,9 @@ const fieldCount = Object.values(FIELDS).reduce((sum, rows) => sum + rows.length
 // Fields that have never had a tooltip. Widening the audit above from the first
 // source literal to the drawer's real manifest uncovered these 110 at once —
 // they were always unexplained, the old audit simply could not see them.
-// (109 now: `hold.mode` was written when tap-to-confirm was added.)
+// (109 after `hold.mode` was written for tap-to-confirm; 103 after Mega-menu's
+// six were written for the radial layout — the four ring options shipped with
+// tooltips, so they never joined the list at all.)
 //
 // This list is a RATCHET, not an exemption: it may only shrink. Writing a
 // tooltip and leaving the entry here fails the test just as loudly as a new gap,
@@ -69,7 +71,6 @@ const KNOWN_GAPS = {
   hold: ['action', 'blend', 'color', 'decay', 'duration', 'step', 'submit'],
   lightbox: ['download', 'thumbnails', 'transition'],
   loadingIndicator: ['barHeight', 'barWidth', 'color', 'preset', 'progressOutput', 'progressSource', 'progressTemplate', 'showLabel', 'showSpinner', 'showStatus', 'size', 'stepTotal', 'stroke', 'trackColor'],
-  megaMenu: ['closeDelay', 'duration', 'indicator', 'layout', 'openDelay', 'trigger'],
   stickyHeader: ['activeClass', 'distance', 'offset', 'shadow', 'shrink'],
   switch: ['checked', 'duration', 'offColor', 'onColor', 'size', 'thumbColor'],
   tabs: ['activation', 'activeClass', 'duration', 'effect', 'indicator', 'indicatorMotion', 'orientation'],

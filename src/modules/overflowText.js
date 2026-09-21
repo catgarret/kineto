@@ -1,9 +1,4 @@
-import { clamp, segmentText } from '../utils.js';
-
-function number(value, fallback, min = 0) {
-  const parsed = Number(value ?? fallback);
-  return Number.isFinite(parsed) ? Math.max(min, parsed) : fallback;
-}
+import { clamp, numberOption, segmentText } from '../utils.js';
 
 function normalizeMaskDirection(value) {
   const direction = String(value || 'top-to-bottom').toLowerCase();
@@ -66,16 +61,16 @@ function plainText(html) {
 export default {
   create(el, opts = {}) {
     const mode = opts.mode || opts.preset || 'loop';
-    const speed = number(opts.speed, 36, 1);
-    const delay = number(opts.delay, 700);
-    const endPause = number(opts.endPause, 900);
+    const speed = numberOption(opts.speed, 36, 1);
+    const delay = numberOption(opts.delay, 700);
+    const endPause = numberOption(opts.endPause, 900);
     // Pause after a full cycle before the effect starts again (falls back to
     // the start delay so existing markup keeps its old rhythm).
-    const restartDelay = number(opts.restartDelay, delay);
-    const gap = number(opts.gap, 32);
+    const restartDelay = numberOption(opts.restartDelay, delay);
+    const gap = numberOption(opts.gap, 32);
     const horizontalDirection = opts.direction === 'right' ? 1 : -1;
     const maskDirection = normalizeMaskDirection(opts.maskDirection || opts.transitionDirection);
-    const maskDuration = number(opts.maskDuration, 260, 20);
+    const maskDuration = numberOption(opts.maskDuration, 260, 20);
     const pauseOnHover = opts.pauseOnHover !== false;
     // GNB-style hover trigger: with `trigger:'hover'` the rolling swap advances
     // once each time the pointer enters (or the item gains focus) instead of on
@@ -193,8 +188,8 @@ export default {
       rollViewport.appendChild(track);
       el.appendChild(rollViewport);
       const direction = opts.rollDirection === 'down' ? 1 : -1;
-      const rollDuration = number(opts.rollDuration, 380, 50);
-      const hold = number(opts.holdDuration, 1500, 100);
+      const rollDuration = numberOption(opts.rollDuration, 380, 50);
+      const hold = numberOption(opts.holdDuration, 1500, 100);
       const advance = async () => {
         if (destroyed || paused || items.length < 2) return;
         const nextIndex = (activeIndex + 1) % items.length;
@@ -264,7 +259,7 @@ export default {
           vp.appendChild(inner);
           el.appendChild(vp);
           const w = a.getBoundingClientRect().width || 200;
-          const pxPerSec = Math.max(20, number(opts.speed, 60));
+          const pxPerSec = Math.max(20, numberOption(opts.speed, 60));
           marqueeAnim = inner.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${-w}px)` }],
             { duration: Math.max(600, w / pxPerSec * 1000), iterations: Infinity, easing: 'linear' });
         };
@@ -337,7 +332,7 @@ export default {
         hoverTarget.addEventListener('focusin', hoverEnterHandler);
         hoverTarget.addEventListener('pointerleave', hoverExitHandler);
         hoverTarget.addEventListener('focusout', hoverExitHandler);
-      } else if (items.length > 1) schedule(advance, number(opts.delay, hold));
+      } else if (items.length > 1) schedule(advance, numberOption(opts.delay, hold));
     };
 
     // Item scene transitions: cycle discrete items with fade / dissolve / flip /
@@ -354,7 +349,7 @@ export default {
       const vp = document.createElement('span');
       vp.className = 'kt-overflow-scene-viewport';
       vp.style.cssText = 'display:block;position:relative;overflow:hidden;';
-      if (mode === 'flip') vp.style.perspective = `${number(opts.perspective, 700, 100)}px`;
+      if (mode === 'flip') vp.style.perspective = `${numberOption(opts.perspective, 700, 100)}px`;
       el.appendChild(vp);
       const nodes = list.map((html) => {
         const node = document.createElement('span');
@@ -378,8 +373,8 @@ export default {
         node.style.opacity = i === 0 ? '1' : '0';
       });
       let idx = 0;
-      const pageHold = number(opts.pageDuration, 1800, 120);
-      const dur = number(opts.dissolveDuration ?? opts.flipDuration ?? opts.maskDuration, 460, 60);
+      const pageHold = numberOption(opts.pageDuration, 1800, 120);
+      const dur = numberOption(opts.dissolveDuration ?? opts.flipDuration ?? opts.maskDuration, 460, 60);
       const flipDown = opts.flipDirection !== 'up';
       const framesFor = () => {
         if (mode === 'dissolve') return [[{ opacity: 1, filter: 'blur(0px)' }, { opacity: 0, filter: 'blur(7px)' }], [{ opacity: 0, filter: 'blur(7px)' }, { opacity: 1, filter: 'blur(0px)' }]];
@@ -442,7 +437,7 @@ export default {
       // page/flip/once modes cut off the tail of the text.
       const viewportWidth = viewport.clientWidth || el.clientWidth;
       const overflow = Math.max(0, first.scrollWidth - viewportWidth);
-      const shouldAnimate = opts.force === true || overflow > number(opts.threshold, 1);
+      const shouldAnimate = opts.force === true || overflow > numberOption(opts.threshold, 1);
       el.dataset.ktOverflowActive = String(shouldAnimate);
       if (!shouldAnimate) {
         track.style.display = 'inline-block';
@@ -502,7 +497,7 @@ export default {
       if (mode === 'scroll-fade' || mode === 'scrollFade') {
         // Scroll to the end, fade out, then fade the start back in and scroll
         // again — a soft-looping marquee with no hard jump.
-        const fadeMs = number(opts.maskDuration, 320, 10);
+        const fadeMs = numberOption(opts.maskDuration, 320, 10);
         if (opts.crossfade === true) {
           // Cross-dissolve the END view into the START view with no dead frame:
           // one track scrolls, and at the seam a frozen ghost of the end fades
@@ -567,12 +562,12 @@ export default {
       if (mode === 'page-roll' || mode === 'pageRoll') {
         // Page + rolling hybrid: the first page shows as-is, then each next
         // page of the same long text rolls in vertically like a ticker.
-        const pageSize = Math.max(1, viewportWidth - number(opts.pageOverlap, 12));
+        const pageSize = Math.max(1, viewportWidth - numberOption(opts.pageOverlap, 12));
         const positions = [0];
         for (let moved = pageSize; moved < overflow; moved += pageSize) positions.push(moved);
         if (positions[positions.length - 1] !== overflow) positions.push(overflow);
-        const rollDuration = number(opts.rollDuration, 420, 60);
-        const pageHold = number(opts.pageDuration, 1200, 120);
+        const rollDuration = numberOption(opts.rollDuration, 420, 60);
+        const pageHold = numberOption(opts.pageDuration, 1200, 120);
         const rollDown = opts.rollDirection === 'down';
         viewport.style.height = '1.3em';
         track.remove();
@@ -627,12 +622,12 @@ export default {
         // Noisy dissolve page transition: characters flicker out in random
         // order with jitter and micro-blur (no plain crossfade), the track
         // jumps to the next page, then characters flicker back in.
-        const pageSize = Math.max(1, viewportWidth - number(opts.pageOverlap, 12));
+        const pageSize = Math.max(1, viewportWidth - numberOption(opts.pageOverlap, 12));
         const positions = [0];
         for (let moved = pageSize; moved < overflow; moved += pageSize) positions.push(moved);
         if (positions[positions.length - 1] !== overflow) positions.push(overflow);
-        const dissolveMs = number(opts.dissolveDuration ?? opts.maskDuration, 460, 100);
-        const jitterAmp = number(opts.jitter, 5, 0);
+        const dissolveMs = numberOption(opts.dissolveDuration ?? opts.maskDuration, 460, 100);
+        const jitterAmp = numberOption(opts.jitter, 5, 0);
         track.style.display = 'inline-block';
         track.textContent = '';
         const spans = [];
@@ -672,7 +667,7 @@ export default {
           return player.finished.catch(() => {});
         }));
         let pageIndex = 0;
-        const pageHold = number(opts.pageDuration, 1200, 120);
+        const pageHold = numberOption(opts.pageDuration, 1200, 120);
         const swapDissolve = async () => {
           if (destroyed || paused) return;
           await scramble(false);
@@ -693,12 +688,12 @@ export default {
       if (mode === 'fade') {
         // Pure crossfade between pages of the long text (no noise) — fade out,
         // jump to the next page, fade in.
-        const pageSize = Math.max(1, viewportWidth - number(opts.pageOverlap, 12));
+        const pageSize = Math.max(1, viewportWidth - numberOption(opts.pageOverlap, 12));
         const positions = [0];
         for (let moved = pageSize; moved < overflow; moved += pageSize) positions.push(moved);
         if (positions[positions.length - 1] !== overflow) positions.push(overflow);
-        const fadeMs = number(opts.maskDuration, 300, 10);
-        const pageHold = number(opts.pageDuration, 1200, 120);
+        const fadeMs = numberOption(opts.maskDuration, 300, 10);
+        const pageHold = numberOption(opts.pageDuration, 1200, 120);
         let pageIndex = 0;
         const swapFade = async () => {
           if (destroyed || paused) return;
@@ -721,14 +716,14 @@ export default {
       if (mode === 'flip') {
         // Split-flap page turn: the visible line flips down (or up) around its
         // horizontal axis and comes back showing the next page of text.
-        el.style.perspective = `${number(opts.perspective, 520, 120)}px`;
-        const pageSize = Math.max(1, viewportWidth - number(opts.pageOverlap, 12));
+        el.style.perspective = `${numberOption(opts.perspective, 520, 120)}px`;
+        const pageSize = Math.max(1, viewportWidth - numberOption(opts.pageOverlap, 12));
         const positions = [0];
         for (let moved = pageSize; moved < overflow; moved += pageSize) positions.push(moved);
         if (positions[positions.length - 1] !== overflow) positions.push(overflow);
         let pageIndex = 0;
-        const pageHold = number(opts.pageDuration, 1200, 120);
-        const flipMs = number(opts.flipDuration ?? opts.maskDuration, 300, 60);
+        const pageHold = numberOption(opts.pageDuration, 1200, 120);
+        const flipMs = numberOption(opts.flipDuration ?? opts.maskDuration, 300, 60);
         const sign = (opts.flipDirection || 'down') === 'up' ? 1 : -1;
         viewport.style.transformOrigin = '50% 50%';
         viewport.style.willChange = 'transform,opacity';
@@ -760,12 +755,12 @@ export default {
       }
 
       if (mode === 'page') {
-        const pageSize = Math.max(1, viewportWidth - number(opts.pageOverlap, 12));
+        const pageSize = Math.max(1, viewportWidth - numberOption(opts.pageOverlap, 12));
         const positions = [0];
         for (let moved = pageSize; moved < overflow; moved += pageSize) positions.push(moved);
         if (positions[positions.length - 1] !== overflow) positions.push(overflow);
         let pageIndex = 0;
-        const pageHold = number(opts.pageDuration, 1100, 120);
+        const pageHold = numberOption(opts.pageDuration, 1100, 120);
         const swapPage = async () => {
           if (destroyed || paused) return;
           await maskOut(viewport);

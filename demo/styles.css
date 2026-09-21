@@ -942,6 +942,19 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 .mega-menu-stage{min-height:220px;display:grid;place-items:center;align-content:center;overflow:visible;padding:16px;border-bottom-left-radius:0;border-bottom-right-radius:0}
 .mega-menu-stage{grid-template-columns:minmax(0,1fr);justify-items:stretch}
 .mega-menu-stage .mega-menu-panel{width:100%;min-width:0;max-width:100%;place-items:center}
+/* Radial menu — the ring opens upward from a trigger sitting near the bottom of
+   the stage, so the room has to be ABOVE the button; a centred grid would put
+   half the arc outside the card. `overflow:visible` is what lets the items sit
+   outside the panel, which the module collapses to a zero-size point. */
+.radial-menu-stage{min-height:236px;display:flex;align-items:flex-end;justify-content:center;padding:16px 16px 20px;overflow:visible}
+.radial-menu-bar{list-style:none;margin:0;padding:0}
+.radial-menu-stage .kt-menu-panel a{padding:8px 13px;border-radius:999px;font-size:13px;font-weight:600;background:var(--panel2);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line) 70%,transparent)}
+/* A ring authored for a desktop card does not fit a phone. `--kt-menu-ring-scale`
+   is the library's hook for exactly this: the same menu, a smaller circle. */
+@media (max-width:640px){
+  .radial-menu-stage{--kt-menu-ring-scale:.72;min-height:204px;padding-bottom:16px}
+  .radial-menu-stage .kt-menu-panel a{padding:6px 10px;font-size:12px}
+}
     /* A per-item `data-kt-menu-trigger="click"` override is invisible next to the
        hover items, so the trigger says so inline. Muted and smaller so it reads as
        a caption on the label, not as part of the menu name. */

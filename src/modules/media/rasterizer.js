@@ -15,7 +15,7 @@
 // aliases) own the DOM — wrapper, layers, lifecycle — through
 // ./stylizer.js and call `renderer.render(source, cellSize)` for every frame
 // they want; this file only knows how to draw.
-import { clamp } from '../../utils.js';
+import { clamp, numberOption } from '../../utils.js';
 
 // Ordered-dither threshold matrices, normalised to 0..1.
 //
@@ -222,16 +222,6 @@ export const MOTION_TYPES = Object.freeze(['none', 'drift', 'shuffle', 'scan', '
 export const POINTER_TYPES = Object.freeze(['none', 'lens', 'spotlight', 'ripple']);
 
 /**
- * Read one numeric option: a finite number is clamped into `min..max`, anything
- * else (missing, empty, "abc") falls back. Shared by the two resolvers below so
- * an option means the same thing wherever it is read.
- */
-function number(value, fallback, min, max) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? clamp(parsed, min, max) : fallback;
-}
-
-/**
  * Normalise author options into a renderer config. The modules read `opts.*`
  * themselves (so the option analysis can attribute each one to its variant) and
  * pass the plain values here.
@@ -253,14 +243,14 @@ export function resolveStyleConfig(style, input = {}) {
     type: DITHER_TYPES.includes(input.type) ? input.type : '8x8',
     shape: HALFTONE_SHAPES.includes(input.shape) ? input.shape : 'dot',
     // 하프톤 스크린 각도(도). 0은 화면과 나란한 격자입니다.
-    angle: number(input.angle, 0, 0, 90),
+    angle: numberOption(input.angle, 0, 0, 90),
     chars: typeof input.chars === 'string' && input.chars.length >= 2 ? input.chars : DEFAULT_ASCII_CHARS,
     font: input.font || 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
     // Levels. A photograph straight out of a camera sits in the middle of the
     // range and dithers to grey mush; pushing contrast first is what gives the
     // print look its snap.
-    contrast: number(input.contrast, 1, 0, 3),
-    brightness: number(input.brightness, 0, -1, 1),
+    contrast: numberOption(input.contrast, 1, 0, 3),
+    brightness: numberOption(input.brightness, 0, -1, 1),
     // Living look: how the pattern moves, and how it answers the pointer.
     // Resolved apart from the rest because these are the settings a running
     // effect can swap without rebuilding its canvas (see resolveLiveLook).
@@ -281,13 +271,13 @@ export function resolveStyleConfig(style, input = {}) {
 export function resolveLiveLook(input = {}) {
   return {
     motion: MOTION_TYPES.includes(input.motion) ? input.motion : 'none',
-    motionSpeed: number(input.motionSpeed, 1, 0.05, 6),
-    motionAmount: number(input.motionAmount, 0.5, 0, 1),
+    motionSpeed: numberOption(input.motionSpeed, 1, 0.05, 6),
+    motionAmount: numberOption(input.motionAmount, 0.5, 0, 1),
     pointer: POINTER_TYPES.includes(input.pointer) ? input.pointer : 'none',
-    pointerRadius: number(input.pointerRadius, 140, 10, 1200),
-    pointerStrength: number(input.pointerStrength, 0.6, 0, 1),
+    pointerRadius: numberOption(input.pointerRadius, 140, 10, 1200),
+    pointerStrength: numberOption(input.pointerStrength, 0.6, 0, 1),
     // 0 means "half the cell size", resolved per frame against the live cell.
-    pointerCellSize: number(input.pointerCellSize, 0, 0, 64)
+    pointerCellSize: numberOption(input.pointerCellSize, 0, 0, 64)
   };
 }
 

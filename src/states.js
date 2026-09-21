@@ -1,9 +1,8 @@
-import { cssEase, env, q } from './utils.js';
+import { cssEase, env, numberOption as number, q } from './utils.js';
 
 // Motion States is intentionally a small, visual-only primitive. It does not
 // own DOM insertion/removal, focus, aria or inert state; Presence and the host
 // component remain responsible for those concerns.
-const number = (value, fallback = 0) => Number.isFinite(Number(value)) ? Number(value) : fallback;
 const px = (value) => `${number(value)}px`;
 
 function normalizeState(value = {}) {

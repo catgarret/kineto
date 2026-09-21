@@ -296,8 +296,8 @@
 
 - Attribute: `data-kt-mega-menu`
 - Default variant: `dropdown`
-- Variants: `dropdown`, `mega`
-- Public options: `closeDelay`, `duration`, `indicator`, `layout`, `openDelay`, `responsive`, `trigger`
+- Variants: `dropdown`, `mega`, `radial`
+- Public options: `closeDelay`, `duration`, `indicator`, `layout`, `openDelay`, `radius`, `responsive`, `stagger`, `startAngle`, `sweep`, `trigger`
 
 ## toast
 

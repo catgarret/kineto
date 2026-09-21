@@ -4,7 +4,7 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
   "schemaVersion": "1.0.0",
   "libraryVersion": "0.11.0",
   "moduleCount": 38,
-  "variantCount": 225,
+  "variantCount": 226,
   "capabilities": {
     "any": "No requirement — works on any element.",
     "image": "Needs an <img> (the element itself or a descendant).",
@@ -2591,7 +2591,11 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
         "data-kt-indicator",
         "data-kt-layout",
         "data-kt-open-delay",
+        "data-kt-radius",
         "data-kt-responsive",
+        "data-kt-stagger",
+        "data-kt-start-angle",
+        "data-kt-sweep",
         "data-kt-trigger"
       ],
       "variants": [
@@ -2602,6 +2606,11 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
         },
         {
           "name": "mega",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "radial",
           "requires": "any",
           "deprecated": false
         }
