@@ -154,7 +154,7 @@ The old markup keeps working until next major and emits a recoverable `KT_DEPREC
 - `data-kt-bottom-sheet` — variants: sheet (JS key `preset`)
 - `data-kt-tabs` — variants: line (JS key `effect`)
 - `data-kt-cover-reveal` — variants: block (JS key `preset`)
-- `data-kt-gesture` — variants: spring (JS key `preset`)
+- `data-kt-gesture` — variants: spring, pull (JS key `preset`)
 - `data-kt-drag` — variants: free (JS key `preset`)
 - `data-kt-tooltip` — variants: default (JS key `effect`)
 - `data-kt-switch` — variants: toggle (JS key `preset`)

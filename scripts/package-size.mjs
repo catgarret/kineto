@@ -186,7 +186,9 @@ const BUDGET = {
   // that is the difference between a dock and icons that merely grow.
   // 2026-09-21 (tap-to-confirm): Hold's third mode measures 598.4 KB packed /
   // 1950.5 KB unpacked on the same 80 files.
-  packedKb: 599,
+  // 2026-09-21 (pull to refresh): Gesture's second behaviour measures 602.9 KB
+  // packed / 1964.3 KB unpacked on the same 80 files.
+  packedKb: 603,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -215,7 +217,7 @@ const BUDGET = {
   // See the live-motion-switching note above for the 1903.0 KB measurement.
   // See the squircle note above for the 1920.1 KB measurement, and the liquid
   // glass note for 1935.4 KB.
-  unpackedKb: 1951,
+  unpackedKb: 1965,
   files: 80
 };
 

@@ -239,6 +239,14 @@ window.KINETO_COPY_I18N = {
     }
   },
   "cards": {
+    "맨 위에서 아래로 당기면 저항이 걸리고, 놓으면 새로고침합니다.": [
+      "Pull down from the very top and it resists; let go past the mark to refresh.",
+      "一番上から下に引くと抵抗がかかり、離すと更新します。",
+      "从最顶部往下拉会有阻力，松手即刷新。",
+      "從最頂部往下拉會有阻力，鬆手即重新整理。",
+      "Потяните с самого верха — он сопротивляется; отпустите за меткой, чтобы обновить.",
+      "Tira giù dall'inizio e oppone resistenza; lascia oltre la soglia per aggiornare."
+    ],
     "모달 없이 버튼이 제자리에서 다시 묻고, 다른 곳을 누르면 원래대로 돌아갑니다.": [
       "No dialog: the button asks again in place, and anything else puts it back.",
       "ダイアログなしで、ボタンがその場で聞き直します。他を押せば元に戻ります。",

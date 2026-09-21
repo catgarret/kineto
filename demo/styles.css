@@ -1384,3 +1384,7 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 .kt-dock span{display:block;width:44px;height:44px;border-radius:12px;background:linear-gradient(160deg,#ff8a4c,var(--accent))}
 .kt-dock span:nth-child(2n){background:linear-gradient(160deg,#7cc4ff,#2f7de1)}
 .kt-dock span:nth-child(3n){background:linear-gradient(160deg,#9de8b6,#39a56b)}
+
+/* Pull-to-refresh demo — a scroll box that is genuinely scrollable, so the
+   gesture has to prove it only engages at the very top. */
+.pull-list{max-height:210px;overflow:auto}

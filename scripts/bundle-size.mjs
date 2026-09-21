@@ -200,7 +200,9 @@ const BUDGETS = {
   // ESM, 456.7 / 139.8 minified and 454.8 / 139.2 UMD.
   // 2026-09-21 (tap-to-confirm): Hold's third mode measures 584.1 / 157.4 ESM,
   // 457.7 / 140.1 minified and 455.8 / 139.4 UMD.
-  'kineto.js': { raw: 585, gz: 158, variance: 2 },
+  // 2026-09-21 (pull to refresh): Gesture's second behaviour measures 588.3 /
+  // 158.7 ESM, 461.0 / 141.1 minified and 459.1 / 140.5 UMD.
+  'kineto.js': { raw: 589, gz: 159, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
   // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/
@@ -217,15 +219,15 @@ const BUDGETS = {
   // See the live-motion-switching note above for the 445.8 KiB measurement.
   // 2026-09-21 (fold): FLIP's fold move style measures 454.3 KiB raw / 139.0
   // KiB gzip minified — the raw ceiling is what moves.
-  'kineto.min.js': { raw: 458, gz: 141, variance: 2 },
+  'kineto.min.js': { raw: 462, gz: 142, variance: 2 },
   // 2026-09-20 (shared-element teardown): the UMD gzip crosses its exact 133 KB
   // boundary at a measured 134.0 KB while raw stays inside 440 KB. Round only
   // the compressed ceiling; runner variance and consumer budgets are unchanged.
   // See the squircle note above for the 448.0 KiB measurement. The ceiling is
   // the next whole KiB because tests/deps-boundary.mjs reads this number as a
   // strict upper bound on the shipped file.
-  'kineto.umd.js': { raw: 456, gz: 140, variance: 1 },
-  'kineto.umd.min.js': { raw: 456, gz: 140, variance: 1 },
+  'kineto.umd.js': { raw: 460, gz: 141, variance: 1 },
+  'kineto.umd.min.js': { raw: 460, gz: 141, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

@@ -7101,18 +7101,63 @@
       "attribute": "data-kt-gesture",
       "defaultVariant": "spring",
       "variants": [
-        "spring"
+        "spring",
+        "pull"
       ],
       "publicOptions": [
         "duration",
         "ease",
+        "effect",
         "hoverEase",
         "hoverScale",
+        "labels",
         "lift",
+        "max",
+        "onRefresh",
         "origin",
+        "preset",
         "pressEase",
-        "tapScale"
-      ]
+        "resistance",
+        "tapScale",
+        "threshold"
+      ],
+      "optionDefaults": {
+        "duration": 0.22,
+        "preset": "spring",
+        "resistance": 0.55,
+        "threshold": 64
+      },
+      "variantOptions": {
+        "spring": [
+          "duration",
+          "ease",
+          "effect",
+          "hoverEase",
+          "hoverScale",
+          "lift",
+          "origin",
+          "preset",
+          "pressEase",
+          "tapScale"
+        ],
+        "pull": [
+          "duration",
+          "ease",
+          "effect",
+          "hoverEase",
+          "hoverScale",
+          "labels",
+          "lift",
+          "max",
+          "onRefresh",
+          "origin",
+          "preset",
+          "pressEase",
+          "resistance",
+          "tapScale",
+          "threshold"
+        ]
+      }
     },
     {
       "name": "drag",

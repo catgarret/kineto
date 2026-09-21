@@ -156,7 +156,7 @@ export function KinetoProvider({ children }: { children: React.ReactNode }) {
 - `gesture` · `spring` — Subtle spring lift for dense lists where 3D would be noisy.
 
   ```jsx
-  <button data-kt-gesture data-kt-hover-scale="1.02">Text</button>
+  <button data-kt-gesture="spring" data-kt-hover-scale="1.02">Text</button>
   // or, when you need the instance:
   const { ref } = useKineto('gesture', { hoverScale: 1.02, preset: "spring" });
   ```
@@ -184,7 +184,7 @@ export function KinetoProvider({ children }: { children: React.ReactNode }) {
 - `gesture` · `spring` — Hover/press spring for any button.
 
   ```jsx
-  <button data-kt-gesture data-kt-tap-scale="0.96">Text</button>
+  <button data-kt-gesture="spring" data-kt-tap-scale="0.96">Text</button>
   // or, when you need the instance:
   const { ref } = useKineto('gesture', { tapScale: 0.96, preset: "spring" });
   ```

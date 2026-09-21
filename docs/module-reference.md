@@ -331,8 +331,8 @@
 
 - Attribute: `data-kt-gesture`
 - Default variant: `spring`
-- Variants: `spring`
-- Public options: `duration`, `ease`, `hoverEase`, `hoverScale`, `lift`, `origin`, `pressEase`, `tapScale`
+- Variants: `spring`, `pull`
+- Public options: `duration`, `ease`, `effect`, `hoverEase`, `hoverScale`, `labels`, `lift`, `max`, `onRefresh`, `origin`, `preset`, `pressEase`, `resistance`, `tapScale`, `threshold`
 
 ## drag
 

@@ -2747,6 +2747,54 @@
     sets[lang] = sets[lang] || {};
     sets[lang].hold = Object.assign({}, sets[lang].hold, values);
   }
+  const gesturePull = {
+    "ko": {
+      "preset": "spring 은 hover·press 에 반응해 요소가 살짝 커지고 눌립니다. pull 은 스크롤 영역을 맨 위에서 아래로 당겨 새로고침을 요청하는 제스처입니다.",
+      "threshold": "여기까지 당기면 새로고침이 걸립니다(px). 짧으면 실수로, 길면 손이 아픕니다.",
+      "max": "아무리 당겨도 여기까지만 늘어납니다(px). 손끝에 \"끝\"이 느껴지게 하는 값입니다.",
+      "resistance": "손가락을 따라오는 비율입니다. 낮을수록 뻑뻑하고, 1이면 손가락을 그대로 따라옵니다."
+    },
+    "en": {
+      "preset": "`spring` grows and presses the element on hover and tap. `pull` is the pull-to-refresh gesture: drag a scroll container down from its top to ask the page to refresh.",
+      "threshold": "How far you have to pull before letting go refreshes, in px. Short is easy to trigger by accident; long is tiring.",
+      "max": "How far the content can stretch however hard you pull, in px. This is what gives the gesture an end you can feel.",
+      "resistance": "How closely the content follows your finger. Lower is stiffer; 1 follows exactly."
+    },
+    "ja": {
+      "preset": "spring はホバーとタップで要素が少し大きくなり沈みます。pull はスクロール領域を上端から下に引いて更新を求めるジェスチャーです。",
+      "threshold": "ここまで引いて離すと更新されます（px）。短いと誤作動し、長いと手が疲れます。",
+      "max": "どれだけ引いてもここまでしか伸びません（px）。指先に「終わり」を感じさせる値です。",
+      "resistance": "指にどれだけ忠実についてくるかです。低いほど重く、1 ならそのまま追従します。"
+    },
+    "zh-CN": {
+      "preset": "spring 在悬停和按下时让元素略微放大、下沉。pull 是下拉刷新手势：从滚动区域顶部往下拉来请求刷新。",
+      "threshold": "要下拉多远松手才会刷新（px）。太短容易误触，太长则费力。",
+      "max": "无论怎么拉最多只能拉到这里（px）。这是让手指感觉到“到头了”的值。",
+      "resistance": "内容跟手的程度。越低越沉，为 1 时完全跟手。"
+    },
+    "zh-TW": {
+      "preset": "spring 在懸停和按下時讓元素略微放大、下沉。pull 是下拉重新整理手勢：從捲動區域頂端往下拉來請求更新。",
+      "threshold": "要下拉多遠鬆手才會更新（px）。太短容易誤觸，太長則費力。",
+      "max": "無論怎麼拉最多只能拉到這裡（px）。這是讓手指感覺到「到頭了」的值。",
+      "resistance": "內容跟手的程度。越低越沉，為 1 時完全跟手。"
+    },
+    "ru": {
+      "preset": "spring увеличивает и вдавливает элемент при наведении и нажатии. pull — жест «потяни, чтобы обновить»: тянете область прокрутки вниз от самого верха.",
+      "threshold": "Насколько далеко нужно потянуть, чтобы отпускание обновило, в px. Мало — легко задеть; много — утомительно.",
+      "max": "Насколько далеко содержимое растянется, как ни тяни, в px. Именно это даёт жесту ощутимый конец.",
+      "resistance": "Насколько точно содержимое следует за пальцем. Ниже — туже; 1 — след в след."
+    },
+    "it": {
+      "preset": "`spring` ingrandisce e schiaccia l'elemento su hover e tap. `pull` è il gesto pull-to-refresh: trascini un contenitore scorrevole verso il basso dalla cima per chiedere un aggiornamento.",
+      "threshold": "Quanto devi tirare perché il rilascio aggiorni, in px. Poco si attiva per sbaglio; molto stanca.",
+      "max": "Fin dove il contenuto si allunga per quanto tiri, in px. È ciò che dà al gesto una fine che si sente.",
+      "resistance": "Quanto il contenuto segue il dito. Più basso è più duro; 1 lo segue esattamente."
+    }
+  };
+  for (const [lang, values] of Object.entries(gesturePull)) {
+    sets[lang] = sets[lang] || {};
+    sets[lang].gesture = Object.assign({}, sets[lang].gesture, values);
+  }
   const revealOnce = {
     ko: '켜면 등장 모션을 한 번만 실행합니다. 끄면 이탈 시 역재생하고 재진입 시 다시 재생합니다. Native와 GSAP 모두 지원합니다.',
     en: 'Play the entrance once. Turn off to reverse on exit and play again on re-entry, with either native animation or GSAP.',

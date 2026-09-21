@@ -118,7 +118,7 @@ npm install @dong-gri/kineto
 - `gesture` · `spring` — Subtle spring lift for dense lists where 3D would be noisy.
 
   ```html
-  <button data-kt-gesture data-kt-hover-scale="1.02">Text</button>
+  <button data-kt-gesture="spring" data-kt-hover-scale="1.02">Text</button>
   ```
 
 > Pick one transform-writing module per element (tilt, gesture, magnetic all write transform).
@@ -140,7 +140,7 @@ npm install @dong-gri/kineto
 - `gesture` · `spring` — Hover/press spring for any button.
 
   ```html
-  <button data-kt-gesture data-kt-tap-scale="0.96">Text</button>
+  <button data-kt-gesture="spring" data-kt-tap-scale="0.96">Text</button>
   ```
 
 - `vibrate` · `tap` — Haptic tap on supported mobile devices (progressive).

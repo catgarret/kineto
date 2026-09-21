@@ -3,8 +3,8 @@
 window.KINETO_VARIANT_CATALOG = Object.freeze({
   "schemaVersion": "1.0.0",
   "libraryVersion": "0.11.0",
-  "moduleCount": 37,
-  "variantCount": 223,
+  "moduleCount": 38,
+  "variantCount": 225,
   "capabilities": {
     "any": "No requirement — works on any element.",
     "image": "Needs an <img> (the element itself or a descendant).",
@@ -2602,6 +2602,49 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
         },
         {
           "name": "mega",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "gesture": {
+      "attribute": "data-kt-gesture",
+      "category": "pointer",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-effect"
+      ],
+      "defaultVariant": "spring",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-duration",
+        "data-kt-ease",
+        "data-kt-effect",
+        "data-kt-hover-ease",
+        "data-kt-hover-scale",
+        "data-kt-labels",
+        "data-kt-lift",
+        "data-kt-max",
+        "data-kt-on-refresh",
+        "data-kt-origin",
+        "data-kt-preset",
+        "data-kt-press-ease",
+        "data-kt-resistance",
+        "data-kt-tap-scale",
+        "data-kt-threshold"
+      ],
+      "variants": [
+        {
+          "name": "spring",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "pull",
           "requires": "any",
           "deprecated": false
         }
