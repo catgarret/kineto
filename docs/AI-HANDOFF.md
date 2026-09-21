@@ -280,6 +280,35 @@ was 32 of 50 modules. The 110 options it uncovered without tooltips are listed
 in `KNOWN_GAPS` as a ratchet: the list may only shrink, and an entry left in
 after its tooltip is written fails the build.
 
+Card Glow's `glass` and FLIP's `fold` are the same design decision as Squircle's
+variant question, resolved the other way: both had a natural home, so neither
+became a module. Glass is a surface treatment on a card that answers the pointer,
+which is what Card Glow is; fold is a way of crossing the gap between two
+layouts, which is what FLIP is, and ROADMAP §3 forbids a `layout` module that
+overlaps it in as many words.
+
+Two things about `glass` that will bite anyone who moves it. Card Glow sets
+`isolation: isolate` for every other look, and a `backdrop-filter` inside an
+isolated stacking context has no backdrop to filter — the pane comes out clear
+while every computed style still reads correctly, so glass skips the isolation
+and `tests/browser/card-glass.mjs` measures rendered pixels rather than styles
+(a PNG of the pane over hard stripes is 11x the bare stripes; unfiltered would
+be 1x and a flat tint below 1). And its options are read INSIDE the
+`mode === 'glass'` branch on purpose: read at the top of the factory,
+`scripts/derive-variant-options.mjs` attributes them to every variant and the
+drawer offers glass controls on the spotlight.
+
+The refraction (`src/modules/surface/glass.js`) is a displacement map built per
+pane from a signed distance field, applied through an SVG filter used as a
+`backdrop-filter` — Chromium only today, dropped elsewhere. The filter element
+lives inside the pane's own layer so its id cannot collide and destroy() takes
+it along.
+
+`fold` shares `crossfade`'s ghost path. The one thing that makes it a different
+effect is the blur, so its test keeps `crossfade` running beside it as a control:
+if the blur were ever dropped the two would become the same effect, and nothing
+else would notice.
+
 ## Required end-of-task record
 
 Every implementation commit must leave enough evidence for the next agent:

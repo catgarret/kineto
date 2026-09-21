@@ -3,6 +3,50 @@
 검증일: 2026-09-20
 대상: v0.11.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-21 Unreleased 검증 (Liquid Glass · Fold)
+
+### 새 모듈이 아니라 variant 인 이유
+
+ROADMAP §3 이 정한 대로, 얹힐 자리가 있는 효과는 모듈을 늘리지 않습니다.
+글래스는 **포인터에 반응하는 카드 표면 처리**이므로 `cardGlow` 의 일곱 번째 variant,
+폴딩은 **두 배치 사이를 건너는 방식**이므로 `flip` 의 move style 입니다.
+후자는 ROADMAP 이 “`flip` 과 겹치는 새 `layout` 모듈을 만들지 않는다”고 못박아 둔
+바로 그 경우입니다.
+
+### 글래스가 피해야 했던 함정
+
+`cardGlow` 는 다른 모든 룩에서 카드에 `isolation: isolate` 를 겁니다. 그런데
+**격리된 stacking context 안의 `backdrop-filter` 는 필터링할 배경이 없습니다** —
+computed style 은 완전히 정상인데 유리만 투명하게 나옵니다. 그래서 `glass` 는 격리를
+건너뛰고, `tests/browser/card-glass.mjs` 는 스타일이 아니라 **그려진 픽셀**을 잽니다:
+8px 줄무늬 위 패널의 PNG 가 옆의 맨 줄무늬 대비 **11.1배**(필터 미적용이면 1배,
+단색으로 덮으면 1배 미만 — 숫자 하나로 세 실패 모드가 갈립니다).
+
+두 번째: 글래스 옵션은 **`mode === 'glass'` 분기 안에서** 읽어야 합니다. 팩토리 상단에서
+읽으면 `scripts/derive-variant-options.mjs` 가 모든 variant 에 귀속시켜, spotlight 에서도
+설정 서랍에 글래스 컨트롤이 뜹니다.
+
+굴절은 `src/modules/surface/glass.js` 의 부호거리장으로 패널마다 만든 변위맵이고,
+SVG 필터를 `backdrop-filter` 로 쓰는 방식이라 현재 크로미엄 전용입니다. 필터 요소는
+패널 자신의 레이어 안에 있어 id 충돌이 없고 destroy 와 함께 사라집니다.
+
+### 폴딩 검사에 대조군을 둔 이유
+
+`fold` 는 `crossfade` 와 고스트 경로를 공유하고, 둘을 가르는 것은 **블러 하나**입니다.
+그래서 `tests/browser/flip-fold.mjs` 는 `crossfade` 를 옆에서 같이 돌리고 “저쪽은 끝까지
+선명할 것”을 함께 단언합니다. 블러가 빠지면 두 효과가 같아지는데, 대조군이 없으면
+그 사실을 아무도 눈치채지 못합니다. 또 **요청한 옵션이 아니라 브라우저가 실제로 재생 중인
+키프레임**을 읽으므로, 모드가 조용히 `slide` 로 떨어지면 통과하지 못합니다.
+
+### 예산
+
+| 항목 | squircle 이후 | glass·fold 이후 |
+|---|---|---|
+| `kineto.min.js` raw | 450.1 KB | **454.3 KB** |
+| `kineto.js` gzip | 154.8 KB | **156.2 KB** |
+| full consumer gzip | 153.5 KB | **154.9 KB** |
+| 패키지 packed / unpacked | 589.2 / 1920.1 KB | **594.1 / 1937.0 KB** |
+
 ## 2026-09-21 Unreleased 검증 (Squircle — 54번째 모듈)
 
 ### 새 모듈 추가 근거 (ROADMAP §3 ④)
