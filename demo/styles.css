@@ -1376,3 +1376,11 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 .fold-panel.is-open{grid-template-columns:repeat(3,120px)}
 .fold-tile{display:flex;align-items:center;justify-content:center;height:72px;border-radius:16px;background:var(--panel2);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:13px}
 .fold-panel.is-open .fold-tile{height:96px}
+
+/* Dock demo — the icons grow above the bar the way a real dock's do, so the
+   stage needs headroom rather than the bar needing to resize. */
+.dock-stage{display:flex;align-items:flex-end;justify-content:center;min-height:150px;padding-bottom:var(--sp-4)}
+.kt-dock{display:flex;gap:10px;align-items:flex-end;padding:10px 14px;border-radius:20px;background:#ffffff0f;border:1px solid var(--line)}
+.kt-dock span{display:block;width:44px;height:44px;border-radius:12px;background:linear-gradient(160deg,#ff8a4c,var(--accent))}
+.kt-dock span:nth-child(2n){background:linear-gradient(160deg,#7cc4ff,#2f7de1)}
+.kt-dock span:nth-child(3n){background:linear-gradient(160deg,#9de8b6,#39a56b)}

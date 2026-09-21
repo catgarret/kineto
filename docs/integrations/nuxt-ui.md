@@ -147,7 +147,7 @@ export default defineNuxtPlugin(() => {
 - `magnetic` · `pointer` — Button leans toward the pointer; landing-page CTAs.
 
   ```vue
-  <button data-kt-magnetic data-kt-strength="0.3">Text</button>
+  <button data-kt-magnetic="pointer" data-kt-strength="0.3">Text</button>
   <!-- or: <button v-motion="{ type: 'magnetic', options: { strength: 0.3, preset: "pointer" } }"> -->
   ```
 

@@ -1,6 +1,6 @@
 # Variant 비교 시트
 
-> Generated from `scripts/generate-variant-catalog.mjs` · library v0.11.0 · 35 modules / 219 variants.
+> Generated from `scripts/generate-variant-catalog.mjs` · library v0.11.0 · 36 modules / 221 variants.
 
 데모의 모듈 블록마다 **"모든 variant 비교"** 버튼이 있습니다. 열면 그 모듈의 공개 variant가
 전부 같은 소재 위에 한 번에 펼쳐지고, 타일마다 그대로 붙여넣을 수 있는 마크업이 붙습니다.
@@ -12,11 +12,11 @@
 
 | 방식 | 뜻 | 모듈 | variant |
 |---|---|---|---|
-| `grid` (나란히) | 같은 소재를 variant 수만큼 복제해 살아 있는 상태로 나란히 보여 줍니다. | 25개 | 176개 |
+| `grid` (나란히) | 같은 소재를 variant 수만큼 복제해 살아 있는 상태로 나란히 보여 줍니다. | 26개 | 178개 |
 | `control` (데모 컨트롤) | 데모가 이미 variant마다 컨트롤을 갖고 있어, 시트가 그 컨트롤을 대신 눌러 줍니다. | 2개 | 19개 |
 | `link` (모듈 데모) | 한 페이지에 여러 개를 둘 수 없거나 옵션 하나로 켤 수 없어, 이유를 적고 모듈 데모로 보냅니다. | 8개 | 24개 |
 
-176/219 variant가 시트 안에서 그대로 살아 움직입니다. 나머지는 왜 그럴 수 없는지가 아래 표에 적혀 있습니다.
+178/221 variant가 시트 안에서 그대로 살아 움직입니다. 나머지는 왜 그럴 수 없는지가 아래 표에 적혀 있습니다.
 
 ## 모듈별
 
@@ -35,6 +35,7 @@
 | `lightbox` | `link` | — | 2 | viewer 와 grouped 는 `data-kt-group` 을 함께 쓰는지의 차이입니다. 갤러리 전체가 하나의 소재라 카드 단위로 복제되지 않습니다. |
 | `loader` | `control` | — | 3 | 전체 화면 로더라 한 번에 하나만 띄울 수 있습니다. 데모의 로더 카드를 그대로 사용합니다. |
 | `loadingIndicator` | `grid` | `data-kt-loading-indicator="<variant>"` | 6 |  |
+| `magnetic` | `grid` | `data-kt-magnetic="<variant>"` | 2 |  |
 | `marquee` | `grid` | `data-kt-direction="<variant>"` | 3 |  |
 | `mouseParallax` | `grid` | `data-kt-mouse-parallax="<variant>"` | 3 |  |
 | `overflowText` | `grid` | `data-kt-overflow-text="<variant>"` | 11 |  |

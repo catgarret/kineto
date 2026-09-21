@@ -41,7 +41,7 @@ React: mount a client `KinetoProvider` that calls `Kineto.observe()` in an effec
 | hero-headline — Hero headline entrance (hero, headline, key visual, kv) | `data-kt-text-reveal="stream" data-kt-speed="30"` | Kineto provides it |
 | section-entrance — Section / card entrance on scroll (fade in, scroll reveal, entrance, appear) | `data-kt-reveal="fade-up" data-kt-once data-kt-duration="0.7"` | Kineto provides it |
 | card-hover — Card hover: tilt, glow, spring (card hover, 3d tilt, glow, spotlight) | `data-kt-tilt="tilt-glare" data-kt-max="8"` | Kineto provides it |
-| cta-button — Call-to-action button feedback (button, cta, click feedback, ripple) | `data-kt-magnetic data-kt-strength="0.3"` | Kineto provides it |
+| cta-button — Call-to-action button feedback (button, cta, click feedback, ripple) | `data-kt-magnetic="pointer" data-kt-strength="0.3"` | Kineto provides it |
 | kpi-number — KPI / statistic count-up (counter, count up, kpi, stat) | `data-kt-counter="slot" data-kt-to="128000" data-kt-format=","` | Kineto provides it |
 | countdown — Countdown / elapsed clock (countdown, timer, until, clock) | `data-kt-counter="clock" data-kt-until="2026-12-31T00:00:00+09:00" data-kt-show-days` | Kineto provides it |
 | image-loading — Image loading effect / placeholder (lazy load, skeleton, blur up, placeholder) | `data-kt-lazy="skeleton" data-kt-skeleton-variant="shimmer"` | Kineto provides it |
@@ -130,7 +130,7 @@ The old markup keeps working until next major and emits a recoverable `KT_DEPREC
 - `data-kt-lightbox` — variants: viewer, grouped (JS key `preset`)
 - `data-kt-loader` — variants: slot, circular, bar (JS key `preset`)
 - `data-kt-loading-indicator` — variants: spinner, dots, bar, shimmer, shimmer-wave, terminal (JS key `preset`)
-- `data-kt-magnetic` — variants: pointer (JS key `preset`)
+- `data-kt-magnetic` — variants: pointer, dock (JS key `preset`)
 - `data-kt-marquee` — variants: left, right, reverse-on-scroll (JS key `preset`)
 - `data-kt-mouse-parallax` — variants: pointer, gyro, compass (JS key `preset`)
 - `data-kt-overflow-text` — variants: loop, bounce, rewind, once, page, flip, dissolve, page-roll, rolling, fade, scroll-fade (JS key `preset`)

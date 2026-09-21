@@ -3825,13 +3825,50 @@
       "attribute": "data-kt-magnetic",
       "defaultVariant": "pointer",
       "variants": [
-        "pointer"
+        "pointer",
+        "dock"
       ],
       "publicOptions": [
+        "axis",
         "ease",
+        "effect",
+        "item",
+        "lift",
+        "maxScale",
+        "preset",
         "radius",
+        "range",
         "strength"
-      ]
+      ],
+      "optionDefaults": {
+        "axis": "horizontal",
+        "ease": 0.15,
+        "lift": 10,
+        "maxScale": 1.8,
+        "preset": "pointer",
+        "range": 120
+      },
+      "variantOptions": {
+        "pointer": [
+          "ease",
+          "effect",
+          "preset",
+          "radius",
+          "strength"
+        ],
+        "dock": [
+          "axis",
+          "ease",
+          "effect",
+          "item",
+          "lift",
+          "maxScale",
+          "preset",
+          "radius",
+          "range",
+          "strength"
+        ]
+      }
     },
     {
       "name": "marquee",

@@ -239,6 +239,14 @@ window.KINETO_COPY_I18N = {
     }
   },
   "cards": {
+    "가까운 아이콘이 커지고 나머지는 자리를 내주며 밀려납니다.": [
+      "The nearest icon grows and the rest slide aside to make room.",
+      "近いアイコンが大きくなり、残りは場所を空けて押しのけられます。",
+      "最近的图标放大，其余的让出位置向两侧推开。",
+      "最近的圖示放大，其餘的讓出位置向兩側推開。",
+      "Ближайшая иконка растёт, остальные отодвигаются, освобождая место.",
+      "L'icona più vicina cresce e le altre si spostano per farle spazio."
+    ],
     "접히는 화면이 펴질 때처럼, 두 배치가 흐려지며 서로를 통과합니다.": [
       "Like a folding screen opening: the two layouts blur through each other.",
       "折りたたみ画面が開くように、二つの配置がぼけながら交差します。",
@@ -1680,6 +1688,14 @@ window.KINETO_COPY_I18N = {
     ]
   },
   "titles": {
+    "Dock — 아이콘 확대": [
+      "Dock — icons magnify",
+      "Dock — アイコンが拡大",
+      "Dock — 图标放大",
+      "Dock — 圖示放大",
+      "Dock — иконки увеличиваются",
+      "Dock — le icone si ingrandiscono"
+    ],
     "Fold — 화면이 열릴 때": [
       "Fold — when the screen opens",
       "Fold — 画面が開くとき",

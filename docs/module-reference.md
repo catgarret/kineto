@@ -121,8 +121,8 @@
 
 - Attribute: `data-kt-magnetic`
 - Default variant: `pointer`
-- Variants: `pointer`
-- Public options: `ease`, `radius`, `strength`
+- Variants: `pointer`, `dock`
+- Public options: `axis`, `ease`, `effect`, `item`, `lift`, `maxScale`, `preset`, `radius`, `range`, `strength`
 
 ## marquee
 

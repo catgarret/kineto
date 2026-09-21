@@ -163,7 +163,7 @@ export function KinetoProvider({ children }: { children: React.ReactNode }) {
 - `magnetic` · `pointer` — Button leans toward the pointer; landing-page CTAs.
 
   ```jsx
-  <button data-kt-magnetic data-kt-strength="0.3">Text</button>
+  <button data-kt-magnetic="pointer" data-kt-strength="0.3">Text</button>
   // or, when you need the instance:
   const { ref } = useKineto('magnetic', { strength: 0.3, preset: "pointer" });
   ```

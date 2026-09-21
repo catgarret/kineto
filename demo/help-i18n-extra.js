@@ -2658,6 +2658,68 @@
     sets[lang] = sets[lang] || {};
     sets[lang].flip = Object.assign({}, sets[lang].flip, values);
   }
+  const magneticDock = {
+    "ko": {
+      "preset": "pointer 는 요소 하나가 커서 쪽으로 끌려옵니다. dock 은 이 요소의 자식들을 아이템으로 보고, 커서에 가까운 것이 커지면서 나머지가 밀려납니다.",
+      "ease": "현재 값에서 목표 값으로 얼마나 빨리 따라갈지입니다. 작을수록 늘어지고, 1이면 즉시 붙습니다.",
+      "axis": "독이 가로로 놓였는지 세로로 놓였는지입니다. 커서의 어느 좌표를 볼지가 이걸로 정해집니다.",
+      "maxScale": "커서 바로 아래 아이템이 몇 배까지 커질지입니다.",
+      "range": "커서에서 몇 px 떨어진 아이템까지 반응할지입니다. 넓을수록 부드럽게 여러 개가 함께 커집니다.",
+      "lift": "커진 아이템이 얼마나 떠오를지(px)입니다. 0이면 크기만 변합니다."
+    },
+    "en": {
+      "preset": "`pointer` pulls one element towards the cursor. `dock` treats this element's children as items: the one nearest the cursor grows and the rest slide aside.",
+      "ease": "How fast each value chases its target. Lower is more languid; 1 snaps straight to it.",
+      "axis": "Whether the dock is laid out across or down — it decides which pointer coordinate is measured.",
+      "maxScale": "How large the item directly under the cursor gets.",
+      "range": "How far from the cursor an item still reacts, in px. Wider makes more of them swell together, which reads softer.",
+      "lift": "How far a grown item rises, in px. At 0 only its size changes."
+    },
+    "ja": {
+      "preset": "pointer は要素ひとつがカーソルに引き寄せられます。dock はこの要素の子をアイテムとして扱い、カーソルに近いものが大きくなり残りが押しのけられます。",
+      "ease": "現在値が目標値をどれだけ速く追うかです。小さいほどゆったりし、1 で即座に着きます。",
+      "axis": "ドックが横並びか縦並びかです。カーソルのどの座標を見るかが決まります。",
+      "maxScale": "カーソル直下のアイテムが何倍まで大きくなるかです。",
+      "range": "カーソルから何 px 離れたアイテムまで反応するかです。広いほど複数が一緒に膨らみ、やわらかく見えます。",
+      "lift": "大きくなったアイテムがどれだけ浮き上がるか（px）です。0 なら大きさだけ変わります。"
+    },
+    "zh-CN": {
+      "preset": "pointer 让单个元素被光标吸引。dock 把该元素的子元素当作图标：离光标最近的放大，其余让位。",
+      "ease": "当前值追赶目标值的快慢。越小越舒缓，为 1 时立即到位。",
+      "axis": "停靠栏是横向还是纵向，决定读取光标的哪个坐标。",
+      "maxScale": "光标正下方的图标最多放大到几倍。",
+      "range": "距光标多少 px 之内的图标仍会响应。范围越大，一起变大的越多，看起来越柔和。",
+      "lift": "放大的图标抬起多少 px。为 0 时只改变大小。"
+    },
+    "zh-TW": {
+      "preset": "pointer 讓單個元素被游標吸引。dock 把該元素的子元素當作圖示：離游標最近的放大，其餘讓位。",
+      "ease": "目前值追趕目標值的快慢。越小越舒緩，為 1 時立即到位。",
+      "axis": "停靠列是橫向還是縱向，決定讀取游標的哪個座標。",
+      "maxScale": "游標正下方的圖示最多放大到幾倍。",
+      "range": "距游標多少 px 之內的圖示仍會反應。範圍越大，一起變大的越多，看起來越柔和。",
+      "lift": "放大的圖示抬起多少 px。為 0 時只改變大小。"
+    },
+    "ru": {
+      "preset": "pointer тянет один элемент к курсору. dock считает детей этого элемента иконками: ближайшая к курсору растёт, остальные расступаются.",
+      "ease": "Насколько быстро значение догоняет цель. Меньше — тягучее; 1 — мгновенно.",
+      "axis": "Док расположен поперёк или вниз — от этого зависит, какая координата курсора измеряется.",
+      "maxScale": "До какого размера вырастает иконка прямо под курсором.",
+      "range": "На каком расстоянии от курсора иконка ещё реагирует, в px. Шире — вместе растут несколько, и это мягче.",
+      "lift": "На сколько px поднимается выросшая иконка. При 0 меняется только размер."
+    },
+    "it": {
+      "preset": "`pointer` attira un elemento verso il cursore. `dock` tratta i figli di questo elemento come icone: quella più vicina cresce e le altre si spostano.",
+      "ease": "Quanto in fretta un valore raggiunge il suo obiettivo. Più basso è più morbido; 1 ci arriva subito.",
+      "axis": "Se il dock è disposto in orizzontale o in verticale — decide quale coordinata del puntatore viene letta.",
+      "maxScale": "Quanto diventa grande l'icona proprio sotto il cursore.",
+      "range": "A che distanza dal cursore un'icona reagisce ancora, in px. Più ampio fa gonfiare più icone insieme, e si legge più morbido.",
+      "lift": "Di quanti px si alza un'icona cresciuta. A 0 cambia solo la dimensione."
+    }
+  };
+  for (const [lang, values] of Object.entries(magneticDock)) {
+    sets[lang] = sets[lang] || {};
+    sets[lang].magnetic = Object.assign({}, sets[lang].magnetic, values);
+  }
   const revealOnce = {
     ko: '켜면 등장 모션을 한 번만 실행합니다. 끄면 이탈 시 역재생하고 재진입 시 다시 재생합니다. Native와 GSAP 모두 지원합니다.',
     en: 'Play the entrance once. Turn off to reverse on exit and play again on re-entry, with either native animation or GSAP.',

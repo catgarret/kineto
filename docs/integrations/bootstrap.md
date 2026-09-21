@@ -136,7 +136,7 @@ npm install @dong-gri/kineto
 - `magnetic` · `pointer` — Button leans toward the pointer; landing-page CTAs.
 
   ```html
-  <button data-kt-magnetic data-kt-strength="0.3">Text</button>
+  <button data-kt-magnetic="pointer" data-kt-strength="0.3">Text</button>
   ```
 
 - `ripple` · `material` — Click ripple for libraries without one (Bootstrap, daisyUI, Nuxt UI).

@@ -3,8 +3,8 @@
 window.KINETO_VARIANT_CATALOG = Object.freeze({
   "schemaVersion": "1.0.0",
   "libraryVersion": "0.11.0",
-  "moduleCount": 35,
-  "variantCount": 219,
+  "moduleCount": 36,
+  "variantCount": 221,
   "capabilities": {
     "any": "No requirement — works on any element.",
     "image": "Needs an <img> (the element itself or a descendant).",
@@ -1185,6 +1185,44 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
         },
         {
           "name": "terminal",
+          "requires": "any",
+          "deprecated": false
+        }
+      ]
+    },
+    "magnetic": {
+      "attribute": "data-kt-magnetic",
+      "category": "pointer",
+      "preview": "grid",
+      "reason": "",
+      "carrier": "activation",
+      "carrierAttribute": "",
+      "clearAttributes": [
+        "data-kt-preset",
+        "data-kt-effect"
+      ],
+      "defaultVariant": "pointer",
+      "deprecatedVariants": [],
+      "optionAttributes": [
+        "data-kt-axis",
+        "data-kt-ease",
+        "data-kt-effect",
+        "data-kt-item",
+        "data-kt-lift",
+        "data-kt-max-scale",
+        "data-kt-preset",
+        "data-kt-radius",
+        "data-kt-range",
+        "data-kt-strength"
+      ],
+      "variants": [
+        {
+          "name": "pointer",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "dock",
           "requires": "any",
           "deprecated": false
         }
