@@ -149,7 +149,7 @@ The old markup keeps working until next major and emits a recoverable `KT_DEPREC
 - `data-kt-text-fill` — variants: scroll-fill (JS key `preset`)
 - `data-kt-text-reveal` — variants: stream, char, word, line, bounce, hangul, decode, flicker, shuffle (JS key `preset`)
 - `data-kt-text-split` — variants: char, word (JS key `preset`)
-- `data-kt-text-transition` — variants: slide-up, flip, rise, fade, blur, scale, clip, dissolve, shimmer (JS key `preset`)
+- `data-kt-text-transition` — variants: slide-up, flip, rise, fade, blur, scale, clip, dissolve, shimmer, pop (JS key `preset`)
 - `data-kt-tilt` — variants: tilt-glare, tilt, x-only, y-only, reverse (JS key `preset`)
 - `data-kt-typewriter` — variants: type-erase (JS key `preset`)
 - `data-kt-vibrate` — variants: tap, double-tap, soft, rigid, heavy, success, warning, error, ratchet, heartbeat, long-press (JS key `preset`)

@@ -4,7 +4,7 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
   "schemaVersion": "1.0.0",
   "libraryVersion": "0.11.0",
   "moduleCount": 38,
-  "variantCount": 226,
+  "variantCount": 227,
   "capabilities": {
     "any": "No requirement — works on any element.",
     "image": "Needs an <img> (the element itself or a descendant).",
@@ -2385,6 +2385,11 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
         },
         {
           "name": "shimmer",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "pop",
           "requires": "any",
           "deprecated": false
         }

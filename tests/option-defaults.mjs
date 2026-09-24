@@ -33,6 +33,11 @@ function objectLiteral(name) {
   }
   throw new Error(`unterminated ${name} literal`);
 }
+// FIELDS reads the generated PUBLIC_VARIANTS map for its variant selects (a
+// typed copy drifts — see tests/demo-control-contract.mjs), so it has to be in
+// scope when the literal is evaluated on its own.
+// eslint-disable-next-line no-unused-vars
+const PUBLIC_VARIANTS = eval(`(${objectLiteral('PUBLIC_VARIANTS')})`);
 const FIELDS = eval(`(${objectLiteral('FIELDS')})`);
 const DEFAULTS = eval(`(${objectLiteral('DEFAULTS')})`);
 const PUBLIC_DEFAULTS = eval(`(${objectLiteral('PUBLIC_DEFAULTS')})`);

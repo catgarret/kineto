@@ -5,6 +5,18 @@ import { cssEase, segmentText, wordSink } from '../utils.js';
  * always real content in normal flow (no absolute stacking, no height
  * measuring, no animation-engine dependency), so it can never render empty.
  */
+// Each effect is a pair of keyframe lists (enter, leave), or a function of the
+// instance's options that builds one. Tunable effects (blur, scale) are
+// functions so every instance gets FRESH keyframes: this table used to be
+// edited in place from create(), so the last element created decided the
+// blur amount and scales of every other Text Transition on the page.
+//
+// Optional fields an effect may add:
+//   clip       — the wrapper hides overflow (the text moves out of its box)
+//   perChar    — the effect only exists per character (charMode is forced on)
+//   easing     — the enter easing is part of the effect (pop's spring)
+//   quickLeave — the old text leaves in one short fade instead of a stagger
+//   defaults   — duration / stagger used when the page gives none
 const EFFECTS = {
   'slide-up': {
     enter: [{ transform: 'translateY(0.9em)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }],
@@ -34,20 +46,84 @@ const EFFECTS = {
     enter: [{ opacity: 0 }, { opacity: 1 }],
     leave: [{ opacity: 1 }, { opacity: 0 }]
   },
-  blur: {
-    enter: [{ opacity: 0, filter: 'blur(14px)' }, { opacity: 1, filter: 'blur(0px)' }],
-    leave: [{ opacity: 1, filter: 'blur(0px)' }, { opacity: 0, filter: 'blur(12px)' }]
+  blur: (opts) => {
+    const amount = Math.max(0, Number(opts.blur ?? 14));
+    return {
+      enter: [{ opacity: 0, filter: `blur(${amount}px)` }, { opacity: 1, filter: 'blur(0px)' }],
+      leave: [{ opacity: 1, filter: 'blur(0px)' }, { opacity: 0, filter: `blur(${Math.round(amount * 0.85)}px)` }]
+    };
   },
-  scale: {
-    enter: [{ opacity: 0, transform: 'scale(.82)' }, { opacity: 1, transform: 'scale(1)' }],
-    leave: [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(1.12)' }]
-  },
+  scale: (opts) => ({
+    enter: [{ opacity: 0, transform: `scale(${Math.max(0.1, Number(opts.startScale ?? 0.82))})` }, { opacity: 1, transform: 'scale(1)' }],
+    leave: [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: `scale(${Math.max(0.1, Number(opts.endScale ?? 1.12))})` }]
+  }),
   clip: {
     // -webkit-clip-path mirrors keep the clip animation working on iOS Safari.
     enter: [{ clipPath: 'inset(0 100% 0 0)', webkitClipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)', webkitClipPath: 'inset(0 0 0 0)' }],
     leave: [{ clipPath: 'inset(0 0 0 0)', webkitClipPath: 'inset(0 0 0 0)' }, { clipPath: 'inset(0 0 0 100%)', webkitClipPath: 'inset(0 0 0 100%)' }]
-  }
+  },
+  pop: () => popEffect()
 };
+
+// ── pop ───────────────────────────────────────────────────────────────────
+// Each letter springs up from small, low and tilted, overshoots a little and
+// settles — the per-letter entrance seen on many product sites when a title
+// changes. The motion is a damped spring (damping ratio 0.5, the familiar
+// "stiffness 100 / damping 10" feel) SAMPLED into keyframes and played with a
+// linear easing, so every engine plays the same curve through plain WAAPI and
+// no animation library is needed. The old text leaves in one short fade.
+const POP = Object.freeze({
+  fromY: 0.4,          // em below the baseline at the start
+  fromScale: 0.4,      // starting scale
+  fromRotate: -15,     // degrees of tilt at the start
+  dampingRatio: 0.5,   // < 1 overshoots; 0.5 overshoots about 16 %
+  settle: 0.005,       // the spring counts as settled within 0.5 % of rest
+  samples: 40,         // keyframes per letter (shared by every letter)
+  duration: 1,         // seconds to settle, when the page gives none
+  stagger: 0.02        // seconds between letters, when the page gives none
+});
+
+// Progress (0 → 1, overshooting) of an underdamped spring at `t`, where t = 1
+// is the moment its envelope falls below POP.settle.
+function springProgress(t) {
+  const ratio = POP.dampingRatio;
+  const root = Math.sqrt(1 - ratio * ratio);
+  const natural = Math.log(1 / (POP.settle * root)) / ratio; // ω·T that makes t = 1 "settled"
+  const damped = natural * root;
+  const envelope = Math.exp(-ratio * natural * t);
+  return 1 - envelope * (Math.cos(damped * t) + (ratio / root) * Math.sin(damped * t));
+}
+
+const popTransform = (progress) => {
+  const rest = 1 - progress;
+  return `translateY(${(POP.fromY * rest).toFixed(4)}em) scale(${(POP.fromScale + (1 - POP.fromScale) * progress).toFixed(4)}) rotate(${(POP.fromRotate * rest).toFixed(3)}deg)`;
+};
+
+let popFrames = null; // the keyframes never change, so they are built once
+function popEffect() {
+  if (!popFrames) {
+    popFrames = Array.from({ length: POP.samples + 1 }, (_, step) => {
+      const t = step / POP.samples;
+      const progress = step === POP.samples ? 1 : springProgress(t);
+      return { offset: t, opacity: Math.min(1, Math.max(0, progress)), transform: popTransform(progress) };
+    });
+  }
+  return {
+    enter: popFrames,
+    leave: [{ opacity: 1, transform: popTransform(1) }, { opacity: 0, transform: 'translateY(-0.12em) scale(0.92) rotate(0deg)' }],
+    perChar: true,
+    easing: 'linear',
+    quickLeave: true,
+    defaults: { duration: POP.duration, stagger: POP.stagger }
+  };
+}
+
+// Upper bound for a quick leave, so a long `duration` never makes the old text
+// linger: the old line should be gone before the first new letter lands.
+const QUICK_LEAVE_MS = 200;
+
+/** The effect's keyframes for this instance (a fresh object for tunable ones). */
+const resolveEffect = (name, opts) => (typeof EFFECTS[name] === 'function' ? EFFECTS[name](opts) : EFFECTS[name]);
 
 export default {
   // Paused by the core while the element is off screen and resumed as it
@@ -69,18 +145,18 @@ export default {
       ? requested
       : (requested === 'shimmer' || requested === 'dissolve') ? requested : 'slide-up';
     const dissolve = effectName === 'dissolve';
-    // Honor the contracted tuning options on their matching effects.
-    const blurAmount = Math.max(0, Number(opts.blur ?? 14));
-    EFFECTS.blur.enter[0].filter = `blur(${blurAmount}px)`;
-    EFFECTS.blur.leave[1].filter = `blur(${Math.round(blurAmount * 0.85)}px)`;
-    EFFECTS.scale.enter[0].transform = `scale(${Math.max(0.1, Number(opts.startScale ?? 0.82))})`;
-    EFFECTS.scale.leave[1].transform = `scale(${Math.max(0.1, Number(opts.endScale ?? 1.12))})`;
-    const duration = Math.max(50, Number(opts.duration ?? 0.55) * (Number(opts.duration ?? 0.55) <= 20 ? 1000 : 1));
+    // Dissolve plays per-character opacity steps over the fade keyframes;
+    // shimmer has no keyframe pair at all (it builds its own sweep below).
+    const effect = effectName === 'shimmer' ? null : resolveEffect(dissolve ? 'fade' : effectName, opts);
+    const effectDefaults = effect?.defaults || {};
+    // Seconds (≤ 20) or milliseconds, like every other duration in Kineto.
+    const durationInput = Number(opts.duration ?? effectDefaults.duration ?? 0.55);
+    const duration = Math.max(50, durationInput * (durationInput <= 20 ? 1000 : 1));
     const hold = Math.max(0, Number(opts.pause ?? opts.hold ?? 1600));
     const loop = opts.loop !== false;
-    // Dissolve is inherently per-character.
-    const charMode = opts.charMode === true || dissolve;
-    const stagger = Math.max(0, Number(opts.stagger ?? 0.035)) * 1000;
+    // Dissolve and pop are inherently per-character.
+    const charMode = opts.charMode === true || dissolve || effect?.perChar === true;
+    const stagger = Math.max(0, Number(opts.stagger ?? effectDefaults.stagger ?? 0.035)) * 1000;
     // Per-character reveal order: ltr (left→right, default), rtl (right→left),
     // or random.
     const charDirection = ['ltr', 'rtl', 'random'].includes(opts.charDirection) ? opts.charDirection : 'ltr';
@@ -93,7 +169,8 @@ export default {
       }
       return Array.from({ length: n }, (_, i) => i);
     };
-    const jitterAmp = Math.max(0, Number(opts.jitter ?? 5));
+    // Only dissolve shakes its letters.
+    const jitterAmp = effectName === 'dissolve' ? Math.max(0, Number(opts.jitter ?? 5)) : 0;
 
     el.innerHTML = '';
     el.style.display = 'block';
@@ -130,7 +207,6 @@ export default {
       };
     }
 
-    const effect = dissolve ? EFFECTS.fade : EFFECTS[effectName];
     const wrap = document.createElement('span');
     wrap.style.cssText = `display:block;${effect.clip ? 'overflow:hidden;' : ''}`;
     const inner = document.createElement('span');
@@ -214,7 +290,7 @@ export default {
           const player = animate(span, dissolve ? dissolveFrames(true) : effect.enter, {
             duration,
             delay: dissolve ? Math.random() * duration * 0.5 : order[spanIndex] * Math.min(stagger, 900 / Math.max(1, spans.length)),
-            easing: dissolve ? `steps(${2 + Math.floor(Math.random() * 3)}, end)` : (opts.ease ? cssEase(opts.ease) : 'cubic-bezier(.22,.8,.3,1)')
+            easing: dissolve ? `steps(${2 + Math.floor(Math.random() * 3)}, end)` : (effect.easing || (opts.ease ? cssEase(opts.ease) : 'cubic-bezier(.22,.8,.3,1)'))
           });
           player.finished.then(() => {
             finished += 1;
@@ -222,7 +298,7 @@ export default {
           }).catch(() => {});
         });
       } else {
-        animate(inner, effect.enter, { duration, easing: 'cubic-bezier(.22,.8,.3,1)' })
+        animate(inner, effect.enter, { duration, easing: effect.easing || 'cubic-bezier(.22,.8,.3,1)' })
           .finished.then(() => onDone?.()).catch(() => {});
       }
     };
@@ -232,10 +308,13 @@ export default {
         const spans = charSpans().reverse();
         let finished = 0;
         if (!spans.length) { onDone?.(); return; }
+        // A quick leave (pop) is one short fade for the whole line, so the new
+        // text's entrance — not the old text's exit — is what reads.
+        const quick = effect.quickLeave === true;
         spans.forEach((span, spanIndex) => {
           const player = animate(span, dissolve ? dissolveFrames(false) : effect.leave, {
-            duration: duration * 0.55,
-            delay: dissolve ? Math.random() * duration * 0.35 : spanIndex * Math.min(stagger * 0.6, 500 / Math.max(1, spans.length)),
+            duration: quick ? Math.min(QUICK_LEAVE_MS, duration * 0.3) : duration * 0.55,
+            delay: dissolve ? Math.random() * duration * 0.35 : quick ? 0 : spanIndex * Math.min(stagger * 0.6, 500 / Math.max(1, spans.length)),
             easing: dissolve ? `steps(${2 + Math.floor(Math.random() * 3)}, end)` : 'cubic-bezier(.5,0,.75,.4)'
           });
           player.finished.then(() => {

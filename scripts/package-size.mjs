@@ -201,8 +201,9 @@ const BUDGET = {
   // change above) — the one new file is the module's own modular entry
   // (dist/modular/modules/canvasEffect.js), which every module has. Packed
   // keeps the runner margin recorded above (CI archives about 1.5 KB larger):
-  // 630.8 + 1.5 rounded up to the next whole KB.
-  packedKb: 633,
+  // 630.8 + 1.5 rounded up to the next whole KB. Text Transition's `pop` then
+  // measures 632.3 KB packed locally: 632.3 + 1.5 → 634.
+  packedKb: 634,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -234,7 +235,9 @@ const BUDGET = {
   // 2026-09-24: continuous Dock anchoring and glass fallback/settling add 1.2 KB
   // unpacked (1972.1 KB locally); same 80 files; packed runner margin recorded above.
   // See the canvasEffect note above for the unpacked measurement and the 81st file.
-  unpackedKb: 2039,
+  // 2026-09-24 (text-transition pop): the spring variant, its guide and the
+  // per-instance effect builders measure 2042.4 KB unpacked on the same 81 files.
+  unpackedKb: 2043,
   files: 81
 };
 

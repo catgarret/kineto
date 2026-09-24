@@ -36,7 +36,7 @@
 확대 검토일: 2026-09-06
 
 `pageReveal`에서 사용한 기준을 variant 수가 많거나 canvas·mask·3D·pointer
-렌더러를 분기하는 여섯 모듈로 확대했습니다. 여기서 “distinct”는 색·속도·기본값만
+렌더러를 분기하는 모듈로 확대했습니다(2026-09-24에 Text Transition 추가). 여기서 “distinct”는 색·속도·기본값만
 다른 이름이 아니라, 서로 다른 초기 상태, DOM 구조, 렌더링 알고리즘 또는 이동
 경로가 소스에 남아 있다는 뜻입니다. 정적 검사는 각 공개 이름을 고유한 mechanism
 identity와 실제 source anchor 묶음에 연결합니다.
@@ -55,8 +55,11 @@ identity와 실제 source anchor 묶음에 연결합니다.
 | `overflowText` | `11/11` | `11/11` | distinct |
 | `glitch` | `10/10` | `10/10` | distinct |
 | `slider` | `10/10` | `10/10` | distinct |
+| `textTransition` | `10/10` | `2/10` | distinct |
 
-전용 markup 합계는 81/81입니다(지원 중단 예정 3개 제외). Slider는 10개 효과를 모두 전용 카드로
+전용 markup 합계는 83/91입니다(지원 중단 예정 3개 제외). Text Transition은 2026-09-24에 감사에
+추가되었고, 10개 효과 중 `blur`와 `pop`만 전용 카드가 있습니다 — 나머지 여덟은 설정 선택지와
+비교 시트에서 모두 재생되지만, 첫 화면의 전용 카드는 아직 없다는 것을 그대로 드러낸 값입니다. Slider는 10개 효과를 모두 전용 카드로
 비교하고, Reveal은 `mask`, `swing`, `skew`의 줄바꿈을 포함한 예제를
 추가했습니다. Fade·Zoom In/Out·Flip X/Y도 동일 문구·크기·시간의 비교 카드로
 제공하며, Fade Down/Left/Right·Slide Down/Right의 시작 위치도 비교합니다.
@@ -68,7 +71,7 @@ Blur·Rise·Soft·Rotate도 동일 조건의 비교 카드로 추가해 Reveal�
 Glitch Wave는 1회 재생과 시작·반복·지연 설정을 확인하는
 전용 예제를 추가했습니다. 새 카드의 설정 공유는 semantic v2만 사용해 과거 v1 순번을
 바꾸지 않습니다. 전용 카드가 없는 variant도 생성된
-`PUBLIC_VARIANTS` 설정 선택지에는 84/84(지원 중단 예정 포함) 모두 노출되고, 비교 시트에도 모두 나타납니다. 따라서 위 수치는 기능
+`PUBLIC_VARIANTS` 설정 선택지에는 94/94(지원 중단 예정 포함) 모두 노출되고, 비교 시트에도 모두 나타납니다. 따라서 위 수치는 기능
 구현 여부를 낮춰 잡은 값이 아니라, 첫 화면에서 즉시 비교할 수 있는 시각 QA 표면의
 범위를 별도로 드러낸 값입니다. 데모가 계약에 없는 오래된 이름을 직접 작성하거나
 설정 선택지에서 공개 variant를 누락하면 CI가 실패합니다.
@@ -108,6 +111,13 @@ Glitch Wave는 1회 재생과 시작·반복·지연 설정을 확인하는
   `vcr`은 scan/roll, SVG turbulence/displacement, 반복 channel canvas, compression block,
   one-shot decode, tracking band로 구분되며 `rgb-slice-burst`는 seeded artifact
   scheduler를 사용합니다.
+- `textTransition`: 한 줄의 텍스트가 다음 텍스트로 바뀌는 방식입니다. `slide-up`은 세로 이동+
+  페이드, `flip`은 평면 밖으로 도는 rotateX, `rise`는 잘린 상자 안에서 한 줄 높이만큼 올라오기,
+  `fade`는 불투명도만, `blur`는 filter 초점 이동, `scale`은 작게 들어와 크게 나가기, `clip`은
+  가로 clip-path 와이프, `dissolve`는 글자마다 계단식으로 깜빡이는 흔들림, `shimmer`는 멈춘
+  글자 위를 지나는 그라디언트, `pop`은 글자마다 샘플링한 감쇠 스프링으로 튀어 올라 약 10 %
+  넘쳤다가 자리 잡는 입장입니다. 조절값(`blur`·`startScale`·`endScale`)은 인스턴스마다 새
+  keyframe으로 만들어 서로 섞이지 않습니다.
 - `slider`: `slide`는 선형 track, `fade`는 stacked opacity, `dissolve`는
   blur·scale, `wipe`는 directional clip, `coverflow`는 centered 3D neighbours,
   `flip`은 180도 plane, `cube`는 90도 hinge, `cards`는 depth stack,

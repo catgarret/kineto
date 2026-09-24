@@ -719,13 +719,21 @@ window.KINETO_COPY_I18N = {
       "Поддерживает дополнительную каретку и составленный набор текста на хангыле.",
       "Supporta un cursore opzionale e una digitazione Hangul composta."
     ],
-    "슬라이드·블러·디졸브·시머로 문구를 전환합니다.": [
-      "Switch text with slide, blur, dissolve, and shimmer.",
-      "スライド、ぼかし、ディゾルブ、シマーでテキストを切り替えます。",
-      "通过幻灯片、模糊、溶解和闪烁切换文本。",
-      "透過幻燈片、模糊、溶解和閃爍切換文字。",
-      "Переключайте текст с помощью слайда, размытия, растворения и мерцания.",
-      "Cambia il testo con diapositiva, sfocatura, dissolvenza e luccichio."
+    "슬라이드·블러·디졸브·시머·팝으로 문구를 전환합니다.": [
+      "Switch text with slide, blur, dissolve, shimmer, and pop.",
+      "スライド、ぼかし、ディゾルブ、シマー、ポップでテキストを切り替えます。",
+      "通过滑动、模糊、溶解、闪烁和弹跳切换文本。",
+      "透過滑動、模糊、溶解、閃爍和彈跳切換文字。",
+      "Смена текста сдвигом, размытием, растворением, мерцанием и всплытием.",
+      "Cambia il testo con scorrimento, sfocatura, dissolvenza, luccichio e pop."
+    ],
+    "글자마다 튀어 올라 살짝 넘쳤다가 제자리에 섭니다.": [
+      "Each letter springs up, overshoots a little, and settles.",
+      "文字ごとに跳ね上がり、少し行き過ぎてから定位置に収まります。",
+      "每个字母弹起，略微越过后回到原位。",
+      "每個字母彈起，略微越過後回到原位。",
+      "Каждая буква подпрыгивает, чуть перелетает и встаёт на место.",
+      "Ogni lettera scatta in su, supera di poco la posizione e si assesta."
     ],
     "무작위 글자가 차례로 원문으로 확정됩니다.": [
       "Random letters are sequentially confirmed as the original text.",

@@ -247,7 +247,7 @@
 
 - Attribute: `data-kt-text-transition`
 - Default variant: `slide-up`
-- Variants: `slide-up`, `flip`, `rise`, `fade`, `blur`, `scale`, `clip`, `dissolve`, `shimmer`
+- Variants: `slide-up`, `flip`, `rise`, `fade`, `blur`, `scale`, `clip`, `dissolve`, `shimmer`, `pop`
 - Public options: `ariaLive`, `baseColor`, `blur`, `charDirection`, `charMode`, `duration`, `ease`, `effect`, `endScale`, `hold`, `jitter`, `loop`, `minHeight`, `onChange`, `onComplete`, `pause`, `preset`, `shimColor`, `shimSpeed`, `stagger`, `startScale`, `texts`
 
 ## tilt

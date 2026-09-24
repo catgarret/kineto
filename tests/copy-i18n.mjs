@@ -98,8 +98,9 @@ assert.ok(
 // adds the Liquid Glass pane, and FLIP's `fold` adds the opening-panel card.
 // Mega-menu's `radial` layout adds the fan-out menu card.
 // 2026-09-24: Canvas Effect adds three — Shape Grid (Canvas 2D), Flow Gradient
-// (shader) and the AI prompt card; the last two have Korean titles.
-assert.equal(descriptions.length, 194);
+// (shader) and the AI prompt card; the last two have Korean titles. Text
+// Transition's `pop` adds its card (English title).
+assert.equal(descriptions.length, 195);
 // 18 since the Korean-titled `radial` compatibility card was removed (see above).
 assert.equal(titles.length, 23);
 

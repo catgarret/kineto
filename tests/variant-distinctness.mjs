@@ -96,6 +96,18 @@ const MODULE_AUDITS = {
     vcr: ['tracking-band-vhs-jitter', "const isVcr = preset === 'vcr';", 'kt-vcr-track'],
     'rgb-slice-burst': ['seeded-artifact-burst', "if (preset === 'rgb-slice-burst') {", 'artifactCount']
   },
+  textTransition: {
+    'slide-up': ['vertical-slide-crossfade', "'slide-up': {", "transform: 'translateY(0.9em)'"],
+    flip: ['out-of-plane-rotate-x', 'flip: {', "transform: 'perspective(600px) rotateX(-72deg)'"],
+    rise: ['clipped-full-height-rise', 'rise: {', "transform: 'translateY(110%)'"],
+    fade: ['opacity-only-crossfade', 'fade: {', 'enter: [{ opacity: 0 }, { opacity: 1 }]'],
+    blur: ['filter-focus-pull', 'blur: (opts) => {', 'filter: `blur(${amount}px)`'],
+    scale: ['scale-in-scale-out', 'scale: (opts) => ({', 'Number(opts.startScale ?? 0.82)'],
+    clip: ['horizontal-clip-path-wipe', 'clip: {', "clipPath: 'inset(0 100% 0 0)'"],
+    dissolve: ['per-letter-stepped-flicker', "const dissolve = effectName === 'dissolve';", 'const dissolveFrames = (entering) => {'],
+    shimmer: ['gradient-sweep-over-static-text', "if (effectName === 'shimmer') {", "[{ backgroundPosition: '160% 0' }, { backgroundPosition: '-160% 0' }]"],
+    pop: ['per-letter-sampled-spring-overshoot', 'pop: () => popEffect()', 'function springProgress(t) {']
+  },
   slider: {
     slide: ['linear-track-translation', "if (effect === 'slide') {", 'const baseX = centerOffset + distance * step'],
     fade: ['stacked-opacity-crossfade', "if (fade) {", "slide.style.opacity = String(visible);"],

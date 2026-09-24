@@ -177,6 +177,7 @@ function analyse(source, publicOptions, declaredVariants) {
   const names = new Set(findVariantVariables(ast, declaredVariants).keys());
   if (!names.size) return null;
   const allowed = new Set(publicOptions);
+  const declared = new Set(declaredVariants);
 
   // Map each variant-gated node range to the labels that gate it.
   /** @type {Array<{start:number,end:number,labels:string[],negated:boolean}>} */
@@ -201,6 +202,19 @@ function analyse(source, publicOptions, declaredVariants) {
     if (node.type === 'ConditionalExpression') {
       const labels = variantsInTest(node.test, names);
       if (labels) regions.push({ start: node.consequent.start, end: node.consequent.end, labels, negated: false });
+    }
+    // A table keyed by variant name whose entries BUILD that variant —
+    // `const EFFECTS = { blur: (opts) => …, scale: (opts) => … }` in Text
+    // Transition. The key is the branch: an option read inside the `blur`
+    // builder belongs to `blur`. Only function-valued properties named exactly
+    // after a declared variant count, so a plain data map is never mistaken
+    // for a branch.
+    if (node.type === 'Property' && !node.computed
+      && (node.value?.type === 'ArrowFunctionExpression' || node.value?.type === 'FunctionExpression')) {
+      const key = node.key?.type === 'Identifier' ? node.key.name : (node.key?.type === 'Literal' ? node.key.value : null);
+      if (typeof key === 'string' && declared.has(key)) {
+        regions.push({ start: node.value.start, end: node.value.end, labels: [key], negated: false });
+      }
     }
   });
 

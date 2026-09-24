@@ -245,6 +245,7 @@ jobs:
           node tests/retry-browser-test.mjs tests/browser/mega-radial.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/browser/stylize-patterns.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/browser/text-word-wrap.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
+          node tests/retry-browser-test.mjs tests/browser/text-transition.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/browser/idle-cost.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/browser/create-cost.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/browser/canvas-effect.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log

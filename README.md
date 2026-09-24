@@ -41,7 +41,7 @@ pointer.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/cardglow.gif" width="620" alt="Card Spotlight and Reflection">
 
-**Text Transition** — Swap phrases with slide, blur, dissolve, or shimmer.
+**Text Transition** — Swap phrases with slide, blur, dissolve, shimmer, or a springy per-letter pop.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/texttransition.gif" width="620" alt="Text Transition">
 

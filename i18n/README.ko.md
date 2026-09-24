@@ -44,7 +44,7 @@ Kineto는 모션·미디어·스크롤·텍스트·UI를 다루는 53개 모듈�
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/cardglow.gif" width="620" alt="Card Spotlight and Reflection">
 
-**Text Transition** — 슬라이드·블러·디졸브·시머로 문구를
+**Text Transition** — 슬라이드·블러·디졸브·시머·팝으로 문구를
 전환합니다.
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/texttransition.gif" width="620" alt="Text Transition">
