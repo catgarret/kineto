@@ -4,6 +4,8 @@
 
 ### English
 
+- Make autoplay hover timing deterministic and sample hero motion on animation frames so hosted-runner delays do not produce false browser failures.
+
 - Pin all workflow runners to Ubuntu 24.04 and reject implicit OS migrations in the workflow contract test.
 
 - Account for the measured Node 24/npm 11 archive compression delta with a 1 KB packed budget margin; keep the same 80-file package surface.
@@ -81,6 +83,8 @@
 - Dependabot no longer proposes major bumps for the `tests/integrations` fixture: the UI-library majors there are the ones the integration map documents, so a new major is reviewed together with the docs and tests instead of landing as a failing automatic PR.
 
 ### 한국어
+
+- 자동재생 호버 검사 시간을 제어하고 첫 화면 움직임을 애니메이션 프레임마다 측정해 CI 실행 지연으로 인한 잘못된 실패를 방지했습니다.
 
 - 모든 워크플로 실행 환경을 Ubuntu 24.04로 고정하고, 계약 검사로 암묵적인 운영체제 전환을 차단합니다.
 

@@ -25,6 +25,7 @@ const PORT = server.address().port;
 
 const browser = await chromium.launch({ headless: true, ...(CHROME ? { executablePath: CHROME } : {}), args: ['--no-sandbox','--disable-setuid-sandbox','--disable-gpu'] });
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+await page.clock.install();
 page.on('pageerror', (e) => console.log('PAGEERROR:', e.message));
 await page.goto(`http://localhost:${PORT}/demo/index.html`, { waitUntil: 'load' });
 await page.waitForFunction(() => window.Kineto && document.querySelector('[data-kt-toast]'), null, { timeout: 15000 }).catch(() => console.log('WARN: not ready'));
@@ -73,7 +74,10 @@ console.log('\n===== SLIDER hover autoplay =====');
 const dissolveSlider = page.locator('.slider-demo--dissolve').first();
 await dissolveSlider.scrollIntoViewIfNeeded();
 await page.mouse.move(4, 4);
-const sliderTiming = await dissolveSlider.evaluate((slider) => {
+// Freeze browser time before constructing the autoplay instance. Locator hover
+// latency must not consume (or wrap) the 500ms interval on a busy CI runner.
+await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+await dissolveSlider.evaluate((slider) => {
   window.Kineto.destroyModule(slider, 'slider');
   const instance = window.Kineto.create('slider', slider, {
     effect: 'fade',
@@ -86,7 +90,7 @@ const sliderTiming = await dissolveSlider.evaluate((slider) => {
   window.__KT_SLIDER_HOVER_QA__ = instance;
   return { index: instance.index };
 });
-await sleep(260);
+await page.clock.runFor(260);
 await dissolveSlider.hover();
 const hoverStarted = await dissolveSlider.evaluate(() => {
   const progress = document.querySelector('.slider-demo--dissolve .kt-slider-progress__fill');
@@ -95,7 +99,8 @@ const hoverStarted = await dissolveSlider.evaluate(() => {
     offset: Number(progress?.style.strokeDashoffset)
   };
 });
-await sleep(420);
+check('slider hover starts midway through its first interval', hoverStarted.index === 0 && hoverStarted.offset > 0.4 && hoverStarted.offset < 0.6, JSON.stringify(hoverStarted));
+await page.clock.runFor(420);
 const hoverHeld = await dissolveSlider.evaluate(() => {
   const progress = document.querySelector('.slider-demo--dissolve .kt-slider-progress__fill');
   return {
@@ -106,7 +111,10 @@ const hoverHeld = await dissolveSlider.evaluate(() => {
 check('slider hover pauses past the original autoplay deadline', hoverHeld.index === hoverStarted.index, `${hoverStarted.index} -> ${hoverHeld.index}`);
 check('slider hover freezes the elapsed progress', Math.abs(hoverHeld.offset - hoverStarted.offset) < 0.03, `${hoverStarted.offset} -> ${hoverHeld.offset}`);
 await page.mouse.move(4, 4);
-await sleep(310);
+await page.clock.runFor(100);
+const beforeRemainingDeadline = await dissolveSlider.evaluate(() => window.__KT_SLIDER_HOVER_QA__.index);
+check('slider leave does not advance before the remaining deadline', beforeRemainingDeadline === hoverStarted.index);
+await page.clock.runFor(210);
 const hoverResumedIndex = await dissolveSlider.evaluate(() => window.__KT_SLIDER_HOVER_QA__.index);
 check(
   'slider leave resumes from remaining time instead of zero',
@@ -124,13 +132,15 @@ await dissolveSlider.evaluate((slider) => {
 });
 await dissolveSlider.hover();
 const defaultHoverStart = await dissolveSlider.evaluate(() => window.__KT_SLIDER_DEFAULT_HOVER_QA__.index);
-await sleep(390);
+await page.clock.runFor(390);
 const defaultHoverEnd = await dissolveSlider.evaluate(() => window.__KT_SLIDER_DEFAULT_HOVER_QA__.index);
 check(
   'slider hover does not pause unless pauseOnHover is enabled',
   defaultHoverEnd !== defaultHoverStart,
   `${defaultHoverStart} -> ${defaultHoverEnd}`
 );
+
+await page.clock.resume();
 
 const coverflowPreview = await page.locator('[data-kt-slider="coverflow"]').first().evaluate((slider) => {
   const viewport = slider.querySelector('.kt-slider-wrap')?.getBoundingClientRect();

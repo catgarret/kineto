@@ -655,11 +655,14 @@ try {
       return event.defaultPrevented;
     };
     const sample = async () => {
-      const path = [];
-      for (let index = 0; index < 10; index += 1) {
-        await wait(90);
+      // Observe rendered frames, not delayed 90ms timers: on a busy runner
+      // those timers can miss most of a valid 680–860ms animation.
+      const path = [Math.round(window.scrollY)];
+      const started = performance.now();
+      do {
+        await new Promise(requestAnimationFrame);
         path.push(Math.round(window.scrollY));
-      }
+      } while (performance.now() - started < 1000);
       return path;
     };
     const hero = document.querySelector('.hero');

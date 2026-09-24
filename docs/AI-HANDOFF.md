@@ -51,6 +51,14 @@ starts on 2026-10-19. `test:supply-chain-automation` checks every workflow so
 OS migrations require an explicit contract update and browser validation.
 The OS image still receives updates within Ubuntu 24.04.
 
+Browser timing checks must measure the behavior, not host scheduling: Slider
+hover QA freezes browser time before creating the instance, advances its real
+timers with Playwright Clock, and retains the early/remaining-deadline checks.
+Hero gesture QA samples every animation frame; 90ms wall-clock polling missed
+valid intermediate frames on hosted Chromium. Keep its monotonicity, minimum
+distinct positions, gesture-tail ownership and final-position assertions.
+
+
 ## Current state
 
 - Package: `@dong-gri/kineto`
