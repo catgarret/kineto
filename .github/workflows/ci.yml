@@ -73,14 +73,6 @@ jobs:
       - name: Install dependencies
         run: npm ci --prefer-offline --fetch-retries=3 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=5000 --fetch-timeout=30000
 
-      - name: Install Playwright Chromium
-        run: |
-          set -o pipefail
-          # Chromium's full browser QA needs the runner libraries as well as
-          # the binary. Bound apt/browser provisioning so a mirror stall cannot
-          # consume the whole test job.
-          timeout --foreground --kill-after=30s 10m npx playwright install --with-deps chromium
-
       - name: Run lint
         run: |
           set -o pipefail
@@ -159,6 +151,13 @@ jobs:
             printf 'Site/release test failures: %s\n' "${failures[*]}"
             exit 1
           fi
+
+      - name: Install Playwright Chromium
+        run: |
+          set -o pipefail
+          # Provision the browser only after deterministic lint/Node/package
+          # gates pass; early source failures should not pay the apt/browser cost.
+          timeout --foreground --kill-after=30s 10m npx playwright install --with-deps chromium
 
       - name: Run demo QA
         run: |
