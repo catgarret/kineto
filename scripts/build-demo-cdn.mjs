@@ -10,6 +10,7 @@
 // the deployed copy only drops whitespace, comments and local identifiers.
 // Both minifiers ship with the repository's Vite toolchain and are
 // deterministic, so `--check` can assert byte equality against a fresh pass.
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
@@ -124,10 +125,10 @@ function buildId() {
 export function rewriteSiteHtml(html, { base = '.', build = 'dev' } = {}) {
   const suffix = `?v=${encodeURIComponent(build)}`;
   let out = html
-    // umd.js / umd.min.js  (optional ?v=NNN)
-    .replace(/(?:href|src)="\.\.\/dist\/kineto\.umd(?:\.min)?\.js(?:\?v=\d+)?"/g, `src="${base}/kineto.umd.min.js${suffix}"`)
-    // css / min.css       (optional ?v=NNN)
-    .replace(/(?:href|src)="\.\.\/dist\/kineto(?:\.min)?\.css(?:\?v=\d+)?"/g, `href="${base}/kineto.min.css${suffix}"`);
+    // umd.js / umd.min.js  (optional ?v=<token>)
+    .replace(/(?:href|src)="\.\.\/dist\/kineto\.umd(?:\.min)?\.js(?:\?v=[^"]*)?"/g, `src="${base}/kineto.umd.min.js${suffix}"`)
+    // css / min.css       (optional ?v=<token>)
+    .replace(/(?:href|src)="\.\.\/dist\/kineto(?:\.min)?\.css(?:\?v=[^"]*)?"/g, `href="${base}/kineto.min.css${suffix}"`);
   // Stamp the build id just before </head> so main.js can read window.__KT_BUILD__.
   if (!/__KT_BUILD__/.test(out)) {
     out = out.replace(/<\/head>/i, `  <script>window.__KT_BUILD__=${JSON.stringify(build)};</script>\n</head>`);
@@ -136,6 +137,53 @@ export function rewriteSiteHtml(html, { base = '.', build = 'dev' } = {}) {
   // install snippet (&lt;script src="https://cdn…"&gt;) is not a ../dist ref.
   const leftover = (out.match(/(?:href|src)="\.\.\/dist\//g) || []).length;
   return { html: out, leftover };
+}
+
+// ── Cache keys ──────────────────────────────────────────────────────────────
+// demo/index.html refers to its own files as `./main.js?v=dev`. The deployed
+// copy replaces every such `?v=` with a short hash of the DEPLOYED bytes of that
+// file, so after a deploy a browser refetches exactly the files that changed
+// and never pairs a new page with an old script or stylesheet. There is no
+// number to bump by hand (there used to be one, and it was bumped by hand).
+const LOCAL_ASSET_REF = /((?:href|src)=")\.\/([^"?#]+)\?v=[^"]*"/g;
+const ASSET_HASH_LENGTH = 10;
+
+/** Short, stable content hash used as a cache key. */
+export function assetHash(bytes) {
+  return crypto.createHash('sha256').update(bytes).digest('hex').slice(0, ASSET_HASH_LENGTH);
+}
+
+// Read a deployed file for hashing — only regular files inside `dir`, so a
+// reference such as `./../x?v=` can never make the build read outside site/.
+function readInside(dir, file) {
+  const target = path.resolve(dir, file);
+  if (target !== dir && !target.startsWith(dir + path.sep)) return null;
+  try { return fs.statSync(target).isFile() ? fs.readFileSync(target) : null; }
+  catch (_error) { return null; }
+}
+
+/**
+ * Pure rewrite: every local `./file?v=…` reference gets `?v=<hash of file>`.
+ * `readAsset(file)` returns the file's bytes, or null to leave the reference
+ * as it is (a file that does not exist is reported by assertAssetVersions).
+ */
+export function stampAssetVersions(html, readAsset) {
+  return html.replace(LOCAL_ASSET_REF, (match, prefix, file) => {
+    const bytes = readAsset(file);
+    return bytes == null ? match : `${prefix}./${file}?v=${assetHash(bytes)}"`;
+  });
+}
+
+/** Every local `?v=` in the deployed page must be the hash of the file it names. */
+export function assertAssetVersions(html, dir = OUT) {
+  const errors = [];
+  for (const [, , file] of html.matchAll(LOCAL_ASSET_REF)) {
+    const bytes = readInside(dir, file);
+    if (bytes == null) { errors.push(`site/index.html refers to ./${file}, which is not in site/`); continue; }
+    const expected = `./${file}?v=${assetHash(bytes)}"`;
+    if (!html.includes(expected)) errors.push(`site/index.html has a stale cache key for ./${file} (expected ?v=${assetHash(bytes)})`);
+  }
+  return errors;
 }
 
 export function assertSite(html) {
@@ -168,9 +216,9 @@ if (isMain) {
   const check = process.argv.includes('--check');
   if (check) {
     const html = fs.readFileSync(path.join(OUT, 'index.html'), 'utf8');
-    const errors = [...assertSite(html), ...assertRuntimeAssets(), ...assertDemoAssets(), ...assertSiteExtras()];
+    const errors = [...assertSite(html), ...assertAssetVersions(html), ...assertRuntimeAssets(), ...assertDemoAssets(), ...assertSiteExtras()];
     if (errors.length) { console.error('demo-cdn --check FAILED:\n  - ' + errors.join('\n  - ')); process.exit(1); }
-    console.log(`demo-cdn --check OK — co-deployed runtime matches dist, demo assets are current minified builds, llms.txt/AI rules/registry are current, public CDN snippets retained, 0 ../dist refs.`);
+    console.log(`demo-cdn --check OK — co-deployed runtime matches dist, demo assets are current minified builds with content-hash cache keys, llms.txt/AI rules/registry are current, public CDN snippets retained, 0 ../dist refs.`);
   } else {
     fs.rmSync(OUT, { recursive: true, force: true });
     fs.cpSync(SRC, OUT, { recursive: true });
@@ -180,9 +228,12 @@ if (isMain) {
     }
     const extras = writeSiteExtras();
     const indexPath = path.join(OUT, 'index.html');
-    const { html, leftover } = rewriteSiteHtml(fs.readFileSync(indexPath, 'utf8'), { build: buildId() });
+    const rewritten = rewriteSiteHtml(fs.readFileSync(indexPath, 'utf8'), { build: buildId() });
+    // Hash last: the files it names are final only after minify and copy above.
+    const html = stampAssetVersions(rewritten.html, (file) => readInside(OUT, file));
+    const { leftover } = rewritten;
     fs.writeFileSync(indexPath, html);
-    const errors = [...assertSite(html), ...assertRuntimeAssets(), ...assertDemoAssets(), ...assertSiteExtras()];
+    const errors = [...assertSite(html), ...assertAssetVersions(html), ...assertRuntimeAssets(), ...assertDemoAssets(), ...assertSiteExtras()];
     if (errors.length || leftover > 0) {
       console.error(`Generated site/ but assertions FAILED (leftover ../dist=${leftover}):\n  - ` + errors.join('\n  - '));
       process.exit(1);

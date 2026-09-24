@@ -101,6 +101,10 @@ own artefacts rather than a different agent's moving working tree.
   text, and `tests/canvas-effect.mjs` checks they match).
 - **Counts are never written down**: tests read the module count from the
   contract, demo copy uses `[data-kt-module-count]` or `{moduleCount}`.
+- **Neither are cache keys**: `demo/index.html` loads its own files with
+  `?v=dev`; `scripts/build-demo-cdn.mjs` writes a hash of each deployed file
+  into `site/index.html`, and `tests/site-deploy.mjs` rejects any other token
+  in the source. Do not bump a `?v=` by hand.
 
 ## How to recover project history
 

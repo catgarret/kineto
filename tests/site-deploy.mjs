@@ -6,7 +6,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert';
-import { rewriteSiteHtml, assertSite, assertDemoAssets, listDemoAssets, minifyDemoScript, minifyDemoStylesheet } from '../scripts/build-demo-cdn.mjs';
+import { rewriteSiteHtml, assertSite, assertDemoAssets, listDemoAssets, minifyDemoScript, minifyDemoStylesheet, stampAssetVersions, assertAssetVersions, assetHash } from '../scripts/build-demo-cdn.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
@@ -58,6 +58,27 @@ for (const file of ['playground.js', 'main.js', 'styles.css', 'playground.css'])
   const source = fs.readFileSync(path.join(root, 'demo', file), 'utf8');
   assert.ok(deployed.length < source.length * 0.8, `site/${file} should be meaningfully smaller than its source (${deployed.length} vs ${source.length})`);
 }
+
+// 2c. Cache keys follow content. The source names its own files with ?v=dev;
+// the deployed page carries a hash of each deployed file, so a returning
+// visitor refetches exactly what changed and never runs a new page against an
+// old script. A hand-typed key (which is what the page used to have) fails here.
+assert.deepStrictEqual([...new Set([...demoHtml.matchAll(/(?:href|src)="\.{1,2}\/[^"?#]+\?v=([^"]*)"/g)].map((match) => match[1]))], ['dev'],
+  'demo/index.html must use ?v=dev for its own files — the site build writes the real cache keys');
+const siteHtml = fs.readFileSync(path.join(root, 'site/index.html'), 'utf8');
+assert.deepStrictEqual(assertAssetVersions(siteHtml), [], 'every local ?v= in site/index.html must be the hash of the file it names');
+const stamped = [...siteHtml.matchAll(/(?:href|src)="\.\/([^"?#]+)\?v=([0-9a-f]+)"/g)];
+assert.ok(stamped.length >= 15, `the deployed page must stamp its scripts and stylesheets (${stamped.length})`);
+for (const [, file, key] of stamped) assert.equal(key, assetHash(fs.readFileSync(path.join(root, 'site', file))), `site/index.html cache key for ${file}`);
+const probe = '<script src="./a.js?v=dev"></script><link href="./b.css?v=old"><img src="./c.png"><script src="https://cdn.example/x.js?v=1"></script>';
+const probeFiles = { 'a.js': Buffer.from('one'), 'b.css': Buffer.from('two') };
+const probed = stampAssetVersions(probe, (file) => probeFiles[file] ?? null);
+assert.ok(probed.includes(`./a.js?v=${assetHash(Buffer.from('one'))}"`) && probed.includes(`./b.css?v=${assetHash(Buffer.from('two'))}"`), 'local references get the hash of their bytes');
+assert.ok(probed.includes('./c.png"') && probed.includes('https://cdn.example/x.js?v=1"'), 'references without ?v= and remote URLs are left alone');
+probeFiles['a.js'] = Buffer.from('changed');
+assert.notEqual(stampAssetVersions(probe, (file) => probeFiles[file] ?? null), probed, 'changing a file changes its key');
+assert.equal(stampAssetVersions('<script src="./missing.js?v=dev"></script>', () => null), '<script src="./missing.js?v=dev"></script>', 'an unknown file is left for assertAssetVersions to report');
+assert.deepStrictEqual(assertAssetVersions('<script src="./../package.json?v=x"></script>'), ['site/index.html refers to ./../package.json, which is not in site/'], 'a reference outside site/ is never read');
 
 // 3. The deploy source owns the GTM snippet, so every generated site/index.html
 // includes the exact container once in <head> and once as the body noscript fallback.
