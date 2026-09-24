@@ -1150,11 +1150,15 @@
         const distance=top-from;
         const duration=Math.min(SNAP_MAX_MS,Math.max(SNAP_MIN_MS,Math.abs(distance)*.42));
         const started=performance.now();
+        let renderedProgress=0;
         // A quartic ease-out carries visible momentum through the middle of the
-        // trip, then settles without overshoot. Clamp every write so Safari's
-        // rubber-band range never becomes part of the programmed trajectory.
+        // trip, then settles without overshoot. A heavily loaded WebKit frame
+        // can arrive after the nominal duration; cap progress per rendered frame
+        // so that stall cannot collapse the whole gesture into one giant jump.
         const frame=(now)=>{
-          const progress=Math.min(1,Math.max(0,(now-started)/duration));
+          const elapsedProgress=Math.min(1,Math.max(0,(now-started)/duration));
+          const progress=Math.min(elapsedProgress,renderedProgress+.34);
+          renderedProgress=progress;
           const eased=1-Math.pow(1-progress,4);
           const next=from+distance*eased;
           window.scrollTo(0,distance>=0?Math.min(top,Math.max(from,next)):Math.max(top,Math.min(from,next)));

@@ -4,6 +4,8 @@
 
 ### English
 
+- Restore deterministic WebKit geometry/motion boundaries in the demo: Tabs now retries a hidden-to-visible indicator measurement for at most two frames plus one bounded fallback when the active tab is still 0px, and the hero scene caps per-frame progress so a long WebKit scheduling stall cannot collapse a 680–860ms inertial snap into one giant scroll jump. The browser regression follows the scene controller's bounded lifecycle instead of assuming a fixed one-second runner window.
+
 - Remove redundant Loading Indicator terminal runtime work: legacy terminal presets now use the already-frozen shared preset map directly instead of cloning/freezing it again at module load, and a text-frame renderer branch whose two paths were identical is collapsed. Behavior and preset IDs stay unchanged while package/runtime bytes drop.
 
 - Minify Lightbox's runtime-injected CSS string without changing selectors or declarations. Because this CSS lives inside JavaScript, the JS minifier cannot compact its whitespace; storing the same rules compactly reduces every full/UMD/modular artifact and restores release-package headroom.
@@ -15,6 +17,8 @@
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- WebKit에서 데모의 geometry/motion 경계를 결정적으로 복원했습니다. Tabs는 hidden→visible 전환 직후 active tab이 아직 0px이면 최대 두 프레임과 한 번의 bounded fallback까지만 재측정하며, hero scene은 프레임당 progress 증가량을 제한해 WebKit 스케줄링이 오래 멈춰도 680–860ms 관성 snap이 한 번의 큰 scroll jump로 붕괴하지 않습니다. 브라우저 회귀 테스트도 고정 1초 대신 scene controller의 bounded lifecycle을 따라갑니다.
 
 - Loading Indicator terminal runtime의 중복 작업을 제거했습니다. 이미 freeze된 legacy preset map을 모듈 로드 시 다시 복사·freeze하지 않고 직접 사용하며, 양쪽 결과가 완전히 같던 text-frame renderer 분기도 하나로 합쳤습니다. preset ID와 동작은 그대로이고 package/runtime byte만 줄어듭니다.
 

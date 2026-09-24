@@ -657,14 +657,16 @@ try {
       return event.defaultPrevented;
     };
     const sample = async () => {
-      // Observe rendered frames, not delayed 90ms timers: on a busy runner
-      // those timers can miss most of a valid 680–860ms animation.
+      // Observe until the scene controller releases the gesture, rather than a
+      // fixed one-second wall-clock window. A saturated WebKit runner can delay
+      // the first rAF past the nominal 680–860ms duration; the runtime now keeps
+      // bounded visual progress after such a stall, so follow that real lifecycle.
       const path = [Math.round(window.scrollY)];
-      const started = performance.now();
+      const deadline = performance.now() + 2500;
       do {
-        await new Promise(requestAnimationFrame);
+        await new Promise(window.requestAnimationFrame);
         path.push(Math.round(window.scrollY));
-      } while (performance.now() - started < 1000);
+      } while (window.__ktHeroSceneSnap && performance.now() < deadline);
       return path;
     };
     const hero = document.querySelector('.hero');

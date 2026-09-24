@@ -200,11 +200,28 @@ export default {
       : null;
     indicatorObserver?.observe(list);
     if (!indicatorObserver) window.addEventListener('resize', moveIndicator);
-    // Some WebKit versions do not emit a resize notification when a `hidden`
-    // ancestor is toggled. Watch that semantic visibility bit directly and wait
-    // one frame for the newly revealed layout to settle.
+    // WebKit can commit a removed `hidden` attribute before the revealed
+    // subtree has measurable layout. A single next-frame read can therefore
+    // permanently write a 0px indicator. Repair synchronously, then for at most
+    // two frames while geometry is still zero, with one bounded timer fallback.
+    let repairRaf = null;
+    let repairTimer = null;
+    const repairIndicator = (attempt = 0) => {
+      refresh();
+      const tab = tabs[active];
+      const size = orientation === 'vertical' ? tab.offsetHeight : tab.offsetWidth;
+      if (size > 0) return;
+      if (attempt < 2) repairRaf = requestAnimationFrame(() => repairIndicator(attempt + 1));
+      else repairTimer = setTimeout(refresh, 160);
+    };
     const hiddenObserver = indicator && typeof MutationObserver !== 'undefined'
-      ? new MutationObserver(() => requestAnimationFrame(moveIndicator))
+      ? new MutationObserver(() => {
+        if (repairRaf != null) cancelAnimationFrame(repairRaf);
+        clearTimeout(repairTimer);
+        repairRaf = null;
+        repairTimer = null;
+        repairIndicator();
+      })
       : null;
     const hiddenAncestor = el.closest?.('[hidden]');
     if (hiddenObserver && hiddenAncestor) hiddenObserver.observe(hiddenAncestor, { attributes: true, attributeFilter: ['hidden'] });
@@ -220,6 +237,8 @@ export default {
       resume() {},
       destroy() {
         cancelAnimationFrame(initRaf);
+        if (repairRaf != null) cancelAnimationFrame(repairRaf);
+        clearTimeout(repairTimer);
         if (!indicatorObserver) window.removeEventListener('resize', moveIndicator);
         indicatorObserver?.disconnect();
         hiddenObserver?.disconnect();
