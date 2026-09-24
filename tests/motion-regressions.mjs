@@ -366,6 +366,35 @@ assert.equal(fullpageSections[1].scrollTop, 540, 're-entering a long section mus
 fullpage.destroy();
 fullpageEl.remove();
 
+// Programmatic Fullpage navigation can supersede a transition before its
+// transitionend/fallback fires. Only the newest fallback may remain pending,
+// otherwise an older timeout can clear the animation gate during the new move.
+const nativeSetTimeoutForFullpage = globalThis.setTimeout;
+const nativeClearTimeoutForFullpage = globalThis.clearTimeout;
+const pendingFullpageTimers = new Map();
+let nextFullpageTimer = 0;
+globalThis.setTimeout = (callback) => {
+  const id = ++nextFullpageTimer;
+  pendingFullpageTimers.set(id, callback);
+  return id;
+};
+globalThis.clearTimeout = (id) => { pendingFullpageTimers.delete(id); };
+const timerFullpageEl = document.createElement('div');
+timerFullpageEl.innerHTML = '<section>A</section><section>B</section><section>C</section>';
+document.body.appendChild(timerFullpageEl);
+const timerFullpage = fullpageModule.create(timerFullpageEl, { dots: false, duration: 0.15 });
+timerFullpage.go(1);
+assert.equal(pendingFullpageTimers.size, 1, 'first Fullpage transition must own one fallback timer');
+const firstSettleTimer = [...pendingFullpageTimers.keys()][0];
+timerFullpage.go(2);
+assert.equal(pendingFullpageTimers.size, 1, 'superseding Fullpage navigation must replace, not stack, the fallback timer');
+assert.equal(pendingFullpageTimers.has(firstSettleTimer), false, 'old Fullpage settle fallback must be cancelled');
+timerFullpage.destroy();
+assert.equal(pendingFullpageTimers.size, 0, 'Fullpage destroy must cancel the current settle fallback');
+timerFullpageEl.remove();
+globalThis.setTimeout = nativeSetTimeoutForFullpage;
+globalThis.clearTimeout = nativeClearTimeoutForFullpage;
+
 const sliderModule = (await import('../src/modules/slider.js')).default;
 const counterModule = (await import('../src/modules/counter.js')).default;
 const dateTimeModule = (await import('../src/modules/dateTime.js')).default;
