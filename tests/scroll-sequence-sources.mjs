@@ -32,12 +32,14 @@ globalThis.ResizeObserver = class {
   disconnect() {}
 };
 
+const createdImages = [];
 class FakeImage {
   constructor() {
     this.onload = null;
     this.onerror = null;
     this.naturalWidth = 0;
     this.naturalHeight = 0;
+    createdImages.push(this);
   }
   set src(value) {
     this._src = value;
@@ -112,3 +114,44 @@ assert.equal(drawCalls, 3, 'resize must force redraw of the current frame');
 assert.deepEqual(frameCalls, [0, 1, 1], 'forced resize redraw remains observable through onFrame');
 
 live.destroy();
+
+
+// Long scroll sequences must not retain every decoded Image object visited.
+// preloadRadius=1 keeps 3 requested frames hot and an internal retention window
+// of 3 frames on either side. Scrubbing well past frame 0 must release its
+// handlers/state so returning to 0 creates a fresh image instead of keeping the
+// first decode alive for the instance lifetime.
+const cacheHost = document.createElement('div');
+document.body.append(cacheHost);
+cacheHost.getBoundingClientRect = () => ({ width: 320, height: 180 });
+drawCalls = 0;
+frameCalls.length = 0;
+createdImages.length = 0;
+const urls = Array.from({ length: 24 }, (_, i) => `/frames/cache-${i}.jpg`);
+const cached = scrollSequence.create(cacheHost, {
+  urls,
+  frames: urls.length,
+  preloadRadius: 1,
+  onFrame(index) { frameCalls.push(index); }
+});
+assert.ok(cached);
+const firstFrameImage = createdImages[0];
+assert.ok(firstFrameImage, 'frame 0 image must have been created');
+assert.equal(firstFrameImage.onload instanceof Function, true);
+
+for (let frame = 1; frame <= 12; frame += 1) {
+  tweenTarget.frame = frame;
+  tweenOptions.onUpdate();
+}
+assert.equal(firstFrameImage.onload, null, 'far-behind loaded frame must release its load handler');
+assert.equal(firstFrameImage.onerror, null, 'far-behind loaded frame must release its error handler');
+const createdBeforeReturn = createdImages.length;
+
+tweenTarget.frame = 0;
+tweenOptions.onUpdate();
+assert.ok(createdImages.length > createdBeforeReturn, 'returning to an evicted frame must create a fresh Image');
+assert.notEqual(createdImages.at(-1), firstFrameImage, 'eviction must not reuse the retained decoded Image object');
+
+cached.destroy();
+assert.ok(createdImages.every((image) => image.onload == null && image.onerror == null), 'destroy must detach handlers from every image still retained');
+cacheHost.remove();
