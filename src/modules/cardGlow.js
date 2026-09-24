@@ -1,6 +1,6 @@
 import { clamp, lerp, snapshotInlineStyles } from '../utils.js';
 import { createInteractiveShadow } from '../interactiveShadow.js';
-import { buildDisplacementMap, supportsBackdrop, supportsBackdropRefraction } from './surface/glass.js';
+import { bevelBand, bevelShading, buildDisplacementMap, displacementScale, supportsBackdrop, supportsBackdropRefraction } from './surface/glass.js';
 
 function bool(value, fallback = false) {
   if (value == null) return fallback;
@@ -215,13 +215,14 @@ export default {
       const context = canvas.getContext('2d', { willReadFrequently: false });
       if (!context) return;
       const paneRadius = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
-      context.putImageData(buildDisplacementMap(context, width, height, paneRadius, glassDepth), 0, 0);
+      const band = bevelBand(width, height, glassDepth);
+      context.putImageData(buildDisplacementMap(context, width, height, paneRadius, band), 0, 0);
       glassMap.image.setAttribute('href', canvas.toDataURL());
       glassMap.image.setAttribute('width', String(width));
       glassMap.image.setAttribute('height', String(height));
       // How far the backdrop is allowed to travel. Tied to the bevel, so a
       // deeper edge bends more — which is what a thicker piece of glass does.
-      glassMap.displace.setAttribute('scale', String(Math.round(glassDepth * 1.2)));
+      glassMap.displace.setAttribute('scale', displacementScale(band).toFixed(2));
     };
     let glassResize = null;
     if (refracting && typeof ResizeObserver !== 'undefined') {
@@ -296,7 +297,11 @@ export default {
         // the near edge and fades round the far side, and the sheen leans the
         // same way. This is the part that makes the pane feel like a solid
         // object being tilted rather than a picture of one.
-        const angle = Math.atan2(yPercent - 50, xPercent - 50) * 180 / Math.PI + 90;
+        const radians = Math.atan2(yPercent - 50, xPercent - 50);
+        const angle = radians * 180 / Math.PI + 90;
+        // The bevel is lit from the same direction as the rim.
+        root.style.boxShadow = bevelShading(Math.cos(radians), Math.sin(radians),
+          bevelBand(el.clientWidth, el.clientHeight, glassDepth));
         spotlight.style.background = `linear-gradient(${angle + 180}deg,`
           + 'rgba(255,255,255,.95) 0%,rgba(255,255,255,.22) 34%,'
           + 'rgba(255,255,255,0) 52%,rgba(255,255,255,.5) 100%)';

@@ -11,11 +11,24 @@
 // backdrop avoids root-canvas background special cases; no PNG-size heuristic.
 // Run: npm run build && node tests/browser/card-glass.mjs
 import assert from 'node:assert/strict';
-import { buildDisplacementMap } from '../../src/modules/surface/glass.js';
+import { bevelBand, buildDisplacementMap, displacementScale } from '../../src/modules/surface/glass.js';
 
 const map = buildDisplacementMap({ createImageData: (w, h) => ({ data: new Uint8ClampedArray(w * h * 4) }) }, 100, 60, 30, 18);
 assert.equal(map.data[(30 * 100 + 50) * 4], 128, 'lens centre must remain neutral');
-assert.ok(map.data[(30 * 100 + 5) * 4] > 200, 'bevel must bend across a band, not just a hairline');
+// Along the middle row, from the left rim inward: where each pixel samples the
+// backdrop from. feDisplacementMap moves by scale × (R/255 − 0.5).
+const red = (x) => map.data[(30 * 100 + x) * 4];
+const sampleAt = (x) => x + 0.5 + displacementScale(18) * (red(x) / 255 - 0.5);
+assert.ok(red(1) > 225 && red(5) > red(10) && red(10) > red(15), 'the pull must be strongest at the rim and fall off across the band');
+for (let x = 0; x < 20; x += 1) {
+  assert.ok(sampleAt(x + 1) > sampleAt(x), `the lens must never fold the backdrop back on itself (x=${x})`);
+}
+// The smear this replaced: the old profile stretched about one pixel of
+// backdrop across the last few pixels of the band (a local stretch of ~15×).
+// Where the band meets the clear centre, one pixel must still show ~one pixel.
+assert.ok(sampleAt(17) - sampleAt(16) > 0.75, `the band must meet the clear centre without a seam (step ${(sampleAt(17) - sampleAt(16)).toFixed(2)})`);
+// A 52px pill keeps a clear centre: the bevel is capped by the pane's size.
+assert.ok(bevelBand(300, 52, 18) < 18 && bevelBand(300, 52, 18) > 10, 'a thin pane must get a narrower bevel than it asked for');
 import { chromium, firefox, webkit } from 'playwright';
 import http from 'node:http';
 import fs from 'node:fs';
