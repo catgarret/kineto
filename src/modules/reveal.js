@@ -1,4 +1,4 @@
-import { clamp, G, gsapEaseName, motionDefaults, observeOnce, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
+import { clamp, G, gsapEaseName, latestEntry, motionDefaults, observeOnce, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
 import { cubicBezierFn, fn as easingFn } from '../easings.js';
 
 const PRESETS = {
@@ -338,7 +338,7 @@ export default {
       } else if (once) {
         observer = observeOnce(el, enter, { threshold: Number(opts.threshold ?? 0.1), rootMargin: opts.rootMargin || '0px 0px -10% 0px' });
       } else if (typeof IntersectionObserver !== 'undefined') {
-        observer = new IntersectionObserver(([entry]) => entry.isIntersecting ? enter() : leave(), {
+        observer = new IntersectionObserver((entries) => (latestEntry(entries, el)?.isIntersecting ? enter() : leave()), {
           threshold: Number(opts.threshold ?? 0.1), rootMargin: opts.rootMargin || '0px'
         });
         observer.observe(el);
@@ -495,7 +495,7 @@ export default {
     let io = null;
     if (typeof IntersectionObserver !== 'undefined') {
       io = new IntersectionObserver((entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return;
+        if (!latestEntry(entries, el)?.isIntersecting) return;
         io.disconnect(); io = null;
         if (tween.progress() === 0) {
           playImmediate(Number(opts.delay ?? 0));

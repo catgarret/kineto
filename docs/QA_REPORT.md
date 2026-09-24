@@ -27,11 +27,15 @@ Overflow Text 속성 항목(이전 빌드는 페이로드로 이미지 4개 생�
 Page Transition 응답 주입, `<img id="gsap">` DOM clobbering, 계약과 어긋난 옵션 이름 충돌 목록(11건),
 destroy 뒤 쓰기(Sticky Header·Parallax·Bottom Sheet·Counter), Tilt resume, Radial `autoplay: true`,
 동작 줄이기에서 사라지던 기능(Lightbox·Date Time·Sticky Header·당겨서 새로고침), Presence `exit`,
-Vue `v-motion` 재생성, MCP의 `__proto__` 조회.
+Vue `v-motion` 재생성, MCP의 `__proto__` 조회, 옮겨진 노드의 IntersectionObserver 묶음에서 첫 기록만 읽던
+Lazy·Reveal·Slider/Radial·Vibrate(Ambient Media 안의 Lazy 이미지가 뜨지 않음 — 데모 QA animated-media 단계가
+이 컨테이너에서 멈추던 진짜 원인. 가짜 묶음으로 결정적으로 재현).
 
 검증: 전체 `test:node`(각 단계 개별 실행), Chromium 브라우저 레인 전체, 새·보강 브라우저 게이트 세 엔진
 (`layout-refresh`·`css-scroll`·`card-glass`·`markup-trust`·`lifecycle-edges`·`demo-blocks`·`magnetic-dock`),
-framework QA(React·Vue·jQuery·하이드레이션·SSR), 데모 QA(컨테이너 전용 animated-media 대기 단계 전까지).
+framework QA(React·Vue·jQuery·하이드레이션·SSR), 데모 QA(GIF·WebP·APNG 연속성까지 통과, 마지막 MP4 단계는
+이 컨테이너의 Chromium이 H.264를 재생하지 못해 멈춤 — `canPlayType('video/mp4; codecs="avc1…"')`가 빈 문자열.
+Kineto가 붙기 전 `readyState`에서 멈추므로 컨테이너 전용).
 예산은 실측과 이유를 주석으로 남기고 다음 KB로 올렸습니다(ESM 618.8/168.6, min 484.2/149.9, UMD 482.3/149.2 KB;
 패키지 640.3 KB 압축 + CI 여유 1.5 → 642; 소비자 번들 React 171.6·Vue 173.1 KB).
 

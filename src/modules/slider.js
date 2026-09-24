@@ -1,4 +1,4 @@
-import { clamp, cssString, env, labeller, lerp, selectAll, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
+import { clamp, cssString, env, labeller, latestEntry, lerp, selectAll, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
 
 // Do not rewind presentation owned by a composing module or application.
 const snapshotPresentation = (el, properties, classes = [], attributes = []) => {
@@ -363,7 +363,8 @@ export default {
       renderRadial(visualActive);
 
       if (pauseWhenOffscreen && typeof IntersectionObserver !== 'undefined') {
-        visibilityObserver = new IntersectionObserver(([entry]) => {
+        visibilityObserver = new IntersectionObserver((entries) => {
+          const entry = latestEntry(entries, el);
           const visible = Boolean(entry?.isIntersecting && (entry.intersectionRatio == null || entry.intersectionRatio > 0));
           if (visible === !offscreen) return;
           offscreen = !visible;
@@ -1148,7 +1149,8 @@ export default {
     wrap.addEventListener('pointerleave', onLeave);
 
     if (pauseWhenOffscreen && typeof IntersectionObserver !== 'undefined') {
-      visibilityObserver = new IntersectionObserver(([entry]) => {
+      visibilityObserver = new IntersectionObserver((entries) => {
+        const entry = latestEntry(entries, el);
         const visible = Boolean(entry?.isIntersecting && (entry.intersectionRatio == null || entry.intersectionRatio > 0));
         if (visible === !offscreen) return;
         offscreen = !visible;

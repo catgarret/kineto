@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import Kineto from '../src/core.js';
 import { JSDOM } from 'jsdom';
-import { coerce, createProgressOutputs, cssString, dash, decomposeHangul, hangulFrames, measureThenApply, numberOption, q, readOpts, segmentText, selectAll, snapshotAttributes, snapshotInlineStyles, textOption, timeMs } from '../src/utils.js';
+import { coerce, createProgressOutputs, cssString, dash, decomposeHangul, hangulFrames, latestEntry, measureThenApply, numberOption, q, readOpts, segmentText, selectAll, snapshotAttributes, snapshotInlineStyles, textOption, timeMs } from '../src/utils.js';
 
 assert.equal(dash('scrollSequence'), 'scroll-sequence');
 assert.equal(coerce('true'), true);
@@ -16,6 +16,17 @@ assert.equal(textOption('₩'), '₩');
 // Selectors from options: an invalid one matches nothing instead of throwing.
 assert.deepEqual(selectAll('div[', { querySelectorAll() { throw new SyntaxError('bad'); } }), []);
 assert.equal(cssString('a"b'), 'a\\"b');
+// IntersectionObserver batches are chronological: a node moved right after
+// observe() reports [not visible, visible] in one callback, and only the last
+// record is the current state.
+{
+  const a = { id: 'a' }; const b = { id: 'b' };
+  const batch = [{ target: a, isIntersecting: false }, { target: b, isIntersecting: false }, { target: a, isIntersecting: true }];
+  assert.equal(latestEntry(batch, a).isIntersecting, true, 'the newest record for the target wins');
+  assert.equal(latestEntry(batch, b).isIntersecting, false);
+  assert.equal(latestEntry(batch), batch[2], 'without a target, the newest record of the batch');
+  assert.equal(latestEntry([], a), undefined);
+}
 assert.deepEqual(hangulFrames('강'), ['ㄱ', '가', '강']);
 assert.deepEqual(decomposeHangul('A'), null);
 assert.deepEqual(segmentText('가A'), ['가', 'A']);

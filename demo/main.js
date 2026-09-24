@@ -794,8 +794,9 @@
     let heroPassed=!heroEl;
     let pastHero=()=>heroPassed;
     if(heroEl&&'IntersectionObserver' in window){
-      new IntersectionObserver(([entry])=>{
-        heroPassed=!entry.isIntersecting;
+      // Records arrive oldest-first; the last one is the hero's current state.
+      new IntersectionObserver((entries)=>{
+        heroPassed=!entries[entries.length-1].isIntersecting;
         syncSmoothForScroll();
       },{rootMargin:`-${HERO_EXIT_MARGIN}px 0px 0px 0px`}).observe(heroEl);
     }else if(heroEl){

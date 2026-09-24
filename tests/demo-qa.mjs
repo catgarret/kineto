@@ -1131,6 +1131,14 @@ try {
     const body=blurPanel.__mkBody;
     const ease=body?.querySelector('.kt-ease-field');
     const graph=ease?.querySelector('.kt-bz-svg');
+    // The viewBox follows the SVG's box through a ResizeObserver, which reports
+    // after layout. While the drawer is still settling, the last callback may
+    // not have run yet, so wait (bounded) for it instead of racing it.
+    const ratioGap=()=>{
+      const box=graph?.getBoundingClientRect(); const vb=graph?.viewBox?.baseVal;
+      return box&&vb&&box.height&&vb.height?Math.abs(box.width/box.height-vb.width/vb.height):Infinity;
+    };
+    for(let waited=0;waited<1000&&ratioGap()>0.02;waited+=50) await sleep(50);
     const duration=body?.querySelector('[data-option="duration"]')?.closest('.kt-playground__field');
     const stagger=body?.querySelector('[data-option="stagger"]')?.closest('.kt-playground__field');
     const close=body?.querySelector('.kt-playground__close');

@@ -423,6 +423,27 @@ export function ST() {
   return getScrollTrigger();
 }
 
+/**
+ * IntersectionObserver 가 한 번에 넘겨준 기록 중 **가장 최근 것**을 고릅니다.
+ *
+ * 콜백 한 번에 같은 요소의 기록이 여러 개 올 수 있습니다. 대표적으로 관찰을 시작한
+ * 직후 다른 모듈(Ambient Media 의 래퍼 등)이나 프레임워크가 요소를 DOM 안에서 옮기면
+ * `[안 보임, 보임]` 두 개가 한 묶음으로 옵니다. 기록은 시간 순이라 **마지막 것이 지금
+ * 상태**인데, 첫 번째만 읽으면 이미 화면에 들어온 요소를 "안 보인다"고 판단하고 그대로
+ * 끝나 버립니다(Lazy 이미지가 영영 안 뜨던 원인). 한 요소만 관찰하는 콜백은
+ * `([entry]) =>` 대신 항상 이 함수를 쓰세요.
+ *
+ * @param {IntersectionObserverEntry[]} entries 콜백이 받은 기록 배열
+ * @param {Element} [target] 이 요소의 기록만 봅니다. 생략하면 묶음 전체의 마지막 기록.
+ * @returns {IntersectionObserverEntry|undefined}
+ */
+export function latestEntry(entries, target) {
+  for (let index = entries.length - 1; index >= 0; index -= 1) {
+    if (!target || entries[index].target === target) return entries[index];
+  }
+  return undefined;
+}
+
 export function observeOnce(el, callback, options = {}) {
   if (typeof IntersectionObserver === 'undefined') {
     callback();
@@ -430,7 +451,7 @@ export function observeOnce(el, callback, options = {}) {
   }
 
   const observer = new IntersectionObserver((entries) => {
-    const entry = entries.find((item) => item.target === el) || entries[0];
+    const entry = latestEntry(entries, el);
     if (!entry?.isIntersecting) return;
     observer.disconnect();
     callback(entry);

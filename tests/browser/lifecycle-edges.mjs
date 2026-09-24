@@ -10,6 +10,10 @@
 //     scheduled another — one tab switch left it dead.
 //   • Radial: `autoplay: true` was Number(true) = 1ms per step, and a hover-out
 //     or scroll-back restarted autoplay on a carousel the page had paused.
+//   • Lazy under Ambient Media: Ambient Media moves the image into its wrapper
+//     right after Lazy started observing it. The observer then reports
+//     [not visible, visible] in one batch; reading only the first record left
+//     the image unloaded forever.
 //   • Reduced motion removed FEATURES, not motion: Lightbox never opened, Date
 //     Time never formatted, Sticky Header never got its class, and Gesture's
 //     pull-to-refresh was gone.
@@ -42,6 +46,8 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
   <img id="photo" alt="photo" width="40" height="40" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
   <time id="when" data-kt-date-time data-kt-date="2020-01-02T03:04:05Z" data-kt-mode="absolute" data-kt-locale="en-US">raw</time>
   <header id="header2"></header>
+  <div id="ambient" style="width:200px;height:120px;position:relative"><img id="lazyimg" alt="lazy"></div>
+  <img id="batched" alt="batched" width="40" height="40"><div id="batchedReveal">reveal</div>
   <div id="pull" style="height:120px;overflow:auto"><div style="height:400px">list</div></div>
   <div class="spacer"></div>
   <script src="${SITE}/dist/kineto.umd.js"></script>
@@ -152,6 +158,61 @@ const radial = await page.evaluate(async () => {
 assert.equal(radial.after400, radial.start, `autoplay:true must not step within 400ms (${JSON.stringify(radial)})`);
 assert.equal(radial.pausedMoved, false, `a paused radial must stay paused through a hover-out (${JSON.stringify(radial)})`);
 
+// Lazy + Ambient Media: moved right after observe() must still load.
+const movedLazy = await page.evaluate(async () => {
+  const host = document.getElementById('ambient');
+  const image = document.getElementById('lazyimg');
+  const src = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=';
+  let loaded = false;
+  const lazy = window.Kineto.create('lazy', image, { effect: 'print', src, nativeLazy: false, rootMargin: '10000px', duration: 0.1, onLoad: () => { loaded = true; } });
+  const ambient = window.Kineto.create('ambientMedia', host, { blur: 10 });
+  const movedIntoWrapper = Boolean(image.closest('.kt-ambient-wrap'));
+  for (let waited = 0; waited < 2000 && !loaded; waited += 50) await new Promise((resolve) => setTimeout(resolve, 50));
+  const result = { movedIntoWrapper, loaded, hasSrc: image.getAttribute('src') === src };
+  ambient?.destroy?.();
+  lazy?.destroy?.();
+  return result;
+});
+assert.deepEqual(movedLazy, { movedIntoWrapper: true, loaded: true, hasSrc: true },
+  `a lazy image moved by Ambient Media right after observe() must still load (${JSON.stringify(movedLazy)})`);
+
+// The same contract without relying on timing: an observer that delivers the
+// stale record first and the current one last, in one batch, like a browser
+// does after a DOM move. Every single-target observer must act on the last.
+const batched = await page.evaluate(async () => {
+  const Native = window.IntersectionObserver;
+  window.IntersectionObserver = class {
+    constructor(callback) { this.callback = callback; this.live = true; }
+    observe(target) {
+      setTimeout(() => {
+        if (this.live) this.callback([
+          { target, isIntersecting: false, intersectionRatio: 0 },
+          { target, isIntersecting: true, intersectionRatio: 1 }
+        ], this);
+      }, 20);
+    }
+    unobserve() {}
+    disconnect() { this.live = false; }
+    takeRecords() { return []; }
+  };
+  try {
+    const image = document.getElementById('batched');
+    const src = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=';
+    let entered = 0;
+    const lazy = window.Kineto.create('lazy', image, { effect: 'print', src, nativeLazy: false, duration: 0.1 });
+    const reveal = window.Kineto.create('reveal', document.getElementById('batchedReveal'), { preset: 'class', once: false, onEnter: () => { entered += 1; } });
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    const result = { lazyLoaded: image.getAttribute('src') === src, revealEntered: entered > 0 };
+    lazy?.destroy?.();
+    reveal?.destroy?.();
+    return result;
+  } finally {
+    window.IntersectionObserver = Native;
+  }
+});
+assert.deepEqual(batched, { lazyLoaded: true, revealEntered: true },
+  `observers must act on the newest record of a batch (${JSON.stringify(batched)})`);
+
 // Reduced motion keeps the features and drops only the motion.
 const reduced = await page.evaluate(async () => {
   window.Kineto.setReducedMotion('always');
@@ -182,4 +243,4 @@ assert.deepEqual(reduced, { opened: true, formatted: true, stuck: true, pullIsRe
 await frames();
 assert.deepEqual(errors, [], `page errors:\n${errors.join('\n')}`);
 await browser.close();
-console.log(`lifecycle-edges OK (${browserName}) — no writes after destroy (Sticky Header, Parallax, Bottom Sheet, Counter), Tilt revives after pause, Radial autoplay:true is 3s and pause() holds, and reduced motion keeps Lightbox, Date Time, Sticky Header and pull-to-refresh working.`);
+console.log(`lifecycle-edges OK (${browserName}) — no writes after destroy (Sticky Header, Parallax, Bottom Sheet, Counter), Tilt revives after pause, Radial autoplay:true is 3s and pause() holds, Lazy loads after Ambient Media moves it (observers act on the newest record of a batch), and reduced motion keeps Lightbox, Date Time, Sticky Header and pull-to-refresh working.`);

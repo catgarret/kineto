@@ -1,3 +1,5 @@
+import { latestEntry } from '../utils.js';
+
 // Named haptic patterns in the spirit of platform haptics. The Web Vibration
 // API has no amplitude control, so texture comes from timing: short pulses
 // read as "tap", tight pulse trains read as a ratchet/buzz.
@@ -35,7 +37,7 @@ export default {
     else if (trigger === 'click') el.addEventListener('click', vibrate);
     else if (trigger === 'scroll' && typeof IntersectionObserver !== 'undefined') {
       observer = new IntersectionObserver((entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) vibrate();
+        if (latestEntry(entries, el)?.isIntersecting) vibrate();
       }, { threshold: Number(opts.threshold ?? 0.1) });
       observer.observe(el);
     }

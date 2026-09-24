@@ -134,6 +134,10 @@ or a tag; release approval remains separate.
 - **pause/resume/destroy leave nothing running**: a queued frame checks a
   `destroyed` flag, a finish handler is detached before destroy, and `pause()`
   forgets the cancelled frame id. `tests/browser/lifecycle-edges.mjs`.
+- **An IntersectionObserver callback acts on the newest record**: a node moved
+  after `observe()` arrives as `[not visible, visible]` in one batch. Read it
+  with `latestEntry(entries, el)` from `src/utils.js`, never `([entry]) =>`.
+  `tests/browser/lifecycle-edges.mjs` fakes such a batch.
 - **Reduced motion removes motion, not features**: a module whose job is not
   motion (a viewer, a formatter, a state class, pull-to-refresh) implements
   `reduced()` by creating itself without its transitions.

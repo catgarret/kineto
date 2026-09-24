@@ -58,6 +58,7 @@ Page Transition은 요청·최종 응답 URL·`navigate()` 모두 같은 출처 
 | 동작 줄이기에서 Lightbox가 안 열림, 날짜가 안 바뀜 | `reduced()`가 no-op → 기능 전체가 사라짐 |
 | Presence의 exit 모션이 무시됨 | 문서·타입은 `exit`, 코드는 `leave`를 읽음 |
 | Vue `v-motion`이 렌더마다 애니메이션 재시작 | 옵션 객체를 참조로 비교 |
+| Ambient Media 안의 Lazy 이미지가 영영 안 뜸, 화면 안 슬라이더가 멈춤 | 옮겨진 노드는 IntersectionObserver가 `[안 보임, 보임]`을 한 묶음으로 보내는데 첫 기록(`([entry]) =>`)만 읽음 → `latestEntry()` |
 
 → `tests/browser/lifecycle-edges.mjs`(세 엔진)와 Presence·framework QA 보강. 규칙은
 AI-HANDOFF의 "pause/resume/destroy leave nothing running", "Reduced motion removes
@@ -87,6 +88,8 @@ ScrollTrigger는 트리거 위치를 한 번 재고, 창 크기 변경·`load` �
    한 곳에 등록하고 `destroy()`에서 자동 해제. 2.3의 버그는 전부 "해제를 손으로 적는다"에서
    나왔습니다. 먼저 옮길 모듈: Counter, Slider, Lightbox, Overflow Text(해제 지점이 가장
    많은 곳). 헬퍼는 3KB gzip 한도 안에서 코어에 둡니다.
+   옵저버 등록도 이 헬퍼가 맡으면 "묶음의 마지막 기록을 따른다"를 모듈마다 기억할 필요가
+   없어집니다(지금은 `latestEntry()`를 직접 불러야 합니다).
 2. **옵션 타입을 계약에** — 지금 계약은 옵션 *이름*만 압니다. `text | number | boolean |
    color | selector | html` 같은 타입이 있으면 빈 속성 해석(`textOption`), 공유 링크 검증,
    MCP 검증, 설정창 필드, `d.ts` 생성이 전부 한 곳에서 나옵니다. 2.1과 2.2의 나머지 사본이
