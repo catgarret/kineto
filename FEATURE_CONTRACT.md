@@ -7,9 +7,9 @@
 - 라이브러리 버전: `0.11.0`
 - 기능 계약 버전: `1.7.0`
 - 동작 계약 버전: `1.2.0`
-- 공개 모듈: 정확히 **54개**
+- 공개 모듈: 정확히 **55개**
 - Core public property: **12개**
-- Core API: **29개**
+- Core API: **31개**
 - compatibility API: **9개**
 - additional named export: `modules`
 

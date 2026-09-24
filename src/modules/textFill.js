@@ -1,4 +1,4 @@
-import { clamp, segmentText, snapshotAttributes, ST } from '../utils.js';
+import { clamp, segmentText, snapshotAttributes, ST, wordSink } from '../utils.js';
 
 export default {
   create(el, opts) {
@@ -13,9 +13,11 @@ export default {
     el.setAttribute('aria-label', text);
     el.innerHTML = '';
 
+    // Word boxes keep each word on one line (utils.wordSink).
+    const sink = wordSink(el);
     const spans = segmentText(text).map((char) => {
       if (/^\s$/.test(char)) {
-        el.appendChild(document.createTextNode(char));
+        sink.gap(document.createTextNode(char));
         return null;
       }
       const span = document.createElement('span');
@@ -25,7 +27,7 @@ export default {
       // unchanged) enlarges the background-clip:text box, so rounded glyph edges
       // — e.g. the right of an "O" — aren't shaved off under negative letter-spacing.
       span.style.cssText = `display:inline-block;padding:0 .06em;margin:0 -.06em;background-image:linear-gradient(to right,${fillColor} 50%,${baseColor} 50%);background-size:200% 100%;background-position:100% 0;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;`;
-      el.appendChild(span);
+      sink.add(span);
       return span;
     }).filter(Boolean);
 

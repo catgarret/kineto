@@ -1,4 +1,4 @@
-import Kineto, { reveal, slider, states, type KinetoInstance, type KinetoModule, type KinetoDiagnostic, type KinetoObserverHandle } from '@dong-gri/kineto';
+import Kineto, { reveal, slider, states, defineCanvasEffect, listCanvasEffects, type KinetoInstance, type KinetoModule, type KinetoDiagnostic, type KinetoObserverHandle } from '@dong-gri/kineto';
 import ModularCore from '@dong-gri/kineto/core';
 import sliderModule from '@dong-gri/kineto/modules/slider';
 import modularPresence from '@dong-gri/kineto/presence';
@@ -34,6 +34,23 @@ const unsubscribePresence = presenceController.subscribe((status, presenceResult
 });
 unsubscribePresence();
 modularPresence(target).destroy();
+
+// Canvas Effect: a typed definition, both registration paths, and the descriptors.
+const effectName: string = defineCanvasEffect('typed-grid', {
+  context: '2d',
+  options: { color: '#fff', size: 24 },
+  setup: () => ({ cells: [] as number[] }),
+  frame(api) {
+    const size: number = api.options.size;
+    const inside: boolean = api.pointer.inside;
+    void size;
+    return inside;
+  }
+});
+Kineto.defineCanvasEffect('typed-shader', { fragment: 'void main(){gl_FragColor=vec4(1.0);}', options: { speed: 1 } });
+const effectNames: string[] = listCanvasEffects().map((effect) => effect.name);
+Kineto.canvasEffect(target, { effect: effectName });
+void effectNames;
 
 void result;
 void diagnostic;

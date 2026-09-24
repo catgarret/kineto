@@ -3,8 +3,8 @@
   "kinetoVersion": "0.11.0",
   "featureContractVersion": "1.7.0",
   "integrationsVersion": "1.0.0",
-  "moduleCount": 54,
-  "intentCount": 32,
+  "moduleCount": 55,
+  "intentCount": 33,
   "ecosystems": [
     "vanilla",
     "shadcn",
@@ -54,6 +54,7 @@
     "flip": "docs/modules/flip.md",
     "scrollShadows": "docs/modules/scroll-shadows.md",
     "stickyHeader": "docs/modules/sticky-header.md",
-    "horizontalScroll": "docs/modules/horizontal-scroll.md"
+    "horizontalScroll": "docs/modules/horizontal-scroll.md",
+    "canvasEffect": "docs/modules/canvas-effect.md"
   }
 }

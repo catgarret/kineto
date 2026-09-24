@@ -57,7 +57,7 @@
     }
   },
   "libraryVersion": "0.11.0",
-  "moduleCount": 54,
+  "moduleCount": 55,
   "statusLegend": {
     "accessibility": {
       "native": "native semantics/keyboard",
@@ -615,6 +615,16 @@
       "performance": "medium",
       "reducedMotion": "final-state",
       "browserCoverage": "evergreen-scroll"
+    },
+    "canvasEffect": {
+      "category": "effects",
+      "summary": "직접 정의한 Canvas·WebGL 효과를 요소 뒤에 그리고, 크기·픽셀 비율·프레임·포인터·스크롤·수명주기를 대신 관리합니다.",
+      "useWhen": "AI나 직접 작성한 인터랙티브 배경·셰이더를 Kineto의 일시정지·저사양·접근성 규칙 안에서 쓰고 싶을 때",
+      "avoidWhen": "같은 화면에 여러 개를 동시에 띄우거나, 효과가 핵심 정보를 전달해야 할 때",
+      "accessibility": "manual",
+      "performance": "heavy",
+      "reducedMotion": "static",
+      "browserCoverage": "evergreen-canvas"
     }
   }
 }

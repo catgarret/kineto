@@ -9,7 +9,9 @@ import {
   snapshotAttributes,
   snapshotChildNodes,
   scramblePainter,
-  textWithLineBreaks
+  textWithLineBreaks,
+  wordBox,
+  wordSink
 } from '../utils.js';
 
 function lineBreak() {
@@ -18,10 +20,12 @@ function lineBreak() {
   return br;
 }
 
-function appendWhitespace(parent, content) {
+// Whitespace ends the current word: it goes to the element itself, not into a
+// word box, so it stays a place where the line may wrap.
+function appendWhitespace(sink, content) {
   normalizeTextLineBreaks(content).split(/(\n)/).forEach((part) => {
     if (!part) return;
-    parent.appendChild(part === '\n' ? lineBreak() : document.createTextNode(part));
+    sink.gap(part === '\n' ? lineBreak() : document.createTextNode(part));
   });
 }
 
@@ -86,6 +90,9 @@ export default {
       let charIndex = 0;
       const cursor = addSpan('');
       el.appendChild(cursor);
+      // The half-typed syllable rides in the current word box, so the cursor
+      // never wraps to the next line on its own and then jumps back.
+      let word = null;
 
       const nextChar = () => {
         if (charIndex >= chars.length) {
@@ -95,11 +102,17 @@ export default {
         }
         const char = chars[charIndex];
         if (/^\s$/.test(char)) {
+          if (word) { word.after(cursor); word = null; }
           if (char === '\n') cursor.before(lineBreak());
           else cursor.before(document.createTextNode(char));
           charIndex += 1;
           later(nextChar, speed);
           return;
+        }
+        if (!word) {
+          word = wordBox();
+          cursor.before(word);
+          word.appendChild(cursor);
         }
         const frames = hangulFrames(char);
         let frameIndex = 0;
@@ -121,14 +134,13 @@ export default {
     };
 
     const renderBounce = () => {
+      const sink = wordSink(el);
       const spans = segmentText(text).map((char) => {
         if (/^\s$/.test(char)) {
-          appendWhitespace(el, char);
+          appendWhitespace(sink, char);
           return null;
         }
-        const span = addSpan(char, { opacity: '0', transformOrigin: 'bottom' });
-        el.appendChild(span);
-        return span;
+        return sink.add(addSpan(char, { opacity: '0', transformOrigin: 'bottom' }));
       }).filter(Boolean);
 
       if (gsap) {
@@ -160,16 +172,17 @@ export default {
       else tokens = segmentText(text);
 
       const spans = [];
+      const sink = wordSink(el);
       tokens.forEach((token) => {
         if (!token) return;
         if (/^\s+$/.test(token)) {
-          appendWhitespace(el, token);
+          appendWhitespace(sink, token);
           return;
         }
         const wrapper = addSpan('', { overflow: 'hidden', verticalAlign: 'bottom', paddingBottom: '2px' });
         const inner = addSpan(token, { opacity: '0', transform: 'translateY(100%)' });
         wrapper.appendChild(inner);
-        el.appendChild(wrapper);
+        sink.add(wrapper);
         spans.push(inner);
       });
 
@@ -212,7 +225,8 @@ export default {
         const span = addSpan(char, { visibility: 'hidden' });
         return { span, char, space: false };
       });
-      cells.forEach(({ span }) => el.appendChild(span));
+      const sink = wordSink(el);
+      cells.forEach(({ span, space }) => (space ? sink.gap(span) : sink.add(span)));
 
       let index = 0;
       const step = () => {
@@ -256,14 +270,13 @@ export default {
     const renderFlicker = () => {
       const currentGeneration = generation;
       const duration = Math.max(0.1, Number(opts.duration ?? 0.9)) * 1000;
+      const sink = wordSink(el);
       const spans = segmentText(text).map((char) => {
         if (/^\s$/.test(char)) {
-          appendWhitespace(el, char);
+          appendWhitespace(sink, char);
           return null;
         }
-        const span = addSpan(char, { opacity: '0' });
-        el.appendChild(span);
-        return span;
+        return sink.add(addSpan(char, { opacity: '0' }));
       }).filter(Boolean);
       const strobe = (span, settleVisible = true) => {
         const blinks = 2 + Math.floor(Math.random() * 3);
@@ -319,11 +332,10 @@ export default {
       const shuffleSpeed = Math.max(12, Number(opts.speed ?? 34));
       const revealRate = Math.max(1, Number(opts.revealRate ?? 2));
       const graphemes = segmentText(text);
+      const sink = wordSink(el);
       const cells = graphemes.map((char) => {
-        if (/^\s$/.test(char)) { appendWhitespace(el, char); return null; }
-        const span = addSpan(char, { textAlign: 'center' });
-        el.appendChild(span);
-        return span;
+        if (/^\s$/.test(char)) { appendWhitespace(sink, char); return null; }
+        return sink.add(addSpan(char, { textAlign: 'center' }));
       });
       // Lock each cell to its final width so scrambled glyphs never reflow lines.
       cells.forEach((span) => { if (span) span.style.width = `${Math.ceil(span.getBoundingClientRect().width * 100) / 100}px`; });

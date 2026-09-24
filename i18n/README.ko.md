@@ -198,6 +198,7 @@ Kineto.disableSmooth();
 | `flip` | `data-kt-flip` | 정렬·추가·삭제 FLIP 전환 |
 | `scrollShadows` | `data-kt-scroll-shadows` | 스크롤 가장자리 그림자 |
 | `squircle` | `data-kt-squircle` | 모든 브라우저에서 같은 초타원 모서리 |
+| `canvasEffect` | `data-kt-canvas-effect` | 직접 만든 Canvas 2D·WebGL·셰이더 효과의 실행 호스트 |
 | `stickyHeader` | `data-kt-sticky-header` | 축소·커버형 고정 헤더 |
 | `horizontalScroll` | `data-kt-horizontal-scroll` | 고정형 가로 스크롤 |
 

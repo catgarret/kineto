@@ -92,6 +92,20 @@ async function runSmoke() {
       el.style.cssText = 'width:120px;height:80px;border-radius:24px;background:#888;';
       return { el, options: { preset: 'squircle' } };
     },
+    // Canvas Effect runs an effect the page registered; the smoke case
+    // registers a tiny one so the lifecycle (create → pause → resume → destroy)
+    // runs against a real canvas.
+    canvasEffect: () => {
+      if (!Kineto.listCanvasEffects().some(({ name }) => name === 'smoke-fill')) {
+        Kineto.defineCanvasEffect('smoke-fill', {
+          options: { color: '#888' },
+          frame(api) { api.ctx.fillStyle = api.options.color; api.ctx.fillRect(0, 0, api.canvas.width, api.canvas.height); return false; }
+        });
+      }
+      const el = make('div', 'Canvas Effect');
+      el.style.cssText = 'width:120px;height:80px;';
+      return { el, options: { effect: 'smoke-fill' } };
+    },
     cursor: () => ({ el: make(), options: { clickImage: svg } }),
     fullpage: () => {
       const el = withMarkup('<section>One</section><section>Two</section>');
@@ -335,6 +349,9 @@ async function runSmoke() {
   const overflowShort = makeFunctional('div', 'Short');
   overflowShort.style.width = '200px';
   const overflowShortInstance = Kineto.create('overflowText', overflowShort, { mode: 'loop', delay: 0 });
+  // Overflow Text measures in the shared layout pass of the next frame (one
+  // layout for every instance created together), so the decision lands then.
+  await new Promise((resolve) => requestAnimationFrame(() => resolve()));
   if (overflowLong.querySelector('.kt-overflow-text-track')?.getAnimations().length === 0) errors.push('overflow text did not animate overflowing content');
   if (overflowShort.querySelector('.kt-overflow-text-track')?.getAnimations().length !== 0) errors.push('overflow text animated content that fits');
 

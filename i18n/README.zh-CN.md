@@ -156,6 +156,7 @@ Kineto.disableSmooth();
 | `flip` | `data-kt-flip` | 排序/添加/删除 FLIP 转换 |
 | `scrollShadows` | `data-kt-scroll-shadows` | 滚动边缘阴影 |
 | `squircle` | `data-kt-squircle` | 所有浏览器一致的超椭圆圆角 |
+| `canvasEffect` | `data-kt-canvas-effect` | 运行自定义 Canvas 2D / WebGL / 着色器效果的宿主 |
 | `stickyHeader` | `data-kt-sticky-header` | 折叠式/盖式固定头 |
 | `horizontalScroll` | `data-kt-horizontal-scroll` | 固定水平滚动 |
 

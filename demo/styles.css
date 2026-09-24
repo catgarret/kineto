@@ -258,8 +258,11 @@
       /* Compound terminal indicators carry a label/status/meter as one
          non-wrapping unit. Give those demo cards the full mobile row and scale
          only the preview type so every glyph remains visible. Library defaults
-         and consumer markup are unchanged. */
-      .module-block-body--dense>.card:has(
+         and consumer markup are unchanged.
+         `.grid` is part of the selector on purpose: it has to outrank the
+         unified grid's `.module-block-body--dense.grid>.card{grid-column:auto}`
+         further down, which otherwise put these back into one 150px cell. */
+      .module-block-body--dense.grid>.card:has(
         [data-kt-terminal-style="spinner-label"],
         [data-kt-terminal-style="quad-dots-label"],
         [data-kt-terminal-style="spinner-elapsed"],
@@ -393,9 +396,14 @@
     .card:has(.lightbox-grid) .kt-playground{margin-top:0;border-top:0;border-top-left-radius:0;border-top-right-radius:0}
     .card:has(.kt-playground) .lightbox-grid{border-bottom-left-radius:0;border-bottom-right-radius:0}
     /* Prev/Next 같은 실제 버튼 줄이 스테이지와 패널 사이에 남아 있는 카드는
-       결합하지 않고 원래의 분리된 패널로 되돌린다(간격 확보). */
-    .card:has(.replay-row:not(:empty)) .demo-stage,.card:has(.slider-controls) .demo-stage,.card:has(.replay-row:not(:empty)) .reveal-demo-card{border-bottom-left-radius:var(--r-stage);border-bottom-right-radius:var(--r-stage)}
-    .card:has(.replay-row:not(:empty)) .kt-playground,.card:has(.demo-stage) .replay-row:not(:empty)+.kt-playground,.card:has(.demo-stage):has(.replay-row:not(:empty)) .kt-playground,.card:has(.demo-stage):has(.slider-controls) .kt-playground{margin-top:16px;border-top:1px solid var(--line);border-top-left-radius:14px;border-top-right-radius:14px}
+       결합하지 않고 원래의 분리된 패널로 되돌린다(간격 확보).
+       `.has-replay-row` is set by the playground mount (demo/playground.js) on a
+       card whose button row survives it. It replaces `.card:has(.replay-row:not(:empty))`:
+       an `:empty` inside `:has()` made the browser re-check the whole card on
+       every text change inside it — counters, typewriters, loaders — which was
+       a quarter of the page's load cost. */
+    .card.has-replay-row .demo-stage,.card:has(.slider-controls) .demo-stage,.card.has-replay-row .reveal-demo-card{border-bottom-left-radius:var(--r-stage);border-bottom-right-radius:var(--r-stage)}
+    .card.has-replay-row .kt-playground,.card:has(.demo-stage) .replay-row:not(:empty)+.kt-playground,.card.has-replay-row:has(.demo-stage) .kt-playground,.card:has(.demo-stage):has(.slider-controls) .kt-playground{margin-top:16px;border-top:1px solid var(--line);border-top-left-radius:14px;border-top-right-radius:14px}
     .card:has(.slider-controls)>.kt-playground{margin-top:16px}
     .slider-controls{margin-top:14px}
     .loader-demo-button{min-width:150px}
@@ -658,7 +666,7 @@
     .to-top:hover{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
     @media(max-width:1080px){.to-top{bottom:calc(112px + env(safe-area-inset-bottom))}}
     /* 커스텀 커서가 라이트박스 딤드 위에서 묻히지 않게 — difference 블렌드 */
-    body:has(#kt-lightbox:not([hidden])) .kt-cursor{mix-blend-mode:difference!important}
+    html.kt-lightbox-open .kt-cursor{mix-blend-mode:difference!important}
 
 /* First-visit fade-in: the whole page eases in the moment the preload veil
    lifts, while the individual entrance choreography plays underneath. */
@@ -839,12 +847,6 @@ html.light .kt-tabs--segment { --kt-seg-active: #ffffff; --kt-seg-bg: rgba(0,0,0
     .module-block-body{margin:0}
     .module-block-body--stack{display:flex;flex-direction:column;gap:var(--sp-4)}
     .module-block-body--stack>*{width:100%;min-width:0}
-    /* Restore the three layout weights inside a module grid: a normal card
-       fills one column, `.card.wide` spans two (a wider feature cell), and
-       `.card.full` spans the whole row. On a two-column grid `span 2` naturally
-       becomes full width. */
-    .module-block-body.grid>.card.full{grid-column:1 / -1}
-    .module-block-body.grid>.card.wide{grid-column:span 2}
 .mod-subhead:first-child,.grid>.mod-subhead:first-child{margin-top:0}
 
 /* ── Apple-style thin overlay scrollbars ─────────────────────────────────────
@@ -906,6 +908,11 @@ html.light .kt-tabs--segment { --kt-seg-active: #ffffff; --kt-seg-bg: rgba(0,0,0
 .replay-fab:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
 .replay-fab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .replay-fab--left{left:14px;right:auto}
+/* Motion on → the button offers pause; motion off → it offers play. */
+.motion-fab[aria-pressed="true"] .motion-fab__play,
+.motion-fab[aria-pressed="false"] .motion-fab__pause{display:none}
+/* Text that is the accessible name of an icon-only control. */
+.u-sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
 /* List Reveal — proper row cards instead of bare text. */
 .reveal-list-stage{min-height:260px;padding:16px 18px}
 .reveal-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;width:100%}
@@ -1050,8 +1057,6 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 .accordion-plus details[open]>summary::after,
 .accordion-plus details.kt-open>summary::after{content:"−"!important;background:transparent!important;color:var(--accent)}
 
-/* The two slider examples are a deliberate 50/50 comparison on desktop. */
-#mod-slider .module-block-body{grid-template-columns:repeat(2,minmax(0,1fr))}
 #mod-slider .module-block-body>.card{height:100%}
 #mod-slider .slider-demo{height:clamp(230px,31vw,320px);padding:0;border-radius:var(--r-stage);background:var(--panel2)}
 #mod-slider .card:first-child .slider-demo{background:transparent}
@@ -1071,30 +1076,7 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 #mod-slider .slider-demo--native-snap .kt-slider-wrap{scrollbar-width:thin}
 #mod-slider .slider-demo.kt-slider--active-shadow{box-sizing:content-box;padding-bottom:70px;margin-bottom:-70px}
 #mod-slider .slider-controls{margin-top:12px}
-#mod-cardGlow .module-block-body{grid-template-columns:repeat(6,minmax(0,1fr))}
-#mod-cardGlow .module-block-body>.card{grid-column:span 2}
-#mod-cardGlow .module-block-body>.card:nth-last-child(-n+2){grid-column:span 3}
-/* Counter examples are always a plain three-column gallery. The old six-track
-   special case split the last two cards in half, making Digit/Pop/Split-flap
-   and the three clock examples visibly misalign. */
-#mod-counter .module-block-body{grid-template-columns:repeat(3,minmax(0,1fr))}
-#mod-counter .module-block-body>.card,
-#mod-counter .module-block-body>.card:nth-last-child(-n+2){grid-column:auto}
-#mod-glitch .module-block-body{grid-template-columns:repeat(6,minmax(0,1fr))}
-#mod-glitch .module-block-body>.card:nth-child(-n+2){grid-column:span 3}
-#mod-glitch .module-block-body>.card:nth-child(n+3){grid-column:span 2}
-#mod-accordion .module-block-body{grid-template-columns:repeat(2,minmax(0,1fr))}
-#mod-accordion .module-block-body.grid>.card.wide{grid-column:auto}
-#mod-tabs .module-block-body{grid-template-columns:repeat(2,minmax(0,1fr))}
-#mod-tabs .module-block-body.grid>.card.wide{grid-column:auto}
-#mod-coverReveal .module-block-body{grid-template-columns:repeat(2,minmax(0,1fr))}
 #mod-fullpage .card>.fullpage-demo,#mod-fullpage .card>.fp-scroll-host{height:clamp(340px,42vw,420px);margin-top:auto}
-@media(max-width:760px){
-  #mod-slider .module-block-body,#mod-cardGlow .module-block-body,#mod-counter .module-block-body,#mod-glitch .module-block-body,#mod-accordion .module-block-body,#mod-tabs .module-block-body,#mod-coverReveal .module-block-body{grid-template-columns:1fr}
-  #mod-cardGlow .module-block-body>.card,#mod-cardGlow .module-block-body>.card:nth-last-child(-n+2){grid-column:auto}
-  #mod-counter .module-block-body>.card,#mod-counter .module-block-body>.card:nth-last-child(-n+2),#mod-glitch .module-block-body>.card:nth-child(n){grid-column:auto}
-}
-
 .horizontal-scroll .kt-sticky-horizontal-viewport{border-radius:20px}
 .horizontal-scroll .kt-sticky-horizontal-track>article{height:100%;min-height:0;border-radius:20px;padding:40px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;font-size:clamp(2rem,6vw,5rem);font-weight:900}
 .kt-floating-viewport>article{padding:50px;text-align:center}
@@ -1141,6 +1123,9 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 .demo-css-e1b82943{background:linear-gradient(150deg,#334155,#94a3b8);color:#fff}
 .demo-css-a62abd4b{margin-top:26px;grid-template-columns:1fr}
 .demo-css-85778c4c{min-height:120px;align-content:center}
+/* The Lenis card's copyable setup line sits under the switch, in the hero's own
+   install-row component. The stage is a grid, so the box just joins the flow. */
+.smooth-code{width:min(100%,460px);margin-top:14px}
 .demo-css-24d308c0{margin-top:26px}
 .demo-css-245fe1d4{align-content:center}
 .demo-css-0466783d{width:100%}
@@ -1257,47 +1242,49 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
       .tabs-demo-tablist>button{padding-inline:4px;font-size:12.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     }
 
-    /* Explicit column counts for modules whose previews are small enough to sit
-       tighter than the default 3-up. Each still keeps a sane minimum so nothing
-       clips, and a `.card.full` inside still claims a whole row. */
-    /* Twelve real tracks, not 3 or 4. A card spans 12/columns, so an INCOMPLETE
-       last row can be split evenly whatever it holds: 12/1=12, 12/2=6, 12/3=4,
-       12/4=3 are all whole numbers. With a literal 3-track grid two leftover
-       cards could not share the row — `span 1.5` does not exist — which is why
-       the third cell kept showing up empty. */
-    .module-block-body--cols-3.grid,
-    .module-block-body--cols-4.grid{grid-template-columns:repeat(12,minmax(0,1fr))}
-    .module-block-body--cols-3.grid{--kt-card-span:4}
+    /* ONE grid for every module block. Twelve real tracks, not 2, 3 or 4: a
+       card spans 12/columns, so an INCOMPLETE last row can always be split
+       evenly — 12/1, 12/2, 12/3 and 12/4 are whole numbers, where a literal
+       3-track grid has no `span 1.5` for two leftover cards and shows an empty
+       cell instead.
+
+       A block chooses its column count with one class from MODULE_COLS in
+       demo/main.js (3-up when it names none). Nothing below is written for a
+       particular module: Card Glow used to carry its own `nth-last-child` spans,
+       and they went ragged the moment it gained a sixth card.
+
+       The frame-spinner gallery (`--dense`) keeps its own auto-fill template —
+       its selector is more specific — and its cards take one cell each. */
+    .module-block-body.grid{grid-template-columns:repeat(12,minmax(0,1fr));--kt-card-span:4}
+    .module-block-body--cols-2.grid{--kt-card-span:6}
     .module-block-body--cols-4.grid{--kt-card-span:3}
-    .module-block-body--cols-3.grid>.card,
-    .module-block-body--cols-4.grid>.card{grid-column:span var(--kt-card-span)}
-    .module-block-body--cols-3.grid>.card.wide,
-    .module-block-body--cols-4.grid>.card.wide{grid-column:span calc(var(--kt-card-span) * 2)}
-    .module-block-body--cols-3.grid>.card.full,
-    .module-block-body--cols-4.grid>.card.full{grid-column:1/-1}
+    .module-block-body.grid>.card{grid-column:span var(--kt-card-span)}
+    .module-block-body.grid>.card.wide{grid-column:span calc(var(--kt-card-span) * 2)}
+    /* `wide` means "two columns", and in a two-column grid that is a whole row —
+       which is what `full` is for. There a wide card is simply a card. */
+    .module-block-body--cols-2.grid>.card.wide{grid-column:span 6}
+    .module-block-body.grid>.card.full{grid-column:1/-1}
     /* Leftover cards in the last row share it equally. The class is set by
        measurement in main.js — a `.card.full` earlier in the grid eats a whole
        row, so nth-child arithmetic gets the row boundaries wrong. */
     .module-block-body.grid>.card.is-last-row-1{grid-column:1/-1}
-    .module-block-body--cols-3.grid>.card.is-last-row-2,
-    .module-block-body--cols-4.grid>.card.is-last-row-2{grid-column:span 6}
-    .module-block-body--cols-3.grid>.card.is-last-row-3,
-    .module-block-body--cols-4.grid>.card.is-last-row-3{grid-column:span 4}
-    .module-block-body--cols-4.grid>.card.is-last-row-4{grid-column:span 3}
+    .module-block-body.grid>.card.is-last-row-2{grid-column:span 6}
+    .module-block-body.grid>.card.is-last-row-3{grid-column:span 4}
+    .module-block-body.grid>.card.is-last-row-4{grid-column:span 3}
+    .module-block-body--dense.grid>.card{grid-column:auto}
     @media(max-width:1180px){
       .module-block-body--cols-4.grid{--kt-card-span:4}
-      .module-block-body--cols-4.grid>.card.is-last-row-4{grid-column:span 4}
     }
     @media(max-width:900px){
-      .module-block-body--cols-3.grid,.module-block-body--cols-4.grid{--kt-card-span:6}
-      .module-block-body--cols-3.grid>.card.is-last-row-3,
-      .module-block-body--cols-4.grid>.card.is-last-row-3,
-      .module-block-body--cols-4.grid>.card.is-last-row-4{grid-column:span 6}
+      .module-block-body.grid{--kt-card-span:6}
+      .module-block-body.grid>.card.wide{grid-column:span 12}
+      .module-block-body--cols-2.grid>.card.wide{grid-column:span 6}
     }
     @media(max-width:600px){
-      .module-block-body--cols-3.grid,.module-block-body--cols-4.grid{--kt-card-span:12}
-      .module-block-body--cols-3.grid>.card.wide,
-      .module-block-body--cols-4.grid>.card.wide{grid-column:span 12}
+      .module-block-body.grid{--kt-card-span:12}
+      .module-block-body.grid>.card.wide,
+      .module-block-body--cols-2.grid>.card.wide,
+      .module-block-body.grid>.card[class*="is-last-row-"]{grid-column:1/-1}
     }
     /* Text-heavy demos need their type scaled down to survive a narrower cell. */
     .module-block-body--cols-3 #mod-textSplit .big-text,
@@ -1310,6 +1297,21 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
        Applied by measurement, not nth-child arithmetic: a `.card.full` earlier in
        the grid consumes a whole row, which shifts every count-based guess. */
     .module-block-body.grid>.card.is-row-filler{grid-column:1/-1}
+    /* Canvas Effect cards: the effect fills the stage and draws BEHIND its
+       content (the caption stays on top). The shader stage keeps a CSS
+       gradient of its own — that is what shows where WebGL is unavailable. */
+    .ce-stage{min-height:220px;overflow:hidden}
+    .ce-stage--shader{background:linear-gradient(135deg,var(--bg),color-mix(in srgb,var(--accent) 34%,var(--bg)))}
+    .ce-caption{font:600 11px/1 var(--font-mono,ui-monospace,monospace);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 10px;border-radius:999px;background:color-mix(in srgb,var(--panel) 72%,transparent);pointer-events:none}
+    .ce-stage--shader .ce-caption{color:var(--text);background:color-mix(in srgb,var(--bg) 55%,transparent)}
+    .ce-prompt .install-row code{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ce-guide-link{margin:12px 0 0;text-align:center;font-size:13px}
+    .ce-guide-link a{color:var(--accent);font-weight:700;text-decoration:none}
+    /* The pointer an otherwise empty module block shows (see main.js). Styled as
+       part of the block header rather than as a card, because it is not a demo. */
+    .module-block-elsewhere{margin:6px 0 0;color:var(--muted);font-size:13.5px}
+    .module-block-elsewhere a{color:var(--accent);font-weight:700;text-decoration:none;margin-left:2px}
+    .module-block-elsewhere a:hover,.module-block-elsewhere a:focus-visible{text-decoration:underline}
 
     /* Keep this mobile override after the generated demo utility rules so the
        three-column source grid cannot win the cascade in release Chromium. */
@@ -1373,18 +1375,35 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
 .sq-stage{display:flex;gap:var(--sp-4);align-items:center;justify-content:center;flex-wrap:wrap}
 .sq-tile{width:112px;height:112px;display:flex;align-items:flex-end;justify-content:center;padding:10px;background:var(--accent);color:#120c07;font-weight:800;font-size:11px;border-radius:34px;box-sizing:border-box}
 .sq-tile span{opacity:.85}
-.sq-plain{background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+/* The plain tile is the control in a comparison: same size, same radius, same
+   fill as the squircle beside it, so the corner curve is the only difference.
+   It used to be drawn in the stage's own colour, which made the one thing
+   being compared nearly invisible. */
+.sq-plain{background:var(--accent)}
 .sq-outline{width:96px;height:96px;background:var(--panel2);color:var(--text);border:4px solid var(--accent);border-radius:26px}
 
-/* Liquid Glass demo — the pane covers only part of the picture, so the sharp
-   image beside it is what shows the blur, the saturation and the lit rim. */
-.glass-stage{position:relative;padding:0;overflow:hidden}
-.glass-pane{position:absolute;left:16%;right:16%;top:62%;height:64px;border-radius:999px;box-shadow:0 8px 28px #00000026,0 1px 4px #00000018;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;letter-spacing:.06em;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+/* Liquid Glass demo — the pane (a clear capsule) covers only part of the
+   picture, so the sharp image around it is what shows the blur, the saturation
+   and the lit rim. The card sits in the same anatomy as the other five Card Glow cards —
+   the card itself is the scene, the title and line sit on it, and the settings
+   bar is pinned underneath — so the six share one row height instead of the
+   glass card standing a head taller than its neighbours. The photo is the
+   backdrop the pane refracts; the pane sits between it and the text, anchored
+   to the bottom so it never covers the description however it wraps. */
+.glass-scene{position:relative;overflow:hidden;isolation:auto}
+.glass-backdrop{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.glass-demo .glass-scene>h3,.glass-demo .glass-scene>p{position:relative;z-index:2;text-shadow:0 1px 3px rgba(0,0,0,.55)}
+.glass-demo .glass-scene>p{color:rgba(255,255,255,.86);max-width:22em}
+.glass-pane{position:absolute;z-index:1;left:16%;right:16%;bottom:9%;height:52px;border-radius:999px;box-shadow:0 8px 28px #00000026,0 1px 4px #00000018;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;letter-spacing:.06em;text-shadow:0 1px 3px rgba(0,0,0,.5)}
 
 /* Fold demo — a compact "cover" layout that opens into a wide "inner" one. The
    two states are only a grid change apart; the module is what makes the change
    read as one surface being re-formed instead of a cut. */
 .fold-stage{display:flex;flex-direction:column;align-items:center;gap:var(--sp-4)}
+/* The fold switch sits INSIDE the stage. It is deliberately not a `.replay-row`:
+   that class means "a row under the stage", and a card that has one detaches its
+   settings bar, which left this card's footer floating on its own. */
+.fold-controls{display:flex;justify-content:center}
 .fold-panel{display:grid;grid-template-columns:repeat(2,96px);gap:var(--sp-3);justify-content:center;transition:none}
 .fold-panel.is-open{grid-template-columns:repeat(3,120px)}
 .fold-tile{display:flex;align-items:center;justify-content:center;height:72px;border-radius:16px;background:var(--panel2);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:13px}

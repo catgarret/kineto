@@ -32,7 +32,13 @@ export const consumerFixtures = [
   // 158.9 KB React and 159.9 KB Vue (Rolldown 159.1 KB React). Same rule.
   // 2026-09-21 (fold, dock, tap-to-confirm): three more behaviours on existing
   // modules take Vue to 161.2 KB. Only the measured product ceilings move.
-  { name: 'full', entry: 'full', budget: 157, variance: { vite: 4, rolldown: 4 } },
+  // 2026-09-24 (canvasEffect, module 55): the canvas / WebGL effect host, the
+  // shared layout-read batch and the system-suspension rule are full-runtime
+  // code. Vite measures 164.7 KB full, 168.7 KB React and 169.7 KB Vue (Rolldown
+  // 164.4 / 168.8 / 170.3 KB); core + selected-module entries do not move
+  // (core-reveal 16.2 KB, core-three 31.6 KB). Only the three product ceilings
+  // move, to the next KB over the measurement.
+  { name: 'full', entry: 'full', budget: 165, variance: { vite: 4, rolldown: 4 } },
   { name: 'core-reveal', entry: 'core-reveal', budget: 30, variance: { rolldown: 1 } },
   { name: 'core-three', entry: 'core-three', budget: 65, variance: { rolldown: 1 } },
   { name: 'core-states', entry: 'core-states', budget: 35 },
@@ -47,7 +53,7 @@ export const consumerFixtures = [
   // 2026-09-20 (effect quality): the four effect rewrites measure 155.4 KiB gzip
   // in the Vite React entry. Round only this measured cost; variance unchanged.
   // See the squircle note above: Vite measures 157.5 KB in the React entry.
-  { name: 'react-adapter', entry: 'react', budget: 162, variance: { vite: 1, rolldown: 1 } },
+  { name: 'react-adapter', entry: 'react', budget: 169, variance: { vite: 1, rolldown: 1 } },
   // 2026-09-18: the Presence status subscription that keeps both adapters in
   // sync with a propagating parent measures 144.1 KB in the Vite Vue entry
   // (React 143.x stays inside its ceiling). Round the Vue product ceiling by
@@ -63,7 +69,7 @@ export const consumerFixtures = [
   // Vue measures 163.2 KiB gzip in Vite (163.8 in Rolldown, inside its own
   // variance), while full at 158.2 and React at 162.4 stay inside theirs.
   // Round only the ceiling that actually moved.
-  { name: 'vue-adapter', entry: 'vue', budget: 163, variance: { vite: 1, rolldown: 2 } }
+  { name: 'vue-adapter', entry: 'vue', budget: 170, variance: { vite: 1, rolldown: 2 } }
 ];
 
 export const treeShakenEntries = [

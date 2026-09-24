@@ -6,6 +6,8 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+// The module count comes from the feature contract, never a literal here.
+const { moduleCount } = JSON.parse(fs.readFileSync(path.join(root, 'kineto.features.json'), 'utf8'));
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'kineto-package-'));
 
 try {
@@ -30,7 +32,7 @@ try {
     '--eval',
     "import Kineto from '@dong-gri/kineto'; console.log(JSON.stringify({version:Kineto.version,modules:Object.keys(Kineto.registry).length}))"
   ], { cwd: temp, encoding: 'utf8' }));
-  assert.equal(esm.modules, 54);
+  assert.equal(esm.modules, moduleCount);
 
   const cjs = JSON.parse(execFileSync(process.execPath, [
     '--input-type=commonjs',

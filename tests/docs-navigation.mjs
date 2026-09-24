@@ -81,6 +81,9 @@ const moduleNames = contract.modules.map((module) => module.name);
 const referenceNames = [...reference.matchAll(/^## ([A-Za-z][A-Za-z0-9]*)$/gm)].map((match) => match[1]);
 assert.equal(referenceNames.length, contract.moduleCount, 'generated module reference heading count must match contract');
 assert.deepEqual(new Set(referenceNames), new Set(moduleNames), 'generated module reference must cover every public module');
+// The catalog states the count in prose too; it drifted to 53 while the
+// contract grew, because nothing read it.
+assert.ok(modulesReadme.includes(`**${contract.moduleCount}개**`), `docs/modules/README.md must state the module count (${contract.moduleCount})`);
 for (const name of moduleNames) {
   const listed = modulesReadme.includes(`| \`${name}\` |`)
     || (name === 'radial' && modulesReadme.includes('| `slider` |'));

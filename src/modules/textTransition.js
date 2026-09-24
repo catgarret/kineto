@@ -1,4 +1,4 @@
-import { cssEase, segmentText } from '../utils.js';
+import { cssEase, segmentText, wordSink } from '../utils.js';
 
 /*
  * Text transition rebuilt around a single live node: the visible text is
@@ -50,6 +50,9 @@ const EFFECTS = {
 };
 
 export default {
+  // Paused by the core while the element is off screen and resumed as it
+  // returns (cycling phrases keep swapping on a timer). See `offscreen` in src/core.js.
+  offscreen: 'pause',
   create(el, opts) {
     const originalHTML = el.innerHTML;
     const originalStyle = el.getAttribute('style');
@@ -162,22 +165,26 @@ export default {
     const setContent = (value) => {
       if (charMode) {
         inner.innerHTML = '';
+        // Word boxes keep each word on one line (utils.wordSink).
+        const sink = wordSink(inner);
         segmentText(value).forEach((char) => {
           if (/^\s$/.test(char)) {
-            inner.appendChild(document.createTextNode(char));
+            sink.gap(document.createTextNode(char));
             return;
           }
           const span = document.createElement('span');
+          span.className = 'kt-text-char';
           span.style.cssText = 'display:inline-block;will-change:transform,opacity;';
           span.textContent = char;
-          inner.appendChild(span);
+          sink.add(span);
         });
       } else {
         inner.textContent = value;
       }
     };
 
-    const charSpans = () => Array.from(inner.querySelectorAll('span'));
+    // Only the characters animate — not the word boxes holding them.
+    const charSpans = () => Array.from(inner.querySelectorAll('.kt-text-char'));
 
     // Per-character noisy dissolve frames: jitter plus stepped opacity
     // flicker in random order (no blur — it reads as glow on colored text).

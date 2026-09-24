@@ -117,6 +117,73 @@ After editing:
 3. Report any unsupported or intentionally deferred behavior.
 ```
 
+### Canvas effects (React Bits–style backgrounds)
+
+Kineto does not ship interactive backgrounds, particles or shader effects of its
+own. It ships the host for them: `canvasEffect` owns the canvas, sizing, the
+pixel ratio, the frame loop, input, pausing and teardown, so an effect is only
+its drawing code — [docs/modules/canvas-effect.md](docs/modules/canvas-effect.md).
+Ask an AI for an effect with this block, then describe the effect after it
+(the look, the motion, how it reacts to the pointer and scroll, reference
+links). The demo's **AI로 효과 만들기** card copies the same block.
+
+```text
+Write ONE Kineto canvas effect definition. Do not write a React or Vue
+component, a canvas setup, a requestAnimationFrame loop, resize handling or
+pointer listeners: Kineto's canvasEffect host (@dong-gri/kineto) already owns
+the canvas, the capped pixel ratio, resizing, the frame loop, pointer and
+scroll input, pausing off screen and in hidden tabs, reduced motion, quality
+tiers and teardown. Register the effect like this:
+
+Kineto.defineCanvasEffect('effect-name', {
+  context: '2d',                 // or 'webgl' / 'webgl2'
+  options: { /* every option you read, with its default */ },
+  setup(api) { return {}; },     // optional, once; the result is api.state
+  resize(api) {},                // optional, after every size or option change
+  frame(api) { return true; },   // draw one frame; return false when nothing
+                                 // moves and the loop rests until input
+  destroy(api) {}                // optional
+});
+
+For a pure shader effect give `fragment: '<WebGL1 GLSL>'` instead of frame().
+The host draws a full-screen triangle and sets these uniforms (declare the ones
+you use): uTime (seconds), uResolution (device px), uPointer (0-1, y up),
+uPointerDown, uScroll (0-1). Every option also becomes a uniform named
+u + PascalCase: a number is a float, a colour string a vec3, 2-4 numbers a
+vec2-vec4 (options { speed: 1, color: '#ff5b1c' } -> uSpeed, uColor).
+
+The api object: api.ctx (2D) or api.gl (WebGL), api.canvas, api.width and
+api.height (CSS px), api.dpr (already capped; in 2D call
+ctx.setTransform(api.dpr, 0, 0, api.dpr, 0, 0) before drawing), api.time and
+api.delta (seconds), api.frame, api.pointer { x, y, nx, ny, vx, vy, inside,
+down, active }, api.scroll { progress, velocity }, api.options, api.state,
+api.quality ('low' | 'medium' | 'high'), api.reducedMotion (true: only one
+still frame is drawn), api.color(css) -> [r, g, b, a] in 0-1, api.wake().
+
+Rules
+- Name options from this vocabulary when one fits: color, color2, background,
+  speed, density, size, strength (pointer reaction), distortion. Add other
+  names only when none fits, and give every option a default.
+- No network requests, no external libraries, no eval, and no DOM outside
+  api.canvas.
+- Move with api.delta so the effect looks the same at any frame rate; ease
+  with 1 - Math.exp(-api.delta * k).
+- Allocate nothing per frame that can be kept in api.state; do less on
+  api.quality 'low' (fewer particles, cells or noise octaves).
+- Return false from frame() whenever nothing is moving.
+- Original work only: do not copy code or shaders from React Bits, Shadertoy or
+  other sites, whose licences may not allow it.
+
+The page will use it as:
+<div data-kt-canvas-effect="effect-name" data-kt-color="#ff5b1c"></div>
+or Kineto.canvasEffect(element, { effect: 'effect-name' }), or in React
+<Motion type="canvasEffect" options={{ effect: 'effect-name' }} />.
+
+Reply with the single JavaScript file and one line per option explaining it.
+
+The effect to build:
+```
+
 ## Next to a UI library, a shadcn registry, or an MCP-capable agent
 
 [`docs/integrations/README.md`](docs/integrations/README.md) holds one guide
@@ -236,14 +303,14 @@ installed version's documented cleanup API.
 
 ## Capability map
 
-Kineto currently exposes 53 modules. Use this map to find a likely module, then
+Kineto currently exposes 55 modules. Use this map to find a likely module, then
 read the generated reference for exact variants and options.
 
 | Intent | Modules |
 |---|---|
 | Loading and state | `loader`, `loadingIndicator`, `progress`, `lazy`, `pageReveal`, `pageTransition` |
-| Reveal and text | `reveal`, `textReveal`, `textSplit`, `textTransition`, `textFill`, `blurText`, `typewriter`, `counter`, `overflowText`, `marquee` |
-| Media and visual effects | `ambientMedia`, `brushReveal`, `coverReveal`, `glitch`, `lightbox`, `slider`, `radial` |
+| Reveal and text | `reveal`, `textReveal`, `textSplit`, `textTransition`, `textFill`, `blurText`, `typewriter`, `counter`, `dateTime`, `overflowText`, `marquee` |
+| Media and visual effects | `ambientMedia`, `brushReveal`, `coverReveal`, `glitch`, `lightbox`, `slider`, `radial`, `stylize`, `squircle`, `canvasEffect` |
 | Scroll and layout | `cssScroll`, `fullpage`, `horizontalScroll`, `parallax`, `scrollSequence`, `scrollShadows`, `scrollVelocity`, `stickyHeader`, `stickyStack`, `flip` |
 | Pointer and gesture | `cursor`, `drag`, `gesture`, `magnetic`, `mouseParallax`, `ripple`, `tilt`, `vibrate`, `hold` |
 | Accessible UI and feedback | `accordion`, `bottomSheet`, `confetti`, `megaMenu`, `switch`, `tabs`, `toast`, `tooltip`, `cardGlow` |
@@ -288,6 +355,26 @@ authoritative if this summary and an installed release ever differ.
 `data-kt-progress-output`은 같은 진행률을 화면의 숫자나 별도 UI와
 공유할 때 사용합니다. `Loading Indicator`는 `bindProgress()` 또는
 `progressSource`로 그 값을 구독할 수 있습니다.
+
+### 인터랙티브 배경·셰이더 효과를 AI에게 맡길 때
+
+React Bits 같은 배경·파티클·셰이더 효과는 Kineto가 직접 싣지 않습니다. 대신
+`canvasEffect`가 캔버스, 크기·픽셀 비율, 프레임 루프, 포인터·스크롤 입력,
+화면 밖·숨은 탭 일시정지, 축소 모션, 품질 단계, 해제를 모두 맡습니다. 그래서
+AI에게는 **React 컴포넌트가 아니라 효과 정의 하나**를 받으면 됩니다.
+
+1. 위의 **Canvas effects** 블록을 복사해 붙이고, 그 아래에 원하는 효과를
+   적습니다(모양, 움직임, 포인터·스크롤 반응, 참고 링크).
+2. 받은 파일을 페이지에서 Kineto 다음에 불러옵니다. Kineto가 먼저 페이지를
+   훑었어도, 효과가 정의되는 순간 그 이름을 쓰는 요소가 자동으로 시작됩니다.
+3. `<div data-kt-canvas-effect="이름">`으로 쓰고, 옵션은
+   `data-kt-color`·`data-kt-speed`처럼 붙입니다. React·Vue에서는
+   `<Motion type="canvasEffect" options={{ effect: '이름' }} />`입니다.
+4. 옵션 이름은 공용 어휘(`color`, `color2`, `background`, `speed`,
+   `density`, `size`, `strength`, `distortion`)를 쓰게 하세요. 효과가 읽지 않는
+   어휘 옵션을 붙이면 콘솔에 한 번 알려 줍니다.
+5. Shadertoy·React Bits의 코드를 그대로 옮기게 하지 마세요. 라이선스가
+   상업적 사용을 막는 경우가 많습니다(Shadertoy 기본값은 CC BY-NC-SA).
 
 ### AI가 자주 하는 실수
 

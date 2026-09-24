@@ -80,6 +80,7 @@ Kineto.observe(); // scans now and follows later DOM changes
 | **성공 축하 효과**<br>`celebration` | `confetti` · `burst` | `vibrate` · `success` | Kineto 사용 |
 | **스크롤 영역 가장자리 그림자**<br>`overflow-shadows` | `scrollShadows` · `horizontal` | `scrollShadows` · `mask` | 라이브러리 컴포넌트 유지 + Kineto 모션 |
 | **iOS 스타일 모서리(스퀘어클)**<br>`corner-shape` | `squircle` · `squircle` | `squircle` · `bevel`<br>`squircle` · `notch` | 라이브러리 컴포넌트 유지 + Kineto 모션 |
+| **인터랙티브 캔버스·WebGL 배경 (React Bits 스타일)**<br>`interactive-background` | `canvasEffect` · `custom` | — | Kineto 사용 |
 | **길게 눌러 확인**<br>`confirm-hold` | `hold` · `confirm` | — | Kineto 사용 |
 | **아코디언·탭·스위치·메가메뉴**<br>`disclosure` | `accordion` · `panel` | `tabs` · `line`<br>`switch` · `toggle`<br>`megaMenu` · `mega` | 라이브러리 컴포넌트 우선 |
 | **재정렬·추가·삭제 애니메이션 (FLIP)**<br>`layout-change` | `flip` · `layout` | `flip` · `crossfade` | Kineto 사용 |

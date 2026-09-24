@@ -1,6 +1,9 @@
 import { G, snapshotInlineStyles, ST } from '../utils.js';
 
 export default {
+  // Paused by the core while the element is off screen and resumed as it
+  // returns (an endless strip that nobody can see is pure cost). See `offscreen` in src/core.js.
+  offscreen: 'pause',
   create(el, opts) {
     const gsap = G();
     const scrollTrigger = ST();
@@ -83,12 +86,20 @@ export default {
     let skewTarget = 0;
     let skewCurrent = 0;
     let skewRaf = null;
+    // The lean only needs frames while it is springing back: a scroll update
+    // wakes it, and once it is upright again it stops asking for frames.
     const skewTick = () => {
+      skewRaf = null;
       if (!alive) return;
       skewTarget *= 0.9;
       skewCurrent += (skewTarget - skewCurrent) * 0.12;
+      const upright = Math.abs(skewTarget) < 0.001 && Math.abs(skewCurrent) < 0.001;
+      if (upright) { skewTarget = 0; skewCurrent = 0; }
       el.style.transform = `skewX(${skewCurrent.toFixed(3)}deg)`;
-      skewRaf = requestAnimationFrame(skewTick);
+      if (!upright) skewRaf = requestAnimationFrame(skewTick);
+    };
+    const wakeSkew = () => {
+      if (alive && maxSkew > 0 && skewRaf == null) skewRaf = requestAnimationFrame(skewTick);
     };
     if (scrollTrigger && (reverseOnScrollUp || scrollAcceleration > 0 || maxSkew > 0)) {
       velocityTrigger = scrollTrigger.create({
@@ -103,10 +114,11 @@ export default {
           }
           if (maxSkew > 0) {
             skewTarget = Math.max(-maxSkew, Math.min(maxSkew, (scrollVelocity / 220) * maxSkew));
+            wakeSkew();
           }
         }
       });
-      if (maxSkew > 0) skewRaf = requestAnimationFrame(skewTick);
+      wakeSkew();
     }
 
     const onEnter = () => { hovered = true; targetVelocity = 0; };
@@ -119,8 +131,21 @@ export default {
     return {
       el,
       type: 'marquee',
-      pause: () => { alive = false; if (rafId != null) cancelAnimationFrame(rafId); },
-      resume: () => { if (!alive) { alive = true; previousTime = performance.now(); rafId = requestAnimationFrame(tick); } },
+      pause: () => {
+        alive = false;
+        if (rafId != null) cancelAnimationFrame(rafId);
+        if (skewRaf != null) cancelAnimationFrame(skewRaf);
+        skewRaf = null;
+      },
+      // Resume restarts the strip AND the lean (it used to stay frozen after
+      // the first pause, because only the strip loop was restarted).
+      resume: () => {
+        if (alive) return;
+        alive = true;
+        previousTime = performance.now();
+        rafId = requestAnimationFrame(tick);
+        if (velocityTrigger) wakeSkew();
+      },
       destroy: () => {
         alive = false;
         if (rafId != null) cancelAnimationFrame(rafId);

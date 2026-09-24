@@ -206,7 +206,7 @@
 .kt-loading-indicator{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;color:var(--kt-loading-color,currentColor);line-height:1;box-shadow:none}
 .kt-loading{position:relative;display:inline-grid;place-items:center;color:inherit;transform-origin:var(--kt-loading-transform-origin,center);transition:opacity var(--kt-loading-exit-duration,180ms) ease,transform var(--kt-loading-exit-duration,180ms) ease}
 .kt-loading-indicator.is-complete .kt-loading{opacity:0;transform:scale(.92)}
-.kt-loading-indicator.is-paused .kt-loading,.kt-loading-indicator.is-paused .kt-loading *{animation-play-state:paused!important}
+.kt-loading-indicator.is-paused .kt-loading,.kt-loading-indicator.is-paused .kt-loading *,.kt-loading-indicator.is-suspended .kt-loading,.kt-loading-indicator.is-suspended .kt-loading *{animation-play-state:paused!important}
 .kt-loading--spinner{width:var(--kt-loading-size);height:var(--kt-loading-size)}
 .kt-loading-spinner__ring{position:absolute;inset:0;box-sizing:border-box;border:var(--kt-loading-stroke) solid var(--kt-loading-track-color);border-top-color:var(--kt-loading-color);border-radius:50%;transform-origin:var(--kt-loading-transform-origin,center);animation:kt-loading-spin var(--kt-loading-motion-duration) linear infinite}
 .kt-loading-spinner--ring .kt-loading-spinner__ring{border-right-color:var(--kt-loading-color)}
@@ -1215,6 +1215,8 @@ html.kt-preload [data-kt-text-transition] {
 .kt-cursor-textring{position:absolute;left:calc(var(--kt-cursor-textring,96px) / -2);top:calc(var(--kt-cursor-textring,96px) / -2);transform-origin:center;animation:kt-cursor-textring-spin var(--kt-cursor-textring-dur,7s) linear infinite}
 .kt-cursor-textring text{fill:var(--kt-cursor-textring-fill,currentColor);font:700 var(--kt-cursor-textring-size,11px) ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase}
 @keyframes kt-cursor-textring-spin{to{transform:rotate(360deg)}}
+/* A hidden cursor holds its keyframes still (see setVisible in cursor.js). */
+.kt-cursor-idle,.kt-cursor-idle *{animation-play-state:paused!important}
 @media (prefers-reduced-motion:reduce){.kt-cursor-textring{animation:none}}
 /* Image cursor: dimensions and rotation are per-instance custom properties. */
 .kt-cursor-image{display:block;width:var(--kt-cursor-w,36px);height:var(--kt-cursor-h,36px);transform:translate(-50%,-50%) rotate(var(--kt-cursor-rotate,0deg));object-fit:contain}
@@ -1226,3 +1228,17 @@ html.kt-preload [data-kt-text-transition] {
 /* The wording is for screen readers only — the arc says it visually. */
 .kt-pull-label{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 .kt-pull-indicator.kt-pull-spinning svg{animation:kt-loading-spin .9s linear infinite}
+
+/* Canvas Effect (src/modules/canvasEffect.js): the drawing surface fills its host
+   and sits behind the host's own content (the host is made positioned and
+   isolated, so z-index -1 stays inside it). When the effect cannot run — no
+   WebGL here, or it stopped on an error — the canvas steps aside and the host's
+   own CSS background shows instead. */
+.kt-canvas-effect__canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block;pointer-events:none;z-index:-1}
+.kt-canvas-effect.is-unsupported>.kt-canvas-effect__canvas,.kt-canvas-effect.is-failed>.kt-canvas-effect__canvas{display:none}
+
+/* Offscreen suspension (SYSTEM SUSPENSION in src/core.js): while the core has an
+   instance suspended out of view it sets [data-kt-offscreen] on the element, and
+   Kineto's OWN keyframes inside it stop. Page-owned animations are left alone. */
+[data-kt-offscreen][class*="kt-"],[data-kt-offscreen][class*="kt-"]::before,[data-kt-offscreen][class*="kt-"]::after,
+[data-kt-offscreen] [class*="kt-"],[data-kt-offscreen] [class*="kt-"]::before,[data-kt-offscreen] [class*="kt-"]::after{animation-play-state:paused!important}

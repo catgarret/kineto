@@ -67,6 +67,22 @@
     const enableHashClear=()=>{ allowHashClear=true; };
     window.addEventListener('wheel',enableHashClear,{passive:true,once:true});
     window.addEventListener('touchmove',enableHashClear,{passive:true,once:true});
+    // The browser-chrome tint (<meta name="theme-color">) follows the page's own
+    // --bg token, so it never repeats a colour the stylesheet owns. It is read in
+    // a frame callback: style is computed for that frame anyway, whereas a read
+    // in the middle of start-up forced a whole-page style pass of its own
+    // (~0.4 s on the demo, the single largest item in its load profile).
+    // It follows --intro-bg while the intro canvas is up (html.is-intro) and
+    // --bg otherwise, so every caller — intro, theme toggle — gets the right
+    // one whatever order they run in. (The theme toggle used to overwrite the
+    // intro tint the moment the page started.)
+    const themeColorMeta=document.getElementById('theme-color-meta');
+    const syncThemeColorMeta=()=>{
+      const root=document.documentElement;
+      const color=getComputedStyle(root).getPropertyValue(root.classList.contains('is-intro')?'--intro-bg':'--bg').trim();
+      if(color&&themeColorMeta)themeColorMeta.setAttribute('content',color);
+    };
+    const syncThemeColorMetaSoon=()=>requestAnimationFrame(syncThemeColorMeta);
     // B-1 / C-8: stamp version, module count and build id from the RUNTIME so the
     // header/footer can never drift from Kineto.version or the real module count
     // (kills the stale "51 modules" text and any hardcoded-version mismatch).
@@ -172,7 +188,6 @@
       // Geometry and the light brand canvas live in `.intro-loader` in
       // styles.css — no inline style strings anywhere in the demo.
       overlay.className='intro-loader';
-      const introBg=getComputedStyle(document.documentElement).getPropertyValue('--intro-bg').trim()||'#efe9de';
       const wordmark=document.createElement('span');
       wordmark.className='kt-loader-wordmark';
       wordmark.textContent='Kineto';
@@ -185,8 +200,7 @@
       document.documentElement.classList.add('is-intro');
       // Match the iOS status-bar / home-bar tint to the intro canvas so the notch
       // and home-bar areas blend with the loader while it fills.
-      const introTcMeta = document.getElementById('theme-color-meta');
-      introTcMeta?.setAttribute('content', introBg);
+      syncThemeColorMetaSoon();
       // Fast/file loads can already be complete when this script runs —
       // resolve immediately then, otherwise the loader would never finish
       // (and skipping it entirely meant no intro at all).
@@ -194,7 +208,7 @@
         ? Promise.resolve()
         : new Promise(resolve=>window.addEventListener('load',resolve,{once:true}));
       let finished=false;
-      const finishIntro=()=>{ if(finished)return; finished=true; if(overlay.parentNode)overlay.remove(); document.documentElement.classList.remove('is-intro'); introTcMeta?.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#0d0e12'); startModules(); };
+      const finishIntro=()=>{ if(finished)return; finished=true; if(overlay.parentNode)overlay.remove(); document.documentElement.classList.remove('is-intro'); syncThemeColorMetaSoon(); startModules(); };
       try{
         Kineto.loader(overlay,{
           type:'slot',
@@ -235,7 +249,7 @@
     // from the generated membership (a missing or unknown name).
     const MODULE_ORDER=['textSplit','blurText','typewriter','textReveal','textTransition','textFill','overflowText','counter','dateTime','marquee',
       'lazy','lightbox','slider','radial',
-      'stylize','glitch','brushReveal','ambientMedia','squircle',
+      'stylize','glitch','brushReveal','ambientMedia','squircle','canvasEffect',
       'parallax','reveal','stickyStack','scrollVelocity','cssScroll','scrollShadows','stickyHeader','horizontalScroll','scrollSequence','coverReveal','progress','fullpage',
       'cursor','tilt','cardGlow','magnetic','mouseParallax','gesture','drag',
       'accordion','megaMenu','tabs','bottomSheet','tooltip','switch','flip',
@@ -253,7 +267,10 @@
     // Every module marks exactly ONE home card in demo/index.html with
     // data-demo-home, so "where does this module live" has a single answer and
     // no longer depends on which section happens to mention its attribute first.
-    const homeCardFor=(name)=>document.querySelector('[data-demo-home="'+CSS.escape(name)+'"]');
+    // Module names are registry keys (plain identifiers), but escape anyway where
+    // the environment offers it; jsdom-based tests have no global `CSS`.
+    const cssEscape=(value)=>(typeof CSS!=='undefined'&&CSS.escape)?CSS.escape(value):String(value).replace(/["\\]/g,'\\$&');
+    const homeCardFor=(name)=>document.querySelector('[data-demo-home="'+cssEscape(name)+'"]');
     const targetSectionFor=(name)=>homeCardFor(name)?.closest('section[id]')||null;
     // Scroll to the module's actual demo CARD (not just the category section),
     // so e.g. clicking "Counter" lands on the counter demo, centred in view.
@@ -348,7 +365,7 @@
       };
       const SUBS={
         textSplit:'문장을 글자·단어 단위로 쪼개 3D로 등장·교체.',blurText:'흐림에서 또렷하게, 스태거로 등장.',shuffle:'랜덤 글리프로 흩뿌린 뒤 확정.',typewriter:'타이핑·한글 자모 조합·캐럿.',textReveal:'글자별 점멸 후 확정되는 등장.',textTransition:'문장을 글자 단위로 교체.',textFill:'스크롤 진행률로 글자에 색이 차오름.',overflowText:'컨테이너보다 긴 텍스트의 여덟 가지 순환.',glitch:'RGB 분리·픽셀 시프트·데이터모시.',counter:'카운트업·플립·시계·카운트다운.',dateTime:'서버 날짜를 상대 시간·절대 시간으로 표시.',
-        lazy:'이미지 로딩 중 재생되는 전환들.',stylize:'이미지·영상에 디더·ASCII·하프톤 질감을 입히는 캔버스 필터.',lightbox:'전체화면 그룹 뷰어 — 줌·미니맵·필름스트립.',slider:'커버플로우 슬라이더.',ambientMedia:'재생 프레임을 샘플링한 주변광.',brushReveal:'포인터로 문질러 드러내는 브러시 마스크.',squircle:'CSS corner-shape의 모서리 곡선을 모든 브라우저에서 같게.',scrollSequence:'스크롤로 이미지 프레임을 스크럽.',marquee:'무한 흐름 마퀴.',radial:'원형 캐러셀(도크형).',coverReveal:'커버가 걷히며 콘텐츠 등장.',
+        lazy:'이미지 로딩 중 재생되는 전환들.',stylize:'이미지·영상에 디더·ASCII·하프톤 질감을 입히는 캔버스 필터.',lightbox:'전체화면 그룹 뷰어 — 줌·미니맵·필름스트립.',slider:'커버플로우 슬라이더.',ambientMedia:'재생 프레임을 샘플링한 주변광.',brushReveal:'포인터로 문질러 드러내는 브러시 마스크.',squircle:'CSS corner-shape의 모서리 곡선을 모든 브라우저에서 같게.',canvasEffect:'직접 만든 Canvas·WebGL·셰이더 효과를 Kineto의 수명주기 안에서 실행.',scrollSequence:'스크롤로 이미지 프레임을 스크럽.',marquee:'무한 흐름 마퀴.',radial:'원형 캐러셀(도크형).',coverReveal:'커버가 걷히며 콘텐츠 등장.',
         parallax:'레이어가 다른 속도로 움직여 깊이를 만듦.',reveal:'진입 시 방향·마스크·클록 등장.',stickyStack:'핀 고정 스택 — 세로·가로·플로팅.',scrollVelocity:'스크롤 속도·방향에 반응.',cssScroll:'CSS 애니메이션 타임라인에 연결.',scrollShadows:'스크롤 가능 영역에 엣지 그림자.',stickyHeader:'스크롤에 반응하는 고정 헤더.',horizontalScroll:'세로 스크롤로 가로 이동.',progress:'읽기 진행률 바·링.',fullpage:'한 화면씩 넘기는 풀페이지.',
         cursor:'커스텀 커서 프리셋.',tilt:'포인터 추종 3D 틸트 + 글레어.',cardGlow:'표면 반사·외곽 광택 글로우.',magnetic:'포인터로 끌려오는 자석 버튼.',ripple:'클릭 지점에서 퍼지는 리플.',vibrate:'햅틱 진동 패턴.',mouseParallax:'마우스·자이로 시차 이동.',gesture:'hover·press 스프링 제스처.',drag:'관성·경계·키보드 드래그.',
         accordion:'접근성 details 아코디언.',megaMenu:'GNB 드롭다운·메가메뉴.',tabs:'WAI-ARIA 탭·세그먼트.',bottomSheet:'드래그 바텀시트.',tooltip:'자동 배치 툴팁.',switch:'폼 연동 토글 스위치.',flip:'레이아웃 변화 FLIP 애니메이션.',
@@ -456,10 +473,13 @@
           if(rest.length) out.push(['기타',rest]);
           return out;
         };
-        // Per-module / per-sub-group column counts. Some modules have small
-        // previews that waste a 3-up row (lazy, cursor) and some have text
-        // demos that only need a font tweak to fit three across.
-        const MODULE_COLS={lazy:4,cursor:3,textReveal:3,textSplit:3,overflowText:3,scrollVelocity:3,progress:3,fullpage:3};
+        // Per-module / per-sub-group column counts — the ONLY place a block's
+        // grid is chosen (styles.css has one twelve-track grid and no per-module
+        // spans). A block that names nothing is 3-up. `4` packs small previews
+        // (lazy); `2` is for side-by-side comparisons whose stages need the width
+        // (slider, accordion, tabs, cover reveal); an explicit `3` also opts
+        // text demos into the smaller type that lets them fit three across.
+        const MODULE_COLS={lazy:4,slider:2,accordion:2,tabs:2,coverReveal:2,canvasEffect:2,cursor:3,textReveal:3,textSplit:3,overflowText:3,scrollVelocity:3,progress:3,fullpage:3};
         const SUBGROUP_COLS={'터미널 · 미터/커서':3};
         const applyCols=(body,count)=>{
           if(!count||!body.classList.contains('grid'))return;
@@ -474,36 +494,48 @@
         // Measured, not counted: a `.card.full` earlier in the grid claims a whole
         // row and shifts every nth-child guess.
         const LAST_ROW_CLASSES=['is-last-row-1','is-last-row-2','is-last-row-3','is-last-row-4'];
-        const markLoneLastCard=(body)=>{
+        // What a grid's last row should become, from measurements alone (no
+        // writes): { cards, cls } when it is short, or null when it is full.
+        const planLastRow=(body)=>{
           const cards=[...body.children].filter(c=>c.classList.contains('card'));
-          cards.forEach(c=>c.classList.remove('is-row-filler',...LAST_ROW_CLASSES));
-          if(!cards.length)return;
-          if(cards.length===1){
-            cards[0].classList.add('is-last-row-1');
-            return;
-          }
-          // Group by row using the measured top edge, then re-measure once the
-          // classes are off so a previous pass cannot bias the grouping.
+          if(!cards.length)return null;
+          if(cards.length===1)return {cards,cls:'is-last-row-1'};
+          // Group by row using the measured top edge.
           const rows=new Map();
           cards.forEach(c=>{const top=Math.round(c.getBoundingClientRect().top);
             if(!rows.has(top))rows.set(top,[]);
             rows.get(top).push(c);});
           const tops=[...rows.keys()].sort((a,b)=>a-b);
-          if(tops.length<2)return;
           const last=rows.get(tops[tops.length-1]);
-          const widest=Math.max(1,...[...rows.values()]
-            .filter(row=>!row.some(card=>card.classList.contains('full')))
-            .map(row=>row.length));
-          // A full last row needs no help.
-          if(last.length>=widest||last.length>LAST_ROW_CLASSES.length)return;
-          const cls=LAST_ROW_CLASSES[last.length-1];
-          last.forEach(c=>c.classList.add(cls));
+          if(last.some(card=>card.classList.contains('full')))return null;
+          // Is the last row actually short? Ask the row, not the other rows.
+          // Comparing against "the widest row seen" misses the commonest case —
+          // a lone card after a `.card.full` — because there is no other row to
+          // compare with, so the card stayed at one third with the rest empty.
+          // What the row holds is measured: the cards' own widths plus the gaps
+          // between them, against the grid's width.
+          const gap=parseFloat(getComputedStyle(body).columnGap)||0;
+          const used=last.reduce((sum,card)=>sum+card.getBoundingClientRect().width,0)+gap*(last.length-1);
+          const width=body.getBoundingClientRect().width;
+          if(used>=width-2||last.length>LAST_ROW_CLASSES.length)return null;
+          return {cards:last,cls:LAST_ROW_CLASSES[last.length-1]};
         };
-        const rebalanceRows=()=>{
-          document.querySelectorAll('.module-block-body.grid').forEach(markLoneLastCard);
+        // Three passes over every grid at once — clear all, measure all, mark
+        // all — so the page lays itself out once, not once per grid: the old
+        // clear→measure→mark per grid forced a fresh layout for each of ~50
+        // grids at start-up. Clearing first also keeps a previous pass's
+        // classes from biasing the grouping.
+        const rebalance=(bodies)=>{
+          // The frame-spinner gallery is an auto-fill grid with no fixed row
+          // capacity; its rows are always as full as the width allows.
+          const grids=bodies.filter(body=>!body.classList.contains('module-block-body--dense'));
+          grids.forEach(body=>{for(const child of body.children)child.classList.remove('is-row-filler',...LAST_ROW_CLASSES);});
+          const plans=grids.map(planLastRow);
+          plans.forEach(plan=>plan?.cards.forEach(card=>card.classList.add(plan.cls)));
         };
+        const rebalanceRows=()=>rebalance([...document.querySelectorAll('.module-block-body.grid')]);
         const rowBalanceObserver='ResizeObserver' in window
-          ? new ResizeObserver((entries)=>entries.forEach(({target})=>markLoneLastCard(target)))
+          ? new ResizeObserver((entries)=>rebalance(entries.map(({target})=>target)))
           : null;
         let rowBalanceFrame=0;
         // ResizeObserver already reports only grids whose width changed. Avoid a
@@ -520,6 +552,10 @@
         };
         // Phase 1: build each category's blocks. appendChild MOVES the unit node,
         // detaching it from its old grid, so nothing is lost when we clear next.
+        // Every home card, looked up BEFORE the blocks are built: building moves
+        // each unit into a block that is not in the document yet, so a
+        // document query made halfway through can no longer see it.
+        const homeCards=new Map([...document.querySelectorAll('[data-demo-home]')].map(el=>[el.dataset.demoHome,el]));
         const wraps={};
         Object.entries(MODULE_GROUPS).forEach(([cat,names])=>{
           const wrap=document.createElement('div'); wrap.className='module-blocks';
@@ -544,13 +580,36 @@
             // Some modules ship far too many demos for one flat grid (Loading
             // Indicator alone has 40+). Those declare a sub-grouping so the
             // block reads as a few short, labelled sets instead of one wall.
+            // A module whose only demo card lives in ANOTHER module's block —
+            // Radial, whose carousel is shown beside Slider's so the two read as
+            // one comparison — would otherwise render as a heading over nothing.
+            // Say where the card is and take the reader there; this is derived
+            // from data-demo-home, so any future module in the same position gets
+            // the same treatment without being named here.
+            const home=list.length?null:homeCards.get(n);
+            const homeOwner=home?ownerOf(home):null;
+            if(homeOwner&&homeOwner!==n){
+              const note=document.createElement('p');
+              note.className='module-block-elsewhere';
+              const text=document.createElement('span');
+              text.dataset.demoI18nText='이 모듈의 데모 카드는 여기에 있습니다:';
+              text.textContent=text.dataset.demoI18nText;
+              const link=document.createElement('a');
+              link.href='#mod-'+homeOwner;
+              link.textContent=labelOf(homeOwner)+' →';
+              link.addEventListener('click',(event)=>{
+                event.preventDefault();
+                home.scrollIntoView({behavior:'smooth',block:'center'});
+              });
+              note.append(text,' ',link);
+              block.append(note);
+            }
             const groups=SUBGROUPS[n]?groupUnits(list,SUBGROUPS[n]):null;
             if(groups&&groups.length>1){
               groups.forEach(([label,units])=>{
                 const sh=document.createElement('h4');
                 sh.className='module-subgroup'; sh.textContent=label;
                 const sb=document.createElement('div'); sb.className=layoutFor(units);
-                if(n==='counter'&&label==='시간')sb.classList.add('module-block-body--counter-time');
                 // A long set of tiny previews (the 35 frame spinners) would run
                 // for a dozen rows at the default 3-up. Pack those denser.
                 if(units.length>=12) sb.classList.add('module-block-body--dense');
@@ -632,9 +691,7 @@
       }
     })();
     (()=>{const themeButton=document.getElementById('theme');
-    const themeColorMeta=document.getElementById('theme-color-meta');
-    const syncThemeColor=()=>{ if(!themeColorMeta)return; const bg=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(); if(bg) themeColorMeta.setAttribute('content',bg); };
-    const syncTheme=()=>{themeButton.setAttribute('aria-checked',document.documentElement.classList.contains('light')?'true':'false');syncThemeColor();};
+    const syncTheme=()=>{themeButton.setAttribute('aria-checked',document.documentElement.classList.contains('light')?'true':'false');syncThemeColorMetaSoon();};
     syncTheme();
     themeButton.addEventListener('click',()=>{const light=document.documentElement.classList.toggle('light');syncTheme();try{localStorage.setItem('kt-theme',light?'light':'dark')}catch(_){}});})();
 
@@ -741,7 +798,22 @@
     let smoothManual=false;
     const smoothWanted=()=>smoothToggle?smoothToggle.checked:wantsSmooth;
     const heroEl=document.querySelector('.hero');
-    const pastHero=()=>!heroEl||window.scrollY>heroEl.offsetHeight-120;
+    // "Past the hero" = its bottom edge is within 120px of the top. An
+    // IntersectionObserver keeps it, so the scroll listener below reads no
+    // layout: measuring offsetHeight there forced a layout on every scroll
+    // event while animations kept the page dirty (and one more at start-up).
+    const HERO_EXIT_MARGIN=120;
+    let heroPassed=!heroEl;
+    let pastHero=()=>heroPassed;
+    if(heroEl&&'IntersectionObserver' in window){
+      new IntersectionObserver(([entry])=>{
+        heroPassed=!entry.isIntersecting;
+        syncSmoothForScroll();
+      },{rootMargin:`-${HERO_EXIT_MARGIN}px 0px 0px 0px`}).observe(heroEl);
+    }else if(heroEl){
+      // No observer: measure on demand, as before.
+      pastHero=()=>window.scrollY>heroEl.offsetHeight-HERO_EXIT_MARGIN;
+    }
     let smoothOn=false;
     const syncSmoothForScroll=()=>{
       // The hero scene controller owns this short programmatic landing. Starting
@@ -843,15 +915,17 @@
       const select=document.getElementById('lang');
       if(!select)return;
       const LANGS=window.KINETO_COPY_I18N?.langs||{};
-      // Module count comes from the live registry. Locale strings may outlive a
-      // registry refactor, so normalize their old numeric copy at runtime.
-      const moduleCount=registered.size;
-      const normalizeCount=(value)=>{
-        if(Array.isArray(value))return value.map(normalizeCount);
-        if(value&&typeof value==='object'){Object.keys(value).forEach(key=>{value[key]=normalizeCount(value[key]);});return value;}
-        return typeof value==='string'?value.replace(/\b(?:34|50|51)\b/g,String(moduleCount)):value;
+      // The module count comes from the live registry: locale strings say
+      // `{moduleCount}` and never a number, so a new module changes no copy.
+      // (This used to rewrite whichever old numbers it knew — 34, 50, 51 —
+      // and every other count went stale.)
+      const moduleCount=String(registered.size);
+      const fillCount=(value)=>{
+        if(Array.isArray(value))return value.map(fillCount);
+        if(value&&typeof value==='object'){Object.keys(value).forEach(key=>{value[key]=fillCount(value[key]);});return value;}
+        return typeof value==='string'?value.replaceAll('{moduleCount}',moduleCount):value;
       };
-      Object.values(LANGS).forEach(normalizeCount);
+      Object.values(LANGS).forEach(fillCount);
       const KO={};
       document.querySelectorAll('section[id]').forEach((section)=>{
         const copy=section.querySelector('.section-copy');

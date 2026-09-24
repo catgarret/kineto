@@ -1,4 +1,4 @@
-import { G, gsapEaseName, observeOnce, renderTextLineBreaks, segmentText, snapshotAttributes, snapshotChildNodes, snapshotInlineStyles, ST, textWithLineBreaks } from '../utils.js';
+import { G, gsapEaseName, observeOnce, renderTextLineBreaks, segmentText, snapshotAttributes, snapshotChildNodes, snapshotInlineStyles, ST, textWithLineBreaks, wordSink } from '../utils.js';
 
 export default {
   create(el, opts) {
@@ -10,18 +10,21 @@ export default {
     el.setAttribute('aria-label', text);
     el.innerHTML = '';
 
+    // Characters go into word boxes so a line can only wrap between words
+    // (utils.wordSink); whitespace closes the word and stays a wrap point.
+    const sink = wordSink(el);
     const chars = segmentText(text).map((char) => {
       if (/^\s$/.test(char)) {
         const whitespace = char === '\n' ? document.createElement('br') : document.createTextNode(char);
         if (char === '\n') whitespace.setAttribute('aria-hidden', 'true');
-        el.appendChild(whitespace);
+        sink.gap(whitespace);
         return null;
       }
       const span = document.createElement('span');
       span.style.cssText = 'display:inline-block;filter:blur(8px);opacity:0;will-change:filter,opacity;';
       span.setAttribute('aria-hidden', 'true');
       span.textContent = char;
-      el.appendChild(span);
+      sink.add(span);
       return span;
     }).filter(Boolean);
 

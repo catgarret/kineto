@@ -43,9 +43,40 @@ Kineto.config({ forceReducedMotion: true });
 
 지원 값은 `auto`, `high`, `mid`, `low`입니다. 과거 문서의 `off` 및 자동 FPS 강등 기능은 현재 구현되어 있지 않습니다.
 
-## 탭 가시성
+## 탭 가시성과 화면 밖 — 시스템 일시정지
 
-탭이 숨겨지면 코어는 활성 인스턴스의 `pause()`를 호출하고, 다시 보이면 `resume()`을 호출합니다. 모듈은 자신이 소유한 RAF, tween, timer의 의미에 맞춰 대응합니다.
+규칙은 하나입니다: **탭이 숨었거나 요소가 화면 밖이면 인스턴스는 일시정지**합니다.
+코어는 이 판단을 한 곳(`src/core.js`의 `syncSuspension`)에서만 하고, 페이지가 직접 부른
+`pause()`와 따로 관리합니다. 그래서 둘은 서로를 덮어쓰지 않습니다 — 페이지가 멈춘
+인스턴스는 화면에 들어와도 멈춰 있고, 화면 밖에서 부른 `resume()`은 요소가 돌아올 때
+실행됩니다.
+
+- 탭이 숨겨지면 모든 인스턴스가, 요소가 화면 밖으로 나가면 **참여한 모듈**만 멈춥니다.
+  모듈 정의에 `offscreen: 'pause'`(또는 옵션을 받아 `'pause'`/`null`을 돌려주는 함수)를
+  두면 IntersectionObserver 하나가 지켜봅니다(`rootMargin` 25%라 스크롤해 들어오기 전에
+  다시 시작합니다). 현재 Marquee·Mouse Parallax·Scroll Velocity·Loading Indicator·
+  Card Glow·Glitch·Overflow Text·Stylize·Text Transition·Typewriter·Canvas Effect가 참여합니다.
+- 화면 밖 요소에는 `data-kt-offscreen`이 붙고, `kineto.css`가 그 안의 **Kineto 자신의**
+  CSS 키프레임(`[class*="kt-"]`)을 멈춥니다. 페이지의 애니메이션은 건드리지 않습니다.
+  이 속성은 코어의 상태라서 `Kineto.observe()`가 다시 탐색하지 않습니다.
+- 기본 경로는 모듈의 `pause()`/`resume()`입니다. `pause()`가 **공개 상태**인 모듈
+  (Loading Indicator는 `paused`를 페이지에 알립니다)은 `suspend(on)`을 구현합니다.
+  그러면 코어는 규칙이 바뀔 때마다 `pause()` 대신 이것을 부르고, 페이지의 pause·resume은
+  곧바로 모듈로 갑니다. `suspend`는 일만 멈추고 페이지가 보는 상태는 바꾸지 않습니다.
+
+### 새 모듈을 쓸 때
+
+- **따라잡은 루프는 쉬게 하세요.** 목표에 도달하면 다음 프레임을 요청하지 말고, 입력이
+  `wake()`로 깨우게 합니다. `pause()`에서 프레임을 취소할 때는 `rafId = null`까지 해야
+  합니다 — id가 남으면 `wake()`가 루프가 이미 있다고 믿고 다시 시작하지 않습니다.
+- **`create()` 안에서 쓰고 읽지 마세요.** DOM을 쓴 뒤 크기를 읽으면 그 자리에서 레이아웃이
+  강제되고, 페이지가 인스턴스를 수백 개 만들면 수백 번이 됩니다. `measureThenApply(read,
+  apply)`(`src/utils.js`)는 다음 프레임에 모든 read를 먼저, 그다음 모든 apply를 실행합니다.
+  반환값(취소 함수)은 `destroy()`에서 부르세요. Overflow Text가 이렇게 바뀌어 150개 생성의
+  강제 레이아웃이 200번에서 1번이 되었습니다.
+- **ResizeObserver 콜백에서는 관찰 결과를 쓰세요.** 콜백은 레이아웃 뒤에 오므로 읽어도
+  싸지만, 앞선 콜백이 DOM을 바꿨다면 다시 강제됩니다. 필요한 값이 `contentRect`이면 그것을
+  쓰고, padding box가 필요하면(`clientWidth`) 콜백 안에서만 읽습니다.
 
 마지막 인스턴스가 제거되면 코어의 `visibilitychange`, `prefers-reduced-motion`,
 Network Information 감시기도 해제됩니다. 이후 새 인스턴스가 만들어지면 다시
@@ -119,6 +150,11 @@ Kineto 번들 크기와 구분해야 합니다. 이 경계는 `npm run test:deps
   기존과 같이 `updateModule()` 또는 `replay()`를 사용하세요.
 - Scroll Velocity는 위치·목표·탄성 속도가 모두 안정되면 RAF를 중지합니다.
   새로운 스크롤 입력에서 재개하며, `onUpdate`는 실제 처리 프레임에만 호출됩니다.
+  Cursor(팔로워·체인·스네이크)·Mouse Parallax·나침반·Marquee의 스크롤 기울기도 같습니다.
+- `npm run test:browser`의 `idle-cost.mjs`는 아무 입력이 없는 페이지에서 Kineto의 rAF가
+  초당 3개 미만인지, 입력이 깨우고 다시 쉬는지, 화면 밖 일시정지와 페이지의 pause가
+  서로를 덮어쓰지 않는지 확인합니다. `create-cost.mjs`는 인스턴스 150개를 한꺼번에 만들 때
+  강제 레이아웃 수를 크로미엄 트레이스로 셉니다.
 - Stylize 디더링은 샘플 `ImageData`를 출력에도 사용합니다. 오차 확산은 전체
   격자가 아닌 Floyd–Steinberg 2행·Atkinson 3행만 보관하고 같은 폭에서 재사용합니다.
   ASCII·단색 Halftone은 셀마다 같은 색을 다시 설정하지 않습니다.

@@ -11,7 +11,7 @@ export type ModuleName =
   | 'textTransition' | 'tilt' | 'typewriter' | 'vibrate' | 'confetti'
   | 'accordion' | 'hold' | 'megaMenu' | 'toast' | 'bottomSheet' | 'tabs'
   | 'coverReveal' | 'gesture' | 'drag' | 'tooltip' | 'switch' | 'flip'
-  | 'scrollShadows' | 'stickyHeader' | 'horizontalScroll';
+  | 'scrollShadows' | 'stickyHeader' | 'horizontalScroll' | 'squircle' | 'canvasEffect';
 
 export interface KinetoInstance {
   el: Element;
@@ -39,6 +39,62 @@ export interface KinetoModule {
 }
 
 export type KinetoResult = KinetoInstance | KinetoInstance[] | null;
+
+/** What a Canvas Effect is handed every call (see docs/modules/canvas-effect.md). */
+export interface KinetoCanvasEffectApi<Options extends Record<string, unknown> = Record<string, unknown>, State = any> {
+  el: Element;
+  canvas: HTMLCanvasElement;
+  context: '2d' | 'webgl' | 'webgl2';
+  /** The 2D context, or the WebGL context for a WebGL effect. */
+  ctx: CanvasRenderingContext2D | WebGLRenderingContext | WebGL2RenderingContext | null;
+  /** The WebGL context (null for a 2D effect). */
+  gl: WebGLRenderingContext | WebGL2RenderingContext | null;
+  /** Only the options the definition declares, coerced to their defaults' types. */
+  options: Options;
+  /** The effect's own data; setup()'s return value lands here. */
+  state: State;
+  /** CSS px. */
+  width: number;
+  height: number;
+  /** The capped pixel ratio the backing store is drawn at. */
+  dpr: number;
+  /** Seconds since start (stops while paused), the last step in seconds, and a frame count. */
+  time: number;
+  delta: number;
+  frame: number;
+  pointer: { x: number; y: number; nx: number; ny: number; vx: number; vy: number; inside: boolean; down: boolean; active: boolean };
+  scroll: { progress: number; velocity: number };
+  quality: 'low' | 'medium' | 'high';
+  /** True when only one still frame is drawn. */
+  reducedMotion: boolean;
+  /** A CSS colour (or var(--token)) as [r, g, b, a] in 0…1, or null. */
+  color(value: string | number[]): number[] | null;
+  /** Ask for frames again after frame() returned false. */
+  wake(): void;
+}
+
+/** A Canvas Effect: plain functions, or a fragment shader the host runs. */
+export interface KinetoCanvasEffectDefinition<Options extends Record<string, unknown> = Record<string, unknown>, State = any> {
+  context?: '2d' | 'webgl' | 'webgl2';
+  /** Every option the effect reads, with its default. */
+  options?: Options;
+  setup?(api: KinetoCanvasEffectApi<Options, State>): State | void;
+  resize?(api: KinetoCanvasEffectApi<Options, State>): void;
+  /** Return false when nothing moves: the loop rests until input wakes it. */
+  frame?(api: KinetoCanvasEffectApi<Options, State>): boolean | void;
+  destroy?(api: KinetoCanvasEffectApi<Options, State>): void;
+  /** WebGL1 GLSL; the host compiles it and fills uTime, uResolution, uPointer, uPointerDown, uScroll and one uniform per option. */
+  fragment?: string;
+  /** Extra uniforms for a fragment shader, every frame. */
+  uniforms?(api: KinetoCanvasEffectApi<Options, State>): Record<string, number | boolean | string | number[]>;
+}
+
+export interface KinetoCanvasEffectDescriptor {
+  name: string;
+  context: '2d' | 'webgl' | 'webgl2';
+  shader: boolean;
+  options: Record<string, unknown>;
+}
 export type KinetoFactory = (target: KinetoTarget, options?: KinetoOptions) => KinetoResult;
 
 export interface KinetoEnvironment {
@@ -184,6 +240,10 @@ export interface KinetoStatic {
   refresh(): this;
   states(definitions: KinetoStateDefinitions, options?: KinetoOptions): KinetoStateController;
   listTerminalFramePresets(): unknown;
+  /** Register a Canvas Effect under a name markup can use (`data-kt-canvas-effect="name"`). */
+  defineCanvasEffect<Options extends Record<string, unknown>>(name: string, definition: KinetoCanvasEffectDefinition<Options>): string;
+  /** Every registered Canvas Effect, with the options it reads. */
+  listCanvasEffects(): KinetoCanvasEffectDescriptor[];
 }
 
 export interface KinetoObserveOptions {
@@ -206,6 +266,8 @@ export default Kineto;
 export const modules: Record<ModuleName, KinetoModule>;
 export function listTerminalFramePresets(): unknown;
 export function states(definitions: KinetoStateDefinitions, options?: KinetoOptions): KinetoStateController;
+export function defineCanvasEffect<Options extends Record<string, unknown>>(name: string, definition: KinetoCanvasEffectDefinition<Options>): string;
+export function listCanvasEffects(): KinetoCanvasEffectDescriptor[];
 
 export const ambientMedia: KinetoFactory;
 export const blurText: KinetoFactory;
@@ -261,3 +323,5 @@ export const flip: KinetoFactory;
 export const scrollShadows: KinetoFactory;
 export const stickyHeader: KinetoFactory;
 export const horizontalScroll: KinetoFactory;
+export const squircle: KinetoFactory;
+export const canvasEffect: KinetoFactory;

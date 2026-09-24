@@ -543,6 +543,122 @@ export function renderTextLineBreaks(el) {
 
 // Reinsert author-owned nodes instead of parsing an HTML string on teardown.
 // Besides preserving listeners, this retains CRLF text nodes exactly.
+/**
+ * 글자를 쪼갠 텍스트가 **단어 중간에서 줄바꿈되지 않게** 합니다.
+ *
+ * 글자 애니메이션은 글자마다 `inline-block` span 을 만들어야 각자 움직일 수 있습니다. 그런데
+ * 브라우저는 **inline-block 두 개 사이 어디서든** 줄을 바꿀 수 있어서, "YOUR PLATFORM" 이
+ * "YOU / R PLATFORM" 으로 갈라집니다(데모의 Text Reveal Flicker 카드에서 실제로 보였습니다).
+ * 연속된 글자를 `white-space: nowrap` 인 단어 상자 하나로 묶으면 단어 사이의 공백만 줄바꿈
+ * 자리로 남아, 쪼개기 전의 텍스트와 똑같이 줄이 바뀝니다.
+ *
+ * 단어 상자는 inline(기본 span) 입니다. inline-block 으로 만들면 상자가 변형을 가진
+ * 요소처럼 취급될 수 있어, 3D 로 도는 글자(textSplit 의 preserve-3d)가 평평해질 수 있습니다.
+ *
+ * @returns {HTMLSpanElement}
+ */
+export function wordBox() {
+  const box = document.createElement('span');
+  box.className = 'kt-text-word';
+  box.style.whiteSpace = 'nowrap';
+  return box;
+}
+
+/**
+ * 쪼갠 글자를 부모에 붙이는 창구입니다. `add(node)` 는 지금 단어에 글자를 넣고(없으면 단어
+ * 상자를 새로 엽니다), `gap(node)` 는 단어를 닫고 공백·줄바꿈·간격 요소를 부모에 직접 붙입니다.
+ * 모든 글자 분할 모듈이 이 하나를 쓰므로, "단어는 한 줄에" 라는 규칙이 모듈마다 따로 놀지
+ * 않습니다.
+ *
+ * @param {Element} parent
+ * @returns {{ add: (node: Node) => Node, gap: (node: Node) => Node }}
+ */
+export function wordSink(parent) {
+  let word = null;
+  return {
+    add(node) {
+      if (!word) {
+        word = wordBox();
+        parent.appendChild(word);
+      }
+      word.appendChild(node);
+      return node;
+    },
+    gap(node) {
+      word = null;
+      parent.appendChild(node);
+      return node;
+    }
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Batched layout reads.
+//
+// Reading a size (clientWidth, getBoundingClientRect, getComputedStyle…) right
+// after changing the DOM forces the browser to lay the page out on the spot.
+// A module that writes then reads inside create() therefore costs one full
+// layout PER INSTANCE when a page creates hundreds of them in one scan — the
+// demo's 236 Overflow Text titles alone spent about half a second doing it.
+//
+// measureThenApply(read, apply) queues the pair instead. On the next frame ALL
+// queued reads run first (one layout serves every one of them), then all the
+// applies, in the order they were queued. An apply that queues more work goes
+// to the frame after, so a read never sees another instance's half-written DOM.
+// Without requestAnimationFrame (SSR, some test shims) it runs immediately.
+// ---------------------------------------------------------------------------
+const layoutQueue = [];
+let layoutFrame = null;
+
+function flushLayoutQueue() {
+  layoutFrame = null;
+  const jobs = layoutQueue.splice(0);
+  const results = jobs.map(({ read }) => {
+    try {
+      return { ok: true, value: read() };
+    } catch (error) {
+      return { ok: false, error };
+    }
+  });
+  jobs.forEach(({ apply }, index) => {
+    const result = results[index];
+    try {
+      if (!result.ok) throw result.error;
+      apply(result.value);
+    } catch (error) {
+      console.error('[Kineto] a batched layout step failed:', error);
+    }
+  });
+}
+
+/**
+ * Queue a layout read and the DOM write that depends on it (see above).
+ * @template T
+ * @param {() => T} read   Only reads layout/style. Must not write to the DOM.
+ * @param {(value: T) => void} apply   Writes, using what `read` returned.
+ * @returns {() => void} cancel — drops the job if it has not run yet (call it
+ *   from destroy()); the shared frame is cancelled once nothing is left in it.
+ */
+export function measureThenApply(read, apply) {
+  const raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : null;
+  if (!raf) {
+    apply(read());
+    return () => {};
+  }
+  const job = { read, apply };
+  layoutQueue.push(job);
+  if (layoutFrame == null) layoutFrame = raf(flushLayoutQueue);
+  return () => {
+    const index = layoutQueue.indexOf(job);
+    if (index < 0) return;
+    layoutQueue.splice(index, 1);
+    if (!layoutQueue.length && layoutFrame != null && typeof cancelAnimationFrame === 'function') {
+      cancelAnimationFrame(layoutFrame);
+      layoutFrame = null;
+    }
+  };
+}
+
 export function snapshotChildNodes(el) {
   const entries = [];
   const visit = (node) => {

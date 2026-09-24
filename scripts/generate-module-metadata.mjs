@@ -77,7 +77,8 @@ const definitions = {
   scrollShadows: ['scroll', '스크롤 가능 영역의 가장자리에 그림자·마스크를 표시합니다.', '긴 패널의 더 많은 콘텐츠가 있음을 알려줄 때', '배경 대비가 약하거나 고정 높이가 없는 영역에'],
   squircle: ['surface', 'CSS corner-shape의 모서리 곡선(스퀘어클·베벨·스쿠프 등)을 모든 브라우저에서 같게 그립니다.', 'iOS처럼 보여야 하는 카드·버튼 모서리를 브라우저와 무관하게 맞출 때', '요소에 box-shadow가 있고 Safari·Firefox에서도 그림자를 유지해야 할 때'],
   stickyHeader: ['scroll', '스크롤 방향에 반응하는 고정 헤더입니다.', '긴 페이지에서 탐색을 계속 노출할 때', '헤더가 콘텐츠를 가리거나 전체 화면 내러티브가 필요한 곳에'],
-  horizontalScroll: ['scroll', '세로 스크롤을 가로 이동으로 매핑합니다.', '가로 갤러리·스토리텔링 구간을 구성할 때', '일반 목록·키보드 탐색·모바일 세로 흐름이 우선인 곳에']
+  horizontalScroll: ['scroll', '세로 스크롤을 가로 이동으로 매핑합니다.', '가로 갤러리·스토리텔링 구간을 구성할 때', '일반 목록·키보드 탐색·모바일 세로 흐름이 우선인 곳에'],
+  canvasEffect: ['mediaHeavy', '직접 정의한 Canvas·WebGL 효과를 요소 뒤에 그리고, 크기·픽셀 비율·프레임·포인터·스크롤·수명주기를 대신 관리합니다.', 'AI나 직접 작성한 인터랙티브 배경·셰이더를 Kineto의 일시정지·저사양·접근성 규칙 안에서 쓰고 싶을 때', '같은 화면에 여러 개를 동시에 띄우거나, 효과가 핵심 정보를 전달해야 할 때']
 };
 
 const requiredKeys = ['summary', 'useWhen', 'avoidWhen', 'accessibility', 'performance', 'reducedMotion', 'browserCoverage'];
@@ -132,7 +133,7 @@ const CATEGORIES = {
   scrollSequence: 'scroll',
   parallax: 'scroll', progress: 'scroll', reveal: 'scroll', scrollShadows: 'scroll',
   // effects (a drawn look rather than a movement)
-  squircle: 'effects',
+  squircle: 'effects', canvasEffect: 'effects',
   scrollVelocity: 'scroll', stickyHeader: 'scroll', stickyStack: 'scroll',
   // pointer
   cardGlow: 'pointer', cursor: 'pointer', drag: 'pointer', gesture: 'pointer',

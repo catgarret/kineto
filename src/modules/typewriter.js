@@ -1,6 +1,9 @@
 import { hangulFrames, segmentText, snapshotAttributes } from '../utils.js';
 
 export default {
+  // Paused by the core while the element is off screen and resumed as it
+  // returns (a looping typewriter keeps typing into a line nobody reads). See `offscreen` in src/core.js.
+  offscreen: 'pause',
   create(el, opts) {
     const originalHTML = el.innerHTML;
     const restoreAttributes = snapshotAttributes(el, ['aria-label']);

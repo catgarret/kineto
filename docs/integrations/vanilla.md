@@ -654,6 +654,18 @@ npm install @dong-gri/kineto
   <div data-kt-squircle="notch">…</div>
   ```
 
+### 인터랙티브 캔버스·WebGL 배경 (React Bits 스타일) (`interactive-background`)
+
+- `canvasEffect` · `custom` — Kineto ships the host, not the effect: write ONE effect definition (Kineto.defineCanvasEffect(name, { options, setup, resize, frame }) or { fragment: GLSL }) and name it with data-kt-canvas-effect. The host owns the canvas, the capped pixel ratio, resizing, the frame loop and its rest state, pointer and scroll input, off-screen and hidden-tab pausing, reduced motion, quality tiers and teardown — never write those in a component. Use the shared option vocabulary (color, color2, background, speed, density, size, strength, distortion). AI-PROMPT-GUIDE.md › Canvas effects has the prompt.
+
+  ```html
+  <div data-kt-canvas-effect>…</div>
+  ```
+
+> Do not copy shaders or components from React Bits, Shadertoy or similar sites: their licences often forbid it (Shadertoy defaults to CC BY-NC-SA).
+
+> Give the host element a CSS background — it shows where WebGL is unavailable or the effect fails. Keep it to one or two per screen: browsers cap live WebGL contexts.
+
 ### 길게 눌러 확인 (`confirm-hold`)
 
 - `hold` · `confirm` — Destructive actions confirmed by holding the button.

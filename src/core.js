@@ -53,6 +53,39 @@ let lenisTicker = null;
 let lenisLoading = null;
 let visibilityHandler = null;
 let cachedEnv = null;
+// SYSTEM SUSPENSION — one rule for every instance:
+//
+//   suspended  ⇔  the tab is hidden  OR  the element is off screen
+//
+// and it is kept apart from the page's own pause() (`record.paused`), so
+// neither ever overrides the other. `syncSuspension(record)` is the only place
+// that applies it; the visibilitychange handler and the IntersectionObserver
+// below just update the inputs and call it.
+//
+// Offscreen: a module that declares `offscreen: 'pause'` on its definition is
+// watched by ONE shared IntersectionObserver. Before this, the demo page kept
+// 127 of its 128 running animations going with nobody able to see them.
+// `offscreen` may also be a function of the instance's options, for a module
+// that should keep running in some configurations (Scroll Velocity keeps
+// running when the page listens to its `onUpdate`, since that may drive
+// something that IS on screen).
+//
+// How a module is suspended:
+//   • default — through its own pause()/resume(), with the user's pause
+//     respected (a paused instance is left alone, and a resume() asked for
+//     while suspended waits until the suspension ends);
+//   • `suspend(on)` — a module whose pause() is PUBLIC state (Loading
+//     Indicator reports 'paused' to the page) implements this quiet hook
+//     instead: it only stops the work, never changes what the page sees, and
+//     the core calls it on every change of the rule above, independently of
+//     the user's pause/resume, which then always go straight to the module.
+let offscreenObserver = null;
+const offscreenRecords = new Map(); // element → Set of records watched on it
+// Set on a watched element while it is out of view, so ONE stylesheet rule can
+// hold Kineto's own CSS keyframes still inside it (see kineto.css). It is the
+// core's state, not an activation attribute: observe() must not rescan on it.
+const OFFSCREEN_ATTRIBUTE = 'data-kt-offscreen';
+const CORE_STATE_ATTRIBUTES = new Set([OFFSCREEN_ATTRIBUTE]);
 
 const config = {
   smooth: false,
@@ -170,7 +203,10 @@ function addRecord(sourceEl, name, instance, options) {
   const pauseImplementation = normalized.pause;
   const resumeImplementation = normalized.resume;
   const record = { sourceEl, name, instance: normalized, options, destroyImplementation, destroying: false,
-    visibility: false, paused: false };
+    visibility: false, paused: false, offscreen: false, suspended: false,
+    // A module with the quiet `suspend(on)` hook handles system suspension
+    // itself (see SYSTEM SUSPENSION above).
+    quiet: typeof normalized.suspend === 'function' };
 
   // User pause is independent of the temporary page-visibility suspension.
   normalized.pause = () => {
@@ -183,7 +219,10 @@ function addRecord(sourceEl, name, instance, options) {
     if (!records.has(record)) return;
     if (!record.visibility) record.paused = false;
     record.visibility = false;
-    if (!document.hidden) return resumeImplementation();
+    // Clearing the user's pause is always honoured; actually running again waits
+    // until the system suspension ends — unless the module suspends quietly,
+    // in which case it keeps its own work stopped and can take the resume now.
+    if (record.quiet || !record.suspended) return resumeImplementation();
   };
 
   // Calling instance.destroy() must also remove the core registry record.
@@ -205,9 +244,92 @@ function describeElement(el) {
   return `${tag}${id}${className ? `.${className}` : ''}`;
 }
 
+// A pause or resume the SYSTEM makes (hidden tab, element off screen). It runs
+// through the instance's own wrapper with `visibility` set, so the user's pause
+// flag is left exactly as it was.
+function systemCall(record, method) {
+  try {
+    record.visibility = true;
+    record.instance[method]();
+  } catch (error) {
+    console.error(`[Kineto/${record.name}] ${method}() failed:`, error);
+  } finally {
+    record.visibility = false;
+  }
+}
+
+// Apply the SYSTEM SUSPENSION rule to one record — called whenever one of its
+// inputs (tab visibility, the element's on-screen state) may have changed.
+function syncSuspension(record) {
+  const suspended = Boolean((typeof document !== 'undefined' && document.hidden) || record.offscreen);
+  if (suspended === record.suspended) return;
+  record.suspended = suspended;
+  if (record.quiet) {
+    try {
+      record.instance.suspend(suspended);
+    } catch (error) {
+      console.error(`[Kineto/${record.name}] suspend() failed:`, error);
+    }
+    return;
+  }
+  // A user-paused instance stays paused either way; its resume() will run it.
+  if (record.paused) return;
+  systemCall(record, suspended ? 'pause' : 'resume');
+}
+
+function onOffscreenEntries(entries) {
+  entries.forEach((entry) => {
+    const watched = offscreenRecords.get(entry.target);
+    if (!watched) return;
+    const offscreen = !entry.isIntersecting;
+    entry.target.toggleAttribute(OFFSCREEN_ATTRIBUTE, offscreen);
+    watched.forEach((record) => {
+      record.offscreen = offscreen;
+      syncSuspension(record);
+    });
+  });
+}
+
+function pausesOffscreen(module, options) {
+  const flag = typeof module.offscreen === 'function' ? module.offscreen(options || {}) : module.offscreen;
+  return flag === 'pause';
+}
+
+function watchOffscreen(record) {
+  if (typeof IntersectionObserver === 'undefined') return;
+  const el = record.instance.el || record.sourceEl;
+  if (!el || typeof el.getBoundingClientRect !== 'function') return;
+  // A quarter of a screen of lead, so a loop is already running again by the
+  // time its element scrolls into view instead of starting on the first
+  // visible frame.
+  offscreenObserver ||= new IntersectionObserver(onOffscreenEntries, { rootMargin: '25% 0px' });
+  if (!offscreenRecords.has(el)) offscreenRecords.set(el, new Set());
+  offscreenRecords.get(el).add(record);
+  record.offscreenTarget = el;
+  offscreenObserver.observe(el);
+}
+
+function unwatchOffscreen(record) {
+  const el = record.offscreenTarget;
+  if (!el) return;
+  const set = offscreenRecords.get(el);
+  set?.delete(record);
+  if (set && set.size === 0) {
+    offscreenRecords.delete(el);
+    offscreenObserver?.unobserve(el);
+    el.removeAttribute(OFFSCREEN_ATTRIBUTE);
+  }
+  record.offscreenTarget = null;
+  if (offscreenRecords.size === 0) {
+    offscreenObserver?.disconnect();
+    offscreenObserver = null;
+  }
+}
+
 function removeRecord(record, destroy = true, teardownIfEmpty = true) {
   if (!record || !records.has(record) || record.destroying) return;
   record.destroying = true;
+  unwatchOffscreen(record);
   records.delete(record);
   const map = getElementMap(record.sourceEl);
   map?.delete(record.name);
@@ -285,7 +407,8 @@ function createLiveObserver(root, options) {
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       if (mutation.type === 'attributes') {
-        if (String(mutation.attributeName || '').startsWith('data-kt-')) added.add(mutation.target);
+        const name = String(mutation.attributeName || '');
+        if (name.startsWith('data-kt-') && !CORE_STATE_ATTRIBUTES.has(name)) added.add(mutation.target);
         return;
       }
       mutation.addedNodes.forEach((node) => { if (node.nodeType === 1) added.add(node); });
@@ -319,20 +442,7 @@ function ensureCoreServices() {
 
   if (config.smooth && performance !== 'low') startSmoothService(gsap, scrollTrigger);
 
-  visibilityHandler = () => {
-    const method = document.hidden ? 'pause' : 'resume';
-    records.forEach((record) => {
-      if (!document.hidden && record.paused) return;
-      try {
-        record.visibility = true;
-        record.instance[method]();
-      } catch (error) {
-        console.error(`[Kineto/${record.name}] ${method}() failed:`, error);
-      } finally {
-        record.visibility = false;
-      }
-    });
-  };
+  visibilityHandler = () => records.forEach(syncSuspension);
   document.addEventListener('visibilitychange', visibilityHandler);
 }
 
@@ -687,7 +797,9 @@ const Kineto = {
           });
           return null;
         }
-        return addRecord(el, name, instance, options);
+        const created = addRecord(el, name, instance, options);
+        if (pausesOffscreen(module, options)) watchOffscreen(getElementMap(el).get(name));
+        return created;
       } catch (error) {
         console.error(`[Kineto/${name}] create() failed:`, error);
         emitDiagnostic({ code: DIAGNOSTIC_CODES.CREATE_FAILED, module: name, phase: 'create', recoverable: true, cause: error });

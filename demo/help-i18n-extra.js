@@ -2555,6 +2555,111 @@
     sets[lang] = sets[lang] || {};
     sets[lang].squircle = Object.assign({}, sets[lang].squircle, values);
   }
+  // Canvas Effect: the shared option vocabulary and the host's own settings.
+  const canvasEffect = {
+    "ko": {
+      "color": "효과의 주 색상입니다. 효과마다 쓰는 자리가 다르지만 이름은 같습니다.",
+      "color2": "보조 색상입니다. 포인터 주변이나 두 번째 색 띠처럼 강조되는 곳에 쓰입니다.",
+      "background": "캔버스를 지우는 색입니다. transparent면 요소 자신의 배경이 비칩니다.",
+      "speed": "움직임의 빠르기입니다. 1이 효과 본래의 속도입니다.",
+      "density": "얼마나 촘촘한지입니다. 셀·입자·띠의 개수나 크기 비율처럼 효과마다 의미가 조금 다릅니다.",
+      "size": "하나하나의 크기(CSS px)입니다.",
+      "strength": "포인터에 얼마나 강하게 반응할지입니다. 0이면 반응하지 않습니다.",
+      "distortion": "얼마나 휘거나 일그러질지입니다. 0이면 왜곡이 없습니다.",
+      "quality": "기기에 맞춘 품질 단계입니다. auto는 저사양·절약 모드에서 low, 모바일에서 medium을 고릅니다.",
+      "maxDpr": "캔버스 픽셀 비율의 상한입니다. 3배 화면을 3배로 그리면 1배의 9배 픽셀을 칠해야 합니다.",
+      "fps": "초당 프레임 상한입니다. 0이면 화면 주사율을 그대로 따릅니다.",
+      "pointer": "포인터를 어디서 받을지입니다. host는 이 요소 위, window는 페이지 전체, none은 받지 않습니다."
+    },
+    "en": {
+      "color": "The effect's main colour. Each effect uses it in its own place, under the same name.",
+      "color2": "The secondary colour, for what is highlighted — around the pointer, a second band of colour.",
+      "background": "What the canvas is cleared to. transparent lets the element's own background show through.",
+      "speed": "How fast it moves. 1 is the effect's natural pace.",
+      "density": "How dense it is — cells, particles or bands, or their share of the space, depending on the effect.",
+      "size": "How big each thing is, in CSS px.",
+      "strength": "How strongly it reacts to the pointer. 0 turns the reaction off.",
+      "distortion": "How far it bends or warps. 0 means none.",
+      "quality": "A quality tier for the device. auto picks low on weak devices or data saver and medium on mobile.",
+      "maxDpr": "The highest pixel ratio the canvas draws at. A 3× screen drawn at 3× paints nine times the pixels of 1×.",
+      "fps": "The frame-rate cap. 0 follows the display's own rate.",
+      "pointer": "Where the pointer is read from: host is this element, window the whole page, none turns it off."
+    },
+    "ja": {
+      "color": "効果のメインカラーです。使う場所は効果ごとに違いますが、名前は共通です。",
+      "color2": "サブカラーです。ポインターの周りや二本目の色帯など、強調する部分に使います。",
+      "background": "キャンバスを消去する色です。transparent なら要素自身の背景が見えます。",
+      "speed": "動きの速さです。1 が効果本来の速度です。",
+      "density": "どれだけ密か、です。セル・粒子・帯の数や占める割合など、効果によって意味が少し違います。",
+      "size": "一つひとつの大きさ（CSS px）です。",
+      "strength": "ポインターにどれだけ強く反応するかです。0 で反応しません。",
+      "distortion": "どれだけ曲がったり歪んだりするかです。0 で歪みなし。",
+      "quality": "端末に合わせた品質段階です。auto は低性能・データセーバーで low、モバイルで medium を選びます。",
+      "maxDpr": "キャンバスのピクセル比の上限です。3 倍の画面を 3 倍で描くと、1 倍の 9 倍のピクセルを塗ります。",
+      "fps": "フレームレートの上限です。0 なら画面のリフレッシュレートに従います。",
+      "pointer": "ポインターをどこから読むかです。host はこの要素、window はページ全体、none は読みません。"
+    },
+    "zh-CN": {
+      "color": "效果的主色。各效果用在不同的位置，但名称统一。",
+      "color2": "辅助色，用于被强调的部分，例如指针周围或第二条色带。",
+      "background": "清空画布时使用的颜色。transparent 会透出元素自身的背景。",
+      "speed": "运动的快慢。1 为效果本来的速度。",
+      "density": "密集程度——格子、粒子、色带的数量或所占比例，含义随效果略有不同。",
+      "size": "每个单元的大小（CSS px）。",
+      "strength": "对指针反应的强度。0 表示不反应。",
+      "distortion": "弯曲或扭曲的程度。0 表示没有扭曲。",
+      "quality": "按设备选择的画质档位。auto 在低性能或省流量模式下选 low，在移动端选 medium。",
+      "maxDpr": "画布像素比的上限。3 倍屏按 3 倍绘制，要填充的像素是 1 倍的 9 倍。",
+      "fps": "帧率上限。0 表示跟随屏幕刷新率。",
+      "pointer": "从哪里读取指针：host 为此元素，window 为整个页面，none 为不读取。"
+    },
+    "zh-TW": {
+      "color": "效果的主色。各效果用在不同的位置，但名稱統一。",
+      "color2": "輔助色，用於被強調的部分，例如指標周圍或第二條色帶。",
+      "background": "清空畫布時使用的顏色。transparent 會透出元素本身的背景。",
+      "speed": "運動的快慢。1 為效果本來的速度。",
+      "density": "密集程度——格子、粒子、色帶的數量或所佔比例，含義隨效果略有不同。",
+      "size": "每個單元的大小（CSS px）。",
+      "strength": "對指標反應的強度。0 表示不反應。",
+      "distortion": "彎曲或扭曲的程度。0 表示沒有扭曲。",
+      "quality": "依裝置選擇的畫質等級。auto 在低效能或省流量模式下選 low，在行動裝置選 medium。",
+      "maxDpr": "畫布像素比的上限。3 倍螢幕以 3 倍繪製，要填滿的像素是 1 倍的 9 倍。",
+      "fps": "影格率上限。0 表示跟隨螢幕更新率。",
+      "pointer": "從哪裡讀取指標：host 為此元素，window 為整個頁面，none 為不讀取。"
+    },
+    "ru": {
+      "color": "Основной цвет эффекта. Каждый эффект применяет его по-своему, но имя одно и то же.",
+      "color2": "Дополнительный цвет — для выделенного: вокруг указателя, второй цветовой полосы.",
+      "background": "Цвет, которым очищается холст. transparent пропускает собственный фон элемента.",
+      "speed": "Скорость движения. 1 — естественный темп эффекта.",
+      "density": "Насколько плотно: число ячеек, частиц или полос либо их доля — зависит от эффекта.",
+      "size": "Размер каждого элемента, в CSS px.",
+      "strength": "Насколько сильно эффект откликается на указатель. 0 отключает отклик.",
+      "distortion": "Насколько сильно изгибается или искажается. 0 — без искажений.",
+      "quality": "Уровень качества под устройство. auto выбирает low на слабых устройствах и в режиме экономии, medium на мобильных.",
+      "maxDpr": "Верхняя граница плотности пикселей холста. Экран 3× при отрисовке в 3× закрашивает в девять раз больше пикселей, чем 1×.",
+      "fps": "Ограничение частоты кадров. 0 — частота самого экрана.",
+      "pointer": "Откуда брать указатель: host — этот элемент, window — вся страница, none — не брать."
+    },
+    "it": {
+      "color": "Il colore principale dell’effetto. Ogni effetto lo usa a modo suo, con lo stesso nome.",
+      "color2": "Il colore secondario, per ciò che è in evidenza: intorno al puntatore, una seconda fascia di colore.",
+      "background": "Il colore con cui si pulisce il canvas. transparent lascia vedere lo sfondo dell’elemento.",
+      "speed": "Quanto si muove in fretta. 1 è il ritmo naturale dell’effetto.",
+      "density": "Quanto è fitto: celle, particelle o fasce, o la loro parte di spazio, secondo l’effetto.",
+      "size": "Quanto è grande ogni elemento, in px CSS.",
+      "strength": "Quanto reagisce al puntatore. 0 spegne la reazione.",
+      "distortion": "Quanto si piega o si deforma. 0 significa nessuna deformazione.",
+      "quality": "Un livello di qualità per il dispositivo. auto sceglie low sui dispositivi deboli o con risparmio dati e medium sul mobile.",
+      "maxDpr": "La densità di pixel massima del canvas. Uno schermo 3× disegnato a 3× colora nove volte i pixel di 1×.",
+      "fps": "Il limite di frame al secondo. 0 segue la frequenza dello schermo.",
+      "pointer": "Da dove leggere il puntatore: host è questo elemento, window tutta la pagina, none lo spegne."
+    }
+  };
+  for (const [lang, values] of Object.entries(canvasEffect)) {
+    sets[lang] = sets[lang] || {};
+    sets[lang].canvasEffect = Object.assign({}, sets[lang].canvasEffect, values);
+  }
   const cardGlass = {
     "ko": {
       "glassBlur": "뒤에 있는 것을 얼마나 흐리게 볼지입니다(px). 0이면 유리가 투명해져 색만 얹힙니다.",

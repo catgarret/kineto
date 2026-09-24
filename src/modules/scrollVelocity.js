@@ -1,6 +1,11 @@
 import { clamp, lerp, snapshotInlineStyles, ST } from '../utils.js';
 
 export default {
+  // Suspended by the core while the element is off screen (see SYSTEM
+  // SUSPENSION in src/core.js) — a jump-scroll used to spring every instance on
+  // the page, visible or not. A page that listens to onUpdate keeps it running:
+  // that callback may drive something that IS on screen.
+  offscreen: (opts) => (typeof opts.onUpdate === 'function' ? null : 'pause'),
   create(el, opts = {}) {
     const scrollTrigger = ST();
     if (!scrollTrigger) return null;

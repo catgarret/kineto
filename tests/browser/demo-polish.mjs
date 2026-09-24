@@ -607,9 +607,11 @@ try {
   });
   assert.deepEqual(megaTabs.labels,['전체','드롭다운','메가메뉴'],'GNB examples must be grouped into overview/dropdown/mega tabs');
   assert.deepEqual(megaTabs.targetCounts,[1,1,1],'each GNB tab must own one independently initialized menu');
-  assert.equal(megaTabs.overviewItems,3,'the read-only overview must compare dropdown, click, and mega triggers');
-  assert.equal(megaTabs.settingsHosts,2,'overview must stay read-only while both detail tabs own settings');
-  assert.deepEqual(megaTabs.settingsTargets,['megaMenu','megaMenu'],'each GNB detail tab must own a Mega Menu settings panel');
+  assert.equal(megaTabs.overviewItems,3,'the overview must compare dropdown, click, and mega triggers');
+  // Every tab hands over its code — the overview included (it used to be the
+  // one GNB example with no way to see or copy its source).
+  assert.equal(megaTabs.settingsHosts,3,'each GNB tab, the overview included, must own a settings · code panel');
+  assert.deepEqual(megaTabs.settingsTargets,['megaMenu','megaMenu','megaMenu'],'each GNB tab must own a Mega Menu settings panel');
   checkpoint('mega-menu-structure');
 
   await page.setViewportSize({width:700,height:807});
@@ -871,6 +873,10 @@ try {
   }));
   assert.ok(mobileCompounds.length>=5,'compound loading demos must remain present on mobile');
   assert.ok(mobileCompounds.every((item)=>item.inside),`compound loading text must fit its mobile stage: ${JSON.stringify(mobileCompounds)}`);
+  // They fit because they own the whole row; a later same-specificity grid rule
+  // once put them back into one 150px cell, where they only fit by luck of the
+  // fallback font.
+  assert.ok(mobileCompounds.every((item)=>item.fullRow),`compound loading cards must take the full mobile row: ${JSON.stringify(mobileCompounds)}`);
   assert.ok(mobileCompounds.every((item)=>item.fullRow),`compound loading cards must use the full mobile row: ${JSON.stringify(mobileCompounds)}`);
   checkpoint('mobile-loading');
 

@@ -3,6 +3,82 @@
 검증일: 2026-09-20
 대상: v0.11.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-24 Unreleased 검증 (데모 정비 · 런타임 비용 · Canvas Effect — 55번째 모듈)
+
+같은 날 `main`에 들어온 `cd59c10`(DOM 스캔·Stylize·Scroll Velocity 성능) 위에 올렸습니다.
+Scroll Velocity는 두 작업이 같은 개선(안정되면 쉬고 입력이 깨움)을 따로 만들어, `cd59c10`의
+구현(`destroyed` 가드 포함)을 유지하고 이쪽에서는 화면 밖 일시정지만 더했습니다.
+
+### 새 모듈 추가 근거 (ROADMAP §3 ④)
+
+소유자 요청 원문: **“reactbits.dev 이런기능을 직접 탑재하는건 어려울것 같고, 성격도
+우리꺼랑 좀 안맞음. 대신 연계해서 쓸 수 있는 발판이나 그런걸 좀 마련해줬으면 해.”**
+함께 준 자료는 “React Bits 같은 효과를 AI에게 부탁하려면” 받은 프롬프트였고, 그 요구사항
+— rAF, devicePixelRatio 상한, 리사이즈, 포인터·스크롤 반응, 모바일 품질 조절, 재사용 가능한
+컴포넌트 — 이 곧 막힘입니다: 효과를 AI에게 맡길 때마다 그 런타임을 매번 새로 짜게 되고,
+그렇게 만든 컴포넌트는 Kineto의 수명주기(화면 밖·숨은 탭 일시정지, 축소 모션, destroy,
+`data-kt-*`, React·Vue 어댑터) 밖에 있습니다. 그래서 효과가 아니라 **효과를 돌리는 호스트**를
+모듈로 넣었습니다. 요구사항 `MK-CANVAS-001`로 잠갔습니다.
+
+### 측정 (데모, 1440×900, 헤드리스 크로미엄)
+
+| 항목 | 이전 (`e58442a` 배포본) | 이후 |
+|---|---|---|
+| 유휴 rAF 콜백 / 초 | 787 (전부 Kineto) | **78** (Kineto 0 — 나머지는 GSAP·ScrollTrigger) |
+| 유휴 스타일 재계산 | 약 290 ms/s | **16~29 ms/s** |
+| 유휴 메인 스레드 작업 | 약 830 ms/s | **약 400 ms/s** (남은 것은 화면에 보이는 애니메이션의 래스터) |
+| 실행 중인 CSS 애니메이션 | 65 (대부분 화면 밖) | **8** |
+| 로딩 중 긴 작업 합계 / 최장 | 4.1~4.5 s / 1.2~1.4 s | **2.85~3.3 s / 0.69 s** |
+| Overflow Text 150개 생성 시 강제 레이아웃 | 200 | **1** |
+
+유휴 비용의 가장 큰 원인은 rAF가 아니라 **타이머**였습니다: Loading Indicator의 터미널
+프레임이 화면 밖에서도 초당 약 230번 텍스트 노드를 바꿨고, 데모 CSS의
+`.card:has(.replay-row:not(:empty))`·`body:has(#kt-lightbox:not([hidden]))` 때문에 그때마다
+카드 전체, 또는 페이지 전체가 다시 검사되었습니다. 플레이그라운드가 장착되면 replay 행은
+전부 사라지므로 앞의 규칙은 한 번도 맞지 않으면서 비용만 냈습니다.
+
+### 측정하면서 드러난 버그
+
+1. **Loading Indicator `resume()`이 어떤 상태든 `running`으로 바꿨습니다.** 숨은 탭 왕복이
+   모든 인스턴스에 `resume()`을 불러, 완료되거나 숨긴 인디케이터가 되살아나고
+   `statechange`를 보냈습니다. 화면 밖 일시정지를 같은 경로에 얹었다면 스크롤할 때마다
+   그랬을 것이라, `suspend(on)`이라는 조용한 경로를 따로 두었습니다.
+2. **안정 루프의 `pause()`가 취소한 프레임 id를 남겼습니다.** `wake()`는 `rafId == null`일
+   때만 예약하므로, 움직이는 중에 멈춘 커서·패럴랙스는 resume 뒤 영영 움직이지 않았습니다.
+   `idle-cost.mjs`의 2b 단계가 되돌린 코드에서 실패하는 것을 확인했습니다.
+3. **복합 터미널 로더가 휴대폰에서 한 줄을 차지하지 못했습니다.** 통합 격자의
+   `.module-block-body--dense.grid>.card{grid-column:auto}`가 앞쪽 모바일 규칙과 명시도가 같고
+   뒤에 있어서 이겼습니다. 기존 검사는 “스테이지 안에 들어가는가”만 봤고, 대체 글꼴에서는
+   우연히 들어갔습니다. 이제 `fullRow`도 확인합니다.
+4. **캔버스는 padding box를 채우는데, 백킹 스토어를 content box로 잡았습니다.** 데모
+   스테이지의 24px 패딩만큼 작게 그려져 늘어나 보였습니다. `canvas-effect.mjs` 1단계가
+   되돌린 코드에서 `{width:300, …}`로 실패하는 것을 확인했습니다.
+5. **`data-kt-*` 값은 JSON으로 해석됩니다.** 그래서 `effect` 자리에 정의 객체가 마크업에서
+   들어올 수 있었고, 셰이더 문자열이 컴파일될 뻔했습니다. 옵션으로는 등록된 **이름**만
+   받습니다. `canvas-effect.mjs`(Node)가 되돌린 코드에서 실패하는 것을 확인했습니다.
+
+### 검증
+
+- `npm run lint && npm run build && npm run test:node` 통과.
+- 브라우저: 전체 `test:browser`(크로미엄) 통과. 새 검사 `idle-cost`·`create-cost`·
+  `canvas-effect`·`text-word-wrap`·`browser-smoke`(55개 모듈)는 Firefox·WebKit에서도 통과.
+  Firefox 헤드리스에는 WebGL이 없어 `canvas-effect`가 셰이더 대신 대체 경로를 실제로 검증합니다.
+- 각 새 검사는 고치기 전 코드로 되돌려 실패하는 것을 확인했습니다(unread 루프, 화면 밖
+  marquee, rafId, Overflow Text 200 레이아웃, 코드 복사 칩, 로더 resume, padding box, 이름 전용).
+- 이 컨테이너에서만: `b2_navigation`의 히어로 스냅 궤적 검사가 다른 측정과 동시에 돌 때
+  한 번 실패했다가 단독 재실행에서 통과했습니다(CPU 경합, 회귀 아님).
+
+### 예산
+
+| 항목 | 이전 | 이후 |
+|---|---|---|
+| `kineto.umd.js` raw / gzip | 460.5 / 141.1 KB | **476.1 / 146.9 KB** |
+| `kineto.js` gzip | 159.3 KB | **165.9 KB** |
+| `canvasEffect` 모듈형 엔트리 gzip | — | **5.2 KB** (ROADMAP §4: 3KB를 넘는 primitive는 모듈형 분리 필수 — 충족) |
+| full / React / Vue consumer gzip (Vite) | 158.2 / 162.4 / 163.2 KB | **164.7 / 168.7 / 169.7 KB** |
+| core + 모듈 엔트리 (core-reveal / core-three) | 16.2 / 31.6 KB | **16.2 / 31.6 KB** (변화 없음) |
+| 패키지 packed / unpacked / 파일 | 605.2 / 1970.5 KB / 80 | **630.4 / 2037.6 KB / 81** |
+
 ## 2026-09-21 CI 복구 — 배포가 세 커밋 동안 멈춰 있던 이유
 
 `30d057f`(squircle) 부터 CI 가 계속 실패했고, `Deploy demo site` 는 CI 성공에 달려 있어
@@ -792,7 +868,7 @@ Slider의 소유 상태 복원 중복을 통합했습니다. 기존 예산·77�
 |---|---|---|
 | Lint | 통과 | source, tests, 모든 demo 스크립트 |
 | Build | 통과 | ESM, UMD, minified JS/CSS |
-| Feature contract | 통과 | 54 modules, 29 Core APIs |
+| Feature contract | 통과 | 55 modules, 31 Core APIs |
 | Owner requirements | 통과 | 48 locked requirements |
 | Docs / options parity | 통과 | 생성 문서와 설정 필드 계약 동기화 |
 | Package surface | 통과 | ESM, CommonJS, CSS, React/Vue/jQuery entry |

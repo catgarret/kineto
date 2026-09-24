@@ -359,6 +359,11 @@ function buildIndicator(host, type, opts) {
 }
 
 export default {
+  // Suspended by the core while the indicator is off screen (see SYSTEM
+  // SUSPENSION in src/core.js) — through the quiet suspend() hook below, since
+  // pause() here is public state. A page full of terminal loaders used to swap
+  // text nodes ~230 times a second with all of them out of sight.
+  offscreen: 'pause',
   create(el, opts = {}) {
     const type = variant(opts.type || opts.preset, ['spinner', 'dots', 'bar', 'shimmer', 'shimmer-wave', 'terminal'], 'spinner');
     const original = {
@@ -423,6 +428,11 @@ export default {
     let progress = clamp(Number(opts.progress ?? 0), 0, 100);
     let state = 'running';
     let destroyed = false;
+    // SYSTEM suspension (hidden tab / off screen), set only through suspend().
+    let suspended = false;
+    // What the drawn indicator should do: its public state, except that a
+    // system suspension holds a running indicator still.
+    const uiState = (value) => (suspended && value === 'running' ? 'paused' : value);
     let completionTimer = null;
     const progressSubscriptions = [];
     let finishResolve;
@@ -440,7 +450,7 @@ export default {
       const previous = state;
       state = next;
       el.dataset.ktLoadingState = next;
-      ui.setState?.(next);
+      ui.setState?.(uiState(next));
       progressOutputs.update(progress, next);
       opts.onStateChange?.(next, previous, el);
       emit('statechange', { previous });
@@ -564,15 +574,28 @@ export default {
       stop: complete,
       complete,
       trackPromise,
+      // pause()/resume() only move between 'running' and 'paused'. resume()
+      // used to set 'running' from ANY state, so a tab switch brought a
+      // completed or hidden indicator back as "running".
       pause() {
-        if (destroyed) return;
+        if (destroyed || state !== 'running') return;
         el.classList.add('is-paused');
         setState('paused');
       },
       resume() {
-        if (destroyed) return;
+        if (destroyed || state !== 'paused') return;
         el.classList.remove('is-paused');
         setState('running');
+      },
+      // Quiet SYSTEM suspension, called by the core while the tab is hidden or
+      // the indicator is off screen: the frame timers and CSS animations stop,
+      // but the public state, `data-kt-loading-state` and the state events stay
+      // exactly as they are — the page never sees a "paused" it didn't ask for.
+      suspend(on) {
+        if (destroyed || suspended === Boolean(on)) return;
+        suspended = Boolean(on);
+        el.classList.toggle('is-suspended', suspended);
+        ui.setState?.(uiState(state));
       },
       restart() {
         if (destroyed) return;

@@ -380,5 +380,11 @@ window.KINETO_MODULE_METADATA = Object.freeze({
     "accessibility": "manual",
     "performance": "medium",
     "reducedMotion": "final-state"
+  },
+  "canvasEffect": {
+    "category": "effects",
+    "accessibility": "manual",
+    "performance": "heavy",
+    "reducedMotion": "static"
   }
 });

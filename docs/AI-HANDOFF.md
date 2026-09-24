@@ -64,7 +64,7 @@ distinct positions, gesture-tail ownership and final-position assertions.
 - Package: `@dong-gri/kineto`
 - Current source version: `0.11.0`
 - Latest published npm version at the time of this handoff: `0.10.0`
-- Public surface: 54 modules and 29 Core APIs
+- Public surface: 55 modules and 31 Core APIs
 - Primary branch: `main`
 - Remote: `https://github.com/catgarret/kineto`
 
@@ -79,6 +79,28 @@ and Pages verification for that ongoing work, not an npm/MCP release or tag.
 Claude may be working concurrently: use an isolated checkout, preserve its
 changes, recheck remote main before pushing, and verify the deployed commit's
 own artefacts rather than a different agent's moving working tree.
+
+### Runtime conventions every module follows (2026-09-24)
+
+- **System suspension is one rule**: suspended ⇔ tab hidden OR element off
+  screen, applied only by `syncSuspension()` in `src/core.js` and kept apart
+  from the page's own `pause()`. A module joins the off-screen half with
+  `offscreen: 'pause'` (or a function of its options). A module whose `pause()`
+  is public state implements `suspend(on)` instead (Loading Indicator). Never
+  pause/resume from a module's own visibility or intersection code.
+- **Loops rest**: a loop that has caught up stops requesting frames and input
+  calls `wake()`; `pause()` clears the cancelled `rafId`. `tests/browser/idle-cost.mjs`
+  holds this.
+- **No write-then-read inside `create()`**: queue measurements with
+  `measureThenApply()` (`src/utils.js`) and cancel from `destroy()`.
+  `tests/browser/create-cost.mjs` counts forced layouts.
+- **Canvas Effect is a host, not an effect library**: effects are registered
+  with `Kineto.defineCanvasEffect()` by page code; markup and options may only
+  NAME one. Do not add effects to `src/`; recipes live in `demo/effects/` and
+  the prompt for AI tools in `AI-PROMPT-GUIDE.md` (the demo copies the same
+  text, and `tests/canvas-effect.mjs` checks they match).
+- **Counts are never written down**: tests read the module count from the
+  contract, demo copy uses `[data-kt-module-count]` or `{moduleCount}`.
 
 ## How to recover project history
 

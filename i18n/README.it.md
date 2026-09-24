@@ -157,6 +157,7 @@ Kineto.disableSmooth();
 | `flip` | `data-kt-flip` | Ordina/Aggiungi/Elimina conversione FLIP |
 | `scrollShadows` | `data-kt-scroll-shadows` | ombra del bordo di scorrimento |
 | `squircle` | `data-kt-squircle` | angoli superellisse su ogni browser |
+| `canvasEffect` | `data-kt-canvas-effect` | host per effetti Canvas 2D / WebGL / shader scritti da te |
 | `stickyHeader` | `data-kt-sticky-header` | Testata fissa pieghevole/con copertura |
 | `horizontalScroll` | `data-kt-horizontal-scroll` | Corretto lo scorrimento orizzontale |
 

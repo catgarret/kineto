@@ -157,6 +157,7 @@ Kineto.disableSmooth();
 | `flip` | `data-kt-flip` | Сортировать/Добавить/Удалить преобразование FLIP |
 | `scrollShadows` | `data-kt-scroll-shadows` | тень от края прокрутки |
 | `squircle` | `data-kt-squircle` | суперэллиптические углы во всех браузерах |
+| `canvasEffect` | `data-kt-canvas-effect` | хост для собственных эффектов Canvas 2D / WebGL / шейдеров |
 | `stickyHeader` | `data-kt-sticky-header` | Фиксированный коллектор складного/крышного типа |
 | `horizontalScroll` | `data-kt-horizontal-scroll` | Исправлена ​​горизонтальная прокрутка |
 

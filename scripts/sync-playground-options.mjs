@@ -53,6 +53,13 @@ for (const m of [...feat.modules].sort((a, b) => a.name.localeCompare(b.name))) 
 }
 const variantOptionsLiteral = `  const VARIANT_OPTIONS = ${JSON.stringify(variantOptions)};`;
 
+// Which attribute activates which module. The playground used to type this map
+// out by hand in three places, and a module added to the library but not to
+// those lists (Squircle) got no settings panel and no copyable code at all.
+const attributes = {};
+for (const m of [...feat.modules].sort((a, b) => a.name.localeCompare(b.name))) attributes[m.name] = m.attribute;
+const attributesLiteral = `  const CONTRACT_ATTRIBUTES = ${JSON.stringify(attributes)};`;
+
 const file = path.join(root, 'demo/playground.js');
 const src = fs.readFileSync(file, 'utf8');
 const re = /^ {2}const PUBLIC_OPTIONS = \{.*\};$/m;
@@ -65,10 +72,12 @@ const defRe = /^ {2}const PUBLIC_DEFAULTS = \{.*\};$/m;
 if (!defRe.test(src)) { console.error('sync-playground-options: PUBLIC_DEFAULTS block not found'); process.exit(1); }
 const varOptRe = /^ {2}const VARIANT_OPTIONS = \{.*\};$/m;
 if (!varOptRe.test(src)) { console.error('sync-playground-options: VARIANT_OPTIONS block not found'); process.exit(1); }
-const next = src.replace(re, literal).replace(variantsRe, variantsLiteral).replace(reqRe, requiresLiteral).replace(defRe, defaultsLiteral).replace(varOptRe, variantOptionsLiteral);
+const attrRe = /^ {2}const CONTRACT_ATTRIBUTES = \{.*\};$/m;
+if (!attrRe.test(src)) { console.error('sync-playground-options: CONTRACT_ATTRIBUTES block not found'); process.exit(1); }
+const next = src.replace(re, literal).replace(variantsRe, variantsLiteral).replace(reqRe, requiresLiteral).replace(defRe, defaultsLiteral).replace(varOptRe, variantOptionsLiteral).replace(attrRe, attributesLiteral);
 
 if (check) {
-  if (next !== src) { console.error('demo/playground.js PUBLIC_OPTIONS / PUBLIC_VARIANTS / VARIANT_REQUIRES / PUBLIC_DEFAULTS is out of sync with kineto.features.json. Run: node scripts/sync-playground-options.mjs'); process.exit(1); }
+  if (next !== src) { console.error('demo/playground.js PUBLIC_OPTIONS / PUBLIC_VARIANTS / VARIANT_REQUIRES / PUBLIC_DEFAULTS / CONTRACT_ATTRIBUTES is out of sync with kineto.features.json. Run: node scripts/sync-playground-options.mjs'); process.exit(1); }
   console.log('playground PUBLIC_OPTIONS in sync with features.json.');
 } else {
   if (next !== src) { fs.writeFileSync(file, next); console.log('Synced demo/playground.js PUBLIC_OPTIONS from features.json.'); }

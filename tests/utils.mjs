@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import Kineto from '../src/core.js';
 import { JSDOM } from 'jsdom';
-import { coerce, dash, decomposeHangul, hangulFrames, numberOption, q, readOpts, segmentText, snapshotAttributes, snapshotInlineStyles } from '../src/utils.js';
+import { coerce, dash, decomposeHangul, hangulFrames, measureThenApply, numberOption, q, readOpts, segmentText, snapshotAttributes, snapshotInlineStyles } from '../src/utils.js';
 
 assert.equal(dash('scrollSequence'), 'scroll-sequence');
 assert.equal(coerce('true'), true);
@@ -115,6 +115,53 @@ assert.doesNotThrow(() => Kineto.destroy());
   c.style.webkitUserDrag = 'none';
   restoreC();
   assert.equal(c.style.webkitUserDrag, 'element', 'an authored vendor member value is restored in DOM adapters');
+}
+
+// measureThenApply — the shared layout pass. Every read queued in one frame
+// runs before any apply (so one layout serves all of them), applies keep their
+// order, a failing step does not take the others down, and work an apply
+// queues goes to the NEXT frame rather than reading a half-written DOM.
+{
+  const frames = [];
+  const savedRaf = globalThis.requestAnimationFrame;
+  const savedError = console.error;
+  globalThis.requestAnimationFrame = (callback) => { frames.push(callback); return frames.length; };
+  const errors = [];
+  console.error = (...args) => errors.push(args);
+  try {
+    const log = [];
+    measureThenApply(() => { log.push('read a'); return 1; }, (value) => log.push(`apply a ${value}`));
+    measureThenApply(() => { throw new Error('read failed'); }, () => log.push('apply broken'));
+    measureThenApply(() => { log.push('read b'); return 2; }, (value) => {
+      log.push(`apply b ${value}`);
+      measureThenApply(() => { log.push('read c'); return 3; }, (next) => log.push(`apply c ${next}`));
+    });
+    assert.equal(frames.length, 1, 'one frame is requested for every job queued before it');
+    assert.deepEqual(log, [], 'nothing runs synchronously');
+    frames.shift()();
+    assert.deepEqual(log, ['read a', 'read b', 'apply a 1', 'apply b 2'], 'all reads first, then the applies in order; a failed read skips only its own apply');
+    assert.equal(errors.length, 1, 'the failed step is reported');
+    assert.equal(frames.length, 1, 'work queued by an apply waits for the next frame');
+    frames.shift()();
+    assert.deepEqual(log.slice(-2), ['read c', 'apply c 3']);
+    // A cancelled job never runs, and the shared frame goes once it is empty.
+    let cancelledFrame = null;
+    const savedCancel = globalThis.cancelAnimationFrame;
+    globalThis.cancelAnimationFrame = (id) => { cancelledFrame = id; };
+    const cancel = measureThenApply(() => { log.push('read d'); }, () => log.push('apply d'));
+    cancel();
+    assert.equal(cancelledFrame, frames.length, 'the frame nothing is waiting for is cancelled');
+    frames.length = 0;
+    globalThis.cancelAnimationFrame = savedCancel;
+    assert.ok(!log.includes('read d'), 'a cancelled job never reads');
+    globalThis.requestAnimationFrame = undefined;
+    let immediate = null;
+    measureThenApply(() => 'now', (value) => { immediate = value; });
+    assert.equal(immediate, 'now', 'without requestAnimationFrame the pair runs at once');
+  } finally {
+    globalThis.requestAnimationFrame = savedRaf;
+    console.error = savedError;
+  }
 }
 
 console.log('Utility and SSR checks OK.');

@@ -84,6 +84,7 @@ export default {
 
     const cursor = document.createElement('div');
     cursor.className = `kt-cursor kt-cursor-${type}${opts.className ? ` ${opts.className}` : ''}`;
+    cursor.classList.add('kt-cursor-idle'); // hidden until the pointer arrives — see setVisible()
     cursor.setAttribute('aria-hidden', 'true');
     cursor.style.cssText = `position:fixed;top:0;left:0;z-index:${zIndex};pointer-events:none;opacity:0;color:${color};mix-blend-mode:${mixBlendMode};transition:opacity .18s var(--kt-ease-ui, ease);`;
 
@@ -267,9 +268,28 @@ export default {
     let hoverTarget = null;
     let insideScope = !scoped;
 
+    // The render loop runs only while there is something to move (see render
+    // below). While the cursor is hidden it does not run at all, so whatever
+    // was drawn last is stale by the time it reappears — snap everything to
+    // the pointer first, which is exactly where an always-on loop would have
+    // converged, so reappearing looks the same as it always did.
+    const snapToPointer = () => {
+      x = mouseX;
+      y = mouseY;
+      chain.xs = chain.xs.map(() => mouseX);
+      chain.ys = chain.ys.map(() => mouseY);
+    };
     const setVisible = (next) => {
+      if (next && !visible) {
+        snapToPointer();
+        visible = true;
+        wake();
+      }
       visible = next;
       cursor.style.opacity = next ? String(opacity) : '0';
+      // An invisible cursor's own keyframes (the text ring's spin) stop too —
+      // they kept the compositor busy with the pointer nowhere near.
+      cursor.classList.toggle('kt-cursor-idle', !next);
     };
     // Hover behavior: when the cursor has an inner dot, the DOT grows to fill
     // the ring (the ring itself stays put) — 'ring' restores the old scaling.
@@ -278,6 +298,7 @@ export default {
     const followerScale = () => (hoverTarget && hoverEffect === 'ring' ? hoverScale : 1) * (pressed ? pressScale : 1);
     const enterTarget = (target) => {
       hoverTarget = target;
+      wake();
       cursor.classList.add('is-hover');
       // image/custom cursors can react to hover: swap the image, swap the
       // custom HTML, or just add a class you style yourself.
@@ -341,6 +362,7 @@ export default {
       opts.onEnter?.(target, cursor);
     };
     const leaveTarget = () => {
+      wake();
       const previous = hoverTarget;
       hoverTarget = null;
       cursor.classList.remove('is-hover');
@@ -406,6 +428,7 @@ export default {
     const onMove = (event) => {
       mouseX = event.clientX;
       mouseY = event.clientY;
+      wake();
       if (scoped) insideScope = Boolean(event.target && typeof event.target.closest === 'function' && (event.target.closest('[data-kt-cursor-scope]') === el || el.contains(event.target)));
       const show = shouldShowAt(event) && pointInsideViewport(event) && !event.target?.closest?.(hiddenSelector);
       if (show !== visible) setVisible(show);
@@ -438,16 +461,20 @@ export default {
     };
     const onDown = (event) => {
       pressed = true;
+      wake();
       cursor.classList.add('is-pressed');
       if (visible && (opts.clickSprite || opts.clickImage)) clickEffects.spawn(event.clientX, event.clientY);
     };
-    const onUp = () => { pressed = false; cursor.classList.remove('is-pressed'); };
+    const onUp = () => { pressed = false; wake(); cursor.classList.remove('is-pressed'); };
     const onWindowOut = (event) => { if (!event.relatedTarget) setVisible(false); };
     const onScopeLeave = () => { insideScope = false; setVisible(false); if (hoverTarget) leaveTarget(); };
 
     let lastFrame = 0;
     const frameEase = (amount, time) => 1 - ((1 - amount) ** Math.min(4, Math.max(0.25, time / 16.667)));
+    // Below this many pixels of travel left, a follower is where it is going.
+    const SETTLED = 0.05;
     const render = (time = performance.now()) => {
+      rafId = null;
       if (!alive) return;
       const elapsed = lastFrame ? time - lastFrame : 16.667;
       lastFrame = time;
@@ -495,6 +522,8 @@ export default {
           leadY = chain.ys[index];
         });
       } else if (type === 'orbit') {
+        // Orbiting glyphs keep circling while the cursor is shown, so this
+        // type never settles — it only stops when the cursor is hidden.
         // Ellipse → circle bloom on hover, eased for smoothness. Pressing
         // contracts the ring by pressScale so a click on a target is felt.
         const orbitBase = (hoverTarget ? chain.orbitHoverRadius : chain.orbitRadius) * (pressed ? pressScale : 1);
@@ -507,8 +536,38 @@ export default {
           node.style.transform = `translate3d(${Math.round(ox)}px,${Math.round(oy)}px,0)`;
         });
       }
-      rafId = requestAnimationFrame(render);
+      // Ask for another frame only while something is still moving. At rest —
+      // pointer still, followers caught up — the loop stops, and the next
+      // pointer move, press or hover change wakes it (see wake()). It used to
+      // run forever per instance: the demo page, with fourteen cursors, spent
+      // ~280 rAF callbacks a second on cursors nobody was pointing at.
+      if (visible && (type === 'orbit' || !settled())) rafId = requestAnimationFrame(render);
     };
+    // Has every follower reached its leader? The follower and each chain link
+    // chase the pointer (or the link ahead of them); the snake's glyphs also
+    // ease their size, so a shrinking stack is still "moving".
+    const settled = () => {
+      if (Math.abs(x - mouseX) > SETTLED || Math.abs(y - mouseY) > SETTLED) return false;
+      if (type !== 'trail' && type !== 'snake') return true;
+      let leadX = mouseX;
+      let leadY = mouseY;
+      for (let index = 0; index < chain.nodes.length; index += 1) {
+        if (Math.abs(chain.xs[index] - leadX) > SETTLED || Math.abs(chain.ys[index] - leadY) > SETTLED) return false;
+        leadX = chain.xs[index];
+        leadY = chain.ys[index];
+      }
+      if (type === 'snake') {
+        const minScale = chain.minScale ?? 0.42;
+        if (chain.scales.some((scale) => Math.abs(scale - minScale) > 0.002)) return false;
+      }
+      return true;
+    };
+    function wake() {
+      if (alive && rafId == null) {
+        lastFrame = 0;
+        rafId = requestAnimationFrame(render);
+      }
+    }
 
     window.addEventListener('pointermove', onMove, { passive: true });
     document.addEventListener('pointerover', onOver);
@@ -526,8 +585,9 @@ export default {
       setLabel(text = '') { if (label) { label.textContent = text; label.style.opacity = text ? '1' : '0'; } },
       show() { cursor.hidden = false; setVisible(true); },
       hide() { setVisible(false); },
-      pause() { alive = false; if (rafId != null) cancelAnimationFrame(rafId); cursor.hidden = true; },
-      resume() { if (!alive) { alive = true; lastFrame = 0; cursor.hidden = false; rafId = requestAnimationFrame(render); } },
+      // rafId is cleared with the cancel so wake() can schedule again later.
+      pause() { alive = false; if (rafId != null) cancelAnimationFrame(rafId); rafId = null; cursor.hidden = true; },
+      resume() { if (!alive) { alive = true; cursor.hidden = false; wake(); } },
       destroy() {
         alive = false;
         if (rafId != null) cancelAnimationFrame(rafId);

@@ -309,6 +309,12 @@
       "module": "squircle",
       "title": "One corner shape on every browser",
       "acceptance": "Squircle draws CSS corner-shape's curve — squircle, round, bevel, scoop, notch, square and any superellipse(K) between them — using the native property where the browser has it and the identical outline everywhere else, redrawing on resize and restoring the element on destroy."
+    },
+    {
+      "id": "MK-CANVAS-001",
+      "module": "canvasEffect",
+      "title": "A host for AI-written canvas and WebGL effects",
+      "acceptance": "Canvas Effect runs an effect the page defines (Canvas 2D, WebGL, or a bare fragment shader) behind the element's content: it owns the canvas, the capped pixel ratio, resizing, the frame loop and its rest state, pointer and scroll input, off-screen and hidden-tab pausing, a still frame under reduced motion, quality tiers, WebGL context loss and a fallback to the element's own background, and restores the element on destroy — while markup can only name an effect the page's scripts registered, never supply code."
     }
   ]
 }

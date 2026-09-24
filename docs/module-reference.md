@@ -5,10 +5,10 @@
 - Library: 0.11.0
 - Feature contract: 1.7.0
 - Behavior contract: 1.2.0
-- Public modules: 54
+- Public modules: 55
 - Root properties: `version`, `easings`, `prefersReducedMotion`, `env`, `performance`, `registry`, `instanceCount`, `smoothEnabled`, `lenis`, `core`, `diagnostics`, `diagnosticCodes`
-- Core methods: `autoInit()`, `config()`, `create()`, `destroy()`, `destroyModule()`, `disableSmooth()`, `easing()`, `easingFn()`, `enableSmooth()`, `getEngineSource()`, `getInstance()`, `init()`, `initModules()`, `listTerminalFramePresets()`, `observe()`, `pause()`, `refresh()`, `register()`, `replay()`, `resume()`, `scan()`, `scrollTo()`, `setAnimationEngine()`, `setEngineSource()`, `setReducedMotion()`, `states()`, `toggleSmooth()`, `unregister()`, `updateModule()`
-- Additional named exports: `modules`, `listTerminalFramePresets`, `states`
+- Core methods: `autoInit()`, `config()`, `create()`, `defineCanvasEffect()`, `destroy()`, `destroyModule()`, `disableSmooth()`, `easing()`, `easingFn()`, `enableSmooth()`, `getEngineSource()`, `getInstance()`, `init()`, `initModules()`, `listCanvasEffects()`, `listTerminalFramePresets()`, `observe()`, `pause()`, `refresh()`, `register()`, `replay()`, `resume()`, `scan()`, `scrollTo()`, `setAnimationEngine()`, `setEngineSource()`, `setReducedMotion()`, `states()`, `toggleSmooth()`, `unregister()`, `updateModule()`
+- Additional named exports: `modules`, `listTerminalFramePresets`, `states`, `defineCanvasEffect`, `listCanvasEffects`
 
 각 모듈의 이름, 활성화 속성, 기본 모드, 허용 모드, 공개 옵션은 patch/minor 릴리스에서 임의로 변경할 수 없습니다.
 
@@ -389,3 +389,10 @@
 - Default variant: `pin`
 - Variants: `pin`
 - Public options: `height`, `smooth`, `top`
+
+## canvasEffect
+
+- Attribute: `data-kt-canvas-effect`
+- Default variant: `custom`
+- Variants: `custom`
+- Public options: `background`, `color`, `color2`, `density`, `distortion`, `effect`, `fps`, `maxDpr`, `onError`, `pauseOffscreen`, `pointer`, `preset`, `quality`, `reducedMotion`, `scroll`, `size`, `speed`, `strength`

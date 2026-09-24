@@ -1,5 +1,12 @@
 import { labeller } from '../utils.js';
 
+// Set on <html> while the viewer is open, so a page can restyle what sits under
+// it (a custom cursor, a sticky header) with a plain class selector instead of
+// `body:has(#kt-lightbox:not([hidden]))` — a :has() on <body> makes the browser
+// re-check the whole page on every DOM change. A class, not a data-kt-*
+// attribute, so Kineto.observe() never treats it as a module to scan.
+const OPEN_CLASS = 'kt-lightbox-open';
+
 const entries = new Set();
 let manager = null;
 
@@ -431,6 +438,7 @@ function createManager(label) {
       root.style.display = 'none';
       root.style.opacity = '1';
       document.body.style.overflow = previousOverflow;
+      document.documentElement.classList.remove(OPEN_CLASS);
       lazyInstance?.destroy?.();
       lazyInstance = null;
       previousFocus?.focus?.();
@@ -448,6 +456,7 @@ function createManager(label) {
     root.style.display = 'block';
     root.style.opacity = '0';
     document.body.style.overflow = 'hidden';
+    document.documentElement.classList.add(OPEN_CLASS);
     const duration = Math.max(0, Number(entry.duration ?? 0.12));
     root.style.transition = `opacity ${duration}s ease`;
     requestAnimationFrame(() => { root.style.opacity = '1'; });
@@ -644,6 +653,7 @@ function createManager(label) {
       lazyInstance?.destroy?.();
       document.removeEventListener('keydown', onKeyDown);
       document.body.style.overflow = previousOverflow;
+      document.documentElement.classList.remove(OPEN_CLASS);
       root.remove();
       // 뷰어와 같이 들어온 것이므로 같이 나갑니다. 이 destroy 는 마지막 lightbox 가
       // 사라질 때만 불리므로, 다음에 열리면 createManager 가 다시 넣어 줍니다.

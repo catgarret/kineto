@@ -17,6 +17,9 @@ function backgroundIsDark(el) {
 const NOISE_CHARS = '!@#$%^&*()<>?/|{}~ABCDEFGHIJabcdefghij0123456789';
 
 export default {
+  // Paused by the core while the element is off screen and resumed as it
+  // returns (ambient bursts are timers that keep firing). See `offscreen` in src/core.js.
+  offscreen: 'pause',
   create(el, opts) {
     let destroyed = false;
     const type = opts.preset || opts.type || 'rgb';

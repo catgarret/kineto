@@ -72,6 +72,15 @@ assert.ok(/data-kt-module-count/.test(demoHtml), 'demo has [data-kt-module-count
 assert.ok(/data-kt-build/.test(demoHtml), 'demo has [data-kt-build] hook');
 assert.match(demoHtml, new RegExp(`data-kt-module-count>${moduleCount}<`), 'demo count starts from the feature contract');
 assert.doesNotMatch(demoHtml, /\b51\b/, 'demo must not retain the previous 51-module copy');
+// Every live count is a [data-kt-module-count] hook, and every count that has
+// to stay literal (the meta description, the Blur Text hero line) matches the
+// contract — so adding a module fails here until the copy follows.
+for (const [, count] of demoHtml.matchAll(/(\d+)(?:개 (?:모션 |공개 )?모듈| modules\b)/g)) {
+  assert.equal(Number(count), moduleCount, `demo copy still says ${count} modules`);
+}
+const copyTable = fs.readFileSync(path.join(root, 'demo', 'copy-i18n.js'), 'utf8');
+assert.doesNotMatch(copyTable.split('"cards"')[0], /\d+\s*(?:modules|moduli|モジュール|个|個|модул)/i,
+  'translated demo copy must say {moduleCount}, never a number');
 
 // Keep the project status links visible in the public hero. These are part of
 // the demo's trust surface, not optional decoration.

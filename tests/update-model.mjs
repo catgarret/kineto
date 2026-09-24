@@ -98,5 +98,50 @@ assert.deepEqual([pauses, resumes], counts, 'destroyed normalized instances rema
 assert.equal(Kineto.instanceCount, 0);
 Kineto.unregister('visibilityProbe');
 
+// A module whose pause() is public state suspends QUIETLY: the core tells its
+// suspend(on) hook about every system change, whatever the page's own pause
+// says, and never holds back the page's resume() — the module keeps its own
+// work stopped while suspended.
+const quietCalls = []; let quietResumes = 0;
+Kineto.register('quietProbe', { create: () => ({
+  pause() {}, resume() { quietResumes++; }, suspend(on) { quietCalls.push(on); }, destroy() {}
+}) });
+const quiet = Kineto.create('quietProbe', btn);
+visibility(true); visibility(false);
+assert.deepEqual(quietCalls, [true, false], 'a quiet module hears the hidden tab through suspend(), not pause()');
+quiet.pause(); visibility(true);
+assert.deepEqual(quietCalls, [true, false, true], 'a quiet module is suspended even while the page has it paused');
+quiet.resume();
+assert.equal(quietResumes, 1, "a quiet module takes the page's resume() at once, even while suspended");
+visibility(false);
+assert.deepEqual(quietCalls, [true, false, true, false], 'and is unsuspended when the tab returns');
+quiet.destroy(); visibility(true); visibility(false);
+assert.deepEqual(quietCalls, [true, false, true, false], 'a destroyed quiet module hears nothing more');
+Kineto.unregister('quietProbe');
+
+// Loading Indicator: pause()/resume() only move between running and paused,
+// and a tab switch is a quiet suspension — a hidden indicator stays hidden and
+// the page hears no state change. (resume() used to force 'running' from any
+// state, so every tab switch revived finished indicators.)
+const loadingHost = w.document.body.appendChild(w.document.createElement('div'));
+const seenStates = [];
+loadingHost.addEventListener('kt-loading-indicator-statechange', (event) => seenStates.push(event.detail.state));
+const loading = Kineto.create('loadingIndicator', loadingHost, { type: 'spinner' });
+visibility(true);
+assert.equal(loading.state, 'running', 'a hidden tab must not change the public state');
+assert.ok(loadingHost.classList.contains('is-suspended'), 'but it must stop the drawn motion');
+visibility(false);
+assert.ok(!loadingHost.classList.contains('is-suspended'), 'and restart it when the tab returns');
+assert.deepEqual(seenStates, [], 'a tab switch must not send state events');
+loading.hide();
+loading.resume();
+assert.equal(loading.state, 'hidden', 'resume() must not revive a hidden indicator');
+visibility(true); visibility(false);
+assert.equal(loading.state, 'hidden', 'nor may a tab switch');
+loading.show(); loading.pause(); loading.resume();
+assert.deepEqual(seenStates, ['hidden', 'running', 'paused', 'running'], 'only real state changes are reported');
+loading.destroy();
+assert.ok(!loadingHost.classList.contains('is-suspended') && !loadingHost.hasAttribute('class'), 'destroy() restores the host');
+
 console.log('update-model OK — in-place update/recreate and explicit pause versus page visibility verified.');
 process.exit(0);

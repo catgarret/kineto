@@ -194,7 +194,15 @@ const BUDGET = {
   // measured ceiling up to the next whole KB.
   // 2026-09-24: Node 24/npm 11 CI measures just over 606.0 KB for the
   // same archive that is 604.5 KB locally. Keep a bounded 1 KB runner margin.
-  packedKb: 607,
+  // 2026-09-24 (canvasEffect, module 55): the canvas / WebGL effect host and its
+  // modular entry, the shared layout-read batch, the system-suspension rule,
+  // the effect guide's docs and seven-language option help measure 630.8 KB
+  // packed / 2038.7 KB unpacked on 81 files locally (on top of the Dock/glass
+  // change above) — the one new file is the module's own modular entry
+  // (dist/modular/modules/canvasEffect.js), which every module has. Packed
+  // keeps the runner margin recorded above (CI archives about 1.5 KB larger):
+  // 630.8 + 1.5 rounded up to the next whole KB.
+  packedKb: 633,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -225,8 +233,9 @@ const BUDGET = {
   // glass note for 1935.4 KB.
   // 2026-09-24: continuous Dock anchoring and glass fallback/settling add 1.2 KB
   // unpacked (1972.1 KB locally); same 80 files; packed runner margin recorded above.
-  unpackedKb: 1973,
-  files: 80
+  // See the canvasEffect note above for the unpacked measurement and the 81st file.
+  unpackedKb: 2039,
+  files: 81
 };
 
 console.log(`release package: ${packedKb.toFixed(1)} KB packed · ${unpackedKb.toFixed(1)} KB unpacked · ${files.length} files`);

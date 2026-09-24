@@ -10,7 +10,7 @@ Kineto는 `dongri.me`의 픽셀 모자이크 실험에서 시작한 인터랙션
 
 - 버전: `0.11.0`
 - 공개 모듈: 53개
-- Core API: 29개
+- Core API: 31개
 - 소유자 고정 요구사항: 50개
 - 라이브 플레이그라운드: 227개
 - Smooth Scroll: 기본 비활성화, Lenis runtime API로 선택 사용

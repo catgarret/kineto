@@ -1,6 +1,9 @@
 import { clamp, ensureGyroPermission, env, lerp, snapshotInlineStyles } from '../utils.js';
 
 export default {
+  // Suspended by the core while the element is off screen (see `offscreen` in
+  // src/core.js): pointer moves no longer steer layers nobody can see.
+  offscreen: 'pause',
   create(el, opts) {
     const environment = env();
     const mode = opts.mode || opts.preset;
@@ -21,9 +24,14 @@ export default {
       let rafId = null;
       // On touch devices the dial follows the real device heading (gyro).
       const useGyro = opts.gyro !== false && environment.touch && environment.hasGyro;
+      // The dial eases towards its target and then stops asking for frames;
+      // every pointer move or heading change wakes it again. It used to spin
+      // its loop forever with the dial already pointing the right way.
+      const wake = () => { if (alive && rafId == null) rafId = requestAnimationFrame(tick); };
       const onGyroCompass = (event) => {
         if (event.alpha == null) return;
         target = -event.alpha * sensitivity;
+        wake();
       };
       const onMove = (event) => {
         const rect = el.getBoundingClientRect();
@@ -41,8 +49,10 @@ export default {
           ) * 180 / Math.PI;
           target = angle * sensitivity;
         }
+        wake();
       };
-      const tick = () => {
+      function tick() {
+        rafId = null;
         if (!alive) return;
         // Rotate along the shortest arc so the dial never spins the long way.
         let delta = (target - current) % 360;
@@ -50,8 +60,8 @@ export default {
         if (delta < -180) delta += 360;
         current += delta * smoothing;
         el.style.transform = `rotate(${(current + offset).toFixed(3)}deg)`;
-        rafId = requestAnimationFrame(tick);
-      };
+        if (Math.abs(delta) > 0.01) rafId = requestAnimationFrame(tick);
+      }
       if (useGyro) {
         ensureGyroPermission().then((granted) => {
           if (granted && alive) window.addEventListener('deviceorientation', onGyroCompass, { passive: true });
@@ -63,8 +73,9 @@ export default {
       return {
         el,
         type: 'mouseParallax',
-        pause: () => { alive = false; if (rafId != null) cancelAnimationFrame(rafId); },
-        resume: () => { if (!alive) { alive = true; rafId = requestAnimationFrame(tick); } },
+        // rafId is cleared with the cancel so wake() can schedule again later.
+        pause: () => { alive = false; if (rafId != null) cancelAnimationFrame(rafId); rafId = null; },
+        resume: () => { if (!alive) { alive = true; wake(); } },
         destroy: () => {
           alive = false;
           if (rafId != null) cancelAnimationFrame(rafId);
@@ -93,6 +104,9 @@ export default {
     const currentX = targets.map(() => 0);
     const currentY = targets.map(() => 0);
 
+    // Layers ease towards the pointer and then stop asking for frames; the
+    // next pointer move or tilt wakes them. The loop used to run forever.
+    const wake = () => { if (alive && rafId == null) rafId = requestAnimationFrame(tick); };
     const onPointerMove = (event) => {
       const rect = opts.global
         ? { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight }
@@ -100,11 +114,13 @@ export default {
       if (!rect.width || !rect.height) return;
       xTarget = (((event.clientX - rect.left) / rect.width) - 0.5) * 2;
       yTarget = (((event.clientY - rect.top) / rect.height) - 0.5) * 2;
+      wake();
     };
 
     const onGyro = (event) => {
       xTarget = clamp((event.gamma || 0) / 30, -1, 1);
       yTarget = clamp((event.beta || 0) / 30, -1, 1);
+      wake();
     };
 
     if (useGyro) {
@@ -115,19 +131,24 @@ export default {
       eventTarget.addEventListener('pointermove', onPointerMove, { passive: true });
     }
 
-    const tick = () => {
+    function tick() {
+      rafId = null;
       if (!alive) return;
+      let moving = false;
       targets.forEach((target, index) => {
         // Subtle depth multiplier (unchanged default so existing layouts don't
         // suddenly move). For a full `maxX`/`maxY` travel set data-kt-speed (or
         // per-child data-mp-speed) explicitly.
         const multiplier = Number(target.dataset.mpSpeed ?? target.dataset.ktMouseSpeed ?? opts.speed ?? 0.05);
-        currentX[index] = lerp(currentX[index], xTarget * maxX * multiplier, ease);
-        currentY[index] = lerp(currentY[index], yTarget * maxY * multiplier, ease);
+        const goalX = xTarget * maxX * multiplier;
+        const goalY = yTarget * maxY * multiplier;
+        currentX[index] = lerp(currentX[index], goalX, ease);
+        currentY[index] = lerp(currentY[index], goalY, ease);
+        if (Math.abs(goalX - currentX[index]) > 0.01 || Math.abs(goalY - currentY[index]) > 0.01) moving = true;
         target.style.transform = `translate3d(${currentX[index]}px, ${currentY[index]}px, 0)`;
       });
-      rafId = requestAnimationFrame(tick);
-    };
+      if (moving) rafId = requestAnimationFrame(tick);
+    }
     rafId = requestAnimationFrame(tick);
 
     return {
@@ -136,11 +157,12 @@ export default {
       pause: () => {
         alive = false;
         if (rafId != null) cancelAnimationFrame(rafId);
+        rafId = null; // or wake() would never schedule again after resume()
       },
       resume: () => {
         if (!alive) {
           alive = true;
-          rafId = requestAnimationFrame(tick);
+          wake();
         }
       },
       destroy: () => {

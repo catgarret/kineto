@@ -940,7 +940,8 @@ try {
     // Overflow modes and mask directions.
     const rewind=document.querySelector('[data-kt-overflow-text="rewind"]'); const rewindInstance=Kineto.getInstance(rewind,'overflowText');
     result.rewind=Boolean(rewindInstance)&&rewind.querySelector('.kt-overflow-text-track')!==null;
-    const rolling=document.querySelector('[data-kt-overflow-text="rolling"]'); const rollingInstance=Kineto.getInstance(rolling,'overflowText'); const ri=rollingInstance?.index; await sleep(1650); result.rolling=rollingInstance?.index!==ri;
+    // In view: off screen the core suspends it (SYSTEM SUSPENSION in src/core.js).
+    const rolling=document.querySelector('[data-kt-overflow-text="rolling"]'); rolling.scrollIntoView({block:'center'}); await sleep(250); const rollingInstance=Kineto.getInstance(rolling,'overflowText'); const ri=rollingInstance?.index; await sleep(1650); result.rolling=rollingInstance?.index!==ri;
     // Card surface + border.
     const surfaceCard=Array.from(document.querySelectorAll('[data-kt-card-glow]')).find((el)=>el.dataset.ktSurface==='true');
     result.card=Boolean(surfaceCard?.querySelector('.kt-card-glow-surface')&&surfaceCard?.querySelector('.kt-card-glow-border'));
@@ -966,7 +967,7 @@ try {
     result.shadowRestoresBase=getComputedStyle(shadowHost).boxShadow===baseShadow;
     shadowHost.remove();
     // Text transition and RGB glitch.
-    const transition=document.querySelector('[data-kt-text-transition]'); const ti=Kineto.getInstance(transition,'textTransition'); const before=ti.index; ti.next(); await sleep(1050); result.transition=ti.index!==before;
+    const transition=document.querySelector('[data-kt-text-transition]'); transition.scrollIntoView({block:'center'}); await sleep(250); const ti=Kineto.getInstance(transition,'textTransition'); const before=ti.index; ti.next(); await sleep(1050); result.transition=ti.index!==before;
     const glitch=document.querySelector('[data-kt-glitch="rgb"]'); result.glitch=glitch.querySelectorAll('span').length>=5;
     // Class-only reveal.
     const classReveal=document.querySelector('[data-kt-reveal="class"]'); Kineto.getInstance(classReveal,'reveal').replay(); await sleep(40); result.classHook=classReveal.classList.contains('is-inview');

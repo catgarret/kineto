@@ -1,6 +1,6 @@
 # Module Catalog
 
-공개 모듈은 정확히 **53개**입니다. 각 모듈은 `Kineto.<name>(target, options)`와 대응하는 `data-kt-*` 활성화 속성을 제공합니다. 전체 옵션·변형은 [module-reference.md](../module-reference.md)와 `kineto.features.json`을 참고하세요.
+공개 모듈은 정확히 **55개**입니다. 각 모듈은 `Kineto.<name>(target, options)`와 대응하는 `data-kt-*` 활성화 속성을 제공합니다. 전체 옵션·변형은 [module-reference.md](../module-reference.md)와 `kineto.features.json`을 참고하세요.
 
 | 모듈 | 속성 | 핵심 역할 |
 |---|---|---|
@@ -42,6 +42,7 @@
 | `fullpage` | `data-kt-fullpage` | fullpage section paging |
 | `scrollShadows` | `data-kt-scroll-shadows` | CSS edge shadows on scroll containers |
 | `squircle` | `data-kt-squircle` | Superellipse corners (CSS `corner-shape`) on every browser |
+| `canvasEffect` | `data-kt-canvas-effect` | [host for your own Canvas 2D / WebGL / shader effects](canvas-effect.md) — sizing, pixel ratio, frame loop, pointer, pausing |
 | `stickyHeader` | `data-kt-sticky-header` | shrinking / cover-to-fixed sticky header |
 | `horizontalScroll` | `data-kt-horizontal-scroll` | pinned horizontal scroll section |
 | `accordion` | `data-kt-accordion` | accessible details accordion |

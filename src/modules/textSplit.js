@@ -8,7 +8,8 @@ import {
   snapshotChildNodes,
   snapshotInlineStyles,
   ST,
-  textWithLineBreaks
+  textWithLineBreaks,
+  wordSink
 } from '../utils.js';
 
 // Per-animation from/to states. "rise" clips inside an overflow wrapper,
@@ -45,17 +46,20 @@ const SWAP_OUT = {
 
 function buildUnits(el, text, by, wrap) {
   const units = [];
+  // Units go into word boxes so a split line only wraps between words
+  // (utils.wordSink); whitespace closes the word and stays a wrap point.
+  const sink = wordSink(el);
   const appendBreak = () => {
     const br = document.createElement('br');
     br.setAttribute('aria-hidden', 'true');
-    el.appendChild(br);
+    sink.gap(br);
   };
   const appendWhitespace = (content) => {
     const parts = normalizeTextLineBreaks(content).split(/(\n)/);
     parts.forEach((part) => {
       if (!part) return;
       if (part === '\n') appendBreak();
-      else el.appendChild(document.createTextNode(part));
+      else sink.gap(document.createTextNode(part));
     });
   };
   const addUnit = (content) => {
@@ -69,9 +73,9 @@ function buildUnits(el, text, by, wrap) {
       const wrapper = document.createElement('span');
       wrapper.style.cssText = 'display:inline-block;overflow:hidden;vertical-align:bottom;';
       wrapper.appendChild(span);
-      el.appendChild(wrapper);
+      sink.add(wrapper);
     } else {
-      el.appendChild(span);
+      sink.add(span);
     }
     units.push(span);
   };

@@ -54,6 +54,7 @@ import scrollShadowsModule from './modules/scrollShadows.js';
 import squircleModule from './modules/squircle.js';
 import stickyHeaderModule from './modules/stickyHeader.js';
 import horizontalScrollModule from './modules/horizontalScroll.js';
+import canvasEffectModule from './modules/canvasEffect.js';
 import { listTerminalFramePresets } from './modules/loadingIndicator/terminalFramePresets.js';
 import createStates from './states.js';
 
@@ -111,7 +112,8 @@ const moduleEntries = {
   scrollShadows: scrollShadowsModule,
   squircle: squircleModule,
   stickyHeader: stickyHeaderModule,
-  horizontalScroll: horizontalScrollModule
+  horizontalScroll: horizontalScrollModule,
+  canvasEffect: canvasEffectModule
 };
 
 Object.entries(moduleEntries).forEach(([name, module]) => Kineto.register(name, module));
@@ -175,6 +177,7 @@ export const scrollShadows = call('scrollShadows');
 export const squircle = call('squircle');
 export const stickyHeader = call('stickyHeader');
 export const horizontalScroll = call('horizontalScroll');
+export const canvasEffect = call('canvasEffect');
 
 export { moduleEntries as modules };
 
@@ -182,8 +185,14 @@ export { moduleEntries as modules };
 // (and the playground) can hide settings a preset does not support instead of
 // keeping a hand-maintained duplicate of the same list.
 Kineto.listTerminalFramePresets = listTerminalFramePresets;
+// Canvas Effect: effects are registered by the page and NAMED in markup
+// (<div data-kt-canvas-effect="my-effect">). See src/modules/canvasEffect.js.
+Kineto.defineCanvasEffect = canvasEffectModule.define;
+Kineto.listCanvasEffects = canvasEffectModule.list;
 Kineto.states = (definitions, options = {}) => createStates(definitions, options, Kineto);
 export { listTerminalFramePresets };
+export const defineCanvasEffect = canvasEffectModule.define;
+export const listCanvasEffects = canvasEffectModule.list;
 export const states = (definitions, options = {}) => createStates(definitions, options, Kineto);
 
 export default Kineto;

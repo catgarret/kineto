@@ -8,6 +8,9 @@ function bool(value, fallback = false) {
 }
 
 export default {
+  // Paused by the core while the element is off screen and resumed as it
+  // returns (the aurora and comet looks are endless CSS animations). See `offscreen` in src/core.js.
+  offscreen: 'pause',
   create(el, opts = {}) {
     // Optional: skip entirely on touch devices (gyro/hover effects off).
     if (opts.disableOnMobile === true && typeof window !== 'undefined' && window.matchMedia?.('(hover: none), (pointer: coarse)').matches) return null;

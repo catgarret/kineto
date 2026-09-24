@@ -1,4 +1,4 @@
-import { clamp, numberOption, segmentText } from '../utils.js';
+import { clamp, measureThenApply, numberOption, segmentText } from '../utils.js';
 
 function normalizeMaskDirection(value) {
   const direction = String(value || 'top-to-bottom').toLowerCase();
@@ -59,6 +59,9 @@ function plainText(html) {
 }
 
 export default {
+  // Paused by the core while the element is off screen and resumed as it
+  // returns (looping scrollers keep their timers and animations running). See `offscreen` in src/core.js.
+  offscreen: 'pause',
   create(el, opts = {}) {
     const mode = opts.mode || opts.preset || 'loop';
     const speed = numberOption(opts.speed, 36, 1);
@@ -104,11 +107,24 @@ export default {
     let viewport = null;
     let track = null;
     let activeIndex = 0;
+    // Whether the current build has something moving. A line that fits stays
+    // still, and resume() must then leave it alone instead of rebuilding it —
+    // the core resumes every instance each time it scrolls back into view.
+    let active = false;
+    // Bumped by every overflow build, so a measurement queued for an older
+    // build (a resize, replay or destroy got there first) is dropped.
+    let buildToken = 0;
+    // The pending measurement of the current build, cancelled by destroy().
+    let cancelMeasure = null;
 
     el.textContent = '';
     el.style.overflow = 'hidden';
     el.style.whiteSpace = 'nowrap';
-    if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+    const positionIfStatic = (position) => { if (position === 'static') el.style.position = 'relative'; };
+    // Rolling and scene builds measure straight away, so they need the position
+    // now. The plain overflow build reads it with its other measurements, in
+    // the shared layout pass (see buildOverflow).
+    if (mode === 'rolling' || sceneItems) positionIfStatic(getComputedStyle(el).position);
     if (text) el.setAttribute('aria-label', text);
     if (!originalTitle && opts.title !== false && text) el.setAttribute('title', text);
 
@@ -418,6 +434,7 @@ export default {
 
     const buildOverflow = () => {
       clearMotion();
+      active = false;
       el.textContent = '';
       viewport = document.createElement('span');
       viewport.className = 'kt-overflow-text-viewport';
@@ -431,28 +448,60 @@ export default {
       track.appendChild(first);
       viewport.appendChild(track);
       el.appendChild(viewport);
+      // The resting state: truncated, with an ellipsis. A line that fits keeps
+      // it; a line that overflows shows it for the one frame before it is
+      // measured.
+      track.style.display = 'inline-block';
+      track.style.maxWidth = '100%';
+      track.style.overflow = 'hidden';
+      track.style.textOverflow = opts.ellipsis === false ? 'clip' : 'ellipsis';
 
-      // Measure against the viewport (content box). Using el.clientWidth
-      // included the element's padding and under-measured the overflow, so
-      // page/flip/once modes cut off the tail of the text.
-      const viewportWidth = viewport.clientWidth || el.clientWidth;
-      const overflow = Math.max(0, first.scrollWidth - viewportWidth);
+      // Measure in the shared layout pass (measureThenApply in utils.js): a
+      // page creating hundreds of these no longer lays itself out once per
+      // instance. Measured against the viewport (content box) — el.clientWidth
+      // included the padding and under-measured the overflow, so page/flip/once
+      // cut off the tail of the text.
+      const token = ++buildToken;
+      const builtViewport = viewport;
+      cancelMeasure?.();
+      cancelMeasure = measureThenApply(
+        () => ({
+          position: getComputedStyle(el).position,
+          viewportWidth: builtViewport.clientWidth || el.clientWidth,
+          contentWidth: first.scrollWidth,
+          firstBox: first.getBoundingClientRect()
+        }),
+        (measured) => {
+          cancelMeasure = null;
+          if (destroyed || token !== buildToken) return;
+          startOverflow(first, measured);
+          // Paused before the measurement arrived: start where pause() would
+          // have left it. (Self-scheduling steps check `paused` themselves.)
+          if (paused) animation?.pause?.();
+        }
+      );
+    };
+
+    // Everything that moves an overflowing line, given the measurements.
+    const startOverflow = (first, { position, viewportWidth, contentWidth, firstBox }) => {
+      positionIfStatic(position);
+      const overflow = Math.max(0, contentWidth - viewportWidth);
       const shouldAnimate = opts.force === true || overflow > numberOption(opts.threshold, 1);
       el.dataset.ktOverflowActive = String(shouldAnimate);
-      if (!shouldAnimate) {
-        track.style.display = 'inline-block';
-        track.style.maxWidth = '100%';
-        track.style.overflow = 'hidden';
-        track.style.textOverflow = opts.ellipsis === false ? 'clip' : 'ellipsis';
-        return;
-      }
+      if (!shouldAnimate) return;
+      active = true;
+      // Leave the resting state: the track becomes the moving strip.
+      track.style.display = 'inline-flex';
+      track.style.maxWidth = '';
+      track.style.overflow = '';
+      track.style.textOverflow = '';
 
       if (mode === 'loop') {
         first.style.marginRight = `${gap}px`;
         const second = createSegment(text, true);
         second.style.marginRight = `${gap}px`;
         track.appendChild(second);
-        const travel = first.getBoundingClientRect().width + gap;
+        const travel = firstBox.width + gap;
         const duration = Math.max(200, (travel / speed) * 1000);
         const from = horizontalDirection < 0 ? 0 : -travel;
         const to = horizontalDirection < 0 ? -travel : 0;
@@ -503,7 +552,7 @@ export default {
           // one track scrolls, and at the seam a frozen ghost of the end fades
           // out while the track (reset to the start) fades in — over the SAME
           // spot, so the two never scroll past each other and smear.
-          const h = first.getBoundingClientRect().height || first.offsetHeight;
+          const h = firstBox.height;
           viewport.style.height = h ? `${h}px` : '1.35em';
           track.style.position = 'absolute';
           track.style.left = '0';
@@ -805,6 +854,9 @@ export default {
     };
 
     const build = () => {
+      // Rolling and scene builds always move; buildOverflow() resets this and
+      // decides once the line is measured.
+      active = true;
       if (mode === 'rolling') buildRolling();
       else if (sceneItems && sceneItems.length >= 2) buildScenes();
       else buildOverflow();
@@ -818,10 +870,15 @@ export default {
       || (sceneItems && sceneItems.length >= 2);
 
     if (typeof ResizeObserver !== 'undefined' && mode !== 'rolling') {
-      let width = el.clientWidth;
-      resizeObserver = new ResizeObserver(() => {
-        if (Math.abs(el.clientWidth - width) < 1) return;
-        width = el.clientWidth;
+      // The width comes from the observer's own report — reading clientWidth
+      // here would force a layout again. Its first report only describes the
+      // initial layout, which the build above already measured.
+      let width = null;
+      resizeObserver = new ResizeObserver((entries) => {
+        const next = entries[entries.length - 1]?.contentRect.width ?? 0;
+        const changed = width != null && Math.abs(next - width) >= 1;
+        width = next;
+        if (!changed) return;
         clearMotion();
         build();
       });
@@ -857,13 +914,18 @@ export default {
       pause() { paused = true; animation?.pause?.(); clearTimeout(timer); },
       resume() {
         paused = false;
+        // Nothing was moving (the line fits, or its measurement is still on
+        // its way and will start it): nothing to restart.
+        if (!active) return;
         // Self-scheduling loops (scroll-fade crossfade, page/flip/scene, rolling)
         // leave a stale finished handle, so re-run the loop instead of play().
         if (selfScheduling) { clearMotion(); build(); }
-        else { animation?.play?.(); if (!animation) build(); }
+        else if (animation) animation.play();
+        else build();
       },
       destroy() {
         destroyed = true;
+        cancelMeasure?.();
         clearMotion();
         resizeObserver?.disconnect();
         el.removeEventListener('pointerenter', onHoverIn);

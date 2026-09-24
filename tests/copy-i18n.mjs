@@ -97,9 +97,11 @@ assert.ok(
 // and the other corner-shape keywords. 2026-09-21: Card Glow's `glass` variant
 // adds the Liquid Glass pane, and FLIP's `fold` adds the opening-panel card.
 // Mega-menu's `radial` layout adds the fan-out menu card.
-assert.equal(descriptions.length, 191);
+// 2026-09-24: Canvas Effect adds three — Shape Grid (Canvas 2D), Flow Gradient
+// (shader) and the AI prompt card; the last two have Korean titles.
+assert.equal(descriptions.length, 194);
 // 18 since the Korean-titled `radial` compatibility card was removed (see above).
-assert.equal(titles.length, 21);
+assert.equal(titles.length, 23);
 
 for (const [label, values, dictionary] of [
   ['card description', descriptions, copy.cards],

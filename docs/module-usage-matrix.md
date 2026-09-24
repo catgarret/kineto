@@ -1,6 +1,6 @@
 # Module usage and quality matrix
 
-> Generated from `scripts/generate-module-metadata.mjs` · library v0.11.0 · 54 modules.
+> Generated from `scripts/generate-module-metadata.mjs` · library v0.11.0 · 55 modules.
 >
 > 데모의 모듈 인덱스와 복사 코드에서 확인할 최소 판단 기준입니다. `native`·`managed`가 표시되어도 실제 콘텐츠의 이름·대체 동작은 소비자가 함께 제공해야 합니다.
 
@@ -26,7 +26,7 @@
 |---|---|---|---|
 | 1 | **System** (`system`) | 콘텐츠를 덮거나 문서 사이의 전환을 다루는, 페이지 전체 수준의 모듈. | `loader`, `loadingIndicator`, `pageReveal`, `pageTransition` |
 | 2 | **Media** (`media`) | 이미지·영상을 가져오고(로딩) 보여주고 탐색하는 모듈. 픽셀을 다시 그리지는 않습니다. | `lazy`, `lightbox`, `radial`, `slider` |
-| 3 | **Effects** (`effects`) | 이미 렌더된 대상의 픽셀을 캔버스로 다시 그리는 그래픽 효과 모듈. | `ambientMedia`, `brushReveal`, `glitch`, `stylize`, `squircle` |
+| 3 | **Effects** (`effects`) | 이미 렌더된 대상의 픽셀을 캔버스로 다시 그리는 그래픽 효과 모듈. | `ambientMedia`, `brushReveal`, `glitch`, `stylize`, `squircle`, `canvasEffect` |
 | 4 | **Components** (`components`) | 키보드와 ARIA 상태를 가진 UI 위젯. | `accordion`, `megaMenu`, `bottomSheet`, `tabs`, `tooltip`, `switch`, `flip` |
 | 5 | **Text** (`text`) | 글자 자체를 다루는 모듈. | `blurText`, `counter`, `dateTime`, `marquee`, `overflowText`, `textFill`, `textReveal`, `textSplit`, `textTransition`, `typewriter` |
 | 6 | **Scroll** (`scroll`) | 스크롤 위치나 속도가 구동하는 모듈. | `cssScroll`, `fullpage`, `parallax`, `progress`, `reveal`, `scrollSequence`, `scrollVelocity`, `stickyStack`, `coverReveal`, `scrollShadows`, `stickyHeader`, `horizontalScroll` |
@@ -91,5 +91,6 @@
 | `squircle` | `effects` | CSS corner-shape의 모서리 곡선(스퀘어클·베벨·스쿠프 등)을 모든 브라우저에서 같게 그립니다. | iOS처럼 보여야 하는 카드·버튼 모서리를 브라우저와 무관하게 맞출 때 | 요소에 box-shadow가 있고 Safari·Firefox에서도 그림자를 유지해야 할 때 | `visual-only` | `light` | `static` | `evergreen` |
 | `stickyHeader` | `scroll` | 스크롤 방향에 반응하는 고정 헤더입니다. | 긴 페이지에서 탐색을 계속 노출할 때 | 헤더가 콘텐츠를 가리거나 전체 화면 내러티브가 필요한 곳에 | `manual` | `medium` | `final-state` | `evergreen-scroll` |
 | `horizontalScroll` | `scroll` | 세로 스크롤을 가로 이동으로 매핑합니다. | 가로 갤러리·스토리텔링 구간을 구성할 때 | 일반 목록·키보드 탐색·모바일 세로 흐름이 우선인 곳에 | `manual` | `medium` | `final-state` | `evergreen-scroll` |
+| `canvasEffect` | `effects` | 직접 정의한 Canvas·WebGL 효과를 요소 뒤에 그리고, 크기·픽셀 비율·프레임·포인터·스크롤·수명주기를 대신 관리합니다. | AI나 직접 작성한 인터랙티브 배경·셰이더를 Kineto의 일시정지·저사양·접근성 규칙 안에서 쓰고 싶을 때 | 같은 화면에 여러 개를 동시에 띄우거나, 효과가 핵심 정보를 전달해야 할 때 | `manual` | `heavy` | `static` | `evergreen-canvas` |
 
 새 모듈은 이 표의 필수 필드를 채운 뒤 `npm run test:module-metadata`와 `npm run test:docs-navigation`을 통과해야 합니다.

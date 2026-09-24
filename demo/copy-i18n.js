@@ -17,9 +17,9 @@ window.KINETO_COPY_I18N = {
       "components": "UI components with keyboard and screen-reader support.<br>Includes accordions, mega menus, tabs, sheets, tooltips, and switches.",
       "buttons-feedback": "Feedback for input and status changes.<br>Includes confetti, hold, toast, and vibration effects.",
       "loading": "Motion applied across the page.<br>Includes loaders, page reveals, and page transitions.",
-      "module-index": "The 54 public modules in the current release.",
+      "module-index": "The {moduleCount} public modules in the current release.",
       "_hero": [
-        "Explore 54 motion modules on one page.",
+        "Explore {moduleCount} motion modules on one page.",
         "Tune the options, then copy finished HTML, JS, React, or Vue code."
       ],
       "_chips": [
@@ -55,9 +55,9 @@ window.KINETO_COPY_I18N = {
       "components": "キーボードとスクリーンリーダーをサポートするUIです。<br>アコーディオン・メガメニュー・タブ・ボトムシート・ツールチップ・スイッチを提供します。",
       "buttons-feedback": "入力結果と状態を通知するモジュールです。<br>紙吹雪・長押し・トースト・振動効果を提供します。",
       "loading": "ページ全体に適用するモジュールです。<br>ローディング・画面進入・ページ切り替え効果を提供します。",
-      "module-index": "現在配布に含まれている54のパブリックモジュールです。",
+      "module-index": "現在配布に含まれている{moduleCount}のパブリックモジュールです。",
       "_hero": [
-        "54のモーションモジュールを1ページで見てください。",
+        "{moduleCount}のモーションモジュールを1ページで見てください。",
         "オプションを調整し、HTML・JavaScript・React・Vueコードをコピーできます。"
       ],
       "_chips": [
@@ -83,7 +83,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "コア単独動作",
-      "_footerBrand": "HTMLプロパティとJavaScript APIとして使用するWebモーションライブラリ。<br>54個のモジュールで必要な機能のみを選択して使用できます。"
+      "_footerBrand": "HTMLプロパティとJavaScript APIとして使用するWebモーションライブラリ。<br>{moduleCount}個のモジュールで必要な機能のみを選択して使用できます。"
     },
     "zh-CN": {
       "counter": "这是一个移动数字和字母的模块。<br>提供计数器、溢出、分割、打字和故障。",
@@ -93,9 +93,9 @@ window.KINETO_COPY_I18N = {
       "components": "此 UI 支持键盘和屏幕阅读器。<br>它提供了手风琴、大型菜单、选项卡、底部工作表、工具提示和开关。",
       "buttons-feedback": "这是一个报告输入结果和状态的模块。<br>提供五彩纸屑、长按、吐司和振动效果。",
       "loading": "该模块适用于整个页面。<br>提供加载、入屏、页面切换效果。",
-      "module-index": "当前发行版中包含 54 个公共模块。",
+      "module-index": "当前发行版中包含 {moduleCount} 个公共模块。",
       "_hero": [
-        "在一页上探索 54 个运动模块。",
+        "在一页上探索 {moduleCount} 个运动模块。",
         "您可以调整选项并复制完整的 HTML、JavaScript、React 或 Vue 代码。"
       ],
       "_chips": [
@@ -121,7 +121,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "核心独立运营",
-      "_footerBrand": "它是一个用作 HTML 属性和 JavaScript API 的 Web 动作库。<br>您可以从 54 个模块中仅选择和使用您需要的功能。"
+      "_footerBrand": "它是一个用作 HTML 属性和 JavaScript API 的 Web 动作库。<br>您可以从 {moduleCount} 个模块中仅选择和使用您需要的功能。"
     },
     "zh-TW": {
       "counter": "這是一個移動數字和字母的模組。<br>提供計數器、溢出、分割、打字和故障。",
@@ -131,9 +131,9 @@ window.KINETO_COPY_I18N = {
       "components": "此 UI 支援鍵盤和螢幕閱讀器。<br>它提供了手風琴、大型菜單、選項卡、底部工作表、工具提示和開關。",
       "buttons-feedback": "這是一個報告輸入結果和狀態的模組。<br>提供五彩紙屑、長按、吐司和振動效果。",
       "loading": "此模組適用於整個頁面。<br>提供載入、入屏、頁面切換效果。",
-      "module-index": "目前發行版中包含 54 個公共模組。",
+      "module-index": "目前發行版中包含 {moduleCount} 個公共模組。",
       "_hero": [
-        "在一頁上探索 54 個運動模組。",
+        "在一頁上探索 {moduleCount} 個運動模組。",
         "您可以調整選項並複製完整的 HTML、JavaScript、React 或 Vue 程式碼。"
       ],
       "_chips": [
@@ -159,7 +159,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "核心獨立營運",
-      "_footerBrand": "它是一個用作 HTML 屬性和 JavaScript API 的 Web 動作庫。<br>您可以從 54 個模組中僅選擇和使用您需要的功能。"
+      "_footerBrand": "它是一個用作 HTML 屬性和 JavaScript API 的 Web 動作庫。<br>您可以從 {moduleCount} 個模組中僅選擇和使用您需要的功能。"
     },
     "ru": {
       "counter": "Это модуль, который перемещает цифры и буквы.<br>Обеспечивает счетчик, переполнение, разделение, ввод текста и сбои.",
@@ -169,9 +169,9 @@ window.KINETO_COPY_I18N = {
       "components": "Этот пользовательский интерфейс поддерживает программы чтения с клавиатуры и экрана.<br>Он предоставляет аккордеон, мегаменю, вкладку, нижний лист, всплывающую подсказку и переключатель.",
       "buttons-feedback": "Это модуль, который сообщает о результатах ввода и состоянии.<br>Обеспечивает эффекты конфетти, длительного нажатия, тоста и вибрации.",
       "loading": "Этот модуль применяется ко всей странице.<br>Обеспечивает эффекты загрузки, входа на экран и перехода между страницами.",
-      "module-index": "В текущий дистрибутив включено 54 общедоступных модуля.",
+      "module-index": "Публичных модулей в текущем выпуске: {moduleCount}.",
       "_hero": [
-        "Изучите 54 модуля движения на одной странице.",
+        "Модулей движения на одной странице: {moduleCount}.",
         "Настройте параметры и скопируйте готовый код HTML, JavaScript, React или Vue."
       ],
       "_chips": [
@@ -197,7 +197,7 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "Независимая работа ядра",
-      "_footerBrand": "Это библиотека веб-анимации для HTML-атрибутов и JavaScript API.<br>Из 54 модулей можно выбрать только нужные функции."
+      "_footerBrand": "Это библиотека веб-анимации для HTML-атрибутов и JavaScript API.<br>Из {moduleCount} модулей можно выбрать только нужные функции."
     },
     "it": {
       "counter": "Questo è un modulo che muove numeri e lettere.<br>Fornisce contatore, overflow, suddivisione, digitazione e problemi tecnici.",
@@ -207,9 +207,9 @@ window.KINETO_COPY_I18N = {
       "components": "Questa interfaccia utente supporta tastiera e lettori di schermo.<br>Fornisce fisarmonica, mega menu, scheda, foglio inferiore, descrizione comando e interruttore.",
       "buttons-feedback": "Questo è un modulo che riporta i risultati e lo stato degli input.<br>Fornisce effetti di coriandoli, pressione prolungata, toast e vibrazione.",
       "loading": "Questo modulo si applica all'intera pagina.<br>Fornisce effetti di caricamento, immissione sullo schermo e transizione della pagina.",
-      "module-index": "La versione attuale include 54 moduli pubblici.",
+      "module-index": "La versione attuale include {moduleCount} moduli pubblici.",
       "_hero": [
-        "Esplora 54 moduli di movimento in una pagina.",
+        "Esplora {moduleCount} moduli di movimento in una pagina.",
         "Modifica le opzioni e copia il codice HTML, JavaScript, React o Vue pronto."
       ],
       "_chips": [
@@ -235,10 +235,34 @@ window.KINETO_COPY_I18N = {
         ]
       ],
       "_support": "Funzionamento indipendente dal nucleo",
-      "_footerBrand": "Una libreria di motion per attributi HTML e API JavaScript.<br>Scegli solo le funzioni necessarie tra 54 moduli."
+      "_footerBrand": "Una libreria di motion per attributi HTML e API JavaScript.<br>Scegli solo le funzioni necessarie tra {moduleCount} moduli."
     }
   },
   "cards": {
+    "직접 만든 캔버스 효과. 크기·프레임·일시정지는 Kineto가 맡습니다.": [
+      "An effect you wrote. Kineto handles sizing, frames and pausing.",
+      "自作のキャンバス効果。サイズ・フレーム・一時停止は Kineto が担当します。",
+      "自制的画布效果。尺寸、帧和暂停由 Kineto 负责。",
+      "自製的畫布效果。尺寸、影格和暫停由 Kineto 負責。",
+      "Ваш собственный эффект. Размер, кадры и паузу берёт на себя Kineto.",
+      "Un effetto scritto da te. Dimensioni, frame e pausa li gestisce Kineto."
+    ],
+    "셰이더 하나가 효과 전체입니다. 옵션은 같은 이름의 uniform이 됩니다.": [
+      "One shader is the whole effect. Each option becomes a uniform of the same name.",
+      "シェーダー一つが効果のすべて。オプションは同じ名前の uniform になります。",
+      "一个着色器就是整个效果。每个选项都成为同名 uniform。",
+      "一個著色器就是整個效果。每個選項都成為同名 uniform。",
+      "Весь эффект — один шейдер. Каждая опция становится uniform с тем же именем.",
+      "Un solo shader è tutto l’effetto. Ogni opzione diventa una uniform con lo stesso nome."
+    ],
+    "프롬프트 아래 원하는 효과를 적어 AI에 주면, 바로 붙는 정의를 받습니다.": [
+      "Describe the effect under this prompt and give it to an AI: you get a definition that plugs straight in.",
+      "プロンプトの下に効果を書いて AI に渡すと、そのまま使える定義が返ってきます。",
+      "在提示词下写上想要的效果交给 AI，就能得到可直接接入的定义。",
+      "在提示詞下寫上想要的效果交給 AI，就能得到可直接接入的定義。",
+      "Опишите эффект под подсказкой и отдайте её ИИ — получите готовое определение.",
+      "Descrivi l’effetto sotto il prompt e dallo a un’IA: riceverai una definizione pronta."
+    ],
     "버튼을 누르면 항목이 그 둘레로 부채꼴을 그리며 펼쳐집니다.": [
       "Press the button and the items fan out on an arc around it.",
       "ボタンを押すと、項目がその周りに扇状に広がります。",
@@ -284,7 +308,7 @@ window.KINETO_COPY_I18N = {
       "背景が透けてぼけ、光の当たる縁が明るく立ちます。",
       "背后的内容透出并模糊，受光的边缘亮起一圈。",
       "背後的內容透出並模糊，受光的邊緣亮起一圈。",
-      "Фон просвечивает размытым, а освещённый край ловит яркую кромку.",
+      "Фон размыто просвечивает, освещённый край светится.",
       "Ciò che sta dietro traspare sfocato e il bordo illuminato si accende."
     ],
     "애플의 모서리는 원이 아니라 초타원입니다. 같은 반지름인데 곡선이 다릅니다.": [
@@ -1712,6 +1736,22 @@ window.KINETO_COPY_I18N = {
     ]
   },
   "titles": {
+    "Flow Gradient — 셰이더": [
+      "Flow Gradient — shader",
+      "Flow Gradient — シェーダー",
+      "Flow Gradient — 着色器",
+      "Flow Gradient — 著色器",
+      "Flow Gradient — шейдер",
+      "Flow Gradient — shader"
+    ],
+    "AI로 효과 만들기": [
+      "Make an effect with AI",
+      "AI で効果をつくる",
+      "用 AI 制作效果",
+      "用 AI 製作效果",
+      "Эффект с помощью ИИ",
+      "Crea un effetto con l’IA"
+    ],
     "Dock — 아이콘 확대": [
       "Dock — icons magnify",
       "Dock — アイコンが拡大",
@@ -1922,6 +1962,22 @@ window.KINETO_COPY_I18N = {
     ]
   },
   "ui": {
+    "효과 정의 가이드와 레시피 보기 →": [
+      "Effect guide and recipes →",
+      "効果定義のガイドとレシピ →",
+      "效果定义指南与示例 →",
+      "效果定義指南與範例 →",
+      "Руководство и рецепты эффектов →",
+      "Guida e ricette degli effetti →"
+    ],
+    "이 모듈의 데모 카드는 여기에 있습니다:": [
+      "This module's demo card lives here:",
+      "このモジュールのデモカードはこちらです:",
+      "该模块的演示卡片在这里：",
+      "該模組的示範卡片在這裡：",
+      "Демо этого модуля находится здесь:",
+      "La demo di questo modulo si trova qui:"
+    ],
     "{\"confirm\":\"정말 삭제할까요?\"}": [
       "{\"confirm\":\"Delete this?\"}",
       "{\"confirm\":\"削除しますか？\"}",
