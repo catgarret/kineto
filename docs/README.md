@@ -6,6 +6,7 @@ Kineto v0.12.0의 공개 API와 소유자 의도를 기준으로 정리한 문�
 
 - [Getting Started](getting-started.md)
 - [제품·기술 로드맵](ROADMAP.md)
+- [아키텍처 리뷰와 부서별 방향 (2026-09-24)](ARCHITECTURE-REVIEW.md) — 이번 배치가 닫은 원인 계열, 남은 구조 부채와 순서
 - [Motion States RFC](motion-states-rfc.md)
 - [Presence Core RFC](presence-core-rfc.md)
 - [공통 옵션과 데이터 속성](common-options.md)

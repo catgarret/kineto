@@ -3,6 +3,38 @@
 검증일: 2026-09-20
 대상: v0.12.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-24 소유자 데모 리뷰 반영 (원인 계열 정리)
+
+소유자가 라이브 데모에서 아홉 가지를 짚었습니다(Squircle 코드 복사, Radial이 숨겨짐, Slider 블록이 모든 variant를
+늘어놓음, Reveal 모서리, Class Hook 이후 고정 섹션 겹침, CSS Scroll 네이티브 탭이 안 움직임, Card Glow 배치,
+Liquid Glass 품질, Dock 끊김). 증상마다 고치기보다 원인 계열을 찾아 닫았고, 그 배경과 남은 구조 부채는
+[아키텍처 리뷰](ARCHITECTURE-REVIEW.md)에 있습니다.
+
+| 항목 | 원인 | 결과 | 게이트 |
+|---|---|---|---|
+| Dock 끊김 | 라이브(구) 코드의 패킹 알고리즘 — 현재 `main`에는 이미 소유자 수정이 있음 | 같은 스윕에서 떨림 83회(라이브) → 0회. 수정 전 코드로 되돌리면 새 검사가 60회로 실패 | `magnetic-dock` |
+| Radial 숨김 | 유일한 카드가 Slider 블록에 있었음 | Radial 블록에 `data-kt-radial` 카드, 드로어는 Slider radial 필드에서 도출 | `demo-blocks`·`nav-parity`·`drawer-layout` |
+| Slider가 모든 variant를 늘어놓음 | 블록이 카드를 전부 출력(페이지 70,126px) | 블록은 측정한 두 줄 + "데모 더 보기 +N"(61,243px, 폰에서는 한 장씩 두 줄) | `demo-blocks` |
+| Reveal 모서리 | `.card .reveal-demo-card` 규칙이 스테이지 안쪽 상자까지 적용 | 설정 패널에 바로 닿은 상자만 아래 모서리를 폄 | `demo-blocks` |
+| 고정 섹션 겹침 | 레이아웃 변화 뒤 ScrollTrigger 위치가 갱신되지 않음(헤드리스로 그 화면을 재현하지는 못함) | 코어가 body 높이 변화 뒤 refresh | `layout-refresh` |
+| CSS Scroll 네이티브 정지 | `overflow: hidden` 스테이지가 타임라인을 캡처 | 데모는 `overflow: clip`, 라이브러리는 캡처 감지 → 대체 경로 + `KT_NATIVE_FALLBACK` | `css-scroll`·`demo-blocks` |
+| Card Glow 배치 | 현재 빌드는 이미 3×2로 정렬됨 | 변경 없음(라이브가 이전 빌드) | — |
+| Liquid Glass | 굴절 프로파일이 띠 안쪽 끝에서 배경을 약 15배로 늘림 | (1−u)² 프로파일, 베벨 폭 상한, 빛 방향 명암, 데모에서 끌어 보기 | `card-glass` |
+| Squircle 코드 복사 | 현재 빌드는 이미 모든 카드에서 복사 가능 | 변경 없음 | `demo-code-access` |
+
+데모를 고치며 읽은 라이브러리에서 나온 결함(각각 수정 전 코드로 되돌려 실패를 확인): 옵션 값 HTML 주입 4곳과
+Overflow Text 속성 항목(이전 빌드는 페이로드로 이미지 4개 생성·스크립트 4회 실행), 다른 출처로 리다이렉트된
+Page Transition 응답 주입, `<img id="gsap">` DOM clobbering, 계약과 어긋난 옵션 이름 충돌 목록(11건),
+destroy 뒤 쓰기(Sticky Header·Parallax·Bottom Sheet·Counter), Tilt resume, Radial `autoplay: true`,
+동작 줄이기에서 사라지던 기능(Lightbox·Date Time·Sticky Header·당겨서 새로고침), Presence `exit`,
+Vue `v-motion` 재생성, MCP의 `__proto__` 조회.
+
+검증: 전체 `test:node`(각 단계 개별 실행), Chromium 브라우저 레인 전체, 새·보강 브라우저 게이트 세 엔진
+(`layout-refresh`·`css-scroll`·`card-glass`·`markup-trust`·`lifecycle-edges`·`demo-blocks`·`magnetic-dock`),
+framework QA(React·Vue·jQuery·하이드레이션·SSR), 데모 QA(컨테이너 전용 animated-media 대기 단계 전까지).
+예산은 실측과 이유를 주석으로 남기고 다음 KB로 올렸습니다(ESM 618.8/168.6, min 484.2/149.9, UMD 482.3/149.2 KB;
+패키지 640.3 KB 압축 + CI 여유 1.5 → 642; 소비자 번들 React 171.6·Vue 173.1 KB).
+
 ## 2026-09-24 Unreleased 검증 (Text Transition `pop` · 시간 단위 · Scroll Velocity `blur`)
 
 소유자가 한 제품 사이트에서 제목이 바뀔 때의 글자 애니메이션을 보고 “우리꺼에도 쓸만하겠다”고 했습니다.

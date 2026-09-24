@@ -130,6 +130,21 @@ Kineto.autoInit();
 
 모듈이 각자의 trigger/tween을 소유합니다. 전역 `Kineto.refresh()`는 레이아웃 변경 후 ScrollTrigger refresh를 호출합니다.
 
+ScrollTrigger는 창 크기 변경과 `load`에만 스스로 다시 잽니다. 그래서 코어는 스크롤 모듈
+인스턴스가 하나라도 살아 있는 동안 `<body>` 높이를 ResizeObserver로 지켜보고, 높이가
+200ms 동안 멈추면 한 번 refresh합니다(`src/layoutRefresh.js`). refresh 직후의 높이(핀
+spacer 포함)를 기억해 두므로 refresh가 스스로를 다시 부르는 고리가 생기지 않습니다.
+`Kineto.config({ autoRefresh: false })`로 끕니다. 높이가 바뀌지 않는 변화(같은 높이의 탭
+교체)는 감지하지 못하므로 그때는 `Kineto.refresh()`를 부릅니다.
+
+### 옵션 값의 신뢰 경계
+
+옵션은 대부분 마크업에서 오고, 마크업은 CMS·사용자 데이터로 채워지는 경우가 많습니다.
+그래서 옵션 값은 **텍스트**입니다 — `textContent`·`setAttribute`·CSS 속성으로만 씁니다.
+HTML로 해석하는 옵션은 이름이 그렇게 붙은 것뿐입니다(`SECURITY.md`). Page Transition은
+같은 출처의 HTML 응답만 주입하고, 엔진 전역(`window.gsap` 등)은 DOM clobbering을 막기
+위해 쓰기 전에 모양을 검사합니다(`src/runtime.js`).
+
 > 이전 문서의 “모든 모듈이 단일 RAF를 공유한다”는 설명은 실제 구현과 달라 제거했습니다. RAF 기반 모듈은 각 인스턴스가 자신의 RAF를 소유하고 반드시 `destroy()`에서 해제합니다.
 
 ## 7. 기능 변경 규칙

@@ -206,7 +206,10 @@ const BUDGET = {
   // reader, the Scroll Velocity blur fix and their docs: 632.6 + 1.5 → 635.
   // With the integrated perf branches (scan discovery, progress dedupe,
   // Scroll Sequence cache) and the <progress> scale fix: 633.9 + 1.5 → 636.
-  packedKb: 636,
+  // The owner review batch (layout-shift refresh, native-timeline fallback,
+  // text-only option values, same-origin page swaps, activation owners,
+  // lifecycle and reduced-motion fixes): 640.3 + 1.5 → 642.
+  packedKb: 642,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -242,7 +245,8 @@ const BUDGET = {
   // per-instance effect builders measure 2042.4 KB unpacked on the same 81 files.
   // 2026-09-24 (timing units + Scroll Velocity blur): 2043.1 KB, same 81 files.
   // 2026-09-24 (integrated perf branches + <progress> scale): 2046.1 KB, 81 files.
-  unpackedKb: 2047,
+  // 2026-09-24 (owner review batch): 2064.4 KB, same 81 files.
+  unpackedKb: 2065,
   files: 81
 };
 

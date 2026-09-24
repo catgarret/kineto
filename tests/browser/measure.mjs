@@ -29,6 +29,10 @@ await page.clock.install();
 page.on('pageerror', (e) => console.log('PAGEERROR:', e.message));
 await page.goto(`http://localhost:${PORT}/demo/index.html`, { waitUntil: 'load' });
 await page.waitForFunction(() => window.Kineto && document.querySelector('[data-kt-toast]'), null, { timeout: 15000 }).catch(() => console.log('WARN: not ready'));
+// These measurements drive individual demos wherever they sit. A demo below
+// its block's fold is clipped and inert until opened (demo/fold.js, tested on
+// its own in demo-blocks.mjs), so open every fold first, as a reader would.
+await page.evaluate(() => window.KINETO_FOLD?.openAll());
 await page.waitForTimeout(1200);
 const sleep = (ms) => page.waitForTimeout(ms);
 let pass = 0, fail = 0;
