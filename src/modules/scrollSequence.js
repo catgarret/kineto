@@ -89,10 +89,16 @@ export default {
       };
       image.onerror = () => {
         loadStates[index] = 'error';
-        opts.onError?.(index, image.src);
+        const failedSrc = image.src;
+        image.onload = null;
+        image.onerror = null;
+        images[index] = undefined;
+        opts.onError?.(index, failedSrc);
       };
-      image.src = urlFor(index);
+      // Store before assigning src: cached/data URLs and test shims may
+      // complete synchronously, and their onload eviction must be authoritative.
       images[index] = image;
+      image.src = urlFor(index);
     };
 
     const preloadAround = (index) => {
