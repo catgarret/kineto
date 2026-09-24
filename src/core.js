@@ -361,13 +361,22 @@ function matchesRoot(record, roots) {
   });
 }
 
-// Destroy every instance whose element is no longer in the document. Called
-// after a watched subtree lost nodes; instances of detached elements would
-// otherwise keep listeners, observers and timers alive (a leak in SPAs).
-function releaseDetachedRecords() {
-  Array.from(records).forEach((record) => {
-    const el = record.sourceEl;
-    if (el && el.isConnected === false) removeRecord(record);
+// Destroy instances owned by source elements inside subtrees removed from an
+// observed root. Walk only those subtrees instead of scanning the complete
+// registry after every removal — large SPAs can keep thousands of unrelated
+// instances alive elsewhere on the page.
+function releaseDetachedSubtrees(roots) {
+  const releaseElement = (el) => {
+    if (!el || el.isConnected !== false) return;
+    const map = getElementMap(el);
+    if (!map?.size) return;
+    // Snapshot because removeRecord mutates the per-element map.
+    [...map.values()].forEach((record) => removeRecord(record));
+  };
+  roots.forEach((root) => {
+    if (!root || root.nodeType !== 1 || root.isConnected) return;
+    releaseElement(root);
+    root.querySelectorAll?.('*').forEach(releaseElement);
   });
 }
 
@@ -377,7 +386,7 @@ function releaseDetachedRecords() {
 function createLiveObserver(root, options) {
   const watchAttributes = options.attributes === true;
   let added = new Set();
-  let removed = false;
+  let removed = new Set();
   let scheduled = false;
   let active = true;
   const flush = () => {
@@ -385,8 +394,8 @@ function createLiveObserver(root, options) {
     scheduled = false;
     const nodes = added;
     added = new Set();
-    const hadRemoval = removed;
-    removed = false;
+    const removedNodes = removed;
+    removed = new Set();
     nodes.forEach((node) => {
       if (!active || !node.isConnected || !root.contains(node)) return;
       // A framework may insert a parent, then build its children in the same
@@ -397,7 +406,16 @@ function createLiveObserver(root, options) {
       }
       Kineto.scan(node);
     });
-    if (active && hadRemoval) releaseDetachedRecords();
+    if (active && removedNodes.size) {
+      removedNodes.forEach((node) => {
+        // A framework may remove a parent and descendants separately in one
+        // commit. Process only the outermost removed subtree.
+        for (let parent = node.parentNode; parent; parent = parent.parentNode) {
+          if (removedNodes.has(parent)) return;
+        }
+        releaseDetachedSubtrees([node]);
+      });
+    }
   };
   const schedule = () => {
     if (scheduled) return;
@@ -412,9 +430,9 @@ function createLiveObserver(root, options) {
         return;
       }
       mutation.addedNodes.forEach((node) => { if (node.nodeType === 1) added.add(node); });
-      if (mutation.removedNodes.length) removed = true;
+      mutation.removedNodes.forEach((node) => { if (node.nodeType === 1) removed.add(node); });
     });
-    if (added.size || removed) schedule();
+    if (added.size || removed.size) schedule();
   });
   observer.observe(root, { childList: true, subtree: true, attributes: watchAttributes });
   return {
@@ -422,6 +440,7 @@ function createLiveObserver(root, options) {
       active = false;
       observer.disconnect();
       added.clear();
+      removed.clear();
     }
   };
 }

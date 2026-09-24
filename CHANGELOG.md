@@ -4,6 +4,8 @@
 
 ### English
 
+- Make live-observer removal cleanup proportional to the removed DOM subtree instead of scanning every active Kineto record after any child removal. Detached source elements are destroyed by walking only removed element trees, while nodes reparented elsewhere before the batched flush keep their existing instances.
+
 - Fix the Stylize video browser regression probe after core off-screen suspension added a second `IntersectionObserver` in the public API path. The probe now tracks all observers and selects the trigger observer by target/options instead of assuming the most recently constructed observer is Stylize's view trigger.
 
 - Make the Lightbox toolbar resilient down to narrow phone widths and three-digit gallery counts. The counter uses no-wrap tabular numerals and never flex-shrinks; the mobile toolbar can wrap into two rows, and ≤420 px controls use compact spacing without hiding features. Browser QA exercises a 320 px viewport with `999 / 999`, share/download/zoom/close all visible, and requires both counter/actions to remain inside the viewer with no horizontal overflow.
@@ -11,6 +13,8 @@
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- live observer에서 child 제거가 한 번 발생할 때마다 모든 활성 Kineto record를 검사하던 정리를 제거된 DOM subtree 기준으로 좁혔습니다. 제거된 element tree 안의 source만 정리하고, batch flush 전에 다른 위치로 reparent되어 다시 연결된 요소는 기존 instance를 유지합니다.
 
 - 코어 off-screen suspension이 public API 경로에 두 번째 `IntersectionObserver`를 추가한 뒤 Stylize video 브라우저 회귀 테스트가 잘못된 observer를 검사하던 문제를 수정했습니다. 테스트는 이제 모든 observer를 추적하고 target/options로 실제 view trigger observer를 선택합니다.
 
