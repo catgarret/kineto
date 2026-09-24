@@ -67,8 +67,7 @@ function createManager(label) {
       @media (max-width:760px){
         .kt-lightbox .kt-lightbox-toolbar{padding:12px max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left));flex-wrap:wrap;gap:8px 10px}
         .kt-lightbox .kt-lightbox-counter{position:static!important;left:auto!important;top:auto!important;transform:none!important}
-        .kt-lightbox .kt-lightbox-prev{left:max(10px,env(safe-area-inset-left))!important}
-        .kt-lightbox .kt-lightbox-next{right:max(10px,env(safe-area-inset-right))!important}
+        .kt-lightbox :is(.kt-lightbox-prev,.kt-lightbox-next){margin-inline:max(10px,env(safe-area-inset-left))}
         .kt-lightbox .kt-lightbox-info{padding-bottom:calc(22px + env(safe-area-inset-bottom))!important}
       }
       @media (max-width:420px){
