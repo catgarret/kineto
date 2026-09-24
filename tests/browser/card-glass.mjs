@@ -130,10 +130,16 @@ const rimAfter = await page.evaluate(() => window.__glassRim());
 assert.notEqual(rimAfter, report.rimBefore, 'the lit edge must follow the pointer');
 // Leaving must finish its light return, rather than paint a single lerp frame.
 await page.mouse.move(5, 5);
-await page.waitForTimeout(900);
-const returnedRim = await page.evaluate(() => window.__glassRim());
 const angleOf = (css) => Number(css.match(/linear-gradient\(([-\d.]+)deg/)[1]);
-assert.ok(Math.abs(angleOf(returnedRim) - angleOf(report.rimBefore)) < 0.1, 'leaving must return to the resting light');
+// Wait for the result, not for a guessed duration: a busy runner gives the
+// return fewer frames per second. A single-lerp-frame return never gets there.
+let returnedRim = '';
+for (let waited = 0; waited <= 3000; waited += 150) {
+  await page.waitForTimeout(150);
+  returnedRim = await page.evaluate(() => window.__glassRim());
+  if (Math.abs(angleOf(returnedRim) - angleOf(report.rimBefore)) < 0.1) break;
+}
+assert.ok(Math.abs(angleOf(returnedRim) - angleOf(report.rimBefore)) < 0.1, `leaving must return to the resting light (${returnedRim})`);
 await page.mouse.move(report.box.left + 16, report.box.top + 16);
 await page.evaluate(() => window.Kineto.getInstance(document.getElementById('glass'), 'cardGlow').pause());
 const pausedRim = await page.evaluate(() => window.__glassRim());

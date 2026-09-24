@@ -1,4 +1,4 @@
-import { clamp, lerp, snapshotInlineStyles, ST } from '../utils.js';
+import { clamp, frameEase, lerp, snapshotInlineStyles, ST } from '../utils.js';
 
 // Blur at full speed for the `blur` variant, in px, unless `maxBlur` is given.
 const BLUR_VARIANT_MAX = 8;
@@ -72,10 +72,11 @@ export default {
         const acceleration = (force + dampingForce) / mass;
         currentVelocity += acceleration * dt;
         current += currentVelocity * dt;
-        target = lerp(target, 0, decay);
+        target = lerp(target, 0, frameEase(decay, dt * 1000));
       } else {
-        current = lerp(current, target, smoothing);
-        target = lerp(target, 0, decay);
+        // Per-frame factors, converted to elapsed time so 120Hz is not twice as fast.
+        current = lerp(current, target, frameEase(smoothing, dt * 1000));
+        target = lerp(target, 0, frameEase(decay, dt * 1000));
         currentVelocity = 0;
       }
       // Include velocity: a spring crossing zero can still carry momentum.

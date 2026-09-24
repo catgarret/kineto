@@ -271,6 +271,7 @@ jobs:
           node tests/retry-browser-test.mjs tests/browser/demo-blocks.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/browser/markup-trust.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/browser/lifecycle-edges.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
+          node tests/retry-browser-test.mjs tests/browser/motion-timing.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
         env:
           KT_BROWSER: ${{ matrix.browser }}
 

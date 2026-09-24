@@ -1,4 +1,4 @@
-import { clamp, lerp } from '../utils.js';
+import { clamp, frameClock, frameEase, lerp } from '../utils.js';
 
 /*
  * Horizontal scroll section: pin a full-height stage and translate its inner
@@ -73,8 +73,9 @@ export default {
       targetX = t * maxX;
     };
 
-    const apply = () => {
-      currentX = smooth ? lerp(currentX, targetX, smooth) : targetX;
+    const clock = frameClock();
+    const apply = (time) => {
+      currentX = smooth ? lerp(currentX, targetX, frameEase(smooth, clock.tick(time))) : targetX;
       track.style.transform = `translate3d(${-currentX}px,0,0)`;
       if (smooth && Math.abs(currentX - targetX) > 0.2) { rafId = requestAnimationFrame(apply); }
       else { currentX = targetX; track.style.transform = `translate3d(${-currentX}px,0,0)`; rafId = null; }

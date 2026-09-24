@@ -3922,7 +3922,7 @@
         "preset": "layers",
         "rotateOffset": 0,
         "sensitivity": 1,
-        "smoothing": 0.12
+        "smoothing": 0.08
       }
     },
     {

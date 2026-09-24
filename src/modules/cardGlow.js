@@ -1,4 +1,4 @@
-import { clamp, lerp, snapshotInlineStyles } from '../utils.js';
+import { clamp, frameClock, frameEase, lerp, snapshotInlineStyles } from '../utils.js';
 import { createInteractiveShadow } from '../interactiveShadow.js';
 import { bevelBand, bevelShading, buildDisplacementMap, displacementScale, supportsBackdrop, supportsBackdropRefraction } from './surface/glass.js';
 
@@ -255,10 +255,14 @@ export default {
       surface.style.backgroundPosition = `${xPercent}% ${yPercent}%`;
     };
 
-    const render = () => {
+    // Time-based easing: the light moves at the same speed on 60Hz and 120Hz
+    // screens, and a slow frame catches up instead of dragging the return.
+    const clock = frameClock();
+    const render = (time) => {
       if (!alive) return;
-      currentX = lerp(currentX, targetX, smoothing);
-      currentY = lerp(currentY, targetY, smoothing);
+      const step = frameEase(smoothing, clock.tick(time));
+      currentX = lerp(currentX, targetX, step);
+      currentY = lerp(currentY, targetY, step);
       const width = Math.max(1, el.clientWidth);
       const height = Math.max(1, el.clientHeight);
       const xPercent = clamp(currentX / width * 100, 0, 100);

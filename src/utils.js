@@ -103,6 +103,53 @@ export function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+/** 60Hz 기준 한 프레임(ms). 모듈의 `smoothing` 계수는 이 속도에서 맞춰져 있습니다. */
+export const FRAME_MS = 1000 / 60;
+
+/**
+ * "매 프레임 남은 거리의 `amount` 만큼 다가간다"를 **시간 기준**으로 바꾼 계수.
+ *
+ * `lerp(current, target, smoothing)` 를 rAF 마다 부르면 움직이는 속도가 화면 주사율에
+ * 묶입니다. 120Hz 화면(ProMotion 맥·아이폰)에서는 디자이너가 60Hz 에서 맞춘 것보다 두 배
+ * 빠르고, 바쁜 페이지·저사양 기기에서는 프레임이 늦는 만큼 느려집니다. 이 함수는 흐른
+ * 시간만큼의 프레임 수로 환산해, 60Hz 에서는 `amount` 와 똑같고 다른 주사율에서도 같은
+ * 시간에 같은 거리를 가게 합니다.
+ *
+ *   const k = frameEase(smoothing, elapsedMs);
+ *   current = lerp(current, target, k);
+ *
+ * 한 번에 4프레임 분까지만 따라잡습니다(멈춰 있던 탭이 깨어날 때 한 번에 튀지 않게).
+ */
+export function frameEase(amount, elapsedMs = FRAME_MS) {
+  const step = clamp(Number(amount) || 0, 0, 1);
+  if (step >= 1) return 1;
+  const frames = clamp((Number(elapsedMs) || FRAME_MS) / FRAME_MS, 0.25, 4);
+  return 1 - ((1 - step) ** frames);
+}
+
+/**
+ * rAF 콜백 사이에 흐른 시간(ms)을 재는 작은 시계. `frameEase()` 와 짝입니다.
+ *
+ * 다 따라잡아 쉬던 루프가 입력으로 다시 깨어나면, 마지막 프레임 이후 몇 초가 지나 있습니다.
+ * 그 시간을 그대로 쓰면 깨어난 첫 프레임에 크게 튀므로, `idleGapMs` 보다 긴 간격은
+ * "새로 시작한 첫 프레임"(한 프레임)으로 칩니다.
+ *
+ *   const clock = frameClock();
+ *   const tick = (time) => { const k = frameEase(smoothing, clock.tick(time)); … };
+ */
+export function frameClock(idleGapMs = 250) {
+  let last = 0;
+  return {
+    tick(now = (typeof performance !== 'undefined' ? performance.now() : Date.now())) {
+      const gap = now - last;
+      const elapsed = last && gap > 0 && gap <= idleGapMs ? gap : FRAME_MS;
+      last = now;
+      return elapsed;
+    },
+    reset() { last = 0; }
+  };
+}
+
 /**
  * 숫자 옵션 하나를 읽습니다. 유한한 숫자면 `min..max` 안으로 가두고, 숫자가 아니면
  * (없거나, 빈 문자열이거나, `"abc"` 같은 오타면) `fallback` 을 그대로 돌려줍니다.

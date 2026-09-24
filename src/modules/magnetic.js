@@ -1,4 +1,4 @@
-import { clamp, dropEmptyAttributes, lerp, snapshotInlineStyles } from '../utils.js';
+import { clamp, dropEmptyAttributes, FRAME_MS, frameClock, frameEase, lerp, numberOption, snapshotInlineStyles } from '../utils.js';
 
 /*
  * Magnetic — an element that answers the pointer coming near it. Two ways:
@@ -39,7 +39,9 @@ function createDock(el, { axis, maxScale, lift, range, ease, item }) {
   const peak = Math.max(1, Number(maxScale ?? 1.8));
   const raise = Number(lift ?? 10);
   const reach = Math.max(1, Number(range ?? 120));
-  const smoothing = clamp(Number(ease ?? 0.22), 0.02, 1);
+  // `ease` here is a lerp factor (a number), not a curve name; anything that is
+  // not a number keeps the default instead of turning every frame into NaN.
+  const smoothing = numberOption(ease, 0.22, 0.02, 1);
   const selector = item || null;
 
   const items = () => (selector ? Array.from(el.querySelectorAll(selector)) : Array.from(el.children));
@@ -75,15 +77,18 @@ function createDock(el, { axis, maxScale, lift, range, ease, item }) {
     scales = rest.map(() => 1);
   };
 
-  const paint = () => {
+  // `elapsed` is the time since the previous frame, so the dock eases at the
+  // same speed on 60Hz and 120Hz screens (see utils.frameEase).
+  const paint = (elapsed = FRAME_MS) => {
     if (!rest.length) return;
+    const step = frameEase(smoothing, elapsed);
     // 1. how big each item wants to be, eased towards from where it is now.
     const wanted = rest.map(({ centre }) => (
       pointer == null ? 1 : dockScale(Math.abs(pointer - centre), reach, peak)
     ));
     let settled = true;
     scales = scales.map((current, index) => {
-      const next = lerp(current, wanted[index], smoothing);
+      const next = lerp(current, wanted[index], step);
       if (Math.abs(next - wanted[index]) > 0.002) settled = false;
       return next;
     });
@@ -99,7 +104,7 @@ function createDock(el, { axis, maxScale, lift, range, ease, item }) {
     // Keep the last anchor while leaving; resetting it would jump the row.
     if (anchor == null) anchor = pointer ?? rest[Math.floor(rest.length / 2)].centre;
     if (pointer != null) {
-      anchor = lerp(anchor, pointer, smoothing);
+      anchor = lerp(anchor, pointer, step);
       if (Math.abs(anchor - pointer) > 0.02) settled = false;
     }
     let right = rest.findIndex(({ centre }) => centre >= anchor);
@@ -119,9 +124,10 @@ function createDock(el, { axis, maxScale, lift, range, ease, item }) {
     return settled;
   };
 
-  const loop = () => {
+  const clock = frameClock();
+  const loop = (time) => {
     if (!alive) { rafId = null; return; }
-    const settled = paint();
+    const settled = paint(clock.tick(time));
     rafId = settled ? null : requestAnimationFrame(loop);
   };
   const wake = () => { if (alive && rafId == null) rafId = requestAnimationFrame(loop); };
@@ -177,7 +183,7 @@ function createPointerMagnet(el, { strength, radius, ease }) {
   const parent = el.parentElement || el;
   const pull = strength ?? 0.4;
   const reach = radius ?? 100;
-  const smoothing = ease ?? 0.15;
+  const smoothing = numberOption(ease, 0.15, 0.01, 1);
   const restore = snapshotInlineStyles(el, ['transform', 'willChange']);
 
   let targetX = 0;
@@ -190,10 +196,12 @@ function createPointerMagnet(el, { strength, radius, ease }) {
 
   el.style.willChange = 'transform';
 
-  const loop = () => {
+  const clock = frameClock();
+  const loop = (time) => {
     if (!alive) return;
-    currentX = lerp(currentX, targetX, smoothing);
-    currentY = lerp(currentY, targetY, smoothing);
+    const step = frameEase(smoothing, clock.tick(time));
+    currentX = lerp(currentX, targetX, step);
+    currentY = lerp(currentY, targetY, step);
     el.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
     const moving = Math.abs(currentX - targetX) > 0.1 || Math.abs(currentY - targetY) > 0.1;
     if (active || moving) rafId = requestAnimationFrame(loop);

@@ -1,4 +1,4 @@
-import { clamp, ensureGyroPermission, lerp, snapshotInlineStyles } from '../utils.js';
+import { clamp, ensureGyroPermission, frameClock, frameEase, lerp, numberOption, snapshotInlineStyles } from '../utils.js';
 import { createInteractiveShadow } from '../interactiveShadow.js';
 
 export default {
@@ -16,7 +16,8 @@ export default {
     const maxY = Math.max(0, Number(opts.maxY ?? max));
     const perspective = Math.max(100, Number(opts.perspective ?? 1000));
     const scale = Math.max(0.5, Number(opts.scale ?? 1.02));
-    const smoothing = clamp(Number(opts.smoothing ?? opts.ease ?? 0.1), 0.01, 1);
+    // `ease` is an alias of the numeric `smoothing`; a curve name keeps the default.
+    const smoothing = numberOption(opts.smoothing ?? opts.ease, 0.1, 0.01, 1);
     const sensitivity = Math.max(0.1, Number(opts.sensitivity ?? 1));
     const axis = opts.axis || 'both';
     const reverse = opts.reverse === true ? -1 : 1;
@@ -80,11 +81,14 @@ export default {
       el.appendChild(glareWrap);
     }
 
-    const tick = () => {
+    // Time-based easing: same tilt speed on 60Hz and 120Hz screens.
+    const clock = frameClock();
+    const tick = (time) => {
       if (!alive) return;
-      currentX = lerp(currentX, targetX, smoothing);
-      currentY = lerp(currentY, targetY, smoothing);
-      currentScale = lerp(currentScale, targetScale, smoothing);
+      const step = frameEase(smoothing, clock.tick(time));
+      currentX = lerp(currentX, targetX, step);
+      currentY = lerp(currentY, targetY, step);
+      currentScale = lerp(currentScale, targetScale, step);
       el.style.transform = `perspective(${perspective}px) rotateX(${currentX}deg) rotateY(${currentY}deg) scale3d(${currentScale},${currentScale},${currentScale})`;
       shadow.update(
         shadowX - currentY * shadowFollow,

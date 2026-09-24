@@ -137,7 +137,10 @@ const foldState = (page, block) => page.evaluate((id) => {
 
   // Open.
   await page.locator('#mod-slider .module-fold__toggle').click();
-  await page.waitForFunction(() => document.querySelector('#mod-slider .module-block-body').dataset.demoFold === 'open', null, { timeout: 3000 });
+  // Opening settles on transitionend or, at the latest, fold.js's 700ms timer.
+  // A slow WebKit runner can hold the main thread for seconds while the newly
+  // revealed sliders start, so allow for that rather than guess a duration.
+  await page.waitForFunction(() => document.querySelector('#mod-slider .module-block-body').dataset.demoFold === 'open', null, { timeout: 15000 });
   const opened = await foldState(page, 'mod-slider');
   assert.equal(opened.folded, 0, 'an open fold hides nothing');
   assert.equal(opened.inert, 0, 'an open fold leaves nothing inert');
@@ -148,7 +151,7 @@ const foldState = (page, block) => page.evaluate((id) => {
 
   // Close again.
   await page.locator('#mod-slider .module-fold__toggle').click();
-  await page.waitForFunction(() => document.querySelector('#mod-slider .module-block-body').dataset.demoFold === 'closed', null, { timeout: 3000 });
+  await page.waitForFunction(() => document.querySelector('#mod-slider .module-block-body').dataset.demoFold === 'closed', null, { timeout: 15000 });
   const reclosed = await foldState(page, 'mod-slider');
   assert.equal(reclosed.folded, closed.folded, 'closing must fold the same cards again');
   const buttonInView = await page.evaluate(() => {

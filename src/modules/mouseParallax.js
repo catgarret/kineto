@@ -1,4 +1,4 @@
-import { clamp, ensureGyroPermission, env, lerp, snapshotInlineStyles } from '../utils.js';
+import { clamp, ensureGyroPermission, env, frameClock, frameEase, lerp, numberOption, snapshotInlineStyles } from '../utils.js';
 
 export default {
   // Suspended by the core while the element is off screen (see `offscreen` in
@@ -11,7 +11,7 @@ export default {
     if (mode === 'compass') {
       // Compass dial: the element rotates to aim at the pointer (or maps the
       // pointer's X position onto a rotation range when compassRange is set).
-      const smoothing = clamp(Number(opts.smoothing ?? opts.ease ?? 0.08), 0.01, 1);
+      const smoothing = numberOption(opts.smoothing ?? opts.ease, 0.08, 0.01, 1);
       const offset = Number(opts.rotateOffset ?? 0);
       const range = opts.compassRange != null ? Number(opts.compassRange) : null;
       const sensitivity = Number(opts.sensitivity ?? 1);
@@ -51,14 +51,15 @@ export default {
         }
         wake();
       };
-      function tick() {
+      const compassClock = frameClock();
+      function tick(time) {
         rafId = null;
         if (!alive) return;
         // Rotate along the shortest arc so the dial never spins the long way.
         let delta = (target - current) % 360;
         if (delta > 180) delta -= 360;
         if (delta < -180) delta += 360;
-        current += delta * smoothing;
+        current += delta * frameEase(smoothing, compassClock.tick(time));
         el.style.transform = `rotate(${(current + offset).toFixed(3)}deg)`;
         if (Math.abs(delta) > 0.01) rafId = requestAnimationFrame(tick);
       }
@@ -86,7 +87,9 @@ export default {
       };
     }
 
-    const ease = opts.ease ?? 0.08;
+    // Both presets read the same knob: `smoothing` (with `ease` as its old alias).
+    // The layered preset used to read only `ease`, so the drawer's Smoothing did nothing.
+    const ease = numberOption(opts.smoothing ?? opts.ease, 0.08, 0.01, 1);
     const maxX = opts.maxX ?? 40;
     const maxY = opts.maxY ?? 40;
     const eventTarget = opts.global ? window : el;
@@ -131,9 +134,12 @@ export default {
       eventTarget.addEventListener('pointermove', onPointerMove, { passive: true });
     }
 
-    function tick() {
+    // Time-based easing: the layers drift at the same speed on any refresh rate.
+    const clock = frameClock();
+    function tick(time) {
       rafId = null;
       if (!alive) return;
+      const step = frameEase(ease, clock.tick(time));
       let moving = false;
       targets.forEach((target, index) => {
         // Subtle depth multiplier (unchanged default so existing layouts don't
@@ -142,8 +148,8 @@ export default {
         const multiplier = Number(target.dataset.mpSpeed ?? target.dataset.ktMouseSpeed ?? opts.speed ?? 0.05);
         const goalX = xTarget * maxX * multiplier;
         const goalY = yTarget * maxY * multiplier;
-        currentX[index] = lerp(currentX[index], goalX, ease);
-        currentY[index] = lerp(currentY[index], goalY, ease);
+        currentX[index] = lerp(currentX[index], goalX, step);
+        currentY[index] = lerp(currentY[index], goalY, step);
         if (Math.abs(goalX - currentX[index]) > 0.01 || Math.abs(goalY - currentY[index]) > 0.01) moving = true;
         target.style.transform = `translate3d(${currentX[index]}px, ${currentY[index]}px, 0)`;
       });

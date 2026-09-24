@@ -1,4 +1,4 @@
-import { clamp, cssString, env, labeller, latestEntry, lerp, selectAll, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
+import { clamp, cssString, env, frameEase, labeller, latestEntry, lerp, selectAll, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
 
 // Do not rewind presentation owned by a composing module or application.
 const snapshotPresentation = (el, properties, classes = [], attributes = []) => {
@@ -225,7 +225,7 @@ export default {
             radialVelocity += acceleration * seconds;
             visualActive += radialVelocity * seconds;
           } else if (radialSmoothing) {
-            visualActive = lerp(visualActive, targetActive, radialSmoothing);
+            visualActive = lerp(visualActive, targetActive, frameEase(radialSmoothing, dt));
           } else {
             const progress = Math.min(1, (time - started) / (duration * 1000));
             const eased = 1 - ((1 - progress) ** 3);

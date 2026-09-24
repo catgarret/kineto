@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import Kineto from '../src/core.js';
 import { JSDOM } from 'jsdom';
-import { coerce, createProgressOutputs, cssString, dash, decomposeHangul, hangulFrames, latestEntry, measureThenApply, numberOption, q, readOpts, segmentText, selectAll, snapshotAttributes, snapshotInlineStyles, textOption, timeMs } from '../src/utils.js';
+import { coerce, createProgressOutputs, cssString, dash, decomposeHangul, FRAME_MS, frameClock, frameEase, hangulFrames, latestEntry, measureThenApply, numberOption, q, readOpts, segmentText, selectAll, snapshotAttributes, snapshotInlineStyles, textOption, timeMs } from '../src/utils.js';
 
 assert.equal(dash('scrollSequence'), 'scroll-sequence');
 assert.equal(coerce('true'), true);
@@ -16,6 +16,24 @@ assert.equal(textOption('₩'), '₩');
 // Selectors from options: an invalid one matches nothing instead of throwing.
 assert.deepEqual(selectAll('div[', { querySelectorAll() { throw new SyntaxError('bad'); } }), []);
 assert.equal(cssString('a"b'), 'a\\"b');
+// frameEase: a per-frame lerp factor converted to elapsed time. One 60Hz frame
+// is the factor itself; two 120Hz frames add up to one 60Hz frame; a long gap
+// catches up at most four frames; a non-number never produces NaN.
+{
+  const close = (a, b) => Math.abs(a - b) < 1e-9;
+  assert.ok(close(frameEase(0.2, FRAME_MS), 0.2));
+  const half = frameEase(0.2, FRAME_MS / 2);
+  assert.ok(close(1 - (1 - half) * (1 - half), 0.2), 'two half-frames equal one frame');
+  assert.ok(close(frameEase(0.2, 10000), 1 - 0.8 ** 4), 'a long gap is capped at four frames');
+  assert.equal(frameEase(1, 5), 1);
+  assert.equal(frameEase('cubic-bezier(.2,.8,.2,1)', FRAME_MS), 0, 'a curve string is not a factor');
+  const clock = frameClock(250);
+  assert.ok(close(clock.tick(1000), FRAME_MS), 'the first tick counts as one frame');
+  assert.equal(clock.tick(1008), 8);
+  assert.ok(close(clock.tick(5000), FRAME_MS), 'waking after an idle gap counts as one frame, not four seconds');
+  clock.reset();
+  assert.ok(close(clock.tick(5010), FRAME_MS));
+}
 // IntersectionObserver batches are chronological: a node moved right after
 // observe() reports [not visible, visible] in one callback, and only the last
 // record is the current state.

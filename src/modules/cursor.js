@@ -1,4 +1,4 @@
-import { clamp, lerp } from '../utils.js';
+import { clamp, frameEase, lerp, numberOption } from '../utils.js';
 import { createCursorClickEffects } from './cursor/clickEffects.js';
 
 // Keep the click-effect option boundary in the public module entry. Besides
@@ -84,7 +84,8 @@ export default {
     }
 
     const type = opts.type || opts.preset || 'dot';
-    const smoothing = clamp(Number(opts.smoothing ?? opts.ease ?? opts.speed ?? 0.16), 0.01, 1);
+    // `ease`/`speed` are aliases of the numeric `smoothing`; a curve name keeps the default.
+    const smoothing = numberOption(opts.smoothing ?? opts.ease ?? opts.speed, 0.16, 0.01, 1);
     const dotSize = Math.max(1, Number(opts.dotSize ?? 7));
     const followerSize = Math.max(dotSize, Number(opts.followerSize ?? 34));
     const hoverScale = Math.max(0.1, Number(opts.hoverScale ?? 1.7));
@@ -499,7 +500,6 @@ export default {
     const onScopeLeave = () => { insideScope = false; setVisible(false); if (hoverTarget) leaveTarget(); };
 
     let lastFrame = 0;
-    const frameEase = (amount, time) => 1 - ((1 - amount) ** Math.min(4, Math.max(0.25, time / 16.667)));
     // Below this many pixels of travel left, a follower is where it is going.
     const SETTLED = 0.05;
     const render = (time = performance.now()) => {
