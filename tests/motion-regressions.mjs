@@ -775,7 +775,7 @@ flipClockInstance.destroy();
 await new Promise((resolve) => setTimeout(resolve, 360));
 assert.equal(animationsAfterClockDestroy, 0, 'destroyed flip clock must cancel delayed fold callbacks');
 assert.equal(flipClock.innerHTML, '<b>clock</b>', 'flip clock destroy must keep restored author markup untouched');
-window.HTMLElement.prototype.animate = nativeAnimate;
+window.HTMLElement.prototype.animate = clockNativeAnimate;
 flipClock.remove();
 
 const relativeTime = document.createElement('time');
@@ -867,7 +867,7 @@ fixedUnitRelativeTime.remove();
 // Record the WAAPI frames so a future refactor cannot collapse them into the
 // same opacity curve again.
 const pageRevealFrames = [];
-const nativeAnimate = window.HTMLElement.prototype.animate;
+const clockNativeAnimate = window.HTMLElement.prototype.animate;
 window.HTMLElement.prototype.animate = function recordPageReveal(frames, options) {
   pageRevealFrames.push({ frames, options, background: this.style.background, filter: this.style.filter });
   return { finished: new Promise(() => {}), cancel() {}, pause() {}, play() {} };
