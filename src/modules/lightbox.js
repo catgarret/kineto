@@ -79,11 +79,12 @@ function createManager(label) {
   toolbar.style.cssText = 'position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;pointer-events:auto;';
   const counter = document.createElement('span');
   counter.className = 'kt-lightbox-counter';
-  counter.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);flex:0 0 auto;white-space:nowrap;font-variant-numeric:tabular-nums;font:600 12.5px/1 ui-monospace,monospace;letter-spacing:.06em;color:rgba(255,255,255,.85);background:rgba(20,20,26,.5);border:1px solid rgba(255,255,255,.12);padding:6px 13px;border-radius:99px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);';
+  const toolbarGlass = 'background:rgba(20,20,26,.5);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);';
+  counter.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);flex:0 0 auto;white-space:nowrap;font-variant-numeric:tabular-nums;font:600 12.5px/1 ui-monospace,monospace;letter-spacing:.06em;color:rgba(255,255,255,.85);padding:6px 13px;border-radius:99px;' + toolbarGlass;
   const actions = document.createElement('div');
   actions.className = 'kt-lightbox-actions';
   // A single translucent cluster (segmented control) instead of scattered buttons.
-  actions.style.cssText = 'display:flex;align-items:center;gap:2px;padding:4px;background:rgba(20,20,26,.5);border:1px solid rgba(255,255,255,.12);border-radius:13px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);';
+  actions.style.cssText = 'display:flex;align-items:center;gap:2px;padding:4px;border-radius:13px;' + toolbarGlass;
   const zoomOut = createButton('kt-lightbox-zoom-out', label('zoomOut'), '−');
   const zoomReset = createButton('kt-lightbox-zoom-reset', label('zoomReset'), '100%');
   const zoomIn = createButton('kt-lightbox-zoom-in', label('zoomIn'), '+');
