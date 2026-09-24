@@ -4,6 +4,8 @@
 
 ### English
 
+- Reduce `Kineto.scan()` activation discovery from one selector traversal per registered module to one traversal per engine tier, preserving registry-order creation and re-discovering GSAP markup only when an asynchronous engine load requires it; lock 100 registered native modules to one traversal in the deterministic performance suite.
+
 - Pin all workflow runners to Ubuntu 24.04 and reject implicit OS migrations in the workflow contract test.
 
 - Account for the measured Node 24/npm 11 archive compression delta with a 1 KB packed budget margin; keep the same 80-file package surface.
@@ -81,6 +83,8 @@
 - Dependabot no longer proposes major bumps for the `tests/integrations` fixture: the UI-library majors there are the ones the integration map documents, so a new major is reviewed together with the docs and tests instead of landing as a failing automatic PR.
 
 ### 한국어
+
+- `Kineto.scan()`의 활성화 탐색을 등록 모듈마다 한 번씩 DOM 검색하던 방식에서 엔진 그룹당 한 번으로 줄였습니다. 모듈 등록 순서의 생성 동작은 유지하고, 비동기 GSAP 로딩이 실제로 필요한 경우에만 완료 시 GSAP 마크업을 다시 찾습니다. 결정적 성능 테스트에서 네이티브 모듈 100개가 selector traversal 1회만 사용하도록 고정했습니다.
 
 - 모든 워크플로 실행 환경을 Ubuntu 24.04로 고정하고, 계약 검사로 암묵적인 운영체제 전환을 차단합니다.
 

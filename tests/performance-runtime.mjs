@@ -23,6 +23,31 @@ const step = () => {
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 const { default: Kineto } = await import('../src/core.js');
 const app = document.querySelector('main');
+
+// scan() discovery cost must scale with engine tiers, not registered module
+// count. A hundred activation names still require one selector traversal for
+// the native tier; adding a GSAP-tier module makes that two, not 101+.
+for (let i = 0; i < 100; i += 1) {
+  Kineto.register(`bulkProbe${i}`, { create: (el) => ({ el, destroy() {} }) });
+}
+const discoveryRoot = document.createElement('section');
+for (let i = 0; i < 100; i += 1) {
+  const el = document.createElement('div');
+  el.setAttribute(`data-kt-bulk-probe${i}`, '');
+  discoveryRoot.append(el);
+}
+let selectorTraversals = 0;
+const realQuerySelectorAll = discoveryRoot.querySelectorAll.bind(discoveryRoot);
+discoveryRoot.querySelectorAll = (...args) => {
+  selectorTraversals += 1;
+  return realQuerySelectorAll(...args);
+};
+Kineto.scan(discoveryRoot);
+assert.equal(Kineto.instanceCount, 100);
+assert.equal(selectorTraversals, 1, '100 native modules must share one selector traversal');
+Kineto.destroy();
+for (let i = 0; i < 100; i += 1) Kineto.unregister(`bulkProbe${i}`);
+
 Kineto.register('probe', { create: (el) => ({ el, destroy() {} }) });
 const scans = [];
 const scan = Kineto.scan;
@@ -147,5 +172,5 @@ for (const action of ['pause', 'destroy']) {
   assert.equal(frames.size, 0, `${action} from onUpdate must not leave a frame`);
   instance.destroy();
 }
-console.log('performance-runtime OK — 101 mutation targets → 1 scan; duplicate options skipped; disconnected work cancelled; velocity idle/wake/settle/reentry.');
+console.log('performance-runtime OK — 100 modules → 1 discovery traversal; 101 mutation targets → 1 scan; duplicate options skipped; disconnected work cancelled; velocity idle/wake/settle/reentry.');
 dom.window.close();
