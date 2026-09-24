@@ -184,7 +184,11 @@ assert.match(releaseCrossBrowserJob, /MK_BROWSER_TEST_ATTEMPTS:\s*\$\{\{ matrix\
   'the release WebKit lane must retain the same bounded retry policy');
 for (const command of ['lint', 'build', 'test:demo', 'test:browser']) {
   assert.match(workflow, new RegExp(`retry-command\\.mjs npm run ${command}`), `release workflow must isolate ${command}`);
-  assert.match(read('.github/workflows/ci.yml'), new RegExp(`retry-command\\.mjs npm run ${command}`), `CI workflow must isolate ${command}`);
+}
+assert.match(ciTestJob, /npm run lint 2>&1 \| tee -a ci\.log/, 'CI lint must run once and surface deterministic failures immediately');
+assert.doesNotMatch(ciTestJob, /retry-command\.mjs npm run lint/, 'CI lint must not retry deterministic failures');
+for (const command of ['build', 'test:demo', 'test:browser']) {
+  assert.match(ciTestJob, new RegExp(`retry-command\\.mjs npm run ${command}`), `CI workflow must retain bounded retry for ${command}`);
 }
 // Derive this manifest from the local suite instead of maintaining a second
 // hand-written list that can silently omit a newly added regression gate.
@@ -220,7 +224,13 @@ for (const step of pkg.scripts['test:browser:cross'].split(' && ')) {
   }
 }
 assert.match(workflow, /retry-command\.mjs npm run audit:lockfiles -- --output-dir release-audit/);
-assert.match(read('.github/workflows/ci.yml'), /retry-command\.mjs npm pack --dry-run/);
+assert.match(ciTestJob, /npm pack --dry-run 2>&1 \| tee -a ci\.log/);
+assert.doesNotMatch(ciTestJob, /retry-command\.mjs npm pack --dry-run/, 'CI dry-run pack must fail fast');
+const chromiumInstallAt = ciTestJob.indexOf('Install Playwright Chromium');
+const nodePackageAt = ciTestJob.indexOf('Run Node tests · contracts and package');
+const consumersAt = ciTestJob.indexOf('Run Node tests · consumers and frameworks');
+assert.ok(chromiumInstallAt > nodePackageAt && chromiumInstallAt < consumersAt,
+  'CI must defer Chromium until deterministic package gates pass, but install it before integration browser QA');
 assert.match(ciWorkflow, /tests\/browser\/demo-polish\.mjs/);
 assert.match(ciWorkflow, /KT_BROWSER:\s*\$\{\{ matrix\.browser \}\}/);
 assert.match(ciWorkflow, /matrix\.browser == 'firefox' \|\| matrix\.browser == 'webkit'/);

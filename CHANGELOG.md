@@ -4,6 +4,8 @@
 
 ### English
 
+- Make deterministic CI checks fail fast instead of retrying the same lint/Node contract/package error three times. Network-backed consumer/framework installs and browser QA keep their retry paths; lint, core contract/package loops and the final dry-run pack now surface the first real failure immediately. Chromium provisioning is deferred until the deterministic contract/package gates pass, but still occurs before consumer/integration QA because that lane launches Chromium itself. Source/package failures therefore avoid browser/OS provisioning without starving integration tests of their browser dependency.
+
 - Fix the Stylize video browser regression probe after core off-screen suspension added a second `IntersectionObserver` in the public API path. The probe now tracks all observers and selects the trigger observer by target/options instead of assuming the most recently constructed observer is Stylize's view trigger.
 
 - Make the Lightbox toolbar resilient down to narrow phone widths and three-digit gallery counts. The counter uses no-wrap tabular numerals and never flex-shrinks; the mobile toolbar can wrap into two rows, and ≤420 px controls use compact spacing without hiding features. Browser QA exercises a 320 px viewport with `999 / 999`, share/download/zoom/close all visible, and requires both counter/actions to remain inside the viewer with no horizontal overflow.
@@ -11,6 +13,8 @@
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- 결정적인 CI 검사는 같은 lint/Node contract/package 오류를 세 번 반복하지 않고 첫 실패에서 바로 종료하도록 바꿨습니다. 네트워크가 필요한 consumer/framework 설치와 브라우저 QA의 retry는 유지하고, lint·핵심 contract/package 루프·최종 dry-run pack은 실제 첫 오류를 즉시 보여줍니다. Chromium 설치도 결정적인 contract/package gate 뒤로 미루되 Chromium을 직접 띄우는 consumer/integration QA보다는 앞에 둡니다. 소스/패키지 오류에서는 브라우저·OS 의존성 설치를 피하면서 integration 테스트의 실제 브라우저 의존성은 유지합니다.
 
 - 코어 off-screen suspension이 public API 경로에 두 번째 `IntersectionObserver`를 추가한 뒤 Stylize video 브라우저 회귀 테스트가 잘못된 observer를 검사하던 문제를 수정했습니다. 테스트는 이제 모든 observer를 추적하고 target/options로 실제 view trigger observer를 선택합니다.
 
