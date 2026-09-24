@@ -4,6 +4,8 @@
 
 ### English
 
+- Make Fullpage transition fallback work single-owner and terminal: a new programmatic navigation cancels the previous settle timeout, `transitionend` cancels its fallback, and destroy clears both the settle timeout and the initial section-measure rAF. An older transition can no longer unlock input in the middle of a newer one.
+
 - Make Counter delayed work obey teardown: native Pop now wakes every character from one shared rAF instead of one rAF per glyph and owns its completion timeout; Clock flip/fade delayed callbacks are tracked, cleared before a structural rebuild, and cancelled on destroy. This prevents late callbacks from touching restored or detached DOM.
 
 - Restore deterministic WebKit geometry/motion boundaries in the demo: Tabs now retries a hidden-to-visible indicator measurement for at most two frames plus one bounded fallback when the active tab is still 0px, and the hero scene caps per-frame progress so a long WebKit scheduling stall cannot collapse a 680–860ms inertial snap into one giant scroll jump. The browser regression follows the scene controller's bounded lifecycle instead of assuming a fixed one-second runner window.
@@ -19,6 +21,8 @@
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- Fullpage 전환 fallback 작업을 한 인스턴스의 최신 전환 하나만 소유하도록 정리했습니다. 새 programmatic navigation은 이전 settle timeout을 취소하고, `transitionend`가 먼저 오면 fallback을 제거하며, destroy는 settle timeout과 초기 section 측정 RAF까지 취소합니다. 이전 전환이 새 전환 도중 입력 잠금을 풀 수 없게 됩니다.
 
 - Counter의 지연 작업을 teardown 수명주기에 묶었습니다. 네이티브 Pop은 글자마다 RAF를 만들지 않고 한 RAF로 모두 시작하며 completion timeout도 소유하고, Clock flip/fade의 지연 callback은 추적해서 구조 재빌드 전에 정리하고 destroy 시 취소합니다. 복원되거나 분리된 DOM을 늦게 다시 건드리는 문제를 막습니다.
 
