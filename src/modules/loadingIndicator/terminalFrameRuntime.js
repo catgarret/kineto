@@ -252,12 +252,7 @@ export function mountTerminalFrameSpinner(root, preset, opts) {
   };
 
   const applyTextFrame = (content) => {
-    if (!frameNode) return;
-    if (preset.renderer === 'multiline-frame') {
-      frameNode.textContent = content;
-    } else {
-      frameNode.textContent = content;
-    }
+    if (frameNode) frameNode.textContent = content;
   };
 
   const advanceFrame = () => {

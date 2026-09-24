@@ -21,14 +21,10 @@ function variant(value, allowed, fallback) {
   return allowed.includes(value) ? value : fallback;
 }
 
-const TERMINAL_FRAME_PRESETS = Object.freeze({
-  ...TERMINAL_FRAME_LEGACY_PRESETS
-});
-
 const TERMINAL_STYLES = [
   'cursor', 'dots', 'blocks', 'meter',
   ...TERMINAL_FRAME_PRESET_IDS,
-  ...Object.keys(TERMINAL_FRAME_PRESETS)
+  ...Object.keys(TERMINAL_FRAME_LEGACY_PRESETS)
 ];
 
 function buildIndicator(host, type, opts) {
@@ -277,10 +273,10 @@ function buildIndicator(host, type, opts) {
         root.classList.add('kt-loading-terminal--custom');
         root.appendChild(frameNode);
         scheduleFrames();
-      } else if (TERMINAL_FRAME_PRESETS[requestedStyle]) {
+      } else if (TERMINAL_FRAME_LEGACY_PRESETS[requestedStyle]) {
         frameRuntime = mountLegacyCharFrames(root, requestedStyle, opts);
       } else {
-        frames = Array.from(TERMINAL_FRAME_PRESETS.ascii || '|/-\\');
+        frames = Array.from(TERMINAL_FRAME_LEGACY_PRESETS.ascii || '|/-\\');
         frameNode = node('i', 'kt-loading-terminal__frame', frames[0]);
         root.classList.add('kt-loading-terminal--ascii');
         root.appendChild(frameNode);
