@@ -57,30 +57,7 @@ function createManager(label) {
   if (!document.getElementById('kt-lightbox-style')) {
     const style = document.createElement('style');
     style.id = 'kt-lightbox-style';
-    style.textContent = `
-      .kt-lightbox button{transition:background-color .18s var(--kt-ease-ui, ease),border-color .18s var(--kt-ease-ui, ease),transform .18s var(--kt-ease-ui, ease),opacity .18s var(--kt-ease-ui, ease);}
-      .kt-lightbox .kt-lightbox-toolbar button:hover:not(:disabled){background:rgba(255,255,255,.16)!important;border-color:rgba(255,255,255,.3)!important;}
-      .kt-lightbox .kt-lightbox-toolbar button:disabled{opacity:.32;cursor:default;}
-      .kt-lightbox .kt-lightbox-prev:hover,.kt-lightbox .kt-lightbox-next:hover{background:rgba(255,255,255,.14)!important;transform:translateY(-50%) scale(1.06);}
-      .kt-lightbox .kt-lightbox-stage.is-zoomed{cursor:grab;}
-      .kt-lightbox .kt-lightbox-stage.is-panning{cursor:grabbing;}
-      @media (max-width:760px){
-        .kt-lightbox .kt-lightbox-toolbar{padding:12px max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left));flex-wrap:wrap;gap:8px 10px}
-        .kt-lightbox .kt-lightbox-counter{position:static!important;left:auto!important;top:auto!important;transform:none!important}
-        .kt-lightbox .kt-lightbox-prev{left:max(10px,env(safe-area-inset-left))!important}
-        .kt-lightbox .kt-lightbox-next{right:max(10px,env(safe-area-inset-right))!important}
-        .kt-lightbox .kt-lightbox-info{padding-bottom:calc(22px + env(safe-area-inset-bottom))!important}
-      }
-      @media (max-width:420px){
-        .kt-lightbox .kt-lightbox-toolbar{padding:10px max(10px,env(safe-area-inset-right)) 8px max(10px,env(safe-area-inset-left));gap:6px}
-        .kt-lightbox .kt-lightbox-counter{padding:6px 10px}
-        .kt-lightbox .kt-lightbox-actions{gap:0!important;padding:3px!important}
-        .kt-lightbox .kt-lightbox-toolbar button{min-width:30px;padding:0 5px}
-        .kt-lightbox .kt-lightbox-zoom-reset{min-width:44px!important}
-        .kt-lightbox :is(.kt-lightbox-zoom-out,.kt-lightbox-zoom-in,.kt-lightbox-close){width:30px;padding:0}
-        .kt-lightbox .kt-lightbox-actions>span{margin:0 4px!important}
-      }
-    `;
+    style.textContent = '.kt-lightbox button{transition:background-color .18s var(--kt-ease-ui,ease),border-color .18s var(--kt-ease-ui,ease),transform .18s var(--kt-ease-ui,ease),opacity .18s var(--kt-ease-ui,ease)}.kt-lightbox .kt-lightbox-toolbar button:hover:not(:disabled){background:rgba(255,255,255,.16)!important;border-color:rgba(255,255,255,.3)!important}.kt-lightbox .kt-lightbox-toolbar button:disabled{opacity:.32;cursor:default}.kt-lightbox :is(.kt-lightbox-prev,.kt-lightbox-next):hover{background:rgba(255,255,255,.14)!important;transform:translateY(-50%) scale(1.06)}.kt-lightbox .kt-lightbox-stage.is-zoomed{cursor:grab}.kt-lightbox .kt-lightbox-stage.is-panning{cursor:grabbing}@media(max-width:760px){.kt-lightbox .kt-lightbox-toolbar{padding:12px max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left));flex-wrap:wrap;gap:8px 10px}.kt-lightbox .kt-lightbox-counter{position:static!important;left:auto!important;top:auto!important;transform:none!important}.kt-lightbox .kt-lightbox-prev{left:max(10px,env(safe-area-inset-left))!important}.kt-lightbox .kt-lightbox-next{right:max(10px,env(safe-area-inset-right))!important}.kt-lightbox .kt-lightbox-info{padding-bottom:calc(22px + env(safe-area-inset-bottom))!important}}@media(max-width:420px){.kt-lightbox .kt-lightbox-toolbar{padding:10px max(10px,env(safe-area-inset-right)) 8px max(10px,env(safe-area-inset-left));gap:6px}.kt-lightbox .kt-lightbox-counter{padding:6px 10px}.kt-lightbox .kt-lightbox-actions{gap:0!important;padding:3px!important}.kt-lightbox .kt-lightbox-toolbar button{min-width:30px;padding:0 5px}.kt-lightbox .kt-lightbox-zoom-reset{min-width:44px!important}.kt-lightbox :is(.kt-lightbox-zoom-out,.kt-lightbox-zoom-in,.kt-lightbox-close){width:30px;padding:0}.kt-lightbox .kt-lightbox-actions>span{margin:0 4px!important}}';
     document.head.appendChild(style);
   }
 
