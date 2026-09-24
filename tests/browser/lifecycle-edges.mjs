@@ -14,6 +14,9 @@
 //     right after Lazy started observing it. The observer then reports
 //     [not visible, visible] in one batch; reading only the first record left
 //     the image unloaded forever.
+//   • Tabs initialised inside a hidden panel wrote `width: 0` for the marker,
+//     so revealing them started a CSS transition from nothing: the pill was
+//     missing until that transition got frames (a busy page, WebKit in CI).
 //   • Reduced motion removed FEATURES, not motion: Lightbox never opened, Date
 //     Time never formatted, Sticky Header never got its class, and Gesture's
 //     pull-to-refresh was gone.
@@ -35,6 +38,8 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
   body{margin:0} .spacer{height:1500px} #sheet{height:200px}
   #tilt{width:200px;height:120px;background:#ccc} #radial{width:400px;height:300px}
   #radial > div{width:60px;height:60px}
+  #tabsEl [role=tablist]{position:relative;display:flex} #tabsEl button{width:80px;height:30px}
+  #tabsEl .kt-tabs__indicator{position:absolute;left:0;bottom:0;height:4px;transition:transform 5s linear,width 5s linear}
 </style></head><body>
   <header id="header" data-kt-sticky-header></header>
   <div id="px">parallax</div>
@@ -48,6 +53,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
   <header id="header2"></header>
   <div id="ambient" style="width:200px;height:120px;position:relative"><img id="lazyimg" alt="lazy"></div>
   <img id="batched" alt="batched" width="40" height="40"><div id="batchedReveal">reveal</div>
+  <div id="tabsWrap" hidden><div id="tabsEl"><div role="tablist"><button type="button">One</button><button type="button">Two</button></div><div class="kt-tabpanel">one</div><div class="kt-tabpanel">two</div></div></div>
   <div id="pull" style="height:120px;overflow:auto"><div style="height:400px">list</div></div>
   <div class="spacer"></div>
   <script src="${SITE}/dist/kineto.umd.js"></script>
@@ -213,6 +219,33 @@ const batched = await page.evaluate(async () => {
 assert.deepEqual(batched, { lazyLoaded: true, revealEntered: true },
   `observers must act on the newest record of a batch (${JSON.stringify(batched)})`);
 
+// Tabs created while hidden: the marker snaps into place on reveal (the
+// stylesheet transition here is 5s, so anything that animates would show),
+// a later tab change still slides, and hiding again keeps the geometry.
+const tabsReveal = await page.evaluate(async () => {
+  const nextFrames = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  const wrap = document.getElementById('tabsWrap');
+  const el = document.getElementById('tabsEl');
+  const instance = window.Kineto.create('tabs', el, {});
+  await nextFrames();
+  const indicator = el.querySelector('.kt-tabs__indicator');
+  const writtenWhileHidden = indicator.style.width;
+  wrap.hidden = false;
+  instance.refresh();
+  const revealedWidth = Math.round(indicator.getBoundingClientRect().width);
+  el.querySelectorAll('[role=tab]')[1].click();
+  const slides = indicator.getAnimations().some((animation) => animation.transitionProperty === 'transform');
+  indicator.getAnimations().forEach((animation) => animation.finish());
+  wrap.hidden = true;
+  await nextFrames();
+  const widthAfterHide = indicator.style.width;
+  instance.destroy();
+  wrap.hidden = false;
+  return { writtenWhileHidden, revealedWidth, slides, widthAfterHide };
+});
+assert.deepEqual(tabsReveal, { writtenWhileHidden: '', revealedWidth: 80, slides: true, widthAfterHide: '80px' },
+  `hidden-initialised tabs must place their marker on reveal without animating from 0 (${JSON.stringify(tabsReveal)})`);
+
 // Reduced motion keeps the features and drops only the motion.
 const reduced = await page.evaluate(async () => {
   window.Kineto.setReducedMotion('always');
@@ -243,4 +276,4 @@ assert.deepEqual(reduced, { opened: true, formatted: true, stuck: true, pullIsRe
 await frames();
 assert.deepEqual(errors, [], `page errors:\n${errors.join('\n')}`);
 await browser.close();
-console.log(`lifecycle-edges OK (${browserName}) — no writes after destroy (Sticky Header, Parallax, Bottom Sheet, Counter), Tilt revives after pause, Radial autoplay:true is 3s and pause() holds, Lazy loads after Ambient Media moves it (observers act on the newest record of a batch), and reduced motion keeps Lightbox, Date Time, Sticky Header and pull-to-refresh working.`);
+console.log(`lifecycle-edges OK (${browserName}) — no writes after destroy (Sticky Header, Parallax, Bottom Sheet, Counter), Tilt revives after pause, Radial autoplay:true is 3s and pause() holds, Lazy loads after Ambient Media moves it (observers act on the newest record of a batch), hidden Tabs snap their marker on reveal, and reduced motion keeps Lightbox, Date Time, Sticky Header and pull-to-refresh working.`);

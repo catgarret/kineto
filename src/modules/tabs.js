@@ -80,8 +80,13 @@ export default {
       }
     });
 
+    // Moves the marker (underline / pill) onto the active tab. Returns false and
+    // writes nothing while the active tab has no box: inside a hidden ancestor
+    // every offset is 0, and writing `width: 0` then would make the marker grow
+    // out of nothing (a CSS transition from 0) the moment the tab set appears.
     const placeIndicator = () => {
       const tab = tabs[active];
+      if (!tab.offsetWidth && !tab.offsetHeight) return false;
       // Use setProperty(..'important') so the measured geometry always wins over
       // the stylesheet's `!important` segment rules (which set the OTHER axis).
       if (orientation === 'vertical') {
@@ -93,13 +98,37 @@ export default {
         indicator.style.setProperty('width', `${tab.offsetWidth}px`, 'important');
         indicator.style.removeProperty('height');
       }
+      return true;
     };
+    // True until the marker has been placed on a real box once.
     let indFirst = true;
+    // Geometry repair — first paint, a reveal, refresh(): the marker SNAPS into
+    // place. The stylesheet's transition is for moving between tabs; applied
+    // here it animated from wherever the marker last was (often nothing), and on
+    // a busy page the pill stayed missing until the transition got frames.
+    const snapIndicator = () => {
+      if (!indicator) return;
+      const transition = indicator.style.transition;
+      indicator.style.transition = 'none';
+      const placed = placeIndicator();
+      // Commit the new geometry while transitions are off, then restore them.
+      void indicator.offsetWidth;
+      indicator.style.transition = transition;
+      if (placed) indFirst = false;
+    };
+    // Layout changed (resize, reveal): snap if the marker has never been placed,
+    // otherwise follow the tab the way the stylesheet says.
+    const syncIndicator = () => {
+      if (!indicator) return;
+      if (indFirst) snapIndicator();
+      else placeIndicator();
+    };
+    // A tab change: slide (or fade) the marker to the newly selected tab.
     const moveIndicator = () => {
       if (!indicator) return;
-      // 'fade': blink the marker out, teleport it (no slide), fade it back in —
-      // skipped on the very first placement so it just appears in position.
-      if (indicatorMotion === 'fade' && !indFirst && !reduce && typeof indicator.animate === 'function') {
+      if (indFirst) { snapIndicator(); return; }
+      // 'fade': blink the marker out, teleport it (no slide), fade it back in.
+      if (indicatorMotion === 'fade' && !reduce && typeof indicator.animate === 'function') {
         const prevTransition = indicator.style.transition;
         indicator.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, easing: 'ease' }).onfinish = () => {
           indicator.style.transition = 'none';
@@ -111,18 +140,13 @@ export default {
       } else {
         placeIndicator();
       }
-      indFirst = false;
     };
     // Consumers that reveal a tab set through their own state (for example a
     // card switcher that toggles `hidden` on the panel) can explicitly ask the
     // module to measure again after layout becomes visible. This is intentionally
     // synchronous and skips the indicator transition: it is a geometry repair,
     // not a tab selection.
-    const refresh = () => {
-      if (!indicator) return;
-      placeIndicator();
-      indFirst = false;
-    };
+    const refresh = snapIndicator;
 
     // Enter animation for the incoming panel. `cross` waits for the outgoing
     // panel to fade out first (fade-out → fade-in), the rest animate the
@@ -196,18 +220,19 @@ export default {
     // geometry. ResizeObserver fires when the ancestor becomes visible and
     // places the indicator without requiring a window resize or user click.
     const indicatorObserver = indicator && typeof ResizeObserver !== 'undefined'
-      ? new ResizeObserver(moveIndicator)
+      ? new ResizeObserver(syncIndicator)
       : null;
     indicatorObserver?.observe(list);
     // WebKit can miss the ancestor/list resize when [hidden] is removed. The
     // actual tab boxes still transition from 0 to measurable geometry, so watch
     // those boxes with the same observer and repair as soon as layout exists.
     tabs.forEach((tab) => indicatorObserver?.observe(tab));
-    if (!indicatorObserver) window.addEventListener('resize', moveIndicator);
+    if (!indicatorObserver) window.addEventListener('resize', syncIndicator);
     // WebKit can commit a removed `hidden` attribute before the revealed
-    // subtree has measurable layout. A single next-frame read can therefore
-    // permanently write a 0px indicator. Repair synchronously, then for at most
-    // two frames while geometry is still zero, with one bounded timer fallback.
+    // subtree has measurable layout. Repair synchronously, then for at most two
+    // frames while geometry is still zero, with one bounded timer fallback.
+    // refresh() snaps (no transition) and writes nothing while the tab has no
+    // box, so an early attempt can never leave a 0px marker behind.
     let repairRaf = null;
     let repairTimer = null;
     const repairIndicator = (attempt = 0) => {
@@ -230,7 +255,7 @@ export default {
     const hiddenAncestor = el.closest?.('[hidden]');
     if (hiddenObserver && hiddenAncestor) hiddenObserver.observe(hiddenAncestor, { attributes: true, attributeFilter: ['hidden'] });
     // Keep the handle so destroy() can cancel a still-pending first paint (no leak).
-    const initRaf = requestAnimationFrame(moveIndicator);
+    const initRaf = requestAnimationFrame(syncIndicator);
 
     return {
       el,
@@ -243,7 +268,7 @@ export default {
         cancelAnimationFrame(initRaf);
         if (repairRaf != null) cancelAnimationFrame(repairRaf);
         clearTimeout(repairTimer);
-        if (!indicatorObserver) window.removeEventListener('resize', moveIndicator);
+        if (!indicatorObserver) window.removeEventListener('resize', syncIndicator);
         indicatorObserver?.disconnect();
         hiddenObserver?.disconnect();
         tabs.forEach((tab, i) => {
