@@ -45,7 +45,8 @@ Pages 배포 concurrency 그룹을 실제 배포 전용으로 좁혀 v0.10.0에�
 고쳤습니다. 로컬 검증은 [QA 보고서](QA_REPORT.md)의 2026-09-19 연동 배치 항목에 있고, 원격 CI·Release·npm
 게시·배포 증거는 v0.11.0 배포 후 [QA 보고서](QA_REPORT.md#v0110)에 기록합니다.
 
-v0.12.0에서 공개 모듈이 52개에서 55개가 되었습니다. Lazy에서 분리한 Stylize(디더·아스키·하프톤을 영구 필터로,
+0.12 라인에서 공개 모듈이 52개에서 55개가 되었습니다(`v0.12.0` 태그는 릴리스 검사가 실패해 게시되지 않았고, 첫 게시본은
+v0.12.1입니다 — 원인과 수정은 CHANGELOG 0.12.1 항목). Lazy에서 분리한 Stylize(디더·아스키·하프톤을 영구 필터로,
 움직임·포인터 반응과 함께), iOS 코너 모양을 모든 브라우저에서 그리는 Squircle, 그리고 직접 만든 캔버스·WebGL
 효과를 Kineto 수명주기 안에서 돌리는 Canvas Effect 호스트입니다(`Kineto.defineCanvasEffect()`·
 `listCanvasEffects()`로 Core API 31개). 효과를 라이브러리에 싣지 않고 호스트만 두는 이유와 AI에게 줄 프롬프트는
@@ -59,8 +60,8 @@ Magnetic `dock`, Hold `tap`, Gesture `pull`, Mega-menu `radial`, Text Transition
 계약에서 생성), 옵션 값의 신뢰 경계(값은 텍스트, Page Transition은 같은 출처 HTML만), 수명주기 가장자리(destroy 뒤
 쓰기, pause/resume, 동작 줄이기에서 기능 유지), 레이아웃 변화 뒤 ScrollTrigger 재측정, 네이티브 타임라인 캡처.
 배경과 남은 구조 부채의 순서는 [아키텍처 리뷰](ARCHITECTURE-REVIEW.md)에 있습니다. 로컬 검증은
-[QA 보고서](QA_REPORT.md)의 2026-09-19~24 항목에 있고, 원격 CI·Release·npm 게시·배포 증거는 v0.12.0 배포 후
-[QA 보고서](QA_REPORT.md#v0120)에 기록합니다.
+[QA 보고서](QA_REPORT.md)의 2026-09-19~24 항목에 있고, 원격 CI·Release·npm 게시·배포 증거는 v0.12.1 배포 후
+[QA 보고서](QA_REPORT.md#v0121)에 기록합니다.
 
 ## 1. 결론
 

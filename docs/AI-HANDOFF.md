@@ -138,6 +138,13 @@ or a tag; release approval remains separate.
   after `observe()` arrives as `[not visible, visible]` in one batch. Read it
   with `latestEntry(entries, el)` from `src/utils.js`, never `([entry]) =>`.
   `tests/browser/lifecycle-edges.mjs` fakes such a batch.
+- **A geometry repair snaps; only a state change animates**: first placement,
+  a reveal, a resize and `refresh()` write the measured position with the
+  transition off, and nothing is written while the element has no box (a
+  hidden ancestor measures 0). Tabs' marker animated from `width: 0` on reveal
+  and failed the WebKit release gate. `tests/browser/lifecycle-edges.mjs`.
+- **A release tag follows green CI**: `release:ship` waits for the CI run of
+  the exact commit before tagging (`scripts/ci-status.mjs`). Never tag first.
 - **Reduced motion removes motion, not features**: a module whose job is not
   motion (a viewer, a formatter, a state class, pull-to-refresh) implements
   `reduced()` by creating itself without its transitions.

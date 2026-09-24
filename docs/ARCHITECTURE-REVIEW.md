@@ -1,6 +1,7 @@
 # Architecture review — 2026-09-24
 
-이 문서는 v0.12.0 준비 막바지에 저장소 전체를 다시 읽고 정리한 **기술 방향 문서**입니다.
+이 문서는 0.12 라인 준비 막바지(`v0.12.0` 태그 이후, 첫 게시본 v0.12.1 전)에 저장소 전체를 다시 읽고 정리한
+**기술 방향 문서**입니다.
 대상은 세 부류입니다: 다음에 코드를 만질 개발자(사람·AI), 데모를 리뷰 도구로 쓰는 디자인,
 그리고 로드맵과 릴리스 순서를 정하는 기획·제품 쪽입니다. 구현 규칙 자체는
 [ARCHITECTURE.md](ARCHITECTURE.md)와 [AI-HANDOFF.md](AI-HANDOFF.md)의 "Runtime conventions"가
@@ -58,6 +59,7 @@ Page Transition은 요청·최종 응답 URL·`navigate()` 모두 같은 출처 
 | 동작 줄이기에서 Lightbox가 안 열림, 날짜가 안 바뀜 | `reduced()`가 no-op → 기능 전체가 사라짐 |
 | Presence의 exit 모션이 무시됨 | 문서·타입은 `exit`, 코드는 `leave`를 읽음 |
 | Vue `v-motion`이 렌더마다 애니메이션 재시작 | 옵션 객체를 참조로 비교 |
+| 숨겨진 패널에서 만든 Tabs의 필이 드러난 뒤에도 안 보임(WebKit 릴리스 게이트 실패) | 숨김 중에 `width: 0`을 써 두고, 드러날 때 슬라이드 전환이 0부터 시작 → 크기 없으면 안 쓰고, 기하 복구는 전환 없이 |
 | Ambient Media 안의 Lazy 이미지가 영영 안 뜸, 화면 안 슬라이더가 멈춤 | 옮겨진 노드는 IntersectionObserver가 `[안 보임, 보임]`을 한 묶음으로 보내는데 첫 기록(`([entry]) =>`)만 읽음 → `latestEntry()` |
 
 → `tests/browser/lifecycle-edges.mjs`(세 엔진)와 Presence·framework QA 보강. 규칙은
@@ -79,6 +81,14 @@ ScrollTrigger는 트리거 위치를 한 번 재고, 창 크기 변경·`load` �
 `scroll()`/`view()` 타임라인은 영원히 0입니다. 데모의 CSS Scroll 네이티브 탭이 그랬습니다.
 → `cssScroll`이 그 조상을 찾으면 대체 경로로 동작하고 `KT_NATIVE_FALLBACK` 진단으로 원인과
 해결책(`overflow: clip`)을 알려 줍니다.
+
+### 2.6 릴리스가 검증보다 먼저 나간 자리
+
+`release:ship`은 `main`과 태그를 한 번에 푸시했습니다. 태그는 옮기지 않으므로, CI가 그 뒤에 실패하면 버전
+번호만 소진됩니다. `v0.12.0`이 정확히 그렇게 됐습니다 — 태그는 남았지만 릴리스 검사가 실패해 npm에는 0.11.0이
+그대로이고, 데모 사이트는 CI가 초록일 때만 배포되므로 이전 빌드에 머물렀습니다. 이제 `release:ship`은 `main`을
+푸시하고 **그 커밋의 CI가 통과한 뒤에만** 태그를 만듭니다(`scripts/ci-status.mjs`, 토큰 없이 공개 API 읽기).
+CI가 실패하면 태그가 없으므로 같은 명령을 다시 실행하면 됩니다. 수정은 규칙대로 새 패치 v0.12.1로 나갑니다.
 
 ## 3. 남은 구조 부채와 권장 순서
 

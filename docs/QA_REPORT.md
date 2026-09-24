@@ -3,6 +3,25 @@
 검증일: 2026-09-20
 대상: v0.12.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-24 v0.12.0 태그가 게시되지 않은 원인과 v0.12.1
+
+`v0.12.0`은 `cf962db`에 태그됐지만 Release 워크플로(#83)의 `Verify · Chromium · package`(`test:browser`)와
+`webkit · release gate`가 실패해 publish 단계가 돌지 않았습니다. npm `latest`는 0.11.0, GitHub Release도 0.11.0이
+마지막이고, 데모 사이트는 `main` CI가 초록일 때만 배포되므로 이전 빌드(0.11.0, 54개 모듈)에 머물렀습니다.
+원격 로그는 로그인 없이 볼 수 없어서, 같은 커밋을 이 컨테이너에서 재현해 원인을 찾았습니다.
+
+| 확인 | 결과 |
+|---|---|
+| `cf962db` WebKit `demo-polish` | "a tab revealed after hidden initialization must place its active pill" `{width:0}` — 재현 |
+| 원인 | 숨겨진 패널에서 만든 Tabs가 표시에 `width: 0`을 써 두고, 드러날 때 스타일시트 전환이 0부터 시작. WebKit은 바쁜 페이지에서 그 전환에 프레임을 늦게 줘서 80ms 뒤에도 0 |
+| `cf962db` Chromium 같은 순간 | 드러난 직후 0px → 40ms 153px → 80ms 198px(같은 전환). 느린 CI 러너에서 같은 단언이 실패했을 가능성이 가장 큼. 이 컨테이너의 `cf962db` Chromium 브라우저 레인 36개는 모두 통과 |
+| 수정 후 | 두 엔진 모두 드러난 즉시 224px, 전환 없음. `lifecycle-edges`에 5초 전환으로 결정적 재현 케이스(수정 전 실패 확인) |
+| 절차 | `release:ship`이 `main`과 태그를 함께 푸시해, 검증 안 된 커밋에 태그가 먼저 생겼음 → 이제 그 커밋의 CI 통과 뒤에만 태그 |
+
+태그는 옮기지 않는다는 규칙대로 수정은 새 패치 `v0.12.1`로 나갑니다. 이 컨테이너 전용 한계: WebKit `demo-polish`의
+"mobile hero landing" 단계는 소프트웨어 렌더링으로 데모가 초당 몇 프레임밖에 못 받아 1초 샘플에 프레임이 2개뿐이라
+멈춥니다(`cf962db`와 현재 모두 같은 프레임률 — 회귀 아님, v0.11.0 CI에서는 통과).
+
 ## 2026-09-24 소유자 데모 리뷰 반영 (원인 계열 정리)
 
 소유자가 라이브 데모에서 아홉 가지를 짚었습니다(Squircle 코드 복사, Radial이 숨겨짐, Slider 블록이 모든 variant를
