@@ -110,6 +110,46 @@ for (const direction of [1, -1]) {
   assert.ok(jump <= 4, `a 2px midpoint crossing must remain continuous, row jumped ${jump}px`);
 }
 
+// A steady sweep must move the row smoothly. The dock in v0.11.0 visibly
+// stuttered ("끊겨 보임") when the pointer moved sideways: its packing anchor and
+// its scales were eased separately and the row re-packed between neighbouring
+// centres, so icons flipped direction within a few frames (83 such flips and a
+// per-frame velocity change of 56 px measured on that build) even though every
+// single frame looked plausible. Sample every icon on every frame of a sweep
+// across and back, and count those flips.
+await page.mouse.move(rest[0].centre - 40, target.bottom - 25);
+await page.waitForTimeout(500);
+await page.evaluate(() => {
+  const icons = [...document.querySelectorAll('.dock span')];
+  window.__dockFrames = [];
+  const sample = () => {
+    window.__dockFrames.push(icons.map((node) => new DOMMatrix(getComputedStyle(node).transform).e));
+    if (window.__dockFrames.length < 420) requestAnimationFrame(sample);
+  };
+  requestAnimationFrame(sample);
+});
+const sweepFrom = rest[0].centre - 40;
+const sweepTo = rest[rest.length - 1].centre + 40;
+for (let x = sweepFrom; x <= sweepTo; x += 3) { await page.mouse.move(x, target.bottom - 25); await page.waitForTimeout(8); }
+for (let x = sweepTo; x >= sweepFrom; x -= 3) { await page.mouse.move(x, target.bottom - 25); await page.waitForTimeout(8); }
+await page.waitForTimeout(400);
+const frames = await page.evaluate(() => window.__dockFrames);
+let flips = 0;
+let jerk = 0;
+for (let icon = 0; icon < rest.length; icon += 1) {
+  const velocity = frames.slice(1).map((frame, index) => frame[icon] - frames[index][icon]);
+  for (let index = 1; index < velocity.length; index += 1) {
+    if (index >= 2) jerk = Math.max(jerk, Math.abs(velocity[index] - velocity[index - 1]));
+    if (Math.abs(velocity[index]) < 0.15 || Math.abs(velocity[index - 1]) < 0.15) continue;
+    if (Math.sign(velocity[index]) === Math.sign(velocity[index - 1])) continue;
+    // a flip that flips BACK within three frames is a stutter, not a turn
+    if (velocity.slice(index + 1, index + 4).some((next) => Math.abs(next) > 0.15 && Math.sign(next) === Math.sign(velocity[index - 1]))) flips += 1;
+  }
+}
+assert.ok(frames.length > 60, `the sweep must be sampled (${frames.length} frames)`);
+assert.ok(flips <= 3, `a steady sweep must not make icons flip back and forth, ${flips} flips`);
+assert.ok(jerk <= 20, `the row must not lurch between frames, velocity changed by ${jerk.toFixed(1)} px/frame`);
+
 // Leaving puts the row back exactly as it was.
 await page.mouse.move(10, 10);
 await page.waitForTimeout(900);
@@ -129,4 +169,4 @@ assert.ok(after.every((style) => style == null), `destroy() must leave the icons
 await page.close();
 await browser.close();
 server.close();
-console.log(`magnetic-dock OK (${browserName}) — ${widths[3]}px under the pointer falling away to ${widths[0]}px at the ends, neighbours sliding ${leftShift}/${rightShift}px aside without overlap, and a clean return.`);
+console.log(`magnetic-dock OK (${browserName}) — ${widths[3]}px under the pointer falling away to ${widths[0]}px at the ends, neighbours sliding ${leftShift}/${rightShift}px aside without overlap, a smooth sweep (${flips} flips, jerk ${jerk.toFixed(1)}), and a clean return.`);
