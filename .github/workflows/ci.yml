@@ -92,6 +92,13 @@ jobs:
             echo "::endgroup::"
           done
 
+      - name: Install Playwright Chromium
+        run: |
+          set -o pipefail
+          # Provision the browser only after deterministic lint/Node/package
+          # gates pass; early source failures should not pay the apt/browser cost.
+          timeout --foreground --kill-after=30s 10m npx playwright install --with-deps chromium
+
       - name: Run Node tests · consumers and frameworks
         run: |
           set -uo pipefail
@@ -151,13 +158,6 @@ jobs:
             printf 'Site/release test failures: %s\n' "${failures[*]}"
             exit 1
           fi
-
-      - name: Install Playwright Chromium
-        run: |
-          set -o pipefail
-          # Provision the browser only after deterministic lint/Node/package
-          # gates pass; early source failures should not pay the apt/browser cost.
-          timeout --foreground --kill-after=30s 10m npx playwright install --with-deps chromium
 
       - name: Run demo QA
         run: |

@@ -227,10 +227,10 @@ assert.match(workflow, /retry-command\.mjs npm run audit:lockfiles -- --output-d
 assert.match(ciTestJob, /npm pack --dry-run 2>&1 \| tee -a ci\.log/);
 assert.doesNotMatch(ciTestJob, /retry-command\.mjs npm pack --dry-run/, 'CI dry-run pack must fail fast');
 const chromiumInstallAt = ciTestJob.indexOf('Install Playwright Chromium');
-const nodeReleaseAt = ciTestJob.indexOf('Run Node tests · site and release');
-const demoQaAt = ciTestJob.indexOf('Run demo QA');
-assert.ok(chromiumInstallAt > nodeReleaseAt && chromiumInstallAt < demoQaAt,
-  'CI must defer Chromium provisioning until deterministic Node/package gates pass');
+const nodePackageAt = ciTestJob.indexOf('Run Node tests · contracts and package');
+const consumersAt = ciTestJob.indexOf('Run Node tests · consumers and frameworks');
+assert.ok(chromiumInstallAt > nodePackageAt && chromiumInstallAt < consumersAt,
+  'CI must defer Chromium until deterministic package gates pass, but install it before integration browser QA');
 assert.match(ciWorkflow, /tests\/browser\/demo-polish\.mjs/);
 assert.match(ciWorkflow, /KT_BROWSER:\s*\$\{\{ matrix\.browser \}\}/);
 assert.match(ciWorkflow, /matrix\.browser == 'firefox' \|\| matrix\.browser == 'webkit'/);
