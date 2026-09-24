@@ -130,7 +130,9 @@ Kineto.disableSmooth();
 Kineto.config({
   respectReducedMotion: true,
   performance: 'auto',
-  debug: false
+  debug: false,
+  // 문서 높이가 바뀌면(이미지 로드·펼침 등) ScrollTrigger 위치를 다시 잽니다. 기본 true.
+  autoRefresh: true
 });
 
 Kineto.replay('.title', 'textReveal');

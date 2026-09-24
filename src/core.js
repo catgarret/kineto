@@ -35,6 +35,7 @@ function activationIsOwnedOption(el, name) {
   return (ACTIVATION_OPTION_OWNERS[name] || []).some((owner) => el.hasAttribute?.(`data-kt-${dash(owner)}`));
 }
 import { toCSS as easingToCSS, fn as easingFn, EASINGS } from './easings.js';
+import { createLayoutRefresh } from './layoutRefresh.js';
 
 const modules = new Map();
 const records = new Set();
@@ -95,8 +96,19 @@ const config = {
   performance: 'auto',
   spring: false,
   debug: false,
-  debugSink: null
+  debugSink: null,
+  // Refresh ScrollTrigger when the document's height changes on its own
+  // (src/layoutRefresh.js). `false` leaves refreshing to the page.
+  autoRefresh: true
 };
+
+// Scroll-driven instances alive right now. The layout-shift watcher runs only
+// while this is above zero, so a page without scroll effects pays nothing.
+let scrollDrivenCount = 0;
+const layoutRefresh = createLayoutRefresh({
+  getScrollTrigger: () => ST(),
+  isEnabled: () => config.autoRefresh !== false
+});
 
 const diagnostics = createDiagnosticHub({
   isEnabled: () => Boolean(config.debug || typeof config.debugSink === 'function'),
@@ -231,6 +243,10 @@ function addRecord(sourceEl, name, instance, options) {
 
   records.add(record);
   getElementMap(sourceEl, true).set(name, record);
+  if (GSAP_MODULES.has(name)) {
+    scrollDrivenCount += 1;
+    layoutRefresh.start();
+  }
   return normalized;
 }
 
@@ -331,6 +347,10 @@ function removeRecord(record, destroy = true, teardownIfEmpty = true) {
   record.destroying = true;
   unwatchOffscreen(record);
   records.delete(record);
+  if (GSAP_MODULES.has(record.name) && --scrollDrivenCount <= 0) {
+    scrollDrivenCount = 0;
+    layoutRefresh.stop();
+  }
   const map = getElementMap(record.sourceEl);
   map?.delete(record.name);
   if (map?.size === 0) byElement.delete(record.sourceEl);
@@ -563,6 +583,8 @@ function stopSmoothService() {
 }
 
 function teardownCoreServices() {
+  layoutRefresh.stop();
+  scrollDrivenCount = 0;
   if (visibilityHandler && typeof document !== 'undefined') {
     document.removeEventListener('visibilitychange', visibilityHandler);
   }
