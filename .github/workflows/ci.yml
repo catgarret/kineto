@@ -19,7 +19,7 @@ permissions:
 jobs:
   node-compatibility:
     name: Node ${{ matrix.node }} · public engine contract
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -54,7 +54,7 @@ jobs:
 
   test:
     name: Node 24 / npm 11 · full test suite
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
 
     steps:
@@ -200,7 +200,7 @@ jobs:
   cross-browser:
     name: ${{ matrix.browser }} · browser smoke
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
       fail-fast: false

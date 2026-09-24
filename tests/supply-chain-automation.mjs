@@ -17,6 +17,17 @@ const consumerPackage = JSON.parse(read('tests/consumer-bundles/package.json'));
 const frameworkPackage = JSON.parse(read('tests/framework-qa/package.json'));
 const auditedLockfiles = ['package-lock.json', 'tests/consumer-bundles/package-lock.json', 'tests/framework-qa/package-lock.json', 'tests/integrations/package-lock.json', 'packages/kineto-mcp/package-lock.json'];
 
+// OS major upgrades must be reviewed rather than inherited from a moving label.
+for (const name of fs.readdirSync(path.join(root, '.github/workflows')).filter((name) => /\.ya?ml$/.test(name))) {
+  const source = read(`.github/workflows/${name}`);
+  const runners = [...source.matchAll(/^\s*runs-on:\s*([^\n#]+)/gm)];
+  assert.ok(runners.length > 0, `${name} must declare its runner explicitly`);
+  for (const [, runner] of runners) {
+    assert.equal(runner.trim(), 'ubuntu-24.04',
+      `${name}: runner changes require an explicit OS migration and an updated contract`);
+  }
+}
+
 assert.match(workflow, /workflow_dispatch:/);
 assert.match(workflow, /cron:\s*"41 3 \* \* 1"/);
 assert.match(workflow, /permissions:[\s\S]*contents:\s*read/);

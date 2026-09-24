@@ -23,7 +23,7 @@ permissions:
 jobs:
   verify:
     name: Verify · contracts · package
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     steps:
@@ -121,7 +121,7 @@ jobs:
   publish:
     name: Publish verified npm and GitHub artifacts
     needs: [verify]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: write

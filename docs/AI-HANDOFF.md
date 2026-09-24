@@ -43,6 +43,14 @@ another agent's prose report are leads to verify, not evidence of completion.
 - Delete or merge a file only after repository-wide import, build, test,
   documentation, and package-reference searches prove it is unused.
 
+### Hosted runner policy
+
+All repository workflows pin `runs-on: ubuntu-24.04`. Do not restore a floating
+OS label: GitHub's [Ubuntu 26 migration notice](https://github.com/actions/runner-images/issues/14748)
+starts on 2026-10-19. `test:supply-chain-automation` checks every workflow so
+OS migrations require an explicit contract update and browser validation.
+The OS image still receives updates within Ubuntu 24.04.
+
 ## Current state
 
 - Package: `@dong-gri/kineto`

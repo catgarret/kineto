@@ -15,7 +15,7 @@ permissions:
 jobs:
   verify:
     name: Verify · Chromium · package
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 35
 
     steps:
@@ -189,7 +189,7 @@ jobs:
 
   cross-browser:
     name: ${{ matrix.browser }} · release gate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     strategy:
       fail-fast: false
@@ -266,7 +266,7 @@ jobs:
   publish:
     name: Publish verified npm and GitHub artifacts
     needs: [verify, cross-browser]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: write

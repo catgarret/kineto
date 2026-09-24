@@ -4,6 +4,8 @@
 
 ### English
 
+- Pin all workflow runners to Ubuntu 24.04 and reject implicit OS migrations in the workflow contract test.
+
 - Account for the measured Node 24/npm 11 archive compression delta with a 1 KB packed budget margin; keep the same 80-file package surface.
 
 <!-- Add matching English release bullets here. -->
@@ -79,6 +81,8 @@
 - Dependabot no longer proposes major bumps for the `tests/integrations` fixture: the UI-library majors there are the ones the integration map documents, so a new major is reviewed together with the docs and tests instead of landing as a failing automatic PR.
 
 ### 한국어
+
+- 모든 워크플로 실행 환경을 Ubuntu 24.04로 고정하고, 계약 검사로 암묵적인 운영체제 전환을 차단합니다.
 
 - Node 24/npm 11에서 확인된 압축 크기 차이에 맞춰 패키지 압축 상한에 1KB 여유를 반영했습니다. 패키지 파일 80개 구성은 유지합니다.
 
