@@ -4,6 +4,8 @@
 
 ### English
 
+- Stop Scroll Sequence from clearing/redrawing the same rounded frame on every GSAP scrub tick. Preload/render work now runs only when the requested integer frame changes, while resize still forces the current frame to repaint; `onFrame` therefore tracks actual paints rather than duplicate tween updates.
+
 - Make autoplay hover timing deterministic and sample hero motion on animation frames so hosted-runner delays do not produce false browser failures.
 
 - Pin all workflow runners to Ubuntu 24.04 and reject implicit OS migrations in the workflow contract test.
@@ -83,6 +85,8 @@
 - Dependabot no longer proposes major bumps for the `tests/integrations` fixture: the UI-library majors there are the ones the integration map documents, so a new major is reviewed together with the docs and tests instead of landing as a failing automatic PR.
 
 ### 한국어
+
+- Scroll Sequence가 GSAP scrub 갱신마다 같은 반올림 프레임을 반복해서 clear/redraw하던 작업을 제거했습니다. 요청한 정수 프레임이 바뀔 때만 preload/render하고, resize에서는 현재 프레임을 강제로 다시 그립니다. 이에 따라 `onFrame`은 중복 tween tick이 아니라 실제 paint에만 호출됩니다.
 
 - 자동재생 호버 검사 시간을 제어하고 첫 화면 움직임을 애니메이션 프레임마다 측정해 CI 실행 지연으로 인한 잘못된 실패를 방지했습니다.
 
