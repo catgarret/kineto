@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import Kineto from '../src/core.js';
 import { JSDOM } from 'jsdom';
-import { coerce, dash, decomposeHangul, hangulFrames, measureThenApply, numberOption, q, readOpts, segmentText, snapshotAttributes, snapshotInlineStyles } from '../src/utils.js';
+import { coerce, dash, decomposeHangul, hangulFrames, measureThenApply, numberOption, q, readOpts, segmentText, snapshotAttributes, snapshotInlineStyles, timeMs } from '../src/utils.js';
 
 assert.equal(dash('scrollSequence'), 'scroll-sequence');
 assert.equal(coerce('true'), true);
@@ -26,6 +26,22 @@ assert.equal(numberOption(0, 5), 0, 'zero is a value, not a missing option');
 assert.equal(numberOption(99, 5, 0, 10), 10, 'a finite value is clamped into range');
 assert.equal(numberOption(-99, 5, 0, 10), 0, 'clamping works at the bottom too');
 assert.equal(numberOption('nope', -7, 0, 10), -7, 'the fallback is returned as written');
+
+// timeMs — timing options written in seconds OR milliseconds. The integration
+// map handed AI tools `hold: 1.4` for Text Transition, which read it as 1.4 ms
+// and swapped words every frame; Text Split's contract default `hold: 1.2`
+// clamped to 200 ms the same way. 20 and below is seconds, above is ms.
+assert.equal(timeMs(1.4, 1600), 1400, 'a small value is seconds');
+assert.equal(timeMs('1.2', 1600), 1200, 'from markup too');
+assert.equal(timeMs(1400, 1600), 1400, 'a large value is already milliseconds');
+assert.equal(timeMs('1600', 0), 1600);
+assert.equal(timeMs(20, 0), 20000, '20 is the last value read as seconds');
+assert.equal(timeMs(21, 0), 21, 'and 21 the first read as milliseconds');
+assert.equal(timeMs(0, 1600), 0, 'zero is a value, not a missing option');
+assert.equal(timeMs(undefined, 1600), 1600, 'a missing value falls back');
+assert.equal(timeMs('', 1600), 1600, 'an empty attribute falls back, it is not zero');
+assert.equal(timeMs('soon', 1600), 1600, 'a typo falls back');
+assert.equal(timeMs(-3, 1600), 1600, 'a negative time falls back');
 
 // snapshotAttributes must hand the element back exactly as it found it. The
 // trap is `style`: once the CSSOM has written to it, Chromium and WebKit both

@@ -6576,7 +6576,7 @@
         "word": "text"
       },
       "optionDefaults": {
-        "hold": 1.2,
+        "hold": 2000,
         "swapOut": "up"
       }
     },

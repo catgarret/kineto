@@ -9,6 +9,7 @@ import {
   snapshotInlineStyles,
   ST,
   textWithLineBreaks,
+  timeMs,
   wordSink
 } from '../utils.js';
 
@@ -144,7 +145,8 @@ export default {
 
     // Soft text swap: current glyphs stagger out (slide-up + fade by
     // default), the next text staggers in with the entrance animation.
-    const hold = Math.max(200, Number(opts.hold ?? opts.pause ?? 2000));
+    // Seconds (≤ 20) or milliseconds — see utils.timeMs.
+    const hold = Math.max(200, timeMs(opts.hold ?? opts.pause, 2000));
     const outDefinition = SWAP_OUT[opts.swapOut] || SWAP_OUT['slide-up'];
     const scheduleSwap = () => {
       if (!texts || texts.length < 2 || !alive) return;

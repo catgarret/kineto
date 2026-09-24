@@ -1,4 +1,4 @@
-import { cssEase, segmentText, wordSink } from '../utils.js';
+import { cssEase, segmentText, timeMs, wordSink } from '../utils.js';
 
 /*
  * Text transition rebuilt around a single live node: the visible text is
@@ -149,10 +149,9 @@ export default {
     // shimmer has no keyframe pair at all (it builds its own sweep below).
     const effect = effectName === 'shimmer' ? null : resolveEffect(dissolve ? 'fade' : effectName, opts);
     const effectDefaults = effect?.defaults || {};
-    // Seconds (≤ 20) or milliseconds, like every other duration in Kineto.
-    const durationInput = Number(opts.duration ?? effectDefaults.duration ?? 0.55);
-    const duration = Math.max(50, durationInput * (durationInput <= 20 ? 1000 : 1));
-    const hold = Math.max(0, Number(opts.pause ?? opts.hold ?? 1600));
+    // Both accept seconds (≤ 20) or milliseconds — see utils.timeMs.
+    const duration = Math.max(50, timeMs(opts.duration ?? effectDefaults.duration, 550));
+    const hold = timeMs(opts.pause ?? opts.hold, 1600);
     const loop = opts.loop !== false;
     // Dissolve and pop are inherently per-character.
     const charMode = opts.charMode === true || dissolve || effect?.perChar === true;

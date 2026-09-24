@@ -131,6 +131,31 @@ export function numberOption(value, fallback = 0, min = -Infinity, max = Infinit
   return Number.isFinite(parsed) ? clamp(parsed, min, max) : fallback;
 }
 
+// A timing option of 20 or less is read as SECONDS, anything larger as
+// milliseconds (see timeMs). Nobody holds a phrase for 20 ms, and nobody
+// waits 20 s between two words, so the two ranges never collide.
+const SECONDS_UP_TO = 20;
+
+/**
+ * A time given in seconds or milliseconds, returned in milliseconds.
+ *
+ * Kineto's timing options have always been written both ways — `duration:
+ * 0.6` in JS, `data-kt-hold="1600"` in markup — and a reader that assumed one
+ * unit silently broke the other: a recipe's `hold: 1.4` became 1.4 ms. Read
+ * every timing option through this so both spellings mean what they look like.
+ * Empty, negative or non-numeric values fall back (same rule as numberOption).
+ *
+ * @param {unknown} value
+ * @param {number} fallbackMs  used when no usable value was given
+ * @returns {number} milliseconds
+ */
+export function timeMs(value, fallbackMs) {
+  if (value == null || (typeof value === 'string' && value.trim() === '')) return fallbackMs;
+  const number = Number(value);
+  if (!Number.isFinite(number) || number < 0) return fallbackMs;
+  return number <= SECONDS_UP_TO ? number * 1000 : number;
+}
+
 /**
  * 모듈이 **스스로 만든** 컨트롤의 접근성 이름을 페이지가 정할 수 있게 합니다.
  *

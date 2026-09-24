@@ -13,6 +13,7 @@
 //      one short fade (no stagger), so the next title's entrance is what reads.
 //   4. pause() holds the spring mid-flight, resume() finishes it, destroy()
 //      hands the element back exactly as it was.
+//   5. `hold` accepts seconds as well as milliseconds (utils.timeMs).
 //
 // Run: npm run build && node tests/browser/text-transition.mjs
 import assert from 'node:assert/strict';
@@ -37,6 +38,7 @@ const fixtureHtml = () => `<!doctype html><html><head><meta charset="utf-8">
   <div id="scale-small" data-kt-text-transition="scale" data-kt-start-scale="0.5" data-kt-pause="60000"><div>ONE</div><div>TWO</div></div>
   <div id="scale-big" data-kt-text-transition="scale" data-kt-start-scale="1.3" data-kt-pause="60000"><div>ONE</div><div>TWO</div></div>
   <div id="pop" data-kt-text-transition="pop" data-kt-pause="60000"><div>01 Kinetic</div><div>02 Spring</div></div>
+  <div id="hold-seconds" data-kt-text-transition="fade" data-kt-duration="0.05" data-kt-hold="0.8"><div>A</div><div>B</div><div>C</div></div>
 </main>
 <script src="/dist/kineto.umd.js"></script><script>Kineto.init();</script></body></html>`;
 const server = http.createServer((request, response) => {
@@ -175,6 +177,19 @@ try {
   assert.ok(swap.leaveDurations.length === 1 && swap.leaveDurations[0] <= 200, `the old text fades quickly (got ${swap.leaveDurations})`);
   assert.equal(swap.index, 1);
   assert.equal(swap.text, '02Spring', 'the next text is on screen, letter by letter');
+
+  // 5. `hold` in seconds is seconds. Read as milliseconds, 0.8 would swap the
+  // words every frame (what an AI recipe's `hold: 1.4` used to do).
+  const cadence = await page.evaluate(async () => {
+    const instance = Kineto.getInstance(document.getElementById('hold-seconds'), 'textTransition');
+    instance.replay();
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    const early = instance.index;
+    await new Promise((resolve) => setTimeout(resolve, 1400));
+    return { early, later: instance.index };
+  });
+  assert.equal(cadence.early, 0, 'a 0.8 s hold keeps the first word up for 0.4 s');
+  assert.ok(cadence.later >= 1, 'and moves on after it');
 
   // 4b. destroy() restores the element.
   const restored = await page.evaluate(() => {

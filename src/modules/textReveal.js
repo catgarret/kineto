@@ -10,6 +10,7 @@ import {
   snapshotChildNodes,
   scramblePainter,
   textWithLineBreaks,
+  timeMs,
   wordBox,
   wordSink
 } from '../utils.js';
@@ -213,7 +214,8 @@ export default {
       const charset = String(opts.chars || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>/\\|=+*#');
       const scramblePaint = scramblePainter({ rainbow: opts.rainbow, rainbowColors: opts.rainbowColors, scrambleFade: opts.scrambleFade });
       const flickerFrames = Math.max(1, Math.round(Number(opts.flickerCount ?? 3)));
-      const hold = Math.max(200, Number(opts.hold ?? 1400));
+      // Seconds (≤ 20) or milliseconds — see utils.timeMs.
+      const hold = Math.max(200, timeMs(opts.hold, 1400));
       const cells = segmentText(text).map((char) => {
         if (char === '\n') {
           return { span: lineBreak(), char, space: true, break: true };
@@ -356,7 +358,7 @@ export default {
         if (revealed >= graphemes.length) {
           cells.forEach((span, i) => { if (span) { span.textContent = graphemes[i]; scramblePaint?.clear(span); } });
           complete();
-          if (opts.loop === true) later(() => { revealed = 0; tick = 0; step(); }, Math.max(200, Number(opts.hold ?? 1400)));
+          if (opts.loop === true) later(() => { revealed = 0; tick = 0; step(); }, Math.max(200, timeMs(opts.hold, 1400)));
           return;
         }
         later(step, shuffleSpeed);

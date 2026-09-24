@@ -12,6 +12,12 @@
 | `stagger` | number/object | 자식 또는 분할 텍스트의 순차 간격 |
 | `speed` | number | 모듈별 이동량·문자 속도·흐름 속도 |
 | `onComplete` | function | 완료 콜백 |
+| `hold` / `pause` | number | 텍스트를 바꾸기 전 머무는 시간 — Text Transition·Text Split·Text Reveal |
+
+`hold`(Text Transition은 `pause`도)는 **초와 밀리초를 둘 다** 받습니다. 20 이하는 초, 그보다 크면
+밀리초입니다 — `hold: 1.4`와 `data-kt-hold="1400"`은 같은 1.4초입니다. 20ms 동안 머무는 문구도,
+20초씩 기다리는 단어 교체도 없어서 두 범위가 겹치지 않습니다(`src/utils.js`의 `timeMs`).
+Text Transition의 `duration`도 같은 규칙입니다.
 
 ## 스크롤 옵션
 
