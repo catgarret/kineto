@@ -5,6 +5,8 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Fix Dock neighbour jumps with a continuous packing anchor, container-relative coordinates and settled frame suspension.
+- Refine Liquid Glass edge refraction, show a clear capsule, restore smooth light return and pause/resume, and test decoded pixels instead of PNG compression size.
 - Reduce live-DOM work by scanning overlapping mutation subtrees once, skipping option parsing for existing instances, and cancelling queued work on observer disconnect.
 - Let Scroll Velocity sleep after spring/lerp settling and wake on input; preserve explicit pause and make teardown terminal, including callback-triggered teardown.
 - Reuse sampled pixels for Stylize dither output, replace full-grid diffusion buffers with reusable 2–3-row storage, and avoid repeated monochrome Canvas colour writes. Lock pixel parity and work counts with deterministic performance regressions.
@@ -75,6 +77,9 @@
 - Dependabot no longer proposes major bumps for the `tests/integrations` fixture: the UI-library majors there are the ones the integration map documents, so a new major is reviewed together with the docs and tests instead of landing as a failing automatic PR.
 
 ### 한국어
+
+- Dock 배치 기준점을 연속 보간해 주변 아이콘이 튀는 문제를 수정했습니다. 컨테이너 기준 좌표를 사용하고 정착하면 프레임을 멈춥니다.
+- Liquid Glass 가장자리 굴절과 투명한 캡슐 데모, 반사광 복귀와 pause/resume을 개선하고 실제 픽셀로 블러를 검증합니다.
 
 - DOM 변경의 중첩 하위 트리를 한 번만 탐색하고 기존 인스턴스의 옵션 재파싱을 생략하며, 관찰 해제 시 예약된 탐색도 취소합니다.
 - Scroll Velocity의 탄성·보간이 안정되면 RAF를 중지하고 입력 시 재개합니다. 명시적 일시정지를 보존하고 콜백 안에서 종료해도 다시 실행되지 않습니다.

@@ -95,6 +95,21 @@ assert.ok(gap > -1, `the grown icon must not overlap its neighbour, ${gap.toFixe
 // …and it lifts, which is the other half of a dock.
 assert.ok(rest[3].bottom - hovered[3].bottom > 6, 'the icon under the pointer must rise');
 
+// A one-pixel crossing of a rest midpoint must not change the packing anchor
+// by a whole icon. Test both directions after settling to separate geometry
+// discontinuities from frame-rate noise.
+const midpoint = (rest[3].centre + rest[4].centre) / 2;
+for (const direction of [1, -1]) {
+  await page.mouse.move(midpoint - direction, target.bottom - 25);
+  await page.waitForTimeout(700);
+  const before = await geometry();
+  await page.mouse.move(midpoint + direction, target.bottom - 25);
+  await page.waitForTimeout(700);
+  const after = await geometry();
+  const jump = Math.max(...after.map((entry, index) => Math.abs(entry.centre - before[index].centre)));
+  assert.ok(jump <= 4, `a 2px midpoint crossing must remain continuous, row jumped ${jump}px`);
+}
+
 // Leaving puts the row back exactly as it was.
 await page.mouse.move(10, 10);
 await page.waitForTimeout(900);

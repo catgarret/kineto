@@ -7,19 +7,15 @@
 // `backdrop-filter`, Chromium today), so the test checks the first three
 // everywhere and the fourth where the engine can do it.
 //
-// The backdrop is a hard 8px stripe pattern, and the blur is checked on the
-// rendered pixels rather than on the computed style — a `backdrop-filter` that
-// the engine accepts but silently does not apply (an isolated stacking context
-// is the classic way to get one) leaves the DOM looking perfectly correct. The
-// measure is the size of a PNG of the region. Hard stripes are two colours in
-// a perfect repeat and compress to almost nothing; blurring them turns every
-// edge into a ramp of distinct values, which PNG cannot pack at all. So the
-// blurred clip comes out MUCH bigger than the bare one — and the three ways
-// this can go wrong separate cleanly: an unfiltered pane paints the same
-// stripes (ratio ~1), a flat tint paints one colour (below 1), and a real blur
-// measures about 11.
+// Contrast is measured from decoded screenshot pixels. A real sibling
+// backdrop avoids root-canvas background special cases; no PNG-size heuristic.
 // Run: npm run build && node tests/browser/card-glass.mjs
 import assert from 'node:assert/strict';
+import { buildDisplacementMap } from '../../src/modules/surface/glass.js';
+
+const map = buildDisplacementMap({ createImageData: (w, h) => ({ data: new Uint8ClampedArray(w * h * 4) }) }, 100, 60, 30, 18);
+assert.equal(map.data[(30 * 100 + 50) * 4], 128, 'lens centre must remain neutral');
+assert.ok(map.data[(30 * 100 + 5) * 4] > 200, 'bevel must bend across a band, not just a hairline');
 import { chromium, firefox, webkit } from 'playwright';
 import http from 'node:http';
 import fs from 'node:fs';
@@ -36,7 +32,7 @@ const FIXTURE = '/__glass__.html';
 const fixtureHtml = () => `<!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="/dist/kineto.css"><style>
   html,body{margin:0;height:100%}
-  body{background:repeating-linear-gradient(90deg,#000 0 8px,#fff 8px 16px)}
+  body::before{content:"";position:fixed;inset:0;background:repeating-linear-gradient(90deg,#000 0 8px,#fff 8px 16px)}
   .pane{position:absolute;top:60px;width:240px;height:180px;border-radius:32px}
 </style></head><body><main></main><script src="/dist/kineto.umd.js"></script></body></html>`;
 const server = http.createServer((request, response) => {
@@ -60,7 +56,7 @@ const origin = `http://127.0.0.1:${server.address().port}`;
 const browser = await browserType.launch({
   headless: true,
   ...(browserName === 'chromium' && process.env.KT_CHROME ? { executablePath: process.env.KT_CHROME } : {}),
-  args: browserName === 'chromium' ? ['--no-sandbox', '--disable-gpu'] : []
+  args: browserName === 'chromium' ? ['--no-sandbox'] : []
 });
 const page = await browser.newPage({ viewport: { width: 900, height: 320 } });
 const errors = [];
@@ -119,6 +115,22 @@ await page.mouse.move(report.box.right - 12, report.box.bottom - 12);
 await page.waitForTimeout(400);
 const rimAfter = await page.evaluate(() => window.__glassRim());
 assert.notEqual(rimAfter, report.rimBefore, 'the lit edge must follow the pointer');
+// Leaving must finish its light return, rather than paint a single lerp frame.
+await page.mouse.move(5, 5);
+await page.waitForTimeout(900);
+const returnedRim = await page.evaluate(() => window.__glassRim());
+const angleOf = (css) => Number(css.match(/linear-gradient\(([-\d.]+)deg/)[1]);
+assert.ok(Math.abs(angleOf(returnedRim) - angleOf(report.rimBefore)) < 0.1, 'leaving must return to the resting light');
+await page.mouse.move(report.box.left + 16, report.box.top + 16);
+await page.evaluate(() => window.Kineto.getInstance(document.getElementById('glass'), 'cardGlow').pause());
+const pausedRim = await page.evaluate(() => window.__glassRim());
+await page.mouse.move(report.box.right - 16, report.box.bottom - 16);
+await page.waitForTimeout(100);
+assert.equal(await page.evaluate(() => window.__glassRim()), pausedRim, 'pause must hold the light');
+await page.evaluate(() => window.Kineto.getInstance(document.getElementById('glass'), 'cardGlow').resume());
+await page.waitForTimeout(500);
+assert.notEqual(await page.evaluate(() => window.__glassRim()), pausedRim, 'resume must schedule rendering again');
+
 
 assert.match(report.filter, /blur\(12px\)/, 'the pane must blur its backdrop by the requested amount');
 assert.match(report.filter, /saturate\(/, 'the pane must push the colour behind it');
@@ -127,6 +139,7 @@ assert.equal(report.hasSheen, true, 'the pane must draw an inner sheen');
 assert.equal(report.opacityAtRest, '1', 'glass is the material, so it must stay on when the pointer leaves');
 assert.notEqual(report.isolation, 'isolate', 'an isolated card has no backdrop to filter — glass must not isolate');
 assert.equal(report.bare, false, 'a card without the module must be left alone');
+if (browserName !== 'chromium') assert.equal(report.refracting, false, 'syntax-only SVG support must retain the CSS blur fallback');
 assert.doesNotMatch(report.flatFilter, /url\(/, 'glassRefraction:"off" must drop the bend and keep the blur');
 assert.match(report.flatFilter, /blur\(12px\)/, 'glassRefraction:"off" must keep everything else');
 
@@ -137,50 +150,59 @@ if (report.refracting) {
   console.log(`card-glass note (${browserName}) — no SVG backdrop-filter here, so the bend was skipped as designed.`);
 }
 
-// The blur, on the pixels the browser actually painted. Both clips are the same
-// size and sit on the same stripes; the only difference is the pane over one.
-const clip = (left) => page.screenshot({ clip: { x: left, y: 110, width: 120, height: 80 } });
-const [inside, outside] = await Promise.all([clip(100), clip(760)]);
-const blurRatio = inside.length / outside.length;
-
-// Does this engine PAINT a backdrop-filter here, or only accept the
-// declaration? Headless Firefox and WebKit accept `backdrop-filter: blur(12px)`
-// and composite nothing at all, so the pixel check below would be measuring the
-// runner rather than the module. The control is a plain div with an inline
-// backdrop-filter over the same stripes — no Kineto anywhere near it — so a
-// Chromium run cannot take the skip branch by accident: measured on this
-// fixture it lands at 12.9x there, against 1.0x in both of the others.
-const low = (left) => page.screenshot({ clip: { x: left, y: 244, width: 120, height: 72 } });
-const [control, controlStripes] = await Promise.all([low(40), low(200)]);
-const controlRatio = control.length / controlStripes.length;
-
-if (controlRatio > 3) {
-  assert.ok(
-    blurRatio > 3,
-    `the backdrop must actually be blurred: a PNG of the pane is only ${blurRatio.toFixed(1)}x the size of `
-    + `one of the bare stripes beside it (${inside.length} vs ${outside.length} bytes) — at about 1 the pane `
-    + 'is passing the stripes through untouched, and below 1 it is painting over them instead of filtering them'
-  );
+// Decode screenshots in a canvas and measure stripe contrast directly. PNG
+// byte length measures compression, not blur: a perfectly blurred flat grey
+// region can compress just as well as the original two-colour stripes.
+const pixels = async (clip) => {
+  const png = await page.screenshot({ clip });
+  return page.evaluate(async (base64) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${base64}`;
+    await img.decode();
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width; canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    return Array.from(ctx.getImageData(0, 0, img.width, img.height).data);
+  }, png.toString('base64'));
+};
+const contrast = (data) => {
+  const red = data.filter((_, index) => index % 4 === 0);
+  return Math.max(...red) - Math.min(...red);
+};
+const bare = await pixels({ x: 760, y: 130, width: 64, height: 16 });
+const control = await pixels({ x: 64, y: 270, width: 64, height: 16 });
+const inside = await pixels({ x: 112, y: 130, width: 64, height: 16 });
+assert.ok(contrast(bare) > 200, 'fixture must expose high contrast stripes');
+const paintsBlur = contrast(control) < contrast(bare) * 0.25;
+if (paintsBlur) {
+  assert.ok(contrast(inside) < contrast(bare) * 0.25,
+    `glass must really blur the backdrop; contrast ${contrast(inside)}`);
 } else {
-  console.log(
-    `card-glass note (${browserName}) — a plain control div with an inline backdrop-filter measures `
-    + `${controlRatio.toFixed(2)}x the bare stripes here, so this engine is not compositing backdrop-filter `
-    + 'at all in this run and the pixel check would say nothing about the module. The declaration, the rim, '
-    + 'the sheen and the teardown are all still checked above.'
-  );
+  console.log(`card-glass note (${browserName}) — plain control does not paint blur; pixel blur assertion unavailable.`);
 }
 
-// The bend, the same way: at the rim, refraction moves the stripes, so the two
-// panes cannot paint the same pixels there.
-const [bentRim, flatRim] = await Promise.all([
-  page.screenshot({ clip: { x: 44, y: 110, width: 28, height: 80 } }),
-  page.screenshot({ clip: { x: 334, y: 110, width: 28, height: 80 } })
-]);
-if (report.refracting && controlRatio > 3) {
-  assert.ok(
-    !bentRim.equals(flatRim),
-    'with refraction on, the rim must not paint the same pixels as the pane with it off'
-  );
+// Compare the SAME region with refraction enabled/disabled, with no blur or
+// highlights to hide a broken filter. Different screenshot positions used to
+// compare different stripe phases and could pass even with no displacement.
+await page.evaluate(() => {
+  const el = document.getElementById('glass');
+  window.Kineto.destroyModule(el, 'cardGlow');
+  window.Kineto.create('cardGlow', el, { mode:'glass', glassBlur:0,
+    glassDepth:24, glassTint:'transparent', glassRimOpacity:0, glassSheen:0 });
+});
+await page.waitForTimeout(150);
+const rimClip = { x: 44, y: 130, width: 28, height: 40 };
+const bent = await pixels(rimClip);
+await page.evaluate(() => {
+  const layer = document.querySelector('#glass .kt-card-glow');
+  layer.style.backdropFilter = 'none';
+  layer.style.webkitBackdropFilter = 'none';
+});
+const flat = await pixels(rimClip);
+if (report.refracting && paintsBlur) {
+  const delta = bent.reduce((sum, value, index) => sum + Math.abs(value - flat[index]), 0) / bent.length;
+  assert.ok(delta > 3, `edge refraction must move backdrop pixels, mean difference ${delta}`);
 }
 
 // Teardown: the card must be exactly as it was found.
@@ -200,4 +222,4 @@ assert.doesNotMatch(after.style || '', /backdrop-filter|isolation/, 'destroy() m
 await page.close();
 await browser.close();
 server.close();
-console.log(`card-glass OK (${browserName}) — ${controlRatio > 3 ? `measured backdrop blur (${blurRatio.toFixed(1)}x the PNG of the bare stripes)` : 'declared backdrop blur (this engine composites none here)'} and saturation, pointer-lit rim, inner sheen, ${report.refracting ? 'edge refraction' : 'refraction correctly skipped'}, no stacking-context trap, clean teardown.`);
+console.log(`card-glass OK (${browserName}) — ${paintsBlur ? 'pixel blur' : 'blur declaration'}, rim, sheen, ${report.refracting && paintsBlur ? 'pixel refraction' : 'refraction declaration/fallback'}, return, pause/resume and teardown.`);

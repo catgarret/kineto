@@ -49,6 +49,7 @@ function createDock(el, { axis, maxScale, lift, range, ease, item }) {
   let rafId = null;
   let pointer = null;
   let scales = [];
+  let anchor = null;
 
   // Rest geometry is measured with every transform cleared, so a resize during
   // a hover cannot bake the current magnification into the new baseline.
@@ -58,11 +59,12 @@ function createDock(el, { axis, maxScale, lift, range, ease, item }) {
       if (!restore.has(node)) restore.set(node, snapshotInlineStyles(node, ['transform', 'transform-origin', 'will-change']));
       node.style.transform = '';
     });
+    const origin = el.getBoundingClientRect();
     rest = nodes.map((node) => {
       const box = node.getBoundingClientRect();
       return {
         node,
-        centre: vertical ? box.top + box.height / 2 : box.left + box.width / 2,
+        centre: vertical ? box.top + box.height / 2 - origin.top : box.left + box.width / 2 - origin.left,
         size: vertical ? box.height : box.width
       };
     });
@@ -86,35 +88,33 @@ function createDock(el, { axis, maxScale, lift, range, ease, item }) {
       return next;
     });
 
-    // 2. re-pack the row around the item the pointer is nearest, so the extra
-    //    width goes into the row rather than on top of the neighbours.
-    let focus = 0;
+    // Pack once, then interpolate the anchor between neighbouring rest
+    // centres. Selecting the nearest icon makes the entire row jump when the
+    // pointer crosses a midpoint, even when the scales themselves are eased.
+    const growth = rest.map(({ size }, index) => size * (scales[index] - 1) / 2);
+    const shifts = [0];
     for (let index = 1; index < rest.length; index += 1) {
-      if (pointer != null && Math.abs(rest[index].centre - pointer) < Math.abs(rest[focus].centre - pointer)) focus = index;
+      shifts[index] = shifts[index - 1] + growth[index - 1] + growth[index];
     }
-    // The authored gap between two items is edge to edge, so that is what has to
-    // be preserved — measuring it from the centres instead makes every step
-    // slightly short, and the row never quite comes back to where it started.
-    const gapBefore = (index) => (rest[index].centre - rest[index].size / 2)
-      - (rest[index - 1].centre + rest[index - 1].size / 2);
-    const placed = new Array(rest.length);
-    placed[focus] = rest[focus].centre;
-    for (let index = focus + 1; index < rest.length; index += 1) {
-      placed[index] = placed[index - 1]
-        + (rest[index - 1].size * scales[index - 1]) / 2 + gapBefore(index) + (rest[index].size * scales[index]) / 2;
+    // Keep the last anchor while leaving; resetting it would jump the row.
+    if (anchor == null) anchor = pointer ?? rest[Math.floor(rest.length / 2)].centre;
+    if (pointer != null) {
+      anchor = lerp(anchor, pointer, smoothing);
+      if (Math.abs(anchor - pointer) > 0.02) settled = false;
     }
-    for (let index = focus - 1; index >= 0; index -= 1) {
-      placed[index] = placed[index + 1]
-        - (rest[index + 1].size * scales[index + 1]) / 2 - gapBefore(index + 1) - (rest[index].size * scales[index]) / 2;
-    }
+    let right = rest.findIndex(({ centre }) => centre >= anchor);
+    if (right < 0) right = rest.length - 1;
+    const left = Math.max(0, right - 1);
+    const span = rest[right].centre - rest[left].centre;
+    const weight = span ? clamp((anchor - rest[left].centre) / span, 0, 1) : 0;
+    const offset = lerp(shifts[left], shifts[right], weight);
 
-    rest.forEach(({ node, centre, size }, index) => {
-      const shift = placed[index] - centre;
+    rest.forEach(({ node }, index) => {
+      const shift = shifts[index] - offset;
       const grown = (scales[index] - 1) / Math.max(0.0001, peak - 1);
       const along = vertical ? `translate3d(${(raise * grown).toFixed(2)}px, ${shift.toFixed(2)}px, 0)`
         : `translate3d(${shift.toFixed(2)}px, ${(-raise * grown).toFixed(2)}px, 0)`;
       node.style.transform = `${along} scale(${scales[index].toFixed(3)})`;
-      void size;
     });
     return settled;
   };
@@ -122,12 +122,13 @@ function createDock(el, { axis, maxScale, lift, range, ease, item }) {
   const loop = () => {
     if (!alive) { rafId = null; return; }
     const settled = paint();
-    rafId = settled && pointer == null ? null : requestAnimationFrame(loop);
+    rafId = settled ? null : requestAnimationFrame(loop);
   };
   const wake = () => { if (alive && rafId == null) rafId = requestAnimationFrame(loop); };
 
   const onMove = (event) => {
-    pointer = vertical ? event.clientY : event.clientX;
+    const origin = el.getBoundingClientRect();
+    pointer = vertical ? event.clientY - origin.top : event.clientX - origin.left;
     wake();
   };
   const onLeave = () => { pointer = null; wake(); };

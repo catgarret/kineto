@@ -221,7 +221,9 @@ const BUDGET = {
   // See the live-motion-switching note above for the 1903.0 KB measurement.
   // See the squircle note above for the 1920.1 KB measurement, and the liquid
   // glass note for 1935.4 KB.
-  unpackedKb: 1971,
+  // 2026-09-24: continuous Dock anchoring and glass fallback/settling add 1.2 KB
+  // unpacked (1972.1 KB locally); same 80 files and packed ceiling.
+  unpackedKb: 1973,
   files: 80
 };
 

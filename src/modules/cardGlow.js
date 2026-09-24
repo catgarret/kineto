@@ -145,12 +145,12 @@ export default {
       // so this is the one part that simply does not happen elsewhere.
       refracting = supportsBackdrop() && wantsRefraction && supportsBackdropRefraction();
       glassFilterId = refracting ? `kt-glass-${Math.random().toString(36).slice(2, 10)}` : '';
-      const glassFilter = `blur(${glassBlur}px) saturate(${glassSaturate})${refracting ? ` url(#${glassFilterId})` : ''}`;
+      const glassFilter = `${refracting ? `url(#${glassFilterId}) ` : ''}blur(${glassBlur}px) saturate(${glassSaturate})`;
       // The pane itself: a blurred, colour-pushed backdrop under a faint tint.
       // It is always on — glass is a material the card is made of, not a hover
       // reaction — and it keeps the card's own corner radius.
       const tint = opts.glassTint || 'rgba(255,255,255,.10)';
-      root.style.cssText = `position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none;overflow:hidden;opacity:1;background:${tint};`;
+      root.style.cssText = `position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none;overflow:hidden;opacity:1;background:${tint};box-shadow:inset 0 1px 1px #ffffff40,inset 0 -1px 2px #00000020;`;
       if (supportsBackdrop()) {
         root.style.backdropFilter = glassFilter;
         root.style.webkitBackdropFilter = glassFilter;
@@ -234,8 +234,8 @@ export default {
       drawRefraction();
     }
 
-    let targetX = el.clientWidth / 2;
-    let targetY = el.clientHeight / 2;
+    let targetX = el.clientWidth * (mode === 'glass' ? 0.25 : 0.5);
+    let targetY = el.clientHeight * (mode === 'glass' ? 0.2 : 0.5);
     let currentX = targetX;
     let currentY = targetY;
     let rafId = null;
@@ -303,7 +303,7 @@ export default {
         }
       }
       const moving = Math.abs(currentX - targetX) > 0.08 || Math.abs(currentY - targetY) > 0.08;
-      if (hovering && (follow || moving)) rafId = requestAnimationFrame(render);
+      if (moving || (hovering && follow && mode !== 'glass')) rafId = requestAnimationFrame(render);
       else rafId = null;
     };
     const requestRender = () => {
@@ -334,8 +334,8 @@ export default {
     };
     const onLeave = () => {
       hovering = false;
-      targetX = el.clientWidth / 2;
-      targetY = el.clientHeight / 2;
+      targetX = el.clientWidth * (mode === 'glass' ? 0.25 : 0.5);
+      targetY = el.clientHeight * (mode === 'glass' ? 0.2 : 0.5);
       // Glass is what the card is made of, so it stays when the pointer leaves;
       // only the direction its light comes from goes back to neutral.
       root.style.opacity = mode === 'glass'
@@ -381,6 +381,7 @@ export default {
       pause() {
         alive = false;
         if (rafId != null) cancelAnimationFrame(rafId);
+        rafId = null;
         spotlight.style.animationPlayState = 'paused';
       },
       resume() {

@@ -292,8 +292,9 @@ Two things about `glass` that will bite anyone who moves it. Card Glow sets
 isolated stacking context has no backdrop to filter — the pane comes out clear
 while every computed style still reads correctly, so glass skips the isolation
 and `tests/browser/card-glass.mjs` measures rendered pixels rather than styles
-(a PNG of the pane over hard stripes is 11x the bare stripes; unfiltered would
-be 1x and a flat tint below 1). And its options are read INSIDE the
+(decoded stripe contrast against a plain blur control; PNG compression size
+is not a reliable blur metric). Headless engines may fail the plain control;
+record that limitation instead of claiming pixel validation. Options are read INSIDE the
 `mode === 'glass'` branch on purpose: read at the top of the factory,
 `scripts/derive-variant-options.mjs` attributes them to every variant and the
 drawer offers glass controls on the spotlight.
@@ -302,7 +303,14 @@ The refraction (`src/modules/surface/glass.js`) is a displacement map built per
 pane from a signed distance field, applied through an SVG filter used as a
 `backdrop-filter` — Chromium only today, dropped elsewhere. The filter element
 lives inside the pane's own layer so its id cannot collide and destroy() takes
-it along.
+it along. CSS.supports accepts SVG URL syntax in engines that do not composite
+it; the refraction gate also restricts it to Chromium-family user agents.
+The demo uses low blur and a capsule shape; the public 14px blur default remains.
+
+Dock packing must use a continuous anchor. A nearest-icon anchor jumps the row
+44px on a 2px midpoint crossing in the previous implementation. The browser
+regression checks both crossing directions; retain the last anchor while
+leaving so returning to rest cannot introduce another discontinuity.
 
 `fold` shares `crossfade`'s ghost path. The one thing that makes it a different
 effect is the blur, so its test keeps `crossfade` running beside it as a control:

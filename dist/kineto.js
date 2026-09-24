@@ -5464,69 +5464,72 @@ function kr(e, t, n) {
 	return 1 + (n - 1) * r;
 }
 function Ar(e, { axis: t, maxScale: n, lift: r, range: i, ease: a, item: o }) {
-	let s = t === "vertical" || t === "y", c = Math.max(1, Number(n ?? 1.8)), l = Number(r ?? 10), u = Math.max(1, Number(i ?? 120)), d = G(Number(a ?? .22), .02, 1), f = o || null, p = () => f ? Array.from(e.querySelectorAll(f)) : Array.from(e.children), m = /* @__PURE__ */ new Map(), h = [], g = !0, _ = null, v = null, y = [], b = () => {
-		let e = p();
-		e.forEach((e) => {
+	let s = t === "vertical" || t === "y", c = Math.max(1, Number(n ?? 1.8)), l = Number(r ?? 10), u = Math.max(1, Number(i ?? 120)), d = G(Number(a ?? .22), .02, 1), f = o || null, p = () => f ? Array.from(e.querySelectorAll(f)) : Array.from(e.children), m = /* @__PURE__ */ new Map(), h = [], g = !0, _ = null, v = null, y = [], b = null, x = () => {
+		let t = p();
+		t.forEach((e) => {
 			m.has(e) || m.set(e, Z(e, [
 				"transform",
 				"transform-origin",
 				"will-change"
 			])), e.style.transform = "";
-		}), h = e.map((e) => {
+		});
+		let n = e.getBoundingClientRect();
+		h = t.map((e) => {
 			let t = e.getBoundingClientRect();
 			return {
 				node: e,
-				centre: s ? t.top + t.height / 2 : t.left + t.width / 2,
+				centre: s ? t.top + t.height / 2 - n.top : t.left + t.width / 2 - n.left,
 				size: s ? t.height : t.width
 			};
-		}), e.forEach((e) => {
+		}), t.forEach((e) => {
 			e.style.transformOrigin = s ? "left center" : "center bottom", e.style.willChange = "transform";
 		}), y = h.map(() => 1);
-	}, x = () => {
+	}, S = () => {
 		if (!h.length) return;
 		let e = h.map(({ centre: e }) => v == null ? 1 : kr(Math.abs(v - e), u, c)), t = !0;
 		y = y.map((n, r) => {
 			let i = W(n, e[r], d);
 			return Math.abs(i - e[r]) > .002 && (t = !1), i;
 		});
-		let n = 0;
-		for (let e = 1; e < h.length; e += 1) v != null && Math.abs(h[e].centre - v) < Math.abs(h[n].centre - v) && (n = e);
-		let r = (e) => h[e].centre - h[e].size / 2 - (h[e - 1].centre + h[e - 1].size / 2), i = Array(h.length);
-		i[n] = h[n].centre;
-		for (let e = n + 1; e < h.length; e += 1) i[e] = i[e - 1] + h[e - 1].size * y[e - 1] / 2 + r(e) + h[e].size * y[e] / 2;
-		for (let e = n - 1; e >= 0; --e) i[e] = i[e + 1] - h[e + 1].size * y[e + 1] / 2 - r(e + 1) - h[e].size * y[e] / 2;
-		return h.forEach(({ node: e, centre: t, size: n }, r) => {
-			let a = i[r] - t, o = (y[r] - 1) / Math.max(1e-4, c - 1), u = s ? `translate3d(${(l * o).toFixed(2)}px, ${a.toFixed(2)}px, 0)` : `translate3d(${a.toFixed(2)}px, ${(-l * o).toFixed(2)}px, 0)`;
-			e.style.transform = `${u} scale(${y[r].toFixed(3)})`;
+		let n = h.map(({ size: e }, t) => e * (y[t] - 1) / 2), r = [0];
+		for (let e = 1; e < h.length; e += 1) r[e] = r[e - 1] + n[e - 1] + n[e];
+		b ??= v ?? h[Math.floor(h.length / 2)].centre, v != null && (b = W(b, v, d), Math.abs(b - v) > .02 && (t = !1));
+		let i = h.findIndex(({ centre: e }) => e >= b);
+		i < 0 && (i = h.length - 1);
+		let a = Math.max(0, i - 1), o = h[i].centre - h[a].centre, f = o ? G((b - h[a].centre) / o, 0, 1) : 0, p = W(r[a], r[i], f);
+		return h.forEach(({ node: e }, t) => {
+			let n = r[t] - p, i = (y[t] - 1) / Math.max(1e-4, c - 1), a = s ? `translate3d(${(l * i).toFixed(2)}px, ${n.toFixed(2)}px, 0)` : `translate3d(${n.toFixed(2)}px, ${(-l * i).toFixed(2)}px, 0)`;
+			e.style.transform = `${a} scale(${y[t].toFixed(3)})`;
 		}), t;
-	}, S = () => {
+	}, C = () => {
 		if (!g) {
 			_ = null;
 			return;
 		}
-		_ = x() && v == null ? null : requestAnimationFrame(S);
-	}, C = () => {
-		g && _ == null && (_ = requestAnimationFrame(S));
-	}, w = (e) => {
-		v = s ? e.clientY : e.clientX, C();
-	}, T = () => {
-		v = null, C();
+		_ = S() ? null : requestAnimationFrame(C);
+	}, w = () => {
+		g && _ == null && (_ = requestAnimationFrame(C));
+	}, T = (t) => {
+		let n = e.getBoundingClientRect();
+		v = s ? t.clientY - n.top : t.clientX - n.left, w();
+	}, E = () => {
+		v = null, w();
 	};
-	b(), x(), e.addEventListener("pointermove", w, { passive: !0 }), e.addEventListener("pointerleave", T);
-	let E = null;
-	return typeof ResizeObserver < "u" && (E = new ResizeObserver(() => {
-		v ?? b();
-	}), E.observe(e)), {
+	x(), S(), e.addEventListener("pointermove", T, { passive: !0 }), e.addEventListener("pointerleave", E);
+	let D = null;
+	return typeof ResizeObserver < "u" && (D = new ResizeObserver(() => {
+		v ?? x();
+	}), D.observe(e)), {
 		el: e,
 		type: "magnetic",
 		pause() {
 			g = !1, _ != null && cancelAnimationFrame(_), _ = null;
 		},
 		resume() {
-			g || (g = !0, C());
+			g || (g = !0, w());
 		},
 		destroy() {
-			g = !1, _ != null && cancelAnimationFrame(_), E?.disconnect(), e.removeEventListener("pointermove", w), e.removeEventListener("pointerleave", T), m.forEach((e, t) => {
+			g = !1, _ != null && cancelAnimationFrame(_), D?.disconnect(), e.removeEventListener("pointermove", T), e.removeEventListener("pointerleave", E), m.forEach((e, t) => {
 				e(), oe(t);
 			}), m.clear();
 		}
@@ -10748,7 +10751,7 @@ function Na(e, t, n, r, i) {
 function Pa(e, t, n, r, i) {
 	let a = e.createImageData(t, n), o = Math.max(1, i);
 	for (let e = 0; e < n; e += 1) for (let i = 0; i < t; i += 1) {
-		let s = -Na(i + .5, e + .5, t, n, r), c = s <= 0 || s >= o ? 0 : 1 - s / o, l = c * c, u = (e * t + i) * 4;
+		let s = -Na(i + .5, e + .5, t, n, r), c = s <= 0 || s >= o ? 0 : 1 - s / o, l = Math.sin(c * Math.PI / 2), u = (e * t + i) * 4;
 		if (l === 0) a.data[u] = 128, a.data[u + 1] = 128;
 		else {
 			let o = (Na(i + 1.5, e + .5, t, n, r) - Na(i - .5, e + .5, t, n, r)) / 2, s = (Na(i + .5, e + 1.5, t, n, r) - Na(i + .5, e - .5, t, n, r)) / 2, c = Math.hypot(o, s) || 1;
@@ -10759,7 +10762,7 @@ function Pa(e, t, n, r, i) {
 	return a;
 }
 function Fa() {
-	return typeof CSS < "u" && typeof CSS.supports == "function" && CSS.supports("backdrop-filter", "url(#kt-glass-probe)");
+	return typeof navigator < "u" && /(?:Chrome|Chromium|Edg)\//.test(navigator.userAgent) && typeof CSS < "u" && typeof CSS.supports == "function" && CSS.supports("backdrop-filter", "url(#kt-glass-probe)");
 }
 function Ia() {
 	return typeof CSS < "u" && typeof CSS.supports == "function" && (CSS.supports("backdrop-filter", "blur(4px)") || CSS.supports("-webkit-backdrop-filter", "blur(4px)"));
@@ -10819,8 +10822,8 @@ var Ra = {
 		else if (n === "glass") {
 			let e = Math.max(0, Number(t.glassBlur ?? 14)), n = Math.max(0, Number(t.glassSaturate ?? 1.7)), r = Math.max(.5, Number(t.glassRim ?? 1.5)), i = G(Number(t.glassRimOpacity ?? .9), 0, 1), a = G(Number(t.glassSheen ?? .3), 0, 1), o = t.glassRefraction !== "off" && t.glassRefraction !== !1;
 			T = Math.max(1, Number(t.glassDepth ?? 20)), E = Ia() && o && Fa(), D = E ? `kt-glass-${Math.random().toString(36).slice(2, 10)}` : "";
-			let s = `blur(${e}px) saturate(${n})${E ? ` url(#${D})` : ""}`, c = t.glassTint || "rgba(255,255,255,.10)";
-			A.style.cssText = `position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none;overflow:hidden;opacity:1;background:${c};`, Ia() && (A.style.backdropFilter = s, A.style.webkitBackdropFilter = s), j.style.cssText = `position:absolute;inset:0;border-radius:inherit;padding:${r}px;opacity:${i};-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;will-change:background;`;
+			let s = `${E ? `url(#${D}) ` : ""}blur(${e}px) saturate(${n})`, c = t.glassTint || "rgba(255,255,255,.10)";
+			A.style.cssText = `position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none;overflow:hidden;opacity:1;background:${c};box-shadow:inset 0 1px 1px #ffffff40,inset 0 -1px 2px #00000020;`, Ia() && (A.style.backdropFilter = s, A.style.webkitBackdropFilter = s), j.style.cssText = `position:absolute;inset:0;border-radius:inherit;padding:${r}px;opacity:${i};-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;will-change:background;`;
 			let l = document.createElement("span");
 			l.className = "kt-card-glow-sheen", l.style.cssText = `position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:${a};`, A.appendChild(l), O = l;
 		}
@@ -10855,7 +10858,7 @@ var Ra = {
 				n !== t && (t = n, R());
 			}), z.observe(e);
 		} else E && R();
-		let B = e.clientWidth / 2, V = e.clientHeight / 2, H = B, U = V, K = null, ee = !0, q = !1, J = (e, n) => {
+		let B = e.clientWidth * (n === "glass" ? .25 : .5), V = e.clientHeight * (n === "glass" ? .2 : .5), H = B, U = V, K = null, ee = !0, q = !1, J = (e, n) => {
 			if (!N) return;
 			let r = Math.atan2(n - 50, e - 50) * 180 / Math.PI + 90, i = t.surfaceGradient;
 			N.style.background = i || `linear-gradient(${r}deg,transparent 12%,${t.surfaceColor || "rgba(255,255,255,.48)"} 42%,${t.surfaceColor2 || "rgba(145,180,255,.16)"} 55%,transparent 78%)`, N.style.backgroundSize = `${Math.max(100, Number(t.surfaceSize ?? 170))}% ${Math.max(100, Number(t.surfaceSize ?? 170))}%`, N.style.backgroundPosition = `${e}% ${n}%`;
@@ -10875,8 +10878,7 @@ var Ra = {
 				let e = Math.atan2(a - 50, i - 50) * 180 / Math.PI + 90;
 				j.style.background = `linear-gradient(${e + 180}deg,rgba(255,255,255,.95) 0%,rgba(255,255,255,.22) 34%,rgba(255,255,255,0) 52%,rgba(255,255,255,.5) 100%)`, O && (O.style.background = `linear-gradient(${e + 180}deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 46%)`);
 			}
-			let o = Math.abs(H - B) > .08 || Math.abs(U - V) > .08;
-			K = q && (l || o) ? requestAnimationFrame(Y) : null;
+			K = Math.abs(H - B) > .08 || Math.abs(U - V) > .08 || q && l && n !== "glass" ? requestAnimationFrame(Y) : null;
 		}, X = () => {
 			ee && K == null && n !== "aurora" && n !== "shine" && n !== "comet" && (K = requestAnimationFrame(Y));
 		}, te = (t) => {
@@ -10891,7 +10893,7 @@ var Ra = {
 				easing: t.ease || "ease-in-out"
 			}), X();
 		}, re = () => {
-			q = !1, B = e.clientWidth / 2, V = e.clientHeight / 2, A.style.opacity = n === "glass" ? "1" : La(t.alwaysOn, n === "aurora" || n === "comet") ? String(o) : "0", w.update(b, x, !C), X();
+			q = !1, B = e.clientWidth * (n === "glass" ? .25 : .5), V = e.clientHeight * (n === "glass" ? .2 : .5), A.style.opacity = n === "glass" ? "1" : La(t.alwaysOn, n === "aurora" || n === "comet") ? String(o) : "0", w.update(b, x, !C), X();
 		}, ie = (e) => {
 			q = !0, A.style.opacity = "1", w.update(b, x, !0), te(e), A.animate([
 				{ filter: "brightness(1)" },
@@ -10909,7 +10911,7 @@ var Ra = {
 			el: e,
 			type: "cardGlow",
 			pause() {
-				ee = !1, K != null && cancelAnimationFrame(K), j.style.animationPlayState = "paused";
+				ee = !1, K != null && cancelAnimationFrame(K), K = null, j.style.animationPlayState = "paused";
 			},
 			resume() {
 				ee || (ee = !0, j.style.animationPlayState = "running", X());

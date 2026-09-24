@@ -42,11 +42,11 @@ export function buildDisplacementMap(context, width, height, radius, depth) {
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       const inside = -roundedRectDistance(x + 0.5, y + 0.5, width, height, radius);
-      // `t` runs 1 at the rim to 0 at the inner edge of the bevel; squaring it
-      // keeps the middle flat and concentrates the bend where the glass is
-      // actually curved.
+      // `t` runs 1 at the rim to 0 at the inner edge of the bevel. A rounded
+      // profile keeps the lens visible across the band instead of reducing
+      // the bend to a hairline; the interior remains neutral.
       const t = inside <= 0 || inside >= band ? 0 : 1 - inside / band;
-      const amount = t * t;
+      const amount = Math.sin(t * Math.PI / 2);
       const index = (y * width + x) * 4;
       if (amount === 0) {
         image.data[index] = NEUTRAL;
@@ -71,7 +71,10 @@ export function buildDisplacementMap(context, width, height, radius, depth) {
 
 /** True when this engine can use an SVG filter as a `backdrop-filter`. */
 export function supportsBackdropRefraction() {
-  return typeof CSS !== 'undefined' && typeof CSS.supports === 'function'
+  // CSS.supports only checks syntax: Gecko/WebKit accept url() without
+  // compositing SVG backdrop filters. Keep their working CSS blur fallback.
+  return typeof navigator !== 'undefined' && /(?:Chrome|Chromium|Edg)\//.test(navigator.userAgent)
+    && typeof CSS !== 'undefined' && typeof CSS.supports === 'function'
     && CSS.supports('backdrop-filter', 'url(#kt-glass-probe)');
 }
 
