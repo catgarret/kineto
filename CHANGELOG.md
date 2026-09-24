@@ -4,6 +4,8 @@
 
 ### English
 
+- Remove redundant Loading Indicator terminal runtime work: legacy terminal presets now use the already-frozen shared preset map directly instead of cloning/freezing it again at module load, and a text-frame renderer branch whose two paths were identical is collapsed. Behavior and preset IDs stay unchanged while package/runtime bytes drop.
+
 - Minify Lightbox's runtime-injected CSS string without changing selectors or declarations. Because this CSS lives inside JavaScript, the JS minifier cannot compact its whitespace; storing the same rules compactly reduces every full/UMD/modular artifact and restores release-package headroom.
 
 - Fix the Stylize video browser regression probe after core off-screen suspension added a second `IntersectionObserver` in the public API path. The probe now tracks all observers and selects the trigger observer by target/options instead of assuming the most recently constructed observer is Stylize's view trigger.
@@ -13,6 +15,8 @@
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- Loading Indicator terminal runtime의 중복 작업을 제거했습니다. 이미 freeze된 legacy preset map을 모듈 로드 시 다시 복사·freeze하지 않고 직접 사용하며, 양쪽 결과가 완전히 같던 text-frame renderer 분기도 하나로 합쳤습니다. preset ID와 동작은 그대로이고 package/runtime byte만 줄어듭니다.
 
 - Lightbox가 런타임에 주입하는 CSS 문자열을 selector/declaration 변경 없이 압축했습니다. 이 CSS는 JavaScript 문자열이라 JS minifier가 내부 공백을 줄이지 못하므로, 같은 규칙을 compact하게 저장해 full/UMD/modular 산출물과 release package 크기를 함께 줄입니다.
 
