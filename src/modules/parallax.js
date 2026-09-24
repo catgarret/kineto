@@ -58,8 +58,14 @@ export default {
     const distance = (Number(opts.distance ?? 200)) * speed;
     el.style.willChange = 'transform';
     let ticking = false;
+    let frame = null;
+    let destroyed = false;
     const update = () => {
       ticking = false;
+      frame = null;
+      // A frame queued just before destroy() would write the transform back
+      // after restore() had removed it.
+      if (destroyed) return;
       const rect = el.getBoundingClientRect();
       const vh = window.innerHeight || document.documentElement.clientHeight;
       // 0 as the element enters from the bottom, 1 as it leaves past the top.
@@ -67,7 +73,7 @@ export default {
       const value = (progress - 0.5) * 2 * -distance;
       el.style.transform = axis === 'x' ? `translate3d(${value}px,0,0)` : `translate3d(0,${value}px,0)`;
     };
-    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+    const onScroll = () => { if (!ticking) { ticking = true; frame = requestAnimationFrame(update); } };
     update();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
@@ -77,6 +83,8 @@ export default {
       pause() { window.removeEventListener('scroll', onScroll); },
       resume() { window.addEventListener('scroll', onScroll, { passive: true }); },
       destroy() {
+        destroyed = true;
+        if (frame != null) cancelAnimationFrame(frame);
         window.removeEventListener('scroll', onScroll);
         window.removeEventListener('resize', onScroll);
         restore();

@@ -1,6 +1,6 @@
 # Variant 비교 시트
 
-> Generated from `scripts/generate-variant-catalog.mjs` · library v0.12.0 · 38 modules / 227 variants.
+> Generated from `scripts/generate-variant-catalog.mjs` · library v0.12.0 · 38 modules / 228 variants.
 
 데모의 모듈 블록마다 **"모든 variant 비교"** 버튼이 있습니다. 열면 그 모듈의 공개 variant가
 전부 같은 소재 위에 한 번에 펼쳐지고, 타일마다 그대로 붙여넣을 수 있는 마크업이 붙습니다.
@@ -12,11 +12,11 @@
 
 | 방식 | 뜻 | 모듈 | variant |
 |---|---|---|---|
-| `grid` (나란히) | 같은 소재를 variant 수만큼 복제해 살아 있는 상태로 나란히 보여 줍니다. | 28개 | 184개 |
+| `grid` (나란히) | 같은 소재를 variant 수만큼 복제해 살아 있는 상태로 나란히 보여 줍니다. | 28개 | 185개 |
 | `control` (데모 컨트롤) | 데모가 이미 variant마다 컨트롤을 갖고 있어, 시트가 그 컨트롤을 대신 눌러 줍니다. | 2개 | 19개 |
 | `link` (모듈 데모) | 한 페이지에 여러 개를 둘 수 없거나 옵션 하나로 켤 수 없어, 이유를 적고 모듈 데모로 보냅니다. | 8개 | 24개 |
 
-184/227 variant가 시트 안에서 그대로 살아 움직입니다. 나머지는 왜 그럴 수 없는지가 아래 표에 적혀 있습니다.
+185/228 variant가 시트 안에서 그대로 살아 움직입니다. 나머지는 왜 그럴 수 없는지가 아래 표에 적혀 있습니다.
 
 ## 모듈별
 
@@ -45,7 +45,7 @@
 | `reveal` | `grid` | `data-kt-reveal="<variant>"` | 23 |  |
 | `radial` | `grid` | `data-kt-radial="<variant>"` | 4 |  |
 | `scrollSequence` | `grid` | `data-kt-fit="<variant>"` | 2 |  |
-| `scrollVelocity` | `grid` | `data-kt-scroll-velocity="<variant>"` | 5 |  |
+| `scrollVelocity` | `grid` | `data-kt-scroll-velocity="<variant>"` | 6 |  |
 | `slider` | `grid` | `data-kt-slider="<variant>"` | 10 |  |
 | `stickyStack` | `grid` | `data-kt-sticky-stack="<variant>"` | 4 |  |
 | `textReveal` | `grid` | `data-kt-text-reveal="<variant>"` | 9 |  |

@@ -130,7 +130,7 @@ jobs:
         run: |
           set -uo pipefail
           failures=()
-          for command in test:easings test:reduced test:update test:canvas-effect test:scroll-velocity test:audit test:leak test:perf test:deps test:engine test:sequence-sources test:control-labels test:regressions test:cursor-click-media; do
+          for command in test:easings test:reduced test:update test:canvas-effect test:scroll-velocity test:audit test:leak test:perf test:activation test:deps test:engine test:sequence-sources test:control-labels test:regressions test:cursor-click-media; do
             echo "::group::$command"
             if ! node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a ci.log; then
               echo "::error title=Node runtime test failed::$command"
@@ -269,6 +269,8 @@ jobs:
           node tests/retry-browser-test.mjs tests/browser/canvas-effect.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/browser/layout-refresh.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/browser/demo-blocks.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
+          node tests/retry-browser-test.mjs tests/browser/markup-trust.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
+          node tests/retry-browser-test.mjs tests/browser/lifecycle-edges.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
         env:
           KT_BROWSER: ${{ matrix.browser }}
 

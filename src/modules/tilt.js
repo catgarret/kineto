@@ -153,7 +153,11 @@ export default {
     return {
       el,
       type: 'tilt',
-      pause: () => { alive = false; if (rafId != null) cancelAnimationFrame(rafId); },
+      // The cancelled frame's id must be forgotten too: ensureTick() only
+      // schedules when rafId is null, so a stale id left a resumed tilt dead
+      // (the core pauses every instance while the tab is hidden, so switching
+      // tabs once was enough).
+      pause: () => { alive = false; if (rafId != null) cancelAnimationFrame(rafId); rafId = null; },
       resume: () => { if (!alive) { alive = true; ensureTick(); } },
       destroy: () => {
         alive = false;

@@ -15,6 +15,12 @@ assert.equal(Kineto.prefersReducedMotion, true, "policy 'always' should force re
 Kineto.setReducedMotion('never');
 assert.equal(Kineto.prefersReducedMotion, false, "policy 'never' should force reduced motion off");
 Kineto.setReducedMotion('user');
+// Booleans are the typed shorthand for 'always' / 'never'.
+Kineto.setReducedMotion(true);
+assert.equal(Kineto.prefersReducedMotion, true, 'setReducedMotion(true) must force reduced motion');
+Kineto.setReducedMotion(false);
+assert.equal(Kineto.prefersReducedMotion, false, 'setReducedMotion(false) must force full motion');
+Kineto.setReducedMotion('user');
 assert.equal(Kineto.prefersReducedMotion, false, "policy 'user' should follow the (false) OS value here");
 
 // The getter reflects the live cached env, not a frozen copy.

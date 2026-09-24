@@ -89,6 +89,24 @@ try {
     };
     waiting.destroy();
 
+    // The documented key for the leave motion is `exit` (docs, types, every
+    // integration guide). It used to be ignored — the code read `leave`.
+    const exitHost = document.createElement('div');
+    document.body.appendChild(exitHost);
+    const motions = [];
+    const exiting = window.KinetoPresence(exitHost, {
+      enter: () => { motions.push('enter'); },
+      exit: () => { motions.push('exit'); }
+    });
+    await exiting.enter();
+    await exiting.leave();
+    exiting.destroy();
+    const legacyHost = document.createElement('div');
+    document.body.appendChild(legacyHost);
+    const legacy = window.KinetoPresence(legacyHost, { leave: () => { motions.push('leave'); } });
+    await legacy.leave();
+    legacy.destroy();
+
     const destroyHost = document.createElement('div');
     document.body.appendChild(destroyHost);
     const doomed = window.KinetoPresence(destroyHost);
@@ -137,7 +155,7 @@ try {
     };
     nested.destroy();
     parent.destroy();
-    return { entered, afterEnter, left, afterLeave, restored, reentryResults, waitResults, destroyResult, status: doomed.status, propagation };
+    return { entered, afterEnter, left, afterLeave, restored, reentryResults, waitResults, destroyResult, status: doomed.status, propagation, motions };
   });
   assert.deepEqual(result.entered, { status: 'finished' });
   assert.equal(result.afterEnter.opacity, '1');
@@ -159,6 +177,7 @@ try {
   assert.deepEqual(result.waitResults.enter, { status: 'cancelled', reason: 'reenter' });
   assert.deepEqual(result.waitResults.latestEnter, { status: 'finished' });
   assert.deepEqual(result.destroyResult, { status: 'cancelled', reason: 'destroy' });
+  assert.deepEqual(result.motions, ['enter', 'exit', 'leave'], `the leave motion must come from \`exit\` (and still from the older \`leave\`) (${JSON.stringify(result.motions)})`);
   assert.equal(result.status, 'destroyed');
   assert.deepEqual(result.propagation.parentResult, { status: 'finished' });
   assert.equal(result.propagation.nestedStatus, 'finished');

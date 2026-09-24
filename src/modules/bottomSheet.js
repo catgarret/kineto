@@ -254,6 +254,10 @@ export default {
       resume() {},
       destroy() {
         doClose();
+        // The close animation's finish handler hides the panel. Detach it and
+        // stop the animation now, or it fires after destroy() has restored the
+        // element and hides it for good.
+        if (anim) { anim.onfinish = null; anim.oncancel = null; anim.cancel(); anim = null; }
         document.removeEventListener('keydown', onKey, true);
         triggers.forEach((t) => t.removeEventListener('click', onTrig));
         dragBindings.forEach(({ surface, down, move, up, dblclick }) => {

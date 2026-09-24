@@ -4,7 +4,7 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
   "schemaVersion": "1.0.0",
   "libraryVersion": "0.12.0",
   "moduleCount": 38,
-  "variantCount": 227,
+  "variantCount": 228,
   "capabilities": {
     "any": "No requirement — works on any element.",
     "image": "Needs an <img> (the element itself or a descendant).",
@@ -1960,6 +1960,11 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
         },
         {
           "name": "translate",
+          "requires": "any",
+          "deprecated": false
+        },
+        {
+          "name": "combo",
           "requires": "any",
           "deprecated": false
         }

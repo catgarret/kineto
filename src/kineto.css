@@ -1167,6 +1167,7 @@ html.kt-preload [data-kt-text-transition] {
 }
 .kt-sticky-header.kt-sh-shadow.kt-stuck { box-shadow: 0 8px 24px -14px rgba(0,0,0,.32); }
 .kt-sticky-header.kt-sh-shrink.kt-stuck { padding-top: .45rem; padding-bottom: .45rem; }
+@media (prefers-reduced-motion: reduce) { .kt-sticky-header { transition: none; } }
 
 /* ── Horizontal scroll section (data-kt-horizontal-scroll) ───────────────────
    The module pins a viewport and translates the inner track sideways. The

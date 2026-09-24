@@ -17,6 +17,12 @@ function createImageClone(src, media, opts) {
 }
 
 export default {
+  // The video sampler is a continuous rAF loop, one of the heaviest mobile
+  // costs. The core pauses it off screen and in a hidden tab, and keeps that
+  // apart from the page's own pause(); the module used to run its own
+  // IntersectionObserver + visibilitychange pair that called the same
+  // pause()/resume() — so scrolling back resumed a carousel the page had paused.
+  offscreen: 'pause',
   create(el, opts = {}) {
     const media = ['VIDEO', 'IFRAME', 'IMG', 'PICTURE'].includes(el.tagName) ? el : el.querySelector('video,iframe,img,picture');
     if (!media) return null;
@@ -76,7 +82,6 @@ export default {
     let observer = null;
     let drawCount = 0;
     let playing = false;
-    let onScreen = true;
     let videoControls = null;
     const fallbackColor = opts.color || opts.fallbackColor || 'rgba(100,120,180,.42)';
     let shown = false;
@@ -144,7 +149,7 @@ export default {
       // playing: fade in + live-sample while playing; on pause/end freeze on the
       // last frame and KEEP the glow (a still frame / poster is still on screen);
       // only fade out when the video truly shows nothing (source cleared/error).
-      const onPlaying = () => { playing = true; if (onScreen && !document.hidden) { showGlow(); startSampling(); } };
+      const onPlaying = () => { playing = true; if (alive) { showGlow(); startSampling(); } };
       const onPause = () => { playing = false; stopSampling(); sampleOnce(); if (actualMedia.readyState >= 2) showGlow(); };
       const onFrame = () => { if (!playing) { sampleOnce(); if (actualMedia.readyState >= 2) showGlow(); } };
       const onBlank = () => { playing = false; stopSampling(); hideGlow(); };
@@ -159,8 +164,6 @@ export default {
       else if (actualMedia.readyState >= 2) onFrame();
     } else setFallback();
 
-    let io = null;
-    let onVisibility = null;
     const instance = {
       el,
       type: 'ambientMedia',
@@ -185,8 +188,6 @@ export default {
         videoControls?.stop();
         if (rafId != null) cancelAnimationFrame(rafId);
         observer?.disconnect();
-        io?.disconnect();
-        if (onVisibility) document.removeEventListener('visibilitychange', onVisibility);
         if (glow._mkLoadHandler) actualMedia.removeEventListener('load', glow._mkLoadHandler);
         if (glow._mkVid) {
           actualMedia.removeEventListener('playing', glow._mkVid.onPlaying);
@@ -206,19 +207,6 @@ export default {
         if (originalMediaStyle == null) actualMedia.removeAttribute('style'); else actualMedia.setAttribute('style', originalMediaStyle);
       }
     };
-
-    // Only the video sampler runs a continuous rAF loop. Pause it while the
-    // element is off-screen or the tab is hidden — multiple ambient canvases
-    // sampling every frame is one of the heaviest mobile costs.
-    if (canvas && typeof IntersectionObserver !== 'undefined') {
-      io = new IntersectionObserver((entries) => {
-        onScreen = !!entries[0]?.isIntersecting;
-        if (onScreen && !document.hidden) instance.resume(); else instance.pause();
-      }, { rootMargin: '120px' });
-      io.observe(el);
-      onVisibility = () => { if (document.hidden) instance.pause(); else if (onScreen) instance.resume(); };
-      document.addEventListener('visibilitychange', onVisibility);
-    }
 
     return instance;
   },

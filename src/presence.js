@@ -232,7 +232,11 @@ export default function createPresence(target, defaults = {}, kineto = null) {
       try { return direction === 'leave' ? child.leave(options) : child.enter(options); }
       catch (error) { return Promise.resolve(result('error', 'propagate', { error })); }
     });
-    const descriptor = descriptorFor(options.motion ?? config[direction]);
+    // The documented (and typed) key for the leave motion is `exit`; the code
+    // used to read `config.leave`, so every documented `exit: { … }` was
+    // ignored and nodes left with no motion. `leave` stays accepted.
+    const configured = direction === 'leave' ? (config.exit ?? config.leave) : config.enter;
+    const descriptor = descriptorFor(options.motion ?? configured);
     if (reduced) {
       if (descriptor?.run) {
         try {

@@ -12,25 +12,50 @@ function normalizeBinding(binding) {
   };
 }
 
+// Structural equality for option objects. `v-motion="{ type: 'reveal', options: { … } }"`
+// builds a NEW object on every render, so comparing by reference rebuilt the
+// module — and restarted its animation — whenever anything else in the
+// component re-rendered (typing in a sibling input was enough).
+function sameValue(a, b) {
+  if (a === b) return true;
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+  const keys = Object.keys(a);
+  if (keys.length !== Object.keys(b).length) return false;
+  return keys.every((key) => Object.prototype.hasOwnProperty.call(b, key) && sameValue(a[key], b[key]));
+}
+
 export const vMotion = {
   mounted(el, binding) {
     const { type, options } = normalizeBinding(binding);
     if (!type) return;
     el.__kinetoType = type;
+    el.__kinetoOptions = options;
     Kineto.create(type, el, options);
   },
   updated(el, binding) {
-    if (binding.value === binding.oldValue && binding.arg === el.__kinetoType) return;
-    const previous = normalizeBinding({ ...binding, value: binding.oldValue });
     const next = normalizeBinding(binding);
     if (!next.type) return;
-    if (previous.type) Kineto.destroyModule(el, previous.type);
+    // Same module, same options (by value): nothing to do.
+    if (next.type === el.__kinetoType && sameValue(next.options, el.__kinetoOptions)) return;
+    // Same module, new options: update in place when the module can, so a
+    // running animation is adjusted rather than restarted. (updateModule()
+    // itself falls back to a rebuild when a particular change cannot be live.)
+    const live = typeof Kineto.getInstance(el, next.type)?.update === 'function';
+    if (next.type === el.__kinetoType && live) {
+      Kineto.updateModule(el, next.type, next.options);
+      el.__kinetoOptions = next.options;
+      return;
+    }
+    if (el.__kinetoType) Kineto.destroyModule(el, el.__kinetoType);
     el.__kinetoType = next.type;
+    el.__kinetoOptions = next.options;
     Kineto.create(next.type, el, next.options);
   },
   unmounted(el) {
     if (el.__kinetoType) Kineto.destroyModule(el, el.__kinetoType);
     delete el.__kinetoType;
+    delete el.__kinetoOptions;
   }
 };
 

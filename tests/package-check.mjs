@@ -74,4 +74,13 @@ for (const adapter of ['react', 'vue', 'jquery']) {
   assert.match(source, /from ['"]@dong-gri\/kineto['"]/, `${adapter} adapter must resolve the packaged core`);
 }
 
+// Entry points that do their work ON IMPORT must be declared side-effectful, or
+// a bundler drops a bare `import '@dong-gri/kineto/jquery'` and the plugin is
+// never installed: the jQuery adapter installs itself on window.jQuery, and
+// the UMD builds assign window.Kineto.
+for (const file of ['./src/adapters/jquery.js', './dist/kineto.umd.js', './dist/kineto.umd.min.js', './dist/kineto.umd.cjs']) {
+  assert.ok(packageJson.sideEffects.includes(file), `package.json sideEffects must list ${file}`);
+}
+assert.ok(packageJson.sideEffects.includes('**/*.css'), 'stylesheets stay side-effectful');
+
 console.log('Package surface OK: full, modular, CommonJS, CSS and adapter entry points verified.');

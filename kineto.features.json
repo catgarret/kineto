@@ -5587,7 +5587,8 @@
         "rotate",
         "scale",
         "blur",
-        "translate"
+        "translate",
+        "combo"
       ],
       "publicOptions": [
         "axis",

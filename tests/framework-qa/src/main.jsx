@@ -213,10 +213,15 @@ async function testVue() {
     assert(!document.querySelector('#vue-transition-target'), 'Vue Transition interop did not remove the leaving child');
     assert(window.__vueTransitionLeave >= 1, 'Vue Transition interop did not settle the leave hook');
   });
+  // A re-render that changes nothing about the directive (its binding is a new
+  // object literal each render) must keep the SAME instance — it used to be
+  // destroyed and recreated, restarting the animation on every render.
+  const counterBefore = Kineto.getInstance(document.querySelector('#vue-directive-target'), 'counter');
   transitionVisible.value = true;
   presenceVisible.value = true;
   await nextTick();
   await waitForAssertions(() => {
+    assert(Kineto.getInstance(document.querySelector('#vue-directive-target'), 'counter') === counterBefore, 'Vue directive rebuilt its module on an unrelated re-render');
     assert(document.querySelector('[data-group-key="vue-nested-a"]'), 'Vue nested Presence child did not re-enter after parent propagation');
     assert(document.querySelector('#vue-transition-target'), 'Vue Transition interop did not re-enter after cancellation/replay');
   });

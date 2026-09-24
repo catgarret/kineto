@@ -3002,4 +3002,10 @@
   for (const [lang, once] of Object.entries(revealOnce)) {
     sets[lang].reveal = Object.assign({}, sets[lang].reveal, { once });
   }
+  // Radial's drawer is Slider's radial controls (see FIELDS.radial in
+  // demo/playground.js), so it reads Slider's tips for the same keys instead of
+  // keeping a second translated copy that could drift.
+  for (const lang of Object.keys(sets)) {
+    sets[lang].radial = Object.assign({}, sets[lang].slider, sets[lang].radial);
+  }
 })();

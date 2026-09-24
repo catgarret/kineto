@@ -205,7 +205,7 @@
 
 - Attribute: `data-kt-scroll-velocity`
 - Default variant: `skew`
-- Variants: `skew`, `rotate`, `scale`, `blur`, `translate`
+- Variants: `skew`, `rotate`, `scale`, `blur`, `translate`, `combo`
 - Public options: `axis`, `damping`, `decay`, `distance`, `effect`, `elastic`, `end`, `global`, `mass`, `maxBlur`, `maxRotate`, `maxScale`, `maxSkew`, `mode`, `onDirection`, `onUpdate`, `preset`, `response`, `reverse`, `smoothing`, `spring`, `start`, `stiffness`, `velocityDivisor`
 
 ## slider

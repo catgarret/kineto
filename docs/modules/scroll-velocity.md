@@ -6,6 +6,7 @@
 |---|---|
 | `skew` | 방향에 따른 skew |
 | `translate` | 선택 축 이동 |
+| `combo` | 이동·기울임·회전·크기를 함께 (`distance`·`maxSkew`·`maxRotate`·`maxScale`로 각각 조절) |
 | `rotate` | 방향에 따른 회전 |
 | `scale` | 속도 절댓값에 따른 확대 |
 | `blur` | 움직이지 않고 스크롤 속도만큼 흐려짐 (기본 `maxBlur` 8px) |

@@ -143,7 +143,7 @@ The old markup keeps working until next major and emits a recoverable `KT_DEPREC
 - `data-kt-radial` — variants: bottom, top, left, right (JS key `preset`)
 - `data-kt-ripple` — variants: material (JS key `preset`)
 - `data-kt-scroll-sequence` — variants: cover, contain (JS key `preset`)
-- `data-kt-scroll-velocity` — variants: skew, rotate, scale, blur, translate (JS key `preset`)
+- `data-kt-scroll-velocity` — variants: skew, rotate, scale, blur, translate, combo (JS key `preset`)
 - `data-kt-slider` — variants: slide, fade, dissolve, wipe, coverflow, flip, cube, cards, creative, radial (JS key `preset`)
 - `data-kt-sticky-stack` — variants: vertical, horizontal, zindex, floating (JS key `preset`)
 - `data-kt-text-fill` — variants: scroll-fill (JS key `preset`)

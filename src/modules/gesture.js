@@ -284,5 +284,11 @@ export default {
         origin: opts.origin
       });
   },
-  reduced(el) { return { el, type: 'gesture', pause() {}, resume() {}, destroy() {} }; }
+  // The spring is decoration and is dropped. Pull-to-refresh is a FEATURE: it
+  // keeps working, with no settle animation.
+  reduced(el, opts = {}) {
+    const pull = opts.preset === 'pull' || opts.effect === 'pull';
+    if (!pull) return { el, type: 'gesture', pause() {}, resume() {}, destroy() {} };
+    return this.create(el, { ...opts, duration: 0 });
+  }
 };

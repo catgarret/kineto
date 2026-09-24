@@ -39,9 +39,15 @@ export default {
 
     let stuck = false;
     let ticking = false;
+    let frame = null;
+    let destroyed = false;
 
     const update = () => {
       ticking = false;
+      frame = null;
+      // A frame scheduled just before destroy() must not put the class and
+      // the progress variable back on a header destroy() has just cleaned.
+      if (destroyed) return;
       const y = scrollY();
       const progress = clamp(y / distance, 0, 1);
       el.style.setProperty('--kt-header-progress', progress.toFixed(4));
@@ -52,7 +58,7 @@ export default {
         opts.onChange?.(stuck, progress, el);
       }
     };
-    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+    const onScroll = () => { if (!ticking) { ticking = true; frame = requestAnimationFrame(update); } };
 
     update();
     scrollHost.addEventListener('scroll', onScroll, { passive: true });
@@ -64,11 +70,16 @@ export default {
       pause() { scrollHost.removeEventListener('scroll', onScroll); },
       resume() { scrollHost.addEventListener('scroll', onScroll, { passive: true }); },
       destroy() {
+        destroyed = true;
+        if (frame != null) cancelAnimationFrame(frame);
         scrollHost.removeEventListener('scroll', onScroll);
         window.removeEventListener('resize', onScroll);
         el.classList.remove('kt-sticky-header', 'kt-sh-shrink', 'kt-sh-shadow', activeClass);
         el.style.removeProperty('--kt-header-progress');
       }
     };
-  }
+  },
+  // The stuck class is layout state that pages style against, not motion; the
+  // shrink transition is CSS and follows prefers-reduced-motion there.
+  reduced(el, opts) { return this.create(el, opts); }
 };

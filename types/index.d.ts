@@ -208,7 +208,8 @@ export interface KinetoStatic {
   readonly diagnosticCodes: Readonly<Record<string, KinetoDiagnosticCode>>;
   core: Record<string, (...args: any[]) => unknown>;
   config(options?: KinetoOptions): this;
-  setReducedMotion(policy: boolean | 'system'): this;
+  /** 'always' / true: reduced motion everywhere · 'never' / false: full motion · 'user' / 'system': follow the OS setting. */
+  setReducedMotion(policy: 'always' | 'never' | 'user' | 'system' | boolean): this;
   setEngineSource(sources?: KinetoOptions): this;
   getEngineSource(): KinetoOptions;
   enableSmooth(options?: KinetoOptions): this;

@@ -185,5 +185,8 @@ export default {
       el, type: 'dateTime', render,
       destroy() { if (timer) clearInterval(timer); el.innerHTML = originalHTML; if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle); restoreAttributes(); }
     };
-  }
+  },
+  // Formatting a date is not motion. Without this the core put a no-op in its
+  // place under reduced motion, and the raw server string stayed on screen.
+  reduced(el, opts) { return this.create(el, opts); }
 };

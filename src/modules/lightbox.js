@@ -778,5 +778,10 @@ export default {
       }
     };
   },
-  reduced() {}
+  // Reduced motion removes the MOTION, not the viewer. `reduced() {}` used to
+  // return nothing, so the core put a no-op in its place and clicking an image
+  // did nothing at all for anyone with reduced motion on.
+  reduced(el, opts = {}) {
+    return this.create(el, { ...opts, duration: 0, lightboxDuration: 0, transition: 'none' });
+  }
 };

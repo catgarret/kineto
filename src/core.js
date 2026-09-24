@@ -23,19 +23,14 @@ const GSAP_MODULES = new Set([
 // A few concise option names intentionally match another module's activation
 // attribute. On a slider, for example, `data-kt-progress="true"` means
 // "show autoplay progress"; it must not also instantiate the standalone
-// Progress module on the same node. Composition remains available by nesting
-// elements or by calling create() explicitly.
-const ACTIVATION_OPTION_OWNERS = {
-  cursor: ['lightbox'],
-  drag: ['fullpage', 'radial'],
-  hold: ['textReveal', 'textSplit'],
-  progress: ['slider', 'loadingIndicator']
-};
+// Progress module on the same node. The map is generated from the contract
+// (src/activationOwners.js), so a new option can never re-open the collision.
 function activationIsOwnedOption(el, name) {
   return (ACTIVATION_OPTION_OWNERS[name] || []).some((owner) => el.hasAttribute?.(`data-kt-${dash(owner)}`));
 }
 import { toCSS as easingToCSS, fn as easingFn, EASINGS } from './easings.js';
 import { createLayoutRefresh } from './layoutRefresh.js';
+import { ACTIVATION_OPTION_OWNERS } from './activationOwners.js';
 
 const modules = new Map();
 const records = new Set();
@@ -664,9 +659,12 @@ const Kineto = {
 
   // Set the reduced-motion policy and notify listeners. New module inits honour
   // it immediately; a `kineto:reduced-motion` event fires so live views can react.
+  // `true`/`false` are accepted as 'always'/'never' — the type declarations
+  // offered booleans for years while the code treated `true` as "follow the
+  // system", so a page asking for reduced motion did not get it.
   setReducedMotion(policy) {
-    if (policy === 'always') { config.forceReducedMotion = true; config.respectReducedMotion = true; }
-    else if (policy === 'never') { config.forceReducedMotion = false; config.respectReducedMotion = false; }
+    if (policy === 'always' || policy === true) { config.forceReducedMotion = true; config.respectReducedMotion = true; }
+    else if (policy === 'never' || policy === false) { config.forceReducedMotion = false; config.respectReducedMotion = false; }
     else { config.forceReducedMotion = false; config.respectReducedMotion = true; }
     // Re-apply to elements already on the page so the switch is live, not just
     // for future inits.
