@@ -26,26 +26,10 @@
         Kineto.updateModule(target,'coverReveal',{colorMode:'auto',colors:'',...(gallery?{mask:false}:{})});
       }
     });
-    const radialDemo=document.querySelector('[data-kt-slider="radial"]');
-    if(radialDemo){
-      radialDemo.setAttribute('data-kt-position','bottom');
-      radialDemo.setAttribute('data-kt-radius','180');
-      radialDemo.setAttribute('data-kt-step','34');
-      if(Kineto.getInstance(radialDemo,'slider')){
-        Kineto.updateModule(radialDemo,'slider',{position:'bottom',radius:180,step:34});
-      }
-    }
-    document.addEventListener('change',(event)=>{
-      const field=event.target.closest?.('.kt-playground__field[data-module="slider"][data-key="position"]');
-      if(!field||!radialDemo)return;
-      const scope=field.closest('.kt-drawer-sheet,.kt-playground__body,.kt-playground')||document;
-      const radius=event.target.value==='center'?96:180;
-      const radiusInput=scope.querySelector('.kt-playground__field[data-module="slider"][data-key="radius"] input[data-option]');
-      if(radiusInput&&Number(radiusInput.value)!==radius){
-        radiusInput.value=String(radius);
-        radiusInput.dispatchEvent(new Event('input',{bubbles:true}));
-      }
-    });
+    // The Radial card's layout (bottom dock, 180px radius, 34° step) is written
+    // in demo/index.html itself. It used to be authored as a centred wheel and
+    // then patched here at start-up, so the markup a visitor copied did not
+    // match what they saw.
     // The demo ships WITH smooth scrolling on — it is one of the library's
     // features, so the default page should show it. The Smooth Scroll card
     // lets a visitor switch it off and feel the difference immediately.
@@ -171,7 +155,7 @@
         } else if(hash&&hash.length>1){
           let cancelled=false;
           const stop=()=>{cancelled=true;};
-          const jump=()=>{ if(cancelled)return; let t=null; try{t=document.querySelector(hash);}catch(_){} if(t)t.scrollIntoView(); };
+          const jump=()=>{ if(cancelled)return; let t=null; try{t=document.querySelector(hash);}catch(_){} if(t){window.KINETO_FOLD?.reveal(t);t.scrollIntoView();} };
           window.addEventListener('wheel',stop,{passive:true,once:true});
           window.addEventListener('touchmove',stop,{passive:true,once:true});
           requestAnimationFrame(jump); setTimeout(jump,260); setTimeout(jump,800);
@@ -599,6 +583,7 @@
               link.textContent=labelOf(homeOwner)+' →';
               link.addEventListener('click',(event)=>{
                 event.preventDefault();
+                window.KINETO_FOLD?.reveal(home);
                 home.scrollIntoView({behavior:'smooth',block:'center'});
               });
               note.append(text,' ',link);
@@ -616,12 +601,15 @@
                 applyCols(sb,SUBGROUP_COLS[label]||MODULE_COLS[n]);
                 units.forEach(u=>sb.appendChild(u));
                 block.append(sh,sb);
+                window.KINETO_FOLD?.attach(sb);
               });
             } else {
               const body=document.createElement('div'); body.className=layoutFor(list);
               applyCols(body,MODULE_COLS[n]);
               list.forEach(u=>body.appendChild(u));
               block.append(body);
+              // Two rows of demos, the rest behind "데모 더 보기" (demo/fold.js).
+              window.KINETO_FOLD?.attach(body);
             }
             wrap.appendChild(block);
           });
@@ -856,6 +844,7 @@
       if(!target)return;
       event.preventDefault();
       const isSkipLink=link.classList.contains('skip-link');
+      window.KINETO_FOLD?.reveal(target);
       target.scrollIntoView({behavior:isSkipLink?'auto':'smooth',block:'start'});
       if(isSkipLink)requestAnimationFrame(()=>target.focus({preventScroll:true}));
       try{history.replaceState(null,'',link.getAttribute('href'));}catch(_){/* about:blank/file 환경 대비 */}
@@ -1067,6 +1056,41 @@
         apply(select.value);
         try{localStorage.setItem('kt-lang',select.value);}catch(_){}
       });
+    })();
+    // CSS Scroll: say which engine drives each tab and print the progress it
+    // produces. Without this the three tabs looked like the same box three times;
+    // with it, "what does 0→1 measure?" has a visible answer per tab. Reads run
+    // only while a card is on screen, at most once per frame.
+    (()=>{
+      const cards=[...document.querySelectorAll('.css-scroll-card')];
+      if(!cards.length||!('IntersectionObserver' in window))return;
+      const MODE_LABEL={native:'CSS 네이티브',fallback:'ScrollTrigger 대체'};
+      const visible=new Set();
+      let frame=0;
+      const paint=()=>{
+        frame=0;
+        visible.forEach((card)=>{
+          const out=card.parentElement?.querySelector('[data-css-scroll-readout]');
+          if(!out)return;
+          const mode=window.Kineto?.getInstance?.(card,'cssScroll')?.mode;
+          const modeNode=out.querySelector('[data-css-scroll-mode]');
+          const key=MODE_LABEL[mode];
+          if(key&&modeNode&&modeNode.dataset.demoI18nText!==key){
+            modeNode.dataset.demoI18nText=key;
+            modeNode.textContent=localizedDemoUi(key);
+          }
+          const value=Number.parseFloat(getComputedStyle(card).getPropertyValue('--scroll-progress'))||0;
+          const progressNode=out.querySelector('[data-css-scroll-progress]');
+          if(progressNode)progressNode.textContent=value.toFixed(2);
+        });
+      };
+      const request=()=>{ if(!frame&&visible.size)frame=requestAnimationFrame(paint); };
+      const io=new IntersectionObserver((entries)=>{
+        entries.forEach((entry)=>{ if(entry.isIntersecting)visible.add(entry.target); else visible.delete(entry.target); });
+        request();
+      });
+      cards.forEach((card)=>io.observe(card));
+      window.addEventListener('scroll',request,{passive:true});
     })();
     // Sidebar: highlight the section in view.
     (()=>{

@@ -13,8 +13,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRY = fs.readdirSync(path.join(root, 'src/modules')).filter((f) => f.endsWith('.js')).map((f) => f.replace('.js', ''));
 // `radial` used to have no nav entry of its own — it was only demoed through
 // Slider's radial effect, so the counts here had to add it back by hand. It now
-// carries a data-kt-radial card and is listed like every other module, so the
-// index count is simply the registry count.
+// has its own block with a data-kt-radial card and is listed like every other
+// module, so the index count is simply the registry count.
 const COMPAT_DEMOS = { radial: 'slider' };
 const html = fs.readFileSync(path.join(root, 'demo/index.html'), 'utf8').replace(/<script[\s\S]*?<\/script>/gi, '');
 

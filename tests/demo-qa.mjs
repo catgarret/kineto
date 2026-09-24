@@ -940,6 +940,11 @@ try {
   const functional=await page.evaluate(async()=>{
     const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));
     const result={};
+    // These checks drive individual demos wherever they sit on the page. A
+    // demo below its block's fold is clipped and paused until the reader
+    // opens the fold (demo/fold.js, tested on its own in demo-fold.mjs).
+    window.KINETO_FOLD?.openAll();
+    await sleep(120);
     // Skeleton shimmer/pulse are real temporary layers.
     const shimmer=document.querySelector('[data-kt-lazy="skeleton"]'); Kineto.replay(shimmer,'lazy'); await sleep(40);
     const skeleton=shimmer.parentElement.querySelector('.kt-lazy-skeleton');

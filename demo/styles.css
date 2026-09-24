@@ -389,9 +389,13 @@
        this preset takes two grid tracks instead of being clipped. */
     /* Cursor presets print "label▉" as one run of text, so the only lever for
        breathing room is tracking. */
-    /* 데모 스테이지와 옵션 서머리를 한 덩어리로 결합 */
-    .card:has(.kt-playground) .demo-stage,.card:has(.kt-playground) .fullpage-demo,.card:has(.kt-playground) .reveal-demo-card,.card:has(.kt-playground) .lightbox-grid{border-bottom-left-radius:0;border-bottom-right-radius:0}
-    .card:has(.demo-stage) .kt-playground,.card:has(.demo-stage) .replay-row+.kt-playground,.card:has(.fullpage-demo) .kt-playground,.card:has(.reveal-demo-card) .kt-playground{margin-top:0;border-top-left-radius:0;border-top-right-radius:0;border-top:0}
+    /* 데모 스테이지와 옵션 서머리를 한 덩어리로 결합.
+       모서리를 펴는 것은 설정 패널 **바로 위에 붙은** 요소뿐입니다. Reveal 의 주황 상자는
+       회색 스테이지 안에 들어 있을 때가 많은데, 예전 규칙(`.card .reveal-demo-card`)은 그
+       안쪽 상자까지 아래 모서리를 펴서, 회색 상자 안에서 주황 상자 밑변만 각져 보였습니다.
+       그래서 Reveal 상자는 카드의 직계 자식일 때(= 설정 패널에 곧바로 닿을 때)만 폅니다. */
+    .card:has(.kt-playground) .demo-stage,.card:has(.kt-playground) .fullpage-demo,.card:has(.kt-playground)>.reveal-demo-card,.card:has(.kt-playground) .lightbox-grid{border-bottom-left-radius:0;border-bottom-right-radius:0}
+    .card:has(.demo-stage) .kt-playground,.card:has(.demo-stage) .replay-row+.kt-playground,.card:has(.fullpage-demo) .kt-playground,.card:has(>.reveal-demo-card) .kt-playground{margin-top:0;border-top-left-radius:0;border-top-right-radius:0;border-top:0}
     /* The thumbnail grid and its settings belong to one unit. */
     .card:has(.lightbox-grid) .kt-playground{margin-top:0;border-top:0;border-top-left-radius:0;border-top-right-radius:0}
     .card:has(.kt-playground) .lightbox-grid{border-bottom-left-radius:0;border-bottom-right-radius:0}
@@ -402,7 +406,7 @@
        an `:empty` inside `:has()` made the browser re-check the whole card on
        every text change inside it — counters, typewriters, loaders — which was
        a quarter of the page's load cost. */
-    .card.has-replay-row .demo-stage,.card:has(.slider-controls) .demo-stage,.card.has-replay-row .reveal-demo-card{border-bottom-left-radius:var(--r-stage);border-bottom-right-radius:var(--r-stage)}
+    .card.has-replay-row .demo-stage,.card:has(.slider-controls) .demo-stage,.card.has-replay-row>.reveal-demo-card{border-bottom-left-radius:var(--r-stage);border-bottom-right-radius:var(--r-stage)}
     .card.has-replay-row .kt-playground,.card:has(.demo-stage) .replay-row:not(:empty)+.kt-playground,.card.has-replay-row:has(.demo-stage) .kt-playground,.card:has(.demo-stage):has(.slider-controls) .kt-playground{margin-top:16px;border-top:1px solid var(--line);border-top-left-radius:14px;border-top-right-radius:14px}
     .card:has(.slider-controls)>.kt-playground{margin-top:16px}
     .slider-controls{margin-top:14px}
@@ -523,6 +527,15 @@
     @property --scroll-progress{syntax:"<number>";inherits:false;initial-value:0}
     @keyframes kt-demo-css-scroll-progress{from{--scroll-progress:0}to{--scroll-progress:1}}
     .css-scroll-demo-panel{width:100%}
+    /* `overflow: clip` — NOT hidden. A native scroll()/view() timeline follows the
+       nearest scroll container, and `overflow: hidden` makes the stage one (that
+       nobody can scroll), so the two native tabs used to sit still. `clip` clips
+       the same pixels without becoming a scroll container. */
+    .demo-stage.css-scroll-demo-stage{overflow:clip}
+    .css-scroll-demo-panel .css-scroll-note{margin:14px auto 0;color:var(--muted);font-size:13px;line-height:1.55;text-align:center;max-width:72ch}
+    .css-scroll-demo-panel .css-scroll-readout{display:flex;justify-content:center;align-items:baseline;gap:6px;margin:8px 0 0;color:var(--muted);font:600 12px/1.4 var(--font-mono)}
+    .css-scroll-readout b{color:var(--text);font-weight:700;font-variant-numeric:tabular-nums}
+    .css-scroll-readout__sep{opacity:.5;margin:0 4px}
     .css-scroll-card{--scroll-progress:0;width:100%;min-height:112px;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));border-radius:14px;background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 16%,var(--panel)),var(--panel));animation-timing-function:linear;transform:translateX(calc((var(--scroll-progress) - .5)*80px)) rotate(calc((var(--scroll-progress) - .5)*5deg));opacity:calc(.35 + var(--scroll-progress)*.65)}
     @media(prefers-reduced-motion:reduce){.css-scroll-card{transform:none;opacity:1}}
 
@@ -1321,6 +1334,29 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
       }
     }
 
+    /* ── Module block fold ─────────────────────────────────────────────────────
+       블록은 처음 두 줄만 보여 주고 나머지는 "데모 더 보기" 뒤에 둡니다(demo/fold.js).
+       접힌 카드는 display:none 이 아니라 잘라서 가립니다 — 모듈이 시작할 때 자기 크기를
+       재기 때문에, 크기 0 인 상태로 시작한 카드는 펼쳐도 깨진 채로 남습니다.
+       max-height 값은 fold.js 가 잰 뒤 인라인으로 씁니다(측정값이라 CSS 에 둘 수 없습니다). */
+    .module-block-body[data-demo-fold-active="true"]:not([data-demo-fold="open"]){position:relative;overflow:clip;transition:max-height .42s cubic-bezier(.2,.7,.2,1)}
+    /* 다음 줄이 살짝 보이다가 페이지 배경으로 사라집니다 — "더 있다"는 신호입니다. */
+    .module-block-body[data-demo-fold-active="true"]::after{content:"";position:absolute;left:0;right:0;bottom:0;height:96px;pointer-events:none;background:linear-gradient(to bottom,transparent,var(--bg) 82%);opacity:0;transition:opacity .25s ease}
+    .module-block-body[data-demo-fold-active="true"][data-demo-fold="closed"]::after{opacity:1}
+    .module-fold{display:flex;justify-content:center;margin-top:var(--sp-3)}
+    .module-fold[hidden]{display:none}
+    .module-fold__toggle{display:inline-flex;align-items:center;gap:var(--sp-2);padding:9px 16px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--text);font:600 13px/1 var(--font-sans);cursor:pointer;transition:border-color .16s ease,background-color .16s ease}
+    .module-fold__toggle:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
+    .module-fold__toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    .module-fold__toggle i{font-size:13px;transition:transform .25s ease}
+    .module-fold__toggle[aria-expanded="true"] i{transform:rotate(180deg)}
+    .module-fold__count{padding:2px 7px;border-radius:999px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);font:700 11px/1.3 var(--font-mono)}
+    .module-fold__count[hidden],.module-fold__toggle>span[hidden]{display:none}
+    @media (prefers-reduced-motion: reduce){
+      .module-block-body[data-demo-fold-active="true"],.module-block-body[data-demo-fold-active="true"]::after,.module-fold__toggle i{transition:none}
+    }
+    @media print{.module-fold{display:none}}
+
     /* ── Variant compare sheet ────────────────────────────────────────────────
        모듈 블록마다 붙는 "모든 variant 비교" 패널입니다. 마크업은 demo/compare.js 가
        만들고, 크기·색은 전부 여기서만 정합니다(데모는 인라인 스타일을 금지합니다). */
@@ -1392,6 +1428,12 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
    to the bottom so it never covers the description however it wraps. */
 .glass-scene{position:relative;overflow:hidden;isolation:auto}
 .glass-backdrop{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+/* A light scrim behind the title and line: the photo is busy, and glass reads
+   best when the words around it stay legible. It sits under the pane (z 1, later
+   in the DOM), so dragging the pane over it shows the refraction of the scrim too. */
+.glass-scene::before{content:"";position:absolute;inset:0 0 auto;height:62%;z-index:1;pointer-events:none;background:linear-gradient(rgba(8,10,14,.42),rgba(8,10,14,0))}
+.glass-pane{touch-action:none}
+.glass-pane:focus-visible{outline:2px solid #fff;outline-offset:3px}
 .glass-demo .glass-scene>h3,.glass-demo .glass-scene>p{position:relative;z-index:2;text-shadow:0 1px 3px rgba(0,0,0,.55)}
 .glass-demo .glass-scene>p{color:rgba(255,255,255,.86);max-width:22em}
 .glass-pane{position:absolute;z-index:1;left:16%;right:16%;bottom:9%;height:52px;border-radius:999px;box-shadow:0 8px 28px #00000026,0 1px 4px #00000018;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;letter-spacing:.06em;text-shadow:0 1px 3px rgba(0,0,0,.5)}

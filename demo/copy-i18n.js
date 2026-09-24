@@ -303,13 +303,13 @@ window.KINETO_COPY_I18N = {
       "Как раскрывается складной экран: две раскладки размываются одна сквозь другую.",
       "Come uno schermo pieghevole che si apre: i due layout si sfocano l'uno nell'altro."
     ],
-    "뒤가 비쳐 흐려지고, 빛 들어오는 쪽 테두리가 밝게 섭니다.": [
-      "What is behind shows through, blurred, and the lit edge catches a bright rim.",
-      "背景が透けてぼけ、光の当たる縁が明るく立ちます。",
-      "背后的内容透出并模糊，受光的边缘亮起一圈。",
-      "背後的內容透出並模糊，受光的邊緣亮起一圈。",
-      "Фон размыто просвечивает, освещённый край светится.",
-      "Ciò che sta dietro traspare sfocato e il bordo illuminato si accende."
+    "끌어 보세요. 가장자리는 뒤를 굴절시키고, 빛 쪽 테두리가 밝게 섭니다.": [
+      "Drag it. The edge bends what is behind; the lit side catches a bright rim.",
+      "動かしてみて。縁が背景を屈折させ、光の側が輝きます。",
+      "拖动这块玻璃。边缘会折射背后的内容，受光一侧的边缘亮起。",
+      "拖曳這塊玻璃。邊緣會折射背後的內容，受光一側的邊緣亮起。",
+      "Потяните его. Край преломляет фон, а сторона к свету светится.",
+      "Trascinalo. Il bordo rifrange lo sfondo e il lato in luce si accende."
     ],
     "애플의 모서리는 원이 아니라 초타원입니다. 같은 반지름인데 곡선이 다릅니다.": [
       "Apple's corners are superellipses, not circles. Same radius, different curve.",
@@ -2449,6 +2449,78 @@ window.KINETO_COPY_I18N = {
       "全部重播",
       "Повторить все",
       "Riproduci tutto"
+    ],
+    "데모 더 보기": [
+      "Show more demos",
+      "デモをもっと見る",
+      "显示更多演示",
+      "顯示更多示範",
+      "Показать ещё демо",
+      "Mostra altre demo"
+    ],
+    "데모 접기": [
+      "Show fewer demos",
+      "デモを折りたたむ",
+      "收起演示",
+      "收合示範",
+      "Свернуть демо",
+      "Mostra meno demo"
+    ],
+    "구동": [
+      "Engine",
+      "駆動",
+      "驱动",
+      "驅動",
+      "Движок",
+      "Motore"
+    ],
+    "진행률": [
+      "Progress",
+      "進行度",
+      "进度",
+      "進度",
+      "Прогресс",
+      "Avanzamento"
+    ],
+    "CSS 네이티브": [
+      "Native CSS",
+      "ネイティブ CSS",
+      "原生 CSS",
+      "原生 CSS",
+      "Нативный CSS",
+      "CSS nativo"
+    ],
+    "ScrollTrigger 대체": [
+      "ScrollTrigger fallback",
+      "ScrollTrigger 代替",
+      "ScrollTrigger 回退",
+      "ScrollTrigger 備援",
+      "Запасной ScrollTrigger",
+      "Fallback ScrollTrigger"
+    ],
+    "모든 브라우저에서 동작합니다. ScrollTrigger가 페이지 스크롤을 읽어 --scroll-progress 를 씁니다.": [
+      "Works in every browser. ScrollTrigger reads the page scroll and writes --scroll-progress.",
+      "すべてのブラウザで動作します。ScrollTrigger がページのスクロールを読み取り --scroll-progress に書き込みます。",
+      "适用于所有浏览器。ScrollTrigger 读取页面滚动并写入 --scroll-progress。",
+      "適用於所有瀏覽器。ScrollTrigger 讀取頁面捲動並寫入 --scroll-progress。",
+      "Работает во всех браузерах. ScrollTrigger читает прокрутку страницы и записывает --scroll-progress.",
+      "Funziona in ogni browser. ScrollTrigger legge lo scorrimento della pagina e scrive --scroll-progress."
+    ],
+    "카드가 화면 아래로 들어와 위로 나갈 때까지 0→1. 브라우저가 스크롤과 같은 프레임에 직접 계산합니다(JS 없음).": [
+      "0→1 from the moment the card enters at the bottom until it leaves at the top. The browser computes it in the same frame as the scroll (no JS).",
+      "カードが画面下から入り上へ出るまで 0→1。ブラウザがスクロールと同じフレームで直接計算します(JS なし)。",
+      "从卡片由底部进入到从顶部离开，0→1。浏览器在滚动的同一帧直接计算(无 JS)。",
+      "從卡片由底部進入到從頂部離開，0→1。瀏覽器在捲動的同一影格直接計算(無 JS)。",
+      "0→1 с момента, когда карточка входит снизу, до выхода сверху. Браузер считает это в том же кадре, что и прокрутку (без JS).",
+      "0→1 da quando la scheda entra dal basso a quando esce dall'alto. Il browser lo calcola nello stesso frame dello scorrimento (senza JS)."
+    ],
+    "카드 위치와 상관없이 페이지 전체 스크롤이 0→1. 가장 가까운 스크롤 영역을 따라갑니다(JS 없음).": [
+      "0→1 across the whole page scroll, wherever the card is. It follows the nearest scroll container (no JS).",
+      "カードの位置に関係なく、ページ全体のスクロールが 0→1。最も近いスクロール領域に従います(JS なし)。",
+      "与卡片位置无关，整页滚动为 0→1。跟随最近的滚动容器(无 JS)。",
+      "與卡片位置無關，整頁捲動為 0→1。跟隨最近的捲動容器(無 JS)。",
+      "0→1 по всей прокрутке страницы, где бы ни была карточка. Следует ближайшему контейнеру прокрутки (без JS).",
+      "0→1 lungo tutto lo scorrimento della pagina, ovunque sia la scheda. Segue il contenitore di scorrimento più vicino (senza JS)."
     ]
   }
 };

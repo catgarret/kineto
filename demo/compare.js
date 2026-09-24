@@ -598,6 +598,8 @@
     var control = document.querySelector('[data-demo-variant="' + escapeSelector(target) + '"]');
     var destination = control || document.querySelector('[data-demo-home="' + escapeSelector(name) + '"]');
     if (!destination) return;
+    // A card below a block's fold is clipped; ask demo/fold.js to open it first.
+    destination.dispatchEvent(new CustomEvent('kt-demo:reveal', { bubbles: true }));
     destination.scrollIntoView({ behavior: 'smooth', block: 'center' });
     if (!control) return;
     // 스크롤이 끝난 뒤에 눌러야 무엇이 일어났는지 보입니다.

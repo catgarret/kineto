@@ -677,7 +677,7 @@
     hold:{mode:'hold',duration:1100,step:.08,decay:.4,blend:'normal'},
     accordion:{single:false,effect:'blur',duration:.4,blur:6,arrowPosition:'right'},
     megaMenu:{trigger:'hover',layout:'dropdown',responsive:'wrap',indicator:'none',openDelay:60,closeDelay:180,duration:.24},
-    radial:{position:'bottom',align:'center',radius:260,step:26,activeAngle:-90,duration:.6,loop:true,drag:true,controls:true,autoplay:0},
+    radial:{position:'bottom',align:'center',radius:260,step:26,activeAngle:-90,duration:.6,loop:'infinite',drag:true,controls:true,autoplay:0},
     coverReveal:{colorMode:'pair',color:'#ff5b1c',color2:'#12141a',colors:'#ff5b1c,#ac7bef,#2791ef,#e5b322',direction:'right',duration:.7,delay:0,layers:2,stagger:120,lines:false,waitForImage:true},
     gesture:{hoverScale:1.04,tapScale:.96,lift:0,origin:'center',duration:.22},
     drag:{axis:'both',bounds:'',snapBack:false,inertia:true},
@@ -696,6 +696,21 @@
   if (FIELDS.lightbox && !FIELDS.lightbox.some((f) => f[0] === 'share')) FIELDS.lightbox.push(['share','Share button','checkbox']);
   if (FIELDS.lightbox && !FIELDS.lightbox.some((f) => f[0] === 'thumbnails')) FIELDS.lightbox.push(['thumbnails','Filmstrip (group)','checkbox']);
   if (FIELDS.brushReveal && !FIELDS.brushReveal.some((f) => f[0] === 'hold')) { FIELDS.brushReveal.push(['hold','Hold to scratch','checkbox']); FIELDS.brushReveal.push(['threshold','Reveal threshold','range',0.1,1,0.05]); }
+  // Radial is Slider's radial effect behind a frozen public API
+  // (src/modules/radial.js). Its controls are therefore Slider's — the options
+  // Radial accepts that Slider also shows for its radial effect — instead of a
+  // second hand-kept list that would drift from the first. Only the dock
+  // differs: Radial's public positions have no `center`.
+  if (!FIELDS.radial && FIELDS.slider) {
+    const accepted = new Set(PUBLIC_OPTIONS.radial || []);
+    const asRadial = { ...(PUBLIC_DEFAULTS.slider || {}), preset: 'radial', effect: 'radial' };
+    const shownForRadial = (key) => (WHEN.slider?.[key] ? WHEN.slider[key](asRadial) : true);
+    FIELDS.radial = FIELDS.slider
+      .filter(([key]) => accepted.has(key) && shownForRadial(key))
+      .map((field) => (field[0] === 'position' ? [field[0], field[1], field[2], [...(PUBLIC_VARIANTS.radial || [])]] : field));
+    CHOICE_WHEN.radial = Object.fromEntries(Object.entries(CHOICE_WHEN.slider || {})
+      .map(([key, rule]) => [key, () => rule(asRadial)]));
+  }
 
   Object.assign(FIELDS, {
     scrollShadows: [['mode','Mode','select',['shadow','mask']],['shape','Shape','select',['radial','linear']],['axis','Axis','select',['vertical','horizontal']],['size','Edge size (px)','range',12,80,2],['transitionMode','Edge motion','select',['smooth','instant']],['transitionDuration','Transition (s)','range',0,2,0.05],['ease','Ease','easing'],['opacity','Shadow opacity','range',0,1,0.05],['shadow','Shadow color','color']],
@@ -1184,6 +1199,9 @@
     // at the restored card instead of the requested `#mod-…` block. Preserve
     // the hash and let main.js perform the late layout-safe module jump.
     const hasModuleDeepLink = /^#mod-[A-Za-z0-9]+$/.test(window.location.hash || '');
+    // The restored card may sit below its block's fold (demo/fold.js); open it
+    // either way, so the reader following the link sees the settings applied.
+    host.dispatchEvent?.(new CustomEvent('kt-demo:reveal', { bubbles: true }));
     if (!hasModuleDeepLink) panel?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
     state.pendingShare = null;
   }
@@ -3123,6 +3141,10 @@
             requestAnimationFrame(refresh);
           });
           setTimeout(refresh, 64);
+          // A ScrollTrigger created inside a hidden panel measured a 0×0 box.
+          // Showing the panel does not change the page height, so the core's
+          // layout watcher cannot notice; re-measure explicitly.
+          requestAnimationFrame(() => window.Kineto?.refresh?.());
         });
         strip.appendChild(tab);
         const descriptors = panel.hasAttribute('data-demo-no-settings') ? [] : discover(panel);

@@ -54,10 +54,10 @@ identity와 실제 source anchor 묶음에 연결합니다.
 | `cursor` | `11/11` | `11/11` | distinct |
 | `overflowText` | `11/11` | `11/11` | distinct |
 | `glitch` | `10/10` | `10/10` | distinct |
-| `slider` | `10/10` | `10/10` | distinct |
+| `slider` | `10/10` | `9/10` | distinct |
 | `textTransition` | `10/10` | `2/10` | distinct |
 
-전용 markup 합계는 83/91입니다(지원 중단 예정 3개 제외). Text Transition은 2026-09-24에 감사에
+전용 markup 합계는 82/91입니다(지원 중단 예정 3개 제외). Text Transition은 2026-09-24에 감사에
 추가되었고, 10개 효과 중 `blur`와 `pop`만 전용 카드가 있습니다 — 나머지 여덟은 설정 선택지와
 비교 시트에서 모두 재생되지만, 첫 화면의 전용 카드는 아직 없다는 것을 그대로 드러낸 값입니다. Slider는 10개 효과를 모두 전용 카드로
 비교하고, Reveal은 `mask`, `swing`, `skew`의 줄바꿈을 포함한 예제를
@@ -122,7 +122,9 @@ Glitch Wave는 1회 재생과 시작·반복·지연 설정을 확인하는
   blur·scale, `wipe`는 directional clip, `coverflow`는 centered 3D neighbours,
   `flip`은 180도 plane, `cube`는 90도 hinge, `cards`는 depth stack,
   `creative`는 offset·rotate·blur stack입니다. `radial`은 track renderer를 쓰지 않고
-  hub orbit와 독립 drag/settle engine을 사용합니다.
+  hub orbit와 독립 drag/settle engine을 사용합니다. `radial`의 데모 카드는 같은 엔진을 쓰는
+  Radial 블록(`data-kt-radial`)에 있어 Slider 블록의 직접 데모는 9/10이고, Slider 비교 시트는
+  그 카드를 `radial` variant의 소재로 빌립니다(`data-demo-specimen="slider"`).
 
 `tests/variant-distinctness.mjs`는 이 감사 범위의 contract 완전성, source-anchor
 fingerprint 고유성, Reveal 초기 상태 고유성, 전용 demo variant의 유효성, 생성된

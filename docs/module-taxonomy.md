@@ -81,6 +81,14 @@ Lazy가 하는 일은 이미지를 *가져오는* 것이고, 전환 효과는 �
    대표 카드 하나에 `data-demo-home="<모듈명>"`을 답니다.
 4. `npm run test:taxonomy`가 위 세 가지의 일치를 검사합니다.
 
+데모 카드가 많아도 블록이 끝없이 길어지지 않습니다. 모듈 블록은 **처음 두 줄**의 카드만
+보여 주고 나머지는 "데모 더 보기" 버튼 뒤에 둡니다(`demo/fold.js`). 대표 카드와 가장 먼저
+보여 줄 카드를 마크업 앞쪽에 두세요. 모든 variant를 한 번에 보는 곳은 블록 위의
+"모든 variant 비교" 시트입니다([variant 비교](variant-compare.md)). 접힌 카드는 잘려서 가려질 뿐
+크기를 유지하고(`display:none`이 아니므로 모듈 측정이 깨지지 않음) `inert`로 키보드에서
+빠집니다. 카드로 스크롤하는 코드는 먼저 `KINETO_FOLD.reveal(el)`을 부르거나 그 요소에
+`kt-demo:reveal` 이벤트를 보냅니다.
+
 ## 무엇이 검사되는가
 
 `tests/module-taxonomy.mjs`가 CI에서 다음을 강제합니다.

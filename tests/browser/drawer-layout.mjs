@@ -19,6 +19,9 @@ const openCard=async(title)=>{
   const opened=await pg.evaluate((text)=>{
     const card=[...document.querySelectorAll('article.card')].find((node)=>node.querySelector(':scope>h3')?.textContent.trim()===text);
     const summary=card?.querySelector('.kt-playground>summary');
+    // A card below its block's fold is clipped and inert until the reader opens
+    // the fold (demo/fold.js) — do what the reader would do first.
+    window.KINETO_FOLD?.reveal(card);
     card?.scrollIntoView({block:'center'});
     summary?.click();
     return Boolean(summary);
@@ -270,23 +273,25 @@ const radialFields=await pg.evaluate(()=>{
   const sheet=document.querySelector('.kt-drawer-sheet');
   const body=[...sheet.children].find((node)=>node.classList.contains('kt-playground__body')&&!node.hidden);
   const card=[...document.querySelectorAll('article.card')].find((node)=>node.querySelector(':scope>h3')?.textContent.trim()==='Radial Carousel (원형 스와이퍼)');
-  const field=(key)=>body.querySelector(`.kt-playground__field[data-module="slider"][data-key="${key}"]`);
+  // The card is Radial's own (data-kt-radial). Its drawer is built from
+  // Slider's radial controls (demo/playground.js), so the same rules hold:
+  // radial-compatible choices only, no track-only controls.
+  const field=(key)=>body.querySelector(`.kt-playground__field[data-module="radial"][data-key="${key}"]`);
+  const options=(key)=>[...(field(key)?.querySelectorAll('option')||[])].map((option)=>option.value);
   return {
     drawerTitle:body.querySelector('.kt-playground__drawer-heading strong')?.textContent.trim(),
-    targetPreset:card?.querySelector('[data-kt-slider]')?.getAttribute('data-kt-slider'),
-    sourceSummaryOpen:card?.querySelector('.kt-playground')?.open,
-    selectedPreset:field('preset')?.querySelector('select')?.value,
-    presets:[...field('preset').querySelectorAll('option')].map((option)=>option.value),
-    aligns:[...field('align').querySelectorAll('option')].map((option)=>option.value),
-    loops:[...field('loop').querySelectorAll('option')].map((option)=>option.value),
-    controlsHidden:field('controls').hidden,
-    perViewHidden:field('perView').hidden,
-    axisHidden:field('axis').hidden
+    target:card?.querySelector('[data-kt-radial]')?.getAttribute('data-kt-radial'),
+    positions:options('position'),
+    aligns:options('align'),
+    loops:options('loop'),
+    controlsShown:field('controls')?.hidden===false,
+    trackOnly:['perView','axis','dots','effectIntensity','spring'].filter((key)=>body.querySelector(`.kt-playground__field[data-key="${key}"]`))
   };
 });
-ck('radial demo offers only the compatible radial preset', radialFields.presets.length===1&&radialFields.presets[0]==='radial', radialFields.presets.join(','));
+ck('radial card opens the Radial drawer', radialFields.drawerTitle==='Radial'&&radialFields.target==='bottom', JSON.stringify(radialFields));
+ck('radial dock choices are Radial\'s four public positions', radialFields.positions.join(',')==='bottom,top,left,right', radialFields.positions.join(','));
 ck('radial choices contain only supported align/loop values', radialFields.aligns.join(',')==='center,edge'&&radialFields.loops.join(',')==='off,infinite', JSON.stringify(radialFields));
-ck('radial hides track-only controls', radialFields.controlsHidden===false&&radialFields.perViewHidden===true&&radialFields.axisHidden===true, JSON.stringify(radialFields));
+ck('radial shows its controls and no track-only ones', radialFields.controlsShown&&radialFields.trackOnly.length===0, JSON.stringify(radialFields));
 // Variant gating must already hold when a drawer OPENS, not only after the
 // first edit: before this check the CRT card opened with every Lazy option
 // (pixelate steps, wave amplitude, ...) and hid them on the first change.

@@ -301,7 +301,7 @@ try {
     const pageTransition = document.querySelector('.pt-fx-row');
     const cursors = [...document.querySelectorAll('.kt-cursor')];
     const fullpages = [...document.querySelectorAll('#mod-fullpage [data-kt-fullpage]')];
-    const radial = document.querySelector('[data-kt-slider="radial"]');
+    const radial = document.querySelector('[data-kt-radial]');
     const coverGallery = document.querySelector('#cover-gallery-demo');
     const stickyBefore = stickyHeader ? { scrollTop: stickyHost.scrollTop, progress: stickyHeader.style.getPropertyValue('--kt-header-progress'), stuck: stickyHeader.classList.contains('kt-stuck') } : null;
     if (stickyHost && stickyHeader) {
@@ -496,14 +496,22 @@ try {
   });
   assert.ok(coverReset.sameTargets&&coverReset.coverInstances===8&&coverReset.coverWrappers===8&&coverReset.flip, `Reset must preserve and recreate both nested Cover Reveal and Flip instances (${JSON.stringify(coverReset)})`);
   checkpoint('cover-reveal-gallery');
-  const radial = page.locator('[data-kt-slider="radial"]');
+  // The Radial block's own card (data-kt-radial). Its engine is Slider's radial
+  // effect, so the centred wheel below is checked by turning the same element
+  // into a Slider radial — Radial's frozen public API has no `center` dock.
+  const radial = page.locator('[data-demo-home="radial"] .kt-radial');
   const radialDefault = await radial.evaluate((host)=>{
     const boxes=[...host.querySelectorAll('.kt-radial-item')].filter((item)=>Number(getComputedStyle(item).opacity)>.99).map((item)=>item.querySelector('img').getBoundingClientRect());
     const nearest=Math.min(...boxes.flatMap((box,index)=>boxes.slice(index+1).map((other)=>Math.hypot((box.left+box.width/2)-(other.left+other.width/2),(box.top+box.height/2)-(other.top+other.height/2)))));
     return {bottom:host.classList.contains('kt-radial--bottom'),radius:host.style.getPropertyValue('--kt-radial-radius'),solid:boxes.length,nearest,maxDiameter:Math.max(...boxes.map((box)=>box.width))};
   });
   assert.ok(radialDefault.bottom&&radialDefault.radius==='180px'&&radialDefault.solid>=3&&radialDefault.nearest>radialDefault.maxDiameter,`Radial demo must open in the spacious Bottom layout (${JSON.stringify(radialDefault)})`);
-  await radial.evaluate((host)=>window.Kineto.updateModule(host,'slider',{position:'center',radius:96}));
+  await radial.evaluate((host)=>{
+    window.Kineto.destroyModule(host,'radial');
+    host.removeAttribute('data-kt-radial');
+    host.setAttribute('data-kt-slider','radial');
+    window.Kineto.create('slider',host,{preset:'radial',effect:'radial',position:'center',align:'center',radius:96,step:34,smoothing:.14});
+  });
   await radial.locator('.kt-radial-next').click();
   await page.waitForTimeout(260);
   const radialMotion = await radial.evaluate((host)=>{

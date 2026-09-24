@@ -40,7 +40,7 @@ const data = await page.evaluate(() => ({
   right: [...document.querySelectorAll('main [data-module-block]')].map((el) => el.dataset.moduleBlock),
   registry: Object.keys(window.Kineto.registry).length,
   radialRegistered: Boolean(window.Kineto.registry.radial),
-  radialDemo: Boolean(document.querySelector('#mod-slider [data-kt-slider="radial"]')),
+  radialDemo: Boolean(document.querySelector('#mod-radial [data-kt-radial]')),
   hrefIds: [...document.querySelectorAll('#side-nav-modules .nav-mod')].map((a) => {
     const id = (a.getAttribute('href') || '').slice(1);
     return { module: a.dataset.module, href: a.getAttribute('href'), idCount: document.querySelectorAll('[id="' + id + '"]').length,
@@ -57,7 +57,7 @@ if (!arrEq(data.left, data.right)) fails.push('left !== right');
 if (new Set(data.left).size !== data.left.length) fails.push('duplicate nav module');
 if (data.left.length !== data.registry) fails.push(`nav ${data.left.length} !== registry ${data.registry}`);
 if (data.registry !== REGISTRY) fails.push(`registry ${data.registry} !== module files ${REGISTRY}`);
-if (!data.radialRegistered || !data.radialDemo) fails.push('grouped radial module or Slider demo is missing');
+if (!data.radialRegistered || !data.radialDemo) fails.push('the Radial block must hold its own data-kt-radial demo');
 data.hrefIds.forEach((h) => {
   if (h.href !== `#mod-${h.module}`) fails.push(`bad href ${h.href}`);
   if (h.idCount !== 1) fails.push(`href ${h.href} -> ${h.idCount} ids`);

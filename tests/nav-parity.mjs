@@ -26,11 +26,11 @@ const REGISTRY = fs.readdirSync(path.join(root, 'src/modules'))
 // that they share one engine.
 //
 // 2026-09-20: the demo used to carry a card for each, which showed the same
-// carousel twice — the second card said only "this is another way in". One card
-// now serves both, so what has to hold is no longer "each has its own card" but
-// "the shared engine is still demonstrated, and the compare sheet still has
-// material for the compatibility attribute". The sheet's material is declared
-// with `data-demo-specimen`, which is why that declaration is checked here.
+// carousel twice. 2026-09-24: the one remaining card lived in Slider's block,
+// which left the Radial block as a heading over a "the card is over there" note
+// — the owner read that as Radial being hidden. The card now lives in Radial's
+// own block (data-kt-radial), and Slider's compare sheet borrows it as the
+// material for its `radial` variant (data-demo-specimen="slider").
 const COMPAT_DEMOS = { radial: 'slider' };
 
 // Drop the page's own <script> tags (external bundle + demo scripts); we inject
@@ -76,10 +76,11 @@ for (const [moduleName, hostModule] of Object.entries(COMPAT_DEMOS)) {
   ok(REGISTRY.includes(moduleName), `compat module ${moduleName} is not registered`);
   ok(leftOrder.includes(hostModule), `${hostModule} is missing from the nav for ${moduleName}`);
   if (moduleName === 'radial') {
-    ok(!!doc.querySelector('#mod-slider [data-kt-slider="radial"]'), 'slider lost its radial effect demo');
-    ok(!!doc.querySelector('[data-demo-home="radial"]'), 'radial has nowhere for the nav to send a reader');
-    ok(!!doc.querySelector('[data-demo-specimen="radial"]'),
-      'the compare sheet has no material for data-kt-radial — declare it with data-demo-specimen="radial"');
+    ok(!!doc.querySelector('#mod-radial [data-demo-home="radial"] [data-kt-radial]'), 'the Radial block must hold its own data-kt-radial card');
+    ok(!doc.querySelector('#mod-radial .module-block-elsewhere'), 'the Radial block must not point elsewhere for its demo');
+    const specimen = doc.querySelector('[data-demo-specimen="slider"]');
+    ok(!!specimen && specimen.children.length >= 2,
+      'Slider\'s compare sheet needs radial material — mark an element with 2+ items data-demo-specimen="slider"');
   }
 }
 for (const a of doc.querySelectorAll('#side-nav-modules .nav-mod')) {
