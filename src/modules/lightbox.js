@@ -121,12 +121,13 @@ function createManager(label) {
   divider.style.cssText = 'width:1px;height:18px;margin:0 8px;background:rgba(255,255,255,.16);flex:0 0 auto;';
   zoomReset.style.minWidth = '54px';
   zoomReset.title = label('zoomHint');
+  const icon = (body) => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
   shareButton.hidden = true;
   shareButton.title = label('share');
-  shareButton.innerHTML = "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx='18' cy='5' r='3'/><circle cx='6' cy='12' r='3'/><circle cx='18' cy='19' r='3'/><path d='M8.6 13.5l6.8 4M15.4 6.5l-6.8 4'/></svg>";
+  shareButton.innerHTML = icon("<circle cx='18' cy='5' r='3'/><circle cx='6' cy='12' r='3'/><circle cx='18' cy='19' r='3'/><path d='M8.6 13.5l6.8 4M15.4 6.5l-6.8 4'/>");
   downloadButton.hidden = true;
   downloadButton.title = label('download');
-  downloadButton.innerHTML = "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M12 3v12'/><path d='M7 11l5 5 5-5'/><path d='M5 21h14'/></svg>";
+  downloadButton.innerHTML = icon("<path d='M12 3v12'/><path d='M7 11l5 5 5-5'/><path d='M5 21h14'/>");
   closeButton.style.fontSize = '22px';
   actions.append(zoomOut, zoomReset, zoomIn, divider, shareButton, downloadButton, closeButton);
   actions.style.marginLeft = 'auto';
