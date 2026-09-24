@@ -815,20 +815,42 @@ const Kineto = {
     if (this.env.ssr || !root) return this;
     ensureCoreServices();
 
-    function* candidates(name) {
-      const selector = `[data-kt-${dash(name)}]`;
-      // Snapshot before root creation: factories can clone activation markup.
-      const descendants = root.querySelectorAll?.(selector) || [];
-      if (root.matches?.(selector)) yield root;
-      yield* descendants;
-    }
     const eligible = (el, name) => !getElementMap(el)?.has(name) && !activationIsOwnedOption(el, name);
-    const scanModules = (engine) => {
+    // Discover one engine tier with a single selector traversal instead of one
+    // querySelectorAll() per registered module. Keep results grouped by module
+    // so create order remains the registry order, not DOM order across modules.
+    const discoverModules = (engine) => {
+      const names = [];
+      const byAttribute = new Map();
       modules.forEach((_module, name) => {
         if (GSAP_MODULES.has(name) !== engine) return;
-        for (const el of candidates(name)) {
-          if (eligible(el, name)) this.create(name, el, readOpts(el, name));
-        }
+        names.push(name);
+        byAttribute.set(`data-kt-${dash(name)}`, name);
+      });
+      const discovered = new Map(names.map((name) => [name, []]));
+      if (!names.length) return discovered;
+
+      const selector = names.map((name) => `[data-kt-${dash(name)}]`).join(',');
+      const collect = (el) => {
+        const attributes = el.getAttributeNames?.() || [];
+        attributes.forEach((attribute) => {
+          const name = byAttribute.get(attribute);
+          if (name && eligible(el, name)) discovered.get(name).push(el);
+        });
+      };
+
+      // Snapshot the tier before creating from it: a factory may clone markup
+      // carrying the same activation attribute, and that clone belongs to a
+      // subsequent scan rather than recursively expanding this one.
+      if (root.matches?.(selector)) collect(root);
+      root.querySelectorAll?.(selector).forEach(collect);
+      return discovered;
+    };
+    const scanDiscovered = (discovered) => {
+      modules.forEach((_module, name) => {
+        const candidates = discovered.get(name);
+        if (!candidates) return;
+        candidates.forEach((el) => this.create(name, el, readOpts(el, name)));
       });
     };
     // Pre-init flash guard: once modules have applied their initial states,
@@ -839,21 +861,23 @@ const Kineto = {
     };
 
     // Effects that don't need GSAP init immediately — they must never wait on a
-    // network fetch. GSAP-backed effects init after the engine is ready.
-    scanModules(false);
+    // network fetch. Discover the whole tier once, then preserve registry-order
+    // creation from that snapshot.
+    scanDiscovered(discoverModules(false));
 
-    const needsGsap = Array.from(GSAP_MODULES).some((name) => {
-      if (!modules.has(name)) return false;
-      for (const el of candidates(name)) { if (eligible(el, name)) return true; }
-      return false;
-    });
+    const gsapDiscovered = discoverModules(true);
+    const needsGsap = Array.from(gsapDiscovered.values()).some((candidates) => candidates.length > 0);
 
-    const complete = () => { scanModules(true); releaseVeil(); };
     if (needsGsap && !gsapReady()) {
       // Fetch the engine (page global or CDN), THEN create the scroll modules so
       // they find GSAP — keeping the preload veil up until they've applied.
-      ensureGSAP().finally(complete);
-    } else complete();
+      // Re-discover once after the asynchronous fetch so GSAP markup inserted
+      // while the engine was loading keeps the pre-existing scan() semantics.
+      ensureGSAP().finally(() => { scanDiscovered(discoverModules(true)); releaseVeil(); });
+    } else {
+      scanDiscovered(gsapDiscovered);
+      releaseVeil();
+    }
     return this;
   },
 
