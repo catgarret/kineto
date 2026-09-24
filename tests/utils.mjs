@@ -164,7 +164,7 @@ assert.doesNotThrow(() => Kineto.destroy());
   outputs.update(10.24, 'paused');
   assert.equal(textWrites.length, 3, 'identical progress/state/template must stay deduplicated');
 
-  outputs.update(10.249, 'paused');
+  outputs.update(10.241, 'paused');
   assert.equal(outStyleWrites.filter(([name]) => name === '--kt-progress').length, 3, 'same four-decimal progress serialization must skip the CSS write');
 
   outputs.update(10.6, 'paused');
