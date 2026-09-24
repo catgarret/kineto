@@ -21,17 +21,28 @@ export async function probeVideoLifecycle(base, publicApi = false) {
   const original = [window.requestAnimationFrame, window.cancelAnimationFrame, window.IntersectionObserver];
   const hiddenDescriptor = Object.getOwnPropertyDescriptor(document, 'hidden');
   const frames = new Map();
-  let serial = 0, time = 0, hidden = false, paused = false, ready = 2, observer;
+  const observers = [];
+  let serial = 0, time = 0, hidden = false, paused = false, ready = 2;
   Object.defineProperties(video, { paused: { get: () => paused }, ended: { get: () => false }, readyState: { get: () => ready } });
   Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden });
   window.requestAnimationFrame = (fn) => { const id = ++serial; frames.set(id, fn); return id; };
   window.cancelAnimationFrame = (id) => frames.delete(id);
   window.IntersectionObserver = class {
-    constructor(callback, options) { observer = this; this.callback = callback; this.options = options; }
-    observe(target) { this.target = target; }
-    unobserve() { this.target = null; }
-    disconnect() { this.target = null; }
+    constructor(callback, options = {}) {
+      this.callback = callback;
+      this.options = options;
+      this.targets = new Set();
+      observers.push(this);
+    }
+    observe(target) { this.targets.add(target); }
+    unobserve(target) { this.targets.delete(target); }
+    disconnect() { this.targets.clear(); }
   };
+  const triggerObserver = (threshold, rootMargin) => [...observers].reverse().find((candidate) =>
+    candidate.targets.has(video)
+    && candidate.options?.threshold === threshold
+    && candidate.options?.rootMargin === rootMargin
+  );
   const tick = (ms = 100) => {
     time += ms;
     for (const [id, fn] of [...frames]) { frames.delete(id); fn(time); }
@@ -54,15 +65,17 @@ export async function probeVideoLifecycle(base, publicApi = false) {
     instance = stylize.create(video, { mode: 'reveal', trigger: 'view', threshold: 0.4, rootMargin: '20px' });
     video.dispatchEvent(new Event('playing')); tick();
     check(!canvas(), 'view waits for intersection');
-    check(observer?.options.threshold === 0.4 && observer?.options.rootMargin === '20px', 'view passes observer options');
-    observer?.callback([{ target: video, isIntersecting: true }]); tick();
+    const viewObserver = triggerObserver(0.4, '20px');
+    check(Boolean(viewObserver), 'view passes observer options');
+    viewObserver?.callback([{ target: video, isIntersecting: true }]); tick();
     check(Boolean(canvas()?.width), 'view intersection paints');
     clear();
-    check(!observer?.target, 'view observer is released');
+    check(viewObserver?.targets.size === 0, 'view observer is released');
     instance = stylize.create(video, { mode: 'reveal', trigger: 'view' });
+    const lateObserver = triggerObserver(0.05, '0px');
     clear();
-    check(!observer?.target, 'destroy before intersection disconnects observer');
-    observer?.callback([{ target: video, isIntersecting: true }]); tick();
+    check(lateObserver?.targets.size === 0, 'destroy before intersection disconnects observer');
+    lateObserver?.callback([{ target: video, isIntersecting: true }]); tick();
     check(!canvas() && frames.size === 0, 'late intersection after destroy is inert');
 
     ready = 0;

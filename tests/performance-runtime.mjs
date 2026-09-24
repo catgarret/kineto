@@ -102,6 +102,44 @@ right.append(left);
 await settle();
 assert.equal(Kineto.getInstance(left, 'probe'), retained, 'connected reparenting must retain the instance');
 moves.disconnect();
+
+// Removal cleanup must be proportional to the removed subtree, not the global
+// instance registry. Poison an unrelated live element's isConnected getter: a
+// registry-wide sweep would touch it and fail, while targeted subtree cleanup
+// must leave it completely alone.
+app.innerHTML = '';
+const cleanupWatch = Kineto.observe(app, { scan: false });
+const unrelated = document.createElement('div');
+unrelated.setAttribute('data-kt-probe', '');
+app.append(unrelated);
+const removedParent = document.createElement('section');
+const removedChild = document.createElement('div');
+removedChild.setAttribute('data-kt-probe', '');
+removedParent.append(removedChild);
+app.append(removedParent);
+await settle();
+assert.ok(Kineto.getInstance(unrelated, 'probe'));
+assert.ok(Kineto.getInstance(removedChild, 'probe'));
+Object.defineProperty(unrelated, 'isConnected', {
+  configurable: true,
+  get() { throw new Error('unrelated instance must not be inspected during detach cleanup'); }
+});
+removedParent.remove();
+await settle();
+delete unrelated.isConnected;
+assert.equal(Kineto.getInstance(removedChild, 'probe'), null, 'removed subtree instance must be destroyed');
+assert.ok(Kineto.getInstance(unrelated, 'probe'), 'unrelated live instance must be retained');
+
+// Connected reparenting still reports a removal mutation, but the moved source
+// is connected again by flush time and therefore must keep its instance.
+const reparentHost = document.createElement('section');
+app.append(reparentHost);
+const beforeReparent = Kineto.getInstance(unrelated, 'probe');
+reparentHost.append(unrelated);
+await settle();
+assert.equal(Kineto.getInstance(unrelated, 'probe'), beforeReparent, 'connected reparenting must survive targeted cleanup');
+cleanupWatch.disconnect();
+
 // A core-only consumer must not fetch GSAP for an unregistered activation.
 movedOut.setAttribute('data-kt-reveal', '');
 Kineto.scan(movedOut);
@@ -172,5 +210,5 @@ for (const action of ['pause', 'destroy']) {
   assert.equal(frames.size, 0, `${action} from onUpdate must not leave a frame`);
   instance.destroy();
 }
-console.log('performance-runtime OK — 100 modules → 1 discovery traversal; 101 mutation targets → 1 scan; duplicate options skipped; disconnected work cancelled; velocity idle/wake/settle/reentry.');
+console.log('performance-runtime OK — batched discovery/scans; targeted detached-subtree cleanup; duplicate options skipped; disconnected work cancelled; velocity idle/wake/settle/reentry.');
 dom.window.close();
