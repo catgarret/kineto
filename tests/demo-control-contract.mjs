@@ -33,14 +33,31 @@ window.document.body.appendChild(script);
 const fields = window.KinetoPlayground?.fields;
 assert.ok(fields && typeof fields === 'object', 'KinetoPlayground.fields must expose the complete runtime field manifest');
 const contracts = JSON.parse(fs.readFileSync(path.join(root, 'kineto.features.json'), 'utf8')).modules;
-for (const name of ['reveal', 'lazy', 'cursor', 'overflowText', 'glitch', 'slider']) {
-  const contract = contracts.find((module) => module.name === name);
+// Every drawer whose `preset` select picks the module's variant offers exactly
+// the contract's variants. This used to be checked for six hand-picked
+// modules, and three of the others had drifted: Text Transition had lost
+// `flip`, Text Reveal `shuffle`, and Scroll Velocity offered an unlisted
+// `combo` instead of `blur`. The fix for all of them is the same — the field
+// reads PUBLIC_VARIANTS instead of a typed list.
+// A module belongs here only when its variants are not preset values, with why:
+const PRESET_IS_NOT_THE_VARIANT = {
+  // `pointer` and `gyro` are chosen by the device (gyro on a touch screen that
+  // has one); the only mode a page picks is `compass`, so the select is ['', 'compass'].
+  mouseParallax: ['', 'compass']
+};
+let presetFields = 0;
+for (const contract of contracts) {
+  const field = fields[contract.name]?.find(([key, , type]) => key === 'preset' && type === 'select');
+  if (!field) continue;
+  presetFields += 1;
+  const expected = PRESET_IS_NOT_THE_VARIANT[contract.name] || contract.variants;
   assert.deepEqual(
-    [...fields[name].find(([key]) => key === 'preset')[3]].sort(),
-    [...contract.variants].sort(),
-    `${name}: the rendered preset field must include every public variant and no removed aliases`
+    [...field[3]].sort(),
+    [...expected].sort(),
+    `${contract.name}: the preset field must offer every public variant and nothing else — use PUBLIC_VARIANTS.${contract.name}`
   );
 }
+assert.ok(presetFields >= 19, `the preset gate must see the drawers (${presetFields})`);
 
 const supportedTypes = new Set(['checkbox', 'color', 'easing', 'number', 'range', 'select', 'text']);
 const seenTypes = new Set();

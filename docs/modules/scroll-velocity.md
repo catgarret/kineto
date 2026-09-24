@@ -8,7 +8,10 @@
 | `translate` | 선택 축 이동 |
 | `rotate` | 방향에 따른 회전 |
 | `scale` | 속도 절댓값에 따른 확대 |
-| `blur` | 속도 기반 blur |
+| `blur` | 움직이지 않고 스크롤 속도만큼 흐려짐 (기본 `maxBlur` 8px) |
+
+`maxBlur`를 주면 다른 모드에도 속도 기반 blur를 더할 수 있습니다. `blur` 모드는 transform을
+쓰지 않으므로 요소 자신의 CSS transform이 그대로 유지됩니다.
 
 ```html
 <h2

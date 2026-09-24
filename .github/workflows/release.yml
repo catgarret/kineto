@@ -84,7 +84,7 @@ jobs:
         run: |
           set -uo pipefail
           failures=()
-          for command in test:easings test:reduced test:update test:canvas-effect test:audit test:leak test:perf test:deps test:engine test:sequence-sources test:control-labels test:regressions test:cursor-click-media; do
+          for command in test:easings test:reduced test:update test:canvas-effect test:scroll-velocity test:audit test:leak test:perf test:deps test:engine test:sequence-sources test:control-labels test:regressions test:cursor-click-media; do
             echo "::group::$command"
             if ! node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log; then
               echo "::error title=Node runtime test failed::$command"

@@ -1,5 +1,8 @@
 import { clamp, lerp, snapshotInlineStyles, ST } from '../utils.js';
 
+// Blur at full speed for the `blur` variant, in px, unless `maxBlur` is given.
+const BLUR_VARIANT_MAX = 8;
+
 export default {
   // Suspended by the core while the element is off screen (see SYSTEM
   // SUSPENSION in src/core.js) — a jump-scroll used to spring every instance on
@@ -13,7 +16,11 @@ export default {
     const axis = opts.axis === 'x' ? 'x' : 'y';
     const reverse = opts.reverse === true ? -1 : 1;
     const maxSkew = Math.max(0, Number(opts.maxSkew ?? 8));
-    const maxBlur = Math.max(0, Number(opts.maxBlur ?? 0));
+    // `blur` is the one variant that moves nothing: the element only softens
+    // with scroll speed. It used to fall through to the skew transform with
+    // `maxBlur` at 0 — identical to `skew` on screen.
+    const moves = mode !== 'blur';
+    const maxBlur = Math.max(0, Number(opts.maxBlur ?? (moves ? 0 : BLUR_VARIANT_MAX)));
     const distance = Math.max(0, Number(opts.distance ?? 48));
     const maxRotate = Math.max(0, Number(opts.maxRotate ?? 4));
     const maxScale = Math.max(0, Number(opts.maxScale ?? 0.08));
@@ -26,7 +33,7 @@ export default {
     const mass = Math.max(0.05, Number(opts.mass ?? 1));
     const response = clamp(Number(opts.response ?? 1), 0.05, 4);
     const restore = snapshotInlineStyles(el, ['transform', 'filter', 'willChange']);
-    el.style.willChange = maxBlur ? 'transform,filter' : 'transform';
+    el.style.willChange = [moves ? 'transform' : '', maxBlur ? 'filter' : ''].filter(Boolean).join(',') || 'auto';
 
     let target = 0;
     let current = 0;
@@ -49,7 +56,7 @@ export default {
         const translatePart = axis === 'x' ? `translate3d(${translate}px,0,0)` : `translate3d(0,${translate}px,0)`;
         transform = `${translatePart} skew${axis === 'x' ? 'Y' : 'X'}(${skew}deg) rotate(${rotate}deg) scale(${scale})`;
       } else transform = `skew${axis === 'x' ? 'Y' : 'X'}(${skew}deg)`;
-      el.style.transform = transform;
+      if (moves) el.style.transform = transform;
       if (maxBlur) el.style.filter = `blur(${Math.abs(value) * maxBlur}px)`;
       opts.onUpdate?.(value, el);
     };
