@@ -250,19 +250,14 @@ export default {
         });
         // One paint kick is enough for every character. Track both delayed jobs
         // so destroy() cannot animate restored author markup or fire onComplete.
-        let popRaf = requestAnimationFrame(() => {
-          popRaf = null;
+        const popRaf = requestAnimationFrame(() => {
           characters.forEach((node) => {
             node.style.opacity = '1';
             node.style.transform = 'scale(1)';
           });
         });
         const popTimer = setTimeout(() => opts.onComplete?.(el), (popDuration + stagger * characters.length) * 1000);
-        addAnimation({ kill: () => {
-          if (popRaf != null) cancelAnimationFrame(popRaf);
-          clearTimeout(popTimer);
-          popRaf = null;
-        } });
+        addAnimation({ kill: () => { cancelAnimationFrame(popRaf); clearTimeout(popTimer); } });
       }
     } else if (mode === 'flip') {
       // True split-flap (Solari board): each digit is split at the middle.
