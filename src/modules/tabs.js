@@ -212,7 +212,7 @@ export default {
       const size = orientation === 'vertical' ? tab.offsetHeight : tab.offsetWidth;
       if (size > 0) return;
       if (attempt < 2) repairRaf = requestAnimationFrame(() => repairIndicator(attempt + 1));
-      else repairTimer = setTimeout(refresh, 160);
+      else repairTimer = setTimeout(refresh, 64);
     };
     const hiddenObserver = indicator && typeof MutationObserver !== 'undefined'
       ? new MutationObserver(() => {
