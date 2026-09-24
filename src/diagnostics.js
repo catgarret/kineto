@@ -17,7 +17,12 @@ export const DIAGNOSTIC_CODES = Object.freeze({
   TRANSFORM_CONFLICT: 'KT_TRANSFORM_CONFLICT',
   // A still-working public API that has a replacement and a removal release;
   // `detail` names the replacement (docs/diagnostics-and-deprecation.md).
-  DEPRECATED: 'KT_DEPRECATED'
+  DEPRECATED: 'KT_DEPRECATED',
+  // A module declined its native browser path and used its fallback instead,
+  // because the page would have made the native path silently do nothing
+  // (cssScroll: a native timeline inside an `overflow: hidden` ancestor).
+  // `detail` names the cause and the CSS that fixes it.
+  NATIVE_FALLBACK: 'KT_NATIVE_FALLBACK'
 });
 
 export function createDiagnostic({ code, module = 'core', phase = 'runtime', recoverable = false, cause, detail } = {}) {

@@ -66,6 +66,33 @@ tabs?.refresh?.();
 사용합니다. 애플리케이션에서 임의의 무한 polling을 추가하지 말고, 표시 상태 변경과
 레이아웃 완료 시점에 맞춰 한 번 호출하십시오.
 
+## 고정(pin)된 섹션이 아래 내용과 겹치거나, 스크롤 효과가 엉뚱한 위치에서 시작함
+
+ScrollTrigger 기반 모듈(Sticky Stack·Reveal·Parallax·Text Fill 등)은 **시작·끝 위치를 한 번 재
+두고** 그 값으로 동작합니다. 그 위쪽 내용의 높이가 나중에 바뀌면(이미지 로드, 아코디언 펼침,
+"더 보기"로 카드 추가) 아래 트리거는 옛 위치에서 켜지고, 고정된 섹션이 그 자리로 밀려 온 내용
+위에 겹쳐 그려집니다.
+
+Kineto는 스크롤 모듈이 하나라도 살아 있는 동안 `<body>`의 높이를 지켜보다가, 높이가 바뀌고
+**200ms 동안 더 바뀌지 않으면** ScrollTrigger를 한 번 다시 잽니다(`src/layoutRefresh.js`).
+높이가 애니메이션으로 바뀌어도 끝에서 한 번만 잽니다. 이 동작은 기본으로 켜져 있습니다.
+
+- 높이가 **바뀌지 않는** 변화(탭 전환처럼 같은 높이의 패널을 바꿔 끼우는 경우)는 감지할 수
+  없습니다. 숨겨져 있던 패널을 보여 준 직후에 `Kineto.refresh()`를 한 번 부르세요.
+- 새로고침 시점을 직접 관리하는 앱은 `Kineto.config({ autoRefresh: false })`로 끕니다.
+
+## 네이티브 CSS 스크롤 애니메이션이 움직이지 않음 (`cssScroll`)
+
+네이티브 `scroll()`·`view()` 타임라인은 **가장 가까운 스크롤 컨테이너**를 따라갑니다.
+`overflow: hidden`인 조상도 스크롤 컨테이너이므로(아무도 스크롤할 수 없는), 그 안의 타임라인은
+영원히 0에 머뭅니다. 카드가 내용을 자르려고 `overflow: hidden`을 쓰는 것만으로 생깁니다.
+
+Kineto는 이 조상을 찾으면 네이티브 경로 대신 ScrollTrigger 경로로 동작하고,
+`debug`가 켜져 있으면 [`KT_NATIVE_FALLBACK`](diagnostics-and-deprecation.md) 진단을 보냅니다.
+네이티브로 돌리려면 그 조상을 `overflow: clip`으로 바꾸세요 — 같은 픽셀을 자르지만 스크롤
+컨테이너가 되지 않습니다. 어느 경로로 동작 중인지는 `Kineto.getInstance(el, 'cssScroll').mode`
+(`'native'` 또는 `'fallback'`)로 확인합니다.
+
 ## 모바일 Mega Menu가 열리지 않거나 엉뚱한 위치에 표시됨
 
 모바일에는 hover가 없습니다. 좁은 화면에서는 `trigger: 'click'`을 사용하고, 메뉴

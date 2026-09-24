@@ -474,6 +474,51 @@ try {
     instanceCount: 0
   }, 'reduced-motion destroy must restore the authored custom property and priority');
 
+  // A native timeline inside `overflow: hidden` binds to a scroll container
+  // nobody can scroll, so it never moves — the demo's own two native tabs sat
+  // still for exactly this reason. cssScroll must notice, take the
+  // ScrollTrigger path, and say why through the opt-in diagnostics. The same
+  // markup inside `overflow: clip` (not a scroll container) stays native.
+  if (nativeSupport.view) {
+    const captured = await page.evaluate(() => {
+      const make = (overflow) => {
+        const stage = document.createElement('div');
+        stage.style.cssText = `overflow:${overflow};height:200px`;
+        const target = document.createElement('div');
+        target.style.height = '80px';
+        stage.appendChild(target);
+        document.body.appendChild(stage);
+        return { stage, target };
+      };
+      const events = [];
+      const stop = window.Kineto.diagnostics.subscribe((event) => events.push(event));
+      window.Kineto.config({ debug: true });
+      const hidden = make('hidden');
+      const clipped = make('clip');
+      const options = { property: '--view-progress', cssAnimation: 'kt-css-scroll-view-progress' };
+      const inHidden = window.Kineto.create('cssScroll', hidden.target, options);
+      const inClip = window.Kineto.create('cssScroll', clipped.target, options);
+      const result = {
+        hiddenMode: inHidden?.mode,
+        clipMode: inClip?.mode,
+        hiddenAnimations: hidden.target.getAnimations().length,
+        diagnostics: events.filter((event) => event.code === 'KT_NATIVE_FALLBACK').map((event) => ({ module: event.module, ancestor: event.detail?.ancestor, fix: event.detail?.fix }))
+      };
+      inHidden?.destroy();
+      inClip?.destroy();
+      hidden.stage.remove();
+      clipped.stage.remove();
+      window.Kineto.config({ debug: false });
+      stop();
+      return result;
+    });
+    assert.equal(captured.hiddenMode, 'fallback', `a native timeline inside overflow:hidden must fall back (${JSON.stringify(captured)})`);
+    assert.equal(captured.hiddenAnimations, 0, 'the captured element must not keep a dead native animation');
+    assert.equal(captured.clipMode, 'native', `overflow:clip is not a scroll container, so the native path must stay (${JSON.stringify(captured)})`);
+    assert.deepEqual(captured.diagnostics, [{ module: 'cssScroll', ancestor: 'div', fix: 'overflow: clip' }],
+      `the fallback must be reported once, naming the ancestor and the fix (${JSON.stringify(captured)})`);
+  }
+
   assert.deepEqual(runtimeErrors, [], `cssScroll browser runtime errors:\n${runtimeErrors.join('\n')}`);
   console.log(`cssScroll browser QA OK in ${browserName}: scroll=${nativeSupport.scroll}, view=${nativeSupport.view}, fallback=true, lifecycle restored.`);
 } finally {

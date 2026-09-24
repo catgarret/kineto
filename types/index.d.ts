@@ -111,11 +111,13 @@ export type KinetoDiagnosticCode =
   | 'KT_INVALID_MODULE'
   | 'KT_UNKNOWN_MODULE'
   | 'KT_CREATE_FAILED'
+  | 'KT_NOT_APPLICABLE'
   | 'KT_UPDATE_FAILED'
   | 'KT_DESTROY_FAILED'
   | 'KT_LIFECYCLE_FAILED'
   | 'KT_TRANSFORM_CONFLICT'
-  | 'KT_DEPRECATED';
+  | 'KT_DEPRECATED'
+  | 'KT_NATIVE_FALLBACK';
 
 export interface KinetoDiagnostic {
   readonly code: KinetoDiagnosticCode | (string & {});

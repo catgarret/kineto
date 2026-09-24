@@ -60,6 +60,21 @@ Kineto.diagnostics.clear();
 담지 않습니다 — 진단이 페이지 내용을 실어 나르지 않게 하기 위해서입니다.
 사용자용 안내는 [문제 해결](troubleshooting.md#속성을-붙였는데-아무-일도-일어나지-않음)에 있습니다.
 
+### `KT_NATIVE_FALLBACK` — 네이티브 경로가 조용히 멈출 상황이라 대체 경로를 쓴 경우
+
+모듈이 브라우저의 네이티브 경로를 쓸 수 있는데도, 페이지 구조 때문에 그 경로가 **아무 일도 하지
+않을 것이 확실할 때** 대체 경로로 동작하고 이 진단을 한 번 보냅니다. 지금은 `cssScroll` 하나입니다:
+네이티브 스크롤 타임라인이 `overflow: hidden` 조상(아무도 스크롤할 수 없는 스크롤 컨테이너)에
+묶이는 경우입니다.
+
+```js
+// { code: 'KT_NATIVE_FALLBACK', module: 'cssScroll', phase: 'create', recoverable: true,
+//   detail: { ancestor: 'div.demo-stage', reason: 'overflow: hidden captures the native timeline',
+//             fix: 'overflow: clip' } }
+```
+
+화면은 대체 경로로 정상 동작하므로 오류가 아닙니다. `detail.fix`를 적용하면 네이티브 경로로 돌아갑니다.
+
 `debugSink`를 주입하면 콘솔 대신 소비자 sink로만 전달됩니다. Kineto는 DOM,
 URL, 서버 응답을 자동 수집하지 않으며, 최근 50개 이벤트만 opt-in 상태에서
 메모리에 보관합니다. `cause`는 원래 오류 객체를 그대로 전달하므로 소비자가
