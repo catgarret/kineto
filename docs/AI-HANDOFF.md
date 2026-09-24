@@ -105,6 +105,13 @@ own artefacts rather than a different agent's moving working tree.
   `?v=dev`; `scripts/build-demo-cdn.mjs` writes a hash of each deployed file
   into `site/index.html`, and `tests/site-deploy.mjs` rejects any other token
   in the source. Do not bump a `?v=` by hand.
+- **Timing options accept seconds or milliseconds**: read them with
+  `timeMs(value, fallbackMs)` from `src/utils.js` (20 or less is seconds).
+  A reader that assumed one unit turned a recipe's `hold: 1.4` into 1.4 ms.
+- **Variant lists are never typed twice**: a drawer's `preset` select reads
+  `PUBLIC_VARIANTS.<module>`, and a tunable effect is a builder keyed by the
+  variant name (`blur: (opts) => …`) so each instance gets its own keyframes
+  and `derive-variant-options` attributes its options to that variant only.
 
 ## How to recover project history
 

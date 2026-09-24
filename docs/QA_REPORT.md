@@ -3,6 +3,34 @@
 검증일: 2026-09-20
 대상: v0.11.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-24 Unreleased 검증 (Text Transition `pop` · 시간 단위 · Scroll Velocity `blur`)
+
+소유자가 한 제품 사이트에서 제목이 바뀔 때의 글자 애니메이션을 보고 “우리꺼에도 쓸만하겠다”고 했습니다.
+그 페이지의 동작을 실제로 재 보니(글자마다 opacity·transform을 40ms 간격으로 기록) 글자는
+`opacity 0, translateY(20px) scale(.4) rotate(-15deg)`에서 출발해 약 0.4초에 `scale 1.098, rotate +2.4deg,
+-3.26px`까지 넘친 뒤 약 1.1초에 멈췄고, 이전 텍스트는 즉시 교체됐습니다. 감쇠비 0.5 스프링의
+해석해와 정확히 맞아(최고점 1.0978·2.45°·−3.26px), 그 곡선을 keyframe으로 샘플링해 Text Transition의
+10번째 효과 `pop`으로 넣었습니다(새 모듈이 아니라 variant — 문구가 바뀌는 방식 = Text Transition 그 자체).
+효과 이름·문구·색은 가져오지 않았고 데모 문구도 자체 작성입니다.
+
+그 모듈을 읽다가 나온 결함 넷:
+
+1. **Text Transition 조절값이 인스턴스끼리 섞였습니다.** `blur`·`startScale`·`endScale`을 `create()`에서
+   모듈 전체의 keyframe 표에 써 넣어, 마지막으로 만든 인스턴스가 다른 인스턴스의 두 번째 텍스트부터
+   값을 정했습니다. `tests/browser/text-transition.mjs`가 옛 동작(공유 표)에서 실패하는 것을 확인했습니다.
+2. **`hold`가 밀리초로만 읽혔습니다.** 연동 지도가 AI 도구·MCP에 내주는 레시피 `hold: 1.4`가 1.4ms가
+   되어 단어가 매 프레임 바뀌었고, Text Split 계약 기본값 `hold: 1.2`는 200ms로 잘렸습니다.
+   `utils.timeMs`로 통일(20 이하 = 초).
+3. **Scroll Velocity `blur`가 `skew`와 똑같았습니다.** `maxBlur` 0으로 skew transform에 떨어졌습니다.
+   `tests/scroll-velocity.mjs`가 옛 코드에서 “blur == skew”로 실패하는 것을 확인했습니다.
+4. **설정창 variant 목록이 손으로 쓴 사본이었습니다.** Text Transition은 `flip`, Text Reveal은 `shuffle`이
+   빠졌고 Scroll Velocity는 계약에 없는 `combo`를 보였습니다. 여섯 모듈만 보던 검사를 모든 preset 목록으로
+   넓혔고, 되돌린 목록에서 실패하는 것을 확인했습니다.
+
+검증: `text-transition` 세 엔진, `scroll-velocity`·`utils`·`demo-control-contract`·`variant-distinctness`
+(Text Transition 추가, 10/10 · 전용 카드 2/10)·`copy-i18n`·`site-deploy`, 전체 `test:node`, Chromium 브라우저
+레인 전체. 예산은 실측과 이유를 주석으로 남기고 다음 KB로 올렸습니다(패키지 압축은 CI 여유 1.5KB 포함).
+
 ## 2026-09-24 Unreleased 검증 (데모 정비 · 런타임 비용 · Canvas Effect — 55번째 모듈)
 
 같은 날 `main`에 들어온 `cd59c10`(DOM 스캔·Stylize·Scroll Velocity 성능) 위에 올렸습니다.
