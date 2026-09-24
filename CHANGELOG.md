@@ -4,6 +4,8 @@
 
 ### English
 
+- Make concurrent-agent work PR-first: isolated task branches, repeated `origin/main` rechecks, intentional overlap reconciliation, no ordinary direct pushes or force-pushes to `main`, and CI-gated merging even when server-side branch protection is absent.
+
 - Pin all workflow runners to Ubuntu 24.04 and reject implicit OS migrations in the workflow contract test.
 
 - Account for the measured Node 24/npm 11 archive compression delta with a 1 KB packed budget margin; keep the same 80-file package surface.
@@ -81,6 +83,8 @@
 - Dependabot no longer proposes major bumps for the `tests/integrations` fixture: the UI-library majors there are the ones the integration map documents, so a new major is reviewed together with the docs and tests instead of landing as a failing automatic PR.
 
 ### 한국어
+
+- 여러 AI 에이전트의 동시 작업을 PR 우선 방식으로 고정했습니다. 격리된 작업 브랜치, 반복적인 `origin/main` 재확인, 겹치는 변경의 의도적 조정, 일반 작업의 `main` 직접 push/force-push 금지, 서버 측 브랜치 보호가 없더라도 CI 통과 후 병합 원칙을 적용합니다.
 
 - 모든 워크플로 실행 환경을 Ubuntu 24.04로 고정하고, 계약 검사로 암묵적인 운영체제 전환을 차단합니다.
 

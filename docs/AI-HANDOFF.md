@@ -63,14 +63,19 @@ The OS image still receives updates within Ubuntu 24.04.
 The exact current version and public surface are authoritative in
 `package.json`, `kineto.features.json`, and `kineto.requirements.json`.
 
-### Current owner workflow (2026-09-20)
+### Current owner workflow (updated 2026-09-24)
 
-The owner explicitly requested that completed improvement batches include a
-public demo deployment, not only a local commit. This authorizes the main push
-and Pages verification for that ongoing work, not an npm/MCP release or tag.
-Claude may be working concurrently: use an isolated checkout, preserve its
-changes, recheck remote main before pushing, and verify the deployed commit's
-own artefacts rather than a different agent's moving working tree.
+Multiple coding agents may work concurrently. Ordinary implementation work must
+use an isolated task branch and a pull request into `main`; agents must not
+direct-push implementation commits to `main`, even if GitHub temporarily has no
+server-side branch protection configured. Recheck `origin/main` before edits,
+before the final commit, and before updating the PR. If upstream touched the same
+surface, reconcile against the new source instead of replaying an older patch.
+
+Completed improvement batches should still reach the public demo: merge the
+validated PR, let authoritative main CI complete, then verify the Pages
+deployment for that merged commit. This does not authorize npm/MCP publication
+or a tag; release approval remains separate.
 
 ## How to recover project history
 
