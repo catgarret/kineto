@@ -492,13 +492,22 @@ function oe(e, t = {}) {
 			progressVar: e.style.getPropertyValue("--kt-progress"),
 			percentVar: e.style.getPropertyValue("--kt-percent")
 		}, ae.set(e, t)), t.owners += 1, e;
-	}), s = !1;
+	}), s = !1, c = /* @__PURE__ */ new WeakMap();
 	return {
 		update(e, n = "running") {
-			let r = G(Number(e) || 0, 0, 100), a = Math.round(r);
+			let r = G(Number(e) || 0, 0, 100), a = Math.round(r), o = String(a), s = String(n), l = (r / 100).toFixed(4);
 			i.forEach((e) => {
-				let i = e.dataset.ktProgressTemplate || t.progressTemplate || "{value}%", o = String(i).split("{value}").join(String(a)).split("{progress}").join(String(a)).split("{state}").join(String(n));
-				"value" in e && /^(?:INPUT|OUTPUT|PROGRESS)$/.test(e.tagName) ? e.value = e.tagName === "PROGRESS" ? r : o : e.textContent = o, e.dataset.ktProgressValue = String(a), e.dataset.ktProgressState = String(n), e.style.setProperty("--kt-progress", (r / 100).toFixed(4)), e.style.setProperty("--kt-percent", String(a));
+				let n = String(e.dataset.ktProgressTemplate || t.progressTemplate || "{value}%"), i = c.get(e), u = !i || i.rounded !== a || i.state !== s || i.template !== n, d = !i || i.progress !== l;
+				if (u) {
+					let t = n.split("{value}").join(o).split("{progress}").join(o).split("{state}").join(s);
+					"value" in e && /^(?:INPUT|OUTPUT|PROGRESS)$/.test(e.tagName) ? e.tagName !== "PROGRESS" && (e.value = t) : e.textContent = t, e.dataset.ktProgressValue = o, e.dataset.ktProgressState = s, e.style.setProperty("--kt-percent", o);
+				}
+				e.tagName === "PROGRESS" && (e.value = r / 100 * (e.max || 1)), d && e.style.setProperty("--kt-progress", l), c.set(e, {
+					rounded: a,
+					state: s,
+					template: n,
+					progress: l
+				});
 			});
 		},
 		destroy() {
@@ -1346,26 +1355,33 @@ var Rt = {
 	scan(e = typeof document < "u" ? document : null) {
 		if (this.env.ssr || !e) return this;
 		kt();
-		function* t(t) {
-			let n = `[data-kt-${q(t)}]`, r = e.querySelectorAll?.(n) || [];
-			e.matches?.(n) && (yield e), yield* r;
-		}
-		let n = (e, t) => !gt(e)?.has(t) && !Re(e, t), r = (e) => {
-			ze.forEach((r, i) => {
-				if (Ie.has(i) === e) for (let e of t(i)) n(e, i) && this.create(i, e, se(e, i));
+		let t = (e, t) => !gt(e)?.has(t) && !Re(e, t), n = (n) => {
+			let r = [], i = /* @__PURE__ */ new Map();
+			ze.forEach((e, t) => {
+				Ie.has(t) === n && (r.push(t), i.set(`data-kt-${q(t)}`, t));
+			});
+			let a = new Map(r.map((e) => [e, []]));
+			if (!r.length) return a;
+			let o = r.map((e) => `[data-kt-${q(e)}]`).join(","), s = (e) => {
+				(e.getAttributeNames?.() || []).forEach((n) => {
+					let r = i.get(n);
+					r && t(e, r) && a.get(r).push(e);
+				});
+			};
+			return e.matches?.(o) && s(e), e.querySelectorAll?.(o).forEach(s), a;
+		}, r = (e) => {
+			ze.forEach((t, n) => {
+				let r = e.get(n);
+				r && r.forEach((e) => this.create(n, e, se(e, n)));
 			});
 		}, i = () => {
 			typeof requestAnimationFrame < "u" ? requestAnimationFrame(() => document.documentElement.classList.remove("kt-preload")) : document.documentElement.classList.remove("kt-preload");
 		};
-		r(!1);
-		let a = Array.from(Ie).some((e) => {
-			if (!ze.has(e)) return !1;
-			for (let r of t(e)) if (n(r, e)) return !0;
-			return !1;
-		}), o = () => {
-			r(!0), i();
-		};
-		return a && !m() ? g().finally(o) : o(), this;
+		r(n(!1));
+		let a = n(!0);
+		return Array.from(a.values()).some((e) => e.length > 0) && !m() ? g().finally(() => {
+			r(n(!0)), i();
+		}) : (r(a), i()), this;
 	},
 	init(e = typeof document < "u" ? document : null) {
 		return this.scan(e);
@@ -12006,37 +12022,49 @@ var jo = {
 		u.className = "kt-scroll-sequence-wrap", u.style.height = t.scrollLength || `${Math.max(2, a * Number(t.vhPerFrame ?? 3))}vh`, l.parent.insertBefore(u, e), u.appendChild(e), e.style.position = "sticky", e.style.top = t.top == null ? "0" : typeof t.top == "number" ? `${t.top}px` : String(t.top), e.style.height = t.height || "100vh", e.style.overflow = "hidden";
 		let d = document.createElement("canvas");
 		d.setAttribute("aria-hidden", "true"), d.style.cssText = "display:block;width:100%;height:100%;", e.appendChild(d);
-		let f = d.getContext("2d"), p = Array(a), m = Array(a).fill("idle"), h = { frame: 0 }, g = 1, _ = 1, v = 1, y = (e) => n?.[e] || `${o}${String(e + 1).padStart(c, "0")}${s}`, b = (e) => {
+		let f = d.getContext("2d"), p = Array(a), m = Array(a).fill("idle"), h = { frame: 0 }, g = 1, _ = 1, v = 1, y = Math.round(h.frame), b = -1, x = Math.max(0, Math.floor(Number(t.preloadRadius ?? 8) || 0)), S = Math.max(x + 2, x * 2), C = (e) => n?.[e] || `${o}${String(e + 1).padStart(c, "0")}${s}`, w = (e) => {
+			let t = p[e];
+			t && m[e] === "loaded" && (t.onload = null, t.onerror = null, p[e] = void 0, m[e] = "idle", b === e && (b = -1));
+		}, T = (e) => {
+			for (let t = 0; t < a; t += 1) Math.abs(t - e) <= S || w(t);
+		}, E = (e) => {
 			if (e < 0 || e >= a || m[e] !== "idle") return;
 			m[e] = "loading";
 			let n = new Image();
 			t.crossOrigin && (n.crossOrigin = t.crossOrigin), n.decoding = "async", n.onload = () => {
-				m[e] = "loaded", p[e] = n, (Math.round(h.frame) === e || e === 0) && S(e);
+				if (m[e] = "loaded", p[e] = n, Math.abs(e - y) > S) {
+					w(e);
+					return;
+				}
+				(Math.round(h.frame) === e || e === 0) && O(e);
 			}, n.onerror = () => {
-				m[e] = "error", t.onError?.(e, n.src);
-			}, n.src = y(e), p[e] = n;
-		}, x = (e) => {
-			let n = Number(t.preloadRadius ?? 8);
-			for (let t = -n; t <= n; t += 1) b(e + t);
-		}, S = (e) => {
-			let n = p[e];
-			if (!n || m[e] !== "loaded" || !n.naturalWidth) {
-				x(e);
+				m[e] = "error";
+				let r = n.src;
+				n.onload = null, n.onerror = null, p[e] = void 0, t.onError?.(e, r);
+			}, p[e] = n, n.src = C(e);
+		}, D = (e) => {
+			for (let t = -x; t <= x; t += 1) E(e + t);
+			T(e);
+		}, O = (e, n = !1) => {
+			let r = p[e];
+			if (!r || m[e] !== "loaded" || !r.naturalWidth) {
+				D(e);
 				return;
 			}
+			if (!n && b === e) return;
 			f.clearRect(0, 0, d.width, d.height), f.imageSmoothingEnabled = !0;
-			let r = n.naturalWidth / n.naturalHeight, i = g / _, a, o, s, c;
+			let i = r.naturalWidth / r.naturalHeight, a = g / _, o, s, c, l;
 			if ((t.fit || "cover") === "contain") {
-				let e = Math.min(g / n.naturalWidth, _ / n.naturalHeight);
-				a = n.naturalWidth * e, o = n.naturalHeight * e;
-			} else r > i ? (o = _, a = _ * r) : (a = g, o = g / r);
-			s = (g - a) / 2, c = (_ - o) / 2, f.drawImage(n, s * v, c * v, a * v, o * v), t.onFrame?.(e, n, d);
-		}, C = () => {
+				let e = Math.min(g / r.naturalWidth, _ / r.naturalHeight);
+				o = r.naturalWidth * e, s = r.naturalHeight * e;
+			} else i > a ? (s = _, o = _ * i) : (o = g, s = g / i);
+			c = (g - o) / 2, l = (_ - s) / 2, f.drawImage(r, c * v, l * v, o * v, s * v), b = e, t.onFrame?.(e, r, d);
+		}, k = () => {
 			let n = e.getBoundingClientRect();
-			g = Math.max(1, n.width || window.innerWidth), _ = Math.max(1, n.height || window.innerHeight), v = Math.min(window.devicePixelRatio || 1, Number(t.maxDpr ?? 2)), d.width = Math.round(g * v), d.height = Math.round(_ * v), S(Math.round(h.frame));
-		}, w = typeof ResizeObserver < "u" ? new ResizeObserver(C) : null;
-		w?.observe(e), window.addEventListener("resize", C), C(), b(0), x(0);
-		let T = r.to(h, {
+			g = Math.max(1, n.width || window.innerWidth), _ = Math.max(1, n.height || window.innerHeight), v = Math.min(window.devicePixelRatio || 1, Number(t.maxDpr ?? 2)), d.width = Math.round(g * v), d.height = Math.round(_ * v), O(Math.round(h.frame), !0);
+		}, A = typeof ResizeObserver < "u" ? new ResizeObserver(k) : null;
+		A?.observe(e), window.addEventListener("resize", k), k(), E(0), D(0);
+		let j = r.to(h, {
 			frame: a - 1,
 			snap: { frame: 1 },
 			ease: "none",
@@ -12049,17 +12077,17 @@ var jo = {
 			},
 			onUpdate: () => {
 				let e = Math.round(h.frame);
-				x(e), S(e);
+				e !== y && (y = e, D(e), O(e));
 			}
 		});
 		return {
 			el: e,
 			type: "scrollSequence",
-			pause: () => T.pause(),
-			resume: () => T.resume(),
+			pause: () => j.pause(),
+			resume: () => j.resume(),
 			destroy: () => {
-				w?.disconnect(), window.removeEventListener("resize", C), T.scrollTrigger?.kill(), T.kill(), p.forEach((e) => {
-					e && (e.onload = null, e.onerror = null);
+				A?.disconnect(), window.removeEventListener("resize", k), j.scrollTrigger?.kill(), j.kill(), p.forEach((e, t) => {
+					e && (e.onload = null, e.onerror = null, p[t] = void 0);
 				}), d.remove(), u.parentNode && (u.parentNode.insertBefore(e, u), u.remove()), l.style == null ? e.removeAttribute("style") : e.setAttribute("style", l.style), l.next && l.next.parentNode === l.parent && l.parent.insertBefore(e, l.next);
 			}
 		};

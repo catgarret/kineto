@@ -220,7 +220,11 @@ const BUDGETS = {
   // effect builders that replace the shared, mutated keyframe table, and the
   // quick-leave path measure 612.0 / 166.6 ESM, 479.3 / 148.1 minified and
   // 477.3 / 147.5 UMD. Same rounding rule as above.
-  'kineto.js': { raw: 613, gz: 167, variance: 2 },
+  // 2026-09-24 (integrated with the parallel perf branches: tiered scan
+  // discovery, progress-output write dedupe, bounded Scroll Sequence cache):
+  // 613.4 / 167.0 ESM, 480.1 / 148.5 minified, 478.2 / 147.8 UMD. Same rule;
+  // the UMD raw ceiling moves by two because deps-boundary reads it strictly.
+  'kineto.js': { raw: 614, gz: 168, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
   // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/
@@ -237,15 +241,15 @@ const BUDGETS = {
   // See the live-motion-switching note above for the 445.8 KiB measurement.
   // 2026-09-21 (fold): FLIP's fold move style measures 454.3 KiB raw / 139.0
   // KiB gzip minified — the raw ceiling is what moves.
-  'kineto.min.js': { raw: 480, gz: 149, variance: 2 },
+  'kineto.min.js': { raw: 481, gz: 149, variance: 2 },
   // 2026-09-20 (shared-element teardown): the UMD gzip crosses its exact 133 KB
   // boundary at a measured 134.0 KB while raw stays inside 440 KB. Round only
   // the compressed ceiling; runner variance and consumer budgets are unchanged.
   // See the squircle note above for the 448.0 KiB measurement. The ceiling is
   // the next whole KiB because tests/deps-boundary.mjs reads this number as a
   // strict upper bound on the shipped file.
-  'kineto.umd.js': { raw: 478, gz: 148, variance: 1 },
-  'kineto.umd.min.js': { raw: 478, gz: 148, variance: 1 },
+  'kineto.umd.js': { raw: 480, gz: 148, variance: 1 },
+  'kineto.umd.min.js': { raw: 480, gz: 148, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

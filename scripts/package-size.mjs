@@ -204,7 +204,9 @@ const BUDGET = {
   // 630.8 + 1.5 rounded up to the next whole KB. Text Transition's `pop` then
   // measures 632.3 KB packed locally: 632.3 + 1.5 → 634. The shared timeMs
   // reader, the Scroll Velocity blur fix and their docs: 632.6 + 1.5 → 635.
-  packedKb: 635,
+  // With the integrated perf branches (scan discovery, progress dedupe,
+  // Scroll Sequence cache) and the <progress> scale fix: 633.9 + 1.5 → 636.
+  packedKb: 636,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -239,7 +241,8 @@ const BUDGET = {
   // 2026-09-24 (text-transition pop): the spring variant, its guide and the
   // per-instance effect builders measure 2042.4 KB unpacked on the same 81 files.
   // 2026-09-24 (timing units + Scroll Velocity blur): 2043.1 KB, same 81 files.
-  unpackedKb: 2044,
+  // 2026-09-24 (integrated perf branches + <progress> scale): 2046.1 KB, 81 files.
+  unpackedKb: 2047,
   files: 81
 };
 

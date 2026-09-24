@@ -42,6 +42,8 @@ export const consumerFixtures = [
   // measures 165.3 KB full, 169.3 KB React and 170.3 KB Vue (Rolldown 165.0 /
   // 169.5 / 170.9 KB). Same rule: the three product ceilings move to the next
   // KB over the measurement, so the runner variance stays for the runner.
+  // With the integrated perf branches Rolldown measures Vue at 171.2 KB; Vue
+  // moves to 172 by the same rule (full 165.3 and React 169.8 stay inside).
   { name: 'full', entry: 'full', budget: 166, variance: { vite: 4, rolldown: 4 } },
   { name: 'core-reveal', entry: 'core-reveal', budget: 30, variance: { rolldown: 1 } },
   { name: 'core-three', entry: 'core-three', budget: 65, variance: { rolldown: 1 } },
@@ -73,7 +75,7 @@ export const consumerFixtures = [
   // Vue measures 163.2 KiB gzip in Vite (163.8 in Rolldown, inside its own
   // variance), while full at 158.2 and React at 162.4 stay inside theirs.
   // Round only the ceiling that actually moved.
-  { name: 'vue-adapter', entry: 'vue', budget: 171, variance: { vite: 1, rolldown: 2 } }
+  { name: 'vue-adapter', entry: 'vue', budget: 172, variance: { vite: 1, rolldown: 2 } }
 ];
 
 export const treeShakenEntries = [
