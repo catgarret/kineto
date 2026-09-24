@@ -4,11 +4,15 @@
 
 ### English
 
+- Fix the Stylize video browser regression probe after core off-screen suspension added a second `IntersectionObserver` in the public API path. The probe now tracks all observers and selects the trigger observer by target/options instead of assuming the most recently constructed observer is Stylize's view trigger.
+
 - Make the Lightbox toolbar resilient down to narrow phone widths and three-digit gallery counts. The counter uses no-wrap tabular numerals and never flex-shrinks; the mobile toolbar can wrap into two rows, and ≤420 px controls use compact spacing without hiding features. Browser QA exercises a 320 px viewport with `999 / 999`, share/download/zoom/close all visible, and requires both counter/actions to remain inside the viewer with no horizontal overflow.
 
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- 코어 off-screen suspension이 public API 경로에 두 번째 `IntersectionObserver`를 추가한 뒤 Stylize video 브라우저 회귀 테스트가 잘못된 observer를 검사하던 문제를 수정했습니다. 테스트는 이제 모든 observer를 추적하고 target/options로 실제 view trigger observer를 선택합니다.
 
 - Lightbox 툴바를 좁은 휴대폰 폭과 세 자리 갤러리 수까지 견디도록 보강했습니다. 카운터는 tabular 숫자·줄바꿈 금지·flex 축소 금지를 적용하고, 모바일 툴바는 필요하면 2행으로 감기며, 420px 이하에서는 기능을 숨기지 않고 버튼 간격만 compact하게 줄입니다. 브라우저 QA에서 320px 뷰포트에 `999 / 999`와 share/download/zoom/close를 모두 표시해 카운터·액션이 뷰어 안에 있고 가로 overflow가 없는지 검사합니다.
 

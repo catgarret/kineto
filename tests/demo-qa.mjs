@@ -1034,7 +1034,7 @@ try {
     share.hidden=false;
     download.hidden=false;
     counter.textContent='999 / 999';
-    await new Promise((resolve)=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    await new Promise((resolve)=>window.requestAnimationFrame(()=>window.requestAnimationFrame(resolve)));
     const toolbarRect=toolbar.getBoundingClientRect();
     const counterRect=counter.getBoundingClientRect();
     const actionsRect=actions.getBoundingClientRect();
