@@ -7,7 +7,7 @@
 ```bash
 npm install @dong-gri/kineto
 # 또는
-npm install ./dong-gri-kineto-0.11.0.tgz
+npm install ./dong-gri-kineto-0.12.0.tgz
 ```
 
 ```js

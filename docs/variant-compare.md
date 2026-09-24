@@ -1,6 +1,6 @@
 # Variant 비교 시트
 
-> Generated from `scripts/generate-variant-catalog.mjs` · library v0.11.0 · 38 modules / 227 variants.
+> Generated from `scripts/generate-variant-catalog.mjs` · library v0.12.0 · 38 modules / 227 variants.
 
 데모의 모듈 블록마다 **"모든 variant 비교"** 버튼이 있습니다. 열면 그 모듈의 공개 variant가
 전부 같은 소재 위에 한 번에 펼쳐지고, 타일마다 그대로 붙여넣을 수 있는 마크업이 붙습니다.

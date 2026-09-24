@@ -4,6 +4,16 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.12.0] - 2026-09-24
+
+### English
+
 - Make concurrent-agent work PR-first: isolated task branches, repeated `origin/main` rechecks, intentional overlap reconciliation, no ordinary direct pushes or force-pushes to `main`, and CI-gated merging even when server-side branch protection is absent.
 - Bound Scroll Sequence's retained decoded-image window instead of keeping every loaded frame until teardown. Frames outside a wider-than-preload retention radius release their `Image` references and handlers, late loads outside the window are dropped immediately, and reverse scrubbing can recreate evicted frames.
 
@@ -213,7 +223,6 @@
 - `radial`에 `data-kt-radial`을 쓰는 전용 데모 카드와 내비게이션 항목을 주었습니다. 공개 모듈인데도 Slider의 radial 효과로만 시연되어 데모 집계에서 손으로 보정해야 했습니다.
 - `window`는 있는데 `navigator` 전역이 없는 환경(DOM shim, Node 21 미만 테스트 런타임; Node 21+는 전역 navigator를 제공)에서 `Kineto.env`가 `ReferenceError: navigator is not defined`를 던지던 문제를 고쳤습니다. 환경 감지가 navigator 부재를 일반 브라우저로 취급합니다. 첫 v0.11.0 CI에서 `tests/observe.mjs`를 통해 Node 20.19 엔진 계약 job이 실패한 원인이며, 테스트도 브라우저처럼 jsdom의 navigator를 노출합니다.
 - Dependabot이 `tests/integrations` fixture의 메이저 업데이트를 제안하지 않습니다. 그 fixture의 UI 라이브러리 메이저는 연동 지도가 문서화한 버전이므로, 새 메이저는 실패하는 자동 PR 대신 문서·테스트와 함께 수동으로 검토합니다.
-
 ## [0.11.0] - 2026-09-19
 
 ### English

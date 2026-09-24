@@ -62,7 +62,7 @@ distinct positions, gesture-tail ownership and final-position assertions.
 ## Current state
 
 - Package: `@dong-gri/kineto`
-- Current source version: `0.11.0`
+- Current source version: `0.12.0`
 - Latest published npm version at the time of this handoff: `0.10.0`
 - Public surface: 55 modules and 31 Core APIs
 - Primary branch: `main`
