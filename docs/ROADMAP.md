@@ -45,6 +45,19 @@ Pages 배포 concurrency 그룹을 실제 배포 전용으로 좁혀 v0.10.0에�
 고쳤습니다. 로컬 검증은 [QA 보고서](QA_REPORT.md)의 2026-09-19 연동 배치 항목에 있고, 원격 CI·Release·npm
 게시·배포 증거는 v0.11.0 배포 후 [QA 보고서](QA_REPORT.md#v0110)에 기록합니다.
 
+v0.12.0에서 공개 모듈이 52개에서 55개가 되었습니다. Lazy에서 분리한 Stylize(디더·아스키·하프톤을 영구 필터로,
+움직임·포인터 반응과 함께), iOS 코너 모양을 모든 브라우저에서 그리는 Squircle, 그리고 직접 만든 캔버스·WebGL
+효과를 Kineto 수명주기 안에서 돌리는 Canvas Effect 호스트입니다(`Kineto.defineCanvasEffect()`·
+`listCanvasEffects()`로 Core API 31개). 효과를 라이브러리에 싣지 않고 호스트만 두는 이유와 AI에게 줄 프롬프트는
+`docs/modules/canvas-effect.md`와 `AI-PROMPT-GUIDE.md`에 있습니다. 기존 모듈에는 Card Glow `glass`, FLIP `fold`,
+Magnetic `dock`, Hold `tap`, Gesture `pull`, Mega-menu `radial`, Text Transition `pop`을 variant로 더했습니다
+(§3 승격 기준). 모듈 카테고리를 계약으로 만들고, 한 모듈의 모든 variant를 같은 소재에서 비교하는 시트를 데모에
+넣었습니다. 런타임은 탭 숨김·화면 밖 일시정지 규칙 하나, 따라잡으면 쉬는 루프, 레이아웃 읽기 배칭, 엔진 그룹당
+한 번의 DOM 탐색으로 유휴 비용을 줄였습니다(데모 유휴 rAF 787 → 78/초, Kineto 0). 이 버전은 여러 AI 에이전트가
+같은 저장소를 동시에 다룬 첫 릴리스이기도 해서, 작업 브랜치·PR 우선 규칙(`AGENTS.md`)을 함께 넣었습니다. 로컬 검증은
+[QA 보고서](QA_REPORT.md)의 2026-09-19~24 항목에 있고, 원격 CI·Release·npm 게시·배포 증거는 v0.12.0 배포 후
+[QA 보고서](QA_REPORT.md#v0120)에 기록합니다.
+
 ## 1. 결론
 
 Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이션 엔진을 목표로 하지 않습니다.
