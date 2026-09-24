@@ -4,6 +4,8 @@
 
 ### English
 
+- Account for the measured Node 24/npm 11 archive compression delta with a 1 KB packed budget margin; keep the same 80-file package surface.
+
 <!-- Add matching English release bullets here. -->
 - Fix Dock neighbour jumps with a continuous packing anchor, container-relative coordinates and settled frame suspension.
 - Refine Liquid Glass edge refraction, show a clear capsule, restore smooth light return and pause/resume, and test decoded pixels instead of PNG compression size.
@@ -77,6 +79,8 @@
 - Dependabot no longer proposes major bumps for the `tests/integrations` fixture: the UI-library majors there are the ones the integration map documents, so a new major is reviewed together with the docs and tests instead of landing as a failing automatic PR.
 
 ### 한국어
+
+- Node 24/npm 11에서 확인된 압축 크기 차이에 맞춰 패키지 압축 상한에 1KB 여유를 반영했습니다. 패키지 파일 80개 구성은 유지합니다.
 
 - Dock 배치 기준점을 연속 보간해 주변 아이콘이 튀는 문제를 수정했습니다. 컨테이너 기준 좌표를 사용하고 정착하면 프레임을 멈춥니다.
 - Liquid Glass 가장자리 굴절과 투명한 캡슐 데모, 반사광 복귀와 pause/resume을 개선하고 실제 픽셀로 블러를 검증합니다.

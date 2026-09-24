@@ -192,7 +192,9 @@ const BUDGET = {
   // and Mega-menu's seven-language option help measure 605.2 KB packed /
   // 1970.5 KB unpacked with the file allowlist unchanged at 80. Round each
   // measured ceiling up to the next whole KB.
-  packedKb: 606,
+  // 2026-09-24: Node 24/npm 11 CI measures just over 606.0 KB for the
+  // same archive that is 604.5 KB locally. Keep a bounded 1 KB runner margin.
+  packedKb: 607,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -222,7 +224,7 @@ const BUDGET = {
   // See the squircle note above for the 1920.1 KB measurement, and the liquid
   // glass note for 1935.4 KB.
   // 2026-09-24: continuous Dock anchoring and glass fallback/settling add 1.2 KB
-  // unpacked (1972.1 KB locally); same 80 files and packed ceiling.
+  // unpacked (1972.1 KB locally); same 80 files; packed runner margin recorded above.
   unpackedKb: 1973,
   files: 80
 };
