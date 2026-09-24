@@ -6,7 +6,7 @@
 // file system, the network or the DOM.
 import {
   attributeList, findModule, guidanceFor, isCorePrimitive, modulesInMap,
-  snippetFor, suggest, validateOptions, variantKey
+  ownValue, snippetFor, suggest, validateOptions, variantKey
 } from './lib.mjs';
 
 export const FRAMEWORKS = ['html', 'react', 'vue', 'js'];
@@ -33,12 +33,12 @@ function closest(candidate, options) {
 }
 
 function moduleUrl(contracts, moduleName) {
-  const doc = contracts.meta.moduleDocs?.[moduleName];
+  const doc = ownValue(contracts.meta.moduleDocs, moduleName);
   return doc ? `${contracts.meta.repository}/blob/main/${doc}` : `${contracts.meta.repository}/blob/main/docs/module-reference.md`;
 }
 
 function moduleSummary(contracts, module, usage) {
-  const metadata = contracts.metadata.modules?.[module.name] || {};
+  const metadata = ownValue(contracts.metadata.modules, module.name) || {};
   return {
     name: module.name,
     attribute: module.attribute,
@@ -96,7 +96,7 @@ function renderRecipe(contracts, recipe, framework, component) {
 }
 
 function ecosystemNotes(contracts, ecosystemId) {
-  const ecosystem = ecosystemId ? contracts.integrations.ecosystems[ecosystemId] : null;
+  const ecosystem = ecosystemId ? ownValue(contracts.integrations.ecosystems, ecosystemId) : null;
   if (!ecosystem) return null;
   return { title: ecosystem.title, attach: ecosystem.attach.summary, conflicts: ecosystem.conflicts || [], notes: ecosystem.notes };
 }
@@ -161,7 +161,7 @@ export function validate(contracts, { module: moduleName, options = {} }) {
 
 /** kineto_ecosystem — how to attach Kineto next to one UI library / design system. */
 export function describeEcosystem(contracts, { id }) {
-  const ecosystem = contracts.integrations.ecosystems[id];
+  const ecosystem = ownValue(contracts.integrations.ecosystems, id);
   if (!ecosystem) return { error: `unknown ecosystem "${id}"`, ecosystems: Object.keys(contracts.integrations.ecosystems) };
   const intents = contracts.integrations.intents.map((intent) => ({ intent: intent.id, ...guidanceFor(intent, id, contracts.integrations) }));
   return {

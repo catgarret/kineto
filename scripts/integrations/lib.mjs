@@ -12,6 +12,16 @@ const VARIANT_KEYS = ['preset', 'effect', 'type', 'mode', 'variant', 'style'];
 // Core primitives that are not modules but still valid recipe targets.
 const CORE_PRIMITIVES = new Set(['presence', 'states']);
 
+/**
+ * `object[key]` only when `key` is the object's OWN property. Tool inputs from an
+ * MCP client are untrusted strings: `ecosystems["__proto__"]` or
+ * `ecosystems["constructor"]` would otherwise return Object's own machinery
+ * instead of "unknown ecosystem".
+ */
+export function ownValue(object, key) {
+  return object != null && typeof key === 'string' && Object.hasOwn(object, key) ? object[key] : undefined;
+}
+
 export function dash(value) {
   return String(value).replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 }
@@ -191,8 +201,8 @@ export function validateOptions(features, moduleName, options = {}) {
  *   enhance         → keep the library component, add Kineto motion to its content
  */
 export function guidanceFor(intent, ecosystemId, integrations) {
-  const ecosystem = integrations.ecosystems[ecosystemId];
-  const equivalent = intent.libraryEquivalents?.[ecosystemId] || null;
+  const ecosystem = ownValue(integrations.ecosystems, ecosystemId);
+  const equivalent = ownValue(intent.libraryEquivalents, ecosystemId) || null;
   const mode = intent.provideWhenLibraryHas;
   if (!ecosystem || !mode || !equivalent) return { decision: 'kineto', equivalent };
   return { decision: mode, equivalent };

@@ -1,4 +1,4 @@
-import { hangulFrames, segmentText, snapshotAttributes } from '../utils.js';
+import { hangulFrames, segmentText, snapshotAttributes, textOption } from '../utils.js';
 
 export default {
   // Paused by the core while the element is off screen and resumed as it
@@ -18,12 +18,23 @@ export default {
     const loop = opts.loop !== false;
     // caret(|) 표시 여부와 모양, 한글 자모 조합 타이핑 여부를 옵션으로 제어한다.
     const caretEnabled = opts.caret !== false;
-    const caretChar = String(opts.caretChar ?? '|');
+    const caretChar = textOption(opts.caretChar, '|');
     const hangul = opts.hangul === true || opts.compose === true;
 
     el.setAttribute('aria-label', strings.join(', '));
-    el.innerHTML = `<span class="kt-tw-text" aria-hidden="true"></span>${caretEnabled ? `<span class="kt-tw-caret" aria-hidden="true">${caretChar}</span>` : ''}`;
-    const textEl = el.querySelector('.kt-tw-text');
+    // Built as nodes, not an HTML string: `caretChar` can come from markup
+    // (data-kt-caret-char), and option values are text, never HTML.
+    const textEl = document.createElement('span');
+    textEl.className = 'kt-tw-text';
+    textEl.setAttribute('aria-hidden', 'true');
+    el.replaceChildren(textEl);
+    if (caretEnabled) {
+      const caret = document.createElement('span');
+      caret.className = 'kt-tw-caret';
+      caret.setAttribute('aria-hidden', 'true');
+      caret.textContent = caretChar;
+      el.appendChild(caret);
+    }
     let stringIndex = 0;
     let charIndex = 0;
     let frameIndex = 0;

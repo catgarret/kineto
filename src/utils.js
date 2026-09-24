@@ -206,8 +206,38 @@ export function coerce(value) {
   return value;
 }
 
+/**
+ * A TEXT option's value. An attribute written without a value (`data-kt-x` or
+ * `data-kt-x=""`) reads as `true` — right for a switch, wrong for text: a
+ * counter with `data-kt-prefix=""` used to print "true" before every number.
+ * For text, present-but-empty means empty; absent means the fallback.
+ */
+export function textOption(value, fallback = '') {
+  if (value === undefined || value === null) return fallback;
+  if (value === true || value === false) return '';
+  return String(value);
+}
+
 export function dash(value) {
   return value.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+}
+
+/**
+ * querySelectorAll for a selector that came from an OPTION (markup or data):
+ * an invalid selector is that option's mistake, so it matches nothing instead
+ * of throwing out of the module that asked.
+ */
+export function selectAll(selector, root = typeof document !== 'undefined' ? document : null) {
+  if (!selector || !root?.querySelectorAll) return [];
+  try { return Array.from(root.querySelectorAll(String(selector))); }
+  catch (_error) { return []; }
+}
+
+/** An attribute-selector-safe form of `value` (quotes and backslashes escaped). */
+export function cssString(value) {
+  const text = String(value ?? '');
+  if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') return CSS.escape(text);
+  return text.replace(/["\\]/g, '\\$&');
 }
 
 export function q(target, root = typeof document !== 'undefined' ? document : null) {

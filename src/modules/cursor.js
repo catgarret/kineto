@@ -17,6 +17,32 @@ function clickEffectOptions(opts) {
   };
 }
 
+/**
+ * The rotating text ring: an SVG circle path with the text laid along it.
+ * Every value is set as an attribute or as textContent, so the text is shown
+ * literally whatever characters it contains.
+ */
+function textRing(size, radius, pathId, text) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('class', 'kt-cursor-textring');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
+  svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
+  const defs = document.createElementNS(ns, 'defs');
+  const path = document.createElementNS(ns, 'path');
+  path.setAttribute('id', pathId);
+  path.setAttribute('d', `M ${size / 2},${size / 2 - radius} a ${radius},${radius} 0 1,1 -0.01,0 Z`);
+  defs.appendChild(path);
+  const label = document.createElementNS(ns, 'text');
+  const along = document.createElementNS(ns, 'textPath');
+  along.setAttribute('href', `#${pathId}`);
+  along.textContent = text;
+  label.appendChild(along);
+  svg.append(defs, label);
+  return svg;
+}
+
 function pointInsideViewport(event) {
   return event.clientX >= 0 && event.clientY >= 0 && event.clientX <= window.innerWidth && event.clientY <= window.innerHeight;
 }
@@ -172,7 +198,10 @@ export default {
       const uid = `kt-cur-txt-${Math.random().toString(36).slice(2, 7)}`;
       const labelSize = Math.max(8, Number(opts.labelSize ?? 11));
       const radius = ringSize / 2 - labelSize;
-      addSingle(`<svg class="kt-cursor-textring" width="${ringSize}" height="${ringSize}" viewBox="0 0 ${ringSize} ${ringSize}"><defs><path id="${uid}-p" d="M ${ringSize / 2},${ringSize / 2 - radius} a ${radius},${radius} 0 1,1 -0.01,0 Z"></path></defs><text><textPath href="#${uid}-p">${String(ringText)}</textPath></text></svg>`);
+      // Built as SVG nodes with the ring text as textContent: `rotateText` and
+      // `text` can come from markup and are text, never markup.
+      addSingle(null);
+      single.appendChild(textRing(ringSize, radius, `${uid}-p`, String(ringText)));
       single.style.setProperty('--kt-cursor-textring', `${ringSize}px`);
       single.style.setProperty('--kt-cursor-textring-dur', `${Math.max(2, Number(opts.rotateDuration ?? 7))}s`);
       single.style.setProperty('--kt-cursor-textring-fill', String(opts.textColor || color));

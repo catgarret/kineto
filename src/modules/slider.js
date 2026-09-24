@@ -1,4 +1,4 @@
-import { clamp, env, labeller, lerp, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
+import { clamp, cssString, env, labeller, lerp, selectAll, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
 
 // Do not rewind presentation owned by a composing module or application.
 const snapshotPresentation = (el, properties, classes = [], attributes = []) => {
@@ -344,10 +344,15 @@ export default {
         el.addEventListener('touchmove', onTouchMove, { passive: false });
       }
 
-      // Autoplay (pauses on hover / when tab hidden).
-      const autoplay = Math.max(0, Number(opts.autoplay ?? 0));
+      // Autoplay (pauses on hover / when tab hidden). Same reading as the track
+      // effects: `autoplay: true` means every 3s. It used to be Number(true) —
+      // one millisecond — so a radial with `data-kt-autoplay` spun flat out.
+      const autoplay = opts.autoplay === true ? 3000 : Math.max(0, Number(opts.autoplay || 0));
       let timer = null;
-      const startAuto = () => { if (autoplay && !reduce && !offscreen) { stopAuto(); timer = setInterval(next, autoplay); } };
+      // The page's pause() wins over hover-out and scroll-back: both used to
+      // restart autoplay on a carousel the page had paused.
+      let userPaused = false;
+      const startAuto = () => { if (autoplay && !reduce && !offscreen && !userPaused) { stopAuto(); timer = setInterval(next, autoplay); } };
       const stopAuto = () => { if (timer) { clearInterval(timer); timer = null; } };
       if (autoplay) {
         el.addEventListener('mouseenter', stopAuto);
@@ -382,8 +387,8 @@ export default {
         effect: 'radial',
         get index() { return active; },
         next, prev, go,
-        pause: stopAuto,
-        resume: startAuto,
+        pause: () => { userPaused = true; stopAuto(); },
+        resume: () => { userPaused = false; startAuto(); },
         destroy() {
           stopAuto();
           visibilityObserver?.disconnect();
@@ -892,7 +897,7 @@ export default {
       const raw = opts.sync;
       if (!raw) return [];
       const list = Array.isArray(raw) ? raw : [raw];
-      return list.map((entry) => (typeof entry === 'string' ? document.querySelector(entry) : entry)).filter(Boolean);
+      return list.map((entry) => (typeof entry === 'string' ? selectAll(entry)[0] : entry)).filter(Boolean);
     })();
     let syncing = false;
     const syncPartners = (nextIndex) => {
@@ -1096,8 +1101,12 @@ export default {
       else if (event.key === 'End') { event.preventDefault(); goTo(maxIndex); }
     };
 
-    const nextButtons = Array.from(document.querySelectorAll(opts.nextSelector || `[data-kt-slider-next="${el.id || ''}"], [data-kt-slider-next]`)).filter((button) => !button.dataset.ktSliderBound);
-    const prevButtons = Array.from(document.querySelectorAll(opts.prevSelector || `[data-kt-slider-prev="${el.id || ''}"], [data-kt-slider-prev]`)).filter((button) => !button.dataset.ktSliderBound);
+    // The id is escaped: an id is any string, and a quote in it would break the
+    // selector (and the slider with it). Selectors from options match nothing
+    // when invalid, instead of throwing.
+    const ownId = cssString(el.id || '');
+    const nextButtons = selectAll(opts.nextSelector || `[data-kt-slider-next="${ownId}"], [data-kt-slider-next]`).filter((button) => !button.dataset.ktSliderBound);
+    const prevButtons = selectAll(opts.prevSelector || `[data-kt-slider-prev="${ownId}"], [data-kt-slider-prev]`).filter((button) => !button.dataset.ktSliderBound);
     const bindButton = (button, handler) => { button.dataset.ktSliderBound = 'true'; button.addEventListener('click', handler); };
     nextButtons.forEach((button) => bindButton(button, next));
     prevButtons.forEach((button) => bindButton(button, prev));

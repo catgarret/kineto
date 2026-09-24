@@ -1,9 +1,10 @@
-import { formatNumber, G, observeOnce, snapshotAttributes } from '../utils.js';
+import { formatNumber, G, observeOnce, snapshotAttributes, textOption } from '../utils.js';
 
 function normalizedFormat(opts) {
   if (opts.format) return opts.format;
   // Any character works as a grouping separator — not just the comma.
-  if (opts.separator) return String(opts.separator);
+  const separator = textOption(opts.separator);
+  if (separator) return separator;
   if (opts.grouping === true || opts.comma === true) return ',';
   return '';
 }
@@ -110,8 +111,8 @@ export default {
     const to = Number(opts.to ?? (Number.isFinite(parsed) ? parsed : 0));
     const duration = Math.max(0, Number(opts.duration ?? 2));
     const decimals = Math.max(0, Number(opts.decimals ?? 0));
-    const prefix = opts.prefix || '';
-    const suffix = opts.suffix || '';
+    const prefix = textOption(opts.prefix);
+    const suffix = textOption(opts.suffix);
     const format = normalizedFormat(opts);
     const formatOptions = { decimals, format, locale: opts.locale };
     const finalNumericString = formatNumber(to, formatOptions);
@@ -252,7 +253,10 @@ export default {
             node.style.transform = 'scale(1)';
           });
         });
-        setTimeout(() => opts.onComplete?.(el), (popDuration + stagger * characters.length) * 1000);
+        // Registered like any other animation, so destroy() cancels it: a
+        // destroyed counter must not report "complete" a second later.
+        const completeTimer = setTimeout(() => opts.onComplete?.(el), (popDuration + stagger * characters.length) * 1000);
+        addAnimation({ kill: () => clearTimeout(completeTimer) });
       }
     } else if (mode === 'flip') {
       // True split-flap (Solari board): each digit is split at the middle.
@@ -448,7 +452,7 @@ export default {
       const secondsDigits = Math.max(1, Math.round(Number(opts.secondsDigits ?? 3)));
       const secondsLabel = String(opts.secondsLabel ?? 'S');
       const hour12 = opts.hour12 === true;
-      const sepChar = String(opts.clockSeparator ?? ':');
+      const sepChar = textOption(opts.clockSeparator, ':');
       const blink = opts.blink !== false;
       const clockStyle = opts.clockStyle || 'roll';
       const rollMs = Math.max(80, Number(opts.rollDuration ?? 0.28) * 1000);
@@ -816,7 +820,7 @@ export default {
     const mode = opts.secondsOnly === true ? 'clock' : (opts.mode || opts.preset || opts.style || 'slot');
     if (mode === 'clock') {
       // Reduced motion: plain text time, refreshed without any animation.
-      const sepChar = String(opts.clockSeparator ?? ':');
+      const sepChar = textOption(opts.clockSeparator, ':');
       const showSeconds = opts.seconds !== false;
       const hour12 = opts.hour12 === true;
       const renderTime = () => {
@@ -834,7 +838,7 @@ export default {
           const parts = [pad(Math.floor(ms / 3600000) % 24), pad(Math.floor(ms / 60000) % 60)];
           if (showSeconds) parts.push(pad(Math.floor(ms / 1000) % 60));
           const daysText = days > 0 || opts.showDays === true ? `${days}${opts.daysLabel ?? 'd'} ` : '';
-          el.textContent = `${opts.prefix || ''}${daysText}${parts.join(sepChar)}${opts.suffix || ''}`;
+          el.textContent = `${textOption(opts.prefix)}${daysText}${parts.join(sepChar)}${textOption(opts.suffix)}`;
           return;
         }
         const now = new Date();
@@ -848,7 +852,7 @@ export default {
         if (hour12) { meridiem = hours >= 12 ? ' PM' : ' AM'; hours = (hours % 12) || 12; }
         const parts = [pad(hours), pad(now.getMinutes())];
         if (showSeconds) parts.push(pad(now.getSeconds()));
-        el.textContent = `${opts.prefix || ''}${parts.join(sepChar)}${meridiem}${opts.suffix || ''}`;
+        el.textContent = `${textOption(opts.prefix)}${parts.join(sepChar)}${meridiem}${textOption(opts.suffix)}`;
       };
       renderTime();
       const intervalId = setInterval(renderTime, 1000);
@@ -865,7 +869,7 @@ export default {
     const parsed = Number.parseFloat((el.textContent || '').replace(/[^0-9.-]/g, ''));
     const to = Number(opts.to ?? (Number.isFinite(parsed) ? parsed : 0));
     const format = normalizedFormat(opts);
-    el.textContent = `${opts.prefix || ''}${formatNumber(to, { decimals, format, locale: opts.locale })}${opts.suffix || ''}`;
+    el.textContent = `${textOption(opts.prefix)}${formatNumber(to, { decimals, format, locale: opts.locale })}${textOption(opts.suffix)}`;
     return {
       el, type: 'counter', pause() {}, resume() {},
       destroy() {

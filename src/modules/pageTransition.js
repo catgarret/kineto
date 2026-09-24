@@ -36,6 +36,23 @@ function makeOverlay(opts) {
   return { coverIn: () => step(spec.in), coverOut: () => step(spec.out), remove: () => el.remove() };
 }
 
+// TRUST BOUNDARY — the fetched page is injected into this document and, by
+// default, its scripts are executed. So only a page this origin itself served
+// may ever reach renderPage(): the URL we ask for must be same-origin http(s),
+// and so must the URL the response finally came from (a same-origin open
+// redirect to a CORS-enabled page elsewhere would otherwise be executed here),
+// and the response must be an HTML document. Anything else is handed to the
+// browser as an ordinary navigation, which is always safe.
+const HTML_TYPES = /^(?:text\/html|application\/xhtml\+xml)\b/i;
+
+/** The URL as a same-origin http(s) URL object, or null when it is anything else. */
+function sameOriginPage(value, base = window.location.href) {
+  let url;
+  try { url = new URL(value, base); } catch (_error) { return null; }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+  return url.origin === new URL(base).origin ? url : null;
+}
+
 function maxTransitionMs(el) {
   const style = getComputedStyle(el);
   const durations = style.transitionDuration.split(',').map((value) => Number.parseFloat(value) * (value.includes('ms') ? 1 : 1000));
@@ -59,8 +76,8 @@ export default {
     const shouldHandle = (event, link) => {
       if (!link || event.defaultPrevented || event.button !== 0) return false;
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false;
-      const url = new URL(link.href, window.location.href);
-      if (url.origin !== window.location.origin) return false;
+      const url = sameOriginPage(link.href);
+      if (!url) return false;
       if (url.pathname === window.location.pathname && url.search === window.location.search) return false;
       return true;
     };
@@ -72,9 +89,15 @@ export default {
       try {
         const response = await fetch(url, {
           signal: controller.signal,
+          credentials: 'same-origin',
           headers: { 'X-Kineto-Navigation': '1' }
         });
         if (!response.ok) return null;
+        // See TRUST BOUNDARY above: where the response finally came from, and
+        // what it is, decide whether it may be injected. `response.url` is
+        // empty for some synthetic responses; treat that as the requested URL.
+        if (!sameOriginPage(response.url || url)) return null;
+        if (!HTML_TYPES.test(response.headers.get('content-type') || '')) return null;
         const text = await response.text();
         if (opts.cache !== false) cache.set(url, text);
         return text;
@@ -134,6 +157,9 @@ export default {
 
     const navigate = async (url, popState = false) => {
       if (navigating || destroyed) return;
+      // `navigate` is public API too, so the same rule as for clicks: a URL
+      // that is not a same-origin page is left to the browser, never fetched.
+      if (!sameOriginPage(url)) { window.location.assign(url); return; }
       navigating = true;
       shownPage = pageOf(new URL(url, window.location.href));
       const html = document.documentElement;

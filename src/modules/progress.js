@@ -112,10 +112,22 @@ export default {
         root.setAttribute('aria-hidden', 'true');
       }
       root.style.cssText = `${attach === 'fixed' ? `position:fixed;${cornerStyle(opts.position, Math.max(0, Number(opts.offset ?? 18)))}z-index:${Number(opts.zIndex ?? 1200)};` : 'position:relative;'}width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;border:0;padding:0;background:var(--kt-progress-ring-bg,transparent);border-radius:50%;${clickToTop ? 'cursor:pointer;' : ''}transition:opacity .25s var(--kt-ease-ui, ease);color:inherit;`;
-      root.innerHTML = `<svg class="kt-progress-ring-svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" aria-hidden="true">`
-        + `<circle class="kt-progress-ring-track" cx="${size / 2}" cy="${size / 2}" r="${ringRadius}" fill="none" stroke="${trackColor}" stroke-width="${stroke}"/>`
-        + `<circle class="kt-progress-ring-fill" cx="${size / 2}" cy="${size / 2}" r="${ringRadius}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}"/>`
-        + '</svg>';
+      // Built with setAttribute, not an HTML string: `color` and `trackColor`
+      // can come from markup, and an attribute value must stay a value — a
+      // quote in it would otherwise close the attribute and add markup.
+      const svgNs = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNs, 'svg');
+      [['class', 'kt-progress-ring-svg'], ['viewBox', `0 0 ${size} ${size}`], ['width', size], ['height', size], ['aria-hidden', 'true']]
+        .forEach(([name, value]) => svg.setAttribute(name, String(value)));
+      const ringCircle = (className, stroked, extra = []) => {
+        const circle = document.createElementNS(svgNs, 'circle');
+        [['class', className], ['cx', size / 2], ['cy', size / 2], ['r', ringRadius], ['fill', 'none'], ['stroke', stroked], ['stroke-width', stroke], ...extra]
+          .forEach(([name, value]) => circle.setAttribute(name, String(value)));
+        svg.appendChild(circle);
+      };
+      ringCircle('kt-progress-ring-track', trackColor);
+      ringCircle('kt-progress-ring-fill', color, [['stroke-linecap', 'round'], ['stroke-dasharray', circumference], ['stroke-dashoffset', circumference]]);
+      root.appendChild(svg);
       const center = document.createElement('span');
       center.className = 'kt-progress-ring-label';
       center.style.cssText = `position:relative;font:600 ${Math.round(size * (showPercent ? 0.26 : 0.36))}px/1 ui-monospace,monospace;user-select:none;`;

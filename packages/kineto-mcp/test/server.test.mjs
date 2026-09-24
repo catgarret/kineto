@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { loadContracts } from '../src/contracts.mjs';
-import { listModules, mapFigmaLayers, renderSnippet, suggestIntents, validate } from '../src/tools.mjs';
+import { describeEcosystem, listModules, mapFigmaLayers, renderSnippet, suggestIntents, validate } from '../src/tools.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const contracts = loadContracts();
@@ -58,6 +58,13 @@ const contracts = loadContracts();
   });
   assert.deepEqual(layers.layers.map((layer) => layer.intent), ['hero-headline', 'kpi-number', 'image-loading', null]);
   assert.ok(layers.layers[0].recipe.attributes.startsWith('data-kt-text-reveal'));
+
+  // Tool input is untrusted: an id that names an Object built-in is simply
+  // unknown, never Object's own machinery dressed up as an ecosystem.
+  for (const id of ['__proto__', 'constructor', 'toString', 'hasOwnProperty']) {
+    const answer = describeEcosystem(contracts, { id });
+    assert.match(String(answer.error), /unknown ecosystem/, `ecosystem id "${id}" must be unknown`);
+  }
 }
 
 // --------------------------------------------------------------- stdio round trip

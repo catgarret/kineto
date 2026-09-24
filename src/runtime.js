@@ -16,6 +16,24 @@ const win = typeof window !== 'undefined' ? window : undefined;
 const resolveDefault = (value) => value?.default || value?.gsap || value;
 const defer = (callback) => Promise.resolve().then(callback);
 
+// DOM CLOBBERING — an element with `id="gsap"` (or name=…) makes `window.gsap`
+// that element: browsers expose ids as window properties. A truthy global is
+// therefore not proof of an engine. Page globals are read only through these
+// checks, so a stray id can neither pose as GSAP (and throw on the first
+// `gsap.to`) nor stop the real engine from loading.
+const ENGINE_CHECKS = {
+  gsap: (value) => typeof value?.to === 'function' && typeof value?.registerPlugin === 'function',
+  ScrollTrigger: (value) => typeof value?.create === 'function' && typeof value?.refresh === 'function',
+  Lenis: (value) => typeof value === 'function'
+};
+/** The page's own engine global, or null when it is missing or not the real thing. */
+function pageEngine(name) {
+  if (!win) return null;
+  let value = null;
+  try { value = resolveDefault(win[name]); } catch (_error) { return null; }
+  return ENGINE_CHECKS[name](value) ? value : null;
+}
+
 // CDN sources — overridable via Kineto.setEngineSource() to pin an exact
 // version, self-host, or point at an internal mirror.
 const sources = {
@@ -27,8 +45,8 @@ const sources = {
   lenisIntegrity: 'sha384-jqpi9VmOdhyLoLURgjCn7EpnG9BbnHW57ibIZoeaIU+erWDH3k8fQQg0xH2ySjnw'
 };
 
-let gsapInstance = (win && win.gsap) ? resolveDefault(win.gsap) : null;
-let scrollTriggerInstance = (win && win.ScrollTrigger) ? resolveDefault(win.ScrollTrigger) : null;
+let gsapInstance = pageEngine('gsap');
+let scrollTriggerInstance = pageEngine('ScrollTrigger');
 let gsapPromise = null;
 let lenisPromise = null;
 
@@ -44,7 +62,7 @@ export function setEngineSource(next = {}) {
   Object.assign(sources, next);
   // A failed request must not poison a later self-host/CDN override.
   if (gsapChanged && !gsapReady()) gsapPromise = null;
-  if (lenisChanged && !(win && win.Lenis)) lenisPromise = null;
+  if (lenisChanged && !pageEngine('Lenis')) lenisPromise = null;
 }
 
 export function getEngineSource() {
@@ -61,6 +79,8 @@ function registerScrollTrigger() {
   }
 }
 
+// An explicit hand-off is trusted as given (tests pass small stand-ins); only
+// page GLOBALS are checked, because only they can be clobbered by markup.
 export function setAnimationEngine({ gsap, ScrollTrigger } = {}) {
   if (gsap) gsapInstance = resolveDefault(gsap);
   if (ScrollTrigger) scrollTriggerInstance = resolveDefault(ScrollTrigger);
@@ -69,13 +89,15 @@ export function setAnimationEngine({ gsap, ScrollTrigger } = {}) {
 
 export function getGSAP() {
   if (gsapInstance) return gsapInstance;
-  if (win && win.gsap) { gsapInstance = resolveDefault(win.gsap); if (win.ScrollTrigger && !scrollTriggerInstance) scrollTriggerInstance = resolveDefault(win.ScrollTrigger); registerScrollTrigger(); return gsapInstance; }
+  const pageGsap = pageEngine('gsap');
+  if (pageGsap) { gsapInstance = pageGsap; if (!scrollTriggerInstance) scrollTriggerInstance = pageEngine('ScrollTrigger'); registerScrollTrigger(); return gsapInstance; }
   return null;
 }
 
 export function getScrollTrigger() {
   if (scrollTriggerInstance) return scrollTriggerInstance;
-  if (win && win.ScrollTrigger) { scrollTriggerInstance = resolveDefault(win.ScrollTrigger); return scrollTriggerInstance; }
+  const pageScrollTrigger = pageEngine('ScrollTrigger');
+  if (pageScrollTrigger) { scrollTriggerInstance = pageScrollTrigger; return scrollTriggerInstance; }
   return null;
 }
 
@@ -135,9 +157,9 @@ export function ensureGSAP() {
   if (gsapPromise) return gsapPromise;
   gsapPromise = (async () => {
     try {
-      if (!(win && win.gsap)) await loadScript(sources.gsap, sources.gsapIntegrity);
-      if (!(win && win.ScrollTrigger)) await loadScript(sources.scrollTrigger, sources.scrollTriggerIntegrity);
-      setAnimationEngine({ gsap: win && win.gsap, ScrollTrigger: win && win.ScrollTrigger });
+      if (!pageEngine('gsap')) await loadScript(sources.gsap, sources.gsapIntegrity);
+      if (!pageEngine('ScrollTrigger')) await loadScript(sources.scrollTrigger, sources.scrollTriggerIntegrity);
+      setAnimationEngine({ gsap: pageEngine('gsap'), ScrollTrigger: pageEngine('ScrollTrigger') });
     } catch (_error) {
       // CDN unreachable — leave engines null; scroll modules fall back.
     }
@@ -151,14 +173,14 @@ export function ensureGSAP() {
 // Resolve with the Lenis constructor (for smooth scroll), loading the CDN build
 // on demand. Resolves to null if unavailable so smooth scroll degrades to native.
 export function ensureLenis() {
-  if (win && win.Lenis) return Promise.resolve(resolveDefault(win.Lenis));
+  if (pageEngine('Lenis')) return Promise.resolve(pageEngine('Lenis'));
   if (lenisPromise) return lenisPromise;
   lenisPromise = (async () => {
     try { await loadScript(sources.lenis, sources.lenisIntegrity); } catch (_error) {
       defer(() => { lenisPromise = null; });
       return null;
     }
-    const result = (win && win.Lenis) ? resolveDefault(win.Lenis) : null;
+    const result = pageEngine('Lenis');
     if (!result) defer(() => { lenisPromise = null; });
     return result;
   })();

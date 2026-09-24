@@ -1,13 +1,21 @@
 import assert from 'node:assert/strict';
 import Kineto from '../src/core.js';
 import { JSDOM } from 'jsdom';
-import { coerce, createProgressOutputs, dash, decomposeHangul, hangulFrames, measureThenApply, numberOption, q, readOpts, segmentText, snapshotAttributes, snapshotInlineStyles, timeMs } from '../src/utils.js';
+import { coerce, createProgressOutputs, cssString, dash, decomposeHangul, hangulFrames, measureThenApply, numberOption, q, readOpts, segmentText, selectAll, snapshotAttributes, snapshotInlineStyles, textOption, timeMs } from '../src/utils.js';
 
 assert.equal(dash('scrollSequence'), 'scroll-sequence');
 assert.equal(coerce('true'), true);
 assert.equal(coerce('false'), false);
 assert.equal(coerce('12.5'), 12.5);
 assert.deepEqual(coerce('{"once":false}'), { once: false });
+// A text option: absent → fallback, present-but-empty (reads as true) → empty.
+assert.equal(textOption(undefined, '|'), '|');
+assert.equal(textOption(coerce(''), '|'), '', 'data-kt-prefix="" means "no prefix", not the word "true"');
+assert.equal(textOption(0), '0');
+assert.equal(textOption('₩'), '₩');
+// Selectors from options: an invalid one matches nothing instead of throwing.
+assert.deepEqual(selectAll('div[', { querySelectorAll() { throw new SyntaxError('bad'); } }), []);
+assert.equal(cssString('a"b'), 'a\\"b');
 assert.deepEqual(hangulFrames('강'), ['ㄱ', '가', '강']);
 assert.deepEqual(decomposeHangul('A'), null);
 assert.deepEqual(segmentText('가A'), ['가', 'A']);

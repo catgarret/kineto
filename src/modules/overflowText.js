@@ -34,18 +34,27 @@ function nudge(direction, amount = '0.3em') {
   return `translate3d(0,${amount},0)`;
 }
 
+// Items are rendered as markup everywhere below (a rolling item may be a
+// span with an icon). Items that come from an OPTION or an attribute are text,
+// though — they are often filled from data — so they are escaped here, once,
+// into markup that shows them literally. Only items written as element children
+// keep their markup, because that markup is already part of the page.
+const HTML_ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+const textAsMarkup = (value) => String(value).replace(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
+
 function parseItems(el, opts) {
-  if (Array.isArray(opts.items)) return opts.items.map(String).filter(Boolean);
+  const textItems = (list) => list.map((item) => String(item).trim()).filter(Boolean).map(textAsMarkup);
+  if (Array.isArray(opts.items)) return textItems(opts.items);
   if (typeof opts.items === 'string') {
     try {
       const parsed = JSON.parse(opts.items);
-      if (Array.isArray(parsed)) return parsed.map(String).filter(Boolean);
+      if (Array.isArray(parsed)) return textItems(parsed);
     } catch (_error) {
-      return opts.items.split('|').map((item) => item.trim()).filter(Boolean);
+      return textItems(opts.items.split('|'));
     }
   }
   const dataItems = el.getAttribute('data-items');
-  if (dataItems) return dataItems.split('|').map((item) => item.trim()).filter(Boolean);
+  if (dataItems) return textItems(dataItems.split('|'));
   // Element children keep their full markup so rolling items can contain
   // spans, icons, links — anything, not just plain text.
   const children = Array.from(el.children).map((child) => child.innerHTML.trim()).filter(Boolean);

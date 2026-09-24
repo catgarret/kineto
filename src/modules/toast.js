@@ -80,7 +80,16 @@ export default {
 
       // Icon HTML (customizable): default clean type symbol, unless type is
       // "none" or icon:false. A string is used verbatim (custom SVG/text).
-      const iconHtml = (kind !== 'none' && iconOpt !== false) ? (typeof iconOpt === 'string' ? iconOpt : (TYPE_ICON[kind] || '')) : '';
+      // The built-in icons are this file's own SVG strings. A custom `icon` is
+      // TEXT (a glyph or an emoji) — it can come from markup or from app data,
+      // so it is never parsed as HTML — or, from JavaScript, an Element to clone.
+      const customIcon = kind !== 'none' && iconOpt !== false && iconOpt != null;
+      const iconHtml = (kind !== 'none' && iconOpt !== false && !customIcon) ? (TYPE_ICON[kind] || '') : '';
+      const fillIcon = (target) => {
+        if (iconHtml) { target.innerHTML = iconHtml; return; }
+        if (typeof Element !== 'undefined' && iconOpt instanceof Element) target.appendChild(iconOpt.cloneNode(true));
+        else target.textContent = String(iconOpt);
+      };
 
       const body = document.createElement('span');
       body.className = 'kt-toast__msg';
@@ -155,21 +164,21 @@ export default {
         ring.setAttribute('aria-hidden', 'true');
         const C = 2 * Math.PI * 9;
         ring.innerHTML = `<svg viewBox="0 0 24 24"><circle class="kt-toast__ring-track" cx="12" cy="12" r="9"></circle><circle class="kt-toast__ring-fill" cx="12" cy="12" r="9" transform="rotate(-90 12 12)" stroke-dasharray="${C}" stroke-dashoffset="0"></circle></svg>`;
-        if (iconHtml) {
+        if (iconHtml || customIcon) {
           const ic = document.createElement('span');
           ic.className = 'kt-toast__ring-icon';
           ic.setAttribute('aria-hidden', 'true');
-          ic.innerHTML = iconHtml;
+          fillIcon(ic);
           ring.appendChild(ic);
         }
         toast.insertBefore(ring, toast.firstChild);
         barAnim = ring.querySelector('.kt-toast__ring-fill').animate([{ strokeDashoffset: 0 }, { strokeDashoffset: C }], { duration: remaining, easing: 'linear', fill: 'forwards' });
       } else {
-        if (iconHtml) {
+        if (iconHtml || customIcon) {
           const icon = document.createElement('span');
           icon.className = 'kt-toast__icon';
           icon.setAttribute('aria-hidden', 'true');
-          icon.innerHTML = iconHtml;
+          fillIcon(icon);
           toast.insertBefore(icon, toast.firstChild);
         }
         if (progressStyle === 'bar' && !reduce && toast.animate) {
