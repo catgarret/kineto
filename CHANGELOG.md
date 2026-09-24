@@ -4,9 +4,13 @@
 
 ### English
 
+- Keep the Lightbox item counter on one line on narrow/mobile toolbars. The counter now refuses flex shrinking and uses no-wrap text, preventing values such as `6 / 6` from collapsing into two vertical lines.
+
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- 모바일처럼 폭이 좁은 Lightbox 툴바에서 항목 카운터가 한 줄을 유지하도록 수정했습니다. 카운터의 flex 축소를 막고 줄바꿈을 금지해 `6 / 6`이 세로 두 줄로 깨지지 않습니다.
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 

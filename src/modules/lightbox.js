@@ -97,7 +97,7 @@ function createManager(label) {
   toolbar.style.cssText = 'position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;pointer-events:auto;';
   const counter = document.createElement('span');
   counter.className = 'kt-lightbox-counter';
-  counter.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:600 12.5px/1 ui-monospace,monospace;letter-spacing:.06em;color:rgba(255,255,255,.85);background:rgba(20,20,26,.5);border:1px solid rgba(255,255,255,.12);padding:6px 13px;border-radius:99px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);';
+  counter.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;white-space:nowrap;font:600 12.5px/1 ui-monospace,monospace;letter-spacing:.06em;color:rgba(255,255,255,.85);background:rgba(20,20,26,.5);border:1px solid rgba(255,255,255,.12);padding:6px 13px;border-radius:99px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);';
   const actions = document.createElement('div');
   actions.className = 'kt-lightbox-actions';
   // A single translucent cluster (segmented control) instead of scattered buttons.

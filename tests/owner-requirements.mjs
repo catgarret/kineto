@@ -101,6 +101,8 @@ assert.match(source.ambientMedia, /image-clone/);
 assert.match(source.ambientMedia, /video-sample/);
 assert.match(source.lightbox, /kt-lightbox-minimap/);
 assert.match(source.lightbox, /uiTemplate/);
+assert.match(source.lightbox, /white-space:nowrap/, 'lightbox counter must stay on one line on narrow toolbars');
+assert.match(source.lightbox, /flex:0 0 auto/, 'lightbox counter must not shrink below its content width');
 assert.match(source.cursor, /type === 'crosshair'/);
 assert.match(source.cursor, /type === 'custom'/);
 
