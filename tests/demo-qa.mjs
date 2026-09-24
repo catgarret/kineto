@@ -1015,6 +1015,49 @@ try {
   });
   for(const [key,value] of Object.entries(functional)) assert.ok(value,`${key} demo behavior failed`);
 
+  // Lightbox toolbar must stay usable on very narrow phones even when the
+  // counter reaches three digits and every optional action is visible.
+  const beforeLightboxViewport=page.viewportSize();
+  await page.setViewportSize({width:320,height:700});
+  const mobileLightbox=await page.evaluate(async()=>{
+    const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));
+    const source=document.querySelector('[data-kt-lightbox][data-kt-title="Composition 01"]');
+    const instance=window.Kineto.getInstance(source,'lightbox');
+    instance.open();
+    await sleep(180);
+    const viewer=document.querySelector('#kt-lightbox');
+    const toolbar=viewer.querySelector('.kt-lightbox-toolbar');
+    const counter=viewer.querySelector('.kt-lightbox-counter');
+    const actions=viewer.querySelector('.kt-lightbox-actions');
+    const share=viewer.querySelector('.kt-lightbox-share');
+    const download=viewer.querySelector('.kt-lightbox-download');
+    share.hidden=false;
+    download.hidden=false;
+    counter.textContent='999 / 999';
+    await new Promise((resolve)=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    const toolbarRect=toolbar.getBoundingClientRect();
+    const counterRect=counter.getBoundingClientRect();
+    const actionsRect=actions.getBoundingClientRect();
+    const style=getComputedStyle(counter);
+    const result={
+      counterText:counter.textContent,
+      counterOneLine:counterRect.height<=Math.ceil(parseFloat(style.lineHeight)||13)+14,
+      counterInside:counterRect.left>=toolbarRect.left-1&&counterRect.right<=toolbarRect.right+1,
+      actionsInside:actionsRect.left>=toolbarRect.left-1&&actionsRect.right<=toolbarRect.right+1,
+      noHorizontalOverflow:viewer.scrollWidth<=viewer.clientWidth+1,
+      wrapsWhenNeeded:actionsRect.top>=counterRect.top
+    };
+    viewer.querySelector('.kt-lightbox-close').click();
+    return result;
+  });
+  assert.equal(mobileLightbox.counterText,'999 / 999');
+  assert.equal(mobileLightbox.counterOneLine,true,'320px lightbox counter must keep three-digit values on one line');
+  assert.equal(mobileLightbox.counterInside,true,'320px lightbox counter must stay inside the toolbar');
+  assert.equal(mobileLightbox.actionsInside,true,'320px lightbox actions must stay inside the toolbar');
+  assert.equal(mobileLightbox.noHorizontalOverflow,true,'320px lightbox toolbar must not create horizontal overflow');
+  assert.equal(mobileLightbox.wrapsWhenNeeded,true,'narrow toolbar must allow action row wrapping instead of shrinking the counter');
+  await page.setViewportSize(beforeLightboxViewport);
+
   // The settings drawer is fluid: three or more categories share the same
   // responsive grid instead of forcing an odd final card across the full row.
   // Collapsed title bars must remain compact and cards must never overlap.

@@ -65,15 +65,24 @@ function createManager(label) {
       .kt-lightbox .kt-lightbox-stage.is-zoomed{cursor:grab;}
       .kt-lightbox .kt-lightbox-stage.is-panning{cursor:grabbing;}
       @media (max-width: 760px) {
-        .kt-lightbox .kt-lightbox-toolbar{padding:12px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));justify-content:space-between;}
+        .kt-lightbox .kt-lightbox-toolbar{padding:12px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));justify-content:space-between;flex-wrap:wrap;column-gap:10px;row-gap:8px;}
         /* On narrow screens the absolutely-centered counter overlaps the zoom /
            close controls — drop it back into flow so space-between separates them. */
-        .kt-lightbox .kt-lightbox-counter{position:static !important;left:auto !important;top:auto !important;transform:none !important;}
+        .kt-lightbox .kt-lightbox-counter{position:static !important;left:auto !important;top:auto !important;transform:none !important;width:max-content;max-width:100%;font-variant-numeric:tabular-nums;}
         .kt-lightbox .kt-lightbox-toolbar button{min-width:34px;height:34px;padding:0 8px;}
         .kt-lightbox .kt-lightbox-zoom-out,.kt-lightbox .kt-lightbox-zoom-in,.kt-lightbox .kt-lightbox-close{width:34px;padding:0;aspect-ratio:1;}
         .kt-lightbox .kt-lightbox-prev{left:max(10px, env(safe-area-inset-left)) !important;}
         .kt-lightbox .kt-lightbox-next{right:max(10px, env(safe-area-inset-right)) !important;}
         .kt-lightbox .kt-lightbox-info{padding-bottom:calc(22px + env(safe-area-inset-bottom)) !important;}
+      }
+      @media (max-width: 420px) {
+        .kt-lightbox .kt-lightbox-toolbar{padding:10px max(10px, env(safe-area-inset-right)) 8px max(10px, env(safe-area-inset-left));column-gap:6px;row-gap:6px;}
+        .kt-lightbox .kt-lightbox-counter{padding:6px 10px;font-size:12px;}
+        .kt-lightbox .kt-lightbox-actions{flex:0 0 auto;max-width:100%;gap:0!important;padding:3px!important;border-radius:11px!important;}
+        .kt-lightbox .kt-lightbox-toolbar button{min-width:30px;height:32px;padding:0 6px;}
+        .kt-lightbox .kt-lightbox-zoom-reset{min-width:44px!important;padding:0 5px!important;}
+        .kt-lightbox .kt-lightbox-zoom-out,.kt-lightbox .kt-lightbox-zoom-in,.kt-lightbox .kt-lightbox-close{width:30px;padding:0;aspect-ratio:1;}
+        .kt-lightbox .kt-lightbox-actions > span{margin-left:4px!important;margin-right:4px!important;}
       }
     `;
     document.head.appendChild(style);
