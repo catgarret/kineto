@@ -4,6 +4,8 @@
 
 ### English
 
+- Deduplicate Loader/Loading Indicator progress-output DOM writes during smoothed updates: visible templates, rounded metadata and `--kt-percent` now update only when their represented value/state/template changes, while continuous `--kt-progress` and native `<progress>.value` precision remain intact.
+
 - Make autoplay hover timing deterministic and sample hero motion on animation frames so hosted-runner delays do not produce false browser failures.
 
 - Pin all workflow runners to Ubuntu 24.04 and reject implicit OS migrations in the workflow contract test.
@@ -83,6 +85,8 @@
 - Dependabot no longer proposes major bumps for the `tests/integrations` fixture: the UI-library majors there are the ones the integration map documents, so a new major is reviewed together with the docs and tests instead of landing as a failing automatic PR.
 
 ### 한국어
+
+- Loader/Loading Indicator의 smoothing 갱신 중 progress output DOM 쓰기를 중복 제거했습니다. 표시 template, 반올림 metadata, `--kt-percent`는 표현 값/state/template이 바뀔 때만 갱신하고, 연속 `--kt-progress`와 네이티브 `<progress>.value` 정밀도는 그대로 유지합니다.
 
 - 자동재생 호버 검사 시간을 제어하고 첫 화면 움직임을 애니메이션 프레임마다 측정해 CI 실행 지연으로 인한 잘못된 실패를 방지했습니다.
 
