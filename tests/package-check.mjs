@@ -38,6 +38,7 @@ assert.equal(packageJson.exports['./vue'].types, './types/vue.d.ts');
 assert.equal(packageJson.exports['./jquery'].types, './types/jquery.d.ts');
 assert.equal(packageJson.exports['./package.json'], './package.json');
 assert.ok(!packageJson.dependencies?.[packageJson.name], 'package must not depend on itself');
+assert.match(packageJson.description, new RegExp(`\\b${moduleCount} modules\\b`), 'package description module count must follow the feature contract');
 
 for (const declaration of ['index', 'core', 'states', 'presence', 'module', 'react', 'vue', 'jquery']) {
   await access(new URL(`../types/${declaration}.d.ts`, import.meta.url));
