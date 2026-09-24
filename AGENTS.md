@@ -19,6 +19,34 @@ Read these files in order:
 Chat history is not a source of truth. Recover prior decisions from the files
 above, `CHANGELOG.md`, and `git log --oneline --decorate -30`.
 
+## Concurrent-agent branch policy
+
+Assume another coding agent may be working at the same time.
+
+1. Never make an implementation commit directly on `main`. Start from the
+   latest `origin/main` in an isolated checkout/worktree and use a task branch.
+2. One task owns one branch. Do not reuse another agent's branch or rewrite its
+   history. Prefer an agent/task-qualified name such as
+   `agent/<agent>/<short-task>` when creating a new branch.
+3. Before editing, before the final commit, and again before opening/updating a
+   pull request, fetch/recheck `origin/main` and inspect commits that landed
+   since the task started.
+4. If new upstream work touches the same files or behavior, re-read the current
+   source and reconcile intentionally. Never blindly replay an older patch over
+   newer agent work.
+5. Finish through a pull request targeting `main`. CI on the PR is the
+   integration authority; do not merge while required checks are failing or
+   pending.
+6. Do not force-push shared branches and never force-push or delete `main`.
+   If a task branch must be rewritten, first verify no other agent or human is
+   using it; otherwise merge/rebase without destructive history changes.
+7. A request to "push" ordinary work means push the task branch / update its
+   PR, not bypass the PR path by pushing directly to `main`. Releases remain
+   subject to the separate release approval below.
+
+This policy still applies if repository-side branch protection is temporarily
+missing: agent behavior must not depend on GitHub accepting an unsafe write.
+
 ## Finish every implementation task
 
 Unless the user explicitly asks for read-only analysis or says not to commit:
@@ -45,9 +73,10 @@ Use `fix:`, `feat:`, `docs:`, `test:`, `refactor:`, `perf:`, `build:`,
 
 Two separate approvals, because they have different consequences:
 
-- **Push** (`git push origin main`): starts CI and, when CI passes, the Pages
-  workflow redeploys the public demo site. Push only when the user asks for a
-  push, a deploy of the demo, or a release.
+- **Push**: push the task branch and update/open its pull request. Merging the
+  validated PR into `main` starts the authoritative main CI and, when CI
+  passes, the Pages workflow redeploys the public demo site. Do not direct-push
+  ordinary implementation commits to `main`.
 - **Release** (`npm run release:ship -- v<version>`): also pushes the annotated
   tag, which publishes the npm package and creates the GitHub Release. Only an
   explicit "release/ship/publish" request covers this; a push request does not.

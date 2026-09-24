@@ -4,6 +4,7 @@
 
 ### English
 
+- Make concurrent-agent work PR-first: isolated task branches, repeated `origin/main` rechecks, intentional overlap reconciliation, no ordinary direct pushes or force-pushes to `main`, and CI-gated merging even when server-side branch protection is absent.
 - Bound Scroll Sequence's retained decoded-image window instead of keeping every loaded frame until teardown. Frames outside a wider-than-preload retention radius release their `Image` references and handlers, late loads outside the window are dropped immediately, and reverse scrubbing can recreate evicted frames.
 
 - Stop Scroll Sequence from clearing/redrawing the same rounded frame on every GSAP scrub tick. Preload/render work now runs only when the requested integer frame changes, while resize still forces the current frame to repaint; `onFrame` therefore tracks actual paints rather than duplicate tween updates.
@@ -107,6 +108,7 @@
 
 ### 한국어
 
+- 여러 AI 에이전트의 동시 작업을 PR 우선 방식으로 고정했습니다. 격리된 작업 브랜치, 반복적인 `origin/main` 재확인, 겹치는 변경의 의도적 조정, 일반 작업의 `main` 직접 push/force-push 금지, 서버 측 브랜치 보호가 없더라도 CI 통과 후 병합 원칙을 적용합니다.
 - Scroll Sequence가 한 번 로드한 모든 프레임 이미지를 teardown까지 보유하지 않도록 retained image 범위를 제한했습니다. preload보다 넓은 보존 반경 밖의 `Image` 참조와 핸들러를 해제하고, 늦게 완료된 범위 밖 로드도 즉시 버리며, 역스크롤 시 제거된 프레임은 다시 생성할 수 있습니다.
 
 - Scroll Sequence가 GSAP scrub 갱신마다 같은 반올림 프레임을 반복해서 clear/redraw하던 작업을 제거했습니다. 요청한 정수 프레임이 바뀔 때만 preload/render하고, resize에서는 현재 프레임을 강제로 다시 그립니다. 이에 따라 `onFrame`은 중복 tween tick이 아니라 실제 paint에만 호출됩니다.
