@@ -143,6 +143,13 @@ or a tag; release approval remains separate.
   transition off, and nothing is written while the element has no box (a
   hidden ancestor measures 0). Tabs' marker animated from `width: 0` on reveal
   and failed the WebKit release gate. `tests/browser/lifecycle-edges.mjs`.
+- **Motion eases by elapsed time, not by frame**: a loop that closes a fraction
+  of the distance each frame uses `frameEase(smoothing, clock.tick(time))`
+  with `frameClock()` from `src/utils.js` — never a bare
+  `lerp(current, target, smoothing)` per rAF, which runs about 40% further in
+  the same time on 120Hz screens. A numeric factor is read with
+  `numberOption()`, so a curve string cannot turn it into NaN.
+  `tests/browser/motion-timing.mjs`.
 - **A release tag follows green CI**: `release:ship` waits for the CI run of
   the exact commit before tagging (`scripts/ci-status.mjs`). Never tag first.
 - **Reduced motion removes motion, not features**: a module whose job is not

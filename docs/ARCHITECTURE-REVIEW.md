@@ -59,6 +59,8 @@ Page Transition은 요청·최종 응답 URL·`navigate()` 모두 같은 출처 
 | 동작 줄이기에서 Lightbox가 안 열림, 날짜가 안 바뀜 | `reduced()`가 no-op → 기능 전체가 사라짐 |
 | Presence의 exit 모션이 무시됨 | 문서·타입은 `exit`, 코드는 `leave`를 읽음 |
 | Vue `v-motion`이 렌더마다 애니메이션 재시작 | 옵션 객체를 참조로 비교 |
+| 120Hz 화면에서 Tilt·Magnetic·Card Glow 등이 약 40% 빠름, 바쁜 페이지에서 늘어짐 | 매 프레임 `lerp(현재, 목표, smoothing)` — 속도가 주사율에 묶임. Cursor만 시간 기준이었음 → `frameEase()`·`frameClock()` |
+| 설정창에서 Tilt·Magnetic·Cursor·Mouse Parallax에 곡선을 고르면 멈춤 | 이 모듈들의 `ease`는 숫자(`smoothing` 별칭)인데 곡선 편집기를 붙였고, 모듈은 숫자 검사 없이 NaN을 씀. 옵션 *타입*이 계약에 없다는 §3-2 부채의 실제 사례 |
 | 숨겨진 패널에서 만든 Tabs의 필이 드러난 뒤에도 안 보임(WebKit 릴리스 게이트 실패) | 숨김 중에 `width: 0`을 써 두고, 드러날 때 슬라이드 전환이 0부터 시작 → 크기 없으면 안 쓰고, 기하 복구는 전환 없이 |
 | Ambient Media 안의 Lazy 이미지가 영영 안 뜸, 화면 안 슬라이더가 멈춤 | 옮겨진 노드는 IntersectionObserver가 `[안 보임, 보임]`을 한 묶음으로 보내는데 첫 기록(`([entry]) =>`)만 읽음 → `latestEntry()` |
 
