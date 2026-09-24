@@ -43,6 +43,8 @@ export default {
     let width = 1;
     let height = 1;
     let dpr = 1;
+    let requestedFrame = -1;
+    let renderedFrame = -1;
 
     const urlFor = (index) => urls?.[index] || `${prefix}${String(index + 1).padStart(padding, '0')}${extension}`;
 
@@ -70,12 +72,17 @@ export default {
       for (let offset = -radius; offset <= radius; offset += 1) loadFrame(index + offset);
     };
 
-    const render = (index) => {
+    const render = (index, force = false) => {
       const image = images[index];
       if (!image || loadStates[index] !== 'loaded' || !image.naturalWidth) {
         preloadAround(index);
         return;
       }
+      // GSAP's scrub tween can call onUpdate many times while snap still rounds
+      // to the same integer frame. Redrawing an identical decoded image wastes
+      // a full-canvas clear + drawImage + user callback with no visual change.
+      // Resize passes force=true because changing canvas dimensions clears it.
+      if (!force && renderedFrame === index) return;
       context.clearRect(0, 0, canvas.width, canvas.height);
       context.imageSmoothingEnabled = true;
       const imageRatio = image.naturalWidth / image.naturalHeight;
@@ -98,6 +105,7 @@ export default {
       x = (width - drawWidth) / 2;
       y = (height - drawHeight) / 2;
       context.drawImage(image, x * dpr, y * dpr, drawWidth * dpr, drawHeight * dpr);
+      renderedFrame = index;
       opts.onFrame?.(index, image, canvas);
     };
 
@@ -108,7 +116,7 @@ export default {
       dpr = Math.min(window.devicePixelRatio || 1, Number(opts.maxDpr ?? 2));
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
-      render(Math.round(sequence.frame));
+      render(Math.round(sequence.frame), true);
     };
 
     const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(resize) : null;
@@ -117,6 +125,7 @@ export default {
     resize();
     loadFrame(0);
     preloadAround(0);
+    requestedFrame = Math.round(sequence.frame);
 
     const tween = gsap.to(sequence, {
       frame: frameCount - 1,
@@ -131,6 +140,8 @@ export default {
       },
       onUpdate: () => {
         const index = Math.round(sequence.frame);
+        if (index === requestedFrame) return;
+        requestedFrame = index;
         preloadAround(index);
         render(index);
       }

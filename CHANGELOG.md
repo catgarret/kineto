@@ -4,6 +4,8 @@
 
 ### English
 
+- Stop Scroll Sequence from clearing/redrawing the same rounded frame on every GSAP scrub tick. Preload/render work now runs only when the requested integer frame changes, while resize still forces the current frame to repaint; `onFrame` therefore tracks actual paints rather than duplicate tween updates.
+
 - Deduplicate Loader/Loading Indicator progress-output DOM writes during smoothed updates: visible templates, rounded metadata and `--kt-percent` now update only when their represented value/state/template changes, while continuous `--kt-progress` and native `<progress>.value` precision remain intact.
 
 - Reduce `Kineto.scan()` activation discovery from one selector traversal per registered module to one traversal per engine tier, preserving registry-order creation and re-discovering GSAP markup only when an asynchronous engine load requires it; lock 100 registered native modules to one traversal in the deterministic performance suite.
@@ -102,6 +104,8 @@
 - Dependabot no longer proposes major bumps for the `tests/integrations` fixture: the UI-library majors there are the ones the integration map documents, so a new major is reviewed together with the docs and tests instead of landing as a failing automatic PR.
 
 ### 한국어
+
+- Scroll Sequence가 GSAP scrub 갱신마다 같은 반올림 프레임을 반복해서 clear/redraw하던 작업을 제거했습니다. 요청한 정수 프레임이 바뀔 때만 preload/render하고, resize에서는 현재 프레임을 강제로 다시 그립니다. 이에 따라 `onFrame`은 중복 tween tick이 아니라 실제 paint에만 호출됩니다.
 
 - Loader/Loading Indicator의 smoothing 갱신 중 progress output DOM 쓰기를 중복 제거했습니다. 표시 template, 반올림 metadata, `--kt-percent`는 표현 값/state/template이 바뀔 때만 갱신하고, 연속 `--kt-progress`와 네이티브 `<progress>.value` 정밀도는 그대로 유지합니다.
 
