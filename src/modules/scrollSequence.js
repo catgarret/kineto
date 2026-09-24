@@ -43,10 +43,32 @@ export default {
     let width = 1;
     let height = 1;
     let dpr = 1;
-    let requestedFrame = -1;
+    let requestedFrame = Math.round(sequence.frame);
     let renderedFrame = -1;
+    const preloadRadius = Math.max(0, Math.floor(Number(opts.preloadRadius ?? 8) || 0));
+    // Keep a wider decoded-image window than the preload window so normal
+    // back-and-forth scrubbing does not thrash, while long sequences stop
+    // retaining every frame ever visited until destroy().
+    const retentionRadius = Math.max(preloadRadius + 2, preloadRadius * 2);
 
     const urlFor = (index) => urls?.[index] || `${prefix}${String(index + 1).padStart(padding, '0')}${extension}`;
+
+    const releaseFrame = (index) => {
+      const image = images[index];
+      if (!image || loadStates[index] !== 'loaded') return;
+      image.onload = null;
+      image.onerror = null;
+      images[index] = undefined;
+      loadStates[index] = 'idle';
+      if (renderedFrame === index) renderedFrame = -1;
+    };
+
+    const pruneFrames = (center) => {
+      for (let index = 0; index < frameCount; index += 1) {
+        if (Math.abs(index - center) <= retentionRadius) continue;
+        releaseFrame(index);
+      }
+    };
 
     const loadFrame = (index) => {
       if (index < 0 || index >= frameCount || loadStates[index] !== 'idle') return;
@@ -57,6 +79,12 @@ export default {
       image.onload = () => {
         loadStates[index] = 'loaded';
         images[index] = image;
+        // A slow request can finish after the user has scrubbed far away. Do
+        // not let that late decode silently grow the retained-frame window.
+        if (Math.abs(index - requestedFrame) > retentionRadius) {
+          releaseFrame(index);
+          return;
+        }
         if (Math.round(sequence.frame) === index || index === 0) render(index);
       };
       image.onerror = () => {
@@ -68,8 +96,8 @@ export default {
     };
 
     const preloadAround = (index) => {
-      const radius = Number(opts.preloadRadius ?? 8);
-      for (let offset = -radius; offset <= radius; offset += 1) loadFrame(index + offset);
+      for (let offset = -preloadRadius; offset <= preloadRadius; offset += 1) loadFrame(index + offset);
+      pruneFrames(index);
     };
 
     const render = (index, force = false) => {
@@ -125,7 +153,6 @@ export default {
     resize();
     loadFrame(0);
     preloadAround(0);
-    requestedFrame = Math.round(sequence.frame);
 
     const tween = gsap.to(sequence, {
       frame: frameCount - 1,
@@ -157,8 +184,11 @@ export default {
         window.removeEventListener('resize', resize);
         tween.scrollTrigger?.kill();
         tween.kill();
-        images.forEach((image) => {
-          if (image) { image.onload = null; image.onerror = null; }
+        images.forEach((image, index) => {
+          if (!image) return;
+          image.onload = null;
+          image.onerror = null;
+          images[index] = undefined;
         });
         canvas.remove();
         if (triggerWrap.parentNode) {

@@ -125,9 +125,11 @@ labels, reduced-motion behavior and media failure fallbacks remain unchanged.
 
 ## Follow-up candidates, not implemented
 
-- Scroll Sequence redraws the same rounded frame during scrub updates and keeps
-  decoded frames until teardown. Frame deduplication/cache eviction needs its
-  own `onFrame` timing and network/seek regression tests before changing it.
+- Scroll Sequence frame-paint deduplication and bounded retained-image eviction
+  are now implemented in follow-up PRs. The cache keeps a wider window than
+  `preloadRadius`, releases loaded `Image` references/handlers outside it,
+  and allows reverse scrubbing to recreate evicted frames. Browser/network
+  resource caches remain browser-managed; this only bounds Kineto-owned refs.
 - A shared scheduler for all pointer/scroll effects could reduce per-instance
   overhead, but it needs ordering and lifecycle evidence across the modules.
 - Static-source sampling caches need explicit invalidation for resize, source

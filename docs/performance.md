@@ -88,6 +88,7 @@ Kineto.setEngineSource({
 - 전체 프레임을 한 번에 강제 로드하지 않고 현재 프레임 주변을 preload합니다.
 - GSAP scrub이 여러 번 갱신되어도 반올림된 프레임 번호가 같으면 canvas를 다시 그리지 않습니다. `onFrame`도 실제 paint가 일어날 때만 호출됩니다.
 - resize는 canvas backing store를 지우므로 같은 프레임이어도 강제로 한 번 다시 그립니다.
+- 방문한 모든 프레임의 `Image` 객체를 teardown까지 보유하지 않습니다. 현재 preload 범위보다 넓은 내부 보존 창 밖의 로드 완료 프레임은 참조와 이벤트 핸들러를 해제하고, 역스크롤로 다시 필요해지면 재요청합니다. HTTP/decoded-resource 캐시 여부는 브라우저 정책에 따릅니다.
 - 프레임 수와 이미지 해상도가 메모리 사용량을 결정합니다.
 - 모바일에서는 프레임 수, DPR, preloadRadius를 보수적으로 설정합니다.
 
