@@ -5,6 +5,9 @@
 ### English
 
 <!-- Add matching English release bullets here. -->
+- Reduce live-DOM work by scanning overlapping mutation subtrees once, skipping option parsing for existing instances, and cancelling queued work on observer disconnect.
+- Let Scroll Velocity sleep after spring/lerp settling and wake on input; preserve explicit pause and make teardown terminal, including callback-triggered teardown.
+- Reuse sampled pixels for Stylize dither output, replace full-grid diffusion buffers with reusable 2–3-row storage, and avoid repeated monochrome Canvas colour writes. Lock pixel parity and work counts with deterministic performance regressions.
 - Fix `snapshotAttributes` leaving an empty `style=""` behind. Removing the `style` attribute ONCE is not enough after the CSSOM has written to it: measured in all three engines, Chromium and WebKit answer a `removeAttribute('style')` by emptying the declaration block and serialising it straight back, so an element that had no attribute at all keeps a husk of one; Firefox drops it. Every module that snapshots an attribute and writes an inline style was handing the element back subtly changed, and only a cross-browser test on the exact markup would ever have shown it. The helper now takes the husk with it, the way `dropEmptyAttributes` already does for the ones a `classList.remove()` leaves.
 - Give Squircle a lifecycle smoke fixture. The smoke page builds one per registered module and fails if the two lists disagree, so module 54 shipping without one made `npm run test:demo` fail on `smoke registry mismatch` — and because that block sits at the very end of demo QA, everything before it still looked green while CI stayed red and the demo deploy was skipped for three commits.
 - Drive the Card Glow pointer check through the real input pipeline. A hand-built `new PointerEvent('pointermove', { clientX })` arrives without usable coordinates in WebKit, so the module had nothing to move its lit rim to and the check failed on a browser where the feature works.
@@ -72,6 +75,10 @@
 - Dependabot no longer proposes major bumps for the `tests/integrations` fixture: the UI-library majors there are the ones the integration map documents, so a new major is reviewed together with the docs and tests instead of landing as a failing automatic PR.
 
 ### 한국어
+
+- DOM 변경의 중첩 하위 트리를 한 번만 탐색하고 기존 인스턴스의 옵션 재파싱을 생략하며, 관찰 해제 시 예약된 탐색도 취소합니다.
+- Scroll Velocity의 탄성·보간이 안정되면 RAF를 중지하고 입력 시 재개합니다. 명시적 일시정지를 보존하고 콜백 안에서 종료해도 다시 실행되지 않습니다.
+- Stylize 디더 출력에 샘플 픽셀을 재사용하고 전체 격자 오차 버퍼를 재사용 가능한 2~3행 버퍼로 줄이며, 단색 Canvas의 반복 색상 설정을 제거합니다. 결정적 회귀 테스트로 픽셀 동일성과 작업 횟수를 검증합니다.
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - `snapshotAttributes` 가 빈 `style=""` 를 남기던 문제를 고쳤습니다. CSSOM 이 인라인 스타일을 쓴 뒤에는 `style` 속성을 **한 번 지워서는 지워지지 않습니다.** 세 엔진에서 직접 재 보니, 크로미엄과 웹킷은 `removeAttribute('style')` 에 대해 선언 블록을 비운 뒤 그것을 그대로 다시 직렬화해서, 원래 속성이 아예 없던 요소에 껍데기를 남깁니다(파이어폭스는 지웁니다). 속성을 스냅샷하고 인라인 스타일을 쓰는 모든 모듈이 요소를 조금씩 달라진 채로 돌려주고 있었고, 정확히 같은 마크업으로 크로스브라우저 테스트를 돌려야만 보이는 종류의 차이였습니다. 이제 헬퍼가 껍데기까지 가져갑니다 — `classList.remove()` 가 남기는 껍데기를 `dropEmptyAttributes` 가 이미 그렇게 처리하고 있었습니다.

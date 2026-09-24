@@ -257,16 +257,25 @@ function createLiveObserver(root, options) {
   let added = new Set();
   let removed = false;
   let scheduled = false;
+  let active = true;
   const flush = () => {
+    if (!active) return;
     scheduled = false;
     const nodes = added;
     added = new Set();
     const hadRemoval = removed;
     removed = false;
     nodes.forEach((node) => {
-      if (node.isConnected) Kineto.scan(node);
+      if (!active || !node.isConnected || !root.contains(node)) return;
+      // A framework may insert a parent, then build its children in the same
+      // commit. Scan only the outermost pending subtree using its current ancestry.
+      for (let parent = node.parentNode; parent; parent = parent.parentNode) {
+        if (nodes.has(parent)) return;
+        if (parent === root) break;
+      }
+      Kineto.scan(node);
     });
-    if (hadRemoval) releaseDetachedRecords();
+    if (active && hadRemoval) releaseDetachedRecords();
   };
   const schedule = () => {
     if (scheduled) return;
@@ -285,7 +294,13 @@ function createLiveObserver(root, options) {
     if (added.size || removed) schedule();
   });
   observer.observe(root, { childList: true, subtree: true, attributes: watchAttributes });
-  return { observer, flush: () => { if (scheduled) flush(); } };
+  return {
+    disconnect() {
+      active = false;
+      observer.disconnect();
+      added.clear();
+    }
+  };
 }
 
 function ensureCoreServices() {
@@ -688,45 +703,45 @@ const Kineto = {
     if (this.env.ssr || !root) return this;
     ensureCoreServices();
 
-    const scanModules = (accept) => {
+    function* candidates(name) {
+      const selector = `[data-kt-${dash(name)}]`;
+      // Snapshot before root creation: factories can clone activation markup.
+      const descendants = root.querySelectorAll?.(selector) || [];
+      if (root.matches?.(selector)) yield root;
+      yield* descendants;
+    }
+    const eligible = (el, name) => !getElementMap(el)?.has(name) && !activationIsOwnedOption(el, name);
+    const scanModules = (engine) => {
       modules.forEach((_module, name) => {
-        if (!accept(name)) return;
-        const selector = `[data-kt-${dash(name)}]`;
-        const candidates = [];
-        if (typeof Element !== 'undefined' && root instanceof Element && root.matches(selector)) candidates.push(root);
-        if (typeof root.querySelectorAll === 'function') candidates.push(...root.querySelectorAll(selector));
-        candidates.filter((el) => !activationIsOwnedOption(el, name))
-          .forEach((el) => this.create(name, el, readOpts(el, name)));
+        if (GSAP_MODULES.has(name) !== engine) return;
+        for (const el of candidates(name)) {
+          if (eligible(el, name)) this.create(name, el, readOpts(el, name));
+        }
       });
     };
     // Pre-init flash guard: once modules have applied their initial states,
     // release the `kt-preload` veil (see kineto.css).
     const releaseVeil = () => {
-      if (typeof document === 'undefined') return;
       if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(() => document.documentElement.classList.remove('kt-preload'));
       else document.documentElement.classList.remove('kt-preload');
     };
 
     // Effects that don't need GSAP init immediately — they must never wait on a
     // network fetch. GSAP-backed effects init after the engine is ready.
-    scanModules((name) => !GSAP_MODULES.has(name));
+    scanModules(false);
 
-    const matches = (name) => {
-      const selector = `[data-kt-${dash(name)}]`;
-      if (typeof Element !== 'undefined' && root instanceof Element && root.matches(selector) && !activationIsOwnedOption(root, name)) return true;
-      return typeof root.querySelectorAll === 'function'
-        && Array.from(root.querySelectorAll(selector)).some((el) => !activationIsOwnedOption(el, name));
-    };
-    const needsGsap = Array.from(GSAP_MODULES).some(matches);
+    const needsGsap = Array.from(GSAP_MODULES).some((name) => {
+      if (!modules.has(name)) return false;
+      for (const el of candidates(name)) { if (eligible(el, name)) return true; }
+      return false;
+    });
 
+    const complete = () => { scanModules(true); releaseVeil(); };
     if (needsGsap && !gsapReady()) {
       // Fetch the engine (page global or CDN), THEN create the scroll modules so
       // they find GSAP — keeping the preload veil up until they've applied.
-      ensureGSAP().finally(() => { scanModules((name) => GSAP_MODULES.has(name)); releaseVeil(); });
-    } else {
-      scanModules((name) => GSAP_MODULES.has(name));
-      releaseVeil();
-    }
+      ensureGSAP().finally(complete);
+    } else complete();
     return this;
   },
 
@@ -785,7 +800,7 @@ const Kineto = {
       disconnect: () => {
         const entry = observers.get(target);
         if (!entry || entry.handle !== handle) return;
-        entry.live.observer.disconnect();
+        entry.live.disconnect();
         observers.delete(target);
         handle.active = false;
       }

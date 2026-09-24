@@ -117,7 +117,7 @@
     "test:structure": "node tests/demo-structure.mjs",
     "test:copy": "node tests/copy-i18n.mjs",
     "test:lazy": "node tests/playground-lazy.mjs",
-    "test:perf": "node tests/perf-hygiene.mjs",
+    "test:perf": "node tests/perf-hygiene.mjs && node tests/performance-runtime.mjs && node tests/rasterizer-performance.mjs",
     "test:deps": "node tests/deps-boundary.mjs",
     "test:engine": "node tests/engine-loader.mjs",
     "test:sequence-sources": "node tests/scroll-sequence-sources.mjs",

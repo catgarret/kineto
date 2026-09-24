@@ -25,3 +25,8 @@
 - `spring: true`: `stiffness`, `damping`, `mass`, `response` 기반 탄성 반응
 
 `destroy()`는 RAF와 ScrollTrigger를 정리하고 기존 transform/filter/will-change를 복원합니다. reduced-motion에서는 비활성화됩니다.
+
+값과 탄성 속도가 모두 안정되면 RAF 계산과 스타일 갱신을 중지하고, 다음 스크롤
+입력에서 재개합니다. `onUpdate`는 처리 프레임에 호출되며 정지 중에는 반복 호출되지
+않습니다. `pause()` 중에는 입력이 와도 자동 재개하지 않고, `destroy()` 후에는
+`resume()`을 호출해도 다시 실행되지 않습니다.

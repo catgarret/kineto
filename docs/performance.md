@@ -109,3 +109,25 @@ ESM과 UMD 모두 GSAP·ScrollTrigger·Lenis 본체를 포함하지 않습니다
 필요한 외부 엔진은 runtime loader로 요청하거나 애플리케이션에서 주입합니다.
 엔진을 요청하지 않는 native 경로와, 별도 네트워크로 내려받는 엔진 비용은
 Kineto 번들 크기와 구분해야 합니다. 이 경계는 `npm run test:deps`로 검사합니다.
+
+## 반복 작업 비용
+
+- `Kineto.observe()`는 같은 변경 묶음에 포함된 부모와 자식을 중복 탐색하지
+  않습니다. 연결된 최상위 추가 요소만 탐색하며, `disconnect()`는 이미 예약한
+  탐색도 취소합니다. 관찰 영역 밖으로 이동한 요소는 새로 초기화하지 않습니다.
+- `scan()`은 기존 인스턴스의 옵션을 다시 파싱하지 않습니다. 옵션을 바꾸려면
+  기존과 같이 `updateModule()` 또는 `replay()`를 사용하세요.
+- Scroll Velocity는 위치·목표·탄성 속도가 모두 안정되면 RAF를 중지합니다.
+  새로운 스크롤 입력에서 재개하며, `onUpdate`는 실제 처리 프레임에만 호출됩니다.
+- Stylize 디더링은 샘플 `ImageData`를 출력에도 사용합니다. 오차 확산은 전체
+  격자가 아닌 Floyd–Steinberg 2행·Atkinson 3행만 보관하고 같은 폭에서 재사용합니다.
+  ASCII·단색 Halftone은 셀마다 같은 색을 다시 설정하지 않습니다.
+
+`npm run test:perf`는 시간 제한 대신 탐색·예약·메모리 할당 횟수를 검사하고,
+디더링 1,080회(렌즈 포함 1,188개 출력)의 픽셀 해시를 최적화 전과 비교합니다.
+실행 시간과 실제 프레임률은 브라우저·하드웨어·이미지 크기에 따라 별도 측정해야 합니다.
+
+구현 참고: [MDN Canvas 최적화](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas),
+[MutationObserver disconnect](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/disconnect).
+
+측정 조건·변경 전후 수치·남은 검증 범위는 [2026-09-24 성능 점검](performance-audit-2026-09-24.md)에 기록했습니다.

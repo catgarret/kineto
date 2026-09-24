@@ -988,17 +988,24 @@ function lt() {
 	});
 }
 function ut(e, t) {
-	let n = t.attributes === !0, r = /* @__PURE__ */ new Set(), i = !1, a = !1, o = () => {
+	let n = t.attributes === !0, r = /* @__PURE__ */ new Set(), i = !1, a = !1, o = !0, s = () => {
+		if (!o) return;
 		a = !1;
-		let e = r;
+		let t = r;
 		r = /* @__PURE__ */ new Set();
-		let t = i;
-		i = !1, e.forEach((e) => {
-			e.isConnected && bt.scan(e);
-		}), t && lt();
-	}, s = () => {
-		a || (a = !0, Promise.resolve().then(o));
-	}, c = new MutationObserver((e) => {
+		let n = i;
+		i = !1, t.forEach((n) => {
+			if (o && n.isConnected && e.contains(n)) {
+				for (let r = n.parentNode; r; r = r.parentNode) {
+					if (t.has(r)) return;
+					if (r === e) break;
+				}
+				bt.scan(n);
+			}
+		}), o && n && lt();
+	}, c = () => {
+		a || (a = !0, Promise.resolve().then(s));
+	}, l = new MutationObserver((e) => {
 		e.forEach((e) => {
 			if (e.type === "attributes") {
 				String(e.attributeName || "").startsWith("data-kt-") && r.add(e.target);
@@ -1007,18 +1014,15 @@ function ut(e, t) {
 			e.addedNodes.forEach((e) => {
 				e.nodeType === 1 && r.add(e);
 			}), e.removedNodes.length && (i = !0);
-		}), (r.size || i) && s();
+		}), (r.size || i) && c();
 	});
-	return c.observe(e, {
+	return l.observe(e, {
 		childList: !0,
 		subtree: !0,
 		attributes: n
-	}), {
-		observer: c,
-		flush: () => {
-			a && o();
-		}
-	};
+	}), { disconnect() {
+		o = !1, l.disconnect(), r.clear();
+	} };
 }
 function dt() {
 	if (Fe || bt.env.ssr) return;
@@ -1241,21 +1245,26 @@ var bt = {
 	scan(e = typeof document < "u" ? document : null) {
 		if (this.env.ssr || !e) return this;
 		dt();
-		let t = (t) => {
-			je.forEach((n, r) => {
-				if (!t(r)) return;
-				let i = `[data-kt-${J(r)}]`, a = [];
-				typeof Element < "u" && e instanceof Element && e.matches(i) && a.push(e), typeof e.querySelectorAll == "function" && a.push(...e.querySelectorAll(i)), a.filter((e) => !Ae(e, r)).forEach((e) => this.create(r, e, ne(e, r)));
+		function* t(t) {
+			let n = `[data-kt-${J(t)}]`, r = e.querySelectorAll?.(n) || [];
+			e.matches?.(n) && (yield e), yield* r;
+		}
+		let n = (e, t) => !it(e)?.has(t) && !Ae(e, t), r = (e) => {
+			je.forEach((r, i) => {
+				if (Oe.has(i) === e) for (let e of t(i)) n(e, i) && this.create(i, e, ne(e, i));
 			});
-		}, n = () => {
-			typeof document > "u" || (typeof requestAnimationFrame < "u" ? requestAnimationFrame(() => document.documentElement.classList.remove("kt-preload")) : document.documentElement.classList.remove("kt-preload"));
+		}, i = () => {
+			typeof requestAnimationFrame < "u" ? requestAnimationFrame(() => document.documentElement.classList.remove("kt-preload")) : document.documentElement.classList.remove("kt-preload");
 		};
-		return t((e) => !Oe.has(e)), Array.from(Oe).some((t) => {
-			let n = `[data-kt-${J(t)}]`;
-			return typeof Element < "u" && e instanceof Element && e.matches(n) && !Ae(e, t) ? !0 : typeof e.querySelectorAll == "function" && Array.from(e.querySelectorAll(n)).some((e) => !Ae(e, t));
-		}) && !m() ? g().finally(() => {
-			t((e) => Oe.has(e)), n();
-		}) : (t((e) => Oe.has(e)), n()), this;
+		r(!1);
+		let a = Array.from(Oe).some((e) => {
+			if (!je.has(e)) return !1;
+			for (let r of t(e)) if (n(r, e)) return !0;
+			return !1;
+		}), o = () => {
+			r(!0), i();
+		};
+		return a && !m() ? g().finally(o) : o(), this;
 	},
 	init(e = typeof document < "u" ? document : null) {
 		return this.scan(e);
@@ -1282,7 +1291,7 @@ var bt = {
 			active: !0,
 			disconnect: () => {
 				let e = Pe.get(n);
-				e && e.handle === o && (e.live.observer.disconnect(), Pe.delete(n), o.active = !1);
+				e && e.handle === o && (e.live.disconnect(), Pe.delete(n), o.active = !1);
 			}
 		};
 		return Pe.set(n, {
@@ -3065,67 +3074,103 @@ function wn(e, t, { maxDpr: n = 2 } = {}) {
 	}), i = document.createElement("canvas"), a = i.getContext("2d", {
 		alpha: !0,
 		willReadFrequently: !0
-	}), o = (Number(t.seed) || 2654435769) | 0, s = on(t.seed), c = 0, l = 0, u = 0, d = 0, f = 1, p = (t, i) => {
-		c = Math.max(1, t), l = Math.max(1, i), f = G(typeof window < "u" && window.devicePixelRatio || 1, 1, n), u = Math.max(1, Math.round(c * f)), d = Math.max(1, Math.round(l * f)), (e.width !== u || e.height !== d) && (e.width = u, e.height = d), r.setTransform(1, 0, 0, 1, 0, 0);
-	}, m = (e, t, n = 0, r = 0) => {
+	}), o = (Number(t.seed) || 2654435769) | 0, s = on(t.seed), c = 0, l = 0, u = 1, d = null, f = t.type === "floyd-steinberg" ? [
+		[
+			1,
+			0,
+			7 / 16
+		],
+		[
+			-1,
+			1,
+			3 / 16
+		],
+		[
+			0,
+			1,
+			5 / 16
+		],
+		[
+			1,
+			1,
+			1 / 16
+		]
+	] : t.type === "atkinson" ? [
+		[
+			1,
+			0,
+			1 / 8
+		],
+		[
+			2,
+			0,
+			1 / 8
+		],
+		[
+			-1,
+			1,
+			1 / 8
+		],
+		[
+			0,
+			1,
+			1 / 8
+		],
+		[
+			1,
+			1,
+			1 / 8
+		],
+		[
+			0,
+			2,
+			1 / 8
+		]
+	] : null, p = t.type === "atkinson" ? 3 : 2, m = (t, i) => {
+		u = G(typeof window < "u" && window.devicePixelRatio || 1, 1, n), c = Math.max(1, Math.round(Math.max(1, t) * u)), l = Math.max(1, Math.round(Math.max(1, i) * u)), (e.width !== c || e.height !== l) && (e.width = c, e.height = l), r.setTransform(1, 0, 0, 1, 0, 0);
+	}, h = (e, t, n = 0, r = 0) => {
 		let { width: o, height: s } = gn(e);
 		if (!o || !s) return null;
-		let c = n !== 0 || r !== 0, l = Math.max(1, Math.ceil(u / t) + +!!c), f = Math.max(1, Math.ceil(d / t) + +!!c);
-		(i.width !== l || i.height !== f) && (i.width = l, i.height = f);
-		let p = hn(o, s, u, d), m = l * t / u, h = f * t / d;
-		a.imageSmoothingEnabled = !0, a.clearRect(0, 0, l, f);
+		let u = n !== 0 || r !== 0, d = Math.max(1, Math.ceil(c / t) + +!!u), f = Math.max(1, Math.ceil(l / t) + +!!u);
+		(i.width !== d || i.height !== f) && (i.width = d, i.height = f);
+		let p = hn(o, s, c, l), m = d * t / c, h = f * t / l;
+		a.imageSmoothingEnabled = !0, a.clearRect(0, 0, d, f);
 		try {
-			return a.drawImage(e, p.sx, p.sy, p.sw * m, p.sh * h, 0, 0, l, f), {
-				cols: l,
+			a.drawImage(e, p.sx, p.sy, p.sw * m, p.sh * h, 0, 0, d, f);
+			let i = a.getImageData(0, 0, d, f);
+			return {
+				cols: d,
 				rows: f,
 				cell: t,
 				originX: -n,
 				originY: -r,
-				data: a.getImageData(0, 0, l, f).data
+				imageData: i,
+				data: i.data
 			};
 		} catch {
 			return null;
 		}
-	}, h = (e, t) => Math.round(G(e, 0, 1) * (t - 1)) / (t - 1), g = (e, n, r = null) => {
+	}, g = (e, t) => Math.round(e * (t - 1)) / (t - 1), _ = (e, n, r = null) => {
 		if (t.originalColors) {
-			let e = t.colorSteps, i = (t) => {
+			let e = t.colorSteps;
+			return n.map((t) => {
 				let n = t / 255 * (e - 1);
-				if (r == null) return Math.round(h(t / 255, e) * 255);
+				if (r == null) return Math.round(g(t / 255, e) * 255);
 				let i = Math.floor(n);
 				return Math.round(G((i + +(n - i > r)) / (e - 1), 0, 1) * 255);
-			};
-			return [
-				i(n[0]),
-				i(n[1]),
-				i(n[2])
-			];
+			});
 		}
-		if (t.accent && e > 0 && e < 1) {
-			let [n, r, i] = e < .5 ? [
-				t.paper,
-				t.accent,
-				e * 2
-			] : [
-				t.accent,
-				t.ink,
-				e * 2 - 1
-			];
-			return [
-				pn(n[0], r[0], i),
-				pn(n[1], r[1], i),
-				pn(n[2], r[2], i)
-			];
-		}
-		return [
-			pn(t.paper[0], t.ink[0], e),
-			pn(t.paper[1], t.ink[1], e),
-			pn(t.paper[2], t.ink[2], e)
+		let i = t.paper, a = t.ink;
+		return t.accent && e > 0 && e < 1 && (e < .5 ? (a = t.accent, e *= 2) : (i = t.accent, e = e * 2 - 1)), [
+			pn(i[0], a[0], e),
+			pn(i[1], a[1], e),
+			pn(i[2], a[2], e)
 		];
-	}, _ = ([e, t, n]) => `rgb(${Math.round(e)},${Math.round(t)},${Math.round(n)})`, v = (e) => G((e - .5) * t.contrast + .5 + t.brightness, 0, 1), y = (e, n) => {
-		let r = v(mn(e[n], e[n + 1], e[n + 2])), i = e[n + 3] / 255;
+	}, v = ([e, t, n]) => `rgb(${Math.round(e)},${Math.round(t)},${Math.round(n)})`, y = (e) => G((e - .5) * t.contrast + .5 + t.brightness, 0, 1), b = (e, n) => {
+		let r = y(mn(e[n], e[n + 1], e[n + 2])), i = e[n + 3] / 255;
 		return G((t.inverted ? r : 1 - r) * i, 0, 1);
-	}, b = (e, n, r, i) => {
-		let { motion: a, motionAmount: s, motionSpeed: c } = t, l = (r || 0) / 1e3, u = Math.floor(l * c * 18), d = l * c, p = Math.max(1, e.rows * .12), m = (d * .45 % 1.3 - .15) * e.rows, h = a === "pulse" ? Math.sin(d * 2.2) * .22 * s : 0, g = a === "drift" ? Math.floor(d * 3.1) : 0, _ = a === "drift" ? Math.floor(d * 2.3) : 0, v = a === "drift" ? (e, t) => Math.sin(e * .21 + t * .16 - d * 2.6) * .05 * s : null, y = a === "drift" ? d * 5 : 0, b = i && i.active ? i.x : null, x = i && i.active ? i.y : null, S = t.pointerRadius * f, C = t.pointerStrength, w = t.pointer !== "none" && b != null;
+	}, x = (e, n, r, i) => {
+		let { motion: a, motionAmount: s, motionSpeed: c } = t, l = (r || 0) / 1e3, d = Math.floor(l * c * 18), f = l * c, p = Math.max(1, e.rows * .12), m = (f * .45 % 1.3 - .15) * e.rows, h = a === "pulse" ? Math.sin(f * 2.2) * .22 * s : 0, g = a === "drift" ? Math.floor(f * 3.1) : 0, _ = a === "drift" ? Math.floor(f * 2.3) : 0, v = a === "drift" ? (e, t) => Math.sin(e * .21 + t * .16 - f * 2.6) * .05 * s : null, y = a === "drift" ? f * 5 : 0, b = i && i.active ? i.x : null, x = i && i.active ? i.y : null, S = t.pointerRadius * u, C = t.pointerStrength, w = t.pointer !== "none" && b != null;
 		return {
 			pulse: h,
 			noisePhase: y,
@@ -3136,19 +3181,19 @@ function wn(e, t, { maxDpr: n = 2 } = {}) {
 			},
 			driftX: g,
 			driftY: _,
-			inkShift(e, r, i, d) {
+			inkShift(e, r, i, u) {
 				let f = h;
-				if (v && (f += v(e, r)), a === "shuffle" && _n(e, r, u, o ^ 20973) < s * .5) f += (_n(e, r, u + 1, o) - .5) * .9;
+				if (v && (f += v(e, r)), a === "shuffle" && _n(e, r, d, o ^ 20973) < s * .5) f += (_n(e, r, d + 1, o) - .5) * .9;
 				else if (a === "scan") {
 					let e = Math.abs(r - m);
 					e < p && (f += (1 - e / p) * .45 * s);
 				}
 				if (w && t.pointer !== "lens") {
-					let e = 1 - this.falloff(i, d);
+					let e = 1 - this.falloff(i, u);
 					if (e > 0) {
 						if (t.pointer === "spotlight") f += e * C * .7;
 						else if (t.pointer === "ripple") {
-							let t = Math.sin(Math.hypot(i - b, d - x) / (n * 2) - l * 4 * c);
+							let t = Math.sin(Math.hypot(i - b, u - x) / (n * 2) - l * 4 * c);
 							f += e * t * C * .5;
 						}
 					}
@@ -3156,96 +3201,53 @@ function wn(e, t, { maxDpr: n = 2 } = {}) {
 				return f;
 			},
 			thresholdShift(e, t) {
-				return a === "drift" ? (_n(e, t, u, o ^ 40503) - .5) * .14 * s : a === "shuffle" && _n(e, t, u, o ^ 20973) < s * .5 ? _n(e, t, u + 7, o) - .5 : 0;
+				return a === "drift" ? (_n(e, t, d, o ^ 40503) - .5) * .14 * s : a === "shuffle" && _n(e, t, d, o ^ 20973) < s * .5 ? _n(e, t, d + 7, o) - .5 : 0;
 			},
 			glyphShift(e, t) {
-				return a === "shuffle" && _n(e, t, u, o ^ 12059) < s ? _n(e, t, u + 3, o) < .5 ? -1 : 1 : +(a === "drift" && _n(e, t, u, o ^ 31802) < s * .3);
+				return a === "shuffle" && _n(e, t, d, o ^ 12059) < s ? _n(e, t, d + 3, o) < .5 ? -1 : 1 : +(a === "drift" && _n(e, t, d, o ^ 31802) < s * .3);
 			}
 		};
-	}, x = (e, n) => {
-		let { cols: o, rows: c, cell: l, data: u, originX: d, originY: f } = e, p = t.colorSteps, m = a.createImageData(o, c), _ = m.data, v = en[t.type], b = t.type === "floyd-steinberg" ? [
-			[
-				1,
-				0,
-				7 / 16
-			],
-			[
-				-1,
-				1,
-				3 / 16
-			],
-			[
-				0,
-				1,
-				5 / 16
-			],
-			[
-				1,
-				1,
-				1 / 16
-			]
-		] : t.type === "atkinson" ? [
-			[
-				1,
-				0,
-				1 / 8
-			],
-			[
-				2,
-				0,
-				1 / 8
-			],
-			[
-				-1,
-				1,
-				1 / 8
-			],
-			[
-				0,
-				1,
-				1 / 8
-			],
-			[
-				1,
-				1,
-				1 / 8
-			],
-			[
-				0,
-				2,
-				1 / 8
-			]
-		] : null, x = t.originalColors ? 3 : 1, S = b ? new Float32Array(o * c * x) : null, C = (e, t, n, r) => {
-			b.forEach(([i, a, s]) => {
-				let l = e + i, u = t + a;
-				l >= 0 && l < o && u < c && (S[(u * o + l) * x + n] += r * s);
-			});
-		};
-		for (let e = 0; e < c; e += 1) for (let r = 0; r < o; r += 1) {
-			let i = (e * o + r) * 4, a = [
-				u[i],
-				u[i + 1],
-				u[i + 2]
-			], c = d + r * l + l / 2, m = f + e * l + l / 2, w;
-			if (b && t.originalColors) w = a.map((t, n) => {
-				let i = G(t / 255 + S[(e * o + r) * x + n], 0, 1), a = h(i, p);
-				return C(r, e, n, i - a), Math.round(a * 255);
-			});
-			else if (b) {
-				let t = G(y(u, i) + n.inkShift(r, e, c, m) + S[e * o + r], 0, 1), s = h(t, p);
-				C(r, e, 0, t - s), w = g(s, a);
-			} else {
-				let o = G((v ? v[(e + n.driftY) % v.length][(r + n.driftX) % v.length] : t.type === "noise" ? tn(r, e, n.noisePhase) : s()) + n.thresholdShift(r, e), 0, 1);
-				if (t.originalColors) w = g(0, a, o);
-				else {
-					let t = G(y(u, i) + n.inkShift(r, e, c, m), 0, 1) * (p - 1), s = Math.floor(t);
-					w = g(G((s + +(t - s > o)) / (p - 1), 0, 1), a);
-				}
-			}
-			_[i] = w[0], _[i + 1] = w[1], _[i + 2] = w[2], _[i + 3] = 255;
+	}, S = (e, n) => {
+		let { cols: o, rows: c, cell: l, data: u, originX: m, originY: h } = e, v = t.colorSteps, y = en[t.type], x = t.originalColors ? 3 : 1, S = o * x;
+		if (f) {
+			let e = S * p;
+			!d || d.length !== e ? d = new Float32Array(e) : d.fill(0);
 		}
-		a.putImageData(m, 0, 0), r.imageSmoothingEnabled = !1, r.drawImage(i, 0, 0, o, c, d, f, o * l, c * l);
-	}, S = {
+		let C = (e, t, n, r) => {
+			for (let [i, a, s] of f) {
+				let l = e + i;
+				l >= 0 && l < o && t + a < c && (d[a * S + l * x + n] += r * s);
+			}
+		}, w = [
+			0,
+			0,
+			0
+		];
+		for (let e = 0; e < c; e += 1) {
+			for (let r = 0; r < o; r += 1) {
+				let i = (e * o + r) * 4;
+				for (let e = 0; e < 3; e += 1) w[e] = u[i + e];
+				let a = m + r * l + l / 2, c = h + e * l + l / 2, p;
+				if (f) {
+					for (let o = 0; o < x; o += 1) {
+						let s = G((t.originalColors ? w[o] / 255 : b(u, i) + n.inkShift(r, e, a, c)) + d[r * x + o], 0, 1), l = g(s, v);
+						C(r, e, o, s - l), t.originalColors ? w[o] = Math.round(l * 255) : p = _(l);
+					}
+					t.originalColors && (p = w);
+				} else {
+					let o = G((y ? y[(e + n.driftY) % y.length][(r + n.driftX) % y.length] : t.type === "noise" ? tn(r, e, n.noisePhase) : s()) + n.thresholdShift(r, e), 0, 1);
+					if (t.originalColors) p = _(0, w, o);
+					else {
+						let t = G(b(u, i) + n.inkShift(r, e, a, c), 0, 1) * (v - 1), s = Math.floor(t);
+						p = _(G((s + +(t - s > o)) / (v - 1), 0, 1));
+					}
+				}
+				u[i] = p[0], u[i + 1] = p[1], u[i + 2] = p[2], u[i + 3] = 255;
+			}
+			f && (d.copyWithin(0, S), d.fill(0, -S));
+		}
+		a.putImageData(e.imageData, 0, 0), r.imageSmoothingEnabled = !1, r.drawImage(i, 0, 0, o, c, m, h, o * l, c * l);
+	}, C = {
 		square(e, t, n, r, i) {
 			let a = r * Math.sqrt(i);
 			e.fillRect(t - a / 2, n - a / 2, a, a);
@@ -3273,52 +3275,53 @@ function wn(e, t, { maxDpr: n = 2 } = {}) {
 		dot(e, t, n, r, i) {
 			e.beginPath(), e.arc(t, n, r / 2 * Math.sqrt(i), 0, Math.PI * 2), e.fill();
 		}
-	}, C = {
-		dither: x,
+	}, w = {
+		dither: S,
 		halftone: (e, n) => {
-			let { cols: i, rows: a, cell: o, data: s, originX: c, originY: l } = e;
-			r.fillStyle = _(t.paper), r.fillRect(0, 0, u, d);
-			let f = S[t.shape] || S.dot, p = (e, t, r, o) => {
+			let { cols: i, rows: a, cell: o, data: s, originX: u, originY: d } = e;
+			r.fillStyle = v(t.paper), r.fillRect(0, 0, c, l);
+			let f = C[t.shape] || C.dot;
+			t.originalColors || (r.fillStyle = v(t.ink));
+			let p = (e, t, r, o) => {
 				let c = (G(t, 0, a - 1) * i + G(e, 0, i - 1)) * 4;
 				return {
 					index: c,
-					ink: G(y(s, c) + n.inkShift(e, t, r, o), 0, 1)
+					ink: G(b(s, c) + n.inkShift(e, t, r, o), 0, 1)
 				};
 			}, m = (e, n, i, a) => {
 				let { index: c, ink: l } = p(e, n, i, a);
-				l <= .02 || (r.fillStyle = _(t.originalColors ? g(l, [
+				l <= .02 || (t.originalColors && (r.fillStyle = v(_(l, [
 					s[c],
 					s[c + 1],
 					s[c + 2]
-				]) : g(1)), f(r, i, a, o, l));
+				]))), f(r, i, a, o, l));
 			};
 			if (!t.angle) {
-				for (let e = 0; e < a; e += 1) for (let t = 0; t < i; t += 1) m(t, e, c + t * o + o / 2, l + e * o + o / 2);
+				for (let e = 0; e < a; e += 1) for (let t = 0; t < i; t += 1) m(t, e, u + t * o + o / 2, d + e * o + o / 2);
 				return;
 			}
-			let h = t.angle * Math.PI / 180, v = Math.cos(h), b = Math.sin(h), x = u / 2, C = d / 2, w = Math.ceil(Math.hypot(u, d) / (2 * o)) + 1;
+			let h = t.angle * Math.PI / 180, g = Math.cos(h), y = Math.sin(h), x = c / 2, S = l / 2, w = Math.ceil(Math.hypot(c, l) / (2 * o)) + 1;
 			for (let e = -w; e <= w; e += 1) for (let t = -w; t <= w; t += 1) {
-				let n = x + (t * v - e * b) * o, r = C + (t * b + e * v) * o;
-				n < -o || r < -o || n > u + o || r > d + o || m(Math.floor((n - c) / o), Math.floor((r - l) / o), n, r);
+				let n = x + (t * g - e * y) * o, r = S + (t * y + e * g) * o;
+				n < -o || r < -o || n > c + o || r > l + o || m(Math.floor((n - u) / o), Math.floor((r - d) / o), n, r);
 			}
 		},
 		ascii: (e, n) => {
-			let { cols: i, rows: a, cell: o, data: s, originX: c, originY: l } = e, f = t.chars;
-			r.fillStyle = _(t.paper), r.fillRect(0, 0, u, d), r.font = `${Math.max(4, o * 1.15)}px ${t.font}`, r.textAlign = "center", r.textBaseline = "middle";
-			let p = t.originalColors ? null : _(g(1));
+			let { cols: i, rows: a, cell: o, data: s, originX: u, originY: d } = e, f = t.chars;
+			r.fillStyle = v(t.paper), r.fillRect(0, 0, c, l), r.font = `${Math.max(4, o * 1.15)}px ${t.font}`, r.textAlign = "center", r.textBaseline = "middle", t.originalColors || (r.fillStyle = v(t.ink));
 			for (let e = 0; e < a; e += 1) for (let a = 0; a < i; a += 1) {
-				let u = (e * i + a) * 4, d = c + a * o + o / 2, m = l + e * o + o / 2, h = G(y(s, u) + n.inkShift(a, e, d, m), 0, 1), v = f[G(Math.floor((1 - h) * f.length) + n.glyphShift(a, e), 0, f.length - 1)];
-				v !== " " && (r.fillStyle = t.originalColors ? _(g(h, [
-					s[u],
-					s[u + 1],
-					s[u + 2]
-				])) : p, r.fillText(v, d, m));
+				let c = (e * i + a) * 4, l = u + a * o + o / 2, p = d + e * o + o / 2, m = G(b(s, c) + n.inkShift(a, e, l, p), 0, 1), h = f[G(Math.floor((1 - m) * f.length) + n.glyphShift(a, e), 0, f.length - 1)];
+				h !== " " && (t.originalColors && (r.fillStyle = v(_(m, [
+					s[c],
+					s[c + 1],
+					s[c + 2]
+				]))), r.fillText(h, l, p));
 			}
 		}
 	};
 	return {
 		canvas: e,
-		sync: p,
+		sync: m,
 		configure(e = {}) {
 			return Object.assign(t, Sn({
 				...t,
@@ -3330,18 +3333,18 @@ function wn(e, t, { maxDpr: n = 2 } = {}) {
 		},
 		render(e, n, i = {}) {
 			if (!r || !a) return !1;
-			let o = Math.max(1, Math.round(Math.max(1, n) * f)), s = i.time || 0, c = t.motion === "flow" ? s / 1e3 * t.motionSpeed * o * 1.6 % o : 0, l = m(e, o, c, c * .35);
-			if (!l) return !1;
+			let o = Math.max(1, Math.round(Math.max(1, n) * u)), s = i.time || 0, d = t.motion === "flow" ? s / 1e3 * t.motionSpeed * o * 1.6 % o : 0, f = h(e, o, d, d * .35);
+			if (!f) return !1;
 			let p = i.pointer && i.pointer.active ? {
 				active: !0,
-				x: i.pointer.x * f,
-				y: i.pointer.y * f
-			} : null, h = b(l, o, s, p), g = C[t.style] || x;
-			if (r.clearRect(0, 0, u, d), g(l, h), t.pointer === "lens" && p) {
-				let i = Math.max(1, Math.round((t.pointerCellSize || n / 2) * f));
+				x: i.pointer.x * u,
+				y: i.pointer.y * u
+			} : null, m = x(f, o, s, p), g = w[t.style] || S;
+			if (r.clearRect(0, 0, c, l), g(f, m), t.pointer === "lens" && p) {
+				let i = Math.max(1, Math.round((t.pointerCellSize || n / 2) * u));
 				if (i !== o) {
-					let n = m(e, i);
-					n && (r.save(), r.beginPath(), r.arc(p.x, p.y, t.pointerRadius * f, 0, Math.PI * 2), r.clip(), g(n, b(n, i, s, null)), r.restore());
+					let n = h(e, i);
+					n && (r.save(), r.beginPath(), r.arc(p.x, p.y, t.pointerRadius * u, 0, Math.PI * 2), r.clip(), g(n, x(n, i, s, null)), r.restore());
 				}
 			}
 			return !0;
@@ -3350,13 +3353,13 @@ function wn(e, t, { maxDpr: n = 2 } = {}) {
 			if (!r) return;
 			let i = G(e, 0, 1);
 			if (i <= 0) return;
-			let a = Math.max(1, Math.round(Math.max(1, n) * f)), s = Math.max(1, Math.ceil(u / a)), c = Math.max(1, Math.ceil(d / a)), l = Math.max(3, Math.round(Math.min(s, c) / 12));
+			let a = Math.max(1, Math.round(Math.max(1, n) * u)), s = Math.max(1, Math.ceil(c / a)), d = Math.max(1, Math.ceil(l / a)), f = Math.max(3, Math.round(Math.min(s, d) / 12));
 			r.save(), r.globalCompositeOperation = "destination-out", r.fillStyle = "#000";
-			for (let e = 0; e < c; e += 1) for (let n = 0; n < s; n += 1) (t === "wipe" ? G(n / s * .55 + e / c * .45 + (_n(n, e, 0, o) - .5) * .22, 0, 1) : vn(n, e, l, o)) < i && r.fillRect(n * a, e * a, a, a);
+			for (let e = 0; e < d; e += 1) for (let n = 0; n < s; n += 1) (t === "wipe" ? G(n / s * .55 + e / d * .45 + (_n(n, e, 0, o) - .5) * .22, 0, 1) : vn(n, e, f, o)) < i && r.fillRect(n * a, e * a, a, a);
 			r.restore();
 		},
 		destroy() {
-			i.width = 1, i.height = 1;
+			d = null, i.width = 1, i.height = 1;
 		}
 	};
 }
@@ -8865,39 +8868,44 @@ var ga = {
 			"willChange"
 		]);
 		e.style.willChange = s ? "transform,filter" : "transform";
-		let b = 0, x = 0, S = 0, C = !0, w = null, T = performance.now(), E = n.create({
+		let b = 0, x = 0, S = 0, C = !0, w = !1, T = null, E = performance.now(), D = (n) => {
+			let a = n * c, d = n * o, f = n * l, p = 1 + Math.abs(n) * u, m;
+			m = r === "translate" ? i === "x" ? `translate3d(${a}px,0,0)` : `translate3d(0,${a}px,0)` : r === "rotate" ? `rotate(${f}deg)` : r === "scale" ? `scale(${p})` : r === "combo" ? `${i === "x" ? `translate3d(${a}px,0,0)` : `translate3d(0,${a}px,0)`} skew${i === "x" ? "Y" : "X"}(${d}deg) rotate(${f}deg) scale(${p})` : `skew${i === "x" ? "Y" : "X"}(${d}deg)`, e.style.transform = m, s && (e.style.filter = `blur(${Math.abs(n) * s}px)`), t.onUpdate?.(n, e);
+		}, O = (e) => {
+			if (T = null, !C) return;
+			let t = Math.min(.05, Math.max(.001, (e - E) / 1e3));
+			if (E = e, f) {
+				let e = (-h * (x - b) + -g * S) / _;
+				S += e * t, x += S * t, b = W(b, 0, m);
+			} else x = W(x, b, p), b = W(b, 0, m), S = 0;
+			let n = Math.abs(x) < 1e-4 && Math.abs(b) < 1e-4 && Math.abs(S) < 1e-4;
+			n && (x = b = S = 0), D(x), n || k();
+		}, k = () => {
+			C && T == null && (T = requestAnimationFrame(O));
+		}, A = n.create({
 			trigger: t.global === !0 ? document.documentElement : e,
 			start: t.start || (t.global === !0 ? 0 : "top bottom"),
 			end: t.end || (t.global === !0 ? "max" : "bottom top"),
 			onUpdate: (n) => {
-				b = G(n.getVelocity() / d, -1, 1) * a * v, t.onDirection?.(n.direction, e, n);
+				w || (T ?? (E = performance.now()), b = G(n.getVelocity() / d, -1, 1) * a * v, t.onDirection?.(n.direction, e, n), k());
 			}
-		}), D = (n) => {
-			let a = n * c, d = n * o, f = n * l, p = 1 + Math.abs(n) * u, m;
-			m = r === "translate" ? i === "x" ? `translate3d(${a}px,0,0)` : `translate3d(0,${a}px,0)` : r === "rotate" ? `rotate(${f}deg)` : r === "scale" ? `scale(${p})` : r === "combo" ? `${i === "x" ? `translate3d(${a}px,0,0)` : `translate3d(0,${a}px,0)`} skew${i === "x" ? "Y" : "X"}(${d}deg) rotate(${f}deg) scale(${p})` : `skew${i === "x" ? "Y" : "X"}(${d}deg)`, e.style.transform = m, s && (e.style.filter = `blur(${Math.abs(n) * s}px)`), t.onUpdate?.(n, e);
-		}, O = (e) => {
-			if (!C) return;
-			let t = Math.min(.05, Math.max(.001, (e - T) / 1e3));
-			if (T = e, f) {
-				let e = (-h * (x - b) + -g * S) / _;
-				S += e * t, x += S * t, b = W(b, 0, m);
-			} else x = W(x, b, p), b = W(b, 0, m), S = 0;
-			Math.abs(x) < 1e-4 && Math.abs(b) < 1e-4 && (x = 0), D(x), w = requestAnimationFrame(O);
+		});
+		k();
+		let j = () => {
+			C = !1, T != null && cancelAnimationFrame(T), T = null;
 		};
-		return w = requestAnimationFrame(O), {
+		return {
 			el: e,
 			type: "scrollVelocity",
 			get value() {
 				return x;
 			},
-			pause() {
-				C = !1, w != null && cancelAnimationFrame(w);
-			},
+			pause: j,
 			resume() {
-				C || (C = !0, T = performance.now(), w = requestAnimationFrame(O));
+				!C && !w && (C = !0, E = performance.now(), k());
 			},
 			destroy() {
-				C = !1, w != null && cancelAnimationFrame(w), E.kill(), y();
+				w || (w = !0, j(), A.kill(), y());
 			}
 		};
 	},

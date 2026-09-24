@@ -27,18 +27,9 @@ export default {
     let current = 0;
     let currentVelocity = 0;
     let alive = true;
+    let destroyed = false;
     let rafId = null;
     let lastTime = performance.now();
-
-    const trigger = scrollTrigger.create({
-      trigger: opts.global === true ? document.documentElement : el,
-      start: opts.start || (opts.global === true ? 0 : 'top bottom'),
-      end: opts.end || (opts.global === true ? 'max' : 'bottom top'),
-      onUpdate: (self) => {
-        target = clamp(self.getVelocity() / divisor, -1, 1) * reverse * response;
-        opts.onDirection?.(self.direction, el, self);
-      }
-    });
 
     const apply = (value) => {
       const translate = value * distance;
@@ -59,6 +50,7 @@ export default {
     };
 
     const tick = (time) => {
+      rafId = null;
       if (!alive) return;
       const dt = Math.min(0.05, Math.max(0.001, (time - lastTime) / 1000));
       lastTime = time;
@@ -74,21 +66,47 @@ export default {
         target = lerp(target, 0, decay);
         currentVelocity = 0;
       }
-      if (Math.abs(current) < 0.0001 && Math.abs(target) < 0.0001) current = 0;
+      // Include velocity: a spring crossing zero can still carry momentum.
+      const settled = Math.abs(current) < 0.0001 && Math.abs(target) < 0.0001
+        && Math.abs(currentVelocity) < 0.0001;
+      if (settled) current = target = currentVelocity = 0;
       apply(current);
+      if (!settled) wake();
+    };
+    const wake = () => {
+      if (!alive || rafId != null) return;
       rafId = requestAnimationFrame(tick);
     };
-    rafId = requestAnimationFrame(tick);
+    const trigger = scrollTrigger.create({
+      trigger: opts.global === true ? document.documentElement : el,
+      start: opts.start || (opts.global === true ? 0 : 'top bottom'),
+      end: opts.end || (opts.global === true ? 'max' : 'bottom top'),
+      onUpdate: (self) => {
+        if (destroyed) return;
+        if (rafId == null) lastTime = performance.now();
+        target = clamp(self.getVelocity() / divisor, -1, 1) * reverse * response;
+        opts.onDirection?.(self.direction, el, self);
+        wake();
+      }
+    });
+
+    wake();
+    const pause = () => {
+      alive = false;
+      if (rafId != null) cancelAnimationFrame(rafId);
+      rafId = null;
+    };
 
     return {
       el,
       type: 'scrollVelocity',
       get value() { return current; },
-      pause() { alive = false; if (rafId != null) cancelAnimationFrame(rafId); },
-      resume() { if (!alive) { alive = true; lastTime = performance.now(); rafId = requestAnimationFrame(tick); } },
+      pause,
+      resume() { if (!alive && !destroyed) { alive = true; lastTime = performance.now(); wake(); } },
       destroy() {
-        alive = false;
-        if (rafId != null) cancelAnimationFrame(rafId);
+        if (destroyed) return;
+        destroyed = true;
+        pause();
         trigger.kill();
         restore();
       }

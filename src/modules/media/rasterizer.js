@@ -303,20 +303,25 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
   const gridContext = grid.getContext('2d', { alpha: true, willReadFrequently: true });
   const seed = (Number(config.seed) || 0x9e3779b9) | 0;
   const random = seededRandom(config.seed);
-  let cssWidth = 0;
-  let cssHeight = 0;
   let pixelWidth = 0;
   let pixelHeight = 0;
   let ratio = 1;
+  let errors = null;
+  // A cell only passes error to the current and next one/two rows. Keep a
+  // rolling window, not a width × height allocation on every video frame.
+  const diffusion = config.type === 'floyd-steinberg'
+    ? [[1, 0, 7 / 16], [-1, 1, 3 / 16], [0, 1, 5 / 16], [1, 1, 1 / 16]]
+    : config.type === 'atkinson'
+      ? [[1, 0, 1 / 8], [2, 0, 1 / 8], [-1, 1, 1 / 8], [0, 1, 1 / 8], [1, 1, 1 / 8], [0, 2, 1 / 8]]
+      : null;
+  const errorRows = config.type === 'atkinson' ? 3 : 2;
 
   // Match the display canvas to its CSS box (bounded by maxDpr) and draw in
   // device pixels — `setTransform` stays identity on purpose.
   const sync = (width, height) => {
-    cssWidth = Math.max(1, width);
-    cssHeight = Math.max(1, height);
     ratio = clamp((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 1, maxDpr);
-    pixelWidth = Math.max(1, Math.round(cssWidth * ratio));
-    pixelHeight = Math.max(1, Math.round(cssHeight * ratio));
+    pixelWidth = Math.max(1, Math.round(Math.max(1, width) * ratio));
+    pixelHeight = Math.max(1, Math.round(Math.max(1, height) * ratio));
     if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
       canvas.width = pixelWidth;
       canvas.height = pixelHeight;
@@ -347,13 +352,15 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
     gridContext.clearRect(0, 0, cols, rows);
     try {
       gridContext.drawImage(source, map.sx, map.sy, map.sw * scaleX, map.sh * scaleY, 0, 0, cols, rows);
+      const imageData = gridContext.getImageData(0, 0, cols, rows);
       return {
         cols,
         rows,
         cell: cellDevice,
         originX: -shiftX,
         originY: -shiftY,
-        data: gridContext.getImageData(0, 0, cols, rows).data
+        imageData,
+        data: imageData.data
       };
     } catch (_error) {
       // A tainted (cross-origin) source cannot be read back; the caller keeps
@@ -362,8 +369,8 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
     }
   };
 
-  // Quantise one 0..1 value to `steps` levels (2 = pure black/white).
-  const quantize = (value, steps) => Math.round(clamp(value, 0, 1) * (steps - 1)) / (steps - 1);
+  // Quantise an already bounded 0..1 value (source channel or clamped carry).
+  const quantize = (value, steps) => Math.round(value * (steps - 1)) / (steps - 1);
 
   // Paint helpers shared by the styles. `tone` is 0 (paper) .. 1 (ink).
   // With `originalColors` the cell keeps its own colour, posterised to
@@ -378,14 +385,16 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
         const base = Math.floor(scaled);
         return Math.round(clamp((base + (scaled - base > threshold ? 1 : 0)) / (steps - 1), 0, 1) * 255);
       };
-      return [channel(cellRgb[0]), channel(cellRgb[1]), channel(cellRgb[2])];
+      return cellRgb.map(channel);
     }
+    let from = config.paper;
+    let to = config.ink;
     if (config.accent && tone > 0 && tone < 1) {
       // Three-colour palette: paper → accent → ink.
-      const [from, to, local] = tone < 0.5 ? [config.paper, config.accent, tone * 2] : [config.accent, config.ink, tone * 2 - 1];
-      return [mix(from[0], to[0], local), mix(from[1], to[1], local), mix(from[2], to[2], local)];
+      if (tone < 0.5) { to = config.accent; tone *= 2; }
+      else { from = config.accent; tone = tone * 2 - 1; }
     }
-    return [mix(config.paper[0], config.ink[0], tone), mix(config.paper[1], config.ink[1], tone), mix(config.paper[2], config.ink[2], tone)];
+    return [mix(from[0], to[0], tone), mix(from[1], to[1], tone), mix(from[2], to[2], tone)];
   };
   const css = ([r, g, b]) => `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
 
@@ -494,69 +503,63 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
   const renderDither = (frame, dynamics) => {
     const { cols, rows, cell, data, originX, originY } = frame;
     const steps = config.colorSteps;
-    const output = gridContext.createImageData(cols, rows);
-    const out = output.data;
+    // Every source cell is read only once, before its output is written. Reuse
+    // the sample's ImageData rather than allocating a second full RGBA buffer.
     const matrix = DITHER_MATRICES[config.type];
-    // Error diffusion carries the rounding error of a cell to its neighbours.
-    const diffusion = config.type === 'floyd-steinberg'
-      ? [[1, 0, 7 / 16], [-1, 1, 3 / 16], [0, 1, 5 / 16], [1, 1, 1 / 16]]
-      : config.type === 'atkinson'
-        ? [[1, 0, 1 / 8], [2, 0, 1 / 8], [-1, 1, 1 / 8], [0, 1, 1 / 8], [1, 1, 1 / 8], [0, 2, 1 / 8]]
-        : null;
-    // Error buffers: one for the ink tone, or one per channel in colour mode.
     const channels = config.originalColors ? 3 : 1;
-    const errors = diffusion ? new Float32Array(cols * rows * channels) : null;
+    const stride = cols * channels;
+    if (diffusion) {
+      const length = stride * errorRows;
+      if (!errors || errors.length !== length) errors = new Float32Array(length);
+      else errors.fill(0);
+    }
     const spread = (x, y, channel, error) => {
-      diffusion.forEach(([dx, dy, weight]) => {
+      for (const [dx, dy, weight] of diffusion) {
         const nx = x + dx;
-        const ny = y + dy;
-        if (nx >= 0 && nx < cols && ny < rows) errors[(ny * cols + nx) * channels + channel] += error * weight;
-      });
+        if (nx >= 0 && nx < cols && y + dy < rows) errors[dy * stride + nx * channels + channel] += error * weight;
+      }
     };
+    const cellRgb = [0, 0, 0];
     for (let y = 0; y < rows; y += 1) {
       for (let x = 0; x < cols; x += 1) {
         const index = (y * cols + x) * 4;
-        const cellRgb = [data[index], data[index + 1], data[index + 2]];
+        for (let channel = 0; channel < 3; channel += 1) cellRgb[channel] = data[index + channel];
         const cx = originX + x * cell + cell / 2;
         const cy = originY + y * cell + cell / 2;
         let rgb;
-        if (diffusion && config.originalColors) {
-          rgb = cellRgb.map((value, channel) => {
-            const carried = clamp(value / 255 + errors[(y * cols + x) * channels + channel], 0, 1);
+        if (diffusion) {
+          for (let channel = 0; channel < channels; channel += 1) {
+            const value = config.originalColors ? cellRgb[channel] / 255 : inkOf(data, index) + dynamics.inkShift(x, y, cx, cy);
+            const carried = clamp(value + errors[x * channels + channel], 0, 1);
             const level = quantize(carried, steps);
             spread(x, y, channel, carried - level);
-            return Math.round(level * 255);
-          });
-        } else if (diffusion) {
-          const ink = clamp(inkOf(data, index) + dynamics.inkShift(x, y, cx, cy) + errors[y * cols + x], 0, 1);
-          const tone = quantize(ink, steps);
-          spread(x, y, 0, ink - tone);
-          rgb = paletteColor(tone, cellRgb);
+            if (config.originalColors) cellRgb[channel] = Math.round(level * 255);
+            else rgb = paletteColor(level);
+          }
+          if (config.originalColors) rgb = cellRgb;
         } else {
           const base = matrix
             ? matrix[(y + dynamics.driftY) % matrix.length][(x + dynamics.driftX) % matrix.length]
-            : config.type === 'noise'
-              ? gradientNoise(x, y, dynamics.noisePhase)
-              : random();
+            : config.type === 'noise' ? gradientNoise(x, y, dynamics.noisePhase) : random();
           const threshold = clamp(base + dynamics.thresholdShift(x, y), 0, 1);
           if (config.originalColors) {
             rgb = paletteColor(0, cellRgb, threshold);
           } else {
-            // Ordered dithering with N levels: compare the fractional part of
-            // the scaled ink against the matrix threshold.
             const ink = clamp(inkOf(data, index) + dynamics.inkShift(x, y, cx, cy), 0, 1);
             const scaled = ink * (steps - 1);
             const floor = Math.floor(scaled);
-            rgb = paletteColor(clamp((floor + (scaled - floor > threshold ? 1 : 0)) / (steps - 1), 0, 1), cellRgb);
+            rgb = paletteColor(clamp((floor + (scaled - floor > threshold ? 1 : 0)) / (steps - 1), 0, 1));
           }
         }
-        out[index] = rgb[0];
-        out[index + 1] = rgb[1];
-        out[index + 2] = rgb[2];
-        out[index + 3] = 255;
+        data[index] = rgb[0];
+        data[index + 1] = rgb[1];
+        data[index + 2] = rgb[2];
+        data[index + 3] = 255;
       }
+      // Slide the small window once per row, avoiding modulo per neighbour.
+      if (diffusion) { errors.copyWithin(0, stride); errors.fill(0, -stride); }
     }
-    gridContext.putImageData(output, 0, 0);
+    gridContext.putImageData(frame.imageData, 0, 0);
     context.imageSmoothingEnabled = false;
     context.drawImage(grid, 0, 0, cols, rows, originX, originY, cols * cell, rows * cell);
   };
@@ -630,6 +633,7 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
     context.fillStyle = css(config.paper);
     context.fillRect(0, 0, pixelWidth, pixelHeight);
     const paintShape = SHAPE_PAINTERS[config.shape] || SHAPE_PAINTERS.dot;
+    if (!config.originalColors) context.fillStyle = css(config.ink);
     const inkAt = (gx, gy, cx, cy) => {
       const index = (clamp(gy, 0, rows - 1) * cols + clamp(gx, 0, cols - 1)) * 4;
       return { index, ink: clamp(inkOf(data, index) + dynamics.inkShift(gx, gy, cx, cy), 0, 1) };
@@ -637,9 +641,7 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
     const paintCell = (gx, gy, cx, cy) => {
       const { index, ink } = inkAt(gx, gy, cx, cy);
       if (ink <= 0.02) return;
-      context.fillStyle = css(config.originalColors
-        ? paletteColor(ink, [data[index], data[index + 1], data[index + 2]])
-        : paletteColor(1));
+      if (config.originalColors) context.fillStyle = css(paletteColor(ink, [data[index], data[index + 1], data[index + 2]]));
       paintShape(context, cx, cy, cell, ink);
     };
 
@@ -680,7 +682,7 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
     context.font = `${Math.max(4, cell * 1.15)}px ${config.font}`;
     context.textAlign = 'center';
     context.textBaseline = 'middle';
-    const inkStyle = config.originalColors ? null : css(paletteColor(1));
+    if (!config.originalColors) context.fillStyle = css(config.ink);
     for (let y = 0; y < rows; y += 1) {
       for (let x = 0; x < cols; x += 1) {
         const index = (y * cols + x) * 4;
@@ -690,7 +692,7 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
         const slot = Math.floor((1 - ink) * ramp.length) + dynamics.glyphShift(x, y);
         const glyph = ramp[clamp(slot, 0, ramp.length - 1)];
         if (glyph === ' ') continue;
-        context.fillStyle = config.originalColors ? css(paletteColor(ink, [data[index], data[index + 1], data[index + 2]])) : inkStyle;
+        if (config.originalColors) context.fillStyle = css(paletteColor(ink, [data[index], data[index + 1], data[index + 2]]));
         context.fillText(glyph, cx, cy);
       }
     }
@@ -792,6 +794,7 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
       context.restore();
     },
     destroy() {
+      errors = null;
       grid.width = 1;
       grid.height = 1;
     }
