@@ -724,6 +724,60 @@ assert.ok(countdownSeconds > 0 && countdownSeconds <= 12, 'secondsOnly must supp
 countdownSecondsInstance.destroy();
 countdownSecondsCounter.remove();
 
+// Counter fallback work must be bounded and terminal on destroy. The non-GSAP
+// Pop renderer used to schedule one rAF per character plus an unowned completion
+// timeout, so teardown could still call user code after restoring author markup.
+const authoredPop = document.createElement('span');
+authoredPop.innerHTML = '<em>author</em>';
+document.body.appendChild(authoredPop);
+const nativeRaf = globalThis.requestAnimationFrame;
+const nativeCancelRaf = globalThis.cancelAnimationFrame;
+let popRafCount = 0;
+let popCompleted = 0;
+globalThis.requestAnimationFrame = (callback) => {
+  popRafCount += 1;
+  return nativeRaf(callback);
+};
+const popInstance = counterModule.create(authoredPop, {
+  mode: 'pop', to: 123456, duration: 0.06, stagger: 0.01, start: false,
+  onComplete() { popCompleted += 1; }
+});
+assert.equal(popRafCount, 1, 'native Pop must wake all characters with one shared animation frame');
+popInstance.destroy();
+await new Promise((resolve) => setTimeout(resolve, 180));
+assert.equal(popCompleted, 0, 'destroyed Pop must cancel its delayed completion callback');
+assert.equal(authoredPop.innerHTML, '<em>author</em>', 'destroyed Pop must keep restored author markup untouched');
+globalThis.requestAnimationFrame = nativeRaf;
+globalThis.cancelAnimationFrame = nativeCancelRaf;
+authoredPop.remove();
+
+// Clock flip schedules the second half of its fold after the first half starts.
+// Destroying during that gap must cancel the delayed animation instead of
+// touching detached/replaced digit nodes later.
+const nativeAnimate = window.HTMLElement.prototype.animate;
+let clockDestroyed = false;
+let animationsAfterClockDestroy = 0;
+window.HTMLElement.prototype.animate = function () {
+  if (clockDestroyed) animationsAfterClockDestroy += 1;
+  return { onfinish: null, oncancel: null, cancel() {}, pause() {}, play() {}, finished: Promise.resolve() };
+};
+const flipClock = document.createElement('span');
+flipClock.innerHTML = '<b>clock</b>';
+document.body.appendChild(flipClock);
+const flipClockInstance = counterModule.create(flipClock, {
+  mode: 'clock', clockStyle: 'flip', secondsOnly: true, secondsDigits: 2,
+  secondsLabel: 'S', until: new Date(Date.now() + 1250).toISOString(),
+  rollDuration: 0.4
+});
+await new Promise((resolve) => setTimeout(resolve, 320));
+clockDestroyed = true;
+flipClockInstance.destroy();
+await new Promise((resolve) => setTimeout(resolve, 360));
+assert.equal(animationsAfterClockDestroy, 0, 'destroyed flip clock must cancel delayed fold callbacks');
+assert.equal(flipClock.innerHTML, '<b>clock</b>', 'flip clock destroy must keep restored author markup untouched');
+window.HTMLElement.prototype.animate = nativeAnimate;
+flipClock.remove();
+
 const relativeTime = document.createElement('time');
 relativeTime.textContent = '2026년 8월 9일 10:30';
 document.body.appendChild(relativeTime);

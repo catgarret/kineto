@@ -4,6 +4,8 @@
 
 ### English
 
+- Make Counter delayed work obey teardown: native Pop now wakes every character from one shared rAF instead of one rAF per glyph and owns its completion timeout; Clock flip/fade delayed callbacks are tracked, cleared before a structural rebuild, and cancelled on destroy. This prevents late callbacks from touching restored or detached DOM.
+
 - Restore deterministic WebKit geometry/motion boundaries in the demo: Tabs now retries a hidden-to-visible indicator measurement for at most two frames plus one bounded fallback when the active tab is still 0px, and the hero scene caps per-frame progress so a long WebKit scheduling stall cannot collapse a 680–860ms inertial snap into one giant scroll jump. The browser regression follows the scene controller's bounded lifecycle instead of assuming a fixed one-second runner window.
 
 - Remove redundant Loading Indicator terminal runtime work: legacy terminal presets now use the already-frozen shared preset map directly instead of cloning/freezing it again at module load, and a text-frame renderer branch whose two paths were identical is collapsed. Behavior and preset IDs stay unchanged while package/runtime bytes drop.
@@ -17,6 +19,8 @@
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- Counter의 지연 작업을 teardown 수명주기에 묶었습니다. 네이티브 Pop은 글자마다 RAF를 만들지 않고 한 RAF로 모두 시작하며 completion timeout도 소유하고, Clock flip/fade의 지연 callback은 추적해서 구조 재빌드 전에 정리하고 destroy 시 취소합니다. 복원되거나 분리된 DOM을 늦게 다시 건드리는 문제를 막습니다.
 
 - WebKit에서 데모의 geometry/motion 경계를 결정적으로 복원했습니다. Tabs는 hidden→visible 전환 직후 active tab이 아직 0px이면 최대 두 프레임과 한 번의 bounded fallback까지만 재측정하며, hero scene은 프레임당 progress 증가량을 제한해 WebKit 스케줄링이 오래 멈춰도 680–860ms 관성 snap이 한 번의 큰 scroll jump로 붕괴하지 않습니다. 브라우저 회귀 테스트도 고정 1초 대신 scene controller의 bounded lifecycle을 따라갑니다.
 
