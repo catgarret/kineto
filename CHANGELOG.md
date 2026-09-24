@@ -4,9 +4,13 @@
 
 ### English
 
+- Make the Lightbox toolbar resilient down to narrow phone widths and three-digit gallery counts. The counter uses no-wrap tabular numerals and never flex-shrinks; the mobile toolbar can wrap into two rows, and ≤420 px controls use compact spacing without hiding features. Browser QA exercises a 320 px viewport with `999 / 999`, share/download/zoom/close all visible, and requires both counter/actions to remain inside the viewer with no horizontal overflow.
+
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- Lightbox 툴바를 좁은 휴대폰 폭과 세 자리 갤러리 수까지 견디도록 보강했습니다. 카운터는 tabular 숫자·줄바꿈 금지·flex 축소 금지를 적용하고, 모바일 툴바는 필요하면 2행으로 감기며, 420px 이하에서는 기능을 숨기지 않고 버튼 간격만 compact하게 줄입니다. 브라우저 QA에서 320px 뷰포트에 `999 / 999`와 share/download/zoom/close를 모두 표시해 카운터·액션이 뷰어 안에 있고 가로 overflow가 없는지 검사합니다.
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
