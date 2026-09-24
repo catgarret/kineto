@@ -280,26 +280,55 @@ export function createProgressOutputs(el, opts = {}) {
     return target;
   });
   let released = false;
+  const rendered = new WeakMap();
 
   return {
     update(value, state = 'running') {
       const progress = clamp(Number(value) || 0, 0, 100);
       const rounded = Math.round(progress);
+      const roundedText = String(rounded);
+      const stateText = String(state);
+      const progressText = (progress / 100).toFixed(4);
       targets.forEach((target) => {
-        const template = target.dataset.ktProgressTemplate || opts.progressTemplate || '{value}%';
-        const output = String(template)
-          .split('{value}').join(String(rounded))
-          .split('{progress}').join(String(rounded))
-          .split('{state}').join(String(state));
-        if ('value' in target && /^(?:INPUT|OUTPUT|PROGRESS)$/.test(target.tagName)) {
-          target.value = target.tagName === 'PROGRESS' ? progress : output;
-        } else {
-          target.textContent = output;
+        const template = String(target.dataset.ktProgressTemplate || opts.progressTemplate || '{value}%');
+        const previous = rendered.get(target);
+        const discreteChanged = !previous
+          || previous.rounded !== rounded
+          || previous.state !== stateText
+          || previous.template !== template;
+        const progressChanged = !previous || previous.progress !== progressText;
+
+        // The visible/template output and rounded metadata only change at an
+        // integer boundary, state change, or live template change. Loader
+        // smoothing may call this dozens of times inside the same percentage;
+        // avoid repeating equivalent DOM string writes on every tick.
+        if (discreteChanged) {
+          const output = template
+            .split('{value}').join(roundedText)
+            .split('{progress}').join(roundedText)
+            .split('{state}').join(stateText);
+          if ('value' in target && /^(?:INPUT|OUTPUT|PROGRESS)$/.test(target.tagName)) {
+            if (target.tagName !== 'PROGRESS') target.value = output;
+          } else {
+            target.textContent = output;
+          }
+          target.dataset.ktProgressValue = roundedText;
+          target.dataset.ktProgressState = stateText;
+          target.style.setProperty('--kt-percent', roundedText);
         }
-        target.dataset.ktProgressValue = String(rounded);
-        target.dataset.ktProgressState = String(state);
-        target.style.setProperty('--kt-progress', (progress / 100).toFixed(4));
-        target.style.setProperty('--kt-percent', String(rounded));
+
+        // <progress>.value is a public numeric surface and keeps the full input
+        // precision. The CSS custom property is serialized to four decimals by
+        // contract, so identical serialized values are safe to deduplicate.
+        if (target.tagName === 'PROGRESS') target.value = progress;
+        if (progressChanged) target.style.setProperty('--kt-progress', progressText);
+
+        rendered.set(target, {
+          rounded,
+          state: stateText,
+          template,
+          progress: progressText
+        });
       });
     },
     destroy() {

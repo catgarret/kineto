@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import Kineto from '../src/core.js';
 import { JSDOM } from 'jsdom';
-import { coerce, dash, decomposeHangul, hangulFrames, measureThenApply, numberOption, q, readOpts, segmentText, snapshotAttributes, snapshotInlineStyles, timeMs } from '../src/utils.js';
+import { coerce, createProgressOutputs, dash, decomposeHangul, hangulFrames, measureThenApply, numberOption, q, readOpts, segmentText, snapshotAttributes, snapshotInlineStyles, timeMs } from '../src/utils.js';
 
 assert.equal(dash('scrollSequence'), 'scroll-sequence');
 assert.equal(coerce('true'), true);
@@ -178,6 +178,67 @@ assert.doesNotThrow(() => Kineto.destroy());
     globalThis.requestAnimationFrame = savedRaf;
     console.error = savedError;
   }
+}
+
+
+
+// createProgressOutputs(): smoothed loader ticks often stay inside one rounded
+// percentage. Preserve continuous --kt-progress / <progress>.value updates, but
+// do not rewrite identical visible text, rounded metadata or --kt-percent.
+{
+  const { window } = new JSDOM('<!doctype html><div id="scope"><span id="out" data-kt-progress-output data-kt-progress-template="{value}% {state}"></span><progress id="meter" data-kt-progress-output></progress></div>');
+  const scope = window.document.getElementById('scope');
+  const out = window.document.getElementById('out');
+  const meter = window.document.getElementById('meter');
+
+  const textWrites = [];
+  let textValue = out.textContent;
+  Object.defineProperty(out, 'textContent', {
+    configurable: true,
+    get() { return textValue; },
+    set(value) { textWrites.push(String(value)); textValue = String(value); }
+  });
+
+  const outStyleWrites = [];
+  const nativeOutSetProperty = out.style.setProperty.bind(out.style);
+  out.style.setProperty = (name, value, priority) => {
+    outStyleWrites.push([name, String(value)]);
+    return nativeOutSetProperty(name, value, priority);
+  };
+
+  const outputs = createProgressOutputs(scope);
+  outputs.update(10.1, 'running');
+  outputs.update(10.2, 'running');
+  outputs.update(10.24, 'running');
+
+  assert.deepEqual(textWrites, ['10% running'], 'same rounded percent/state/template must not rewrite visible output');
+  assert.equal(out.dataset.ktProgressValue, '10');
+  assert.equal(out.dataset.ktProgressState, 'running');
+  assert.equal(outStyleWrites.filter(([name]) => name === '--kt-percent').length, 1, 'rounded percent CSS must be written once');
+  assert.equal(outStyleWrites.filter(([name]) => name === '--kt-progress').length, 3, 'distinct serialized continuous progress values must remain observable');
+
+  outputs.update(10.24, 'paused');
+  assert.deepEqual(textWrites, ['10% running', '10% paused'], 'state changes must refresh the discrete output');
+
+  out.dataset.ktProgressTemplate = 'state={state} value={value}';
+  outputs.update(10.24, 'paused');
+  assert.deepEqual(textWrites, ['10% running', '10% paused', 'state=paused value=10'], 'live template changes must invalidate the write cache');
+
+  outputs.update(10.24, 'paused');
+  assert.equal(textWrites.length, 3, 'identical progress/state/template must stay deduplicated');
+
+  outputs.update(10.241, 'paused');
+  assert.equal(outStyleWrites.filter(([name]) => name === '--kt-progress').length, 3, 'same four-decimal progress serialization must skip the CSS write');
+
+  outputs.update(10.6, 'paused');
+  assert.equal(textWrites.at(-1), 'state=paused value=11', 'integer boundary must refresh visible output');
+
+  outputs.update(42.12345, 'running');
+  assert.equal(meter.value, 42.12345, '<progress>.value keeps full numeric precision');
+  outputs.update(42.12346, 'running');
+  assert.equal(meter.value, 42.12346, '<progress>.value updates even within one rounded percent');
+
+  outputs.destroy();
 }
 
 console.log('Utility and SSR checks OK.');

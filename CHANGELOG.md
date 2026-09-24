@@ -4,6 +4,8 @@
 
 ### English
 
+- Deduplicate Loader/Loading Indicator progress-output DOM writes during smoothed updates: visible templates, rounded metadata and `--kt-percent` now update only when their represented value/state/template changes, while continuous `--kt-progress` and native `<progress>.value` precision remain intact.
+
 - Reduce `Kineto.scan()` activation discovery from one selector traversal per registered module to one traversal per engine tier, preserving registry-order creation and re-discovering GSAP markup only when an asynchronous engine load requires it; lock 100 registered native modules to one traversal in the deterministic performance suite.
 - Make autoplay hover timing deterministic and sample hero motion on animation frames so hosted-runner delays do not produce false browser failures.
 
@@ -100,6 +102,8 @@
 - Dependabot no longer proposes major bumps for the `tests/integrations` fixture: the UI-library majors there are the ones the integration map documents, so a new major is reviewed together with the docs and tests instead of landing as a failing automatic PR.
 
 ### 한국어
+
+- Loader/Loading Indicator의 smoothing 갱신 중 progress output DOM 쓰기를 중복 제거했습니다. 표시 template, 반올림 metadata, `--kt-percent`는 표현 값/state/template이 바뀔 때만 갱신하고, 연속 `--kt-progress`와 네이티브 `<progress>.value` 정밀도는 그대로 유지합니다.
 
 - `Kineto.scan()`의 활성화 탐색을 등록 모듈마다 한 번씩 DOM 검색하던 방식에서 엔진 그룹당 한 번으로 줄였습니다. 모듈 등록 순서의 생성 동작은 유지하고, 비동기 GSAP 로딩이 실제로 필요한 경우에만 완료 시 GSAP 마크업을 다시 찾습니다. 결정적 성능 테스트에서 네이티브 모듈 100개가 selector traversal 1회만 사용하도록 고정했습니다.
 - 자동재생 호버 검사 시간을 제어하고 첫 화면 움직임을 애니메이션 프레임마다 측정해 CI 실행 지연으로 인한 잘못된 실패를 방지했습니다.

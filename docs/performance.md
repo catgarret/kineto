@@ -165,6 +165,7 @@ Kineto 번들 크기와 구분해야 합니다. 이 경계는 `npm run test:deps
   탐색도 취소합니다. 관찰 영역 밖으로 이동한 요소는 새로 초기화하지 않습니다.
 - `scan()`은 기존 인스턴스의 옵션을 다시 파싱하지 않습니다. 옵션을 바꾸려면
   기존과 같이 `updateModule()` 또는 `replay()`를 사용하세요.
+- Loader/Loading Indicator의 외부 progress output은 smoothing tick마다 같은 정수 퍼센트·state·template을 반복 기록하지 않습니다. 연속 `--kt-progress` 값과 `<progress>.value` 정밀도는 유지하며, 직렬화된 값이 실제로 바뀔 때만 DOM/CSS 쓰기를 수행합니다.
 - Scroll Velocity는 위치·목표·탄성 속도가 모두 안정되면 RAF를 중지합니다.
   새로운 스크롤 입력에서 재개하며, `onUpdate`는 실제 처리 프레임에만 호출됩니다.
   Cursor(팔로워·체인·스네이크)·Mouse Parallax·나침반·Marquee의 스크롤 기울기도 같습니다.
