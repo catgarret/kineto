@@ -4,6 +4,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { assertPinnedAction } from './workflow-action-pins.mjs';
+import { ciVerdict, githubRepo, readCiVerdict, waitForCi } from '../scripts/ci-status.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8');
@@ -379,4 +380,51 @@ execFileSync(process.execPath, [path.join(root, 'scripts/check-mcp-release.mjs')
   stdio: 'inherit'
 });
 
-console.log('release-automation OK — gated least-privilege publish, verified tarball reuse, rerun safety, pinned actions, engine CI, CDN failure handling, and the mcp-v release path.');
+// release:ship cuts a tag only after CI passed on that exact commit. A tag is
+// never moved, so a tag on a red commit burns the version (v0.12.0).
+const pushAt = shipReleaseScript.indexOf("run('git', ['push', 'origin', 'main'])");
+const waitAt = shipReleaseScript.indexOf('await waitForCi(');
+const tagAt = shipReleaseScript.indexOf("run('git', ['tag', '-a'");
+assert.ok(pushAt > 0 && waitAt > pushAt && tagAt > waitAt, 'release:ship must push main, then wait for CI, then create the tag');
+assert.match(shipReleaseScript, /verdict !== 'success'[\s\S]*?fail\(/, 'release:ship must stop before tagging unless CI succeeded');
+assert.doesNotMatch(shipReleaseScript, /console\.log\([^)]*get-url/, 'the origin URL can hold credentials and must never be printed');
+const ciStatusScript = read('scripts/ci-status.mjs');
+assert.doesNotMatch(ciStatusScript, /process\.env|authorization/i, 'the CI check must not read or send credentials');
+assert.match(ciStatusScript, /redirect: 'error'/, 'the CI check must not follow redirects off the fixed API host');
+
+assert.deepEqual(githubRepo('https://github.com/catgarret/kineto.git'), { owner: 'catgarret', repo: 'kineto' });
+assert.deepEqual(githubRepo('https://someone:secret@github.com/catgarret/kineto'), { owner: 'catgarret', repo: 'kineto' });
+assert.deepEqual(githubRepo('git@github.com:catgarret/kineto.git'), { owner: 'catgarret', repo: 'kineto' });
+assert.equal(githubRepo('https://gitlab.com/catgarret/kineto.git'), null);
+assert.equal(githubRepo('https://github.com/../etc'), null);
+
+const SHA_A = 'a'.repeat(40);
+const run = (id, extra) => ({ id, head_sha: SHA_A, event: 'push', head_branch: 'main', status: 'completed', conclusion: 'success', ...extra });
+assert.equal(ciVerdict([], SHA_A), 'missing');
+assert.equal(ciVerdict([run(1, { head_branch: 'feature' }), run(2, { event: 'pull_request' })], SHA_A), 'missing', 'only push runs on main count');
+assert.equal(ciVerdict([run(1), run(2, { status: 'in_progress', conclusion: null })], SHA_A), 'pending', 'the newest run decides');
+assert.equal(ciVerdict([run(3, { conclusion: 'failure' }), run(2)], SHA_A), 'failure');
+assert.equal(ciVerdict([run(1, { conclusion: 'cancelled' })], SHA_A), 'failure', 'anything but success blocks the tag');
+assert.equal(ciVerdict([run(1)], SHA_A), 'success');
+
+{
+  const requested = [];
+  const answers = [[], [run(5, { status: 'in_progress', conclusion: null })], [run(5)]];
+  const fakeFetch = async (url, init) => {
+    requested.push({ url: String(url), init });
+    return { ok: true, status: 200, json: async () => ({ workflow_runs: answers.shift() }) };
+  };
+  let clock = 0;
+  const verdict = await waitForCi({ owner: 'catgarret', repo: 'kineto', sha: SHA_A, fetchImpl: fakeFetch, sleep: async (ms) => { clock += ms; }, now: () => clock });
+  assert.equal(verdict, 'success', 'waitForCi polls through "not started" and "running" to the result');
+  assert.equal(requested.length, 3);
+  assert.equal(new URL(requested[0].url).origin, 'https://api.github.com');
+  assert.equal(new URL(requested[0].url).searchParams.get('head_sha'), SHA_A);
+  assert.equal(Object.keys(requested[0].init.headers).some((name) => /authorization/i.test(name)), false, 'no credentials are sent');
+  await assert.rejects(readCiVerdict({ owner: 'catgarret', repo: 'kineto', sha: 'not-a-sha', fetchImpl: fakeFetch }), /invalid commit SHA/);
+  await assert.rejects(readCiVerdict({ owner: 'catgarret', repo: 'kineto', sha: SHA_A, fetchImpl: async () => ({ ok: false, status: 403 }) }), /rate limit/);
+  const neverStarts = await waitForCi({ owner: 'catgarret', repo: 'kineto', sha: SHA_A, fetchImpl: async () => ({ ok: true, status: 200, json: async () => ({ workflow_runs: [] }) }), sleep: async (ms) => { clock += ms; }, now: () => clock });
+  assert.equal(neverStarts, 'missing', 'a commit CI never picked up does not get a tag');
+}
+
+console.log('release-automation OK — gated least-privilege publish, verified tarball reuse, rerun safety, pinned actions, engine CI, CDN failure handling, the mcp-v release path, and release:ship waiting for green CI before tagging.');

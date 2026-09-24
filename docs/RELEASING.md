@@ -112,7 +112,19 @@ npm run release:ship -- v<version>
 ```
 
 The command validates the release, quietly checks that neither the local nor
-remote tag exists, pushes `main`, creates an annotated tag, and pushes the tag.
+remote tag exists, pushes `main`, **waits for the CI run of that exact commit
+to pass**, and only then creates and pushes the annotated tag. The wait reads
+the public GitHub Actions API without a token (`scripts/ci-status.mjs`) and
+takes as long as CI does (about 15 minutes). If CI fails, is cancelled, or never
+starts, the command stops **before** tagging, so the version is still unused:
+fix `main` and run the same command again. `--skip-ci-wait` skips the check
+when you have already seen CI green for `HEAD`.
+
+Why: a pushed tag is never moved, so a tag cut on a commit whose CI later fails
+uses up the version. `v0.12.0` was tagged together with an unverified push;
+CI and the release gate failed, nothing reached npm, the demo site stayed on
+the previous build, and the fixes shipped as `v0.12.1`.
+
 The tag starts `.github/workflows/release.yml`, which:
 
 1. checks version and bilingual release-note consistency;
