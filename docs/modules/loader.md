@@ -58,6 +58,11 @@ await loader.finished;
 </div>
 ```
 
+출력 대상은 `<output>`·`<input>`·일반 요소(텍스트)·`<progress>`(값) 모두 됩니다. `<progress>`에는
+그 요소의 눈금으로 값을 씁니다 — `max`가 없으면(기본 1) 42%는 `0.42`, `max="100"`이면 `42`입니다.
+출력은 반올림한 퍼센트·상태·템플릿이 바뀔 때만 다시 쓰고, `--kt-progress`와 `<progress>` 값은
+매 틱 갱신합니다.
+
 `window`은 브라우저의 페이지 완료 시점을, `resources`는 발견한
 리소스의 완료 개수를 추적합니다. 실제 전송 byte 비율이 필요하면
 `trackFetch()`를 사용하고 서버가 `Content-Length`를 제공해야 합니다.

@@ -320,7 +320,10 @@ export function createProgressOutputs(el, opts = {}) {
         // <progress>.value is a public numeric surface and keeps the full input
         // precision. The CSS custom property is serialized to four decimals by
         // contract, so identical serialized values are safe to deduplicate.
-        if (target.tagName === 'PROGRESS') target.value = progress;
+        // A <progress> reads its value on ITS OWN scale — 0 to `max`, and `max`
+        // defaults to 1 — so write the fraction of max, not Kineto's 0–100: a
+        // bare <progress> used to be pinned full from the first percent.
+        if (target.tagName === 'PROGRESS') target.value = (progress / 100) * (target.max || 1);
         if (progressChanged) target.style.setProperty('--kt-progress', progressText);
 
         rendered.set(target, {

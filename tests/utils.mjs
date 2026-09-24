@@ -186,10 +186,11 @@ assert.doesNotThrow(() => Kineto.destroy());
 // percentage. Preserve continuous --kt-progress / <progress>.value updates, but
 // do not rewrite identical visible text, rounded metadata or --kt-percent.
 {
-  const { window } = new JSDOM('<!doctype html><div id="scope"><span id="out" data-kt-progress-output data-kt-progress-template="{value}% {state}"></span><progress id="meter" data-kt-progress-output></progress></div>');
+  const { window } = new JSDOM('<!doctype html><div id="scope"><span id="out" data-kt-progress-output data-kt-progress-template="{value}% {state}"></span><progress id="meter" max="100" data-kt-progress-output></progress><progress id="bare" data-kt-progress-output></progress></div>');
   const scope = window.document.getElementById('scope');
   const out = window.document.getElementById('out');
   const meter = window.document.getElementById('meter');
+  const bare = window.document.getElementById('bare');
 
   const textWrites = [];
   let textValue = out.textContent;
@@ -237,6 +238,9 @@ assert.doesNotThrow(() => Kineto.destroy());
   assert.equal(meter.value, 42.12345, '<progress>.value keeps full numeric precision');
   outputs.update(42.12346, 'running');
   assert.equal(meter.value, 42.12346, '<progress>.value updates even within one rounded percent');
+  // A <progress> without max has max = 1: the value is written on that scale,
+  // not as 42 — which the element clamps to 1 and draws as a full bar.
+  assert.ok(Math.abs(bare.value - 0.4212346) < 1e-9, `a bare <progress> shows 42 %, not a full bar (got ${bare.value})`);
 
   outputs.destroy();
 }
