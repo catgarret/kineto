@@ -1150,19 +1150,33 @@
         const distance=top-from;
         const duration=Math.min(SNAP_MAX_MS,Math.max(SNAP_MIN_MS,Math.abs(distance)*.42));
         const started=performance.now();
+        let renderedEased=0;
         // A quartic ease-out carries visible momentum through the middle of the
-        // trip, then settles without overshoot. Clamp every write so Safari's
-        // rubber-band range never becomes part of the programmed trajectory.
+        // trip, then settles without overshoot. Limit the ACTUAL travelled
+        // fraction per rendered frame: limiting raw progress is insufficient
+        // because quartic ease-out turns progress .34 into ~81% of the distance.
         const frame=(now)=>{
           const progress=Math.min(1,Math.max(0,(now-started)/duration));
-          const eased=1-Math.pow(1-progress,4);
+          const targetEased=1-Math.pow(1-progress,4);
+          const eased=Math.min(targetEased,renderedEased+.28);
+          renderedEased=eased;
           const next=from+distance*eased;
           window.scrollTo(0,distance>=0?Math.min(top,Math.max(from,next)):Math.max(top,Math.min(from,next)));
-          if(progress<1){scrollRaf=requestAnimationFrame(frame);return;}
-          scrollRaf=null;
-          window.scrollTo(0,top);
-          animationDone=true;
-          finishGesture();
+          if(eased<1){scrollRaf=requestAnimationFrame(frame);return;}
+          // WebKit can acknowledge scrollTo() before scrollY exposes the committed
+          // position. Keep gesture ownership until the document has actually
+          // landed, otherwise a reverse swipe can start against a stale offset.
+          const settle=(attempt=0)=>{
+            window.scrollTo(0,top);
+            if(Math.abs(window.scrollY-top)<=1||attempt>=8){
+              scrollRaf=null;
+              animationDone=true;
+              finishGesture();
+              return;
+            }
+            scrollRaf=requestAnimationFrame(()=>settle(attempt+1));
+          };
+          scrollRaf=requestAnimationFrame(()=>settle());
         };
         scrollRaf=requestAnimationFrame(frame);
       };

@@ -57,34 +57,7 @@ function createManager(label) {
   if (!document.getElementById('kt-lightbox-style')) {
     const style = document.createElement('style');
     style.id = 'kt-lightbox-style';
-    style.textContent = `
-      .kt-lightbox button{transition:background-color .18s var(--kt-ease-ui, ease),border-color .18s var(--kt-ease-ui, ease),transform .18s var(--kt-ease-ui, ease),opacity .18s var(--kt-ease-ui, ease);}
-      .kt-lightbox .kt-lightbox-toolbar button:hover:not(:disabled){background:rgba(255,255,255,.16)!important;border-color:rgba(255,255,255,.3)!important;}
-      .kt-lightbox .kt-lightbox-toolbar button:disabled{opacity:.32;cursor:default;}
-      .kt-lightbox .kt-lightbox-prev:hover,.kt-lightbox .kt-lightbox-next:hover{background:rgba(255,255,255,.14)!important;transform:translateY(-50%) scale(1.06);}
-      .kt-lightbox .kt-lightbox-stage.is-zoomed{cursor:grab;}
-      .kt-lightbox .kt-lightbox-stage.is-panning{cursor:grabbing;}
-      @media (max-width: 760px) {
-        .kt-lightbox .kt-lightbox-toolbar{padding:12px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));justify-content:space-between;flex-wrap:wrap;column-gap:10px;row-gap:8px;}
-        /* On narrow screens the absolutely-centered counter overlaps the zoom /
-           close controls — drop it back into flow so space-between separates them. */
-        .kt-lightbox .kt-lightbox-counter{position:static !important;left:auto !important;top:auto !important;transform:none !important;width:max-content;max-width:100%;font-variant-numeric:tabular-nums;}
-        .kt-lightbox .kt-lightbox-toolbar button{min-width:34px;height:34px;padding:0 8px;}
-        .kt-lightbox .kt-lightbox-zoom-out,.kt-lightbox .kt-lightbox-zoom-in,.kt-lightbox .kt-lightbox-close{width:34px;padding:0;aspect-ratio:1;}
-        .kt-lightbox .kt-lightbox-prev{left:max(10px, env(safe-area-inset-left)) !important;}
-        .kt-lightbox .kt-lightbox-next{right:max(10px, env(safe-area-inset-right)) !important;}
-        .kt-lightbox .kt-lightbox-info{padding-bottom:calc(22px + env(safe-area-inset-bottom)) !important;}
-      }
-      @media (max-width: 420px) {
-        .kt-lightbox .kt-lightbox-toolbar{padding:10px max(10px, env(safe-area-inset-right)) 8px max(10px, env(safe-area-inset-left));column-gap:6px;row-gap:6px;}
-        .kt-lightbox .kt-lightbox-counter{padding:6px 10px;font-size:12px;}
-        .kt-lightbox .kt-lightbox-actions{flex:0 0 auto;max-width:100%;gap:0!important;padding:3px!important;border-radius:11px!important;}
-        .kt-lightbox .kt-lightbox-toolbar button{min-width:30px;height:32px;padding:0 6px;}
-        .kt-lightbox .kt-lightbox-zoom-reset{min-width:44px!important;padding:0 5px!important;}
-        .kt-lightbox .kt-lightbox-zoom-out,.kt-lightbox .kt-lightbox-zoom-in,.kt-lightbox .kt-lightbox-close{width:30px;padding:0;aspect-ratio:1;}
-        .kt-lightbox .kt-lightbox-actions > span{margin-left:4px!important;margin-right:4px!important;}
-      }
-    `;
+    style.textContent = '.kt-lightbox button{transition:background-color .18s var(--kt-ease-ui,ease),border-color .18s var(--kt-ease-ui,ease),transform .18s var(--kt-ease-ui,ease),opacity .18s var(--kt-ease-ui,ease)}.kt-lightbox .kt-lightbox-toolbar button:hover:not(:disabled){background:rgba(255,255,255,.16)!important;border-color:rgba(255,255,255,.3)!important}.kt-lightbox .kt-lightbox-toolbar button:disabled{opacity:.32;cursor:default}.kt-lightbox :is(.kt-lightbox-prev,.kt-lightbox-next):hover{background:rgba(255,255,255,.14)!important;transform:translateY(-50%) scale(1.06)}.kt-lightbox .kt-lightbox-stage.is-zoomed{cursor:grab}.kt-lightbox .kt-lightbox-stage.is-panning{cursor:grabbing}@media(max-width:760px){.kt-lightbox .kt-lightbox-toolbar{padding:12px max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left));flex-wrap:wrap;gap:8px 10px}.kt-lightbox .kt-lightbox-counter{position:static!important;left:auto!important;top:auto!important;transform:none!important}.kt-lightbox .kt-lightbox-prev{left:max(10px,env(safe-area-inset-left))!important}.kt-lightbox .kt-lightbox-next{right:max(10px,env(safe-area-inset-right))!important}.kt-lightbox .kt-lightbox-info{padding-bottom:calc(22px + env(safe-area-inset-bottom))!important}}@media(max-width:420px){.kt-lightbox .kt-lightbox-toolbar{padding:10px max(10px,env(safe-area-inset-right)) 8px max(10px,env(safe-area-inset-left));gap:6px}.kt-lightbox .kt-lightbox-counter{padding:6px 10px}.kt-lightbox .kt-lightbox-actions{gap:0!important;padding:3px!important}.kt-lightbox .kt-lightbox-toolbar button{min-width:30px;padding:0 5px}.kt-lightbox .kt-lightbox-zoom-reset{min-width:44px!important}.kt-lightbox :is(.kt-lightbox-zoom-out,.kt-lightbox-zoom-in,.kt-lightbox-close){width:30px;padding:0}.kt-lightbox .kt-lightbox-actions>span{margin:0 4px!important}}';
     document.head.appendChild(style);
   }
 
@@ -106,11 +79,12 @@ function createManager(label) {
   toolbar.style.cssText = 'position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;pointer-events:auto;';
   const counter = document.createElement('span');
   counter.className = 'kt-lightbox-counter';
-  counter.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;white-space:nowrap;font:600 12.5px/1 ui-monospace,monospace;letter-spacing:.06em;color:rgba(255,255,255,.85);background:rgba(20,20,26,.5);border:1px solid rgba(255,255,255,.12);padding:6px 13px;border-radius:99px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);';
+  const toolbarGlass = 'background:rgba(20,20,26,.5);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);';
+  counter.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);flex:0 0 auto;white-space:nowrap;font-variant-numeric:tabular-nums;font:600 12.5px/1 ui-monospace,monospace;letter-spacing:.06em;color:rgba(255,255,255,.85);padding:6px 13px;border-radius:99px;' + toolbarGlass;
   const actions = document.createElement('div');
   actions.className = 'kt-lightbox-actions';
   // A single translucent cluster (segmented control) instead of scattered buttons.
-  actions.style.cssText = 'display:flex;align-items:center;gap:2px;padding:4px;background:rgba(20,20,26,.5);border:1px solid rgba(255,255,255,.12);border-radius:13px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);';
+  actions.style.cssText = 'display:flex;align-items:center;gap:2px;padding:4px;border-radius:13px;' + toolbarGlass;
   const zoomOut = createButton('kt-lightbox-zoom-out', label('zoomOut'), '−');
   const zoomReset = createButton('kt-lightbox-zoom-reset', label('zoomReset'), '100%');
   const zoomIn = createButton('kt-lightbox-zoom-in', label('zoomIn'), '+');
@@ -125,12 +99,13 @@ function createManager(label) {
   divider.style.cssText = 'width:1px;height:18px;margin:0 8px;background:rgba(255,255,255,.16);flex:0 0 auto;';
   zoomReset.style.minWidth = '54px';
   zoomReset.title = label('zoomHint');
+  const icon = (body) => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
   shareButton.hidden = true;
   shareButton.title = label('share');
-  shareButton.innerHTML = "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx='18' cy='5' r='3'/><circle cx='6' cy='12' r='3'/><circle cx='18' cy='19' r='3'/><path d='M8.6 13.5l6.8 4M15.4 6.5l-6.8 4'/></svg>";
+  shareButton.innerHTML = icon("<circle cx='18' cy='5' r='3'/><circle cx='6' cy='12' r='3'/><circle cx='18' cy='19' r='3'/><path d='M8.6 13.5l6.8 4M15.4 6.5l-6.8 4'/>");
   downloadButton.hidden = true;
   downloadButton.title = label('download');
-  downloadButton.innerHTML = "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M12 3v12'/><path d='M7 11l5 5 5-5'/><path d='M5 21h14'/></svg>";
+  downloadButton.innerHTML = icon("<path d='M12 3v12'/><path d='M7 11l5 5 5-5'/><path d='M5 21h14'/>");
   closeButton.style.fontSize = '22px';
   actions.append(zoomOut, zoomReset, zoomIn, divider, shareButton, downloadButton, closeButton);
   actions.style.marginLeft = 'auto';

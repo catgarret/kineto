@@ -4,11 +4,27 @@
 
 ### English
 
+- Restore deterministic WebKit geometry/motion boundaries in the demo: Tabs now retries a hidden-to-visible indicator measurement for at most two frames plus one bounded fallback when the active tab is still 0px, and the hero scene caps per-frame progress so a long WebKit scheduling stall cannot collapse a 680–860ms inertial snap into one giant scroll jump. The browser regression follows the scene controller's bounded lifecycle instead of assuming a fixed one-second runner window.
+
+- Remove redundant Loading Indicator terminal runtime work: legacy terminal presets now use the already-frozen shared preset map directly instead of cloning/freezing it again at module load, and a text-frame renderer branch whose two paths were identical is collapsed. Behavior and preset IDs stay unchanged while package/runtime bytes drop.
+
+- Minify Lightbox's runtime-injected CSS string without changing selectors or declarations. Because this CSS lives inside JavaScript, the JS minifier cannot compact its whitespace; storing the same rules compactly reduces every full/UMD/modular artifact and restores release-package headroom.
+
+- Fix the Stylize video browser regression probe after core off-screen suspension added a second `IntersectionObserver` in the public API path. The probe now tracks all observers and selects the trigger observer by target/options instead of assuming the most recently constructed observer is Stylize's view trigger.
+
 - Make the Lightbox toolbar resilient down to narrow phone widths and three-digit gallery counts. The counter uses no-wrap tabular numerals and never flex-shrinks; the mobile toolbar can wrap into two rows, and ≤420 px controls use compact spacing without hiding features. Browser QA exercises a 320 px viewport with `999 / 999`, share/download/zoom/close all visible, and requires both counter/actions to remain inside the viewer with no horizontal overflow.
 
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- WebKit에서 데모의 geometry/motion 경계를 결정적으로 복원했습니다. Tabs는 hidden→visible 전환 직후 active tab이 아직 0px이면 최대 두 프레임과 한 번의 bounded fallback까지만 재측정하며, hero scene은 프레임당 progress 증가량을 제한해 WebKit 스케줄링이 오래 멈춰도 680–860ms 관성 snap이 한 번의 큰 scroll jump로 붕괴하지 않습니다. 브라우저 회귀 테스트도 고정 1초 대신 scene controller의 bounded lifecycle을 따라갑니다.
+
+- Loading Indicator terminal runtime의 중복 작업을 제거했습니다. 이미 freeze된 legacy preset map을 모듈 로드 시 다시 복사·freeze하지 않고 직접 사용하며, 양쪽 결과가 완전히 같던 text-frame renderer 분기도 하나로 합쳤습니다. preset ID와 동작은 그대로이고 package/runtime byte만 줄어듭니다.
+
+- Lightbox가 런타임에 주입하는 CSS 문자열을 selector/declaration 변경 없이 압축했습니다. 이 CSS는 JavaScript 문자열이라 JS minifier가 내부 공백을 줄이지 못하므로, 같은 규칙을 compact하게 저장해 full/UMD/modular 산출물과 release package 크기를 함께 줄입니다.
+
+- 코어 off-screen suspension이 public API 경로에 두 번째 `IntersectionObserver`를 추가한 뒤 Stylize video 브라우저 회귀 테스트가 잘못된 observer를 검사하던 문제를 수정했습니다. 테스트는 이제 모든 observer를 추적하고 target/options로 실제 view trigger observer를 선택합니다.
 
 - Lightbox 툴바를 좁은 휴대폰 폭과 세 자리 갤러리 수까지 견디도록 보강했습니다. 카운터는 tabular 숫자·줄바꿈 금지·flex 축소 금지를 적용하고, 모바일 툴바는 필요하면 2행으로 감기며, 420px 이하에서는 기능을 숨기지 않고 버튼 간격만 compact하게 줄입니다. 브라우저 QA에서 320px 뷰포트에 `999 / 999`와 share/download/zoom/close를 모두 표시해 카운터·액션이 뷰어 안에 있고 가로 overflow가 없는지 검사합니다.
 

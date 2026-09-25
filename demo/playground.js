@@ -3099,7 +3099,7 @@
             refresh();
             requestAnimationFrame(refresh);
           });
-          setTimeout(refresh, 32);
+          setTimeout(refresh, 64);
         });
         strip.appendChild(tab);
         const descriptors = panel.hasAttribute('data-demo-no-settings') ? [] : discover(panel);

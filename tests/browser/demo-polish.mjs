@@ -575,7 +575,14 @@ try {
   checkpoint('radial');
   const segmentedDemoTab=page.locator('#mod-tabs .demo-tabs .demo-tab',{hasText:'Segmented'});
   await segmentedDemoTab.click();
-  await page.waitForTimeout(80);
+  // Synchronize on the geometry contract, not an arbitrary wall-clock delay:
+  // hosted WebKit can defer layout after removing [hidden] even when the
+  // module's bounded refresh signals have already been queued.
+  await page.waitForFunction(() => {
+    const panel=document.querySelector('#mod-tabs .demo-tabpanel:not([hidden])');
+    const indicator=panel?.querySelector('.kt-tabs__indicator');
+    return (indicator?.getBoundingClientRect().width||0)>20;
+  }, null, { timeout: 2000 });
   const initialSegmentIndicator=await page.evaluate(()=>{
     const panel=document.querySelector('#mod-tabs .demo-tabpanel:not([hidden])');
     const indicator=panel.querySelector('.kt-tabs__indicator');
@@ -657,14 +664,16 @@ try {
       return event.defaultPrevented;
     };
     const sample = async () => {
-      // Observe rendered frames, not delayed 90ms timers: on a busy runner
-      // those timers can miss most of a valid 680–860ms animation.
+      // Count rendered frames, not runner wall-clock time. Keep sampling until
+      // the scene controller really releases ownership so the reverse swipe can
+      // never start inside the tail of the previous gesture. The bound remains
+      // finite to catch a controller that never settles.
       const path = [Math.round(window.scrollY)];
-      const started = performance.now();
-      do {
-        await new Promise(requestAnimationFrame);
+      for (let frame = 0; frame < 64 && window.__ktHeroSceneSnap; frame += 1) {
+        await new Promise(window.requestAnimationFrame);
         path.push(Math.round(window.scrollY));
-      } while (performance.now() - started < 1000);
+      }
+      if (window.__ktHeroSceneSnap) throw new Error('mobile hero scene did not release gesture ownership within 64 rendered frames');
       return path;
     };
     const hero = document.querySelector('.hero');
