@@ -73,14 +73,6 @@ jobs:
       - name: Install dependencies
         run: npm ci --prefer-offline --fetch-retries=3 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=5000 --fetch-timeout=30000
 
-      - name: Install Playwright Chromium
-        run: |
-          set -o pipefail
-          # Chromium's full browser QA needs the runner libraries as well as
-          # the binary. Bound apt/browser provisioning so a mirror stall cannot
-          # consume the whole test job.
-          timeout --foreground --kill-after=30s 10m npx playwright install --with-deps chromium
-
       - name: Run lint
         run: |
           set -o pipefail
@@ -99,6 +91,14 @@ jobs:
             node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a ci.log
             echo "::endgroup::"
           done
+
+      - name: Install Playwright Chromium
+        run: |
+          set -o pipefail
+          # Delay browser/OS provisioning until deterministic lint/build/package
+          # gates pass, but keep it before consumer/integration tests that launch
+          # Chromium themselves.
+          timeout --foreground --kill-after=30s 10m npx playwright install --with-deps chromium
 
       - name: Run Node tests · consumers and frameworks
         run: |
@@ -199,15 +199,13 @@ jobs:
 
   cross-browser:
     name: ${{ matrix.browser }} · browser smoke
-    needs: test
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
       fail-fast: false
-      # WebKit and Firefox share the same CPU/memory-heavy demo fixture. Keep
-      # the engines isolated on the hosted runner so one lane cannot starve
-      # the other while the full demo-polish suite is booting.
-      max-parallel: 1
+      # Each matrix entry gets its own hosted runner. Run WebKit and Firefox in
+      # parallel with each other and with Node 24 so browser failures surface
+      # early instead of extending wall-clock CI after the main suite.
       matrix:
         browser: [webkit, firefox]
 
