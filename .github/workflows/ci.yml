@@ -186,7 +186,7 @@ jobs:
       - name: Run browser QA
         run: |
           set -o pipefail
-          if ! node scripts/retry-command.mjs npm run test:browser 2>&1 | tee -a ci.log; then
+          if ! node scripts/run-lane.mjs test:browser 2>&1 | tee -a ci.log; then
             echo "::error title=Browser QA failed::test:browser"
             exit 1
           fi
@@ -219,15 +219,15 @@ jobs:
 
   cross-browser:
     name: ${{ matrix.browser }} · browser smoke
-    needs: test
+    # No `needs`: every job gets its own hosted runner, so the engines do not
+    # share a CPU with each other or with the Chromium job. Running all three at
+    # once took CI from ~25 minutes (Chromium, then WebKit, then Firefox) to
+    # the length of the slowest lane; the demo deploys only when all pass.
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
       fail-fast: false
-      # WebKit and Firefox share the same CPU/memory-heavy demo fixture. Keep
-      # the engines isolated on the hosted runner so one lane cannot starve
-      # the other while the full demo-polish suite is booting.
-      max-parallel: 1
+      max-parallel: 2
       matrix:
         browser: [webkit, firefox]
 

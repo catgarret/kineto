@@ -183,10 +183,17 @@ assert.match(ciCrossBrowserJob, /MK_BROWSER_TEST_ATTEMPTS:\s*\$\{\{ matrix\.brow
   'only the actual WebKit matrix lane receives the fourth bounded attempt');
 assert.match(releaseCrossBrowserJob, /MK_BROWSER_TEST_ATTEMPTS:\s*\$\{\{ matrix\.browser == 'webkit' && 4 \|\| 3 \}\}/,
   'the release WebKit lane must retain the same bounded retry policy');
-for (const command of ['lint', 'build', 'test:demo', 'test:browser']) {
+for (const command of ['lint', 'build', 'test:demo']) {
   assert.match(workflow, new RegExp(`retry-command\\.mjs npm run ${command}`), `release workflow must isolate ${command}`);
   assert.match(read('.github/workflows/ci.yml'), new RegExp(`retry-command\\.mjs npm run ${command}`), `CI workflow must isolate ${command}`);
 }
+// The Chromium browser lane retries a failing TEST, not the whole lane (one
+// flake used to re-run all 41 tests three times — 22 minutes).
+for (const [name, source] of [['release', workflow], ['CI', ciWorkflow]]) {
+  assert.match(source, /node scripts\/run-lane\.mjs test:browser 2>&1/, `${name} workflow must run test:browser through scripts/run-lane.mjs`);
+  assert.doesNotMatch(source, /retry-command\.mjs npm run test:browser/, `${name} workflow must not retry the whole browser lane`);
+}
+assert.match(read('scripts/run-lane.mjs'), /tests\/retry-browser-test\.mjs/, 'run-lane retries each browser test in its own process group');
 // Derive this manifest from the local suite instead of maintaining a second
 // hand-written list that can silently omit a newly added regression gate.
 for (const step of pkg.scripts['test:node'].split(' && ')) {
@@ -225,7 +232,11 @@ assert.match(read('.github/workflows/ci.yml'), /retry-command\.mjs npm pack --dr
 assert.match(ciWorkflow, /tests\/browser\/demo-polish\.mjs/);
 assert.match(ciWorkflow, /KT_BROWSER:\s*\$\{\{ matrix\.browser \}\}/);
 assert.match(ciWorkflow, /matrix\.browser == 'firefox' \|\| matrix\.browser == 'webkit'/);
-assert.match(ciWorkflow, /max-parallel:\s*1/);
+// Engines run on separate hosted runners, so they run at once, and they do
+// not wait for the Chromium job either.
+assert.match(ciCrossBrowserJob, /max-parallel:\s*2/);
+assert.doesNotMatch(ciCrossBrowserJob, /^\s+needs:/m, 'CI engines must not wait for the Chromium job');
+assert.match(releaseCrossBrowserJob, /max-parallel:\s*2/);
 assert.match(ciWorkflow, /MK_BROWSER_TEST_ATTEMPTS:\s*3/);
 assert.match(ciWorkflow, /MK_BROWSER_TEST_TIMEOUT:\s*240000/);
 assert.match(ciWorkflow, /Browser QA failed::test:browser/);

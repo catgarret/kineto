@@ -140,7 +140,7 @@ jobs:
       - name: Run browser QA
         run: |
           set -o pipefail
-          if ! node scripts/retry-command.mjs npm run test:browser 2>&1 | tee -a release.log; then
+          if ! node scripts/run-lane.mjs test:browser 2>&1 | tee -a release.log; then
             echo "::error title=Browser QA failed::test:browser"
             exit 1
           fi
@@ -213,7 +213,8 @@ jobs:
     timeout-minutes: 25
     strategy:
       fail-fast: false
-      max-parallel: 1
+      # Each engine has its own hosted runner; run both at once.
+      max-parallel: 2
       matrix:
         browser: [firefox, webkit]
 

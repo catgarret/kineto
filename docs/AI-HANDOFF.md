@@ -150,6 +150,12 @@ or a tag; release approval remains separate.
   the same time on 120Hz screens. A numeric factor is read with
   `numberOption()`, so a curve string cannot turn it into NaN.
   `tests/browser/motion-timing.mjs`.
+- **Verify the change, then the lane once**: run the tests that cover what you
+  touched (`node tests/browser/<file>.mjs`, three engines for new browser
+  gates), then the whole Chromium lane ONCE at the end with
+  `npm run test:browser:lane` (per-test retries, every failure reported,
+  `-- --jobs 2` locally). Do not re-run full lanes after each small edit, and
+  never run two browser lanes at the same time — they starve each other.
 - **A release tag follows green CI**: `release:ship` waits for the CI run of
   the exact commit before tagging (`scripts/ci-status.mjs`). Never tag first.
 - **Reduced motion removes motion, not features**: a module whose job is not
