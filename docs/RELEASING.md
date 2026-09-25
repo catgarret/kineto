@@ -1,8 +1,9 @@
 # Releasing Kineto
 
-Kineto uses a tag-triggered GitHub Actions release. The workflow runs the full
-verification suite, publishes `@dong-gri/kineto` to npm with provenance, and
-creates the GitHub Release.
+Kineto uses a tag-triggered GitHub Actions release. The workflow requires CI's
+green result for the tagged commit on `main`, verifies and packs the package,
+publishes `@dong-gri/kineto` to npm with provenance, and creates the GitHub
+Release.
 
 ## One-time repository setup
 
@@ -15,7 +16,7 @@ Configure npm Trusted Publishing for:
 
 The workflow requests `id-token: write`; no long-lived npm token is stored in
 the repository. GitHub Actions also needs `contents: write`, which is declared
-in the workflow.
+in the workflow, and the verify job reads CI runs with `actions: read`.
 
 The public demo is deployed directly from the Kineto repository's GitHub Pages
 artifact. `pages.yml` accepts only a successful same-repository `push` CI run on
@@ -116,10 +117,12 @@ remote tag exists, refuses (before pushing anything) when `origin/main` has
 commits this checkout lacks, pushes `main`, **waits for the CI run of that exact commit
 to pass**, and only then creates and pushes the annotated tag. The wait reads
 the public GitHub Actions API without a token (`scripts/ci-status.mjs`) and
-takes as long as CI does (about 25 minutes when green; it gives up after 75). If CI fails, is cancelled, or never
-starts, the command stops **before** tagging, so the version is still unused:
-fix `main` and run the same command again. `--skip-ci-wait` skips the check
-when you have already seen CI green for `HEAD`.
+takes as long as CI does (every CI job runs at once — about 6–10 minutes when
+green; it gives up after 45). If CI fails, is cancelled, or never starts, the
+command stops **before** tagging, so the version is still unused: fix `main` —
+or, when a test flaked, re-run the failed CI jobs — and run the same command
+again. `--skip-ci-wait` skips the check when you have already seen CI green for
+`HEAD`; the release workflow checks the same result again either way.
 
 Why: a pushed tag is never moved, so a tag cut on a commit whose CI later fails
 uses up the version. `v0.12.0` was tagged together with an unverified push;
@@ -129,14 +132,27 @@ the previous build, and the fixes shipped as `v0.12.1`.
 The tag starts `.github/workflows/release.yml`, which:
 
 1. checks version and bilingual release-note consistency;
-2. runs lint, build, Node, demo, Chromium, package, and all-lockfile audit gates;
-3. independently requires Firefox and WebKit smoke plus demo regression gates;
+2. **requires CI's green result for the tagged commit on `main`**
+   (`scripts/require-green-ci.mjs`, with the job's read-only token; it waits
+   up to 45 minutes while that CI is still running). CI already ran lint,
+   every Node test, demo QA and the Chromium, WebKit and Firefox lanes on that
+   commit, so the release does not run them a second time;
+3. builds the package and runs `test:release-package` (exports, types, size
+   budgets, the packed tarball, these release rules), a Chromium smoke of every
+   module from that build, and the all-lockfile audit;
 4. packs one verified tarball, records its SHA-256 digest, and passes that exact
    artifact to the permission-scoped publish job as an explicit `./`-prefixed
    local path so npm cannot reinterpret it as a Git package spec;
-5. publishes the tarball to npm with provenance only after every browser gate;
+5. publishes the tarball to npm with provenance;
 6. creates a GitHub Release with the runner's built-in `gh` CLI, with English
    first and Korean second.
+
+Why the release trusts CI: until v0.12.1 it re-ran the whole CI suite (about 25
+minutes) on the commit CI had just passed. For `v0.12.1` CI was green, the
+identical re-run failed on one flaky browser test, and the version was burnt.
+Now the release takes about 5 minutes, and a red CI verdict is recoverable:
+re-run the failed CI jobs, then re-run the release workflow — nothing was
+published, so the tag is still good.
 
 Third-party GitHub Actions are pinned to immutable full commit SHAs. Their
 readable major-version comments are informational; update the SHA only after

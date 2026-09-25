@@ -18,22 +18,23 @@
 // printed.
 import path from 'node:path';
 import process from 'node:process';
+import { escapeData, escapeProperty, inGitHubActions } from '../scripts/gh-actions.mjs';
 
 const entry = process.argv[1] || '';
 // npm/npx only relay a child's exit code; the child reports for itself.
 const isPackageManager = /(?:^|[\\/])(?:npm|npx)(?:-cli)?(?:\.js)?$/.test(entry);
+// Our retry/lane wrappers print their own, more precise annotation (attempt
+// counts, timeouts, the list of failing tests), so a generic "exited with
+// code 1" from them would only be noise.
+const WRAPPERS = new Set(['scripts/run-lane.mjs', 'scripts/retry-command.mjs', 'tests/retry-browser-test.mjs']);
+const isWrapper = WRAPPERS.has(path.relative(process.cwd(), entry).split(path.sep).join('/'));
 
-if (process.env.GITHUB_ACTIONS === 'true' && !isPackageManager) {
+if (inGitHubActions() && !isPackageManager && !isWrapper) {
   const script = path.relative(process.cwd(), entry) || 'node';
   const MAX_LINES = 24;
   const MAX_CHARS = 3000;
   const recent = [];
   let reported = false;
-
-  // Workflow-command escaping (see the GitHub Actions toolkit's `escapeData`
-  // and `escapeProperty`).
-  const escapeData = (text) => String(text).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
-  const escapeProperty = (text) => escapeData(text).replace(/:/g, '%3A').replace(/,/g, '%2C');
 
   // Keep a short tail of what the test printed; the assertion message and the
   // lines just before it are what explain a failure.

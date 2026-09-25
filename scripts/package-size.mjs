@@ -211,7 +211,14 @@ const BUDGET = {
   // lifecycle and reduced-motion fixes): 640.3 + 1.5 → 642.
   // v0.12.1 on top of the remote Lightbox/Loading Indicator byte cuts, with
   // latestEntry(), the Tabs snap and time-based easing: 641.9 + 1.5 → 644.
-  packedKb: 644,
+  // Headroom policy (2026-09-25): a ceiling on the measurement left no room,
+  // and the tarball also carries README.md and package.json (about 34 KB) — so
+  // a README line or a new npm script failed CI. Packed and unpacked ceilings
+  // now keep about 1% over the latest measurement (642.0 + 1.5 runner margin
+  // → 650 packed; 2068.6 → 2090 unpacked). The file count stays exact: a new
+  // shipped file is always a decision. When a change needs more than the
+  // headroom, set the ceiling to the new measurement + ~1% and say why here.
+  packedKb: 650,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -251,7 +258,8 @@ const BUDGET = {
   // 2026-09-25 (v0.12.1: latestEntry(), Tabs snap on reveal, frameEase/
   // frameClock time-based easing, numeric `ease` parsing, rebased on the
   // remote Lightbox toolbar fix): 2067.8 KB, same 81 files.
-  unpackedKb: 2068,
+  // Headroom policy (see packedKb): 2068.6 KB → 2090.
+  unpackedKb: 2090,
   files: 81
 };
 

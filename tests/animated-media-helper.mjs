@@ -98,7 +98,16 @@ export async function runAnimatedMediaQa(browser, root) {
       await sleep(40);
     }
 
-    const video = await page.evaluate(async (src) => {
+    // The demo video is H.264 (High profile). Open-source Chromium builds —
+    // many containers and agent sandboxes — ship without that codec, so the
+    // video can never start there. Skip only the video part in such a local
+    // environment and say so; CI's browser must decode it (never skipped there).
+    const decodesH264 = await page.evaluate(() => document.createElement('video').canPlayType('video/mp4; codecs="avc1.640028"') !== '');
+    if (!decodesH264) {
+      assert.notEqual(process.env.CI, 'true', 'the CI browser must decode H.264: the ambient video check cannot be skipped in CI');
+      console.log('animated-media QA: this browser cannot decode H.264 (no proprietary codecs) — the video check is skipped here and runs in CI.');
+    }
+    const video = !decodesH264 ? null : await page.evaluate(async (src) => {
       const host = document.createElement('div');
       host.id = 'video-host';
       host.className = 'host';
@@ -141,10 +150,12 @@ export async function runAnimatedMediaQa(browser, root) {
       assert.equal(state.viewerMoving, true, `${name} lightbox image froze`);
       assert.deepEqual(Object.values(state.tags), ['IMG', 'IMG', 'IMG']);
     }
-    assert.equal(video.ready, true, 'video did not start');
-    assert.equal(video.sampled, true, 'ambient video canvas did not sample frames');
-    assert.equal(video.advancing, true, 'video stopped while ambient was active');
-    assert.ok(video.frames >= 3);
+    if (video) {
+      assert.equal(video.ready, true, 'video did not start');
+      assert.equal(video.sampled, true, 'ambient video canvas did not sample frames');
+      assert.equal(video.advancing, true, 'video stopped while ambient was active');
+      assert.ok(video.frames >= 3);
+    }
     assert.equal(instanceCount, 0, 'animated-media QA leaked instances');
     assert.deepEqual(errors, [], `animated media runtime errors:\n${errors.join('\n')}`);
   } finally {

@@ -5,6 +5,8 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { assertPinnedAction } from './workflow-action-pins.mjs';
 import { ciVerdict, githubRepo, readCiVerdict, waitForCi } from '../scripts/ci-status.mjs';
+import { parseArgs, parseLane, parseShard, selectSteps } from '../scripts/run-lane.mjs';
+import { annotation, reportFlaky } from '../scripts/gh-actions.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8');
@@ -61,11 +63,10 @@ function stepBlock(job, name) {
 }
 
 const verifyJob = mappingBlock(workflow, 'verify');
-const releaseCrossBrowserJob = mappingBlock(workflow, 'cross-browser');
 const publishJob = mappingBlock(workflow, 'publish');
 const ciNodeCompatibilityJob = mappingBlock(ciWorkflow, 'node-compatibility');
 const ciTestJob = mappingBlock(ciWorkflow, 'test');
-const ciCrossBrowserJob = mappingBlock(ciWorkflow, 'cross-browser');
+const ciBrowserJob = mappingBlock(ciWorkflow, 'browser');
 const verifiedPackageUpload = stepBlock(verifyJob, 'Upload the verified package');
 const verifiedPackageDownload = stepBlock(publishJob, 'Download the verified package');
 const artifactVerification = stepBlock(publishJob, 'Verify artifact digest');
@@ -135,20 +136,25 @@ assert.equal(frameworkLock.packages['../..'].version, pkg.version,
 assert.match(workflow, /^permissions:\s*\n\s{2}contents:\s*read$/m);
 assert.equal((workflow.match(/^\s+contents:\s*write$/gm) || []).length, 1, 'only publish may write repository contents');
 assert.equal((workflow.match(/^\s+id-token:\s*write$/gm) || []).length, 1, 'only publish may request OIDC');
-assert.doesNotMatch(verifyJob, /contents:\s*write|id-token:\s*write/);
-assert.doesNotMatch(releaseCrossBrowserJob, /contents:\s*write|id-token:\s*write/);
+assert.doesNotMatch(verifyJob, /contents:\s*write|id-token:\s*write|actions:\s*write/);
 assert.match(publishJob, /permissions:\s*\n\s+contents:\s*write\s*\n\s+id-token:\s*write/);
-assert.match(publishJob, /needs:\s*\[verify, cross-browser\]/);
+assert.match(publishJob, /needs:\s*\[verify\]/);
 assert.doesNotMatch(publishJob, /if:\s*always\(\)/, 'publish must retain the default all-needs-succeeded gate');
-assert.match(releaseCrossBrowserJob, /matrix:\s*\n\s*browser:\s*\[firefox, webkit\]/);
-assert.match(ciCrossBrowserJob, /tests\/browser\/css-scroll\.mjs/,
-  'CI cross-browser lanes must exercise cssScroll native/fallback progress');
-assert.match(releaseCrossBrowserJob, /tests\/browser\/css-scroll\.mjs/,
-  'release cross-browser lanes must exercise cssScroll native/fallback progress');
-assert.match(ciCrossBrowserJob, /tests\/browser\/cursor-click-media\.mjs/,
-  'CI cross-browser lanes must exercise one-shot animated cursor media');
-assert.match(releaseCrossBrowserJob, /tests\/browser\/cursor-click-media\.mjs/,
-  'release cross-browser lanes must exercise one-shot animated cursor media');
+// The release does not re-run CI's test lanes; it requires CI's green verdict
+// for the tagged commit (v0.12.1: CI green, the identical re-run flaked).
+assert.doesNotMatch(workflow, /matrix:|run-lane\.mjs test:browser|npm run test:demo/, 'the release must not repeat the CI browser/demo lanes');
+const greenCiGate = stepBlock(verifyJob, 'Require green CI for the tagged commit');
+assert.match(greenCiGate, /run: node scripts\/require-green-ci\.mjs/);
+assert.match(greenCiGate, /GITHUB_TOKEN: \$\{\{ github\.token \}\}/);
+assert.equal((workflow.match(/github\.token/g) || []).length, 2, 'only the CI gate and the GitHub Release step receive the job token');
+assert.match(verifyJob, /permissions:\s*\n\s+contents:\s*read\s*\n(?:\s*#.*\n)*\s+actions:\s*read/, 'the verify job may read CI runs and nothing more');
+assert.ok(verifyJob.indexOf('Require green CI') < verifyJob.indexOf('Pack the verified release artifact'), 'the CI gate runs before anything is packed');
+const requireGreenCi = read('scripts/require-green-ci.mjs');
+assert.match(requireGreenCi, /rev-parse', 'HEAD\^\{commit\}'/, 'the gate checks the commit the tag points to');
+assert.doesNotMatch(requireGreenCi, /console\.(?:log|error)\([^)]*token/i, 'the gate never prints the token');
+for (const file of ['tests/browser/css-scroll.mjs', 'tests/browser/cursor-click-media.mjs', 'tests/browser/demo-polish.mjs', 'tests/browser/lifecycle-edges.mjs', 'tests/browser/motion-timing.mjs']) {
+  assert.ok(pkg.scripts['test:browser:cross'].includes(`node ${file}`), `the Firefox/WebKit lane must run ${file}`);
+}
 assert.match(verifiedPackageUpload, /^\s+name:\s*verified-package-\$\{\{ github\.ref_name \}\}$/m);
 assert.match(verifiedPackageUpload, /overwrite:\s*true/, 'a full workflow rerun must safely replace its prior verified artifact');
 assert.match(verifiedPackageDownload, /^\s+name:\s*verified-package-\$\{\{ github\.ref_name \}\}$/m);
@@ -179,72 +185,115 @@ for (const command of ['build', 'test:package', 'test:types', 'test:package-tarb
   assert.ok(ciNodeCompatibilityJob.includes(command), `public engine job must run ${command}`);
 }
 assert.doesNotMatch(ciTestJob, /matrix\.browser/, 'the non-matrix Chromium job must not reference matrix.browser');
-assert.match(ciCrossBrowserJob, /MK_BROWSER_TEST_ATTEMPTS:\s*\$\{\{ matrix\.browser == 'webkit' && 4 \|\| 3 \}\}/,
+assert.match(ciBrowserJob, /MK_BROWSER_TEST_ATTEMPTS:\s*\$\{\{ matrix\.browser == 'webkit' && 4 \|\| 3 \}\}/,
   'only the actual WebKit matrix lane receives the fourth bounded attempt');
-assert.match(releaseCrossBrowserJob, /MK_BROWSER_TEST_ATTEMPTS:\s*\$\{\{ matrix\.browser == 'webkit' && 4 \|\| 3 \}\}/,
-  'the release WebKit lane must retain the same bounded retry policy');
+assert.match(ciBrowserJob, /MK_BROWSER_TEST_TIMEOUT:\s*240000/);
 for (const command of ['lint', 'build', 'test:demo']) {
-  assert.match(workflow, new RegExp(`retry-command\\.mjs npm run ${command}`), `release workflow must isolate ${command}`);
-  assert.match(read('.github/workflows/ci.yml'), new RegExp(`retry-command\\.mjs npm run ${command}`), `CI workflow must isolate ${command}`);
+  assert.match(ciTestJob, new RegExp(`retry-command\\.mjs npm run ${command}`), `CI workflow must isolate ${command}`);
 }
-// The Chromium browser lane retries a failing TEST, not the whole lane (one
-// flake used to re-run all 41 tests three times — 22 minutes).
-for (const [name, source] of [['release', workflow], ['CI', ciWorkflow]]) {
-  assert.match(source, /node scripts\/run-lane\.mjs test:browser 2>&1/, `${name} workflow must run test:browser through scripts/run-lane.mjs`);
-  assert.doesNotMatch(source, /retry-command\.mjs npm run test:browser/, `${name} workflow must not retry the whole browser lane`);
+assert.match(verifyJob, /retry-command\.mjs npm run build/, 'the release builds the package it publishes');
+
+// ---------------------------------------------------------------- test lanes
+// package.json holds the ONE list of every lane; both workflows run lanes
+// through scripts/run-lane.mjs, so no test list is copied into YAML (the old
+// copies had drifted: CI ran 8 files that `npm run test:browser:cross` did not).
+assert.match(ciTestJob, /node scripts\/run-lane\.mjs test:node 2>&1/, 'CI runs every Node test through run-lane');
+assert.match(verifyJob, /node scripts\/run-lane\.mjs test:release-package 2>&1/, 'the release checks the package through run-lane');
+assert.match(ciBrowserJob, /node scripts\/run-lane\.mjs "\$LANE" --shard "\$SHARD" 2>&1/, 'CI browser jobs run one shard of a lane');
+for (const source of [ciWorkflow, workflow]) {
+  assert.doesNotMatch(source, /node tests\/retry-browser-test\.mjs tests\/browser\/(?!.*smoke)/, 'workflows must not carry their own browser test lists');
+  assert.doesNotMatch(source, /retry-command\.mjs npm run test:browser/, 'never retry a whole browser lane');
 }
-assert.match(read('scripts/run-lane.mjs'), /tests\/retry-browser-test\.mjs/, 'run-lane retries each browser test in its own process group');
-// Derive this manifest from the local suite instead of maintaining a second
-// hand-written list that can silently omit a newly added regression gate.
-for (const step of pkg.scripts['test:node'].split(' && ')) {
-  assert.match(step, /^npm run test:[\w-]+$/, `unsupported Node test step: ${step}`);
-  const command = step.slice('npm run '.length);
-  const token = new RegExp(`(?:^|\\s)${command}(?=\\s|;|$)`, 'm');
-  assert.match(workflow, token, `release workflow must cover ${command}`);
-  assert.match(ciWorkflow, token, `CI workflow must cover ${command}`);
+const nodeSteps = new Set(pkg.scripts['test:node'].split(' && '));
+for (const step of pkg.scripts['test:release-package'].split(' && ')) {
+  assert.ok(nodeSteps.has(step), `release package check "${step}" must also run in CI's test:node`);
 }
-assert.match(workflow, /retry-command\.mjs npm pack --dry-run/);
-function hasCrossBrowserCommand(source, file) {
-  const escaped = file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`^[ \\t]*node tests/retry-browser-test\\.mjs ${escaped} 2>&1(?:[ \\t]+\\|[ \\t]+tee -a [\\w.\\-/]*(?:\\$\\{\\{ matrix\\.browser \\}\\})?[\\w.\\-/]+)?[ \\t]*$`, 'm').test(source);
+// Every lane parses, and the matrix lists each shard of a lane exactly once.
+for (const lane of ['test:node', 'test:browser', 'test:browser:cross', 'test:release-package']) {
+  assert.ok(parseLane(pkg.scripts[lane], lane).length > 0, `${lane} must be a runnable lane`);
 }
-const crossBrowserFixture = 'tests/example.mjs';
-assert.equal(hasCrossBrowserCommand('  node tests/retry-browser-test.mjs tests/example.mjs 2>&1 | tee -a ci.log', crossBrowserFixture), true);
-assert.equal(hasCrossBrowserCommand('  node tests/retry-browser-test.mjs tests/example.mjs 2>&1', crossBrowserFixture), true);
-for (const invalid of [
-  '# node tests/retry-browser-test.mjs tests/example.mjs 2>&1',
-  'echo "node tests/retry-browser-test.mjs tests/example.mjs 2>&1"',
-  'node tests/retry-browser-test.mjs tests/exampleXmjs 2>&1',
-  'node tests/retry-browser-test.mjs tests/example.mjs 2>&1 || true',
-  'node tests/retry-browser-test.mjs tests/example.mjs 2>&1 | tee -a ci.log || true',
-  'node tests/retry-browser-test.mjs tests/example.mjs 2>&1 | tee -a ci.log; exit 0'
-]) assert.equal(hasCrossBrowserCommand(invalid, crossBrowserFixture), false);
-for (const step of pkg.scripts['test:browser:cross'].split(' && ')) {
-  assert.match(step, /^node tests\/[\w/-]+\.mjs$/, `unsupported cross-browser test step: ${step}`);
-  const testFile = step.slice('node '.length);
-  for (const [lane, source] of [['CI', ciCrossBrowserJob], ['release', releaseCrossBrowserJob]]) {
-    assert.ok(hasCrossBrowserCommand(source, testFile),
-      `${lane} cross-browser workflow must cover ${testFile}`);
-  }
+const matrixEntries = [...ciBrowserJob.matchAll(/- \{ browser: (\w+), lane: "([\w:]+)", shard: "(\d+)\/(\d+)" \}/g)]
+  .map(([, browser, lane, index, count]) => ({ browser, lane, index: Number(index), count: Number(count) }));
+const byEngine = new Map();
+for (const entry of matrixEntries) {
+  const key = `${entry.browser} ${entry.lane}`;
+  byEngine.set(key, [...(byEngine.get(key) || []), entry]);
 }
-assert.match(workflow, /retry-command\.mjs npm run audit:lockfiles -- --output-dir release-audit/);
-assert.match(read('.github/workflows/ci.yml'), /retry-command\.mjs npm pack --dry-run/);
-assert.match(ciWorkflow, /tests\/browser\/demo-polish\.mjs/);
-assert.match(ciWorkflow, /KT_BROWSER:\s*\$\{\{ matrix\.browser \}\}/);
-assert.match(ciWorkflow, /matrix\.browser == 'firefox' \|\| matrix\.browser == 'webkit'/);
-// Engines run on separate hosted runners, so they run at once, and they do
-// not wait for the Chromium job either.
-assert.match(ciCrossBrowserJob, /max-parallel:\s*2/);
-assert.doesNotMatch(ciCrossBrowserJob, /^\s+needs:/m, 'CI engines must not wait for the Chromium job');
-assert.match(releaseCrossBrowserJob, /max-parallel:\s*2/);
-assert.match(ciWorkflow, /MK_BROWSER_TEST_ATTEMPTS:\s*3/);
-assert.match(ciWorkflow, /MK_BROWSER_TEST_TIMEOUT:\s*240000/);
-assert.match(ciWorkflow, /Browser QA failed::test:browser/);
+assert.deepEqual([...byEngine.keys()].sort(), ['chromium test:browser', 'firefox test:browser:cross', 'webkit test:browser:cross'],
+  'CI runs the full lane on Chromium and the cross lane on WebKit and Firefox');
+for (const [key, entries] of byEngine) {
+  const count = entries[0].count;
+  assert.ok(entries.every((entry) => entry.count === count), `${key}: every shard must use the same n`);
+  assert.deepEqual(entries.map((entry) => entry.index).sort((a, b) => a - b), Array.from({ length: count }, (_, index) => index + 1),
+    `${key}: shards 1..${count} must each appear exactly once`);
+}
+assert.match(ciBrowserJob, /KT_BROWSER:\s*\$\{\{ matrix\.browser \}\}/);
+assert.doesNotMatch(ciBrowserJob, /^\s+needs:|max-parallel/m, 'browser shards start at once and never wait for another job');
+assert.match(ciWorkflow, /timeout-minutes:\s*20/);
 assert.match(workflow, /MK_BROWSER_TEST_TIMEOUT:\s*240000/);
 assert.match(workflow, /MK_BROWSER_TEST_ATTEMPTS:\s*3/);
-assert.match(workflow, /Browser QA failed::test:browser/);
-assert.match(ciWorkflow, /timeout-minutes:\s*20/);
-assert.match(ciWorkflow, /cross-browser-\$\{\{ matrix\.browser \}\}\.log/);
+assert.match(workflow, /retry-command\.mjs npm pack --dry-run/);
+assert.match(workflow, /retry-command\.mjs npm run audit:lockfiles -- --output-dir release-audit/);
+assert.match(ciTestJob, /retry-command\.mjs npm pack --dry-run/);
+
+// run-lane: shards partition a lane, filters are exact, and only the two
+// accepted step shapes run (nothing is handed to a shell).
+{
+  const lane = parseLane('node tests/a.mjs && node tests/retry-browser-test.mjs tests/b.mjs && npm run test:c && node tests/d.mjs && node tests/e.mjs', 'fixture');
+  assert.deepEqual(lane.map((step) => step.label), ['tests/a.mjs', 'tests/b.mjs', 'test:c', 'tests/d.mjs', 'tests/e.mjs']);
+  assert.deepEqual(lane[0].argv, ['tests/retry-browser-test.mjs', 'tests/a.mjs'], 'a test file is retried on its own');
+  assert.deepEqual(lane[2].argv, ['scripts/retry-command.mjs', 'npm', 'run', 'test:c'], 'an npm step is retried on its own');
+  for (const count of [1, 2, 3, 7]) {
+    const shards = Array.from({ length: count }, (_, index) => selectSteps(lane, { shard: { index: index + 1, count } }).map((step) => step.label));
+    assert.deepEqual(shards.flat().sort(), lane.map((step) => step.label).sort(), `${count} shards cover every step exactly once`);
+  }
+  assert.deepEqual(selectSteps(lane, { only: ['d.mjs', 'test:c'] }).map((step) => step.label), ['test:c', 'tests/d.mjs']);
+  for (const bad of ['node tests/a.mjs; rm -rf /', 'bash tests/a.sh', 'node tests/a.js', 'npm run a b', 'node --eval x.mjs', 'npm test']) {
+    assert.throws(() => parseLane(bad, 'fixture'), /unsupported step/, `reject "${bad}"`);
+  }
+  assert.deepEqual(parseShard('2/3'), { index: 2, count: 3 });
+  for (const bad of ['0/2', '3/2', '1/0', '1/17', 'a/b', '', undefined]) assert.throws(() => parseShard(bad), /--shard/);
+  const parsed = parseArgs(['test:browser', '--jobs', '2', '--shard=1/2', '--only', 'x,y', '--repeat', '3']);
+  assert.deepEqual({ ...parsed, shard: { ...parsed.shard } }, { lane: 'test:browser', jobs: 2, shard: { index: 1, count: 2 }, only: ['x', 'y'], repeat: 3, list: false });
+  assert.equal(parseArgs(['test:node'], { KT_LANE_JOBS: '3' }).jobs, 3);
+  for (const bad of [[], ['a', 'b'], ['a', '--jobs', '9'], ['a', '--repeat', '0'], ['a', '--only'], ['a', '--what']]) {
+    assert.throws(() => parseArgs(bad), Error, `reject ${JSON.stringify(bad)}`);
+  }
+}
+
+// A pass after a retry is reported as flaky (public annotation in Actions),
+// never silently absorbed.
+{
+  const flakeFile = path.join(fs.mkdtempSync(path.join((await import('node:os')).tmpdir(), 'kineto-flaky-')), 'flaky.tsv');
+  const lines = [];
+  reportFlaky({ label: 'tests/x.mjs', attempt: 2, attempts: 3, env: { GITHUB_ACTIONS: 'true', KT_LANE_FLAKE_FILE: flakeFile }, write: (line) => lines.push(line) });
+  assert.equal(lines.filter((line) => line.startsWith('::warning title=Flaky test tests/x.mjs::')).length, 1, 'a flake leaves one warning annotation');
+  assert.equal(fs.readFileSync(flakeFile, 'utf8'), 'tests/x.mjs\t2/3\n', 'the lane summary learns about the flake');
+  const quiet = [];
+  reportFlaky({ label: 'tests/x.mjs', attempt: 2, attempts: 3, env: {}, write: (line) => quiet.push(line) });
+  assert.equal(quiet.some((line) => line.startsWith('::')), false, 'no workflow commands outside Actions');
+  assert.equal(annotation('error', 'a:b,c', 'x\n::warning::y'), '::error title=a%3Ab%2Cc::x%0A::warning::y', 'annotations are escaped');
+  for (const file of ['tests/retry-browser-test.mjs', 'scripts/retry-command.mjs']) {
+    assert.match(read(file), /reportFlaky\(/, `${file} must report a pass on retry as flaky`);
+  }
+}
+
+// Before any push, agents run the same deterministic checks CI runs first
+// (15 of 26 red CI runs were lint, build output or Node-test failures).
+{
+  assert.equal(pkg.scripts['verify:push'], 'node scripts/verify-push.mjs');
+  assert.equal(pkg.scripts['hooks:install'], 'git config core.hooksPath .githooks');
+  const verifyPush = read('scripts/verify-push.mjs');
+  for (const token of ["'run', 'lint'", "'run', 'build'", "'scripts/run-lane.mjs', 'test:node'", "'run', 'test:demo'", 'checkGenerated']) {
+    assert.ok(verifyPush.includes(token), `verify:push must include ${token}`);
+  }
+  const hook = read('.githooks/pre-push');
+  assert.match(hook, /^#!\/bin\/sh/);
+  assert.match(hook, /verify:push -- --fast/);
+  assert.match(hook, /refs\/tags\/\*\) ;;/, 'pushing only a tag is not re-checked');
+  assert.ok(fs.statSync(path.join(root, '.githooks/pre-push')).mode & 0o111, 'the pre-push hook must be executable');
+  assert.match(agents, /npm run verify:push/, 'AGENTS.md must require verify:push before a push');
+}
 const demoPolish = read('tests/browser/demo-polish.mjs');
 assert.doesNotMatch(demoPolish, /await image\.decode\(\)/, 'WebKit demo QA must not await an unbounded detached image decode');
 assert.match(demoPolish, /Demo polish timeout/, 'WebKit demo QA must annotate the last checkpoint before a bounded retry timeout');
@@ -402,7 +451,9 @@ assert.ok(pushAt > 0 && waitAt > pushAt && tagAt > waitAt, 'release:ship must pu
 assert.match(shipReleaseScript, /verdict !== 'success'[\s\S]*?fail\(/, 'release:ship must stop before tagging unless CI succeeded');
 assert.doesNotMatch(shipReleaseScript, /console\.log\([^)]*get-url/, 'the origin URL can hold credentials and must never be printed');
 const ciStatusScript = read('scripts/ci-status.mjs');
-assert.doesNotMatch(ciStatusScript, /process\.env|authorization/i, 'the CI check must not read or send credentials');
+assert.doesNotMatch(ciStatusScript, /process\.env/, 'the CI check never reads the environment; a caller passes a token explicitly');
+assert.match(ciStatusScript, /if \(token\) headers\.authorization = `Bearer \$\{token\}`/, 'a token is sent only when a caller passes one');
+assert.doesNotMatch(shipReleaseScript, /token/i, 'release:ship stays anonymous');
 assert.match(ciStatusScript, /redirect: 'error'/, 'the CI check must not follow redirects off the fixed API host');
 
 assert.deepEqual(githubRepo('https://github.com/catgarret/kineto.git'), { owner: 'catgarret', repo: 'kineto' });
@@ -435,6 +486,11 @@ assert.equal(ciVerdict([run(1)], SHA_A), 'success');
   assert.equal(new URL(requested[0].url).searchParams.get('head_sha'), SHA_A);
   assert.equal(Object.keys(requested[0].init.headers).some((name) => /authorization/i.test(name)), false, 'no credentials are sent');
   await assert.rejects(readCiVerdict({ owner: 'catgarret', repo: 'kineto', sha: 'not-a-sha', fetchImpl: fakeFetch }), /invalid commit SHA/);
+  answers.push([run(6)]);
+  assert.equal(await readCiVerdict({ owner: 'catgarret', repo: 'kineto', sha: SHA_A, token: 'ghs_example', fetchImpl: fakeFetch }), 'success');
+  assert.equal(requested.at(-1).init.headers.authorization, 'Bearer ghs_example', 'an explicit token is sent as a bearer header');
+  assert.equal(requested.at(-1).init.redirect, 'error', 'a token never follows a redirect off api.github.com');
+  await assert.rejects(readCiVerdict({ owner: 'catgarret', repo: 'kineto', sha: SHA_A, token: 'bad token\n', fetchImpl: fakeFetch }), /invalid token/);
   await assert.rejects(readCiVerdict({ owner: 'catgarret', repo: 'kineto', sha: SHA_A, fetchImpl: async () => ({ ok: false, status: 403 }) }), /rate limit/);
   const neverStarts = await waitForCi({ owner: 'catgarret', repo: 'kineto', sha: SHA_A, fetchImpl: async () => ({ ok: true, status: 200, json: async () => ({ workflow_runs: [] }) }), sleep: async (ms) => { clock += ms; }, now: () => clock });
   assert.equal(neverStarts, 'missing', 'a commit CI never picked up does not get a tag');
@@ -442,8 +498,8 @@ assert.equal(ciVerdict([run(1)], SHA_A), 'success');
 
 // Failing CI tests must say WHICH test and WHY in a public annotation: the
 // job logs need a signed-in account, annotations do not.
-for (const [name, source] of [['ci.yml', ciWorkflow], ['release.yml', workflow]]) {
-  for (const step of ['Run browser QA', 'Run demo QA']) {
+for (const [name, source, steps] of [['ci.yml', ciWorkflow, ['Run Node tests', 'Run demo QA', 'Run browser lane']], ['release.yml', workflow, ['Verify the package', 'Smoke-test the built package in Chromium']]]) {
+  for (const step of steps) {
     const block = source.slice(source.indexOf(`- name: ${step}`), source.indexOf('- name:', source.indexOf(`- name: ${step}`) + 8));
     assert.match(block, /NODE_OPTIONS: --import \$\{\{ github\.workspace \}\}\/tests\/ci-annotate\.mjs/, `${name} "${step}" must load tests/ci-annotate.mjs`);
   }
@@ -467,4 +523,4 @@ for (const [name, source] of [['ci.yml', ciWorkflow], ['release.yml', workflow]]
   assert.equal(local.length, 0, 'outside GitHub Actions the hook stays silent');
 }
 
-console.log('release-automation OK — gated least-privilege publish, verified tarball reuse, rerun safety, pinned actions, engine CI, CDN failure handling, the mcp-v release path, and release:ship waiting for green CI before tagging.');
+console.log('release-automation OK — gated least-privilege publish, verified tarball reuse, rerun safety, pinned actions, sharded engine CI from one lane list, flaky-test reporting, the green-CI release gate, verify:push, CDN failure handling, the mcp-v release path, and release:ship waiting for green CI before tagging.');

@@ -252,21 +252,29 @@ body noscript iframe을 함께 배치해야 합니다. Kineto 데모는 GTM ID
 
 ## CI가 오래 걸리거나 실패함
 
-로컬 기본 게이트는 다음 순서로 좁혀 실행합니다.
+push 전에는 CI의 결정적 검사를 로컬에서 먼저 통과시킵니다. 최근 실패 CI 26건 중 15건이
+lint·`ReferenceError`·재생성하지 않은 생성 파일처럼 이 명령이 몇 분 안에 잡는 문제였습니다.
 
 ```bash
-npm run lint
-npm run test:docs-navigation
-npm run test:demo
-npm run test:browser
-npm run ci
+npm run verify:push                          # lint → build·생성 파일 → Node 전체 → demo QA (약 4분)
+node scripts/run-lane.mjs test:browser --only <이름> --repeat 3   # 바꾼 브라우저 테스트, 재시도 없이 3회
+npm run verify:push -- --browser             # + Chromium 전체 lane (CPU 2코어당 테스트 1개, 필요할 때 한 번)
+npm run ci                                   # 릴리스 전 전체
 ```
 
-Chromium 전체 lane은 시도당 `240s`, 최대 3회로 제한된 browser retry를 사용하고,
-Firefox/WebKit hosted lane은 브라우저 바이너리 설치도 시도당 `timeout 5m`으로 제한한
-bounded retry와 job timeout을 사용합니다. 실패 시 마지막 checkpoint와 엔진별 artifact를
-먼저 확인하고, 테스트를 삭제하거나 timeout을 무제한으로 늘리지 마십시오. 릴리스 전에는
-`npm run verify`와 `npm run test:live-site`까지 실행해야 합니다.
+CI는 모든 job을 동시에 실행합니다. Node job(lint·build·`test:node`·demo QA)과
+브라우저 job(Chromium `test:browser` 2개 shard, WebKit `test:browser:cross` 2개 shard,
+Firefox 1개)이 각자 runner를 쓰므로 전체 시간은 가장 느린 shard 하나(약 6~10분)입니다.
+테스트 목록은 `package.json`에만 있고 `scripts/run-lane.mjs --shard k/n`이 위치 순서대로
+나눠 가지므로, lane에 테스트를 추가하면 workflow를 고치지 않아도 CI에 들어갑니다.
+
+각 브라우저 테스트는 시도당 `240s`, 최대 3회(WebKit 4회)로 제한된 개별 retry를 쓰고,
+Firefox 바이너리 설치는 시도당 `timeout 5m`으로 제한합니다. 재시도에서야 통과한 테스트는
+**flaky**로 보고됩니다(`Flaky:` 로그, CI warning annotation, lane 요약). 재시도 횟수를
+늘리지 말고 고정 대기 대신 조건 대기로 테스트를 고치십시오. 실패한 테스트와 assertion은
+로그인 없이 읽을 수 있는 annotation(`tests/ci-annotate.mjs`)에 남습니다. 테스트를 삭제하거나
+timeout을 무제한으로 늘리지 마십시오. 릴리스 전에는 `npm run verify`와
+`npm run test:live-site`까지 실행해야 합니다.
 
 ## reduced motion·접근성
 

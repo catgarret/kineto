@@ -53,7 +53,7 @@ jobs:
           npm pack --dry-run
 
   test:
-    name: Node 24 / npm 11 · full test suite
+    name: Node 24 / npm 11 · lint, build, Node and demo QA
     runs-on: ubuntu-24.04
     timeout-minutes: 25
 
@@ -76,9 +76,8 @@ jobs:
       - name: Install Playwright Chromium
         run: |
           set -o pipefail
-          # Chromium's full browser QA needs the runner libraries as well as
-          # the binary. Bound apt/browser provisioning so a mirror stall cannot
-          # consume the whole test job.
+          # Demo QA and the integration fixtures drive Chromium. Bound apt/browser
+          # provisioning so a mirror stall cannot consume the whole job.
           timeout --foreground --kill-after=30s 10m npx playwright install --with-deps chromium
 
       - name: Run lint
@@ -91,89 +90,16 @@ jobs:
           set -o pipefail
           node scripts/retry-command.mjs npm run build 2>&1 | tee -a ci.log
 
-      - name: Run Node tests · contracts and package
+      - name: Run Node tests
+        # package.json `test:node` is the one list; run-lane runs every step,
+        # retries a failing one on its own, and reports all failures at once.
         run: |
-          set -euo pipefail
-          for command in test:utils test:diagnostics test:states test:observe test:presence test:contract test:requirements test:docs test:docs-navigation test:roadmap-readiness test:readiness-gates test:readiness-evidence test:lockfile-boundary test:supply-chain-automation test:module-metadata test:module-status test:taxonomy test:mobile-device-manifest test:package test:types test:package-size test:package-tarball; do
-            echo "::group::$command"
-            node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a ci.log
-            echo "::endgroup::"
-          done
+          set -o pipefail
+          node scripts/run-lane.mjs test:node 2>&1 | tee -a ci.log
         env:
           # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
           NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
-
-      - name: Run Node tests · consumers and frameworks
-        run: |
-          set -uo pipefail
-          failures=()
-          for command in test:consumer-bundles test:framework test:integrations test:mcp; do
-            echo "::group::$command"
-            if ! node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a ci.log; then
-              echo "::error title=Consumer/framework test failed::$command"
-              failures+=("$command")
-            fi
-            echo "::endgroup::"
-          done
-          if ((${#failures[@]})); then
-            printf 'Consumer/framework test failures: %s\n' "${failures[*]}"
-            exit 1
-          fi
-        env:
-          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
-          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
-
-      - name: Run Node tests · demo surface
-        run: |
-          set -euo pipefail
-          for command in test:parity test:structure test:copy test:lazy test:options test:demo-controls test:variants test:help test:inline test:defaults test:variant-options test:variant-distinctness test:variant-compare; do
-            echo "::group::$command"
-            node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a ci.log
-            echo "::endgroup::"
-          done
-        env:
-          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
-          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
-
-      - name: Run Node tests · runtime regressions
-        run: |
-          set -uo pipefail
-          failures=()
-          for command in test:easings test:reduced test:update test:canvas-effect test:scroll-velocity test:audit test:leak test:perf test:activation test:deps test:engine test:sequence-sources test:control-labels test:regressions test:cursor-click-media; do
-            echo "::group::$command"
-            if ! node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a ci.log; then
-              echo "::error title=Node runtime test failed::$command"
-              failures+=("$command")
-            fi
-            echo "::endgroup::"
-          done
-          if ((${#failures[@]})); then
-            printf 'Node runtime test failures: %s\n' "${failures[*]}"
-            exit 1
-          fi
-        env:
-          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
-          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
-
-      - name: Run Node tests · site and release
-        run: |
-          set -uo pipefail
-          failures=()
-          for command in test:site test:live-site-script test:release test:size; do
-            echo "::group::$command"
-            if ! node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a ci.log; then
-              echo "::error title=Site/release test failed::$command"
-              failures+=("$command")
-            fi
-            echo "::endgroup::"
-          done
-          if ((${#failures[@]})); then
-            printf 'Site/release test failures: %s\n' "${failures[*]}"
-            exit 1
-          fi
-        env:
-          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
-          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
+          KT_COMMAND_ATTEMPTS: 2
 
       - name: Run demo QA
         run: |
@@ -183,53 +109,43 @@ jobs:
           # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
           NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
 
-      - name: Run browser QA
-        run: |
-          set -o pipefail
-          if ! node scripts/run-lane.mjs test:browser 2>&1 | tee -a ci.log; then
-            echo "::error title=Browser QA failed::test:browser"
-            exit 1
-          fi
-        env:
-          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
-          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
-          # The full Chromium lane exercises every playground and can spend
-          # longer than the cross-browser smoke lane on a shared runner. Keep
-          # the retry bounded while allowing a complete attempt to finish.
-          MK_BROWSER_TEST_TIMEOUT: 240000
-          MK_BROWSER_TEST_ATTEMPTS: 3
-
       - name: Pack dry run
         run: |
           set -o pipefail
           node scripts/retry-command.mjs npm pack --dry-run 2>&1 | tee -a ci.log
 
-      - name: Upload browser screenshots on failure
+      - name: Upload the log on failure
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: browser-test-artifacts
+          name: node-test-log
           path: |
             ci.log
-            tests/browser/shots/
             tests/.smoke/
           if-no-files-found: ignore
           retention-days: 7
           overwrite: true
 
-  cross-browser:
-    name: ${{ matrix.browser }} · browser smoke
-    # No `needs`: every job gets its own hosted runner, so the engines do not
-    # share a CPU with each other or with the Chromium job. Running all three at
-    # once took CI from ~25 minutes (Chromium, then WebKit, then Firefox) to
-    # the length of the slowest lane; the demo deploys only when all pass.
+  browser:
+    name: ${{ matrix.browser }} · ${{ matrix.lane }} · ${{ matrix.shard }}
+    # Every entry gets its own hosted runner and none waits for another job, so
+    # CI takes as long as the slowest shard instead of the sum of all lanes
+    # (about 25 minutes when Chromium, WebKit and Firefox ran one after another).
+    # A lane is split with `run-lane --shard k/n` (round-robin by position in
+    # package.json), so no test list is repeated here. To rebalance, change a
+    # shard count below and list every k of n. The demo deploys only when every
+    # job passes (pages.yml).
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
       fail-fast: false
-      max-parallel: 2
       matrix:
-        browser: [webkit, firefox]
+        include:
+          - { browser: chromium, lane: "test:browser", shard: "1/2" }
+          - { browser: chromium, lane: "test:browser", shard: "2/2" }
+          - { browser: webkit, lane: "test:browser:cross", shard: "1/2" }
+          - { browser: webkit, lane: "test:browser:cross", shard: "2/2" }
+          - { browser: firefox, lane: "test:browser:cross", shard: "1/1" }
 
     steps:
       - name: Checkout
@@ -241,81 +157,49 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Use npm with Trusted Publishing support
-        run: npm install --global npm@11
-
       - name: Install dependencies
         run: npm ci --prefer-offline --fetch-retries=3 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=5000 --fetch-timeout=30000
 
       - name: Install Playwright ${{ matrix.browser }}
+        env:
+          BROWSER: ${{ matrix.browser }}
         run: |
           set -o pipefail
-          # Firefox runs with the hosted runner's libraries. WebKit needs its
-          # additional runtime packages; bound that apt/browser provisioning so
-          # a mirror stall cannot consume the whole matrix job.
-          if [ "${{ matrix.browser }}" = "webkit" ]; then
-            timeout --foreground --kill-after=30s 10m npx playwright install --with-deps webkit
-          else
+          # Firefox runs with the hosted runner's libraries. Chromium and WebKit
+          # need extra runtime packages; bound that apt/browser provisioning so a
+          # mirror stall cannot consume the job.
+          if [ "$BROWSER" = "firefox" ]; then
             node scripts/retry-command.mjs timeout --signal=TERM 5m npx playwright install firefox
+          else
+            timeout --foreground --kill-after=30s 10m npx playwright install --with-deps "$BROWSER"
           fi
 
       - name: Build distributions
         run: npm run build
 
-      - name: Run cross-browser smoke
-        run: |
-          set -o pipefail
-          node tests/retry-browser-test.mjs tests/browser-smoke.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/page-transition-hash.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/css-scroll.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/cursor-click-media.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/slider-variant-browser.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/reveal-variant-browser.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/glitch-wave-browser.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/lazy-stylized.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/stylize.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/squircle.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/card-glass.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/flip-fold.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/magnetic-dock.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/hold-tap.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/gesture-pull.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/mega-radial.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/stylize-patterns.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/text-word-wrap.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/text-transition.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/idle-cost.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/create-cost.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/canvas-effect.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/layout-refresh.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/demo-blocks.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/markup-trust.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/lifecycle-edges.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/motion-timing.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
+      - name: Run browser lane
         env:
           # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
           NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
           KT_BROWSER: ${{ matrix.browser }}
-
-      - name: Run full demo regression QA in the cross-browser lane
-        if: matrix.browser == 'firefox' || matrix.browser == 'webkit'
-        run: |
-          set -o pipefail
-          node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs 2>&1 | tee -a cross-browser-${{ matrix.browser }}.log
-        env:
-          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
-          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
-          KT_BROWSER: ${{ matrix.browser }}
+          LANE: ${{ matrix.lane }}
+          SHARD: ${{ matrix.shard }}
+          # Per test: at most 240s per attempt. A test that passes only on a
+          # retry is reported as flaky (annotation), never silently.
           MK_BROWSER_TEST_TIMEOUT: 240000
           MK_BROWSER_TEST_ATTEMPTS: ${{ matrix.browser == 'webkit' && 4 || 3 }}
+        run: |
+          set -o pipefail
+          node scripts/run-lane.mjs "$LANE" --shard "$SHARD" 2>&1 | tee -a browser.log
 
-      - name: Upload cross-browser artifacts on failure
+      - name: Upload browser artifacts on failure
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: cross-browser-${{ matrix.browser }}-artifacts
+          # A shard like "1/2" cannot be part of an artifact name; the job index can.
+          name: browser-${{ matrix.browser }}-${{ strategy.job-index }}
           path: |
-            cross-browser-${{ matrix.browser }}.log
+            browser.log
             tests/browser/shots/
             tests/.smoke/
           if-no-files-found: ignore

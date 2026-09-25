@@ -23,8 +23,9 @@ another agent's prose report are leads to verify, not evidence of completion.
    implement the smallest compatible change.
 5. Synchronize source, demo, contract, generated reference, translations, and
    the English/Korean `Unreleased` changelog pair.
-6. Run focused checks while editing and `npm run ci` once before handoff.
-   Before a release, run `npm run verify`.
+6. Run focused checks while editing and `npm run verify:push` before every
+   push (see `AGENTS.md` → "Before every push"). Before a release, run
+   `npm run verify`.
 7. Review the complete diff for security, accessibility, standards,
    progressive enhancement/degradation, lifecycle cleanup, network cost,
    bundle size, and untranslated copy.
@@ -150,14 +151,25 @@ or a tag; release approval remains separate.
   the same time on 120Hz screens. A numeric factor is read with
   `numberOption()`, so a curve string cannot turn it into NaN.
   `tests/browser/motion-timing.mjs`.
-- **Verify the change, then the lane once**: run the tests that cover what you
-  touched (`node tests/browser/<file>.mjs`, three engines for new browser
-  gates), then the whole Chromium lane ONCE at the end with
-  `npm run test:browser:lane` (per-test retries, every failure reported,
-  `-- --jobs 2` locally). Do not re-run full lanes after each small edit, and
-  never run two browser lanes at the same time — they starve each other.
-- **A release tag follows green CI**: `release:ship` waits for the CI run of
-  the exact commit before tagging (`scripts/ci-status.mjs`). Never tag first.
+- **Verify the change, then push once**: run the tests that cover what you
+  touched (`node scripts/run-lane.mjs test:browser --only <name> --repeat 3`,
+  three engines for new browser gates), then `npm run verify:push` before the
+  push. The full lanes run in CI in parallel shards; locally run one at most
+  once (`npm run verify:push -- --browser` runs one test per two CPU cores),
+  never two lanes at the same time — they starve each other. On a 2-core
+  machine `--jobs 2` alone makes tests flake.
+- **Test lists live only in package.json**: CI and the release run lanes with
+  `scripts/run-lane.mjs` (`--shard k/n` splits a lane across runners), so a
+  test added to `test:browser` or `test:browser:cross` is in CI without a
+  workflow edit. Never copy a test list into a workflow.
+- **A retry that passes is a flake, and flakes are bugs**: the retry helpers
+  report it (`Flaky:` line, CI warning annotation, lane summary). Fix the test
+  (a bounded condition wait instead of a fixed sleep) — do not raise attempts.
+- **A release tag follows green CI, and the release trusts it**: `release:ship`
+  waits for the CI run of the exact commit before tagging
+  (`scripts/ci-status.mjs`), and `release.yml` requires that verdict again
+  (`scripts/require-green-ci.mjs`) instead of re-running CI's lanes. Never tag
+  first.
 - **Reduced motion removes motion, not features**: a module whose job is not
   motion (a viewer, a formatter, a state class, pull-to-refresh) implements
   `reduced()` by creating itself without its transitions.

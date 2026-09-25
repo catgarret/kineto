@@ -113,7 +113,15 @@ export function assertSiteExtras() {
 }
 
 // Short build id for the footer/debug so a deployed page is traceable to a commit.
+// Only CI stamps the commit (Pages and the backup sync rebuild site/ in CI from
+// the exact commit they deploy). A local build stamps "dev": a committed file
+// cannot contain its own commit id, so stamping HEAD locally made site/index.html
+// change on every commit for no reason — and look like stale generated output.
+// KT_BUILD_ID overrides both (e.g. to reproduce a deployed page locally).
 function buildId() {
+  const override = process.env.KT_BUILD_ID;
+  if (override && /^[\w.-]{1,40}$/.test(override)) return override;
+  if (process.env.CI !== 'true') return 'dev';
   try { return execSync('git rev-parse --short=7 HEAD', { cwd: root }).toString().trim(); }
   catch (_e) { return `v${version}`; }
 }

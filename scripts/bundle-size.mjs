@@ -49,6 +49,14 @@ const dist = path.join(root, 'dist');
 // 2026-07-29 (late): measured 471.7/123.0 (esm), 373.2/109.8 (min), 371.4/109.2 (umd)
 // after the coverflow active-shadow option and the CSS-first lazy wave/grain work.
 // Raised ~2 KB raw / ~1 KB gzip over the measurement, not to a round number.
+// Headroom policy (2026-09-25). Every raw ceiling below used to sit on the
+// last measurement rounded up to the next whole KiB — often less than 0.1 KiB
+// of room. Then ANY runtime change failed CI until someone bumped a number and
+// added a note, so the budget measured "did anyone touch the code" instead of
+// "did the bundle bloat". Raw ceilings now keep about 1% over the latest
+// measurement; gzip ceilings keep their runner variance. The job is still to
+// catch unnoticed growth: when a change needs more than the headroom, set the
+// ceiling to the new measurement + ~1% and write down why.
 const BUDGETS = {
   // The 2026-07-29 release adds CSS-first lazy wave/grain rendering and shared
   // determinate progress outputs. Their measured ESM sizes are 470.2/122.4 KB
@@ -230,7 +238,8 @@ const BUDGETS = {
   // 2026-09-25 (v0.12.1: latestEntry(), Tabs snap, frameEase/frameClock and
   // their junior-facing comments, rebased on the remote Lightbox fixes):
   // 619.9 / 169.1 ESM, 485.0 / 150.3 minified, 483.0 / 149.6 UMD.
-  'kineto.js': { raw: 620, gz: 169, variance: 2 },
+  // Headroom policy above: raw 626 / 490 / 488 (≈ +1%).
+  'kineto.js': { raw: 626, gz: 169, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
   // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/
@@ -247,16 +256,16 @@ const BUDGETS = {
   // See the live-motion-switching note above for the 445.8 KiB measurement.
   // 2026-09-21 (fold): FLIP's fold move style measures 454.3 KiB raw / 139.0
   // KiB gzip minified — the raw ceiling is what moves.
-  'kineto.min.js': { raw: 485, gz: 150, variance: 2 },
+  'kineto.min.js': { raw: 490, gz: 150, variance: 2 },
   // 2026-09-20 (shared-element teardown): the UMD gzip crosses its exact 133 KB
   // boundary at a measured 134.0 KB while raw stays inside 440 KB. Round only
   // the compressed ceiling; runner variance and consumer budgets are unchanged.
   // See the squircle note above for the 448.0 KiB measurement. The ceiling is
   // the next whole KiB because tests/deps-boundary.mjs reads this number as a
   // strict upper bound on the shipped file.
-  // v0.12.1 (see the kineto.js note): 483.0 KiB raw → 484.
-  'kineto.umd.js': { raw: 484, gz: 150, variance: 1 },
-  'kineto.umd.min.js': { raw: 484, gz: 150, variance: 1 },
+  // v0.12.1 (see the kineto.js note): 483.0 KiB raw → 484; headroom policy → 488.
+  'kineto.umd.js': { raw: 488, gz: 150, variance: 1 },
+  'kineto.umd.min.js': { raw: 488, gz: 150, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.
@@ -269,8 +278,9 @@ const BUDGETS = {
   // Vite output with lightningcss moves raw by -0.1%).
   // The radial ring's rules are the first CSS addition to cross 45 KiB raw;
   // gzip is unchanged at 9.4 KiB, well inside its ceiling.
-  'kineto.css': { raw: 46, gz: 10 },
-  'kineto.min.css': { raw: 46, gz: 10 }
+  // Headroom policy above: 45.8 KiB raw → 47.
+  'kineto.css': { raw: 47, gz: 10 },
+  'kineto.min.css': { raw: 47, gz: 10 }
 };
 
 const kb = (n) => n / 1024;

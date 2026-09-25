@@ -8,8 +8,11 @@
 //
 // Why wait: a pushed tag is never moved or deleted, so a tag cut on a commit
 // whose CI then fails uses up the version number (v0.12.0). If CI fails here,
-// no tag exists yet — fix main and run the same command again.
-// `--skip-ci-wait` is for when you have already seen CI green for HEAD.
+// no tag exists yet — fix main (or re-run the failed CI jobs if it was a
+// flake) and run the same command again.
+// `--skip-ci-wait` is for when you have already seen CI green for HEAD. It
+// cannot publish a red commit: the release workflow checks the same CI result
+// again (scripts/require-green-ci.mjs) before it publishes anything.
 import process from 'node:process';
 import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
@@ -57,7 +60,7 @@ run('git', ['fetch', '--quiet', 'origin', 'main']);
 const behind = output('git', ['rev-list', '--count', 'HEAD..origin/main']);
 if (behind !== '0') {
   fail(`origin/main has ${behind} commit(s) this main does not contain (someone else pushed). Nothing was pushed or tagged. `
-    + 'Integrate them first (git pull --rebase origin main, then npm run build and npm run test:node), then run this command again.');
+    + 'Integrate them first (git pull --rebase origin main, then npm run verify:push), then run this command again.');
 }
 run('git', ['push', 'origin', 'main']);
 
@@ -75,7 +78,7 @@ if (skipCiWait) {
     fail(`could not read CI status (${error.message}). No tag was created. Check CI for ${sha.slice(0, 7)} and re-run, with --skip-ci-wait if it is green.`);
   }
   if (verdict !== 'success') {
-    fail(`CI for ${sha.slice(0, 7)} ended as "${verdict}". No tag was created, so ${tag} is still available: fix main and run this command again.`);
+    fail(`CI for ${sha.slice(0, 7)} ended as "${verdict}". No tag was created, so ${tag} is still available: fix main — or, if a test flaked, re-run the failed CI jobs — and run this command again.`);
   }
   console.log(`CI passed for ${sha.slice(0, 7)}.`);
 }

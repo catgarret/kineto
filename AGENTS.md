@@ -56,8 +56,9 @@ Unless the user explicitly asks for read-only analysis or says not to commit:
 3. Update affected module docs, contracts, demos, and translations.
 4. Add concise release bullets to the top `CHANGELOG.md` `Unreleased` section:
    English first and the matching Korean translation second.
-5. Run the smallest useful checks while iterating, then one integrated
-   `npm run ci` before handoff.
+5. Run the smallest useful checks while iterating, `npm run verify:push`
+   before every push (see below), and one integrated `npm run ci` before a
+   release.
 6. Stage only files belonging to the task and create a descriptive conventional
    commit. Never include unrelated dirty-worktree files.
 7. Report the commit hash, checks run, and any environment not verified.
@@ -111,8 +112,44 @@ they drift. Every claim in the map must hold against the real library: extend
 Browser suites locate a local Chromium through `KT_CHROME=<path>` when the
 installed Playwright revision differs from the expected one (`MK_CHROMIUM` is
 accepted as a legacy alias). Container Chromium builds without proprietary
-codecs or animated-image decoding fail the animated-media QA steps only; record
-such environment-only failures instead of weakening the checks.
+codecs cannot play the H.264 demo video: the animated-media QA skips only that
+video step there and says so, while CI (`CI=true`) must decode it and never
+skips. Record any other environment-only failure instead of weakening the
+checks.
+
+## Before every push: CI is not a test runner
+
+Most red CI runs come from checks that take minutes locally. Of 26 failed CI
+runs reviewed on 2026-09-25, 15 were lint errors, a `ReferenceError`, or
+generated files that were not regenerated or not committed; the other 11 were
+browser tests that broke or flaked on one engine.
+
+1. Run `npm run verify:push` (lint → build → generated-file check → every Node
+   test → demo QA; about 4 minutes) and push only when it passes. When the
+   build changed generated files it lists them — they are already regenerated;
+   commit them.
+2. When you add or change a browser test, or the code it covers, run that test
+   several times with retries off before pushing:
+   `node scripts/run-lane.mjs test:browser --only <name> --repeat 3`.
+   For an engine-sensitive change, also run it in that engine:
+   `KT_BROWSER=webkit node scripts/run-lane.mjs test:browser:cross --only <name> --repeat 3`.
+3. Never push to find out whether CI passes, and never push a fix for a red CI
+   run without reproducing the failure first. CI names the failing test and
+   its assertion in public annotations (`tests/ci-annotate.mjs`), readable
+   without signing in.
+4. Assert on conditions, not on time: wait for the state with a bounded poll
+   (`page.waitForFunction(check, arg, { timeout })`) instead of a fixed
+   `waitForTimeout` before an assertion. A test that passes only on a retry is
+   reported as **flaky** (a CI warning annotation and the lane summary) — fix
+   it in the same task instead of raising the retry count.
+5. `npm run hooks:install` (once per clone) adds a pre-push hook that runs
+   `npm run verify:push -- --fast` automatically; skip it once with
+   `git push --no-verify`.
+
+Test lists live only in `package.json` (`test:node`, `test:browser`,
+`test:browser:cross`, `test:release-package`). CI runs them through
+`scripts/run-lane.mjs`, split into parallel shards, so a test added to a lane is
+covered by CI without editing any workflow.
 
 ## Release policy
 
@@ -133,8 +170,12 @@ For a release:
 6. Commit the release preparation as `release: prepare v<version>`.
 7. Run `npm run release:ship -- v<version>` only after explicit release
    authorization. This pushes `main` and the annotated tag.
-8. The tag-triggered GitHub workflow validates, publishes to npm with provenance,
-   and creates the GitHub Release using English notes followed by Korean notes.
+8. The tag-triggered GitHub workflow requires CI's green result for the tagged
+   commit on `main` (it does not re-run CI's test lanes), checks and packs the
+   package, publishes to npm with provenance, and creates the GitHub Release
+   using English notes followed by Korean notes. If CI was red because of a
+   flake, re-run the failed CI jobs and then the release workflow; nothing was
+   published, so the tag stays usable.
 9. Confirm both the GitHub Release and npm version before reporting success.
 
 Never hand-edit or move a tag after npm publication. If a published release is

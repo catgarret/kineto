@@ -6,9 +6,18 @@
 // is what happened to v0.12.0. Waiting here costs a few minutes; a burnt tag
 // costs a version.
 //
+// Two callers:
+//   • scripts/ship-release.mjs (the owner's machine) — anonymous: the
+//     repository is public, so no credential is needed or sent.
+//   • scripts/require-green-ci.mjs (the tag-triggered release workflow) — it
+//     passes the job's own short-lived GITHUB_TOKEN, because hosted runners
+//     share IP addresses and the anonymous limit (60 requests/hour per IP)
+//     would be exhausted by other people's jobs.
+//
 // Security notes (this is the only place release tooling talks to a network):
-//   • Read-only GET to one fixed host (api.github.com). No token is read or
-//     sent: the repository is public and the anonymous API is enough.
+//   • Read-only GET to one fixed host (api.github.com), redirects refused, so a
+//     token can only ever reach that host. This module never reads the
+//     environment: a token is used only when a caller passes one explicitly.
 //   • The owner/repo come from `git remote get-url origin`, which can contain
 //     credentials (https://user:token@github.com/...). Only the validated
 //     owner/repo pair is used or printed — never the URL itself.
@@ -46,16 +55,23 @@ export function ciVerdict(runs, sha) {
   return newest.conclusion === 'success' ? 'success' : 'failure';
 }
 
-/** One read of the CI runs for `sha`. Returns the verdict, or throws with a readable reason. */
-export async function readCiVerdict({ owner, repo, sha, fetchImpl = globalThis.fetch }) {
+/**
+ * One read of the CI runs for `sha`. Returns the verdict, or throws with a
+ * readable reason. `token` is optional (see the header comment) and is never
+ * included in an error message.
+ */
+export async function readCiVerdict({ owner, repo, sha, token = null, fetchImpl = globalThis.fetch }) {
   if (!NAME.test(owner) || !NAME.test(repo)) throw new Error('invalid GitHub owner/repository name');
   if (!SHA.test(sha)) throw new Error('invalid commit SHA');
+  if (token !== null && (typeof token !== 'string' || !/^[\x21-\x7e]{1,4096}$/.test(token))) throw new Error('invalid token');
   const url = new URL(`/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`
     + `/actions/workflows/${CI_WORKFLOW_FILE}/runs`, API_ORIGIN);
   url.searchParams.set('head_sha', sha);
   url.searchParams.set('per_page', '20');
+  const headers = { accept: 'application/vnd.github+json', 'user-agent': 'kineto-release-ship' };
+  if (token) headers.authorization = `Bearer ${token}`;
   const response = await fetchImpl(url, {
-    headers: { accept: 'application/vnd.github+json', 'user-agent': 'kineto-release-ship' },
+    headers,
     redirect: 'error',
     signal: AbortSignal.timeout(15000)
   });
@@ -73,16 +89,16 @@ export async function readCiVerdict({ owner, repo, sha, fetchImpl = globalThis.f
  * seconds after the push.
  */
 export async function waitForCi({
-  owner, repo, sha, fetchImpl, log = () => {},
-  // CI here is a Node job and then the Firefox/WebKit jobs: ~25 minutes when
-  // green, longer when a lane retries. Give it room before giving up, and poll
-  // every 90s so 75 minutes stay under the anonymous API limit (60 per hour).
-  intervalMs = 90000, timeoutMs = 75 * 60 * 1000, missingGraceMs = 3 * 60 * 1000,
+  owner, repo, sha, token = null, fetchImpl, log = () => {},
+  // Every CI job runs at once (ci.yml): about 6–10 minutes when green, longer
+  // when a test retries. Poll once a minute and give up after 45 minutes, which
+  // stays under the anonymous API limit (60 requests per hour).
+  intervalMs = 60000, timeoutMs = 45 * 60 * 1000, missingGraceMs = 3 * 60 * 1000,
   sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)), now = () => Date.now()
 }) {
   const started = now();
   for (;;) {
-    const verdict = await readCiVerdict({ owner, repo, sha, fetchImpl });
+    const verdict = await readCiVerdict({ owner, repo, sha, token, fetchImpl });
     const waited = now() - started;
     if (verdict === 'success' || verdict === 'failure') return verdict;
     if (verdict === 'missing' && waited > missingGraceMs) return 'missing';

@@ -2,6 +2,7 @@
 // The command is still required to pass; retries only absorb short-lived
 // runner, browser, or registry instability without masking a real regression.
 import { spawn } from 'node:child_process';
+import { annotation, inGitHubActions, reportFlaky } from './gh-actions.mjs';
 
 const command = process.argv[2];
 const args = process.argv.slice(3);
@@ -35,7 +36,7 @@ function run() {
 for (let attempt = 1; attempt <= attempts; attempt += 1) {
   const result = await run();
   if (result.code === 0 && !result.signal) {
-    if (attempt > 1) console.log(`Verification passed on retry ${attempt}/${attempts}.`);
+    if (attempt > 1) reportFlaky({ label: [command, ...args].join(' '), attempt, attempts });
     process.exit(0);
   }
   if (attempt < attempts) {
@@ -44,4 +45,7 @@ for (let attempt = 1; attempt <= attempts; attempt += 1) {
   }
 }
 
+const label = [command, ...args].join(' ');
+console.error(`${label} failed on all ${attempts} attempt(s).`);
+if (inGitHubActions()) console.error(annotation('error', `${label} failed`, `failed on all ${attempts} attempt(s)`));
 process.exitCode = 1;

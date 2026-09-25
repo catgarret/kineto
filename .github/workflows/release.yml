@@ -14,9 +14,20 @@ permissions:
 
 jobs:
   verify:
-    name: Verify · Chromium · package
+    # CI already ran every test on this exact commit (ci.yml, on the push to
+    # main). This job does not repeat that: it requires CI's green result for
+    # the commit (scripts/require-green-ci.mjs), then checks what it publishes —
+    # the built package — and packs the one tarball that npm and the GitHub
+    # Release will both receive. About 5 minutes instead of 25, and a flaky
+    # test can no longer fail a release that CI already passed.
+    name: Verify · green CI · package
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    # Up to 45 minutes of waiting when the tag is pushed while CI still runs.
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      # Read the CI runs of this commit; nothing else.
+      actions: read
 
     steps:
       - name: Checkout tagged source
@@ -37,118 +48,39 @@ jobs:
       - name: Validate tag, versions, changelog, and bilingual notes
         run: npm run release:check -- "$GITHUB_REF_NAME"
 
+      - name: Require green CI for the tagged commit
+        run: node scripts/require-green-ci.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
       - name: Install dependencies
         run: npm ci --prefer-offline --fetch-retries=3 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=5000 --fetch-timeout=30000
 
       - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Run lint
-        run: |
-          set -o pipefail
-          node scripts/retry-command.mjs npm run lint 2>&1 | tee -a release.log
+        run: timeout --foreground --kill-after=30s 10m npx playwright install --with-deps chromium
 
       - name: Build distributions
         run: |
           set -o pipefail
           node scripts/retry-command.mjs npm run build 2>&1 | tee -a release.log
 
-      - name: Run Node tests · contracts and package
-        run: |
-          set -euo pipefail
-          for command in test:utils test:diagnostics test:states test:observe test:presence test:contract test:requirements test:docs test:docs-navigation test:roadmap-readiness test:readiness-gates test:readiness-evidence test:lockfile-boundary test:supply-chain-automation test:module-metadata test:module-status test:taxonomy test:mobile-device-manifest test:package test:types test:package-size test:package-tarball; do
-            echo "::group::$command"
-            node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log
-            echo "::endgroup::"
-          done
-        env:
-          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
-          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
-
-      - name: Run Node tests · consumers and frameworks
-        run: |
-          set -euo pipefail
-          for command in test:consumer-bundles test:framework test:integrations test:mcp; do
-            echo "::group::$command"
-            node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log
-            echo "::endgroup::"
-          done
-        env:
-          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
-          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
-
-      - name: Run Node tests · demo surface
-        run: |
-          set -euo pipefail
-          for command in test:parity test:structure test:copy test:lazy test:options test:demo-controls test:variants test:help test:inline test:defaults test:variant-options test:variant-distinctness test:variant-compare; do
-            echo "::group::$command"
-            node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log
-            echo "::endgroup::"
-          done
-        env:
-          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
-          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
-
-      - name: Run Node tests · runtime regressions
-        run: |
-          set -uo pipefail
-          failures=()
-          for command in test:easings test:reduced test:update test:canvas-effect test:scroll-velocity test:audit test:leak test:perf test:activation test:deps test:engine test:sequence-sources test:control-labels test:regressions test:cursor-click-media; do
-            echo "::group::$command"
-            if ! node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log; then
-              echo "::error title=Node runtime test failed::$command"
-              failures+=("$command")
-            fi
-            echo "::endgroup::"
-          done
-          if ((${#failures[@]})); then
-            printf 'Node runtime test failures: %s\n' "${failures[*]}"
-            exit 1
-          fi
-        env:
-          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
-          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
-
-      - name: Run Node tests · site and release
-        run: |
-          set -uo pipefail
-          failures=()
-          for command in test:site test:live-site-script test:release test:size; do
-            echo "::group::$command"
-            if ! node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log; then
-              echo "::error title=Site/release test failed::$command"
-              failures+=("$command")
-            fi
-            echo "::endgroup::"
-          done
-          if ((${#failures[@]})); then
-            printf 'Site/release test failures: %s\n' "${failures[*]}"
-            exit 1
-          fi
-        env:
-          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
-          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
-
-      - name: Run demo QA
+      - name: Verify the package
+        # package.json `test:release-package`: exports, types, size budgets,
+        # the packed tarball, and this workflow's own release rules.
         run: |
           set -o pipefail
-          node scripts/retry-command.mjs npm run test:demo 2>&1 | tee -a release.log
+          node scripts/run-lane.mjs test:release-package 2>&1 | tee -a release.log
         env:
           # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
           NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
 
-      - name: Run browser QA
+      - name: Smoke-test the built package in Chromium
+        # Every public module runs once from the exact build being packed.
         run: |
           set -o pipefail
-          if ! node scripts/run-lane.mjs test:browser 2>&1 | tee -a release.log; then
-            echo "::error title=Browser QA failed::test:browser"
-            exit 1
-          fi
+          node tests/retry-browser-test.mjs tests/browser-smoke.mjs 2>&1 | tee -a release.log
         env:
-          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
           NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
-          # Match the full CI lane: hosted Chromium can need more time than a
-          # local run while still remaining a bounded release gate.
           MK_BROWSER_TEST_TIMEOUT: 240000
           MK_BROWSER_TEST_ATTEMPTS: 3
 
@@ -207,98 +139,9 @@ jobs:
           retention-days: 7
           overwrite: true
 
-  cross-browser:
-    name: ${{ matrix.browser }} · release gate
-    runs-on: ubuntu-24.04
-    timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      # Each engine has its own hosted runner; run both at once.
-      max-parallel: 2
-      matrix:
-        browser: [firefox, webkit]
-
-    steps:
-      - name: Checkout tagged source
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci --prefer-offline --fetch-retries=3 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=5000 --fetch-timeout=30000
-
-      - name: Install Playwright ${{ matrix.browser }}
-        shell: bash
-        run: |
-          set -o pipefail
-          if [ "${{ matrix.browser }}" = "webkit" ]; then
-            timeout --foreground --kill-after=30s 10m npx playwright install --with-deps webkit
-          else
-            node scripts/retry-command.mjs timeout --signal=TERM 5m npx playwright install firefox
-          fi
-
-      - name: Build distributions
-        run: npm run build
-
-      - name: Run cross-browser release QA
-        shell: bash
-        run: |
-          set -o pipefail
-          node tests/retry-browser-test.mjs tests/browser-smoke.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/page-transition-hash.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/css-scroll.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/cursor-click-media.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/slider-variant-browser.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/reveal-variant-browser.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/glitch-wave-browser.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/lazy-stylized.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/stylize.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/squircle.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/card-glass.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/flip-fold.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/magnetic-dock.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/hold-tap.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/gesture-pull.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/mega-radial.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/stylize-patterns.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/text-word-wrap.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/text-transition.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/idle-cost.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/create-cost.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/canvas-effect.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/layout-refresh.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/demo-blocks.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/markup-trust.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/lifecycle-edges.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/motion-timing.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-          node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
-        env:
-          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
-          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
-          KT_BROWSER: ${{ matrix.browser }}
-          MK_BROWSER_TEST_TIMEOUT: 240000
-          MK_BROWSER_TEST_ATTEMPTS: ${{ matrix.browser == 'webkit' && 4 || 3 }}
-
-      - name: Upload cross-browser artifacts on failure
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: release-${{ matrix.browser }}-artifacts
-          path: |
-            release-${{ matrix.browser }}.log
-            tests/browser/shots/
-            tests/.smoke/
-          if-no-files-found: ignore
-          retention-days: 7
-          overwrite: true
-
   publish:
     name: Publish verified npm and GitHub artifacts
-    needs: [verify, cross-browser]
+    needs: [verify]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
