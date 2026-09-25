@@ -1277,13 +1277,14 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
        which is what `full` is for. There a wide card is simply a card. */
     .module-block-body--cols-2.grid>.card.wide{grid-column:span 6}
     .module-block-body.grid>.card.full{grid-column:1/-1}
-    /* Leftover cards in the last row share it equally. The class is set by
-       measurement in main.js — a `.card.full` earlier in the grid eats a whole
-       row, so nth-child arithmetic gets the row boundaries wrong. */
-    .module-block-body.grid>.card.is-last-row-1{grid-column:1/-1}
-    .module-block-body.grid>.card.is-last-row-2{grid-column:span 6}
-    .module-block-body.grid>.card.is-last-row-3{grid-column:span 4}
-    .module-block-body.grid>.card.is-last-row-4{grid-column:span 3}
+    /* Cards in a row that cannot be completed share it equally — any row, not
+       only the last. The class is set by measurement in main.js (planShortRows):
+       a `.card.full` earlier in the grid eats a whole row, so nth-child
+       arithmetic gets the row boundaries wrong. */
+    .module-block-body.grid>.card.is-row-fill-1{grid-column:1/-1}
+    .module-block-body.grid>.card.is-row-fill-2{grid-column:span 6}
+    .module-block-body.grid>.card.is-row-fill-3{grid-column:span 4}
+    .module-block-body.grid>.card.is-row-fill-4{grid-column:span 3}
     .module-block-body--dense.grid>.card{grid-column:auto}
     @media(max-width:1180px){
       .module-block-body--cols-4.grid{--kt-card-span:4}
@@ -1297,7 +1298,7 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
       .module-block-body.grid{--kt-card-span:12}
       .module-block-body.grid>.card.wide,
       .module-block-body--cols-2.grid>.card.wide,
-      .module-block-body.grid>.card[class*="is-last-row-"]{grid-column:1/-1}
+      .module-block-body.grid>.card[class*="is-row-fill-"]{grid-column:1/-1}
     }
     /* Text-heavy demos need their type scaled down to survive a narrower cell. */
     .module-block-body--cols-3 #mod-textSplit .big-text,
@@ -1446,8 +1447,10 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
    that class means "a row under the stage", and a card that has one detaches its
    settings bar, which left this card's footer floating on its own. */
 .fold-controls{display:flex;justify-content:center}
-.fold-panel{display:grid;grid-template-columns:repeat(2,96px);gap:var(--sp-3);justify-content:center;transition:none}
-.fold-panel.is-open{grid-template-columns:repeat(3,120px)}
+/* Tiles shrink with the stage (minmax) so the opened three-column layout fits a
+   half-width card or a phone instead of spilling past the stage. */
+.fold-panel{display:grid;grid-template-columns:repeat(2,minmax(0,96px));gap:var(--sp-3);justify-content:center;width:100%;transition:none}
+.fold-panel.is-open{grid-template-columns:repeat(3,minmax(0,120px))}
 .fold-tile{display:flex;align-items:center;justify-content:center;height:72px;border-radius:16px;background:var(--panel2);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:13px}
 .fold-panel.is-open .fold-tile{height:96px}
 

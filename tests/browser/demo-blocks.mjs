@@ -14,6 +14,10 @@
 //   4. CSS Scroll's native tabs move: the stage clips with `overflow: clip`
 //      (a scroll container would capture the native timeline), and each tab
 //      says which engine is driving it.
+//   5. No block row leaves a hole (2026-09-25: Flip showed one card at two
+//      thirds of the width and the next at full width — two `.wide` cards in a
+//      3-up grid). Flip lays its two cards side by side; any row that cannot be
+//      completed is split evenly, not only the last one.
 //
 // Run: npm run build && node tests/browser/demo-blocks.mjs   (KT_BROWSER=webkit|firefox)
 import assert from 'node:assert/strict';
@@ -105,6 +109,28 @@ const foldState = (page, block) => page.evaluate((id) => {
     buttonShown: Boolean(button && !button.closest('.module-fold').hidden)
   };
 }, block);
+
+/** Every row of every block grid, measured: which ones leave a hole. */
+const rowHoles = (page) => page.evaluate(() => {
+  window.KINETO_FOLD?.openAll?.();
+  const holes = [];
+  document.querySelectorAll('.module-block-body.grid:not(.module-block-body--dense)').forEach((body) => {
+    const cards = [...body.children].filter((card) => card.classList.contains('card') && card.getBoundingClientRect().height > 0);
+    const rows = new Map();
+    cards.forEach((card) => {
+      const top = Math.round(card.getBoundingClientRect().top);
+      if (!rows.has(top)) rows.set(top, []);
+      rows.get(top).push(card);
+    });
+    const gap = parseFloat(getComputedStyle(body).columnGap) || 0;
+    const width = body.getBoundingClientRect().width;
+    rows.forEach((row) => {
+      const used = row.reduce((sum, card) => sum + card.getBoundingClientRect().width, 0) + gap * (row.length - 1);
+      if (used < width - 4) holes.push(`${body.closest('[id^="mod-"]')?.id}: ${Math.round(used)} of ${Math.round(width)}px`);
+    });
+  });
+  return holes;
+});
 
 // ── Desktop ──────────────────────────────────────────────────────────────────
 {
@@ -228,6 +254,17 @@ const foldState = (page, block) => page.evaluate((id) => {
     assert.ok(Math.abs(after.progress - before.progress) > 0.05, `the native view tab must move with the scroll (${JSON.stringify({ before, after })})`);
     assert.equal(after.shown, 'CSS 네이티브', 'the readout names the engine that drives the tab');
   }
+
+  // 5. No holes; Flip's two cards share one row.
+  const flip = await page.evaluate(() => [...document.querySelectorAll('#mod-flip .module-block-body > .card')]
+    .map((card) => { const box = card.getBoundingClientRect(); return { top: Math.round(box.top), width: Math.round(box.width) }; }));
+  assert.equal(flip.length, 2, 'the Flip block has its two cards');
+  assert.ok(flip[0].top === flip[1].top && Math.abs(flip[0].width - flip[1].width) <= 1,
+    `Flip's two cards must sit side by side at equal width (${JSON.stringify(flip)})`);
+  assert.deepEqual(await rowHoles(page), [], 'no block row may leave a hole on desktop');
+  await page.setViewportSize({ width: 1024, height: 900 });
+  await page.waitForTimeout(400);
+  assert.deepEqual(await rowHoles(page), [], 'no block row may leave a hole at 1024px');
 
   assert.deepEqual(errors, [], `demo page errors:\n${errors.join('\n')}`);
   await page.close();

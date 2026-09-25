@@ -4,9 +4,13 @@
 
 ### English
 
+- Demo: the Flip block no longer leaves a hole. Its two cards (FLIP grid and Fold) were `.wide` in a 3-up grid, so the first took two thirds of the row and the second a full row below it; they now sit side by side, and every row that cannot be completed is split evenly (not only the last one — `planShortRows` in `demo/main.js`). The opened Fold tiles shrink with the stage instead of spilling out of a half-width card or a phone. Gate: `tests/browser/demo-blocks.mjs` (no row holes at 1440 and 1024 px).
+
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- 데모: Flip 블록에 빈자리가 생기지 않습니다. 두 카드(FLIP 그리드·Fold)가 3열 그리드의 `.wide`라 첫 카드는 줄의 2/3, 둘째 카드는 그 아래 한 줄 전체를 차지했습니다. 이제 두 카드가 나란히 놓이고, 채울 수 없는 줄은 마지막 줄뿐 아니라 어느 줄이든 균등하게 나눕니다(`demo/main.js`의 `planShortRows`). 펼친 Fold 타일은 반폭 카드나 휴대폰에서 스테이지 밖으로 넘치지 않고 함께 줄어듭니다. 게이트: `tests/browser/demo-blocks.mjs`(1440·1024px에서 줄 빈자리 없음).
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 

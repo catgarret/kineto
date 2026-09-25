@@ -463,46 +463,47 @@
         // (lazy); `2` is for side-by-side comparisons whose stages need the width
         // (slider, accordion, tabs, cover reveal); an explicit `3` also opts
         // text demos into the smaller type that lets them fit three across.
-        const MODULE_COLS={lazy:4,slider:2,accordion:2,tabs:2,coverReveal:2,canvasEffect:2,cursor:3,textReveal:3,textSplit:3,overflowText:3,scrollVelocity:3,progress:3,fullpage:3};
+        const MODULE_COLS={lazy:4,slider:2,accordion:2,tabs:2,coverReveal:2,canvasEffect:2,flip:2,cursor:3,textReveal:3,textSplit:3,overflowText:3,scrollVelocity:3,progress:3,fullpage:3};
         const SUBGROUP_COLS={'터미널 · 미터/커서':3};
         const applyCols=(body,count)=>{
           if(!count||!body.classList.contains('grid'))return;
           body.classList.add('module-block-body--cols-'+count);
         };
-        // If the final row holds a single card, let it claim the row. Measured
-        // rather than counted: a `.card.full` earlier in the grid takes a whole
-        // row on its own, so any nth-child guess is wrong.
-        // Any incomplete last row is split evenly between the cards left in it —
-        // one card takes the row, two take 50/50, three take a third each. The
-        // grid is 12 tracks wide precisely so those fractions are whole spans.
-        // Measured, not counted: a `.card.full` earlier in the grid claims a whole
-        // row and shifts every nth-child guess.
-        const LAST_ROW_CLASSES=['is-last-row-1','is-last-row-2','is-last-row-3','is-last-row-4'];
-        // What a grid's last row should become, from measurements alone (no
-        // writes): { cards, cls } when it is short, or null when it is full.
-        const planLastRow=(body)=>{
+        // Every row that cannot be completed is split evenly between the cards
+        // in it — one card takes the row, two take 50/50, three a third each.
+        // The grid is 12 tracks wide precisely so those fractions are whole
+        // spans. Not only the LAST row: two `.wide` cards in a 3-up grid leave a
+        // 4-track hole after the first (the second cannot fit beside it), and
+        // the Flip block showed exactly that — one card at two thirds, the next
+        // at full width. Widening a short row never moves a card between rows
+        // (the row is short because the next card did not fit), so one pass is
+        // stable. Measured, not counted: a `.card.full` claims a row of its own
+        // and shifts every nth-child guess.
+        const ROW_FILL_CLASSES=['is-row-fill-1','is-row-fill-2','is-row-fill-3','is-row-fill-4'];
+        // Which rows of a grid are short and how to fill them, from
+        // measurements alone (no writes): a list of { cards, cls }.
+        const planShortRows=(body)=>{
           const cards=[...body.children].filter(c=>c.classList.contains('card'));
-          if(!cards.length)return null;
-          if(cards.length===1)return {cards,cls:'is-last-row-1'};
+          if(!cards.length)return [];
+          if(cards.length===1)return [{cards,cls:ROW_FILL_CLASSES[0]}];
           // Group by row using the measured top edge.
           const rows=new Map();
           cards.forEach(c=>{const top=Math.round(c.getBoundingClientRect().top);
             if(!rows.has(top))rows.set(top,[]);
             rows.get(top).push(c);});
-          const tops=[...rows.keys()].sort((a,b)=>a-b);
-          const last=rows.get(tops[tops.length-1]);
-          if(last.some(card=>card.classList.contains('full')))return null;
-          // Is the last row actually short? Ask the row, not the other rows.
-          // Comparing against "the widest row seen" misses the commonest case —
-          // a lone card after a `.card.full` — because there is no other row to
-          // compare with, so the card stayed at one third with the rest empty.
-          // What the row holds is measured: the cards' own widths plus the gaps
-          // between them, against the grid's width.
+          // What each row holds is measured — the cards' own widths plus the
+          // gaps between them — against the grid's width. Comparing rows with
+          // each other misses a lone card after a `.card.full`.
           const gap=parseFloat(getComputedStyle(body).columnGap)||0;
-          const used=last.reduce((sum,card)=>sum+card.getBoundingClientRect().width,0)+gap*(last.length-1);
           const width=body.getBoundingClientRect().width;
-          if(used>=width-2||last.length>LAST_ROW_CLASSES.length)return null;
-          return {cards:last,cls:LAST_ROW_CLASSES[last.length-1]};
+          const plans=[];
+          rows.forEach(row=>{
+            if(row.some(card=>card.classList.contains('full')))return;
+            const used=row.reduce((sum,card)=>sum+card.getBoundingClientRect().width,0)+gap*(row.length-1);
+            if(used>=width-2||row.length>ROW_FILL_CLASSES.length)return;
+            plans.push({cards:row,cls:ROW_FILL_CLASSES[row.length-1]});
+          });
+          return plans;
         };
         // Three passes over every grid at once — clear all, measure all, mark
         // all — so the page lays itself out once, not once per grid: the old
@@ -513,9 +514,9 @@
           // The frame-spinner gallery is an auto-fill grid with no fixed row
           // capacity; its rows are always as full as the width allows.
           const grids=bodies.filter(body=>!body.classList.contains('module-block-body--dense'));
-          grids.forEach(body=>{for(const child of body.children)child.classList.remove('is-row-filler',...LAST_ROW_CLASSES);});
-          const plans=grids.map(planLastRow);
-          plans.forEach(plan=>plan?.cards.forEach(card=>card.classList.add(plan.cls)));
+          grids.forEach(body=>{for(const child of body.children)child.classList.remove('is-row-filler',...ROW_FILL_CLASSES);});
+          const plans=grids.flatMap(planShortRows);
+          plans.forEach(plan=>plan.cards.forEach(card=>card.classList.add(plan.cls)));
         };
         const rebalanceRows=()=>rebalance([...document.querySelectorAll('.module-block-body.grid')]);
         const rowBalanceObserver='ResizeObserver' in window
