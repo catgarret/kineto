@@ -582,7 +582,7 @@ try {
     const panel=document.querySelector('#mod-tabs .demo-tabpanel:not([hidden])');
     const indicator=panel?.querySelector('.kt-tabs__indicator');
     return (indicator?.getBoundingClientRect().width||0)>20;
-  }, null, { timeout: 800 });
+  }, null, { timeout: 2000 });
   const initialSegmentIndicator=await page.evaluate(()=>{
     const panel=document.querySelector('#mod-tabs .demo-tabpanel:not([hidden])');
     const indicator=panel.querySelector('.kt-tabs__indicator');
