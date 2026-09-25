@@ -4,6 +4,8 @@
 
 ### English
 
+- Cut CI wall-clock latency by starting Firefox and WebKit immediately on separate hosted runners instead of waiting for the Node 24 suite and then serializing the two engines. Chromium/OS provisioning in the Node 24 lane is also deferred until deterministic lint/build/package gates pass.
+
 - Restore deterministic WebKit geometry/motion boundaries in the demo: Tabs now retries a hidden-to-visible indicator measurement for at most two frames plus one bounded fallback when the active tab is still 0px, and the hero scene caps per-frame progress so a long WebKit scheduling stall cannot collapse a 680–860ms inertial snap into one giant scroll jump. The browser regression follows the scene controller's bounded lifecycle instead of assuming a fixed one-second runner window.
 
 - Remove redundant Loading Indicator terminal runtime work: legacy terminal presets now use the already-frozen shared preset map directly instead of cloning/freezing it again at module load, and a text-frame renderer branch whose two paths were identical is collapsed. Behavior and preset IDs stay unchanged while package/runtime bytes drop.
@@ -17,6 +19,8 @@
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- CI 총 대기 시간을 줄였습니다. Firefox/WebKit이 Node 24 전체 suite 종료를 기다리지 않고 각각 별도 hosted runner에서 즉시 병렬 실행되며, 두 엔진을 직렬화하던 제한을 제거했습니다. Node 24 lane의 Chromium/OS 설치도 lint·build·package 같은 결정적 gate 뒤로 미뤘습니다.
 
 - WebKit에서 데모의 geometry/motion 경계를 결정적으로 복원했습니다. Tabs는 hidden→visible 전환 직후 active tab이 아직 0px이면 최대 두 프레임과 한 번의 bounded fallback까지만 재측정하며, hero scene은 프레임당 progress 증가량을 제한해 WebKit 스케줄링이 오래 멈춰도 680–860ms 관성 snap이 한 번의 큰 scroll jump로 붕괴하지 않습니다. 브라우저 회귀 테스트도 고정 1초 대신 scene controller의 bounded lifecycle을 따라갑니다.
 
