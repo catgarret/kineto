@@ -4,6 +4,8 @@
 
 ### English
 
+- Adapt Hover Roll links to touch input: a touch tap now plays the authored roll first and replays the ordinary same-context link click when the roll finishes, while mouse hover, keyboard activation, downloads, modifier clicks and new-window links keep their native timing.
+
 - Dismiss settings help tooltips deterministically on outside taps and when the settings drawer closes. Mobile Safari can retain focus on a tapped `?` button, so relying on `blur`/`pointerleave` left the fixed tooltip orphaned over the page; the playground now tracks the active help control and clears it on either dismissal path.
 
 - Restore deterministic WebKit geometry/motion boundaries in the demo: Tabs now retries a hidden-to-visible indicator measurement for at most two frames plus one bounded fallback when the active tab is still 0px, and the hero scene caps per-frame progress so a long WebKit scheduling stall cannot collapse a 680–860ms inertial snap into one giant scroll jump. The browser regression follows the scene controller's bounded lifecycle instead of assuming a fixed one-second runner window.
@@ -19,6 +21,8 @@
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- Hover Roll 링크를 터치 입력에 맞게 동작하도록 했습니다. 터치 탭에서는 먼저 롤 모션을 보여 준 뒤 모션이 끝나면 일반 링크 클릭을 다시 실행하며, 마우스 호버·키보드 활성화·다운로드·수정키 클릭·새 창 링크는 기존 브라우저 동작과 타이밍을 그대로 유지합니다.
 
 - 설정 도움말 툴팁이 바깥 영역 탭과 설정 drawer 닫기에서 확실히 사라지도록 수정했습니다. 모바일 Safari는 탭한 `?` 버튼의 포커스를 유지할 수 있어 `blur`/`pointerleave`만으로는 고정 툴팁이 페이지 위에 남았고, 이제 현재 열린 도움말을 추적해 두 닫기 경로에서 즉시 정리합니다.
 
