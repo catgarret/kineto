@@ -209,7 +209,7 @@ jobs:
       # the other while the full demo-polish suite is booting.
       max-parallel: 1
       matrix:
-        browser: [firefox, webkit]
+        browser: [webkit, firefox]
 
     steps:
       - name: Checkout
