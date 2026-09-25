@@ -208,6 +208,38 @@ assert.deepEqual(hoverChanges, [1, 0], 'hover roll must restore after both point
 hoverRollInstance.destroy();
 hoverRoll.remove();
 
+// Touch has no hover dwell: a tap on a hover-roll link should show the roll,
+// then replay the link click after the authored roll duration instead of
+// navigating so fast that the motion is never visible.
+const touchRollTarget = document.createElement('div');
+touchRollTarget.id = 'touch-roll-target';
+document.body.appendChild(touchRollTarget);
+const touchRoll = document.createElement('a');
+touchRoll.href = '#touch-roll-target';
+touchRoll.innerHTML = '<span>WORK</span><span>프로젝트</span>';
+document.body.appendChild(touchRoll);
+const touchRollChanges = [];
+const touchRollInstance = overflowTextModule.create(touchRoll, {
+  mode: 'rolling',
+  trigger: 'hover',
+  rollDuration: 60,
+  onChange: (index) => touchRollChanges.push(index)
+});
+let touchRollClicks = 0;
+touchRoll.addEventListener('click', () => { touchRollClicks += 1; });
+const touchRollUp = new window.Event('pointerup', { bubbles: true, cancelable: true });
+Object.defineProperty(touchRollUp, 'pointerType', { value: 'touch' });
+touchRoll.dispatchEvent(touchRollUp);
+const initialTouchClick = new window.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 });
+assert.equal(touchRoll.dispatchEvent(initialTouchClick), false, 'touch hover-roll link must defer the first navigation click');
+assert.deepEqual(touchRollChanges, [1], 'touch tap must start the hover roll immediately');
+assert.equal(touchRollClicks, 0, 'deferred touch click must not reach link handlers before the roll finishes');
+await new Promise((resolve) => setTimeout(resolve, 90));
+assert.equal(touchRollClicks, 1, 'touch hover-roll link must replay one click after the roll finishes');
+touchRollInstance.destroy();
+touchRoll.remove();
+touchRollTarget.remove();
+
 const horizontalMask = document.createElement('div');
 document.body.appendChild(horizontalMask);
 const horizontalMaskInstance = scrollShadowsModule.create(horizontalMask, { axis: 'x', mode: 'mask' });
