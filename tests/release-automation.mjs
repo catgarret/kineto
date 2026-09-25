@@ -146,6 +146,10 @@ assert.match(releaseCrossBrowserJob, /tests\/browser\/css-scroll\.mjs/,
   'release cross-browser lanes must exercise cssScroll native/fallback progress');
 assert.match(ciCrossBrowserJob, /tests\/browser\/cursor-click-media\.mjs/,
   'CI cross-browser lanes must exercise one-shot animated cursor media');
+assert.doesNotMatch(ciCrossBrowserJob, /^\s*needs:\s*test$/m,
+  'cross-browser CI must not wait for the full Node 24 suite before starting');
+assert.doesNotMatch(ciCrossBrowserJob, /max-parallel:\s*1/,
+  'Firefox and WebKit must run on separate hosted runners in parallel');
 assert.match(releaseCrossBrowserJob, /tests\/browser\/cursor-click-media\.mjs/,
   'release cross-browser lanes must exercise one-shot animated cursor media');
 assert.match(verifiedPackageUpload, /^\s+name:\s*verified-package-\$\{\{ github\.ref_name \}\}$/m);
@@ -178,6 +182,11 @@ for (const command of ['build', 'test:package', 'test:types', 'test:package-tarb
   assert.ok(ciNodeCompatibilityJob.includes(command), `public engine job must run ${command}`);
 }
 assert.doesNotMatch(ciTestJob, /matrix\.browser/, 'the non-matrix Chromium job must not reference matrix.browser');
+const ciChromiumInstallAt = ciTestJob.indexOf('Install Playwright Chromium');
+const ciPackageGateAt = ciTestJob.indexOf('Run Node tests · contracts and package');
+const ciConsumerGateAt = ciTestJob.indexOf('Run Node tests · consumers and frameworks');
+assert.ok(ciChromiumInstallAt > ciPackageGateAt && ciChromiumInstallAt < ciConsumerGateAt,
+  'Chromium provisioning must wait for deterministic package gates but precede integration browser tests');
 assert.match(ciCrossBrowserJob, /MK_BROWSER_TEST_ATTEMPTS:\s*\$\{\{ matrix\.browser == 'webkit' && 4 \|\| 3 \}\}/,
   'only the actual WebKit matrix lane receives the fourth bounded attempt');
 assert.match(releaseCrossBrowserJob, /MK_BROWSER_TEST_ATTEMPTS:\s*\$\{\{ matrix\.browser == 'webkit' && 4 \|\| 3 \}\}/,
