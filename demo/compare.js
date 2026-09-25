@@ -600,7 +600,10 @@
     if (!destination) return;
     // A card below a block's fold is clipped; ask demo/fold.js to open it first.
     destination.dispatchEvent(new CustomEvent('kt-demo:reveal', { bubbles: true }));
-    destination.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Page jumps go through main.js: far blocks skip rendering, and its glide
+    // keeps aiming while they are drawn on the way (KINETO_BLOCKS.jumpTo).
+    if (window.KINETO_BLOCKS && window.KINETO_BLOCKS.jumpTo) window.KINETO_BLOCKS.jumpTo(destination, { behavior: 'smooth', block: 'center' });
+    else destination.scrollIntoView({ behavior: 'smooth', block: 'center' });
     if (!control) return;
     // 스크롤이 끝난 뒤에 눌러야 무엇이 일어났는지 보입니다.
     window.setTimeout(function () { control.click(); }, 420);

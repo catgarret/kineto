@@ -33,6 +33,15 @@ const browser = await browserEngine.launch(browserEngine === chromium
   ? { headless:true, ...(process.env.KT_CHROME ? { executablePath:process.env.KT_CHROME } : {}), args:['--no-sandbox','--disable-setuid-sandbox','--disable-gpu'] }
   : { headless:true });
 const page = await browser.newPage({ viewport:{ width:1437, height:807 } });
+// Take the page to a demo the way its own navigation does. Far blocks skip
+// rendering, and Playwright's scrollIntoViewIfNeeded() does not move WebKit to
+// an element inside one (the page stayed 17,000px away); the demo's jumpTo
+// scrolls to it and anchors the landing.
+const bringNear = (selector) => page.evaluate((css) => {
+  const target = document.querySelector(css);
+  if (window.KINETO_BLOCKS?.jumpTo) window.KINETO_BLOCKS.jumpTo(target, { block: 'center' });
+  else target.scrollIntoView({ block: 'center' });
+}, selector);
 try {
   checkpoint('page-created');
   await page.route(/fonts\.googleapis\.com|fonts\.gstatic\.com|cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net/, (route)=>route.fulfill({status:200,body:'',contentType:'text/css'}));
@@ -449,7 +458,7 @@ try {
   assert.ok(lineMaskTiming.length>1&&!lineMaskTiming[0].clip.includes('100')&&lineMaskTiming.slice(1).some((line)=>line.clip.includes('100')), `Mask must reveal each rendered line on its own stagger (${JSON.stringify(lineMaskTiming)})`);
   assert.ok(lineMaskTiming.every((line)=>line.panel&&line.background&&!/0,?\s*255,?\s*0/.test(line.background)), `the mask replacement must keep one color1 panel per line; a completed panel may already have exited by the time a slow engine reports the stagger (${JSON.stringify(lineMaskTiming)})`);
   checkpoint('cover-reveal-unit');
-  await page.locator('#cover-gallery-demo').scrollIntoViewIfNeeded();
+  await bringNear('#cover-gallery-demo');
   await page.evaluate(() => document.querySelectorAll('#cover-gallery-demo img').forEach((image) => { image.loading='eager'; }));
   await page.waitForFunction(() => [...document.querySelectorAll('#cover-gallery-demo img')].every((image)=>image.complete&&image.naturalWidth>0),null,{timeout:10000});
   const galleryPalettes = await page.evaluate(async () => {
@@ -550,6 +559,11 @@ try {
   assert.equal(radialCenter.uniqueTransforms, radialCenter.total, `center Radial must leave no overlapping transition ghosts (${JSON.stringify(radialCenter)})`);
   assert.ok(radialCenter.opaque && radialCenter.inside && radialCenter.minCenterDistance > radialCenter.maxDiameter, `center Radial demo items must stay opaque, separated, and inside the stage (${JSON.stringify(radialCenter)})`);
   assert.ok(radialCenter.controlsZ > radialCenter.hubZ, `Radial paging controls must remain above the hub stacking context (${JSON.stringify(radialCenter)})`);
+  // The drag below uses screen coordinates: centre the wheel first. Clicking
+  // "next" only scrolled that button into view, which could leave the active
+  // image just below the viewport (Firefox: y 855 in an 807px window).
+  await bringNear('[data-demo-home="radial"] .kt-radial');
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   const radialInput=await radial.evaluate((host)=>{
     const image=host.querySelector('.kt-radial-item img');
     const instance=window.Kineto.getInstance(host,'slider');
@@ -638,7 +652,11 @@ try {
     'true',
     'wrapped medium-width mega-menu trigger must open on its first hover'
   );
-  const scrollVelocityGrid = await page.evaluate(() => {
+  // A grid's rows are balanced when it comes near the screen (demo/main.js,
+  // nearGridObserver), so bring this one there the way a reader would and
+  // wait for the balancing frame instead of reading a grid nobody can see.
+  await bringNear('#mod-scrollVelocity .module-block-body.grid');
+  const readScrollVelocityRows = () => page.evaluate(() => {
     const grid = document.querySelector('#mod-scrollVelocity .module-block-body.grid');
     const cards = [...grid.querySelectorAll(':scope > .card')];
     const rows = new Map();
@@ -655,6 +673,12 @@ try {
       last
     };
   });
+  const lastRowFills = (grid) => grid.last.length === 1 && grid.last[0].width >= grid.gridWidth - 2;
+  let scrollVelocityGrid = await readScrollVelocityRows();
+  for (let frame = 0; frame < 30 && !lastRowFills(scrollVelocityGrid); frame += 1) {
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => resolve())));
+    scrollVelocityGrid = await readScrollVelocityRows();
+  }
   assert.equal(scrollVelocityGrid.last.length, 1, 'Scroll Velocity should expose its one-card final row at 700px');
   assert.ok(
     scrollVelocityGrid.last[0].width >= scrollVelocityGrid.gridWidth - 2,

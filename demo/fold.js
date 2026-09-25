@@ -27,6 +27,8 @@
  *   attach(body)  make a `.module-block-body.grid` foldable (main.js calls it)
  *   reveal(el)    open the fold hiding `el`, instantly; true if one opened
  *   openAll()     open every fold (tests, printing)
+ *   prepare(body) plan `body`'s fold now, even far from the viewport (main.js
+ *                 warms far blocks so they are drawn at their final height)
  */
 (function () {
   'use strict';
@@ -55,6 +57,26 @@
   var frame = 0;
   var sequence = 0;
 
+  // Only blocks near the viewport are measured. Measuring a far block forces
+  // the browser to lay out a block it is skipping (`content-visibility` on
+  // `.module-block--skippable`, main.js) — at start-up that meant laying out the
+  // whole page, over a second on a phone. A far block is planned when it comes
+  // within one and a half screens, before it renders; until then it keeps
+  // every card (it is not painted, so nobody sees it unfolded).
+  var near = new Set();
+  var nearObserver = typeof IntersectionObserver === 'function'
+    ? new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) { near.delete(entry.target); return; }
+          if (near.has(entry.target)) return;
+          near.add(entry.target);
+          pending.add(entry.target);
+        });
+        schedule();
+      }, { rootMargin: '150% 0px' })
+    : null;
+  function isNear(body) { return !nearObserver || near.has(body); }
+
   // One observer for the grids (width changes re-flow the rows) and their
   // cards (an image that loads makes a row taller, and the cut must follow).
   var observer = typeof ResizeObserver === 'function'
@@ -71,8 +93,9 @@
     if (frame) return;
     frame = requestAnimationFrame(function () {
       frame = 0;
-      var list = Array.from(pending);
-      pending.clear();
+      // Far blocks stay pending until they come near (nearObserver).
+      var list = Array.from(pending).filter(isNear);
+      list.forEach(function (body) { pending.delete(body); });
       // Measure every grid first, then write — one layout for the whole page.
       var plans = list.map(function (body) { return { body: body, plan: planFold(body) }; });
       plans.forEach(function (item) { applyFold(item.body, item.plan); });
@@ -255,6 +278,7 @@
       observer.observe(body);
       cardsOf(body).forEach(function (card) { observer.observe(card); });
     }
+    if (nearObserver) nearObserver.observe(body);
     pending.add(body);
     schedule();
   }
@@ -268,6 +292,13 @@
     return true;
   }
 
+  /** Plan `body` right away (normally a far block waits until it is near). */
+  function prepare(body) {
+    if (!bodies.has(body) || body.dataset.demoFold === 'opening') return;
+    pending.delete(body);
+    applyFold(body, planFold(body));
+  }
+
   function openAll() {
     bodies.forEach(function (body) {
       if (body.dataset.demoFold !== 'open') setOpen(body, true, { instant: true });
@@ -278,5 +309,5 @@
   // Printing a folded page would cut the cards off mid-row.
   window.addEventListener('beforeprint', openAll);
 
-  window.KINETO_FOLD = { attach: attach, reveal: reveal, openAll: openAll };
+  window.KINETO_FOLD = { attach: attach, reveal: reveal, openAll: openAll, prepare: prepare };
 })();

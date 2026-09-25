@@ -176,7 +176,31 @@ or a tag; release approval remains separate.
 - **Demo blocks show two rows**: `demo/fold.js` folds the rest behind
   "데모 더 보기"; anything that scrolls to a card calls `KINETO_FOLD.reveal(el)`
   or dispatches `kt-demo:reveal` first. Tests that drive individual cards
-  open folds the way a reader would.
+  open folds the way a reader would (a card past two rows is inert — the
+  v0.12.2 CI failed on exactly that in `stylize.mjs`).
+- **The demo renders and measures only what is near**: far module blocks skip
+  rendering (`.module-block--skippable`, `content-visibility: auto`; blocks
+  holding a pin are excluded), and rows (`demo/main.js`) and folds
+  (`demo/fold.js`) are measured when a block comes within 1.5 screens —
+  measuring a skipped block lays it out, which at start-up meant laying out
+  the whole page. A skipped block's height is an estimate until it is drawn,
+  so the demo keeps its own scroll anchoring (the browser's is off,
+  `overflow-anchor: none`): a block above the screen that changes height moves
+  the page with it, in the same frame — so demo code that changes a block's
+  height does it at the start of a frame (`requestAnimationFrame`), never
+  between frames where another script could read the moved page. Scroll to something with `KINETO_BLOCKS.jumpTo(el,
+  { behavior, block })` — its smooth glide re-aims every frame; a native
+  smooth `scrollIntoView` to a far card lands off target. A test that
+  inspects the whole page calls `KINETO_BLOCKS.balanceAll()` after
+  `KINETO_FOLD.openAll()`; one that reads a single far grid scrolls to it
+  first (rows are balanced when a grid comes near).
+- **Visual effects can wait for the viewport**: with
+  `Kineto.config({ defer: true })` (the demo turns it on for touch devices)
+  a module that declares `defer: true` is created only near the screen
+  (`src/deferCreate.js`). Declare it only for effects that matter where they
+  are seen — never for pins, page-level modules, components with keyboard/ARIA
+  behaviour, or media that sits in carousels. Tests on a touch context must
+  scroll to an effect before expecting its instance.
 
 ## How to recover project history
 

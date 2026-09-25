@@ -1227,7 +1227,12 @@
     // The restored card may sit below its block's fold (demo/fold.js); open it
     // either way, so the reader following the link sees the settings applied.
     host.dispatchEvent?.(new CustomEvent('kt-demo:reveal', { bubbles: true }));
-    if (!hasModuleDeepLink) panel?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+    // Page jumps go through main.js (KINETO_BLOCKS.jumpTo): far blocks skip
+    // rendering, and its glide keeps aiming while they are drawn on the way.
+    if (!hasModuleDeepLink && panel) {
+      if (window.KINETO_BLOCKS?.jumpTo) window.KINETO_BLOCKS.jumpTo(panel, { behavior: 'smooth', block: 'center' });
+      else panel.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+    }
     state.pendingShare = null;
   }
   const dash = (value) => value.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
@@ -2312,6 +2317,23 @@
     return wrapper;
   }
 
+  // Every playground summary (~240 of them) dogfoods Overflow Text for its
+  // label. Creating all of them at load was 240 of the page's first 340
+  // instances — most of a second on a phone, for labels nobody could see yet.
+  // Attach each one when its card comes within a screen of the viewport.
+  const SUMMARY_NAME_MOTION = { mode: 'bounce', speed: 34, delay: 900, endPause: 900, pauseOnHover: true, threshold: 2 };
+  let summaryNameObserver = null;
+  function attachSummaryName(nameEl) {
+    const attach = (el) => window.Kineto?.overflowText?.(el, SUMMARY_NAME_MOTION);
+    if (typeof IntersectionObserver === 'undefined') { attach(nameEl); return; }
+    summaryNameObserver ||= new IntersectionObserver((entries) => entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      summaryNameObserver.unobserve(entry.target);
+      if (entry.target.isConnected) attach(entry.target);
+    }), { rootMargin: '100% 0px' });
+    summaryNameObserver.observe(nameEl);
+  }
+
   function panelFor(host, descriptors) {
     const details = document.createElement('details');
     details.className = 'kt-playground';
@@ -2339,10 +2361,7 @@
     // no amount of resizing could ever start it.
     requestAnimationFrame(() => {
       const nameEl = summary.querySelector('.kt-playground__summary-name');
-      if (!nameEl) return;
-      window.Kineto?.overflowText?.(nameEl, {
-        mode: 'bounce', speed: 34, delay: 900, endPause: 900, pauseOnHover: true, threshold: 2
-      });
+      if (nameEl) attachSummaryName(nameEl);
     });
     // B-1 lazy render: with ~119 demos, building every full options body up front
     // (fieldsets, controls, code, search) is the dominant load cost. We build the

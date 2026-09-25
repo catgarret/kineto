@@ -5,6 +5,14 @@
       document.documentElement.classList.remove('kt-preload');
       throw new Error('Kineto failed to load');
     }
+    // Every jump the demo makes itself (side nav, #hash, in-page links) goes
+    // through here. Module blocks skip rendering while far away, so a jump
+    // needs their help to land where it aims (KINETO_BLOCKS.jumpTo, built with
+    // the blocks below); until then it is a plain scrollIntoView.
+    const jumpToElement=(el,options={})=>{
+      if(window.KINETO_BLOCKS?.jumpTo)window.KINETO_BLOCKS.jumpTo(el,options);
+      else el.scrollIntoView(options);
+    };
     // Seed relative-time cards from the visitor's current clock so the demo
     // always exercises the server-date parser without becoming stale. Each card
     // can opt into a different past/future offset and mode in markup.
@@ -43,7 +51,12 @@
       document.querySelectorAll('[data-kt-overflow-text="rolling"][data-kt-trigger="hover"]')
         .forEach((item) => item.setAttribute('data-kt-roll-duration', '380'));
     }
-    try{ Kineto.config({smooth:false}); }catch(_){}
+    // On a touch device, create an effect only when its card nears the screen
+    // (Kineto.config({ defer }), src/deferCreate.js). The page holds 500+
+    // effects; creating all of them at load kept a phone's main thread busy
+    // for seconds, while a reader reaches them one screen at a time.
+    const touchFirst=(()=>{ try{ return matchMedia('(hover: none), (pointer: coarse)').matches; }catch(_){ return false; } })();
+    try{ Kineto.config({smooth:false,defer:touchFirst}); }catch(_){}
     // B-2: when the page opens with a #mod-… deep link, don't let the scroll
     // observer clear the hash before the initial restore scroll runs. Unlocked
     // after the restore settles or on first user scroll.
@@ -148,6 +161,9 @@
           const name=initMod[1];
           let cancelled=false;
           const go=()=>{ if(cancelled)return; try{navigateToModule(name,{source:'initial',history:'replace'});}catch(_){} };
+          // Keep the spies off until the last re-aim below has settled, even
+          // when the link names nothing on the page.
+          holdScrollSpies();
           window.addEventListener('wheel',()=>{cancelled=true;},{passive:true,once:true});
           window.addEventListener('touchmove',()=>{cancelled=true;},{passive:true,once:true});
           requestAnimationFrame(go); setTimeout(go,260); setTimeout(go,800);
@@ -155,7 +171,7 @@
         } else if(hash&&hash.length>1){
           let cancelled=false;
           const stop=()=>{cancelled=true;};
-          const jump=()=>{ if(cancelled)return; let t=null; try{t=document.querySelector(hash);}catch(_){} if(t){window.KINETO_FOLD?.reveal(t);t.scrollIntoView();} };
+          const jump=()=>{ if(cancelled)return; let t=null; try{t=document.querySelector(hash);}catch(_){} if(t){window.KINETO_FOLD?.reveal(t);jumpToElement(t);} };
           window.addEventListener('wheel',stop,{passive:true,once:true});
           window.addEventListener('touchmove',stop,{passive:true,once:true});
           requestAnimationFrame(jump); setTimeout(jump,260); setTimeout(jump,800);
@@ -280,9 +296,24 @@
       if(location.hash===h) return;
       try{ if(mode==='push') history.pushState({ktModule:name},'',h); else history.replaceState({ktModule:name},'',h); }catch(_){/* file:// */}
     };
-    // While a programmatic scroll is in flight, suppress the scroll observer's
-    // replaceState so it can't fight the click's pushState.
+    // The scroll spies (sidebar highlight, address #hash) yield while the page
+    // is being moved on purpose, so their replaceState cannot fight a click's
+    // pushState: during a navigation's jump, and — on a page opened at a deep
+    // link (#mod-… / #cmp-…) — from the start until that jump has settled. The
+    // intro locks scrolling meanwhile and puts the position back afterwards,
+    // and a spy reading the page then rewrote the address to whichever block
+    // happened to be in view, so the deep link went to the wrong module.
+    const NAV_SETTLE_MS=1200;
+    // Only a safety net: startModules() takes the deep link over after the intro.
+    const DEEP_LINK_HOLD_MS=15000;
     let navScrollLock=false;
+    let navScrollLockTimer=0;
+    const holdScrollSpies=(ms=NAV_SETTLE_MS)=>{
+      navScrollLock=true;
+      clearTimeout(navScrollLockTimer);
+      navScrollLockTimer=setTimeout(()=>{ navScrollLock=false; },ms);
+    };
+    if(/^#(?:mod|cmp)-/.test(location.hash||''))holdScrollSpies(DEEP_LINK_HOLD_MS);
     const navigateToModule=(name,opts={})=>{
       if(!name) return;
       const source=opts.source||'click';
@@ -290,10 +321,8 @@
       const el=moduleTargetEl(name);
       setActiveNav(name);
       if(opts.scroll!==false && el && source!=='scroll'){
-        navScrollLock=true;
-        el.scrollIntoView({behavior:source==='initial'||source==='history'?'auto':'smooth',block:'start'});
-        clearTimeout(navigateToModule._t);
-        navigateToModule._t=setTimeout(()=>{navScrollLock=false;},1200);
+        holdScrollSpies();
+        jumpToElement(el,{behavior:source==='initial'||source==='history'?'auto':'smooth',block:'start'});
       }
       writeModuleHash(name,mode);
     };
@@ -541,7 +570,40 @@
           const plans=grids.flatMap(planShortRows);
           plans.forEach(plan=>plan.cards.forEach(card=>card.classList.add(plan.cls)));
         };
-        const rebalanceRows=()=>rebalance([...document.querySelectorAll('.module-block-body.grid')]);
+        // Rows are balanced only for grids near the viewport. Measuring a far
+        // grid forces the browser to lay out a block it is skipping
+        // (`content-visibility`, below) — at start-up that meant laying out the
+        // whole page on a phone. A grid is balanced when it comes within one and
+        // a half screens, and again whenever its width changes while it is near.
+        const NEAR_SCREENS=1.5;
+        // Grids waiting to be balanced. The work runs at the start of a frame,
+        // so its height change and the scroll anchoring that follows it (below)
+        // land in the same frame: a script reading the page between two frames
+        // never sees the page moved and not yet put back.
+        const pendingGrids=new Set();
+        let pendingGridFrame=0;
+        const queueRebalance=(grids)=>{
+          grids.forEach((grid)=>pendingGrids.add(grid));
+          if(!pendingGrids.size||pendingGridFrame)return;
+          pendingGridFrame=requestAnimationFrame(()=>{
+            pendingGridFrame=0;
+            const batch=[...pendingGrids];
+            pendingGrids.clear();
+            rebalance(batch);
+          });
+        };
+        const nearGrids=new Set();
+        const nearGridObserver='IntersectionObserver' in window
+          ? new IntersectionObserver((entries)=>{
+            const arriving=[];
+            entries.forEach(({target,isIntersecting})=>{
+              if(!isIntersecting){ nearGrids.delete(target); return; }
+              if(!nearGrids.has(target)){ nearGrids.add(target); arriving.push(target); }
+            });
+            queueRebalance(arriving);
+          },{rootMargin:`${NEAR_SCREENS*100}% 0px`})
+          : null;
+        const isNear=(grid)=>!nearGridObserver||nearGrids.has(grid);
         // Rebalancing changes card spans, so a grid's HEIGHT changes, and a
         // ResizeObserver that rebalanced inside its own callback was told again
         // in the same frame — WebKit reported "ResizeObserver loop completed
@@ -549,23 +611,17 @@
         // can change which cards share a row, so ignore the rest, collect the
         // grids and rebalance once on the next frame.
         const gridWidths=new WeakMap();
-        const pendingGrids=new Set();
-        let pendingGridFrame=0;
         const rowBalanceObserver='ResizeObserver' in window
           ? new ResizeObserver((entries)=>{
+            const widened=[];
             entries.forEach(({target,contentRect})=>{
               const width=Math.round(contentRect.width);
               if(gridWidths.get(target)===width)return;
               gridWidths.set(target,width);
-              pendingGrids.add(target);
+              // A far grid is balanced on arrival (nearGridObserver) instead.
+              if(isNear(target))widened.push(target);
             });
-            if(!pendingGrids.size||pendingGridFrame)return;
-            pendingGridFrame=requestAnimationFrame(()=>{
-              pendingGridFrame=0;
-              const grids=[...pendingGrids];
-              pendingGrids.clear();
-              rebalance(grids);
-            });
+            queueRebalance(widened);
           })
           : null;
         let rowBalanceFrame=0;
@@ -574,8 +630,305 @@
         // Indicator gallery alone contains 40+ animated cards.
         if(!rowBalanceObserver) window.addEventListener('resize',()=>{
           if(rowBalanceFrame)cancelAnimationFrame(rowBalanceFrame);
-          rowBalanceFrame=requestAnimationFrame(()=>{rowBalanceFrame=0;rebalanceRows();});
+          rowBalanceFrame=requestAnimationFrame(()=>{rowBalanceFrame=0;rebalance([...document.querySelectorAll('.module-block-body.grid')].filter(isNear));});
         });
+        // Every grid at once, near or not: for printing (every block prints) and
+        // for tests that inspect the whole page — window.KINETO_BLOCKS.balanceAll().
+        const balanceAll=()=>rebalance([...document.querySelectorAll('.module-block-body.grid')]);
+        window.addEventListener('beforeprint',balanceAll);
+        const watchGrids=()=>{
+          const grids=[...document.querySelectorAll('.module-block-body.grid')];
+          rowBalanceObserver?.disconnect();
+          nearGridObserver?.disconnect();
+          nearGrids.clear();
+          grids.forEach((grid)=>{ rowBalanceObserver?.observe(grid); nearGridObserver?.observe(grid); });
+          if(!nearGridObserver)rebalance(grids);
+        };
+        // Render skipping. With `content-visibility: auto` (styles.css,
+        // `.module-block--skippable`) the browser skips style, layout and paint
+        // for a block far from the viewport. The page holds ~55 blocks and 500+
+        // live effects; on a phone every animation frame used to lay out and
+        // paint all of them — the main thread was busy 100% of the time at rest
+        // and scrolling ran at 30 fps. Skipped, the same phone sits near 30% and
+        // scrolls at 60 fps. The containment it brings re-anchors
+        // `position: fixed` to the block, which would break a ScrollTrigger pin
+        // (Sticky Stack pins its cards), so a block holding a pin keeps
+        // rendering normally.
+        const PINNING_MARKUP='[data-kt-sticky-stack]';
+        // A skipped block reserves `contain-intrinsic-size` — an estimate —
+        // until it is first drawn; from then on it remembers its real height.
+        // Two things keep that estimate from ever moving the page:
+        //
+        // 1. Anchoring. The browser's own is off in the demo (`overflow-anchor:
+        // none` in styles.css — it kept re-snapping fragment jumps and locked
+        // the side nav) and iOS never had it. Without it, a block ABOVE the
+        // screen that changes height pushes what the reader is looking at: a
+        // skipped block drawn for the first time, a grid balanced or folded as
+        // it comes near, an image loading — after dragging the scrollbar, the
+        // End key, find-in-page, an automated test, any jump at all.
+        //
+        // A ResizeObserver is told after layout and before paint, so moving the
+        // page by the same amount there is never seen. Only a block that had
+        // already scrolled past the reading line (the bottom of the fixed site
+        // header) counts — its bottom padding is only shadow room, so it is not
+        // counted as visible. A change the reader can see (opening
+        // "데모 더 보기") is left alone, as before.
+        //
+        // One exception, in the frame of a jump (more than a screen in one
+        // step): the block holding the middle of the screen is what the jump
+        // went to. When the target sat inside a block that was still skipped,
+        // the browser drew that block to aim at it, so its growth is already
+        // allowed for — moving the page for it threw the target off screen.
+        const siteHeader=document.querySelector('.site-header');
+        const blockHeights=new WeakMap();
+        // Built in document order once the sections are assembled (below).
+        let skippableBlocks=[];
+        // When anchoring must wait. Moving the page stops a scroll in motion:
+        //   · a smooth scroll some other script started (the scroll-to-top
+        //     ring) — a run of scroll events that no wheel, touch or scroll key
+        //     began. A single jump is one event, so it is still anchored;
+        //   · a touch fling coasting after the finger lifted — iOS and Android
+        //     end the fling (list virtualizers meet the same wall). Warm-up
+        //     (3, below) draws the blocks above ahead of time so that is rare.
+        // Our own glide (2, below) re-aims every frame, so its run is anchored.
+        const QUIET_MS=150;
+        const READER_INPUT_MS=250;
+        const SCROLL_KEYS=new Set(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' ']);
+        // runBy: what began the current run of scroll events — 'wheel' | 'key' |
+        // 'touch' (the reader), 'glide' (jumpTo), '' (nothing: another script).
+        const scrollState={lastInput:-Infinity,lastInputType:'',lastScroll:-Infinity,inRun:0,runBy:'',touching:false,shiftedTo:null,gliding:false,lastY:window.scrollY,leapt:false};
+        // jumpTo marks the scroll it is making as its own for as long as it runs.
+        const claimScroll=(on)=>{ scrollState.gliding=on; if(on)scrollState.runBy='glide'; };
+        const noteReaderInput=(type)=>{
+          scrollState.lastInput=performance.now();
+          scrollState.lastInputType=type;
+          // Input during a run makes the rest of it the reader's.
+          if(scrollState.runBy==='')scrollState.runBy=type;
+        };
+        window.addEventListener('wheel',()=>noteReaderInput('wheel'),{capture:true,passive:true});
+        window.addEventListener('keydown',(event)=>{ if(SCROLL_KEYS.has(event.key))noteReaderInput('key'); },{capture:true,passive:true});
+        window.addEventListener('touchstart',()=>{ scrollState.touching=true; noteReaderInput('touch'); },{capture:true,passive:true});
+        window.addEventListener('touchmove',()=>noteReaderInput('touch'),{capture:true,passive:true});
+        ['touchend','touchcancel'].forEach((type)=>window.addEventListener(type,()=>{ scrollState.touching=false; noteReaderInput('touch'); },{capture:true,passive:true}));
+        window.addEventListener('scroll',()=>{
+          const y=window.scrollY;
+          const lastY=scrollState.lastY;
+          scrollState.lastY=y;
+          // Our own correction (shiftPage) is not a movement of its own — unless
+          // the reader moved in the same frame, and the position says so.
+          const shiftedTo=scrollState.shiftedTo;
+          scrollState.shiftedTo=null;
+          if(shiftedTo!==null&&Math.abs(y-shiftedTo)<1)return;
+          // A jump: more than a screen in one step (no wheel, touch or glide
+          // step goes that far). Scroll events come at the start of a frame;
+          // the mark lasts until the start of the next one.
+          if(Math.abs(y-lastY)>window.innerHeight&&!scrollState.leapt){
+            scrollState.leapt=true;
+            requestAnimationFrame(()=>requestAnimationFrame(()=>{ scrollState.leapt=false; }));
+          }
+          const now=performance.now();
+          if(now-scrollState.lastScroll>QUIET_MS){
+            scrollState.inRun=0;
+            const readerInput=now-scrollState.lastInput<READER_INPUT_MS?scrollState.lastInputType:'';
+            scrollState.runBy=scrollState.gliding?'glide':readerInput;
+          }
+          scrollState.inRun+=1;
+          scrollState.lastScroll=now;
+          scheduleWarmUp();
+        },{passive:true});
+        const holdAnchoring=()=>{
+          // The hero's first-screen snap animates the page itself.
+          if(window.__ktHeroSceneSnap)return true;
+          if(performance.now()-scrollState.lastScroll>QUIET_MS)return false;
+          if(scrollState.runBy==='touch')return !scrollState.touching;
+          return scrollState.runBy===''&&scrollState.inRun>1;
+        };
+        // Lenis (smooth scrolling, on by default past the hero) eases a wheel
+        // scroll from `from` to `to` and writes the result back every frame, so
+        // an in-flight ease would undo the correction: move all of it with the
+        // page. These are lenis@1.3 fields; each is checked, so a Lenis without
+        // them only loses the correction while it eases.
+        const LENIS_POSITIONS=['targetScroll','animatedScroll'];
+        const LENIS_EASE_POSITIONS=['from','to','value'];
+        const shiftBy=(owner,keys,delta)=>keys.forEach((key)=>{ if(typeof owner[key]==='number')owner[key]+=delta; });
+        const shiftPage=(delta)=>{
+          const lenis=window.Kineto?.lenis;
+          if(lenis){
+            shiftBy(lenis,LENIS_POSITIONS,delta);
+            if(lenis.animate?.isRunning)shiftBy(lenis.animate,LENIS_EASE_POSITIONS,delta);
+          }
+          const from=window.scrollY;
+          window.scrollBy(0,delta);
+          // Clamped at either end, nothing moved and no scroll event will come.
+          scrollState.shiftedTo=window.scrollY!==from?window.scrollY:null;
+        };
+        const inDocumentOrder=(a,b)=>(a.target.compareDocumentPosition(b.target)&Node.DOCUMENT_POSITION_FOLLOWING?-1:1);
+        const blockAnchor='ResizeObserver' in window
+          ? new ResizeObserver((entries)=>{
+            const holding=holdAnchoring();
+            const middle=window.innerHeight/2;
+            let shift=0;
+            let moved=0;
+            let readingLine=null;
+            entries.sort(inDocumentOrder).forEach((entry)=>{
+              const block=entry.target;
+              const height=entry.borderBoxSize?.[0]?.blockSize ?? block.getBoundingClientRect().height;
+              const before=blockHeights.get(block);
+              blockHeights.set(block,height);
+              if(holding||before===undefined||height===before)return;
+              // Layout is fresh inside a ResizeObserver callback, so these reads
+              // are free. Blocks earlier in this batch already moved this one by
+              // `moved`; its old content ended `paddingBottom` above its edge.
+              const box=block.getBoundingClientRect();
+              const isJumpTarget=scrollState.leapt&&box.top<=middle&&box.bottom>middle;
+              readingLine??=Math.max(0,siteHeader?.getBoundingClientRect().bottom||0);
+              const oldContentBottom=box.top-moved+before-(parseFloat(getComputedStyle(block).paddingBottom)||0);
+              if(!isJumpTarget&&oldContentBottom<=readingLine)shift+=height-before;
+              moved+=height-before;
+            });
+            if(Math.abs(shift)>=0.5)shiftPage(shift);
+          })
+          : null;
+        // 3. Warm-up. While a fling coasts, anchoring has to let a block that
+        // is drawn for the first time move the page. So once the page rests,
+        // draw the blocks above the screen that were never drawn at this
+        // width, nearest first, one at a time: rows balanced and fold planned
+        // as they will be when near, laid out once for real, then skipped
+        // again — remembering that height (`contain-intrinsic-size: auto`).
+        // At rest the height change is anchored away; any scroll pauses it.
+        // Reading downwards never needs it: blocks below are drawn before they
+        // reach the screen, and their height changes happen below the reader.
+        // Six screens covers any fling; further up, the reader jumps (jumpTo).
+        const WARM_SCREENS=6;
+        const REST_MS=300;
+        const WARM_GAP_MS=60;
+        const drawnAt=new WeakMap();
+        let warmTimer=0;
+        let warming=null;
+        const nearestUndrawnAbove=()=>{
+          const width=window.innerWidth;
+          const reach=-WARM_SCREENS*window.innerHeight;
+          for(let i=skippableBlocks.length-1;i>=0;i-=1){
+            const block=skippableBlocks[i];
+            const bottom=block.getBoundingClientRect().bottom;
+            if(bottom>0)continue;
+            if(bottom<reach)return null;
+            if(drawnAt.get(block)!==width)return block;
+          }
+          return null;
+        };
+        const warmUp=()=>{
+          warmTimer=0;
+          if(warming||document.hidden)return;
+          const block=nearestUndrawnAbove();
+          if(!block)return;
+          warming=block;
+          // Every step runs at the start of a frame, so the height change and
+          // its anchoring are painted together (see queueRebalance).
+          requestAnimationFrame(()=>{
+            block.classList.add('module-block--warm');
+            requestAnimationFrame(()=>{
+              // Drawn last frame: plan it exactly as the near observers would.
+              const grids=[...block.querySelectorAll('.module-block-body.grid')];
+              rebalance(grids);
+              grids.forEach((grid)=>window.KINETO_FOLD?.prepare?.(grid));
+              requestAnimationFrame(()=>{
+                block.classList.remove('module-block--warm');
+                drawnAt.set(block,window.innerWidth);
+                warming=null;
+                scheduleWarmUp(WARM_GAP_MS);
+              });
+            });
+          });
+        };
+        function scheduleWarmUp(delay=REST_MS){
+          clearTimeout(warmTimer);
+          warmTimer=setTimeout(warmUp,delay);
+        }
+        // 2. Jumps. jumpTo is the one way the demo scrolls to something itself
+        // (side nav, module index, #hash, in-page links, compare sheet):
+        //   · `behavior: 'auto'` jumps at once; anchoring holds the landing.
+        //   · `behavior: 'smooth'` glides with our own animation, which reads
+        //     where the target is again on every frame, so blocks drawn on the
+        //     way may change height (and anchoring may move the page) without
+        //     the glide missing. A native smooth scroll fixes its destination
+        //     when it starts, so it landed hundreds of pixels off — and
+        //     measuring every block on the way first held a phone for a third
+        //     of a second.
+        //   · further than FAR_JUMP_SCREENS, it first arrives a screen short at
+        //     once and glides the rest: sweeping past fifty blocks in half a
+        //     second would draw every one of them for nothing.
+        //   · reduced motion jumps at once; a wheel, touch, key or click from
+        //     the reader ends the glide where it is.
+        const FAR_JUMP_SCREENS=2;
+        const GLIDE={minMs:320,maxMs:700,msPerPixel:.3};
+        const GLIDE_INTERRUPTS=['wheel','touchstart','keydown','pointerdown'];
+        const easeInOut=(p)=>(p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2);
+        const easeOut=(p)=>1-Math.pow(1-p,3);
+        const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+        let stopGlide=null;
+        const destinationOf=(target,block)=>{
+          const rect=target.getBoundingClientRect();
+          const offset=block==='center'
+            ? rect.top+rect.height/2-window.innerHeight/2
+            : rect.top-(parseFloat(getComputedStyle(target).scrollMarginTop)||0);
+          const max=document.documentElement.scrollHeight-window.innerHeight;
+          return Math.min(max,Math.max(0,window.scrollY+offset));
+        };
+        const glideTo=(target,block,ease)=>{
+          stopGlide?.();
+          // Lenis would ease toward a target of its own meanwhile.
+          const lenis=window.Kineto?.lenis;
+          const pausedLenis=Boolean(lenis&&!lenis.isStopped);
+          if(pausedLenis)lenis.stop();
+          const distance=Math.abs(destinationOf(target,block)-window.scrollY);
+          const duration=Math.min(GLIDE.maxMs,Math.max(GLIDE.minMs,distance*GLIDE.msPerPixel));
+          const started=performance.now();
+          let covered=0;
+          let frame=0;
+          const finish=()=>{
+            cancelAnimationFrame(frame);
+            GLIDE_INTERRUPTS.forEach((type)=>window.removeEventListener(type,finish,true));
+            stopGlide=null;
+            // The run stays the glide's until it goes quiet, so the landing is
+            // still anchored while the blocks around it are drawn.
+            claimScroll(false);
+            if(pausedLenis)lenis.start();
+          };
+          const step=(now)=>{
+            const progress=ease(Math.min(1,(now-started)/duration));
+            // Cover the share of the REMAINING way that the curve covers in
+            // this frame; at progress 1 that is exactly the destination.
+            const current=window.scrollY;
+            window.scrollTo(0,current+(destinationOf(target,block)-current)*((progress-covered)/(1-covered)));
+            covered=progress;
+            if(progress<1)frame=requestAnimationFrame(step); else finish();
+          };
+          GLIDE_INTERRUPTS.forEach((type)=>window.addEventListener(type,finish,{capture:true,passive:true}));
+          stopGlide=finish;
+          claimScroll(true);
+          frame=requestAnimationFrame(step);
+        };
+        const jumpTo=(target,{behavior='auto',block='start'}={})=>{
+          if(!target)return;
+          stopGlide?.();
+          if(behavior!=='smooth'||reducedMotion.matches){ target.scrollIntoView({block}); return; }
+          const away=destinationOf(target,block)-window.scrollY;
+          if(Math.abs(away)<=FAR_JUMP_SCREENS*window.innerHeight){ glideTo(target,block,easeInOut); return; }
+          claimScroll(true);
+          window.scrollBy(0,away-Math.sign(away)*window.innerHeight);
+          // One frame to draw what is there, one for anchoring to settle it.
+          let wait=requestAnimationFrame(()=>{ wait=requestAnimationFrame(()=>glideTo(target,block,easeOut)); });
+          stopGlide=()=>{ cancelAnimationFrame(wait); stopGlide=null; claimScroll(false); };
+        };
+        const markSkippable=(block)=>{
+          if(!('contentVisibility' in document.documentElement.style))return;
+          if(block.querySelector(PINNING_MARKUP))return;
+          block.classList.add('module-block--skippable');
+          blockAnchor?.observe(block);
+          // Drawn because the reader came near: warm-up can pass it by.
+          block.addEventListener('contentvisibilityautostatechange',(event)=>{ if(!event.skipped)drawnAt.set(block,window.innerWidth); });
+        };
         const layoutFor=(list)=>{
           const hasStandalone=list.some(u=>!u.classList.contains('card'));
           const cards=list.filter(u=>u.classList.contains('card')).length;
@@ -631,7 +984,7 @@
               link.addEventListener('click',(event)=>{
                 event.preventDefault();
                 window.KINETO_FOLD?.reveal(home);
-                home.scrollIntoView({behavior:'smooth',block:'center'});
+                jumpTo(home,{behavior:'smooth',block:'center'});
               });
               note.append(text,' ',link);
               block.append(note);
@@ -658,17 +1011,18 @@
               // Two rows of demos, the rest behind "데모 더 보기" (demo/fold.js).
               window.KINETO_FOLD?.attach(body);
             }
+            markSkippable(block);
             wrap.appendChild(block);
           });
           wraps[cat]=wrap;
         });
         // Phase 2: append the rebuilt blocks and remove ONLY leftover containers
         // that hold no surviving unit — an orphan (and its wrapper) is preserved.
-        requestAnimationFrame(()=>requestAnimationFrame(()=>{
-          rebalanceRows();
-          rowBalanceObserver?.disconnect();
-          document.querySelectorAll('.module-block-body.grid').forEach(body=>rowBalanceObserver?.observe(body));
-        }));
+        // Page scripts reach block layout through one small API: jumpTo(el,
+        // { behavior, block }) to scroll somewhere, balanceAll() for print and
+        // tests that inspect every grid.
+        window.KINETO_BLOCKS={balanceAll,jumpTo};
+        requestAnimationFrame(()=>requestAnimationFrame(watchGrids));
         Object.entries(CAT_SECTION).forEach(([cat,secId])=>{
           const sec=document.getElementById(secId); if(!sec||!wraps[cat])return;
           const head=sec.querySelector('.section-head');
@@ -679,6 +1033,12 @@
           });
           sec.appendChild(wraps[cat]);
         });
+        // The category sections skip rendering while the page is being built
+        // (styles.css, `html:not(.kt-blocks-ready)`); from here on each block
+        // decides for itself (markSkippable).
+        document.documentElement.classList.add('kt-blocks-ready');
+        // In document order (blocks were built category by category).
+        skippableBlocks=[...document.querySelectorAll('.module-block--skippable')];
       })();
       // Navigate
       host.addEventListener('click',(e)=>{
@@ -707,6 +1067,24 @@
       document.addEventListener('keydown',(e)=>{
         if(e.key==='/'&&document.activeElement!==search&&!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName||'')){e.preventDefault();search?.focus();}
       });
+      // Keep the active link visible inside the nav's own scroller (a vertical
+      // list on desktop, a row of chips on phones). Element.scrollIntoView()
+      // scrolls the page too: while the intro locks scrolling, the sticky nav
+      // sits at the top of the document, and it threw a deep link to the top.
+      const revealInNav=(link)=>{
+        const r=link.getBoundingClientRect();
+        for(let box=link.parentElement;box&&box!==document.body;box=box.parentElement){
+          const style=getComputedStyle(box);
+          const b=box.getBoundingClientRect();
+          if(/auto|scroll/.test(style.overflowY)&&box.scrollHeight>box.clientHeight){
+            if(r.top<b.top)box.scrollTop-=b.top-r.top; else if(r.bottom>b.bottom)box.scrollTop+=r.bottom-b.bottom;
+          }
+          if(/auto|scroll/.test(style.overflowX)&&box.scrollWidth>box.clientWidth){
+            if(r.left<b.left)box.scrollLeft-=b.left-r.left; else if(r.right>b.right)box.scrollLeft+=r.right-b.right;
+          }
+          if(box.classList.contains('side-nav'))break;
+        }
+      };
       // Active highlight while scrolling — observe the per-module BLOCKS and
       // light the nav link whose data-module === the block's data-module-block.
       // Same id space as the href (#mod-<name>), so click/scroll/URL agree.
@@ -720,7 +1098,7 @@
           const mod=best.getAttribute('data-module-block');
           const link=host.querySelector(`.nav-mod[data-module="${mod}"]`);
           if(link){host.querySelectorAll('.nav-mod.active').forEach(a=>a.classList.remove('active'));link.classList.add('active');
-            link.scrollIntoView({block:'nearest'});}
+            revealInNav(link);}
         },{threshold:[0.15,0.4,0.7]});
         document.querySelectorAll('main [data-module-block]').forEach(s=>io.observe(s));
       }
@@ -893,7 +1271,7 @@
       event.preventDefault();
       const isSkipLink=link.classList.contains('skip-link');
       window.KINETO_FOLD?.reveal(target);
-      target.scrollIntoView({behavior:isSkipLink?'auto':'smooth',block:'start'});
+      jumpToElement(target,{behavior:isSkipLink?'auto':'smooth',block:'start'});
       if(isSkipLink)requestAnimationFrame(()=>target.focus({preventScroll:true}));
       try{history.replaceState(null,'',link.getAttribute('href'));}catch(_){/* about:blank/file 환경 대비 */}
     });

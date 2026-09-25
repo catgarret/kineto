@@ -83,6 +83,17 @@ async function openDemo(viewport) {
   });
   await page.goto(`${origin}/demo/index.html`, { waitUntil: 'load' });
   await page.waitForFunction(() => document.querySelector('#mod-slider .module-fold') && window.KINETO_FOLD, null, { timeout: 30000 });
+  // The intro holds the page still and puts the scroll position back when it
+  // lifts, so a jump made during it is undone (WebKit reaches here first).
+  await page.waitForFunction(() => !document.documentElement.classList.contains('is-intro'), null, { timeout: 30000 });
+  // A block is measured (rows balanced, fold planned) only once it comes near
+  // the viewport — measuring far blocks would lay out the whole page. Go to
+  // Slider the way a reader does (jumpTo is what the side nav uses).
+  await page.evaluate(() => {
+    const slider = document.querySelector('#mod-slider');
+    if (window.KINETO_BLOCKS?.jumpTo) window.KINETO_BLOCKS.jumpTo(slider);
+    else slider.scrollIntoView({ block: 'start' });
+  });
   // The fold is laid out on the frame after the blocks are measured.
   await page.waitForFunction(() => document.querySelector('#mod-slider .module-block-body')?.dataset.demoFoldActive === 'true', null, { timeout: 10000 });
   return { page, errors };
@@ -116,6 +127,8 @@ const foldState = (page, block) => page.evaluate((id) => {
 /** Every row of every block grid, measured: which ones leave a hole. */
 const rowHoles = (page) => page.evaluate(() => {
   window.KINETO_FOLD?.openAll?.();
+  // Rows are balanced when a grid nears the viewport; inspect every grid now.
+  window.KINETO_BLOCKS?.balanceAll?.();
   const holes = [];
   document.querySelectorAll('.module-block-body.grid:not(.module-block-body--dense)').forEach((body) => {
     const cards = [...body.children].filter((card) => card.classList.contains('card') && card.getBoundingClientRect().height > 0);
@@ -138,6 +151,7 @@ const rowHoles = (page) => page.evaluate(() => {
 /** Grids whose last row is ONE card right after a full row of three or more. */
 const loneTails = (page) => page.evaluate(() => {
   window.KINETO_FOLD?.openAll?.();
+  window.KINETO_BLOCKS?.balanceAll?.();
   const lone = [];
   document.querySelectorAll('.module-block-body.grid:not(.module-block-body--dense)').forEach((body) => {
     const rows = new Map();
@@ -199,16 +213,20 @@ const loneTails = (page) => page.evaluate(() => {
   const inlineAfterOpen = await page.evaluate(() => document.querySelector('#mod-slider .module-block-body').style.maxHeight);
   assert.equal(inlineAfterOpen, '', 'an open fold must not keep a measured max-height that would cut a later resize');
 
-  // Close again.
-  await page.locator('#mod-slider .module-fold__toggle').click();
+  // Close again, from where a reader would press it.
+  const toggle = page.locator('#mod-slider .module-fold__toggle');
+  await toggle.scrollIntoViewIfNeeded();
+  const pressedAt = await toggle.evaluate((el) => Math.round(el.getBoundingClientRect().top));
+  await toggle.click();
   await page.waitForFunction(() => document.querySelector('#mod-slider .module-block-body').dataset.demoFold === 'closed', null, { timeout: 15000 });
   const reclosed = await foldState(page, 'mod-slider');
   assert.equal(reclosed.folded, closed.folded, 'closing must fold the same cards again');
-  const buttonInView = await page.evaluate(() => {
+  const afterClose = await page.evaluate(() => {
     const box = document.querySelector('#mod-slider .module-fold__toggle').getBoundingClientRect();
-    return box.top >= 0 && box.bottom <= innerHeight;
+    return { top: Math.round(box.top), bottom: Math.round(box.bottom), viewport: innerHeight, scrollY: Math.round(scrollY) };
   });
-  assert.ok(buttonInView, 'after closing, the button must still be on screen where the reader clicked it');
+  assert.ok(afterClose.top >= 0 && afterClose.bottom <= afterClose.viewport,
+    `after closing, the button must still be on screen where the reader clicked it (${JSON.stringify({ pressedAt, ...afterClose })})`);
 
   // Anything that scrolls to a folded card opens its fold first — here the
   // generic event other scripts (compare sheet, share links) dispatch.

@@ -133,6 +133,11 @@ browser tests that broke or flaked on one engine.
    `node scripts/run-lane.mjs test:browser --only <name> --repeat 3`.
    For an engine-sensitive change, also run it in that engine:
    `KT_BROWSER=webkit node scripts/run-lane.mjs test:browser:cross --only <name> --repeat 3`.
+   Most browser tests drive the demo page, so a change to its layout or
+   start-up (`demo/main.js`, `demo/styles.css`, `demo/fold.js`,
+   `demo/playground.js`) needs the whole Chromium lane once before the push
+   (`npm run verify:push -- --browser`): the v0.12.2 CI failed because only
+   the layout test was run after a row-balancing change.
 3. Never push to find out whether CI passes, and never push a fix for a red CI
    run without reproducing the failure first. CI names the failing test and
    its assertion in public annotations (`tests/ci-annotate.mjs`), readable

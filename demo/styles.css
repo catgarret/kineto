@@ -852,7 +852,24 @@ html.light .kt-tabs--segment { --kt-seg-active: #ffffff; --kt-seg-bg: rgba(0,0,0
     /* Manifest-driven per-module blocks (title + subtitle + demo grid) */
     .module-blocks{display:block}
     .module-block{margin:0 0 44px;scroll-margin-top:82px}
+    /* Far-away blocks are not styled, laid out or painted (main.js,
+       markSkippable). The block keeps its last measured size (`auto`), and a
+       never-rendered one reserves an average block. Containment also clips paint
+       to the block, so the block box is widened by the card shadow's reach
+       (padding + equal negative margin: nothing moves) and the gap below it is
+       padding instead of margin, where the bottom shadows fall. Chromium and
+       Firefox also honour overflow-clip-margin; WebKit relies on the padding. */
+    .module-block--skippable{content-visibility:auto;contain-intrinsic-size:auto 1100px;
+      margin:0 -28px;padding:0 28px 44px;overflow-clip-margin:24px}
     .module-block:last-child{margin-bottom:0}
+    .module-block--skippable:last-child{margin-bottom:-44px}
+    /* main.js warm-up: draw a block above the screen once, at rest, so it remembers its real height */
+    .module-block--skippable.module-block--warm{content-visibility:visible}
+    /* Until main.js has regrouped the cards into module blocks, a whole category
+       section far from the viewport is not laid out either: the static page is
+       parsed and laid out in pieces on a phone, and every piece used to lay out
+       all 230 cards again. */
+    html:not(.kt-blocks-ready) .section[data-demo-category]{content-visibility:auto;contain-intrinsic-size:auto 6000px}
     .module-block-title{margin:0 0 4px;font-size:clamp(1.05rem,1.9vw,1.4rem);font-weight:800;letter-spacing:-.02em;color:var(--text)}
     .module-block-sub{margin:0 0 16px;color:var(--muted);font-size:14px;line-height:1.5;max-width:72ch}
     /* Default module body: a full-width stack (no forced grid). Full-width and

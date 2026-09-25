@@ -211,13 +211,32 @@ const state = () => page.evaluate(() => {
     htmlOverflow: document.documentElement.style.overflow || '(empty)',
     navTop: nav ? Math.round(nav.getBoundingClientRect().top) : null,
     navPos: nav ? getComputedStyle(nav).position : null,
-    instanceCount: window.Kineto?.instanceCount ?? null
+    // Playground titles get their overflow motion as they come near the
+    // screen (demo/playground.js, attachSummaryName) — and the loader's
+    // scroll lock moves what counts as near. That is the page arriving, not
+    // the loader leaking, so those are left out of the leak count.
+    instanceCount: window.Kineto ? window.Kineto.instanceCount - [...document.querySelectorAll('.kt-playground__summary-name')]
+      .filter((el) => window.Kineto.getInstance(el, 'overflowText')).length : null
   };
 });
-await page.evaluate(() => window.scrollTo(0, 0));
-await sleep(300);
-const before = await state(); console.log('  before:', JSON.stringify(before));
+// The baseline is taken where the click happens. Clicking scrolls the button
+// into view, and the demo creates some effects only as they near the screen
+// (playground titles, `Kineto.config({ defer })` on touch devices) — those are
+// the reader arriving, not the loader leaking.
 const loaderBtn = await page.$('.loader-demo-button[data-loader-type="slot"]');
+const settledCount = async () => {
+  let last = -1;
+  for (let tries = 0; tries < 20; tries += 1) {
+    const count = await page.evaluate(() => window.Kineto?.instanceCount ?? null);
+    if (count === last) return count;
+    last = count;
+    await sleep(150);
+  }
+  return last;
+};
+await loaderBtn.scrollIntoViewIfNeeded();
+await settledCount();
+const before = await state(); console.log('  before:', JSON.stringify(before));
 await loaderBtn.click();
 await sleep(60);
 const during = await state(); console.log('  +60ms:', JSON.stringify(during));
@@ -235,7 +254,8 @@ check('page scrolls after loader', scrolled.moved, JSON.stringify(scrolled));
 
 // rapid clicks
 console.log('\n===== LOADER rapid clicks =====');
-await page.evaluate(() => window.scrollTo(0, 0)); await sleep(200);
+await loaderBtn.scrollIntoViewIfNeeded();
+await settledCount();
 const base2 = await state();
 await loaderBtn.click(); await loaderBtn.click(); await loaderBtn.click();
 await sleep(60);
