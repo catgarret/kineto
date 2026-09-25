@@ -99,6 +99,7 @@ export default {
     let hoverTouchHandler = null;
     let hoverClickHandler = null;
     let hoverTouchTimer = null;
+    let hoverTouchArmTimer = null;
     let hoverTarget = null;
     const originalHTML = el.innerHTML;
     const originalStyle = el.getAttribute('style');
@@ -351,8 +352,9 @@ export default {
           el.setAttribute('aria-label', plainText(items[0]));
           opts.onChange?.(0, items[0], el);
         };
+        let touchArmed = false;
         hoverEnterHandler = (event) => {
-          if (!hoverState) hoverAdvance();
+          if (!hoverState && !touchArmed) hoverAdvance();
           hoverState |= event.type === 'pointerenter' ? 1 : 2;
         };
         hoverExitHandler = (event) => {
@@ -371,12 +373,13 @@ export default {
         // their existing immediate navigation behaviour; downloads/new-window
         // links are never delayed because their browser semantics are special.
         const touchLink = hoverTarget.closest?.('a[href]') || null;
-        let touchArmed = false;
         let replayingTouchClick = false;
         if (touchLink) {
           hoverTouchHandler = (event) => {
             if (event.pointerType !== 'touch') return;
             touchArmed = true;
+            clearTimeout(hoverTouchArmTimer);
+            hoverTouchArmTimer = setTimeout(() => { touchArmed = false; }, 800);
             if (!hoverState) hoverAdvance();
           };
           hoverClickHandler = (event) => {
@@ -386,6 +389,8 @@ export default {
             }
             if (!touchArmed) return;
             touchArmed = false;
+            clearTimeout(hoverTouchArmTimer);
+            hoverTouchArmTimer = null;
             const target = (touchLink.getAttribute('target') || '').toLowerCase();
             const specialTarget = target && target !== '_self';
             if (
@@ -1007,6 +1012,7 @@ export default {
         if (hoverTarget && hoverTouchHandler) hoverTarget.removeEventListener('pointerup', hoverTouchHandler);
         if (hoverTarget && hoverClickHandler) hoverTarget.removeEventListener('click', hoverClickHandler, true);
         clearTimeout(hoverTouchTimer);
+        clearTimeout(hoverTouchArmTimer);
         if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);
         if (originalTitle == null) el.removeAttribute('title'); else el.setAttribute('title', originalTitle);
         if (originalAria == null) el.removeAttribute('aria-label'); else el.setAttribute('aria-label', originalAria);
