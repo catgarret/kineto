@@ -1163,10 +1163,20 @@
           const next=from+distance*eased;
           window.scrollTo(0,distance>=0?Math.min(top,Math.max(from,next)):Math.max(top,Math.min(from,next)));
           if(eased<1){scrollRaf=requestAnimationFrame(frame);return;}
-          scrollRaf=null;
-          window.scrollTo(0,top);
-          animationDone=true;
-          finishGesture();
+          // WebKit can acknowledge scrollTo() before scrollY exposes the committed
+          // position. Keep gesture ownership until the document has actually
+          // landed, otherwise a reverse swipe can start against a stale offset.
+          const settle=(attempt=0)=>{
+            window.scrollTo(0,top);
+            if(Math.abs(window.scrollY-top)<=1||attempt>=8){
+              scrollRaf=null;
+              animationDone=true;
+              finishGesture();
+              return;
+            }
+            scrollRaf=requestAnimationFrame(()=>settle(attempt+1));
+          };
+          scrollRaf=requestAnimationFrame(()=>settle());
         };
         scrollRaf=requestAnimationFrame(frame);
       };
