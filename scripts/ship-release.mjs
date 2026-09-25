@@ -50,6 +50,15 @@ if (remoteTag) fail(`remote tag ${tag} already exists`);
 
 console.log(`Shipping ${target.label} ${tag}: push main, wait for CI, create annotated tag, push tag.`);
 const sha = output('git', ['rev-parse', 'HEAD']);
+// Another agent or machine may have pushed to main since this checkout was
+// prepared. Say so plainly instead of letting `git push` fail with a raw
+// "rejected (fetch first)" stack trace; nothing is pushed or tagged yet.
+run('git', ['fetch', '--quiet', 'origin', 'main']);
+const behind = output('git', ['rev-list', '--count', 'HEAD..origin/main']);
+if (behind !== '0') {
+  fail(`origin/main has ${behind} commit(s) this main does not contain (someone else pushed). Nothing was pushed or tagged. `
+    + 'Integrate them first (git pull --rebase origin main, then npm run build and npm run test:node), then run this command again.');
+}
 run('git', ['push', 'origin', 'main']);
 
 if (skipCiWait) {

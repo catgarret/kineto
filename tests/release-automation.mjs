@@ -383,6 +383,8 @@ execFileSync(process.execPath, [path.join(root, 'scripts/check-mcp-release.mjs')
 // release:ship cuts a tag only after CI passed on that exact commit. A tag is
 // never moved, so a tag on a red commit burns the version (v0.12.0).
 const pushAt = shipReleaseScript.indexOf("run('git', ['push', 'origin', 'main'])");
+const behindAt = shipReleaseScript.indexOf("'rev-list', '--count', 'HEAD..origin/main'");
+assert.ok(behindAt > 0 && behindAt < pushAt, 'release:ship must refuse, before pushing, when origin/main has commits HEAD lacks');
 const waitAt = shipReleaseScript.indexOf('await waitForCi(');
 const tagAt = shipReleaseScript.indexOf("run('git', ['tag', '-a'");
 assert.ok(pushAt > 0 && waitAt > pushAt && tagAt > waitAt, 'release:ship must push main, then wait for CI, then create the tag');

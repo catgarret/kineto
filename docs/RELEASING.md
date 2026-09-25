@@ -112,7 +112,8 @@ npm run release:ship -- v<version>
 ```
 
 The command validates the release, quietly checks that neither the local nor
-remote tag exists, pushes `main`, **waits for the CI run of that exact commit
+remote tag exists, refuses (before pushing anything) when `origin/main` has
+commits this checkout lacks, pushes `main`, **waits for the CI run of that exact commit
 to pass**, and only then creates and pushes the annotated tag. The wait reads
 the public GitHub Actions API without a token (`scripts/ci-status.mjs`) and
 takes as long as CI does (about 15 minutes). If CI fails, is cancelled, or never
