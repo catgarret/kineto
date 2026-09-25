@@ -210,10 +210,20 @@ const foldState = (page, block) => page.evaluate((id) => {
         shown: panel.querySelector('[data-css-scroll-mode]')?.textContent
       };
     });
-    const before = await read();
+    // Wait for results, not guessed durations: the readout and the native
+    // timeline both update on rendered frames, and a busy WebKit runner can
+    // deliver only a few per second.
+    const settle = async (test) => {
+      let value = await read();
+      for (let waited = 0; waited < 6000 && !test(value); waited += 150) {
+        await page.waitForTimeout(150);
+        value = await read();
+      }
+      return value;
+    };
+    const before = await settle((value) => value.shown === 'CSS 네이티브' && Number.isFinite(value.progress));
     await page.evaluate(() => window.scrollBy(0, 220));
-    await page.waitForTimeout(300);
-    const after = await read();
+    const after = await settle((value) => Math.abs(value.progress - before.progress) > 0.05);
     assert.equal(before.mode, 'native', `the native view tab must run natively here (${JSON.stringify(before)})`);
     assert.ok(Math.abs(after.progress - before.progress) > 0.05, `the native view tab must move with the scroll (${JSON.stringify({ before, after })})`);
     assert.equal(after.shown, 'CSS 네이티브', 'the readout names the engine that drives the tab');
