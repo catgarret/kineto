@@ -673,7 +673,7 @@ try {
         await new Promise(window.requestAnimationFrame);
         path.push(Math.round(window.scrollY));
       }
-      assert.equal(window.__ktHeroSceneSnap, false, 'mobile hero scene must release gesture ownership within 64 rendered frames');
+      if (window.__ktHeroSceneSnap) throw new Error('mobile hero scene did not release gesture ownership within 64 rendered frames');
       return path;
     };
     const hero = document.querySelector('.hero');
