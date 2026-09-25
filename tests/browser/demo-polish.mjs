@@ -664,15 +664,16 @@ try {
       return event.defaultPrevented;
     };
     const sample = async () => {
-      // Count rendered frames, not runner wall-clock time. Hosted WebKit may
-      // delay the very first rAF by several seconds under load; a time deadline
-      // would then inspect exactly one frame and mistake scheduler starvation
-      // for a one-frame animation. Twenty-four frames is a finite upper bound.
+      // Count rendered frames, not runner wall-clock time. Keep sampling until
+      // the scene controller really releases ownership so the reverse swipe can
+      // never start inside the tail of the previous gesture. The bound remains
+      // finite to catch a controller that never settles.
       const path = [Math.round(window.scrollY)];
-      for (let frame = 0; frame < 24 && window.__ktHeroSceneSnap; frame += 1) {
+      for (let frame = 0; frame < 64 && window.__ktHeroSceneSnap; frame += 1) {
         await new Promise(window.requestAnimationFrame);
         path.push(Math.round(window.scrollY));
       }
+      assert.equal(window.__ktHeroSceneSnap, false, 'mobile hero scene must release gesture ownership within 64 rendered frames');
       return path;
     };
     const hero = document.querySelector('.hero');
