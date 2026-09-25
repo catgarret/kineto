@@ -61,6 +61,9 @@ jobs:
             node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log
             echo "::endgroup::"
           done
+        env:
+          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
+          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
 
       - name: Run Node tests · consumers and frameworks
         run: |
@@ -70,6 +73,9 @@ jobs:
             node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log
             echo "::endgroup::"
           done
+        env:
+          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
+          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
 
       - name: Run Node tests · demo surface
         run: |
@@ -79,6 +85,9 @@ jobs:
             node scripts/retry-command.mjs npm run "$command" 2>&1 | tee -a release.log
             echo "::endgroup::"
           done
+        env:
+          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
+          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
 
       - name: Run Node tests · runtime regressions
         run: |
@@ -96,6 +105,9 @@ jobs:
             printf 'Node runtime test failures: %s\n' "${failures[*]}"
             exit 1
           fi
+        env:
+          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
+          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
 
       - name: Run Node tests · site and release
         run: |
@@ -113,11 +125,17 @@ jobs:
             printf 'Site/release test failures: %s\n' "${failures[*]}"
             exit 1
           fi
+        env:
+          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
+          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
 
       - name: Run demo QA
         run: |
           set -o pipefail
           node scripts/retry-command.mjs npm run test:demo 2>&1 | tee -a release.log
+        env:
+          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
+          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
 
       - name: Run browser QA
         run: |
@@ -127,6 +145,8 @@ jobs:
             exit 1
           fi
         env:
+          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
+          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
           # Match the full CI lane: hosted Chromium can need more time than a
           # local run while still remaining a bounded release gate.
           MK_BROWSER_TEST_TIMEOUT: 240000
@@ -256,6 +276,8 @@ jobs:
           node tests/retry-browser-test.mjs tests/browser/motion-timing.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
           node tests/retry-browser-test.mjs tests/browser/demo-polish.mjs 2>&1 | tee -a release-${{ matrix.browser }}.log
         env:
+          # Failing tests leave a public annotation (see tests/ci-annotate.mjs).
+          NODE_OPTIONS: --import ${{ github.workspace }}/tests/ci-annotate.mjs
           KT_BROWSER: ${{ matrix.browser }}
           MK_BROWSER_TEST_TIMEOUT: 240000
           MK_BROWSER_TEST_ATTEMPTS: ${{ matrix.browser == 'webkit' && 4 || 3 }}

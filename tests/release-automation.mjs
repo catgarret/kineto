@@ -429,4 +429,31 @@ assert.equal(ciVerdict([run(1)], SHA_A), 'success');
   assert.equal(neverStarts, 'missing', 'a commit CI never picked up does not get a tag');
 }
 
+// Failing CI tests must say WHICH test and WHY in a public annotation: the
+// job logs need a signed-in account, annotations do not.
+for (const [name, source] of [['ci.yml', ciWorkflow], ['release.yml', workflow]]) {
+  for (const step of ['Run browser QA', 'Run demo QA']) {
+    const block = source.slice(source.indexOf(`- name: ${step}`), source.indexOf('- name:', source.indexOf(`- name: ${step}`) + 8));
+    assert.match(block, /NODE_OPTIONS: --import \$\{\{ github\.workspace \}\}\/tests\/ci-annotate\.mjs/, `${name} "${step}" must load tests/ci-annotate.mjs`);
+  }
+}
+{
+  const annotate = path.join(root, 'tests/ci-annotate.mjs');
+  const run = (env) => {
+    try {
+      execFileSync(process.execPath, ['--import', annotate, '-e', "console.log('before'); throw new Error('a,b:c\\n::warning::injected')"], { env: { ...process.env, ...env }, encoding: 'utf8', stdio: 'pipe' });
+      return '';
+    } catch (error) {
+      return `${error.stdout}${error.stderr}`;
+    }
+  };
+  // (Node's own uncaught-error print is raw test output and is not the hook's.)
+  const inCi = run({ GITHUB_ACTIONS: 'true' }).split('\n').filter((line) => line.startsWith('::error title='));
+  assert.equal(inCi.length, 1, `exactly one annotation per failing process (${inCi.join(' | ')})`);
+  assert.match(inCi[0], /Error: a,b:c/, 'the annotation names the failure');
+  assert.match(inCi[0], /%0A::warning::injected/, 'text that looks like a workflow command stays escaped inside the annotation');
+  const local = run({ GITHUB_ACTIONS: '' }).split('\n').filter((line) => line.startsWith('::error title='));
+  assert.equal(local.length, 0, 'outside GitHub Actions the hook stays silent');
+}
+
 console.log('release-automation OK — gated least-privilege publish, verified tarball reuse, rerun safety, pinned actions, engine CI, CDN failure handling, the mcp-v release path, and release:ship waiting for green CI before tagging.');

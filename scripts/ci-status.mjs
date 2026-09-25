@@ -74,7 +74,10 @@ export async function readCiVerdict({ owner, repo, sha, fetchImpl = globalThis.f
  */
 export async function waitForCi({
   owner, repo, sha, fetchImpl, log = () => {},
-  intervalMs = 45000, timeoutMs = 45 * 60 * 1000, missingGraceMs = 3 * 60 * 1000,
+  // CI here is a Node job and then the Firefox/WebKit jobs: ~25 minutes when
+  // green, longer when a lane retries. Give it room before giving up, and poll
+  // every 90s so 75 minutes stay under the anonymous API limit (60 per hour).
+  intervalMs = 90000, timeoutMs = 75 * 60 * 1000, missingGraceMs = 3 * 60 * 1000,
   sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)), now = () => Date.now()
 }) {
   const started = now();

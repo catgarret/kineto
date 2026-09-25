@@ -116,7 +116,7 @@ remote tag exists, refuses (before pushing anything) when `origin/main` has
 commits this checkout lacks, pushes `main`, **waits for the CI run of that exact commit
 to pass**, and only then creates and pushes the annotated tag. The wait reads
 the public GitHub Actions API without a token (`scripts/ci-status.mjs`) and
-takes as long as CI does (about 15 minutes). If CI fails, is cancelled, or never
+takes as long as CI does (about 25 minutes when green; it gives up after 75). If CI fails, is cancelled, or never
 starts, the command stops **before** tagging, so the version is still unused:
 fix `main` and run the same command again. `--skip-ci-wait` skips the check
 when you have already seen CI green for `HEAD`.
