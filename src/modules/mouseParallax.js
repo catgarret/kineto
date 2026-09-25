@@ -1,6 +1,9 @@
 import { clamp, ensureGyroPermission, env, frameClock, frameEase, lerp, numberOption, snapshotInlineStyles } from '../utils.js';
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   // Suspended by the core while the element is off screen (see `offscreen` in
   // src/core.js): pointer moves no longer steer layers nobody can see.
   offscreen: 'pause',

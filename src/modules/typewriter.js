@@ -1,6 +1,9 @@
 import { hangulFrames, segmentText, snapshotAttributes, textOption } from '../utils.js';
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   // Paused by the core while the element is off screen and resumed as it
   // returns (a looping typewriter keeps typing into a line nobody reads). See `offscreen` in src/core.js.
   offscreen: 'pause',

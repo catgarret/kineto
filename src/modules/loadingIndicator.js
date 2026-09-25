@@ -355,6 +355,9 @@ function buildIndicator(host, type, opts) {
 }
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   // Suspended by the core while the indicator is off screen (see SYSTEM
   // SUSPENSION in src/core.js) — through the quiet suspend() hook below, since
   // pause() here is public state. A page full of terminal loaders used to swap

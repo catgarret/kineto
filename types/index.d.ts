@@ -32,6 +32,10 @@ export interface KinetoInstance {
 }
 
 export interface KinetoModule {
+  /** `'pause'`: the core pauses the instance while its element is off screen. */
+  offscreen?: 'pause' | null | ((options: KinetoOptions) => 'pause' | null);
+  /** With `Kineto.config({ defer: true })`, scan() creates it only when its element nears the viewport. */
+  defer?: boolean;
   create(element: Element, options: KinetoOptions, kineto: KinetoStatic): KinetoInstance | null | undefined;
   reduced?(element: Element, options: KinetoOptions, kineto: KinetoStatic): KinetoInstance | null | undefined;
   reducedMotion?(element: Element, options: KinetoOptions, kineto: KinetoStatic): KinetoInstance | null | undefined;

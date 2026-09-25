@@ -60,6 +60,36 @@ Marquee가 복제한 그룹 안의 다른 모듈 활성화 속성)은 이번 `sc
 않습니다. 따라서 모듈 수나 한 번의 DOM commit 크기가 커져도 탐색 비용이
 불필요하게 곱해지지 않습니다.
 
+## 화면 근처에서 생성 — `defer`
+
+효과가 수백 개인 긴 페이지는 `scan()`이 시작할 때 전부 만들면 그 비용(DOM 쓰기·측정·
+옵저버·트윈·캔버스)을 한꺼번에 냅니다. 데모(500개 이상)는 휴대폰에서 로드 뒤 몇 초 동안
+메인 스레드가 막혔습니다.
+
+```js
+Kineto.config({ defer: true }); // 기본 false
+Kineto.init();
+```
+
+켜면 `scan()`이 찾은 요소 중 **모듈이 `defer: true`를 선언한 것**만 요소가 화면에서 한
+화면 거리 안으로 들어올 때 만듭니다(IntersectionObserver, `rootMargin` 100%,
+`src/deferCreate.js`). 옵션은 발견한 때가 아니라 **만드는 때의 마크업**에서 읽습니다.
+
+- 기다리는 모듈: 보여야 의미가 있는 시각 효과 — Reveal·Text 계열·Glitch·Stylize·
+  Squircle·Canvas Effect·Card Glow·Tilt·Magnetic·Mouse Parallax·Parallax·CSS Scroll·
+  Scroll Velocity·Scroll Shadows·Cover Reveal·Brush Reveal·Counter·Marquee·Loading Indicator·
+  Ripple·Vibrate·Confetti.
+- 바로 만드는 모듈: 페이지 모양을 먼저 정하는 것(핀·페이지 전체 오버레이·높이를 바꾸는
+  스크롤 모듈), 키보드·ARIA 동작이 있는 컴포넌트, 슬라이더 안에 자주 놓이는 Lazy·Ambient
+  Media(겹쳐 잘린 슬라이드는 교차로 보고되지 않습니다).
+- `Kineto.reveal(el)`·`Kineto.create()` 같은 **직접 호출은 기다리지 않습니다.**
+- `Kineto.destroy()`(또는 `destroy(root)`)는 기다리는 작업도 지우고, 문서에서 빠진 요소는
+  만들어지지 않습니다. 기다리는 동안 `getInstance()`는 `null`입니다.
+- 새 모듈이 기다려도 되면 정의에 `defer: true`를 둡니다(`types/index.d.ts`의 `KinetoModule`).
+
+데모는 터치 기기에서 켭니다(`demo/main.js`): 휴대폰에서 로드 직후 인스턴스가 520개 → 102개,
+로드 이벤트가 7.5초 → 2.6초(4배 CPU 스로틀)가 됐습니다. 게이트 `tests/browser/deferred-create.mjs`.
+
 ## 탭 가시성과 화면 밖 — 시스템 일시정지
 
 규칙은 하나입니다: **탭이 숨었거나 요소가 화면 밖이면 인스턴스는 일시정지**합니다.
@@ -90,7 +120,10 @@ Marquee가 복제한 그룹 안의 다른 모듈 활성화 속성)은 이번 `sc
   강제되고, 페이지가 인스턴스를 수백 개 만들면 수백 번이 됩니다. `measureThenApply(read,
   apply)`(`src/utils.js`)는 다음 프레임에 모든 read를 먼저, 그다음 모든 apply를 실행합니다.
   반환값(취소 함수)은 `destroy()`에서 부르세요. Overflow Text가 이렇게 바뀌어 150개 생성의
-  강제 레이아웃이 200번에서 1번이 되었습니다.
+  강제 레이아웃이 200번에서 1번이 되었습니다. 첫 페인트 전에 끝나야 하고 프레임을 남기면
+  안 되는 설정(Lazy·Stylize의 미디어 래퍼 크기)은 `measureThenApplyThisTask()`로 **현재
+  작업이 끝날 때** 같은 방식으로 모아 읽습니다 — 이미지 40개가 강제 레이아웃 40번에서
+  1번이 됐습니다(`tests/browser/create-cost.mjs`).
 - **ResizeObserver 콜백에서는 관찰 결과를 쓰세요.** 콜백은 레이아웃 뒤에 오므로 읽어도
   싸지만, 앞선 콜백이 DOM을 바꿨다면 다시 강제됩니다. 필요한 값이 `contentRect`이면 그것을
   쓰고, padding box가 필요하면(`clientWidth`) 콜백 안에서만 읽습니다.

@@ -126,6 +126,9 @@ const QUICK_LEAVE_MS = 200;
 const resolveEffect = (name, opts) => (typeof EFFECTS[name] === 'function' ? EFFECTS[name](opts) : EFFECTS[name]);
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   // Paused by the core while the element is off screen and resumed as it
   // returns (cycling phrases keep swapping on a timer). See `offscreen` in src/core.js.
   offscreen: 'pause',

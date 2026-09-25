@@ -4,6 +4,9 @@ import { clamp, frameEase, lerp, snapshotInlineStyles, ST } from '../utils.js';
 const BLUR_VARIANT_MAX = 8;
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   // Suspended by the core while the element is off screen (see SYSTEM
   // SUSPENSION in src/core.js) — a jump-scroll used to spring every instance on
   // the page, visible or not. A page that listens to onUpdate keeps it running:

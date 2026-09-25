@@ -142,6 +142,9 @@ const harmoniousPalette = (root) => {
 // and between lines), threshold.
 // Reduced motion reveals instantly with no panels.
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   create(el, opts = {}) {
     const reduce = env().reducedMotion;
     const color = opts.color || '#ff5b1c';

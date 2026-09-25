@@ -18,6 +18,9 @@ const HAPTICS = {
 };
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   create(el, opts) {
     if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return null;
     const named = HAPTICS[opts.preset || opts.haptic];

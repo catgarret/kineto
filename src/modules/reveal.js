@@ -286,6 +286,9 @@ function maskedReveal(el, opts, gsap, scrollTrigger, clock, clipAt) {
 export { PRESETS, staggerDelays };
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   create(el, opts = {}, context) {
     const gsap = context?.performance === 'low' ? null : G();
     const scrollTrigger = gsap && ST();

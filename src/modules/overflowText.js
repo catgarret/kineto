@@ -68,6 +68,9 @@ function plainText(html) {
 }
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   // Paused by the core while the element is off screen and resumed as it
   // returns (looping scrollers keep their timers and animations running). See `offscreen` in src/core.js.
   offscreen: 'pause',
@@ -110,6 +113,7 @@ export default {
 
     let animation = null;
     let resizeObserver = null;
+    let rebuildFrame = 0;
     let timer = null;
     let destroyed = false;
     let paused = false;
@@ -882,14 +886,24 @@ export default {
       // The width comes from the observer's own report — reading clientWidth
       // here would force a layout again. Its first report only describes the
       // initial layout, which the build above already measured.
+      //
+      // The rebuild waits for the next frame. Rebuilding changes this element's
+      // own box, so doing it inside the callback re-notified the observer in
+      // the same frame — WebKit reported "ResizeObserver loop completed with
+      // undelivered notifications" as a page error (on the demo, whose far
+      // blocks skip rendering, after a viewport resize).
       let width = null;
       resizeObserver = new ResizeObserver((entries) => {
         const next = entries[entries.length - 1]?.contentRect.width ?? 0;
         const changed = width != null && Math.abs(next - width) >= 1;
         width = next;
-        if (!changed) return;
-        clearMotion();
-        build();
+        if (!changed || rebuildFrame) return;
+        rebuildFrame = requestAnimationFrame(() => {
+          rebuildFrame = 0;
+          if (destroyed) return;
+          clearMotion();
+          build();
+        });
       });
       resizeObserver.observe(el);
     }
@@ -936,6 +950,8 @@ export default {
         destroyed = true;
         cancelMeasure?.();
         clearMotion();
+        if (rebuildFrame) cancelAnimationFrame(rebuildFrame);
+        rebuildFrame = 0;
         resizeObserver?.disconnect();
         el.removeEventListener('pointerenter', onHoverIn);
         el.removeEventListener('pointerleave', onHoverOut);

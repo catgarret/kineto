@@ -137,6 +137,15 @@ spacer 포함)를 기억해 두므로 refresh가 스스로를 다시 부르는 �
 `Kineto.config({ autoRefresh: false })`로 끕니다. 높이가 바뀌지 않는 변화(같은 높이의 탭
 교체)는 감지하지 못하므로 그때는 `Kineto.refresh()`를 부릅니다.
 
+### 화면 근처에서 생성 (`defer`)
+
+`Kineto.config({ defer: true })`이면 `scan()`이 찾은 요소 중 모듈이 `defer: true`를 선언한
+것은 곧바로 만들지 않고 `src/deferCreate.js`의 대기열에 넣습니다. IntersectionObserver
+하나(`rootMargin` 100%)가 요소가 화면 한 칸 거리에 오면 원래 생성 경로(`create()`)로
+만들고, 옵션은 그때의 마크업에서 읽습니다. 모듈 정의가 대상을 정하는 이유는 코어가
+모듈의 성격(핀인지, ARIA 컴포넌트인지)을 추측하지 않게 하려는 것입니다. 직접 호출은
+기다리지 않고, `destroy()`는 대기열도 비웁니다. 자세한 목록은 `docs/performance.md`.
+
 ### 옵션 값의 신뢰 경계
 
 옵션은 대부분 마크업에서 오고, 마크업은 CMS·사용자 데이터로 채워지는 경우가 많습니다.

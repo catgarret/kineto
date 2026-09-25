@@ -1,6 +1,9 @@
 import { clamp, segmentText, snapshotAttributes, ST, wordSink } from '../utils.js';
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   create(el, opts) {
     const scrollTrigger = ST();
     if (!scrollTrigger) return null;

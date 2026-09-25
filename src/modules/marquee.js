@@ -1,6 +1,9 @@
 import { G, snapshotInlineStyles, ST } from '../utils.js';
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   // Paused by the core while the element is off screen and resumed as it
   // returns (an endless strip that nobody can see is pure cost). See `offscreen` in src/core.js.
   offscreen: 'pause',

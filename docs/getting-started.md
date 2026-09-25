@@ -132,7 +132,10 @@ Kineto.config({
   performance: 'auto',
   debug: false,
   // 문서 높이가 바뀌면(이미지 로드·펼침 등) ScrollTrigger 위치를 다시 잽니다. 기본 true.
-  autoRefresh: true
+  autoRefresh: true,
+  // 효과가 많은 긴 페이지: 시각 효과를 화면 한 칸 거리에 올 때 만듭니다. 기본 false.
+  // 어떤 모듈이 기다리는지는 docs/performance.md 의 「화면 근처에서 생성」.
+  defer: false
 });
 
 Kineto.replay('.title', 'textReveal');

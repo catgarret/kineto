@@ -13,6 +13,9 @@ function coverMap(sourceWidth, sourceHeight, boxWidth, boxHeight) {
  * Strokes can persist like real paint or gently fade back to the base image.
  */
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   create(el, opts = {}) {
     const src = opts.src || opts.revealSrc || el.getAttribute('data-reveal-src') || '';
     if (!src) return null;

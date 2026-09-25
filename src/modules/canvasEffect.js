@@ -428,6 +428,9 @@ const canvasEffect = {
   // in src/core.js); `pauseOffscreen: false` keeps it drawing (a fixed page
   // background that is always in view does not need the observer at all).
   offscreen: (opts) => (opts.pauseOffscreen === false ? null : 'pause'),
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   create(el, opts = {}, kineto) {
     return mount(el, opts, kineto, false);
   },

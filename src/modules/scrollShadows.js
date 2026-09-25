@@ -27,6 +27,9 @@ function resolveEase(value) {
  * other property) stays fully themeable from your stylesheet.
  */
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   create(el, opts = {}) {
     const axis = opts.axis === 'horizontal' || opts.axis === 'x' ? 'horizontal' : 'vertical';
     const size = Math.max(4, Number(opts.size ?? 44));

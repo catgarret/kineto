@@ -8,6 +8,9 @@ function bool(value, fallback = false) {
 }
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   // Paused by the core while the element is off screen and resumed as it
   // returns (the aurora and comet looks are endless CSS animations). See `offscreen` in src/core.js.
   offscreen: 'pause',

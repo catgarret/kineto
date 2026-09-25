@@ -765,9 +765,9 @@ export function wordSink(parent) {
 const layoutQueue = [];
 let layoutFrame = null;
 
-function flushLayoutQueue() {
-  layoutFrame = null;
-  const jobs = layoutQueue.splice(0);
+// All reads of a batch first, then all writes, in queue order. A failing step
+// is reported and does not stop the others.
+function runLayoutJobs(jobs) {
   const results = jobs.map(({ read }) => {
     try {
       return { ok: true, value: read() };
@@ -784,6 +784,11 @@ function flushLayoutQueue() {
       console.error('[Kineto] a batched layout step failed:', error);
     }
   });
+}
+
+function flushLayoutQueue() {
+  layoutFrame = null;
+  runLayoutJobs(layoutQueue.splice(0));
 }
 
 /**
@@ -811,6 +816,39 @@ export function measureThenApply(read, apply) {
       cancelAnimationFrame(layoutFrame);
       layoutFrame = null;
     }
+  };
+}
+
+// The same batching, flushed at the END OF THE CURRENT TASK (a microtask)
+// instead of on the next frame. For layout-dependent setup that must be in place
+// before the first paint and must not leave a frame scheduled: a scan() that
+// creates many instances synchronously still measures them all in one layout,
+// right after the last create() returns.
+const taskLayoutQueue = [];
+let taskFlushQueued = false;
+
+function flushTaskLayoutQueue() {
+  taskFlushQueued = false;
+  runLayoutJobs(taskLayoutQueue.splice(0));
+}
+
+/**
+ * Like measureThenApply(), but runs when the current task ends (see above).
+ * @template T
+ * @param {() => T} read   Only reads layout/style. Must not write to the DOM.
+ * @param {(value: T) => void} apply   Writes, using what `read` returned.
+ * @returns {() => void} cancel — drops the job if it has not run yet.
+ */
+export function measureThenApplyThisTask(read, apply) {
+  const job = { read, apply };
+  taskLayoutQueue.push(job);
+  if (!taskFlushQueued) {
+    taskFlushQueued = true;
+    Promise.resolve().then(flushTaskLayoutQueue);
+  }
+  return () => {
+    const index = taskLayoutQueue.indexOf(job);
+    if (index >= 0) taskLayoutQueue.splice(index, 1);
   };
 }
 

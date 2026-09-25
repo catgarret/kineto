@@ -2,6 +2,9 @@ import { clamp, ensureGyroPermission, frameClock, frameEase, lerp, numberOption,
 import { createInteractiveShadow } from '../interactiveShadow.js';
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   create(el, opts) {
     // Optional: skip entirely on touch devices (gyro/hover effects off).
     if (opts.disableOnMobile === true && typeof window !== 'undefined' && window.matchMedia?.('(hover: none), (pointer: coarse)').matches) return null;

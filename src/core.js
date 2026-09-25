@@ -30,6 +30,7 @@ function activationIsOwnedOption(el, name) {
 }
 import { toCSS as easingToCSS, fn as easingFn, EASINGS } from './easings.js';
 import { createLayoutRefresh } from './layoutRefresh.js';
+import { createDeferral } from './deferCreate.js';
 import { ACTIVATION_OPTION_OWNERS } from './activationOwners.js';
 
 const modules = new Map();
@@ -94,12 +95,23 @@ const config = {
   debugSink: null,
   // Refresh ScrollTrigger when the document's height changes on its own
   // (src/layoutRefresh.js). `false` leaves refreshing to the page.
-  autoRefresh: true
+  autoRefresh: true,
+  // Create markup-discovered effects only when their element nears the
+  // viewport (src/deferCreate.js). Off by default: a page opts in.
+  defer: false
 };
 
 // Scroll-driven instances alive right now. The layout-shift watcher runs only
 // while this is above zero, so a page without scroll effects pays nothing.
 let scrollDrivenCount = 0;
+// Elements scan() found but left for later (config.defer). Created through the
+// normal create() path, with options read at that moment.
+const deferral = createDeferral({
+  create: (el, name) => {
+    if (modules.has(name)) Kineto.create(name, el, readOpts(el, name));
+  }
+});
+
 const layoutRefresh = createLayoutRefresh({
   getScrollTrigger: () => ST(),
   isEnabled: () => config.autoRefresh !== false
@@ -384,6 +396,7 @@ function releaseDetachedRecords() {
     const el = record.sourceEl;
     if (el && el.isConnected === false) removeRecord(record);
   });
+  deferral.prune();
 }
 
 // Build the MutationObserver behind Kineto.observe(). Mutations are batched
@@ -835,7 +848,7 @@ const Kineto = {
     if (this.env.ssr || !root) return this;
     ensureCoreServices();
 
-    const eligible = (el, name) => !getElementMap(el)?.has(name) && !activationIsOwnedOption(el, name);
+    const eligible = (el, name) => !getElementMap(el)?.has(name) && !deferral.has(el, name) && !activationIsOwnedOption(el, name);
     // Discover one engine tier with a single selector traversal instead of one
     // querySelectorAll() per registered module. Keep results grouped by module
     // so create order remains the registry order, not DOM order across modules.
@@ -867,10 +880,16 @@ const Kineto = {
       return discovered;
     };
     const scanDiscovered = (discovered) => {
-      modules.forEach((_module, name) => {
+      modules.forEach((module, name) => {
         const candidates = discovered.get(name);
         if (!candidates) return;
-        candidates.forEach((el) => this.create(name, el, readOpts(el, name)));
+        // config.defer: a module that declares `defer: true` waits until its
+        // element nears the viewport (src/deferCreate.js).
+        const waits = config.defer === true && module.defer === true;
+        candidates.forEach((el) => {
+          if (waits && deferral.queue(el, name)) return;
+          this.create(name, el, readOpts(el, name));
+        });
       });
     };
     // Pre-init flash guard: once modules have applied their initial states,
@@ -1052,9 +1071,11 @@ const Kineto = {
       Array.from(records).forEach((record) => {
         if (matchesRoot(record, roots)) removeRecord(record);
       });
+      deferral.cancel(roots);
       return this;
     }
 
+    deferral.cancel();
     Array.from(records).forEach((record) => removeRecord(record));
     Array.from(observers.values()).forEach(({ handle }) => handle.disconnect());
     teardownCoreServices();

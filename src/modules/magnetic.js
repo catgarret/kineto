@@ -265,6 +265,9 @@ function createPointerMagnet(el, { strength, radius, ease }) {
 }
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   create(el, opts) {
     const preset = opts.preset === 'dock' || opts.effect === 'dock' ? 'dock' : 'pointer';
     if (preset === 'dock') {

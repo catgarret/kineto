@@ -299,6 +299,9 @@ function createVideoInstance(el, media, effect, opts, kineto) {
 }
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   // Paused by the core while the element is off screen and resumed as it
   // returns (a living texture keeps redrawing its canvas every frame). See `offscreen` in src/core.js.
   offscreen: 'pause',

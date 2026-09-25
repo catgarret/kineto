@@ -17,6 +17,9 @@ function backgroundIsDark(el) {
 const NOISE_CHARS = '!@#$%^&*()<>?/|{}~ABCDEFGHIJabcdefghij0123456789';
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   // Paused by the core while the element is off screen and resumed as it
   // returns (ambient bursts are timers that keep firing). See `offscreen` in src/core.js.
   offscreen: 'pause',

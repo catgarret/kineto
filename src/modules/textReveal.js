@@ -31,6 +31,9 @@ function appendWhitespace(sink, content) {
 }
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   create(el, opts) {
     const restoreContent = snapshotChildNodes(el);
     const restoreAttributes = snapshotAttributes(el, ['aria-label']);

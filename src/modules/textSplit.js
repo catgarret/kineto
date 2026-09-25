@@ -97,6 +97,9 @@ function buildUnits(el, text, by, wrap) {
 }
 
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   create(el, opts) {
     const gsap = G();
     const scrollTrigger = ST();

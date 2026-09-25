@@ -6,6 +6,9 @@ import { clamp, env } from '../utils.js';
 // the rAF loop stops (and the canvas is removed) once every particle has died,
 // so nothing runs at rest. Skipped entirely under reduced motion.
 export default {
+  // Kineto.config({ defer: true }) may create this only when the element nears
+  // the viewport (src/deferCreate.js): it only matters where it can be seen.
+  defer: true,
   create(el, opts = {}) {
     const environment = env();
     const trigger = opts.trigger || 'click';
