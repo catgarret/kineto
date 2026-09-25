@@ -209,7 +209,9 @@ const BUDGET = {
   // The owner review batch (layout-shift refresh, native-timeline fallback,
   // text-only option values, same-origin page swaps, activation owners,
   // lifecycle and reduced-motion fixes): 640.3 + 1.5 → 642.
-  packedKb: 642,
+  // v0.12.1 on top of the remote Lightbox/Loading Indicator byte cuts, with
+  // latestEntry(), the Tabs snap and time-based easing: 641.9 + 1.5 → 644.
+  packedKb: 644,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -246,7 +248,10 @@ const BUDGET = {
   // 2026-09-24 (timing units + Scroll Velocity blur): 2043.1 KB, same 81 files.
   // 2026-09-24 (integrated perf branches + <progress> scale): 2046.1 KB, 81 files.
   // 2026-09-24 (owner review batch): 2064.4 KB, same 81 files.
-  unpackedKb: 2065,
+  // 2026-09-25 (v0.12.1: latestEntry(), Tabs snap on reveal, frameEase/
+  // frameClock time-based easing, numeric `ease` parsing, rebased on the
+  // remote Lightbox toolbar fix): 2067.8 KB, same 81 files.
+  unpackedKb: 2068,
   files: 81
 };
 

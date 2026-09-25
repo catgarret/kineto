@@ -227,7 +227,10 @@ const BUDGETS = {
   // 2026-09-24 (owner review batch — see tests/consumer-bundles/fixture-config.mjs
   // for the list): 618.8 / 168.6 ESM, 484.2 / 149.9 minified, 482.3 / 149.2
   // UMD. Same rule: every ceiling to the next whole KiB over its measurement.
-  'kineto.js': { raw: 619, gz: 169, variance: 2 },
+  // 2026-09-25 (v0.12.1: latestEntry(), Tabs snap, frameEase/frameClock and
+  // their junior-facing comments, rebased on the remote Lightbox fixes):
+  // 619.9 / 169.1 ESM, 485.0 / 150.3 minified, 483.0 / 149.6 UMD.
+  'kineto.js': { raw: 620, gz: 169, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
   // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/
@@ -251,8 +254,9 @@ const BUDGETS = {
   // See the squircle note above for the 448.0 KiB measurement. The ceiling is
   // the next whole KiB because tests/deps-boundary.mjs reads this number as a
   // strict upper bound on the shipped file.
-  'kineto.umd.js': { raw: 483, gz: 150, variance: 1 },
-  'kineto.umd.min.js': { raw: 483, gz: 150, variance: 1 },
+  // v0.12.1 (see the kineto.js note): 483.0 KiB raw → 484.
+  'kineto.umd.js': { raw: 484, gz: 150, variance: 1 },
+  'kineto.umd.min.js': { raw: 484, gz: 150, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.
