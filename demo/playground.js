@@ -2078,13 +2078,24 @@
         document.getElementById(tipId)?.classList.add('kt-playground-help');
         return instance;
       };
+      const dismissHelp = () => {
+        clearTimeout(help.__ktHelpHideTimer);
+        help.__ktHelpPinnedUntil = 0;
+        help.__ktHelpTooltip?.hide?.();
+        if (status.__ktActiveHelp === help) status.__ktActiveHelp = null;
+      };
       const showHelp = () => {
+        if (status.__ktActiveHelp && status.__ktActiveHelp !== help) {
+          status.__ktActiveHelp.__ktDismissHelp?.();
+        }
         clearTimeout(help.__ktHelpHideTimer);
         // Keep the explanation pinned briefly while the bottom-sheet moves
         // focus into its dialog. The focus hand-off can blur the help button
         // on slower browsers immediately after a programmatic click.
         help.__ktHelpPinnedUntil = performance.now() + 500;
-        ensureHelpTooltip()?.show?.();
+        const instance = ensureHelpTooltip();
+        instance?.show?.();
+        if (instance) status.__ktActiveHelp = help;
       };
       const hideHelp = () => {
         clearTimeout(help.__ktHelpHideTimer);
@@ -2093,7 +2104,8 @@
           help.__ktHelpHideTimer = setTimeout(hideHelp, remaining);
           return;
         }
-        ensureHelpTooltip()?.hide?.();
+        help.__ktHelpTooltip?.hide?.();
+        if (status.__ktActiveHelp === help) status.__ktActiveHelp = null;
       };
       const deferHelpHide = () => {
         clearTimeout(help.__ktHelpHideTimer);
@@ -2101,6 +2113,7 @@
         // through its dialog; this also removes a timing race on slower CI.
         help.__ktHelpHideTimer = setTimeout(hideHelp, 700);
       };
+      help.__ktDismissHelp = dismissHelp;
       help.addEventListener('pointerenter', showHelp);
       help.addEventListener('pointerleave', deferHelpHide);
       help.addEventListener('focus', showHelp);
@@ -2814,7 +2827,9 @@
         sheet.classList.remove('is-open');
         api.spotlit?.classList.remove('kt-fp-spotlight');
         api.spotlit = null;
-        const owner = api.current?.__mkOwner;
+        const current = api.current;
+        const owner = current?.__mkOwner;
+        current?.querySelector('.kt-playground__status')?.__ktActiveHelp?.__ktDismissHelp?.();
         api.current = null;
         if (owner && owner.open) owner.open = false;
         // Restore focus to the trigger that opened the dialog (a11y).
@@ -2823,6 +2838,14 @@
         api.lastFocus = null;
       }
     };
+    // Manual help tooltips need an explicit outside-tap contract. Mobile Safari
+    // can keep focus on a tapped button, so relying on blur/pointerleave leaves
+    // the fixed tooltip orphaned over the page until another help button opens.
+    document.addEventListener('pointerdown', (event) => {
+      const activeHelp = api.current?.querySelector('.kt-playground__status')?.__ktActiveHelp;
+      if (!activeHelp || event.target.closest?.('.kt-help, .kt-playground-help')) return;
+      activeHelp.__ktDismissHelp?.();
+    }, true);
     // Keyboard focus trap: Tab / Shift+Tab cycle within the dialog only.
     sheet.addEventListener('keydown', (e) => {
       if (e.key !== 'Tab' || !sheet.classList.contains('is-open')) return;

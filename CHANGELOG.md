@@ -4,6 +4,8 @@
 
 ### English
 
+- Dismiss settings help tooltips deterministically on outside taps and when the settings drawer closes. Mobile Safari can retain focus on a tapped `?` button, so relying on `blur`/`pointerleave` left the fixed tooltip orphaned over the page; the playground now tracks the active help control and clears it on either dismissal path.
+
 - Restore deterministic WebKit geometry/motion boundaries in the demo: Tabs now retries a hidden-to-visible indicator measurement for at most two frames plus one bounded fallback when the active tab is still 0px, and the hero scene caps per-frame progress so a long WebKit scheduling stall cannot collapse a 680–860ms inertial snap into one giant scroll jump. The browser regression follows the scene controller's bounded lifecycle instead of assuming a fixed one-second runner window.
 
 - Remove redundant Loading Indicator terminal runtime work: legacy terminal presets now use the already-frozen shared preset map directly instead of cloning/freezing it again at module load, and a text-frame renderer branch whose two paths were identical is collapsed. Behavior and preset IDs stay unchanged while package/runtime bytes drop.
@@ -17,6 +19,8 @@
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- 설정 도움말 툴팁이 바깥 영역 탭과 설정 drawer 닫기에서 확실히 사라지도록 수정했습니다. 모바일 Safari는 탭한 `?` 버튼의 포커스를 유지할 수 있어 `blur`/`pointerleave`만으로는 고정 툴팁이 페이지 위에 남았고, 이제 현재 열린 도움말을 추적해 두 닫기 경로에서 즉시 정리합니다.
 
 - WebKit에서 데모의 geometry/motion 경계를 결정적으로 복원했습니다. Tabs는 hidden→visible 전환 직후 active tab이 아직 0px이면 최대 두 프레임과 한 번의 bounded fallback까지만 재측정하며, hero scene은 프레임당 progress 증가량을 제한해 WebKit 스케줄링이 오래 멈춰도 680–860ms 관성 snap이 한 번의 큰 scroll jump로 붕괴하지 않습니다. 브라우저 회귀 테스트도 고정 1초 대신 scene controller의 bounded lifecycle을 따라갑니다.
 
