@@ -899,8 +899,16 @@ try {
       &&tipRect.top>=0&&tipRect.bottom<=window.innerHeight
       &&Math.abs(sheet.scrollTop-scrollBefore)<2
     );
+    sheet.dispatchEvent(new window.PointerEvent('pointerdown',{bubbles:true,pointerType:'touch'}));
+    await sleep(20);
+    const tooltipDismissedOutside=Boolean(tooltip?.hidden);
+    help?.click();
+    await sleep(20);
+    const tooltipReopened=Boolean(tooltip&&!tooltip.hidden);
     scrollPanel.open=false;
     scrollPanel.dispatchEvent(new window.Event('toggle'));
+    await sleep(20);
+    const tooltipDismissedOnClose=Boolean(tooltip?.hidden);
     return {
       flipRows:flipRows.size,
       accordionBottom:note?getComputedStyle(note).marginBottom:null,
@@ -910,7 +918,10 @@ try {
       scrollCoverHidden:coverInput==null,
       rgbaPreserved:scrollTarget.dataset.ktShadow==='rgba(12, 24, 48, 0.37)'&&Boolean(Kineto.getInstance(scrollTarget,'scrollShadows')),
       colorControl:shadowInput?.type==='text'&&shadowInput.classList.contains('kt-color-value'),
-      tooltipStable
+      tooltipStable,
+      tooltipDismissedOutside,
+      tooltipReopened,
+      tooltipDismissedOnClose
     };
   });
   assert.ok(demoPolish.flipRows>=3,`FLIP demo must visibly prove multi-row support, got ${demoPolish.flipRows} rows`);
@@ -922,6 +933,9 @@ try {
   assert.equal(demoPolish.rgbaPreserved,true,'Scroll Shadows must preserve and apply an RGBA shadow color');
   assert.equal(demoPolish.colorControl,true,'color settings must use the shared CSS color control');
   assert.equal(demoPolish.tooltipStable,true,'settings help tooltip must auto-place without changing sheet scroll');
+  assert.equal(demoPolish.tooltipDismissedOutside,true,'settings help tooltip must dismiss on an outside touch');
+  assert.equal(demoPolish.tooltipReopened,true,'settings help tooltip must reopen after an outside dismissal');
+  assert.equal(demoPolish.tooltipDismissedOnClose,true,'settings help tooltip must dismiss when the drawer closes');
 
   const functional=await page.evaluate(async()=>{
     const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));
