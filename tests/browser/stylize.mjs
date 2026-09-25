@@ -540,7 +540,10 @@ try {
       const selector = `[data-action="toggle-motion"][data-probe-index="${index}"]`;
       // Each card owns one stylized media element; scroll it in so the module
       // is running before the switch is pressed.
-      await demoPage.locator(selector).scrollIntoViewIfNeeded();
+      const toggleLocator = demoPage.locator(selector);
+      await toggleLocator.evaluate((button) => {
+        button.scrollIntoView({ block: 'center', inline: 'nearest' });
+      });
       // The module attaches once its media is ready, which is a load away.
       const ready = await demoPage.waitForFunction((css) => {
         const media = document.querySelector(css).closest('.card').querySelector('[data-kt-stylize]');
@@ -552,7 +555,7 @@ try {
         const media = button.closest('.card').querySelector('[data-kt-stylize]');
         return { motion: window.Kineto.getInstance(media, 'stylize')?.motion ?? null, pressed: button.getAttribute('aria-pressed') };
       }, selector);
-      await demoPage.click(selector);
+      await toggleLocator.click();
       const after = await demoPage.evaluate((css) => {
         const button = document.querySelector(css);
         const media = button.closest('.card').querySelector('[data-kt-stylize]');

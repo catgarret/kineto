@@ -4,11 +4,11 @@
 
 ### English
 
-<!-- Add matching English release bullets here. -->
+- Stabilize the Stylize demo motion-toggle browser gate (`tests/browser/stylize.mjs`) by scrolling each toggle button to the viewport center before clicking, avoiding sticky-header click interception that caused CI timeouts.
 
 ### 한국어
 
-<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- Stylize 데모 모션 토글 브라우저 게이트(`tests/browser/stylize.mjs`)를 안정화했습니다. 클릭 전에 각 토글 버튼을 뷰포트 중앙으로 스크롤해 sticky header 가 클릭을 가로채며 CI에서 시간 초과가 나던 문제를 막았습니다.
 
 ## [0.12.2] - 2026-09-25
 
