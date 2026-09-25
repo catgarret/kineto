@@ -5,12 +5,14 @@
 ### English
 
 - Demo: the Flip block no longer leaves a hole. Its two cards (FLIP grid and Fold) were `.wide` in a 3-up grid, so the first took two thirds of the row and the second a full row below it; they now sit side by side, and every row that cannot be completed is split evenly (not only the last one — `planShortRows` in `demo/main.js`). The opened Fold tiles shrink with the stage instead of spilling out of a half-width card or a phone. Gate: `tests/browser/demo-blocks.mjs` (no row holes at 1440 and 1024 px).
+- Demo: rebalancing a grid no longer trips WebKit's "ResizeObserver loop completed with undelivered notifications" page error. The observer rebalanced inside its own callback, which changed the grid's height and re-notified it in the same frame; it now reacts only to width changes and rebalances on the next frame. The CSS Scroll check in `tests/browser/demo-blocks.mjs` holds Lenis still while it scrolls by hand and starts from a card that is really in view (CI read the view timeline as 0 before and after), and its failure message now carries the scroll position, the card's box and its animations.
 
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
 - 데모: Flip 블록에 빈자리가 생기지 않습니다. 두 카드(FLIP 그리드·Fold)가 3열 그리드의 `.wide`라 첫 카드는 줄의 2/3, 둘째 카드는 그 아래 한 줄 전체를 차지했습니다. 이제 두 카드가 나란히 놓이고, 채울 수 없는 줄은 마지막 줄뿐 아니라 어느 줄이든 균등하게 나눕니다(`demo/main.js`의 `planShortRows`). 펼친 Fold 타일은 반폭 카드나 휴대폰에서 스테이지 밖으로 넘치지 않고 함께 줄어듭니다. 게이트: `tests/browser/demo-blocks.mjs`(1440·1024px에서 줄 빈자리 없음).
+- 데모: 그리드 재배치가 WebKit의 "ResizeObserver loop completed with undelivered notifications" 페이지 오류를 더 내지 않습니다. 관찰자가 자기 콜백 안에서 재배치해 그리드 높이가 바뀌고 같은 프레임에 다시 통지됐습니다. 이제 폭 변화에만 반응하고 다음 프레임에 재배치합니다. `tests/browser/demo-blocks.mjs`의 CSS Scroll 검사는 손으로 스크롤하는 동안 Lenis를 멈추고, 실제로 화면 안에 있는 카드에서 시작합니다(CI에서 view 타임라인이 전후 모두 0). 실패 메시지에 스크롤 위치·카드 위치·애니메이션 상태를 담습니다.
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 

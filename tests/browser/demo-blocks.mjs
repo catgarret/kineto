@@ -225,15 +225,29 @@ const rowHoles = (page) => page.evaluate(() => {
   assert.equal(cssScroll.readouts, 3, 'each CSS Scroll tab shows the engine and the live progress');
   if (cssScroll.nativeView) {
     const card = page.locator('[data-demo-home="cssScroll"]');
+    // The demo scrolls with Lenis, which keeps its own scroll target and can
+    // put a programmatic scroll back on its next frame if it is mid-animation
+    // (CI saw the card's view timeline read 0 before and after — the card was
+    // never in view). What is under test is the native timeline, so hold Lenis
+    // still while the page is scrolled by hand, like the hero checks do.
+    await page.evaluate(() => window.Kineto?.lenis?.stop?.());
     await card.evaluate((node) => node.scrollIntoView({ block: 'center' }));
     await card.locator('.demo-tab').nth(1).click();
     await page.waitForTimeout(250);
     const read = () => card.evaluate((node) => {
       const panel = node.querySelector('.demo-tabpanel:not([hidden])');
+      const target = panel.querySelector('.css-scroll-card');
+      const box = target.getBoundingClientRect();
       return {
-        progress: Number.parseFloat(getComputedStyle(panel.querySelector('.css-scroll-card')).getPropertyValue('--scroll-progress')),
-        mode: window.Kineto.getInstance(panel.querySelector('.css-scroll-card'), 'cssScroll')?.mode,
-        shown: panel.querySelector('[data-css-scroll-mode]')?.textContent
+        progress: Number.parseFloat(getComputedStyle(target).getPropertyValue('--scroll-progress')),
+        mode: window.Kineto.getInstance(target, 'cssScroll')?.mode,
+        shown: panel.querySelector('[data-css-scroll-mode]')?.textContent,
+        // Diagnostics for the failure message (a CI annotation is all we get).
+        scrollY: Math.round(window.scrollY),
+        top: Math.round(box.top),
+        bottom: Math.round(box.bottom),
+        viewport: window.innerHeight,
+        animations: target.getAnimations().map((animation) => `${animation.animationName || animation.constructor.name}:${animation.playState}:${animation.timeline?.constructor?.name}`)
       };
     });
     // Wait for results, not guessed durations: the readout and the native
@@ -247,9 +261,11 @@ const rowHoles = (page) => page.evaluate(() => {
       }
       return value;
     };
-    const before = await settle((value) => value.shown === 'CSS 네이티브' && Number.isFinite(value.progress));
+    // Start from a card that is really in view, part-way through its range.
+    const before = await settle((value) => value.shown === 'CSS 네이티브' && value.progress > 0.05 && value.progress < 0.95);
     await page.evaluate(() => window.scrollBy(0, 220));
     const after = await settle((value) => Math.abs(value.progress - before.progress) > 0.05);
+    await page.evaluate(() => window.Kineto?.lenis?.start?.());
     assert.equal(before.mode, 'native', `the native view tab must run natively here (${JSON.stringify(before)})`);
     assert.ok(Math.abs(after.progress - before.progress) > 0.05, `the native view tab must move with the scroll (${JSON.stringify({ before, after })})`);
     assert.equal(after.shown, 'CSS 네이티브', 'the readout names the engine that drives the tab');

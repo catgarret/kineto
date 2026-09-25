@@ -519,8 +519,31 @@
           plans.forEach(plan=>plan.cards.forEach(card=>card.classList.add(plan.cls)));
         };
         const rebalanceRows=()=>rebalance([...document.querySelectorAll('.module-block-body.grid')]);
+        // Rebalancing changes card spans, so a grid's HEIGHT changes, and a
+        // ResizeObserver that rebalanced inside its own callback was told again
+        // in the same frame — WebKit reported "ResizeObserver loop completed
+        // with undelivered notifications" as a page error. Only a WIDTH change
+        // can change which cards share a row, so ignore the rest, collect the
+        // grids and rebalance once on the next frame.
+        const gridWidths=new WeakMap();
+        const pendingGrids=new Set();
+        let pendingGridFrame=0;
         const rowBalanceObserver='ResizeObserver' in window
-          ? new ResizeObserver((entries)=>rebalance(entries.map(({target})=>target)))
+          ? new ResizeObserver((entries)=>{
+            entries.forEach(({target,contentRect})=>{
+              const width=Math.round(contentRect.width);
+              if(gridWidths.get(target)===width)return;
+              gridWidths.set(target,width);
+              pendingGrids.add(target);
+            });
+            if(!pendingGrids.size||pendingGridFrame)return;
+            pendingGridFrame=requestAnimationFrame(()=>{
+              pendingGridFrame=0;
+              const grids=[...pendingGrids];
+              pendingGrids.clear();
+              rebalance(grids);
+            });
+          })
           : null;
         let rowBalanceFrame=0;
         // ResizeObserver already reports only grids whose width changed. Avoid a
