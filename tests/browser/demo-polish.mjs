@@ -575,7 +575,14 @@ try {
   checkpoint('radial');
   const segmentedDemoTab=page.locator('#mod-tabs .demo-tabs .demo-tab',{hasText:'Segmented'});
   await segmentedDemoTab.click();
-  await page.waitForTimeout(80);
+  // Synchronize on the geometry contract, not an arbitrary wall-clock delay:
+  // hosted WebKit can defer layout after removing [hidden] even when the
+  // module's bounded refresh signals have already been queued.
+  await page.waitForFunction(() => {
+    const panel=document.querySelector('#mod-tabs .demo-tabpanel:not([hidden])');
+    const indicator=panel?.querySelector('.kt-tabs__indicator');
+    return (indicator?.getBoundingClientRect().width||0)>20;
+  }, null, { timeout: 800 });
   const initialSegmentIndicator=await page.evaluate(()=>{
     const panel=document.querySelector('#mod-tabs .demo-tabpanel:not([hidden])');
     const indicator=panel.querySelector('.kt-tabs__indicator');
