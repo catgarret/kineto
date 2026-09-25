@@ -539,8 +539,17 @@ try {
     for (const index of toggles) {
       const selector = `[data-action="toggle-motion"][data-probe-index="${index}"]`;
       // Each card owns one stylized media element; scroll it in so the module
-      // is running before the switch is pressed.
-      await demoPage.locator(selector).scrollIntoViewIfNeeded();
+      // is running before the switch is pressed. A card past a block's first two
+      // rows sits behind "Show more demos" (inert until opened), so open its
+      // fold first, as anything that takes a reader to a card does.
+      // Then go there with the demo's own jump: far blocks skip rendering, and
+      // Playwright's scrollIntoViewIfNeeded() does not move WebKit into one.
+      await demoPage.evaluate((css) => {
+        const control = document.querySelector(css);
+        window.KINETO_FOLD?.reveal(control);
+        if (window.KINETO_BLOCKS?.jumpTo) window.KINETO_BLOCKS.jumpTo(control, { block: 'center' });
+        else control.scrollIntoView({ block: 'center' });
+      }, selector);
       // The module attaches once its media is ready, which is a load away.
       const ready = await demoPage.waitForFunction((css) => {
         const media = document.querySelector(css).closest('.card').querySelector('[data-kt-stylize]');

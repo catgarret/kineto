@@ -441,7 +441,10 @@ async function runSmoke() {
 
   const replayedCounter = Kineto.replay(plainCounter, 'counter', { mode: 'plain', to: 84, duration: 0.02, start: false });
   if (!replayedCounter) errors.push('counter replay with replacement options returned null');
-  await waitUntil(() => plainCounter.textContent === '84', 1000);
+  // A condition wait, not a duration: the replacement counts once its fresh
+  // instance sees the element, and a busy WebKit runner delivered that after
+  // the old 1s budget (CI annotation: "Flaky test tests/browser-smoke.mjs").
+  await waitUntil(() => plainCounter.textContent === '84', 5000);
   if (plainCounter.textContent !== '84') errors.push(`replay replacement options were not applied: ${plainCounter.textContent}`);
   pixelInstance?.destroy();
   rangedPixelInstance?.destroy();
