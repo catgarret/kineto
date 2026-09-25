@@ -84,6 +84,10 @@ export default {
     let hoverLeaveHandler = null;
     let hoverEnterHandler = null;
     let hoverExitHandler = null;
+    let hoverTouchHandler = null;
+    let hoverClickHandler = null;
+    let hoverTouchTimer = null;
+    let hoverTouchArmTimer = null;
     let hoverTarget = null;
     const originalHTML = el.innerHTML;
     const originalStyle = el.getAttribute('style');
@@ -335,8 +339,9 @@ export default {
           el.setAttribute('aria-label', plainText(items[0]));
           opts.onChange?.(0, items[0], el);
         };
+        let touchArmed = false;
         hoverEnterHandler = (event) => {
-          if (!hoverState) hoverAdvance();
+          if (!hoverState && !touchArmed) hoverAdvance();
           hoverState |= event.type === 'pointerenter' ? 1 : 2;
         };
         hoverExitHandler = (event) => {
@@ -348,6 +353,53 @@ export default {
         hoverTarget.addEventListener('focusin', hoverEnterHandler);
         hoverTarget.addEventListener('pointerleave', hoverExitHandler);
         hoverTarget.addEventListener('focusout', hoverExitHandler);
+
+        // Touch has no persistent hover state. For an ordinary same-context
+        // link, let one tap show the authored roll before replaying the click
+        // after the roll finishes. Mouse hover and keyboard activation keep
+        // their existing immediate navigation behaviour; downloads/new-window
+        // links are never delayed because their browser semantics are special.
+        const touchLink = hoverTarget.closest?.('a[href]') || null;
+        let replayingTouchClick = false;
+        if (touchLink) {
+          hoverTouchHandler = (event) => {
+            if (event.pointerType !== 'touch') return;
+            touchArmed = true;
+            clearTimeout(hoverTouchArmTimer);
+            hoverTouchArmTimer = setTimeout(() => { touchArmed = false; }, 800);
+            if (!hoverState) hoverAdvance();
+          };
+          hoverClickHandler = (event) => {
+            if (replayingTouchClick) {
+              replayingTouchClick = false;
+              return;
+            }
+            if (!touchArmed) return;
+            touchArmed = false;
+            clearTimeout(hoverTouchArmTimer);
+            hoverTouchArmTimer = null;
+            const target = (touchLink.getAttribute('target') || '').toLowerCase();
+            const specialTarget = target && target !== '_self';
+            if (
+              event.defaultPrevented
+              || event.button !== 0
+              || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
+              || touchLink.hasAttribute('download')
+              || specialTarget
+            ) return;
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            clearTimeout(hoverTouchTimer);
+            hoverTouchTimer = setTimeout(() => {
+              hoverTouchTimer = null;
+              if (destroyed || !touchLink.isConnected) return;
+              replayingTouchClick = true;
+              touchLink.click();
+            }, rollDuration);
+          };
+          hoverTarget.addEventListener('pointerup', hoverTouchHandler);
+          hoverTarget.addEventListener('click', hoverClickHandler, true);
+        }
       } else if (items.length > 1) schedule(advance, numberOption(opts.delay, hold));
     };
 
@@ -932,6 +984,10 @@ export default {
         el.removeEventListener('pointerleave', onHoverOut);
         if (hoverTarget && hoverEnterHandler) { hoverTarget.removeEventListener('pointerenter', hoverEnterHandler); hoverTarget.removeEventListener('focusin', hoverEnterHandler); }
         if (hoverTarget && hoverExitHandler) { hoverTarget.removeEventListener('pointerleave', hoverExitHandler); hoverTarget.removeEventListener('focusout', hoverExitHandler); }
+        if (hoverTarget && hoverTouchHandler) hoverTarget.removeEventListener('pointerup', hoverTouchHandler);
+        if (hoverTarget && hoverClickHandler) hoverTarget.removeEventListener('click', hoverClickHandler, true);
+        clearTimeout(hoverTouchTimer);
+        clearTimeout(hoverTouchArmTimer);
         if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);
         if (originalTitle == null) el.removeAttribute('title'); else el.setAttribute('title', originalTitle);
         if (originalAria == null) el.removeAttribute('aria-label'); else el.setAttribute('aria-label', originalAria);
