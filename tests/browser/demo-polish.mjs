@@ -664,16 +664,15 @@ try {
       return event.defaultPrevented;
     };
     const sample = async () => {
-      // Observe until the scene controller releases the gesture, rather than a
-      // fixed one-second wall-clock window. A saturated WebKit runner can delay
-      // the first rAF past the nominal 680–860ms duration; the runtime now keeps
-      // bounded visual progress after such a stall, so follow that real lifecycle.
+      // Count rendered frames, not runner wall-clock time. Hosted WebKit may
+      // delay the very first rAF by several seconds under load; a time deadline
+      // would then inspect exactly one frame and mistake scheduler starvation
+      // for a one-frame animation. Twenty-four frames is a finite upper bound.
       const path = [Math.round(window.scrollY)];
-      const deadline = performance.now() + 2500;
-      do {
+      for (let frame = 0; frame < 24 && window.__ktHeroSceneSnap; frame += 1) {
         await new Promise(window.requestAnimationFrame);
         path.push(Math.round(window.scrollY));
-      } while (window.__ktHeroSceneSnap && performance.now() < deadline);
+      }
       return path;
     };
     const hero = document.querySelector('.hero');
