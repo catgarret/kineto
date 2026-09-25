@@ -4,6 +4,16 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.12.1] - 2026-09-25
+
+### English
+
 - First published 0.12 release. `v0.12.0` was tagged, but its release checks failed, so nothing was published under that tag (npm stayed on 0.11.0 and the demo site did not redeploy). Everything listed under 0.12.0 ships in this version.
 - Re-measure ScrollTrigger when the document changes height by itself. ScrollTrigger measures each trigger once and refreshes on window resize and `load`, not when an image loads, an accordion opens or a block reveals more cards above a trigger — so pinned sections could be drawn over the content that moved in beneath them. While a scroll-driven instance is alive, the core watches the body's height and refreshes once it has been still for 200 ms; the height right after a refresh is remembered so a refresh cannot trigger itself. `Kineto.config({ autoRefresh: false })` opts out. Gate: `tests/browser/layout-refresh.mjs`.
 - Make `cssScroll` take its ScrollTrigger path when an `overflow: hidden` ancestor would freeze a native `scroll()`/`view()` timeline (that ancestor is a scroll container nobody can scroll), and report it with the new recoverable diagnostic `KT_NATIVE_FALLBACK` naming the ancestor and the fix (`overflow: clip`). Instances expose `mode` (`'native'` | `'fallback'`).
@@ -49,7 +59,6 @@
 - Lightbox가 런타임에 주입하는 CSS 문자열을 selector/declaration 변경 없이 압축했습니다. 이 CSS는 JavaScript 문자열이라 JS minifier가 내부 공백을 줄이지 못하므로, 같은 규칙을 compact하게 저장해 full/UMD/modular 산출물과 release package 크기를 함께 줄입니다.
 - 코어 off-screen suspension이 public API 경로에 두 번째 `IntersectionObserver`를 추가한 뒤 Stylize video 브라우저 회귀 테스트가 잘못된 observer를 검사하던 문제를 수정했습니다. 테스트는 이제 모든 observer를 추적하고 target/options로 실제 view trigger observer를 선택합니다.
 - Lightbox 툴바를 좁은 휴대폰 폭과 세 자리 갤러리 수까지 견디도록 보강했습니다. 카운터는 tabular 숫자·줄바꿈 금지·flex 축소 금지를 적용하고, 모바일 툴바는 필요하면 2행으로 감기며, 420px 이하에서는 기능을 숨기지 않고 버튼 간격만 compact하게 줄입니다. 브라우저 QA에서 320px 뷰포트에 `999 / 999`와 share/download/zoom/close를 모두 표시해 카운터·액션이 뷰어 안에 있고 가로 overflow가 없는지 검사합니다.
-
 ## [0.12.0] - 2026-09-24
 
 ### English

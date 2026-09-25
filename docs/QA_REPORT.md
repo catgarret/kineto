@@ -1,7 +1,7 @@
-# Kineto v0.12.0 QA Report
+# Kineto v0.12.1 QA Report
 
 검증일: 2026-09-20
-대상: v0.12.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
+대상: v0.12.1 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
 ## 2026-09-24 v0.12.0 태그가 게시되지 않은 원인과 v0.12.1
 
@@ -1032,7 +1032,7 @@ registry의 해제 크기는 1,797,191 bytes로 확인했습니다. 이 수치�
 
 <!-- release:prepare updates this source label, not the publication evidence below. -->
 현재 소스의 패키지명은
-`@dong-gri/kineto`, 버전은 `0.12.0`입니다.
+`@dong-gri/kineto`, 버전은 `0.12.1`입니다.
 
 ## 배포 후 확인
 

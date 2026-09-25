@@ -1,7 +1,7 @@
 {
   "$schema": "./kineto.integrations.schema.json",
   "integrationsVersion": "1.0.0",
-  "libraryVersion": "0.12.0",
+  "libraryVersion": "0.12.1",
   "description": "Machine-readable guidance for using Kineto next to popular UI libraries and design systems, and for AI tools (Codex, Claude Code, Cursor, Figma MCP flows) that decide which Kineto module fits a piece of UI. Every module, variant and option named here is validated against kineto.features.json by tests/integrations-contract.mjs. Human-readable docs under docs/integrations/ and the AI rule files under ai/ are generated from this file — edit here, then run `npm run integrations:build`.",
   "principles": [
     "Kineto adds motion and media effects to markup you already own; it does not replace the component library's behaviour (dialogs, menus, forms, routing).",
@@ -2010,7 +2010,7 @@
     {
       "use": "data-kt-lazy=\"dither\"",
       "instead": "data-kt-stylize=\"dither\"",
-      "since": "0.12.0",
+      "since": "0.12.1",
       "removal": "next major",
       "why": "Lazy fetches an image; these redraw pixels that are already there. They are the Stylize module now, and Stylize adds the living look (motion, pointer) and the crisp dissolve reveal that the alias cannot reach.",
       "note": "Stylize does not load anything: use src, not data-src, and data-kt-mode=\"persist|reveal\" instead of data-kt-persist. Both modules can sit on one element when the image also needs lazy loading."
@@ -2018,7 +2018,7 @@
     {
       "use": "data-kt-lazy=\"ascii\"",
       "instead": "data-kt-stylize=\"ascii\"",
-      "since": "0.12.0",
+      "since": "0.12.1",
       "removal": "next major",
       "why": "Lazy fetches an image; these redraw pixels that are already there. They are the Stylize module now, and Stylize adds the living look (motion, pointer) and the crisp dissolve reveal that the alias cannot reach.",
       "note": "Stylize does not load anything: use src, not data-src, and data-kt-mode=\"persist|reveal\" instead of data-kt-persist. Both modules can sit on one element when the image also needs lazy loading."
@@ -2026,7 +2026,7 @@
     {
       "use": "data-kt-lazy=\"halftone\"",
       "instead": "data-kt-stylize=\"halftone\"",
-      "since": "0.12.0",
+      "since": "0.12.1",
       "removal": "next major",
       "why": "Lazy fetches an image; these redraw pixels that are already there. They are the Stylize module now, and Stylize adds the living look (motion, pointer) and the crisp dissolve reveal that the alias cannot reach.",
       "note": "Stylize does not load anything: use src, not data-src, and data-kt-mode=\"persist|reveal\" instead of data-kt-persist. Both modules can sit on one element when the image also needs lazy loading."
