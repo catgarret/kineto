@@ -1307,10 +1307,6 @@ html.light .sticky-stack-unit .sticky-vertical-stage{background:#f6f6f6}
     .module-block-body--cols-3 .sv-demo,.module-block-body--cols-3 .sv-line{font-size:clamp(1rem,2vw,1.6rem)}
     .module-block-body--cols-4 .demo-stage{min-height:150px}
 
-    /* A lone card in the final row stretches instead of leaving dead cells.
-       Applied by measurement, not nth-child arithmetic: a `.card.full` earlier in
-       the grid consumes a whole row, which shifts every count-based guess. */
-    .module-block-body.grid>.card.is-row-filler{grid-column:1/-1}
     /* Canvas Effect cards: the effect fills the stage and draws BEHIND its
        content (the caption stays on top). The shader stage keeps a CSS
        gradient of its own — that is what shows where WebGL is unavailable. */

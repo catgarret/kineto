@@ -18,6 +18,9 @@
 //      thirds of the width and the next at full width — two `.wide` cards in a
 //      3-up grid). Flip lays its two cards side by side; any row that cannot be
 //      completed is split evenly, not only the last one.
+//   6. No block ends on one stretched card after a row of three: the last two
+//      rows share their cards (3+1 → 2+2). After a row of two, a lone card
+//      still fills its row (v0.8.43; tests/browser/demo-polish.mjs holds it).
 //
 // Run: npm run build && node tests/browser/demo-blocks.mjs   (KT_BROWSER=webkit|firefox)
 import assert from 'node:assert/strict';
@@ -132,6 +135,27 @@ const rowHoles = (page) => page.evaluate(() => {
   return holes;
 });
 
+/** Grids whose last row is ONE card right after a full row of three or more. */
+const loneTails = (page) => page.evaluate(() => {
+  window.KINETO_FOLD?.openAll?.();
+  const lone = [];
+  document.querySelectorAll('.module-block-body.grid:not(.module-block-body--dense)').forEach((body) => {
+    const rows = new Map();
+    [...body.children].filter((card) => card.classList.contains('card') && card.getBoundingClientRect().height > 0).forEach((card) => {
+      const top = Math.round(card.getBoundingClientRect().top);
+      rows.set(top, [...(rows.get(top) || []), card]);
+    });
+    const list = [...rows.values()];
+    if (list.length < 2) return;
+    const [prev, last] = list.slice(-2);
+    // A `.card.full` is a deliberate full-width demo (Hover Roll's nav bar).
+    if (last.length === 1 && prev.length >= 3 && ![...prev, ...last].some((card) => card.classList.contains('full'))) {
+      lone.push(`${body.closest('[id^="mod-"]')?.id}: ${list.map((row) => row.length).join('+')}`);
+    }
+  });
+  return lone;
+});
+
 // ── Desktop ──────────────────────────────────────────────────────────────────
 {
   const { page, errors } = await openDemo({ width: 1440, height: 900 });
@@ -244,6 +268,7 @@ const rowHoles = (page) => page.evaluate(() => {
         shown: panel.querySelector('[data-css-scroll-mode]')?.textContent,
         // Diagnostics for the failure message (a CI annotation is all we get).
         scrollY: Math.round(window.scrollY),
+        pageHeight: document.documentElement.scrollHeight,
         top: Math.round(box.top),
         bottom: Math.round(box.bottom),
         viewport: window.innerHeight,
@@ -253,16 +278,26 @@ const rowHoles = (page) => page.evaluate(() => {
     // Wait for results, not guessed durations: the readout and the native
     // timeline both update on rendered frames, and a busy WebKit runner can
     // deliver only a few per second.
-    const settle = async (test) => {
+    // Late layout can move the card after the jump: CI decodes the demo videos
+    // (this container cannot), they gain their real size, pinned sections
+    // re-measure, and the page above grows — CI read the card 20,000 px below
+    // the viewport (the page sets `overflow-anchor: none`, so nothing holds
+    // the reader's place). While a check needs the card on screen, bring it
+    // back whenever it has left the viewport.
+    const centreTarget = () => card.evaluate((node) => node.querySelector('.demo-tabpanel:not([hidden]) .css-scroll-card')
+      ?.scrollIntoView({ block: 'center' }));
+    const settle = async (test, { keepInView = false } = {}) => {
       let value = await read();
-      for (let waited = 0; waited < 6000 && !test(value); waited += 150) {
+      for (let waited = 0; waited < 10000 && !test(value); waited += 150) {
+        if (keepInView && (value.bottom < 0 || value.top > value.viewport)) await centreTarget();
         await page.waitForTimeout(150);
         value = await read();
       }
       return value;
     };
     // Start from a card that is really in view, part-way through its range.
-    const before = await settle((value) => value.shown === 'CSS 네이티브' && value.progress > 0.05 && value.progress < 0.95);
+    await centreTarget();
+    const before = await settle((value) => value.shown === 'CSS 네이티브' && value.progress > 0.05 && value.progress < 0.95, { keepInView: true });
     await page.evaluate(() => window.scrollBy(0, 220));
     const after = await settle((value) => Math.abs(value.progress - before.progress) > 0.05);
     await page.evaluate(() => window.Kineto?.lenis?.start?.());
@@ -278,6 +313,18 @@ const rowHoles = (page) => page.evaluate(() => {
   assert.ok(flip[0].top === flip[1].top && Math.abs(flip[0].width - flip[1].width) <= 1,
     `Flip's two cards must sit side by side at equal width (${JSON.stringify(flip)})`);
   assert.deepEqual(await rowHoles(page), [], 'no block row may leave a hole on desktop');
+  // 6. A lone last card shares the row before it (Date Time was 3+1 with a
+  //    full-width banner card; it is 2+2).
+  assert.deepEqual(await loneTails(page), [], 'no block may end on one stretched card after a row of three');
+  const dateRows = await page.evaluate(() => {
+    const rows = new Map();
+    document.querySelectorAll('#mod-dateTime .module-block-body > .card').forEach((card) => {
+      const top = Math.round(card.getBoundingClientRect().top);
+      rows.set(top, (rows.get(top) || 0) + 1);
+    });
+    return [...rows.values()];
+  });
+  assert.deepEqual(dateRows, [2, 2], `Date Time's four cards sit 2+2 (${JSON.stringify(dateRows)})`);
   await page.setViewportSize({ width: 1024, height: 900 });
   await page.waitForTimeout(400);
   assert.deepEqual(await rowHoles(page), [], 'no block row may leave a hole at 1024px');

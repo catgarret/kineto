@@ -470,7 +470,10 @@
           body.classList.add('module-block-body--cols-'+count);
         };
         // Every row that cannot be completed is split evenly between the cards
-        // in it — one card takes the row, two take 50/50, three a third each.
+        // in it — one card takes the row, two take 50/50, three a third each —
+        // except a lone last card after a full row of three or more, which
+        // shares that row's cards instead (3+1 → 2+2; see planShortRows). After
+        // a row of two the lone card fills its row (the v0.8.43 rule).
         // The grid is 12 tracks wide precisely so those fractions are whole
         // spans. Not only the LAST row: two `.wide` cards in a 3-up grid leave a
         // 4-track hole after the first (the second cannot fit beside it), and
@@ -496,11 +499,31 @@
           // each other misses a lone card after a `.card.full`.
           const gap=parseFloat(getComputedStyle(body).columnGap)||0;
           const width=body.getBoundingClientRect().width;
+          const list=[...rows.values()];
+          const usedWidth=(row)=>row.reduce((sum,card)=>sum+card.getBoundingClientRect().width,0)+gap*(row.length-1);
+          const plain=(row)=>!row.some(card=>card.classList.contains('full'));
           const plans=[];
-          rows.forEach(row=>{
-            if(row.some(card=>card.classList.contains('full')))return;
-            const used=row.reduce((sum,card)=>sum+card.getBoundingClientRect().width,0)+gap*(row.length-1);
-            if(used>=width-2||row.length>ROW_FILL_CLASSES.length)return;
+          // A lone card after a full row of three or more stretches into a
+          // banner that reads as a different kind of card (Date Time's 3+1,
+          // Overflow Text's 3+3+3+1). Balance the tail instead: the last full
+          // row and the short row share their cards as evenly as they can
+          // (3+1 → 2+2, 4+1 → 3+2) when both rows are plain — every card the
+          // same width, nothing `.full`. Other short rows are split evenly.
+          const last=list[list.length-1];
+          const prev=list[list.length-2];
+          const sameWidth=(row)=>row.every(card=>Math.abs(card.getBoundingClientRect().width-row[0].getBoundingClientRect().width)<=1);
+          const balanceTail=Boolean(prev)&&plain(prev)&&plain(last)&&prev.length>=3&&last.length*2<prev.length
+            &&usedWidth(prev)>=width-2&&sameWidth([...prev,...last])
+            &&Math.ceil((prev.length+last.length)/2)<=ROW_FILL_CLASSES.length;
+          if(balanceTail){
+            const tail=[...prev,...last];
+            const first=Math.ceil(tail.length/2);
+            plans.push({cards:tail.slice(0,first),cls:ROW_FILL_CLASSES[first-1]});
+            plans.push({cards:tail.slice(first),cls:ROW_FILL_CLASSES[tail.length-first-1]});
+          }
+          (balanceTail?list.slice(0,-2):list).forEach(row=>{
+            if(!plain(row))return;
+            if(usedWidth(row)>=width-2||row.length>ROW_FILL_CLASSES.length)return;
             plans.push({cards:row,cls:ROW_FILL_CLASSES[row.length-1]});
           });
           return plans;
@@ -514,7 +537,7 @@
           // The frame-spinner gallery is an auto-fill grid with no fixed row
           // capacity; its rows are always as full as the width allows.
           const grids=bodies.filter(body=>!body.classList.contains('module-block-body--dense'));
-          grids.forEach(body=>{for(const child of body.children)child.classList.remove('is-row-filler',...ROW_FILL_CLASSES);});
+          grids.forEach(body=>{for(const child of body.children)child.classList.remove(...ROW_FILL_CLASSES);});
           const plans=grids.flatMap(planShortRows);
           plans.forEach(plan=>plan.cards.forEach(card=>card.classList.add(plan.cls)));
         };
