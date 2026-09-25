@@ -247,12 +247,17 @@ export default {
           node.style.transformOrigin = popOrigin;
           node.style.transform = `scale(${popScale})`;
           node.style.transition = `opacity ${popDuration}s ease ${index * stagger}s,transform ${popDuration}s cubic-bezier(.2,.9,.3,1.25) ${index * stagger}s`;
-          requestAnimationFrame(() => {
+        });
+        // One paint kick is enough for every character. Track both delayed jobs
+        // so destroy() cannot animate restored author markup or fire onComplete.
+        const popRaf = requestAnimationFrame(() => {
+          characters.forEach((node) => {
             node.style.opacity = '1';
             node.style.transform = 'scale(1)';
           });
         });
-        setTimeout(() => opts.onComplete?.(el), (popDuration + stagger * characters.length) * 1000);
+        const popTimer = setTimeout(() => opts.onComplete?.(el), (popDuration + stagger * characters.length) * 1000);
+        addAnimation({ kill: () => { cancelAnimationFrame(popRaf); clearTimeout(popTimer); } });
       }
     } else if (mode === 'flip') {
       // True split-flap (Solari board): each digit is split at the middle.
@@ -500,6 +505,12 @@ export default {
       // Split-flap digits for the clock family (clockStyle:'flip') — the same
       // half-fold mechanic as the flip counter, driven by time updates.
       const flipVis = flipVisuals(opts);
+      const clockTimers = new Set();
+      const clockLater = (fn, ms) => {
+        const id = setTimeout(() => { clockTimers.delete(id); fn(); }, ms);
+        clockTimers.add(id);
+      };
+      const clearClockTimers = () => { clockTimers.forEach(clearTimeout); clockTimers.clear(); };
       const flipConfig = {
         tileColor: opts.tileColor || '#191b20',
         tileText: opts.tileTextColor || '#f6f7fb',
@@ -559,9 +570,9 @@ export default {
         const downFrames = [{ transform: 'rotateX(0deg)', filter: 'brightness(1)' }, { transform: 'rotateX(-90deg)', filter: 'brightness(.6)' }];
         const upFrames = [{ transform: 'rotateX(90deg)', filter: 'brightness(.6)' }, { transform: 'rotateX(0deg)', filter: 'brightness(1)' }];
         c.topFlap.half.animate(downFrames, { duration: half, easing: 'cubic-bezier(.55,0,.85,.5)', fill: 'forwards' });
-        setTimeout(() => {
+        clockLater(() => {
           c.bottomFlap.half.animate(upFrames, { duration: half, easing: 'cubic-bezier(.15,.6,.3,1.15)', fill: 'forwards' });
-          setTimeout(() => {
+          clockLater(() => {
             c.bottomStatic.glyph.textContent = nextChar;
             c.bottomStatic.half.style.visibility = 'visible';
           }, half);
@@ -577,6 +588,7 @@ export default {
       const patternOf = (state) => `${showDays(state.days) ? String(state.days).length : 0}|${state.text.length}`;
 
       const build = (state) => {
+        clearClockTimers();
         blinkPlayers.forEach((player) => player.cancel());
         blinkPlayers.clear();
         el.innerHTML = '';
@@ -629,7 +641,7 @@ export default {
             [{ opacity: 1 }, { opacity: 0, offset: 0.45 }, { opacity: 0, offset: 0.55 }, { opacity: 1 }],
             { duration: rollMs, easing: 'ease' }
           );
-          setTimeout(() => { glyph.textContent = nextChar; }, rollMs / 2);
+          clockLater(() => { glyph.textContent = nextChar; }, rollMs / 2);
           return;
         }
         // roll (default): odometer-style vertical roll. rollDirection picks
@@ -695,7 +707,7 @@ export default {
       };
       let intervalId = setInterval(update, 250);
       addAnimation({
-        kill: () => { clockAlive = false; clearInterval(intervalId); blinkPlayers.forEach((player) => player.cancel()); },
+        kill: () => { clockAlive = false; clearInterval(intervalId); clearClockTimers(); blinkPlayers.forEach((player) => player.cancel()); },
         pause: () => { clockAlive = false; clearInterval(intervalId); blinkPlayers.forEach((player) => player.pause()); },
         resume: () => { if (!clockAlive) { clockAlive = true; intervalId = setInterval(update, 250); } blinkPlayers.forEach((player) => player.play()); },
         restart: () => { if (!clockAlive) { clockAlive = true; intervalId = setInterval(update, 250); } }
