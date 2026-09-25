@@ -1,4 +1,4 @@
-# Kineto rules for coding agents (v0.12.1)
+# Kineto rules for coding agents (v0.12.2)
 
 Kineto (`@dong-gri/kineto`) is a vanilla-first motion/effects library: 55 modules activated by `data-kt-*` attributes or `Kineto.create()`, with React/Vue/jQuery adapters. Use these rules whenever you generate UI with any component library (shadcn/ui, Bootstrap, MUI, Mantine, Chakra, Ant Design, daisyUI, Nuxt UI, PrimeVue, Vuetify) or from a Figma frame.
 

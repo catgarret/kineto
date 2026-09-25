@@ -4,6 +4,17 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.12.2] - 2026-09-25
+
+### English
+
+- First published 0.12 release. `v0.12.0` and `v0.12.1` were tagged, but neither release run published anything — 0.12.0 stopped on a real Tabs bug, and for 0.12.1 CI passed while the release's identical re-run failed on one flaky browser test — so npm stayed on 0.11.0. Everything listed under 0.12.1 and 0.12.0 ships in this version, and the release workflow no longer re-runs CI (below).
 - Make CI and releases faster without dropping a gate. Every lane — `test:node`, `test:browser`, `test:browser:cross` — runs through `scripts/run-lane.mjs` straight from its `package.json` list: a failing test is retried on its own instead of re-running the whole lane (one flake used to cost about 7 minutes per retry), every failing test is reported in one pass with its time, and `--shard k/n` splits a lane across runners. CI runs one Node job and five browser shards (Chromium ×2, WebKit ×2, Firefox) at the same time, so it takes as long as its slowest shard (about 6–10 minutes) instead of about 25. The workflows no longer keep their own copies of the test lists; the Firefox/WebKit copy had drifted from `npm run test:browser:cross`, which now runs the same 28 files as CI.
 - The release workflow trusts CI instead of repeating it. It requires CI's green result for the tagged commit on `main` (`scripts/require-green-ci.mjs`, with the job's read-only token), then checks and packs the package — `test:release-package`, a Chromium smoke of every module from that build, the lockfile audit — in about 5 minutes instead of 25. For v0.12.1, CI passed and the identical re-run inside the release failed on one flaky test, burning the version; now a red CI can be re-run and the release re-run with the same tag, because nothing was published.
 - Flaky tests are reported, never hidden: a test that passes only on a retry prints `Flaky:`, leaves a CI warning annotation and is listed in the lane summary, and a test that times out on every attempt says so in an error annotation (a killed process cannot report for itself). Hunt a flake locally with `node scripts/run-lane.mjs test:browser --only <name> --repeat 3`, which turns retries off.
@@ -16,6 +27,7 @@
 
 ### 한국어
 
+- 처음 배포되는 0.12 릴리스입니다. `v0.12.0`·`v0.12.1` 태그는 만들어졌지만 두 릴리스 모두 아무것도 게시하지 못했습니다 — 0.12.0은 실제 Tabs 버그에서 멈췄고, 0.12.1은 CI가 통과한 뒤 릴리스가 같은 검사를 다시 돌리다 흔들리는 브라우저 테스트 하나에 실패했습니다. 그래서 npm은 0.11.0에 머물렀습니다. 0.12.1과 0.12.0에 적힌 내용은 모두 이 버전에 들어 있고, 릴리스 workflow는 더 이상 CI를 다시 돌리지 않습니다(아래).
 - 검사를 빼지 않고 CI와 릴리스를 빠르게 했습니다. 모든 레인(`test:node`·`test:browser`·`test:browser:cross`)이 `package.json` 목록 그대로 `scripts/run-lane.mjs`로 돕니다. 실패한 테스트만 따로 재시도하고(전에는 테스트 하나가 흔들리면 레인 전체를 다시 돌려 재시도마다 약 7분), 실패한 테스트를 한 번에 모두 시간과 함께 보고하며, `--shard k/n`으로 레인을 여러 러너에 나눕니다. CI는 Node 작업 하나와 브라우저 shard 다섯 개(Chromium 2·WebKit 2·Firefox 1)를 동시에 돌려, 약 25분 걸리던 시간이 가장 느린 shard 하나(약 6~10분)로 줄었습니다. workflow에 테스트 목록 사본을 따로 두지 않습니다. Firefox/WebKit 사본은 `npm run test:browser:cross`와 이미 어긋나 있었고, 이제 이 명령이 CI와 같은 28개 파일을 돌립니다.
 - 릴리스 workflow가 CI를 반복하지 않고 CI 결과를 믿습니다. 태그가 가리키는 `main` commit의 CI 성공을 확인한 뒤(`scripts/require-green-ci.mjs`, 작업의 읽기 전용 토큰) 패키지만 검사해 묶습니다(`test:release-package`, 그 빌드로 모든 모듈을 돌리는 Chromium smoke, lockfile 감사). 25분 걸리던 릴리스가 약 5분이 됩니다. v0.12.1은 CI가 통과한 commit을 릴리스가 똑같이 다시 돌리다 흔들리는 테스트 하나에 실패해 버전을 잃었습니다. 이제는 아무것도 배포되지 않았으므로, 실패한 CI를 다시 돌린 뒤 같은 태그로 릴리스를 다시 돌리면 됩니다.
 - 흔들리는 테스트를 숨기지 않고 알립니다. 재시도에서야 통과한 테스트는 `Flaky:`를 출력하고 CI warning annotation을 남기며 레인 요약에 나옵니다. 모든 시도에서 시간 초과된 테스트는 error annotation으로 그 사실을 남깁니다(강제 종료된 프로세스는 스스로 보고하지 못함). 로컬에서는 재시도를 끈 `node scripts/run-lane.mjs test:browser --only <이름> --repeat 3`으로 찾습니다.
@@ -25,12 +37,11 @@
 - 데모: 그리드 재배치가 WebKit의 "ResizeObserver loop completed with undelivered notifications" 페이지 오류를 더 내지 않습니다. 관찰자가 자기 콜백 안에서 재배치해 그리드 높이가 바뀌고 같은 프레임에 다시 통지됐습니다. 이제 폭 변화에만 반응하고 다음 프레임에 재배치합니다. `tests/browser/demo-blocks.mjs`의 CSS Scroll 검사는 손으로 스크롤하는 동안 Lenis를 멈추고, 실제로 화면 안에 있는 카드에서 시작합니다(CI에서 view 타임라인이 전후 모두 0). 실패 메시지에 스크롤 위치·카드 위치·애니메이션 상태를 담습니다.
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
-
 ## [0.12.1] - 2026-09-25
 
 ### English
 
-- First published 0.12 release. `v0.12.0` was tagged, but its release checks failed, so nothing was published under that tag (npm stayed on 0.11.0 and the demo site did not redeploy). Everything listed under 0.12.0 ships in this version.
+- Meant as the first published 0.12 release; this tag was not published either (CI passed, then the release's re-run of the same tests failed on a flaky one — see 0.12.2). `v0.12.0` was tagged, but its release checks failed, so nothing was published under that tag (npm stayed on 0.11.0 and the demo site did not redeploy). Everything listed under 0.12.0 ships in this version.
 - Re-measure ScrollTrigger when the document changes height by itself. ScrollTrigger measures each trigger once and refreshes on window resize and `load`, not when an image loads, an accordion opens or a block reveals more cards above a trigger — so pinned sections could be drawn over the content that moved in beneath them. While a scroll-driven instance is alive, the core watches the body's height and refreshes once it has been still for 200 ms; the height right after a refresh is remembered so a refresh cannot trigger itself. `Kineto.config({ autoRefresh: false })` opts out. Gate: `tests/browser/layout-refresh.mjs`.
 - Make `cssScroll` take its ScrollTrigger path when an `overflow: hidden` ancestor would freeze a native `scroll()`/`view()` timeline (that ancestor is a scroll container nobody can scroll), and report it with the new recoverable diagnostic `KT_NATIVE_FALLBACK` naming the ancestor and the fix (`overflow: clip`). Instances expose `mode` (`'native'` | `'fallback'`).
 - Make Card Glow's Liquid Glass bend like a lens. The bevel's pull is now (1−u)² — strongest at the rim and meeting the clear centre with zero slope — instead of a profile that stretched one pixel of backdrop about 15× across the band's inner edge; the bevel is capped at 60% of the pane's half-thickness and shaded from the light direction.
@@ -55,7 +66,7 @@
 
 ### 한국어
 
-- 처음 배포되는 0.12 릴리스입니다. `v0.12.0` 태그는 만들어졌지만 릴리스 검사가 실패해 그 태그로는 아무것도 배포되지 않았습니다(npm은 0.11.0 그대로, 데모 사이트도 재배포되지 않음). 0.12.0에 적힌 내용은 모두 이 버전에 들어 있습니다.
+- 처음 배포되는 0.12 릴리스가 될 예정이었지만 이 태그도 배포되지 않았습니다(CI는 통과했고, 릴리스가 같은 테스트를 다시 돌리다 흔들리는 테스트 하나에 실패 — 0.12.2 참고). `v0.12.0` 태그는 만들어졌지만 릴리스 검사가 실패해 그 태그로는 아무것도 배포되지 않았습니다(npm은 0.11.0 그대로, 데모 사이트도 재배포되지 않음). 0.12.0에 적힌 내용은 모두 이 버전에 들어 있습니다.
 - 문서 높이가 스스로 바뀌면 ScrollTrigger를 다시 잽니다. ScrollTrigger는 트리거 위치를 한 번 재고 창 크기 변경·`load` 때만 다시 재므로, 트리거 위쪽에서 이미지가 로드되거나 아코디언이 열리거나 카드가 더 펼쳐지면 고정 섹션이 그 자리로 밀려 온 내용 위에 겹쳐 그려질 수 있었습니다. 스크롤 모듈이 살아 있는 동안 코어가 body 높이를 지켜보다가 200ms 동안 멈추면 한 번 다시 잽니다. 다시 잰 직후의 높이를 기억해 스스로를 다시 부르지 않습니다. `Kineto.config({ autoRefresh: false })`로 끕니다. 게이트: `tests/browser/layout-refresh.mjs`.
 - `overflow: hidden` 조상(아무도 스크롤할 수 없는 스크롤 컨테이너)이 네이티브 `scroll()`/`view()` 타임라인을 멈추게 할 때 `cssScroll`이 ScrollTrigger 경로로 동작하고, 조상과 해결책(`overflow: clip`)을 담은 새 진단 `KT_NATIVE_FALLBACK`을 보냅니다. 인스턴스는 `mode`(`'native'` | `'fallback'`)를 노출합니다.
 - Card Glow의 Liquid Glass가 렌즈처럼 휘도록 했습니다. 베벨 당김을 (1−u)²로 바꿔 테두리에서 가장 세고 맑은 가운데와 기울기 0으로 만나게 했습니다. 예전 프로파일은 띠 안쪽 끝에서 배경 한 픽셀을 약 15배로 늘렸습니다. 베벨은 패널 두께 절반의 60%를 넘지 않고, 빛 방향에 따라 명암이 생깁니다.
