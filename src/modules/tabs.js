@@ -199,6 +199,10 @@ export default {
       ? new ResizeObserver(moveIndicator)
       : null;
     indicatorObserver?.observe(list);
+    // WebKit can miss the ancestor/list resize when [hidden] is removed. The
+    // actual tab boxes still transition from 0 to measurable geometry, so watch
+    // those boxes with the same observer and repair as soon as layout exists.
+    tabs.forEach((tab) => indicatorObserver?.observe(tab));
     if (!indicatorObserver) window.addEventListener('resize', moveIndicator);
     // WebKit can commit a removed `hidden` attribute before the revealed
     // subtree has measurable layout. A single next-frame read can therefore
