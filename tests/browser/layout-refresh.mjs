@@ -13,6 +13,7 @@
 //      refresh, and an idle page costs none (no refresh → pin-spacer → refresh loop);
 //   3. `Kineto.config({ autoRefresh: false })` leaves positions to the page;
 //   4. destroying the last scroll-driven instance stops the watcher.
+//   5. a page that is scrolling is refreshed once it stops, not during the scroll.
 // Run: node tests/browser/layout-refresh.mjs   (KT_BROWSER=firefox|webkit)
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -115,6 +116,24 @@ const revealStart = (page) => page.evaluate(() => {
     `a trigger below a block that grew 600px must move 600px (was ${before}, now ${after})`);
   assert.ok(animatedRefreshes >= 1 && animatedRefreshes <= 2,
     `a height animated over 20 frames must cost one settled refresh, got ${animatedRefreshes}`);
+
+  // 5. A page that is scrolling is not refreshed until it stops: a refresh is
+  //    one long task that also puts the scroll position back, which stalls a
+  //    scroll in progress and ends a touch fling on iOS.
+  const scrollingStart = await page.evaluate(() => window.__refreshes);
+  const duringScroll = await page.evaluate(() => new Promise((resolve) => {
+    const block = document.getElementById('grow');
+    block.style.height = '1200px';
+    const started = performance.now();
+    const step = (time) => {
+      window.scrollBy(0, 2);
+      if (time - started < 900) requestAnimationFrame(step); else resolve(window.__refreshes);
+    };
+    requestAnimationFrame(step);
+  }));
+  assert.equal(duringScroll - scrollingStart, 0, `no refresh may run while the page scrolls (ran ${duringScroll - scrollingStart})`);
+  await page.waitForFunction((start) => window.__refreshes > start, scrollingStart, { timeout: 3000 });
+  assert.equal(await page.evaluate(() => window.__refreshes) - scrollingStart, 1, 'once scrolling stops, one refresh catches up');
 
   // 4. Destroying every scroll-driven instance stops the watcher.
   await page.evaluate(() => { window.Kineto.destroy(); window.__refreshes = 0; document.getElementById('grow').style.height = '100px'; });

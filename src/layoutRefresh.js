@@ -12,12 +12,17 @@
 // instance is alive, it watches the body's height and asks ScrollTrigger to
 // refresh once the height has stopped changing for `settleMs`.
 //
-// Two details keep it cheap and loop-free:
+// Three details keep it cheap and loop-free:
 //   • ScrollTrigger's own refresh changes the height too (pin spacers). The
 //     height right after a refresh is remembered as the settled height, and a
 //     resize that ends at that height is ignored.
 //   • Resizes are debounced, so an animated height change (an accordion
 //     opening over 400ms) costs one refresh at the end, not one per frame.
+//   • It also waits for the page to stop scrolling. A refresh re-measures
+//     every trigger in one long task and puts the scroll position back, which
+//     stalls a scroll in progress and ends a touch fling on iOS. Pages whose
+//     content settles as the reader scrolls (blocks that skip rendering until
+//     they near the screen) otherwise refreshed several times per swipe.
 //
 // Pages that manage refreshes themselves turn it off with
 // `Kineto.config({ autoRefresh: false })`.
@@ -37,12 +42,20 @@ export function createLayoutRefresh({ getScrollTrigger, isEnabled, settleMs = 20
   let settledHeight = -1;
   let refreshListener = null;
   let listenedTrigger = null;
+  let lastScrollAt = -Infinity;
 
+  const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
   const bodyHeight = () => document.body?.getBoundingClientRect().height || 0;
+  const onScroll = () => { lastScrollAt = now(); };
 
   function refreshNow() {
     timer = 0;
     if (!observer || !isEnabled()) return;
+    const sinceScroll = now() - lastScrollAt;
+    if (sinceScroll < settleMs) {
+      timer = setTimeout(refreshNow, settleMs - sinceScroll);
+      return;
+    }
     const scrollTrigger = getScrollTrigger();
     // The height may have returned to where it was while we waited.
     if (Math.abs(bodyHeight() - settledHeight) < MIN_SHIFT_PX) return;
@@ -77,6 +90,7 @@ export function createLayoutRefresh({ getScrollTrigger, isEnabled, settleMs = 20
       settledHeight = bodyHeight();
       observer = new ResizeObserver(onResize);
       observer.observe(document.body);
+      window.addEventListener('scroll', onScroll, { passive: true });
     },
 
     /** Stops watching and forgets everything; start() begins afresh. */
@@ -84,7 +98,9 @@ export function createLayoutRefresh({ getScrollTrigger, isEnabled, settleMs = 20
       if (timer) clearTimeout(timer);
       timer = 0;
       observer?.disconnect();
+      if (observer) window.removeEventListener('scroll', onScroll);
       observer = null;
+      lastScrollAt = -Infinity;
       if (listenedTrigger && refreshListener) listenedTrigger.removeEventListener?.('refresh', refreshListener);
       listenedTrigger = null;
       refreshListener = null;

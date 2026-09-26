@@ -47,15 +47,33 @@ function pointInsideViewport(event) {
   return event.clientX >= 0 && event.clientY >= 0 && event.clientX <= window.innerWidth && event.clientY <= window.innerHeight;
 }
 
+/**
+ * Does this cursor live inside `el` (scoped), or is `el` only where the page
+ * put a page-wide cursor (global)?
+ *
+ *   · `global: true | false` decides outright.
+ *   · <body>/<html> are global.
+ *   · A dedicated, empty holder (no children, no text) is global. A stretched
+ *     empty <div data-kt-cursor> used to be taken for a scope, which left the
+ *     native cursor visible everywhere outside that div.
+ *   · Anything with content is a scope, whatever its size at this moment. A
+ *     scope that starts out hidden — a closed tab panel, a collapsed
+ *     accordion, a card not on the page yet — has no box and measures 0×0,
+ *     and judging it by size turned it into a page-wide cursor: a second ring
+ *     that followed the pointer everywhere, drawn over the page's own cursor.
+ *   · Only a box that IS drawn and is a few pixels at most is still read as a
+ *     holder (the rule this function started with), so a page that relied on
+ *     a tiny visible holder keeps its global cursor.
+ */
 function isScopedElement(el, opts) {
   if (opts.global === true) return false;
   if (opts.global === false) return true;
   if (!el || el === document.body || el === document.documentElement) return false;
-  // A dedicated, empty cursor holder (no children, no text) is a GLOBAL cursor,
-  // not a scoped container. Prevents a stretched empty <div data-kt-cursor>
-  // from being mis-detected as a scope (which left the native cursor visible
-  // everywhere outside that div).
   if (!el.children.length && !el.textContent.trim()) return false;
+  // getClientRects() is empty for an element that is not drawn at all
+  // (display:none, or an ancestor's), and for one that is not in the document.
+  const drawn = el.isConnected && el.getClientRects().length > 0;
+  if (!drawn) return true;
   return el.clientWidth > 4 && el.clientHeight > 4;
 }
 

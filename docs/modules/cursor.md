@@ -34,6 +34,17 @@ Kineto.cursor(document.body, {
 
 색상, 크기, border, blur, shadow, mix-blend-mode, hover label/background/scale, press scale, follower on/off와 custom callbacks를 조절할 수 있습니다. 터치 또는 hover 없는 환경, reduced-motion에서는 fallback을 사용합니다.
 
+## 페이지 전체 커서와 영역 커서
+
+커서가 페이지 전체를 따라다닐지, 붙은 요소 안에서만 보일지는 다음 순서로 정해집니다.
+
+1. `global: true`(`data-kt-global="true"`)는 페이지 전체, `global: false`는 영역입니다.
+2. `<body>`·`<html>`, 그리고 자식도 텍스트도 없는 빈 holder(`<div data-kt-cursor="dot"></div>`)는 페이지 전체입니다.
+3. 내용이 있는 요소는 영역입니다. **시작 시점의 크기와 상관없습니다.** 닫힌 탭 패널·접힌 아코디언처럼 처음에 숨겨져 있던 요소도, 나중에 보이면 그 안에서만 커서가 그려지고 페이지 커서는 그 위에서 비켜 줍니다.
+4. 화면에 그려져 있지만 가로나 세로가 4px 이하인 요소는 holder로 보고 페이지 전체로 둡니다(예전 규칙과 같습니다).
+
+영역 커서 요소에는 `kt-cursor-scope` 클래스와 `data-kt-cursor-scope` 속성이 붙습니다. 페이지 커서는 이 속성이 있는 요소 위에서 숨습니다.
+
 ## 클릭 이미지와 스프라이트
 
 `clickImage`는 GIF, APNG, animated WebP를 클릭하거나 탭한 좌표에서 매번

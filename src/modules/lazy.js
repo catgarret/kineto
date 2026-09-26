@@ -353,6 +353,8 @@ export default {
     let destroyed = false;
     let paused = false;
     let started = false;
+    // The number of the latest run (see run()); an older run stops at its next step.
+    let generation = 0;
     let noise = null;
     let stylized = null;
     // 타일/슬라이스 구성을 버스트마다 다르게 하려고 셉니다. 첫 번째는 선언된 seed 그대로라
@@ -422,14 +424,24 @@ export default {
       return layer;
     };
 
+    // Each run has a number. replay() starts a new run while the previous one
+    // may still be waiting for its image; when that image arrived, the old run
+    // carried on with the NEW run's layers and faded the replayed skeleton out
+    // at once. A run that is no longer the latest stops at its next step.
+    const mine = () => {
+      const id = ++generation;
+      return () => !destroyed && id === generation;
+    };
     const run = async () => {
       if (started || destroyed) return;
       started = true;
+      const current = mine();
       const startedAt = performance.now();
       let image;
       try {
         image = await preload(src, el, opts);
       } catch (error) {
+        if (!current()) return;
         removeLayers();
         if (opts.fallbackSrc) el.src = opts.fallbackSrc;
         else if (original.src == null) el.removeAttribute('src');
@@ -441,7 +453,7 @@ export default {
       const minDuration = Math.max(0, Number(opts.minDuration ?? 0));
       const remaining = minDuration - (performance.now() - startedAt);
       if (remaining > 0) await new Promise((resolve) => later(resolve, remaining));
-      if (destroyed) return;
+      if (!current()) return;
 
       if (effect === 'skeleton') {
         const skeleton = layers[0] || setupSkeleton();
@@ -1093,6 +1105,12 @@ export default {
       type: 'lazy',
       get animatedMedia() { return opts.animated === true || ANIMATED_EXTENSIONS.test(src); },
       replay() {
+        // The previous run's pending steps (a fade that removes its layers, a
+        // transition frame) would act on the run that starts now: cancel them.
+        if (rafId != null) cancelAnimationFrame(rafId);
+        rafId = null;
+        timers.forEach(clearTimeout);
+        timers.clear();
         removeLayers();
         started = false;
         if (effect === 'skeleton') setupSkeleton();

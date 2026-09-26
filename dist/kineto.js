@@ -971,29 +971,36 @@ function Ye({ isEnabled: e = () => !1, sink: t = null } = {}) {
 //#region src/layoutRefresh.js
 var Xe = 1;
 function Ze({ getScrollTrigger: e, isEnabled: t, settleMs: n = 200 }) {
-	let r = null, i = 0, a = -1, o = null, s = null, c = () => document.body?.getBoundingClientRect().height || 0;
-	function l() {
+	let r = null, i = 0, a = -1, o = null, s = null, c = -Infinity, l = () => typeof performance < "u" ? performance.now() : Date.now(), u = () => document.body?.getBoundingClientRect().height || 0, d = () => {
+		c = l();
+	};
+	function f() {
 		if (i = 0, !r || !t()) return;
-		let n = e();
-		Math.abs(c() - a) < Xe || n?.refresh?.();
+		let o = l() - c;
+		if (o < n) {
+			i = setTimeout(f, n - o);
+			return;
+		}
+		let s = e();
+		Math.abs(u() - a) < Xe || s?.refresh?.();
 	}
-	function u(e) {
+	function p(e) {
 		if (!t()) return;
-		let r = e[e.length - 1]?.contentRect?.height ?? c();
-		Math.abs(r - a) < Xe || (i && clearTimeout(i), i = setTimeout(l, n));
+		let r = e[e.length - 1]?.contentRect?.height ?? u();
+		Math.abs(r - a) < Xe || (i && clearTimeout(i), i = setTimeout(f, n));
 	}
-	function d() {
+	function m() {
 		let t = e();
 		t?.addEventListener && s !== t && (o = () => {
-			a = c();
+			a = u();
 		}, t.addEventListener("refresh", o), s = t);
 	}
 	return {
 		start() {
-			typeof document > "u" || !document.body || (d(), !(r || typeof ResizeObserver > "u") && (a = c(), r = new ResizeObserver(u), r.observe(document.body)));
+			typeof document > "u" || !document.body || (m(), !(r || typeof ResizeObserver > "u") && (a = u(), r = new ResizeObserver(p), r.observe(document.body), window.addEventListener("scroll", d, { passive: !0 })));
 		},
 		stop() {
-			i && clearTimeout(i), i = 0, r?.disconnect(), r = null, s && o && s.removeEventListener?.("refresh", o), s = null, o = null, a = -1;
+			i && clearTimeout(i), i = 0, r?.disconnect(), r && window.removeEventListener("scroll", d), r = null, c = -Infinity, s && o && s.removeEventListener?.("refresh", o), s = null, o = null, a = -1;
 		}
 	};
 }
@@ -4174,50 +4181,54 @@ var Ur = {
 			decoding: e.getAttribute("decoding")
 		}, s = dr(e, jr(t)), { wrapper: c } = s;
 		Sr(i) && Hr(n, i), e.loading = t.nativeLazy === !1 ? "eager" : "lazy", e.decoding = "async", e.style.display = "block", e.style.width = "100%", e.style.height = "100%", e.style.objectFit = t.objectFit || "cover", e.style.objectPosition = t.objectPosition || "50% 50%";
-		let l = [], u = /* @__PURE__ */ new Set(), d = null, f = null, p = !1, m = !1, h = !1, g = null, _ = null, v = 0, y = n?.performance === "low", b = (e, t) => {
+		let l = [], u = /* @__PURE__ */ new Set(), d = null, f = null, p = !1, m = !1, h = !1, g = 0, _ = null, v = null, y = 0, b = n?.performance === "low", x = (e, t) => {
 			let n = setTimeout(() => {
 				u.delete(n), p || e();
 			}, Math.max(0, Number(t) || 0));
 			return u.add(n), n;
-		}, x = () => {
-			l.splice(0).forEach((e) => e.remove()), g?.canvas.remove(), g = null, _?.destroy(), _ = null;
 		}, S = () => {
+			l.splice(0).forEach((e) => e.remove()), _?.canvas.remove(), _ = null, v?.destroy(), v = null;
+		}, C = () => {
 			let n = t.srcset || e.getAttribute("data-srcset");
 			n && (e.srcset = n), t.sizes && (e.sizes = t.sizes), e.loading = "eager", e.src = a, e.style.opacity = "1", e.style.filter = "none", e.style.transform = "none", e.style.clipPath = "none", e.style.maskImage = "none", e.style.webkitMaskImage = "none";
-		}, C = () => {
-			S(), x(), t.onProgress?.(1, e), t.onLoad?.(e);
 		}, w = () => {
+			C(), S(), t.onProgress?.(1, e), t.onLoad?.(e);
+		}, T = () => {
 			let n = t.skeletonVariant || t.variant || "shimmer", r = pr(c, `kt-lazy-skeleton kt-lazy-skeleton-${n}`, 5), i = t.skeletonColor || "color-mix(in srgb, currentColor 9%, transparent)", a = t.skeletonHighlight || "rgba(255,255,255,.45)", o = Math.max(.3, Number(t.skeletonSpeed ?? 1.5));
 			if (r.style.backgroundColor = i, n === "pulse" ? r.style.animation = `kt-skeleton-pulse ${o}s ease-in-out infinite` : (r.style.backgroundImage = `linear-gradient(${Number(t.skeletonAngle ?? 100)}deg,transparent 32%,${a} 50%,transparent 68%)`, r.style.backgroundSize = "250% 100%", r.style.animation = `kt-shimmer ${o}s cubic-bezier(.4,.2,.6,.8) infinite`), t.skeletonIcon !== !1) {
 				let e = document.createElement("span");
 				e.className = "kt-lazy-skeleton-icon", e.setAttribute("aria-hidden", "true"), e.innerHTML = "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"3\"/><circle cx=\"8.8\" cy=\"8.8\" r=\"1.9\"/><path d=\"m21 15.2-3.6-3.6a1.8 1.8 0 0 0-2.6 0L6 21\"/></svg>", r.appendChild(e);
 			}
 			return l.push(r), e.style.opacity = "0", r;
-		}, T = async () => {
+		}, E = () => {
+			let e = ++g;
+			return () => !p && e === g;
+		}, D = async () => {
 			if (h || p) return;
 			h = !0;
-			let n = performance.now(), r;
+			let n = E(), r = performance.now(), s;
 			try {
-				r = await Rr(a, e, t);
-			} catch (n) {
-				x(), t.fallbackSrc ? e.src = t.fallbackSrc : o.src == null ? e.removeAttribute("src") : e.setAttribute("src", o.src), e.style.opacity = "1", t.onError?.(n, e);
+				s = await Rr(a, e, t);
+			} catch (r) {
+				if (!n()) return;
+				S(), t.fallbackSrc ? e.src = t.fallbackSrc : o.src == null ? e.removeAttribute("src") : e.setAttribute("src", o.src), e.style.opacity = "1", t.onError?.(r, e);
 				return;
 			}
-			let s = Math.max(0, Number(t.minDuration ?? 0)) - (performance.now() - n);
-			if (s > 0 && await new Promise((e) => b(e, s)), !p) {
+			let u = Math.max(0, Number(t.minDuration ?? 0)) - (performance.now() - r);
+			if (u > 0 && await new Promise((e) => x(e, u)), n()) {
 				if (i === "skeleton") {
-					let n = l[0] || w();
-					S();
-					let i = Math.max(0, Number(t.fadeDuration ?? t.duration ?? .45));
-					e.style.transform = "scale(1.015)", e.style.transition = `opacity ${i}s ease, transform ${Math.max(i, .5)}s cubic-bezier(.22,.8,.3,1)`, n.style.animation = "none", n.style.transition = `opacity ${Math.min(Math.max(i * .5, .18), .32)}s ease`, requestAnimationFrame(() => {
+					let n = l[0] || T();
+					C();
+					let r = Math.max(0, Number(t.fadeDuration ?? t.duration ?? .45));
+					e.style.transform = "scale(1.015)", e.style.transition = `opacity ${r}s ease, transform ${Math.max(r, .5)}s cubic-bezier(.22,.8,.3,1)`, n.style.animation = "none", n.style.transition = `opacity ${Math.min(Math.max(r * .5, .18), .32)}s ease`, requestAnimationFrame(() => {
 						e.style.opacity = "1", e.style.transform = "scale(1)", n.style.opacity = "0";
-					}), b(x, i * 1e3 + 60), t.onLoad?.(e, r);
+					}), x(S, r * 1e3 + 60), t.onLoad?.(e, s);
 					return;
 				}
 				if (i === "fade") {
 					e.src = a, e.style.transition = "none", e.style.opacity = "0", e.offsetWidth, e.style.transition = `opacity ${Math.max(0, Number(t.duration ?? .7))}s ${t.ease || "ease"}`, requestAnimationFrame(() => {
 						e.style.opacity = "1";
-					}), t.onLoad?.(e, r);
+					}), t.onLoad?.(e, s);
 					return;
 				}
 				if (i === "blur-up") {
@@ -4225,23 +4236,23 @@ var Ur = {
 					let n = Math.max(0, Number(t.duration ?? .85));
 					e.offsetWidth, requestAnimationFrame(() => {
 						e.style.transition = `filter ${n}s ease,transform ${n}s cubic-bezier(.22,.8,.3,1)`, e.style.filter = "blur(0px)", e.style.transform = "scale(1)";
-					}), t.onLoad?.(e, r);
+					}), t.onLoad?.(e, s);
 					return;
 				}
 				if (i === "polaroid") {
 					e.src = a;
-					let n = t.frame !== !1, i = null;
+					let n = t.frame !== !1, r = null;
 					if (n) {
-						i = pr(c, "kt-lazy-polaroid-frame", 6);
+						r = pr(c, "kt-lazy-polaroid-frame", 6);
 						let e = "clamp(6px, 4.5%, 18px)";
-						i.style.cssText += `border:${e} solid ${t.frameColor || "#fbfaf7"};border-bottom-width:calc(${e} * 3.2);box-shadow:inset 0 0 8px rgba(0,0,0,.12);`, l.push(i);
+						r.style.cssText += `border:${e} solid ${t.frameColor || "#fbfaf7"};border-bottom-width:calc(${e} * 3.2);box-shadow:inset 0 0 8px rgba(0,0,0,.12);`, l.push(r);
 					}
-					let o = Math.max(.2, Number(t.duration ?? 2.4));
+					let i = Math.max(.2, Number(t.duration ?? 2.4));
 					e.style.transition = "none", e.style.opacity = "1", e.style.filter = "brightness(2.1) saturate(.05) contrast(.72) sepia(.28) blur(7px)", e.style.transform = `rotate(${Number(t.rotate ?? -2)}deg) scale(.965)`, c.style.transition = "none", e.offsetWidth, requestAnimationFrame(() => requestAnimationFrame(() => {
-						e.style.transition = `filter ${o}s cubic-bezier(.3,.1,.25,1),transform ${Math.min(o, 1.1)}s cubic-bezier(.34,1.4,.44,1)`, e.style.filter = "none", e.style.transform = "none";
-					})), b(() => {
-						t.keepFrame === !0 ? (S(), t.onLoad?.(e, r)) : C();
-					}, o * 1e3 + 120);
+						e.style.transition = `filter ${i}s cubic-bezier(.3,.1,.25,1),transform ${Math.min(i, 1.1)}s cubic-bezier(.34,1.4,.44,1)`, e.style.filter = "none", e.style.transform = "none";
+					})), x(() => {
+						t.keepFrame === !0 ? (C(), t.onLoad?.(e, s)) : w();
+					}, i * 1e3 + 120);
 					return;
 				}
 				if (i === "crt") {
@@ -4257,8 +4268,8 @@ var Ur = {
 						let t = pr(c, "kt-lazy-crt-roll", 6);
 						t.style.cssText += `pointer-events:none;top:0;bottom:auto;height:60%;background:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.18) 35%,rgba(0,0,0,.28) 50%,rgba(0,0,0,.18) 65%,transparent 100%);filter:blur(3px);animation:kt-lazy-crt-roll ${n}s linear both;`, l.push(t);
 					}
-					b(() => {
-						e.style.animation = "", e.style.willChange = "", C();
+					x(() => {
+						e.style.animation = "", e.style.willChange = "", w();
 					}, n * 1e3 + 160);
 					return;
 				}
@@ -4267,8 +4278,8 @@ var Ur = {
 					e.src = a, e.style.opacity = "1";
 					let r = pr(c, `kt-lazy-${i}-layer`, 3);
 					r.style.cssText += ";overflow:hidden";
-					let o = c.getBoundingClientRect(), s = o.width || e.naturalWidth || 300, l = o.height || e.naturalHeight || 200, u = v;
-					v += 1;
+					let o = c.getBoundingClientRect(), s = o.width || e.naturalWidth || 300, l = o.height || e.naturalHeight || 200, u = y;
+					y += 1;
 					let d = ((Math.floor(Number(t.seed ?? 20260729)) || 1) >>> 0) + Math.imul(u, 2654435761) >>> 0, f = () => {
 						d = d + 1831565813 >>> 0;
 						let e = d;
@@ -4293,11 +4304,11 @@ var Ur = {
 						for (let t = 0; t < l; t += e) for (let n = 0; n < s; n += e) c(n, t, e);
 						o.sort((e, t) => e.weight - t.weight), o.forEach((e, t) => {
 							let r = t / Math.max(1, o.length - 1);
-							b(() => {
+							x(() => {
 								e.tile.style.transition = "opacity 90ms linear", e.tile.style.opacity = "0";
 							}, r * n * 1e3);
-						}), b(() => {
-							r.remove(), C();
+						}), x(() => {
+							r.remove(), w();
 						}, n * 1e3 + 200);
 					} else {
 						let e = Array.isArray(t.colors) && t.colors.length >= 3 ? t.colors : [
@@ -4340,36 +4351,36 @@ var Ur = {
 								fill: "forwards"
 							}) : (d.style.transition = `transform ${v}ms steps(5, end), opacity ${v}ms linear`, d.style.transform = "translateX(0)", d.style.opacity = "0");
 						}
-						b(() => {
-							r.remove(), C();
+						x(() => {
+							r.remove(), w();
 						}, n * 1e3 + 200);
 					}
 					return;
 				}
 				if (i === "wave" || i === "grain") {
 					e.src = a, e.style.opacity = "1";
-					let n = Math.max(120, Cr(t.duration, i === "wave" ? 1.35 : 1.1)), o = Math.max(0, Number(t.delay ?? 60)), s = K(Number(t.maxDpr ?? 1.5), .5, 2), u = 1e3 / K(Number(t.renderFps ?? (i === "wave" ? 30 : 24)), 4, 60), d = L(t.ease || "cubic-out"), h = K(Number(t.grain ?? t.noise ?? (i === "wave" ? .13 : .3)), 0, 1), _ = pr(c, `kt-lazy-${i}-layer`, 3), v = document.createElement("canvas");
-					v.className = `kt-lazy-${i}-canvas`, _.appendChild(v), l.push(_);
+					let n = Math.max(120, Cr(t.duration, i === "wave" ? 1.35 : 1.1)), r = Math.max(0, Number(t.delay ?? 60)), o = K(Number(t.maxDpr ?? 1.5), .5, 2), u = 1e3 / K(Number(t.renderFps ?? (i === "wave" ? 30 : 24)), 4, 60), d = L(t.ease || "cubic-out"), h = K(Number(t.grain ?? t.noise ?? (i === "wave" ? .13 : .3)), 0, 1), g = pr(c, `kt-lazy-${i}-layer`, 3), v = document.createElement("canvas");
+					v.className = `kt-lazy-${i}-canvas`, g.appendChild(v), l.push(g);
 					let y = v.getContext("2d", {
 						alpha: !0,
 						desynchronized: !0
 					});
-					g = Ir(c, t, 4), g.canvas.classList.add("kt-lazy-grain-canvas");
-					let x = null, S = null, w = -Infinity, T = 0, E = 0, D = 1, O = () => {
+					_ = Ir(c, t, 4), _.canvas.classList.add("kt-lazy-grain-canvas");
+					let b = null, S = null, C = -Infinity, T = 0, E = 0, D = 1, O = () => {
 						let e = c.getBoundingClientRect();
-						T = Math.max(1, e.width), E = Math.max(1, e.height), D = K(window.devicePixelRatio || 1, 1, s);
+						T = Math.max(1, e.width), E = Math.max(1, e.height), D = K(window.devicePixelRatio || 1, 1, o);
 						let t = Math.max(1, Math.round(T * D)), n = Math.max(1, Math.round(E * D));
 						(v.width !== t || v.height !== n) && (v.width = t, v.height = n), y.setTransform(D, 0, 0, D, 0, 0);
-					}, k = (n, a) => {
-						let o = e.complete && e.naturalWidth ? e : r;
-						if (!o.naturalWidth) return;
-						let s = $n(o.naturalWidth, o.naturalHeight, T, E);
-						if (y.clearRect(0, 0, T, E), i === "grain") y.drawImage(o, s.sx, s.sy, s.sw, s.sh, 0, 0, T, E);
+					}, k = (n, r) => {
+						let a = e.complete && e.naturalWidth ? e : s;
+						if (!a.naturalWidth) return;
+						let o = $n(a.naturalWidth, a.naturalHeight, T, E);
+						if (y.clearRect(0, 0, T, E), i === "grain") y.drawImage(a, o.sx, o.sy, o.sw, o.sh, 0, 0, T, E);
 						else {
-							let e = Math.max(0, Number(t.waveAmplitude ?? 22)) * (1 - n), r = Math.max(.001, Number(t.waveFrequency ?? .035)), i = Number(t.waveSpeed ?? .012), c = Math.max(1, Math.round(Number(t.waveSliceHeight ?? 2)));
+							let e = Math.max(0, Number(t.waveAmplitude ?? 22)) * (1 - n), i = Math.max(.001, Number(t.waveFrequency ?? .035)), s = Number(t.waveSpeed ?? .012), c = Math.max(1, Math.round(Number(t.waveSliceHeight ?? 2)));
 							for (let t = 0; t < E; t += c) {
-								let n = s.sy + t / E * s.sh, l = Math.max(1, c / E * s.sh), u = Math.sin(t * r + a * i) * e;
-								y.drawImage(o, s.sx, n, s.sw, l, u, t, T, c);
+								let n = o.sy + t / E * o.sh, l = Math.max(1, c / E * o.sh), u = Math.sin(t * i + r * s) * e;
+								y.drawImage(a, o.sx, n, o.sw, l, u, t, T, c);
 							}
 						}
 					}, A = (r) => {
@@ -4378,42 +4389,42 @@ var Ur = {
 							S ??= r, f = requestAnimationFrame(A);
 							return;
 						}
-						S != null && x != null && (x += r - S, S = null), x ??= r;
-						let i = K((r - x) / n, 0, 1), a = K(d(i), 0, 1);
-						(r - w >= u || i >= 1) && (O(), k(a, r), g.draw(r), g.canvas.style.opacity = String(h * (1 - a) ** 1.15), _.style.opacity = String(Math.max(0, 1 - a)), t.onProgress?.(i, e), w = r), i < 1 ? f = requestAnimationFrame(A) : C();
+						S != null && b != null && (b += r - S, S = null), b ??= r;
+						let i = K((r - b) / n, 0, 1), a = K(d(i), 0, 1);
+						(r - C >= u || i >= 1) && (O(), k(a, r), _.draw(r), _.canvas.style.opacity = String(h * (1 - a) ** 1.15), g.style.opacity = String(Math.max(0, 1 - a)), t.onProgress?.(i, e), C = r), i < 1 ? f = requestAnimationFrame(A) : w();
 					};
-					b(() => {
+					x(() => {
 						f = requestAnimationFrame(A);
-					}, o);
+					}, r);
 					return;
 				}
 				if (i === "pixelate") {
 					e.src = a, e.style.opacity = "1";
-					let n = pr(c, "kt-lazy-pixelate-layer", 3), i = document.createElement("canvas");
-					i.className = "kt-lazy-pixelate-canvas", i.style.cssText = "position:absolute;inset:0;width:100%;height:100%;display:block;", n.appendChild(i), l.push(n);
-					let o = t.noise !== !1 && t.noise !== 0 && t.noise !== "0" && t.noise !== "false", s = typeof t.noise == "number" ? K(t.noise, 0, 1) : .14;
-					o && (g = Ir(c, t, 4), g.canvas.style.opacity = String(s));
-					let u = i.getContext("2d", {
+					let n = pr(c, "kt-lazy-pixelate-layer", 3), r = document.createElement("canvas");
+					r.className = "kt-lazy-pixelate-canvas", r.style.cssText = "position:absolute;inset:0;width:100%;height:100%;display:block;", n.appendChild(r), l.push(n);
+					let i = t.noise !== !1 && t.noise !== 0 && t.noise !== "0" && t.noise !== "false", o = typeof t.noise == "number" ? K(t.noise, 0, 1) : .14;
+					i && (_ = Ir(c, t, 4), _.canvas.style.opacity = String(o));
+					let u = r.getContext("2d", {
 						alpha: !0,
 						desynchronized: !0
-					}), d = document.createElement("canvas"), h = d.getContext("2d", { alpha: !0 }), _ = c.getBoundingClientRect(), v = Pr(Nr(t, _.width, _.height)), y = Math.max(0, Number(t.stepDuration ?? 0)), x = y > 0 ? y * v.length : Cr(t.duration, 1.25), S = Math.max(0, Number(t.delay ?? 100)), w = Math.max(0, Number(t.holdDuration ?? 0)), T = K(Number(t.maxDpr ?? 2), .5, 4), E = 1e3 / K(Number(t.renderFps ?? 60), 4, 120), D = 0, O = 0, k = () => {
+					}), d = document.createElement("canvas"), h = d.getContext("2d", { alpha: !0 }), g = c.getBoundingClientRect(), v = Pr(Nr(t, g.width, g.height)), y = Math.max(0, Number(t.stepDuration ?? 0)), b = y > 0 ? y * v.length : Cr(t.duration, 1.25), S = Math.max(0, Number(t.delay ?? 100)), C = Math.max(0, Number(t.holdDuration ?? 0)), T = K(Number(t.maxDpr ?? 2), .5, 4), E = 1e3 / K(Number(t.renderFps ?? 60), 4, 120), D = 0, O = 0, k = () => {
 						let e = c.getBoundingClientRect();
 						D = Math.max(1, e.width), O = Math.max(1, e.height);
-						let t = K(window.devicePixelRatio || 1, 1, T), n = Math.max(1, Math.round(D * t)), r = Math.max(1, Math.round(O * t));
-						(i.width !== n || i.height !== r) && (i.width = n, i.height = r), u.setTransform(t, 0, 0, t, 0, 0);
+						let t = K(window.devicePixelRatio || 1, 1, T), n = Math.max(1, Math.round(D * t)), i = Math.max(1, Math.round(O * t));
+						(r.width !== n || r.height !== i) && (r.width = n, r.height = i), u.setTransform(t, 0, 0, t, 0, 0);
 					}, A = (t) => {
-						let n = e.complete && e.naturalWidth ? e : r, i = n.naturalWidth, a = n.naturalHeight;
-						if (!i || !a) return;
-						let o = Math.max(1, Math.ceil(D / Math.max(1, t))), s = Math.max(1, Math.ceil(O / Math.max(1, t)));
-						(d.width !== o || d.height !== s) && (d.width = o, d.height = s);
-						let c = $n(i, a, D, O);
-						h.clearRect(0, 0, o, s), h.imageSmoothingEnabled = !0;
+						let n = e.complete && e.naturalWidth ? e : s, r = n.naturalWidth, i = n.naturalHeight;
+						if (!r || !i) return;
+						let a = Math.max(1, Math.ceil(D / Math.max(1, t))), o = Math.max(1, Math.ceil(O / Math.max(1, t)));
+						(d.width !== a || d.height !== o) && (d.width = a, d.height = o);
+						let c = $n(r, i, D, O);
+						h.clearRect(0, 0, a, o), h.imageSmoothingEnabled = !0;
 						try {
-							h.drawImage(n, c.sx, c.sy, c.sw, c.sh, 0, 0, o, s);
+							h.drawImage(n, c.sx, c.sy, c.sw, c.sh, 0, 0, a, o);
 						} catch {
 							return;
 						}
-						u.clearRect(0, 0, D, O), u.imageSmoothingEnabled = !1, u.drawImage(d, 0, 0, o, s, 0, 0, D, O);
+						u.clearRect(0, 0, D, O), u.imageSmoothingEnabled = !1, u.drawImage(d, 0, 0, a, o, 0, 0, D, O);
 					}, j = null, M = null, N = -Infinity, P = -1, F = (n) => {
 						if (p) return;
 						if (m) {
@@ -4421,17 +4432,17 @@ var Ur = {
 							return;
 						}
 						M != null && j != null && (j += n - M, M = null), j ??= n;
-						let r = K((n - j) / Math.max(1, x), 0, 1);
-						g && (g.draw(n), g.canvas.style.opacity = String(s * Math.max(0, 1 - r)));
+						let r = K((n - j) / Math.max(1, b), 0, 1);
+						_ && (_.draw(n), _.canvas.style.opacity = String(o * Math.max(0, 1 - r)));
 						let i = r >= 1 ? v.length - 1 : Math.min(v.length - 1, Math.floor(r * v.length));
 						for (; P < i;) P += 1, k(), A(v[P]), N = n, t.onProgress?.(K((P + 1) / (v.length + 1), 0, 1), e);
 						if (r >= 1) {
-							b(C, w);
+							x(w, C);
 							return;
 						}
 						n - N >= E && (k(), A(v[i]), N = n), f = requestAnimationFrame(F);
 					};
-					k(), A(v[0]), b(() => {
+					k(), A(v[0]), x(() => {
 						f = requestAnimationFrame(F);
 					}, S);
 					return;
@@ -4440,60 +4451,60 @@ var Ur = {
 					e.src = a, e.style.opacity = "1";
 					let n = pr(c, "kt-lazy-flicker-layer", 3);
 					n.style.background = t.flickerBackground || "#000";
-					let i = document.createElement("canvas");
-					i.style.cssText = "position:absolute;inset:0;width:100%;height:100%;display:block;", n.appendChild(i), l.push(n);
-					let o = i.getContext("2d", { alpha: !1 }), s = Math.max(120, Cr(t.duration, 1.15)), u = K(Number(t.glitchStrength ?? 1), .1, 3), d = Math.max(2, Math.round(Number(t.sliceCount ?? 7))), h = Math.max(0, Number(t.delay ?? 60)), g = null, _ = null, v = () => {
-						let e = c.getBoundingClientRect(), n = K(window.devicePixelRatio || 1, 1, K(Number(t.maxDpr ?? 2), .5, 4)), r = Math.max(1, Math.round(e.width * n)), a = Math.max(1, Math.round(e.height * n));
-						(i.width !== r || i.height !== a) && (i.width = r, i.height = a);
+					let r = document.createElement("canvas");
+					r.style.cssText = "position:absolute;inset:0;width:100%;height:100%;display:block;", n.appendChild(r), l.push(n);
+					let i = r.getContext("2d", { alpha: !1 }), o = Math.max(120, Cr(t.duration, 1.15)), u = K(Number(t.glitchStrength ?? 1), .1, 3), d = Math.max(2, Math.round(Number(t.sliceCount ?? 7))), h = Math.max(0, Number(t.delay ?? 60)), g = null, _ = null, v = () => {
+						let e = c.getBoundingClientRect(), n = K(window.devicePixelRatio || 1, 1, K(Number(t.maxDpr ?? 2), .5, 4)), i = Math.max(1, Math.round(e.width * n)), a = Math.max(1, Math.round(e.height * n));
+						(r.width !== i || r.height !== a) && (r.width = i, r.height = a);
 					}, y = (t) => {
-						let n = e.complete && e.naturalWidth ? e : r;
+						let n = e.complete && e.naturalWidth ? e : s;
 						if (!n.naturalWidth) return;
-						let a = i.width, s = i.height, c = $n(n.naturalWidth, n.naturalHeight, a, s);
-						if (o.fillStyle = "#000", o.fillRect(0, 0, a, s), Math.random() < (1 - t) * .28) return;
+						let a = r.width, o = r.height, c = $n(n.naturalWidth, n.naturalHeight, a, o);
+						if (i.fillStyle = "#000", i.fillRect(0, 0, a, o), Math.random() < (1 - t) * .28) return;
 						let l = (1 - t) * u;
-						o.globalAlpha = 1;
+						i.globalAlpha = 1;
 						for (let e = 0; e < d; e += 1) {
-							let t = Math.floor(e / d * s), r = Math.ceil(s / d), i = Math.round((Math.random() - .5) * a * .12 * l * (Math.random() < .4 ? 1 : .15));
-							o.drawImage(n, c.sx, c.sy + t / s * c.sh, c.sw, r / s * c.sh, i, t, a, r);
+							let t = Math.floor(e / d * o), r = Math.ceil(o / d), s = Math.round((Math.random() - .5) * a * .12 * l * (Math.random() < .4 ? 1 : .15));
+							i.drawImage(n, c.sx, c.sy + t / o * c.sh, c.sw, r / o * c.sh, s, t, a, r);
 						}
-						l > .15 && Math.random() < .6 && (o.globalAlpha = .18 * l, o.drawImage(n, c.sx, c.sy, c.sw, c.sh, Math.round(8 * l), 0, a, s), o.globalAlpha = 1);
-					}, x = (n) => {
+						l > .15 && Math.random() < .6 && (i.globalAlpha = .18 * l, i.drawImage(n, c.sx, c.sy, c.sw, c.sh, Math.round(8 * l), 0, a, o), i.globalAlpha = 1);
+					}, b = (n) => {
 						if (p) return;
 						if (m) {
-							_ ??= n, f = requestAnimationFrame(x);
+							_ ??= n, f = requestAnimationFrame(b);
 							return;
 						}
 						_ != null && g != null && (g += n - _, _ = null), g ??= n;
-						let r = K((n - g) / s, 0, 1);
-						v(), y(r), t.onProgress?.(r, e), r < 1 ? f = requestAnimationFrame(x) : C();
+						let r = K((n - g) / o, 0, 1);
+						v(), y(r), t.onProgress?.(r, e), r < 1 ? f = requestAnimationFrame(b) : w();
 					};
-					b(() => {
-						f = requestAnimationFrame(x);
+					x(() => {
+						f = requestAnimationFrame(b);
 					}, h);
 					return;
 				}
 				if (i === "dither" || i === "ascii" || i === "halftone") {
 					e.src = a, e.style.opacity = "1";
 					let n = Tr(i, Br(i, t, e), {
-						lowTier: y,
+						lowTier: b,
 						persistFps: 24,
 						revealFps: 30,
 						maxDpr: 2
 					});
-					_ = Or({
+					v = Or({
 						el: e,
 						wrapper: c,
 						effect: i,
 						settings: n,
 						prefix: "kt-lazy",
-						drawable: () => e.complete && e.naturalWidth ? e : r,
+						drawable: () => e.complete && e.naturalWidth ? e : s,
 						animatedSource: t.animated === !0 || br.test(a),
 						durationMs: Math.max(120, Cr(t.duration, 1.6)),
 						delayMs: Math.max(0, Number(t.delay ?? 60)),
 						holdMs: Math.max(0, Number(t.holdDuration ?? 0)),
 						onProgress: (e, n) => t.onProgress?.(e, n),
-						onFinish: C
-					}), l.push(_.layer), n.persist && t.onLoad?.(e, r), _.start();
+						onFinish: w
+					}), l.push(v.layer), n.persist && t.onLoad?.(e, s), v.start();
 					return;
 				}
 				if (i === "print" || i === "dissolve") {
@@ -4501,36 +4512,36 @@ var Ur = {
 					let n = pr(c, `kt-lazy-${i}-base`, 2), r = Fr(a, e, t);
 					n.appendChild(r), l.push(n);
 					let o = null, s = null, u = null;
-					i === "print" && (o = pr(c, "kt-lazy-print-sharp", 3), s = Fr(a, e, t), o.appendChild(s), l.push(o), u = pr(c, "kt-lazy-print-edge", 5), u.style.mixBlendMode = "soft-light", l.push(u)), g = Ir(c, t, 4);
-					let d = Math.max(50, Cr(t.duration, i === "print" ? 2.2 : 1.55)), h = Math.max(0, Number(t.delay ?? 100)), _ = Math.max(0, Number(t.blur ?? 16)), v = K(Number(t.noise ?? (i === "print" ? .3 : .68)), 0, 1), y = t.direction || "down", x = Number(t.feather ?? (i === "print" ? 12 : 8)), S = null, w = null, T = (n) => {
+					i === "print" && (o = pr(c, "kt-lazy-print-sharp", 3), s = Fr(a, e, t), o.appendChild(s), l.push(o), u = pr(c, "kt-lazy-print-edge", 5), u.style.mixBlendMode = "soft-light", l.push(u)), _ = Ir(c, t, 4);
+					let d = Math.max(50, Cr(t.duration, i === "print" ? 2.2 : 1.55)), h = Math.max(0, Number(t.delay ?? 100)), g = Math.max(0, Number(t.blur ?? 16)), v = K(Number(t.noise ?? (i === "print" ? .3 : .68)), 0, 1), y = t.direction || "down", b = Number(t.feather ?? (i === "print" ? 12 : 8)), S = null, C = null, T = (n) => {
 						if (p) return;
 						if (m) {
-							w ??= n, f = requestAnimationFrame(T);
+							C ??= n, f = requestAnimationFrame(T);
 							return;
 						}
-						w != null && S != null && (S += n - w, w = null), S ??= n;
+						C != null && S != null && (S += n - C, C = null), S ??= n;
 						let a = K((n - S) / d, 0, 1), s = 1 - (1 - a) ** 2.2;
-						if (g.draw(n), i === "print") {
-							let e = a < .5 ? 2 * a * a : 1 - (-2 * a + 2) ** 2 / 2, n = _ * (1 - a * .45);
-							r.style.filter = `blur(${n}px) contrast(${1 + (1 - a) * .1}) brightness(${1 + (1 - a) * .06})`, o.style.maskImage = Lr(y, e, x, !1), o.style.webkitMaskImage = o.style.maskImage, g.canvas.style.maskImage = Lr(y, e, x, !0), g.canvas.style.webkitMaskImage = g.canvas.style.maskImage, g.canvas.style.opacity = String(v * (1 - a ** 1.6 * .85));
+						if (_.draw(n), i === "print") {
+							let e = a < .5 ? 2 * a * a : 1 - (-2 * a + 2) ** 2 / 2, n = g * (1 - a * .45);
+							r.style.filter = `blur(${n}px) contrast(${1 + (1 - a) * .1}) brightness(${1 + (1 - a) * .06})`, o.style.maskImage = Lr(y, e, b, !1), o.style.webkitMaskImage = o.style.maskImage, _.canvas.style.maskImage = Lr(y, e, b, !0), _.canvas.style.webkitMaskImage = _.canvas.style.maskImage, _.canvas.style.opacity = String(v * (1 - a ** 1.6 * .85));
 							let i = y === "up" ? "to top" : y === "left" ? "to left" : y === "right" ? "to right" : "to bottom", s = K(e * 100, 0, 100), c = K(Number(t.edgeWidth ?? 9), 2, 30);
 							u.style.opacity = a >= 1 ? "0" : "1", u.style.background = `linear-gradient(${i}, transparent ${K(s - c, 0, 100)}%, rgba(255,255,255,${K(Number(t.edgeOpacity ?? .5), 0, 1)}) ${s}%, transparent ${K(s + c * .4, 0, 100)}%)`;
-						} else r.style.filter = `blur(${_ * (1 - s)}px) contrast(${1 + (1 - s) * .22})`, g.canvas.style.opacity = String(v * (1 - s) ** 1.2);
-						t.onProgress?.(a, e), a < 1 ? f = requestAnimationFrame(T) : C();
+						} else r.style.filter = `blur(${g * (1 - s)}px) contrast(${1 + (1 - s) * .22})`, _.canvas.style.opacity = String(v * (1 - s) ** 1.2);
+						t.onProgress?.(a, e), a < 1 ? f = requestAnimationFrame(T) : w();
 					};
-					b(() => {
+					x(() => {
 						f = requestAnimationFrame(T);
 					}, h);
 					return;
 				}
-				S(), t.onLoad?.(e, r);
+				C(), t.onLoad?.(e, s);
 			}
 		};
-		return i === "skeleton" ? w() : ![
+		return i === "skeleton" ? T() : ![
 			"blur-up",
 			"polaroid",
 			"pixelate"
-		].includes(i) && !Sr(i) && (e.style.opacity = "0"), d = Z(e, T, {
+		].includes(i) && !Sr(i) && (e.style.opacity = "0"), d = Z(e, D, {
 			threshold: Number(t.threshold ?? .05),
 			rootMargin: t.rootMargin || "200px 0px"
 		}), {
@@ -4540,16 +4551,16 @@ var Ur = {
 				return t.animated === !0 || br.test(a);
 			},
 			replay() {
-				x(), h = !1, i === "skeleton" && w(), T();
+				f != null && cancelAnimationFrame(f), f = null, u.forEach(clearTimeout), u.clear(), S(), h = !1, i === "skeleton" && T(), D();
 			},
 			pause() {
-				m = !0, _?.pause();
+				m = !0, v?.pause();
 			},
 			resume() {
-				m = !1, _?.resume();
+				m = !1, v?.resume();
 			},
 			destroy() {
-				p = !0, m = !1, d?.disconnect(), f != null && cancelAnimationFrame(f), u.forEach(clearTimeout), u.clear(), x(), fr(e, s);
+				p = !0, m = !1, d?.disconnect(), f != null && cancelAnimationFrame(f), u.forEach(clearTimeout), u.clear(), S(), fr(e, s);
 				let t = (t, n) => n == null ? e.removeAttribute(t) : e.setAttribute(t, n);
 				t("style", o.style), t("src", o.src), t("srcset", o.srcset), t("sizes", o.sizes), t("loading", o.loading), t("decoding", o.decoding);
 			}
@@ -8786,7 +8797,7 @@ function ro(e) {
 	return e.clientX >= 0 && e.clientY >= 0 && e.clientX <= window.innerWidth && e.clientY <= window.innerHeight;
 }
 function io(e, t) {
-	return t.global === !0 ? !1 : t.global === !1 ? !0 : !e || e === document.body || e === document.documentElement || !e.children.length && !e.textContent.trim() ? !1 : e.clientWidth > 4 && e.clientHeight > 4;
+	return t.global === !0 ? !1 : t.global === !1 ? !0 : !e || e === document.body || e === document.documentElement || !e.children.length && !e.textContent.trim() ? !1 : e.isConnected && e.getClientRects().length > 0 ? e.clientWidth > 4 && e.clientHeight > 4 : !0;
 }
 function ao(e, t = "#fff") {
 	if (!e || e === "transparent" || e === "currentColor") return t;

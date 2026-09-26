@@ -17,6 +17,10 @@
 //   • Tabs initialised inside a hidden panel wrote `width: 0` for the marker,
 //     so revealing them started a CSS transition from nothing: the pill was
 //     missing until that transition got frames (a busy page, WebKit in CI).
+//   • Lazy skeleton replay: a replay started a new run while the previous
+//     run's image was still loading; when that image arrived, the OLD run
+//     finished on the NEW skeleton and faded it out at once — the replay
+//     showed nothing (demo-qa "skeleton demo behavior failed", now and then).
 //   • Reduced motion removed FEATURES, not motion: Lightbox never opened, Date
 //     Time never formatted, Sticky Header never got its class, and Gesture's
 //     pull-to-refresh was gone.
@@ -52,6 +56,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
   <time id="when" data-kt-date-time data-kt-date="2020-01-02T03:04:05Z" data-kt-mode="absolute" data-kt-locale="en-US">raw</time>
   <header id="header2"></header>
   <div id="ambient" style="width:200px;height:120px;position:relative"><img id="lazyimg" alt="lazy"></div>
+  <img id="skel" alt="skeleton" width="80" height="60">
   <img id="batched" alt="batched" width="40" height="40"><div id="batchedReveal">reveal</div>
   <div id="tabsWrap" hidden><div id="tabsEl"><div role="tablist"><button type="button">One</button><button type="button">Two</button></div><div class="kt-tabpanel">one</div><div class="kt-tabpanel">two</div></div></div>
   <div id="pull" style="height:120px;overflow:auto"><div style="height:400px">list</div></div>
@@ -69,6 +74,10 @@ await page.route('**/*', (route) => {
   const url = new URL(route.request().url());
   if (url.origin === SITE && url.pathname === '/') return route.fulfill({ status: 200, contentType: 'text/html', body: html });
   if (url.origin === SITE && url.pathname.startsWith('/dist/')) return route.fulfill({ status: 200, contentType: 'text/javascript', body: fs.readFileSync(path.join(root, url.pathname)) });
+  // An image that takes 400ms to arrive (the skeleton replay case below).
+  if (url.origin === SITE && url.pathname === '/slow.gif') {
+    return new Promise((resolve) => setTimeout(resolve, 400)).then(() => route.fulfill({ status: 200, contentType: 'image/gif', body: Buffer.from('R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=', 'base64') }));
+  }
   // No GSAP here on purpose: Parallax takes its native fallback path.
   return route.fulfill({ status: 404, body: '' });
 });
@@ -182,6 +191,25 @@ const movedLazy = await page.evaluate(async () => {
 assert.deepEqual(movedLazy, { movedIntoWrapper: true, loaded: true, hasSrc: true },
   `a lazy image moved by Ambient Media right after observe() must still load (${JSON.stringify(movedLazy)})`);
 
+// Lazy skeleton: a replay while the previous run's image is still loading.
+// Timeline (minDuration 600): run 1 starts at 0 and would reveal at 600; the
+// replay at 250 starts run 2, which must keep its skeleton until 850. At 700
+// the skeleton has to be the replay's own and still running.
+const skeletonReplay = await page.evaluate(async () => {
+  const image = document.getElementById('skel');
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const lazy = window.Kineto.create('lazy', image, { effect: 'skeleton', src: `${location.origin}/slow.gif`, nativeLazy: false, rootMargin: '10000px', minDuration: 600, fadeDuration: 0.2 });
+  await wait(250);
+  lazy.replay();
+  await wait(450);
+  const layer = image.parentElement.querySelector('.kt-lazy-skeleton');
+  const result = { layer: Boolean(layer), animation: layer ? getComputedStyle(layer).animationName : null, opacity: layer ? getComputedStyle(layer).opacity : null };
+  lazy.destroy();
+  return result;
+});
+assert.ok(skeletonReplay.layer && skeletonReplay.animation !== 'none' && skeletonReplay.opacity !== '0',
+  `a replayed skeleton must keep running until its own image and minDuration are done, not end with the previous run (${JSON.stringify(skeletonReplay)})`);
+
 // The same contract without relying on timing: an observer that delivers the
 // stale record first and the current one last, in one batch, like a browser
 // does after a DOM move. Every single-target observer must act on the last.
@@ -276,4 +304,4 @@ assert.deepEqual(reduced, { opened: true, formatted: true, stuck: true, pullIsRe
 await frames();
 assert.deepEqual(errors, [], `page errors:\n${errors.join('\n')}`);
 await browser.close();
-console.log(`lifecycle-edges OK (${browserName}) — no writes after destroy (Sticky Header, Parallax, Bottom Sheet, Counter), Tilt revives after pause, Radial autoplay:true is 3s and pause() holds, Lazy loads after Ambient Media moves it (observers act on the newest record of a batch), hidden Tabs snap their marker on reveal, and reduced motion keeps Lightbox, Date Time, Sticky Header and pull-to-refresh working.`);
+console.log(`lifecycle-edges OK (${browserName}) — no writes after destroy (Sticky Header, Parallax, Bottom Sheet, Counter), Tilt revives after pause, Radial autoplay:true is 3s and pause() holds, Lazy loads after Ambient Media moves it (observers act on the newest record of a batch), a replayed skeleton outlives the previous run, hidden Tabs snap their marker on reveal, and reduced motion keeps Lightbox, Date Time, Sticky Header and pull-to-refresh working.`);
