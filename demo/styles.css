@@ -859,12 +859,10 @@ html.light .kt-tabs--segment { --kt-seg-active: #ffffff; --kt-seg-bg: rgba(0,0,0
        (padding + equal negative margin: nothing moves) and the gap below it is
        padding instead of margin, where the bottom shadows fall. Chromium and
        Firefox also honour overflow-clip-margin; WebKit relies on the padding. */
-    .module-block--skippable{content-visibility:auto;contain-intrinsic-size:auto 1100px;
+    .module-block--skippable{content-visibility:auto;contain-intrinsic-size:auto var(--demo-block-size,1100px);
       margin:0 -28px;padding:0 28px 44px;overflow-clip-margin:24px}
     .module-block:last-child{margin-bottom:0}
     .module-block--skippable:last-child{margin-bottom:-44px}
-    /* main.js warm-up: draw a block above the screen once, at rest, so it remembers its real height */
-    .module-block--skippable.module-block--warm{content-visibility:visible}
     /* Until main.js has regrouped the cards into module blocks, a whole category
        section far from the viewport is not laid out either: the static page is
        parsed and laid out in pieces on a phone, and every piece used to lay out

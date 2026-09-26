@@ -379,6 +379,11 @@
   /** 타일은 화면에 들어올 때 처음으로 초기화됩니다. 23개짜리 시트도 비용이 한꺼번에 들지 않습니다. */
   function initTile(tile) {
     if (tile.dataset.variantPending !== 'true') return;
+    // IntersectionObserver 알림은 시트를 닫은 **뒤에** 도착할 수 있습니다(닫기 직전 프레임에
+    // 계산된 교차 정보가 이미 줄에 서 있기 때문입니다). 그때 타일은 이미 페이지에서 빠졌고,
+    // 거기에 만든 모듈은 아무도 destroy 하지 않습니다 — Cursor 타일은 <body>에 커서를 남겨
+    // 포인터를 어디든 따라다니는 링이 하나 더 생겼습니다. 페이지에 없는 타일은 만들지 않습니다.
+    if (!tile.isConnected) return;
     tile.dataset.variantPending = 'false';
     var stage = tile.querySelector('.variant-tile__stage');
     if (!stage || !window.Kineto) return;
@@ -397,6 +402,9 @@
     var material = materialOf(stage);
     if (!material || typeof material.getBoundingClientRect !== 'function') return;
     var measure = function () {
+      // 한 프레임 사이에 시트가 닫혔으면 무대는 페이지에 없습니다. 떨어져 나간 요소는 높이가 0으로
+      // 재져서, 아래의 "다시 만들기"가 아무도 치우지 않을 모듈을 새로 만들게 됩니다.
+      if (!stage.isConnected) return;
       var box = material.getBoundingClientRect();
       // `u-fill` 표시가 없는데도 높이가 접힌 소재(항목을 전부 절대 배치하는 경우)를 위한
       // 안전망입니다. 확정 높이를 준 다음 그 크기로 한 번 다시 만들어 줍니다.
@@ -453,9 +461,11 @@
   function clearSheet(sheet) {
     if (sheet.dataset.variantBuilt !== 'true') return;
     if (window.Kineto) { try { window.Kineto.destroy(sheet); } catch (error) { /* 이미 정리됨 */ } }
-    if (pendingObserver) {
-      Array.prototype.forEach.call(sheet.querySelectorAll('.variant-tile'), function (tile) { pendingObserver.unobserve(tile); });
-    }
+    Array.prototype.forEach.call(sheet.querySelectorAll('.variant-tile'), function (tile) {
+      if (pendingObserver) pendingObserver.unobserve(tile);
+      // 이미 줄에 선 교차 알림이 늦게 와도 initTile 이 이 타일을 만들지 않게 합니다.
+      tile.dataset.variantPending = 'false';
+    });
     sheet.textContent = '';
     sheet.dataset.variantBuilt = 'false';
   }

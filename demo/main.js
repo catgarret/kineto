@@ -668,11 +668,12 @@
         // End key, find-in-page, an automated test, any jump at all.
         //
         // A ResizeObserver is told after layout and before paint, so moving the
-        // page by the same amount there is never seen. Only a block that had
-        // already scrolled past the reading line (the bottom of the fixed site
-        // header) counts — its bottom padding is only shadow room, so it is not
-        // counted as visible. A change the reader can see (opening
-        // "데모 더 보기") is left alone, as before.
+        // page by the same amount there is never seen. What stays put is the
+        // middle of the screen — where the reader looks, and where the demo
+        // they just tapped usually is: a block (or a grid inside the block the
+        // middle falls in) that ended above it is anchored away. A block's
+        // bottom padding is only shadow room, so it does not count. A change
+        // at or below the middle (opening "데모 더 보기") is left alone.
         //
         // One exception, in the frame of a jump (more than a screen in one
         // step): the block holding the middle of the screen is what the jump
@@ -696,7 +697,7 @@
         const SCROLL_KEYS=new Set(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' ']);
         // runBy: what began the current run of scroll events — 'wheel' | 'key' |
         // 'touch' (the reader), 'glide' (jumpTo), '' (nothing: another script).
-        const scrollState={lastInput:-Infinity,lastInputType:'',lastScroll:-Infinity,inRun:0,runBy:'',touching:false,shiftedTo:null,gliding:false,lastY:window.scrollY,leapt:false};
+        const scrollState={lastInput:-Infinity,lastInputType:'',lastScroll:-Infinity,inRun:0,runBy:'',touching:false,touchMoved:false,sawTouch:false,shiftedTo:null,gliding:false,lastY:window.scrollY,leapt:false};
         // jumpTo marks the scroll it is making as its own for as long as it runs.
         const claimScroll=(on)=>{ scrollState.gliding=on; if(on)scrollState.runBy='glide'; };
         const noteReaderInput=(type)=>{
@@ -707,9 +708,17 @@
         };
         window.addEventListener('wheel',()=>noteReaderInput('wheel'),{capture:true,passive:true});
         window.addEventListener('keydown',(event)=>{ if(SCROLL_KEYS.has(event.key))noteReaderInput('key'); },{capture:true,passive:true});
-        window.addEventListener('touchstart',()=>{ scrollState.touching=true; noteReaderInput('touch'); },{capture:true,passive:true});
-        window.addEventListener('touchmove',()=>noteReaderInput('touch'),{capture:true,passive:true});
-        ['touchend','touchcancel'].forEach((type)=>window.addEventListener(type,()=>{ scrollState.touching=false; noteReaderInput('touch'); },{capture:true,passive:true}));
+        // Only a finger that moved scrolls the page. A tap is not a scroll: it
+        // used to count as one, so whatever moved the page just after a tap on
+        // a demo (focus, a block measured above) was taken for a coasting fling
+        // and left unanchored — the page jumped under the finger.
+        window.addEventListener('touchstart',()=>{ scrollState.touching=true; scrollState.touchMoved=false; },{capture:true,passive:true});
+        window.addEventListener('touchmove',()=>{ scrollState.touchMoved=true; scrollState.sawTouch=true; noteReaderInput('touch'); },{capture:true,passive:true});
+        ['touchend','touchcancel'].forEach((type)=>window.addEventListener(type,()=>{
+          scrollState.touching=false;
+          // A fling may coast on from here.
+          if(scrollState.touchMoved)noteReaderInput('touch');
+        },{capture:true,passive:true}));
         window.addEventListener('scroll',()=>{
           const y=window.scrollY;
           const lastY=scrollState.lastY;
@@ -763,49 +772,108 @@
           scrollState.shiftedTo=window.scrollY!==from?window.scrollY:null;
         };
         const inDocumentOrder=(a,b)=>(a.target.compareDocumentPosition(b.target)&Node.DOCUMENT_POSITION_FOLLOWING?-1:1);
+        // Blocks are watched whole, and so are their parts (title, grids, fold
+        // controls): the block the middle of the screen falls in is not
+        // anchored whole, but a grid inside it that lies above the reader can
+        // still be balanced or folded as it comes near (a tall block like
+        // Loading Indicator holds six), and that moved the demo under the
+        // reader's finger.
+        const isBlock=(el)=>el.classList.contains('module-block--skippable');
         const blockAnchor='ResizeObserver' in window
           ? new ResizeObserver((entries)=>{
             const holding=holdAnchoring();
             const middle=window.innerHeight/2;
             let shift=0;
-            let moved=0;
-            let readingLine=null;
+            let anchorLine=null;
+            // How far the changes read so far moved what follows them: a whole
+            // block moves everything after it, a part moves the rest of its
+            // block. A block's own change does not move its parts.
+            let movedByBlocks=0;
+            const blockDelta=new Map();
+            const partsMoved=new Map();
+            const anchoredWhole=new Set();
+            // In the frame of a jump, the block holding the middle of the
+            // screen is where the jump went (the exception above) — the block
+            // and every part of it. A block drawn for the first time lays out
+            // its parts too, so they report growth even when the block's own
+            // height stays at its remembered size: anchoring those parts threw
+            // the target a screen away (demo-qa's Rolling Ticker, then paused
+            // off screen).
+            const jumpTargets=new Map();
+            const isJumpTarget=(block)=>{
+              if(!scrollState.leapt)return false;
+              if(!jumpTargets.has(block)){
+                const edges=block.getBoundingClientRect();
+                jumpTargets.set(block,edges.top<=middle&&edges.bottom>middle);
+              }
+              return jumpTargets.get(block);
+            };
             entries.sort(inDocumentOrder).forEach((entry)=>{
-              const block=entry.target;
-              const height=entry.borderBoxSize?.[0]?.blockSize ?? block.getBoundingClientRect().height;
-              const before=blockHeights.get(block);
-              blockHeights.set(block,height);
+              const el=entry.target;
+              const height=entry.borderBoxSize?.[0]?.blockSize ?? el.getBoundingClientRect().height;
+              const before=blockHeights.get(el);
+              blockHeights.set(el,height);
               if(holding||before===undefined||height===before)return;
-              // Layout is fresh inside a ResizeObserver callback, so these reads
-              // are free. Blocks earlier in this batch already moved this one by
-              // `moved`; its old content ended `paddingBottom` above its edge.
-              const box=block.getBoundingClientRect();
-              const isJumpTarget=scrollState.leapt&&box.top<=middle&&box.bottom>middle;
-              readingLine??=Math.max(0,siteHeader?.getBoundingClientRect().bottom||0);
-              const oldContentBottom=box.top-moved+before-(parseFloat(getComputedStyle(block).paddingBottom)||0);
-              if(!isJumpTarget&&oldContentBottom<=readingLine)shift+=height-before;
-              moved+=height-before;
+              const delta=height-before;
+              // Layout is fresh inside a ResizeObserver callback, so these
+              // reads are free.
+              // The middle of the screen, never above the fixed header.
+              anchorLine??=Math.max(siteHeader?.getBoundingClientRect().bottom||0,middle);
+              const box=el.getBoundingClientRect();
+              if(isBlock(el)){
+                // Its old content ended `paddingBottom` above its edge.
+                const oldContentBottom=box.top-movedByBlocks+before-(parseFloat(getComputedStyle(el).paddingBottom)||0);
+                if(!isJumpTarget(el)&&oldContentBottom<=anchorLine){ shift+=delta; anchoredWhole.add(el); }
+                movedByBlocks+=delta;
+                blockDelta.set(el,delta);
+                return;
+              }
+              const block=el.parentElement;
+              if(anchoredWhole.has(block)||isJumpTarget(block))return;
+              const within=partsMoved.get(block)||0;
+              partsMoved.set(block,within+delta);
+              const oldBottom=box.top-(movedByBlocks-(blockDelta.get(block)||0))-within+before;
+              if(oldBottom<=anchorLine)shift+=delta;
             });
             if(Math.abs(shift)>=0.5)shiftPage(shift);
           })
           : null;
-        // 3. Warm-up. While a fling coasts, anchoring has to let a block that
-        // is drawn for the first time move the page. So once the page rests,
-        // draw the blocks above the screen that were never drawn at this
-        // width, nearest first, one at a time: rows balanced and fold planned
-        // as they will be when near, laid out once for real, then skipped
-        // again — remembering that height (`contain-intrinsic-size: auto`).
-        // At rest the height change is anchored away; any scroll pauses it.
-        // Reading downwards never needs it: blocks below are drawn before they
-        // reach the screen, and their height changes happen below the reader.
+        // 3. Warm-up. While a fling coasts, anchoring has to let a block that is
+        // drawn for the first time move the page. So once the page rests, the
+        // blocks above the screen whose height is not known yet are measured,
+        // nearest first: rows balanced and fold planned as they will be when
+        // near, then their laid-out height reserved as their skipped size
+        // (`--demo-block-size`, styles.css). Measuring a skipped block lays it
+        // out without drawing it — a few milliseconds, and exact to the pixel.
+        // (Drawing each one for real woke every effect inside it and held a
+        // phone for half a second, right when the reader went to tap a demo.)
+        // Steps run at the start of a frame, so a size change and its
+        // anchoring are painted together; any scroll pauses them. Reading
+        // downwards never needs this: blocks below are drawn before they
+        // reach the screen, and their changes happen below the reader.
         // Six screens covers any fling; further up, the reader jumps (jumpTo).
         const WARM_SCREENS=6;
         const REST_MS=300;
         const WARM_GAP_MS=60;
-        const drawnAt=new WeakMap();
-        let warmTimer=0;
-        let warming=null;
-        const nearestUndrawnAbove=()=>{
+        const WARM_BUDGET_MS=6;
+        // block → the viewport width its height is known at (drawn or measured)
+        const sizedAt=new WeakMap();
+        const sizeBlock=(block)=>{
+          const grids=[...block.querySelectorAll('.module-block-body.grid')];
+          rebalance(grids);
+          grids.forEach((grid)=>window.KINETO_FOLD?.prepare?.(grid));
+          const box=block.getBoundingClientRect();
+          let bottom=box.top;
+          for(const child of block.children){
+            const rect=child.getBoundingClientRect();
+            if(rect.width||rect.height)bottom=Math.max(bottom,rect.bottom);
+          }
+          // contain-intrinsic-size is the CONTENT height; the block's bottom
+          // padding (its shadow room) is added by layout.
+          block.style.setProperty('--demo-block-size',`${Math.ceil(bottom-box.top)}px`);
+          sizedAt.set(block,window.innerWidth);
+        };
+        const nearestUnsizedAbove=()=>{
           const width=window.innerWidth;
           const reach=-WARM_SCREENS*window.innerHeight;
           for(let i=skippableBlocks.length-1;i>=0;i-=1){
@@ -813,35 +881,32 @@
             const bottom=block.getBoundingClientRect().bottom;
             if(bottom>0)continue;
             if(bottom<reach)return null;
-            if(drawnAt.get(block)!==width)return block;
+            if(sizedAt.get(block)!==width)return block;
           }
           return null;
         };
+        let warmTimer=0;
         const warmUp=()=>{
           warmTimer=0;
-          if(warming||document.hidden)return;
-          const block=nearestUndrawnAbove();
-          if(!block)return;
-          warming=block;
-          // Every step runs at the start of a frame, so the height change and
-          // its anchoring are painted together (see queueRebalance).
+          if(document.hidden)return;
           requestAnimationFrame(()=>{
-            block.classList.add('module-block--warm');
-            requestAnimationFrame(()=>{
-              // Drawn last frame: plan it exactly as the near observers would.
-              const grids=[...block.querySelectorAll('.module-block-body.grid')];
-              rebalance(grids);
-              grids.forEach((grid)=>window.KINETO_FOLD?.prepare?.(grid));
-              requestAnimationFrame(()=>{
-                block.classList.remove('module-block--warm');
-                drawnAt.set(block,window.innerWidth);
-                warming=null;
-                scheduleWarmUp(WARM_GAP_MS);
-              });
-            });
+            const until=performance.now()+WARM_BUDGET_MS;
+            let block=nearestUnsizedAbove();
+            while(block){
+              sizeBlock(block);
+              if(performance.now()>until)break;
+              block=nearestUnsizedAbove();
+            }
+            if(block)scheduleWarmUp(WARM_GAP_MS);
           });
         };
+        // Only a reader who scrolls by touch needs it: a wheel, a key or the
+        // scrollbar never coasts, so anchoring always holds for them, and on a
+        // desktop the measuring would only cost frames (a block with its folds
+        // open lays out for 50–100 ms).
+        const wantsWarmUp=()=>touchFirst||scrollState.sawTouch;
         function scheduleWarmUp(delay=REST_MS){
+          if(!wantsWarmUp())return;
           clearTimeout(warmTimer);
           warmTimer=setTimeout(warmUp,delay);
         }
@@ -912,6 +977,10 @@
         const jumpTo=(target,{behavior='auto',block='start'}={})=>{
           if(!target)return;
           stopGlide?.();
+          // A card in a grid that was never near has not had its rows
+          // balanced yet; balance them now so it does not move as it arrives.
+          const grid=target.closest?.('.module-block-body.grid');
+          if(grid&&!nearGrids.has(grid))rebalance([grid]);
           if(behavior!=='smooth'||reducedMotion.matches){ target.scrollIntoView({block}); return; }
           const away=destinationOf(target,block)-window.scrollY;
           if(Math.abs(away)<=FAR_JUMP_SCREENS*window.innerHeight){ glideTo(target,block,easeInOut); return; }
@@ -926,8 +995,9 @@
           if(block.querySelector(PINNING_MARKUP))return;
           block.classList.add('module-block--skippable');
           blockAnchor?.observe(block);
-          // Drawn because the reader came near: warm-up can pass it by.
-          block.addEventListener('contentvisibilityautostatechange',(event)=>{ if(!event.skipped)drawnAt.set(block,window.innerWidth); });
+          for(const part of block.children)blockAnchor?.observe(part);
+          // Drawn because the reader came near: it remembers its real height.
+          block.addEventListener('contentvisibilityautostatechange',(event)=>{ if(!event.skipped)sizedAt.set(block,window.innerWidth); });
         };
         const layoutFor=(list)=>{
           const hasStandalone=list.some(u=>!u.classList.contains('card'));

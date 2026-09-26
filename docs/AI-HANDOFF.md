@@ -138,6 +138,14 @@ or a tag; release approval remains separate.
 - **An IntersectionObserver callback acts on the newest record**: a node moved
   after `observe()` arrives as `[not visible, visible]` in one batch. Read it
   with `latestEntry(entries, el)` from `src/utils.js`, never `([entry]) =>`.
+  A notice can also arrive after its node left the page (a closed compare
+  sheet): check `isConnected` before creating anything from it — an effect
+  created on a removed node is never destroyed (`tests/variant-compare.mjs`).
+- **Decide by content, not by a size read at creation**: an element may be
+  hidden (`display:none`, a closed panel) or off the page when it is created,
+  and measures 0×0. Cursor used to take such a card for a page-wide holder and
+  drew a second cursor everywhere; it now reads a box only when the element is
+  drawn (`getClientRects().length > 0`). `tests/browser/cursor-scope.mjs`.
   `tests/browser/lifecycle-edges.mjs` fakes such a batch.
 - **A geometry repair snaps; only a state change animates**: first placement,
   a reveal, a resize and `refresh()` write the measured position with the
@@ -188,7 +196,15 @@ or a tag; release approval remains separate.
   `overflow-anchor: none`): a block above the screen that changes height moves
   the page with it, in the same frame — so demo code that changes a block's
   height does it at the start of a frame (`requestAnimationFrame`), never
-  between frames where another script could read the moved page. Scroll to something with `KINETO_BLOCKS.jumpTo(el,
+  between frames where another script could read the moved page. What stays
+  still is the middle of the screen, and the grids inside the block that holds
+  it are watched too. Only a finger that moved counts as a scroll (a tap does
+  not), and anchoring waits while a touch fling coasts. In the frame of a
+  jump the block it went to is left alone, parts included. Measuring the
+  blocks above the screen ahead of time (warm-up) runs only for a reader who
+  scrolls by touch. Anything that sends
+  the reader to a card calls `KINETO_FOLD.reveal(el)` first, which plans a far
+  block's fold before deciding whether to open it. Scroll to something with `KINETO_BLOCKS.jumpTo(el,
   { behavior, block })` — its smooth glide re-aims every frame; a native
   smooth `scrollIntoView` to a far card lands off target. A test that
   inspects the whole page calls `KINETO_BLOCKS.balanceAll()` after

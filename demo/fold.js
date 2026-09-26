@@ -285,11 +285,25 @@
 
   /** Open the fold hiding `el` right now, so a scroll to `el` lands on it. */
   function reveal(el) {
-    var card = el && el.closest ? el.closest('[data-demo-folded]') : null;
+    if (!el || !el.closest) return false;
+    // A far block has not been planned yet (it waits until it comes near), so
+    // it cannot tell whether `el` sits below its fold. Plan it now: going to
+    // `el` without opening the fold landed on a card that folded away a moment
+    // later, right under the reader's finger.
+    var owner = bodyOf(el);
+    if (owner && pending.has(owner)) prepare(owner);
+    var card = el.closest('[data-demo-folded]');
     var body = card && card.parentElement;
     if (!body || !bodies.has(body)) return false;
     setOpen(body, true, { instant: true });
     return true;
+  }
+
+  function bodyOf(el) {
+    for (var node = el; node; node = node.parentElement) {
+      if (bodies.has(node)) return node;
+    }
+    return null;
   }
 
   /** Plan `body` right away (normally a far block waits until it is near). */

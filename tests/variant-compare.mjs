@@ -9,6 +9,7 @@
 //   3. control 모듈의 모든 variant는 전용 컨트롤이 정확히 하나 있다.
 //   4. link 모듈은 "왜 나란히 볼 수 없는지"를 읽을 수 있는 문장으로 남긴다.
 //   5. 시트가 쓰는 모든 문구는 데모의 6개 언어에 전부 번역되어 있다.
+//   6. 닫힌 시트의 타일은, 늦게 도착한 교차 알림이 있어도 만들어지지 않는다.
 //
 // 이 검사는 실제 demo/compare.js 를 JSDOM 에서 그대로 실행해서 확인합니다 — 판정 로직의
 // 사본을 테스트에 만들어 두면 그 사본이 먼저 낡기 때문입니다.
@@ -164,6 +165,44 @@ for (const name of Object.keys(catalog.modules)) {
     assert.equal(references.map(node => node.textContent).join(' '), `${name} ${translation}`);
   }
   block.remove();
+}
+
+// ── 3. 닫힌 시트의 타일은 만들어지지 않는다 ────────────────────────────────────
+// IntersectionObserver 알림은 시트를 닫은 뒤에 도착할 수 있습니다. 그때 타일을 초기화하면
+// 페이지에서 빠진 무대에 모듈이 생기고, 아무도 그것을 destroy 하지 않습니다(Cursor 타일은
+// 포인터를 어디든 따라다니는 커서를 <body>에 남겼습니다). 가짜 관찰자로 알림을 손에 쥐고,
+// 열린 시트에서는 타일이 만들어지고 닫은 뒤의 늦은 알림은 아무것도 만들지 않는지 봅니다.
+{
+  const observed = new Set();
+  let deliver = null;
+  window.IntersectionObserver = class {
+    constructor(callback) { deliver = (targets) => callback(targets.map((target) => ({ target, isIntersecting: true })), this); }
+    observe(target) { observed.add(target); }
+    unobserve(target) { observed.delete(target); }
+    disconnect() { observed.clear(); }
+  };
+  const inits = [];
+  window.Kineto = { init(stage) { inits.push(stage); }, destroy() {} };
+  const block = window.document.createElement('section');
+  block.innerHTML = '<h3 class="module-block-title">cursor</h3>';
+  window.document.body.append(block);
+  const toggle = compare.attach(block, 'cursor').querySelector('.variant-compare__toggle');
+
+  toggle.click(); // open: every tile waits for its notification
+  const firstTiles = [...observed];
+  assert.ok(firstTiles.length > 1, 'the Cursor sheet must queue its tiles until they near the screen');
+  deliver(firstTiles.slice(0, 1));
+  assert.ok(inits.length >= 1 && inits.every((stage) => stage.isConnected), 'an open sheet creates the tile that came into view');
+
+  const pending = [...observed];
+  toggle.click(); // close while the rest are still waiting
+  inits.length = 0;
+  deliver(pending); // the notifications computed just before closing arrive now
+  assert.equal(inits.length, 0, `a closed sheet must not create its tiles (created ${inits.length} on stages no longer on the page)`);
+
+  block.remove();
+  delete window.Kineto;
+  delete window.IntersectionObserver;
 }
 
 if (problems.length) {
