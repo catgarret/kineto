@@ -19,6 +19,7 @@
 - `Kineto.observe()` cleans up only the subtrees that were removed. Any child removal used to re-check every live instance on the page; it now walks the removed element trees, and an element moved elsewhere before the batched flush keeps its instance. Gate: `tests/performance-runtime.mjs` (from PR #41). The Lightbox CSS compaction (#43, #40) and Loading Indicator preset clean-up (#44) from the same PR stack were already on `main`.
 - README (all seven languages): installation leads with `core` + only the modules you use — npm, and native ES modules straight from the CDN (`dist/modular/…`) — then the full bundle as the quickest start, then React and Vue. What each module adds on top of `core` is a new generated table, `docs/module-cost.md` (`npm run docs:module-cost`, refreshed by `release:prepare`; `core` 14.9 KB gzip, median module about 2 KB), and the whole-app report `docs/consumer-bundle-size.md` is current again. Five localized READMEs and three agent docs still said 53 modules; every "N modules" phrase is now checked against the contract.
 - Tests: `drawer-layout` waits for the selected tab and a settled sheet height instead of fixed sleeps (it flaked once in a full 2-core lane), and `states`, `slider-scroll-snap` and `glitch-wave` honour `KT_CHROME` like every other browser suite.
+- Build: Vite 8.3.0 (the built files are byte-identical) and the QA fixtures' React 19.3.0, scheduler 0.28.0, Vue 3.5.43 and Rolldown 1.2.9 (Dependabot #18, #20, #22–#24, #31–#33). jsdom 30 is held back: its CSS serializer leaves `background-position` longhands behind, which the leak gate reads as a style Scroll Shadows did not restore; TypeScript 7, jQuery 4, Playwright 1.63 and `actions/download-artifact` 8 need their own compatibility runs.
 
 ### 한국어
 
@@ -37,6 +38,7 @@
 - `Kineto.observe()` 가 실제로 빠진 하위 트리만 정리합니다. 자식 하나가 빠질 때마다 페이지의 모든 인스턴스를 다시 검사하던 것을 빠진 요소 트리만 훑도록 좁혔고, 묶음 처리 전에 다른 곳으로 옮겨진 요소는 인스턴스를 유지합니다. 게이트: `tests/performance-runtime.mjs`(PR #41). 같은 PR 묶음의 Lightbox CSS 압축(#43, #40)과 Loading Indicator 프리셋 정리(#44)는 이미 `main` 에 있었습니다.
 - README(7개 언어): 설치 절이 `core` + 쓰는 모듈만으로 시작합니다 — npm, 그리고 CDN 에서 바로 쓰는 네이티브 ES 모듈(`dist/modular/…`) — 이어서 가장 빠른 시작인 전체 번들, React·Vue 순입니다. 모듈마다 `core` 위에 더해지는 크기를 생성 표 `docs/module-cost.md`(`npm run docs:module-cost`, `release:prepare` 가 갱신; `core` 14.9 KB gzip, 모듈 중앙값 약 2 KB)로 공개하고, 앱 전체 측정 `docs/consumer-bundle-size.md` 도 현재 값으로 갱신했습니다. 번역 README 5개와 에이전트 문서 3개가 아직 53개 모듈이라고 적고 있어, 이제 모든 "N개 모듈" 문구를 계약과 대조합니다.
 - 테스트: `drawer-layout` 이 고정 대기 대신 선택된 탭과 높이가 멈춘 시트를 기다립니다(2코어 전체 레인에서 한 번 흔들림). `states`·`slider-scroll-snap`·`glitch-wave` 도 다른 브라우저 테스트처럼 `KT_CHROME` 을 따릅니다.
+- 빌드: Vite 8.3.0(빌드 결과는 바이트 단위로 동일)과 QA fixture 의 React 19.3.0·scheduler 0.28.0·Vue 3.5.43·Rolldown 1.2.9(Dependabot #18, #20, #22–#24, #31–#33). jsdom 30 은 보류합니다 — CSS 직렬화가 `background-position` 개별 속성을 남겨 누수 게이트가 Scroll Shadows 가 복원하지 않은 스타일로 읽습니다. TypeScript 7·jQuery 4·Playwright 1.63·`actions/download-artifact` 8 은 별도 호환성 검증이 필요합니다.
 
 ## [0.12.2] - 2026-09-25
 
