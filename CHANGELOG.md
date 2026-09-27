@@ -13,6 +13,7 @@
 
 <!-- Add matching English release bullets here. -->
 - Overflow Text Hover Roll works on touch. A phone has no hover, so a tapped Hover Roll link navigated before the roll could be seen. A touch tap on an ordinary same-window link now plays the roll first and replays that one click after `rollDuration`; mouse hover, keyboard activation, downloads, modifier clicks, links that open another window and clicks another script already cancelled keep their native timing. Table: `docs/modules/overflow-text.md`. Gate: `tests/motion-regressions.mjs` (from PR #50).
+- Hover-driven modules decide "can the reader hover?" in one place, `utils.canHover()` (any attached input can hover with a fine pointer). A touchscreen laptop, or a tablet with a trackpad, reports its primary input as coarse and non-hovering even while a mouse is moving, and has touch points: Cursor turned itself off there, and Tilt and Mouse Parallax waited for a gyroscope a laptop never fires, ignoring the mouse. They now follow the mouse; a finger on such a screen hides the page cursor until the mouse moves again. Phones keep the touch path (Cursor tap effects, gyroscope tilt and parallax, Card Glow press light). `disableOnMobile` (Tilt, Card Glow) and Vibrate's hover trigger use the same answer, and Mega Menu's existing check moved onto the helper. Policy and per-module table (desktop / touch / keyboard): `docs/hover-touch-policy.md`. Gate: `tests/browser/hover-touch.mjs` (desktop, touchscreen laptop and phone profiles; fails on 0.12.2).
 
 ### 한국어
 
@@ -25,6 +26,7 @@
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 - Overflow Text Hover Roll 이 터치에서도 보입니다. 휴대폰에는 호버가 없어 Hover Roll 링크를 탭하면 롤이 보이기 전에 이동했습니다. 같은 창으로 가는 일반 링크를 터치로 탭하면 먼저 롤을 보여 주고 `rollDuration` 뒤에 그 클릭을 한 번 다시 실행합니다. 마우스 호버·키보드 활성화·다운로드·수정키 클릭·다른 창으로 여는 링크·다른 스크립트가 이미 취소한 클릭은 원래 타이밍 그대로입니다. 표: `docs/modules/overflow-text.md`. 게이트: `tests/motion-regressions.mjs`(PR #50).
+- 호버에 반응하는 모듈이 "지금 호버할 수 있나"를 한곳 `utils.canHover()`(붙어 있는 입력 중 하나라도 정밀 포인터로 호버 가능)에서 판단합니다. 터치스크린 노트북·트랙패드 달린 태블릿은 마우스를 쓰는 중에도 주 입력을 coarse·호버 불가로, 터치 포인트를 1 이상으로 보고합니다. 그래서 Cursor 가 꺼지고, Tilt·Mouse Parallax 는 노트북에서 오지 않는 자이로스코프를 기다리며 마우스를 무시했습니다. 이제 마우스를 따라가고, 그런 화면을 손가락으로 만지면 페이지 커서가 숨었다가 마우스가 움직이면 돌아옵니다. 휴대폰은 기존 터치 경로(Cursor 탭 효과, 자이로 Tilt·Parallax, Card Glow 누름 빛) 그대로입니다. `disableOnMobile`(Tilt·Card Glow)과 Vibrate 호버 트리거도 같은 판단을 쓰고, Mega Menu 의 기존 검사도 이 헬퍼로 옮겼습니다. 정책과 모듈별 표(데스크톱/터치/키보드): `docs/hover-touch-policy.md`. 게이트: `tests/browser/hover-touch.mjs`(데스크톱·터치스크린 노트북·휴대폰 프로필, 0.12.2 에서 실패).
 
 ## [0.12.2] - 2026-09-25
 

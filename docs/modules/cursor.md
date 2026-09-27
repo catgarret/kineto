@@ -32,7 +32,7 @@ Kineto.cursor(document.body, {
 });
 ```
 
-색상, 크기, border, blur, shadow, mix-blend-mode, hover label/background/scale, press scale, follower on/off와 custom callbacks를 조절할 수 있습니다. 터치 또는 hover 없는 환경, reduced-motion에서는 fallback을 사용합니다.
+색상, 크기, border, blur, shadow, mix-blend-mode, hover label/background/scale, press scale, follower on/off와 custom callbacks를 조절할 수 있습니다. 호버할 수 있는 입력이 하나도 없는 기기(휴대폰)와 reduced-motion에서는 fallback을 사용합니다. 터치스크린 노트북처럼 마우스도 있는 기기는 커서를 유지하고, 화면을 손가락으로 만지면 커서를 숨겼다가 마우스가 움직이면 다시 보입니다([입력 정책](../hover-touch-policy.md)).
 
 ## 페이지 전체 커서와 영역 커서
 

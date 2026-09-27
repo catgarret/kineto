@@ -1,4 +1,4 @@
-import { latestEntry } from '../utils.js';
+import { canHover, latestEntry } from '../utils.js';
 
 // Named haptic patterns in the spirit of platform haptics. The Web Vibration
 // API has no amplitude control, so texture comes from timing: short pulses
@@ -36,7 +36,7 @@ export default {
 
     // trigger:'manual' binds nothing — developers call instance.play()
     // (or Kineto.getInstance(el,'vibrate').play()) whenever they want.
-    if (trigger === 'hover' && !window.matchMedia?.('(hover: none)').matches) el.addEventListener('pointerenter', vibrate);
+    if (trigger === 'hover' && canHover()) el.addEventListener('pointerenter', vibrate);
     else if (trigger === 'click') el.addEventListener('click', vibrate);
     else if (trigger === 'scroll' && typeof IntersectionObserver !== 'undefined') {
       observer = new IntersectionObserver((entries) => {

@@ -1,4 +1,4 @@
-import { clamp, frameClock, frameEase, lerp, snapshotInlineStyles } from '../utils.js';
+import { canHover, clamp, frameClock, frameEase, lerp, snapshotInlineStyles } from '../utils.js';
 import { createInteractiveShadow } from '../interactiveShadow.js';
 import { bevelBand, bevelShading, buildDisplacementMap, displacementScale, supportsBackdrop, supportsBackdropRefraction } from './surface/glass.js';
 
@@ -15,8 +15,9 @@ export default {
   // returns (the aurora and comet looks are endless CSS animations). See `offscreen` in src/core.js.
   offscreen: 'pause',
   create(el, opts = {}) {
-    // Optional: skip entirely on touch devices (gyro/hover effects off).
-    if (opts.disableOnMobile === true && typeof window !== 'undefined' && window.matchMedia?.('(hover: none), (pointer: coarse)').matches) return null;
+    // Optional: skip entirely on touch-only devices (docs/hover-touch-policy.md).
+    // Without it touch still gets the press light (onPress below).
+    if (opts.disableOnMobile === true && !canHover()) return null;
     const mode = opts.mode || opts.preset || 'spotlight';
     const computed = getComputedStyle(el);
     const restore = snapshotInlineStyles(el, ['position', 'zIndex', 'overflow', 'isolation']);

@@ -1,4 +1,4 @@
-import { clamp, frameEase, lerp, numberOption } from '../utils.js';
+import { canHover, clamp, frameEase, lerp, numberOption } from '../utils.js';
 import { createCursorClickEffects } from './cursor/clickEffects.js';
 
 // Keep the click-effect option boundary in the public module entry. Besides
@@ -93,10 +93,11 @@ function readableTextColor(background, fallback = '#fff') {
 
 export default {
   create(el, opts = {}) {
-    const touchDevice = window.matchMedia?.('(hover: none), (pointer: coarse)').matches || navigator.maxTouchPoints > 0;
-    // Touch devices get no pointer visuals, but click/tap effects still work:
-    // taps spawn the sprite or one-shot image at the touch point.
-    if (touchDevice) {
+    // Touch-only devices get no pointer visuals, but click/tap effects still
+    // work: taps spawn the sprite or one-shot image at the touch point. A
+    // touchscreen laptop with a mouse CAN hover and keeps its cursor; there a
+    // touch on the screen hides the cursor until the mouse moves again.
+    if (!canHover()) {
       if (!opts.clickSprite && !opts.clickImage) return null;
       return this._clickEffectsOnly(el, opts);
     }
@@ -474,6 +475,12 @@ export default {
     };
 
     const onMove = (event) => {
+      // A finger on a touchscreen laptop is not the mouse: the cursor would
+      // jump to the touch point and stay there. Hide until the mouse moves.
+      if (event.pointerType === 'touch') {
+        if (visible) setVisible(false);
+        return;
+      }
       mouseX = event.clientX;
       mouseY = event.clientY;
       wake();

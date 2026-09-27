@@ -55,6 +55,30 @@ export function env() {
   };
 }
 
+// Hover-driven modules ask one question: "can the reader hover right now?"
+// This is the single answer (docs/hover-touch-policy.md).
+//
+// `(hover)` / `(pointer)` describe only the PRIMARY input. A touchscreen laptop
+// or a tablet with a trackpad reports its primary input as coarse and
+// non-hovering even while a mouse is in use, and `navigator.maxTouchPoints` is
+// above zero there too — so those checks turned the Cursor off, and sent Tilt
+// and Mouse Parallax to a gyroscope that a laptop never fires, while a mouse
+// was moving over them. `any-hover` / `any-pointer` ask whether at least one
+// attached input can hover with a fine pointer; a phone still answers no.
+//
+// Without media queries (DOM shims, very old engines) the answer is "yes",
+// like env() treating such a runtime as a plain capable browser. An engine that
+// does not know `any-hover` answers false to both of its values; it falls back
+// to the primary-input query it does know.
+export function canHover() {
+  if (typeof window === 'undefined') return false;
+  if (typeof window.matchMedia !== 'function') return true;
+  const matches = (query) => window.matchMedia(query)?.matches === true;
+  if (matches('(any-hover: hover) and (any-pointer: fine)')) return true;
+  if (matches('(any-hover: none)') || matches('(any-hover: hover)')) return false;
+  return !matches('(hover: none)');
+}
+
 // iOS 13+ gates DeviceOrientation behind an explicit permission that must be
 // requested from a real user gesture — and current WebKit only honours the
 // request from a `click`/`touchend`, not always a `pointerdown`. This resolves

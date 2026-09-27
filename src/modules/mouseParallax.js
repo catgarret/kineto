@@ -1,4 +1,4 @@
-import { clamp, ensureGyroPermission, env, frameClock, frameEase, lerp, numberOption, snapshotInlineStyles } from '../utils.js';
+import { canHover, clamp, ensureGyroPermission, env, frameClock, frameEase, lerp, numberOption, snapshotInlineStyles } from '../utils.js';
 
 export default {
   // Kineto.config({ defer: true }) may create this only when the element nears
@@ -25,8 +25,9 @@ export default {
       let current = 0;
       let alive = true;
       let rafId = null;
-      // On touch devices the dial follows the real device heading (gyro).
-      const useGyro = opts.gyro !== false && environment.touch && environment.hasGyro;
+      // On touch-only devices the dial follows the real device heading (gyro).
+      // A touchscreen laptop can hover, so it keeps following the mouse.
+      const useGyro = opts.gyro !== false && environment.hasGyro && !canHover();
       // The dial eases towards its target and then stops asking for frames;
       // every pointer move or heading change wakes it again. It used to spin
       // its loop forever with the dial already pointing the right way.
@@ -96,7 +97,10 @@ export default {
     const maxX = opts.maxX ?? 40;
     const maxY = opts.maxY ?? 40;
     const eventTarget = opts.global ? window : el;
-    const useGyro = opts.gyro !== false && environment.hasGyro && environment.touch;
+    // Gyro only where nothing can hover (docs/hover-touch-policy.md). It keyed
+    // on "has a touchscreen", so a touchscreen laptop listened for a gyroscope
+    // that never fires and ignored the mouse moving over the layers.
+    const useGyro = opts.gyro !== false && environment.hasGyro && !canHover();
     const targets = Array.from(el.querySelectorAll('[data-mp-speed], [data-kt-mouse-speed]'));
     if (!targets.length) targets.push(el);
     const restores = targets.map((target) => snapshotInlineStyles(target, ['transform', 'willChange']));

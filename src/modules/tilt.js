@@ -1,4 +1,4 @@
-import { clamp, ensureGyroPermission, frameClock, frameEase, lerp, numberOption, snapshotInlineStyles } from '../utils.js';
+import { canHover, clamp, ensureGyroPermission, frameClock, frameEase, lerp, numberOption, snapshotInlineStyles } from '../utils.js';
 import { createInteractiveShadow } from '../interactiveShadow.js';
 
 export default {
@@ -6,12 +6,13 @@ export default {
   // the viewport (src/deferCreate.js): it only matters where it can be seen.
   defer: true,
   create(el, opts) {
-    // Optional: skip entirely on touch devices (gyro/hover effects off).
-    if (opts.disableOnMobile === true && typeof window !== 'undefined' && window.matchMedia?.('(hover: none), (pointer: coarse)').matches) return null;
-
-    // On touch devices tilt falls back to the gyroscope instead of turning
-    // off, so cards still respond to how the phone is held.
-    const coarse = window.matchMedia?.('(hover: none)').matches === true;
+    // Touch-only devices (no input can hover — docs/hover-touch-policy.md)
+    // fall back to the gyroscope instead of turning off, so cards still respond
+    // to how the phone is held. `disableOnMobile` skips them entirely. A
+    // touchscreen laptop with a mouse keeps the pointer tilt: it used to take
+    // the gyroscope path there, which a laptop never fires.
+    const coarse = !canHover();
+    if (opts.disableOnMobile === true && coarse) return null;
     const gyroAvailable = typeof DeviceOrientationEvent !== 'undefined';
     if (coarse && (opts.gyro === false || !gyroAvailable)) return null;
     const max = Math.max(0, Number(opts.max ?? 12));
