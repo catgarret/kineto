@@ -12,6 +12,7 @@
 - Demo: the page cursor is the orange dot and ring (the theme's accent, `var(--accent)`), one ring only. It was a white dot and a pale ring blended with `difference`, which drew black on the light theme.
 
 <!-- Add matching English release bullets here. -->
+- Overflow Text Hover Roll works on touch. A phone has no hover, so a tapped Hover Roll link navigated before the roll could be seen. A touch tap on an ordinary same-window link now plays the roll first and replays that one click after `rollDuration`; mouse hover, keyboard activation, downloads, modifier clicks, links that open another window and clicks another script already cancelled keep their native timing. Table: `docs/modules/overflow-text.md`. Gate: `tests/motion-regressions.mjs` (from PR #50).
 
 ### 한국어
 
@@ -23,6 +24,7 @@
 - 데모: 페이지 커서를 주황 점 + 주황 링 하나로 바꿨습니다(테마 강조색 `var(--accent)`). 전에는 흰 점과 옅은 링을 `difference`로 섞어서, 밝은 테마에서는 검게 보였습니다.
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- Overflow Text Hover Roll 이 터치에서도 보입니다. 휴대폰에는 호버가 없어 Hover Roll 링크를 탭하면 롤이 보이기 전에 이동했습니다. 같은 창으로 가는 일반 링크를 터치로 탭하면 먼저 롤을 보여 주고 `rollDuration` 뒤에 그 클릭을 한 번 다시 실행합니다. 마우스 호버·키보드 활성화·다운로드·수정키 클릭·다른 창으로 여는 링크·다른 스크립트가 이미 취소한 클릭은 원래 타이밍 그대로입니다. 표: `docs/modules/overflow-text.md`. 게이트: `tests/motion-regressions.mjs`(PR #50).
 
 ## [0.12.2] - 2026-09-25
 

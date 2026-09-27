@@ -39,4 +39,17 @@ Page는 페이지 사이를 긴 슬라이드 tween으로 이동하지 않습니�
 </div>
 ```
 
+### Hover Roll (`data-kt-trigger="hover"`)
+
+항목이 둘인 Rolling에 `trigger: "hover"`를 주면 GNB 라벨처럼 호버·포커스에서 한 번 굴러 올라가고, 벗어나면 돌아옵니다.
+
+| 입력 | 동작 |
+|---|---|
+| 마우스 | `pointerenter`에서 굴러가고 `pointerleave`에서 돌아옴. 링크 클릭은 즉시 이동 |
+| 키보드 | `focusin`/`focusout`이 호버와 같음. Enter는 즉시 이동(지연 없음) |
+| 터치 | 호버가 없으므로, **같은 창으로 가는 일반 링크**는 탭하면 먼저 굴러간 뒤 `rollDuration` 후 원래 클릭을 한 번 다시 실행 |
+| 터치 예외 | `download`, `target`이 `_self`가 아닌 링크, 수정키, 이미 `preventDefault()`된 클릭은 지연하지 않음 |
+
+전체 모듈의 호버 전용 동작 정책은 [hover-touch-policy.md](../hover-touch-policy.md)에 있습니다.
+
 정확한 option allowlist는 [Module Reference](../module-reference.md#overflowtext)를 확인합니다. ResizeObserver가 overflow를 다시 계산하며 `destroy()`는 animation, timer, observer, listener와 생성 구조를 정리하고 원래 HTML/style/title/ARIA를 복원합니다.

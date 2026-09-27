@@ -489,13 +489,13 @@ function oe(e) {
 	}
 	return e;
 }
-function se(e, t = "") {
+function Y(e, t = "") {
 	return e == null ? t : e === !0 || e === !1 ? "" : String(e);
 }
-function Y(e) {
+function X(e) {
 	return e.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 }
-function ce(e, t = typeof document < "u" ? document : null) {
+function se(e, t = typeof document < "u" ? document : null) {
 	if (!e || !t?.querySelectorAll) return [];
 	try {
 		return Array.from(t.querySelectorAll(String(e)));
@@ -503,11 +503,11 @@ function ce(e, t = typeof document < "u" ? document : null) {
 		return [];
 	}
 }
-function le(e) {
+function ce(e) {
 	let t = String(e ?? "");
 	return typeof CSS < "u" && typeof CSS.escape == "function" ? CSS.escape(t) : t.replace(/["\\]/g, "\\$&");
 }
-function X(e, t = typeof document < "u" ? document : null) {
+function le(e, t = typeof document < "u" ? document : null) {
 	return !e || !t ? [] : typeof e == "string" ? Array.from(t.querySelectorAll(e)) : typeof window < "u" && e === window || typeof document < "u" && e === document || typeof Element < "u" && e instanceof Element ? [e] : typeof NodeList < "u" && e instanceof NodeList || typeof HTMLCollection < "u" && e instanceof HTMLCollection || Array.isArray(e) || (typeof e == "object" || typeof e == "function") && typeof Symbol < "u" && typeof e[Symbol.iterator] == "function" ? Array.from(e).filter(Boolean) : [];
 }
 var ue = /* @__PURE__ */ new WeakMap();
@@ -621,7 +621,7 @@ function _e(e, t) {
 	};
 }
 function ve(e) {
-	return e.includes("-") ? e : Y(e).replace(/^(webkit|moz|ms|o)-/, "-$1-");
+	return e.includes("-") ? e : X(e).replace(/^(webkit|moz|ms|o)-/, "-$1-");
 }
 function ye(e) {
 	return e.includes("-") ? e.replace(/^-/, "").replace(/-([a-z])/g, (e, t) => t.toUpperCase()) : e;
@@ -1075,7 +1075,7 @@ var $e = Object.freeze({
 	"textSplit"
 ]);
 function tt(e, t) {
-	return ($e[t] || []).some((t) => e.hasAttribute?.(`data-kt-${Y(t)}`));
+	return ($e[t] || []).some((t) => e.hasAttribute?.(`data-kt-${X(t)}`));
 }
 var nt = /* @__PURE__ */ new Map(), rt = /* @__PURE__ */ new Set(), it = /* @__PURE__ */ new WeakMap(), at = /* @__PURE__ */ new Map(), ot = !1, st = !1, ct = null, lt = null, ut = null, dt = null, ft = null, pt = null, mt = null, ht = null, gt = /* @__PURE__ */ new Map(), _t = "data-kt-offscreen", vt = /* @__PURE__ */ new Set([_t]), yt = {
 	smooth: !1,
@@ -1463,7 +1463,7 @@ var an = {
 		return lt ? (lt.scrollTo(e, t), this) : (typeof e == "number" ? window.scrollTo({
 			top: e,
 			behavior: t.behavior || "smooth"
-		}) : X(e)[0]?.scrollIntoView?.({
+		}) : le(e)[0]?.scrollIntoView?.({
 			behavior: t.behavior || "smooth",
 			block: t.block || "start"
 		}), this);
@@ -1489,7 +1489,7 @@ var an = {
 			phase: "create",
 			recoverable: !0
 		}), null;
-		let i = X(t);
+		let i = le(t);
 		if (!i.length) return null;
 		let a = i.map((t) => {
 			let i = It(t)?.get(e);
@@ -1524,11 +1524,11 @@ var an = {
 		let t = (e, t) => !It(e)?.has(t) && !xt.has(e, t) && !tt(e, t), n = (n) => {
 			let r = [], i = /* @__PURE__ */ new Map();
 			nt.forEach((e, t) => {
-				et.has(t) === n && (r.push(t), i.set(`data-kt-${Y(t)}`, t));
+				et.has(t) === n && (r.push(t), i.set(`data-kt-${X(t)}`, t));
 			});
 			let a = new Map(r.map((e) => [e, []]));
 			if (!r.length) return a;
-			let o = r.map((e) => `[data-kt-${Y(e)}]`).join(","), s = (e) => {
+			let o = r.map((e) => `[data-kt-${X(e)}]`).join(","), s = (e) => {
 				(e.getAttributeNames?.() || []).forEach((n) => {
 					let r = i.get(n);
 					r && t(e, r) && a.get(r).push(e);
@@ -1557,7 +1557,7 @@ var an = {
 		return this.scan(e);
 	},
 	initModules(e) {
-		return X(e).forEach((e) => this.scan(e)), this;
+		return le(e).forEach((e) => this.scan(e)), this;
 	},
 	autoInit(e = typeof document < "u" ? document : null) {
 		return this.env.ssr || !e ? this : document.readyState === "loading" ? (st || (st = !0, ct = () => {
@@ -1565,7 +1565,7 @@ var an = {
 		}, document.addEventListener("DOMContentLoaded", ct, { once: !0 })), this) : this.scan(e);
 	},
 	observe(e = typeof document < "u" ? document : null, t = {}) {
-		let n = typeof e == "string" ? X(e)[0] : e, r = {
+		let n = typeof e == "string" ? le(e)[0] : e, r = {
 			root: n || null,
 			active: !1,
 			disconnect() {}
@@ -1587,11 +1587,11 @@ var an = {
 		}), t.scan !== !1 && this.scan(n), o;
 	},
 	getInstance(e, t) {
-		let n = X(e)[0];
+		let n = le(e)[0];
 		return n ? t ? It(n)?.get(t)?.instance || null : Array.from(It(n)?.values() || [], ({ instance: e }) => e) : null;
 	},
 	updateModule(e, t, n = {}) {
-		let r = X(e), i = 0;
+		let r = le(e), i = 0;
 		return r.forEach((e) => {
 			let r = It(e)?.get(t);
 			if (r && typeof r.instance.update == "function") {
@@ -1622,13 +1622,13 @@ var an = {
 		}), i > 0;
 	},
 	destroyModule(e, t) {
-		let n = X(e);
+		let n = le(e);
 		return n.length && Array.from(rt).forEach((e) => {
 			e.name === t && Kt(e, n) && Gt(e);
 		}), this;
 	},
 	replay(e, t, n) {
-		let r = X(e), i = [];
+		let r = le(e), i = [];
 		Array.from(rt).forEach((e) => {
 			e.name === t && Kt(e, r) && i.push(e);
 		});
@@ -1645,7 +1645,7 @@ var an = {
 	},
 	destroy(e) {
 		if (e) {
-			let t = X(e);
+			let t = le(e);
 			return Array.from(rt).forEach((e) => {
 				Kt(e, t) && Gt(e);
 			}), xt.cancel(t), this;
@@ -2368,7 +2368,7 @@ var yn = {
 //#endregion
 //#region src/modules/counter.js
 function bn(e) {
-	return e.format ? e.format : se(e.separator) || (e.grouping === !0 || e.comma === !0 ? "," : "");
+	return e.format ? e.format : Y(e.separator) || (e.grouping === !0 || e.comma === !0 ? "," : "");
 }
 function xn(e) {
 	return e.classList.add("kt-counter-separator--blink"), null;
@@ -2421,7 +2421,7 @@ function Dn(e, t) {
 var On = {
 	defer: !0,
 	create(e, t) {
-		let n = pe(), r = e.innerHTML, i = e.getAttribute("style"), a = _e(e, ["aria-label", "aria-live"]), o = t.secondsOnly === !0, s = o ? "clock" : t.mode || t.preset || t.style || "slot", c = Number(t.from ?? 0), l = Number.parseFloat((e.textContent || "").replace(/[^0-9.-]/g, "")), u = Number(t.to ?? (Number.isFinite(l) ? l : 0)), d = Math.max(0, Number(t.duration ?? 2)), f = Math.max(0, Number(t.decimals ?? 0)), p = se(t.prefix), m = se(t.suffix), h = {
+		let n = pe(), r = e.innerHTML, i = e.getAttribute("style"), a = _e(e, ["aria-label", "aria-live"]), o = t.secondsOnly === !0, s = o ? "clock" : t.mode || t.preset || t.style || "slot", c = Number(t.from ?? 0), l = Number.parseFloat((e.textContent || "").replace(/[^0-9.-]/g, "")), u = Number(t.to ?? (Number.isFinite(l) ? l : 0)), d = Math.max(0, Number(t.duration ?? 2)), f = Math.max(0, Number(t.decimals ?? 0)), p = Y(t.prefix), m = Y(t.suffix), h = {
 			decimals: f,
 			format: bn(t),
 			locale: t.locale
@@ -2654,7 +2654,7 @@ var On = {
 			});
 		} else if (s === "clock") {
 			e.innerHTML = "", e.style.display = "inline-flex", e.style.alignItems = "center", e.setAttribute("aria-live", "off");
-			let n = Tn(e, t.lineHeight), r = t.seconds !== !1, i = Math.max(1, Math.round(Number(t.secondsDigits ?? 3))), a = String(t.secondsLabel ?? "S"), s = t.hour12 === !0, c = se(t.clockSeparator, ":"), l = t.blink !== !1, u = t.clockStyle || "roll", d = Math.max(80, Number(t.rollDuration ?? .28) * 1e3), f = String(t.daysLabel ?? "d"), h = t.until ? new Date(t.until) : null, g = t.since ? new Date(t.since) : null, _ = !1, v = (e) => String(e).padStart(2, "0"), y = () => {
+			let n = Tn(e, t.lineHeight), r = t.seconds !== !1, i = Math.max(1, Math.round(Number(t.secondsDigits ?? 3))), a = String(t.secondsLabel ?? "S"), s = t.hour12 === !0, c = Y(t.clockSeparator, ":"), l = t.blink !== !1, u = t.clockStyle || "roll", d = Math.max(80, Number(t.rollDuration ?? .28) * 1e3), f = String(t.daysLabel ?? "d"), h = t.until ? new Date(t.until) : null, g = t.since ? new Date(t.since) : null, _ = !1, v = (e) => String(e).padStart(2, "0"), y = () => {
 				if (h || g) {
 					let n = h ? h.getTime() - Date.now() : Date.now() - g.getTime();
 					if (h && n <= 0 && !_ && (_ = !0, t.onComplete?.(e)), n = Math.max(0, n), o) return {
@@ -2922,7 +2922,7 @@ var On = {
 	reduced(e, t) {
 		let n = e.innerHTML, r = e.getAttribute("style");
 		if ((t.secondsOnly === !0 ? "clock" : t.mode || t.preset || t.style || "slot") === "clock") {
-			let i = se(t.clockSeparator, ":"), a = t.seconds !== !1, o = t.hour12 === !0, s = () => {
+			let i = Y(t.clockSeparator, ":"), a = t.seconds !== !1, o = t.hour12 === !0, s = () => {
 				let n = (e) => String(e).padStart(2, "0"), r = t.secondsOnly === !0;
 				if (t.until || t.since) {
 					let o = t.until ? new Date(t.until) : new Date(t.since), s = Math.max(0, t.until ? o.getTime() - Date.now() : Date.now() - o.getTime());
@@ -2934,7 +2934,7 @@ var On = {
 					let c = Math.floor(s / 864e5), l = [n(Math.floor(s / 36e5) % 24), n(Math.floor(s / 6e4) % 60)];
 					a && l.push(n(Math.floor(s / 1e3) % 60));
 					let u = c > 0 || t.showDays === !0 ? `${c}${t.daysLabel ?? "d"} ` : "";
-					e.textContent = `${se(t.prefix)}${u}${l.join(i)}${se(t.suffix)}`;
+					e.textContent = `${Y(t.prefix)}${u}${l.join(i)}${Y(t.suffix)}`;
 					return;
 				}
 				let s = /* @__PURE__ */ new Date();
@@ -2946,7 +2946,7 @@ var On = {
 				let c = s.getHours(), l = "";
 				o && (l = c >= 12 ? " PM" : " AM", c = c % 12 || 12);
 				let u = [n(c), n(s.getMinutes())];
-				a && u.push(n(s.getSeconds())), e.textContent = `${se(t.prefix)}${u.join(i)}${l}${se(t.suffix)}`;
+				a && u.push(n(s.getSeconds())), e.textContent = `${Y(t.prefix)}${u.join(i)}${l}${Y(t.suffix)}`;
 			};
 			s();
 			let c = setInterval(s, 1e3);
@@ -2961,11 +2961,11 @@ var On = {
 			};
 		}
 		let i = Math.max(0, Number(t.decimals ?? 0)), a = Number.parseFloat((e.textContent || "").replace(/[^0-9.-]/g, "")), o = Number(t.to ?? (Number.isFinite(a) ? a : 0)), s = bn(t);
-		return e.textContent = `${se(t.prefix)}${He(o, {
+		return e.textContent = `${Y(t.prefix)}${He(o, {
 			decimals: i,
 			format: s,
 			locale: t.locale
-		})}${se(t.suffix)}`, {
+		})}${Y(t.suffix)}`, {
 			el: e,
 			type: "counter",
 			pause() {},
@@ -3876,12 +3876,12 @@ function Or({ el: e, wrapper: t, effect: n, settings: r, prefix: i = "kt-stylize
 		te(m), ee(() => {
 			F = t, U();
 		}, c);
-	}, se = () => {
-		H() && (N && (N = !1, p ? J() : oe()), L && (L = !1, te(m)), W(), U());
 	}, Y = () => {
-		document.hidden ? ne() : se();
+		H() && (N && (N = !1, p ? J() : oe()), L && (L = !1, te(m)), W(), U());
+	}, X = () => {
+		document.hidden ? ne() : Y();
 	};
-	return document.addEventListener("visibilitychange", Y), {
+	return document.addEventListener("visibilitychange", X), {
 		layer: x,
 		canvas: S,
 		renderer: C,
@@ -3892,19 +3892,19 @@ function Or({ el: e, wrapper: t, effect: n, settings: r, prefix: i = "kt-stylize
 			A || (C.configure(e), T = C.live, D(), p && M && ae(), p && M && !F && H() && te(m));
 		},
 		start() {
-			A || M || (M = !0, se());
+			A || M || (M = !0, Y());
 		},
 		pause() {
 			j = !0, ne();
 		},
 		resume() {
-			j = !1, se();
+			j = !1, Y();
 		},
 		replay() {
 			A || (q(), P++, M = !1, N = !0, R = null, z = -Infinity, x.style.opacity = "1", x.isConnected || t.appendChild(x), this.start());
 		},
 		destroy() {
-			A || (A = !0, q(), document.removeEventListener("visibilitychange", Y), E?.destroy(), C.destroy(), x.remove());
+			A || (A = !0, q(), document.removeEventListener("visibilitychange", X), E?.destroy(), C.destroy(), x.remove());
 		}
 	};
 }
@@ -5141,7 +5141,7 @@ var ai = {
 	defer: !0,
 	offscreen: "pause",
 	create(e, t) {
-		let n = e.innerHTML, r = _e(e, ["aria-label"]), i = Array.isArray(t.strings) ? t.strings.map(String) : t.strings == null ? [e.textContent || ""] : [String(t.strings)], a = Number(t.typeSpeed ?? 60), o = Number(t.eraseSpeed ?? 30), s = Number(t.pauseAfter ?? 1500), c = t.loop !== !1, l = t.caret !== !1, u = se(t.caretChar, "|"), d = t.hangul === !0 || t.compose === !0;
+		let n = e.innerHTML, r = _e(e, ["aria-label"]), i = Array.isArray(t.strings) ? t.strings.map(String) : t.strings == null ? [e.textContent || ""] : [String(t.strings)], a = Number(t.typeSpeed ?? 60), o = Number(t.eraseSpeed ?? 30), s = Number(t.pauseAfter ?? 1500), c = t.loop !== !1, l = t.caret !== !1, u = Y(t.caretChar, "|"), d = t.hangul === !0 || t.compose === !0;
 		e.setAttribute("aria-label", i.join(", "));
 		let f = document.createElement("span");
 		if (f.className = "kt-tw-text", f.setAttribute("aria-hidden", "true"), e.replaceChildren(f), l) {
@@ -6102,30 +6102,30 @@ var Ni = {
 	defer: !0,
 	offscreen: "pause",
 	create(e, t = {}) {
-		let n = t.mode || t.preset || "loop", r = J(t.speed, 36, 1), i = J(t.delay, 700), a = J(t.endPause, 900), o = J(t.restartDelay, i), s = J(t.gap, 32), c = t.direction === "right" ? 1 : -1, l = Ti(t.maskDirection || t.transitionDirection), u = J(t.maskDuration, 260, 20), d = t.pauseOnHover !== !1, f = t.trigger === "hover", p = null, m = null, h = null, g = null, _ = null, v = e.innerHTML, y = e.getAttribute("style"), b = e.getAttribute("title"), x = e.getAttribute("aria-label"), S = e.getAttribute("role"), C = String(t.text ?? e.textContent ?? "").trim(), w = n === "rolling" ? ji(e, t) : null, T = [
+		let n = t.mode || t.preset || "loop", r = J(t.speed, 36, 1), i = J(t.delay, 700), a = J(t.endPause, 900), o = J(t.restartDelay, i), s = J(t.gap, 32), c = t.direction === "right" ? 1 : -1, l = Ti(t.maskDirection || t.transitionDirection), u = J(t.maskDuration, 260, 20), d = t.pauseOnHover !== !1, f = t.trigger === "hover", p = null, m = null, h = null, g = null, _ = null, v = null, y = null, b = null, x = null, S = e.innerHTML, C = e.getAttribute("style"), w = e.getAttribute("title"), T = e.getAttribute("aria-label"), E = e.getAttribute("role"), D = String(t.text ?? e.textContent ?? "").trim(), O = n === "rolling" ? ji(e, t) : null, k = [
 			"fade",
 			"dissolve",
 			"flip",
 			"page"
-		].includes(n) && e.children.length >= 2 ? ji(e, t) : null, E = null, D = null, O = 0, k = null, A = !1, j = !1, M = null, N = null, P = 0, F = !1, I = 0, L = null;
+		].includes(n) && e.children.length >= 2 ? ji(e, t) : null, A = null, j = null, M = 0, N = null, P = !1, F = !1, I = null, L = null, R = 0, z = !1, B = 0, V = null;
 		e.textContent = "", e.style.overflow = "hidden", e.style.whiteSpace = "nowrap";
-		let R = (t) => {
+		let H = (t) => {
 			t === "static" && (e.style.position = "relative");
 		};
-		(n === "rolling" || T) && R(getComputedStyle(e).position), C && e.setAttribute("aria-label", C), !b && t.title !== !1 && C && e.setAttribute("title", C);
-		let z = !1, B = null, V = () => {
-			E?.cancel?.(), E = null, clearTimeout(k), k = null, B = null;
-		}, H = (e, t) => {
-			clearTimeout(k), k = setTimeout(() => {
-				if (k = null, !A) {
-					if (j || z) {
-						B = e;
+		(n === "rolling" || k) && H(getComputedStyle(e).position), D && e.setAttribute("aria-label", D), !w && t.title !== !1 && D && e.setAttribute("title", D);
+		let U = !1, W = null, ee = () => {
+			A?.cancel?.(), A = null, clearTimeout(N), N = null, W = null;
+		}, G = (e, t) => {
+			clearTimeout(N), N = setTimeout(() => {
+				if (N = null, !P) {
+					if (F || U) {
+						W = e;
 						return;
 					}
 					e();
 				}
 			}, Math.max(0, t));
-		}, U = async (e) => {
+		}, te = async (e) => {
 			let n = e.animate([{
 				clipPath: "inset(0 0 0 0)",
 				webkitClipPath: "inset(0 0 0 0)",
@@ -6141,12 +6141,12 @@ var Ni = {
 				easing: t.maskEase || "cubic-bezier(.5,0,.75,.4)",
 				fill: "forwards"
 			});
-			E = n;
+			A = n;
 			try {
 				await n.finished;
 			} catch {}
-			E === n && (E = null);
-		}, W = async (e) => {
+			A === n && (A = null);
+		}, ne = async (e) => {
 			let n = e.animate([{
 				clipPath: Di(l),
 				webkitClipPath: Di(l),
@@ -6162,56 +6162,56 @@ var Ni = {
 				easing: t.maskEase || "cubic-bezier(.22,.8,.3,1)",
 				fill: "forwards"
 			});
-			E = n;
+			A = n;
 			try {
 				await n.finished;
 			} catch {}
-			E === n && (E = null);
-		}, ee = (e = C, t = !1, n = !1) => {
+			A === n && (A = null);
+		}, q = (e = D, t = !1, n = !1) => {
 			let r = document.createElement("span");
 			return r.className = "kt-overflow-text-segment", n ? r.innerHTML = e : r.textContent = e, r.style.cssText = "display:inline-block;flex:0 0 auto;white-space:nowrap;", t && r.setAttribute("aria-hidden", "true"), r;
-		}, G = () => {
-			let n = w || [];
+		}, re = () => {
+			let n = O || [];
 			if (!n.length) return;
 			e.innerHTML = "", e.setAttribute("role", t.role || "status"), e.setAttribute("aria-live", t.ariaLive || "polite");
 			let r = document.createElement("span");
-			r.className = "kt-overflow-rolling-viewport", r.style.cssText = "display:block;position:relative;height:1.35em;overflow:hidden;", N = document.createElement("span"), N.className = "kt-overflow-rolling-track", N.style.cssText = "display:flex;flex-direction:column;will-change:transform;";
-			let i = ee(n[0], !1, !0), a = ee(n[1 % n.length], !0, !0);
-			i.style.height = a.style.height = "1.35em", i.style.lineHeight = a.style.lineHeight = "1.35em", i.style.display = a.style.display = "flex", i.style.alignItems = a.style.alignItems = "center", i.style.gap = a.style.gap = "0.4em", N.append(i, a), r.appendChild(N), e.appendChild(r);
+			r.className = "kt-overflow-rolling-viewport", r.style.cssText = "display:block;position:relative;height:1.35em;overflow:hidden;", L = document.createElement("span"), L.className = "kt-overflow-rolling-track", L.style.cssText = "display:flex;flex-direction:column;will-change:transform;";
+			let i = q(n[0], !1, !0), a = q(n[1 % n.length], !0, !0);
+			i.style.height = a.style.height = "1.35em", i.style.lineHeight = a.style.lineHeight = "1.35em", i.style.display = a.style.display = "flex", i.style.alignItems = a.style.alignItems = "center", i.style.gap = a.style.gap = "0.4em", L.append(i, a), r.appendChild(L), e.appendChild(r);
 			let o = t.rollDirection === "down" ? 1 : -1, s = J(t.rollDuration, 380, 50), c = J(t.holdDuration, 1500, 100), l = async () => {
-				if (A || j || n.length < 2) return;
-				let r = (P + 1) % n.length, i = o < 0 ? N.lastElementChild : N.firstElementChild;
+				if (P || F || n.length < 2) return;
+				let r = (R + 1) % n.length, i = o < 0 ? L.lastElementChild : L.firstElementChild;
 				i.innerHTML = n[r];
 				let a = o < 0 ? "translate3d(0,0,0)" : "translate3d(0,-1.35em,0)", u = o < 0 ? "translate3d(0,-1.35em,0)" : "translate3d(0,0,0)";
-				N.style.transform = a;
-				let d = N.animate([{ transform: a }, { transform: u }], {
+				L.style.transform = a;
+				let d = L.animate([{ transform: a }, { transform: u }], {
 					duration: s,
 					easing: t.easing || "cubic-bezier(.22,.8,.25,1)",
 					fill: "forwards"
 				});
-				E = d;
+				A = d;
 				try {
 					await d.finished;
 				} catch {
 					return;
 				}
-				if (!A) {
+				if (!P) {
 					if (d.cancel(), o < 0) {
-						let e = N.firstElementChild;
-						N.appendChild(e);
+						let e = L.firstElementChild;
+						L.appendChild(e);
 					} else {
-						let e = N.lastElementChild;
-						N.insertBefore(e, N.firstElementChild);
+						let e = L.lastElementChild;
+						L.insertBefore(e, L.firstElementChild);
 					}
-					N.style.transform = "translate3d(0,0,0)", P = r, e.setAttribute("aria-label", Mi(n[P])), t.onChange?.(P, n[P], e), f || H(l, c);
+					L.style.transform = "translate3d(0,0,0)", R = r, e.setAttribute("aria-label", Mi(n[R])), t.onChange?.(R, n[R], e), f || G(l, c);
 				}
 			};
 			if (f) {
-				_ = t.hoverTarget && (e.closest(t.hoverTarget) || e.parentElement) || e;
-				let i = t.restoreOnLeave !== !1, a = t.loopOnHover === !0, o = t.restoreDirection === "continue" || t.restoreDirection === "forward", c = t.easing || "cubic-bezier(.22,.8,.25,1)", l = "translate3d(0,0,0)", u = "translate3d(0,-1.35em,0)", d = 0, f = null, v = () => {
-					N.style.transition = "none", N.firstElementChild && (N.firstElementChild.innerHTML = n[0]), N.lastElementChild && (N.lastElementChild.innerHTML = n[1 % n.length]), P = 0, N.style.transform = l, e.setAttribute("aria-label", Mi(n[0]));
-				}, y = null, b = () => {
-					if (y) return;
+				x = t.hoverTarget && (e.closest(t.hoverTarget) || e.parentElement) || e;
+				let i = t.restoreOnLeave !== !1, a = t.loopOnHover === !0, o = t.restoreDirection === "continue" || t.restoreDirection === "forward", c = t.easing || "cubic-bezier(.22,.8,.25,1)", l = "translate3d(0,0,0)", u = "translate3d(0,-1.35em,0)", d = 0, f = null, S = () => {
+					L.style.transition = "none", L.firstElementChild && (L.firstElementChild.innerHTML = n[0]), L.lastElementChild && (L.lastElementChild.innerHTML = n[1 % n.length]), R = 0, L.style.transform = l, e.setAttribute("aria-label", Mi(n[0]));
+				}, C = null, w = () => {
+					if (C) return;
 					let i = Math.round(r.getBoundingClientRect().width || e.getBoundingClientRect().width || 120), a = n.map(Mi).join(" ");
 					e.innerHTML = "";
 					let o = document.createElement("span");
@@ -6223,59 +6223,78 @@ var Ni = {
 					let l = document.createElement("span");
 					l.setAttribute("aria-hidden", "true"), l.textContent = a + "  ", s.append(c, l), o.appendChild(s), e.appendChild(o);
 					let u = c.getBoundingClientRect().width || 200, d = Math.max(20, J(t.speed, 60));
-					y = s.animate([{ transform: "translateX(0)" }, { transform: `translateX(${-u}px)` }], {
+					C = s.animate([{ transform: "translateX(0)" }, { transform: `translateX(${-u}px)` }], {
 						duration: Math.max(600, u / d * 1e3),
 						iterations: Infinity,
 						easing: "linear"
 					});
-				}, x = () => {
-					y && (y.cancel(), y = null, e.innerHTML = "", e.appendChild(r), v());
+				}, T = () => {
+					C && (C.cancel(), C = null, e.innerHTML = "", e.appendChild(r), S());
 				};
-				if (o && N.children.length < 3 && N.firstElementChild) {
-					let e = N.firstElementChild.cloneNode(!0);
-					e.innerHTML = n[0], N.appendChild(e);
+				if (o && L.children.length < 3 && L.firstElementChild) {
+					let e = L.firstElementChild.cloneNode(!0);
+					e.innerHTML = n[0], L.appendChild(e);
 				}
 				p = () => {
-					if (!A) {
+					if (!P) {
 						if (a) {
-							b();
+							w();
 							return;
 						}
 						if (clearTimeout(f), o) {
-							N.style.transition = "none", N.style.transform = l, N.offsetHeight, N.style.transition = `transform ${s}ms ${c}`, N.style.transform = u, e.setAttribute("aria-label", Mi(n[1 % n.length])), t.onChange?.(1 % n.length, n[1 % n.length], e);
+							L.style.transition = "none", L.style.transform = l, L.offsetHeight, L.style.transition = `transform ${s}ms ${c}`, L.style.transform = u, e.setAttribute("aria-label", Mi(n[1 % n.length])), t.onChange?.(1 % n.length, n[1 % n.length], e);
 							return;
 						}
-						v(), N.offsetHeight, N.style.transition = `transform ${s}ms ${c}`, N.style.transform = u, e.setAttribute("aria-label", Mi(n[1 % n.length])), t.onChange?.(1 % n.length, n[1 % n.length], e);
+						S(), L.offsetHeight, L.style.transition = `transform ${s}ms ${c}`, L.style.transform = u, e.setAttribute("aria-label", Mi(n[1 % n.length])), t.onChange?.(1 % n.length, n[1 % n.length], e);
 					}
 				}, m = () => {
-					if (!A) {
+					if (!P) {
 						if (a) {
-							i && x();
+							i && T();
 							return;
 						}
 						if (i) {
 							if (o) {
-								N.style.transition = `transform ${s}ms ${c}`, N.style.transform = "translate3d(0,-2.7em,0)", e.setAttribute("aria-label", Mi(n[0])), t.onChange?.(0, n[0], e), clearTimeout(f), f = setTimeout(() => {
-									A || (N.style.transition = "none", N.style.transform = l);
+								L.style.transition = `transform ${s}ms ${c}`, L.style.transform = "translate3d(0,-2.7em,0)", e.setAttribute("aria-label", Mi(n[0])), t.onChange?.(0, n[0], e), clearTimeout(f), f = setTimeout(() => {
+									P || (L.style.transition = "none", L.style.transform = l);
 								}, s + 60);
 								return;
 							}
-							N.style.transition = `transform ${s}ms ${c}`, N.style.transform = l, e.setAttribute("aria-label", Mi(n[0])), t.onChange?.(0, n[0], e);
+							L.style.transition = `transform ${s}ms ${c}`, L.style.transform = l, e.setAttribute("aria-label", Mi(n[0])), t.onChange?.(0, n[0], e);
 						}
 					}
-				}, h = (e) => {
-					d || p(), d |= e.type === "pointerenter" ? 1 : 2;
+				};
+				let E = !1;
+				h = (e) => {
+					!d && !E && p(), d |= e.type === "pointerenter" ? 1 : 2;
 				}, g = (e) => {
-					e.type === "focusout" && _.contains(e.relatedTarget) || (d &= e.type === "pointerleave" ? -2 : -3, d || m());
-				}, _.addEventListener("pointerenter", h), _.addEventListener("focusin", h), _.addEventListener("pointerleave", g), _.addEventListener("focusout", g);
-			} else n.length > 1 && H(l, J(t.delay, c));
-		}, te = () => {
-			let r = T || [];
+					e.type === "focusout" && x.contains(e.relatedTarget) || (d &= e.type === "pointerleave" ? -2 : -3, d || m());
+				}, x.addEventListener("pointerenter", h), x.addEventListener("focusin", h), x.addEventListener("pointerleave", g), x.addEventListener("focusout", g);
+				let D = x.closest?.("a[href]") || null, O = !1;
+				D && (_ = (e) => {
+					e.pointerType === "touch" && (E = !0, clearTimeout(b), b = setTimeout(() => {
+						E = !1;
+					}, 800), d || p());
+				}, v = (e) => {
+					if (O) {
+						O = !1;
+						return;
+					}
+					if (!E) return;
+					E = !1, clearTimeout(b), b = null;
+					let t = (D.getAttribute("target") || "").toLowerCase(), n = t && t !== "_self";
+					e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || D.hasAttribute("download") || n || (e.preventDefault(), e.stopImmediatePropagation(), clearTimeout(y), y = setTimeout(() => {
+						y = null, !P && D.isConnected && (O = !0, D.click());
+					}, s));
+				}, x.addEventListener("pointerup", _), x.addEventListener("click", v, !0));
+			} else n.length > 1 && G(l, J(t.delay, c));
+		}, ie = () => {
+			let r = k || [];
 			if (r.length < 2) {
-				ne();
+				ae();
 				return;
 			}
-			V(), e.innerHTML = "", e.style.whiteSpace = "normal", e.setAttribute("role", t.role || "status"), e.setAttribute("aria-live", t.ariaLive || "polite");
+			ee(), e.innerHTML = "", e.style.whiteSpace = "normal", e.setAttribute("role", t.role || "status"), e.setAttribute("aria-live", t.ariaLive || "polite");
 			let a = document.createElement("span");
 			a.className = "kt-overflow-scene-viewport", a.style.cssText = "display:block;position:relative;overflow:hidden;", n === "flip" && (a.style.perspective = `${J(t.perspective, 700, 100)}px`), e.appendChild(a);
 			let o = r.map((e) => {
@@ -6320,48 +6339,48 @@ var Ni = {
 				}
 				return [[{ opacity: 1 }, { opacity: 0 }], [{ opacity: 0 }, { opacity: 1 }]];
 			}, p = (r) => {
-				if (A) return;
+				if (P) return;
 				let i = o[c], a = o[r], [s, l] = f(), d = {
 					duration: u,
 					easing: n === "flip" ? "cubic-bezier(.4,0,.2,1)" : "ease",
 					fill: "both"
 				}, p = i.animate(s, d);
-				E = a.animate(l, d), E.onfinish = () => {
-					p.cancel(), E?.cancel?.(), i.style.opacity = "0", i.style.transform = "", i.style.filter = "", i.style.clipPath = "", a.style.opacity = "1", a.style.transform = "", a.style.filter = "", a.style.clipPath = "";
-				}, c = r, P = r, t.onPage?.(r, o.length, e);
+				A = a.animate(l, d), A.onfinish = () => {
+					p.cancel(), A?.cancel?.(), i.style.opacity = "0", i.style.transform = "", i.style.filter = "", i.style.clipPath = "", a.style.opacity = "1", a.style.transform = "", a.style.filter = "", a.style.clipPath = "";
+				}, c = r, R = r, t.onPage?.(r, o.length, e);
 			}, m = () => {
-				if (A) return;
-				if (j) {
-					H(m, l);
+				if (P) return;
+				if (F) {
+					G(m, l);
 					return;
 				}
 				let e = (c + 1) % o.length;
-				p(e), (t.repeat !== !1 || e !== 0) && H(m, l);
+				p(e), (t.repeat !== !1 || e !== 0) && G(m, l);
 			};
-			H(m, i + l);
-		}, ne = () => {
-			V(), F = !1, e.textContent = "", M = document.createElement("span"), M.className = "kt-overflow-text-viewport", M.style.cssText = "display:block;position:relative;overflow:hidden;will-change:clip-path,transform;", N = document.createElement("span"), N.className = `kt-overflow-text-track kt-overflow-text-${n}`, N.setAttribute("aria-hidden", "true"), N.dataset.mode = n, N.style.cssText = "display:inline-flex;align-items:center;white-space:nowrap;will-change:transform;";
-			let r = ee();
-			N.appendChild(r), M.appendChild(N), e.appendChild(M), N.style.display = "inline-block", N.style.maxWidth = "100%", N.style.overflow = "hidden", N.style.textOverflow = t.ellipsis === !1 ? "clip" : "ellipsis";
-			let i = ++I, a = M;
-			L?.(), L = Ie(() => ({
+			G(m, i + l);
+		}, ae = () => {
+			ee(), z = !1, e.textContent = "", I = document.createElement("span"), I.className = "kt-overflow-text-viewport", I.style.cssText = "display:block;position:relative;overflow:hidden;will-change:clip-path,transform;", L = document.createElement("span"), L.className = `kt-overflow-text-track kt-overflow-text-${n}`, L.setAttribute("aria-hidden", "true"), L.dataset.mode = n, L.style.cssText = "display:inline-flex;align-items:center;white-space:nowrap;will-change:transform;";
+			let r = q();
+			L.appendChild(r), I.appendChild(L), e.appendChild(I), L.style.display = "inline-block", L.style.maxWidth = "100%", L.style.overflow = "hidden", L.style.textOverflow = t.ellipsis === !1 ? "clip" : "ellipsis";
+			let i = ++B, a = I;
+			V?.(), V = Ie(() => ({
 				position: getComputedStyle(e).position,
 				viewportWidth: a.clientWidth || e.clientWidth,
 				contentWidth: r.scrollWidth,
 				firstBox: r.getBoundingClientRect()
 			}), (e) => {
-				L = null, !(A || i !== I) && (q(r, e), j && E?.pause?.());
+				V = null, !(P || i !== B) && (oe(r, e), F && A?.pause?.());
 			});
-		}, q = (l, { position: u, viewportWidth: d, contentWidth: f, firstBox: p }) => {
-			R(u);
+		}, oe = (l, { position: u, viewportWidth: d, contentWidth: f, firstBox: p }) => {
+			H(u);
 			let m = Math.max(0, f - d), h = t.force === !0 || m > J(t.threshold, 1);
 			if (e.dataset.ktOverflowActive = String(h), !h) return;
-			if (F = !0, N.style.display = "inline-flex", N.style.maxWidth = "", N.style.overflow = "", N.style.textOverflow = "", n === "loop") {
+			if (z = !0, L.style.display = "inline-flex", L.style.maxWidth = "", L.style.overflow = "", L.style.textOverflow = "", n === "loop") {
 				l.style.marginRight = `${s}px`;
-				let e = ee(C, !0);
-				e.style.marginRight = `${s}px`, N.appendChild(e);
+				let e = q(D, !0);
+				e.style.marginRight = `${s}px`, L.appendChild(e);
 				let n = p.width + s, a = Math.max(200, n / r * 1e3), o = c < 0 ? 0 : -n, u = c < 0 ? -n : 0;
-				E = N.animate([{ transform: `translate3d(${o}px,0,0)` }, { transform: `translate3d(${u}px,0,0)` }], {
+				A = L.animate([{ transform: `translate3d(${o}px,0,0)` }, { transform: `translate3d(${u}px,0,0)` }], {
 					duration: a,
 					delay: i,
 					iterations: t.repeat === !1 ? 1 : Infinity,
@@ -6371,9 +6390,9 @@ var Ni = {
 				return;
 			}
 			let g = m, _ = Math.max(120, g / r * 1e3), v = c < 0 ? 0 : -g, y = c < 0 ? -g : 0;
-			if (N.style.transform = `translate3d(${v}px,0,0)`, n === "bounce") {
+			if (L.style.transform = `translate3d(${v}px,0,0)`, n === "bounce") {
 				let e = i + _ + a + _ + o, n = K(i / e, 0, 1), r = K((i + _) / e, n, 1), s = K((i + _ + a) / e, r, 1), c = K((i + _ + a + _) / e, s, 1);
-				E = N.animate([
+				A = L.animate([
 					{
 						transform: `translate3d(${v}px,0,0)`,
 						offset: 0
@@ -6407,7 +6426,7 @@ var Ni = {
 				return;
 			}
 			if (n === "once") {
-				E = N.animate([{ transform: `translate3d(${v}px,0,0)` }, { transform: `translate3d(${y}px,0,0)` }], {
+				A = L.animate([{ transform: `translate3d(${v}px,0,0)` }, { transform: `translate3d(${y}px,0,0)` }], {
 					duration: _,
 					delay: i,
 					easing: t.easing || "ease-in-out",
@@ -6419,48 +6438,48 @@ var Ni = {
 				let e = J(t.maskDuration, 320, 10);
 				if (t.crossfade === !0) {
 					let n = p.height;
-					M.style.height = n ? `${n}px` : "1.35em", N.style.position = "absolute", N.style.left = "0", N.style.top = "0", N.style.willChange = "transform,opacity";
+					I.style.height = n ? `${n}px` : "1.35em", L.style.position = "absolute", L.style.left = "0", L.style.top = "0", L.style.willChange = "transform,opacity";
 					let r = async () => {
-						if (A || j) return;
-						N.style.opacity = "1", N.style.transform = `translate3d(${v}px,0,0)`;
-						let n = N.animate([{ transform: `translate3d(${v}px,0,0)` }, { transform: `translate3d(${y}px,0,0)` }], {
+						if (P || F) return;
+						L.style.opacity = "1", L.style.transform = `translate3d(${v}px,0,0)`;
+						let n = L.animate([{ transform: `translate3d(${v}px,0,0)` }, { transform: `translate3d(${y}px,0,0)` }], {
 							duration: _,
 							delay: i,
 							easing: t.easing || "linear",
 							fill: "forwards"
 						});
-						E = n;
+						A = n;
 						try {
 							await n.finished;
 						} catch {
 							return;
 						}
-						if (A || j || (n.cancel(), N.style.transform = `translate3d(${y}px,0,0)`, await new Promise((e) => H(e, a)), A || j)) return;
-						let s = N.cloneNode(!0);
-						s.setAttribute("aria-hidden", "true"), s.style.cssText = N.style.cssText, s.style.transform = `translate3d(${y}px,0,0)`, s.style.opacity = "1", M.appendChild(s), N.style.transform = `translate3d(${v}px,0,0)`, N.style.opacity = "0", s.animate([{ opacity: 1 }, { opacity: 0 }], {
+						if (P || F || (n.cancel(), L.style.transform = `translate3d(${y}px,0,0)`, await new Promise((e) => G(e, a)), P || F)) return;
+						let s = L.cloneNode(!0);
+						s.setAttribute("aria-hidden", "true"), s.style.cssText = L.style.cssText, s.style.transform = `translate3d(${y}px,0,0)`, s.style.opacity = "1", I.appendChild(s), L.style.transform = `translate3d(${v}px,0,0)`, L.style.opacity = "0", s.animate([{ opacity: 1 }, { opacity: 0 }], {
 							duration: e,
 							easing: "ease",
 							fill: "forwards"
 						});
-						let c = N.animate([{ opacity: 0 }, { opacity: 1 }], {
+						let c = L.animate([{ opacity: 0 }, { opacity: 1 }], {
 							duration: e,
 							easing: "ease",
 							fill: "forwards"
 						});
-						E = c;
+						A = c;
 						try {
 							await c.finished;
 						} catch {
 							s.remove();
 							return;
 						}
-						s.remove(), N.style.opacity = "1", t.repeat !== !1 && H(r, o);
+						s.remove(), L.style.opacity = "1", t.repeat !== !1 && G(r, o);
 					};
 					r();
 					return;
 				}
 				let n = i + e + _ + e + a, r = K(i / n, 0, 1), s = K((i + e) / n, r, 1), c = K((i + e + _) / n, s, 1), l = K((i + e + _ + e) / n, c, 1);
-				E = N.animate([
+				A = L.animate([
 					{
 						transform: `translate3d(${v}px,0,0)`,
 						opacity: 0,
@@ -6504,19 +6523,19 @@ var Ni = {
 				for (let e = n; e < m; e += n) r.push(e);
 				r[r.length - 1] !== m && r.push(m);
 				let a = J(t.rollDuration, 420, 60), s = J(t.pageDuration, 1200, 120), l = t.rollDirection === "down";
-				M.style.height = "1.3em", N.remove();
+				I.style.height = "1.3em", L.remove();
 				let u = (e) => {
 					let t = document.createElement("span");
 					t.className = "kt-overflow-text-line", t.setAttribute("aria-hidden", "true"), t.style.cssText = "position:absolute;left:0;top:0;height:100%;display:inline-flex;align-items:center;white-space:nowrap;will-change:transform;";
-					let n = ee();
-					return n.style.transform = `translate3d(${e}px,0,0)`, t.appendChild(n), M.appendChild(t), t;
+					let n = q();
+					return n.style.transform = `translate3d(${e}px,0,0)`, t.appendChild(n), I.appendChild(t), t;
 				}, f = (e) => {
 					let t = r[e];
 					return c < 0 ? -t : -(m - t);
 				}, p = u(0), h = u(0);
 				h.style.transform = "translateY(100%)";
 				let g = 0, _ = async () => {
-					if (A || j) return;
+					if (P || F) return;
 					g = (g + 1) % r.length, h.firstElementChild.style.transform = `translate3d(${f(g)}px,0,0)`;
 					let n = l ? "translateY(-100%)" : "translateY(100%)", i = l ? "translateY(100%)" : "translateY(-100%)";
 					h.style.transform = n;
@@ -6529,18 +6548,18 @@ var Ni = {
 						easing: c,
 						fill: "forwards"
 					});
-					E = d;
+					A = d;
 					try {
 						await Promise.all([u.finished, d.finished]);
 					} catch {
 						return;
 					}
-					if (A) return;
+					if (P) return;
 					u.cancel(), d.cancel();
 					let m = p;
-					p = h, h = m, p.style.transform = "translateY(0)", h.style.transform = "translateY(100%)", p.dataset.page = String(g), t.onPage?.(g, r.length, e), (t.repeat !== !1 || g < r.length - 1) && H(_, g === 0 ? o : s);
+					p = h, h = m, p.style.transform = "translateY(0)", h.style.transform = "translateY(100%)", p.dataset.page = String(g), t.onPage?.(g, r.length, e), (t.repeat !== !1 || g < r.length - 1) && G(_, g === 0 ? o : s);
 				};
-				H(_, i);
+				G(_, i);
 				return;
 			}
 			if (n === "dissolve") {
@@ -6548,15 +6567,15 @@ var Ni = {
 				for (let e = n; e < m; e += n) r.push(e);
 				r[r.length - 1] !== m && r.push(m);
 				let a = J(t.dissolveDuration ?? t.maskDuration, 460, 100), s = J(t.jitter, 5, 0);
-				N.style.display = "inline-block", N.textContent = "";
+				L.style.display = "inline-block", L.textContent = "";
 				let l = [];
-				Ee(C).forEach((e) => {
+				Ee(D).forEach((e) => {
 					if (/^\s$/.test(e)) {
-						N.appendChild(document.createTextNode(e));
+						L.appendChild(document.createTextNode(e));
 						return;
 					}
 					let t = document.createElement("span");
-					t.textContent = e, t.style.cssText = "display:inline-block;will-change:transform,opacity,filter;", N.appendChild(t), l.push(t);
+					t.textContent = e, t.style.cssText = "display:inline-block;will-change:transform,opacity,filter;", L.appendChild(t), l.push(t);
 				});
 				let u = (e) => Promise.all(l.map((t) => {
 					let n = (Math.random() - .5) * s * 2, r = (Math.random() - .5) * s * 1.4, i = e ? [
@@ -6603,14 +6622,14 @@ var Ni = {
 						easing: `steps(${2 + Math.floor(Math.random() * 3)}, end)`,
 						fill: "forwards"
 					});
-					return E = o, o.finished.catch(() => {});
+					return A = o, o.finished.catch(() => {});
 				})), f = 0, p = J(t.pageDuration, 1200, 120), h = async () => {
-					if (A || j || (await u(!1), A)) return;
+					if (P || F || (await u(!1), P)) return;
 					f = (f + 1) % r.length;
 					let n = r[f], i = c < 0 ? -n : -(m - n);
-					N.style.transform = `translate3d(${i}px,0,0)`, await u(!0), N.dataset.page = String(f), t.onPage?.(f, r.length, e), (t.repeat !== !1 || f < r.length - 1) && H(h, f === 0 ? o : p);
+					L.style.transform = `translate3d(${i}px,0,0)`, await u(!0), L.dataset.page = String(f), t.onPage?.(f, r.length, e), (t.repeat !== !1 || f < r.length - 1) && G(h, f === 0 ? o : p);
 				};
-				H(h, i);
+				G(h, i);
 				return;
 			}
 			if (n === "fade") {
@@ -6618,20 +6637,20 @@ var Ni = {
 				for (let e = n; e < m; e += n) r.push(e);
 				r[r.length - 1] !== m && r.push(m);
 				let a = J(t.maskDuration, 300, 10), s = J(t.pageDuration, 1200, 120), l = 0, u = async () => {
-					if (A || j || (await N.animate([{ opacity: 1 }, { opacity: 0 }], {
+					if (P || F || (await L.animate([{ opacity: 1 }, { opacity: 0 }], {
 						duration: a,
 						easing: "ease",
 						fill: "forwards"
-					}).finished.catch(() => {}), A)) return;
+					}).finished.catch(() => {}), P)) return;
 					l = (l + 1) % r.length;
 					let n = r[l], i = c < 0 ? -n : -(m - n);
-					N.style.transform = `translate3d(${i}px,0,0)`, E = N.animate([{ opacity: 0 }, { opacity: 1 }], {
+					L.style.transform = `translate3d(${i}px,0,0)`, A = L.animate([{ opacity: 0 }, { opacity: 1 }], {
 						duration: a,
 						easing: "ease",
 						fill: "forwards"
-					}), await E.finished.catch(() => {}), N.dataset.page = String(l), t.onPage?.(l, r.length, e), (t.repeat !== !1 || l < r.length - 1) && H(u, l === 0 ? o : s);
+					}), await A.finished.catch(() => {}), L.dataset.page = String(l), t.onPage?.(l, r.length, e), (t.repeat !== !1 || l < r.length - 1) && G(u, l === 0 ? o : s);
 				};
-				H(u, i);
+				G(u, i);
 				return;
 			}
 			if (n === "flip") {
@@ -6640,10 +6659,10 @@ var Ni = {
 				for (let e = n; e < m; e += n) r.push(e);
 				r[r.length - 1] !== m && r.push(m);
 				let a = 0, s = J(t.pageDuration, 1200, 120), l = J(t.flipDuration ?? t.maskDuration, 300, 60), u = (t.flipDirection || "down") === "up" ? 1 : -1;
-				M.style.transformOrigin = "50% 50%", M.style.willChange = "transform,opacity";
+				I.style.transformOrigin = "50% 50%", I.style.willChange = "transform,opacity";
 				let f = async () => {
-					if (A || j) return;
-					let n = M.animate([{
+					if (P || F) return;
+					let n = I.animate([{
 						transform: "rotateX(0deg)",
 						opacity: 1
 					}, {
@@ -6654,17 +6673,17 @@ var Ni = {
 						easing: "cubic-bezier(.55,0,.7,.4)",
 						fill: "forwards"
 					});
-					E = n;
+					A = n;
 					try {
 						await n.finished;
 					} catch {
 						return;
 					}
-					if (A) return;
+					if (P) return;
 					a = (a + 1) % r.length;
 					let i = r[a], d = c < 0 ? -i : -(m - i);
-					N.style.transform = `translate3d(${d}px,0,0)`;
-					let p = M.animate([{
+					L.style.transform = `translate3d(${d}px,0,0)`;
+					let p = I.animate([{
 						transform: `rotateX(${-u * 88}deg)`,
 						opacity: .4
 					}, {
@@ -6675,15 +6694,15 @@ var Ni = {
 						easing: "cubic-bezier(.25,.7,.35,1)",
 						fill: "forwards"
 					});
-					E = p;
+					A = p;
 					try {
 						await p.finished;
 					} catch {
 						return;
 					}
-					N.dataset.page = String(a), t.onPage?.(a, r.length, e), (t.repeat !== !1 || a < r.length - 1) && H(f, a === 0 ? o : s);
+					L.dataset.page = String(a), t.onPage?.(a, r.length, e), (t.repeat !== !1 || a < r.length - 1) && G(f, a === 0 ? o : s);
 				};
-				H(f, i);
+				G(f, i);
 				return;
 			}
 			if (n === "page") {
@@ -6691,39 +6710,39 @@ var Ni = {
 				for (let e = n; e < m; e += n) r.push(e);
 				r[r.length - 1] !== m && r.push(m);
 				let a = 0, s = J(t.pageDuration, 1100, 120), l = async () => {
-					if (A || j || (await U(M), A)) return;
+					if (P || F || (await te(I), P)) return;
 					a = (a + 1) % r.length;
 					let n = r[a], i = c < 0 ? -n : -(m - n);
-					N.style.transform = `translate3d(${i}px,0,0)`, M.offsetWidth, await W(M), N.dataset.page = String(a), t.onPage?.(a, r.length, e), (t.repeat !== !1 || a < r.length - 1) && H(l, a === 0 ? o : s);
+					L.style.transform = `translate3d(${i}px,0,0)`, I.offsetWidth, await ne(I), L.dataset.page = String(a), t.onPage?.(a, r.length, e), (t.repeat !== !1 || a < r.length - 1) && G(l, a === 0 ? o : s);
 				};
-				H(l, i);
+				G(l, i);
 				return;
 			}
 			let b = async () => {
-				if (A || j) return;
-				N.style.transform = `translate3d(${v}px,0,0)`, M.style.clipPath = "inset(0 0 0 0)";
-				let e = N.animate([{ transform: `translate3d(${v}px,0,0)` }, { transform: `translate3d(${y}px,0,0)` }], {
+				if (P || F) return;
+				L.style.transform = `translate3d(${v}px,0,0)`, I.style.clipPath = "inset(0 0 0 0)";
+				let e = L.animate([{ transform: `translate3d(${v}px,0,0)` }, { transform: `translate3d(${y}px,0,0)` }], {
 					duration: _,
 					delay: i,
 					easing: t.easing || "linear",
 					fill: "forwards"
 				});
-				E = e;
+				A = e;
 				try {
 					await e.finished;
 				} catch {
 					return;
 				}
-				A || j || (e.cancel(), N.style.transform = `translate3d(${y}px,0,0)`, H(async () => {
-					await U(M), !A && (N.style.transform = `translate3d(${v}px,0,0)`, M.offsetWidth, await W(M), t.repeat !== !1 && H(b, o));
+				P || F || (e.cancel(), L.style.transform = `translate3d(${y}px,0,0)`, G(async () => {
+					await te(I), !P && (L.style.transform = `translate3d(${v}px,0,0)`, I.offsetWidth, await ne(I), t.repeat !== !1 && G(b, o));
 				}, a));
 			};
 			b();
-		}, re = () => {
-			F = !0, n === "rolling" ? G() : T && T.length >= 2 ? te() : ne();
+		}, Y = () => {
+			z = !0, n === "rolling" ? re() : k && k.length >= 2 ? ie() : ae();
 		};
-		re();
-		let ie = [
+		Y();
+		let X = [
 			"rolling",
 			"fade",
 			"dissolve",
@@ -6733,41 +6752,41 @@ var Ni = {
 			"pageRoll",
 			"scroll-fade",
 			"scrollFade"
-		].includes(n) || T && T.length >= 2;
+		].includes(n) || k && k.length >= 2;
 		if (typeof ResizeObserver < "u" && n !== "rolling") {
 			let t = null;
-			D = new ResizeObserver((e) => {
+			j = new ResizeObserver((e) => {
 				let n = e[e.length - 1]?.contentRect.width ?? 0, r = t != null && Math.abs(n - t) >= 1;
-				t = n, r && !O && (O = requestAnimationFrame(() => {
-					O = 0, !A && (V(), re());
+				t = n, r && !M && (M = requestAnimationFrame(() => {
+					M = 0, !P && (ee(), Y());
 				}));
-			}), D.observe(e);
+			}), j.observe(e);
 		}
-		let ae = () => {
-			z = !0, E?.playState === "running" && E.pause();
-		}, oe = () => {
-			if (z = !1, E?.playState === "paused" && E.play(), B && k == null) {
-				let e = B;
-				B = null, H(e, 220);
+		let se = () => {
+			U = !0, A?.playState === "running" && A.pause();
+		}, ce = () => {
+			if (U = !1, A?.playState === "paused" && A.play(), W && N == null) {
+				let e = W;
+				W = null, G(e, 220);
 			}
 		};
-		return d && !f && (e.addEventListener("pointerenter", ae), e.addEventListener("pointerleave", oe)), {
+		return d && !f && (e.addEventListener("pointerenter", se), e.addEventListener("pointerleave", ce)), {
 			el: e,
 			type: "overflowText",
 			get index() {
-				return P;
+				return R;
 			},
 			replay() {
-				V(), P = 0, re();
+				ee(), R = 0, Y();
 			},
 			pause() {
-				j = !0, E?.pause?.(), clearTimeout(k);
+				F = !0, A?.pause?.(), clearTimeout(N);
 			},
 			resume() {
-				j = !1, F && (ie ? (V(), re()) : E ? E.play() : re());
+				F = !1, z && (X ? (ee(), Y()) : A ? A.play() : Y());
 			},
 			destroy() {
-				A = !0, L?.(), V(), O && cancelAnimationFrame(O), O = 0, D?.disconnect(), e.removeEventListener("pointerenter", ae), e.removeEventListener("pointerleave", oe), _ && h && (_.removeEventListener("pointerenter", h), _.removeEventListener("focusin", h)), _ && g && (_.removeEventListener("pointerleave", g), _.removeEventListener("focusout", g)), y == null ? e.removeAttribute("style") : e.setAttribute("style", y), b == null ? e.removeAttribute("title") : e.setAttribute("title", b), x == null ? e.removeAttribute("aria-label") : e.setAttribute("aria-label", x), S == null ? e.removeAttribute("role") : e.setAttribute("role", S), e.innerHTML = v, delete e.dataset.ktOverflowActive;
+				P = !0, V?.(), ee(), M && cancelAnimationFrame(M), M = 0, j?.disconnect(), e.removeEventListener("pointerenter", se), e.removeEventListener("pointerleave", ce), x && h && (x.removeEventListener("pointerenter", h), x.removeEventListener("focusin", h)), x && g && (x.removeEventListener("pointerleave", g), x.removeEventListener("focusout", g)), x && _ && x.removeEventListener("pointerup", _), x && v && x.removeEventListener("click", v, !0), clearTimeout(y), clearTimeout(b), C == null ? e.removeAttribute("style") : e.setAttribute("style", C), w == null ? e.removeAttribute("title") : e.setAttribute("title", w), T == null ? e.removeAttribute("aria-label") : e.setAttribute("aria-label", T), E == null ? e.removeAttribute("role") : e.setAttribute("role", E), e.innerHTML = S, delete e.dataset.ktOverflowActive;
 			}
 		};
 	},
@@ -8480,15 +8499,15 @@ var Fa = {
 			if (!n.width || !n.height) return;
 			let r = K(((t.clientX - n.left) / n.width - .5) * u + .5, 0, 1), i = K(((t.clientY - n.top) / n.height - .5) * u + .5, 0, 1);
 			j = d === "x" ? 0 : -(i - .5) * 2 * a * f, M = d === "y" ? 0 : (r - .5) * 2 * o * f, H = r * 100, U = i * 100, ie();
-		}, se = () => {
+		}, Y = () => {
 			z = !1, p && (j = 0, M = 0, F = 1), V && (V.style.opacity = "0"), ie();
-		}, Y = null;
-		return n ? (Y = (e) => {
+		}, X = null;
+		return n ? (X = (e) => {
 			let t = K((e.gamma || 0) / 28, -1, 1), n = K(((e.beta || 0) - 40) / 28, -1, 1);
 			j = -n * a * f, M = t * o * f, H = (t + 1) * 50, U = (n + 1) * 50, V && (V.style.opacity = String(g)), z = !0, ie();
 		}, ee().then((e) => {
-			e && L && window.addEventListener("deviceorientation", Y, { passive: !0 });
-		})) : (e.addEventListener("pointerenter", ae), e.addEventListener("pointermove", oe, { passive: !0 }), e.addEventListener("pointerleave", se)), {
+			e && L && window.addEventListener("deviceorientation", X, { passive: !0 });
+		})) : (e.addEventListener("pointerenter", ae), e.addEventListener("pointermove", oe, { passive: !0 }), e.addEventListener("pointerleave", Y)), {
 			el: e,
 			type: "tilt",
 			pause: () => {
@@ -8498,7 +8517,7 @@ var Fa = {
 				L || (L = !0, ie());
 			},
 			destroy: () => {
-				L = !1, R != null && cancelAnimationFrame(R), e.removeEventListener("pointerenter", ae), e.removeEventListener("pointermove", oe), e.removeEventListener("pointerleave", se), Y && window.removeEventListener("deviceorientation", Y), B?.remove(), W.destroy(), A();
+				L = !1, R != null && cancelAnimationFrame(R), e.removeEventListener("pointerenter", ae), e.removeEventListener("pointermove", oe), e.removeEventListener("pointerleave", Y), X && window.removeEventListener("deviceorientation", X), B?.remove(), W.destroy(), A();
 			}
 		};
 	},
@@ -8936,15 +8955,15 @@ var oo = {
 			if (g && !e.contains(t.target)) return;
 			let n = t.target.closest?.(m);
 			n && n !== z ? te(n) : !n && z && q();
-		}, se = (e) => {
-			z && !z.contains(e.relatedTarget) && q(), e.relatedTarget || H(!1);
 		}, Y = (e) => {
+			z && !z.contains(e.relatedTarget) && q(), e.relatedTarget || H(!1);
+		}, X = (e) => {
 			L = !0, me(), y.classList.add("is-pressed"), I && (t.clickSprite || t.clickImage) && A.spawn(e.clientX, e.clientY);
-		}, ce = () => {
+		}, se = () => {
 			L = !1, me(), y.classList.remove("is-pressed");
-		}, le = (e) => {
+		}, ce = (e) => {
 			e.relatedTarget || H(!1);
-		}, X = () => {
+		}, le = () => {
 			B = !1, H(!1), z && q();
 		}, ue = 0, de = .05, fe = (e = performance.now()) => {
 			if (R = null, !F) return;
@@ -8990,7 +9009,7 @@ var oo = {
 		function me() {
 			F && R == null && (ue = 0, R = requestAnimationFrame(fe));
 		}
-		return window.addEventListener("pointermove", ae, { passive: !0 }), document.addEventListener("pointerover", oe), document.addEventListener("pointerout", se), document.addEventListener("pointerdown", Y, { passive: !0 }), document.addEventListener("pointerup", ce, { passive: !0 }), window.addEventListener("mouseout", le), g && e.addEventListener("pointerleave", X), R = requestAnimationFrame(fe), {
+		return window.addEventListener("pointermove", ae, { passive: !0 }), document.addEventListener("pointerover", oe), document.addEventListener("pointerout", Y), document.addEventListener("pointerdown", X, { passive: !0 }), document.addEventListener("pointerup", se, { passive: !0 }), window.addEventListener("mouseout", ce), g && e.addEventListener("pointerleave", le), R = requestAnimationFrame(fe), {
 			el: e,
 			type: "cursor",
 			cursor: y,
@@ -9010,7 +9029,7 @@ var oo = {
 				F || (F = !0, y.hidden = !1, me());
 			},
 			destroy() {
-				F = !1, R != null && cancelAnimationFrame(R), window.removeEventListener("pointermove", ae), document.removeEventListener("pointerover", oe), document.removeEventListener("pointerout", se), document.removeEventListener("pointerdown", Y), document.removeEventListener("pointerup", ce), window.removeEventListener("mouseout", le), g && (e.removeEventListener("pointerleave", X), e.classList.remove("kt-cursor-scope"), e.removeAttribute("data-kt-cursor-scope")), A.destroy(), y.remove(), !g && !document.querySelector(".kt-cursor") && (_.classList.remove("kt-cursor-active"), _.style.cursor = v);
+				F = !1, R != null && cancelAnimationFrame(R), window.removeEventListener("pointermove", ae), document.removeEventListener("pointerover", oe), document.removeEventListener("pointerout", Y), document.removeEventListener("pointerdown", X), document.removeEventListener("pointerup", se), window.removeEventListener("mouseout", ce), g && (e.removeEventListener("pointerleave", le), e.classList.remove("kt-cursor-scope"), e.removeAttribute("data-kt-cursor-scope")), A.destroy(), y.remove(), !g && !document.querySelector(".kt-cursor") && (_.classList.remove("kt-cursor-active"), _.style.cursor = v);
 			}
 		};
 	},
@@ -9606,12 +9625,12 @@ var ho = {
 			k.addEventListener("click", J);
 			let re = e.querySelector(".kt-radial-controls"), ie = null, ae = null, oe = !1;
 			C && (re || (re = document.createElement("div"), re.className = "kt-radial-controls", re.innerHTML = "<button type=\"button\" class=\"kt-radial-prev\" aria-label=\"Previous\"></button><button type=\"button\" class=\"kt-radial-next\" aria-label=\"Next\"></button>", e.appendChild(re), oe = !0), ie = re.querySelector(".kt-radial-prev, [data-kt-radial-prev]"), ae = re.querySelector(".kt-radial-next, [data-kt-radial-next]"), ie?.addEventListener("click", ee), ae?.addEventListener("click", W));
-			let se = (e) => {
+			let Y = (e) => {
 				e.key === "ArrowRight" || e.key === "ArrowDown" ? (e.preventDefault(), W()) : (e.key === "ArrowLeft" || e.key === "ArrowUp") && (e.preventDefault(), ee());
 			};
-			e.hasAttribute("tabindex") || (e.tabIndex = 0), e.addEventListener("keydown", se);
-			let Y = null, ce = f === "bottom" || f === "top", le = (e) => {
-				S && !e.target.closest(".kt-radial-controls, button") && (e.pointerType !== "mouse" || e.button === 0) && (Y = {
+			e.hasAttribute("tabindex") || (e.tabIndex = 0), e.addEventListener("keydown", Y);
+			let X = null, se = f === "bottom" || f === "top", ce = (e) => {
+				S && !e.target.closest(".kt-radial-controls, button") && (e.pointerType !== "mouse" || e.button === 0) && (X = {
 					x: e.clientX,
 					y: e.clientY,
 					start: j,
@@ -9620,21 +9639,21 @@ var ho = {
 					captured: !1,
 					lastIndex: j
 				});
-			}, X = (t) => {
-				if (!Y || t.pointerId !== Y.pointerId) return;
-				let n = ce ? t.clientX - Y.x : t.clientY - Y.y;
+			}, le = (t) => {
+				if (!X || t.pointerId !== X.pointerId) return;
+				let n = se ? t.clientX - X.x : t.clientY - X.y;
 				if (Math.abs(n) <= 6) return;
-				Y.captured || (e.setPointerCapture?.(t.pointerId), Y.captured = !0), Y.moved = !0;
-				let r = Y.start + Math.round(-n / 60);
-				r !== Y.lastIndex && (Y.lastIndex = r, H(r));
+				X.captured || (e.setPointerCapture?.(t.pointerId), X.captured = !0), X.moved = !0;
+				let r = X.start + Math.round(-n / 60);
+				r !== X.lastIndex && (X.lastIndex = r, H(r));
 			}, ue = (t) => {
-				Y && t.pointerId === Y.pointerId && (Y.captured && e.releasePointerCapture?.(t.pointerId), Y.moved && (te = !0, q != null && clearTimeout(q), q = setTimeout(() => {
+				X && t.pointerId === X.pointerId && (X.captured && e.releasePointerCapture?.(t.pointerId), X.moved && (te = !0, q != null && clearTimeout(q), q = setTimeout(() => {
 					te = !1, q = null;
-				}, 2e3)), Y = null);
+				}, 2e3)), X = null);
 			}, de = (e) => {
-				Y?.moved && e.preventDefault();
+				X?.moved && e.preventDefault();
 			};
-			S && (e.addEventListener("pointerdown", le), e.addEventListener("pointermove", X), e.addEventListener("pointerup", ue), e.addEventListener("pointercancel", ue), e.addEventListener("touchmove", de, { passive: !1 }));
+			S && (e.addEventListener("pointerdown", ce), e.addEventListener("pointermove", le), e.addEventListener("pointerup", ue), e.addEventListener("pointercancel", ue), e.addEventListener("touchmove", de, { passive: !1 }));
 			let fe = t.autoplay === !0 ? 3e3 : Math.max(0, Number(t.autoplay || 0)), pe = null, me = !1, Z = () => {
 				fe && !r && !z && !me && (ge(), pe = setInterval(W, fe));
 			}, ge = () => {
@@ -9660,7 +9679,7 @@ var ho = {
 					me = !1, Z();
 				},
 				destroy() {
-					ge(), B?.disconnect(), I && cancelAnimationFrame(I), q != null && clearTimeout(q), k.removeEventListener("click", J), e.removeEventListener("keydown", se), e.removeEventListener("pointerdown", le), e.removeEventListener("pointermove", X), e.removeEventListener("pointerup", ue), e.removeEventListener("pointercancel", ue), e.removeEventListener("touchmove", de), e.removeEventListener("mouseenter", ge), e.removeEventListener("mouseleave", Z), ie?.removeEventListener("click", ee), ae?.removeEventListener("click", W), [...D].reverse().forEach(({ item: t, next: n, restore: r }) => {
+					ge(), B?.disconnect(), I && cancelAnimationFrame(I), q != null && clearTimeout(q), k.removeEventListener("click", J), e.removeEventListener("keydown", Y), e.removeEventListener("pointerdown", ce), e.removeEventListener("pointermove", le), e.removeEventListener("pointerup", ue), e.removeEventListener("pointercancel", ue), e.removeEventListener("touchmove", de), e.removeEventListener("mouseenter", ge), e.removeEventListener("mouseleave", Z), ie?.removeEventListener("click", ee), ae?.removeEventListener("click", W), [...D].reverse().forEach(({ item: t, next: n, restore: r }) => {
 						e.insertBefore(t, n?.parentNode === e ? n : null), r();
 					}), O(), k.remove(), M.remove(), oe && re.remove(), T();
 				}
@@ -9688,8 +9707,8 @@ var ho = {
 			});
 			let a = Number(r?.perView ?? r?.slidesPerView);
 			return Number.isFinite(a) ? a : null;
-		})(), S = _ ? 1 : K(Number(x ?? t.perView ?? (l ? 1.35 : 1)), 1, a.length), C = Math.max(1, Math.round(Number(t.perGroup ?? 1))), w = l || (t.align || "center") !== "left", T = w ? a.length - 1 : Math.max(0, Math.ceil(a.length - S)), E = t.loop === !0 ? "infinite" : t.loop || "off", D = E === "infinite", O = K(Number(t.smoothing ?? .14 / Math.max(.2, Number(t.speed ?? t.duration ?? .55) / .55)), .02, .5), k = t.spring === !0, A = K(Number(t.stiffness ?? 170), 20, 400), j = K(Number(t.damping ?? 24), 1, 80), M = K(Number(t.mass ?? 1), .1, 4), N = K(Number(t.velocityInfluence ?? .35), 0, 1.2), P = t.momentum !== !1, F = t.bounce === !0, I = t.stickySnap === !0, L = t.autoplay === !0 ? 3e3 : Math.max(0, Number(t.autoplay || 0)), R = t.pauseOnHover === !0, z = t.pauseWhenOffscreen !== !1, B = Number(t.rotate ?? 32), V = Number(t.depth ?? 140), H = Number(t.scaleStep ?? .12), W = K(Number(t.minScale ?? .8), .2, 1), ee = Number(t.opacityStep ?? .32), te = K(Number(t.minOpacity ?? .25), 0, 1), q = t.axis === "y", J = K(Number(t.effectIntensity ?? 1), 0, 3), re = String(t.effectDirection || (q ? "up" : "left")).toLowerCase(), ie = t.drag !== !1, oe = t.touch !== !1, se = t.keyboard !== !1, Y = !1, X = !1;
-		c === "slide" && (Y = t.scrollSnap === !0, X = Y && E === "off" && !q && S === 1 && b === 0 && t.autoHeight !== !0 && oe);
+		})(), S = _ ? 1 : K(Number(x ?? t.perView ?? (l ? 1.35 : 1)), 1, a.length), C = Math.max(1, Math.round(Number(t.perGroup ?? 1))), w = l || (t.align || "center") !== "left", T = w ? a.length - 1 : Math.max(0, Math.ceil(a.length - S)), E = t.loop === !0 ? "infinite" : t.loop || "off", D = E === "infinite", O = K(Number(t.smoothing ?? .14 / Math.max(.2, Number(t.speed ?? t.duration ?? .55) / .55)), .02, .5), k = t.spring === !0, A = K(Number(t.stiffness ?? 170), 20, 400), j = K(Number(t.damping ?? 24), 1, 80), M = K(Number(t.mass ?? 1), .1, 4), N = K(Number(t.velocityInfluence ?? .35), 0, 1.2), P = t.momentum !== !1, F = t.bounce === !0, I = t.stickySnap === !0, L = t.autoplay === !0 ? 3e3 : Math.max(0, Number(t.autoplay || 0)), R = t.pauseOnHover === !0, z = t.pauseWhenOffscreen !== !1, B = Number(t.rotate ?? 32), V = Number(t.depth ?? 140), H = Number(t.scaleStep ?? .12), W = K(Number(t.minScale ?? .8), .2, 1), ee = Number(t.opacityStep ?? .32), te = K(Number(t.minOpacity ?? .25), 0, 1), q = t.axis === "y", J = K(Number(t.effectIntensity ?? 1), 0, 3), re = String(t.effectDirection || (q ? "up" : "left")).toLowerCase(), ie = t.drag !== !1, oe = t.touch !== !1, Y = t.keyboard !== !1, X = !1, le = !1;
+		c === "slide" && (X = t.scrollSnap === !0, le = X && E === "off" && !q && S === 1 && b === 0 && t.autoHeight !== !0 && oe);
 		let ue = go(e, [t.grabCursor === !0 && "cursor", v && "--kt-slide-active-shadow-opacity"].filter(Boolean), [`kt-slider--${c}`, "kt-slider--active-shadow"], [
 			"data-kt-slider-index",
 			"data-kt-slider-effect",
@@ -9721,10 +9740,10 @@ var ho = {
 			"aria-hidden",
 			"aria-label"
 		])), me = _o(r, a), Z = K(Math.round(Number(t.initial ?? 0)), 0, T), ge = Z, ve = Z, ye = 0, Q = !1, be = !1, xe = Z, Se = !1, Ce = 0, we = 0, Te = 0, Ee = 0, De = 0, Oe = 0, ke = 0, Ae = null, je = null, Me = -16, Ne = null, Pe = 0, Fe = L, Ie = !1, Le = !1, Re = null, ze = !1, Be = !0, Ve = null, He = t.enabled !== !1, Ue = () => {};
-		r.setAttribute("role", "region"), r.setAttribute("aria-roledescription", n("carouselRole")), r.setAttribute("aria-label", t.label || "Carousel"), r.hasAttribute("tabindex") || (r.tabIndex = 0), v ? (r.style.overflow = "clip", r.style.overflowClipMargin = "var(--kt-slide-active-shadow-room, 56px)") : (r.style.overflow = "hidden", r.style.removeProperty("overflow-clip-margin")), r.style.touchAction = q ? "pan-x" : "pan-y", r.style.position = "relative", X && (r.style.overflowX = "auto", r.style.overflowY = "hidden", r.style.scrollSnapType = "x mandatory", r.style.scrollBehavior = o ? "auto" : "smooth", r.style.touchAction = "pan-x pan-y", r.style.overscrollBehaviorX = "contain"), (l || p || m || h || g) && (r.style.perspective = `${Number(t.perspective ?? 1100)}px`), e.dataset.ktSliderEffect = c, Y && (e.dataset.ktSliderScrollSnap = X ? "native" : "fallback"), e.classList.add(`kt-slider--${c}`), e.classList.toggle("kt-slider--active-shadow", v), v && e.style.setProperty("--kt-slide-active-shadow-opacity", `${Number((y * 100).toFixed(2))}%`), i.style.display = X ? "flex" : "block", i.style.position = "relative", i.style.width = "100%", i.style.transformStyle = l ? "preserve-3d" : "flat", X && (i.style.flexWrap = "nowrap");
+		r.setAttribute("role", "region"), r.setAttribute("aria-roledescription", n("carouselRole")), r.setAttribute("aria-label", t.label || "Carousel"), r.hasAttribute("tabindex") || (r.tabIndex = 0), v ? (r.style.overflow = "clip", r.style.overflowClipMargin = "var(--kt-slide-active-shadow-room, 56px)") : (r.style.overflow = "hidden", r.style.removeProperty("overflow-clip-margin")), r.style.touchAction = q ? "pan-x" : "pan-y", r.style.position = "relative", le && (r.style.overflowX = "auto", r.style.overflowY = "hidden", r.style.scrollSnapType = "x mandatory", r.style.scrollBehavior = o ? "auto" : "smooth", r.style.touchAction = "pan-x pan-y", r.style.overscrollBehaviorX = "contain"), (l || p || m || h || g) && (r.style.perspective = `${Number(t.perspective ?? 1100)}px`), e.dataset.ktSliderEffect = c, X && (e.dataset.ktSliderScrollSnap = le ? "native" : "fallback"), e.classList.add(`kt-slider--${c}`), e.classList.toggle("kt-slider--active-shadow", v), v && e.style.setProperty("--kt-slide-active-shadow-opacity", `${Number((y * 100).toFixed(2))}%`), i.style.display = le ? "flex" : "block", i.style.position = "relative", i.style.width = "100%", i.style.transformStyle = l ? "preserve-3d" : "flat", le && (i.style.flexWrap = "nowrap");
 		let We = 100 / S;
 		a.forEach((e, r) => {
-			X ? (e.style.position = "relative", e.style.top = "", e.style.left = "", e.style.width = "100%", e.style.minWidth = "100%", e.style.flex = "0 0 100%", e.style.height = "100%", e.style.scrollSnapAlign = "start") : (e.style.position = r === 0 ? "relative" : "absolute", e.style.top = "0", e.style.left = "0"), !X && q ? (e.style.width = "100%", e.style.height = `calc(${We}% - ${b * (S - 1) / S}px)`) : X || (e.style.width = `calc(${We}% - ${b * (S - 1) / S}px)`, e.style.minWidth = "0", r !== 0 && t.autoHeight !== !0 && (e.style.height = "100%")), e.style.transformOrigin = "50% 50%", e.style.willChange = X ? "auto" : v ? "transform,opacity,filter" : "transform,opacity", e.style.transition = "none", X && (e.style.transform = "none"), e.setAttribute("role", "group"), e.setAttribute("aria-roledescription", n("slideRole")), e.setAttribute("aria-label", n("slide", {
+			le ? (e.style.position = "relative", e.style.top = "", e.style.left = "", e.style.width = "100%", e.style.minWidth = "100%", e.style.flex = "0 0 100%", e.style.height = "100%", e.style.scrollSnapAlign = "start") : (e.style.position = r === 0 ? "relative" : "absolute", e.style.top = "0", e.style.left = "0"), !le && q ? (e.style.width = "100%", e.style.height = `calc(${We}% - ${b * (S - 1) / S}px)`) : le || (e.style.width = `calc(${We}% - ${b * (S - 1) / S}px)`, e.style.minWidth = "0", r !== 0 && t.autoHeight !== !0 && (e.style.height = "100%")), e.style.transformOrigin = "50% 50%", e.style.willChange = le ? "auto" : v ? "transform,opacity,filter" : "transform,opacity", e.style.transition = "none", le && (e.style.transform = "none"), e.setAttribute("role", "group"), e.setAttribute("aria-roledescription", n("slideRole")), e.setAttribute("aria-label", n("slide", {
 				n: r + 1,
 				total: a.length
 			}));
@@ -9737,7 +9756,7 @@ var ho = {
 				step: n + b
 			};
 		}, Ke = () => {
-			if (X) {
+			if (le) {
 				a.forEach((e) => {
 					e.style.transform = "none", e.style.opacity = "1", e.style.filter = "", e.style.clipPath = "", e.style.backfaceVisibility = "", e.style.zIndex = "", e.style.pointerEvents = "", e.style.setProperty("--kt-slider-slide-distance", "0"), e.style.setProperty("--kt-slider-slide-progress", "1"), e.style.setProperty("--kt-slider-transition-mix", "0");
 				});
@@ -9801,7 +9820,7 @@ var ho = {
 				slide: a[Z]
 			}), !0;
 		}, Ye = null, Xe = () => {
-			X && Be && Ye == null && (Ye = requestAnimationFrame(() => {
+			le && Be && Ye == null && (Ye = requestAnimationFrame(() => {
 				Ye = null;
 				let e = Math.max(1, r.clientWidth || r.getBoundingClientRect().width), t = K(Math.round(r.scrollLeft / e), 0, T);
 				ve = t, ge = t, Je(t);
@@ -9834,7 +9853,7 @@ var ho = {
 			let n = D ? e : K(e, 0, T);
 			ve = !D && t ? Math.round(n) : n;
 			let i = D ? tt(ve) : K(Math.round(ve), 0, T);
-			if (X) {
+			if (le) {
 				ve = i, ge = i, Je(i);
 				let e = Math.max(1, r.clientWidth || r.getBoundingClientRect().width);
 				o ? r.scrollLeft = i * e : r.scrollTo?.({
@@ -9851,7 +9870,7 @@ var ho = {
 			} else nt(e, { snap: !0 });
 		}, it = () => D ? nt(Math.round(ve) + C) : rt(E === "rewind" && Z >= T ? 0 : Math.min(T, Z + C)), at = () => D ? nt(Math.round(ve) - C) : rt(E === "rewind" && Z <= 0 ? T : Math.max(0, Z - C)), ot = (() => {
 			let e = t.sync;
-			return e ? (Array.isArray(e) ? e : [e]).map((e) => typeof e == "string" ? ce(e)[0] : e).filter(Boolean) : [];
+			return e ? (Array.isArray(e) ? e : [e]).map((e) => typeof e == "string" ? se(e)[0] : e).filter(Boolean) : [];
 		})(), st = !1, ct = (t) => {
 			ot.length && !st && ot.forEach((n) => {
 				let r = n.__ktSlider;
@@ -9893,7 +9912,7 @@ var ho = {
 			}, Fe));
 		}, yt = (e) => {
 			if (He && (e.pointerType !== "mouse" || e.button === 0) && !(e.pointerType === "mouse" ? !ie : !oe)) {
-				if (X) {
+				if (le) {
 					if (e.pointerType !== "mouse") return;
 					Q = !0, Se = !1, Ae = e.pointerId, Ce = e.clientX, we = r.scrollLeft, Ee = e.clientX, De = performance.now(), r.style.scrollSnapType = "none", r.style.scrollBehavior = "auto", r.setPointerCapture?.(Ae), gt();
 					return;
@@ -9902,7 +9921,7 @@ var ho = {
 			}
 		}, bt = (e) => {
 			if (!Q || e.pointerId !== Ae) return;
-			if (X) {
+			if (le) {
 				let t = e.clientX - Ce;
 				if (!Se && Math.abs(t) < 5) return;
 				Se = !0;
@@ -9919,7 +9938,7 @@ var ho = {
 			ke = Math.min(5, ke + 1), Oe += (c - Oe) * (2 / (ke + 1)), Ee = n, De = o, ve = a, Qe();
 		}, xt = (e) => {
 			if (!Q || e.pointerId !== Ae) return;
-			if (Q = !1, r.releasePointerCapture?.(Ae), X) {
+			if (Q = !1, r.releasePointerCapture?.(Ae), le) {
 				Se && (Dt = performance.now() + 250);
 				let e = Math.max(1, r.clientWidth || r.getBoundingClientRect().width), t = r.scrollLeft;
 				r.style.scrollSnapType = "x mandatory", r.style.scrollBehavior = o ? "auto" : "smooth", nt(Math.round(t / e)), vt();
@@ -9929,10 +9948,10 @@ var ho = {
 			let t = P ? K(Oe * N, -1.2, 1.2) : 0, n = ve + t;
 			F && !o && !D && (ve < 0 || ve > T || n < 0 || n > T) ? (xe = K(n, 0, T), nt(xe, { snap: !0 }), be = !0, ye = 0, Qe()) : nt(n, { snap: I }), vt();
 		}, St = (e) => {
-			if (!He || !se) return;
+			if (!He || !Y) return;
 			let t = q ? "ArrowDown" : "ArrowRight", n = q ? "ArrowUp" : "ArrowLeft";
 			e.key === t ? (e.preventDefault(), it()) : e.key === n ? (e.preventDefault(), at()) : e.key === "Home" ? (e.preventDefault(), rt(0)) : e.key === "End" && (e.preventDefault(), rt(T));
-		}, Ct = le(e.id || ""), wt = ce(t.nextSelector || `[data-kt-slider-next="${Ct}"], [data-kt-slider-next]`).filter((e) => !e.dataset.ktSliderBound), Tt = ce(t.prevSelector || `[data-kt-slider-prev="${Ct}"], [data-kt-slider-prev]`).filter((e) => !e.dataset.ktSliderBound), Et = (e, t) => {
+		}, Ct = ce(e.id || ""), wt = se(t.nextSelector || `[data-kt-slider-next="${Ct}"], [data-kt-slider-next]`).filter((e) => !e.dataset.ktSliderBound), Tt = se(t.prevSelector || `[data-kt-slider-prev="${Ct}"], [data-kt-slider-prev]`).filter((e) => !e.dataset.ktSliderBound), Et = (e, t) => {
 			e.dataset.ktSliderBound = "true", e.addEventListener("click", t);
 		};
 		wt.forEach((e) => Et(e, it)), Tt.forEach((e) => Et(e, at));
@@ -9942,7 +9961,7 @@ var ho = {
 		r.addEventListener("pointerdown", yt), r.addEventListener("pointermove", bt), r.addEventListener("pointerup", xt), r.addEventListener("pointercancel", xt), r.addEventListener("touchmove", Ot, { passive: !1 }), r.addEventListener("keydown", St);
 		let kt = t.wheel === !0, At = 0, jt = (e) => {
 			if (!He) return;
-			if (X) {
+			if (le) {
 				!kt && Math.abs(e.deltaX) >= Math.abs(e.deltaY) && e.preventDefault();
 				return;
 			}
@@ -9952,7 +9971,7 @@ var ho = {
 			let n = performance.now();
 			n - At < 320 || (At = n, t > 0 ? it() : at());
 		};
-		(kt || X) && r.addEventListener("wheel", jt, { passive: !1 });
+		(kt || le) && r.addEventListener("wheel", jt, { passive: !1 });
 		let Mt = () => {
 			R && (Ie = !0, gt());
 		}, Nt = () => {
@@ -9963,12 +9982,12 @@ var ho = {
 			r !== !Le && (Le = !r, Le ? (gt(), je != null && (cancelAnimationFrame(je), je = null), Jt()) : (Qe(), vt(), Xt()));
 		}, { threshold: .01 }), Re.observe(e));
 		let Pt = typeof ResizeObserver < "u" ? new ResizeObserver(() => {
-			if (Ke(), X) {
+			if (Ke(), le) {
 				let e = Math.max(1, r.clientWidth || r.getBoundingClientRect().width), t = r.style.scrollBehavior;
 				r.style.scrollBehavior = "auto", r.scrollLeft = Z * e, r.style.scrollBehavior = t;
 			}
 		}) : null;
-		Pt?.observe(r), X && r.addEventListener("scroll", Xe, { passive: !0 });
+		Pt?.observe(r), le && r.addEventListener("scroll", Xe, { passive: !0 });
 		let Ft = t.dots === !0, It = [], Lt = null;
 		Ft && (Lt = document.createElement("div"), Lt.className = "kt-slider-dots", a.forEach((e, t) => {
 			let r = document.createElement("button");
@@ -10008,7 +10027,7 @@ var ho = {
 		}, Xt = () => {
 			Vt && Ut == null && Yt();
 		};
-		Ue = qt, Ke(), qe(), X && requestAnimationFrame(() => {
+		Ue = qt, Ke(), qe(), le && requestAnimationFrame(() => {
 			if (!Be) return;
 			let e = Math.max(1, r.clientWidth || r.getBoundingClientRect().width), t = r.style.scrollBehavior;
 			r.style.scrollBehavior = "auto", r.scrollLeft = Z * e, r.style.scrollBehavior = t;
@@ -11376,14 +11395,14 @@ var Ro = {
 			if (!n.width || !n.height) return;
 			let r = K(((t.clientX - n.left) / n.width - .5) * u + .5, 0, 1), i = K(((t.clientY - n.top) / n.height - .5) * u + .5, 0, 1);
 			B = r * n.width, V = i * n.height, ae();
-		}, se = (e) => {
+		}, Y = (e) => {
 			te = !0, A.style.opacity = "1", w.update(b, x, !0), oe(e), n === "shine" && j.animate([{ transform: "translateX(0) skewX(-20deg)" }, { transform: "translateX(390%) skewX(-20deg)" }], {
 				duration: Math.max(100, Number(t.duration ?? 800)),
 				easing: t.ease || "ease-in-out"
 			}), ae();
-		}, Y = () => {
+		}, X = () => {
 			te = !1, B = e.clientWidth * (n === "glass" ? .25 : .5), V = e.clientHeight * (n === "glass" ? .2 : .5), A.style.opacity = n === "glass" ? "1" : Lo(t.alwaysOn, n === "aurora" || n === "comet") ? String(o) : "0", w.update(b, x, !C), ae();
-		}, ce = (e) => {
+		}, se = (e) => {
 			te = !0, A.style.opacity = "1", w.update(b, x, !0), oe(e), A.animate([
 				{ filter: "brightness(1)" },
 				{
@@ -11396,7 +11415,7 @@ var Ro = {
 				easing: "cubic-bezier(.2,.7,.2,1)"
 			}), ae();
 		};
-		return e.addEventListener("pointerenter", se), e.addEventListener("pointermove", oe, { passive: !0 }), e.addEventListener("pointerleave", Y), e.addEventListener("pointerdown", ce), Lo(t.alwaysOn, n === "aurora" || n === "comet") && (A.style.opacity = String(o)), J(50, 50), n === "glass" && (A.style.opacity = "1", ie()), {
+		return e.addEventListener("pointerenter", Y), e.addEventListener("pointermove", oe, { passive: !0 }), e.addEventListener("pointerleave", X), e.addEventListener("pointerdown", se), Lo(t.alwaysOn, n === "aurora" || n === "comet") && (A.style.opacity = String(o)), J(50, 50), n === "glass" && (A.style.opacity = "1", ie()), {
 			el: e,
 			type: "cardGlow",
 			pause() {
@@ -11406,7 +11425,7 @@ var Ro = {
 				ee || (ee = !0, j.style.animationPlayState = "running", ae());
 			},
 			destroy() {
-				ee = !1, z?.disconnect(), z = null, W != null && cancelAnimationFrame(W), e.removeEventListener("pointerenter", se), e.removeEventListener("pointermove", oe), e.removeEventListener("pointerleave", Y), e.removeEventListener("pointerdown", ce), A.remove(), I.forEach((e) => e()), w.destroy(), i();
+				ee = !1, z?.disconnect(), z = null, W != null && cancelAnimationFrame(W), e.removeEventListener("pointerenter", Y), e.removeEventListener("pointermove", oe), e.removeEventListener("pointerleave", X), e.removeEventListener("pointerdown", se), A.remove(), I.forEach((e) => e()), w.destroy(), i();
 			}
 		};
 	},
@@ -11537,7 +11556,7 @@ function Go(e) {
 			})), r.style.cssText = `flex:0 0 auto;width:64px;height:44px;border-radius:6px;overflow:hidden;padding:0;cursor:pointer;background:#111;border:2px solid ${n === P ? "var(--kt-lightbox-accent,#ff5b1c)" : "transparent"};opacity:${n === P ? "1" : ".55"};transition:opacity .16s var(--kt-ease-ui, ease),border-color .16s var(--kt-ease-ui, ease);`;
 			let i = document.createElement("img");
 			i.src = t.thumb, i.alt = t.alt || "", i.loading = "lazy", i.style.cssText = "width:100%;height:100%;object-fit:cover;", r.appendChild(i), r.addEventListener("click", (e) => {
-				e.stopPropagation(), se(n);
+				e.stopPropagation(), Y(n);
 			}), j.appendChild(r);
 		});
 	}, q = () => {
@@ -11573,7 +11592,7 @@ function Go(e) {
 		n.style.backdropFilter = e, n.style.webkitBackdropFilter = e, t.style.setProperty("--kt-lightbox-radius", `${Number(M?.radius ?? 4)}px`), t.className = `kt-lightbox ${M?.className || ""}`.trim(), i.hidden = M?.toolbar === !1;
 		let r = typeof location < "u" && /^https?:$/i.test(location.protocol), a = typeof navigator < "u" && typeof navigator.share == "function" && r;
 		d.hidden = !(M?.share === !0 && a), f.hidden = M?.download !== !0, m.hidden = d.hidden && f.hidden, T.hidden = M?.info === !1, A.innerHTML = M?.uiTemplate || "", M?.renderUI?.(A, te, M);
-	}, se = (e) => {
+	}, Y = (e) => {
 		if (!N.length) return;
 		G?.destroy?.(), G = null;
 		let t = P;
@@ -11644,22 +11663,22 @@ function Go(e) {
 				}).catch(() => {});
 			}
 		}, M.onChange?.(P, M, te);
-	}, Y = () => {
+	}, X = () => {
 		if (t.hidden) return;
 		let e = Math.max(0, Number(M?.duration ?? .12));
 		t.style.transition = `opacity ${e}s ease`, t.style.opacity = "0", setTimeout(() => {
 			t.hidden = !0, t.style.display = "none", t.style.opacity = "1", document.body.style.overflow = F, document.documentElement.classList.remove(zo), G?.destroy?.(), G = null, I?.focus?.(), M?.onClose?.();
 		}, e * 1e3);
-	}, ce = (e) => {
-		I = document.activeElement, F = document.body.style.overflow, N = e.group ? Array.from(Bo).filter((t) => t.group === e.group) : [e], se(Math.max(0, N.indexOf(e))), ne(), t.hidden = !1, t.style.display = "block", t.style.opacity = "0", document.body.style.overflow = "hidden", document.documentElement.classList.add(zo);
+	}, se = (e) => {
+		I = document.activeElement, F = document.body.style.overflow, N = e.group ? Array.from(Bo).filter((t) => t.group === e.group) : [e], Y(Math.max(0, N.indexOf(e))), ne(), t.hidden = !1, t.style.display = "block", t.style.opacity = "0", document.body.style.overflow = "hidden", document.documentElement.classList.add(zo);
 		let n = Math.max(0, Number(e.duration ?? .12));
 		t.style.transition = `opacity ${n}s ease`, requestAnimationFrame(() => {
 			t.style.opacity = "1";
 		}), p.focus(), e.onOpen?.(te);
-	}, le = (e) => {
+	}, ce = (e) => {
 		if (!t.hidden) {
 			if (e.key === "Escape") {
-				Y();
+				X();
 				return;
 			}
 			if (e.key === "Tab") {
@@ -11669,9 +11688,9 @@ function Go(e) {
 				e.shiftKey && (a === n || !r.contains(a)) ? (e.preventDefault(), i.focus()) : !e.shiftKey && (a === i || !r.contains(a)) && (e.preventDefault(), n.focus());
 				return;
 			}
-			e.key === "ArrowLeft" && N.length > 1 ? se(P - 1) : e.key === "ArrowRight" && N.length > 1 ? se(P + 1) : e.key === "+" || e.key === "=" ? ie(L + Number(M?.zoomStep ?? .5)) : e.key === "-" ? ie(L - Number(M?.zoomStep ?? .5)) : e.key === "0" && ae();
+			e.key === "ArrowLeft" && N.length > 1 ? Y(P - 1) : e.key === "ArrowRight" && N.length > 1 ? Y(P + 1) : e.key === "+" || e.key === "=" ? ie(L + Number(M?.zoomStep ?? .5)) : e.key === "-" ? ie(L - Number(M?.zoomStep ?? .5)) : e.key === "0" && ae();
 		}
-	}, X = (e) => {
+	}, le = (e) => {
 		if (M?.zoom === !1) return;
 		e.preventDefault();
 		let t = Number(M?.wheelStep ?? .18);
@@ -11714,7 +11733,7 @@ function Go(e) {
 		ue.delete(e.pointerId), g.releasePointerCapture?.(e.pointerId), ue.size < 2 && (de = 0), B && e.pointerId === V && (B = !1, g.classList.remove("is-panning"));
 	};
 	n.addEventListener("click", () => {
-		K || M?.closeOnBackdrop !== !1 && Y();
+		K || M?.closeOnBackdrop !== !1 && X();
 	});
 	let _e = null;
 	g.addEventListener("pointerdown", (e) => {
@@ -11723,8 +11742,8 @@ function Go(e) {
 			y: e.clientY
 		};
 	}), g.addEventListener("click", (e) => {
-		K || M?.closeOnBackdrop === !1 || L > 1.001 || (e.target === g || e.target === _) && (_e && Math.hypot(e.clientX - _e.x, e.clientY - _e.y) > 8 || Y());
-	}), p.addEventListener("click", Y), b.addEventListener("click", () => se(P - 1)), x.addEventListener("click", () => se(P + 1)), u.addEventListener("click", () => ie(L + Number(M?.zoomStep ?? .5))), c.addEventListener("click", () => ie(L - Number(M?.zoomStep ?? .5))), l.addEventListener("dblclick", ae), l.addEventListener("click", () => {
+		K || M?.closeOnBackdrop === !1 || L > 1.001 || (e.target === g || e.target === _) && (_e && Math.hypot(e.clientX - _e.x, e.clientY - _e.y) > 8 || X());
+	}), p.addEventListener("click", X), b.addEventListener("click", () => Y(P - 1)), x.addEventListener("click", () => Y(P + 1)), u.addEventListener("click", () => ie(L + Number(M?.zoomStep ?? .5))), c.addEventListener("click", () => ie(L - Number(M?.zoomStep ?? .5))), l.addEventListener("dblclick", ae), l.addEventListener("click", () => {
 		if (M?.zoom === !1 || l.querySelector("input")) return;
 		let t = document.createElement("input");
 		t.type = "text", t.inputMode = "numeric", t.value = String(Math.round(L * 100)), t.setAttribute("aria-label", e("zoomInput")), t.style.cssText = "width:46px;background:transparent;border:0;color:inherit;font:inherit;text-align:center;outline:none;", l.textContent = "", l.appendChild(t), t.focus(), t.select();
@@ -11782,7 +11801,7 @@ function Go(e) {
 			let n = document.createElement("a");
 			n.href = e, n.download = t, n.target = "_blank", n.rel = "noopener", document.body.appendChild(n), n.click(), n.remove();
 		}
-	}), g.addEventListener("wheel", X, { passive: !1 }), g.addEventListener("pointerdown", he), g.addEventListener("pointermove", Z), g.addEventListener("pointerup", ge), g.addEventListener("pointercancel", ge);
+	}), g.addEventListener("wheel", le, { passive: !1 }), g.addEventListener("pointerdown", he), g.addEventListener("pointermove", Z), g.addEventListener("pointerup", ge), g.addEventListener("pointercancel", ge);
 	let ve = null, ye = null, Q = null;
 	return g.addEventListener("pointerdown", (e) => {
 		if (!e.isPrimary || e.pointerType === "mouse" || L > 1.001 || N.length <= 1 || e.target.closest("button,.kt-lightbox-toolbar,.kt-lightbox-info")) {
@@ -11793,23 +11812,23 @@ function Go(e) {
 	}), g.addEventListener("pointerup", (e) => {
 		if (ve == null || e.pointerId !== Q) return;
 		let t = e.clientX - ve, n = e.clientY - ye;
-		ve = ye = null, Q = null, L <= 1.001 && Math.abs(t) > 50 && Math.abs(t) > Math.abs(n) * 1.4 && se(P + (t < 0 ? 1 : -1));
-	}), y.addEventListener("dblclick", (e) => ie(L > 1 ? 1 : Number(M?.doubleClickZoom ?? 2), e.clientX, e.clientY)), document.addEventListener("keydown", le), {
+		ve = ye = null, Q = null, L <= 1.001 && Math.abs(t) > 50 && Math.abs(t) > Math.abs(n) * 1.4 && Y(P + (t < 0 ? 1 : -1));
+	}), y.addEventListener("dblclick", (e) => ie(L > 1 ? 1 : Number(M?.doubleClickZoom ?? 2), e.clientX, e.clientY)), document.addEventListener("keydown", ce), {
 		root: t,
 		controls: te,
-		open: ce,
-		close: Y,
+		open: se,
+		close: X,
 		next() {
-			se(P + 1);
+			Y(P + 1);
 		},
 		prev() {
-			se(P - 1);
+			Y(P - 1);
 		},
 		zoom(e) {
 			ie(Number(e));
 		},
 		destroy() {
-			G?.destroy?.(), document.removeEventListener("keydown", le), document.body.style.overflow = F, document.documentElement.classList.remove(zo), t.remove(), document.getElementById("kt-lightbox-style")?.remove();
+			G?.destroy?.(), document.removeEventListener("keydown", ce), document.body.style.overflow = F, document.documentElement.classList.remove(zo), t.remove(), document.getElementById("kt-lightbox-style")?.remove();
 		}
 	};
 }
@@ -15624,7 +15643,7 @@ function ll(e = {}) {
 	return e.blur != null && r.push(`blur(${cl(e.blur)})`), e.brightness != null && r.push(`brightness(${J(e.brightness, 1)})`), e.filter != null && r.push(String(e.filter)), r.length && (t.filter = r.join(" ")), t;
 }
 function ul(e) {
-	return X(e).filter((e) => e?.nodeType === 1);
+	return le(e).filter((e) => e?.nodeType === 1);
 }
 function dl(e, t) {
 	if (!t) return [];
