@@ -1,5 +1,26 @@
 import { clamp, env, snapshotAttributes } from '../utils.js';
 
+// One arrow-key press on the resize handle changes the height by this much.
+const RESIZE_KEY_STEP = 24;
+// Page parts that never take focus or clicks, so they need no `inert`.
+const NEVER_INTERACTIVE = new Set(['SCRIPT', 'STYLE', 'LINK', 'META', 'TEMPLATE', 'NOSCRIPT']);
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])';
+
+// Make everything outside `el` inert (every sibling of `el` and of each of its
+// ancestors up to <body>), except `keep`. Returns the undo. Elements that were
+// already inert are left to whoever made them so.
+function inertOutside(el, keep) {
+  const changed = [];
+  for (let node = el; node && node.parentElement && node !== document.body; node = node.parentElement) {
+    Array.from(node.parentElement.children).forEach((sibling) => {
+      if (sibling === node || sibling === keep || sibling.inert || NEVER_INTERACTIVE.has(sibling.tagName)) return;
+      sibling.inert = true;
+      changed.push(sibling);
+    });
+  }
+  return () => changed.forEach((sibling) => { sibling.inert = false; });
+}
+
 // Bottom sheet — a panel that slides up from the bottom edge with an optional
 // backdrop and drag-to-dismiss handle. Put `data-kt-bottom-sheet` on the panel;
 // triggers are any elements matching `opts.trigger` (default
@@ -57,10 +78,25 @@ export default {
     let open = false;
     let lastFocus = null;
     let anim = null;
+    let restoreBackground = null;
+    // The sheet itself takes focus when it has nothing focusable inside; a
+    // plain <div> ignores focus(), which left focus behind on the page.
+    const restoreTabIndex = snapshotAttributes(el, ['tabindex']);
 
-    const focusables = () => Array.from(el.querySelectorAll(
-      'a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])'
-    ));
+    // Only what can actually be reached: a control inside a collapsed part of
+    // the sheet (display:none) cannot take focus, so it cannot close the trap.
+    const focusables = () => Array.from(el.querySelectorAll(FOCUSABLE))
+      .filter((node) => node.getClientRects().length > 0);
+
+    // Opening lands on the first control of the content; the resize handle
+    // (when resizable) is in the Tab order but is not where a reader starts.
+    const focusInside = () => {
+      const items = focusables();
+      const first = items.find((node) => node !== handle) || items[0];
+      if (first) { first.focus(); return; }
+      if (!el.hasAttribute('tabindex')) el.tabIndex = -1;
+      el.focus?.();
+    };
 
     const doOpen = () => {
       if (open) return;
@@ -71,7 +107,12 @@ export default {
       el.classList.add('kt-open');
       if (anim) anim.cancel();
       if (!reduce) anim = el.animate([{ transform: 'translateY(100%)' }, { transform: 'translateY(0)' }], { duration: duration * 1000, easing: 'cubic-bezier(.22,.8,.3,1)' });
-      (focusables()[0] || el).focus?.();
+      // A modal dialog: the page behind it is out of reach for keyboard,
+      // pointer and screen reader alike — the comment above always said so,
+      // but nothing made it true. The backdrop stays clickable to dismiss.
+      restoreBackground?.();
+      restoreBackground = inertOutside(el, backdrop);
+      focusInside();
       document.addEventListener('keydown', onKey, true);
     };
 
@@ -80,6 +121,8 @@ export default {
       open = false;
       el.classList.remove('kt-open');
       document.removeEventListener('keydown', onKey, true);
+      restoreBackground?.();
+      restoreBackground = null;
       // Guard on `open`: if the sheet is reopened before this close animation
       // finishes (or is cancelled by the reopen), do NOT hide it.
       const finish = () => { if (!open) { el.hidden = true; if (backdrop) backdrop.hidden = true; } };
@@ -92,9 +135,9 @@ export default {
     const onKey = (event) => {
       if (event.key === 'Escape' && dismissible) { event.preventDefault(); doClose(); return; }
       if (event.key !== 'Tab') return;
-      // Simple focus trap.
+      // Simple focus trap. With nothing focusable inside, Tab stays on the sheet.
       const items = focusables();
-      if (!items.length) return;
+      if (!items.length) { event.preventDefault(); focusInside(); return; }
       const first = items[0];
       const last = items[items.length - 1];
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
@@ -102,6 +145,12 @@ export default {
     };
 
     if (backdrop && dismissible) backdrop.addEventListener('click', doClose);
+    // Buttons inside the sheet marked `data-kt-sheet-close` close it.
+    const onCloseClick = (event) => {
+      const closer = event.target.closest?.('[data-kt-sheet-close]');
+      if (closer && el.contains(closer)) { event.preventDefault(); doClose(); }
+    };
+    el.addEventListener('click', onCloseClick);
     // Set the resting opacity on the backdrop itself (it lives on <body>, not
     // inside the sheet, so a var on the sheet would never reach it).
     if (backdrop) backdrop.style.setProperty('--kt-sheet-backdrop-opacity', String(backdropOpacity));
@@ -153,12 +202,37 @@ export default {
     }
     const resetSize = () => { el.style.height = ''; el.style.maxHeight = ''; if (autoHeight) applyAutoHeight(); };
     const dragBindings = [];
+    let onHandleKey = null;
     if (handle && resizable) {
       handle.style.cursor = 'ns-resize'; handle.style.touchAction = 'none'; el.classList.add('kt-sheet--resizable');
       // 손잡이 툴팁. 라이브러리가 쓰는 사람의 언어를 알 수는 없으므로, `label` 과 같은
       // 규칙으로 영어 기본값을 두고 문구는 페이지가 정합니다. 빈 문자열이면 툴팁을 끕니다.
       const resizeLabel = opts.resizeLabel ?? 'Drag to resize · Double-click to reset';
       handle.title = handle.title || resizeLabel;
+      // Resizing was pointer-only. The handle is now a focusable splitter
+      // (role=separator): ↑/↓ change the height, Home/End jump to the limits.
+      // Its name is the title above — one string, so a page that re-words the
+      // tooltip (a language switch) re-words the name with it.
+      handle.removeAttribute('aria-hidden');
+      handle.tabIndex = 0;
+      handle.setAttribute('role', 'separator');
+      handle.setAttribute('aria-orientation', 'horizontal');
+      handle.setAttribute('aria-valuemin', String(minHeight));
+      onHandleKey = (event) => {
+        const viewportMax = Math.round((typeof window !== 'undefined' ? window.innerHeight : 800) * 0.95);
+        const maxHeight = Math.min(viewportMax, resolveMaxHeight());
+        const current = el.getBoundingClientRect().height;
+        const wanted = { ArrowUp: current + RESIZE_KEY_STEP, ArrowDown: current - RESIZE_KEY_STEP, Home: minHeight, End: maxHeight }[event.key];
+        if (wanted == null) return;
+        event.preventDefault();
+        const h = Math.min(maxHeight, Math.max(minHeight, Math.round(wanted)));
+        el.style.height = `${h}px`; el.style.maxHeight = `${maxHeight}px`;
+        handle.setAttribute('aria-valuemax', String(Math.round(maxHeight)));
+        handle.setAttribute('aria-valuenow', String(h));
+        opts.onResize?.(h, el);
+        emit('kt-sheet-resize', { height: h, source: 'keyboard' });
+      };
+      handle.addEventListener('keydown', onHandleKey);
     }
     if (resizable) {
       el.classList.add(`kt-sheet--resize-${resizeArea}`);
@@ -259,6 +333,9 @@ export default {
         // element and hides it for good.
         if (anim) { anim.onfinish = null; anim.oncancel = null; anim.cancel(); anim = null; }
         document.removeEventListener('keydown', onKey, true);
+        el.removeEventListener('click', onCloseClick);
+        if (onHandleKey) handle.removeEventListener('keydown', onHandleKey);
+        restoreTabIndex();
         triggers.forEach((t) => t.removeEventListener('click', onTrig));
         dragBindings.forEach(({ surface, down, move, up, dblclick }) => {
           surface.removeEventListener('pointerdown', down);

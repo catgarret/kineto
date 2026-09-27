@@ -6,7 +6,16 @@ import { cssEase, dropEmptyAttributes } from '../utils.js';
 // reduced motion it leaves the native <details> untouched (instant, accessible).
 export default {
   create(el, opts = {}) {
-    const items = el.matches('details') ? [el] : Array.from(el.querySelectorAll('details'));
+    // An accordion inside one of our items is its own widget: its <details>
+    // are not ours (claiming them wrapped their panels twice, and `single`
+    // closed them along with ours).
+    const ownItem = (details) => {
+      for (let up = details.parentElement; up && up !== el; up = up.parentElement) {
+        if (up.matches('[data-kt-accordion], .kt-accordion')) return false;
+      }
+      return true;
+    };
+    const items = el.matches('details') ? [el] : Array.from(el.querySelectorAll('details')).filter(ownItem);
     if (!items.length) return null;
 
     const duration = Math.max(0.05, Number(opts.duration ?? 0.4));

@@ -5,6 +5,9 @@ export default {
   // Kineto.config({ defer: true }) may create this only when the element nears
   // the viewport (src/deferCreate.js): it only matters where it can be seen.
   defer: true,
+  // Paused by the core while the card is off screen: a gyro-driven tilt used
+  // to run a frame loop per card for as long as the page was open.
+  offscreen: 'pause',
   create(el, opts) {
     // Optional: skip entirely on touch devices (gyro/hover effects off).
     if (opts.disableOnMobile === true && typeof window !== 'undefined' && window.matchMedia?.('(hover: none), (pointer: coarse)').matches) return null;
@@ -53,8 +56,12 @@ export default {
     let targetScale = 1;
     let currentScale = 1;
     let alive = true;
+    // pause() clears `alive`; only destroy() sets this. Work that finishes
+    // later (the gyro permission) must check this one, not `alive`.
+    let destroyed = false;
     let rafId = null;
     let hovering = false;
+    let gyroGlareShown = false;
     let glareWrap = null;
     let glare = null;
     let glareX = 50;
@@ -99,8 +106,11 @@ export default {
         !shadowHoverOnly || hovering
       );
       if (glare) glare.style.transform = `translate3d(${glareX}%,${glareY}%,0)`;
+      // Rest once caught up — also while hovered: a resting pointer or a phone
+      // held still sends no new target, and every move/orientation event
+      // wakes the loop again (ensureTick).
       const moving = Math.abs(currentX - targetX) > 0.02 || Math.abs(currentY - targetY) > 0.02 || Math.abs(currentScale - targetScale) > 0.002;
-      if (hovering || moving) rafId = requestAnimationFrame(tick);
+      if (moving) rafId = requestAnimationFrame(tick);
       else rafId = null;
     };
     const ensureTick = () => { if (alive && rafId == null) rafId = requestAnimationFrame(tick); };
@@ -142,14 +152,19 @@ export default {
         targetY = gx * maxY * reverse;
         glareX = (gx + 1) * 50;
         glareY = (gy + 1) * 50;
-        if (glare) glare.style.opacity = String(glareOpacity);
+        // Orientation events arrive ~60 times a second: show the glare once
+        // instead of writing its opacity on every one of them.
+        if (glare && !gyroGlareShown) { glare.style.opacity = String(glareOpacity); gyroGlareShown = true; }
         hovering = true;
         ensureTick();
       };
       // The shared gate resolves on the first tap anywhere (iOS gesture rule);
       // guard against the instance being destroyed before permission returns.
+      // A card that was merely PAUSED then (off screen, hidden tab) still
+      // listens: ensureTick() does nothing until it is resumed. Checking
+      // `alive` here left its gyro dead for good.
       ensureGyroPermission().then((granted) => {
-        if (granted && alive) window.addEventListener('deviceorientation', gyroHandler, { passive: true });
+        if (granted && !destroyed) window.addEventListener('deviceorientation', gyroHandler, { passive: true });
       });
     } else {
       el.addEventListener('pointerenter', onEnter);
@@ -168,6 +183,7 @@ export default {
       resume: () => { if (!alive) { alive = true; ensureTick(); } },
       destroy: () => {
         alive = false;
+        destroyed = true;
         if (rafId != null) cancelAnimationFrame(rafId);
         el.removeEventListener('pointerenter', onEnter);
         el.removeEventListener('pointermove', onMove);

@@ -10,8 +10,10 @@ import { clamp, cssEase, env, labeller, motionDefaults, snapshotInlineStyles } f
 //                     you go, and letting go past the threshold asks the page
 //                     to refresh
 //
-// Keyboard-accessible (focus mirrors hover, Space/Enter press; `pull` exposes a
-// button so it is reachable without a pointer at all). Reduced motion: the
+// Keyboard-accessible (focus mirrors hover, Space/Enter press). `pull` has no
+// built-in button: it exposes `instance.refresh()` so the page can wire its
+// own refresh button or shortcut and stay reachable without a pointer.
+// Reduced motion: the
 // spring is a no-op, and `pull` keeps working without the rubber band, because
 // a refresh gesture that does nothing is a broken control rather than a calm one.
 

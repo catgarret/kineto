@@ -190,7 +190,6 @@ function createPointerMagnet(el, { strength, radius, ease }) {
   let targetY = 0;
   let currentX = 0;
   let currentY = 0;
-  let active = false;
   let alive = true;
   let rafId = null;
 
@@ -203,8 +202,10 @@ function createPointerMagnet(el, { strength, radius, ease }) {
     currentX = lerp(currentX, targetX, step);
     currentY = lerp(currentY, targetY, step);
     el.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+    // Rest once caught up, even with the pointer in reach: the target changes
+    // only on pointermove, which wakes the loop (ensureLoop).
     const moving = Math.abs(currentX - targetX) > 0.1 || Math.abs(currentY - targetY) > 0.1;
-    if (active || moving) rafId = requestAnimationFrame(loop);
+    if (moving) rafId = requestAnimationFrame(loop);
     else rafId = null;
   };
 
@@ -218,12 +219,10 @@ function createPointerMagnet(el, { strength, radius, ease }) {
     const y = event.clientY - (rect.top + rect.height / 2);
     const distance = Math.hypot(x, y);
     if (distance <= reach * 1.5) {
-      active = true;
       targetX = x * pull;
       targetY = y * pull;
       ensureLoop();
     } else {
-      active = false;
       targetX = 0;
       targetY = 0;
       ensureLoop();
@@ -231,7 +230,6 @@ function createPointerMagnet(el, { strength, radius, ease }) {
   };
 
   const onLeave = () => {
-    active = false;
     targetX = 0;
     targetY = 0;
     ensureLoop();

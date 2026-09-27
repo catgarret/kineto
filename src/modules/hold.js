@@ -1,5 +1,13 @@
 import { clamp, labeller, snapshotChildNodes } from '../utils.js';
 
+// A screen reader's "activate" (and `el.click()`) sends a click with no press
+// before it, so a user who cannot hold or mash gets the same two-step question
+// `tap` asks: the first such click arms the button, the second confirms. They
+// need longer than a pointer does to hear the new label and answer.
+const ASSISTIVE_ARM_MS = 5000;
+// Ids for the hidden instructions each button points at (aria-describedby).
+let hintSequence = 0;
+
 // Hold-to-confirm — a control that asks for a deliberate second act before it
 // does the irreversible thing. Three ways of asking:
 //
@@ -129,10 +137,31 @@ export default {
     // The label is a `labels` map like every other user-visible string in the
     // library: the default is documented English and the page owns the words,
     // because a library cannot know what language its host page is in.
-    const label = labeller({ confirm: 'Sure?' }, opts.labels);
+    const label = labeller({
+      confirm: 'Sure?',
+      // How to use it, read after the name (aria-describedby). "Activate
+      // twice" is the path for a screen reader, which cannot press and hold.
+      holdHint: 'Press and hold to confirm, or activate twice.',
+      mashHint: 'Press repeatedly to confirm, or activate twice.',
+      tapHint: 'Activate twice to confirm.'
+    }, opts.labels);
     const restoreLabel = snapshotChildNodes(el);
     let armed = false;
     let armTimer = null;
+
+    // The instructions live in a hidden sibling: a hidden node is left out of
+    // the button's own name but is still read through aria-describedby.
+    const previousDescribedBy = el.getAttribute('aria-describedby');
+    const hint = document.createElement('span');
+    hint.hidden = true;
+    hint.className = 'kt-hold-hint';
+    hintSequence += 1;
+    hint.id = `kt-hold-hint-${hintSequence}`;
+    hint.textContent = label(`${mode}Hint`);
+    if (el.parentNode) {
+      el.after(hint);
+      el.setAttribute('aria-describedby', [previousDescribedBy, hint.id].filter(Boolean).join(' '));
+    }
 
     const disarm = () => {
       if (!armed) return;
@@ -143,7 +172,7 @@ export default {
       el.classList.remove('kt-hold-armed');
       el.removeAttribute('aria-pressed');
     };
-    const arm = () => {
+    const arm = (windowMs = duration) => {
       if (armed || confirmed) return;
       armed = true;
       el.textContent = label('confirm');
@@ -152,7 +181,7 @@ export default {
       // is on this button re-announces it — which is the announcement.
       el.setAttribute('aria-pressed', 'false');
       clearTimeout(armTimer);
-      armTimer = setTimeout(disarm, duration);
+      armTimer = setTimeout(disarm, windowMs);
     };
     // Clicking anywhere else is an answer too, and it is "no".
     const onDocumentDown = (event) => { if (armed && !el.contains(event.target)) disarm(); };
@@ -161,22 +190,48 @@ export default {
     const onDown = (event) => {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
       if (mode === 'tap') { if (armed) { disarm(); confirm(); } else arm(); return; }
+      // A real press answers a screen-reader arming with the gauge instead.
+      disarm();
       if (mode === 'mash') tap(); else start();
     };
+    // A link or submit button would otherwise follow/submit on a plain click
+    // in `hold` and `mash` too — the press was never held, and the native
+    // action ran anyway. confirm() performs that action itself (runAction).
+    const nativeAction = (el.tagName === 'A' && el.hasAttribute('href'))
+      || (/^(BUTTON|INPUT)$/.test(el.tagName) && el.type === 'submit' && Boolean(el.form));
+    // Enter/Space make the browser send a click of their own (detail 0, like a
+    // screen reader's). Those clicks follow a key press we already handled.
+    let keyPressed = false;
+    let keyReleaseTimer = null;
     // A click that only armed the button must not also do the thing the button
     // does. This is why `tap` blocks the click rather than listening for it.
     const onClickGuard = (event) => {
-      if (mode !== 'tap' || confirmed) return;
-      event.preventDefault();
-      event.stopPropagation();
+      if (mode === 'tap') {
+        if (confirmed) return;
+        event.preventDefault();
+        event.stopPropagation();
+      } else if (nativeAction) event.preventDefault();
+      // `detail` counts presses: 0 means no pointer made this click.
+      const assistive = event.detail === 0 && !keyPressed;
+      if (!assistive || confirmed) return;
+      if (armed) { disarm(); confirm(); } else arm(Math.max(duration, ASSISTIVE_ARM_MS));
     };
     const onKey = (event) => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
+      keyPressed = true;
       event.preventDefault();
       if (mode === 'tap') { if (!event.repeat) { if (armed) { disarm(); confirm(); } else arm(); } return; }
+      disarm();
       if (mode === 'mash') { if (!event.repeat) tap(); } else start();
     };
-    const onKeyUp = (event) => { if (mode === 'hold' && (event.key === 'Enter' || event.key === ' ')) release(); };
+    const onKeyUp = (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      if (mode === 'hold') release();
+      // The key's own click (if any) is dispatched during this keyup; forget
+      // the key press after it so a later screen-reader click counts as one.
+      clearTimeout(keyReleaseTimer);
+      keyReleaseTimer = setTimeout(() => { keyPressed = false; keyReleaseTimer = null; }, 0);
+    };
 
     el.addEventListener('pointerdown', onDown);
     if (mode === 'hold') {
@@ -184,12 +239,12 @@ export default {
       el.addEventListener('pointerleave', release);
       el.addEventListener('pointercancel', release);
     }
-    if (mode === 'tap') {
-      el.addEventListener('click', onClickGuard, true);
-      el.addEventListener('blur', disarm);
-      document.addEventListener('pointerdown', onDocumentDown, true);
-      document.addEventListener('keydown', onEscape);
-    }
+    // Every mode can be armed now (a screen reader arms `hold` and `mash` too),
+    // so every mode listens for the answers that disarm it.
+    el.addEventListener('click', onClickGuard, true);
+    el.addEventListener('blur', disarm);
+    document.addEventListener('pointerdown', onDocumentDown, true);
+    document.addEventListener('keydown', onEscape);
     el.addEventListener('keydown', onKey);
     el.addEventListener('keyup', onKeyUp);
 
@@ -205,6 +260,10 @@ export default {
       destroy() {
         cancelRaf();
         disarm();
+        clearTimeout(keyReleaseTimer);
+        hint.remove();
+        if (previousDescribedBy == null) el.removeAttribute('aria-describedby');
+        else el.setAttribute('aria-describedby', previousDescribedBy);
         el.removeEventListener('click', onClickGuard, true);
         el.removeEventListener('blur', disarm);
         document.removeEventListener('pointerdown', onDocumentDown, true);

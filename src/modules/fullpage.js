@@ -13,7 +13,7 @@ import { labeller } from '../utils.js';
 export default {
   create(el, opts) {
     // 모듈이 만드는 점 버튼의 이름. 기본값은 영어이고 `labels` 로 덮어씁니다(utils.labeller).
-    const label = labeller({ dot: 'Go to section {n}' }, opts.labels);
+    const label = labeller({ dot: 'Go to section {n}', dots: 'Sections' }, opts.labels);
     const originalHTML = el.innerHTML;
     const originalStyle = el.getAttribute('style');
     const sections = opts.sectionSelector
@@ -159,7 +159,10 @@ export default {
     if (opts.dots !== false) {
       dotsWrap = document.createElement('div');
       dotsWrap.className = 'kt-fullpage-dots';
-      dotsWrap.setAttribute('role', 'tablist');
+      // A group of buttons (aria-current marks the section shown). It was a
+      // tablist with no tabs in it — announced as a widget it never was.
+      dotsWrap.setAttribute('role', 'group');
+      dotsWrap.setAttribute('aria-label', label('dots'));
       dotsWrap.style.cssText = bidir
         ? 'position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;flex-direction:row;gap:10px;z-index:5;'
         : 'position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:5;';
@@ -391,14 +394,36 @@ export default {
     const onTouchEnd = () => { tStart = null; tLast = null; };
 
     // Keyboard, when focus is on/inside the container.
+    // Keys that belong to what has focus stay with it: a text field or select
+    // keeps every key (caret, options), a button or link keeps Space (it
+    // activates), and a widget that handled the key already says so.
+    const FIELD = 'input,textarea,select,[contenteditable]:not([contenteditable=false])';
+    const ACTIVATES_ON_SPACE = 'button,a[href],summary,[role=button],[role=link]';
+    const keyBelongsToFocus = (event) => {
+      if (event.defaultPrevented || event.target === el) return event.defaultPrevented;
+      if (event.target.closest?.(FIELD)) return true;
+      return event.key === ' ' && Boolean(event.target.closest?.(ACTIVATES_ON_SPACE));
+    };
+    // How far one key press scrolls a long section before paging.
+    const KEY_SCROLL_STEP = 40;
     const onKeyDown = (event) => {
       if (!el.contains(document.activeElement)) return;
+      if (keyBelongsToFocus(event)) return;
       const forwardKeys = mixed ? ['ArrowRight', 'ArrowDown', 'PageDown', ' '] : horizontal ? ['ArrowRight', 'PageDown', ' '] : ['ArrowDown', 'PageDown', ' '];
       const backKeys = mixed ? ['ArrowLeft', 'ArrowUp', 'PageUp'] : horizontal ? ['ArrowLeft', 'PageUp'] : ['ArrowUp', 'PageUp'];
       const forward = forwardKeys.includes(event.key);
       const back = backKeys.includes(event.key);
       if (!forward && !back && event.key !== 'Home' && event.key !== 'End') return;
       event.preventDefault();
+      // A long section scrolls through its own content first, as the wheel
+      // already did; only at its edge does the key change the page.
+      const dir = forward ? 1 : -1;
+      if ((forward || back) && !horizontal && sectionCanScroll(dir)) {
+        const section = sections[index];
+        const page = event.key === 'PageDown' || event.key === 'PageUp' || event.key === ' ';
+        section.scrollTop += dir * (page ? section.clientHeight * 0.9 : KEY_SCROLL_STEP);
+        return;
+      }
       if (event.key === 'Home') go(0);
       else if (event.key === 'End') go(sections.length - 1);
       else go(index + (forward ? 1 : -1));

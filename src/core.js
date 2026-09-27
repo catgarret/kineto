@@ -529,23 +529,22 @@ function warnHostTransformClash(el, name) {
     detail: { otherModule: other }
   });
 }
-// True when `node` is inside a scrollable container (or one tagged with
-// data-lenis-prevent), so Lenis should skip it and let native scroll happen.
+// True when `node` ITSELF is a scrollable container (or is tagged with
+// data-lenis-prevent), so Lenis should skip the event and let native scroll
+// happen. Only this one element is checked: Lenis already calls `prevent` for
+// every element on the event's path, target first. Walking the ancestors here
+// as well read computed style depth² times per wheel event (a 12-deep target
+// cost 78 style reads instead of 12).
 function isInnerScrollable(node) {
-  let el = node && node.nodeType === 1 ? node : (node && node.parentElement);
   const root = typeof document !== 'undefined' ? document : null;
-  while (el && root && el !== root.body && el !== root.documentElement) {
-    if (el.nodeType === 1) {
-      if (el.hasAttribute('data-lenis-prevent') || el.hasAttribute('data-lenis-prevent-wheel')) return true;
-      const style = getComputedStyle(el);
-      const oy = style.overflowY;
-      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
-      const ox = style.overflowX;
-      if ((ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 1) return true;
-    }
-    el = el.parentElement;
-  }
-  return false;
+  if (!root || !node || node.nodeType !== 1) return false;
+  if (node === root.body || node === root.documentElement) return false;
+  if (node.hasAttribute('data-lenis-prevent') || node.hasAttribute('data-lenis-prevent-wheel')) return true;
+  const style = getComputedStyle(node);
+  const oy = style.overflowY;
+  if ((oy === 'auto' || oy === 'scroll') && node.scrollHeight > node.clientHeight + 1) return true;
+  const ox = style.overflowX;
+  return (ox === 'auto' || ox === 'scroll') && node.scrollWidth > node.clientWidth + 1;
 }
 
 function startSmoothService(gsap = G(), scrollTrigger = ST()) {

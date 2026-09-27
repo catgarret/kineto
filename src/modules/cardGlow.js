@@ -317,8 +317,10 @@ export default {
             + 'rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 46%)';
         }
       }
+      // Rest once the light has caught up, hovered or not: nothing here moves
+      // on its own, and every pointer move wakes the loop (requestRender).
       const moving = Math.abs(currentX - targetX) > 0.08 || Math.abs(currentY - targetY) > 0.08;
-      if (moving || (hovering && follow && mode !== 'glass')) rafId = requestAnimationFrame(render);
+      if (moving) rafId = requestAnimationFrame(render);
       else rafId = null;
     };
     const requestRender = () => {
