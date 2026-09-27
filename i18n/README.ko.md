@@ -17,7 +17,7 @@
 
 ---
 
-Kineto는 모션·미디어·스크롤·텍스트·UI를 다루는 53개 모듈을
+Kineto는 모션·미디어·스크롤·텍스트·UI를 다루는 55개 모듈을
 제공합니다.
 `data-kt-*` 속성 하나로 적용하거나 JavaScript API로 세밀하게
 제어할 수 있습니다.
@@ -59,15 +59,34 @@ Kineto는 모션·미디어·스크롤·텍스트·UI를 다루는 53개 모듈�
 
 <img src="https://cdn.jsdelivr.net/gh/catgarret/kineto@main/assets/preview/lightbox.gif" width="620" alt="Lightbox">
 
-전체 53개 모듈은 아래 [모듈 목록](#모듈)을 참고하세요.
+전체 55개 모듈은 아래 [모듈 목록](#모듈)을 참고하세요.
 
 ## 설치
-
-### npm
 
 ```bash
 npm install @dong-gri/kineto
 ```
+
+### 권장: `core` + 사용하는 모듈만
+
+코어를 가져오고 페이지에서 실제로 쓰는 모듈만 등록합니다. 다른 모듈의 코드는 내려받지 않습니다.
+
+```js
+import Kineto from '@dong-gri/kineto/core';
+import reveal from '@dong-gri/kineto/modules/reveal';
+import counter from '@dong-gri/kineto/modules/counter';
+import '@dong-gri/kineto/style.css';
+
+Kineto.register('reveal', reveal);
+Kineto.register('counter', counter);
+Kineto.autoInit();
+```
+
+`core`는 약 15 KB(gzip)이고, 모듈별 추가 비용은 [`docs/module-cost.md`](../docs/module-cost.md)(중앙값 약 2 KB), 앱 전체 측정은 [`docs/consumer-bundle-size.md`](../docs/consumer-bundle-size.md)에 있습니다. 등록하지 않은 모듈의 `data-kt-*` 속성은 동작하지 않는 것이 정상입니다.
+
+### 가장 빠른 시작: 전체 번들
+
+기본 엔트리는 모든 모듈을 한 번에 등록합니다. 랜딩 페이지·프로토타입에 가장 간단하지만 전체 번들(약 169 KB gzip)을 받습니다.
 
 ```js
 import Kineto from '@dong-gri/kineto';
@@ -90,6 +109,21 @@ Kineto.autoInit();
 
 ```js
 import Kineto from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/+esm';
+```
+
+### CDN (ESM, 사용하는 모듈만)
+
+운영에서는 `@dong-gri/kineto@0.12`처럼 버전을 고정하세요.
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.min.css">
+<script type="module">
+  import Kineto from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/modular/core.js';
+  import reveal from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/modular/modules/reveal.js';
+
+  Kineto.register('reveal', reveal);
+  Kineto.autoInit();
+</script>
 ```
 
 ## 빠른 시작

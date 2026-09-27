@@ -26,6 +26,9 @@ assert.match(featureContract, new RegExp(`Core public property: \\*\\*${contract
 assert.match(featureContract, new RegExp(`Core API: \\*\\*${contract.coreApi.length}개\\*\\*`));
 assert.match(handoff, new RegExp(`Public surface: ${contract.moduleCount} modules and ${contract.coreApi.length} Core APIs`));
 assert.match(context, new RegExp(`Core API: ${contract.coreApi.length}개`));
+// The module and requirement counts beside it drifted (53 / 50) while only this line was checked.
+assert.match(context, new RegExp(`공개 모듈: ${contract.moduleCount}개`));
+assert.match(context, new RegExp(`소유자 고정 요구사항: ${requirements.requirements.length}개`));
 assert.match(stabilization, new RegExp(`${contract.moduleCount}개 모듈과 ${contract.coreApi.length}개 Core API`));
 assert.match(qaReport, new RegExp(`${contract.moduleCount} modules, ${contract.coreApi.length} Core APIs`));
 assert.match(roadmap, /최소 3개의 외부 실제 사용 사례/);

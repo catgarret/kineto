@@ -16,7 +16,7 @@
 
 ---
 
-Kineto 是一个包含 53 个交互模块（动效、媒体、滚动、加载器、文本）的库，你可以用一个 `data-kt-*` 属性直接挂载，或通过 JavaScript API 精细控制。核心无任何必需依赖；在不支持的浏览器或低端设备上，效果会自动关闭而内容保持完整。
+Kineto 是一个包含 55 个交互模块（动效、媒体、滚动、加载器、文本）的库，你可以用一个 `data-kt-*` 属性直接挂载，或通过 JavaScript API 精细控制。核心无任何必需依赖；在不支持的浏览器或低端设备上，效果会自动关闭而内容保持完整。
 
 > 使用 AI 编程工具（Cursor、Claude 等）？请参阅 [AI 提示词指南](../AI-PROMPT-GUIDE.md)——其中包含可直接粘贴的指令，让助手在处理动效与交互时优先使用 Kineto 模块。
 
@@ -24,11 +24,30 @@ Kineto 是一个包含 53 个交互模块（动效、媒体、滚动、加载器
 
 ## 安装
 
-### npm
-
 ```bash
 npm install @dong-gri/kineto
 ```
+
+### 推荐：`core` + 只注册用到的模块
+
+引入核心，只注册页面实际使用的模块，其他模块的代码不会被下载。
+
+```js
+import Kineto from '@dong-gri/kineto/core';
+import reveal from '@dong-gri/kineto/modules/reveal';
+import counter from '@dong-gri/kineto/modules/counter';
+import '@dong-gri/kineto/style.css';
+
+Kineto.register('reveal', reveal);
+Kineto.register('counter', counter);
+Kineto.autoInit();
+```
+
+`core` 约 15 KB（gzip）；每个模块的额外成本见 [`docs/module-cost.md`](../docs/module-cost.md)（中位数约 2 KB），整个应用的测量见 [`docs/consumer-bundle-size.md`](../docs/consumer-bundle-size.md)。未注册模块的 `data-kt-*` 属性不会生效，这是预期行为。
+
+### 最快上手：完整包
+
+默认入口一次注册所有模块，最适合落地页或原型，但体积是完整包（约 169 KB gzip）。
 
 ```js
 import Kineto from '@dong-gri/kineto';
@@ -51,6 +70,21 @@ Kineto.autoInit();
 
 ```js
 import Kineto from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/+esm';
+```
+
+### CDN（ESM，只用到的模块）
+
+生产环境请固定版本，例如 `@dong-gri/kineto@0.12`。
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.min.css">
+<script type="module">
+  import Kineto from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/modular/core.js';
+  import reveal from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/modular/modules/reveal.js';
+
+  Kineto.register('reveal', reveal);
+  Kineto.autoInit();
+</script>
 ```
 
 ## 快速开始

@@ -58,11 +58,38 @@ See the [full module list](#modules) below for all 55 modules.
 
 ## Installation
 
-### npm
-
 ```bash
 npm install @dong-gri/kineto
 ```
+
+### Recommended: `core` + only the modules you use
+
+Import the core and register the modules the page actually uses. Each module
+brings only its own code; the others are never downloaded.
+
+```js
+import Kineto from '@dong-gri/kineto/core';
+import reveal from '@dong-gri/kineto/modules/reveal';
+import counter from '@dong-gri/kineto/modules/counter';
+import '@dong-gri/kineto/style.css';
+
+Kineto.register('reveal', reveal);
+Kineto.register('counter', counter);
+Kineto.autoInit(); // scans data-kt-* once the DOM is ready
+```
+
+`core` is about 15 KB gzip; what each module adds on top is listed in
+[`docs/module-cost.md`](docs/module-cost.md) (median about 2 KB), and whole-app
+measurements for Vite and Rolldown are in
+[`docs/consumer-bundle-size.md`](docs/consumer-bundle-size.md). A `data-kt-*`
+attribute whose module is not registered does nothing — that is expected; see
+[modular imports](#modular-imports) and
+[troubleshooting](docs/troubleshooting.md#모듈형-엔트리가-동작하지-않음).
+
+### Quickest start: everything
+
+The default entry registers every module at once — the simplest path for a
+landing page or a prototype, at the cost of the full bundle (about 169 KB gzip).
 
 ```js
 import Kineto from '@dong-gri/kineto';
@@ -71,12 +98,9 @@ import '@dong-gri/kineto/style.css';
 Kineto.autoInit();
 ```
 
-기본 엔트리는 55개 모듈을 한 번에 등록하는 가장 간단한 경로입니다. 초기 번들 비용이
-중요한 제품에서는 아래의 `core` + 모듈 엔트리를 기본 선택으로 두고, 실제 사용하는
-모듈만 등록하십시오. 소비자별 측정값과 gzip 예산은
-[`docs/consumer-bundle-size.md`](docs/consumer-bundle-size.md)에 공개합니다.
+### CDN, no build step
 
-### CDN (script tag, no build step)
+Everything in one script tag:
 
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.min.css">
@@ -86,11 +110,44 @@ Kineto.autoInit();
 </script>
 ```
 
-### CDN (ESM)
+Only the modules you use, as native ES modules (pin a version in production,
+e.g. `@dong-gri/kineto@0.12`):
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.min.css">
+<script type="module">
+  import Kineto from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/modular/core.js';
+  import reveal from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/modular/modules/reveal.js';
+
+  Kineto.register('reveal', reveal);
+  Kineto.autoInit();
+</script>
+```
+
+The full package as one ES module: `import Kineto from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/+esm';`
+
+### React and Vue
+
+```jsx
+import { Motion } from '@dong-gri/kineto/react';
+import '@dong-gri/kineto/style.css';
+
+export const Title = () => <Motion as="h2" type="textReveal">Hello</Motion>;
+```
 
 ```js
-import Kineto from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/+esm';
+import { createApp } from 'vue';
+import KinetoVue from '@dong-gri/kineto/vue';
+import '@dong-gri/kineto/style.css';
+
+createApp(App).use(KinetoVue).mount('#app');
 ```
+
+The adapters import the full entry (see [Framework adapters](#framework-adapters)).
+A React or Vue app that only renders `data-kt-*` markup can skip the adapter and
+use the modular `core` path above instead — call `Kineto.observe(root)` once so
+elements rendered later are picked up. Do not mix the two in one app: `core` and
+the full entry are separate registries.
 
 ## Quick start
 
@@ -375,6 +432,8 @@ Kineto.scan();
 
 Module entries share code-split runtime chunks. Importing a module does not
 register the other modules or download their implementations.
+The bytes each module adds on top of `core` are generated per release in
+[`docs/module-cost.md`](docs/module-cost.md).
 
 권장 판단은 다음과 같습니다.
 

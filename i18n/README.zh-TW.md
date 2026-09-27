@@ -16,7 +16,7 @@
 
 ---
 
-Kineto 是一個包含 53 個互動模組（動效、媒體、捲動、載入器、文字）的函式庫，你可以用一個 `data-kt-*` 屬性直接掛載，或透過 JavaScript API 精細控制。核心沒有任何必要相依；在不支援的瀏覽器或低階裝置上，效果會自動關閉而內容維持完整。
+Kineto 是一個包含 55 個互動模組（動效、媒體、捲動、載入器、文字）的函式庫，你可以用一個 `data-kt-*` 屬性直接掛載，或透過 JavaScript API 精細控制。核心沒有任何必要相依；在不支援的瀏覽器或低階裝置上，效果會自動關閉而內容維持完整。
 
 > 使用 AI 編程工具（Cursor、Claude 等）？請參閱 [AI 提示詞指南](../AI-PROMPT-GUIDE.md)——內含可直接貼上的指令，讓助手在處理動效與互動時優先使用 Kineto 模組。
 
@@ -24,11 +24,30 @@ Kineto 是一個包含 53 個互動模組（動效、媒體、捲動、載入器
 
 ## 安裝
 
-### npm
-
 ```bash
 npm install @dong-gri/kineto
 ```
+
+### 建議：`core` + 只註冊用到的模組
+
+引入核心，只註冊頁面實際使用的模組，其他模組的程式碼不會被下載。
+
+```js
+import Kineto from '@dong-gri/kineto/core';
+import reveal from '@dong-gri/kineto/modules/reveal';
+import counter from '@dong-gri/kineto/modules/counter';
+import '@dong-gri/kineto/style.css';
+
+Kineto.register('reveal', reveal);
+Kineto.register('counter', counter);
+Kineto.autoInit();
+```
+
+`core` 約 15 KB（gzip）；每個模組的額外成本見 [`docs/module-cost.md`](../docs/module-cost.md)（中位數約 2 KB），整個應用程式的量測見 [`docs/consumer-bundle-size.md`](../docs/consumer-bundle-size.md)。未註冊模組的 `data-kt-*` 屬性不會生效，這是預期行為。
+
+### 最快上手：完整套件
+
+預設入口一次註冊所有模組，最適合登陸頁或原型，但體積是完整套件（約 169 KB gzip）。
 
 ```js
 import Kineto from '@dong-gri/kineto';
@@ -51,6 +70,21 @@ Kineto.autoInit();
 
 ```js
 import Kineto from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/+esm';
+```
+
+### CDN（ESM，只用到的模組）
+
+正式環境請固定版本，例如 `@dong-gri/kineto@0.12`。
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.min.css">
+<script type="module">
+  import Kineto from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/modular/core.js';
+  import reveal from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/modular/modules/reveal.js';
+
+  Kineto.register('reveal', reveal);
+  Kineto.autoInit();
+</script>
 ```
 
 ## 快速開始

@@ -197,6 +197,14 @@ for (const file of readmes) {
     .sort();
   assert.deepEqual(documented, featureNames, `${file} module table is stale`);
   assert.doesNotMatch(source, /\b45\b/, `${file} contains the stale module count`);
+  // Any "N modules" phrase must say the contract's count: five READMEs still
+  // said 53 two modules later because only one old number was checked.
+  const moduleCount = featureNames.length;
+  // One adjective may sit between the number and the noun ("53 интерактивных модулей").
+  const countPhrases = /(\d+)\s*(?:(?:[\p{L}-]+\s+)?(?:modules\b|moduli\b|модул)|개\s*모듈|個のインタラクションモジュール|個のモジュール|个交互模块|个模块|個互動模組|個模組)/gu;
+  for (const [phrase, count] of source.matchAll(countPhrases)) {
+    assert.equal(Number(count), moduleCount, `${file} says "${phrase}" but the contract has ${moduleCount} modules`);
+  }
   assert.doesNotMatch(
     source,
     /AI (?:vibe-coding|바이브코딩)|バイブコーディング|氛围编程|氛圍編程/i,

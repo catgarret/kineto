@@ -16,7 +16,7 @@
 
 ---
 
-Kineto — библиотека из 53 интерактивных модулей (движение, медиа, скролл, лоадер, текст), которые подключаются одним атрибутом `data-kt-*` или точно управляются через JavaScript API. Ядро не имеет обязательных зависимостей; в неподдерживаемых браузерах и на слабых устройствах эффекты отключаются, а контент остаётся нетронутым.
+Kineto — библиотека из 55 интерактивных модулей (движение, медиа, скролл, лоадер, текст), которые подключаются одним атрибутом `data-kt-*` или точно управляются через JavaScript API. Ядро не имеет обязательных зависимостей; в неподдерживаемых браузерах и на слабых устройствах эффекты отключаются, а контент остаётся нетронутым.
 
 > Работаете с ИИ-инструментами (Cursor, Claude и т. п.)? Смотрите [руководство по промтам для ИИ](../AI-PROMPT-GUIDE.md) — там есть готовая инструкция, которая велит ассистенту в первую очередь использовать модули Kineto для движения и интеракций.
 
@@ -24,11 +24,30 @@ Kineto — библиотека из 53 интерактивных модуле�
 
 ## Установка
 
-### npm
-
 ```bash
 npm install @dong-gri/kineto
 ```
+
+### Рекомендуется: `core` + только нужные модули
+
+Подключите ядро и зарегистрируйте только те модули, которые используются на странице. Код остальных модулей не загружается.
+
+```js
+import Kineto from '@dong-gri/kineto/core';
+import reveal from '@dong-gri/kineto/modules/reveal';
+import counter from '@dong-gri/kineto/modules/counter';
+import '@dong-gri/kineto/style.css';
+
+Kineto.register('reveal', reveal);
+Kineto.register('counter', counter);
+Kineto.autoInit();
+```
+
+`core` — около 15 КБ (gzip); сколько добавляет каждый модуль — в [`docs/module-cost.md`](../docs/module-cost.md) (медиана около 2 КБ), замеры целого приложения — в [`docs/consumer-bundle-size.md`](../docs/consumer-bundle-size.md). Атрибут `data-kt-*` незарегистрированного модуля ничего не делает — это ожидаемо.
+
+### Быстрее всего: полный пакет
+
+Точка входа по умолчанию регистрирует все модули сразу — проще всего для лендинга или прототипа, но это полный бандл (около 169 КБ gzip).
 
 ```js
 import Kineto from '@dong-gri/kineto';
@@ -51,6 +70,21 @@ Kineto.autoInit();
 
 ```js
 import Kineto from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/+esm';
+```
+
+### CDN (ESM, только нужные модули)
+
+В продакшене закрепляйте версию, например `@dong-gri/kineto@0.12`.
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.min.css">
+<script type="module">
+  import Kineto from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/modular/core.js';
+  import reveal from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/modular/modules/reveal.js';
+
+  Kineto.register('reveal', reveal);
+  Kineto.autoInit();
+</script>
 ```
 
 ## Быстрый старт
