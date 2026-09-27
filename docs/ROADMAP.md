@@ -73,6 +73,13 @@ flaky로 보고되고, 모든 push 전에 `npm run verify:push`를 돌립니다.
 데모는 먼 블록의 렌더링을 건너뛰며 가까운 블록만 측정하고, 그 때문에 화면이 밀리지 않도록 스크롤 앵커링을
 직접 합니다(에뮬레이션 기준 로드 7.5 → 2.7초, 12화면 스크롤 11 → 39fps — [QA 보고서](QA_REPORT.md)의 2026-09-25 항목).
 
+v0.12.3에서 휴대폰 탭 튐(에뮬레이션 스윕 20px 초과 10 → 0)·유령 커서·Lazy 재생 경쟁과 스크롤 중 ScrollTrigger
+재측정을 고쳤고, 호버에 반응하는 모듈이 "지금 호버할 수 있나"를 한곳(`canHover()`)에서 판단하게 했습니다 —
+터치스크린 노트북에서 Cursor 가 꺼지고 Tilt·Mouse Parallax 가 오지 않는 자이로스코프를 기다리던 원인입니다
+([입력 정책](hover-touch-policy.md)). 열린 품질 PR(Hover Roll 터치, Counter·Fullpage 지연 작업, observe 정리)을
+흡수했고, README 설치 절을 `core` + 쓰는 모듈 우선으로 바꾸며 모듈별 비용 표([module-cost](module-cost.md))를
+공개했습니다. 엔진(GSAP·Lenis)을 불러오지 못하면 `KT_ENGINE_UNAVAILABLE` 진단이 이유를 알려 줍니다.
+
 ## 1. 결론
 
 Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이션 엔진을 목표로 하지 않습니다.
