@@ -29,6 +29,13 @@
 
 프리셋에 따라 `intensity`는 이동량·노이즈·블록 수, `speed`는 재생 속도, `frequency`는 반복 빈도, `randomness`는 패턴과 간격의 무작위성(0–1)을 제어합니다. 버스트 계열에서는 `trigger`(`auto`·`hover`·`scroll`)와 `loop`로 시작·반복을 설정합니다. 이미지 프리셋은 `sliceCount`, `pixel`·`datamosh`·`reveal`은 `duration`을 추가로 사용합니다. `replay()`, `pause()`, `resume()`, `destroy()`를 제공합니다.
 
+텍스트 프리셋의 복제·조각 레이어는 `aria-hidden`이고, 원문은 요소 안의 보이지 않는 텍스트 하나
+(`kt-sr-only`)로 읽힙니다. 뒤섞인 노이즈 글자는 읽히지 않습니다. `aria-label`은 제목·링크·버튼처럼
+이름을 가질 수 있는 요소에만 함께 붙습니다.
+
+`replay()`·`pause()`/`resume()`·화면 진입을 여러 번 반복해도 버스트 흐름은 하나만 돕니다. `hover`
+글리치는 `resume()` 뒤에도 포인터를 기다리고, 끝난 `reveal`은 `resume()`으로 다시 글리치하지 않습니다.
+
 ## 종료와 스타일 복원
 
 `destroy()`는 최종 종료입니다. 이전 인스턴스에 남아 있는 `replay()`·`resume()`·

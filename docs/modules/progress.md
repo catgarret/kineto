@@ -78,6 +78,9 @@ Kineto.progress('.scroll-progress', {
 ## 접근성 노트
 
 - 자동 `aria-hidden="true"` 적용 (장식 요소)
+- `ui:'ring'`에 `clickToTop:true`를 주면 원형 표시가 맨 위로 이동하는 버튼이 되고, 이름은 `label`
+  (기본 `'Scroll back to top'`)입니다. `showAfter`·`hideAtEnd`로 숨겨진 동안 이 버튼은 `inert`라서
+  Tab 순서와 스크린리더에서 빠집니다.
 - 의미 있는 진행률(파일 업로드 등)에는 별도 `<progress>` 또는 `role="progressbar"` 사용
 - `prefers-reduced-motion`: 정상 동작 (스크롤 위치 그대로 반영)
 

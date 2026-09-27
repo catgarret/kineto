@@ -1,3 +1,5 @@
+// Every module of the contract, created and destroyed in a real browser.
+// @lane-affected-by src/modules/   (run-lane --changed: any module change runs this)
 import assert from 'node:assert/strict';
 import { mkdir, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';

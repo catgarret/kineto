@@ -40,12 +40,15 @@ export default {
       el.style.display = 'block';
       el.style.overflow = 'visible';
       el.style.paddingBottom = `${Math.max(0, Number(opts.bottomSpace ?? top + offset * Math.max(0, children.length - 1)))}px`;
-      const stickyTop = (child, index) => align === 'center'
-        ? `calc(50vh - ${Math.round((child.offsetHeight || 0) / 2)}px + ${index * offset}px)`
+      // Read every card's height first, then write: reading after the previous
+      // card's `position: sticky` forced a fresh layout per card.
+      const heights = align === 'center' ? children.map((child) => child.offsetHeight || 0) : [];
+      const stickyTop = (index) => align === 'center'
+        ? `calc(50vh - ${Math.round(heights[index] / 2)}px + ${index * offset}px)`
         : `${top + index * offset}px`;
       children.forEach((child, index) => {
         child.style.position = 'sticky';
-        child.style.top = stickyTop(child, index);
+        child.style.top = stickyTop(index);
         child.style.marginBottom = index === children.length - 1 ? '0px' : `${gap}px`;
         child.style.zIndex = String(zDirection > 0 ? index + 1 : children.length - index);
         child.style.transformOrigin = opts.transformOrigin || '50% 0%';

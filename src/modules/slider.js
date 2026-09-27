@@ -1,4 +1,4 @@
-import { clamp, cssString, env, frameEase, labeller, latestEntry, lerp, selectAll, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
+import { clamp, cssString, env, frameEase, labeller, latestEntry, lerp, numberOption, selectAll, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
 
 // Do not rewind presentation owned by a composing module or application.
 const snapshotPresentation = (el, properties, classes = [], attributes = []) => {
@@ -57,7 +57,12 @@ export default {
       pause: 'Pause carousel autoplay',
       resume: 'Resume carousel autoplay',
       carouselRole: 'carousel',
-      slideRole: 'slide'
+      slideRole: 'slide',
+      // Radial: its prev/next buttons, and what the live region says when the
+      // front item changes ({name} is the item's own label or text).
+      previous: 'Previous',
+      next: 'Next',
+      radialStatus: '{name}, {n} of {total}'
     }, opts.labels);
     // `radial` is a genuinely different layout — items orbit a hub instead of
     // travelling along a track — so it gets its own engine rather than being
@@ -75,12 +80,19 @@ export default {
 
       const fullCircle = opts.position === 'center';
       const requestedRadius = Math.max(40, Number(opts.radius ?? 260));
-      const itemExtent = Math.max(0, ...items.map((item) => Math.max(item.offsetWidth, item.offsetHeight)));
-      const availableDiameter = Math.min(el.clientWidth, el.clientHeight);
-      const fittedRadius = availableDiameter > itemExtent
-        ? Math.max(40, (availableDiameter - itemExtent - 16) / 2)
-        : requestedRadius;
-      const radius = fullCircle ? Math.min(requestedRadius, fittedRadius) : requestedRadius;
+      // A centred wheel fits its radius to the box it is drawn in. That box is
+      // measured again whenever it changes (ResizeObserver below): measured
+      // only here, a wheel created inside a closed panel (0×0) or on a phone
+      // that later rotated kept the size it had at creation.
+      const fitRadius = () => {
+        const itemExtent = Math.max(0, ...items.map((item) => Math.max(item.offsetWidth, item.offsetHeight)));
+        const availableDiameter = Math.min(el.clientWidth, el.clientHeight);
+        const fittedRadius = availableDiameter > itemExtent
+          ? Math.max(40, (availableDiameter - itemExtent - 16) / 2)
+          : requestedRadius;
+        return Math.min(requestedRadius, fittedRadius);
+      };
+      let radius = fullCircle ? fitRadius() : requestedRadius;
       const step = fullCircle ? 360 / items.length : Number(opts.step ?? 26);
       const position = ['bottom', 'top', 'left', 'right', 'center'].includes(opts.position) ? opts.position : 'bottom';
       // Focal angle points AWAY from the docked edge, into the visible area:
@@ -147,6 +159,13 @@ export default {
         ? clamp(Math.round(requestedIndex), 0, items.length - 1)
         : Math.floor(items.length / 2);
 
+      // The item's own name for the live region: its label, else its text,
+      // else an image's alt.
+      const itemName = (item) => (item.getAttribute('aria-label')
+        || item.textContent
+        || item.querySelector('img[alt]')?.getAttribute('alt')
+        || '').trim();
+      let announced = null;
       const live = document.createElement('div');
       live.className = 'kt-radial-live';
       live.setAttribute('aria-live', 'polite');
@@ -185,7 +204,18 @@ export default {
           if (on) item.setAttribute('aria-current', 'true'); else item.removeAttribute('aria-current');
           item.style.zIndex = String(100 - Math.abs(offset));
         });
-        live.textContent = `${active + 1} / ${items.length}`;
+        // Roving tab stop and announcement change only with the front item.
+        // The live region used to be rewritten every animation frame, and said
+        // "3 / 7" without saying what item 3 was.
+        if (announced === active) return;
+        items.forEach((item, i) => { item.tabIndex = i === active ? 0 : -1; });
+        const name = itemName(items[active]);
+        const counts = { n: active + 1, total: items.length };
+        const text = name ? label('radialStatus', { name, ...counts }) : label('slide', counts);
+        // The first render sets the tab stop quietly; announcing starts with
+        // the first change.
+        if (announced != null) live.textContent = text;
+        announced = active;
       };
 
       const go = (index) => {
@@ -250,10 +280,7 @@ export default {
       const next = () => go(active + 1);
       const prev = () => go(active - 1);
 
-      items.forEach((item) => {
-        item.style.cursor = 'pointer';
-        if (!item.hasAttribute('tabindex')) item.tabIndex = -1;
-      });
+      items.forEach((item) => { item.style.cursor = 'pointer'; });
       let suppressItemClick = false;
       let suppressItemClickTimer = null;
       const onItemClick = (event) => {
@@ -277,7 +304,13 @@ export default {
         if (!controls) {
           controls = document.createElement('div');
           controls.className = 'kt-radial-controls';
-          controls.innerHTML = '<button type="button" class="kt-radial-prev" aria-label="Previous"></button><button type="button" class="kt-radial-next" aria-label="Next"></button>';
+          ['kt-radial-prev', 'kt-radial-next'].forEach((className) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = className;
+            button.setAttribute('aria-label', label(className === 'kt-radial-prev' ? 'previous' : 'next'));
+            controls.appendChild(button);
+          });
           el.appendChild(controls);
           builtControls = true;
         }
@@ -287,9 +320,21 @@ export default {
         nextBtn?.addEventListener('click', next);
       }
 
+      // The wheel itself stays focusable (arrows turn it from there), and the
+      // front item is a tab stop of its own (roving tabindex: 0 on the front
+      // item, -1 on the rest). Arrows move focus along with the front item
+      // when an item has it; Enter/Space on the wheel or its front item
+      // activate that item — its own click handlers — which a keyboard could
+      // not reach before.
+      const focusFront = () => { if (items.some((item) => item.contains(document.activeElement))) items[active].focus(); };
       const onKey = (event) => {
-        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') { event.preventDefault(); next(); }
-        else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') { event.preventDefault(); prev(); }
+        if (event.target.closest?.('.kt-radial-controls')) return;
+        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') { event.preventDefault(); next(); focusFront(); }
+        else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') { event.preventDefault(); prev(); focusFront(); }
+        else if ((event.key === 'Enter' || event.key === ' ') && (event.target === el || event.target === items[active])) {
+          event.preventDefault();
+          items[active].click();
+        }
       };
       if (!el.hasAttribute('tabindex')) el.tabIndex = 0;
       el.addEventListener('keydown', onKey);
@@ -352,15 +397,42 @@ export default {
       // The page's pause() wins over hover-out and scroll-back: both used to
       // restart autoplay on a carousel the page had paused.
       let userPaused = false;
-      const startAuto = () => { if (autoplay && !reduce && !offscreen && !userPaused) { stopAuto(); timer = setInterval(next, autoplay); } };
+      // Hover and keyboard focus both hold the wheel still (WCAG 2.2.2): an
+      // item that turns away while it has focus cannot be read or used.
+      let hovered = false;
+      let focused = false;
+      const startAuto = () => { if (autoplay && !reduce && !offscreen && !userPaused && !hovered && !focused) { stopAuto(); timer = setInterval(next, autoplay); } };
       const stopAuto = () => { if (timer) { clearInterval(timer); timer = null; } };
+      const onAutoEnter = () => { hovered = true; stopAuto(); };
+      const onAutoLeave = () => { hovered = false; startAuto(); };
+      const onAutoFocusIn = () => { focused = true; stopAuto(); };
+      const onAutoFocusOut = (event) => {
+        if (event.relatedTarget && el.contains(event.relatedTarget)) return;
+        focused = false;
+        startAuto();
+      };
       if (autoplay) {
-        el.addEventListener('mouseenter', stopAuto);
-        el.addEventListener('mouseleave', startAuto);
+        el.addEventListener('mouseenter', onAutoEnter);
+        el.addEventListener('mouseleave', onAutoLeave);
+        el.addEventListener('focusin', onAutoFocusIn);
+        el.addEventListener('focusout', onAutoFocusOut);
         startAuto();
       }
 
       renderRadial(visualActive);
+
+      // Refit a centred wheel whenever its box changes size (see fitRadius).
+      let lastRadius = radius;
+      const fitObserver = fullCircle && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => {
+        if (!el.getClientRects().length) return;
+        const fitted = fitRadius();
+        if (Math.abs(fitted - lastRadius) < 0.5) return;
+        radius = fitted;
+        lastRadius = fitted;
+        el.style.setProperty('--kt-radial-radius', `${radius}px`);
+        renderRadial(visualActive);
+      }) : null;
+      fitObserver?.observe(el);
 
       if (pauseWhenOffscreen && typeof IntersectionObserver !== 'undefined') {
         visibilityObserver = new IntersectionObserver((entries) => {
@@ -393,6 +465,7 @@ export default {
         destroy() {
           stopAuto();
           visibilityObserver?.disconnect();
+          fitObserver?.disconnect();
           if (radialFrame) cancelAnimationFrame(radialFrame);
           if (suppressItemClickTimer != null) clearTimeout(suppressItemClickTimer);
           hub.removeEventListener('click', onItemClick);
@@ -402,8 +475,10 @@ export default {
           el.removeEventListener('pointerup', onUp);
           el.removeEventListener('pointercancel', onUp);
           el.removeEventListener('touchmove', onTouchMove);
-          el.removeEventListener('mouseenter', stopAuto);
-          el.removeEventListener('mouseleave', startAuto);
+          el.removeEventListener('mouseenter', onAutoEnter);
+          el.removeEventListener('mouseleave', onAutoLeave);
+          el.removeEventListener('focusin', onAutoFocusIn);
+          el.removeEventListener('focusout', onAutoFocusOut);
           prevBtn?.removeEventListener('click', prev);
           nextBtn?.removeEventListener('click', next);
           // Reverse insertion preserves author-owned comments, controls and
@@ -462,7 +537,9 @@ export default {
     })();
     const perView = stacked ? 1 : clamp(Number(breakpointPerView ?? opts.perView ?? (coverflow ? 1.35 : 1)), 1, slides.length);
     // How many slides one next()/prev() advances (Swiper's slidesPerGroup).
-    const perGroup = Math.max(1, Math.round(Number(opts.perGroup ?? 1)));
+    // Read through numberOption: `Number('abc')` is NaN, and a NaN group size
+    // or starting index became a NaN target the settle loop could never reach.
+    const perGroup = Math.round(numberOption(opts.perGroup, 1, 1));
     // The active slide is centered by default in both effects; align:'left'
     // restores the classic left-edge slide alignment.
     const centered = coverflow || (opts.align || 'center') !== 'left';
@@ -535,7 +612,7 @@ export default {
     const restoreSlides = slides.map((slide) => snapshotAttributes(slide, ['class', 'style', 'role', 'aria-roledescription', 'aria-hidden', 'aria-label']));
     const restoreImages = preventImageDrag(wrap, slides);
 
-    let index = clamp(Math.round(Number(opts.initial ?? 0)), 0, maxIndex);
+    let index = clamp(Math.round(numberOption(opts.initial, 0)), 0, maxIndex);
     let position = index;      // rendered (smoothed) position
     let target = index;        // where the spring is heading
     let springVelocity = 0;
@@ -566,6 +643,8 @@ export default {
     // Assigned once the progress bar is set up (below); no-op until then so the
     // autoplay start() can call it without a temporal-dead-zone hazard.
     let resetProgressSafe = () => {};
+    // Same for the progress loop: start() wakes it once it exists.
+    let startProgressSafe = () => {};
 
     wrap.setAttribute('role', 'region');
     wrap.setAttribute('aria-roledescription', label('carouselRole'));
@@ -647,14 +726,23 @@ export default {
       slide.setAttribute('aria-label', label('slide', { n: slideIndex + 1, total: slides.length }));
     });
 
+    // Measured once and kept until the viewport changes size (the
+    // ResizeObserver below drops it): render() runs every animation frame,
+    // and reading layout there cost a layout read per frame per slider.
+    // Without a ResizeObserver nothing would ever drop it, so it is not kept.
+    const canCacheMetrics = typeof ResizeObserver !== 'undefined';
+    let cachedMetrics = null;
     const metrics = () => {
+      if (cachedMetrics) return cachedMetrics;
       const rect = wrap.getBoundingClientRect();
       const width = (vertical ? rect.height : rect.width) || 1;
       // offsetWidth/Height ignore transforms — measuring the bounding box of
       // a scaled/rotated side slide skewed the math, so the last slide never
       // landed dead-center.
       const slideWidth = (vertical ? slides[0].offsetHeight : slides[0].offsetWidth) || width / perView;
-      return { width, slideWidth, step: slideWidth + gap };
+      const measured = { width, slideWidth, step: slideWidth + gap };
+      if (canCacheMetrics) cachedMetrics = measured;
+      return measured;
     };
 
     const render = () => {
@@ -858,7 +946,11 @@ export default {
     // In loop mode the continuous target just keeps climbing/falling forever, so
     // the spring never has to unwind the whole track to wrap around.
     const settle = (raw, { snap = true } = {}) => {
-      if (!enabled) return;
+      // goTo() with no argument (or `goTo('next')`) used to reach here as NaN:
+      // the index became NaN and the frame loop, whose "arrived?" test NaN
+      // never passes, requested frames forever. A request that is not a
+      // number is ignored.
+      if (!enabled || !Number.isFinite(raw)) return;
       bounceActive = false;
       const requested = seamless ? raw : clamp(raw, 0, maxIndex);
       target = !seamless && snap ? Math.round(requested) : requested;
@@ -990,6 +1082,7 @@ export default {
         }
         start();
       }, remaining);
+      startProgressSafe();
     };
 
     const onDown = (event) => {
@@ -1112,6 +1205,27 @@ export default {
     nextButtons.forEach((button) => bindButton(button, next));
     prevButtons.forEach((button) => bindButton(button, prev));
 
+    // Tab can still reach a link inside a slide that is out of view, which is
+    // `aria-hidden` — the screen reader would then sit on content it was told
+    // does not exist, and sighted users would see focus vanish. Bring that
+    // slide into view instead: goTo() re-syncs aria-hidden synchronously, so
+    // the focused slide is announced as part of the page again.
+    const onFocusIn = (event) => {
+      const slideIndex = slides.findIndex((slide) => slide.contains(event.target));
+      if (slideIndex < 0 || slides[slideIndex].getAttribute('aria-hidden') !== 'true') return;
+      goTo(slideIndex);
+    };
+    // Focusing that element also scrolls the viewport (overflow:hidden is still
+    // a scroll container) and the transforms then land off by that much. Only
+    // the transform engine positions slides here, so a stray scroll is undone.
+    const onStrayScroll = () => {
+      if (nativeScrollSnap) return;
+      if (wrap.scrollLeft) wrap.scrollLeft = 0;
+      if (wrap.scrollTop) wrap.scrollTop = 0;
+    };
+    wrap.addEventListener('focusin', onFocusIn);
+    if (!nativeScrollSnap) wrap.addEventListener('scroll', onStrayScroll, { passive: true });
+
     // Horizontal swipe must win over page scroll once a drag has started.
     let suppressClickUntil = 0;
     const onTouchMove = (event) => { if (dragging && dragMoved) event.preventDefault(); };
@@ -1167,6 +1281,7 @@ export default {
       visibilityObserver.observe(el);
     }
     const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => {
+      cachedMetrics = null;
       render();
       if (nativeScrollSnap) {
         const width = Math.max(1, wrap.clientWidth || wrap.getBoundingClientRect().width);
@@ -1274,15 +1389,20 @@ export default {
       if (!progressFill) { progressRaf = null; return; }
       // `remaining` is preserved by stop(), so the ring and the actual timeout
       // freeze and resume from the same point.
-      if (timer != null && !dragging && !paused && !hoverPaused) {
+      const running = timer != null && !dragging && !paused && !hoverPaused;
+      if (running) {
         const elapsed = performance.now() - timerStartedAt;
         progressValue = clamp((autoplayDelay - remaining + elapsed) / autoplayDelay, 0, 1);
       }
       paintProgress();
-      progressRaf = requestAnimationFrame(progressLoop);
+      // Frames only while the countdown runs: a paused, hovered or dragged
+      // carousel used to repaint a frozen ring 60 times a second. start()
+      // wakes the loop again (startProgressSafe).
+      progressRaf = running ? requestAnimationFrame(progressLoop) : null;
     };
-    const startProgressLoop = () => { if (progressFill && progressRaf == null) progressLoop(); };
+    const startProgressLoop = () => { if (alive && !offscreen && progressFill && progressRaf == null) progressLoop(); };
     resetProgressSafe = resetProgress;
+    startProgressSafe = startProgressLoop;
 
     render();
     syncState();
@@ -1340,6 +1460,7 @@ export default {
         if (nativeScrollRaf != null) cancelAnimationFrame(nativeScrollRaf);
         resizeObserver?.disconnect();
         wrap.removeEventListener('pointerdown', onDown); wrap.removeEventListener('pointermove', onMove); wrap.removeEventListener('pointerup', onEnd); wrap.removeEventListener('pointercancel', onEnd); wrap.removeEventListener('touchmove', onTouchMove); wrap.removeEventListener('keydown', onKey); wrap.removeEventListener('wheel', onWheel); wrap.removeEventListener('pointerenter', onEnter); wrap.removeEventListener('pointerleave', onLeave); wrap.removeEventListener('scroll', onNativeScroll);
+        wrap.removeEventListener('focusin', onFocusIn); wrap.removeEventListener('scroll', onStrayScroll);
         nextButtons.forEach((button) => { button.removeEventListener('click', next); delete button.dataset.ktSliderBound; });
         prevButtons.forEach((button) => { button.removeEventListener('click', prev); delete button.dataset.ktSliderBound; });
         el.removeEventListener('pointerdown', onGrabStart);
@@ -1359,10 +1480,75 @@ export default {
     el.__ktSlider = api;
     return api;
   },
-  reduced(el) {
-    const restore = snapshotInlineStyles(el, ['overflowX', 'scrollSnapType']);
-    el.style.overflowX = 'auto'; el.style.scrollSnapType = 'x mandatory';
-    return { el, type: 'slider', pause() {}, resume() {}, destroy: restore };
+  // Reduced motion keeps every slide REACHABLE, it only drops the animation.
+  // The viewport (`.kt-slider-wrap`) becomes a native horizontal scroller with
+  // snap points and next/prev/goTo jump it instantly. This used to set
+  // `overflow-x:auto` on the root instead, while the stylesheet's
+  // `.kt-slider-wrap{overflow:hidden}` still clipped the track: only slide 1
+  // could ever be seen, and the page's own next/prev buttons had no methods to
+  // call. Radial has no track; its own create() already moves without motion.
+  reduced(el, opts = {}) {
+    if ((opts.effect || opts.preset) === 'radial') return this.create(el, opts);
+    const wrap = el.querySelector('.kt-slider-wrap') || el;
+    const track = wrap.querySelector('.kt-slider-track') || el.firstElementChild;
+    const slides = track ? Array.from(track.children) : [];
+    if (!slides.length) return null;
+    const loop = opts.loop === true || opts.loop === 'infinite' || opts.loop === 'rewind';
+    const restoreWrap = snapshotInlineStyles(wrap, ['overflowX', 'overflowY', 'scrollSnapType']);
+    const restoreWrapAttributes = snapshotAttributes(wrap, ['tabindex']);
+    const restoreTrack = snapshotInlineStyles(track, ['display']);
+    const restoreSlides = slides.map((slide) => snapshotInlineStyles(slide, ['scrollSnapAlign']));
+    wrap.style.overflowX = 'auto';
+    wrap.style.overflowY = 'hidden';
+    wrap.style.scrollSnapType = 'x mandatory';
+    // A focusable scroller is one the arrow keys can scroll.
+    if (!wrap.hasAttribute('tabindex')) wrap.tabIndex = 0;
+    track.style.display = 'flex';
+    slides.forEach((slide) => { slide.style.scrollSnapAlign = 'start'; });
+
+    // Layout is read only when the page asks to move, never while creating.
+    const scrollPosition = (slide) => slide.getBoundingClientRect().left - wrap.getBoundingClientRect().left + wrap.scrollLeft;
+    const currentIndex = () => {
+      let nearest = 0;
+      let nearestDistance = Infinity;
+      slides.forEach((slide, slideIndex) => {
+        const distance = Math.abs(scrollPosition(slide) - wrap.scrollLeft);
+        if (distance < nearestDistance) { nearest = slideIndex; nearestDistance = distance; }
+      });
+      return nearest;
+    };
+    const goTo = (value) => {
+      const requested = Number(value);
+      if (!Number.isFinite(requested)) return;
+      const last = slides.length - 1;
+      const rounded = Math.round(requested);
+      const target = loop ? ((rounded % slides.length) + slides.length) % slides.length : clamp(rounded, 0, last);
+      const left = scrollPosition(slides[target]);
+      if (typeof wrap.scrollTo === 'function') wrap.scrollTo({ left, behavior: 'auto' });
+      else wrap.scrollLeft = left;
+    };
+    const next = () => goTo(currentIndex() + 1);
+    const prev = () => goTo(currentIndex() - 1);
+    return {
+      el,
+      type: 'slider',
+      get index() { return currentIndex(); },
+      next,
+      prev,
+      slideNext: next,
+      slidePrev: prev,
+      goTo,
+      slideTo: goTo,
+      replay() { goTo(0); },
+      pause() {},
+      resume() {},
+      destroy() {
+        restoreSlides.forEach((restore) => restore());
+        restoreTrack();
+        restoreWrapAttributes();
+        restoreWrap();
+      }
+    };
   },
   fallback(el, opts) { return this.reduced(el, opts); }
 };

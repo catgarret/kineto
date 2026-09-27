@@ -20,6 +20,10 @@
 
 같은 group은 이전/다음 button과 좌우 방향키로 이동합니다. ESC, 닫기 button, backdrop click을 지원합니다. Wheel, toolbar, double click으로 zoom하고 확대 상태에서는 pan과 minimap을 사용할 수 있습니다.
 
+닫히는 페이드 도중에 다시 열어도 viewer는 열린 채로 남고, 다음에 닫으면 페이지 스크롤 잠금이 풀리고
+포커스는 처음 열기 전 위치로 돌아갑니다. `destroy()`는 viewer가 열려 있을 때만 페이지 스크롤 상태를
+되돌립니다.
+
 ## Lazy 조합
 
 ```js

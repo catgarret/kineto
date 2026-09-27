@@ -58,21 +58,49 @@ export function ensureWrapper(el, { className = 'kt-lazy-wrap', display, aspectR
   // already defines a box (a skeleton otherwise shows as a thin bar inside an
   // aspect-ratio stage), and fall back to 16:9 when the wrapper would collapse.
   const needsBox = !ratio && !(attrWidth > 0 && attrHeight > 0) && !height;
-  const cancel = measureThenApplyThisTask(() => ({
+  const readBox = () => ({
+    parentHeight: created ? wrapper.parentElement?.getBoundingClientRect().height || 0 : 0,
+    ownHeight: wrapper.getBoundingClientRect().height
+  });
+  const applyBox = ({ parentHeight, ownHeight }) => {
+    if (created && parentHeight > 2) wrapper.style.height = '100%';
+    else if (ownHeight < 2) wrapper.style.aspectRatio = '16 / 9';
+  };
+  // A wrapper inside a closed panel (`display:none`) measures 0×0, which says
+  // nothing about the box it will have: deciding then fixed a permanent 16:9
+  // on media that was never going to collapse. Wait until it is drawn — one
+  // ResizeObserver report — and decide from that size instead.
+  let drawnObserver = null;
+  const decideWhenDrawn = () => {
+    if (typeof ResizeObserver === 'undefined') { applyBox(readBox()); return; }
+    drawnObserver = new ResizeObserver(() => {
+      if (!wrapper.isConnected || !wrapper.getClientRects().length) return;
+      drawnObserver.disconnect();
+      drawnObserver = null;
+      applyBox(readBox());
+    });
+    drawnObserver.observe(wrapper);
+  };
+  const cancelMeasure = measureThenApplyThisTask(() => ({
     position: created ? 'relative' : getComputedStyle(wrapper).position,
     // Keep rounded media rounded while layers are active: the wrapper is the
     // clipping box, so a radius left on the image alone shows square corners.
     radius: getComputedStyle(el).borderRadius,
-    parentHeight: needsBox && created ? wrapper.parentElement?.getBoundingClientRect().height || 0 : 0,
-    ownHeight: needsBox ? wrapper.getBoundingClientRect().height : 0
-  }), ({ position, radius, parentHeight, ownHeight }) => {
+    drawn: needsBox && wrapper.getClientRects().length > 0,
+    box: needsBox ? readBox() : null
+  }), ({ position, radius, drawn, box }) => {
     if (!wrapper.isConnected) return;
     if (position === 'static') wrapper.style.position = 'relative';
     if (radius && radius !== '0px') wrapper.style.borderRadius = radius;
     if (!needsBox) return;
-    if (created && parentHeight > 2) wrapper.style.height = '100%';
-    else if (ownHeight < 2) wrapper.style.aspectRatio = '16 / 9';
+    if (drawn) applyBox(box);
+    else decideWhenDrawn();
   });
+  const cancel = () => {
+    cancelMeasure();
+    drawnObserver?.disconnect();
+    drawnObserver = null;
+  };
   return { wrapper, created, originalWrapperStyle, cancel };
 }
 

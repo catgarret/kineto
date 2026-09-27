@@ -106,6 +106,9 @@ v0.12.1은 반대 방향으로 같은 결과가 났습니다. CI가 통과한 �
 사본이 있어 어긋나 있었습니다(Firefox/WebKit CI가 `npm run test:browser:cross`보다 8개 더 돌림). 조치:
 push 전 `npm run verify:push`(선택형 pre-push hook), 목록은 `package.json`에만 두고 CI는
 `scripts/run-lane.mjs --shard`로 병렬 실행, 재시도로 통과한 테스트는 flaky로 annotation 보고.
+2026-09-27: shard를 위치 순서가 아니라 측정 시간(`tests/lane-timings.json`, 긴 것부터 가장 덜 찬
+shard로)으로 나누고 Chromium 3·WebKit 3·Firefox 2개로 늘렸으며, 로컬 확인은 `--changed`로 바뀐
+파일이 영향을 주는 단계만 돌립니다(`scripts/lane-select.mjs`).
 
 ## 3. 남은 구조 부채와 권장 순서
 

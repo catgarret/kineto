@@ -2727,8 +2727,16 @@
     // interactive for the live preview, so instead of `inert`-ing the page we
     // trap keyboard focus inside the dialog and let the backdrop close on click.
     sheet.setAttribute('role', 'dialog');
-    sheet.setAttribute('aria-modal', 'true');
     localize(sheet, 'options', 'aria-label');
+    // Closed, the sheet only slides off screen (for the animation), so it stays
+    // in the page: keep it `inert` and not modal until it opens, or Tab lands
+    // on invisible controls and a screen reader treats the page as covered.
+    const setSheetOpen = (open) => {
+      sheet.inert = !open;
+      if (open) sheet.setAttribute('aria-modal', 'true');
+      else sheet.removeAttribute('aria-modal');
+    };
+    setSheetOpen(false);
     // Resize from the grip or the drawer header only. Keeping the settings/code
     // body out of the gesture surface preserves native text selection and copy.
     const grip = document.createElement('div');
@@ -2854,9 +2862,16 @@
         Array.from(sheet.children).forEach((child) => { if (child !== grip) child.hidden = child !== body; });
         body.hidden = false;
         api.current = body;
+        setSheetOpen(true);
         applySheetH();
         // Move focus into the dialog (its labelled heading), once painted.
+        // Every frame callback below first checks that this body is still the
+        // one shown: a panel closed within the same frame (a double click on
+        // its summary, a script) used to be re-opened by these callbacks — the
+        // dim backdrop then covered the page with nothing left to close it.
+        const stillShown = () => api.current === body;
         requestAnimationFrame(() => {
+          if (!stillShown()) return;
           api.fit(body);
           (sheet.querySelector('.kt-playground__close') || focusables()[0] || sheet).focus?.();
         });
@@ -2868,10 +2883,12 @@
         api.spotlit = card;
         card?.classList?.add('kt-fp-spotlight');
         requestAnimationFrame(() => {
+          if (!stillShown()) return;
           backdrop.classList.add('is-open');
           sheet.classList.add('is-open');
           if (!card) return;
           requestAnimationFrame(() => {
+            if (!stillShown()) return;
             const rect = card.getBoundingClientRect();
             const dockTop = window.innerHeight - sheet.offsetHeight;
             const gap = dockTop - 76; // usable space above the dock
@@ -2898,6 +2915,7 @@
         const restore = owner?.querySelector?.('summary') || api.lastFocus;
         restore?.focus?.();
         api.lastFocus = null;
+        setSheetOpen(false);
       }
     };
     // Manual help tooltips need an explicit outside-tap contract. Mobile Safari
@@ -3094,6 +3112,9 @@
     ensureHorizontalSettings(controlHost, descriptors);
   }
 
+  // Numbers the demo cards' tab strips so their tab/panel ids are unique on
+  // the page, however many times mount() runs (see the tabbed cards below).
+  let demoTabsSequence = 0;
   function mount(root = document) {
     if (!state.pendingShare) state.pendingShare = decodeShare(new window.URLSearchParams(window.location.search).get(SHARE_PARAM));
     // Replay as a floating icon on the stage's bottom-left corner.
@@ -3147,7 +3168,11 @@
       const stage = card.querySelector('.demo-stage') || card;
       const strip = document.createElement('div');
       strip.className = 'demo-tabs';
+      // The WAI-ARIA tabs pattern, like the drawer's settings/code tabs above:
+      // tabs control their panels (ids), one tab is in the Tab order (roving
+      // tabindex) and the arrow keys, Home and End move between tabs.
       strip.setAttribute('role', 'tablist');
+      const tabsId = `demo-tabs-${++demoTabsSequence}`;
       // Each panel's settings trigger lives in a shared slot BELOW the stage —
       // mounting it inside the panel dropped it into the middle of the preview.
       const hostSlot = document.createElement('div');
@@ -3164,11 +3189,20 @@
         if (panel.hasAttribute('data-demo-tab-i18n')) {
           tab.dataset.demoI18n = panel.dataset.demoTabI18n || tabLabel;
         }
+        tab.id = `${tabsId}-tab-${index}`;
+        panel.id ||= `${tabsId}-panel-${index}`;
+        tab.setAttribute('aria-controls', panel.id);
+        panel.setAttribute('role', 'tabpanel');
+        panel.setAttribute('aria-labelledby', tab.id);
         tab.setAttribute('aria-selected', String(index === 0));
+        tab.tabIndex = index === 0 ? 0 : -1;
         tab.addEventListener('click', () => {
           panels.forEach((other, otherIndex) => { other.hidden = otherIndex !== index; });
           hosts.forEach((host, hostIndex) => { if (host) host.hidden = hostIndex !== index; });
-          [...strip.children].forEach((node, nodeIndex) => node.setAttribute('aria-selected', String(nodeIndex === index)));
+          [...strip.children].forEach((node, nodeIndex) => {
+            node.setAttribute('aria-selected', String(nodeIndex === index));
+            node.tabIndex = nodeIndex === index ? 0 : -1;
+          });
           // A nested Kineto Tabs instance may have been created while this
           // panel was hidden. WebKit does not consistently emit ResizeObserver
           // callbacks for a hidden ancestor, so give visible child instances a
@@ -3200,6 +3234,16 @@
           created.hidden = index !== 0;
         }
         hosts.push(created);
+      });
+      strip.addEventListener('keydown', (event) => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        const tabs = [...strip.children];
+        const current = Math.max(0, tabs.indexOf(event.target.closest('[role="tab"]')));
+        const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
+          : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+        event.preventDefault();
+        tabs[next].click();
+        tabs[next].focus();
       });
       // Float the switch over the top of the grey preview box.
       stage.classList.add('demo-stage--tabbed');

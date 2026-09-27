@@ -88,6 +88,9 @@ Text Motion과 Content Entrance 데모는 시각 검수를 위해 Replay를 제�
 `delay`는 재생 시작 전 대기 시간(초)이고 `onComplete`는 전환 시간이 지난 뒤
 호출됩니다. `replay()`·`destroy()`는 이전 실행에 예약된 callback을 취소합니다.
 GSAP 경로의 `pause()`·`resume()`는 Replay로 시작한 현재 tween에도 적용됩니다.
+`resume()`은 `pause()`가 실제로 멈춘 tween만 이어 갑니다. 아직 ScrollTrigger 진입을 기다리던
+요소는 탭을 숨겼다 돌아와도(코어가 모든 인스턴스를 일시정지·재개합니다) 화면 아래에서 미리
+재생되지 않습니다.
 GSAP의 일반 transform/opacity 프리셋(`mask`·`wipe`·`clock`·`class` 제외)은
 `once:false`에서 Replay 뒤에도 원래 스크롤 이탈·역재생·재진입과
 진입/이탈 callback을 유지합니다.

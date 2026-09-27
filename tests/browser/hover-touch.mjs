@@ -155,15 +155,19 @@ try {
     assert.deepEqual({ canHover: s.canHover, cursor: s.cursor, glow: s.glow }, { canHover: false, cursor: 0, glow: false },
       `a phone has no page cursor and honours disableOnMobile (${JSON.stringify(s)})`);
 
+    // The roll is read from the track's transform: the link's accessible name
+    // stays its first item on purpose (a name that changed on hover read
+    // "WORK프로젝트" and then the second word — tests/browser/text-a11y-lifecycle.mjs).
     const rollState = () => page.evaluate(() => {
-      const roll = document.getElementById('roll');
-      return { hash: location.hash, label: roll.getAttribute('aria-label') };
+      const track = document.querySelector('#roll .kt-overflow-rolling-track');
+      return { hash: location.hash, transform: track?.style.transform ?? null, label: document.getElementById('roll').getAttribute('aria-label') };
     });
     const before = await rollState();
     await page.tap('#roll');
     const right = await rollState();
     assert.equal(right.hash, before.hash, 'a touch tap on a Hover Roll link must not navigate before the roll');
-    assert.notEqual(right.label, before.label, 'the tap starts the roll at once');
+    assert.notEqual(right.transform, before.transform, `the tap starts the roll at once (${JSON.stringify({ before, right })})`);
+    assert.equal(right.label, before.label, 'the link keeps one accessible name while it rolls');
     await page.waitForFunction(() => location.hash === '#roll-target', null, { timeout: 2000 });
     await context.close();
   }

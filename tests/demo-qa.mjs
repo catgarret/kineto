@@ -345,7 +345,11 @@ try {
     const select=document.getElementById('lang');
     const languages=['ko','en','ja','zh-CN','zh-TW','ru','it'];
     const heroLines=[...document.querySelectorAll('.lead-line')];
-    const koreanHero=heroLines.map((line)=>line.textContent);
+    // Blur Text keeps one visually hidden copy of the line for screen readers
+    // (.kt-sr-only): `drawn` is the painted text, the copy is what is read.
+    const drawn=(node)=>[...node.childNodes].filter((child)=>!child.classList?.contains('kt-sr-only')).map((child)=>child.textContent).join('');
+    const read=(node)=>node.querySelector('.kt-sr-only')?.textContent;
+    const koreanHero=heroLines.map(drawn);
     const result={};
     document.querySelector('.card > .kt-playground')?.__buildBody?.();
     for(const language of languages){
@@ -381,7 +385,7 @@ try {
         count:descriptions.length,
         heroCopy:heroLines.every((line,index)=>{
           const expected=(language==='ko'?koreanHero:window.KINETO_COPY_I18N.langs[language]._hero)[index];
-          return line.textContent===expected&&line.getAttribute('aria-label')===expected
+          return drawn(line)===expected&&read(line)===expected&&line.getAttribute('aria-label')===expected
             &&Boolean(window.Kineto.getInstance(line,'blurText'));
         }),
         twoLines:descriptions.every((node)=>{
@@ -533,7 +537,8 @@ try {
   const elapsedSeconds=page.locator('#counter .card').filter({has:page.getByRole('heading',{name:'Elapsed seconds',exact:true})});
   await elapsedSeconds.waitFor();
   const elapsedState=await elapsedSeconds.locator('[data-kt-counter="clock"]').evaluate((el)=>({
-    text:el.textContent,
+    // The painted digits; the counter's hidden screen-reader copy (.kt-sr-only) is left out.
+    text:[...el.childNodes].filter((child)=>!child.classList?.contains('kt-sr-only')).map((child)=>child.textContent).join(''),
     secondsOnly:el.dataset.ktSecondsOnly,
     digits:el.dataset.ktSecondsDigits,
     label:el.dataset.ktSecondsLabel,

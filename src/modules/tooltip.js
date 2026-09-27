@@ -8,13 +8,27 @@ import { clamp, env } from '../utils.js';
 // pointer is over the tooltip (for links inside). Accessible: role="tooltip",
 // aria-describedby wiring, Esc to close. Reduced motion: no fade. Theme with
 // `.kt-tooltip` + --kt-tooltip-* variables.
+// Options update() applies in place; any other key needs a fresh instance.
+const LIVE_UPDATE_KEYS = new Set(['content', 'html']);
+
+// Does the element have a name of its own besides `title`? An icon-only button
+// named only by its title lost its name when the title was taken away.
+function hasOwnName(el) {
+  if (el.getAttribute('aria-label')?.trim() || el.getAttribute('aria-labelledby')?.trim()) return true;
+  if (el.textContent.trim()) return true;
+  return Boolean(el.querySelector('img[alt]:not([alt=""]), [aria-label]:not([aria-label=""])'));
+}
+
 export default {
   create(el, opts = {}) {
     const reduce = env().reducedMotion;
     const nativeTitle = el.getAttribute('title');
     const content = opts.content || el.getAttribute('data-kt-title') || nativeTitle || el.getAttribute('aria-label') || '';
     if (!content) return null;
-    // Suppress the native title tooltip while we own it.
+    // Suppress the native title tooltip while we own it — but a title that was
+    // the element's only name moves to aria-label first (restored on destroy).
+    const movedTitleToLabel = nativeTitle != null && nativeTitle.trim() !== '' && !hasOwnName(el);
+    if (movedTitleToLabel) el.setAttribute('aria-label', nativeTitle);
     if (nativeTitle != null) el.removeAttribute('title');
 
     const placement = ['top', 'bottom', 'left', 'right'].includes(opts.placement) ? opts.placement : 'top';
@@ -48,6 +62,8 @@ export default {
     tip.appendChild(arrow);
     document.body.appendChild(tip);
 
+    // Always wired, even when the tip repeats the name: pages find their tip
+    // through this reference (the demo's settings help does).
     const describedBy = el.getAttribute('aria-describedby');
     el.setAttribute('aria-describedby', describedBy ? `${describedBy} ${tip.id}` : tip.id);
 
@@ -94,6 +110,9 @@ export default {
       // scrolling off the main-thread critical path (D-3 listener policy).
       window.addEventListener('scroll', position, { capture: true, passive: true });
       window.addEventListener('resize', position);
+      // Escape closes a shown tip wherever focus is (WCAG 1.4.13): a hover
+      // tip used to close only while its trigger had focus.
+      document.addEventListener('keydown', onKey);
     };
     const hide = () => {
       clearTimeout(showTimer);
@@ -106,6 +125,7 @@ export default {
       if (!reduce && effect !== 'none') { anim = tip.animate([toState, fromState], { duration: duration * 700, easing: 'ease' }); anim.onfinish = done; anim.oncancel = done; } else done();
       window.removeEventListener('scroll', position, true);
       window.removeEventListener('resize', position);
+      document.removeEventListener('keydown', onKey);
     };
     const scheduleShow = () => { clearTimeout(hideTimer); showTimer = setTimeout(show, delay); };
     const scheduleHide = () => { clearTimeout(showTimer); hideTimer = setTimeout(hide, hideDelay); };
@@ -118,12 +138,17 @@ export default {
     const onKey = (e) => { if (e.key === 'Escape' && visible) hide(); };
     const onDocClick = (e) => { if (visible && !el.contains(e.target) && !tip.contains(e.target)) hide(); };
 
+    // A hover tip stays open while the pointer is over it (WCAG 1.4.13
+    // "hoverable"): moving onto the tip to read it no longer closes it.
+    const onTipEnter = () => clearTimeout(hideTimer);
     if (trigger === 'hover') {
       el.addEventListener('pointerenter', onEnter);
       el.addEventListener('pointerleave', onLeave);
       el.addEventListener('focus', onFocus);
       el.addEventListener('blur', onBlur);
-      if (interactive) { tip.style.pointerEvents = 'auto'; tip.addEventListener('pointerenter', () => clearTimeout(hideTimer)); tip.addEventListener('pointerleave', scheduleHide); }
+      tip.style.pointerEvents = 'auto';
+      tip.addEventListener('pointerenter', onTipEnter);
+      tip.addEventListener('pointerleave', scheduleHide);
     } else if (trigger === 'focus') {
       el.addEventListener('focus', onFocus);
       el.addEventListener('blur', onBlur);
@@ -131,19 +156,27 @@ export default {
       el.addEventListener('click', onClick);
       document.addEventListener('pointerdown', onDocClick, true);
     }
-    el.addEventListener('keydown', onKey);
+    // `interactive` used to be what made the tip hoverable; every hover tip is
+    // now, so the option only matters for focus/click tips with links inside.
+    if (interactive && trigger !== 'hover') tip.style.pointerEvents = 'auto';
 
     return {
       el,
       type: 'tooltip',
       show, hide,
       // Live-update the tip text/markup in place — no teardown (audit B-5).
+      // A key it cannot apply here (placement, trigger, …) returns false, so
+      // the core recreates the instance instead of reporting a live update
+      // that changed nothing.
       update(patch = {}) {
+        if (Object.keys(patch).some((key) => !LIVE_UPDATE_KEYS.has(key))) return false;
         if (patch.content != null) {
           const useHtml = patch.html != null ? patch.html === true : allowHtml;
           if (useHtml) tip.innerHTML = String(patch.content); else tip.textContent = String(patch.content);
+          tip.appendChild(arrow); // replacing the content removed the arrow
         }
         if (visible) position();
+        return true;
       },
       pause() {}, resume() {},
       destroy() {
@@ -156,11 +189,14 @@ export default {
         el.removeEventListener('blur', onBlur);
         el.removeEventListener('click', onClick);
         document.removeEventListener('pointerdown', onDocClick, true);
-        el.removeEventListener('keydown', onKey);
+        document.removeEventListener('keydown', onKey);
+        tip.removeEventListener('pointerenter', onTipEnter);
+        tip.removeEventListener('pointerleave', scheduleHide);
         tip.remove();
-        // Restore aria-describedby / title.
+        // Restore aria-describedby / title (and the aria-label the title became).
         const db = (el.getAttribute('aria-describedby') || '').split(/\s+/).filter((v) => v && v !== tip.id).join(' ');
         if (db) el.setAttribute('aria-describedby', db); else el.removeAttribute('aria-describedby');
+        if (movedTitleToLabel && el.getAttribute('aria-label') === nativeTitle) el.removeAttribute('aria-label');
         if (nativeTitle != null) el.setAttribute('title', nativeTitle);
       }
     };

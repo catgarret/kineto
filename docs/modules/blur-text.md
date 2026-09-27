@@ -30,4 +30,11 @@ GSAP이 없는 환경에서는 CSS 전환과 viewport 감지로 등장합니다.
 작성자의 inline markup을 유지합니다. 일반 애니메이션은 텍스트를 글자
 span으로 나누므로 `<em>` 같은 inline markup의 표현은 유지하지 않습니다.
 
+글자 span은 `aria-hidden`이고, 원문은 요소 안의 보이지 않는 텍스트 하나(`kt-sr-only`)로 읽힙니다.
+`aria-label`은 제목·링크·버튼처럼 이름을 가질 수 있는 요소에만 함께 붙고, `p`·`div`·`span`에는 붙이지
+않습니다.
+
+GSAP 경로의 `resume()`은 `pause()`가 멈춘 등장만 이어 갑니다. 아직 화면에 들어오지 않아 ScrollTrigger를
+기다리던 요소는 숨긴 탭에서 돌아와도 미리 재생되지 않습니다.
+
 `destroy()`는 원래 HTML·ARIA와 모듈이 변경한 inline style을 복원합니다.

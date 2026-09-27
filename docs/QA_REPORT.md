@@ -3,7 +3,68 @@
 검증일: 2026-09-20
 대상: v0.12.3 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
-## 2026-09-26 아이폰 탭 튐 · 유령 커서 · 스크롤 중 ScrollTrigger refresh (Unreleased)
+## 2026-09-27 감사 수정 · 데모 접근성 · CI와 로컬 확인 속도 (Unreleased)
+
+소유자 요청: "대폭 성능 최적화, 접근성, 오류 등 잡는 리팩토링 거하게. 그리고 CI나 지금 작업하는 데
+반나절+하루 걸리는 것도 이슈라 생각해서 그것까지 개선."
+
+### 무엇을 했나
+
+- **감사 수정(약 40개 모듈):** 세 갈래(상호작용 컴포넌트, 코어·페이지 수준 lifecycle, 텍스트 모듈)로 나눠 찾고
+  고쳤습니다. 수정마다 "고치기 전 코드에서 실패하는 것"을 확인한 게이트를 붙였습니다:
+  `tests/browser/components-a11y.mjs`(51개 케이스), `lifecycle-core.mjs`(17개), `text-a11y-lifecycle.mjs`(12개).
+  세 엔진 모두 통과했습니다. 내용은 CHANGELOG `[Unreleased]`에 있습니다.
+- **데모:** 닫힌 설정 드로어는 `inert`이고 모달이 아닙니다. 페이드 중에 다시 연 사이트맵이 열린 채로 남습니다.
+  탭 줄은 탭 패턴(패널·`aria-controls`·로빙 탭 정지·화살표)을 따릅니다. 히어로를 지나면 제목 그라디언트가 멈추고,
+  휠·터치 이벤트마다 레이아웃을 읽지 않습니다. 게이트는 `tests/browser/demo-a11y.mjs`(v0.12.2에서 5개 모두 실패).
+- **reduced motion 텍스트:** Text Split·Blur Text·Text Reveal이 문단에도 `aria-label`을 붙이던 것을 고쳤습니다.
+  이제 `utils.labelStaticText()`로 이름을 가질 수 있는 요소에만 붙입니다(`tests/motion-regressions.mjs`).
+- **CI 속도:** shard를 위치 순서(round-robin)가 아니라 측정 시간(`tests/lane-timings.json`, LPT)으로 나누고,
+  Chromium 3·WebKit 3·Firefox 2개로 늘렸습니다. 병합한 트리에서 측정한 시간(2코어)으로 계산한 shard 부하:
+  Chromium 161/161/161초(위치 순서였다면 92/198/194), WebKit 134/135/134초(195/84/124), Firefox 201/201초
+  (한 shard였을 때 402)입니다. CI에서 가장 느린 job은 전에는 Firefox 1/1(363초)이었습니다. 게이트 `tests/lane-select.mjs`: 분할이 모든 단계를 한 번씩 덮는지,
+  실제 레인에서 LPT 한계(최적의 4/3) 안인지, round-robin보다 느리지 않은지 확인합니다.
+- **로컬 확인 속도:** `run-lane --changed[=ref]`와 `verify:push -- --changed`는 바뀐 파일이 영향을 줄 수 있는
+  단계만 돌립니다. 공유 파일(`src/` 코어·어댑터·`package.json`·레인 도구)이 바뀌면 전부 돌리고, CI는 이 옵션을
+  쓰지 않습니다. Slider 하나를 바꾸면 Chromium 48개 중 9개가 선택됩니다(측정 시간 합 약 210초, 전체 약 480초).
+  실시간 대기가 서로 독립인 두 테스트는 대기를 나란히 돌립니다: Reveal variant 58 → 42초, Stylize pattern 31 → 8초
+  (엔진마다, 단언은 그대로, 모션을 얼린 변이는 여전히 실패).
+  Playwright 브라우저 캐시는 넣지 않았습니다. Playwright가 권하지 않고(복원 시간이 다운로드와 비슷하고 OS
+  패키지는 어차피 설치), path 필터도 넣지 않았습니다(필수 검사가 건너뛰어지면 PR이 막힘).
+
+### 최신 `main`(v0.12.3 + 0.13 엔트리) 위로 합치기
+
+작업 도중 원격 `main`이 42커밋 앞서 갔습니다(v0.12.3 게시, `/auto`·`/all` 엔트리, `utils.canHover()` 입력 정책,
+Counter·Fullpage teardown, `observe()` 하위 트리 정리, `KT_ENGINE_UNAVAILABLE`, `dist/` 미추적).
+`AGENTS.md`의 동시 작업 규칙대로 최신 `main`에서 새 작업 브랜치 `agent/claude/perf-a11y-ci`를 만들고 병합해,
+충돌 13곳을 의도에 맞게 풀었습니다(병합 커밋 메시지에 곳곳의 결정을 적었습니다). 병합한 트리에서 테스트가 잡은 것:
+
+- `hover-touch`는 Hover Roll이 시작됐는지를 링크의 `aria-label` 변화로 확인했습니다. 감사 수정은 링크 이름을
+  첫 항목으로 고정했으므로(hover 중 이름이 바뀌던 결함), 트랙의 transform으로 확인하고 이름이 그대로인지도 봅니다.
+- `lifecycle-core`의 어댑터 케이스: 어댑터가 `@dong-gri/kineto/all`을 import 하므로 테스트 import map에 추가했습니다.
+- `components-a11y`의 gyro 케이스: `canHover()` 정책 이후 gyro는 "아무 입력도 호버하지 못할 때"만 씁니다.
+  테스트는 `(hover: none)` 하나만 흉내 냈으므로, 휴대폰의 hover/pointer 질의 응답 전체를 흉내 내게 했습니다.
+  함정: 이 도우미는 HTML 템플릿 리터럴 안에 있어 정규식의 `\s`가 `s`가 되었습니다 — 백슬래시를 두 번 씁니다.
+- 예산은 병합한 트리에서 다시 쟀습니다. 패키지: packed 674.0 → 682, unpacked 2157.0 → 2179(88개 파일).
+  소비자 번들: full·all 176, React 180, Vue 181(Vite 175.3/179.1/180.3, Rolldown 175.6/179.3/180.8 KB).
+  `docs/consumer-bundle-size.md`도 다시 생성했습니다.
+
+### 검증 (이 컨테이너, 2코어, 병합한 트리)
+
+| 검사 | 결과 |
+|---|---|
+| `npm run lint`, `npm run build` | 통과 |
+| `run-lane test:node` | 64/64 (2.3분) |
+| Chromium `test:browser` | 45/48 → 병합에서 깨진 3개(`hover-touch`·`lifecycle-core`·`components-a11y`)를 고친 뒤 다시 돌려 3/3 (전체 8.6분) |
+| Firefox `test:browser:cross` | 33/34 → `components-a11y` 수정 뒤 `components-a11y`·`lifecycle-core` 2/2 (전체 7.1분) |
+| WebKit `test:browser:cross` | 34/34 (6.7분) |
+| `npm run test:demo` | 통과(742개 컨트롤, 239개 플레이그라운드. H.264 비디오 단계는 이 브라우저에서 건너뜀 — CI에서 실행) |
+| 병합 전 브랜치 Chromium 레인 | 47/47 (8.1분) |
+
+검증하지 못한 것: 새 shard matrix의 실제 CI 시간(PR의 첫 CI가 첫 측정), 실기기 iOS/Android, 스크린 리더 실제 낭독
+(NVDA·JAWS·VoiceOver). 스크린 리더 동작은 접근성 트리와 DOM 규칙으로만 확인했습니다.
+
+## 2026-09-26 아이폰 탭 튐 · 유령 커서 · 스크롤 중 ScrollTrigger refresh (v0.12.3)
 
 v0.12.2 게시(태그 `v0.12.2` → `3cc58bb`, Release·데모 배포 성공) 뒤의 소유자 보고 셋:
 "아이폰에서 폴딩된 기준으로 스크롤하면 버벅이거나 튐, 특히 데모 버튼 누르면 튐",

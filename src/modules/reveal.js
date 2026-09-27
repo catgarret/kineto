@@ -506,6 +506,11 @@ export default {
       }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
       io.observe(el);
     }
+    // The tween pause() stopped while it was playing. An entrance still
+    // waiting for its ScrollTrigger is paused already, and resume() must leave
+    // it for the trigger: resuming it played every entrance below the fold as
+    // soon as a hidden tab came back (the core pauses on tab hide).
+    let pausedTween = null;
     return {
       el,
       type: 'reveal',
@@ -513,8 +518,15 @@ export default {
       // ScrollTrigger holds its own tween paused while the element is already in
       // view, so tween.restart() alone would just snap back to the start state.
       replay(nextOptions) { Object.assign(opts, nextOptions || {}); playImmediate(); },
-      pause() { activeTween.pause(); },
-      resume() { activeTween.resume(); },
+      pause() {
+        if (activeTween.paused()) return;
+        activeTween.pause();
+        pausedTween = activeTween;
+      },
+      resume() {
+        if (pausedTween === activeTween) activeTween.resume();
+        pausedTween = null;
+      },
       destroy() {
         destroyed = true;
         io?.disconnect();

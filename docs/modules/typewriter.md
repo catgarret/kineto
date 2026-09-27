@@ -82,9 +82,15 @@ Kineto.typewriter('.hero-text', {
 
 ## 접근성 노트
 
-- 모든 strings를 `aria-label`로 합쳐서 노출 (스크린리더가 한 번에 읽음)
+- 타이핑 중인 줄은 `aria-hidden="true"`이고, 모든 strings를 쉼표로 이은 문장 하나를 보이지 않는
+  텍스트(`kt-sr-only`)로 요소 안에 둡니다. 스크린리더는 이 문장을 한 번 읽고, 글자가 바뀔 때마다
+  읽지 않습니다.
+- `aria-label`은 제목·링크·버튼처럼 이름을 가질 수 있는 요소에만 함께 붙습니다. `span`·`div`·`p`에는
+  붙이지 않습니다(그 자리의 `aria-label`은 NVDA·JAWS가 읽기 모드에서 무시합니다).
 - caret(`▋`)은 `aria-hidden="true"`
 - `prefers-reduced-motion`: 첫 번째 문자열만 정적 표시 (애니메이션 없음)
+- `loop:false`로 마지막 문자열까지 친 뒤에는 `resume()`이 다시 타이핑하지 않고 `onComplete`도 다시
+  부르지 않습니다.
 
 ---
 

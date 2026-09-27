@@ -98,6 +98,9 @@
     h1{font-size:clamp(3rem,7vw,6.2rem);line-height:.9;letter-spacing:-.075em;margin:30px 0 22px}
     .hero-title{background:linear-gradient(105deg,var(--text) 0%,var(--text) 34%,var(--accent) 47%,#ffd166 53%,var(--text) 66%,var(--text) 100%);background-size:230% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:kt-hero-flow 5.2s linear infinite;filter:drop-shadow(0 0 30px color-mix(in srgb,var(--accent) 28%,transparent))}
     @keyframes kt-hero-flow{from{background-position:215% 0}to{background-position:-15% 0}}
+    /* main.js: paused while the hero is scrolled away (a background-position
+       animation repaints the text every frame on the main thread). */
+    .hero.is-past .hero-title{animation-play-state:paused}
     @media(prefers-reduced-motion:reduce){.hero-title{animation:none}}
     .lead{font-size:clamp(1rem,2.2vw,1.3rem);color:var(--muted);max-width:720px;margin:0 auto;line-height:1.7;word-break:keep-all;text-wrap:pretty}
     .lead-line{display:block}

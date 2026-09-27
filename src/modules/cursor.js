@@ -1,4 +1,4 @@
-import { canHover, clamp, frameEase, lerp, numberOption } from '../utils.js';
+import { canHover, clamp, frameEase, lerp, NATIVE_POINTER_FIELDS, numberOption } from '../utils.js';
 import { createCursorClickEffects } from './cursor/clickEffects.js';
 
 // Keep the click-effect option boundary in the public module entry. Besides
@@ -42,6 +42,17 @@ function textRing(size, radius, pathId, text) {
   svg.append(defs, label);
   return svg;
 }
+
+// Where the native pointer stays visible (fields, selects): one shared list,
+// see NATIVE_POINTER_FIELDS in src/utils.js. The default `hiddenSelector`
+// hides the custom cursor there, so only one pointer shows.
+const NATIVE_CURSOR_FIELDS = NATIVE_POINTER_FIELDS;
+
+// Page-wide cursors that are running (not paused, not destroyed). They share
+// the root class that hides the native pointer, so the class goes only when
+// the last of them pauses or is destroyed: a paused cursor used to keep it,
+// and Kineto.pause() left the page with no pointer at all.
+const runningPageCursors = new Set();
 
 function pointInsideViewport(event) {
   return event.clientX >= 0 && event.clientY >= 0 && event.clientX <= window.innerWidth && event.clientY <= window.innerHeight;
@@ -116,17 +127,26 @@ export default {
     const opacity = clamp(Number(opts.opacity ?? 1), 0, 1);
     const zIndex = Number(opts.zIndex ?? 2147483000);
     const hoverSelector = opts.hoverSelector || 'a,button,input,select,textarea,label,[role="button"],[data-kt-cursor-hover]';
-    const hiddenSelector = opts.hiddenSelector || '[data-kt-cursor-hide]';
+    const hiddenSelector = opts.hiddenSelector || `[data-kt-cursor-hide],${NATIVE_CURSOR_FIELDS}`;
     const scoped = isScopedElement(el, opts);
     const root = document.documentElement;
     const originalRootCursor = root.style.cursor;
-
-    if (scoped) {
-      el.classList.add('kt-cursor-scope');
-      el.setAttribute('data-kt-cursor-scope', '');
-    } else {
+    const pageCursorToken = {};
+    // Hide the native pointer where this cursor draws (scope or page) — and
+    // give it back on pause() and destroy().
+    const hideNativePointer = () => {
+      if (scoped) { el.classList.add('kt-cursor-scope'); return; }
+      runningPageCursors.add(pageCursorToken);
       root.classList.add('kt-cursor-active');
-    }
+    };
+    const showNativePointer = () => {
+      if (scoped) { el.classList.remove('kt-cursor-scope'); return; }
+      runningPageCursors.delete(pageCursorToken);
+      if (!runningPageCursors.size) root.classList.remove('kt-cursor-active');
+    };
+
+    if (scoped) el.setAttribute('data-kt-cursor-scope', '');
+    hideNativePointer();
 
     const cursor = document.createElement('div');
     cursor.className = `kt-cursor kt-cursor-${type}${opts.className ? ` ${opts.className}` : ''}`;
@@ -456,16 +476,28 @@ export default {
       const ox = Math.cos(angle * Math.PI / 180) * distance;
       const oy = Math.sin(angle * Math.PI / 180) * distance;
       node.textContent = symbol;
-      // Reset without transition first, otherwise a pooled star would start
-      // mid-transition from its old faded state and never become visible.
-      node.style.cssText = `position:fixed;left:${sx + ox}px;top:${sy + oy}px;z-index:${zIndex - 2};pointer-events:none;font-size:${size}px;font-weight:900;line-height:1;color:${tint};text-shadow:0 0 6px currentColor;transform:translate(-50%,-50%) rotate(${angle}deg) scale(1);opacity:1;transition:none;`;
-      if (!node.parentNode) cursor.appendChild(node);
-      void node.offsetWidth;
-      node.style.transition = `opacity ${sparkles.duration}ms cubic-bezier(.2,0,.8,1),transform ${sparkles.duration}ms cubic-bezier(.2,0,.8,1)`;
-      requestAnimationFrame(() => {
-        node.style.opacity = '0';
-        node.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg) scale(.1)`;
-      });
+      const from = `translate(-50%,-50%) rotate(${angle}deg) scale(1)`;
+      const to = `translate(-50%,-50%) rotate(${angle + 90}deg) scale(.1)`;
+      const easing = 'cubic-bezier(.2,0,.8,1)';
+      if (typeof node.animate === 'function') {
+        // The resting style is the END state (invisible); the animation plays
+        // from the start state to it. No transition to restart, so no forced
+        // layout (`void offsetWidth`) and no extra frame per star.
+        node.style.cssText = `position:fixed;left:${sx + ox}px;top:${sy + oy}px;z-index:${zIndex - 2};pointer-events:none;font-size:${size}px;font-weight:900;line-height:1;color:${tint};text-shadow:0 0 6px currentColor;transform:${to};opacity:0;`;
+        if (!node.parentNode) cursor.appendChild(node);
+        node.animate([{ opacity: 1, transform: from }, { opacity: 0, transform: to }], { duration: sparkles.duration, easing });
+      } else {
+        // Reset without transition first, otherwise a pooled star would start
+        // mid-transition from its old faded state and never become visible.
+        node.style.cssText = `position:fixed;left:${sx + ox}px;top:${sy + oy}px;z-index:${zIndex - 2};pointer-events:none;font-size:${size}px;font-weight:900;line-height:1;color:${tint};text-shadow:0 0 6px currentColor;transform:${from};opacity:1;transition:none;`;
+        if (!node.parentNode) cursor.appendChild(node);
+        void node.offsetWidth;
+        node.style.transition = `opacity ${sparkles.duration}ms ${easing},transform ${sparkles.duration}ms ${easing}`;
+        requestAnimationFrame(() => {
+          node.style.opacity = '0';
+          node.style.transform = to;
+        });
+      }
       setTimeout(() => { if (node.parentNode) sparkles.pool.push(node); }, sparkles.duration + 60);
     };
 
@@ -483,10 +515,19 @@ export default {
       }
       mouseX = event.clientX;
       mouseY = event.clientY;
-      wake();
-      if (scoped) insideScope = Boolean(event.target && typeof event.target.closest === 'function' && (event.target.closest('[data-kt-cursor-scope]') === el || el.contains(event.target)));
+      // A scoped cursor with the pointer elsewhere only remembers where the
+      // pointer is. Fourteen cursors on one page each walked the target's
+      // ancestors, wrote transforms and woke a frame on every move, all for
+      // cursors nobody could see. setVisible(true) snaps to the pointer.
+      if (scoped) {
+        const node = event.target && event.target.nodeType === 1 ? event.target : event.target?.parentElement;
+        insideScope = Boolean(node && el.contains(node));
+        if (!insideScope) { if (visible) setVisible(false); return; }
+      }
       const show = shouldShowAt(event) && pointInsideViewport(event) && !event.target?.closest?.(hiddenSelector);
       if (show !== visible) setVisible(show);
+      if (!visible) return;
+      wake();
       if (dot) dot.style.transform = `translate3d(${mouseX}px,${mouseY}px,0) translate(-50%,-50%)`;
       if (single) {
         if (single.dataset.crosshairFull) {
@@ -640,8 +681,8 @@ export default {
       show() { cursor.hidden = false; setVisible(true); },
       hide() { setVisible(false); },
       // rafId is cleared with the cancel so wake() can schedule again later.
-      pause() { alive = false; if (rafId != null) cancelAnimationFrame(rafId); rafId = null; cursor.hidden = true; },
-      resume() { if (!alive) { alive = true; cursor.hidden = false; wake(); } },
+      pause() { alive = false; if (rafId != null) cancelAnimationFrame(rafId); rafId = null; cursor.hidden = true; showNativePointer(); },
+      resume() { if (!alive) { alive = true; cursor.hidden = false; hideNativePointer(); wake(); } },
       destroy() {
         alive = false;
         if (rafId != null) cancelAnimationFrame(rafId);
@@ -653,16 +694,13 @@ export default {
         window.removeEventListener('mouseout', onWindowOut);
         if (scoped) {
           el.removeEventListener('pointerleave', onScopeLeave);
-          el.classList.remove('kt-cursor-scope');
           el.removeAttribute('data-kt-cursor-scope');
         }
+        showNativePointer();
         injectedStyle?.remove();
         clickEffects.destroy();
         cursor.remove();
-        if (!scoped && !document.querySelector('.kt-cursor')) {
-          root.classList.remove('kt-cursor-active');
-          root.style.cursor = originalRootCursor;
-        }
+        if (!scoped && !runningPageCursors.size) root.style.cursor = originalRootCursor;
       }
     };
   },

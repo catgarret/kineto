@@ -10,6 +10,9 @@ import { clamp, dropEmptyAttributes, env, snapshotAttributes, snapshotInlineStyl
 // focus; `"manual"` waits for Enter/Space. An animated indicator underlines the
 // active tab; panels cross-fade/slide per `effect`. All themeable via
 // `.kt-tab* ` classes and CSS variables.
+const PANEL_SELECTOR = '[role="tabpanel"], .kt-tabpanel, [data-kt-tabpanel]';
+const TABS_ROOT_SELECTOR = '[data-kt-tabs], .kt-tabs';
+
 export default {
   create(el, opts = {}) {
     const reduce = env().reducedMotion;
@@ -27,11 +30,21 @@ export default {
       ? opts.indicatorMotion
       : 'slide';
 
-    const list = el.querySelector('[role="tablist"], .kt-tablist') || el.firstElementChild;
+    // Tabs inside a panel are a widget of their own. A part belongs to THIS
+    // widget only when no panel or tab container sits between it and `el`;
+    // the unscoped query used to take the inner widget's panels as ours, so
+    // the outer tabs showed and hid the inner ones.
+    const ownPart = (node) => {
+      for (let up = node.parentElement; up && up !== el; up = up.parentElement) {
+        if (up.matches(`${PANEL_SELECTOR}, ${TABS_ROOT_SELECTOR}`)) return false;
+      }
+      return true;
+    };
+    const list = Array.from(el.querySelectorAll('[role="tablist"], .kt-tablist')).find(ownPart) || el.firstElementChild;
     if (!list) return null;
     const tabs = Array.from(list.querySelectorAll('button, a, [role="tab"], .kt-tab'))
       .filter((node) => node.closest('[role="tablist"], .kt-tablist') === list);
-    const panels = Array.from(el.querySelectorAll('[role="tabpanel"], .kt-tabpanel, [data-kt-tabpanel]'));
+    const panels = Array.from(el.querySelectorAll(PANEL_SELECTOR)).filter(ownPart);
     if (!tabs.length || !panels.length) return null;
 
     // 쓰기 **전에** 전부 기억합니다. 되돌리지 않으면 destroy 한 뒤에도 마크업이 완전한

@@ -62,27 +62,35 @@ export function createInteractiveShadow(el, namespace, config = {}) {
   const inset = config.inset === true ? 'inset ' : '';
   const customCss = String(config.css || '').trim();
   let destroyed = false;
+  // Last values written, so a frame that changes nothing writes nothing. Every
+  // write to a custom property restyles the card and all of its descendants.
+  let writtenOpacity = null;
+  let writtenRuntime = null;
 
-  const update = (x = 0, y = 0, active = true) => {
-    if (destroyed) return;
+  const write = (x, y, active) => {
     const visible = enabled && active;
-    style.setProperty(activeOpacityName, `${visible ? opacity * 100 : 0}%`);
-    if (customCss && visible) {
-      style.setProperty(runtimeName, customCss);
-      return;
-    }
-    style.setProperty(
-      runtimeName,
-      `${inset}var(${prefix}-x, ${Number(x).toFixed(2)}px) `
-      + `var(${prefix}-y, ${Number(y).toFixed(2)}px) `
-      + `var(${prefix}-blur, ${blur}px) `
-      + `var(${prefix}-spread, ${spread}px) `
-      + `color-mix(in srgb, var(${prefix}-color, ${color}) `
-      + `var(${prefix}-opacity, var(${activeOpacityName})), transparent)`
-    );
+    const opacityValue = `${visible ? opacity * 100 : 0}%`;
+    const runtimeValue = customCss && visible
+      ? customCss
+      : `${inset}var(${prefix}-x, ${Number(x).toFixed(2)}px) `
+        + `var(${prefix}-y, ${Number(y).toFixed(2)}px) `
+        + `var(${prefix}-blur, ${blur}px) `
+        + `var(${prefix}-spread, ${spread}px) `
+        + `color-mix(in srgb, var(${prefix}-color, ${color}) `
+        + `var(${prefix}-opacity, var(${activeOpacityName})), transparent)`;
+    if (opacityValue !== writtenOpacity) { style.setProperty(activeOpacityName, opacityValue); writtenOpacity = opacityValue; }
+    if (runtimeValue !== writtenRuntime) { style.setProperty(runtimeName, runtimeValue); writtenRuntime = runtimeValue; }
   };
 
-  update(Number(config.x ?? 0), Number(config.y ?? 0), config.active !== false);
+  // A disabled channel (the default) is written once, transparent, and then
+  // left alone: Tilt and Card Glow call update() every animation frame, and
+  // each call used to rewrite the offsets of a shadow nobody could see.
+  const update = (x = 0, y = 0, active = true) => {
+    if (destroyed || !enabled) return;
+    write(x, y, active);
+  };
+
+  write(Number(config.x ?? 0), Number(config.y ?? 0), config.active !== false);
 
   return {
     update,

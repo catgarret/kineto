@@ -166,9 +166,18 @@ assert.deepEqual(errors, [], 'no page errors');
 //    collapse (a parent with no height and an image not loaded yet).
 const media = await context.newPage();
 await media.goto(`${origin}${MEDIA_FIXTURE}`, { waitUntil: 'load' });
-const createMedia = () => media.evaluate(() => {
+// The trace window is the creating task plus the next frame's shared read
+// (measureThenApply runs in the rAF callback registered during creation; the
+// end marker's callback is registered after it, so it runs after). Without the
+// markers the window ran on until Tracing.end, and a Lazy image's own later
+// work (its IntersectionObserver notice) was sometimes counted too: 6 or 10
+// "forced layouts" on a busy machine, 0-3 alone.
+const createMedia = () => media.evaluate(() => new Promise((resolve) => {
+  console.timeStamp('kt-create-begin');
   document.querySelectorAll('img.media').forEach((img) => window.Kineto.create('lazy', img, { effect: 'fade' }));
-});
+  requestAnimationFrame(() => { console.timeStamp('kt-create-end'); resolve(); });
+}));
+const markerTime = (events, message) => events.find((event) => event.name === 'TimeStamp' && event.args?.data?.message === message)?.ts;
 let mediaLayouts = null;
 if (browserName === 'chromium') {
   const cdp = await context.newCDPSession(media);
@@ -179,7 +188,10 @@ if (browserName === 'chromium') {
   await createMedia();
   await cdp.send('Tracing.end');
   await complete;
-  mediaLayouts = events.filter((event) => event.name === 'Layout' && event.args?.beginData?.stackTrace?.length).length;
+  const begin = markerTime(events, 'kt-create-begin');
+  const end = markerTime(events, 'kt-create-end');
+  assert.ok(begin != null && end != null, 'the trace carries both window markers');
+  mediaLayouts = events.filter((event) => event.name === 'Layout' && event.args?.beginData?.stackTrace?.length && event.ts >= begin && event.ts <= end).length;
   assert.ok(mediaLayouts <= 3, `creating 40 Lazy images together must not lay the page out once per image: ${mediaLayouts} forced layouts`);
 } else {
   await createMedia();

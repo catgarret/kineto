@@ -8,7 +8,7 @@
 // ensureLenis() (page global or official CDN) the first time enableSmooth() is
 // called. Smooth scroll is opt-in and off by default, so a page that never
 // enables it never fetches Lenis. See src/runtime.js for the engine loader.
-import { dash, dropEmptyAttributes, env, G, noopInstance, q, readOpts, ST, setMotionDefaults } from './utils.js';
+import { dash, dropEmptyAttributes, env, G, NATIVE_POINTER_FIELDS, noopInstance, q, readOpts, ST, setMotionDefaults } from './utils.js';
 import { setAnimationEngine, setEngineSource, getEngineSource, ensureGSAP, ensureLenis, gsapReady, engineFailure } from './runtime.js';
 import { createDiagnosticHub, DIAGNOSTIC_CODES } from './diagnostics.js';
 
@@ -398,17 +398,31 @@ function removeRecord(record, destroy = true, teardownIfEmpty = true) {
     // 같은 요소에 살아 있는 다른 모듈이나 페이지가 넣은 값은 건드리지 않습니다.
     dropEmptyAttributes(record.sourceEl);
   }
-  if (teardownIfEmpty && records.size === 0) teardownCoreServices();
+  if (teardownIfEmpty && records.size === 0) teardownInstanceServices();
+}
+
+// True when `root` is, or contains, `node` (the document and window cover all).
+function coversNode(root, node) {
+  if ((typeof document !== 'undefined' && root === document) ||
+      (typeof window !== 'undefined' && root === window)) return true;
+  return root === node || (typeof root?.contains === 'function' && root.contains(node));
+}
+
+// scan() creates GSAP-driven modules only after the engine has downloaded.
+// Whatever the page tears down in the meantime must stay torn down: a
+// Kineto.destroy(root), or removing the root, used to be undone a moment later
+// when the engine arrived and the scan created instances on nodes the page had
+// already let go of (and that nothing would ever destroy).
+const pendingScans = new Set(); // { root, cancelled, released: [roots destroyed meanwhile] }
+function forgetPendingScans(roots = null) {
+  pendingScans.forEach((pending) => {
+    if (!roots || roots.some((gone) => coversNode(gone, pending.root))) pending.cancelled = true;
+    else pending.released.push(...roots);
+  });
 }
 
 function matchesRoot(record, roots) {
-  return roots.some((root) => {
-    if ((typeof document !== 'undefined' && root === document) ||
-        (typeof window !== 'undefined' && root === window)) return true;
-    if (record.sourceEl === root || record.instance.el === root) return true;
-    return typeof root.contains === 'function' &&
-      (root.contains(record.sourceEl) || root.contains(record.instance.el));
-  });
+  return roots.some((root) => coversNode(root, record.sourceEl) || coversNode(root, record.instance.el));
 }
 
 // Destroy instances owned by source elements inside subtrees removed from an
@@ -557,23 +571,22 @@ function warnHostTransformClash(el, name) {
     detail: { otherModule: other }
   });
 }
-// True when `node` is inside a scrollable container (or one tagged with
-// data-lenis-prevent), so Lenis should skip it and let native scroll happen.
+// True when `node` ITSELF is a scrollable container (or is tagged with
+// data-lenis-prevent), so Lenis should skip the event and let native scroll
+// happen. Only this one element is checked: Lenis already calls `prevent` for
+// every element on the event's path, target first. Walking the ancestors here
+// as well read computed style depth² times per wheel event (a 12-deep target
+// cost 78 style reads instead of 12).
 function isInnerScrollable(node) {
-  let el = node && node.nodeType === 1 ? node : (node && node.parentElement);
   const root = typeof document !== 'undefined' ? document : null;
-  while (el && root && el !== root.body && el !== root.documentElement) {
-    if (el.nodeType === 1) {
-      if (el.hasAttribute('data-lenis-prevent') || el.hasAttribute('data-lenis-prevent-wheel')) return true;
-      const style = getComputedStyle(el);
-      const oy = style.overflowY;
-      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
-      const ox = style.overflowX;
-      if ((ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 1) return true;
-    }
-    el = el.parentElement;
-  }
-  return false;
+  if (!root || !node || node.nodeType !== 1) return false;
+  if (node === root.body || node === root.documentElement) return false;
+  if (node.hasAttribute('data-lenis-prevent') || node.hasAttribute('data-lenis-prevent-wheel')) return true;
+  const style = getComputedStyle(node);
+  const oy = style.overflowY;
+  if ((oy === 'auto' || oy === 'scroll') && node.scrollHeight > node.clientHeight + 1) return true;
+  const ox = style.overflowX;
+  return (ox === 'auto' || ox === 'scroll') && node.scrollWidth > node.clientWidth + 1;
 }
 
 function startSmoothService(gsap = G(), scrollTrigger = ST()) {
@@ -632,17 +645,16 @@ function stopSmoothService() {
   lenis = null;
 }
 
-function teardownCoreServices() {
+// Services that exist only for live instances: the layout watcher, the tab
+// visibility hook and the reduced-motion / connection watchers. They go when
+// the last instance goes and come back with the next create().
+function teardownInstanceServices() {
   layoutRefresh.stop();
   scrollDrivenCount = 0;
   if (visibilityHandler && typeof document !== 'undefined') {
     document.removeEventListener('visibilitychange', visibilityHandler);
   }
   visibilityHandler = null;
-  if (domReadyHandler && typeof document !== 'undefined') {
-    document.removeEventListener('DOMContentLoaded', domReadyHandler);
-  }
-  domReadyHandler = null;
 
   if (rmMediaQuery && rmChangeHandler) {
     if (rmMediaQuery.removeEventListener) rmMediaQuery.removeEventListener('change', rmChangeHandler);
@@ -657,10 +669,22 @@ function teardownCoreServices() {
   watchedConnection = null;
   connectionChangeHandler = null;
   connWatched = false;
-
-  stopSmoothService();
   initialized = false;
+}
+
+// Everything, including what the PAGE switched on: smooth scroll
+// (enableSmooth) and a pending autoInit() waiting for DOMContentLoaded. Only
+// Kineto.destroy() ends those. Destroying the last instance used to do it too,
+// so an SPA route unmounting its only effect turned smooth scroll off (while
+// `config.smooth` stayed true) and silently dropped a pending autoInit().
+function teardownCoreServices() {
+  teardownInstanceServices();
+  if (domReadyHandler && typeof document !== 'undefined') {
+    document.removeEventListener('DOMContentLoaded', domReadyHandler);
+  }
+  domReadyHandler = null;
   domReadyScheduled = false;
+  stopSmoothService();
 }
 
 function injectCSSFallback() {
@@ -676,6 +700,9 @@ function injectCSSFallback() {
     @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
     .kt-cursor-active, .kt-cursor-active * { cursor: none !important; }
     .kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }
+    .kt-cursor-active :is(${NATIVE_POINTER_FIELDS}), .kt-cursor-scope :is(${NATIVE_POINTER_FIELDS}),
+    .kt-cursor-active [data-kt-cursor-hide], .kt-cursor-active [data-kt-cursor-hide] *,
+    .kt-cursor-scope [data-kt-cursor-hide], .kt-cursor-scope [data-kt-cursor-hide] * { cursor: auto !important; }
     .kt-tw-caret { animation: kt-caret .8s step-end infinite; }
     .kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }
     .kt-slider-wrap { position: relative; overflow: hidden; }
@@ -928,7 +955,7 @@ const Kineto = {
       root.querySelectorAll?.(selector).forEach(collect);
       return discovered;
     };
-    const scanDiscovered = (discovered) => {
+    const scanDiscovered = (discovered, keep = null) => {
       modules.forEach((module, name) => {
         const candidates = discovered.get(name);
         if (!candidates) return;
@@ -936,6 +963,7 @@ const Kineto = {
         // element nears the viewport (src/deferCreate.js).
         const waits = config.defer === true && module.defer === true;
         candidates.forEach((el) => {
+          if (keep && !keep(el)) return;
           if (waits && deferral.queue(el, name)) return;
           this.create(name, el, readOpts(el, name));
         });
@@ -977,12 +1005,25 @@ const Kineto = {
       // they find GSAP — keeping the preload veil up until they've applied.
       // Re-discover once after the asynchronous fetch so GSAP markup inserted
       // while the engine was loading keeps the pre-existing scan() semantics.
+      // See pendingScans: skip a root destroyed meanwhile, and any element
+      // under a root destroyed meanwhile. A root that was on the page and has
+      // left it (or an element that has) is skipped too; a subtree scanned
+      // before it was attached keeps its old behaviour.
+      const pending = { root, cancelled: false, released: [] };
+      pendingScans.add(pending);
+      const watchConnection = root.isConnected !== false;
+      const keep = (el) => (!watchConnection || el.isConnected !== false)
+        && !pending.released.some((gone) => coversNode(gone, el));
       ensureGSAP().finally(() => {
+        pendingScans.delete(pending);
+        // The engine did not load: say which modules wait for it (diagnostic),
+        // whether or not their root is still here.
         if (!gsapReady()) {
           reportEngineUnavailable('gsap', Array.from(gsapDiscovered.entries())
             .filter(([, candidates]) => candidates.length > 0).map(([name]) => name));
         }
-        scanDiscovered(discoverModules(true));
+        const rootLeft = watchConnection && root.isConnected === false;
+        if (!pending.cancelled && !rootLeft) scanDiscovered(discoverModules(true), keep);
         release();
       });
     } else {
@@ -1096,7 +1137,10 @@ const Kineto = {
       if (record?.instance?.effect === 'radial' && Number.isFinite(record.instance.index)) {
         opts.initialIndex = record.instance.index;
       }
-      this.destroyModule(el, name);
+      // Rebuild THIS element's instance only. destroyModule(el, name) also
+      // destroys every same-module instance nested inside `el` (a reveal
+      // inside a reveal), and those were never recreated.
+      if (record) removeRecord(record);
       this.create(name, el, opts);
     });
     return liveCount > 0;
@@ -1144,10 +1188,12 @@ const Kineto = {
         if (matchesRoot(record, roots)) removeRecord(record);
       });
       deferral.cancel(roots);
+      forgetPendingScans(roots);
       return this;
     }
 
     deferral.cancel();
+    forgetPendingScans();
     Array.from(records).forEach((record) => removeRecord(record));
     Array.from(observers.values()).forEach(({ handle }) => handle.disconnect());
     teardownCoreServices();

@@ -145,12 +145,16 @@ or a tag; release approval remains separate.
   A notice can also arrive after its node left the page (a closed compare
   sheet): check `isConnected` before creating anything from it — an effect
   created on a removed node is never destroyed (`tests/variant-compare.mjs`).
+  `tests/browser/lifecycle-edges.mjs` fakes such a batch.
 - **Decide by content, not by a size read at creation**: an element may be
   hidden (`display:none`, a closed panel) or off the page when it is created,
   and measures 0×0. Cursor used to take such a card for a page-wide holder and
   drew a second cursor everywhere; it now reads a box only when the element is
   drawn (`getClientRects().length > 0`). `tests/browser/cursor-scope.mjs`.
-  `tests/browser/lifecycle-edges.mjs` fakes such a batch.
+  Fullpage pinned such a deck at `height: 100svh` (a 420px demo card grew as
+  tall as the window just by scrolling to it): a read under 10px is now
+  confirmed by a ResizeObserver report on the laid-out deck before any
+  fallback applies (`fullpage-hidden-panel` in `components-a11y.mjs`).
 - **A geometry repair snaps; only a state change animates**: first placement,
   a reveal, a resize and `refresh()` write the measured position with the
   transition off, and nothing is written while the element has no box (a
@@ -165,15 +169,50 @@ or a tag; release approval remains separate.
   `tests/browser/motion-timing.mjs`.
 - **Verify the change, then push once**: run the tests that cover what you
   touched (`node scripts/run-lane.mjs test:browser --only <name> --repeat 3`,
-  three engines for new browser gates), then `npm run verify:push` before the
-  push. The full lanes run in CI in parallel shards; locally run one at most
-  once (`npm run verify:push -- --browser` runs one test per two CPU cores),
-  never two lanes at the same time — they starve each other. On a 2-core
-  machine `--jobs 2` alone makes tests flake.
+  three engines for new browser gates), then `npm run verify:push -- --changed`
+  before the push (it adds the Chromium browser tests the change can affect).
+  The full lanes run in CI in parallel shards; locally run one at most once
+  (`npm run verify:push -- --browser` runs one test per two CPU cores), never
+  two lanes at the same time — they starve each other. On a 2-core machine
+  `--jobs 2` alone makes tests flake.
+- **Waits that are real time run side by side**: a browser test whose cases
+  each wait on a transition or an observer (not on the CPU) runs independent
+  cases concurrently, each on its own element or scroller — Reveal's native
+  repeat probe and Stylize's motion matrix went from ~19 s and ~30 s to ~3 s
+  and ~6 s per engine. Keep trajectory and frame-timing checks sequential:
+  they flake under contention (`b2_navigation`'s hero snap did).
 - **Test lists live only in package.json**: CI and the release run lanes with
-  `scripts/run-lane.mjs` (`--shard k/n` splits a lane across runners), so a
-  test added to `test:browser` or `test:browser:cross` is in CI without a
-  workflow edit. Never copy a test list into a workflow.
+  `scripts/run-lane.mjs` (`--shard k/n` splits a lane across runners by the
+  measured times in `tests/lane-timings.json`, longest first onto the
+  least-loaded shard), so a test added to `test:browser` or
+  `test:browser:cross` is in CI without a workflow edit — it counts as a
+  typical step until `--record-timings` measures it. Never copy a test list
+  into a workflow, and never pass `--changed` in CI.
+- **A test that covers a whole area says so**: `run-lane --changed` picks the
+  steps whose file (or its local imports, or an npm script's files) names the
+  changed module, demo file or test. A test that exercises every module
+  without naming it declares `// @lane-affected-by src/modules/`
+  (`tests/browser-smoke.mjs`, `demo-blocks.mjs`, `idle-cost.mjs`).
+- **Text drawn as glyphs is read from one hidden copy**: a module that draws
+  `aria-hidden` letters, reels or copies gives the text back with `srText()`
+  (`src/utils.js`: one `.kt-sr-only` node; `aria-label` only on a host whose
+  role takes a name, `acceptsAccessibleName()`). Reduced motion shows the text
+  itself and names a host only through `labelStaticText()`. Never put the text
+  back as `aria-label` on a div, span or p — screen readers ignore it there.
+  Text that changes on its own is never a live region.
+  `tests/browser/text-a11y-lifecycle.mjs`, `tests/motion-regressions.mjs`.
+- **`resume()` resumes only what `pause()` stopped**: a tween still waiting
+  for its ScrollTrigger, or an effect that already finished, stays as it is
+  (the core pauses and resumes everything on a hidden tab). Track the players
+  and timers a run owns, cancel them in `replay()` and `destroy()`, and let an
+  outdated run stop at its next step (a generation number).
+  `tests/browser/lifecycle-core.mjs`, `text-a11y-lifecycle.mjs`.
+- **Where the audit gates live**: interactive components (keyboard, screen
+  reader, inert, focus return, resting loops) in
+  `tests/browser/components-a11y.mjs`; core and page-level lifecycle races in
+  `lifecycle-core.mjs`; text modules in `text-a11y-lifecycle.mjs`; the demo's
+  own dialogs, tabs and hero in `demo-a11y.mjs`. Each case failed on the code
+  before its fix; add a new case to the file of its area.
 - **A retry that passes is a flake, and flakes are bugs**: the retry helpers
   report it (`Flaky:` line, CI warning annotation, lane summary). Fix the test
   (a bounded condition wait instead of a fixed sleep) — do not raise attempts.

@@ -64,7 +64,9 @@ await results.apply('.result-card', 'shown', { stagger: 20 });
 
 - `apply(target, state, options)`는 취소 가능한 Promise를 반환합니다. 완료 결과는
   `{ status: 'finished' }`, 취소 결과는 `{ status: 'cancelled' }` 형태로 구분합니다.
-- 같은 대상에 새 상태를 적용하면 이전 재생을 취소하고 새 상태를 시작합니다.
+- 같은 대상에 새 상태를 적용하면 그 요소의 이전 재생만 멈추고 새 상태를 시작합니다. 이전 실행이
+  함께 움직이던 다른 요소(stagger 형제 등)는 제자리로 튀지 않고 끝까지 움직이며, 이전 실행은 모든
+  요소에 도달하지 못했으므로 `{ status: 'cancelled' }`로 끝납니다.
 - `replay(target?, state?)`는 마지막으로 적용한 상태를 다시 재생합니다.
 - `destroy()`는 생성한 애니메이션·listener·inline style을 정리하고 상태 엔진이
   변경하기 전의 DOM을 복원합니다. 두 번 호출해도 오류가 없어야 합니다.

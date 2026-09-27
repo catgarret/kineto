@@ -95,7 +95,8 @@ Text Reveal도 authored `<br>`와 `text` 옵션의 `\n`을 같은 방식으로
 
 ## 접근성 노트
 
-**중요**: 원본 텍스트는 `aria-label`로 보존, 분할된 span은 `aria-hidden="true"`.
+**중요**: 분할된 span은 `aria-hidden="true"`이고, 원본 텍스트는 요소 안의 보이지 않는 텍스트
+하나(`kt-sr-only`)로 보존합니다.
 
 ```html
 <!-- 적용 후 -->
@@ -104,10 +105,19 @@ Text Reveal도 authored `<br>`와 `text` 옵션의 `\n`을 같은 방식으로
   <span aria-hidden="true">o</span>
   <span aria-hidden="true">v</span>
   ...
+  <span class="kt-sr-only">Move everything.</span>
 </h1>
 ```
 
-스크린리더는 `aria-label`만 읽고 분할된 span은 무시합니다.
+스크린리더는 보이지 않는 텍스트만 읽고 분할된 span은 무시합니다. 이 span은 인라인 스타일로
+숨겨지므로 `kineto.css` 없이도 화면에 보이지 않습니다. `h1`–`h6`·링크·버튼처럼 이름을 가질 수 있는
+요소에는 같은 문장이 `aria-label`로도 붙습니다. `p`·`div`·`span`에는 `aria-label`을 붙이지 않고
+보이지 않는 텍스트만 둡니다(그 자리의 `aria-label`은 명세상 허용되지 않고 NVDA·JAWS가 읽기
+모드에서 무시합니다). `texts`를 교체하면 보이지 않는 텍스트도 화면의 문구로 바뀌며, `destroy()`는
+이 span을 지우고 원래 `aria-label`을 되돌립니다.
+
+`texts`가 둘 이상이면 화면 밖에서는 교체를 멈추고, 요소가 처음 화면에 들어오기 전에는 교체를
+시작하지 않습니다.
 
 `prefers-reduced-motion`: 애니메이션 없이 첫 문구를 표시하고 줄바꿈을
 유지합니다. 옵션 문구가 없으면 작성한 inline markup도 유지합니다.
