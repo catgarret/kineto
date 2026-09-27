@@ -2865,7 +2865,13 @@
         setSheetOpen(true);
         applySheetH();
         // Move focus into the dialog (its labelled heading), once painted.
+        // Every frame callback below first checks that this body is still the
+        // one shown: a panel closed within the same frame (a double click on
+        // its summary, a script) used to be re-opened by these callbacks — the
+        // dim backdrop then covered the page with nothing left to close it.
+        const stillShown = () => api.current === body;
         requestAnimationFrame(() => {
+          if (!stillShown()) return;
           api.fit(body);
           (sheet.querySelector('.kt-playground__close') || focusables()[0] || sheet).focus?.();
         });
@@ -2877,10 +2883,12 @@
         api.spotlit = card;
         card?.classList?.add('kt-fp-spotlight');
         requestAnimationFrame(() => {
+          if (!stillShown()) return;
           backdrop.classList.add('is-open');
           sheet.classList.add('is-open');
           if (!card) return;
           requestAnimationFrame(() => {
+            if (!stillShown()) return;
             const rect = card.getBoundingClientRect();
             const dockTop = window.innerHeight - sheet.offsetHeight;
             const gap = dockTop - 76; // usable space above the dock

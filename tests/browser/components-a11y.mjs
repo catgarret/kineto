@@ -749,6 +749,49 @@ await check('fullpage-dots', async () => {
 });
 await clearStage();
 
+// A deck created while it is not drawn (a closed panel, a detached subtree)
+// measured 0 and was pinned at `height: 100svh` for good: the demo's first
+// Fullpage card grew as tall as the window. The "no height → fill the screen"
+// rule is now decided once the deck is drawn.
+await check('fullpage-hidden-panel', async () => {
+  const state = await page.evaluate(async () => {
+    const stage = document.getElementById('stage');
+    stage.innerHTML = '<div id="fp-panel" style="display:none">'
+      + '<div id="fp-sized" style="height:240px"><section>one</section><section>two</section></div>'
+      + '<div id="fp-unsized"><section></section><section></section></div></div>';
+    const sized = document.getElementById('fp-sized');
+    const unsized = document.getElementById('fp-unsized');
+    const decks = [window.Kineto.create('fullpage', sized, { dots: false }), window.Kineto.create('fullpage', unsized, { dots: false })];
+    const detached = document.createElement('div');
+    detached.style.height = '180px';
+    detached.innerHTML = '<section>a</section><section>b</section>';
+    decks.push(window.Kineto.create('fullpage', detached, { dots: false }));
+    // Drawn from the start but with no height of its own: fills the screen.
+    const drawnUnsized = document.createElement('div');
+    drawnUnsized.innerHTML = '<section></section><section></section>';
+    stage.appendChild(drawnUnsized);
+    decks.push(window.Kineto.create('fullpage', drawnUnsized, { dots: false }));
+    await window.__frames(2);
+    const drawnUnsizedEarly = drawnUnsized.style.height;
+    document.getElementById('fp-panel').style.display = '';
+    stage.appendChild(detached);
+    await window.__frames(3);
+    const read = (node) => ({ height: Math.round(node.getBoundingClientRect().height), inline: node.style.height });
+    const result = { sized: read(sized), unsized: read(unsized), detached: read(detached), drawnUnsized: read(drawnUnsized), drawnUnsizedEarly, viewport: innerHeight };
+    decks.forEach((deck) => deck?.destroy());
+    result.restored = [sized, unsized, detached, drawnUnsized].map((node) => node.style.height);
+    return result;
+  });
+  assert.deepEqual(state.sized, { height: 240, inline: '240px' }, `a deck the page sized keeps its height when created hidden (${JSON.stringify(state)})`);
+  assert.deepEqual(state.detached, { height: 180, inline: '180px' }, `a deck created before it was attached keeps its height (${JSON.stringify(state)})`);
+  assert.equal(state.unsized.inline, '100svh', 'a deck with no height of its own still fills the screen once drawn');
+  assert.equal(state.unsized.height, state.viewport, 'the unsized deck is as tall as the viewport');
+  assert.equal(state.drawnUnsizedEarly, '100svh', 'a drawn deck with no height fills the screen within a frame or two');
+  assert.deepEqual(state.drawnUnsized, { height: state.viewport, inline: '100svh' }, 'and stays that way');
+  assert.deepEqual(state.restored, ['240px', '', '180px', ''], 'destroy() restores the authored heights');
+});
+await clearStage();
+
 const controlsState = await probe('small-controls', () => page.evaluate(async () => {
   const stage = document.getElementById('stage');
   stage.innerHTML = '<div id="sw-host" style="background:#fff;color:#000;padding:10px"><button id="sw">Notify</button></div>'

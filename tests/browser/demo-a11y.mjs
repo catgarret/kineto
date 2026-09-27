@@ -96,6 +96,25 @@ const settle = (ms = 120) => page.waitForTimeout(ms);
   });
   assert.deepEqual(closed, { inert: true, modal: false, focusInside: false },
     `a closed drawer must be inert and not modal, so Tab and screen readers never reach it (${JSON.stringify(closed)})`);
+
+  // Closed within the frame it opened in (a double click, a script): the
+  // drawer's frame callbacks used to open it again, leaving the dim backdrop
+  // over the page (seen as a flaky click in demo-code-access).
+  await page.waitForFunction(() => !document.querySelector('.kt-drawer-backdrop')?.classList.contains('is-open'));
+  const quick = await summary.evaluate(async (node) => {
+    const details = node.parentElement;
+    details.open = true;
+    await new Promise((resolve) => setTimeout(resolve, 0)); // the toggle event runs show()
+    details.open = false;
+    await new Promise((resolve) => setTimeout(resolve, 0)); // … and hide(), before the next frame
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    return {
+      backdrop: document.querySelector('.kt-drawer-backdrop').classList.contains('is-open'),
+      sheet: document.querySelector('.kt-drawer-sheet').classList.contains('is-open'),
+      inert: document.querySelector('.kt-drawer-sheet').inert
+    };
+  });
+  assert.deepEqual(quick, { backdrop: false, sheet: false, inert: true }, `a drawer closed in the frame it opened stays closed (${JSON.stringify(quick)})`);
 }
 
 // 2. Sitemap: reopening during the closing fade keeps it open and the page usable.

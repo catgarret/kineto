@@ -10,6 +10,37 @@
 
 import { labeller } from '../utils.js';
 
+/**
+ * A deck needs a height of its own. When the page gives it none (it measures
+ * under 10px once laid out), it fills the screen: `height: 100svh`.
+ *
+ * A read at creation can say "0" for a deck that does have a height: created
+ * inside a hidden panel, a detached subtree or a part of the page the browser
+ * has not laid out yet (`content-visibility: auto`), it measures 0 — and the old
+ * read pinned it at the window's height for good (the demo's first Fullpage
+ * card grew as tall as the window just by scrolling to it). So only a height
+ * of 10px or more is trusted at once; anything less is confirmed by the first
+ * ResizeObserver report on the laid-out deck.
+ * @param {HTMLElement} el  the deck
+ * @returns {() => void}    stops waiting (destroy() calls it)
+ */
+function fillScreenIfUnsized(el) {
+  if (el.clientHeight >= 10) return () => {};
+  if (typeof ResizeObserver !== 'function') { el.style.height = '100svh'; return () => {}; }
+  const drawn = () => el.isConnected && el.getClientRects().length > 0;
+  const watch = new ResizeObserver(() => {
+    if (!drawn()) return;
+    watch.disconnect();
+    // Layout is fresh inside a ResizeObserver callback, so this read is exact.
+    if (el.clientHeight < 10) el.style.height = '100svh';
+  });
+  watch.observe(el);
+  return () => watch.disconnect();
+}
+
+/** `height` option → CSS length (a number is pixels). */
+const heightValue = (height) => (typeof height === 'number' ? `${height}px` : String(height));
+
 export default {
   create(el, opts) {
     // 모듈이 만드는 점 버튼의 이름. 기본값은 영어이고 `labels` 로 덮어씁니다(utils.labeller).
@@ -60,8 +91,9 @@ export default {
     let animating = false;
     let alive = true;
 
-    if (opts.height) el.style.height = typeof opts.height === 'number' ? `${opts.height}px` : String(opts.height);
-    else if (el.clientHeight < 10) el.style.height = '100svh';
+    let stopSizing = () => {};
+    if (opts.height) el.style.height = heightValue(opts.height);
+    else stopSizing = fillScreenIfUnsized(el);
     el.classList.add('kt-fullpage');
     el.style.position = 'relative';
     el.style.overflow = 'hidden';
@@ -491,6 +523,7 @@ export default {
       resume() { startAuto(); },
       destroy() {
         alive = false;
+        stopSizing();
         stopAuto();
         settle();
         cancelAnimationFrame(sectionRaf);
@@ -519,7 +552,11 @@ export default {
     const sections = opts.sectionSelector
       ? Array.from(el.querySelectorAll(opts.sectionSelector))
       : Array.from(el.children);
-    if (el.clientHeight < 10 && !opts.height) el.style.height = '100svh';
+    // Same height rule as the animated deck; an explicit `height` is kept too
+    // (reduced motion removes the motion, not the layout the page asked for).
+    let stopSizing = () => {};
+    if (opts.height) el.style.height = heightValue(opts.height);
+    else stopSizing = fillScreenIfUnsized(el);
     el.style.overflowY = 'auto';
     el.style.scrollSnapType = 'y proximity';
     const restoreSections = sections.map((section) => {
@@ -534,6 +571,7 @@ export default {
       pause() {},
       resume() {},
       destroy() {
+        stopSizing();
         restoreSections.forEach((fn) => fn());
         if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);
       }

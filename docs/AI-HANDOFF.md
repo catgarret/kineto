@@ -151,6 +151,10 @@ or a tag; release approval remains separate.
   and measures 0×0. Cursor used to take such a card for a page-wide holder and
   drew a second cursor everywhere; it now reads a box only when the element is
   drawn (`getClientRects().length > 0`). `tests/browser/cursor-scope.mjs`.
+  Fullpage pinned such a deck at `height: 100svh` (a 420px demo card grew as
+  tall as the window just by scrolling to it): a read under 10px is now
+  confirmed by a ResizeObserver report on the laid-out deck before any
+  fallback applies (`fullpage-hidden-panel` in `components-a11y.mjs`).
 - **A geometry repair snaps; only a state change animates**: first placement,
   a reveal, a resize and `refresh()` write the measured position with the
   transition off, and nothing is written while the element has no box (a

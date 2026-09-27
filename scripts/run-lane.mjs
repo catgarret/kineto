@@ -201,7 +201,7 @@ async function main() {
       const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
       const affected = affectedSteps(selected, files, stepTextReader(root, pkg.scripts || {}));
       selected = affected.steps;
-      changedNote = `changed since ${ref.slice(0, 12)}`;
+      changedNote = `changed since ${/^[0-9a-f]{40}$/.test(ref) ? ref.slice(0, 12) : ref}`;
       console.log(`run-lane --changed: ${affected.reason}; ${selected.length} step(s) affected.${affected.all ? '' : ' CI still runs every step.'}`);
     } catch (error) { console.error(`run-lane: ${error.message}`); process.exit(2); }
   }
