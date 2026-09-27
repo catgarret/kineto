@@ -7,6 +7,7 @@ import {
   snapshotAttributes,
   snapshotChildNodes,
   snapshotInlineStyles,
+  labelStaticText,
   srText,
   ST,
   textWithLineBreaks,
@@ -252,7 +253,7 @@ export default {
       : textWithLineBreaks(el);
     if (Array.isArray(opts.texts) && opts.texts.length) el.textContent = firstText;
     renderTextLineBreaks(el);
-    el.setAttribute('aria-label', firstText);
+    labelStaticText(el, firstText);
     el.style.opacity = '1';
     el.style.transform = 'none';
     return {

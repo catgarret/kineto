@@ -1,4 +1,4 @@
-import { G, gsapEaseName, observeOnce, renderTextLineBreaks, segmentText, snapshotAttributes, snapshotChildNodes, snapshotInlineStyles, srText, ST, textWithLineBreaks, wordSink } from '../utils.js';
+import { G, gsapEaseName, labelStaticText, observeOnce, renderTextLineBreaks, segmentText, snapshotAttributes, snapshotChildNodes, snapshotInlineStyles, srText, ST, textWithLineBreaks, wordSink } from '../utils.js';
 
 export default {
   // Kineto.config({ defer: true }) may create this only when the element nears
@@ -151,7 +151,7 @@ export default {
     const restoreContent = snapshotChildNodes(el);
     const restoreAttributes = snapshotAttributes(el, ['aria-label']);
     const restore = snapshotInlineStyles(el, ['opacity', 'filter']);
-    el.setAttribute('aria-label', textWithLineBreaks(el));
+    labelStaticText(el, textWithLineBreaks(el));
     renderTextLineBreaks(el);
     el.style.opacity = '1';
     el.style.filter = 'none';

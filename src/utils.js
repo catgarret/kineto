@@ -924,6 +924,19 @@ export function acceptsAccessibleName(el) {
 }
 
 /**
+ * Reduced motion shows the text itself, so a screen reader reads it as it is.
+ * Like srText(), only a host whose role takes a name also gets it as
+ * `aria-label` (the static text is then the name, line breaks included); a
+ * div, span or p is never named — the name is prohibited there. The caller
+ * snapshots `aria-label` before and restores it on destroy.
+ * @param {Element} el
+ * @param {string} text
+ */
+export function labelStaticText(el, text) {
+  if (acceptsAccessibleName(el)) el.setAttribute('aria-label', String(text ?? ''));
+}
+
+/**
  * Put `text` inside `el` as one visually hidden text node (see above).
  * @param {Element} el    the host whose glyphs are aria-hidden
  * @param {string} text   the whole text a screen reader should read

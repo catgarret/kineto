@@ -191,9 +191,11 @@ function radialPanels({ radius, start, sweep, stagger, duration, reduce }) {
 // navigation with hover-to-open dropdowns (Korean GNB style), full-width mega
 // panels, or a radial menu whose items fan out around their own trigger.
 // Progressive enhancement: without JS it is a plain nested list;
-// the module adds the interaction, ARIA (aria-haspopup / aria-expanded /
-// aria-controls) and full keyboard support (Enter/Space/↓ open, Esc close &
-// return focus, ←/→ move between top items). One panel open at a time.
+// the module adds the interaction, disclosure ARIA (aria-expanded /
+// aria-controls — no aria-haspopup, the panels are not role=menu) and full
+// keyboard support (Space/↓ open, Enter too unless the trigger is a link, which
+// Enter follows; Esc closes and returns focus; ←/→ move between top items,
+// plain links included). One panel open at a time.
 //
 // Expected markup:
 //   <nav data-kt-mega-menu>

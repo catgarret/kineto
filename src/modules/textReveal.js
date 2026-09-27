@@ -9,6 +9,7 @@ import {
   snapshotAttributes,
   snapshotChildNodes,
   scramblePainter,
+  labelStaticText,
   srText,
   textWithLineBreaks,
   timeMs,
@@ -475,7 +476,7 @@ export default {
     const restoreContent = snapshotChildNodes(el);
     const restoreAttributes = snapshotAttributes(el, ['aria-label']);
     const text = normalizeTextLineBreaks(opts.text ?? textWithLineBreaks(el));
-    el.setAttribute('aria-label', text);
+    labelStaticText(el, text);
     if (opts.text != null) el.textContent = text;
     renderTextLineBreaks(el);
     return {

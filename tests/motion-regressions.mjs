@@ -1614,8 +1614,13 @@ for (const [name, module, options] of [
     });
     await Promise.resolve();
     assert.equal(host.querySelectorAll('br').length, 4, `${name} ${reduced ? 'reduced' : 'normal'} must preserve authored br, nested CRLF and LF breaks`);
-    // Reduced motion keeps the text itself; the animated path reads a hidden copy.
-    assert.equal(reduced ? host.getAttribute('aria-label') : readText(host), '첫\n시작\n둘\n셋\n넷', `${name} must expose normalized multiline source to ARIA`);
+    // Reduced motion keeps the text itself (readable as it is); the animated
+    // path reads a hidden copy. A <p> takes no name, so reduced mode leaves its
+    // aria-label alone instead of naming it.
+    if (reduced) {
+      assert.equal(host.getAttribute('aria-label'), 'Author label', `${name} reduced mode must not name a paragraph`);
+      assert.equal(readText(host), null, `${name} reduced mode needs no hidden copy`);
+    } else assert.equal(readText(host), '첫\n시작\n둘\n셋\n넷', `${name} must expose normalized multiline source to ARIA`);
     if (reduced) {
       assert.equal(host.querySelector('strong'), authorStrong, `${name} reduced mode must preserve authored inline elements`);
     } else {
@@ -1657,11 +1662,20 @@ const reducedSplitInstance = textSplitModule.reduced(reducedSplit, {
   texts: ['감소된 모션에서도\n줄바꿈 유지', '교체하지 않는 둘째 문구']
 });
 assert.equal(reducedSplit.querySelectorAll('br').length, 1, 'reduced Text Split must render the first options newline as <br>');
-assert.equal(reducedSplit.getAttribute('aria-label'), '감소된 모션에서도\n줄바꿈 유지', 'reduced Text Split must expose its static multiline value to ARIA');
+assert.equal(reducedSplit.hasAttribute('aria-label'), false, 'reduced Text Split must not name a paragraph (its text is read as it is)');
 reducedSplitInstance.destroy();
 assert.equal(reducedSplit.innerHTML, reducedSplitHTML, 'reduced Text Split destroy must restore author markup');
 assert.equal(reducedSplit.hasAttribute('aria-label'), false, 'reduced Text Split destroy must remove generated ARIA');
 reducedSplit.remove();
+// A heading takes a name: there the static multiline value is also its aria-label.
+const reducedHeading = document.createElement('h2');
+reducedHeading.innerHTML = '<strong>reduced fallback</strong>';
+document.body.appendChild(reducedHeading);
+const reducedHeadingInstance = textSplitModule.reduced(reducedHeading, { texts: ['감소된 모션에서도\n줄바꿈 유지'] });
+assert.equal(reducedHeading.getAttribute('aria-label'), '감소된 모션에서도\n줄바꿈 유지', 'reduced Text Split names a heading with its static multiline value');
+reducedHeadingInstance.destroy();
+assert.equal(reducedHeading.hasAttribute('aria-label'), false, 'reduced Text Split destroy must remove the generated heading name');
+reducedHeading.remove();
 
 const swappedSplit = document.createElement('p');
 swappedSplit.innerHTML = '<strong>fallback</strong>';
