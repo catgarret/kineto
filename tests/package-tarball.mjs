@@ -48,6 +48,16 @@ try {
   ], { cwd: temp, encoding: 'utf8' }));
   assert.deepEqual(modular, { before: 0, after: ['slider'], api: 'function' });
 
+  // The on-demand entry must find every module chunk inside the installed
+  // package (its import() paths are relative to dist/modular/auto.js), and the
+  // default entry must be the same Kineto instance as /all.
+  const entries = JSON.parse(execFileSync(process.execPath, [
+    '--input-type=module',
+    '--eval',
+    "import Auto from '@dong-gri/kineto/auto'; import Default from '@dong-gri/kineto'; import All from '@dong-gri/kineto/all'; const before=Object.keys(Auto.registry).length; await Auto.loadModules(['slider','canvasEffect']); console.log(JSON.stringify({before,after:Object.keys(Auto.registry).sort(),same:Default===All,full:Object.keys(All.registry).length}))"
+  ], { cwd: temp, encoding: 'utf8' }));
+  assert.deepEqual(entries, { before: 0, after: ['canvasEffect', 'slider'], same: true, full: moduleCount });
+
   const cssPath = execFileSync(process.execPath, [
     '--input-type=commonjs',
     '--eval',
@@ -64,7 +74,7 @@ try {
   assert.equal(installedPackage.exports['./presence'].default, './dist/modular/presence.js');
   assert.equal(installedPackage.exports['./modules/*'].types, './types/module.d.ts');
   assert.ok(!installedPackage.dependencies?.[installedPackage.name], 'installed package must not depend on itself');
-  for (const declaration of ['index', 'core', 'states', 'presence', 'module', 'react', 'vue', 'jquery']) {
+  for (const declaration of ['index', 'default', 'all', 'auto', 'core', 'states', 'presence', 'module', 'react', 'vue', 'jquery']) {
     assert.ok(fs.existsSync(path.join(temp, `node_modules/@dong-gri/kineto/types/${declaration}.d.ts`)));
   }
 
