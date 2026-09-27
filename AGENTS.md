@@ -124,10 +124,14 @@ runs reviewed on 2026-09-25, 15 were lint errors, a `ReferenceError`, or
 generated files that were not regenerated or not committed; the other 11 were
 browser tests that broke or flaked on one engine.
 
-1. Run `npm run verify:push` (lint → build → generated-file check → every Node
-   test → demo QA; about 4 minutes) and push only when it passes. When the
-   build changed generated files it lists them — they are already regenerated;
-   commit them.
+1. Run `npm run verify:push -- --changed` (lint → build → generated-file check
+   → every Node test → demo QA → the Chromium browser tests the change can
+   affect; about 5–8 minutes) and push only when it passes. When the build
+   changed generated files it lists them — they are already regenerated;
+   commit them. `--changed` compares with `origin/main` and picks steps with
+   `scripts/lane-select.mjs`: a shared file (`src/core.js`, `package.json`, …)
+   runs the whole lane, a module file runs the tests that name it plus those
+   that declare `// @lane-affected-by src/modules/`.
 2. When you add or change a browser test, or the code it covers, run that test
    several times with retries off before pushing:
    `node scripts/run-lane.mjs test:browser --only <name> --repeat 3`.
@@ -154,7 +158,11 @@ browser tests that broke or flaked on one engine.
 Test lists live only in `package.json` (`test:node`, `test:browser`,
 `test:browser:cross`, `test:release-package`). CI runs them through
 `scripts/run-lane.mjs`, split into parallel shards, so a test added to a lane is
-covered by CI without editing any workflow.
+covered by CI without editing any workflow. Shards are dealt by the measured
+step times in `tests/lane-timings.json`; after adding a slow test or speeding
+one up, refresh them once with `node scripts/run-lane.mjs <lane>
+--record-timings` (with `KT_BROWSER=firefox|webkit` for the cross lane) and
+commit the file. CI itself never uses `--changed`: it always runs every step.
 
 ## Release policy
 

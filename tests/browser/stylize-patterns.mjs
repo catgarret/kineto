@@ -115,16 +115,19 @@ try {
       ['halftone', { preset: 'halftone', cellSize: 7 }],
       ['halftone-angled', { preset: 'halftone', cellSize: 7, halftoneAngle: 30 }]
     ];
+    // The six motions of one look run side by side (six 200×150 cells fit the
+    // viewport, so none is paused off screen): the 650ms watch is real time, and
+    // one pair after another it was ~30 s of the test.
     for (const [label, base] of looks) {
-      for (const type of ['none', 'drift', 'shuffle', 'scan', 'flow', 'pulse']) {
-        const mounted = await mount({ ...base, motion: type, motionSpeed: 1.6, motionAmount: 0.8, renderFps: 60 });
-        const canvas = canvasOf(mounted.media);
-        if (!canvas) { motion[`${label}:${type}`] = -1; teardown(mounted); continue; }
-        const before = readCanvas(canvas).slice();
-        await wait(650);
-        motion[`${label}:${type}`] = changedPixels(before, readCanvas(canvas));
-        teardown(mounted);
-      }
+      const types = ['none', 'drift', 'shuffle', 'scan', 'flow', 'pulse'];
+      const mounted = await Promise.all(types.map((type) => mount({ ...base, motion: type, motionSpeed: 1.6, motionAmount: 0.8, renderFps: 60 })));
+      const canvases = mounted.map(({ media }) => canvasOf(media));
+      const before = canvases.map((canvas) => canvas && readCanvas(canvas).slice());
+      await wait(650);
+      types.forEach((type, index) => {
+        motion[`${label}:${type}`] = canvases[index] ? changedPixels(before[index], readCanvas(canvases[index])) : -1;
+      });
+      mounted.forEach(teardown);
     }
     return { patterns, missing, motion };
   });

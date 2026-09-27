@@ -257,16 +257,29 @@ lint·`ReferenceError`·재생성하지 않은 생성 파일처럼 이 명령이
 
 ```bash
 npm run verify:push                          # lint → build·생성 파일 → Node 전체 → demo QA (약 4분)
+npm run verify:push -- --changed             # + 바꾼 파일이 영향을 주는 Chromium 브라우저 테스트 (push 전 기본)
 node scripts/run-lane.mjs test:browser --only <이름> --repeat 3   # 바꾼 브라우저 테스트, 재시도 없이 3회
+node scripts/run-lane.mjs test:browser --changed --list          # 영향받는 테스트 목록만 보기
 npm run verify:push -- --browser             # + Chromium 전체 lane (CPU 2코어당 테스트 1개, 필요할 때 한 번)
 npm run ci                                   # 릴리스 전 전체
 ```
 
+`--changed`는 `origin/main`(또는 `--changed=<ref>`)과 비교해 영향받는 단계만 고릅니다
+(`scripts/lane-select.mjs`). `src/core.js`·`src/utils.js`·`package.json`처럼 모든 단계가
+쓰는 파일이 바뀌면 lane 전체를 돌리고, 모듈 파일은 그 이름·`data-kt-…` 속성을 언급하는
+테스트와 `// @lane-affected-by src/modules/`를 선언한 테스트를, 데모 파일은 데모를 여는
+테스트를 고릅니다. 로컬 가속용이며 CI는 항상 전체를 돌립니다.
+
 CI는 모든 job을 동시에 실행합니다. Node job(lint·build·`test:node`·demo QA)과
-브라우저 job(Chromium `test:browser` 2개 shard, WebKit `test:browser:cross` 2개 shard,
-Firefox 1개)이 각자 runner를 쓰므로 전체 시간은 가장 느린 shard 하나(약 6~10분)입니다.
-테스트 목록은 `package.json`에만 있고 `scripts/run-lane.mjs --shard k/n`이 위치 순서대로
-나눠 가지므로, lane에 테스트를 추가하면 workflow를 고치지 않아도 CI에 들어갑니다.
+브라우저 job(Chromium `test:browser` 3개 shard, WebKit `test:browser:cross` 3개 shard,
+Firefox 2개)이 각자 runner를 쓰므로 전체 시간은 가장 느린 shard 하나입니다.
+테스트 목록은 `package.json`에만 있고, `scripts/run-lane.mjs --shard k/n`이
+`tests/lane-timings.json`의 측정 시간으로 긴 테스트부터 가장 덜 찬 shard에 나눠 주므로
+shard들이 비슷한 시간에 끝납니다(위치 순서로 나누던 때는 Firefox 한 shard가 363초로 혼자
+길었습니다). lane에 테스트를 추가하면 workflow를 고치지 않아도 CI에 들어가고, 측정 전에는
+보통 길이의 테스트로 계산됩니다. 느린 테스트를 추가하거나 빠르게 고친 뒤에는
+`node scripts/run-lane.mjs <lane> --record-timings`(cross lane은 `KT_BROWSER=firefox|webkit`)로
+시간을 한 번 갱신해 커밋하십시오.
 
 각 브라우저 테스트는 시도당 `240s`, 최대 3회(WebKit 4회)로 제한된 개별 retry를 쓰고,
 Firefox 바이너리 설치는 시도당 `timeout 5m`으로 제한합니다. 재시도에서야 통과한 테스트는

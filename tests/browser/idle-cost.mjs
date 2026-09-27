@@ -17,6 +17,7 @@
 // the stack each one was scheduled from.
 //
 // Run: npm run build && node tests/browser/idle-cost.mjs
+// @lane-affected-by src/modules/   (run-lane --changed: every module's idle loop counts here)
 import assert from 'node:assert/strict';
 import { chromium, firefox, webkit } from 'playwright';
 import http from 'node:http';

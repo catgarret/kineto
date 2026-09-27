@@ -23,6 +23,7 @@
 //      still fills its row (v0.8.43; tests/browser/demo-polish.mjs holds it).
 //
 // Run: npm run build && node tests/browser/demo-blocks.mjs   (KT_BROWSER=webkit|firefox)
+// @lane-affected-by src/modules/   (run-lane --changed: every block's demos run here)
 import assert from 'node:assert/strict';
 import { chromium, firefox, webkit } from 'playwright';
 import http from 'node:http';
