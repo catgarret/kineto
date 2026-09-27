@@ -165,15 +165,30 @@ or a tag; release approval remains separate.
   `tests/browser/motion-timing.mjs`.
 - **Verify the change, then push once**: run the tests that cover what you
   touched (`node scripts/run-lane.mjs test:browser --only <name> --repeat 3`,
-  three engines for new browser gates), then `npm run verify:push` before the
-  push. The full lanes run in CI in parallel shards; locally run one at most
-  once (`npm run verify:push -- --browser` runs one test per two CPU cores),
-  never two lanes at the same time — they starve each other. On a 2-core
-  machine `--jobs 2` alone makes tests flake.
+  three engines for new browser gates), then `npm run verify:push -- --changed`
+  before the push (it adds the Chromium browser tests the change can affect).
+  The full lanes run in CI in parallel shards; locally run one at most once
+  (`npm run verify:push -- --browser` runs one test per two CPU cores), never
+  two lanes at the same time — they starve each other. On a 2-core machine
+  `--jobs 2` alone makes tests flake.
+- **Waits that are real time run side by side**: a browser test whose cases
+  each wait on a transition or an observer (not on the CPU) runs independent
+  cases concurrently, each on its own element or scroller — Reveal's native
+  repeat probe and Stylize's motion matrix went from ~19 s and ~30 s to ~3 s
+  and ~6 s per engine. Keep trajectory and frame-timing checks sequential:
+  they flake under contention (`b2_navigation`'s hero snap did).
 - **Test lists live only in package.json**: CI and the release run lanes with
-  `scripts/run-lane.mjs` (`--shard k/n` splits a lane across runners), so a
-  test added to `test:browser` or `test:browser:cross` is in CI without a
-  workflow edit. Never copy a test list into a workflow.
+  `scripts/run-lane.mjs` (`--shard k/n` splits a lane across runners by the
+  measured times in `tests/lane-timings.json`, longest first onto the
+  least-loaded shard), so a test added to `test:browser` or
+  `test:browser:cross` is in CI without a workflow edit — it counts as a
+  typical step until `--record-timings` measures it. Never copy a test list
+  into a workflow, and never pass `--changed` in CI.
+- **A test that covers a whole area says so**: `run-lane --changed` picks the
+  steps whose file (or its local imports, or an npm script's files) names the
+  changed module, demo file or test. A test that exercises every module
+  without naming it declares `// @lane-affected-by src/modules/`
+  (`tests/browser-smoke.mjs`, `demo-blocks.mjs`, `idle-cost.mjs`).
 - **A retry that passes is a flake, and flakes are bugs**: the retry helpers
   report it (`Flaky:` line, CI warning annotation, lane summary). Fix the test
   (a bounded condition wait instead of a fixed sleep) — do not raise attempts.

@@ -74,8 +74,10 @@ Kineto.textFill('p.quote', {
 
 ## 접근성 노트
 
-- 원본 텍스트는 `aria-label`로 보존
 - 분할된 span은 `aria-hidden="true"`
+- 원본 텍스트는 요소 안의 보이지 않는 텍스트 하나(`kt-sr-only`)로 보존합니다. `aria-label`은
+  제목·링크·버튼처럼 이름을 가질 수 있는 요소에만 함께 붙고, `p`·`div`·`span`에는 붙이지 않습니다.
+  `destroy()`는 원래 DOM과 `aria-label`을 되돌립니다.
 - `prefers-reduced-motion`: 효과 없이 정상 표시 (모든 글자 fillColor)
 
 ---

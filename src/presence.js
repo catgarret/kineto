@@ -175,10 +175,14 @@ export default function createPresence(target, defaults = {}, kineto = null) {
     }
     notify(outcome);
     run.resolve(outcome);
-    if (queued && !destroyed && run.direction === 'leave' && outcome.status !== 'error') {
+    if (queued && !destroyed && run.direction === 'leave') {
       const next = queued;
       queued = null;
-      start(next.direction, next.options).then(next.resolve, next.reject);
+      // A failed leave does not start the enter that waited for it. That
+      // waiting enter used to stay queued: its Promise never settled, and the
+      // next leave that DID finish started it, so the node came straight back.
+      if (outcome.status === 'error') next.resolve(result('cancelled', 'error'));
+      else start(next.direction, next.options).then(next.resolve, next.reject);
     }
   };
 
@@ -256,7 +260,11 @@ export default function createPresence(target, defaults = {}, kineto = null) {
       const motionPromise = motion && typeof motion.then === 'function' ? motion : Promise.resolve();
       const fallback = descriptor?.run ? null : waitFor(number(options.duration ?? config.duration, 0) + number(options.delay ?? config.delay, 0), false);
       run.timer = fallback;
-      const motionDone = Promise.race([motionPromise, fallback?.promise || Promise.resolve()]);
+      // Wait for the motion when there is one, otherwise for duration + delay.
+      // This raced both against an already-resolved Promise, so every run
+      // settled at once: leave() resolved (and safeToRemove ran) before the
+      // exit motion had even started.
+      const motionDone = fallback ? fallback.promise : motionPromise;
       Promise.all([motionDone, Promise.all(childPromises)]).then(
         ([, childResults]) => {
           const childError = childResults.find((childResult) => childResult?.status === 'error');

@@ -254,7 +254,7 @@ assert.match(ciTestJob, /retry-command\.mjs npm pack --dry-run/);
   assert.deepEqual(parseShard('2/3'), { index: 2, count: 3 });
   for (const bad of ['0/2', '3/2', '1/0', '1/17', 'a/b', '', undefined]) assert.throws(() => parseShard(bad), /--shard/);
   const parsed = parseArgs(['test:browser', '--jobs', '2', '--shard=1/2', '--only', 'x,y', '--repeat', '3']);
-  assert.deepEqual({ ...parsed, shard: { ...parsed.shard } }, { lane: 'test:browser', jobs: 2, shard: { index: 1, count: 2 }, only: ['x', 'y'], repeat: 3, list: false });
+  assert.deepEqual({ ...parsed, shard: { ...parsed.shard } }, { lane: 'test:browser', jobs: 2, shard: { index: 1, count: 2 }, only: ['x', 'y'], repeat: 3, list: false, changed: null, recordTimings: false });
   assert.equal(parseArgs(['test:node'], { KT_LANE_JOBS: '3' }).jobs, 3);
   for (const bad of [[], ['a', 'b'], ['a', '--jobs', '9'], ['a', '--repeat', '0'], ['a', '--only'], ['a', '--what']]) {
     assert.throws(() => parseArgs(bad), Error, `reject ${JSON.stringify(bad)}`);

@@ -370,6 +370,22 @@ export default {
       timers.add(timer);
       return timer;
     };
+    // The reveal steps' frames, tracked like `timers` so replay() and destroy()
+    // can cancel them. An untracked frame wrote its opacity/transform after
+    // destroy() had restored the image, or onto the run that replaced it.
+    const frames = new Set();
+    const nextFrame = (callback) => {
+      const id = requestAnimationFrame(() => {
+        frames.delete(id);
+        if (!destroyed) callback();
+      });
+      frames.add(id);
+      return id;
+    };
+    const cancelFrames = () => {
+      frames.forEach((id) => cancelAnimationFrame(id));
+      frames.clear();
+    };
     const removeLayers = () => {
       layers.splice(0).forEach((layer) => layer.remove());
       noise?.canvas.remove();
@@ -468,7 +484,7 @@ export default {
         // photo resolves.
         skeleton.style.animation = 'none';
         skeleton.style.transition = `opacity ${Math.min(Math.max(fade * 0.5, 0.18), 0.32)}s ease`;
-        requestAnimationFrame(() => {
+        nextFrame(() => {
           el.style.opacity = '1';
           el.style.transform = 'scale(1)';
           skeleton.style.opacity = '0';
@@ -487,7 +503,7 @@ export default {
         el.style.opacity = '0';
         void el.offsetWidth;
         el.style.transition = `opacity ${Math.max(0, Number(opts.duration ?? 0.7))}s ${opts.ease || 'ease'}`;
-        requestAnimationFrame(() => { el.style.opacity = '1'; });
+        nextFrame(() => { el.style.opacity = '1'; });
         opts.onLoad?.(el, image);
         return;
       }
@@ -500,7 +516,7 @@ export default {
         el.style.transform = `scale(${Math.max(1, Number(opts.startScale ?? 1.06))})`;
         const duration = Math.max(0, Number(opts.duration ?? 0.85));
         void el.offsetWidth;
-        requestAnimationFrame(() => {
+        nextFrame(() => {
           el.style.transition = `filter ${duration}s ease,transform ${duration}s cubic-bezier(.22,.8,.3,1)`;
           el.style.filter = 'blur(0px)';
           el.style.transform = 'scale(1)';
@@ -528,7 +544,7 @@ export default {
         el.style.transform = `rotate(${Number(opts.rotate ?? -2)}deg) scale(.965)`;
         wrapper.style.transition = 'none';
         void el.offsetWidth;
-        requestAnimationFrame(() => requestAnimationFrame(() => {
+        nextFrame(() => nextFrame(() => {
           el.style.transition = `filter ${duration}s cubic-bezier(.3,.1,.25,1),transform ${Math.min(duration, 1.1)}s cubic-bezier(.34,1.4,.44,1)`;
           el.style.filter = 'none';
           el.style.transform = 'none';
@@ -1111,6 +1127,7 @@ export default {
         rafId = null;
         timers.forEach(clearTimeout);
         timers.clear();
+        cancelFrames();
         removeLayers();
         started = false;
         if (effect === 'skeleton') setupSkeleton();
@@ -1125,6 +1142,7 @@ export default {
         if (rafId != null) cancelAnimationFrame(rafId);
         timers.forEach(clearTimeout);
         timers.clear();
+        cancelFrames();
         removeLayers();
         releaseWrapper(el, wrapping);
         const restore = (name, value) => value == null ? el.removeAttribute(name) : el.setAttribute(name, value);

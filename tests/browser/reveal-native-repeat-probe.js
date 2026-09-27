@@ -1,15 +1,31 @@
+// Native (IntersectionObserver) Reveal inside a nested scroller: repeat
+// boundaries, reverse playback near an edge, and destroy() from every callback.
+// Loaded into the page by tests/reveal-variant-browser.mjs.
+//
+// Every scenario gets its OWN scroller and element, so the scenarios run side
+// by side: their waits are real time (a transition plus an observer notice),
+// and one after another the 13 scenarios cost ~19 s per engine. The scrollers
+// may overlap on screen — IntersectionObserver ignores occlusion, and nothing
+// here hit-tests.
 export async function probeNativeRepeat(core) {
   const wait = (ms = 260) => new Promise(resolve => setTimeout(resolve, ms));
   const failures = [];
   const check = (ok, label) => { if (!ok) failures.push(label); };
-  const host = document.createElement('div');
-  host.style.cssText = 'position:fixed;top:20px;left:20px;width:300px;height:180px;overflow:auto';
-  host.innerHTML = '<div style="height:900px;position:relative"><div style="position:absolute;top:360px;width:120px;height:60px"><b>First<br>Second</b><b>Third</b></div></div>';
-  document.body.append(host);
-  const el = host.firstElementChild.firstElementChild;
-  const original = el.outerHTML;
-  for (const once of [false, true]) {
-    host.scrollTop = 0;
+  const released = (el) => !core.getInstance(el, 'reveal');
+
+  /** A 300×180 scroller with a two-child target 360px down its 900px content. */
+  const scroller = () => {
+    const host = document.createElement('div');
+    host.style.cssText = 'position:fixed;top:20px;left:20px;width:300px;height:180px;overflow:auto';
+    host.innerHTML = '<div style="height:900px;position:relative"><div style="position:absolute;top:360px;width:120px;height:60px"><b>First<br>Second</b><b>Third</b></div></div>';
+    document.body.append(host);
+    const el = host.firstElementChild.firstElementChild;
+    return { host, el, original: el.outerHTML };
+  };
+
+  // Boundaries, replay, pause/resume and cleanup — repeating and once.
+  const repeatBoundaries = async (once) => {
+    const { host, el, original } = scroller();
     const events = []; let completed = 0, premature = 0;
     const instance = core.create('reveal', el, {
       preset: 'fade-up', once, duration: .12, delay: .02, stagger: .02,
@@ -42,13 +58,15 @@ export async function probeNativeRepeat(core) {
     check(once ? visible() : hidden(), `${once}: resume follows pending direction`);
     instance.destroy(); const count = events.length;
     instance.replay(); instance.resume(); host.scrollTop = 0; await wait();
-    check(el.outerHTML === original && events.length === count && core.instanceCount === 0, `${once}: terminal cleanup`);
+    check(el.outerHTML === original && events.length === count && released(el), `${once}: terminal cleanup`);
     check(premature === 0, `${once}: completion waits for every staggered child`);
-  }
+    host.remove();
+  };
+
   // A transform applied by Reveal must not move its own trigger back into view
   // during reverse playback near the top edge of a nested scroller.
-  for (const preset of ['fade-up', 'fade-down', 'slide-up', 'rotate', 'flip-x']) {
-    host.scrollTop = 0;
+  const ownTransformAtEdge = async (preset) => {
+    const { host, el, original } = scroller();
     const events = [];
     const instance = core.create('reveal', el, { preset, once: false, duration: .08,
       rootMargin: '0px', threshold: .2,
@@ -61,12 +79,16 @@ export async function probeNativeRepeat(core) {
     host.scrollTop = 300; await wait();
     check(events.join() === 'enter,leave,enterBack' && Number(getComputedStyle(el).opacity) === 1, `${preset}: real re-entry still works`);
     instance.destroy(); check(el.outerHTML === original, `${preset}: restores author DOM`);
-  }
-  for (const hook of ['onEnter', 'onLeave', 'onEnterBack', 'onLeaveBack', 'onClassChange', 'onComplete']) {
-    host.scrollTop = 0;
+    host.remove();
+  };
+
+  // destroy() from inside each callback is terminal: no later callback, the DOM restored.
+  const HOOKS = ['onEnter', 'onLeave', 'onEnterBack', 'onLeaveBack', 'onClassChange', 'onComplete'];
+  const destroyFromCallback = async (hook) => {
+    const { host, el, original } = scroller();
     let armed = false, destroyed = false, after = 0, instance;
     const options = { preset: 'fade-up', once: false, duration: .08, rootMargin: '0px' };
-    for (const name of ['onEnter', 'onLeave', 'onEnterBack', 'onLeaveBack', 'onClassChange', 'onComplete']) {
+    for (const name of HOOKS) {
       options[name] = () => {
         if (destroyed) after++;
         if (armed && name === hook && !destroyed) { instance.destroy(); destroyed = true; }
@@ -75,9 +97,16 @@ export async function probeNativeRepeat(core) {
     instance = core.create('reveal', el, options);
     await wait(); armed = true;
     for (const position of [300, 480, 300, 0]) { host.scrollTop = position; await wait(); }
-    check(destroyed && after === 0 && el.outerHTML === original && core.instanceCount === 0, `${hook}: callback destroy is terminal`);
+    check(destroyed && after === 0 && el.outerHTML === original && released(el), `${hook}: callback destroy is terminal`);
     instance.destroy();
-  }
-  host.remove();
+    host.remove();
+  };
+
+  await Promise.all([
+    ...[false, true].map(repeatBoundaries),
+    ...['fade-up', 'fade-down', 'slide-up', 'rotate', 'flip-x'].map(ownTransformAtEdge),
+    ...HOOKS.map(destroyFromCallback)
+  ]);
+  check(core.instanceCount === 0, `every scenario released its instance (${core.instanceCount} left)`);
   return failures;
 }

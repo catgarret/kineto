@@ -2,6 +2,9 @@
 //
 //   npm run verify:push                 lint → build → generated files → Node lane → demo QA   (~4 min)
 //   npm run verify:push -- --fast       lint → build → generated files → Node lane             (pre-push hook)
+//   npm run verify:push -- --changed    … and the Chromium browser tests your change can affect
+//                                         (scripts/lane-select.mjs; compared with origin/main,
+//                                         or `--changed=<ref>`) — the usual check before a push
 //   npm run verify:push -- --browser    … and the whole Chromium browser lane (one test per 2 cores)
 //
 // Why this exists: of the last 26 red CI runs, 15 failed on things this
@@ -27,12 +30,20 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const args = new Set(process.argv.slice(2));
-for (const arg of args) {
-  if (!['--fast', '--browser'].includes(arg)) {
-    console.error(`verify:push: unknown flag ${arg} (use --fast or --browser)`);
+const args = new Set();
+let changed = null; // null: off · '': since origin/main · 'ref': since that ref
+for (const arg of process.argv.slice(2)) {
+  const [flag, value] = arg.split(/=(.*)/s, 2);
+  if (flag === '--changed') changed = value ?? '';
+  else if (['--fast', '--browser'].includes(arg)) args.add(arg);
+  else {
+    console.error(`verify:push: unknown flag ${arg} (use --fast, --changed[=ref] or --browser)`);
     process.exit(2);
   }
+}
+if (changed !== null && args.has('--browser')) {
+  console.error('verify:push: --browser already runs every browser test; drop --changed');
+  process.exit(2);
 }
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 // A browser test needs about two cores of its own: two tests on a 2-core
@@ -64,7 +75,9 @@ const steps = [
   { name: 'build (+ generated files)', command: npm, args: ['run', 'build'], checkGenerated: true },
   { name: 'Node lane (test:node)', command: process.execPath, args: ['scripts/run-lane.mjs', 'test:node'] },
   ...(args.has('--fast') ? [] : [{ name: 'demo QA (test:demo)', command: npm, args: ['run', 'test:demo'] }]),
-  ...(args.has('--browser') ? [{ name: `Chromium browser lane (${browserJobs} at a time)`, command: process.execPath, args: ['scripts/run-lane.mjs', 'test:browser', '--jobs', browserJobs] }] : [])
+  ...(args.has('--browser') ? [{ name: `Chromium browser lane (${browserJobs} at a time)`, command: process.execPath, args: ['scripts/run-lane.mjs', 'test:browser', '--jobs', browserJobs] }] : []),
+  // run-lane validates the ref and hands it to git as one argument (no shell).
+  ...(changed !== null ? [{ name: 'Chromium browser tests the change affects', command: process.execPath, args: ['scripts/run-lane.mjs', 'test:browser', changed ? `--changed=${changed}` : '--changed', '--jobs', browserJobs] }] : [])
 ];
 
 // Locally a failing Node test fails at once: a retry only doubles the wait
@@ -101,4 +114,7 @@ if (results.length < steps.length || results.some((result) => !result.ok)) {
   console.error(`\nverify:push FAILED after ${minutes} min — do not push. Fix the ✗ step above.`);
   process.exit(1);
 }
-console.log(`\nverify:push passed in ${minutes} min${args.has('--browser') ? '' : ' (browser lanes run in CI; run a changed browser test with `node scripts/run-lane.mjs test:browser --only <name> --repeat 3`)'}.`);
+const browserNote = args.has('--browser') ? ''
+  : changed !== null ? ' (Firefox, WebKit and every other browser test run in CI)'
+    : ' (browser lanes run in CI; add `-- --changed` for the browser tests your change affects)';
+console.log(`\nverify:push passed in ${minutes} min${browserNote}.`);

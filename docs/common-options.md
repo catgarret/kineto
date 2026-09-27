@@ -95,13 +95,23 @@ Kineto.reveal('.hero', { preset: 'fade-up', spring: false }); // 이 요소만 �
 
 | 모듈 | 키와 기본값 |
 |---|---|
-| `slider` | `dot` `'Go to slide {n}'` · `slide` `'{n} of {total}'` · `pause` `'Pause carousel autoplay'` · `resume` `'Resume carousel autoplay'` · `carouselRole` `'carousel'` · `slideRole` `'slide'` |
-| `fullpage` | `dot` `'Go to section {n}'` |
+| `slider` | `dot` `'Go to slide {n}'` · `slide` `'{n} of {total}'` · `pause` `'Pause carousel autoplay'` · `resume` `'Resume carousel autoplay'` · `carouselRole` `'carousel'` · `slideRole` `'slide'` · Radial: `previous` `'Previous'` · `next` `'Next'` · `radialStatus` `'{name}, {n} of {total}'` |
+| `fullpage` | `dot` `'Go to section {n}'` · `dots` `'Sections'` |
+| `hold` | `confirm` `'Sure?'` · `holdHint` `'Press and hold to confirm, or activate twice.'` · `mashHint` `'Press repeatedly to confirm, or activate twice.'` · `tapHint` `'Activate twice to confirm.'` |
+| `gesture` (`pull`) | `pull` `'Pull to refresh'` · `release` `'Release to refresh'` · `busy` `'Refreshing'` |
 | `toast` | `region` `'Notifications'` · `dismiss` `'Dismiss'` |
 | `lightbox` | `viewer` `'Media viewer'` · `backdrop`·`close` `'Close viewer'` · `previous` `'Previous item'` · `next` `'Next item'` · `zoomIn` `'Zoom in'` · `zoomOut` `'Zoom out'` · `zoomReset` `'Reset zoom'` · `zoomHint` `'Click to type an exact zoom %'` · `zoomInput` `'Zoom percent'` · `thumbnail` `'Item {n} of {total}'` · `share` `'Share'` · `download` `'Download'` |
 
-`{n}`·`{total}` 자리표시자는 값이 있을 때만 바뀝니다. 이름을 잘못 적으면 `{dot}`처럼 그대로
-보이므로, 오타가 조용히 빈칸이 되지 않습니다.
+- Slider의 `previous`·`next`는 Radial이 직접 만드는 이전/다음 버튼의 이름이고, `radialStatus`는
+  앞에 온 항목이 바뀔 때 스크린 리더에 읽히는 문장입니다. `{name}`은 그 항목의 `aria-label`,
+  없으면 텍스트, 없으면 이미지 `alt`입니다. 이름을 찾지 못하면 `slide` 문구를 씁니다.
+- Fullpage의 `dots`는 점 버튼 묶음(`role="group"`)의 이름입니다.
+- Hold의 `confirm`은 한 번 눌러 대기 상태가 된 버튼에 잠시 표시되는 문구입니다. `holdHint`·
+  `mashHint`·`tapHint`는 모드에 맞는 사용 방법으로, 버튼 이름 뒤에 설명(`aria-describedby`)으로
+  읽힙니다.
+
+`{n}`·`{total}`·`{name}` 자리표시자는 값이 있을 때만 바뀝니다. 이름을 잘못 적으면 `{dot}`처럼
+그대로 보이므로, 오타가 조용히 빈칸이 되지 않습니다.
 
 ```html
 <!-- 마크업: JSON 속성을 그대로 읽습니다 -->
@@ -123,4 +133,5 @@ Kineto.slider('#gallery', { labels: { dot: '슬라이드 {n}으로 이동' } });
 **요소 자신의 이름은 별개입니다.** `slider`·`bottomSheet`·`progress` 의 `label`,
 `loader`·`loadingIndicator` 의 `ariaLabel` 은 그 요소 자체의 이름이고, `labels` 는 그 안에
 모듈이 만들어 넣는 컨트롤들의 이름입니다. `bottomSheet` 은 만드는 컨트롤이 그립 하나뿐이라
-지도 대신 `resizeLabel` 옵션 하나를 씁니다(`''` 이면 툴팁을 달지 않습니다).
+지도 대신 `resizeLabel` 옵션 하나를 씁니다. 이 문구는 그립의 툴팁이자 키보드로 높이를 조절하는
+구분선(`role="separator"`)의 이름입니다. `''` 이면 툴팁을 달지 않으므로 이름도 없어집니다.

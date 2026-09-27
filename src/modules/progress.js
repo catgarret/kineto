@@ -65,6 +65,9 @@ export default {
       const hidden = (showAfter > 0 && window.scrollY < showAfter) || (hideAtEnd && raw >= 0.999);
       node.style.opacity = hidden ? '0' : '1';
       node.style.pointerEvents = hidden ? 'none' : '';
+      // A faded-out back-to-top button was still in the Tab order and read by
+      // screen readers; `inert` takes it out along with the opacity.
+      if (node.inert !== hidden) node.inert = hidden;
     };
 
     let restore = null;

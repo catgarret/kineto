@@ -438,7 +438,11 @@ export default {
     const api = {
       el,
       type: 'coverReveal',
+      // replay()/exit() after destroy() — a refresh() whose update callback
+      // was still running, a late gallery shuffle — must not build new panels
+      // on the element destroy() just restored.
       replay() {
+        if (!alive) return;
         played = false;
         timers.forEach(clearTimeout); timers = [];
         if (reduce) return;
@@ -456,7 +460,7 @@ export default {
       // what a reordered or refreshed gallery needs; until now the only options
       // were "slide to a new position" or "already visible, no entrance".
       exit() {
-        if (reduce) return Promise.resolve();
+        if (!alive || reduce) return Promise.resolve();
         played = false;
         timers.forEach(clearTimeout); timers = [];
         covers.forEach((cover) => {

@@ -6,6 +6,8 @@
 //   node scripts/run-lane.mjs test:browser:cross --shard 1/2  # CI: half of the lane per runner
 //   node scripts/run-lane.mjs test:browser --only magnetic --repeat 5   # hunt a flake
 //   node scripts/run-lane.mjs test:browser --shard 2/3 --list           # show a shard, run nothing
+//   node scripts/run-lane.mjs test:browser --changed                    # only the steps your change can affect
+//   node scripts/run-lane.mjs test:browser --record-timings             # refresh tests/lane-timings.json
 //
 // Why not `npm run test:browser`: a chain stops at the first failure, and CI
 // used to wrap the WHOLE chain in a retry. One flaky browser test re-ran all 41
@@ -14,9 +16,14 @@
 //     (tests/retry-browser-test.mjs for test files, scripts/retry-command.mjs
 //     for `npm run` steps), and a pass on retry is reported as FLAKY;
 //   • the lane keeps going, so one run reports every failing step;
-//   • `--shard k/n` splits a lane across CI runners (round-robin by position,
-//     so every step lands in exactly one shard and a new test needs no config);
-//   • each step's time is printed, so slow tests are visible.
+//   • `--shard k/n` splits a lane across CI runners by MEASURED time
+//     (tests/lane-timings.json, see scripts/lane-select.mjs): every step lands
+//     in exactly one shard, the shards take about as long as each other, and a
+//     new test needs no config (it counts as a typical step until recorded);
+//   • `--changed[=ref]` runs only the steps the changed files can affect — a
+//     LOCAL accelerator (CI never passes it, so CI always runs every step);
+//   • each step's time is printed, so slow tests are visible, and
+//     `--record-timings` writes them back for the next shard split.
 //
 // package.json stays the ONE list of tests: CI, the release workflow, and the
 // local `npm run preflight` all run lanes through this file, so "passes
@@ -28,16 +35,19 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { annotation, inGitHubActions } from './gh-actions.mjs';
+import { affectedSteps, balancedShard, changedFilesSince, stepTextReader, timingKey } from './lane-select.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const RETRY_BROWSER = 'tests/retry-browser-test.mjs';
 const RETRY_COMMAND = 'scripts/retry-command.mjs';
 const VALUE_FLAGS = new Set(['--jobs', '--shard', '--only', '--repeat']);
 const MAX_BUFFER_BYTES = 1024 * 1024; // per step, when output is buffered (--jobs > 1)
+/** Measured seconds per step, per lane (and engine). Rewritten by --record-timings. */
+export const TIMINGS_FILE = 'tests/lane-timings.json';
 
 /** argv → options. Throws a readable Error on a bad flag. */
 export function parseArgs(argv, env = {}) {
-  const options = { lane: null, jobs: Number(env.KT_LANE_JOBS) || 1, shard: null, only: [], repeat: 1, list: false };
+  const options = { lane: null, jobs: Number(env.KT_LANE_JOBS) || 1, shard: null, only: [], repeat: 1, list: false, changed: null, recordTimings: false };
   let sawOnly = false;
   for (let index = 0; index < argv.length; index += 1) {
     let [flag, value] = argv[index].split(/=(.*)/s, 2);
@@ -47,6 +57,9 @@ export function parseArgs(argv, env = {}) {
     else if (flag === '--only') { sawOnly = true; options.only = String(value ?? '').split(',').map((part) => part.trim()).filter(Boolean); }
     else if (flag === '--repeat') options.repeat = Number(value);
     else if (flag === '--list') options.list = true;
+    // `--changed` alone compares with origin/main; `--changed=<ref>` with a ref.
+    else if (flag === '--changed') options.changed = value ?? '';
+    else if (flag === '--record-timings') options.recordTimings = true;
     else if (flag.startsWith('--')) throw new Error(`unknown flag ${flag}`);
     else if (!options.lane) options.lane = flag;
     else throw new Error(`unexpected argument ${flag}`);
@@ -55,6 +68,10 @@ export function parseArgs(argv, env = {}) {
   if (!Number.isInteger(options.jobs) || options.jobs < 1 || options.jobs > 8) throw new Error('--jobs must be 1–8');
   if (!Number.isInteger(options.repeat) || options.repeat < 1 || options.repeat > 50) throw new Error('--repeat must be 1–50');
   if (sawOnly && !options.only.length) throw new Error('--only needs a value');
+  // A ref reaches git as one argument (never a shell); still, keep it a plain
+  // ref, and never one that starts with "-" (git would read it as an option).
+  if (options.changed && !/^[\w./~^@{}][\w./~^@{}-]*$/.test(options.changed)) throw new Error(`--changed needs a git ref (got "${options.changed}")`);
+  if (options.recordTimings && options.repeat > 1) throw new Error('--record-timings cannot be combined with --repeat');
   return options;
 }
 
@@ -90,10 +107,37 @@ export function parseLane(chain, lane = 'lane') {
   });
 }
 
-/** Keeps the steps of one shard (round-robin by position) that match `only`. */
-export function selectSteps(steps, { shard = null, only = [] } = {}) {
-  return steps.filter((step, position) => (!shard || position % shard.count === shard.index - 1)
+/**
+ * Keeps the steps of one shard that match `only`. A shard is dealt by the
+ * measured `seconds` per label (balancedShard); with no times it is plain
+ * round-robin. Either way the shards of a lane partition it.
+ */
+export function selectSteps(steps, { shard = null, only = [], seconds = {} } = {}) {
+  const inShard = shard ? new Set(balancedShard(steps, shard, seconds)) : null;
+  return steps.filter((step) => (!inShard || inShard.has(step))
     && (!only.length || only.some((part) => step.label.includes(part))));
+}
+
+/** The whole timings file ({} when missing or unreadable — times only tune shards). */
+export function readTimings(file = path.join(root, TIMINGS_FILE)) {
+  try {
+    const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return data && typeof data === 'object' ? data : {};
+  } catch { return {}; }
+}
+
+/**
+ * Timings after a run: the steps that passed get their new time, the others
+ * keep their old one (a failure's time says nothing), and labels that are no
+ * longer in the lane drop out. Keys are sorted so the file diffs cleanly.
+ * @param {string[]} labels  every step label of the lane, as package.json has it now
+ */
+export function mergeTimings(timings, key, results, labels) {
+  const entry = { ...(timings[key] || {}) };
+  for (const result of results) if (result.ok) entry[result.label] = Math.round(result.seconds * 10) / 10;
+  const current = new Set(labels);
+  const sorted = Object.fromEntries(Object.entries(entry).filter(([label]) => current.has(label)).sort(([a], [b]) => a.localeCompare(b)));
+  return { ...timings, [key]: sorted };
 }
 
 // Keeps the last MAX_BUFFER_BYTES of a child's output (used with --jobs > 1 so
@@ -145,15 +189,30 @@ async function main() {
   const { lane, jobs, shard, only, repeat } = options;
   let all;
   try { all = parseLane(chain, lane); } catch (error) { console.error(`run-lane: ${error.message}`); process.exit(2); }
-  const selected = selectSteps(all, { shard, only });
-  const scope = [shard && `shard ${shard.index}/${shard.count}`, only.length && `only ${only.join(',')}`].filter(Boolean).join(', ');
+  const timings = readTimings();
+  const key = timingKey(lane, process.env.KT_BROWSER);
+  const seconds = timings[key] || {};
+  let selected = selectSteps(all, { shard, only, seconds });
   if (only.length && !selected.length) { console.error(`run-lane: no step of ${lane} matches --only ${only.join(',')}`); process.exit(2); }
+  let changedNote = '';
+  if (options.changed !== null) {
+    try {
+      const { ref, files } = changedFilesSince(root, options.changed || null);
+      const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+      const affected = affectedSteps(selected, files, stepTextReader(root, pkg.scripts || {}));
+      selected = affected.steps;
+      changedNote = `changed since ${ref.slice(0, 12)}`;
+      console.log(`run-lane --changed: ${affected.reason}; ${selected.length} step(s) affected.${affected.all ? '' : ' CI still runs every step.'}`);
+    } catch (error) { console.error(`run-lane: ${error.message}`); process.exit(2); }
+  }
+  const scope = [shard && `shard ${shard.index}/${shard.count}`, only.length && `only ${only.join(',')}`, changedNote].filter(Boolean).join(', ');
   if (options.list) {
-    console.log(`${lane}${scope ? ` (${scope})` : ''}: ${selected.length} of ${all.length} steps`);
-    for (const step of selected) console.log(`  ${step.label}`);
+    const estimate = selected.reduce((total, step) => total + (seconds[step.label] || 0), 0);
+    console.log(`${lane}${scope ? ` (${scope})` : ''}: ${selected.length} of ${all.length} steps${estimate ? `, about ${Math.round(estimate)}s measured` : ''}`);
+    for (const step of selected) console.log(`  ${step.label}${seconds[step.label] ? `  ${seconds[step.label]}s` : ''}`);
     return;
   }
-  if (!selected.length) { console.log(`${lane} (${scope}): nothing to run.`); return; }
+  if (!selected.length) { console.log(`${lane}${scope ? ` (${scope})` : ''}: nothing to run.`); return; }
 
   // Room for the heaviest demo checks on a small machine, and one retry. CI sets
   // its own values in the workflow. --repeat turns retries OFF so a flake shows.
@@ -199,6 +258,11 @@ async function main() {
 
   const failed = results.filter((result) => !result.ok);
   const minutes = ((Date.now() - started) / 60000).toFixed(1);
+  if (options.recordTimings) {
+    const merged = mergeTimings(timings, key, results, all.map((step) => step.label));
+    fs.writeFileSync(path.join(root, TIMINGS_FILE), `${JSON.stringify(merged, null, 2)}\n`);
+    console.log(`Recorded ${results.filter((result) => result.ok).length} step time(s) under "${key}" in ${TIMINGS_FILE}${jobs > 1 ? ' (with --jobs > 1 the times include contention)' : ''}.`);
+  }
   const slowest = [...results].sort((a, b) => b.seconds - a.seconds).slice(0, 5)
     .map((result) => `${title(result)} ${result.seconds.toFixed(0)}s`).join(', ');
   console.log(`\n${lane}${scope ? ` (${scope})` : ''}: ${results.length - failed.length}/${results.length} passed in ${minutes} min (jobs=${jobs}${repeat > 1 ? `, repeat=${repeat}` : ''}). Slowest: ${slowest}.`);

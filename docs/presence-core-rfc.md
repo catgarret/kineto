@@ -46,12 +46,16 @@ if (result.status === 'finished') panel.remove();
 | `{ status: 'finished' }` | 요청한 enter/exit와 후속 정리가 완료됨 |
 | `{ status: 'cancelled', reason: 'reenter' }` | 반대 방향 요청이 현재 실행을 대체함 |
 | `{ status: 'cancelled', reason: 'destroy' }` | `destroy()`가 실행을 중단함 |
+| `{ status: 'cancelled', reason: 'error' }` | `wait`에서 앞선 leave가 실패해 대기 중이던 enter를 시작하지 않음 |
 | `{ status: 'skipped' }` | 이미 제거되었거나 reduced motion 정책으로 모션이 생략됨 |
 | `{ status: 'error', error }` | 모션 어댑터가 실패했으며 호스트가 처리해야 함 |
 
 같은 방향의 중복 요청은 현재 Promise를 반환해야 합니다. 반대 방향 요청은
 이전 실행을 취소하고 새 실행을 시작하며, 이전 호출자는 반드시 `cancelled`를
 받습니다. `cancel()`은 DOM을 제거하지 않습니다.
+
+`enter()`·`leave()`는 모션이 실제로 끝난 뒤에 resolve합니다. 모션이 없으면 `duration + delay`가 지난
+뒤입니다. 따라서 `safeToRemove`는 exit 모션이 끝나기 전에 불리지 않습니다.
 
 ## 순서 정책
 

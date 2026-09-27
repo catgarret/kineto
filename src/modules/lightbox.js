@@ -203,6 +203,16 @@ function createManager(label) {
   let originY = 0;
   let lazyInstance = null;
   let sharing = false; // true while the native share sheet is up (+ a short grace)
+  // The close fade's timer. Reopening during the fade used to let it fire
+  // anyway: it hid the viewer that had just opened, and the second open had
+  // saved the page's overflow while it was still 'hidden', so the page stayed
+  // locked for good. open() and destroy() cancel it.
+  let closeTimer = null;
+  const cancelPendingClose = () => {
+    if (closeTimer == null) return;
+    clearTimeout(closeTimer);
+    closeTimer = null;
+  };
 
   const controls = { root, backdrop, shell, toolbar, stage, image, closeButton, previous, next, zoomIn, zoomOut, zoomReset, shareButton, downloadButton, info, title, description, meta, minimap, custom, counter, filmstrip };
 
@@ -417,7 +427,9 @@ function createManager(label) {
     const duration = Math.max(0, Number(activeEntry?.duration ?? 0.12));
     root.style.transition = `opacity ${duration}s ease`;
     root.style.opacity = '0';
-    setTimeout(() => {
+    cancelPendingClose();
+    closeTimer = setTimeout(() => {
+      closeTimer = null;
       root.hidden = true;
       root.style.display = 'none';
       root.style.opacity = '1';
@@ -431,8 +443,14 @@ function createManager(label) {
   };
 
   const open = (entry) => {
-    previousFocus = document.activeElement;
-    previousOverflow = document.body.style.overflow;
+    // Only an open from CLOSED saves what to restore. While the viewer is up
+    // (or still fading out) the body is already 'hidden' and focus is inside
+    // the viewer, so saving again would restore those on the next close.
+    if (root.hidden) {
+      previousFocus = document.activeElement;
+      previousOverflow = document.body.style.overflow;
+    }
+    cancelPendingClose();
     activeList = entry.group ? Array.from(entries).filter((item) => item.group === entry.group) : [entry];
     render(Math.max(0, activeList.indexOf(entry)));
     buildFilmstrip();
@@ -634,9 +652,12 @@ function createManager(label) {
     prev() { render(activeIndex - 1); },
     zoom(value) { setScale(Number(value)); },
     destroy() {
+      cancelPendingClose();
       lazyInstance?.destroy?.();
       document.removeEventListener('keydown', onKeyDown);
-      document.body.style.overflow = previousOverflow;
+      // Restore only what an open viewer changed; a viewer that was never
+      // opened must not overwrite the page's own overflow.
+      if (!root.hidden) document.body.style.overflow = previousOverflow;
       document.documentElement.classList.remove(OPEN_CLASS);
       root.remove();
       // 뷰어와 같이 들어온 것이므로 같이 나갑니다. 이 destroy 는 마지막 lightbox 가

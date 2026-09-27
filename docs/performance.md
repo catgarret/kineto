@@ -104,7 +104,10 @@ Kineto.init();
   모듈 정의에 `offscreen: 'pause'`(또는 옵션을 받아 `'pause'`/`null`을 돌려주는 함수)를
   두면 IntersectionObserver 하나가 지켜봅니다(`rootMargin` 25%라 스크롤해 들어오기 전에
   다시 시작합니다). 현재 Marquee·Mouse Parallax·Scroll Velocity·Loading Indicator·
-  Card Glow·Glitch·Overflow Text·Stylize·Text Transition·Typewriter·Canvas Effect가 참여합니다.
+  Card Glow·Tilt·Glitch·Overflow Text·Stylize·Ambient Media·Text Transition·Typewriter·
+  Canvas Effect가 참여하고, Counter는 `clock`일 때, Text Split은 `texts`가 둘 이상일 때,
+  Text Reveal은 `loop`·`flickerLoop`일 때만 참여합니다. 화면 밖에서 멈춘 카운트다운도 끝나는
+  시각에는 완료를 알립니다.
 - 화면 밖 요소에는 `data-kt-offscreen`이 붙고, `kineto.css`가 그 안의 **Kineto 자신의**
   CSS 키프레임(`[class*="kt-"]`)을 멈춥니다. 페이지의 애니메이션은 건드리지 않습니다.
   이 속성은 코어의 상태라서 `Kineto.observe()`가 다시 탐색하지 않습니다.
@@ -132,7 +135,11 @@ Kineto.init();
 
 마지막 인스턴스가 제거되면 코어의 `visibilitychange`, `prefers-reduced-motion`,
 Network Information 감시기도 해제됩니다. 이후 새 인스턴스가 만들어지면 다시
-설치되므로 SPA의 반복 mount/unmount에서 전역 리스너가 남지 않습니다.
+설치되므로 SPA의 반복 mount/unmount에서 전역 리스너가 남지 않습니다. 페이지가 켠
+Smooth Scroll(`enableSmooth()`)과 아직 `DOMContentLoaded`를 기다리는 `autoInit()`은
+마지막 인스턴스와 함께 사라지지 않으며, `Kineto.destroy()`(인자 없이)만 둘을 끝냅니다.
+GSAP을 내려받는 동안 대기 중인 `scan()`은 그 사이 `Kineto.destroy(root)`로 정리했거나
+문서에서 빠진 요소에 인스턴스를 만들지 않습니다.
 
 ## 외부 애니메이션 엔진
 
@@ -207,6 +214,11 @@ Kineto 번들 크기와 구분해야 합니다. 이 경계는 `npm run test:deps
 - Scroll Velocity는 위치·목표·탄성 속도가 모두 안정되면 RAF를 중지합니다.
   새로운 스크롤 입력에서 재개하며, `onUpdate`는 실제 처리 프레임에만 호출됩니다.
   Cursor(팔로워·체인·스네이크)·Mouse Parallax·나침반·Marquee의 스크롤 기울기도 같습니다.
+- Tilt·Card Glow·Magnetic·Brush Reveal은 포인터가 요소 위에 머물러 있어도 움직임이 없으면
+  따라잡은 뒤 RAF를 멈추고, 다음 포인터 이동(Tilt는 기기 방향 변화도)에서 재개합니다.
+  호버·포커스로 멈춘 Marquee와, 멈춰 있는 Slider 자동 재생 진행 UI도 프레임을 요청하지 않습니다.
+- 영역 Cursor(페이지 전체가 아닌 커서)는 포인터가 영역 밖에 있는 동안 좌표만 기록하고, 조상 탐색·
+  transform 쓰기·프레임 요청을 하지 않습니다.
 - `npm run test:browser`의 `idle-cost.mjs`는 아무 입력이 없는 페이지에서 Kineto의 rAF가
   초당 3개 미만인지, 입력이 깨우고 다시 쉬는지, 화면 밖 일시정지와 페이지의 pause가
   서로를 덮어쓰지 않는지 확인합니다. `create-cost.mjs`는 인스턴스 150개를 한꺼번에 만들 때

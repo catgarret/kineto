@@ -23,6 +23,11 @@ async function runSmoke() {
     root.appendChild(el);
     return el;
   };
+  // Text modules keep one visually hidden copy of their text for screen
+  // readers (utils.srText): `drawnText` is what is painted, `readText` what is read.
+  const srCopy = (el) => Array.from(el.children).find((child) => child.classList.contains('kt-sr-only'));
+  const drawnText = (el) => Array.from(el.childNodes).filter((child) => child !== srCopy(el)).map((child) => child.textContent).join('');
+  const readText = (el) => srCopy(el)?.textContent ?? null;
   const withMarkup = (html, tag = 'div') => {
     const el = make(tag, '');
     el.innerHTML = html;
@@ -301,7 +306,7 @@ async function runSmoke() {
 
   const slotCounter = makeFunctional('div', '0');
   const slotCounterInstance = Kineto.create('counter', slotCounter, { mode: 'slot', to: 12345, format: ',', duration: 0.02, loops: 0 });
-  if (!slotCounter.querySelector('.kt-counter-separator') || slotCounter.getAttribute('aria-label') !== '12,345') {
+  if (!slotCounter.querySelector('.kt-counter-separator') || readText(slotCounter) !== '12,345') {
     errors.push('slot counter did not preserve comma grouping');
   }
 
@@ -428,11 +433,11 @@ async function runSmoke() {
     && printImage.style.opacity === '1'
   ), 3000);
   if (!lazyLoaded || !pixelImage.complete || !pixelImage.src.startsWith('data:image/svg+xml')) errors.push('lazy pixelate did not load its real image');
-  if (hangulElement.textContent !== '강') errors.push(`hangul reveal did not settle to original text: ${hangulElement.textContent}`);
+  if (drawnText(hangulElement) !== '강') errors.push(`hangul reveal did not settle to original text: ${drawnText(hangulElement)}`);
   if (plainCounter.textContent !== '42') errors.push(`plain counter did not reach target: ${plainCounter.textContent}`);
 
-  if (digitCounter.textContent !== '54,321') errors.push(`digit counter did not reach grouped target: ${digitCounter.textContent}`);
-  if (popCounter.textContent !== '9,876') errors.push(`pop counter did not reach grouped target: ${popCounter.textContent}`);
+  if (drawnText(digitCounter) !== '54,321') errors.push(`digit counter did not reach grouped target: ${drawnText(digitCounter)}`);
+  if (drawnText(popCounter) !== '9,876') errors.push(`pop counter did not reach grouped target: ${drawnText(popCounter)}`);
   if (pixelProgress < 3 || !rangedPixelImage.complete || !rangedPixelImage.src.startsWith('data:image/svg+xml')) errors.push('pixelate range controls did not complete');
   if (!printImage.complete || !printImage.src.startsWith('data:image/svg+xml') || printImage.style.opacity !== '1') errors.push('progressive print did not reveal the real image');
   const lightboxDialog = document.querySelector('#kt-lightbox');

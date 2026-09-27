@@ -39,6 +39,9 @@ Card 내부에 제한되는 pointer spotlight와 선택적 표면 반사·발광
 
 Glow와 reflection은 card clipping bounds 안에 유지됩니다. 그림자는 바깥으로 자연스럽게 표시되며 Tilt 그림자와 기존 `box-shadow`를 덮지 않고 합성합니다. Magnetic, Ripple, Vibrate는 Pointer & Button Feedback 카테고리입니다.
 
+빛이 포인터를 따라잡으면 프레임 루프를 쉽니다. 포인터를 카드 위에 올려 둔 채 멈춰 있어도 같고, 다음
+포인터 이동이 루프를 다시 깨웁니다.
+
 ## Liquid Glass
 
 `data-kt-card-glow="glass"`는 배경 굴절·블러·틴트·포인터 반사를 겹칩니다.

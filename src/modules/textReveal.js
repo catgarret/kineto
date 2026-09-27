@@ -9,6 +9,8 @@ import {
   snapshotAttributes,
   snapshotChildNodes,
   scramblePainter,
+  labelStaticText,
+  srText,
   textWithLineBreaks,
   timeMs,
   wordBox,
@@ -30,47 +32,83 @@ function appendWhitespace(sink, content) {
   });
 }
 
+const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+
+// Whether a GSAP tween or a WAAPI player is moving (or waiting out its delay)
+// right now — the only ones pause() stops and resume() starts again. A finished
+// player must stay finished: play() on it starts it over.
+function isRunning(animation) {
+  if (typeof animation.paused === 'function') return !animation.paused() && animation.progress() < 1;
+  return animation.playState === 'running';
+}
+
 export default {
   // Kineto.config({ defer: true }) may create this only when the element nears
   // the viewport (src/deferCreate.js): it only matters where it can be seen.
   defer: true,
+  // A looping reveal (decode/shuffle `loop`, flicker `flickerLoop`) never ends,
+  // so the core pauses it while off screen (see `offscreen` in src/core.js).
+  offscreen: (options) => (options.flickerLoop === true || options.loop === true ? 'pause' : null),
   create(el, opts) {
     const restoreContent = snapshotChildNodes(el);
-    const restoreAttributes = snapshotAttributes(el, ['aria-label']);
     const text = normalizeTextLineBreaks(opts.text ?? textWithLineBreaks(el));
     const mode = opts.mode || opts.preset || 'stream';
     const speed = Number(opts.speed ?? (mode === 'stream' ? 30 : mode === 'hangul' ? 80 : 100));
     const delay = Number(opts.delay ?? 0);
     const gsap = G();
-    const timers = new Set();
-    const animations = [];
+    // Steps waiting on a timeout. pause() stops the timeouts but keeps the
+    // steps with the time each had left, so resume() continues where the text
+    // stopped (it used to wipe the text and reveal it again from the start).
+    const pending = new Set();
+    // Live animations only: a WAAPI player leaves as soon as it ends, so the
+    // ambient flicker loop no longer piles up a player every second or two.
+    const animations = new Set();
+    // What pause() stopped, for resume() to start again (nothing else).
+    let pausedAnimations = [];
+    let pausedAt = 0;
     let observer = null;
     let alive = true;
     let started = false;
+    // The element has been on screen (the IntersectionObserver fired). Until
+    // then resume() must not start anything.
+    let entered = false;
     let destroyed = false;
     let generation = 0;
 
-    el.setAttribute('aria-label', text);
     el.innerHTML = '';
+    // The glyphs are aria-hidden; screen readers read this one text node.
+    const screenReaderText = srText(el, text);
 
-    const later = (callback, milliseconds) => {
-      const id = setTimeout(() => {
-        timers.delete(id);
-        if (alive) callback();
+    const arm = (entry, milliseconds) => {
+      entry.id = setTimeout(() => {
+        pending.delete(entry);
+        if (alive) entry.callback();
       }, milliseconds);
-      timers.add(id);
-      return id;
+    };
+    const later = (callback, milliseconds) => {
+      const entry = { callback, runAt: now() + milliseconds, id: 0 };
+      pending.add(entry);
+      // While paused the step only waits in the list; resume() arms it.
+      if (alive) arm(entry, milliseconds);
+    };
+
+    const track = (animation) => {
+      animations.add(animation);
+      animation.finished?.catch(() => {}).then(() => animations.delete(animation));
+      return animation;
     };
 
     const clearWork = () => {
       generation += 1;
-      timers.forEach(clearTimeout);
-      timers.clear();
+      pending.forEach((entry) => clearTimeout(entry.id));
+      pending.clear();
+      pausedAt = 0;
       animations.forEach((animation) => {
         if (typeof animation.kill === 'function') animation.kill();
         else animation.cancel?.();
       });
-      animations.length = 0;
+      animations.clear();
+      pausedAnimations = [];
     };
 
     const resumeAnimation = (animation) => {
@@ -149,7 +187,7 @@ export default {
 
       if (gsap) {
         gsap.set(spans, { y: 20, scaleY: 0.5, opacity: 0 });
-        animations.push(gsap.to(spans, {
+        track(gsap.to(spans, {
           y: 0,
           scaleY: 1,
           opacity: 1,
@@ -191,7 +229,7 @@ export default {
       });
 
       if (gsap) {
-        animations.push(gsap.to(spans, {
+        track(gsap.to(spans, {
           y: '0%',
           opacity: 1,
           duration: Number(opts.duration ?? 0.6),
@@ -297,8 +335,7 @@ export default {
           easing: 'steps(1, end)',
           fill: 'both'
         });
-        animations.push(player);
-        return player;
+        return track(player);
       };
       // Flicker is a mechanical strobe — no color scramble here (decode only).
       let done = 0;
@@ -321,7 +358,7 @@ export default {
               { opacity: 1 }, { opacity: 0.15, offset: 0.3 }, { opacity: 1, offset: 0.5 },
               { opacity: 0.4, offset: 0.7 }, { opacity: 1 }
             ], { duration: 260 + Math.random() * 240, easing: 'steps(1, end)' });
-            animations.push(player);
+            track(player);
           }
           later(ambient, 500 + Math.random() * 1800);
         };
@@ -381,7 +418,7 @@ export default {
       else renderStream();
     };
 
-    observer = observeOnce(el, start, {
+    observer = observeOnce(el, () => { entered = true; start(); }, {
       threshold: Number(opts.threshold ?? 0.2),
       rootMargin: opts.rootMargin || '0px'
     });
@@ -390,6 +427,7 @@ export default {
       if (destroyed) return;
       clearWork();
       el.innerHTML = '';
+      screenReaderText.attach();
       alive = true;
       started = false;
       start();
@@ -400,18 +438,27 @@ export default {
       type: 'textReveal',
       replay: reset,
       pause: () => {
-        if (destroyed) return;
+        if (destroyed || !alive) return;
         alive = false;
-        timers.forEach(clearTimeout);
-        timers.clear();
-        animations.forEach((animation) => animation.pause?.());
+        pausedAt = now();
+        pending.forEach((entry) => clearTimeout(entry.id));
+        pausedAnimations = [...animations].filter(isRunning);
+        pausedAnimations.forEach((animation) => animation.pause());
       },
       resume: () => {
-        if (!destroyed && !alive) {
-          alive = true;
-          if (animations.length) animations.forEach(resumeAnimation);
-          else reset();
-        }
+        if (destroyed || alive) return;
+        alive = true;
+        pausedAnimations.forEach(resumeAnimation);
+        pausedAnimations = [];
+        const held = pausedAt ? now() - pausedAt : 0;
+        pausedAt = 0;
+        pending.forEach((entry) => {
+          entry.runAt += held;
+          arm(entry, Math.max(0, entry.runAt - now()));
+        });
+        // It came on screen while paused: begin now. Before that, and after
+        // the reveal is done, there is nothing to resume.
+        if (entered && !started) start();
       },
       destroy: () => {
         if (destroyed) return;
@@ -419,8 +466,8 @@ export default {
         alive = false;
         observer?.disconnect();
         clearWork();
+        screenReaderText.restore();
         restoreContent();
-        restoreAttributes();
       }
     };
   },
@@ -429,7 +476,7 @@ export default {
     const restoreContent = snapshotChildNodes(el);
     const restoreAttributes = snapshotAttributes(el, ['aria-label']);
     const text = normalizeTextLineBreaks(opts.text ?? textWithLineBreaks(el));
-    el.setAttribute('aria-label', text);
+    labelStaticText(el, text);
     if (opts.text != null) el.textContent = text;
     renderTextLineBreaks(el);
     return {

@@ -80,6 +80,9 @@ export default {
       }
     };
     const onKey = (e) => {
+      // Only a key pressed ON the draggable (or its handle) moves it: arrows in
+      // a text field, a select or a slider inside it belong to that control.
+      if (e.target !== el && e.target !== handle) return;
       const step = e.shiftKey ? 20 : 6;
       let moved = true;
       el.style.transition = 'transform .12s var(--kt-ease-ui, ease)';

@@ -1,4 +1,4 @@
-import { formatNumber, G, observeOnce, snapshotAttributes, textOption } from '../utils.js';
+import { formatNumber, G, observeOnce, snapshotAttributes, srText, textOption } from '../utils.js';
 
 function normalizedFormat(opts) {
   if (opts.format) return opts.format;
@@ -83,6 +83,18 @@ function constrainLineViewport(viewport, lineHeight, extra = '') {
   viewport.style.cssText = `${extra}overflow:hidden;height:${height};max-height:${height};block-size:${height};max-block-size:${height};contain:paint;`;
 }
 
+// A clock, countdown or elapsed timer ticks forever; the core pauses it while
+// it is off screen (see `offscreen` in src/core.js). Mirrors the mode lookup in
+// create(), where `secondsOnly` forces the clock.
+const isClock = (options) => options.secondsOnly === true || (options.mode || options.preset || options.style) === 'clock';
+
+// Paused, a countdown still reports its end on time (onComplete may drive the
+// page). The slack lets the check run just after the deadline, not just before.
+const DEADLINE_SLACK_MS = 20;
+// How often the clock face and the reduced-motion clock re-read the time.
+const CLOCK_TICK_MS = 250;
+const REDUCED_CLOCK_TICK_MS = 1000;
+
 function buildScrollTrigger(el, opts) {
   if (opts.start === false) return undefined;
   const rect = el.getBoundingClientRect();
@@ -99,6 +111,7 @@ export default {
   // Kineto.config({ defer: true }) may create this only when the element nears
   // the viewport (src/deferCreate.js): it only matters where it can be seen.
   defer: true,
+  offscreen: (options) => (isClock(options) ? 'pause' : null),
   create(el, opts) {
     const gsap = G();
     const originalHTML = el.innerHTML;
@@ -123,8 +136,20 @@ export default {
     const scrollTrigger = buildScrollTrigger(el, opts);
     const animations = [];
 
-    el.setAttribute('aria-label', finalValue);
-    el.setAttribute('aria-live', 'polite');
+    // Every mode but `plain` draws the value as separate pieces: slot reels
+    // hold a dozen digits each, flip cells four halves, pop and digit one box
+    // per character. Those pieces are aria-hidden and ONE hidden text node
+    // carries the value. There is no live region: the host used to be
+    // `aria-live="polite"` while it was rewritten on every frame.
+    let screenReaderText = null;
+    const showValue = (value) => {
+      Array.from(el.children).forEach((node) => {
+        if (node !== screenReaderText?.node) node.setAttribute('aria-hidden', 'true');
+      });
+      if (!screenReaderText) screenReaderText = srText(el, value);
+      screenReaderText.attach();
+      screenReaderText.set(value);
+    };
 
     const addAnimation = (animation) => {
       if (animation) animations.push(animation);
@@ -171,6 +196,7 @@ export default {
         else createCharacter(el, char, 'kt-counter-separator');
       }
       appendAffix(el, suffix, 'kt-counter-suffix');
+      showValue(finalValue);
 
       const loops = Math.max(0, Number(opts.loops ?? 2));
       const stagger = Math.max(0, Number(opts.stagger ?? 0.06));
@@ -215,6 +241,7 @@ export default {
         /\d/.test(char) ? 'kt-counter-digit kt-counter-pop-char' : 'kt-counter-separator kt-counter-pop-char'
       ));
       appendAffix(el, suffix, 'kt-counter-suffix');
+      showValue(finalValue);
 
       // Where the pop lands from: bottom (default), center, or top.
       const popAlign = opts.popAlign || 'bottom';
@@ -332,6 +359,7 @@ export default {
         cells.push({ topStatic, bottomStatic, topFlap, bottomFlap, target: Number(char), start: startDigit });
       }
       appendAffix(el, suffix, 'kt-counter-suffix');
+      showValue(finalValue);
 
       const loops = Math.max(0, Number(opts.loops ?? 1));
       const timers = new Set();
@@ -631,6 +659,7 @@ export default {
           el.appendChild(meridiemNode);
         }
         appendAffix(el, suffix, 'kt-counter-suffix');
+        showValue(clockText(state));
       };
 
       const changeTo = (cell, nextChar) => {
@@ -679,15 +708,17 @@ export default {
         });
       };
 
-      const label = (state) => {
+      // What a screen reader reads: "1d 02:03:04", "10:15 PM" or "012S".
+      const clockText = (state) => {
         const daysText = showDays(state.days) ? `${state.days}${daysLabel} ` : '';
-        el.setAttribute('aria-label', `${daysText}${state.text}${state.meridiem ? ` ${state.meridiem}` : ''}`);
+        return `${daysText}${state.text}${state.meridiem ? ` ${state.meridiem}` : ''}`;
       };
+      // Writes nothing when the text is unchanged (4 checks a second, 1 change).
+      const label = (state) => screenReaderText.set(clockText(state));
 
       const firstState = timeParts();
       currentPattern = patternOf(firstState);
       build(firstState);
-      label(firstState);
 
       let clockAlive = true;
       const update = () => {
@@ -711,12 +742,22 @@ export default {
         }
         label(state);
       };
-      let intervalId = setInterval(update, 250);
+      let intervalId = setInterval(update, CLOCK_TICK_MS);
+      let deadlineTimer = null;
+      const watchDeadline = () => {
+        if (!until || completed) return;
+        deadlineTimer = setTimeout(() => { deadlineTimer = null; timeParts(); }, Math.max(0, until.getTime() - Date.now()) + DEADLINE_SLACK_MS);
+      };
+      const stopDeadline = () => { clearTimeout(deadlineTimer); deadlineTimer = null; };
+      const startClock = () => {
+        stopDeadline();
+        if (!clockAlive) { clockAlive = true; intervalId = setInterval(update, CLOCK_TICK_MS); }
+      };
       addAnimation({
-        kill: () => { clockAlive = false; clearInterval(intervalId); clearClockTimers(); blinkPlayers.forEach((player) => player.cancel()); },
-        pause: () => { clockAlive = false; clearInterval(intervalId); blinkPlayers.forEach((player) => player.pause()); },
-        resume: () => { if (!clockAlive) { clockAlive = true; intervalId = setInterval(update, 250); } blinkPlayers.forEach((player) => player.play()); },
-        restart: () => { if (!clockAlive) { clockAlive = true; intervalId = setInterval(update, 250); } }
+        kill: () => { clockAlive = false; clearInterval(intervalId); clearClockTimers(); stopDeadline(); blinkPlayers.forEach((player) => player.cancel()); },
+        pause: () => { clockAlive = false; clearInterval(intervalId); stopDeadline(); watchDeadline(); blinkPlayers.forEach((player) => player.pause()); },
+        resume: () => { startClock(); blinkPlayers.forEach((player) => player.play()); },
+        restart: startClock
       });
     } else {
       const lineHeight = resolveLineHeight(el, opts.lineHeight);
@@ -777,6 +818,7 @@ export default {
         slots.push({ reel, fromY: countingUp ? 0 : -(steps * lineHeight), toY: countingUp ? -(steps * lineHeight) : 0 });
       }
       appendAffix(el, suffix, 'kt-counter-suffix');
+      showValue(finalValue);
 
       if (gsap) {
         const timeline = gsap.timeline({
@@ -813,14 +855,29 @@ export default {
       });
     }
 
+    // GSAP tweens that pause() stopped while they played. A tween still waiting
+    // for its ScrollTrigger is paused already; resuming it counted every
+    // counter below the fold up as soon as a hidden tab came back.
+    const pausedTweens = new Set();
+    const isTween = (animation) => typeof animation.paused === 'function';
+
     return {
       el,
       type: 'counter',
       replay: () => animations.forEach((animation) => animation.restart?.()),
-      pause: () => animations.forEach((animation) => animation.pause?.()),
-      resume: () => animations.forEach((animation) => animation.resume?.()),
+      pause: () => animations.forEach((animation) => {
+        if (!isTween(animation)) { animation.pause?.(); return; }
+        if (animation.paused()) return;
+        animation.pause();
+        pausedTweens.add(animation);
+      }),
+      resume: () => animations.forEach((animation) => {
+        if (!isTween(animation)) animation.resume?.();
+        else if (pausedTweens.delete(animation)) animation.resume();
+      }),
       destroy: () => {
         killAnimations();
+        screenReaderText?.restore();
         el.innerHTML = originalHTML;
         if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);
         restoreAttributes();
@@ -837,6 +894,9 @@ export default {
       const sepChar = textOption(opts.clockSeparator, ':');
       const showSeconds = opts.seconds !== false;
       const hour12 = opts.hour12 === true;
+      // A write only when the text changed: the same text every second was a
+      // DOM mutation (and a screen reader update) for nothing.
+      const write = (value) => { if (el.textContent !== value) el.textContent = value; };
       const renderTime = () => {
         const pad = (value) => String(value).padStart(2, '0');
         const secondsOnly = opts.secondsOnly === true;
@@ -845,20 +905,20 @@ export default {
           const ms = Math.max(0, opts.until ? target.getTime() - Date.now() : Date.now() - target.getTime());
           if (secondsOnly) {
             const digits = Math.max(1, Math.round(Number(opts.secondsDigits ?? 3)));
-            el.textContent = `${String(Math.floor(ms / 1000)).padStart(digits, '0')}${String(opts.secondsLabel ?? 'S')}`;
+            write(`${String(Math.floor(ms / 1000)).padStart(digits, '0')}${String(opts.secondsLabel ?? 'S')}`);
             return;
           }
           const days = Math.floor(ms / 86400000);
           const parts = [pad(Math.floor(ms / 3600000) % 24), pad(Math.floor(ms / 60000) % 60)];
           if (showSeconds) parts.push(pad(Math.floor(ms / 1000) % 60));
           const daysText = days > 0 || opts.showDays === true ? `${days}${opts.daysLabel ?? 'd'} ` : '';
-          el.textContent = `${textOption(opts.prefix)}${daysText}${parts.join(sepChar)}${textOption(opts.suffix)}`;
+          write(`${textOption(opts.prefix)}${daysText}${parts.join(sepChar)}${textOption(opts.suffix)}`);
           return;
         }
         const now = new Date();
         if (secondsOnly) {
           const digits = Math.max(1, Math.round(Number(opts.secondsDigits ?? 3)));
-          el.textContent = `${String(now.getSeconds()).padStart(digits, '0')}${String(opts.secondsLabel ?? 'S')}`;
+          write(`${String(now.getSeconds()).padStart(digits, '0')}${String(opts.secondsLabel ?? 'S')}`);
           return;
         }
         let hours = now.getHours();
@@ -866,12 +926,20 @@ export default {
         if (hour12) { meridiem = hours >= 12 ? ' PM' : ' AM'; hours = (hours % 12) || 12; }
         const parts = [pad(hours), pad(now.getMinutes())];
         if (showSeconds) parts.push(pad(now.getSeconds()));
-        el.textContent = `${textOption(opts.prefix)}${parts.join(sepChar)}${meridiem}${textOption(opts.suffix)}`;
+        write(`${textOption(opts.prefix)}${parts.join(sepChar)}${meridiem}${textOption(opts.suffix)}`);
       };
       renderTime();
-      const intervalId = setInterval(renderTime, 1000);
+      // Paused off screen like the animated clock (it used to tick on).
+      let intervalId = setInterval(renderTime, REDUCED_CLOCK_TICK_MS);
       return {
-        el, type: 'counter', pause() {}, resume() {},
+        el,
+        type: 'counter',
+        pause() { clearInterval(intervalId); intervalId = null; },
+        resume() {
+          if (intervalId != null) return;
+          renderTime();
+          intervalId = setInterval(renderTime, REDUCED_CLOCK_TICK_MS);
+        },
         destroy() {
           clearInterval(intervalId);
           el.innerHTML = originalHTML;
