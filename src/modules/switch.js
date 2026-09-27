@@ -12,7 +12,9 @@ export default {
     const reduce = env().reducedMotion;
     const size = Math.max(14, Number(opts.size ?? 24));            // thumb diameter
     const onColor = opts.onColor || 'var(--kt-switch-on, #ff5b1c)';
-    const offColor = opts.offColor || 'var(--kt-switch-off, color-mix(in srgb, currentColor 26%, transparent))';
+    // 55% of the text colour: the old 26% track was 1.8:1 against the page
+    // (WCAG 1.4.11 asks 3:1), and the white thumb on it was barely visible.
+    const offColor = opts.offColor || 'var(--kt-switch-off, color-mix(in srgb, currentColor 55%, transparent))';
     const thumbColor = opts.thumbColor || 'var(--kt-switch-thumb, #fff)';
     const duration = Math.max(0, Number(opts.duration ?? 0.22));
     // Form-usable: if a child <input type="checkbox|radio"> is present it becomes
