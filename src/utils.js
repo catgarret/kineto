@@ -306,6 +306,12 @@ export function q(target, root = typeof document !== 'undefined' ? document : nu
 }
 
 const progressOutputOwners = new WeakMap();
+// Form-like outputs show progress through `.value`; every other element
+// through its text. BUTTON, LI, SELECT … also have a `.value`, so checking
+// `'value' in target` alone sent destroy() to restore the wrong channel: the
+// button kept "100%" as its label.
+const VALUE_OUTPUT_TAGS = /^(?:INPUT|OUTPUT|PROGRESS)$/;
+const writesValue = (target) => 'value' in target && VALUE_OUTPUT_TAGS.test(target.tagName);
 
 // Keep visible progress copy in sync with Loader/LoadingIndicator without
 // coupling either module to a specific UI. Targets may be descendants of the
@@ -345,7 +351,7 @@ export function createProgressOutputs(el, opts = {}) {
       record = {
         owners: 0,
         text: target.textContent,
-        value: 'value' in target ? target.value : undefined,
+        value: writesValue(target) ? target.value : undefined,
         dataValue: target.getAttribute('data-kt-progress-value'),
         state: target.getAttribute('data-kt-progress-state'),
         progressVar: target.style.getPropertyValue('--kt-progress'),
@@ -384,7 +390,7 @@ export function createProgressOutputs(el, opts = {}) {
             .split('{value}').join(roundedText)
             .split('{progress}').join(roundedText)
             .split('{state}').join(stateText);
-          if ('value' in target && /^(?:INPUT|OUTPUT|PROGRESS)$/.test(target.tagName)) {
+          if (writesValue(target)) {
             if (target.tagName !== 'PROGRESS') target.value = output;
           } else {
             target.textContent = output;
