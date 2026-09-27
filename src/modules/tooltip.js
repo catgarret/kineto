@@ -62,12 +62,10 @@ export default {
     tip.appendChild(arrow);
     document.body.appendChild(tip);
 
-    // A tip that only repeats the name would be read twice ("Settings,
-    // Settings"): it describes the element only when it adds something.
-    const name = (el.getAttribute('aria-label') || el.textContent || '').trim();
-    const describes = allowHtml || String(content).trim() !== name;
+    // Always wired, even when the tip repeats the name: pages find their tip
+    // through this reference (the demo's settings help does).
     const describedBy = el.getAttribute('aria-describedby');
-    if (describes) el.setAttribute('aria-describedby', describedBy ? `${describedBy} ${tip.id}` : tip.id);
+    el.setAttribute('aria-describedby', describedBy ? `${describedBy} ${tip.id}` : tip.id);
 
     let visible = false;
     let showTimer = null;
