@@ -25,5 +25,8 @@ VSCODE-GUIDE.md
 .fuse_hidden*
 **/.fuse_hidden*
 
-# Generated CDN demo (run: npm run demo:cdn). Keep it tracked so GitHub Pages
-# can publish the standalone @latest CDN build from /site.
+# Build output (npm run build). Not committed since 0.13: every workflow that
+# needs it (CI, Pages, Release, the backup-site sync) builds the same commit,
+# and a committed copy hid size regressions and conflicted in every merge.
+# `site/` (the demo) stays tracked; it embeds a copy of the UMD runtime.
+/dist/
