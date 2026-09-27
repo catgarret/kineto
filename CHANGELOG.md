@@ -4,12 +4,14 @@
 
 ### English
 
+- Package metadata: `LICENSE` is now the verbatim MIT text with the owner's copyright (the old copyright holder and an appended third-party paragraph made GitHub report "Other (NOASSERTION)" while README and `package.json` said MIT); the third-party note moved to the README. Both packages share one `author`, the MCP package ships the same LICENSE, and the npm description no longer carries a module count (it said 53). Gate: `tests/license.mjs`.
 - `dist/` is no longer committed. Every workflow already builds the commit it tests; the committed copy hid size regressions and conflicted in every merge. Run `npm run build` after cloning.
 
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
+- 패키지 메타데이터: `LICENSE`를 소유자 저작권이 적힌 MIT 원문 그대로로 바꿨습니다(예전 저작권자와 덧붙인 서드파티 문단 때문에 README·`package.json`은 MIT인데 GitHub는 "Other (NOASSERTION)"으로 표시). 서드파티 안내는 README로 옮겼습니다. 두 패키지가 같은 `author`를 쓰고, MCP 패키지도 같은 LICENSE를 싣고, npm 설명에서 모듈 수(53으로 남아 있었음)를 뺐습니다. 게이트: `tests/license.mjs`.
 - `dist/`를 더 이상 커밋하지 않습니다. 모든 워크플로우가 이미 검사하는 커밋을 직접 빌드하며, 커밋된 사본은 용량 회귀를 가리고 병합마다 충돌했습니다. clone 뒤 `npm run build`를 실행하세요.
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->

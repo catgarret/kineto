@@ -497,4 +497,6 @@ npm run verify  # full CI suite plus dependency security audit
 
 ## License
 
-MIT © [dongri.me](https://dongri.me)
+MIT © [dongri.me](https://dongri.me) — see [LICENSE](LICENSE).
+
+Kineto does not bundle its optional engines. When a page uses them they are loaded from the page or the CDN under their own licenses: [GSAP](https://gsap.com/licensing/) (GreenSock's standard license) and [Lenis](https://github.com/darkroomengineering/lenis) (MIT).

@@ -298,4 +298,6 @@ npm run verify  # 전체 CI 검증 + 의존성 보안 감사
 
 ## 라이선스
 
-MIT © [dongri.me](https://dongri.me)
+MIT © [dongri.me](https://dongri.me) — [LICENSE](../LICENSE) 참고.
+
+Kineto는 선택 엔진을 번들하지 않습니다. 페이지가 쓸 때 페이지나 CDN에서 각자의 라이선스로 불러옵니다: [GSAP](https://gsap.com/licensing/)(GreenSock 표준 라이선스), [Lenis](https://github.com/darkroomengineering/lenis)(MIT).
