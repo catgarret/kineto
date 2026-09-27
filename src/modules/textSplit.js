@@ -7,6 +7,7 @@ import {
   snapshotAttributes,
   snapshotChildNodes,
   snapshotInlineStyles,
+  srText,
   ST,
   textWithLineBreaks,
   timeMs,
@@ -96,10 +97,17 @@ function buildUnits(el, text, by, wrap) {
   return units;
 }
 
+// A Text Split with two or more `texts` swaps them on a timer forever,
+// rebuilding its glyphs and stagger each time — nobody needs that off screen.
+const swapsTexts = (options) => Array.isArray(options.texts) && options.texts.length > 1;
+
 export default {
   // Kineto.config({ defer: true }) may create this only when the element nears
   // the viewport (src/deferCreate.js): it only matters where it can be seen.
   defer: true,
+  // A swapping headline is paused by the core while off screen (see
+  // `offscreen` in src/core.js); a one-shot entrance has nothing to pause.
+  offscreen: (options) => (swapsTexts(options) ? 'pause' : null),
   create(el, opts) {
     const gsap = G();
     const scrollTrigger = ST();
@@ -109,7 +117,6 @@ export default {
     const animationName = (typeof opts.animation === 'string' && ANIMATIONS[opts.animation]) ? opts.animation : (ANIMATIONS[opts.preset] ? opts.preset : 'rise');
     const definition = ANIMATIONS[animationName];
     const restoreContent = snapshotChildNodes(el);
-    const restoreAttributes = snapshotAttributes(el, ['aria-label']);
     const originalText = textWithLineBreaks(el);
     const restoreStyle = snapshotInlineStyles(el, ['overflow', 'perspective', 'display', 'minHeight']);
     const texts = Array.isArray(opts.texts) && opts.texts.length
@@ -119,11 +126,20 @@ export default {
     const stagger = Number(opts.stagger ?? 0.03);
     const ease = opts.ease ? gsapEaseName(opts.ease) : 'power3.out';
 
-    el.setAttribute('aria-label', texts ? texts[0] : originalText);
     el.innerHTML = '';
     if (animationName === 'spin' || animationName === 'flip') el.style.perspective = `${Number(opts.perspective ?? 600)}px`;
 
     let units = buildUnits(el, texts ? texts[0] : originalText, by, definition.wrap && !texts);
+    // The glyphs are aria-hidden; screen readers read this one text node.
+    const screenReaderText = srText(el, texts ? texts[0] : originalText);
+    // Rebuild the glyphs for `text` (a swap or a replay) and keep the screen
+    // reader copy in step with what is shown.
+    const showText = (text) => {
+      el.innerHTML = '';
+      units = buildUnits(el, text, by, false);
+      screenReaderText.attach();
+      screenReaderText.set(text);
+    };
     let tween = null;
     let swapTimer = null;
     let textIndex = 0;
@@ -166,9 +182,7 @@ export default {
           onComplete: () => {
             if (!alive) return;
             textIndex = (textIndex + 1) % texts.length;
-            el.innerHTML = '';
-            units = buildUnits(el, texts[textIndex], by, false);
-            el.setAttribute('aria-label', texts[textIndex]);
+            showText(texts[textIndex]);
             opts.onSwap?.(textIndex, texts[textIndex], el);
             playIn(scheduleSwap);
           }
@@ -205,22 +219,25 @@ export default {
         tween?.kill();
         if (texts) {
           textIndex = 0;
-          el.innerHTML = '';
-          units = buildUnits(el, texts[0], by, false);
-          el.setAttribute('aria-label', texts[0]);
+          showText(texts[0]);
         }
         gsap.set(units, { ...definition.from });
         playIn(texts ? scheduleSwap : null);
       },
       pause: () => { tween?.pause(); clearTimeout(swapTimer); },
-      resume: () => { tween?.resume(); if (texts && !tween?.isActive()) scheduleSwap(); },
+      resume: () => {
+        tween?.resume();
+        // Swaps follow the entrance: an element that never entered keeps
+        // waiting for its ScrollTrigger instead of swapping off screen.
+        if (started && texts && !tween?.isActive()) scheduleSwap();
+      },
       destroy: () => {
         alive = false;
         clearTimeout(swapTimer);
         trigger.kill();
         tween?.kill();
+        screenReaderText.restore();
         restoreContent();
-        restoreAttributes();
         restoreStyle();
       }
     };

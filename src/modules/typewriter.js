@@ -1,4 +1,4 @@
-import { hangulFrames, segmentText, snapshotAttributes, textOption } from '../utils.js';
+import { hangulFrames, segmentText, srText, textOption } from '../utils.js';
 
 export default {
   // Kineto.config({ defer: true }) may create this only when the element nears
@@ -9,7 +9,6 @@ export default {
   offscreen: 'pause',
   create(el, opts) {
     const originalHTML = el.innerHTML;
-    const restoreAttributes = snapshotAttributes(el, ['aria-label']);
     const strings = Array.isArray(opts.strings)
       ? opts.strings.map(String)
       : opts.strings != null
@@ -24,7 +23,6 @@ export default {
     const caretChar = textOption(opts.caretChar, '|');
     const hangul = opts.hangul === true || opts.compose === true;
 
-    el.setAttribute('aria-label', strings.join(', '));
     // Built as nodes, not an HTML string: `caretChar` can come from markup
     // (data-kt-caret-char), and option values are text, never HTML.
     const textEl = document.createElement('span');
@@ -38,23 +36,32 @@ export default {
       caret.textContent = caretChar;
       el.appendChild(caret);
     }
+    // The typed line is aria-hidden (it changes every keystroke); screen
+    // readers get every string once, from one hidden text node.
+    const screenReaderText = srText(el, strings.join(', '));
+    // Each string is split into graphemes once, not on every keystroke.
+    const graphemesOf = strings.map((string) => segmentText(string));
     let stringIndex = 0;
     let charIndex = 0;
     let frameIndex = 0;
     let erasing = false;
     let alive = true;
+    // Set once the last string is typed with `loop: false`: resume() must not
+    // type it again (and report onComplete again).
+    let completed = false;
     let timer = null;
 
     const framesFor = (grapheme) => (hangul ? hangulFrames(grapheme) : [grapheme]);
 
     const step = () => {
       if (!alive) return;
-      const graphemes = segmentText(strings[stringIndex]);
+      const graphemes = graphemesOf[stringIndex];
       if (!erasing) {
         const done = graphemes.slice(0, charIndex).join('');
         if (charIndex >= graphemes.length) {
           textEl.textContent = done;
           if (!loop && stringIndex === strings.length - 1) {
+            completed = true;
             opts.onComplete?.(el);
             return;
           }
@@ -94,16 +101,21 @@ export default {
         frameIndex = 0;
         erasing = false;
         alive = true;
+        completed = false;
         textEl.textContent = '';
         step();
       },
       pause: () => { alive = false; clearTimeout(timer); },
-      resume: () => { if (!alive) { alive = true; step(); } },
+      resume: () => {
+        if (alive) return;
+        alive = true;
+        if (!completed) step();
+      },
       destroy: () => {
         alive = false;
         clearTimeout(timer);
+        screenReaderText.restore();
         el.innerHTML = originalHTML;
-        restoreAttributes();
       }
     };
   },

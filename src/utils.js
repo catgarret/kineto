@@ -633,12 +633,16 @@ export function hangulFrames(char) {
   return frames;
 }
 
+// One grapheme segmenter for the whole library. Building an Intl.Segmenter is
+// far slower than using one, and Typewriter segments on every keystroke.
+let graphemeSegmenter = null;
+
 export function segmentText(text, decomposeKorean = false) {
   let segments;
   if (typeof Intl !== 'undefined' && Intl.Segmenter) {
     try {
-      const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
-      segments = Array.from(segmenter.segment(text), ({ segment }) => segment);
+      graphemeSegmenter ||= new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+      segments = Array.from(graphemeSegmenter.segment(text), ({ segment }) => segment);
     } catch (_error) {
       segments = Array.from(text);
     }
@@ -869,16 +873,90 @@ export function snapshotChildNodes(el) {
   return () => entries.forEach(([node, children]) => node.replaceChildren(...children));
 }
 
+// Intl.NumberFormat instances by locale + decimals. Counter's plain mode formats
+// on every animation frame, and building a formatter costs ~60× using one.
+const numberFormats = new Map();
+
+function numberFormatFor(locale, decimals) {
+  const key = `${locale}|${decimals}`;
+  let formatter = numberFormats.get(key);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    numberFormats.set(key, formatter);
+  }
+  return formatter;
+}
+
 export function formatNumber(value, { decimals = 0, format = '', locale } = {}) {
   const number = Number(value);
   if (!Number.isFinite(number)) return String(value);
-  if (format === ',' || locale) {
-    return new Intl.NumberFormat(locale || 'en-US', {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
-    }).format(number);
-  }
+  if (format === ',' || locale) return numberFormatFor(locale || 'en-US', decimals).format(number);
   return number.toFixed(decimals);
+}
+
+// ---------------------------------------------------------------------------
+// Screen-reader text for text that is drawn as separate glyphs.
+//
+// Text modules draw their text as many small `aria-hidden` spans (one per
+// letter, a reel of digits, stacked RGB copies). The whole text used to be put
+// back as `aria-label` on the host — but most hosts are a div, span or p, and a
+// name is not allowed on those roles: NVDA and JAWS ignore it in browse mode,
+// so the text was silent. srText() adds ONE visually hidden text node holding
+// the whole text instead, and sets aria-label only on a host whose role takes
+// a name (a heading, link, button or landmark).
+// ---------------------------------------------------------------------------
+const SR_ONLY_CLASS = 'kt-sr-only';
+// Inline, so the text stays hidden on a page that does not load kineto.css.
+const SR_ONLY_STYLE = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;'
+  + 'clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0;';
+// Elements whose own role accepts an accessible name.
+const NAMED_TAGS = new Set(['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BUTTON', 'NAV', 'MAIN', 'ASIDE', 'SECTION', 'FORM', 'HEADER', 'FOOTER']);
+// Explicit roles that may NOT carry a name (WAI-ARIA 1.2 "naming prohibited").
+const UNNAMED_ROLES = new Set(['generic', 'none', 'presentation', 'paragraph', 'caption', 'code', 'deletion', 'insertion',
+  'emphasis', 'strong', 'subscript', 'superscript']);
+
+/** Whether `el`'s role accepts an accessible name (aria-label). */
+export function acceptsAccessibleName(el) {
+  const role = (el.getAttribute('role') || '').trim().split(/\s+/)[0].toLowerCase();
+  if (role) return !UNNAMED_ROLES.has(role);
+  if (el.tagName === 'A' || el.tagName === 'AREA') return el.hasAttribute('href');
+  return NAMED_TAGS.has(el.tagName);
+}
+
+/**
+ * Put `text` inside `el` as one visually hidden text node (see above).
+ * @param {Element} el    the host whose glyphs are aria-hidden
+ * @param {string} text   the whole text a screen reader should read
+ * @returns {{ node: HTMLSpanElement, set: (text: string) => void, attach: () => void, restore: () => void }}
+ *   `set` changes the text (and writes nothing when it is unchanged), `attach`
+ *   puts the node back after the module emptied `el` for a rebuild, and
+ *   `restore` removes the node and puts back the host's own aria-label.
+ */
+export function srText(el, text) {
+  const restoreLabel = snapshotAttributes(el, ['aria-label']);
+  const named = acceptsAccessibleName(el);
+  const node = document.createElement('span');
+  node.className = SR_ONLY_CLASS;
+  node.style.cssText = SR_ONLY_STYLE;
+  const set = (value) => {
+    const next = String(value ?? '');
+    if (node.textContent !== next) node.textContent = next;
+    if (named && el.getAttribute('aria-label') !== next) el.setAttribute('aria-label', next);
+  };
+  // Appended after the glyphs, so the host's first child stays the module's
+  // own layer (page code and tests reach it as `firstElementChild`).
+  const attach = () => { if (node.parentNode !== el) el.appendChild(node); };
+  set(text);
+  attach();
+  return {
+    node,
+    set,
+    attach,
+    restore() {
+      node.remove();
+      restoreLabel();
+    }
+  };
 }
 
 export function parseColor(input) {

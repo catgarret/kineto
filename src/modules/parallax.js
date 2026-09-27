@@ -32,8 +32,12 @@ export default {
     return {
       el,
       type: 'parallax',
-      pause: () => tween.pause(),
-      resume: () => tween.resume(),
+      // A scrubbed tween is driven by its ScrollTrigger and stays paused
+      // itself: tween.resume() made it play to its end on its own after a tab
+      // switch. Switch the trigger off and on instead (false: keep the
+      // current offset rather than reverting it).
+      pause: () => tween.scrollTrigger?.disable(false),
+      resume: () => tween.scrollTrigger?.enable(),
       destroy: () => {
         tween.scrollTrigger?.kill();
         tween.kill();

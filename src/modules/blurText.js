@@ -1,4 +1,4 @@
-import { G, gsapEaseName, observeOnce, renderTextLineBreaks, segmentText, snapshotAttributes, snapshotChildNodes, snapshotInlineStyles, ST, textWithLineBreaks, wordSink } from '../utils.js';
+import { G, gsapEaseName, observeOnce, renderTextLineBreaks, segmentText, snapshotAttributes, snapshotChildNodes, snapshotInlineStyles, srText, ST, textWithLineBreaks, wordSink } from '../utils.js';
 
 export default {
   // Kineto.config({ defer: true }) may create this only when the element nears
@@ -8,9 +8,7 @@ export default {
     const gsap = G();
     const scrollTrigger = ST();
     const restoreContent = snapshotChildNodes(el);
-    const restoreAttributes = snapshotAttributes(el, ['aria-label']);
     const text = textWithLineBreaks(el);
-    el.setAttribute('aria-label', text);
     el.innerHTML = '';
 
     // Characters go into word boxes so a line can only wrap between words
@@ -30,6 +28,8 @@ export default {
       sink.add(span);
       return span;
     }).filter(Boolean);
+    // The letters are aria-hidden; screen readers read this one text node.
+    const screenReaderText = srText(el, text);
 
     const duration = opts.duration ?? 0.6;
     const stagger = opts.stagger ?? 0.03;
@@ -94,6 +94,12 @@ export default {
       observer = observeOnce(el, fallbackPlay, { threshold: 0.1 });
     }
 
+    // The tween pause() stopped while it was playing. A ScrollTrigger tween
+    // that has not entered yet is already paused, and resume() must leave it
+    // for its trigger — resuming it played every entrance below the fold as
+    // soon as the tab came back.
+    let pausedTween = null;
+
     const replay = () => {
       if (tween) {
         tween.restart();
@@ -111,13 +117,17 @@ export default {
       type: 'blurText',
       replay,
       pause: () => {
-        tween?.pause();
+        if (tween && !tween.paused()) {
+          tween.pause();
+          pausedTween = tween;
+        }
         if (pausedAt || !pending.size) return;
         pausedAt = now();
         pending.forEach((entry) => clearTimeout(entry.id));
       },
       resume: () => {
-        tween?.resume();
+        pausedTween?.resume();
+        pausedTween = null;
         if (!pausedAt) return;
         const held = now() - pausedAt;
         pausedAt = 0;
@@ -131,8 +141,8 @@ export default {
         clearTimers();
         tween?.scrollTrigger?.kill();
         tween?.kill();
+        screenReaderText.restore();
         restoreContent();
-        restoreAttributes();
       }
     };
   },

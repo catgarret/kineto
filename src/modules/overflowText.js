@@ -1,4 +1,4 @@
-import { clamp, measureThenApply, numberOption, segmentText } from '../utils.js';
+import { acceptsAccessibleName, clamp, measureThenApply, numberOption, segmentText, srText, textOption } from '../utils.js';
 
 function normalizeMaskDirection(value) {
   const direction = String(value || 'top-to-bottom').toLowerCase();
@@ -67,6 +67,14 @@ function plainText(html) {
   return probe.textContent || '';
 }
 
+// A host that is a control or already has a role (a link, a button, a heading,
+// a list item…). Giving it role="status" would take its own role away — a
+// rolling nav link stopped being announced as a link.
+function hasOwnRole(el) {
+  return el.hasAttribute('role') || el.hasAttribute('tabindex') || acceptsAccessibleName(el)
+    || /^(A|INPUT|SELECT|TEXTAREA|SUMMARY|LABEL|LI|TD|TH)$/.test(el.tagName);
+}
+
 export default {
   // Kineto.config({ defer: true }) may create this only when the element nears
   // the viewport (src/deferCreate.js): it only matters where it can be seen.
@@ -100,8 +108,8 @@ export default {
     const originalHTML = el.innerHTML;
     const originalStyle = el.getAttribute('style');
     const originalTitle = el.getAttribute('title');
-    const originalAria = el.getAttribute('aria-label');
     const originalRole = el.getAttribute('role');
+    const originalLive = el.getAttribute('aria-live');
     const text = String(opts.text ?? el.textContent ?? '').trim();
     // Rolling items must be read before the element is emptied below,
     // otherwise markup children (div/span items) would be lost.
@@ -110,6 +118,11 @@ export default {
     // when the element holds multiple item children — not only overflowing text.
     const sceneModes = ['fade', 'dissolve', 'flip', 'page'];
     const sceneItems = (sceneModes.includes(mode) && el.children.length >= 2) ? parseItems(el, opts) : null;
+    // What a screen reader reads and the tooltip shows: the first item of a
+    // rolling or scene list (the items' joined text read "WORK프로젝트"),
+    // otherwise the whole text.
+    const listItems = rollingItems || sceneItems;
+    const label = listItems?.length ? plainText(listItems[0]).trim() : text;
 
     let animation = null;
     let resizeObserver = null;
@@ -138,8 +151,29 @@ export default {
     // now. The plain overflow build reads it with its other measurements, in
     // the shared layout pass (see buildOverflow).
     if (mode === 'rolling' || sceneItems) positionIfStatic(getComputedStyle(el).position);
-    if (text) el.setAttribute('aria-label', text);
-    if (!originalTitle && opts.title !== false && text) el.setAttribute('title', text);
+    // Every build below draws aria-hidden layers; screen readers read this
+    // one hidden text node instead (each build puts it back after emptying el).
+    const screenReaderText = srText(el, label);
+    if (!originalTitle && opts.title !== false && label) el.setAttribute('title', label);
+    // A live region only when the page asks for one (`ariaLive` / `role`), the
+    // content does not change by itself on a timer, and the host has no role of
+    // its own. Rotating text used to be announced every few seconds, forever.
+    const applyLiveRegion = (rotates) => {
+      if (rotates || hasOwnRole(el)) return;
+      const live = textOption(opts.ariaLive);
+      const role = textOption(opts.role);
+      if (live) el.setAttribute('aria-live', live);
+      if (role) el.setAttribute('role', role);
+    };
+    // Removes the hover listeners of the previous build. Every rebuild
+    // (resume, replay) used to add four more, so one hover rolled several times.
+    const detachHover = () => {
+      if (!hoverTarget) return;
+      if (hoverEnterHandler) { hoverTarget.removeEventListener('pointerenter', hoverEnterHandler); hoverTarget.removeEventListener('focusin', hoverEnterHandler); }
+      if (hoverExitHandler) { hoverTarget.removeEventListener('pointerleave', hoverExitHandler); hoverTarget.removeEventListener('focusout', hoverExitHandler); }
+      hoverEnterHandler = null;
+      hoverExitHandler = null;
+    };
 
     let hoverPaused = false;
     let deferred = null;
@@ -198,16 +232,21 @@ export default {
       // create, so replay/rebuild must not append a second rolling viewport
       // (which left stacked tracks with only the last one animating).
       el.innerHTML = '';
-      el.setAttribute('role', opts.role || 'status');
-      el.setAttribute('aria-live', opts.ariaLive || 'polite');
+      applyLiveRegion(!hoverTrigger && items.length > 1);
+      // A hover roll always starts at home. A timed ticker rebuilt by resume()
+      // continues from the item it shows (it restarted at the first item but
+      // kept counting from the old one, so the next roll skipped items).
+      if (hoverTrigger) activeIndex = 0;
       const rollViewport = document.createElement('span');
       rollViewport.className = 'kt-overflow-rolling-viewport';
+      rollViewport.setAttribute('aria-hidden', 'true');
       rollViewport.style.cssText = 'display:block;position:relative;height:1.35em;overflow:hidden;';
       track = document.createElement('span');
       track.className = 'kt-overflow-rolling-track';
       track.style.cssText = 'display:flex;flex-direction:column;will-change:transform;';
-      const current = createSegment(items[0], false, true);
-      const next = createSegment(items[1 % items.length], true, true);
+      const current = createSegment(items[activeIndex], false, true);
+      const next = createSegment(items[(activeIndex + 1) % items.length], true, true);
+      if (!hoverTrigger) screenReaderText.set(plainText(items[activeIndex]).trim());
       current.style.height = next.style.height = '1.35em';
       current.style.lineHeight = next.style.lineHeight = '1.35em';
       current.style.display = next.style.display = 'flex';
@@ -216,6 +255,7 @@ export default {
       track.append(current, next);
       rollViewport.appendChild(track);
       el.appendChild(rollViewport);
+      screenReaderText.attach();
       const direction = opts.rollDirection === 'down' ? 1 : -1;
       const rollDuration = numberOption(opts.rollDuration, 380, 50);
       const hold = numberOption(opts.holdDuration, 1500, 100);
@@ -245,11 +285,13 @@ export default {
         }
         track.style.transform = 'translate3d(0,0,0)';
         activeIndex = nextIndex;
-        el.setAttribute('aria-label', plainText(items[activeIndex]));
+        // Read in browse mode, never announced (no live region by default).
+        screenReaderText.set(plainText(items[activeIndex]).trim());
         opts.onChange?.(activeIndex, items[activeIndex], el);
         if (!hoverTrigger) schedule(advance, hold);
       };
       if (hoverTrigger) {
+        detachHover();
         hoverTarget = opts.hoverTarget ? (el.closest(opts.hoverTarget) || el.parentElement || el) : el;
         const restoreOnLeave = opts.restoreOnLeave !== false;
         const loopOnHover = opts.loopOnHover === true;
@@ -267,7 +309,6 @@ export default {
           if (track.lastElementChild) track.lastElementChild.innerHTML = items[1 % items.length];
           activeIndex = 0;
           track.style.transform = homeTf;
-          el.setAttribute('aria-label', plainText(items[0]));
         };
         // loopOnHover: a horizontal, infinitely-scrolling marquee of the label
         // (like `mode:'loop'`) while hovered — NOT the vertical roll. Restored to
@@ -279,6 +320,7 @@ export default {
           const label = items.map(plainText).join(' ');
           el.innerHTML = '';
           const vp = document.createElement('span');
+          vp.setAttribute('aria-hidden', 'true');
           vp.style.cssText = `display:inline-block;overflow:hidden;white-space:nowrap;vertical-align:bottom;width:${boxW}px;max-width:${boxW}px;`;
           const inner = document.createElement('span');
           inner.style.cssText = 'display:inline-flex;white-space:nowrap;will-change:transform;';
@@ -287,6 +329,7 @@ export default {
           inner.append(a, b);
           vp.appendChild(inner);
           el.appendChild(vp);
+          screenReaderText.attach();
           const w = a.getBoundingClientRect().width || 200;
           const pxPerSec = Math.max(20, numberOption(opts.speed, 60));
           marqueeAnim = inner.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${-w}px)` }],
@@ -297,6 +340,7 @@ export default {
           marqueeAnim.cancel(); marqueeAnim = null;
           el.innerHTML = '';
           el.appendChild(rollViewport);
+          screenReaderText.attach();
           resetToHome();
         };
         // continue mode uses a 3-segment stack [item0, item1, item0] so leaving
@@ -316,14 +360,12 @@ export default {
             track.style.transition = 'none'; track.style.transform = homeTf; void track.offsetHeight;
             track.style.transition = `transform ${rollDuration}ms ${ease}`;
             track.style.transform = upTf;            // item0 -> item1
-            el.setAttribute('aria-label', plainText(items[1 % items.length]));
             opts.onChange?.(1 % items.length, items[1 % items.length], el);
             return;
           }
           resetToHome(); void track.offsetHeight;   // reverse: start from home
           track.style.transition = `transform ${rollDuration}ms ${ease}`;
           track.style.transform = upTf;
-          el.setAttribute('aria-label', plainText(items[1 % items.length]));
           opts.onChange?.(1 % items.length, items[1 % items.length], el);
         };
         hoverLeaveHandler = () => {
@@ -333,7 +375,6 @@ export default {
           if (continueRoll) {
             track.style.transition = `transform ${rollDuration}ms ${ease}`;
             track.style.transform = upTf2;           // item1 -> item0 (third seg)
-            el.setAttribute('aria-label', plainText(items[0]));
             opts.onChange?.(0, items[0], el);
             clearTimeout(continueResetTimer);
             continueResetTimer = setTimeout(() => {
@@ -345,7 +386,6 @@ export default {
           }
           track.style.transition = `transform ${rollDuration}ms ${ease}`;
           track.style.transform = homeTf;
-          el.setAttribute('aria-label', plainText(items[0]));
           opts.onChange?.(0, items[0], el);
         };
         hoverEnterHandler = (event) => {
@@ -373,13 +413,15 @@ export default {
       clearMotion();
       el.innerHTML = '';
       el.style.whiteSpace = 'normal';
-      el.setAttribute('role', opts.role || 'status');
-      el.setAttribute('aria-live', opts.ariaLive || 'polite');
       const vp = document.createElement('span');
       vp.className = 'kt-overflow-scene-viewport';
+      vp.setAttribute('aria-hidden', 'true');
       vp.style.cssText = 'display:block;position:relative;overflow:hidden;';
       if (mode === 'flip') vp.style.perspective = `${numberOption(opts.perspective, 700, 100)}px`;
       el.appendChild(vp);
+      // Scenes change on a timer, so they are never a live region; the hidden
+      // text follows the scene on screen and is read in browse mode.
+      screenReaderText.attach();
       const nodes = list.map((html) => {
         const node = document.createElement('span');
         node.className = 'kt-overflow-scene';
@@ -433,6 +475,7 @@ export default {
         animation.onfinish = settle;
         idx = nextIdx;
         activeIndex = nextIdx;
+        screenReaderText.set(plainText(list[nextIdx]).trim());
         opts.onPage?.(nextIdx, nodes.length, el);
       };
       const step = () => {
@@ -461,6 +504,7 @@ export default {
       track.appendChild(first);
       viewport.appendChild(track);
       el.appendChild(viewport);
+      screenReaderText.attach();
       // The resting state: truncated, with an ellipsis. A line that fits keeps
       // it; a line that overflows shows it for the one frame before it is
       // measured.
@@ -955,12 +999,12 @@ export default {
         resizeObserver?.disconnect();
         el.removeEventListener('pointerenter', onHoverIn);
         el.removeEventListener('pointerleave', onHoverOut);
-        if (hoverTarget && hoverEnterHandler) { hoverTarget.removeEventListener('pointerenter', hoverEnterHandler); hoverTarget.removeEventListener('focusin', hoverEnterHandler); }
-        if (hoverTarget && hoverExitHandler) { hoverTarget.removeEventListener('pointerleave', hoverExitHandler); hoverTarget.removeEventListener('focusout', hoverExitHandler); }
+        detachHover();
+        screenReaderText.restore();
         if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);
         if (originalTitle == null) el.removeAttribute('title'); else el.setAttribute('title', originalTitle);
-        if (originalAria == null) el.removeAttribute('aria-label'); else el.setAttribute('aria-label', originalAria);
         if (originalRole == null) el.removeAttribute('role'); else el.setAttribute('role', originalRole);
+        if (originalLive == null) el.removeAttribute('aria-live'); else el.setAttribute('aria-live', originalLive);
         el.innerHTML = originalHTML;
         delete el.dataset.ktOverflowActive;
       }

@@ -1,4 +1,4 @@
-import { cssEase, segmentText, timeMs, wordSink } from '../utils.js';
+import { cssEase, segmentText, srText, textOption, timeMs, wordSink } from '../utils.js';
 
 /*
  * Text transition rebuilt around a single live node: the visible text is
@@ -213,12 +213,22 @@ export default {
     wrap.style.cssText = `display:block;${effect.clip ? 'overflow:hidden;' : ''}`;
     const inner = document.createElement('span');
     inner.style.cssText = 'display:block;will-change:transform,opacity,filter;';
-    inner.setAttribute('aria-live', opts.ariaLive || 'polite');
+    // Text that rotates by itself must not be announced: a looping headline
+    // was read out every few seconds, forever. Only a page that asks for
+    // `ariaLive` on text that does not loop gets a live region.
+    const rotates = loop && texts.length > 1;
+    inner.setAttribute('aria-live', rotates ? 'off' : textOption(opts.ariaLive, 'off'));
     wrap.appendChild(inner);
     el.appendChild(wrap);
+    // Per-character text is drawn as aria-hidden letters and read from one
+    // hidden text node, which is also the only thing a live region reports.
+    const screenReaderText = charMode ? srText(inner, texts[0]) : null;
 
     let index = 0;
     let alive = true;
+    // Set when a text that does not loop has shown its last string: resume()
+    // must not schedule another turn (each one reported onComplete again).
+    let completed = false;
     let timer = null;
     const players = new Set();
 
@@ -253,9 +263,12 @@ export default {
           const span = document.createElement('span');
           span.className = 'kt-text-char';
           span.style.cssText = 'display:inline-block;will-change:transform,opacity;';
+          span.setAttribute('aria-hidden', 'true');
           span.textContent = char;
           sink.add(span);
         });
+        screenReaderText.attach();
+        screenReaderText.set(value);
       } else {
         inner.textContent = value;
       }
@@ -334,6 +347,7 @@ export default {
       if (!alive) return;
       const nextIndex = index + 1;
       if (!loop && nextIndex >= texts.length) {
+        completed = true;
         opts.onComplete?.(el);
         return;
       }
@@ -357,6 +371,7 @@ export default {
       replay: () => {
         clearWork();
         alive = true;
+        completed = false;
         index = 0;
         setContent(texts[0]);
         enter(schedule);
@@ -370,7 +385,7 @@ export default {
         if (alive) return;
         alive = true;
         players.forEach((player) => player.play());
-        if (!players.size) schedule();
+        if (!players.size && !completed) schedule();
       },
       destroy: () => {
         alive = false;

@@ -368,6 +368,11 @@ fullpageEl.remove();
 
 const sliderModule = (await import('../src/modules/slider.js')).default;
 const counterModule = (await import('../src/modules/counter.js')).default;
+// Text modules keep one visually hidden copy of their text for screen readers
+// (utils.srText). `drawnText` is what is painted, `readText` what is read.
+const srCopy = (node) => Array.from(node.children).find((child) => child.classList.contains('kt-sr-only'));
+const drawnText = (node) => Array.from(node.childNodes).filter((child) => child !== srCopy(node)).map((child) => child.textContent).join('');
+const readText = (node) => srCopy(node)?.textContent ?? null;
 const dateTimeModule = (await import('../src/modules/dateTime.js')).default;
 const brushRevealModule = (await import('../src/modules/brushReveal.js')).default;
 const pageRevealModule = (await import('../src/modules/pageReveal.js')).default;
@@ -697,7 +702,8 @@ document.body.appendChild(secondsCounter);
 const secondsInstance = counterModule.create(secondsCounter, {
   mode: 'clock', secondsOnly: true, secondsDigits: 3, secondsLabel: 'S', since: new Date(Date.now() - 12000).toISOString()
 });
-assert.match(secondsCounter.textContent, /^0?12S$/, 'clock seconds-only mode must render an elapsed seconds value with its unit');
+assert.match(drawnText(secondsCounter), /^0?12S$/, 'clock seconds-only mode must render an elapsed seconds value with its unit');
+assert.match(readText(secondsCounter), /^0?12S$/, 'clock seconds-only mode must read its value from one hidden text node');
 assert.equal(secondsCounter.querySelector('.kt-counter-separator--blink'), null, 'the seconds-only unit must not blink like a clock colon');
 secondsInstance.destroy();
 secondsCounter.remove();
@@ -709,7 +715,7 @@ const protectedSecondsInstance = counterModule.create(protectedSecondsCounter, {
   // seconds-only semantic must still win instead of rendering a numeric mode.
   mode: 'pop', secondsOnly: true, secondsDigits: 3, secondsLabel: 'S', since: new Date(Date.now() - 12000).toISOString()
 });
-assert.match(protectedSecondsCounter.textContent, /^0?12S$/, 'secondsOnly must force the Clock renderer when a conflicting mode is supplied');
+assert.match(drawnText(protectedSecondsCounter), /^0?12S$/, 'secondsOnly must force the Clock renderer when a conflicting mode is supplied');
 assert.ok(protectedSecondsCounter.querySelector('.kt-counter-clock-digit'), 'secondsOnly with a conflicting mode must use Clock digit markup');
 protectedSecondsInstance.destroy();
 protectedSecondsCounter.remove();
@@ -719,7 +725,7 @@ document.body.appendChild(countdownSecondsCounter);
 const countdownSecondsInstance = counterModule.create(countdownSecondsCounter, {
   mode: 'clock', secondsOnly: true, secondsDigits: 3, secondsLabel: 'S', until: new Date(Date.now() + 12000).toISOString()
 });
-const countdownSeconds = Number(countdownSecondsCounter.textContent.replace('S', ''));
+const countdownSeconds = Number(drawnText(countdownSecondsCounter).replace('S', ''));
 assert.ok(countdownSeconds > 0 && countdownSeconds <= 12, 'secondsOnly must support a future until timestamp as a remaining-seconds countdown');
 countdownSecondsInstance.destroy();
 countdownSecondsCounter.remove();
@@ -1608,7 +1614,8 @@ for (const [name, module, options] of [
     });
     await Promise.resolve();
     assert.equal(host.querySelectorAll('br').length, 4, `${name} ${reduced ? 'reduced' : 'normal'} must preserve authored br, nested CRLF and LF breaks`);
-    assert.equal(host.getAttribute('aria-label'), '첫\n시작\n둘\n셋\n넷', `${name} must expose normalized multiline source to ARIA`);
+    // Reduced motion keeps the text itself; the animated path reads a hidden copy.
+    assert.equal(reduced ? host.getAttribute('aria-label') : readText(host), '첫\n시작\n둘\n셋\n넷', `${name} must expose normalized multiline source to ARIA`);
     if (reduced) {
       assert.equal(host.querySelector('strong'), authorStrong, `${name} reduced mode must preserve authored inline elements`);
     } else {
@@ -1668,14 +1675,14 @@ const swappedSplitInstance = textSplitModule.create(swappedSplit, {
 });
 await Promise.resolve();
 assert.equal(swappedSplit.querySelectorAll('br').length, 1, 'word split must render a \n from options as <br>');
-assert.equal(swappedSplit.getAttribute('aria-label'), '분석한 전략과\n브랜드 리소스', 'word split must expose only the currently visible multiline text to ARIA');
+assert.equal(readText(swappedSplit), '분석한 전략과\n브랜드 리소스', 'word split must expose only the currently visible multiline text to ARIA');
 await new Promise((resolve) => setTimeout(resolve, 230));
 assert.deepEqual(swaps, ['생성 결과를\n확인합니다'], 'multiline swap must report the unchanged source string');
 assert.equal(swappedSplit.querySelectorAll('br').length, 1, 'word split swap must keep a real line break');
-assert.equal(swappedSplit.getAttribute('aria-label'), '생성 결과를\n확인합니다', 'word split swap must update ARIA to the visible multiline text');
+assert.equal(readText(swappedSplit), '생성 결과를\n확인합니다', 'word split swap must update ARIA to the visible multiline text');
 swappedSplitInstance.replay();
 assert.equal(swappedSplit.querySelectorAll('br').length, 1, 'word split replay must rebuild its first multiline value');
-assert.equal(swappedSplit.getAttribute('aria-label'), '분석한 전략과\n브랜드 리소스', 'word split replay must restore the first ARIA value');
+assert.equal(readText(swappedSplit), '분석한 전략과\n브랜드 리소스', 'word split replay must restore the first ARIA value');
 swappedSplitInstance.destroy();
 assert.equal(swappedSplit.innerHTML, swappedSplitHTML, 'word split destroy must restore author markup after swap and replay');
 assert.equal(swappedSplit.hasAttribute('aria-label'), false, 'word split destroy must remove generated ARIA');
@@ -1690,7 +1697,7 @@ const revealedInstance = textRevealModule.create(revealedText, {
 });
 await Promise.resolve();
 assert.equal(revealedText.querySelectorAll('br').length, 1, 'Text Reveal word mode must retain authored <br>');
-assert.equal(revealedText.getAttribute('aria-label'), '서버 문구\n다음 줄', 'Text Reveal ARIA must retain the authored line break');
+assert.equal(readText(revealedText), '서버 문구\n다음 줄', 'Text Reveal ARIA must retain the authored line break');
 revealedInstance.replay();
 assert.equal(revealedText.querySelectorAll('br').length, 1, 'Text Reveal replay must retain authored line breaks');
 revealedInstance.destroy();
@@ -1707,22 +1714,27 @@ const optionRevealInstance = textRevealModule.create(optionReveal, {
 });
 await Promise.resolve();
 assert.equal(optionReveal.querySelectorAll('br').length, 1, 'Text Reveal text option must render \n as a real line break');
-assert.equal(optionReveal.getAttribute('aria-label'), '옵션 첫 줄\n옵션 둘째 줄', 'Text Reveal text option must preserve its line break in ARIA');
+assert.equal(readText(optionReveal), '옵션 첫 줄\n옵션 둘째 줄', 'Text Reveal text option must preserve its line break in ARIA');
 optionRevealInstance.destroy();
 assert.equal(optionReveal.innerHTML, optionRevealHTML, 'Text Reveal destroy must restore author markup after a text override');
 optionReveal.remove();
 
 const textRevealAnimate = window.HTMLElement.prototype.animate;
 const nativeTextRevealPlayers = [];
+// Players finish at once unless a case needs them still running: Text Reveal
+// pauses and resumes only the players that are running (a finished player must
+// stay finished — play() would start it over).
+let nativePlayersKeepRunning = false;
 window.HTMLElement.prototype.animate = () => {
   const player = {
-    finished: Promise.resolve(),
+    finished: nativePlayersKeepRunning ? new Promise(() => {}) : Promise.resolve(),
+    playState: nativePlayersKeepRunning ? 'running' : 'finished',
     cancelled: false,
     paused: false,
     played: false,
-    cancel() { this.cancelled = true; },
-    pause() { this.paused = true; },
-    play() { this.played = true; }
+    cancel() { this.cancelled = true; this.playState = 'idle'; },
+    pause() { this.paused = true; this.playState = 'paused'; },
+    play() { this.played = true; this.playState = 'running'; }
   };
   nativeTextRevealPlayers.push(player);
   return player;
@@ -1750,6 +1762,7 @@ const nativeFlicker = document.createElement('p');
 nativeFlicker.textContent = 'native lifecycle';
 document.body.appendChild(nativeFlicker);
 const nativeFlickerStart = nativeTextRevealPlayers.length;
+nativePlayersKeepRunning = true;
 const nativeFlickerInstance = textRevealModule.create(nativeFlicker, {
   mode: 'flicker', duration: 0.1, stagger: 0
 });
@@ -1767,6 +1780,7 @@ const replayPlayers = nativeTextRevealPlayers.slice(nativeFlickerStart + firstFl
 nativeFlickerInstance.destroy();
 assert.ok(replayPlayers.length > 0 && replayPlayers.every((player) => player.cancelled), 'Text Reveal destroy must cancel active native Web Animations');
 nativeFlicker.remove();
+nativePlayersKeepRunning = false;
 
 // Native completion promises are delivered on a microtask. Cancelling an
 // already fulfilled animation cannot retract that callback from an old run.
