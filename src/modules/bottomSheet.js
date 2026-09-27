@@ -211,11 +211,12 @@ export default {
       handle.title = handle.title || resizeLabel;
       // Resizing was pointer-only. The handle is now a focusable splitter
       // (role=separator): ↑/↓ change the height, Home/End jump to the limits.
+      // Its name is the title above — one string, so a page that re-words the
+      // tooltip (a language switch) re-words the name with it.
       handle.removeAttribute('aria-hidden');
       handle.tabIndex = 0;
       handle.setAttribute('role', 'separator');
       handle.setAttribute('aria-orientation', 'horizontal');
-      if (resizeLabel) handle.setAttribute('aria-label', resizeLabel);
       handle.setAttribute('aria-valuemin', String(minHeight));
       onHandleKey = (event) => {
         const viewportMax = Math.round((typeof window !== 'undefined' ? window.innerHeight : 800) * 0.95);

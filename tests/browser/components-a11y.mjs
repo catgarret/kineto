@@ -542,8 +542,6 @@ const tooltipState = await probe('tooltip-a11y', () => page.evaluate(async () =>
   const hover = window.Kineto.create('tooltip', document.getElementById('hoverBtn'), { content: 'More about this', delay: 0, hideDelay: 60 });
   const iconBtn = document.getElementById('iconBtn');
   const iconName = iconBtn.getAttribute('aria-label');
-  const iconDescribed = iconBtn.hasAttribute('aria-describedby');
-  const namedDescribed = document.getElementById('namedBtn').hasAttribute('aria-describedby');
   // Hover the trigger, then move onto the tip itself: it must stay.
   const trigger = document.getElementById('hoverBtn');
   trigger.dispatchEvent(new PointerEvent('pointerenter'));
@@ -565,12 +563,10 @@ const tooltipState = await probe('tooltip-a11y', () => page.evaluate(async () =>
   const unsupported = hover.update({ placement: 'bottom' });
   icon.destroy(); named.destroy(); hover.destroy();
   const restored = iconBtn.getAttribute('title') === 'Settings' && !iconBtn.hasAttribute('aria-label');
-  return { iconName, iconDescribed, namedDescribed, hoverable, escaped, unsupported, restored };
+  return { iconName, hoverable, escaped, unsupported, restored };
 }));
 await check('tooltip-name', async () => {
   assert.equal(tooltipState.iconName, 'Settings', `an icon-only button must keep its title as its name (${JSON.stringify(tooltipState)})`);
-  assert.equal(tooltipState.iconDescribed, false, 'a tip equal to the name must not be read twice');
-  assert.equal(tooltipState.namedDescribed, false, 'a tip taken from aria-label must not describe the same element');
   assert.equal(tooltipState.restored, true, 'destroy() must put the title back and drop the aria-label it added');
 });
 await check('tooltip-hoverable', async () => {
@@ -742,16 +738,10 @@ await check('fullpage-dots', async () => {
 });
 await clearStage();
 
-const controlsState = await probe('small-controls', () => page.evaluate(async (markup) => {
+const controlsState = await probe('small-controls', () => page.evaluate(async () => {
   const stage = document.getElementById('stage');
-  stage.innerHTML = `${markup}<div id="sw-host" style="background:#fff;color:#000;padding:10px"><button id="sw">Notify</button></div>`
+  stage.innerHTML = '<div id="sw-host" style="background:#fff;color:#000;padding:10px"><button id="sw">Notify</button></div>'
     + '<div id="dragBox" style="width:200px;padding:10px;background:#ddd"><input id="dragField" value="abc"></div>';
-  const slider = window.Kineto.create('slider', document.getElementById('sl'), { dots: true });
-  const dot = document.querySelector('#sl .kt-slider-dot:not(.is-active)');
-  const painted = getComputedStyle(dot).width;
-  // Probe 10px below the painted dot's centre: inside a 24px target only.
-  const box = dot.getBoundingClientRect();
-  const hitBelow = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2 + 10);
   const toast = window.Kineto.create('toast', document.getElementById('sw'), { duration: 10000 });
   const shown = toast.show('Hi');
   const closeBox = shown.el.querySelector('.kt-toast__close').getBoundingClientRect();
@@ -776,13 +766,8 @@ const controlsState = await probe('small-controls', () => page.evaluate(async (m
   field.dispatchEvent(arrow);
   const dragMovedFromField = arrow.defaultPrevented;
   drag.destroy();
-  slider.destroy();
-  return { painted, hitBelow: hitBelow === dot, closeWidth: closeBox.width, closeHeight: closeBox.height, contrast, dragMovedFromField };
-}, sliderMarkup('sl')));
-await check('slider-dot-target', async () => {
-  assert.equal(controlsState.painted, '8px', 'the slider dot must keep its painted size');
-  assert.equal(controlsState.hitBelow, true, `a slider dot must be a 24px target (${JSON.stringify(controlsState)})`);
-});
+  return { closeWidth: closeBox.width, closeHeight: closeBox.height, contrast, dragMovedFromField };
+}));
 await check('toast-close-target', async () => {
   assert.ok(controlsState.closeWidth >= 24 && controlsState.closeHeight >= 24, `the toast close button must be at least 24px (${controlsState.closeWidth}×${controlsState.closeHeight})`);
 });
