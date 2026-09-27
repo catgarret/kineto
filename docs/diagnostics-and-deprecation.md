@@ -75,6 +75,22 @@ Kineto.diagnostics.clear();
 
 화면은 대체 경로로 정상 동작하므로 오류가 아닙니다. `detail.fix`를 적용하면 네이티브 경로로 돌아갑니다.
 
+### `KT_ENGINE_UNAVAILABLE` — 필요할 때 불러오는 엔진이 오지 않은 경우
+
+GSAP·ScrollTrigger(스크롤 모듈)와 Lenis(부드러운 스크롤)는 번들에 없고 필요할 때 CDN(SRI 검증)에서 불러옵니다.
+CDN이 막혔거나 오프라인이거나, SRI 해시가 맞지 않거나, 12초 안에 오지 않았거나, `setEngineSource()`로
+끈 경우 모듈은 스스로 물러납니다(스크롤 효과는 대체 경로, 부드러운 스크롤은 네이티브). 그때 이 진단을 한 번 보냅니다.
+
+```js
+// { code: 'KT_ENGINE_UNAVAILABLE', module: 'core', phase: 'runtime', recoverable: true,
+//   detail: { engine: 'gsap', reason: 'Kineto: load failed https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js',
+//             modules: ['parallax', 'reveal'] } }
+```
+
+`reason`은 로더 자신의 메시지이고, 들어 있는 URL은 페이지 주소가 아니라 Kineto가 불러오려던 **엔진 주소**
+(`getEngineSource()`)입니다. 자체 호스팅이나 버전 고정은 `setEngineSource()`로, 페이지가 이미 GSAP를 번들하고 있다면
+`Kineto.setAnimationEngine({ gsap, ScrollTrigger })`로 넘겨 해결합니다([문제 해결](troubleshooting.md#스크롤-효과가-대체-경로로만-동작함)).
+
 `debugSink`를 주입하면 콘솔 대신 소비자 sink로만 전달됩니다. Kineto는 DOM,
 URL, 서버 응답을 자동 수집하지 않으며, 최근 50개 이벤트만 opt-in 상태에서
 메모리에 보관합니다. `cause`는 원래 오류 객체를 그대로 전달하므로 소비자가

@@ -121,7 +121,8 @@ export type KinetoDiagnosticCode =
   | 'KT_LIFECYCLE_FAILED'
   | 'KT_TRANSFORM_CONFLICT'
   | 'KT_DEPRECATED'
-  | 'KT_NATIVE_FALLBACK';
+  | 'KT_NATIVE_FALLBACK'
+  | 'KT_ENGINE_UNAVAILABLE';
 
 export interface KinetoDiagnostic {
   readonly code: KinetoDiagnosticCode | (string & {});

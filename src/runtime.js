@@ -49,6 +49,12 @@ let gsapInstance = pageEngine('gsap');
 let scrollTriggerInstance = pageEngine('ScrollTrigger');
 let gsapPromise = null;
 let lenisPromise = null;
+// Why the last load of each engine ended without an engine ('load failed …',
+// 'load timeout …', 'engine disabled'), or null. The loaders never reject —
+// modules degrade instead — so without this the reason was thrown away and a
+// page whose CDN is blocked had no way to learn why scroll effects fell back.
+const engineFailures = { gsap: null, lenis: null };
+export function engineFailure(name) { return engineFailures[name] || null; }
 
 export function setEngineSource(next = {}) {
   const gsapChanged = ('gsap' in next && next.gsap !== sources.gsap)
@@ -156,12 +162,14 @@ export function ensureGSAP() {
   if (gsapReady()) { registerScrollTrigger(); return Promise.resolve(getGSAP()); }
   if (gsapPromise) return gsapPromise;
   gsapPromise = (async () => {
+    engineFailures.gsap = null;
     try {
       if (!pageEngine('gsap')) await loadScript(sources.gsap, sources.gsapIntegrity);
       if (!pageEngine('ScrollTrigger')) await loadScript(sources.scrollTrigger, sources.scrollTriggerIntegrity);
       setAnimationEngine({ gsap: pageEngine('gsap'), ScrollTrigger: pageEngine('ScrollTrigger') });
-    } catch (_error) {
+    } catch (error) {
       // CDN unreachable — leave engines null; scroll modules fall back.
+      engineFailures.gsap = String(error?.message || error);
     }
     const result = getGSAP();
     if (!gsapReady()) defer(() => { gsapPromise = null; });
@@ -176,7 +184,9 @@ export function ensureLenis() {
   if (pageEngine('Lenis')) return Promise.resolve(pageEngine('Lenis'));
   if (lenisPromise) return lenisPromise;
   lenisPromise = (async () => {
-    try { await loadScript(sources.lenis, sources.lenisIntegrity); } catch (_error) {
+    engineFailures.lenis = null;
+    try { await loadScript(sources.lenis, sources.lenisIntegrity); } catch (error) {
+      engineFailures.lenis = String(error?.message || error);
       defer(() => { lenisPromise = null; });
       return null;
     }

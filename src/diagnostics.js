@@ -22,7 +22,13 @@ export const DIAGNOSTIC_CODES = Object.freeze({
   // because the page would have made the native path silently do nothing
   // (cssScroll: a native timeline inside an `overflow: hidden` ancestor).
   // `detail` names the cause and the CSS that fixes it.
-  NATIVE_FALLBACK: 'KT_NATIVE_FALLBACK'
+  NATIVE_FALLBACK: 'KT_NATIVE_FALLBACK',
+  // An engine loaded on demand (GSAP + ScrollTrigger, or Lenis) did not arrive:
+  // the CDN is blocked or offline, the SRI hash did not match, the load timed
+  // out, or setEngineSource() disabled it. Modules degrade (scroll effects use
+  // their fallback, smooth scroll stays native); `detail` names the engine, the
+  // reason and the modules that were waiting (docs/diagnostics-and-deprecation.md).
+  ENGINE_UNAVAILABLE: 'KT_ENGINE_UNAVAILABLE'
 });
 
 export function createDiagnostic({ code, module = 'core', phase = 'runtime', recoverable = false, cause, detail } = {}) {
