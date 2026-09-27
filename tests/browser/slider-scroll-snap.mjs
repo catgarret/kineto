@@ -17,7 +17,8 @@ const server = http.createServer((req, res) => {
 });
 await new Promise((resolve) => server.listen(0, resolve));
 const PORT = server.address().port;
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-gpu'] });
+// KT_CHROME points at a local Chromium when the installed Playwright revision differs (AGENTS.md).
+const browser = await chromium.launch({ headless: true, ...(process.env.KT_CHROME ? { executablePath: process.env.KT_CHROME } : {}), args: ['--no-sandbox', '--disable-gpu'] });
 const page = await browser.newPage({ viewport: { width: 900, height: 500 } });
 page.on('pageerror', (error) => console.log('PAGEERROR:', error.message));
 await page.setContent(`<!doctype html><html><head><style>

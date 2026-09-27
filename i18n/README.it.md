@@ -16,7 +16,7 @@ Un toolkit di interazioni web guidato da attributi HTML o da un'API JavaScript
 
 ---
 
-Kineto è una libreria di 53 moduli di interazione — movimento, media, scroll, loader e testo — che colleghi con un solo attributo `data-kt-*` o controlli con precisione tramite un'API JavaScript. Il core non ha dipendenze obbligatorie e, su browser non supportati o dispositivi datati, gli effetti si disattivano mentre il contenuto resta intatto.
+Kineto è una libreria di 55 moduli di interazione — movimento, media, scroll, loader e testo — che colleghi con un solo attributo `data-kt-*` o controlli con precisione tramite un'API JavaScript. Il core non ha dipendenze obbligatorie e, su browser non supportati o dispositivi datati, gli effetti si disattivano mentre il contenuto resta intatto.
 
 > Lavori con strumenti di coding AI (Cursor, Claude, ecc.)? Vedi la [guida ai prompt AI](../AI-PROMPT-GUIDE.md): contiene un'istruzione pronta da incollare che indica all'assistente di usare prima i moduli Kineto per movimento e interazioni.
 
@@ -24,11 +24,30 @@ Kineto è una libreria di 53 moduli di interazione — movimento, media, scroll,
 
 ## Installazione
 
-### npm
-
 ```bash
 npm install @dong-gri/kineto
 ```
+
+### Consigliato: `core` + solo i moduli che usi
+
+Importa il core e registra solo i moduli usati dalla pagina. Il codice degli altri moduli non viene scaricato.
+
+```js
+import Kineto from '@dong-gri/kineto/core';
+import reveal from '@dong-gri/kineto/modules/reveal';
+import counter from '@dong-gri/kineto/modules/counter';
+import '@dong-gri/kineto/style.css';
+
+Kineto.register('reveal', reveal);
+Kineto.register('counter', counter);
+Kineto.autoInit();
+```
+
+`core` pesa circa 15 KB (gzip); quanto aggiunge ogni modulo è in [`docs/module-cost.md`](../docs/module-cost.md) (mediana circa 2 KB), le misure dell'intera app in [`docs/consumer-bundle-size.md`](../docs/consumer-bundle-size.md). Un attributo `data-kt-*` di un modulo non registrato non fa nulla: è previsto.
+
+### Avvio più rapido: pacchetto completo
+
+L'entry predefinita registra tutti i moduli in una volta: la via più semplice per una landing o un prototipo, al costo del bundle completo (circa 169 KB gzip).
 
 ```js
 import Kineto from '@dong-gri/kineto';
@@ -51,6 +70,21 @@ Kineto.autoInit();
 
 ```js
 import Kineto from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/+esm';
+```
+
+### CDN (ESM, solo i moduli che usi)
+
+In produzione fissa una versione, ad esempio `@dong-gri/kineto@0.12`.
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.min.css">
+<script type="module">
+  import Kineto from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/modular/core.js';
+  import reveal from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/modular/modules/reveal.js';
+
+  Kineto.register('reveal', reveal);
+  Kineto.autoInit();
+</script>
 ```
 
 ## Avvio rapido

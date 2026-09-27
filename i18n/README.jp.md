@@ -16,7 +16,7 @@ HTML属性または JavaScript API で制御するWebインタラクションツ
 
 ---
 
-Kineto は、モーション・メディア・スクロール・ローダー・テキストにわたる53個のインタラクションモジュールを、`data-kt-*` 属性ひとつで付与するか、JavaScript API で細かく制御できるライブラリです。コアに必須の依存はなく、非対応ブラウザや低スペック端末では効果だけが無効化され、コンテンツはそのまま保たれます。
+Kineto は、モーション・メディア・スクロール・ローダー・テキストにわたる55個のインタラクションモジュールを、`data-kt-*` 属性ひとつで付与するか、JavaScript API で細かく制御できるライブラリです。コアに必須の依存はなく、非対応ブラウザや低スペック端末では効果だけが無効化され、コンテンツはそのまま保たれます。
 
 > AIコーディングツール（Cursor、Claude など）で作業する場合は [AIプロンプトガイド](../AI-PROMPT-GUIDE.md) を参照してください。モーションとインタラクションに Kineto のモジュールを優先的に使わせる、貼り付けるだけの指示文が入っています。
 
@@ -24,11 +24,30 @@ Kineto は、モーション・メディア・スクロール・ローダー・�
 
 ## インストール
 
-### npm
-
 ```bash
 npm install @dong-gri/kineto
 ```
+
+### 推奨：`core` ＋ 使うモジュールだけ
+
+コアを読み込み、ページで実際に使うモジュールだけを登録します。ほかのモジュールのコードはダウンロードされません。
+
+```js
+import Kineto from '@dong-gri/kineto/core';
+import reveal from '@dong-gri/kineto/modules/reveal';
+import counter from '@dong-gri/kineto/modules/counter';
+import '@dong-gri/kineto/style.css';
+
+Kineto.register('reveal', reveal);
+Kineto.register('counter', counter);
+Kineto.autoInit();
+```
+
+`core` は約 15 KB（gzip）です。モジュールごとの追加コストは [`docs/module-cost.md`](../docs/module-cost.md)（中央値 約 2 KB）、アプリ全体の計測は [`docs/consumer-bundle-size.md`](../docs/consumer-bundle-size.md) にあります。登録していないモジュールの `data-kt-*` 属性が動かないのは正常です。
+
+### いちばん手早く：フルバンドル
+
+デフォルトエントリはすべてのモジュールを一度に登録します。ランディングページやプロトタイプには最も簡単ですが、フルバンドル（約 169 KB gzip）になります。
 
 ```js
 import Kineto from '@dong-gri/kineto';
@@ -51,6 +70,21 @@ Kineto.autoInit();
 
 ```js
 import Kineto from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/+esm';
+```
+
+### CDN（ESM、使うモジュールだけ）
+
+本番では `@dong-gri/kineto@0.12` のようにバージョンを固定してください。
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/kineto.min.css">
+<script type="module">
+  import Kineto from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/modular/core.js';
+  import reveal from 'https://cdn.jsdelivr.net/npm/@dong-gri/kineto/dist/modular/modules/reveal.js';
+
+  Kineto.register('reveal', reveal);
+  Kineto.autoInit();
+</script>
 ```
 
 ## クイックスタート

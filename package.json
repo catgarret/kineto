@@ -198,7 +198,8 @@
     "test:variant-compare": "node scripts/generate-variant-catalog.mjs --check && node tests/variant-compare.mjs",
     "test:mcp": "node scripts/npm-ci-retry.mjs packages/kineto-mcp && npm --prefix packages/kineto-mcp test",
     "test:canvas-effect": "node tests/canvas-effect.mjs",
-    "test:scroll-velocity": "node tests/scroll-velocity.mjs"
+    "test:scroll-velocity": "node tests/scroll-velocity.mjs",
+    "docs:module-cost": "node scripts/module-cost.mjs --write"
   },
   "author": {
     "name": "dongri",

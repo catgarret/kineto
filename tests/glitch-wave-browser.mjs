@@ -24,7 +24,10 @@ const origin = `http://127.0.0.1:${server.address().port}`;
 let browser;
 
 try {
-  browser = await browserType.launch({ headless: true });
+  // KT_CHROME points at a local Chromium when the installed Playwright revision differs (AGENTS.md).
+  browser = await browserType.launch(browserType === chromium && process.env.KT_CHROME
+    ? { headless: true, executablePath: process.env.KT_CHROME }
+    : { headless: true });
   const page = await browser.newPage({ viewport: { width: 800, height: 600 }, reducedMotion: 'no-preference' });
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));

@@ -29,8 +29,24 @@ const openCard=async(title)=>{
   if(!opened) throw new Error(`settings trigger not found for card: ${title}`);
   await pg.waitForTimeout(900);
 };
-const sheetH=()=>pg.evaluate(()=>Math.round(document.querySelector('.kt-drawer-sheet').getBoundingClientRect().height));
-const setView=async(v)=>{await pg.evaluate((view)=>document.querySelector(`.kt-drawer-sheet .kt-vt[data-view="${view}"]`)?.click(),v);await pg.waitForTimeout(600);};
+// Wait until the sheet's height holds for several frames instead of sleeping a
+// fixed time: the height animates, and on a loaded 2-core runner 600ms was not
+// always enough (settings 396 vs code 396 — the code view had not grown yet).
+const settleSheet=()=>pg.waitForFunction(()=>{
+  const sheet=document.querySelector('.kt-drawer-sheet');
+  if(!sheet) return false;
+  const h=Math.round(sheet.getBoundingClientRect().height);
+  const st=window.__ktSheetSettle||(window.__ktSheetSettle={h:-1,n:0});
+  if(h===st.h) st.n+=1; else { st.h=h; st.n=0; }
+  if(st.n>=6){ window.__ktSheetSettle=null; return true; }
+  return false;
+},null,{polling:'raf',timeout:5000});
+const sheetH=async()=>{await settleSheet();return pg.evaluate(()=>Math.round(document.querySelector('.kt-drawer-sheet').getBoundingClientRect().height));};
+const setView=async(v)=>{
+  await pg.evaluate((view)=>document.querySelector(`.kt-drawer-sheet .kt-vt[data-view="${view}"]`)?.click(),v);
+  await pg.waitForFunction((view)=>document.querySelector(`.kt-drawer-sheet .kt-vt[data-view="${view}"]`)?.getAttribute('aria-selected')==='true',v,{timeout:5000});
+  await settleSheet();
+};
 
 await openDrawer('mod-toast');
 const hSettings=await sheetH(); await setView('code'); const hCode=await sheetH(); await setView('settings');
