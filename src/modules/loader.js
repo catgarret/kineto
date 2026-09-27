@@ -1,4 +1,4 @@
-import { clamp, createProgressOutputs } from '../utils.js';
+import { clamp, createProgressOutputs, selectAll } from '../utils.js';
 
 // Reference-counted global scroll lock. Overlapping loaders used to each save
 // and restore <html>/<body> overflow independently, so a second loader would
@@ -160,14 +160,92 @@ function createProgressUI(el, type, opts) {
   return { root, fillEl, render, setState, destroy() {} };
 }
 
+// Page callbacks (onStart, onStateChange, onProgress, a renderUI's render …)
+// run INSIDE the loader's own steps: create(), a frame, the exit timer. One that
+// threw used to abort that step half-way — create() failed after taking the
+// page's scroll lock (nobody could release it) with a frame loop and a `load`
+// listener still attached, and a throw in the exit timer left `finished`
+// pending forever. The error is reported and the loader carries on.
+function callSafely(kineto, name, callback, ...args) {
+  if (typeof callback !== 'function') return undefined;
+  try {
+    return callback(...args);
+  } catch (error) {
+    console.error(`[Kineto/loader] ${name} failed:`, error);
+    try {
+      kineto?.diagnostics?.emit?.({ code: kineto.diagnosticCodes.LIFECYCLE_FAILED, module: 'loader', phase: 'runtime', recoverable: true, cause: error, detail: name });
+    } catch (_error) { /* diagnostics are best effort */ }
+    return undefined;
+  }
+}
+
+// source:'resources' — deciding whether a page resource has ALREADY loaded.
+// Only <img> has a `complete` flag. <script> and <link> have no ready state at
+// all (`readyState >= 2` was undefined >= 2, always false) and their `load`
+// event has normally fired before the loader exists, so they waited forever.
+// <video>/<audio> never fire `load` (their event is `loadeddata`), and a
+// lazy image below the fold never loads while the loader locks scrolling.
+const DEFAULT_RESOURCE_SELECTOR = 'img[src],img[data-src],video[src],source[src],link[rel="stylesheet"],script[src]';
+// HTMLMediaElement.HAVE_CURRENT_DATA / NETWORK_NO_SOURCE (constants on the
+// element's prototype, spelled out so the check also runs where they're missing).
+const MEDIA_HAVE_CURRENT_DATA = 2;
+const MEDIA_NETWORK_NO_SOURCE = 3;
+// The longest the loader waits for resources that never report: a video the
+// browser decides not to preload, or a load event that fired unseen. After
+// this the loader completes instead of holding the page behind it for good.
+const RESOURCE_TIMEOUT_MS = 10000;
+
+const isMedia = (node) => node?.tagName === 'VIDEO' || node?.tagName === 'AUDIO';
+const pageLoaded = () => document.readyState === 'complete';
+// A finished request leaves a Resource Timing entry, even when its element's
+// `load` event fired before anyone listened.
+function wasFetched(url) {
+  if (!url || typeof performance === 'undefined' || typeof performance.getEntriesByName !== 'function') return false;
+  try { return performance.getEntriesByName(url, 'resource').length > 0; } catch (_error) { return false; }
+}
+
+function resourceLoaded(node) {
+  // Nothing to listen to (not an element): nothing to wait for.
+  if (typeof node?.addEventListener !== 'function') return true;
+  if (node.tagName === 'IMG') return node.complete || node.loading === 'lazy';
+  if (isMedia(node)) {
+    return node.readyState >= MEDIA_HAVE_CURRENT_DATA || node.preload === 'none'
+      || Boolean(node.error) || node.networkState === MEDIA_NETWORK_NO_SOURCE;
+  }
+  if (node.tagName === 'LINK') return Boolean(node.sheet) || pageLoaded() || wasFetched(node.href);
+  if (node.tagName === 'SCRIPT') return pageLoaded() || wasFetched(node.src);
+  return typeof node.readyState === 'number' && node.readyState >= 2;
+}
+
+// Listen for one resource to finish (or fail); returns the listener remover.
+// `error` is captured because it does not bubble: a failing <source> reports
+// on itself, not on its <video>.
+function watchResource(node, onDone) {
+  const loadEvent = isMedia(node) ? 'loadeddata' : 'load';
+  const stop = () => {
+    node.removeEventListener(loadEvent, done);
+    node.removeEventListener('error', done, true);
+  };
+  const done = () => { stop(); onDone(); };
+  node.addEventListener(loadEvent, done);
+  node.addEventListener('error', done, true);
+  return stop;
+}
+
 function collectPageResources(opts) {
-  if (Array.isArray(opts.resources)) return opts.resources;
-  const selector = opts.resourceSelector || 'img[src],img[data-src],video[src],source[src],link[rel="stylesheet"],script[src]';
-  return Array.from(document.querySelectorAll(selector));
+  const found = Array.isArray(opts.resources) ? opts.resources : selectAll(opts.resourceSelector || DEFAULT_RESOURCE_SELECTOR);
+  // A <source> loads through its <video>/<audio>, which is counted once in its
+  // place; a <picture> source is already counted through its <img>.
+  const resources = new Set();
+  found.forEach((node) => {
+    if (node?.tagName !== 'SOURCE') resources.add(node);
+    else if (isMedia(node.parentElement)) resources.add(node.parentElement);
+  });
+  return [...resources];
 }
 
 export default {
-  create(el, opts = {}) {
+  create(el, opts = {}, kineto = null) {
     const requestedType = opts.type || opts.preset || 'bar';
     const type = ['slot', 'circular', 'bar'].includes(requestedType) ? requestedType : 'bar';
     const source = opts.source || opts.progressSource || 'window';
@@ -200,6 +278,7 @@ export default {
     let paused = false;
     let rafId = null;
     let loadHandler = null;
+    let revealPlayer = null;
     let performanceObserver = null;
     let state = 'idle';
     let outcome = 'completed';
@@ -232,14 +311,16 @@ export default {
         }));
       } catch (_error) { /* older browser */ }
     };
+    // Every page-supplied function goes through here (see callSafely).
+    const call = (name, callback, ...args) => callSafely(kineto, name, callback, ...args);
     const setState = (next, detail = {}) => {
       if (state === next) return;
       const previous = state;
       state = next;
       el.dataset.ktLoaderState = next;
-      progressUI.setState?.(next);
+      call('renderUI setState', progressUI.setState, next);
       progressOutputs.update(displayed, next);
-      opts.onStateChange?.(next, previous, el, detail);
+      call('onStateChange', opts.onStateChange, next, previous, el, detail);
       emit('statechange', { previous, ...detail });
     };
     const settle = (status, detail = {}) => {
@@ -256,11 +337,11 @@ export default {
     el.setAttribute('aria-valuemax', '100');
     acquireLock();
     setState('running');
-    opts.onStart?.(el);
+    call('onStart', opts.onStart, el);
     emit('start');
 
     const render = () => {
-      progressUI.render(displayed);
+      call('renderUI render', progressUI.render, displayed);
       el.setAttribute('aria-valuenow', String(Math.round(displayed)));
       // Headless API: stream progress to CSS variables so a fully custom loader
       // can be built with `renderUI` OR pure CSS (no JS): --kt-loader-progress
@@ -268,7 +349,7 @@ export default {
       el.style.setProperty('--kt-loader-progress', (displayed / 100).toFixed(4));
       el.style.setProperty('--kt-loader-percent', String(Math.round(displayed)));
       progressOutputs.update(displayed, state);
-      opts.onProgress?.(displayed, el);
+      call('onProgress', opts.onProgress, displayed, el);
       emit('progress', { value: displayed });
     };
     const animate = () => {
@@ -286,6 +367,22 @@ export default {
     const wake = () => { if (!destroyed && rafId == null && displayed !== progress) rafId = requestAnimationFrame(animate); };
     rafId = requestAnimationFrame(animate);
 
+    // The end of every exit: hide the overlay, then report. The revealEffect
+    // exit used to run its own shorter copy of this (under a name that shadowed
+    // `settle`), so `finished` never resolved and onHide / kt-loader-complete /
+    // kt-loader-hide never fired for it.
+    const finishExit = () => {
+      el.style.display = 'none';
+      el.hidden = true;
+      el.setAttribute('aria-busy', 'false');
+      releaseLock();
+      setState(outcome);
+      call('onComplete', opts.onComplete, el);
+      call('onHide', opts.onHide, el, outcome);
+      emit('complete', { outcome });
+      emit('hide', { reason: outcome });
+      settle(outcome);
+    };
     const exit = () => {
       if (destroyed) return;
       // The steady-state fill animation is done; stop its rAF so onProgress
@@ -311,7 +408,7 @@ export default {
       // Spawning a second overlay on top was wrong: the loader you were looking
       // at just vanished and an unrelated cover animated over the page. Here the
       // loader IS the cover, so it is the thing that gets wiped away.
-      if (opts.revealEffect) {
+      if (opts.revealEffect && typeof el.animate === 'function') {
         const ease = 'cubic-bezier(.165,.84,.44,1)';
         const shift = { up: '0,-100%', down: '0,100%', left: '-100%,0', right: '100%,0' }[exitDirection] || '0,-100%';
         const insets = { up: '0 0 100% 0', down: '100% 0 0 0', left: '0 100% 0 0', right: '0 0 0 100%' };
@@ -327,20 +424,21 @@ export default {
         };
         const keyframes = frames[opts.revealEffect] || frames.wipe;
         el.style.willChange = 'clip-path, transform, opacity';
-        const player = el.animate(keyframes, {
+        // Kept so destroy() can cancel it: with fill:'forwards' the finished
+        // wipe keeps the element clipped away even after its style is restored.
+        revealPlayer = el.animate(keyframes, {
           duration: Math.max(120, duration * 1000),
           easing: ease,
           fill: 'forwards'
         });
-        const settle = () => {
-          el.style.display = 'none';
-          el.hidden = true;
-          el.setAttribute('aria-busy', 'false');
+        // A destroy() mid-wipe cancels the player, whose `finished` then
+        // rejects: nothing may be written to the restored element after that.
+        const finishReveal = () => {
+          if (destroyed) return;
           el.style.removeProperty('will-change');
-          setState(outcome);
-          opts.onComplete?.(el);
+          finishExit();
         };
-        player.finished.then(settle).catch(settle);
+        revealPlayer.finished.then(finishReveal, finishReveal);
         return;
       }
       if (exitEffect === 'wipe' || exitEffect === 'mask') {
@@ -361,18 +459,7 @@ export default {
         el.style.clipPath = `inset(${insets[exitDirection]})`;
         el.style.webkitClipPath = `inset(${insets[exitDirection]})`;
       } else el.style.opacity = '0';
-      later(() => {
-        el.style.display = 'none';
-        el.hidden = true;
-        el.setAttribute('aria-busy', 'false');
-        releaseLock();
-        setState(outcome);
-        opts.onComplete?.(el);
-        opts.onHide?.(el, outcome);
-        emit('complete', { outcome });
-        emit('hide', { reason: outcome });
-        settle(outcome);
-      }, duration * 1000 + 20);
+      later(finishExit, duration * 1000 + 20);
     };
     const complete = (status = 'completed') => {
       if (completed || destroyed) return;
@@ -405,7 +492,7 @@ export default {
       el.setAttribute('aria-busy', 'true');
       acquireLock();
       setState(paused ? 'paused' : 'running');
-      opts.onShow?.(el);
+      call('onShow', opts.onShow, el);
       emit('show');
       return true;
     };
@@ -416,7 +503,7 @@ export default {
       el.setAttribute('aria-busy', 'false');
       releaseLock();
       setState('hidden', { reason });
-      opts.onHide?.(el, reason);
+      call('onHide', opts.onHide, el, reason);
       emit('hide', { reason });
       return true;
     };
@@ -431,8 +518,8 @@ export default {
       el.setAttribute('aria-busy', 'false');
       releaseLock();
       setState('cancelled', { reason });
-      opts.onCancel?.(reason, el);
-      opts.onHide?.(el, reason);
+      call('onCancel', opts.onCancel, reason, el);
+      call('onHide', opts.onHide, el, reason);
       emit('cancel', { reason });
       emit('hide', { reason });
       settle('cancelled', { reason });
@@ -440,7 +527,7 @@ export default {
     };
     const fail = (error) => {
       if (destroyed || completed) return false;
-      opts.onError?.(error, el);
+      call('onError', opts.onError, error, el);
       setState('error', { error });
       emit('error', { error });
       if (opts.completeOnError !== false) complete('error');
@@ -499,24 +586,26 @@ export default {
         requestAnimationFrame(manualTick);
       }
     } else if (source === 'promise' && opts.promise) {
-      trackPromise(opts.promise);
+      // trackPromise() re-throws for the caller that awaits it; nobody awaits
+      // this one, so without a handler a rejected `promise` option surfaced as
+      // an unhandledrejection. The failure is already reported via fail().
+      trackPromise(opts.promise)?.catch?.(() => {});
     } else if (source === 'fetch' && (opts.url || opts.fetch)) {
       trackFetch(opts.url || opts.fetch, opts.fetchOptions).catch((error) => { fail(error); });
     } else if (source === 'resources') {
       const resources = collectPageResources(opts);
       if (!resources.length) complete();
       else {
-        let finished = 0;
-        const update = () => { finished += 1; setProgress(finished / resources.length * 100); };
+        let loadedCount = 0;
+        const countLoaded = () => { loadedCount += 1; setProgress(loadedCount / resources.length * 100); };
+        const waiting = new Map(); // resource → listener remover
+        const stopWaiting = () => { waiting.forEach((stop) => stop()); waiting.clear(); };
         resources.forEach((resource) => {
-          const ready = resource.tagName === 'IMG' ? resource.complete : resource.readyState >= 2;
-          if (ready) update();
-          else {
-            resource.addEventListener('load', update, { once: true });
-            resource.addEventListener('error', update, { once: true });
-            cleanupFunctions.push(() => { resource.removeEventListener('load', update); resource.removeEventListener('error', update); });
-          }
+          if (resourceLoaded(resource)) countLoaded();
+          else waiting.set(resource, watchResource(resource, () => { waiting.delete(resource); countLoaded(); }));
         });
+        cleanupFunctions.push(stopWaiting);
+        if (waiting.size) later(() => { stopWaiting(); setProgress(100); }, RESOURCE_TIMEOUT_MS);
       }
     } else {
       const existing = performance.getEntriesByType?.('resource')?.length || 0;
@@ -531,7 +620,10 @@ export default {
       }
       if (document.readyState === 'complete') complete();
       else {
-        loadHandler = complete;
+        // Not `loadHandler = complete`: the listener receives the load Event,
+        // which then became the outcome (state "[object Event]", `finished`
+        // resolving { status: Event }).
+        loadHandler = () => complete();
         window.addEventListener('load', loadHandler, { once: true });
       }
     }
@@ -572,6 +664,9 @@ export default {
         timeouts.clear();
         if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
         if (loadHandler) window.removeEventListener('load', loadHandler);
+        // A forwards-filled reveal wipe would keep the restored element clipped.
+        try { revealPlayer?.cancel(); } catch (_error) { /* already gone */ }
+        revealPlayer = null;
         performanceObserver?.disconnect();
         cleanupFunctions.forEach((cleanup) => cleanup());
         // Release the shared scroll lock exactly once (no-op if exit already
@@ -602,8 +697,8 @@ export default {
   },
   // Low-perf devices skip the loader entirely (same as reduced) so the page
   // isn't held behind an animation it can't render smoothly (audit D-2 / D-6).
-  fallback(el, opts = {}) { return this.reduced(el, opts); },
-  reduced(el, opts = {}) {
+  fallback(el, opts = {}, kineto = null) { return this.reduced(el, opts, kineto); },
+  reduced(el, opts = {}, kineto = null) {
     const original = el.style.display;
     el.style.display = 'none';
     // Even when the loader is skipped, onComplete must still fire exactly once
@@ -616,8 +711,8 @@ export default {
     const id = setTimeout(() => {
       done = true;
       state = 'completed';
-      opts.onComplete?.(el);
-      opts.onStateChange?.('completed', 'completing', el);
+      callSafely(kineto, 'onComplete', opts.onComplete, el);
+      callSafely(kineto, 'onStateChange', opts.onStateChange, 'completed', 'completing', el);
       resolveFinished?.({ status: 'completed', progress: 100, el });
     }, 0);
     return {
@@ -637,7 +732,7 @@ export default {
         clearTimeout(id);
         done = true;
         state = 'cancelled';
-        opts.onCancel?.(reason, el);
+        callSafely(kineto, 'onCancel', opts.onCancel, reason, el);
         resolveFinished?.({ status: 'cancelled', progress: 100, el, reason });
         return true;
       },
@@ -646,7 +741,7 @@ export default {
         clearTimeout(id);
         done = true;
         state = 'error';
-        opts.onError?.(error, el);
+        callSafely(kineto, 'onError', opts.onError, error, el);
         resolveFinished?.({ status: 'error', progress: 100, el, error });
         return true;
       },
