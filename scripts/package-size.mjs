@@ -220,7 +220,9 @@ const BUDGET = {
   // headroom, set the ceiling to the new measurement + ~1% and say why here.
   // 2026-09-27 (entry points, 0.13): the seven new files listed under `files`
   // measure 649.5 KB packed locally; + 1.5 KB runner margin + ~1% → 657.
-  packedKb: 657,
+  // 2026-09-27 (springs everywhere + Reveal split — requested features, see
+  // scripts/bundle-size.mjs): 671.9 KB packed on the same 88 files → 680.
+  packedKb: 680,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -267,7 +269,8 @@ const BUDGET = {
   // on-demand entry), types/default.d.ts / all.d.ts / auto.d.ts and
   // types/index.d.cts (CommonJS declarations for `require`). Measures 649.5 KB
   // packed / 2091.6 KB unpacked on 88 files; unpacked keeps ~1% headroom → 2112.
-  unpackedKb: 2112,
+  // 2026-09-27 (springs + split): 2156.1 KB unpacked, same 88 files → 2178.
+  unpackedKb: 2178,
   files: 88
 };
 

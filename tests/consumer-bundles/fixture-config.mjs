@@ -54,17 +54,23 @@ export const consumerFixtures = [
   // counter/fullpage teardown): Vite measures 168.8 KB full, 172.9 KB React,
   // 174.0 KB Vue; Rolldown 168.5 / 173.1 / 174.7 KB. Same rule: each product
   // ceiling moves to the next KB over its larger measurement (169 / 174 / 175).
-  { name: 'full', entry: 'full', budget: 170, variance: { vite: 4, rolldown: 4 } },
+  // 2026-09-27 (springs everywhere + Reveal split — requested features, see
+  // scripts/bundle-size.mjs): Vite 174.7 full / 174.4 all / 178.7 React /
+  // 179.9 Vue, Rolldown 175.1 / 174.1 / 179.1 / 180.6 KB → 176 / 175 / 180 / 181.
+  // The easing subsystem (spring parser, settle solver, linear() baker, Apple
+  // presets) sits under the core's resolver, so every entry that animates pays
+  // ~2.7 KB gzip once: auto 22.5 KB (Vite) → 23, core-reveal 22.0, core-states 16.4.
+  { name: 'full', entry: 'full', budget: 176, variance: { vite: 4, rolldown: 4 } },
   // 2026-09-27 (entry points, 0.13): `@dong-gri/kineto/all` is the file the
   // default entry wraps, so it carries the same ceiling. The default entry adds
   // the notice wrapper (+0.3 KB, default only); the core gained only the
   // on-demand hook in scan() (+0.1 KB in every entry). With both, Rolldown
   // measures full 169.6 KB: full and all move to the next KB (170) by the rule.
-  { name: 'all', entry: 'all', budget: 170, variance: { vite: 4, rolldown: 4 } },
+  { name: 'all', entry: 'all', budget: 175, variance: { vite: 4, rolldown: 4 } },
   // The on-demand entry: the budget is the FIRST download (core + the loader
   // table + the Canvas Effect registry; Vite 19.5 KB in 4 files, Rolldown
   // 18.0 KB); every module is its own chunk (onDemandEntries below).
-  { name: 'auto', entry: 'auto', budget: 22, variance: { rolldown: 1 } },
+  { name: 'auto', entry: 'auto', budget: 23, variance: { rolldown: 1 } },
   { name: 'core-reveal', entry: 'core-reveal', budget: 30, variance: { rolldown: 1 } },
   { name: 'core-three', entry: 'core-three', budget: 65, variance: { rolldown: 1 } },
   { name: 'core-states', entry: 'core-states', budget: 35 },
@@ -79,7 +85,7 @@ export const consumerFixtures = [
   // 2026-09-20 (effect quality): the four effect rewrites measure 155.4 KiB gzip
   // in the Vite React entry. Round only this measured cost; variance unchanged.
   // See the squircle note above: Vite measures 157.5 KB in the React entry.
-  { name: 'react-adapter', entry: 'react', budget: 174, variance: { vite: 1, rolldown: 1 } },
+  { name: 'react-adapter', entry: 'react', budget: 180, variance: { vite: 1, rolldown: 1 } },
   // 2026-09-18: the Presence status subscription that keeps both adapters in
   // sync with a propagating parent measures 144.1 KB in the Vite Vue entry
   // (React 143.x stays inside its ceiling). Round the Vue product ceiling by
@@ -95,7 +101,7 @@ export const consumerFixtures = [
   // Vue measures 163.2 KiB gzip in Vite (163.8 in Rolldown, inside its own
   // variance), while full at 158.2 and React at 162.4 stay inside theirs.
   // Round only the ceiling that actually moved.
-  { name: 'vue-adapter', entry: 'vue', budget: 175, variance: { vite: 1, rolldown: 2 } }
+  { name: 'vue-adapter', entry: 'vue', budget: 181, variance: { vite: 1, rolldown: 2 } }
 ];
 
 export const treeShakenEntries = [

@@ -1,6 +1,6 @@
 import {
   G,
-  gsapEaseName,
+  resolveMotion,
   hangulFrames,
   normalizeTextLineBreaks,
   observeOnce,
@@ -138,6 +138,7 @@ export default {
     };
 
     const renderBounce = () => {
+      const popMotion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: { gsap: 'elastic.out(1, 0.4)', css: 'ease' }, duration: 0.8 });
       const sink = wordSink(el);
       const spans = segmentText(text).map((char) => {
         if (/^\s$/.test(char)) {
@@ -153,15 +154,17 @@ export default {
           y: 0,
           scaleY: 1,
           opacity: 1,
-          duration: Number(opts.duration ?? 0.8),
+          duration: popMotion.seconds,
           stagger: Number(opts.stagger ?? 0.04),
-          ease: opts.ease ? gsapEaseName(opts.ease) : 'elastic.out(1, 0.4)',
+          ease: popMotion.gsap,
           delay,
           onComplete: complete
         }));
       } else {
         spans.forEach((span, index) => later(() => {
-          span.style.transition = 'opacity .4s var(--kt-ease-ui, ease), transform .4s var(--kt-ease-ui, ease)';
+          span.style.transition = popMotion.authored
+            ? `opacity ${popMotion.seconds}s ${popMotion.css}, transform ${popMotion.seconds}s ${popMotion.css}`
+            : 'opacity .4s var(--kt-ease-ui, ease), transform .4s var(--kt-ease-ui, ease)';
           span.style.opacity = '1';
           span.style.transform = 'none';
           if (index === spans.length - 1) complete();
@@ -170,6 +173,7 @@ export default {
     };
 
     const renderStream = () => {
+      const streamMotion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: { gsap: 'power3.out', css: 'ease' }, duration: 0.6 });
       let tokens;
       if (mode === 'word') tokens = text.split(/(\n|[^\S\n]+)/);
       else if (mode === 'line') tokens = text.split(/(\n)/);
@@ -194,15 +198,17 @@ export default {
         animations.push(gsap.to(spans, {
           y: '0%',
           opacity: 1,
-          duration: Number(opts.duration ?? 0.6),
+          duration: streamMotion.seconds,
           stagger: Number(opts.stagger ?? 0.05),
-          ease: opts.ease ? gsapEaseName(opts.ease) : 'power3.out',
+          ease: streamMotion.gsap,
           delay,
           onComplete: complete
         }));
       } else {
         spans.forEach((span, index) => later(() => {
-          span.style.transition = 'opacity .5s var(--kt-ease-ui, ease), transform .5s var(--kt-ease-ui, ease)';
+          span.style.transition = streamMotion.authored
+            ? `opacity ${streamMotion.seconds}s ${streamMotion.css}, transform ${streamMotion.seconds}s ${streamMotion.css}`
+            : 'opacity .5s var(--kt-ease-ui, ease), transform .5s var(--kt-ease-ui, ease)';
           span.style.opacity = '1';
           span.style.transform = 'translateY(0)';
           if (index === spans.length - 1) complete();

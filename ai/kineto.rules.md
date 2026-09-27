@@ -133,7 +133,7 @@ The old markup keeps working until next major and emits a recoverable `KT_DEPREC
 - `data-kt-page-transition` — variants: same-origin (JS key `effect`)
 - `data-kt-parallax` — variants: x, y (JS key `preset`)
 - `data-kt-progress` — variants: page:scaleX, page:width, element:scaleX, element:width (JS key `preset`)
-- `data-kt-reveal` — variants: fade, fade-up, fade-down, fade-left, fade-right, slide-up, slide-down, slide-left, slide-right, zoom-in, zoom-out, blur, rise, soft, flip-x, flip-y, rotate, mask, wipe, class, clock, swing, skew (JS key `preset`)
+- `data-kt-reveal` — variants: fade, fade-up, fade-down, fade-left, fade-right, slide-up, slide-down, slide-left, slide-right, zoom-in, zoom-out, blur, rise, soft, flip-x, flip-y, rotate, mask, wipe, class, clock, swing, skew, split (JS key `preset`)
 - `data-kt-radial` — variants: bottom, top, left, right (JS key `preset`)
 - `data-kt-ripple` — variants: material (JS key `preset`)
 - `data-kt-scroll-sequence` — variants: cover, contain (JS key `preset`)

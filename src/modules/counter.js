@@ -1,4 +1,4 @@
-import { formatNumber, G, observeOnce, snapshotAttributes, textOption } from '../utils.js';
+import { formatNumber, G, gsapEaseName, observeOnce, snapshotAttributes, textOption } from '../utils.js';
 
 function normalizedFormat(opts) {
   if (opts.format) return opts.format;
@@ -95,6 +95,10 @@ function buildScrollTrigger(el, opts) {
   };
 }
 
+// Counting tweens run on GSAP: `ease` accepts every Kineto token, and springs
+// become an exact GSAP ease function (the raw value used to reach GSAP as-is).
+const counterEase = (opts, fallback) => (opts.ease != null && opts.ease !== '' ? gsapEaseName(opts.ease) : fallback);
+
 export default {
   // Kineto.config({ defer: true }) may create this only when the element nears
   // the viewport (src/deferCreate.js): it only matters where it can be seen.
@@ -149,7 +153,7 @@ export default {
           value: to,
           duration,
           delay: Number(opts.delay ?? 0),
-          ease: opts.ease || 'power2.out',
+          ease: counterEase(opts, 'power2.out'),
           onUpdate: render,
           onComplete: () => opts.onComplete?.(el),
           scrollTrigger
@@ -187,7 +191,7 @@ export default {
           timeline.to(state, {
             value: total,
             duration: Math.max(0.05, duration + index * stagger),
-            ease: opts.ease || 'none',
+            ease: counterEase(opts, 'none'),
             onUpdate: () => {
               const digit = Math.floor(state.value) % 10;
               if (digit === previousDigit) return;
@@ -240,7 +244,7 @@ export default {
             opacity: 1,
             scale: 1,
             duration: popDuration,
-            ease: opts.ease || 'back.out(2.2)',
+            ease: counterEase(opts, 'back.out(2.2)'),
             clearProps: 'transform,opacity'
           }, index * stagger);
         });
@@ -788,7 +792,7 @@ export default {
           timeline.fromTo(reel, { y: fromY }, {
             y: toY,
             duration: duration + index * Number(opts.stagger ?? 0.1),
-            ease: opts.ease || 'power3.inOut'
+            ease: counterEase(opts, 'power3.inOut')
           }, 0);
         });
         addAnimation(timeline);

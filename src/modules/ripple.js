@@ -1,4 +1,4 @@
-import { snapshotInlineStyles } from '../utils.js';
+import { resolveMotion, snapshotInlineStyles } from '../utils.js';
 
 export default {
   // Kineto.config({ defer: true }) may create this only when the element nears
@@ -14,7 +14,9 @@ export default {
     const ripples = new Set();
     const color = opts.color || 'currentColor';
     const opacity = Math.max(0, Math.min(1, Number(opts.opacity ?? 0.22)));
-    const duration = Math.max(80, Number(opts.duration ?? 520));
+    // `easing` (this module's option name) takes any token or spring; ms unit.
+    const motion = resolveMotion({ easing: opts.easing, duration: opts.duration }, { easeKey: 'easing', ease: 'cubic-bezier(.2,.7,.2,1)', duration: 520, durationUnit: 'ms', springable: false });
+    const duration = Math.max(80, motion.ms);
     const scale = Math.max(1, Number(opts.scale ?? 1));
 
     const onPointerDown = (event) => {
@@ -35,7 +37,7 @@ export default {
       const animation = ripple.animate([
         { transform: 'translate(-50%,-50%) scale(0)', opacity },
         { transform: 'translate(-50%,-50%) scale(1)', opacity: 0 }
-      ], { duration, easing: opts.easing || 'cubic-bezier(.2,.7,.2,1)', fill: 'forwards' });
+      ], { duration, easing: motion.css, fill: 'forwards' });
       animation.finished.catch(() => {}).finally(() => {
         ripples.delete(ripple);
         ripple.remove();

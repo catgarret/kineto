@@ -1,4 +1,4 @@
-import { clamp, env, snapshotAttributes } from '../utils.js';
+import { clamp, env, resolveMotion, snapshotAttributes } from '../utils.js';
 
 // Bottom sheet — a panel that slides up from the bottom edge with an optional
 // backdrop and drag-to-dismiss handle. Put `data-kt-bottom-sheet` on the panel;
@@ -14,6 +14,10 @@ export default {
       if (EventCtor) el.dispatchEvent(new EventCtor(name, { detail }));
     };
     const reduce = env().reducedMotion;
+    // Opening follows `ease` (any token; a spring gives the sheet its natural
+    // settle, like a native sheet). Closing keeps the quick accelerate-out.
+    const motion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: 'cubic-bezier(.22,.8,.3,1)', duration: 0.34 });
+    const openSeconds = Math.max(0.05, motion.seconds);
     const duration = Math.max(0.05, Number(opts.duration ?? 0.34));
     const useBackdrop = opts.backdrop !== false;
     const backdropOpacity = clamp(Number(opts.backdropOpacity ?? 0.5), 0, 1);
@@ -66,11 +70,11 @@ export default {
       if (open) return;
       open = true;
       lastFocus = document.activeElement;
-      if (backdrop) { document.body.appendChild(backdrop); backdrop.hidden = false; if (!reduce) backdrop.animate([{ opacity: 0 }, { opacity: backdropOpacity }], { duration: duration * 1000, easing: 'ease' }); }
+      if (backdrop) { document.body.appendChild(backdrop); backdrop.hidden = false; if (!reduce) backdrop.animate([{ opacity: 0 }, { opacity: backdropOpacity }], { duration: Math.min(openSeconds, duration * 1.6) * 1000, easing: 'ease' }); }
       el.hidden = false;
       el.classList.add('kt-open');
       if (anim) anim.cancel();
-      if (!reduce) anim = el.animate([{ transform: 'translateY(100%)' }, { transform: 'translateY(0)' }], { duration: duration * 1000, easing: 'cubic-bezier(.22,.8,.3,1)' });
+      if (!reduce) anim = el.animate([{ transform: 'translateY(100%)' }, { transform: 'translateY(0)' }], { duration: openSeconds * 1000, easing: motion.css });
       (focusables()[0] || el).focus?.();
       document.addEventListener('keydown', onKey, true);
     };

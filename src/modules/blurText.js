@@ -1,4 +1,4 @@
-import { G, gsapEaseName, observeOnce, renderTextLineBreaks, segmentText, snapshotAttributes, snapshotChildNodes, snapshotInlineStyles, ST, textWithLineBreaks, wordSink } from '../utils.js';
+import { G, observeOnce, renderTextLineBreaks, resolveMotion, segmentText, snapshotAttributes, snapshotChildNodes, snapshotInlineStyles, ST, textWithLineBreaks, wordSink } from '../utils.js';
 
 export default {
   // Kineto.config({ defer: true }) may create this only when the element nears
@@ -31,7 +31,10 @@ export default {
       return span;
     }).filter(Boolean);
 
-    const duration = opts.duration ?? 0.6;
+    // Blur/opacity are not spring material, so page-wide springs skip this module;
+    // an element can still ask for any curve (or spring) with `ease`.
+    const motion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: { gsap: 'power2.out', css: 'ease' }, duration: 0.6, springable: false });
+    const duration = motion.seconds;
     const stagger = opts.stagger ?? 0.03;
     let observer = null;
     let tween = null;
@@ -68,7 +71,7 @@ export default {
       }
       chars.forEach((char, index) => {
         schedule(() => {
-          char.style.transition = `filter ${duration}s ease, opacity ${duration}s ease`;
+          char.style.transition = `filter ${duration}s ${motion.css}, opacity ${duration}s ${motion.css}`;
           char.style.filter = 'blur(0)';
           char.style.opacity = '1';
           if (index === chars.length - 1) { releaseWillChange(); opts.onComplete?.(); }
@@ -82,7 +85,7 @@ export default {
         opacity: 1,
         duration,
         stagger,
-        ease: opts.ease ? gsapEaseName(opts.ease) : 'power2.out',
+        ease: motion.gsap,
         onComplete: () => { releaseWillChange(); opts.onComplete?.(); },
         scrollTrigger: {
           trigger: el,

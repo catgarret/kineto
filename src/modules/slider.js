@@ -1,4 +1,5 @@
-import { clamp, cssString, env, frameEase, labeller, latestEntry, lerp, selectAll, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
+import { clamp, cssString, env, frameEase, labeller, latestEntry, lerp, resolveMotion, selectAll, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
+import { parseSpring } from '../easings.js';
 
 // Do not rewind presentation owned by a composing module or application.
 const snapshotPresentation = (el, properties, classes = [], attributes = []) => {
@@ -46,6 +47,43 @@ const preventImageDrag = (root, items) => {
  * never fight each other or double-run. Coverflow renders centered 3D slides
  * from the same value.
  */
+// Slider physics, in priority order:
+//   1. `spring: true` with the historical stiffness/damping/mass options;
+//   2. a spring easing token in `ease` ('spring-snappy', 'spring(0.5s, 0.3)',
+//      'spring(170, 24)') — the same vocabulary every other module speaks;
+//   3. the page-wide Kineto.config({ spring | ease }) unless `spring: false`.
+// Returns null for the classic frame-lerp / duration engines.
+function sliderPhysics(opts) {
+  if (opts.spring === true) {
+    return {
+      stiffness: clamp(Number(opts.stiffness ?? 170), 20, 400),
+      damping: clamp(Number(opts.damping ?? 24), 1, 80),
+      mass: clamp(Number(opts.mass ?? 1), 0.1, 4)
+    };
+  }
+  const motion = resolveMotion({ ease: opts.ease }, { ease: 'ease', springable: opts.spring !== false });
+  const physics = motion.spring ? parseSpring(motion.spec) : null;
+  if (!physics) return null;
+  return {
+    stiffness: clamp(physics.stiffness, 20, 2000),
+    damping: clamp(physics.damping, 1, 400),
+    mass: clamp(physics.mass, 0.1, 4)
+  };
+}
+
+// One semi-implicit Euler step, split into ≤4 ms substeps so stiff springs
+// (Apple's interactive preset is ~1750) stay stable after a 64 ms frame gap.
+function stepSpring(position, velocity, target, physics, dtMs) {
+  const steps = Math.max(1, Math.ceil(dtMs / 4));
+  const h = dtMs / 1000 / steps;
+  for (let i = 0; i < steps; i += 1) {
+    const acceleration = ((target - position) * physics.stiffness - velocity * physics.damping) / physics.mass;
+    velocity += acceleration * h;
+    position += velocity * h;
+  }
+  return [position, velocity];
+}
+
 export default {
   create(el, opts = {}) {
     // 슬라이더가 스스로 만드는 컨트롤의 이름(점·재생/일시정지)과 ARIA role 설명.
@@ -94,10 +132,11 @@ export default {
       // This makes the two slider layouts feel consistent without changing
       // existing radial timing for consumers that do not opt in.
       const radialSmoothing = opts.smoothing == null ? 0 : clamp(opts.smoothing, 0.02, 0.5);
-      const radialSpring = opts.spring === true;
-      const radialStiffness = clamp(Number(opts.stiffness ?? 170), 20, 400);
-      const radialDamping = clamp(Number(opts.damping ?? 24), 1, 80);
-      const radialMass = clamp(Number(opts.mass ?? 1), 0.1, 4);
+      const radialPhysics = sliderPhysics(opts);
+      const radialSpring = radialPhysics != null;
+      // The duration engine's curve: `ease` (any non-spring token) or the
+      // historical cubic-out.
+      const radialCurve = resolveMotion({ ease: opts.ease }, { ease: 'cubic-out', springable: false }).fn;
       const loop = opts.loop !== false && opts.loop !== 'off';
       const drag = opts.drag !== false;
       const useControls = opts.controls !== false;
@@ -220,15 +259,12 @@ export default {
           const dt = Math.min(64, Math.max(0, time - radialLastTime));
           radialLastTime = time;
           if (radialSpring) {
-            const seconds = dt / 1000;
-            const acceleration = ((targetActive - visualActive) * radialStiffness - radialVelocity * radialDamping) / radialMass;
-            radialVelocity += acceleration * seconds;
-            visualActive += radialVelocity * seconds;
+            [visualActive, radialVelocity] = stepSpring(visualActive, radialVelocity, targetActive, radialPhysics, dt);
           } else if (radialSmoothing) {
             visualActive = lerp(visualActive, targetActive, frameEase(radialSmoothing, dt));
           } else {
             const progress = Math.min(1, (time - started) / (duration * 1000));
-            const eased = 1 - ((1 - progress) ** 3);
+            const eased = radialCurve(progress);
             visualActive = from + (targetActive - from) * eased;
           }
           renderRadial(visualActive);
@@ -472,10 +508,10 @@ export default {
     const loopMode = opts.loop === true ? 'infinite' : (opts.loop || 'off');
     const seamless = loopMode === 'infinite';
     const smoothing = clamp(Number(opts.smoothing ?? (0.14 / Math.max(0.2, Number(opts.speed ?? opts.duration ?? 0.55) / 0.55))), 0.02, 0.5);
-    const springEnabled = opts.spring === true;
-    const springStiffness = clamp(Number(opts.stiffness ?? 170), 20, 400);
-    const springDamping = clamp(Number(opts.damping ?? 24), 1, 80);
-    const springMass = clamp(Number(opts.mass ?? 1), 0.1, 4);
+    const trackPhysics = sliderPhysics(opts);
+    const springEnabled = trackPhysics != null;
+    // A release bounce with no spring configured still needs a solver.
+    const bouncePhysics = trackPhysics ?? { stiffness: 170, damping: 24, mass: 1 };
     // Release momentum is opt-in tunable while the default preserves the
     // historical fling distance. Values above 1 make a fast release travel
     // farther; 0 disables the release fling without disabling drag itself.
@@ -822,11 +858,8 @@ export default {
         // Semi-implicit Euler keeps the public spring controls deterministic
         // while the 64ms cap prevents a background-tab wake from exploding the
         // solver. Dragging itself remains direct, then release starts from rest.
-        const seconds = dt / 1000;
         const solverTarget = bounceActive ? bounceTarget : target;
-        const acceleration = ((solverTarget - position) * springStiffness - springVelocity * springDamping) / springMass;
-        springVelocity += acceleration * seconds;
-        position += springVelocity * seconds;
+        [position, springVelocity] = stepSpring(position, springVelocity, solverTarget, bouncePhysics, dt);
       } else {
         if (dragging) springVelocity = 0;
         const amount = 1 - ((1 - (dragging ? 0.55 : smoothing)) ** (dt / 16));

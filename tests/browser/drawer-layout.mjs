@@ -193,8 +193,10 @@ ck('layout reflows after folding (heights change)', after.spread!==before.spread
 // reserved a 14px band, so the ease field always ended taller at the bottom.
 await openDrawer('mod-textSplit');
 const ez=await pg.evaluate(()=>{
-  const sheet=document.querySelector('.kt-drawer-sheet');
-  const ease=sheet?.querySelector('.kt-ease-field');
+  // The first *rendered* ease field: drawers opened earlier in this run (Slider
+  // and Radial have an ease picker since the spring system) stay in the DOM
+  // hidden, so the first match in document order can be a 0×0 leftover.
+  const ease=[...document.querySelectorAll('.kt-drawer-sheet .kt-ease-field')].find((node)=>node.getBoundingClientRect().width>0);
   if(!ease) return null;
   const svg=ease.querySelector('.kt-bz-svg');
   const ctr=ease.closest('.kt-playground__controls');

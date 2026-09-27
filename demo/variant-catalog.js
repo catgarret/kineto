@@ -4,7 +4,7 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
   "schemaVersion": "1.0.0",
   "libraryVersion": "0.12.3",
   "moduleCount": 38,
-  "variantCount": 228,
+  "variantCount": 229,
   "capabilities": {
     "any": "No requirement — works on any element.",
     "image": "Needs an <img> (the element itself or a descendant).",
@@ -947,6 +947,7 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
         "data-kt-double-click-zoom",
         "data-kt-download",
         "data-kt-duration",
+        "data-kt-ease",
         "data-kt-exif",
         "data-kt-group",
         "data-kt-info",
@@ -1655,6 +1656,8 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
         "data-kt-active-class",
         "data-kt-class-only",
         "data-kt-clock-direction",
+        "data-kt-color",
+        "data-kt-content-delay",
         "data-kt-delay",
         "data-kt-direction",
         "data-kt-distance",
@@ -1664,6 +1667,7 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
         "data-kt-enter-class",
         "data-kt-enter-ease",
         "data-kt-leave-class",
+        "data-kt-morph-ease",
         "data-kt-on-class-change",
         "data-kt-on-complete",
         "data-kt-on-enter",
@@ -1796,6 +1800,11 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
           "name": "skew",
           "requires": "any",
           "deprecated": false
+        },
+        {
+          "name": "split",
+          "requires": "items",
+          "deprecated": false
         }
       ]
     },
@@ -1820,6 +1829,7 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
         "data-kt-damping",
         "data-kt-drag",
         "data-kt-duration",
+        "data-kt-ease",
         "data-kt-loop",
         "data-kt-mass",
         "data-kt-position",
@@ -2000,6 +2010,7 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
         "data-kt-dots",
         "data-kt-drag",
         "data-kt-duration",
+        "data-kt-ease",
         "data-kt-effect",
         "data-kt-effect-direction",
         "data-kt-effect-intensity",
@@ -2598,6 +2609,7 @@ window.KINETO_VARIANT_CATALOG = Object.freeze({
       "optionAttributes": [
         "data-kt-close-delay",
         "data-kt-duration",
+        "data-kt-ease",
         "data-kt-indicator",
         "data-kt-layout",
         "data-kt-open-delay",

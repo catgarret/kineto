@@ -1,4 +1,4 @@
-import { clamp, env } from '../utils.js';
+import { clamp, env, resolveMotion } from '../utils.js';
 
 // Tooltip — accessible, themeable tooltips. Content comes from `content`, or the
 // element's `data-kt-title` / `title` / `aria-label`. Placement (top/bottom/
@@ -22,6 +22,10 @@ export default {
     const delay = Math.max(0, Number(opts.delay ?? 120));
     const hideDelay = Math.max(0, Number(opts.hideDelay ?? 80));
     const offset = Number(opts.offset ?? 8);
+    // Enter follows `ease` (tokens or a spring at its natural pace); the exit
+    // stays a short plain fade so a dismissed tip never lingers.
+    const motion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: 'ease', duration: 0.16 });
+    const enterSeconds = Math.max(0, motion.seconds);
     const duration = Math.max(0, Number(opts.duration ?? 0.16));
     const interactive = opts.interactive === true;
     // `html:true` renders the content as markup (e.g. a link inside the tip).
@@ -88,7 +92,7 @@ export default {
       position();
       if (anim) anim.cancel(); // may fire a lingering hide's oncancel — guarded by !visible
       tip.style.opacity = '1';
-      if (!reduce && effect !== 'none') anim = tip.animate([fromState, toState], { duration: duration * 1000, easing: 'ease' });
+      if (!reduce && effect !== 'none') anim = tip.animate([fromState, toState], { duration: enterSeconds * 1000, easing: motion.css });
       // Capture so ANY ancestor scroller repositions the tip (scroll doesn't
       // bubble); passive because position() never calls preventDefault — keeps
       // scrolling off the main-thread critical path (D-3 listener policy).

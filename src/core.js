@@ -28,7 +28,7 @@ const GSAP_MODULES = new Set([
 function activationIsOwnedOption(el, name) {
   return (ACTIVATION_OPTION_OWNERS[name] || []).some((owner) => el.hasAttribute?.(`data-kt-${dash(owner)}`));
 }
-import { toCSS as easingToCSS, fn as easingFn, EASINGS } from './easings.js';
+import { toCSS as easingToCSS, fn as easingFn, EASINGS, parseSpring, springDuration } from './easings.js';
 import { createLayoutRefresh } from './layoutRefresh.js';
 import { createDeferral } from './deferCreate.js';
 import { ACTIVATION_OPTION_OWNERS } from './activationOwners.js';
@@ -698,6 +698,23 @@ const Kineto = {
   easingFn,
   easings: EASINGS,
 
+  // `Kineto.spring(spec)` → everything needed to use a physics spring anywhere:
+  // `{ easing, duration, durationMs, fn, stiffness, damping, mass, velocity }`,
+  // or null when `spec` is not a spring. `easing` is a CSS linear() that runs
+  // for `duration` seconds — e.g. `el.style.transition = \`translate ${s.duration}s ${s.easing}\``.
+  spring(spec = 'spring') {
+    const physics = parseSpring(spec);
+    if (!physics) return null;
+    const duration = springDuration({ spring: physics });
+    return {
+      ...physics,
+      easing: easingToCSS({ spring: physics }),
+      duration,
+      durationMs: Math.round(duration * 1000),
+      fn: easingFn({ spring: physics })
+    };
+  },
+
   get env() {
     if (!cachedEnv) cachedEnv = env();
     installReducedMotionWatch();
@@ -757,6 +774,9 @@ const Kineto = {
     }
     Object.assign(config, { ...options, smoothOptions: config.smoothOptions });
     if (options.spring !== undefined) setMotionDefaults({ spring: options.spring === true });
+    // Page-wide UI easing: any spec resolveMotion() understands ('spring-snappy',
+    // 'apple-standard', 'spring(0.4s, 0.2)' …). null/'' clears it.
+    if (options.ease !== undefined) setMotionDefaults({ ease: options.ease === '' ? null : options.ease });
     cachedEnv = null;
     return this;
   },

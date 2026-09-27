@@ -50,3 +50,9 @@ Kineto.lightbox('.gallery-item', {
 ```
 
 `className`, `uiTemplate`, `renderUI`와 `.kt-lightbox-*` class를 이용해 아이콘과 UI를 HTML/CSS로 교체할 수 있습니다. 마지막 lightbox instance가 파괴되면 공유 viewer manager도 제거됩니다.
+
+## 프레임 전환 곡선 — `ease`
+
+`transition`(slide·zoom·rise…)으로 새 프레임이 들어오는 움직임은 `ease`를 따릅니다.
+[공통 이징 어휘](../common-options.md#이징과-스프링)를 모두 받고, 스프링은 제 속도로 움직입니다.
+`duration`/`lightboxDuration`은 그대로 배경 페이드 시간이라 스프링이 뷰어 열고 닫기를 늦추지 않습니다.

@@ -1,4 +1,4 @@
-import { env } from '../utils.js';
+import { env, resolveMotion } from '../utils.js';
 
 // FLIP layout animations — when the container's children move, resize, are
 // added, removed or reordered, they animate smoothly from their old box to the
@@ -11,8 +11,12 @@ import { env } from '../utils.js';
 export default {
   create(el, opts = {}) {
     const reduce = env().reducedMotion;
-    const duration = Math.max(0, Number(opts.duration ?? 0.4));
-    const ease = opts.ease || 'cubic-bezier(.22,.8,.3,1)';
+    // Any easing token or spring (`ease: 'spring-bouncy'`); a spring without
+    // `duration` moves at its natural pace. Raw strings used to go straight into
+    // WAAPI, where a token like 'expo-out' threw.
+    const motion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: 'cubic-bezier(.22,.8,.3,1)', duration: 0.4 });
+    const duration = Math.max(0, motion.seconds);
+    const ease = motion.css;
     const stagger = Math.max(0, Number(opts.stagger ?? 0));
     const itemSelector = opts.item || null;
 

@@ -1,4 +1,4 @@
-import { canHover, clamp, frameClock, frameEase, lerp, snapshotInlineStyles } from '../utils.js';
+import { canHover, clamp, frameClock, frameEase, lerp, resolveMotion, snapshotInlineStyles } from '../utils.js';
 import { createInteractiveShadow } from '../interactiveShadow.js';
 import { bevelBand, bevelShading, buildDisplacementMap, displacementScale, supportsBackdrop, supportsBackdropRefraction } from './surface/glass.js';
 
@@ -341,10 +341,13 @@ export default {
       shadow.update(shadowX, shadowY, true);
       setPointer(event);
       if (mode === 'shine') {
+        // Shine sweep: `ease` takes any token or spring (a raw string used to
+        // reach WAAPI unchecked and throw on tokens like 'expo-out'); ms unit.
+        const shineMotion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: 'ease-in-out', duration: 800, durationUnit: 'ms', springable: false });
         spotlight.animate([
           { transform: 'translateX(0) skewX(-20deg)' },
           { transform: 'translateX(390%) skewX(-20deg)' }
-        ], { duration: Math.max(100, Number(opts.duration ?? 800)), easing: opts.ease || 'ease-in-out' });
+        ], { duration: Math.max(100, shineMotion.ms), easing: shineMotion.css });
       }
       requestRender();
     };

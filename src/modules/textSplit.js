@@ -1,17 +1,4 @@
-import {
-  G,
-  gsapEaseName,
-  normalizeTextLineBreaks,
-  renderTextLineBreaks,
-  segmentText,
-  snapshotAttributes,
-  snapshotChildNodes,
-  snapshotInlineStyles,
-  ST,
-  textWithLineBreaks,
-  timeMs,
-  wordSink
-} from '../utils.js';
+import { G, gsapEaseName, normalizeTextLineBreaks, renderTextLineBreaks, resolveMotion, segmentText, snapshotAttributes, snapshotChildNodes, snapshotInlineStyles, ST, textWithLineBreaks, timeMs, wordSink } from '../utils.js';
 
 // Per-animation from/to states. "rise" clips inside an overflow wrapper,
 // "spin"/"flip" rotate every glyph in 3D, "wave" is a soft bounce-up.
@@ -115,9 +102,10 @@ export default {
     const texts = Array.isArray(opts.texts) && opts.texts.length
       ? opts.texts.map((text) => normalizeTextLineBreaks(String(text)))
       : null;
-    const duration = Number(opts.duration ?? 0.8);
+    const motion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: { gsap: 'power3.out', css: 'ease' }, duration: 0.8 });
+    const duration = motion.seconds;
     const stagger = Number(opts.stagger ?? 0.03);
-    const ease = opts.ease ? gsapEaseName(opts.ease) : 'power3.out';
+    const ease = motion.gsap;
 
     el.setAttribute('aria-label', texts ? texts[0] : originalText);
     el.innerHTML = '';
@@ -135,7 +123,7 @@ export default {
         ...definition.to,
         duration,
         delay: Number(opts.delay ?? 0),
-        ease: animationName === 'wave' ? (opts.ease ? gsapEaseName(opts.ease) : 'back.out(2.2)') : ease,
+        ease: animationName === 'wave' && !motion.authored ? 'back.out(2.2)' : ease,
         stagger,
         overwrite: true,
         onComplete: () => {

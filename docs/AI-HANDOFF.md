@@ -69,7 +69,7 @@ distinct positions, gesture-tail ownership and final-position assertions.
 - Current source version: `0.12.3`
 - Latest published npm version at the time of this handoff: `0.12.2` (tag `v0.12.2`, GitHub Release and demo deployed; verify with `npm view @dong-gri/kineto version`)
   — the entry-point work in `[Unreleased]` is planned as the minor `0.13.0`
-- Public surface: 55 modules and 31 Core APIs
+- Public surface: 55 modules and 32 Core APIs
 - Primary branch: `main`
 - Remote: `https://github.com/catgarret/kineto`
 
@@ -115,6 +115,20 @@ or a tag; release approval remains separate.
   `?v=dev`; `scripts/build-demo-cdn.mjs` writes a hash of each deployed file
   into `site/index.html`, and `tests/site-deploy.mjs` rejects any other token
   in the source. Do not bump a `?v=` by hand.
+- **Every curve goes through `resolveMotion()`** (`src/utils.js`, 2026-09-27):
+  a module never hands `opts.ease` (or a hardcoded curve it should expose)
+  straight to WAAPI, CSS or GSAP. `resolveMotion({ ease: opts.ease, duration:
+  opts.duration }, { ease: <module default>, duration: <default>, springable })`
+  returns `.css` (always a valid CSS easing — invalid tokens fall back),
+  `.gsap` (springs become the exact physics function), `.fn`, `.seconds`/`.ms`
+  (a spring without an authored duration keeps its natural pace) and
+  `.authored`. Read the options with explicit `opts.X` inside the call — the
+  contract scanner only sees `opts.X` text. `springable: false` keeps
+  progress/scrubbed/hand-fitted motion off the page-wide
+  `Kineto.config({ spring | ease })`. The vocabulary (Apple curves and
+  SwiftUI springs with Apple's numbers) lives in `src/easings.js`; the CSS
+  tokens in `src/kineto.css` are generated from it
+  (`scripts/generate-easing-tokens.mjs`, checked by `test:easings`).
 - **Timing options accept seconds or milliseconds**: read them with
   `timeMs(value, fallbackMs)` from `src/utils.js` (20 or less is seconds).
   A reader that assumed one unit turned a recipe's `hold: 1.4` into 1.4 ms.

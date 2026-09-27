@@ -195,7 +195,8 @@ for (const [moduleName, mechanisms] of Object.entries(MODULE_AUDITS)) {
 // `clock` are separate lifecycle/rendering branches checked below.
 const reveal = contract.modules.find((module) => module.name === 'reveal');
 const revealModule = await import(pathToFileURL(path.join(root, 'src/modules/reveal.js')).href);
-const revealPresetNames = reveal.variants.filter((variant) => !['class', 'clock'].includes(variant));
+// class, clock and split have their own lifecycle branches instead of a PRESETS state.
+const revealPresetNames = reveal.variants.filter((variant) => !['class', 'clock', 'split'].includes(variant));
 assert.deepEqual(Object.keys(revealModule.PRESETS).sort(), revealPresetNames.sort(), 'Reveal PRESETS must cover every non-special public variant');
 const revealStates = Object.entries(revealModule.PRESETS).map(([variant, state]) => [
   variant,
@@ -205,6 +206,7 @@ assert.equal(new Set(revealStates.map(([, state]) => state)).size, revealStates.
 const revealSource = fs.readFileSync(path.join(root, 'src/modules/reveal.js'), 'utf8');
 assert.ok(revealSource.includes("preset === 'class'"), 'Reveal class variant needs its lifecycle branch');
 assert.ok(revealSource.includes("preset === 'clock'"), 'Reveal clock variant needs its conic-mask branch');
+assert.ok(revealSource.includes("preset === 'split'") && fs.existsSync(path.join(root, 'src/modules/reveal/split.js')), 'Reveal split variant needs its blob-to-children branch');
 assert.deepEqual(demoChoices.reveal, reveal.variants, 'Reveal settings choices must mirror the public contract');
 const authoredReveal = authoredDemoVariants(reveal);
 assert.deepEqual([...authoredReveal].sort(), [...liveVariants(reveal)].sort(),

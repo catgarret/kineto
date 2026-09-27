@@ -1,4 +1,4 @@
-import { clamp, dropEmptyAttributes, env, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
+import { clamp, dropEmptyAttributes, env, resolveMotion, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
 
 // Tabs — accessible tabbed interface following the WAI-ARIA / KRDS tab pattern.
 // Markup: a container with `data-kt-tabs`, a tablist (`[role=tablist]` or
@@ -15,7 +15,17 @@ export default {
     const reduce = env().reducedMotion;
     const activation = opts.activation === 'manual' ? 'manual' : 'automatic';
     const orientation = opts.orientation === 'vertical' ? 'vertical' : 'horizontal';
-    const duration = Math.max(0, Number(opts.duration ?? 0.28));
+    // `ease` drives the indicator slide and the panel entrance — any token or a
+    // spring (a spring slides the pill like a native segmented control and runs
+    // at its natural pace unless `duration` is set). The indicator's CSS reads
+    // --kt-tab-ease / --kt-tab-duration, set only when the curve is chosen.
+    const motion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: 'cubic-bezier(.22,.8,.3,1)', duration: 0.28 });
+    const duration = Math.max(0, motion.seconds);
+    const restoreMotionVars = snapshotInlineStyles(el, ['--kt-tab-ease', '--kt-tab-duration']);
+    if (motion.authored || opts.duration != null) {
+      el.style.setProperty('--kt-tab-ease', motion.css);
+      el.style.setProperty('--kt-tab-duration', `${duration}s`);
+    }
     const showIndicator = opts.indicator !== false;
     const effect = opts.effect || 'fade';
     // `activeClass` hooks your OWN class on the active tab (alongside `.kt-active`).
@@ -176,7 +186,7 @@ export default {
           panel.classList.add('kt-active');
           if (animate) {
             const delay = cross && changed ? duration * 500 : 0;
-            panel.animate(enterFrames(), { duration: duration * (cross ? 500 : 1000), delay, easing: 'cubic-bezier(.22,.8,.3,1)', fill: 'backwards' });
+            panel.animate(enterFrames(), { duration: duration * (cross ? 500 : 1000), delay, easing: motion.css, fill: 'backwards' });
           }
         } else if (i === prev && cross && animate && changed) {
           // Fade the outgoing panel out, then hide it.
@@ -289,6 +299,7 @@ export default {
         });
         restoreListStyle();
         restoreList();
+        restoreMotionVars();
       }
     };
   },

@@ -1,21 +1,108 @@
 import { getGSAP, getScrollTrigger } from './runtime.js';
-import { toCSS as easingToCSS, gsapEase as easingGsap } from './easings.js';
+import { toCSS as easingToCSS, gsapEase as easingGsap, fn as easingFn, springDuration } from './easings.js';
 
-// Resolve any easing token (CSS keyword, easings.net name, 'elastic-out',
-// 'bounce-in-out', 'spring', {spring:{…}}, or a raw cubic-bezier/linear string)
-// to a valid CSS <easing-function>. Passes unknown values through unchanged, so
-// it is safe to wrap module `opts.ease` that historically held raw CSS strings.
+// Resolve any easing token (CSS keyword, easings.net name, Apple curve,
+// 'elastic-out', 'spring-snappy', 'spring(0.5s, 0.3)', {spring:{…}}, or a raw
+// cubic-bezier/linear string) to a valid CSS <easing-function>. Passes unknown
+// values through unchanged, so it is safe to wrap module `opts.ease` that
+// historically held raw CSS strings.
 export const cssEase = easingToCSS;
 
 // Same idea for GSAP-driven tweens: map a token ('elastic-out', 'sine-in', …)
-// to the matching GSAP ease name; unknown/GSAP-native values pass through.
+// to the matching GSAP ease name; springs and raw CSS curves become an ease
+// function; unknown/GSAP-native values pass through.
 export const gsapEaseName = easingGsap;
 
-// Global motion defaults, set via Kineto.config({ spring: true }). Modules read
-// these as the fallback when a per-instance option isn't given, so a single
-// switch can give the whole page springy, physical transforms.
-export const motionDefaults = { spring: false };
+// Global motion defaults, set via Kineto.config({ spring, ease }). Modules that
+// resolve their motion through resolveMotion() fall back to these when the
+// element does not set its own `ease`:
+//   spring: true   → UI motion uses the SPRING_UI preset (a real physics spring)
+//   ease: '<spec>' → UI motion uses that spec (wins over `spring`)
+// Decorative/progress timing (steps, scrubbed, linear tickers) opts out with
+// `springable: false`, so a page-wide spring never bends a progress bar.
+export const SPRING_UI = 'spring-snappy';
+export const motionDefaults = { spring: false, ease: null };
 export function setMotionDefaults(patch = {}) { Object.assign(motionDefaults, patch); }
+
+const hasValue = (value) => value != null && value !== '';
+
+const CSS_EASING_SYNTAX = /^(linear|ease|ease-in|ease-out|ease-in-out|step-start|step-end)$|^(cubic-bezier|linear|steps)\(/i;
+/**
+ * Is `value` a CSS <easing-function> this browser accepts? WAAPI throws on an
+ * invalid easing and a transition drops the whole declaration, so a module
+ * must never hand either one a GSAP name or a typo.
+ */
+export function isCssEasing(value) {
+  if (typeof value !== 'string' || !value.trim()) return false;
+  if (typeof CSS !== 'undefined' && typeof CSS.supports === 'function') {
+    try { return CSS.supports('transition-timing-function', value); } catch (_error) { /* old engine */ }
+  }
+  return CSS_EASING_SYNTAX.test(value.trim());
+}
+
+/**
+ * resolveMotion — the one place a module turns its ease/duration options into
+ * what an animation needs. Every animating module goes through here, so all of
+ * them understand the same vocabulary (CSS keywords, easings.net names, Apple
+ * curves, physics springs) and a spring keeps its natural pace.
+ *
+ * Duration rule: an authored duration always wins (a spring is then
+ * time-scaled to fit it). Without one, a spring uses its own settle time and a
+ * curve uses the module default.
+ *
+ * @param {object} opts      the instance options
+ * @param {object} defaults
+ * @param {*}      defaults.ease          module default easing spec, or `{ gsap, css }` per engine
+ * @param {number} defaults.duration      module default duration, in `durationUnit`
+ * @param {string} [defaults.easeKey='ease']          option name holding the ease
+ * @param {string} [defaults.durationKey='duration']  option name holding the duration
+ * @param {'s'|'ms'} [defaults.durationUnit='s']      unit of the duration option
+ * @param {boolean} [defaults.springable=true] false → ignore page-wide spring/ease defaults
+ * @returns {{spec:*, spring:boolean, seconds:number, ms:number, css:string, gsap:*, fn:(t:number)=>number}}
+ */
+export function resolveMotion(opts = {}, defaults = {}) {
+  const easeKey = defaults.easeKey ?? 'ease';
+  const durationKey = defaults.durationKey ?? 'duration';
+  const unit = defaults.durationUnit === 'ms' ? 'ms' : 's';
+  const pageDefault = defaults.springable === false
+    ? null
+    : (motionDefaults.ease ?? (motionDefaults.spring ? SPRING_UI : null));
+  // A module default may name a different curve per engine —
+  // `{ gsap: 'power3.out', css: 'ease' }` — because GSAP names are not CSS.
+  const engineDefault = defaults.ease && typeof defaults.ease === 'object' && !Array.isArray(defaults.ease) && !('spring' in defaults.ease)
+    ? defaults.ease : null;
+  const own = hasValue(opts[easeKey]) ? opts[easeKey] : null;
+  const chosen = own ?? pageDefault;
+  const spec = chosen ?? (engineDefault ? engineDefault.css ?? 'ease' : defaults.ease ?? 'ease');
+  const gsapSpec = chosen ?? (engineDefault ? engineDefault.gsap ?? engineDefault.css : spec);
+  const natural = springDuration(spec);
+  const authored = hasValue(opts[durationKey]) ? Number(opts[durationKey]) : NaN;
+  let seconds;
+  if (Number.isFinite(authored) && authored >= 0) seconds = unit === 'ms' ? authored / 1000 : authored;
+  else if (natural != null) seconds = natural;
+  else seconds = Math.max(0, Number(defaults.duration ?? (unit === 'ms' ? 300 : 0.3))) / (unit === 'ms' ? 1000 : 1);
+  let css; let gsap; let curve;
+  return {
+    spec,
+    // true when the element (or the page default) chose the curve, not the module
+    authored: chosen != null,
+    spring: natural != null,
+    seconds,
+    ms: seconds * 1000,
+    // Always a usable CSS easing: an unknown token (a GSAP name, a typo) falls
+    // back to the module's CSS default instead of breaking WAAPI/transitions.
+    get css() {
+      if (css == null) {
+        const resolved = easingToCSS(spec);
+        const fallback = engineDefault ? engineDefault.css ?? 'ease' : (typeof defaults.ease === 'string' ? defaults.ease : 'ease');
+        css = isCssEasing(resolved) ? resolved : (isCssEasing(easingToCSS(fallback)) ? easingToCSS(fallback) : 'ease');
+      }
+      return css;
+    },
+    get gsap() { return (gsap ??= easingGsap(gsapSpec)); },
+    get fn() { return (curve ??= easingFn(spec)); },
+  };
+}
 
 export function env() {
   if (typeof window === 'undefined') {

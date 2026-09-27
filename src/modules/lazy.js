@@ -1,4 +1,4 @@
-import { clamp, observeOnce } from '../utils.js';
+import { clamp, observeOnce, resolveMotion } from '../utils.js';
 import { fn as easingFunction } from '../easings.js';
 import { coverMap } from './media/rasterizer.js';
 import { createLayer, ensureWrapper, releaseWrapper } from './media/wrapper.js';
@@ -155,8 +155,10 @@ function createVideoReveal(el, opts = {}) {
   const original = { style: el.getAttribute('style'), src: el.getAttribute('src'), preload: el.getAttribute('preload') };
   const sources = Array.from(el.querySelectorAll('source'));
   const directSrc = opts.src || el.dataset.src || el.getAttribute('data-src') || '';
-  const duration = Math.max(0, Number(opts.duration ?? 0.6)) * 1000;
-  const ease = opts.ease || 'cubic-bezier(.22,.8,.3,1)';
+  // Tokens resolve (and an invalid one falls back) instead of reaching CSS raw.
+  const motion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: 'cubic-bezier(.22,.8,.3,1)', duration: 0.6, springable: false });
+  const duration = Math.max(0, motion.seconds) * 1000;
+  const ease = motion.css;
   const once = opts.once !== false;
   const autoplay = opts.autoplay !== false;
   const muted = opts.muted !== false;
@@ -486,7 +488,8 @@ export default {
         el.style.transition = 'none';
         el.style.opacity = '0';
         void el.offsetWidth;
-        el.style.transition = `opacity ${Math.max(0, Number(opts.duration ?? 0.7))}s ${opts.ease || 'ease'}`;
+        const fadeMotion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: 'ease', duration: 0.7, springable: false });
+        el.style.transition = `opacity ${Math.max(0, fadeMotion.seconds)}s ${fadeMotion.css}`;
         requestAnimationFrame(() => { el.style.opacity = '1'; });
         opts.onLoad?.(el, image);
         return;

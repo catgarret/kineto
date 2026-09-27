@@ -1,4 +1,4 @@
-import { clamp, cssEase, env } from '../utils.js';
+import { clamp, env, resolveMotion } from '../utils.js';
 
 const COLOR_MODES = new Set(['single', 'pair', 'palette', 'auto']);
 
@@ -154,9 +154,10 @@ export default {
       : (paletteTokens(opts.colors).length ? 'palette' : 'pair');
     const specifiedPalette = paletteTokens(opts.colors);
     const requestedDirection = ['left', 'right', 'up', 'down', 'random'].includes(opts.direction) ? opts.direction : 'right';
-    const duration = Math.max(0.05, Number(opts.duration ?? 0.7));
+    const motion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: 'cubic-bezier(.77,0,.18,1)', duration: 0.7 });
+    const duration = Math.max(0.05, motion.seconds);
     const delay = Math.max(0, Number(opts.delay ?? 0));
-    const ease = opts.ease ? cssEase(opts.ease) : 'cubic-bezier(.77,0,.18,1)';
+    const ease = motion.css;
     const layers = clamp(Math.round(Number(opts.layers ?? 2)), 1, 3);
     // In mask mode the final coloured panel is replaced by the content mask.
     const maskLead = opts.mask === true;

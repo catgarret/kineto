@@ -1,4 +1,5 @@
 // Local clamp: this module has no other utils dependency and adding one just for
+import { resolveMotion } from '../utils.js';
 // a two-line helper would pull the whole module graph in.
 const clamp = (value, min, max) => Math.min(max, Math.max(min, Number.isFinite(value) ? value : min));
 
@@ -24,15 +25,16 @@ const EASE = {
 export default {
   create(el, opts) {
     const effect = opts.effect || opts.preset || 'curtain';
-    const duration = Math.max(0.1, Number(opts.duration ?? 0.9)) * 1000;
-    // The module default is an -out curve (see EASE). `opts.ease` still wins, so
-    // a caller who wants the old in-out feel just asks for it.
-    const easing = typeof opts.ease === 'string' && (opts.ease.includes('(') || opts.ease.startsWith('ease') || opts.ease === 'linear')
-      ? opts.ease
-      : EASE.expo;
+    // The module default is an -out curve (see EASE). `opts.ease` still wins —
+    // any token or spring — so a caller who wants the old in-out feel just asks
+    // for it. Page-wide springs do not reach this module: its effects are built
+    // around hand-fitted curves.
+    const motion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: EASE.expo, duration: 0.9, springable: false });
+    const duration = Math.max(0.1, motion.seconds) * 1000;
+    const easing = motion.css;
     // True when the caller pinned a curve. Effects that are built around a
     // specific hand-fitted curve consult this before overriding themselves.
-    const easePinned = typeof opts.ease === 'string' && opts.ease.length > 0;
+    const easePinned = motion.authored;
     const color = opts.color || '#0a0908';
     const color2 = opts.color2 || color;
     const delay = Math.max(0, Number(opts.delay ?? 0)) * 1000;

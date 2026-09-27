@@ -1,4 +1,4 @@
-import { G, ST } from '../utils.js';
+import { G, gsapEaseName, ST } from '../utils.js';
 
 function floatingFrom(effect, opts) {
   const distance = Number(opts.distance ?? 80);
@@ -14,8 +14,13 @@ function floatingFrom(effect, opts) {
   return { autoAlpha: 0, y: distance };
 }
 
+// Scroll-scrubbed tweens: `ease` accepts every token (springs become an exact
+// GSAP ease function); a raw token used to reach GSAP unconverted.
+const stackEaseFor = (opts) => (fallback) => (opts.ease != null && opts.ease !== '' ? gsapEaseName(opts.ease) : fallback);
+
 export default {
   create(el, opts = {}) {
+    const stackEase = stackEaseFor(opts);
     const gsap = G();
     const scrollTrigger = ST();
     const mode = opts.mode || opts.type || opts.preset || 'vertical';
@@ -175,7 +180,7 @@ export default {
             yPercent: 0,
             opacity: 1,
             scale: 1,
-            ease: opts.ease || 'power2.inOut',
+            ease: stackEase('power2.inOut'),
             scrollTrigger: { trigger: child, start: opts.start || 'top bottom', end: opts.end || 'top top', scrub: Number(opts.scrub ?? 1) }
           }
         ));
@@ -219,14 +224,14 @@ export default {
           const at = index * itemDuration * (1 - overlap);
           timeline.fromTo(child, floatingFrom(effect, opts), {
             autoAlpha: 1, x: 0, y: 0, z: 0, rotate: 0, rotateX: 0, scale: 1, filter: 'blur(0px)',
-            duration: itemDuration, ease: opts.ease || 'power2.out'
+            duration: itemDuration, ease: stackEase('power2.out')
           }, at);
           if (index < children.length - 1) timeline.to(child, {
             autoAlpha: Number(opts.previousOpacity ?? 0.18),
             scale: Number(opts.previousScale ?? 0.88),
             y: Number(opts.previousY ?? -40),
             filter: opts.fadePrevious === false ? 'blur(0px)' : `blur(${Number(opts.previousBlur ?? 8)}px)`,
-            duration: itemDuration, ease: opts.ease || 'power2.inOut'
+            duration: itemDuration, ease: stackEase('power2.inOut')
           }, at + itemDuration * (1 - overlap));
         });
         animations.push(timeline);

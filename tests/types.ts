@@ -55,6 +55,20 @@ const effectNames: string[] = listCanvasEffects().map((effect) => effect.name);
 Kineto.canvasEffect(target, { effect: effectName });
 void effectNames;
 
+// Springs and easing tokens: one vocabulary for CSS, WAAPI and modules.
+const snappy = Kineto.spring('spring-snappy');
+if (snappy) {
+  const transition: string = `translate ${snappy.duration}s ${snappy.easing}`;
+  const halfway: number = snappy.fn(0.5);
+  void transition; void halfway;
+}
+const appleCurve: string = Kineto.easing('apple-standard');
+const physicsCurve: string = Kineto.easing({ spring: { duration: 0.5, bounce: 0.3 } });
+const progress: number = Kineto.easingFn('spring(100, 8)')(0.25);
+const springNames: string[] = Kineto.easings.springs;
+Kineto.config({ ease: 'spring-snappy' });
+void appleCurve; void physicsCurve; void progress; void springNames;
+
 void result;
 void diagnostic;
 

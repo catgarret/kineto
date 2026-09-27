@@ -1,4 +1,4 @@
-import { env, snapshotAttributes } from '../utils.js';
+import { env, resolveMotion, snapshotAttributes } from '../utils.js';
 
 // Switch — an accessible animated toggle. Attach `data-kt-switch` to a
 // <button> (or any element). It becomes role="switch" with aria-checked, a
@@ -15,6 +15,9 @@ export default {
     const offColor = opts.offColor || 'var(--kt-switch-off, color-mix(in srgb, currentColor 26%, transparent))';
     const thumbColor = opts.thumbColor || 'var(--kt-switch-thumb, #fff)';
     const duration = Math.max(0, Number(opts.duration ?? 0.22));
+    // The thumb follows `ease` — a spring gives the native toggle's little
+    // settle; the track colour keeps a plain fade over `duration`.
+    const thumbMotion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: 'cubic-bezier(.22,.8,.3,1)', duration: 0.22 });
     // Form-usable: if a child <input type="checkbox|radio"> is present it becomes
     // the value carrier (submits with the form, fires native change/input), while
     // this element stays the accessible role="switch" control. Pattern:
@@ -46,7 +49,7 @@ export default {
     const thumb = document.createElement('span');
     thumb.className = 'kt-switch__thumb';
     thumb.setAttribute('aria-hidden', 'true');
-    thumb.style.cssText = `width:${size}px;height:${size}px;border-radius:50%;background:${thumbColor};box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform ${reduce ? 0 : duration}s cubic-bezier(.22,.8,.3,1);will-change:transform;flex:0 0 auto;`;
+    thumb.style.cssText = `width:${size}px;height:${size}px;border-radius:50%;background:${thumbColor};box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform ${reduce ? 0 : thumbMotion.seconds}s ${thumbMotion.css};will-change:transform;flex:0 0 auto;`;
     el.appendChild(thumb);
 
     const apply = () => {

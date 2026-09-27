@@ -186,3 +186,12 @@ DOM 이벤트는 `kt-slider-init`, `kt-slider-before-change`, `kt-slider-change`
 컨테이너에는 `kt-slider--{effect}` 클래스와 `data-kt-slider-effect`가 붙습니다. 각 슬라이드는 `--kt-slider-slide-distance`, `--kt-slider-slide-progress`, `--kt-slider-transition-mix` 상태 변수를 제공합니다.
 
 주요 선택자는 `.kt-slider-dots`, `.kt-slider-dot`, `.is-active`, `.kt-slider-progress`, `.kt-slider-progress--bar`, `.kt-slider-progress--ring`, `.kt-slider-pause`입니다.
+
+## 스프링 토큰 — `ease`
+
+`ease`에 스프링(`spring-snappy`, `spring(0.5s, 0.3)`, `spring(170, 24)`)을 주면 슬라이더가 실제
+물리 엔진으로 움직입니다 — `spring: true` + `stiffness`/`damping`/`mass`와 같은 엔진이고, 다른 모듈과 같은
+표기를 쓸 수 있다는 점만 다릅니다. 우선순위는 `spring: true`(기존 옵션) → `ease`의 스프링 →
+`Kineto.config({ spring | ease })`(단, `spring: false`면 제외)입니다. 애플의 interactive 스프링처럼 딱딱한
+스프링(stiffness ≈ 1750)도 4ms 단위로 나눠 적분하므로 프레임이 늦어도 튀지 않습니다. Radial의 시간 기반
+회전은 스프링이 아닌 곡선(`expo-out` 등)도 받습니다.

@@ -1,5 +1,5 @@
-import { clamp, G, gsapEaseName, latestEntry, motionDefaults, observeOnce, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
-import { cubicBezierFn, fn as easingFn } from '../easings.js';
+import { clamp, G, latestEntry, observeOnce, resolveMotion, snapshotAttributes, snapshotInlineStyles, SPRING_UI, ST } from '../utils.js';
+import { createSplitReveal } from './reveal/split.js';
 
 const PRESETS = {
   fade: { opacity: 0 },
@@ -38,6 +38,17 @@ const revealTargets = (el, opts) => opts.stagger && el.children.length ? Array.f
 function snapshotTargets(el, targets) {
   const restores = [...new Set([...targets, el])].map((node) => snapshotAttributes(node, ['style', 'class']));
   return () => restores.forEach((restore) => restore());
+}
+
+// Reveal's motion: `enterEase` wins over `ease`; `spring: true` asks for the
+// page's UI spring even when the page has not turned springs on; `spring: false`
+// keeps this element on its curve even when the page has.
+function revealMotion(opts, { ease, duration, springable = true }) {
+  const own = opts.enterEase ?? opts.ease;
+  return resolveMotion(
+    { ease: own ?? (opts.spring === true ? SPRING_UI : undefined), duration: opts.duration },
+    { ease, duration, springable: springable && opts.spring !== false }
+  );
 }
 
 function normalizeOrder(value) {
@@ -215,19 +226,20 @@ function maskedReveal(el, opts, gsap, scrollTrigger, clock, clipAt) {
   const prepare = () => {
     stop();
     tween?.kill();
-    duration = Math.max(.05, Number(opts.duration ?? (clock ? 1.4 : gsap ? .8 : .55)));
+    // One motion resolver for every path: tokens, Apple curves and physics
+    // springs mean the same thing with or without GSAP. `spring: true` (or the
+    // page-wide Kineto.config({ spring })) asks for a real spring; a clock
+    // reveal is linear time, so page-wide defaults never bend it.
+    const motion = revealMotion(opts, {
+      ease: clock ? (gsap ? 'power1.inOut' : 'linear') : (gsap ? 'power3.out' : 'ease'),
+      duration: clock ? 1.4 : gsap ? .8 : .55,
+      springable: !clock
+    });
+    duration = Math.max(.05, motion.seconds);
     const delay = Number(opts.delay ?? 0);
     delays = staggerDelays(nodes.length, opts.stagger, opts.order).map((value) => value + (gsap && !clock ? delay : Math.max(0, delay)));
     total = Math.max(.001, duration + Math.max(...delays));
-    const configuredEase = opts.enterEase ?? opts.ease;
-    const cssPoints = {
-      ease: [.25, .1, .25, 1], 'ease-in': [.42, 0, 1, 1],
-      'ease-out': [0, 0, .58, 1], 'ease-in-out': [.42, 0, .58, 1]
-    }[configuredEase || (clock ? 'linear' : 'ease')]
-      || String(configuredEase).match(/^cubic-bezier\(\s*([\d.+-]+)\s*,\s*([\d.+-]+)\s*,\s*([\d.+-]+)\s*,\s*([\d.+-]+)\s*\)$/)?.slice(1).map(Number);
-    ease = gsap
-      ? gsap.parseEase(configuredEase ? gsapEaseName(configuredEase) : clock ? 'power1.inOut' : (opts.spring ?? motionDefaults.spring) === true ? 'back.out(1.25)' : 'power3.out')
-      : cssPoints ? cubicBezierFn(...cssPoints) : easingFn(configuredEase);
+    ease = gsap ? gsap.parseEase(motion.gsap) : motion.fn;
     state.time = 0;
     rate = 1;
     paint();
@@ -370,6 +382,33 @@ export default {
       };
     }
 
+    // `split`: a group rises as one blob and splits into its children
+    // (src/modules/reveal/split.js). Every option is read here so the
+    // contract scanner attributes it to this variant.
+    if (preset === 'split') {
+      const watch = !once || opts.onEnter || opts.onLeave || opts.onEnterBack || opts.onLeaveBack;
+      return createSplitReveal(el, {
+        ease: opts.enterEase ?? opts.ease,
+        morphEase: opts.morphEase,
+        distance: opts.distance,
+        duration: opts.duration,
+        delay: opts.delay,
+        stagger: opts.stagger,
+        contentDelay: opts.contentDelay,
+        color: opts.color,
+        once,
+        onEnter: opts.onEnter,
+        onLeave: opts.onLeave,
+        onEnterBack: opts.onEnterBack,
+        onLeaveBack: opts.onLeaveBack,
+        onComplete: opts.onComplete
+      }, {
+        observe: (boundary) => observeBoundaries(el, opts, false, boundary, watch, null),
+        enterClasses: (node) => addClasses(node, opts),
+        leaveClasses: (node) => removeClasses(node, opts)
+      });
+    }
+
     const clock = preset === 'clock';
 
     // Wipe/mask: gsap can't reliably tween a `clip-path: inset()` string, so we
@@ -407,8 +446,9 @@ export default {
 
     const targets = revealTargets(el, opts);
     const restore = snapshotTargets(el, targets);
-    const duration = Math.max(0, Number(opts.duration ?? 0.8));
-    const ease = (opts.enterEase ?? opts.ease) ? gsapEaseName(opts.enterEase ?? opts.ease) : ((opts.spring ?? motionDefaults.spring) === true ? 'back.out(1.25)' : 'power3.out');
+    const motion = revealMotion(opts, { ease: 'power3.out', duration: 0.8 });
+    const duration = Math.max(0, motion.seconds);
+    const ease = motion.gsap;
     let destroyed = false;
     const animateVars = (delay = Number(opts.delay ?? 0)) => {
       // Explicit delays keep every order preset identical across the GSAP and
@@ -558,7 +598,12 @@ export default {
     const skewX = Number(from.skewX ?? 0);
     const skewY = Number(from.skewY ?? 0);
     const perspective = Number(from.transformPerspective ?? 0);
-    const duration = Math.max(0, Number(opts.duration ?? 0.55));
+    // No GSAP: the same motion vocabulary through WAAPI/CSS (a spring becomes
+    // a baked linear() with its natural duration). This path used to hardcode
+    // 'ease' and ignore `ease`/`spring` entirely.
+    const motion = revealMotion(opts, { ease: 'ease', duration: 0.55 });
+    const duration = Math.max(0, motion.seconds);
+    const easing = motion.css;
     const once = opts.once !== false;
     const watch = !once || opts.onEnter || opts.onLeave || opts.onEnterBack || opts.onLeaveBack;
     let timers = [];
@@ -636,7 +681,7 @@ export default {
           Object.assign(node.style, keyframes[1]);
           const animation = node.animate(keyframes, {
             duration: duration * 1000, delay: (baseDelay + delays[index]) * 1000,
-            easing: 'ease', fill: once ? 'backwards' : 'both'
+            easing, fill: once ? 'backwards' : 'both'
           });
           animations.add(animation);
           pending.add(animation);
@@ -649,7 +694,7 @@ export default {
           return;
         }
         timers.push(setTimeout(() => frame(() => {
-          node.style.transition = `opacity ${duration}s ease,transform ${duration}s ease,filter ${duration}s ease`;
+          node.style.transition = `opacity ${duration}s ${easing},transform ${duration}s ${easing},filter ${duration}s ${easing}`;
           Object.assign(node.style, keyframes[1]);
           if (index === finalIndex) timers.push(setTimeout(() => {
             complete();
@@ -679,7 +724,7 @@ export default {
       else {
         stop();
         targets.forEach(node => {
-          node.style.transition = `opacity ${duration}s ease,transform ${duration}s ease,filter ${duration}s ease`;
+          node.style.transition = `opacity ${duration}s ${easing},transform ${duration}s ${easing},filter ${duration}s ${easing}`;
           Object.assign(node.style, keyframes[0]);
         });
       }

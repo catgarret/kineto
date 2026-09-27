@@ -1,4 +1,4 @@
-import { clamp, cssEase, env, labeller, motionDefaults, snapshotInlineStyles } from '../utils.js';
+import { clamp, env, labeller, resolveMotion, snapshotInlineStyles } from '../utils.js';
 
 // Gesture — pointer gestures on an element. Two of them:
 //
@@ -184,13 +184,16 @@ function createSpring(el, { hoverScale, tapScale, lift, duration, ease, hoverEas
   const grow = Number(hoverScale ?? 1.04);
   const press = Number(tapScale ?? 0.96);
   const rise = Number(lift ?? 0);
-  const time = Math.max(0, Number(duration ?? 0.22));
-  // Global `Kineto.config({spring:true})` bumps the default overshoot.
-  const curve = ease ? cssEase(ease) : (motionDefaults.spring ? 'cubic-bezier(.34,1.8,.5,1)' : 'cubic-bezier(.34,1.56,.64,1)');
+  // One resolver: an overshoot bezier by default, a real spring when the
+  // element (`ease: 'spring-bouncy'`) or the page (`Kineto.config({ spring })`)
+  // asks for one — a spring then runs for its natural duration unless
+  // `duration` is set.
+  const motion = resolveMotion({ ease, duration }, { ease: 'cubic-bezier(.34,1.56,.64,1)', duration: 0.22 });
   // Phase-specific easing (audit C-3 / J-3): `hoverEase` shapes the hover
   // grow/settle, `pressEase` the press-down; both fall back to `ease`.
-  const hoverCurve = hoverEase ? cssEase(hoverEase) : curve;
-  const pressCurve = pressEase ? cssEase(pressEase) : curve;
+  const hoverMotion = hoverEase ? resolveMotion({ ease: hoverEase, duration }, { duration: 0.22 }) : motion;
+  const pressMotion = pressEase ? resolveMotion({ ease: pressEase, duration }, { duration: 0.22 }) : motion;
+  const transition = (m) => `transform ${Math.max(0, m.seconds)}s ${m.css}`;
   // Where the scale/press grows from (center | top | bottom | left | right |
   // any CSS transform-origin value).
   const from = origin || 'center';
@@ -199,7 +202,7 @@ function createSpring(el, { hoverScale, tapScale, lift, duration, ease, hoverEas
   const prevTransform = el.style.transform;
   const prevOrigin = el.style.transformOrigin;
   const prevWillChange = el.style.willChange;
-  el.style.transition = `transform ${time}s ${curve}`;
+  el.style.transition = transition(motion);
   el.style.transformOrigin = from;
   el.style.willChange = 'transform';
 
@@ -208,7 +211,7 @@ function createSpring(el, { hoverScale, tapScale, lift, duration, ease, hoverEas
   const apply = () => {
     const scale = pressed ? press : (hovered ? grow : 1);
     const y = hovered && !pressed ? -rise : 0;
-    el.style.transition = `transform ${time}s ${pressed ? pressCurve : hoverCurve}`;
+    el.style.transition = transition(pressed ? pressMotion : hoverMotion);
     el.style.transform = `translateY(${y}px) scale(${scale})`;
   };
 

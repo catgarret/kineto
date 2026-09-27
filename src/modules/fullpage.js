@@ -8,7 +8,7 @@
 // - mode:'snap' opts into native CSS scroll-snap instead of transforms
 //   (progressive enhancement); reduced motion falls back to it automatically.
 
-import { labeller } from '../utils.js';
+import { labeller, resolveMotion } from '../utils.js';
 
 export default {
   create(el, opts) {
@@ -21,10 +21,11 @@ export default {
       : Array.from(el.children);
     if (!sections.length) return null;
 
-    const duration = Math.max(0.15, Number(opts.duration ?? 0.75));
-    const easing = typeof opts.ease === 'string' && (opts.ease.includes('(') || opts.ease.startsWith('ease') || opts.ease === 'linear')
-      ? opts.ease
-      : 'cubic-bezier(.76,0,.24,1)';
+    // Tokens and springs resolve here; anything that is not a CSS easing (a
+    // GSAP name) falls back to the default curve, as the old filter did.
+    const motion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: 'cubic-bezier(.76,0,.24,1)', duration: 0.75 });
+    const duration = Math.max(0.15, motion.seconds);
+    const easing = motion.css;
     const loop = opts.loop === true;
     // Mixed axis: a SINGLE sequence whose steps change direction — e.g. A→B→C
     // slide horizontally, C→D slides vertically. Each section carries the axis

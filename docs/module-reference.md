@@ -7,7 +7,7 @@
 - Behavior contract: 1.2.0
 - Public modules: 55
 - Root properties: `version`, `easings`, `prefersReducedMotion`, `env`, `performance`, `registry`, `instanceCount`, `smoothEnabled`, `lenis`, `core`, `diagnostics`, `diagnosticCodes`
-- Core methods: `autoInit()`, `config()`, `create()`, `defineCanvasEffect()`, `destroy()`, `destroyModule()`, `disableSmooth()`, `easing()`, `easingFn()`, `enableSmooth()`, `getEngineSource()`, `getInstance()`, `init()`, `initModules()`, `listCanvasEffects()`, `listTerminalFramePresets()`, `observe()`, `pause()`, `refresh()`, `register()`, `replay()`, `resume()`, `scan()`, `scrollTo()`, `setAnimationEngine()`, `setEngineSource()`, `setReducedMotion()`, `states()`, `toggleSmooth()`, `unregister()`, `updateModule()`
+- Core methods: `autoInit()`, `config()`, `create()`, `defineCanvasEffect()`, `destroy()`, `destroyModule()`, `disableSmooth()`, `easing()`, `spring()`, `easingFn()`, `enableSmooth()`, `getEngineSource()`, `getInstance()`, `init()`, `initModules()`, `listCanvasEffects()`, `listTerminalFramePresets()`, `observe()`, `pause()`, `refresh()`, `register()`, `replay()`, `resume()`, `scan()`, `scrollTo()`, `setAnimationEngine()`, `setEngineSource()`, `setReducedMotion()`, `states()`, `toggleSmooth()`, `unregister()`, `updateModule()`
 - Additional named exports: `modules`, `listTerminalFramePresets`, `states`, `defineCanvasEffect`, `listCanvasEffects`
 
 각 모듈의 이름, 활성화 속성, 기본 모드, 허용 모드, 공개 옵션은 patch/minor 릴리스에서 임의로 변경할 수 없습니다.
@@ -101,7 +101,7 @@
 - Attribute: `data-kt-lightbox`
 - Default variant: `viewer`
 - Variants: `viewer`, `grouped`
-- Public options: `alt`, `backdropBlur`, `backdropColor`, `backdropOpacity`, `caption`, `className`, `closeOnBackdrop`, `cursor`, `description`, `doubleClickZoom`, `download`, `duration`, `exif`, `group`, `info`, `labels`, `lazyEffect`, `lazyOptions`, `lightboxDuration`, `maxZoom`, `metadata`, `minZoom`, `minimap`, `onChange`, `onClose`, `onLoad`, `onOpen`, `radius`, `renderUI`, `share`, `src`, `thumbnails`, `title`, `toolbar`, `transition`, `uiTemplate`, `wheelStep`, `zoom`, `zoomStep`
+- Public options: `alt`, `backdropBlur`, `backdropColor`, `backdropOpacity`, `caption`, `className`, `closeOnBackdrop`, `cursor`, `description`, `doubleClickZoom`, `download`, `duration`, `ease`, `exif`, `group`, `info`, `labels`, `lazyEffect`, `lazyOptions`, `lightboxDuration`, `maxZoom`, `metadata`, `minZoom`, `minimap`, `onChange`, `onClose`, `onLoad`, `onOpen`, `radius`, `renderUI`, `share`, `src`, `thumbnails`, `title`, `toolbar`, `transition`, `uiTemplate`, `wheelStep`, `zoom`, `zoomStep`
 
 ## loader
 
@@ -177,15 +177,15 @@
 
 - Attribute: `data-kt-reveal`
 - Default variant: `fade-up`
-- Variants: `fade`, `fade-up`, `fade-down`, `fade-left`, `fade-right`, `slide-up`, `slide-down`, `slide-left`, `slide-right`, `zoom-in`, `zoom-out`, `blur`, `rise`, `soft`, `flip-x`, `flip-y`, `rotate`, `mask`, `wipe`, `class`, `clock`, `swing`, `skew`
-- Public options: `activeClass`, `classOnly`, `clockDirection`, `delay`, `distance`, `direction`, `duration`, `ease`, `end`, `enterClass`, `enterEase`, `leaveClass`, `onClassChange`, `onComplete`, `onEnter`, `onEnterBack`, `onLeave`, `onLeaveBack`, `once`, `order`, `preset`, `removeClassOnLeave`, `rootMargin`, `spring`, `stagger`, `start`, `startAngle`, `threshold`
+- Variants: `fade`, `fade-up`, `fade-down`, `fade-left`, `fade-right`, `slide-up`, `slide-down`, `slide-left`, `slide-right`, `zoom-in`, `zoom-out`, `blur`, `rise`, `soft`, `flip-x`, `flip-y`, `rotate`, `mask`, `wipe`, `class`, `clock`, `swing`, `skew`, `split`
+- Public options: `activeClass`, `classOnly`, `clockDirection`, `color`, `contentDelay`, `delay`, `distance`, `direction`, `duration`, `ease`, `end`, `enterClass`, `enterEase`, `leaveClass`, `morphEase`, `onClassChange`, `onComplete`, `onEnter`, `onEnterBack`, `onLeave`, `onLeaveBack`, `once`, `order`, `preset`, `removeClassOnLeave`, `rootMargin`, `spring`, `stagger`, `start`, `startAngle`, `threshold`
 
 ## radial
 
 - Attribute: `data-kt-radial`
 - Default variant: `bottom`
 - Variants: `bottom`, `top`, `left`, `right`
-- Public options: `activeAngle`, `activeClass`, `align`, `autoplay`, `controls`, `drag`, `duration`, `loop`, `position`, `radius`, `smoothing`, `step`, `spring`, `stiffness`, `damping`, `mass`
+- Public options: `activeAngle`, `activeClass`, `align`, `autoplay`, `controls`, `drag`, `duration`, `ease`, `loop`, `position`, `radius`, `smoothing`, `step`, `spring`, `stiffness`, `damping`, `mass`
 
 ## ripple
 
@@ -213,7 +213,7 @@
 - Attribute: `data-kt-slider`
 - Default variant: `slide`
 - Variants: `slide`, `fade`, `dissolve`, `wipe`, `coverflow`, `flip`, `cube`, `cards`, `creative`, `radial`
-- Public options: `activeAngle`, `activeClass`, `activeShadow`, `activeShadowOpacity`, `align`, `autoHeight`, `autoplay`, `axis`, `bounce`, `breakpoints`, `controls`, `depth`, `dots`, `drag`, `duration`, `effect`, `effectDirection`, `effectIntensity`, `enabled`, `gap`, `grabCursor`, `index`, `initial`, `initialIndex`, `keyboard`, `label`, `labels`, `loop`, `minOpacity`, `minScale`, `nextSelector`, `onBeforeChange`, `onChange`, `onInit`, `opacityStep`, `pauseButton`, `pauseWhenOffscreen`, `pauseOnHover`, `perGroup`, `perView`, `perspective`, `position`, `preset`, `prevSelector`, `progress`, `progressType`, `radius`, `rotate`, `scaleStep`, `scrollSnap`, `slideToClickedSlide`, `smoothing`, `spacing`, `speed`, `step`, `spring`, `stiffness`, `damping`, `mass`, `momentum`, `sync`, `stickySnap`, `velocityInfluence`, `touch`, `wheel`
+- Public options: `activeAngle`, `activeClass`, `activeShadow`, `activeShadowOpacity`, `align`, `autoHeight`, `autoplay`, `axis`, `bounce`, `breakpoints`, `controls`, `depth`, `dots`, `drag`, `duration`, `ease`, `effect`, `effectDirection`, `effectIntensity`, `enabled`, `gap`, `grabCursor`, `index`, `initial`, `initialIndex`, `keyboard`, `label`, `labels`, `loop`, `minOpacity`, `minScale`, `nextSelector`, `onBeforeChange`, `onChange`, `onInit`, `opacityStep`, `pauseButton`, `pauseWhenOffscreen`, `pauseOnHover`, `perGroup`, `perView`, `perspective`, `position`, `preset`, `prevSelector`, `progress`, `progressType`, `radius`, `rotate`, `scaleStep`, `scrollSnap`, `slideToClickedSlide`, `smoothing`, `spacing`, `speed`, `step`, `spring`, `stiffness`, `damping`, `mass`, `momentum`, `sync`, `stickySnap`, `velocityInfluence`, `touch`, `wheel`
 
 ## stickyStack
 
@@ -297,28 +297,28 @@
 - Attribute: `data-kt-mega-menu`
 - Default variant: `dropdown`
 - Variants: `dropdown`, `mega`, `radial`
-- Public options: `closeDelay`, `duration`, `indicator`, `layout`, `openDelay`, `radius`, `responsive`, `stagger`, `startAngle`, `sweep`, `trigger`
+- Public options: `closeDelay`, `duration`, `ease`, `indicator`, `layout`, `openDelay`, `radius`, `responsive`, `stagger`, `startAngle`, `sweep`, `trigger`
 
 ## toast
 
 - Attribute: `data-kt-toast`
 - Default variant: `stack`
 - Variants: `stack`
-- Public options: `barColor`, `dismissible`, `duration`, `icon`, `labels`, `max`, `message`, `position`, `progressBar`, `type`
+- Public options: `barColor`, `dismissible`, `duration`, `ease`, `icon`, `labels`, `max`, `message`, `position`, `progressBar`, `type`
 
 ## bottomSheet
 
 - Attribute: `data-kt-bottom-sheet`
 - Default variant: `sheet`
 - Variants: `sheet`
-- Public options: `autoHeight`, `backdrop`, `backdropOpacity`, `dismissible`, `duration`, `handle`, `label`, `maxHeight`, `minHeight`, `onResize`, `resizable`, `resizeArea`, `resizeLabel`, `trigger`
+- Public options: `autoHeight`, `backdrop`, `backdropOpacity`, `dismissible`, `duration`, `ease`, `handle`, `label`, `maxHeight`, `minHeight`, `onResize`, `resizable`, `resizeArea`, `resizeLabel`, `trigger`
 
 ## tabs
 
 - Attribute: `data-kt-tabs`
 - Default variant: `line`
 - Variants: `line`
-- Public options: `activation`, `activeClass`, `duration`, `effect`, `indicator`, `indicatorMotion`, `onChange`, `orientation`
+- Public options: `activation`, `activeClass`, `duration`, `ease`, `effect`, `indicator`, `indicatorMotion`, `onChange`, `orientation`
 
 ## coverReveal
 
@@ -339,21 +339,21 @@
 - Attribute: `data-kt-drag`
 - Default variant: `free`
 - Variants: `free`
-- Public options: `axis`, `bounds`, `handle`, `inertia`, `snapBack`
+- Public options: `axis`, `bounds`, `ease`, `handle`, `inertia`, `snapBack`
 
 ## tooltip
 
 - Attribute: `data-kt-tooltip`
 - Default variant: `default`
 - Variants: `default`
-- Public options: `content`, `delay`, `duration`, `effect`, `hideDelay`, `html`, `interactive`, `offset`, `placement`, `trigger`
+- Public options: `content`, `delay`, `duration`, `ease`, `effect`, `hideDelay`, `html`, `interactive`, `offset`, `placement`, `trigger`
 
 ## switch
 
 - Attribute: `data-kt-switch`
 - Default variant: `toggle`
 - Variants: `toggle`
-- Public options: `checked`, `duration`, `offColor`, `onChange`, `onColor`, `size`, `thumbColor`
+- Public options: `checked`, `duration`, `ease`, `offColor`, `onChange`, `onColor`, `size`, `thumbColor`
 
 ## flip
 

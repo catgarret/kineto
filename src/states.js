@@ -1,4 +1,4 @@
-import { cssEase, env, numberOption as number, q } from './utils.js';
+import { env, numberOption as number, q, resolveMotion } from './utils.js';
 
 // Motion States is intentionally a small, visual-only primitive. It does not
 // own DOM insertion/removal, focus, aria or inert state; Presence and the host
@@ -44,11 +44,13 @@ function childTargets(parents, children) {
 
 function stateOptions(options, defaults) {
   const source = { ...defaults, ...options };
+  // Springs keep their natural pace when no duration is given.
+  const motion = resolveMotion(source, { ease: 'ease', duration: 300, durationUnit: 'ms' });
   return {
-    duration: Math.max(0, number(source.duration, 300)),
+    duration: Math.max(0, motion.ms),
     delay: Math.max(0, number(source.delay, 0)),
     stagger: Math.max(0, number(source.stagger, 0)),
-    ease: cssEase(source.ease || 'ease'),
+    ease: motion.css,
     initial: source.initial,
     beforeChildren: source.beforeChildren === true,
     afterChildren: source.afterChildren === true,

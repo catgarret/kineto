@@ -1,4 +1,4 @@
-import { clamp, measureThenApply, numberOption, segmentText } from '../utils.js';
+import { clamp, cssEase, isCssEasing, measureThenApply, numberOption, segmentText } from '../utils.js';
 
 function normalizeMaskDirection(value) {
   const direction = String(value || 'top-to-bottom').toLowerCase();
@@ -65,6 +65,15 @@ function plainText(html) {
   const probe = document.createElement('div');
   probe.innerHTML = html;
   return probe.textContent || '';
+}
+
+// Every WAAPI curve here goes through one resolver: Kineto tokens and springs
+// work, and an invalid value falls back to the site's own curve instead of
+// making WAAPI throw (the raw option used to be passed straight through).
+function curve(value, fallback) {
+  if (value == null || value === '') return fallback;
+  const resolved = cssEase(value);
+  return isCssEasing(resolved) ? resolved : fallback;
 }
 
 export default {
@@ -171,7 +180,7 @@ export default {
       const current = node.animate([
         { clipPath: 'inset(0 0 0 0)', webkitClipPath: 'inset(0 0 0 0)', transform: 'translate3d(0,0,0)', opacity: 1 },
         { clipPath: hiddenClip(maskDirection), webkitClipPath: hiddenClip(maskDirection), transform: nudge(maskDirection), opacity: 0.6 }
-      ], { duration: maskDuration, easing: opts.maskEase || 'cubic-bezier(.5,0,.75,.4)', fill: 'forwards' });
+      ], { duration: maskDuration, easing: curve(opts.maskEase, 'cubic-bezier(.5,0,.75,.4)'), fill: 'forwards' });
       animation = current;
       try { await current.finished; } catch (_error) { /* cancelled */ }
       if (animation === current) animation = null;
@@ -180,7 +189,7 @@ export default {
       const current = node.animate([
         { clipPath: oppositeClip(maskDirection), webkitClipPath: oppositeClip(maskDirection), transform: nudge(maskDirection === 'bottom-to-top' ? 'top-to-bottom' : maskDirection === 'top-to-bottom' ? 'bottom-to-top' : maskDirection === 'left-to-right' ? 'right-to-left' : 'left-to-right'), opacity: 0.6 },
         { clipPath: 'inset(0 0 0 0)', webkitClipPath: 'inset(0 0 0 0)', transform: 'translate3d(0,0,0)', opacity: 1 }
-      ], { duration: maskDuration, easing: opts.maskEase || 'cubic-bezier(.22,.8,.3,1)', fill: 'forwards' });
+      ], { duration: maskDuration, easing: curve(opts.maskEase, 'cubic-bezier(.22,.8,.3,1)'), fill: 'forwards' });
       animation = current;
       try { await current.finished; } catch (_error) { /* cancelled */ }
       if (animation === current) animation = null;
@@ -233,7 +242,7 @@ export default {
         track.style.transform = from;
         const currentAnimation = track.animate([{ transform: from }, { transform: to }], {
           duration: rollDuration,
-          easing: opts.easing || 'cubic-bezier(.22,.8,.25,1)',
+          easing: curve(opts.easing, 'cubic-bezier(.22,.8,.25,1)'),
           fill: 'forwards'
         });
         animation = currentAnimation;
@@ -260,7 +269,7 @@ export default {
         // restoreDirection: 'reverse' (default) slides back DOWN to the original;
         // 'continue' keeps rolling UP (same direction) and wraps to the original.
         const continueRoll = opts.restoreDirection === 'continue' || opts.restoreDirection === 'forward';
-        const ease = opts.easing || 'cubic-bezier(.22,.8,.25,1)';
+        const ease = curve(opts.easing, 'cubic-bezier(.22,.8,.25,1)');
         const homeTf = 'translate3d(0,0,0)';
         const upTf = 'translate3d(0,-1.35em,0)';
         let hoverState = 0;
@@ -596,7 +605,7 @@ export default {
           { transform: `translate3d(${endX}px,0,0)`, offset: c },
           { transform: `translate3d(${startX}px,0,0)`, offset: d },
           { transform: `translate3d(${startX}px,0,0)`, offset: 1 }
-        ], { duration: total, iterations: opts.repeat === false ? 1 : Infinity, easing: opts.easing || 'ease-in-out', fill: 'both' });
+        ], { duration: total, iterations: opts.repeat === false ? 1 : Infinity, easing: curve(opts.easing, 'ease-in-out'), fill: 'both' });
         return;
       }
 
@@ -604,7 +613,7 @@ export default {
         animation = track.animate([
           { transform: `translate3d(${startX}px,0,0)` },
           { transform: `translate3d(${endX}px,0,0)` }
-        ], { duration: moveDuration, delay, easing: opts.easing || 'ease-in-out', fill: 'forwards' });
+        ], { duration: moveDuration, delay, easing: curve(opts.easing, 'ease-in-out'), fill: 'forwards' });
         return;
       }
 
@@ -629,7 +638,7 @@ export default {
             track.style.transform = `translate3d(${startX}px,0,0)`;
             const move = track.animate(
               [{ transform: `translate3d(${startX}px,0,0)` }, { transform: `translate3d(${endX}px,0,0)` }],
-              { duration: moveDuration, delay, easing: opts.easing || 'linear', fill: 'forwards' }
+              { duration: moveDuration, delay, easing: curve(opts.easing, 'linear'), fill: 'forwards' }
             );
             animation = move;
             try { await move.finished; } catch (_e) { return; }
@@ -711,7 +720,7 @@ export default {
           const fromB = rollDown ? 'translateY(-100%)' : 'translateY(100%)';
           const toA = rollDown ? 'translateY(100%)' : 'translateY(-100%)';
           lineB.style.transform = fromB;
-          const easing = opts.easing || 'cubic-bezier(.22,.8,.25,1)';
+          const easing = curve(opts.easing, 'cubic-bezier(.22,.8,.25,1)');
           const outgoing = lineA.animate([{ transform: 'translateY(0)' }, { transform: toA }], { duration: rollDuration, easing, fill: 'forwards' });
           const incoming = lineB.animate([{ transform: fromB }, { transform: 'translateY(0)' }], { duration: rollDuration, easing, fill: 'forwards' });
           animation = incoming;
@@ -900,7 +909,7 @@ export default {
         const movement = track.animate([
           { transform: `translate3d(${startX}px,0,0)` },
           { transform: `translate3d(${endX}px,0,0)` }
-        ], { duration: moveDuration, delay, easing: opts.easing || 'linear', fill: 'forwards' });
+        ], { duration: moveDuration, delay, easing: curve(opts.easing, 'linear'), fill: 'forwards' });
         animation = movement;
         try { await movement.finished; } catch (_error) { return; }
         if (destroyed || paused) return;

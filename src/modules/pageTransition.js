@@ -1,5 +1,5 @@
 import Kineto from '../core.js';
-import { cssEase } from '../utils.js';
+import { resolveMotion } from '../utils.js';
 
 let activeInstance = null;
 
@@ -21,8 +21,9 @@ function makeOverlay(opts) {
   const effect = String(opts.effect || 'none');
   if (effect === 'none' || effect === 'css' || !COVER[effect]) return null;
   const spec = COVER[effect];
-  const dur = Math.max(0.05, Number(opts.duration ?? 0.5));
-  const ease = opts.ease ? cssEase(opts.ease) : 'cubic-bezier(.76,0,.24,1)';
+  const motion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: 'cubic-bezier(.76,0,.24,1)', duration: 0.5 });
+  const dur = Math.max(0.05, motion.seconds);
+  const ease = motion.css;
   const color = opts.color || '#101318';
   const color2 = opts.color2 || color;
   const bg = effect === 'curtain' ? `linear-gradient(90deg,${color} 50%,${color2} 50%)`

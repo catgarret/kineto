@@ -8,7 +8,7 @@
 |---|---|---|
 | `duration` | number | 모션 시간(초) |
 | `delay` | number | 시작 지연(초) |
-| `ease` | string | GSAP easing |
+| `ease` | string | 모션 곡선 — 이징 토큰·애플 곡선·스프링 (아래 [이징과 스프링](#이징과-스프링)) |
 | `stagger` | number/object | 자식 또는 분할 텍스트의 순차 간격 |
 | `speed` | number | 모듈별 이동량·문자 속도·흐름 속도 |
 | `onComplete` | function | 완료 콜백 |
@@ -65,24 +65,89 @@ const many = Kineto.reveal('.card', { preset: 'fade-up' });
 
 정규화된 인스턴스는 `pause`, `resume`, `destroy`를 가집니다. 모듈에 따라 `replay`, `next`, `previous`, `navigate` 같은 추가 메서드가 있을 수 있습니다.
 
-## 전역 설정 — 스프링 모션
+## 이징과 스프링
 
-`Kineto.config({ spring: true })` 한 줄로 트랜스폼 계열 모듈의 기본 이징을 스프링(오버슈트)으로 바꿉니다. 현재 `reveal`(진입) · `gesture`(hover/press)에 적용되며, 요소별 `spring` / `ease`(또는 `easing`) 옵션으로 개별 override할 수 있습니다.
+모션이 있는 모든 모듈은 `ease`(Overflow Text·Ripple은 `easing`)를 **한 해석기**(`src/utils.js`의
+`resolveMotion`)로 읽습니다. 그래서 어느 모듈이든 같은 값을 알아듣고, CSS·WAAPI·GSAP 어느 경로로
+그려도 같은 곡선이 됩니다. CSS 이징이 아닌 값(GSAP 이름·오타)은 모듈 기본 곡선으로 돌아가며, 예전처럼
+WAAPI에서 예외를 던지지 않습니다.
 
-```js
-Kineto.config({ spring: true });   // 전역 스프링 on
-Kineto.reveal('.card', { preset: 'fade-up' });        // 스프링 이징 적용
-Kineto.reveal('.hero', { preset: 'fade-up', spring: false }); // 이 요소만 끔
+| 쓰는 법 | 예 | 뜻 |
+|---|---|---|
+| CSS 키워드 | `ease-out` | 그대로 |
+| easings.net | `expo-out`, `back-out` | 실제 cubic-bezier |
+| 애플 곡선 | `apple-standard`, `apple-decelerate`, `apple-header`, `apple-ease-in-out` | apple.com 제품 페이지가 가장 많이 쓰는 세 곡선 + Core Animation `easeInEaseOut` |
+| 애플 스프링 | `spring-smooth`, `spring-snappy`, `spring-bouncy` | SwiftUI `.smooth`·`.snappy`·`.bouncy` (duration 0.5초, bounce 0 / 0.15 / 0.3) |
+| | `spring-apple`, `spring-interactive`, `spring-classic` | SwiftUI `Animation.default`(iOS 17, response 0.55·damping 1.0), `interactiveSpring()`(0.15·0.86), `spring(response:dampingFraction:)` 기본값(0.5·0.825) |
+| 애플 스프링 조정 | `spring-bouncy(0.6s)`, `spring-snappy(0.4s, 0.1)` | 길이와 추가 bounce (SwiftUI `extraBounce`) |
+| 애플 표기 | `spring(0.5s, 0.3)`, `spring(400ms)` | duration·bounce |
+| 물리 표기 | `spring(170, 26)`, `spring(100, 8, 1, 0)` | stiffness·damping·mass·velocity |
+| 기존 토큰 | `spring` | Kineto가 예전부터 쓰던 170/26 (바뀌지 않음) |
+| 객체 | `{ spring: { duration: 0.5, bounce: 0.3 } }` | 세 표기 모두 객체로도 |
+
+애플 값의 변환은 SwiftUI `Spring` 문서의 식 그대로입니다: `stiffness = (2π / duration)²`,
+`damping = 4π(1 − bounce) / duration` (mass 1). 문서 예시 `Spring(duration: 0.5, bounce: 0.3)` →
+stiffness 157.9, damping 17.6과 같은지 `tests/easings.mjs`가 확인합니다.
+
+**스프링은 제 속도로 움직입니다.** `duration`을 주지 않으면 스프링이 0.1% 안으로 멈추는 시간이 모션
+길이가 됩니다(`spring-snappy` ≈ 0.70초). `duration`을 주면 그 시간에 맞춰 곡선을 늘이거나 줄입니다.
+CSS로는 스프링을 `linear()`로 구워 넘기므로 1을 넘는 오버슈트와 여러 번의 진동이 그대로 남습니다.
+GSAP 경로에는 같은 물리 함수가 이징 함수로 들어갑니다(예전의 `elastic.out` 흉내가 아님).
+
+```html
+<div data-kt-tabs data-kt-ease="spring-snappy">…</div>          <!-- 탭 표시가 네이티브 세그먼트처럼 -->
+<div data-kt-bottom-sheet data-kt-ease="spring-smooth">…</div>  <!-- 시트가 iOS처럼 올라옴 -->
+<div data-kt-slider data-kt-ease="spring(0.5s, 0.3)">…</div>    <!-- 슬라이드를 실제 물리로 -->
+<a data-kt-lightbox data-kt-ease="spring-bouncy" href="…">…</a>
 ```
 
-이징을 직접 지정하면 스프링보다 우선합니다. 대표 이징 예시:
+### 페이지 전체 기본값
 
-| 용도 | 값 |
+```js
+Kineto.config({ spring: true });            // UI 모션을 spring-snappy로
+Kineto.config({ ease: 'apple-standard' });  // 또는 원하는 값 하나 (spring보다 우선)
+Kineto.config({ ease: null });              // 해제
+Kineto.reveal('.hero', { preset: 'fade-up', spring: false }); // 이 요소만 제외
+```
+
+요소의 `ease`가 항상 이깁니다. 진행 표시·스크럽·스텝처럼 곡선이 의미를 가진 모션(Page Reveal의 손으로
+맞춘 곡선, Blur Text의 blur, Lazy의 페이드, Ripple, Reveal `clock`, Card Glow의 shine)은 페이지 기본값을
+받지 않고, 요소에 직접 준 `ease`만 따릅니다.
+
+### Kineto 밖 CSS에서 — 토큰
+
+`kineto.css`가 스프링과 애플 곡선을 CSS 변수로 제공합니다(`scripts/generate-easing-tokens.mjs`가
+`src/easings.js`에서 생성 — 손으로 고치지 마세요).
+
+```css
+.card { transition: translate var(--kt-spring-snappy-duration) var(--kt-spring-snappy); }
+.card:hover { translate: 0 -6px; }
+.menu { transition: opacity .24s var(--kt-ease-apple-standard); }
+```
+
+`--kt-spring-{smooth|snappy|bouncy|apple|interactive}`와 각 `-duration`,
+`--kt-ease-apple-{standard|decelerate|header|ease-in-out}`가 있습니다.
+
+### JS에서
+
+```js
+const s = Kineto.spring('spring-bouncy');   // { easing, duration, durationMs, fn, stiffness, damping, mass, velocity }
+el.animate(frames, { duration: s.durationMs, easing: s.easing });
+Kineto.easing('apple-standard');            // 'cubic-bezier(0.4,0,0.6,1)'
+Kineto.easingFn('spring(100, 8)')(0.3);     // 캔버스·rAF용 진행 함수
+```
+
+### 어디에 적용되나
+
+| 무엇이 스프링을 받나 | 모듈 |
 |---|---|
-| 표준(자연스러운 감속) | `power3.out` / `cubic-bezier(.22,.8,.3,1)` |
-| 스프링(살짝 튕김) | `back.out(1.25)` / `cubic-bezier(.34,1.56,.64,1)` |
-| 강한 스프링 | `cubic-bezier(.34,1.8,.5,1)` |
-| 선형(스크럽) | `none` / `linear` |
+| 등장·전환 | Reveal(모든 preset, GSAP 없이도), Text Split·Text Reveal·Text Transition, Blur Text, Cover Reveal, Page Transition, Page Reveal |
+| 컴포넌트 | Tabs(표시 + 패널), Bottom Sheet(열기), Tooltip(나타남), Toast(도착), Switch(손잡이), Mega Menu(열기), Accordion(높이), Lightbox(프레임 전환) |
+| 포인터·배치 | Gesture(hover/press), Drag(제자리로), Flip(배치 전환), Fullpage(섹션 이동), Slider·Radial(실제 물리 엔진) |
+| 스크롤·숫자 | Sticky Stack, Counter (GSAP 이징 함수로) |
+
+닫힘·퇴장 모션(시트 닫기, 툴팁 사라짐, 텍스트 퇴장)은 짧은 가속 곡선을 그대로 둡니다 — 사라지는 것이
+튕기면 머뭇거리는 것처럼 보이기 때문입니다.
 
 ## 컨트롤 이름 — `labels`
 

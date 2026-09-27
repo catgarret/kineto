@@ -100,7 +100,8 @@ assert.ok(
 // 2026-09-24: Canvas Effect adds three — Shape Grid (Canvas 2D), Flow Gradient
 // (shader) and the AI prompt card; the last two have Korean titles. Text
 // Transition's `pop` adds its card (English title).
-assert.equal(descriptions.length, 195);
+// 2026-09-27: Reveal's `split` adds the blob-to-controls card (English title).
+assert.equal(descriptions.length, 196);
 // 18 since the Korean-titled `radial` compatibility card was removed (see above).
 assert.equal(titles.length, 23);
 

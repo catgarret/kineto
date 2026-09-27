@@ -1,4 +1,4 @@
-import { cssEase, dropEmptyAttributes } from '../utils.js';
+import { dropEmptyAttributes, resolveMotion } from '../utils.js';
 
 // Accordion — animates native <details>/<summary> open & close with a springy
 // height morph and a blur-in on the content, keeping the browser's built-in
@@ -9,8 +9,9 @@ export default {
     const items = el.matches('details') ? [el] : Array.from(el.querySelectorAll('details'));
     if (!items.length) return null;
 
-    const duration = Math.max(0.05, Number(opts.duration ?? 0.4));
-    const ease = opts.ease ? cssEase(opts.ease) : 'cubic-bezier(.22,.8,.3,1)';
+    const motion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: 'cubic-bezier(.22,.8,.3,1)', duration: 0.4 });
+    const duration = Math.max(0.05, motion.seconds);
+    const ease = motion.css;
     const single = opts.single === true;
     const blur = Math.max(0, Number(opts.blur ?? 6));
     // Reveal effect for the panel content: 'blur' (blur+fade+height, default),

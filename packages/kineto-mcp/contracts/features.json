@@ -3066,6 +3066,7 @@
         "doubleClickZoom",
         "download",
         "duration",
+        "ease",
         "exif",
         "group",
         "info",
@@ -3099,7 +3100,8 @@
         "maxZoom": 4,
         "minZoom": 1,
         "share": false,
-        "zoomStep": 0.5
+        "zoomStep": 0.5,
+        "ease": "cubic-bezier(.22,.8,.3,1)"
       }
     },
     {
@@ -4813,12 +4815,15 @@
         "class",
         "clock",
         "swing",
-        "skew"
+        "skew",
+        "split"
       ],
       "publicOptions": [
         "activeClass",
         "classOnly",
         "clockDirection",
+        "color",
+        "contentDelay",
         "delay",
         "distance",
         "direction",
@@ -4828,6 +4833,7 @@
         "enterClass",
         "enterEase",
         "leaveClass",
+        "morphEase",
         "onClassChange",
         "onComplete",
         "onEnter",
@@ -4851,7 +4857,10 @@
         "order": "index",
         "preset": "fade-up",
         "stagger": 0,
-        "startAngle": 0
+        "startAngle": 0,
+        "morphEase": "spring(0.4s, 0.3)",
+        "contentDelay": 0.74,
+        "color": ""
       },
       "variantOptions": {
         "fade": [
@@ -5499,7 +5508,41 @@
           "stagger",
           "start",
           "threshold"
+        ],
+        "split": [
+          "activeClass",
+          "classOnly",
+          "color",
+          "contentDelay",
+          "delay",
+          "direction",
+          "distance",
+          "duration",
+          "ease",
+          "end",
+          "enterClass",
+          "enterEase",
+          "leaveClass",
+          "morphEase",
+          "onClassChange",
+          "onComplete",
+          "onEnter",
+          "onEnterBack",
+          "onLeave",
+          "onLeaveBack",
+          "once",
+          "order",
+          "preset",
+          "removeClassOnLeave",
+          "rootMargin",
+          "spring",
+          "stagger",
+          "start",
+          "threshold"
         ]
+      },
+      "variantRequires": {
+        "split": "items"
       }
     },
     {
@@ -5520,6 +5563,7 @@
         "controls",
         "drag",
         "duration",
+        "ease",
         "loop",
         "position",
         "radius",
@@ -5656,6 +5700,7 @@
         "dots",
         "drag",
         "duration",
+        "ease",
         "effect",
         "effectDirection",
         "effectIntensity",
@@ -5764,6 +5809,7 @@
           "dots",
           "drag",
           "duration",
+          "ease",
           "effect",
           "effectDirection",
           "effectIntensity",
@@ -5822,6 +5868,7 @@
           "dots",
           "drag",
           "duration",
+          "ease",
           "effect",
           "effectDirection",
           "effectIntensity",
@@ -5879,6 +5926,7 @@
           "dots",
           "drag",
           "duration",
+          "ease",
           "effect",
           "effectDirection",
           "effectIntensity",
@@ -5936,6 +5984,7 @@
           "dots",
           "drag",
           "duration",
+          "ease",
           "effect",
           "effectDirection",
           "effectIntensity",
@@ -5995,6 +6044,7 @@
           "dots",
           "drag",
           "duration",
+          "ease",
           "effect",
           "effectDirection",
           "effectIntensity",
@@ -6053,6 +6103,7 @@
           "dots",
           "drag",
           "duration",
+          "ease",
           "effect",
           "effectDirection",
           "effectIntensity",
@@ -6110,6 +6161,7 @@
           "dots",
           "drag",
           "duration",
+          "ease",
           "effect",
           "effectDirection",
           "effectIntensity",
@@ -6167,6 +6219,7 @@
           "dots",
           "drag",
           "duration",
+          "ease",
           "effect",
           "effectDirection",
           "effectIntensity",
@@ -6224,6 +6277,7 @@
           "dots",
           "drag",
           "duration",
+          "ease",
           "effect",
           "effectDirection",
           "effectIntensity",
@@ -6281,6 +6335,7 @@
           "dots",
           "drag",
           "duration",
+          "ease",
           "effect",
           "effectDirection",
           "effectIntensity",
@@ -6390,6 +6445,7 @@
           "blur",
           "bottomSpace",
           "distance",
+          "ease",
           "fadePrevious",
           "gap",
           "mode",
@@ -6414,6 +6470,7 @@
           "align",
           "blur",
           "distance",
+          "ease",
           "end",
           "gap",
           "mode",
@@ -6978,6 +7035,7 @@
       "publicOptions": [
         "closeDelay",
         "duration",
+        "ease",
         "indicator",
         "layout",
         "openDelay",
@@ -6999,12 +7057,14 @@
         "stagger": 40,
         "startAngle": -90,
         "sweep": 180,
-        "trigger": "hover"
+        "trigger": "hover",
+        "ease": "cubic-bezier(.22,.8,.3,1)"
       },
       "variantOptions": {
         "dropdown": [
           "closeDelay",
           "duration",
+          "ease",
           "indicator",
           "layout",
           "openDelay",
@@ -7014,6 +7074,7 @@
         "mega": [
           "closeDelay",
           "duration",
+          "ease",
           "indicator",
           "layout",
           "openDelay",
@@ -7023,6 +7084,7 @@
         "radial": [
           "closeDelay",
           "duration",
+          "ease",
           "indicator",
           "layout",
           "openDelay",
@@ -7046,6 +7108,7 @@
         "barColor",
         "dismissible",
         "duration",
+        "ease",
         "icon",
         "labels",
         "max",
@@ -7053,7 +7116,10 @@
         "position",
         "progressBar",
         "type"
-      ]
+      ],
+      "optionDefaults": {
+        "ease": "cubic-bezier(.22,.8,.3,1)"
+      }
     },
     {
       "name": "bottomSheet",
@@ -7068,6 +7134,7 @@
         "backdropOpacity",
         "dismissible",
         "duration",
+        "ease",
         "handle",
         "label",
         "maxHeight",
@@ -7077,7 +7144,10 @@
         "resizeArea",
         "resizeLabel",
         "trigger"
-      ]
+      ],
+      "optionDefaults": {
+        "ease": "cubic-bezier(.22,.8,.3,1)"
+      }
     },
     {
       "name": "tabs",
@@ -7090,12 +7160,16 @@
         "activation",
         "activeClass",
         "duration",
+        "ease",
         "effect",
         "indicator",
         "indicatorMotion",
         "onChange",
         "orientation"
-      ]
+      ],
+      "optionDefaults": {
+        "ease": "cubic-bezier(.22,.8,.3,1)"
+      }
     },
     {
       "name": "coverReveal",
@@ -7198,10 +7272,14 @@
       "publicOptions": [
         "axis",
         "bounds",
+        "ease",
         "handle",
         "inertia",
         "snapBack"
-      ]
+      ],
+      "optionDefaults": {
+        "ease": "cubic-bezier(.22,.8,.3,1)"
+      }
     },
     {
       "name": "tooltip",
@@ -7214,6 +7292,7 @@
         "content",
         "delay",
         "duration",
+        "ease",
         "effect",
         "hideDelay",
         "html",
@@ -7221,7 +7300,10 @@
         "offset",
         "placement",
         "trigger"
-      ]
+      ],
+      "optionDefaults": {
+        "ease": "ease"
+      }
     },
     {
       "name": "switch",
@@ -7233,12 +7315,16 @@
       "publicOptions": [
         "checked",
         "duration",
+        "ease",
         "offColor",
         "onChange",
         "onColor",
         "size",
         "thumbColor"
-      ]
+      ],
+      "optionDefaults": {
+        "ease": "cubic-bezier(.22,.8,.3,1)"
+      }
     },
     {
       "name": "flip",
@@ -7510,6 +7596,7 @@
     "destroyModule",
     "disableSmooth",
     "easing",
+    "spring",
     "easingFn",
     "enableSmooth",
     "getEngineSource",

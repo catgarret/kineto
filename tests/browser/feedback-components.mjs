@@ -17,7 +17,13 @@ const withoutImports = (source) => source.replace(/^import[^;]*from '[^']*';\s*$
 // 그 이름이 정의되지 않아 스크립트가 죽고, 원인이 보이지 않는 타임아웃으로 나타납니다.
 const stub = "const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));const env=()=>({reducedMotion:false});"
   + `const labeller = ${labeller.toString()};`
-  + `const snapshotAttributes = ${snapshotAttributes.toString()};`;
+  + `const snapshotAttributes = ${snapshotAttributes.toString()};`
+  // resolveMotion pulls in the whole easing subsystem, so this suite uses a
+  // curve-only stand-in (no springs): authored duration wins, else the module
+  // default; the curve is the module default. Spring resolution itself is
+  // covered by tests/easings.mjs and tests/browser/spring-motion.mjs.
+  + "const resolveMotion=(o={},d={})=>{const u=d.durationUnit==='ms'?1000:1;const a=o.duration!=null&&o.duration!==''?Number(o.duration):NaN;"
+  + "const seconds=Number.isFinite(a)?a/u:Number(d.duration??0.3)/u;return {spec:d.ease,spring:false,authored:false,seconds,ms:seconds*1000,css:typeof d.ease==='string'?d.ease:'ease'};};";
 
 // 모듈이 utils 에서 가져오는 이름이 stub 에 다 있는지 **먼저** 확인합니다.
 // 빠진 이름이 있으면 페이지 안에서 그 식별자가 정의되지 않아 스크립트가 통째로 죽고,

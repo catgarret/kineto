@@ -48,7 +48,7 @@ identity와 실제 source anchor 묶음에 연결합니다.
 
 | module | source mechanism | 전용 demo markup | 상태 |
 |---|---:|---:|---|
-| `reveal` | `23/23` | `23/23` | distinct |
+| `reveal` | `24/24` | `24/24` | distinct |
 | `lazy` | `16/16` | `13/13` | distinct |
 | `stylize` | `3/3` | `3/3` | distinct |
 | `cursor` | `11/11` | `11/11` | distinct |
@@ -82,6 +82,9 @@ Glitch Wave는 1회 재생과 시작·반복·지연 설정을 확인하는
   perspective flip, rotate·corner swing, skew, clip-path의 서로 다른 초기 상태를
   가집니다. `class`는 observer가 작성자 class만 토글하는 lifecycle branch이고,
   `clock`은 conic mask 진행률을 그리는 별도 branch입니다.
+  `split`은 그룹이 스프링으로 솟으며 한 덩어리(blob)에서 원으로 눌린 뒤 자식들로 갈라져
+  펼쳐지는 별도 branch(`src/modules/reveal/split.js`)로, 다른 preset처럼 한 요소의 초기 상태가 아니라
+  자식들의 배치를 움직입니다.
 - `lazy`: `fade`와 `blur-up`을 분리하고, `wave`는 slice 변위 canvas,
   `grain`은 live-image noise canvas를 사용합니다. `skeleton`, `pixelate`, `flicker`,
   `polaroid`, `crt`는 각각 placeholder, discrete resolution, blackout slice,

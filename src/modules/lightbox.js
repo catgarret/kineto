@@ -1,4 +1,4 @@
-import { labeller } from '../utils.js';
+import { labeller, resolveMotion } from '../utils.js';
 
 // Set on <html> while the viewer is open, so a page can restyle what sits under
 // it (a custom cursor, a sticky header) with a plain class selector instead of
@@ -386,7 +386,13 @@ function createManager(label) {
         zoom: [{ opacity: 0, transform: 'scale(.9)' }, { opacity: 1, transform: 'scale(1)' }],
         rise: [{ opacity: 0, transform: 'translate3d(0,10px,0) scale(.985)' }, { opacity: 1, transform: 'translate3d(0,0,0) scale(1)' }]
       }[effect];
-      if (frames) mediaHost.animate(frames, { duration: effect === 'slide' ? 260 : 200, easing: 'cubic-bezier(.22,.8,.3,1)' });
+      if (frames) {
+        // `ease` shapes the incoming frame (any token or a spring — a spring
+        // runs at its natural pace). `duration` stays the backdrop fade, so a
+        // spring here never slows the viewer's open/close.
+        const frameMotion = resolveMotion({ ease: activeEntry.ease }, { ease: 'cubic-bezier(.22,.8,.3,1)', duration: effect === 'slide' ? 0.26 : 0.2 });
+        mediaHost.animate(frames, { duration: frameMotion.ms, easing: frameMotion.css });
+      }
     }
     applyOptions();
     syncFilmstripActive();
@@ -726,6 +732,7 @@ export default {
       // shares data-kt-duration with another module (e.g. a lazy loader whose
       // long load duration would otherwise bleed into the backdrop fade).
       duration: opts.lightboxDuration ?? opts.duration,
+      ease: opts.ease,
       transition: opts.transition,
       radius: opts.radius,
       toolbar: opts.toolbar,

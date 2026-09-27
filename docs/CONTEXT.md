@@ -10,7 +10,7 @@ Kineto는 `dongri.me`의 픽셀 모자이크 실험에서 시작한 인터랙션
 
 - 버전: `0.12.3`
 - 공개 모듈: 55개
-- Core API: 31개
+- Core API: 32개
 - 소유자 고정 요구사항: 52개
 (세 숫자는 `kineto.features.json`·`kineto.requirements.json` 과 `tests/roadmap-readiness.mjs` 가 대조합니다)
 - 라이브 플레이그라운드: 모든 데모 카드(`tests/browser/demo-code-access.mjs` 가 전부 코드 보기·복사를 강제)

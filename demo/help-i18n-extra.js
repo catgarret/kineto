@@ -3002,6 +3002,84 @@
   for (const [lang, once] of Object.entries(revealOnce)) {
     sets[lang].reveal = Object.assign({}, sets[lang].reveal, { once });
   }
+  // Springs and Apple curves (2026-09-27). Every animating module reads `ease`
+  // through one resolver (src/utils.js resolveMotion), so these modules gained
+  // the option; modules that already had an `ease` tip keep theirs.
+  const motionEase = {
+    ko: '움직임 곡선입니다. 이징 토큰, 애플 곡선(apple-standard), 스프링(spring-snappy, spring(0.5s, 0.3)) 모두 됩니다. 스프링은 지속 시간을 정하지 않으면 제 속도로 움직입니다.',
+    en: 'Motion curve: any easing token, an Apple curve (apple-standard) or a spring (spring-snappy, spring(0.5s, 0.3)). A spring runs at its natural pace unless Duration is set.',
+    ja: '動きのカーブです。イージングトークン、Apple のカーブ(apple-standard)、スプリング(spring-snappy、spring(0.5s, 0.3))が使えます。スプリングは長さ未指定なら本来の速さで動きます。',
+    'zh-CN': '运动曲线：可用缓动名称、Apple 曲线（apple-standard）或弹簧（spring-snappy、spring(0.5s, 0.3)）。未设时长时，弹簧按自身节奏运动。',
+    'zh-TW': '運動曲線：可用緩動名稱、Apple 曲線（apple-standard）或彈簧（spring-snappy、spring(0.5s, 0.3)）。未設時長時，彈簧依自身節奏運動。',
+    ru: 'Кривая движения: любое имя easing, кривая Apple (apple-standard) или пружина (spring-snappy, spring(0.5s, 0.3)). Без длительности пружина идёт в своём темпе.',
+    it: 'Curva del movimento: qualsiasi easing, una curva Apple (apple-standard) o una molla (spring-snappy, spring(0.5s, 0.3)). Senza durata la molla va al suo ritmo.'
+  };
+  // Modules whose Duration means something else (dwell, backdrop fade) or
+  // that have none: the curve shapes the arrival only.
+  const arrivalEase = {
+    ko: '나타나는 움직임의 곡선입니다. 이징 토큰, 애플 곡선, 스프링(spring-bouncy, spring(0.5s, 0.3)) 모두 되며 스프링은 제 속도로 움직입니다.',
+    en: 'Curve of the arrival: any easing token, an Apple curve or a spring (spring-bouncy, spring(0.5s, 0.3)); a spring moves at its natural pace.',
+    ja: '現れる動きのカーブです。イージングトークン、Apple のカーブ、スプリング(spring-bouncy、spring(0.5s, 0.3))が使え、スプリングは本来の速さで動きます。',
+    'zh-CN': '出现动作的曲线：可用缓动名称、Apple 曲线或弹簧（spring-bouncy、spring(0.5s, 0.3)），弹簧按自身节奏运动。',
+    'zh-TW': '出現動作的曲線：可用緩動名稱、Apple 曲線或彈簧（spring-bouncy、spring(0.5s, 0.3)），彈簧依自身節奏運動。',
+    ru: 'Кривая появления: любое имя easing, кривая Apple или пружина (spring-bouncy, spring(0.5s, 0.3)); пружина идёт в своём темпе.',
+    it: 'Curva dell’entrata: qualsiasi easing, una curva Apple o una molla (spring-bouncy, spring(0.5s, 0.3)); la molla va al suo ritmo.'
+  };
+  const sliderEase = {
+    ko: '스프링 토큰(spring-snappy, spring(0.5s, 0.3), spring(170, 24))을 넣으면 실제 물리로 슬라이드합니다. Radial은 일반 곡선도 받아 회전 시간에 씁니다.',
+    en: 'A spring token (spring-snappy, spring(0.5s, 0.3), spring(170, 24)) moves the slides with real physics. Radial also takes a plain curve for its timed turn.',
+    ja: 'スプリングトークン(spring-snappy、spring(0.5s, 0.3)、spring(170, 24))で実際の物理でスライドします。Radial は通常のカーブも回転に使えます。',
+    'zh-CN': '填入弹簧名称（spring-snappy、spring(0.5s, 0.3)、spring(170, 24)）即以真实物理滑动。Radial 也接受普通曲线用于定时旋转。',
+    'zh-TW': '填入彈簧名稱（spring-snappy、spring(0.5s, 0.3)、spring(170, 24)）即以真實物理滑動。Radial 也接受一般曲線用於定時旋轉。',
+    ru: 'Имя пружины (spring-snappy, spring(0.5s, 0.3), spring(170, 24)) двигает слайды настоящей физикой. Radial принимает и обычную кривую для поворота.',
+    it: 'Un nome di molla (spring-snappy, spring(0.5s, 0.3), spring(170, 24)) muove le slide con fisica reale. Radial accetta anche una curva per la rotazione.'
+  };
+  const revealSplit = {
+    ko: {
+      morphEase: 'split: 덩어리가 원이 되고 자식들이 갈라져 펼쳐지는 곡선입니다. 기본은 spring(0.4s, 0.3)입니다.',
+      contentDelay: 'split: 도형이 펼쳐진 뒤 자식 안의 내용이 나타나기까지의 시간(초)입니다. 자식마다 0.2초씩 늦게 나옵니다.',
+      color: 'split: 처음 올라오는 덩어리의 색입니다. 비우면 첫 자식의 배경색을 씁니다.'
+    },
+    en: {
+      morphEase: 'split: curve of the blob turning into a circle and of the children opening out of it. Default spring(0.4s, 0.3).',
+      contentDelay: 'split: seconds before the children’s content appears, after their shapes; each child 0.2 s after the previous.',
+      color: 'split: colour of the rising blob. Empty uses the first child’s background.'
+    },
+    ja: {
+      morphEase: 'split: かたまりが円になり、子要素が分かれて開くカーブです。既定は spring(0.4s, 0.3)。',
+      contentDelay: 'split: 形が開いたあと子要素の中身が現れるまでの秒数です。子ごとに 0.2 秒ずつ遅れます。',
+      color: 'split: 最初に上がってくるかたまりの色です。空なら最初の子の背景色を使います。'
+    },
+    'zh-CN': {
+      morphEase: 'split：团块变成圆、子元素从中分开展开的曲线。默认 spring(0.4s, 0.3)。',
+      contentDelay: 'split：形状展开后，子元素内容出现前的秒数；每个子元素依次晚 0.2 秒。',
+      color: 'split：最先升起的团块颜色。留空则用第一个子元素的背景色。'
+    },
+    'zh-TW': {
+      morphEase: 'split：團塊變成圓、子元素從中分開展開的曲線。預設 spring(0.4s, 0.3)。',
+      contentDelay: 'split：形狀展開後，子元素內容出現前的秒數；每個子元素依序晚 0.2 秒。',
+      color: 'split：最先升起的團塊顏色。留空則用第一個子元素的背景色。'
+    },
+    ru: {
+      morphEase: 'split: кривая, по которой капля становится кругом и из неё раскрываются дети. По умолчанию spring(0.4s, 0.3).',
+      contentDelay: 'split: секунды до появления содержимого детей после их форм; каждый следующий на 0,2 с позже.',
+      color: 'split: цвет поднимающейся капли. Пусто — фон первого ребёнка.'
+    },
+    it: {
+      morphEase: 'split: curva con cui la goccia diventa un cerchio e i figli se ne aprono. Predefinita spring(0.4s, 0.3).',
+      contentDelay: 'split: secondi prima che compaia il contenuto dei figli, dopo le forme; ogni figlio 0,2 s dopo il precedente.',
+      color: 'split: colore della goccia che sale. Vuoto usa lo sfondo del primo figlio.'
+    }
+  };
+  const MOTION_EASE_MODULES = ['tabs', 'tooltip', 'switch', 'bottomSheet', 'megaMenu'];
+  const ARRIVAL_EASE_MODULES = ['toast', 'lightbox', 'drag'];
+  for (const lang of Object.keys(motionEase)) {
+    sets[lang] = sets[lang] || {};
+    MOTION_EASE_MODULES.forEach((name) => { sets[lang][name] = Object.assign({}, sets[lang][name], { ease: motionEase[lang] }); });
+    ARRIVAL_EASE_MODULES.forEach((name) => { sets[lang][name] = Object.assign({}, sets[lang][name], { ease: arrivalEase[lang] }); });
+    sets[lang].slider = Object.assign({}, sets[lang].slider, { ease: sliderEase[lang] });
+    sets[lang].reveal = Object.assign({}, sets[lang].reveal, revealSplit[lang]);
+  }
   // Radial's drawer is Slider's radial controls (see FIELDS.radial in
   // demo/playground.js), so it reads Slider's tips for the same keys instead of
   // keeping a second translated copy that could drift.

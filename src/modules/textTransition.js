@@ -1,4 +1,4 @@
-import { cssEase, segmentText, timeMs, wordSink } from '../utils.js';
+import { resolveMotion, segmentText, timeMs, wordSink } from '../utils.js';
 
 /*
  * Text transition rebuilt around a single live node: the visible text is
@@ -153,7 +153,15 @@ export default {
     const effect = effectName === 'shimmer' ? null : resolveEffect(dissolve ? 'fade' : effectName, opts);
     const effectDefaults = effect?.defaults || {};
     // Both accept seconds (≤ 20) or milliseconds — see utils.timeMs.
-    const duration = Math.max(50, timeMs(opts.duration ?? effectDefaults.duration, 550));
+    // Enter curve: the effect's own baked curve (pop) wins; otherwise `ease`
+    // (any token or spring) — it used to reach only per-character mode, the
+    // whole-line entrance ignored it. A spring without `duration` keeps its pace.
+    const enterMotion = resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: 'cubic-bezier(.22,.8,.3,1)', duration: 550, durationUnit: 'ms' });
+    const enterEasing = effect?.easing || enterMotion.css;
+    const authoredDuration = opts.duration ?? effectDefaults.duration;
+    const duration = Math.max(50, authoredDuration == null && enterMotion.spring && !effect?.easing
+      ? enterMotion.ms
+      : timeMs(authoredDuration, 550));
     const hold = timeMs(opts.pause ?? opts.hold, 1600);
     const loop = opts.loop !== false;
     // Dissolve and pop are inherently per-character.
@@ -292,7 +300,7 @@ export default {
           const player = animate(span, dissolve ? dissolveFrames(true) : effect.enter, {
             duration,
             delay: dissolve ? Math.random() * duration * 0.5 : order[spanIndex] * Math.min(stagger, 900 / Math.max(1, spans.length)),
-            easing: dissolve ? `steps(${2 + Math.floor(Math.random() * 3)}, end)` : (effect.easing || (opts.ease ? cssEase(opts.ease) : 'cubic-bezier(.22,.8,.3,1)'))
+            easing: dissolve ? `steps(${2 + Math.floor(Math.random() * 3)}, end)` : enterEasing
           });
           player.finished.then(() => {
             finished += 1;
@@ -300,7 +308,7 @@ export default {
           }).catch(() => {});
         });
       } else {
-        animate(inner, effect.enter, { duration, easing: effect.easing || 'cubic-bezier(.22,.8,.3,1)' })
+        animate(inner, effect.enter, { duration, easing: enterEasing })
           .finished.then(() => onDone?.()).catch(() => {});
       }
     };

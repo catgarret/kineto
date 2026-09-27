@@ -9,7 +9,7 @@
 
 ## 프리셋
 
-`fade`, `fade-up/down/left/right`, `slide-up/down/left/right`, `zoom-in/out`, `blur`, `rise`, `soft`, `flip-x/y`, `rotate`, `swing`, `skew`, `mask`, `wipe`, `clock`, `class`
+`fade`, `fade-up/down/left/right`, `slide-up/down/left/right`, `zoom-in/out`, `blur`, `rise`, `soft`, `flip-x/y`, `rotate`, `swing`, `skew`, `mask`, `wipe`, `clock`, `class`, `split`
 
 방향 없는 `zoom`·`flip`은 공개 프리셋이 아닙니다. `zoom-in`·`zoom-out`,
 `flip-x`·`flip-y` 중 의도한 동작을 지정합니다. `swing`은 왼쪽 위 모서리를
@@ -54,12 +54,56 @@ Fade Down/Left/Right·Slide Down/Right도 전용 카드로 비교합니다. 카�
 </ul>
 ```
 
-데모는 23개 공개 프리셋 모두 전용 예제를 제공합니다. Blur·Rise·Soft·Rotate도
+데모는 24개 공개 프리셋 모두 전용 예제를 제공합니다. Blur·Rise·Soft·Rotate도
 동일 문구·크기·0.9초 조건에서 비교하며 Replay와 개별 설정을 사용할 수 있습니다.
 기본값 기준 Blur는 이동 없이 20px 흐림을 해제하고, Rise는 아래쪽 72px·96%
 크기에서 올라옵니다. Soft는 아래쪽 24px 이동과 8px 흐림을 함께 해제하며,
 Rotate는 중심축 -8도·92% 크기에서 원래 상태로 돌아옵니다. 이동·크기·흐림을
 섞는 방식이 다르며 단순 이름 변경이나 동일 효과의 복제가 아닙니다.
+
+## 이징과 스프링
+
+`ease`(또는 `enterEase`)는 [공통 이징 어휘](../common-options.md#이징과-스프링)를 모두 받습니다.
+`spring-snappy`처럼 스프링을 주면 GSAP이 있을 때는 같은 물리 함수가, 없을 때는 `linear()`로 구운 곡선이
+쓰이고, `duration`을 주지 않으면 스프링이 멈추는 시간이 모션 길이가 됩니다. `spring: true`는 페이지의
+UI 스프링(`spring-snappy`)을 이 요소에만 켜고, `spring: false`는 `Kineto.config({ spring })`에서 이
+요소를 뺍니다. 예전에는 GSAP이 없는 경로가 `ease`를 무시하고 `ease`로 고정돼 있었습니다.
+
+```html
+<section data-kt-reveal="rise" data-kt-ease="spring-bouncy">통통 튀며 올라옴</section>
+<section data-kt-reveal="fade-up" data-kt-ease="spring(0.6s, 0.2)" data-kt-stagger="0.06">…</section>
+```
+
+## `split` — 한 덩어리에서 갈라지는 그룹
+
+그룹이 스프링으로 솟아오르며 가운데의 **세로로 긴 작은 덩어리**로 먼저 나타나고, 덩어리가 눌려 원이
+된 뒤 **자식들이 그 원에서 각자 자리로 갈라져 펼쳐집니다**. 배경이 먼저 완성되고 자식 안의 내용은
+마지막에 들어옵니다. 애플 제품 페이지 갤러리의 dot-nav + 재생 버튼 등장을 일반화한 것으로, 도구
+모음·칩 묶음·버튼 쌍·내비와 액션 등 **직계 자식이 둘 이상인 모든 줄**에 쓸 수 있습니다.
+
+```html
+<nav data-kt-reveal="split">
+  <div class="dots">…</div>
+  <button aria-label="일시 정지">…</button>
+</nav>
+```
+
+| 옵션 | 기본값 | 뜻 |
+|---|---|---|
+| `ease` | `spring-bouncy` | 그룹이 솟는 스프링. 애플 원본 값 그대로는 `spring(100, 8)` |
+| `distance` | `180` | 시작 위치(아래로 px) |
+| `morphEase` | `spring(0.4s, 0.3)` | 덩어리가 원이 되고 자식들이 펼쳐지는 곡선 |
+| `stagger` | `0.04` | 자식마다 펼쳐지는 시작 간격(초) |
+| `contentDelay` | `0.74` | 자식 안 내용이 나타나는 시각(초), 자식마다 0.2초씩 늦게 |
+| `color` | 첫 자식의 배경색 | 덩어리 색 |
+| `duration` | (자연 길이) | 주면 전체 타임라인을 그 길이에 맞춰 줄이거나 늘림 |
+| `delay`, `once`, `enterClass` 등 | | 다른 preset과 같음 |
+
+시간표(초): 0 상승 시작 · 덩어리 30×80 비율 ×1.3 → 0.18 폭이 원으로 → 0.26 높이가 원으로(눌림·늘어남)
+→ 0.52 자식들이 원에서 갈라져 펼쳐짐 → `contentDelay` 내용 등장. 덩어리는 절대 위치라 그룹의 배치를
+바꾸지 않고, 끝나면 제거되며 모든 인라인 스타일이 원래대로 돌아갑니다. 자식 배경은 불투명한 색일 때
+가장 깔끔합니다(반투명이면 갈라지는 순간 겹친 부분이 진해 보임). 하단 고정 컨트롤로 쓰려면 그룹에
+`position: sticky; bottom: 32px`를 주면 됩니다.
 
 ## Class-only designer hook
 

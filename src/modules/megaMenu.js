@@ -1,4 +1,4 @@
-import { canHover as anyInputCanHover, dropEmptyAttributes, env, numberOption, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
+import { canHover as anyInputCanHover, dropEmptyAttributes, env, numberOption, resolveMotion, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
 
 let panelUid = 0;
 
@@ -74,7 +74,7 @@ function px(value) {
  * Stacked panels — `dropdown` and `mega`. The panel slides and fades as one
  * block, which is what it has always done.
  */
-function slidePanels({ duration, responsive, reduce }) {
+function slidePanels({ duration, motion, responsive, reduce }) {
   const animates = (panel) => !reduce && typeof panel.animate === 'function';
   return {
     attach() {},
@@ -99,7 +99,7 @@ function slidePanels({ duration, responsive, reduce }) {
       if (!animates(entry.p)) return;
       entry.a = entry.p.animate(
         [{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'translateY(0)' }],
-        { duration: duration * 1000, easing: 'cubic-bezier(.22,.8,.3,1)' }
+        { duration: motion.ms, easing: motion.css }
       );
     },
     close(entry, hide, instant) {
@@ -253,7 +253,9 @@ export default {
         duration,
         reduce
       })
-      : slidePanels({ duration, responsive, reduce });
+      // Opening follows `ease` (tokens, or a spring at its natural pace);
+      // closing stays a quick fade over `duration`.
+      : slidePanels({ duration, motion: resolveMotion({ ease: opts.ease, duration: opts.duration }, { ease: 'cubic-bezier(.22,.8,.3,1)', duration: 0.24 }), responsive, reduce });
 
     const restoreMenu = snapshotAttributes(el, ['class']);
     el.classList.add(

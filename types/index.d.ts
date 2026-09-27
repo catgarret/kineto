@@ -223,6 +223,34 @@ export interface KinetoOnDemandApi {
 /** The `@dong-gri/kineto/auto` default export. */
 export type KinetoOnDemand = KinetoStatic & KinetoOnDemandApi & Record<ModuleName, KinetoFactory>;
 
+/**
+ * Any easing Kineto understands: a CSS keyword, an easings.net name
+ * (`'expo-out'`), an Apple curve (`'apple-standard'`), a spring preset
+ * (`'spring-snappy'`, `'spring-bouncy(0.6s, 0.1)'`), a spring in Apple's
+ * duration/bounce form (`'spring(0.5s, 0.3)'`) or physics form
+ * (`'spring(170, 26)'`), a raw `cubic-bezier()/linear()/steps()`, a bezier
+ * array, or a spring object.
+ */
+export type KinetoEasing =
+  | string
+  | [number, number, number, number]
+  | { spring: true | string | { stiffness?: number; damping?: number; mass?: number; velocity?: number } | { duration?: number | string; bounce?: number } | { response: number; dampingFraction?: number } };
+
+/** What `Kineto.spring()` returns: physics plus a CSS curve and its natural duration. */
+export interface KinetoSpring {
+  stiffness: number;
+  damping: number;
+  mass: number;
+  velocity: number;
+  /** A CSS `linear()` easing that plays the spring over `duration`. */
+  easing: string;
+  /** Seconds until the spring rests within 0.1%. */
+  duration: number;
+  durationMs: number;
+  /** Normalized progress function, 0 → 1 (overshoots for bouncy springs). */
+  fn(t: number): number;
+}
+
 export interface KinetoStatic {
   readonly version: string;
   readonly env: KinetoEnvironment;
@@ -275,6 +303,14 @@ export interface KinetoStatic {
   defineCanvasEffect<Options extends Record<string, unknown>>(name: string, definition: KinetoCanvasEffectDefinition<Options>): string;
   /** Every registered Canvas Effect, with the options it reads. */
   listCanvasEffects(): KinetoCanvasEffectDescriptor[];
+  /** Resolve any easing to a valid CSS <easing-function> (springs become `linear()`). */
+  easing(spec?: KinetoEasing | null): string;
+  /** The JS progress function for any easing (for canvas / rAF code). */
+  easingFn(spec?: KinetoEasing | null): (t: number) => number;
+  /** Registry of named easing tokens and families. */
+  readonly easings: { keywords: string[]; families: Record<string, string>; springs: string[]; apple: string[]; tokens: string[] };
+  /** A spring as CSS + duration + physics, or null when `spec` is not a spring. */
+  spring(spec?: KinetoEasing): KinetoSpring | null;
 }
 
 export interface KinetoObserveOptions {

@@ -1,4 +1,4 @@
-import { clamp, snapshotAttributes } from '../utils.js';
+import { clamp, resolveMotion, snapshotAttributes } from '../utils.js';
 
 // Drag — make an element draggable with a pointer. Axis lock (`axis`),
 // containment to the offset parent (`bounds:"parent"`), spring-back to origin
@@ -10,6 +10,10 @@ export default {
     const axis = ['x', 'y', 'both'].includes(opts.axis) ? opts.axis : 'both';
     const bounds = opts.bounds; // 'parent' | undefined
     const snapBack = opts.snapBack === true;
+    // The return to rest (snapBack, reset) follows `ease`: any token, or a
+    // spring that settles like a released object at its natural pace.
+    const snapMotion = resolveMotion({ ease: opts.ease }, { ease: 'cubic-bezier(.22,.8,.3,1)', duration: 0.42 });
+    const snapTransition = `transform ${snapMotion.seconds}s ${snapMotion.css}`;
     const inertia = opts.inertia !== false && !snapBack;
     const handle = opts.handle ? (el.querySelector(opts.handle) || el) : el;
 
@@ -68,7 +72,7 @@ export default {
       dragging = false;
       handle.style.cursor = 'grab';
       if (snapBack) {
-        el.style.transition = 'transform .42s cubic-bezier(.22,.8,.3,1)';
+        el.style.transition = snapTransition;
         setPos(0, 0);
       } else if (inertia && (Math.abs(vx) > 0.02 || Math.abs(vy) > 0.02)) {
         const decay = () => {
@@ -104,7 +108,7 @@ export default {
     return {
       el,
       type: 'drag',
-      reset() { el.style.transition = 'transform .42s cubic-bezier(.22,.8,.3,1)'; setPos(0, 0); },
+      reset() { el.style.transition = snapTransition; setPos(0, 0); },
       pause() {}, resume() {},
       destroy() {
         if (raf) cancelAnimationFrame(raf);

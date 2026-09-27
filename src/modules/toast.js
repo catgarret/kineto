@@ -1,4 +1,4 @@
-import { clamp, env, labeller } from '../utils.js';
+import { clamp, env, labeller, resolveMotion } from '../utils.js';
 
 // Toast — transient status messages in a shared live region (role="status", or
 // "alert" for warning/error) so screen readers announce them. Auto-dismisses
@@ -54,6 +54,9 @@ export default {
     const position = opts.position || 'bottom-right';
     const type = opts.type || 'info';
     const duration = clamp(Number(opts.duration ?? 5000), 1000, 30000);
+    // `duration` is how long a toast stays; `ease` shapes how it arrives (any
+    // token, or a spring at its natural pace).
+    const enterMotion = resolveMotion({ ease: opts.ease }, { ease: 'cubic-bezier(.22,.8,.3,1)', duration: 0.24 });
     const dismissible = opts.dismissible !== false;
     const defaultMessage = opts.message || el.getAttribute('data-kt-message') || el.textContent.trim() || 'Done';
     const progressStyle = opts.progressBar === 'ring' ? 'ring'
@@ -142,7 +145,7 @@ export default {
       if (!reduce && toast.animate) {
         toast.animate(
           [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'translateY(0)' }],
-          { duration: 240, easing: 'cubic-bezier(.22,.8,.3,1)' }
+          { duration: enterMotion.ms, easing: enterMotion.css }
         );
       }
 
