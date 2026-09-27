@@ -985,6 +985,36 @@ await check('slider-metrics-cache', async () => {
 });
 await clearStage();
 
+// Forced layouts are counted from a Chromium performance trace (a Layout event
+// with a JavaScript stack was forced by a read), as tests/browser/create-cost.mjs does.
+if (browserName === 'chromium') {
+  await check('sticky-stack-create-layouts', async () => {
+    await page.evaluate(() => {
+      document.getElementById('stage').innerHTML = `<div id="stack">${Array.from({ length: 8 }, (_, i) => `<div style="height:${60 + i * 5}px;background:#ccc">card ${i + 1}</div>`).join('')}</div>`;
+    });
+    const cdp = await context.newCDPSession(page);
+    const events = [];
+    cdp.on('Tracing.dataCollected', ({ value }) => events.push(...value));
+    const complete = new Promise((resolve) => cdp.once('Tracing.tracingComplete', resolve));
+    await cdp.send('Tracing.start', { categories: 'devtools.timeline,disabled-by-default-devtools.timeline.stack', transferMode: 'ReportEvents' });
+    const tops = await page.evaluate(() => {
+      const el = document.getElementById('stack');
+      const instance = window.Kineto.create('stickyStack', el, { align: 'center' });
+      const values = Array.from(el.children).map((child) => child.style.top);
+      instance.destroy();
+      return values;
+    });
+    await cdp.send('Tracing.end');
+    await complete;
+    await cdp.detach();
+    const forced = events.filter((event) => event.name === 'Layout' && event.args?.beginData?.stackTrace?.length).length;
+    // Card 4 is 75px tall: 50vh - 38px + 3 × 16px offset = 50vh + 10px.
+    assert.ok(/50vh/.test(tops[3]) && /10px/.test(tops[3]), `sticky tops must be unchanged (${tops[3]})`);
+    assert.ok(forced <= 2, `creating an 8-card Sticky Stack must not lay out once per card (${forced} forced layouts)`);
+  });
+  await clearStage();
+}
+
 assert.deepEqual(errors, [], `page errors:\n${errors.join('\n')}`);
 await context.close();
 
