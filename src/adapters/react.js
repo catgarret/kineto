@@ -17,7 +17,9 @@ export function useKineto(type, options = {}, dependencies = []) {
     if (!element || !type) return undefined;
     instanceRef.current = Kineto.create(type, element, options);
     return () => {
-      Kineto.destroyModule(element, type);
+      // This element's own instance only: destroyModule(element, type) would
+      // also destroy same-module instances of nested components.
+      Kineto.getInstance(element, type)?.destroy?.();
       instanceRef.current = null;
     };
   // Options are intentionally controlled by the caller through dependencies.

@@ -1,7 +1,31 @@
 import Kineto from '../core.js';
 import { cssEase } from '../utils.js';
 
+// Page Transition is page-wide: one click/popstate navigator per document. A
+// second element shares the first one's navigator, and each create() gets its
+// own handle. The navigator stops only when the LAST handle is destroyed —
+// before, both elements got the same object and destroying either one stopped
+// navigation for the other.
 let activeInstance = null;
+let activeHolders = 0;
+function holdActive() {
+  const shared = activeInstance;
+  activeHolders += 1;
+  let released = false;
+  return {
+    el: shared.el,
+    type: shared.type,
+    navigate: shared.navigate,
+    pause() {},
+    resume() {},
+    destroy() {
+      if (released) return;
+      released = true;
+      activeHolders -= 1;
+      if (activeHolders <= 0 && activeInstance === shared) shared.destroy();
+    }
+  };
+}
 
 // Built-in overlay transition. `effect` picks a covered-state shape; the overlay
 // animates INTO the covered state during leave, then OUT after the new page
@@ -62,7 +86,7 @@ function maxTransitionMs(el) {
 
 export default {
   create(el, opts) {
-    if (activeInstance) return activeInstance;
+    if (activeInstance) return holdActive();
 
     const containerSelector = opts.container || 'main';
     const linkSelector = opts.linkSelector || 'a[href]:not([target="_blank"]):not([download]):not([data-kt-no-transition])';
@@ -216,10 +240,13 @@ export default {
         document.removeEventListener('click', onClick);
         window.removeEventListener('popstate', onPopState);
         document.documentElement.classList.remove('kt-is-animating', 'kt-is-leaving', 'kt-is-entering');
-        if (activeInstance === this) activeInstance = null;
+        if (activeInstance === this) {
+          activeInstance = null;
+          activeHolders = 0;
+        }
       }
     };
-    return activeInstance;
+    return holdActive();
   },
   reduced() {
     // Native navigation is the reduced-motion fallback.

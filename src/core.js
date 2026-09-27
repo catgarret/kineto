@@ -375,17 +375,31 @@ function removeRecord(record, destroy = true, teardownIfEmpty = true) {
     // 같은 요소에 살아 있는 다른 모듈이나 페이지가 넣은 값은 건드리지 않습니다.
     dropEmptyAttributes(record.sourceEl);
   }
-  if (teardownIfEmpty && records.size === 0) teardownCoreServices();
+  if (teardownIfEmpty && records.size === 0) teardownInstanceServices();
+}
+
+// True when `root` is, or contains, `node` (the document and window cover all).
+function coversNode(root, node) {
+  if ((typeof document !== 'undefined' && root === document) ||
+      (typeof window !== 'undefined' && root === window)) return true;
+  return root === node || (typeof root?.contains === 'function' && root.contains(node));
+}
+
+// scan() creates GSAP-driven modules only after the engine has downloaded.
+// Whatever the page tears down in the meantime must stay torn down: a
+// Kineto.destroy(root), or removing the root, used to be undone a moment later
+// when the engine arrived and the scan created instances on nodes the page had
+// already let go of (and that nothing would ever destroy).
+const pendingScans = new Set(); // { root, cancelled, released: [roots destroyed meanwhile] }
+function forgetPendingScans(roots = null) {
+  pendingScans.forEach((pending) => {
+    if (!roots || roots.some((gone) => coversNode(gone, pending.root))) pending.cancelled = true;
+    else pending.released.push(...roots);
+  });
 }
 
 function matchesRoot(record, roots) {
-  return roots.some((root) => {
-    if ((typeof document !== 'undefined' && root === document) ||
-        (typeof window !== 'undefined' && root === window)) return true;
-    if (record.sourceEl === root || record.instance.el === root) return true;
-    return typeof root.contains === 'function' &&
-      (root.contains(record.sourceEl) || root.contains(record.instance.el));
-  });
+  return roots.some((root) => coversNode(root, record.sourceEl) || coversNode(root, record.instance.el));
 }
 
 // Destroy every instance whose element is no longer in the document. Called
@@ -590,17 +604,16 @@ function stopSmoothService() {
   lenis = null;
 }
 
-function teardownCoreServices() {
+// Services that exist only for live instances: the layout watcher, the tab
+// visibility hook and the reduced-motion / connection watchers. They go when
+// the last instance goes and come back with the next create().
+function teardownInstanceServices() {
   layoutRefresh.stop();
   scrollDrivenCount = 0;
   if (visibilityHandler && typeof document !== 'undefined') {
     document.removeEventListener('visibilitychange', visibilityHandler);
   }
   visibilityHandler = null;
-  if (domReadyHandler && typeof document !== 'undefined') {
-    document.removeEventListener('DOMContentLoaded', domReadyHandler);
-  }
-  domReadyHandler = null;
 
   if (rmMediaQuery && rmChangeHandler) {
     if (rmMediaQuery.removeEventListener) rmMediaQuery.removeEventListener('change', rmChangeHandler);
@@ -615,10 +628,22 @@ function teardownCoreServices() {
   watchedConnection = null;
   connectionChangeHandler = null;
   connWatched = false;
-
-  stopSmoothService();
   initialized = false;
+}
+
+// Everything, including what the PAGE switched on: smooth scroll
+// (enableSmooth) and a pending autoInit() waiting for DOMContentLoaded. Only
+// Kineto.destroy() ends those. Destroying the last instance used to do it too,
+// so an SPA route unmounting its only effect turned smooth scroll off (while
+// `config.smooth` stayed true) and silently dropped a pending autoInit().
+function teardownCoreServices() {
+  teardownInstanceServices();
+  if (domReadyHandler && typeof document !== 'undefined') {
+    document.removeEventListener('DOMContentLoaded', domReadyHandler);
+  }
+  domReadyHandler = null;
   domReadyScheduled = false;
+  stopSmoothService();
 }
 
 function injectCSSFallback() {
@@ -879,7 +904,7 @@ const Kineto = {
       root.querySelectorAll?.(selector).forEach(collect);
       return discovered;
     };
-    const scanDiscovered = (discovered) => {
+    const scanDiscovered = (discovered, keep = null) => {
       modules.forEach((module, name) => {
         const candidates = discovered.get(name);
         if (!candidates) return;
@@ -887,6 +912,7 @@ const Kineto = {
         // element nears the viewport (src/deferCreate.js).
         const waits = config.defer === true && module.defer === true;
         candidates.forEach((el) => {
+          if (keep && !keep(el)) return;
           if (waits && deferral.queue(el, name)) return;
           this.create(name, el, readOpts(el, name));
         });
@@ -912,7 +938,21 @@ const Kineto = {
       // they find GSAP — keeping the preload veil up until they've applied.
       // Re-discover once after the asynchronous fetch so GSAP markup inserted
       // while the engine was loading keeps the pre-existing scan() semantics.
-      ensureGSAP().finally(() => { scanDiscovered(discoverModules(true)); releaseVeil(); });
+      // See pendingScans: skip a root destroyed meanwhile, and any element
+      // under a root destroyed meanwhile. A root that was on the page and has
+      // left it (or an element that has) is skipped too; a subtree scanned
+      // before it was attached keeps its old behaviour.
+      const pending = { root, cancelled: false, released: [] };
+      pendingScans.add(pending);
+      const watchConnection = root.isConnected !== false;
+      const keep = (el) => (!watchConnection || el.isConnected !== false)
+        && !pending.released.some((gone) => coversNode(gone, el));
+      ensureGSAP().finally(() => {
+        pendingScans.delete(pending);
+        const rootLeft = watchConnection && root.isConnected === false;
+        if (!pending.cancelled && !rootLeft) scanDiscovered(discoverModules(true), keep);
+        releaseVeil();
+      });
     } else {
       scanDiscovered(gsapDiscovered);
       releaseVeil();
@@ -1024,7 +1064,10 @@ const Kineto = {
       if (record?.instance?.effect === 'radial' && Number.isFinite(record.instance.index)) {
         opts.initialIndex = record.instance.index;
       }
-      this.destroyModule(el, name);
+      // Rebuild THIS element's instance only. destroyModule(el, name) also
+      // destroys every same-module instance nested inside `el` (a reveal
+      // inside a reveal), and those were never recreated.
+      if (record) removeRecord(record);
       this.create(name, el, opts);
     });
     return liveCount > 0;
@@ -1072,10 +1115,12 @@ const Kineto = {
         if (matchesRoot(record, roots)) removeRecord(record);
       });
       deferral.cancel(roots);
+      forgetPendingScans(roots);
       return this;
     }
 
     deferral.cancel();
+    forgetPendingScans();
     Array.from(records).forEach((record) => removeRecord(record));
     Array.from(observers.values()).forEach(({ handle }) => handle.disconnect());
     teardownCoreServices();

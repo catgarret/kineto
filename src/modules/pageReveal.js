@@ -69,11 +69,15 @@ export default {
       player.finished.catch(() => {}).finally(() => players.delete(player));
       return player;
     };
+    // Each undo runs once, whichever of `done` and `destroy` gets there first.
+    const runCleanups = () => {
+      cleanups.splice(0).forEach((undo) => { try { undo(); } catch (_e) { /* already gone */ } });
+    };
     const done = () => {
       if (finished) return;
       finished = true;
       layers.forEach((node) => node.remove());
-      cleanups.forEach((undo) => { try { undo(); } catch (_e) { /* already gone */ } });
+      runCleanups();
       opts.onComplete?.();
     };
     // An -out curve front-loads its travel: expo-out is ~90% done by 35% of the
@@ -678,12 +682,18 @@ export default {
       pause: () => players.forEach((player) => player.pause()),
       resume: () => players.forEach((player) => player.play()),
       destroy: () => {
+        // Mark the run over BEFORE cancelling: a cancelled player's `finished`
+        // rejects, and its `.catch(done)` runs a moment later — after a Replay
+        // has already created the next run on the same host. That late `done`
+        // cleared the new run's transform-origin, restored the page overflow
+        // mid-reveal and fired onComplete for the run that was destroyed.
+        finished = true;
         players.forEach((player) => player.cancel());
         players.clear();
         timers.forEach(clearTimeout);
         timers.clear();
         layers.forEach((node) => node.remove());
-        cleanups.forEach((undo) => { try { undo(); } catch (_e) { /* already gone */ } });
+        runCleanups();
       }
     };
   },

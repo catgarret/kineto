@@ -106,10 +106,27 @@ export default function createStates(definitions = {}, defaults = {}, kineto = n
 
   const cancelRun = (run) => finishRun(run, 'cancelled');
 
+  // A new apply() takes over ONE element of an older run. Cancelling that
+  // whole run (as this used to) also stopped its other elements mid-stagger
+  // and snapped them back to where they started. Now only this element's
+  // entry stops; the older run keeps animating the rest and settles as
+  // 'cancelled' once they land, because it did not reach every element.
+  const releaseElement = (run, el) => {
+    const entry = run.entries.find((item) => item.el === el && !item.done);
+    if (!entry) return;
+    entry.done = true;
+    run.interrupted = true;
+    if (entry.timer) clearTimeout(entry.timer);
+    try { entry.animation?.cancel?.(); } catch (_error) { /* already finished */ }
+    if (active.get(el) === run) active.delete(el);
+    run.remaining -= 1;
+    if (!run.remaining) finishRun(run, 'cancelled');
+  };
+
   const animateElement = (run, el, from, to, options, index) => {
     remember(el);
     const previous = active.get(el);
-    if (previous && previous !== run) cancelRun(previous);
+    if (previous && previous !== run) releaseElement(previous, el);
     active.set(el, run);
     const entry = { el, animation: null, timer: null, done: false };
     run.entries.push(entry);
@@ -119,7 +136,7 @@ export default function createStates(definitions = {}, defaults = {}, kineto = n
       render(el, to);
       if (active.get(el) === run) active.delete(el);
       run.remaining -= 1;
-      if (!run.remaining) finishRun(run, 'finished');
+      if (!run.remaining) finishRun(run, run.interrupted ? 'cancelled' : 'finished');
     };
     const delay = options.delay + options.stagger * index;
     if (run.reduced || !options.duration) {
@@ -138,7 +155,9 @@ export default function createStates(definitions = {}, defaults = {}, kineto = n
         });
         entry.animation = animation;
         animation.finished.then(complete, () => {
-          if (!run.status) cancelRun(run);
+          // A released entry's own cancel lands here too; only an outside
+          // cancel of a live entry ends the run.
+          if (!entry.done && !run.status) cancelRun(run);
         });
         return;
       } catch (_error) { /* use the style fallback below */ }
@@ -166,6 +185,7 @@ export default function createStates(definitions = {}, defaults = {}, kineto = n
       entries: [],
       remaining: unique.length,
       status: null,
+      interrupted: false,
       resolve: null,
       reduced: Boolean(settings.reducedMotion === 'final' || kineto?.prefersReducedMotion || env().reducedMotion)
     };
