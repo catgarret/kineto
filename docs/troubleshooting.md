@@ -55,6 +55,10 @@ Scroll Shadows, 터미널 인디케이터의 폭·높이가 0 또는 예상보�
 2. 다음 프레임에 모듈을 만들거나 공개 refresh 메서드를 호출합니다.
 3. 고정 폭을 강제하는 `min-width`/`min-height`와 부모의 `align-items`를 확인합니다.
 
+다음은 스스로 다시 맞춥니다. 닫힌 패널 안에서 만든 `position:'center'` Radial은 패널이 열려 크기가
+생기면 반지름을 다시 계산하고, Lazy·Stylize의 미디어 wrapper는 미디어가 실제로 그려진 뒤에 상자
+비율을 정합니다(예전에는 0×0으로 재고 16:9로 고정됐습니다).
+
 Tabs에는 외부에서 다시 측정할 수 있는 `tabs.refresh()`가 있습니다.
 
 ```js
@@ -110,7 +114,8 @@ Kineto는 이 조상을 찾으면 네이티브 경로 대신 ScrollTrigger 경�
 `responsive`는 `wrap`, `scroll`, `custom` 중에서 선택합니다. iPhone Safari와
 Android Chrome에서 실제 터치 동작을 확인할 때는 pointer 이벤트를 가로채는 상위
 요소, `pointer-events:none`, `z-index`, `position` 조합을 함께 확인하십시오.
-키보드 사용자는 Enter/Space와 Escape로 같은 메뉴를 열고 닫을 수 있어야 합니다.
+키보드 사용자는 같은 메뉴를 열고 Escape로 닫을 수 있어야 합니다. `<a href>` 트리거에서 Enter는
+링크로 이동하므로, 그 패널은 Space나 ↓로 엽니다. 버튼 트리거는 Enter·Space·↓ 모두로 열립니다.
 
 ## Slider/Radial을 드래그하면 고스트 이미지가 생김
 

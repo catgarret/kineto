@@ -61,6 +61,14 @@
 - `digit`와 `pop`은 세로 reel을 만들지 않습니다.
 - `pop`은 최종 문자열을 다른 숫자로 바꾸지 않습니다.
 - `destroy()`는 원래 HTML, style, ARIA를 복원합니다.
+- `plain`을 뺀 모드의 숫자 릴·flip 반쪽·pop 글자는 `aria-hidden`이고, 값은 요소 안의 보이지 않는
+  텍스트 하나(`kt-sr-only`)로 읽힙니다. Clock은 `"1d 02:03:04"`, `"10:15 PM"`, `"012S"`처럼 화면에
+  보이는 시간을 읽으며, 그 문구가 바뀔 때만 고칩니다.
+- Counter는 live region이 아닙니다(`aria-live`를 붙이지 않습니다). 값이 프레임마다 바뀌어 끝없이
+  읽혔기 때문입니다. 완료된 값을 알려야 하면 `onComplete`에서 페이지의 live region에 넣으세요.
+- `clock`은 화면 밖에서 멈추고 돌아오면 현재 시각으로 이어집니다. 멈춰 있어도 카운트다운(`until`)은
+  끝나는 시각에 완료를 알립니다. 숨긴 탭에서 돌아와도 아직 화면에 들어오지 않은 Counter는 미리
+  세지 않습니다.
 - Clock의 `blink:true`는 시간 구분자만 깜빡이며, `secondsOnly`의 단위(`S`)에는 적용되지 않습니다.
 - `secondsOnly:true`는 Clock 전용 표시입니다. 다른 `mode` 또는 `preset`이 함께 전달돼도 Clock 렌더러를 우선해 `000S` 형식을 유지합니다.
 - `since`를 전달하면 경과 초를, `until`을 전달하면 남은 초를 표시합니다. 둘 다 전달된 경우 `until`(카운트다운)을 우선합니다.

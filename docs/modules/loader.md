@@ -63,10 +63,27 @@ await loader.finished;
 출력은 반올림한 퍼센트·상태·템플릿이 바뀔 때만 다시 쓰고, `--kt-progress`와 `<progress>` 값은
 매 틱 갱신합니다.
 
+출력 대상은 `destroy()` 때 Loader가 쓴 쪽만 되돌립니다. `<output>`·`<input>`·`<progress>`는 값,
+버튼·목록 항목 같은 일반 요소는 텍스트입니다.
+
 `window`은 브라우저의 페이지 완료 시점을, `resources`는 발견한
 리소스의 완료 개수를 추적합니다. 실제 전송 byte 비율이 필요하면
 `trackFetch()`를 사용하고 서버가 `Content-Length`를 제공해야 합니다.
 일반 Promise는 전체 크기를 알 수 없으므로 완료 전 수치는 추정값입니다.
+
+## 끝나는 조건
+
+- `window`: 페이지 `load` 이벤트에서 끝나고 `finished`는 `{ status: 'completed' }`로 resolve합니다.
+- `resources`: Loader가 만들어지기 전에 이미 받은 스크립트·스타일시트·이미지·영상도 완료로 셉니다.
+  `<video>`·`<audio>`는 첫 프레임 데이터(`loadeddata`)에서 끝난 것으로 보고, `loading="lazy"`
+  이미지는 기다리지 않습니다(스크롤이 잠긴 동안에는 불러오지 않기 때문입니다). 끝내 소식이 없는
+  리소스가 있어도 최대 10초 뒤에는 완료합니다.
+- `revealEffect`로 닫혀도 `finished`가 resolve하고 `onHide`와 `kt-loader-complete`·`kt-loader-hide`
+  이벤트가 발생합니다. 닫히는 중에 `destroy()`하면 요소가 잘린 채로 남지 않습니다.
+- `onStart`·`onStateChange`·`renderUI`의 `render` 같은 페이지 콜백이 예외를 던져도 Loader는 멈추지
+  않습니다. 오류는 콘솔과 `KT_LIFECYCLE_FAILED` 진단으로 보고되고 Loader는 계속 진행하므로, 스크롤 잠금이
+  남거나 `finished`가 끝나지 않는 일이 없습니다. `promise` 옵션의 Promise가 실패하면 `fail()`로
+  처리되고 처리되지 않은 rejection으로 남지 않습니다.
 
 ## 확장
 

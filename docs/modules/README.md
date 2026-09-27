@@ -59,7 +59,9 @@
 | `drag` | `data-kt-drag` | drag with inertia / bounds / keyboard |
 | `flip` | `data-kt-flip` | FLIP layout animation |
 
-`tabs` 인스턴스는 `select(index)`, `refresh()`, `destroy()` 메서드를 제공합니다. 외부 UI가 탭 패널을 `hidden` 상태에서 다시 표시한 뒤에는 `refresh()`를 호출해 인디케이터 geometry를 즉시 재측정할 수 있습니다.
+`tabs` 인스턴스는 `select(index)`, `refresh()`, `destroy()` 메서드를 제공합니다. 외부 UI가 탭 패널을 `hidden` 상태에서 다시 표시한 뒤에는 `refresh()`를 호출해 인디케이터 geometry를 즉시 재측정할 수 있습니다. Tabs 안에 Tabs를, Accordion 항목 안에 Accordion을 넣어도 각 인스턴스는 자기 탭·패널·항목만 다룹니다.
+
+모듈이 만드는 컨트롤의 키보드 조작, 스크린 리더 이름과 알림 방식은 [접근성 가이드](../accessibility.md)에 모듈별로 정리되어 있습니다.
 
 ## 카테고리 원칙
 

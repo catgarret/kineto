@@ -30,4 +30,4 @@
 
 마스크는 교체되는 마지막 색상 패널과 같은 `duration`, `delay`, `stagger`, 방향을 사용합니다. `lines:true`에서는 전체 문단을 한 번에 자르지 않고 렌더링된 각 줄에 별도 마스크를 만들며, 기존 다중 색상 패널과 같은 줄별 시간차로 재생됩니다.
 
-갤러리 순서까지 바꾸려면 같은 컨테이너에 `flip`을 함께 적용하고 `flip.shuffle()` 뒤 각 coverReveal 인스턴스를 replay합니다. `destroy()`는 생성한 wrapper와 cover layer를 제거하고 원래 콘텐츠 구조를 복원합니다.
+갤러리 순서까지 바꾸려면 같은 컨테이너에 `flip`을 함께 적용하고 `flip.shuffle()` 뒤 각 coverReveal 인스턴스를 replay합니다. `destroy()`는 생성한 wrapper와 cover layer를 제거하고 원래 콘텐츠 구조를 복원합니다. 그 뒤에 남은 참조로 `replay()`·`exit()`·`refresh()`를 불러도 새 패널을 만들지 않습니다.

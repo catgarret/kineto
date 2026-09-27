@@ -73,6 +73,7 @@ Coverflow에서 `activeShadow:true`를 켜면 활성 슬라이드의 회전된 �
 `dots:true`로 페이지 점을 표시합니다. `progress:true`와 `progressType:'bar'|'ring'`으로 자동 재생 진행률을 표시하며 `pauseButton:true`로 재생·일시정지 버튼을 추가합니다.
 
 일시정지, 호버, 드래그 중에는 타이머와 진행 UI가 같은 지점에서 멈춥니다. 다시 시작하면 남은 시간부터 이어집니다.
+멈춰 있는 동안에는 진행 UI도 프레임을 요청하지 않습니다.
 화면 밖으로 완전히 벗어난 슬라이더는 기본적으로 자동 재생, 진행 UI, 전환용
 `requestAnimationFrame`을 멈춥니다. 다시 화면에 들어오면 남은 상태에서 재개합니다.
 이 동작이 필요하지 않으면 `pauseWhenOffscreen:false`로 끌 수 있습니다.
@@ -108,7 +109,26 @@ native 경로에서도 API·키보드·휠·touch·마우스 드래그가 같은
 지원 범위와 브라우저 검증 기준은 [`docs/slider-physics-rfc.md`](../slider-physics-rfc.md)를
 참조하세요.
 
-점·일시정지 버튼의 접근성 이름은 `labels` 지도로 바꿉니다 — [공통 옵션](../common-options.md#컨트롤-이름--labels).
+점·일시정지 버튼, Radial의 이전/다음 버튼과 알림 문구는 `labels` 지도로 바꿉니다 — [공통 옵션](../common-options.md#컨트롤-이름--labels).
+
+## 접근성과 reduced motion
+
+- 화면 밖 슬라이드는 `aria-hidden`입니다. Tab으로 그 안의 링크·버튼에 들어가면 그 슬라이드로 이동해
+  포커스가 화면 밖에 숨지 않습니다.
+- `prefers-reduced-motion`에서도 모든 슬라이드에 닿을 수 있습니다. `.kt-slider-wrap`이 스냅 포인트가
+  있는 가로 스크롤 영역이 되어 포커스를 받고 방향키·스와이프로 스크롤되며, `slideNext()`·`slidePrev()`·
+  `slideTo()`는 애니메이션 없이 바로 이동합니다. 자동 재생과 전환 모션은 없습니다. 예전에는 첫
+  슬라이드만 보이고 이 메서드들도 없었습니다.
+- Radial은 휠 자체와 앞에 온 항목이 Tab 정지점입니다(나머지 항목은 `tabindex="-1"`). 항목에 포커스가
+  있을 때 방향키로 돌리면 포커스도 새 앞 항목으로 옮겨 가고, 휠이나 앞 항목에서 누른 Enter·Space는
+  앞 항목을 클릭한 것과 같습니다.
+- Radial의 알림 영역은 앞 항목이 바뀔 때만, 그 항목의 이름과 위치(`'{name}, {n} of {total}'`)를
+  읽습니다. 이름은 항목의 `aria-label`, 텍스트, 이미지 `alt` 순서로 찾습니다.
+- Radial 자동 재생은 포인터가 위에 있거나 키보드 포커스가 안에 있는 동안 멈춥니다.
+- `position:'center'` Radial은 상자 크기가 바뀔 때마다 반지름을 다시 맞춥니다. 닫힌 패널 안에서
+  만들어져도 패널이 열리면 제 크기로 그려집니다.
+- 점 버튼은 8px 크기 그대로입니다. 누르기 쉬운 영역이 필요하면 `--kt-slider-dot-size`·
+  `--kt-slider-dot-gap`으로 키우거나 이전/다음 버튼을 함께 두세요.
 
 ## API와 이벤트
 
@@ -139,6 +159,9 @@ slider.resume();
 slider.disable();
 slider.enable();
 ```
+
+`slideTo()`에 숫자로 읽을 수 없는 값(`undefined`, `'next'` 등)을 넘기면 아무 일도 하지 않습니다.
+`initial`·`perGroup`도 숫자로 읽을 수 없으면 기본값을 씁니다.
 
 다음 상태를 읽을 수 있습니다.
 

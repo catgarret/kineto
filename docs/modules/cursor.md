@@ -28,11 +28,24 @@ Kineto.cursor(document.body, {
   template: '<span class="my-cursor">VIEW</span>',
   smoothing: 0.16,
   pressScale: 0.82,
-  hiddenSelector: 'input, textarea'
+  // 기본값을 대체하므로 hide 영역과 필드도 함께 적습니다(아래 "기본 포인터가 남는 곳").
+  hiddenSelector: '[data-kt-cursor-hide], input, textarea, select, .video-player'
 });
 ```
 
 색상, 크기, border, blur, shadow, mix-blend-mode, hover label/background/scale, press scale, follower on/off와 custom callbacks를 조절할 수 있습니다. 터치 또는 hover 없는 환경, reduced-motion에서는 fallback을 사용합니다.
+
+## 기본 포인터가 남는 곳
+
+- 텍스트 입력 필드, `textarea`, `select`, `contenteditable` 위에서는 커스텀 커서가 숨고 기본 포인터
+  (텍스트 캐럿)가 보입니다. 커스텀 점이 글자 넣을 위치를 가리지 않게 하기 위해서입니다. 체크박스·
+  라디오·범위·버튼형 `input`은 여기에 포함되지 않습니다.
+- `[data-kt-cursor-hide]` 영역에서도 커스텀 커서가 숨고 기본 포인터가 보입니다. 예전에는 두 커서가
+  모두 사라졌습니다.
+- 위 두 목록이 기본 `hiddenSelector`입니다. `hiddenSelector`를 직접 지정하면 이 기본값을 대체하므로,
+  필드 위에서 커스텀 커서를 숨기려면 필드 선택자도 함께 넣으세요(기본 포인터는 어느 쪽이든 보입니다).
+- `pause()`와 `Kineto.pause()`는 기본 포인터를 돌려주고, `resume()`은 다시 숨깁니다. 페이지 전체
+  커서가 여럿이면 마지막 하나가 멈출 때 돌려줍니다. `destroy()`도 기본 포인터를 돌려줍니다.
 
 ## 페이지 전체 커서와 영역 커서
 

@@ -39,4 +39,19 @@ Page는 페이지 사이를 긴 슬라이드 tween으로 이동하지 않습니�
 </div>
 ```
 
+## 접근성
+
+- 움직이는 레이어는 `aria-hidden`이고, 스크린리더는 요소 안의 보이지 않는 텍스트 하나(`kt-sr-only`)를
+  읽습니다. `aria-label`은 링크·버튼·제목처럼 이름을 가질 수 있는 요소에만 함께 붙습니다.
+- `rolling`과 장면 목록은 항목의 텍스트를 이어 붙여 읽지 않습니다. `title`은 첫 번째 항목이고, 보이지
+  않는 텍스트도 첫 항목에서 시작해 시간에 따라 넘어가는 목록에서는 화면에 보이는 항목을 따라갑니다.
+- 스스로 넘어가는 텍스트는 live region이 되지 않습니다. `rolling`은 더 이상 기본으로
+  `role="status"`·`aria-live="polite"`를 붙이지 않으며, 읽기 모드에서 현재 항목으로 읽힙니다.
+- `ariaLive`·`role`은 `rolling`에서 페이지가 지정했고, 목록이 시간에 따라 넘어가지 않으며(hover로
+  넘기거나 항목이 하나), 요소에 자기 역할이 없을 때만 적용됩니다. 링크·버튼·제목·목록 항목·
+  `tabindex`가 있는 요소는 역할을 그대로 유지하므로, `rolling` 내비게이션 링크는 계속 링크로 읽힙니다.
+
+`resume()`·`replay()`로 다시 만들어도 hover 리스너는 한 벌만 남고, 시간으로 넘어가는 `rolling`은 보이던
+항목에서 이어집니다.
+
 정확한 option allowlist는 [Module Reference](../module-reference.md#overflowtext)를 확인합니다. ResizeObserver가 overflow를 다시 계산하며 `destroy()`는 animation, timer, observer, listener와 생성 구조를 정리하고 원래 HTML/style/title/ARIA를 복원합니다.
