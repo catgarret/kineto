@@ -25,6 +25,13 @@ function sameValue(a, b) {
   return keys.every((key) => Object.prototype.hasOwnProperty.call(b, key) && sameValue(a[key], b[key]));
 }
 
+// Destroy the module instance ON `el` only. Kineto.destroyModule(el, type)
+// also destroys every same-module instance nested inside `el`, which belong
+// to other components (a v-motion reveal inside another v-motion reveal).
+function destroyOwn(el, type) {
+  Kineto.getInstance(el, type)?.destroy?.();
+}
+
 export const vMotion = {
   mounted(el, binding) {
     const { type, options } = normalizeBinding(binding);
@@ -47,13 +54,13 @@ export const vMotion = {
       el.__kinetoOptions = next.options;
       return;
     }
-    if (el.__kinetoType) Kineto.destroyModule(el, el.__kinetoType);
+    if (el.__kinetoType) destroyOwn(el, el.__kinetoType);
     el.__kinetoType = next.type;
     el.__kinetoOptions = next.options;
     Kineto.create(next.type, el, next.options);
   },
   unmounted(el) {
-    if (el.__kinetoType) Kineto.destroyModule(el, el.__kinetoType);
+    if (el.__kinetoType) destroyOwn(el, el.__kinetoType);
     delete el.__kinetoType;
     delete el.__kinetoOptions;
   }
@@ -70,14 +77,14 @@ export function useKineto(type, options = {}, watchSources = []) {
 
   const mount = () => {
     if (!element.value || !type) return;
-    Kineto.destroyModule(element.value, type);
+    destroyOwn(element.value, type);
     instance.value = Kineto.create(type, element.value, resolveKinetoOptions(options));
   };
 
   onMounted(mount);
   if (watchSources.length) watch(watchSources, mount, { deep: true });
   onBeforeUnmount(() => {
-    if (element.value && type) Kineto.destroyModule(element.value, type);
+    if (element.value && type) destroyOwn(element.value, type);
     instance.value = null;
   });
 
