@@ -1,7 +1,7 @@
-# Kineto v0.12.2 QA Report
+# Kineto v0.12.3 QA Report
 
 검증일: 2026-09-20
-대상: v0.12.2 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
+대상: v0.12.3 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
 ## 2026-09-26 아이폰 탭 튐 · 유령 커서 · 스크롤 중 ScrollTrigger refresh (Unreleased)
 
@@ -1219,7 +1219,7 @@ registry의 해제 크기는 1,797,191 bytes로 확인했습니다. 이 수치�
 
 <!-- release:prepare updates this source label, not the publication evidence below. -->
 현재 소스의 패키지명은
-`@dong-gri/kineto`, 버전은 `0.12.2`입니다.
+`@dong-gri/kineto`, 버전은 `0.12.3`입니다.
 
 ## 배포 후 확인
 
