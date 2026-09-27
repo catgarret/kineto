@@ -67,7 +67,10 @@ const helpers = `<script>
 const importMap = JSON.stringify({ imports: {
   react: `${SITE}/stubs/react.js`,
   vue: `${SITE}/stubs/vue.js`,
+  // The adapters import the full runtime as `@dong-gri/kineto/all` (0.13);
+  // the bare name stays mapped for anything that still uses it.
   '@dong-gri/kineto': `${SITE}/stubs/kineto.js`,
+  '@dong-gri/kineto/all': `${SITE}/stubs/kineto.js`,
   '@dong-gri/kineto/presence': `${SITE}/stubs/presence.js`
 } });
 const stubs = {

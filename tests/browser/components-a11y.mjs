@@ -57,6 +57,17 @@ const html = `<!doctype html><html><head><meta charset="utf-8">
     };
     window.__frames = (count = 2) => new Promise((resolve) => { let left = count; const step = () => (--left <= 0 ? resolve() : requestAnimationFrame(step)); requestAnimationFrame(step); });
     window.__wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    // A phone's answers to the hover/pointer media queries (utils.canHover()
+    // asks "(any-hover: hover) and (any-pointer: fine)", then "(any-hover: none)").
+    // Returns the function that puts the real matchMedia back. (This script is
+    // inside a template literal: a regex backslash is written twice.)
+    window.__phoneMedia = () => {
+      const real = window.matchMedia;
+      window.matchMedia = (query) => (/hover|pointer/.test(query)
+        ? { matches: /hover:\\s*none|pointer:\\s*coarse/.test(query) && !/hover:\\s*hover|pointer:\\s*fine/.test(query), media: query, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }
+        : real.call(window, query));
+      return () => { window.matchMedia = real; };
+    };
     // Everything focusable inside an aria-hidden subtree that can still take
     // focus AND stays hidden once focused (a slider may reveal the slide).
     window.__focusLeaks = (scope) => {
@@ -363,15 +374,13 @@ await check('tilt-gyro-after-pause', async () => {
     const stage = document.getElementById('stage');
     stage.innerHTML = '<div id="tl" class="box"></div>';
     const el = document.getElementById('tl');
-    // A phone: no hover, and an orientation API without a permission gate.
-    const realMatchMedia = window.matchMedia;
+    // A phone: nothing can hover (utils.canHover() reads these queries), and
+    // an orientation API without a permission gate.
     const realOrientation = window.DeviceOrientationEvent;
-    window.matchMedia = (query) => (/hover:\s*none/.test(query)
-      ? { matches: true, media: query, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }
-      : realMatchMedia.call(window, query));
+    const restoreMedia = window.__phoneMedia();
     window.DeviceOrientationEvent = class FakeOrientationEvent extends Event {};
     const instance = window.Kineto.create('tilt', el, { max: 20, smoothing: 1 });
-    window.matchMedia = realMatchMedia;
+    restoreMedia();
     // Paused (off screen, hidden tab) when the permission arrives …
     instance.pause();
     await window.__wait(30);
@@ -392,11 +401,13 @@ await check('mouse-parallax-gyro-after-pause', async () => {
   const transform = await page.evaluate(async () => {
     const stage = document.getElementById('stage');
     stage.innerHTML = '<div id="mp" class="box"><span data-kt-mouse-speed="1">layer</span></div>';
-    // A phone: touch, and an orientation API without a permission gate.
+    // A phone: touch, nothing can hover, and an orientation API without a permission gate.
     const realOrientation = window.DeviceOrientationEvent;
     window.ontouchstart = null;
+    const restoreMedia = window.__phoneMedia();
     window.DeviceOrientationEvent = class FakeOrientationEvent extends Event {};
     const instance = window.Kineto.create('mouseParallax', document.getElementById('mp'), { smoothing: 1 });
+    restoreMedia();
     // Paused when the permission arrives, resumed later.
     instance.pause();
     await window.__wait(30);
