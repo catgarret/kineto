@@ -480,6 +480,20 @@
   cursor: none !important;
 }
 
+/* The native pointer stays where a custom cursor cannot stand in for it: the
+   text caret of a field, a select, and anything the page marks
+   [data-kt-cursor-hide] (where the custom cursor hides too — without this,
+   nothing at all was visible there). The cursor module's default
+   hiddenSelector uses the same field list. */
+.kt-cursor-active :is(input:not([type=range],[type=checkbox],[type=radio],[type=button],[type=submit],[type=reset],[type=color],[type=file],[type=image]),textarea,select,[contenteditable]:not([contenteditable=false])),
+.kt-cursor-scope :is(input:not([type=range],[type=checkbox],[type=radio],[type=button],[type=submit],[type=reset],[type=color],[type=file],[type=image]),textarea,select,[contenteditable]:not([contenteditable=false])),
+.kt-cursor-active [data-kt-cursor-hide],
+.kt-cursor-active [data-kt-cursor-hide] *,
+.kt-cursor-scope [data-kt-cursor-hide],
+.kt-cursor-scope [data-kt-cursor-hide] * {
+  cursor: auto !important;
+}
+
 .kt-tw-caret {
   animation: kt-caret 0.8s step-end infinite;
 }
@@ -583,21 +597,28 @@
   pointer-events: auto;
 }
 
+/* The painted dot keeps its 8px size, but the button around it is a 24px
+   target (WCAG 2.5.8): padding enlarges the hit area, `background-clip`
+   paints only the content box, and a matching negative margin keeps the row
+   exactly where it was. */
 .kt-slider-dot {
+  --kt-slider-dot-hit-pad: max(0px, (24px - var(--kt-slider-dot-size)) / 2);
   -webkit-appearance: none;
   appearance: none;
   display: block;
-  box-sizing: border-box;
+  box-sizing: content-box;
   flex: none;
   min-width: var(--kt-slider-dot-size);
   max-width: var(--kt-slider-dot-size);
   min-height: 0;
   width: var(--kt-slider-dot-size);
   height: var(--kt-slider-dot-size);
-  padding: 0;
+  padding: var(--kt-slider-dot-hit-pad);
+  margin: calc(var(--kt-slider-dot-hit-pad) * -1);
   border: 0;
   border-radius: 999px;
   background: currentColor;
+  background-clip: content-box;
   opacity: var(--kt-slider-dot-opacity, .42);
   cursor: pointer;
   font-size: 0;
@@ -993,13 +1014,20 @@ html.kt-preload [data-kt-text-transition] {
 }
 .kt-toast__icon svg { width: 17px; height: 17px; display: block; }
 .kt-toast__msg { flex: 1 1 auto; }
+/* 24px: the smallest target WCAG 2.5.8 allows. The margin grows by the same
+   1px per side so the toast's layout does not move. */
 .kt-toast__close {
-  flex: 0 0 auto; width: 22px; height: 22px; margin: -2px -4px -2px 2px; padding: 0;
+  flex: 0 0 auto; width: 24px; height: 24px; margin: -3px -5px -3px 1px; padding: 0;
   display: inline-flex; align-items: center; justify-content: center;
   border: 0; border-radius: 6px; background: transparent; color: inherit; cursor: pointer;
   font-size: 17px; line-height: 1; opacity: .55;
 }
 .kt-toast__close:hover { opacity: 1; background: color-mix(in srgb, currentColor 14%, transparent); }
+
+/* Fullpage dots are 8px (inline); an invisible ::before makes each one a 24px
+   target without changing how it looks. */
+.kt-fullpage-dot { position: relative; }
+.kt-fullpage-dot::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; }
 
 /* ── Bottom sheet ─────────────────────────────────────────────────────────────
    Themeable via --kt-sheet-bg, --kt-sheet-radius, --kt-sheet-max. */
