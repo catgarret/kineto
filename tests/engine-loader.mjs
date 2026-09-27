@@ -57,5 +57,31 @@ assert.equal(Kineto.getEngineSource().gsapIntegrity, '', 'a custom URL must not 
 Kineto.setEngineSource({ gsapIntegrity: 'sha384-consumer-managed' });
 assert.equal(Kineto.getEngineSource().gsapIntegrity, 'sha384-consumer-managed', 'setEngineSource() must let self-hosted engines provide their own integrity');
 
-console.log('engine-loader OK — GSAP effect injects the CDN engine on demand; non-GSAP effects init immediately; setEngineSource() repoints the source.');
+// An engine that does not arrive is reported once, with the reason and the
+// modules that were waiting (KT_ENGINE_UNAVAILABLE, debug only). The loaders
+// never reject — modules degrade — so the reason used to be thrown away.
+const engineEvents = [];
+Kineto.config({ debugSink: (event) => { if (event.code === 'KT_ENGINE_UNAVAILABLE') engineEvents.push(event); } });
+assert.equal(Kineto.diagnosticCodes.ENGINE_UNAVAILABLE, 'KT_ENGINE_UNAVAILABLE');
+Kineto.setEngineSource({ gsap: '' });
+w.document.body.innerHTML = '<div data-kt-reveal="fade">hi</div><div data-kt-parallax>p</div>';
+Kineto.scan(w.document);
+await new Promise((r) => setTimeout(r, 30));
+assert.equal(engineEvents.length, 1, 'a GSAP engine that does not arrive must be reported once');
+assert.equal(engineEvents[0].detail.engine, 'gsap');
+assert.match(engineEvents[0].detail.reason, /engine disabled/, 'the report must carry the loader\'s reason');
+assert.ok(engineEvents[0].detail.modules.includes('reveal'), `the waiting modules must be named (${engineEvents[0].detail.modules})`);
+assert.equal(engineEvents[0].recoverable, true, 'modules degrade, so the report is recoverable');
+assert.equal(JSON.stringify(engineEvents[0].detail).includes('hi'), false, 'page text must never enter a diagnostic');
+
+Kineto.setEngineSource({ lenis: '' });
+Kineto.enableSmooth();
+await new Promise((r) => setTimeout(r, 30));
+const lenisEvent = engineEvents.find((event) => event.detail.engine === 'lenis');
+assert.ok(lenisEvent, 'a Lenis engine that does not arrive must be reported');
+assert.deepEqual(lenisEvent.detail.modules, ['smooth']);
+Kineto.disableSmooth?.();
+Kineto.config({ debugSink: null });
+
+console.log('engine-loader OK — GSAP effect injects the CDN engine on demand; non-GSAP effects init immediately; setEngineSource() repoints the source; a missing engine is reported with its reason (KT_ENGINE_UNAVAILABLE).');
 process.exit(0);

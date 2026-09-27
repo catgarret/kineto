@@ -250,6 +250,15 @@ origin을 허용해야 하며, Google Tag Manager는 사이트 `index.html`의 h
 body noscript iframe을 함께 배치해야 합니다. Kineto 데모는 GTM ID
 `GTM-KFQSFGJL`을 사용합니다.
 
+## 스크롤 효과가 대체 경로로만 동작함
+
+Reveal·Parallax 같은 스크롤 모듈은 GSAP·ScrollTrigger가, 부드러운 스크롤은 Lenis가 필요하며 번들에 없으면
+jsDelivr에서 SRI 검증과 함께 불러옵니다. 사내망·CSP·광고 차단기가 그 요청을 막으면 모듈은 조용히 대체 경로로
+물러납니다. `Kineto.config({ debug: true })`를 켜면 `KT_ENGINE_UNAVAILABLE` 진단이 엔진·이유·기다리던 모듈을
+알려 줍니다([진단](diagnostics-and-deprecation.md)). 해결: CSP `script-src`에 `https://cdn.jsdelivr.net` 허용,
+`Kineto.setEngineSource({ gsap, scrollTrigger, lenis, …Integrity })`로 자체 호스팅, 또는 앱이 이미 GSAP를
+번들하고 있다면 `Kineto.setAnimationEngine({ gsap, ScrollTrigger })`로 넘깁니다.
+
 ## CI가 오래 걸리거나 실패함
 
 push 전에는 CI의 결정적 검사를 로컬에서 먼저 통과시킵니다. 최근 실패 CI 26건 중 15건이

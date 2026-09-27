@@ -9,7 +9,7 @@
 // called. Smooth scroll is opt-in and off by default, so a page that never
 // enables it never fetches Lenis. See src/runtime.js for the engine loader.
 import { dash, dropEmptyAttributes, env, G, noopInstance, q, readOpts, ST, setMotionDefaults } from './utils.js';
-import { setAnimationEngine, setEngineSource, getEngineSource, ensureGSAP, ensureLenis, gsapReady } from './runtime.js';
+import { setAnimationEngine, setEngineSource, getEngineSource, ensureGSAP, ensureLenis, gsapReady, engineFailure } from './runtime.js';
 import { createDiagnosticHub, DIAGNOSTIC_CODES } from './diagnostics.js';
 
 // Modules whose motion is driven by GSAP / ScrollTrigger. If a page uses any of
@@ -124,6 +124,22 @@ const diagnostics = createDiagnosticHub({
     else if (config.debug) console.info('[Kineto]', event);
   }
 });
+
+// One signal when an on-demand engine does not arrive (debug only, like every
+// diagnostic). Modules already degrade on their own; this says WHY, and which
+// modules were waiting, instead of leaving the author with effects that
+// quietly did less. Nothing from the page is included — only engine, reason
+// (the loader's own message, which names the engine URL) and module names.
+function reportEngineUnavailable(engine, modules = []) {
+  const reason = engineFailure(engine);
+  if (!reason) return;
+  diagnostics.emit({
+    code: DIAGNOSTIC_CODES.ENGINE_UNAVAILABLE,
+    phase: 'runtime',
+    recoverable: true,
+    detail: { engine, reason, modules: [...new Set(modules)].sort() }
+  });
+}
 
 // Watch the OS reduced-motion setting for RUNTIME changes and keep the cached
 // env in sync, dispatching `kineto:reduced-motion` so live views/instances can
@@ -561,7 +577,7 @@ function startSmoothService(gsap = G(), scrollTrigger = ST()) {
       const Lenis = await ensureLenis();
       // ensureLenis resolves to null when offline / CDN blocked — fall back to
       // native scrolling instead of throwing.
-      if (!Lenis) return lenis;
+      if (!Lenis) { reportEngineUnavailable('lenis', ['smooth']); return lenis; }
       // enableSmooth may have been toggled back off (or SSR entered) while the
       // engine was loading — bail without constructing anything.
       if (lenis || !config.smooth || Kineto.env.ssr || Kineto.performance === 'low') return lenis;
@@ -931,7 +947,14 @@ const Kineto = {
       // they find GSAP — keeping the preload veil up until they've applied.
       // Re-discover once after the asynchronous fetch so GSAP markup inserted
       // while the engine was loading keeps the pre-existing scan() semantics.
-      ensureGSAP().finally(() => { scanDiscovered(discoverModules(true)); releaseVeil(); });
+      ensureGSAP().finally(() => {
+        if (!gsapReady()) {
+          reportEngineUnavailable('gsap', Array.from(gsapDiscovered.entries())
+            .filter(([, candidates]) => candidates.length > 0).map(([name]) => name));
+        }
+        scanDiscovered(discoverModules(true));
+        releaseVeil();
+      });
     } else {
       scanDiscovered(gsapDiscovered);
       releaseVeil();
