@@ -788,6 +788,203 @@ await check('progress-hidden-button', async () => {
 });
 await clearStage();
 
+const radialMarkup = '<div id="rd" style="width:400px;height:300px;position:relative">'
+  + ['Mercury', 'Venus', 'Earth', 'Mars'].map((name) => `<div class="kt-radial-item" style="width:60px;height:60px">${name}</div>`).join('')
+  + '</div>';
+const radialState = await probe('radial', () => page.evaluate(async (markup) => {
+  const stage = document.getElementById('stage');
+  stage.innerHTML = markup;
+  const el = document.getElementById('rd');
+  let clicked = '';
+  el.addEventListener('click', (event) => { clicked = event.target.closest('.kt-radial-item')?.textContent || ''; });
+  const instance = window.Kineto.create('slider', el, { effect: 'radial', duration: 0.3, labels: { previous: 'Back one', next: 'On one' } });
+  const items = () => Array.from(el.querySelectorAll('.kt-radial-item'));
+  const stops = () => items().filter((item) => item.tabIndex === 0).map((item) => item.textContent);
+  const firstStops = stops();
+  const front = items()[instance.index];
+  front.focus();
+  front.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+  const activatedByKey = clicked;
+  // Arrow: the wheel turns and focus follows the new front item.
+  const live = el.querySelector('.kt-radial-live');
+  let liveWrites = 0;
+  const watcher = new MutationObserver((records) => { liveWrites += records.length; });
+  watcher.observe(live, { childList: true, characterData: true, subtree: true });
+  front.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
+  await window.__wait(600);
+  watcher.disconnect();
+  const focusedAfterArrow = document.activeElement?.textContent || '';
+  const frontAfterArrow = items()[instance.index].textContent;
+  const liveText = live.textContent;
+  const stopsAfterArrow = stops();
+  const buttons = Array.from(el.querySelectorAll('.kt-radial-controls button')).map((button) => button.getAttribute('aria-label'));
+  document.activeElement?.blur();
+  instance.destroy();
+  return { firstStops, activatedByKey, focusedAfterArrow, frontAfterArrow, stopsAfterArrow, liveWrites, liveText, buttons };
+}, radialMarkup));
+await check('radial-roving-focus', async () => {
+  assert.equal(radialState.firstStops?.length, 1, `exactly one radial item must be the tab stop (${JSON.stringify(radialState)})`);
+  assert.equal(radialState.focusedAfterArrow, radialState.frontAfterArrow, 'focus must follow the front item');
+  assert.deepEqual(radialState.stopsAfterArrow, [radialState.frontAfterArrow], 'the tab stop must move with the front item');
+});
+await check('radial-enter-activates', async () => {
+  assert.ok(radialState.activatedByKey, 'Enter on the front item must activate it');
+});
+await check('radial-live-region', async () => {
+  assert.ok(radialState.liveWrites <= 2, `the live region must change once per step, not every frame (${radialState.liveWrites} writes)`);
+  assert.match(radialState.liveText || '', new RegExp(radialState.frontAfterArrow), 'the announcement must name the item');
+});
+await check('radial-labels', async () => {
+  assert.deepEqual(radialState.buttons, ['Back one', 'On one'], 'built prev/next buttons must take their names from labels');
+});
+await clearStage();
+
+await check('radial-autoplay-focus', async () => {
+  const moved = await page.evaluate(async (markup) => {
+    document.getElementById('stage').innerHTML = markup;
+    const el = document.getElementById('rd');
+    const instance = window.Kineto.create('slider', el, { effect: 'radial', duration: 0.05, autoplay: 300 });
+    const before = instance.index;
+    el.querySelectorAll('.kt-radial-item')[before].focus();
+    await window.__wait(1000);
+    const after = instance.index;
+    document.activeElement?.blur();
+    instance.destroy();
+    return after !== before;
+  }, radialMarkup);
+  assert.equal(moved, false, 'autoplay must hold while focus is inside the wheel');
+});
+await clearStage();
+
+await check('radial-refit', async () => {
+  const radius = await page.evaluate(async () => {
+    const stage = document.getElementById('stage');
+    stage.innerHTML = '<div id="closedWheel" style="display:none"><div id="wheel" style="width:300px;height:300px;position:relative">'
+      + [1, 2, 3, 4].map((n) => `<div class="kt-radial-item" style="width:60px;height:60px">${n}</div>`).join('') + '</div></div>';
+    const el = document.getElementById('wheel');
+    const instance = window.Kineto.create('slider', el, { effect: 'radial', position: 'center' });
+    document.getElementById('closedWheel').style.display = 'block';
+    await window.__frames(3);
+    const value = el.style.getPropertyValue('--kt-radial-radius');
+    instance.destroy();
+    return value;
+  });
+  // (300 - 60 - 16) / 2 — the radius that fits the box once it is drawn.
+  assert.equal(radius, '112px', `a centred wheel must refit when it is drawn (${radius})`);
+});
+await clearStage();
+
+await check('lazy-frame-after-destroy', async () => {
+  const style = await page.evaluate(async () => {
+    const stage = document.getElementById('stage');
+    stage.innerHTML = '<img id="lzFade" alt="fade" width="40" height="40">';
+    const img = document.getElementById('lzFade');
+    const instance = window.Kineto.create('lazy', img, { src: '/pixel.gif', effect: 'fade' });
+    // Destroy right after the reveal asked for its frame (the src write and
+    // the frame request happen in the same task; this runs before the frame).
+    await new Promise((resolve) => {
+      const watcher = new MutationObserver(() => {
+        if (!/pixel\.gif/.test(img.getAttribute('src') || '')) return;
+        watcher.disconnect();
+        instance.destroy();
+        resolve();
+      });
+      watcher.observe(img, { attributes: true, attributeFilter: ['src'] });
+      setTimeout(resolve, 3000);
+    });
+    await window.__frames(3);
+    return img.getAttribute('style');
+  });
+  assert.equal(style, null, `a destroyed Lazy image must not be written to by a queued frame (style="${style}")`);
+});
+await clearStage();
+
+const restingLoops = await probe('resting-loops', () => page.evaluate(async () => {
+  const stage = document.getElementById('stage');
+  stage.innerHTML = '<div id="glow" class="box">glow</div><div id="magnetHost" style="padding:40px"><button id="magnet">magnet</button></div>'
+    + '<div id="brush" class="box" data-reveal-src="/pixel.gif"></div>';
+  const settle = async (el, x, y) => {
+    el.dispatchEvent(new PointerEvent('pointerenter', { bubbles: true, clientX: x, clientY: y }));
+    el.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: x, clientY: y }));
+    await window.__wait(1200);
+    return window.__countFrames(10);
+  };
+  const glowEl = document.getElementById('glow');
+  const glow = window.Kineto.create('cardGlow', glowEl, {});
+  const glowRect = glowEl.getBoundingClientRect();
+  const glowFrames = await settle(glowEl, glowRect.left + 20, glowRect.top + 20);
+  glow.destroy();
+  const magnetEl = document.getElementById('magnet');
+  const magnet = window.Kineto.create('magnetic', magnetEl, {});
+  const magnetRect = magnetEl.getBoundingClientRect();
+  const magnetFrames = await settle(document.getElementById('magnetHost'), magnetRect.left + magnetRect.width / 2 + 10, magnetRect.top + magnetRect.height / 2);
+  magnet.destroy();
+  const brushEl = document.getElementById('brush');
+  const brush = window.Kineto.create('brushReveal', brushEl, { persist: true });
+  await window.__wait(100);
+  const brushRect = brushEl.getBoundingClientRect();
+  const brushFrames = await settle(brushEl, brushRect.left + 30, brushRect.top + 30);
+  brush.destroy();
+  return { glowFrames, magnetFrames, brushFrames };
+}));
+await check('card-glow-rest', async () => {
+  assert.ok(restingLoops.glowFrames <= 1, `Card Glow under a resting pointer must stop requesting frames (${restingLoops.glowFrames})`);
+});
+await check('magnetic-rest', async () => {
+  assert.ok(restingLoops.magnetFrames <= 1, `Magnetic under a resting pointer must stop requesting frames (${restingLoops.magnetFrames})`);
+});
+await check('brush-reveal-rest', async () => {
+  assert.ok(restingLoops.brushFrames <= 1, `a persistent Brush Reveal under a resting pointer must stop requesting frames (${restingLoops.brushFrames})`);
+});
+await clearStage();
+
+await check('slider-progress-rest', async () => {
+  const result = await page.evaluate(async (markup) => {
+    document.getElementById('stage').innerHTML = markup;
+    const el = document.getElementById('sl');
+    const instance = window.Kineto.create('slider', el, { autoplay: 4000, progress: true });
+    const fill = el.querySelector('.kt-slider-progress__fill');
+    await window.__wait(300);
+    const early = fill.style.transform;
+    await window.__wait(300);
+    const advancing = fill.style.transform !== early;
+    instance.pause();
+    await window.__wait(100);
+    const frames = await window.__countFrames(10);
+    instance.resume();
+    await window.__wait(300);
+    const resumed = fill.style.transform;
+    await window.__wait(200);
+    const advancingAgain = fill.style.transform !== resumed;
+    instance.destroy();
+    return { advancing, frames, advancingAgain };
+  }, sliderMarkup('sl'));
+  assert.equal(result.advancing, true, 'the autoplay progress bar must fill while running');
+  assert.ok(result.frames <= 1, `a paused autoplay progress bar must stop requesting frames (${result.frames})`);
+  assert.equal(result.advancingAgain, true, 'the progress bar must fill again after resume()');
+});
+await clearStage();
+
+await check('slider-metrics-cache', async () => {
+  const reads = await page.evaluate(async (markup) => {
+    document.getElementById('stage').innerHTML = markup;
+    const el = document.getElementById('sl');
+    const wrap = el.querySelector('.kt-slider-wrap');
+    const instance = window.Kineto.create('slider', el, {});
+    await window.__wait(300);
+    const real = Element.prototype.getBoundingClientRect;
+    let count = 0;
+    Element.prototype.getBoundingClientRect = function countedRect() { if (this === wrap) count += 1; return real.call(this); };
+    instance.goTo(2);
+    await window.__frames(20);
+    Element.prototype.getBoundingClientRect = real;
+    instance.destroy();
+    return count;
+  }, sliderMarkup('sl'));
+  assert.ok(reads <= 1, `the slider must not measure its viewport every frame (${reads} reads over 20 frames)`);
+});
+await clearStage();
+
 assert.deepEqual(errors, [], `page errors:\n${errors.join('\n')}`);
 await context.close();
 
