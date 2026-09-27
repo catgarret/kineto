@@ -3,19 +3,15 @@ import { G, snapshotInlineStyles, ST } from '../utils.js';
 // Below this speed (px/s) a hovered or focused strip counts as stopped, so the
 // loop can rest instead of easing toward zero forever.
 const REST_VELOCITY = 0.5;
-const FOCUSABLE = 'a[href], area[href], button, input, select, textarea, iframe, summary, [tabindex], [contenteditable]';
 
 // A clone repeats the strip only for the eye. `aria-hidden` kept it out of the
 // accessibility tree, but its links and buttons were still in the Tab order —
 // focus landed on things a screen reader was told do not exist — and every
 // id inside it existed twice. `inert` removes it from both.
 function silenceClone(clone) {
-  const inertSupported = 'inert' in clone;
   clone.setAttribute('aria-hidden', 'true');
   clone.inert = true;
   clone.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
-  // Browsers without `inert` still get the clone out of the Tab order.
-  if (!inertSupported) clone.querySelectorAll(FOCUSABLE).forEach((node) => node.setAttribute('tabindex', '-1'));
 }
 
 export default {
