@@ -1,4 +1,4 @@
-import { clamp, segmentText, snapshotAttributes, ST, wordSink } from '../utils.js';
+import { clamp, segmentText, srText, ST, wordSink } from '../utils.js';
 
 export default {
   // Kineto.config({ defer: true }) may create this only when the element nears
@@ -11,9 +11,7 @@ export default {
     const baseColor = opts.baseColor || 'rgba(255,255,255,.15)';
     const fillColor = opts.fillColor || 'currentColor';
     const originalHTML = el.innerHTML;
-    const restoreAttributes = snapshotAttributes(el, ['aria-label']);
     const text = el.textContent || '';
-    el.setAttribute('aria-label', text);
     el.innerHTML = '';
 
     // Word boxes keep each word on one line (utils.wordSink).
@@ -33,13 +31,21 @@ export default {
       sink.add(span);
       return span;
     }).filter(Boolean);
+    // The glyphs are aria-hidden; screen readers read this one text node.
+    const screenReaderText = srText(el, text);
 
     // Fractional fill: finished glyphs are solid, the active glyph sweeps
     // left-to-right, so the fill feels continuous instead of stepping.
+    // Only glyphs whose fill changed are written: a scroll update moves one or
+    // two of them, and rewriting every glyph's style each time cost a style
+    // recalculation for the whole line.
+    const painted = spans.map(() => -1);
     const paint = (progress) => {
       const exact = clamp(progress, 0, 1) * spans.length;
       spans.forEach((span, index) => {
         const local = clamp(exact - index, 0, 1);
+        if (painted[index] === local) return;
+        painted[index] = local;
         span.style.backgroundPosition = `${100 - local * 100}% 0`;
       });
     };
@@ -63,8 +69,8 @@ export default {
       resume: () => trigger.enable(),
       destroy: () => {
         trigger.kill();
+        screenReaderText.restore();
         el.innerHTML = originalHTML;
-        restoreAttributes();
       }
     };
   },

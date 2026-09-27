@@ -1,4 +1,4 @@
-import { clamp, env, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
+import { clamp, env, snapshotAttributes, snapshotInlineStyles, srText } from '../utils.js';
 
 function backgroundIsDark(el) {
   let node = el;
@@ -105,6 +105,7 @@ export default {
 
       const timers = new Set();
       const after = (fn, ms) => { const id = setTimeout(() => { timers.delete(id); fn(); }, ms); timers.add(id); return id; };
+      const clearTimers = () => { timers.forEach(clearTimeout); timers.clear(); };
       let alive = true;
       let paused = false;
 
@@ -168,12 +169,14 @@ export default {
         type: 'glitch',
         preset,
         fire: runBurst,
-        pause() { if (!alive) return; paused = true; clear(); },
-        resume() { if (!alive) return; paused = false; after(runBurst, between(gapMin, gapMax) / cadence); },
+        // pause() drops the pending burst: it used to stay queued, so a quick
+        // pause/resume left two burst chains running (then three, …).
+        pause() { if (!alive) return; paused = true; clearTimers(); clear(); },
+        resume() { if (!alive || !paused) return; paused = false; clearTimers(); after(runBurst, between(gapMin, gapMax) / cadence); },
         destroy() {
           if (!alive) return;
           alive = false;
-          timers.forEach(clearTimeout);
+          clearTimers();
           stage.remove();
           restore();
         }
@@ -469,6 +472,18 @@ export default {
         const id = setTimeout(() => { imgTimers.delete(id); if (imgAlive) fn(); }, ms);
         imgTimers.add(id);
       };
+      // Stops the running burst and the one queued after it. Everything that
+      // starts a burst calls it first: replay() used to start a second burst
+      // chain beside the first, so every replay added one more.
+      const stopImage = () => {
+        imgTimers.forEach(clearTimeout);
+        imgTimers.clear();
+        if (imgRaf != null) cancelAnimationFrame(imgRaf);
+        imgRaf = null;
+        canvas.style.opacity = '0';
+      };
+      // A finished reveal stays finished: resume() must not glitch it again.
+      let revealDone = false;
       const syncCanvas = () => {
         const box = host.getBoundingClientRect();
         const dpr = clamp(window.devicePixelRatio || 1, 1, 2);
@@ -609,9 +624,12 @@ export default {
           drawImageGlitch(revealMode ? (1 - progress) : datamoshMode ? (0.35 + Math.sin(progress * Math.PI) * 0.8) : (1 - progress * 0.5));
           if (progress < 1) imgRaf = requestAnimationFrame(frame);
           else if (revealMode) {
+            imgRaf = null;
+            revealDone = true;
             imageEl.style.opacity = '1';
             canvas.style.opacity = '0';
           } else {
+            imgRaf = null;
             canvas.style.opacity = '0';
             if (loop) imgLater(imageBurst, repeatDelay(datamoshMode ? 900 + random() * 2100 : 700 + random() * 1800));
           }
@@ -621,13 +639,8 @@ export default {
       let imgHoverEnter = null;
       let imgHoverLeave = null;
       if (trigger === 'hover') {
-        imgHoverEnter = () => { imgAlive = true; imageBurst(); };
-        imgHoverLeave = () => {
-          imgTimers.forEach(clearTimeout);
-          imgTimers.clear();
-          if (imgRaf != null) cancelAnimationFrame(imgRaf);
-          canvas.style.opacity = '0';
-        };
+        imgHoverEnter = () => { stopImage(); imgAlive = true; imageBurst(); };
+        imgHoverLeave = stopImage;
         host.addEventListener('pointerenter', imgHoverEnter);
         host.addEventListener('pointerleave', imgHoverLeave);
       } else {
@@ -637,23 +650,31 @@ export default {
       return {
         el,
         type: 'glitch',
-        replay: () => { if (destroyed) return; imgAlive = true; if (revealMode) imageEl.style.opacity = '0'; imageBurst(); },
+        replay: () => {
+          if (destroyed) return;
+          stopImage();
+          imgAlive = true;
+          revealDone = false;
+          if (revealMode) imageEl.style.opacity = '0';
+          imageBurst();
+        },
         pause: () => {
           if (destroyed) return;
           imgAlive = false;
-          imgTimers.forEach(clearTimeout);
-          imgTimers.clear();
-          if (imgRaf != null) cancelAnimationFrame(imgRaf);
-          canvas.style.opacity = '0';
+          stopImage();
         },
-        resume: () => { if (!destroyed && !imgAlive) { imgAlive = true; imgLater(imageBurst, 200); } },
+        resume: () => {
+          if (destroyed || imgAlive) return;
+          imgAlive = true;
+          stopImage();
+          // A hover glitch waits for the pointer; a finished reveal is done.
+          if (trigger !== 'hover' && !revealDone) imgLater(imageBurst, 200);
+        },
         destroy: () => {
           if (destroyed) return;
           destroyed = true;
           imgAlive = false;
-          imgTimers.forEach(clearTimeout);
-          imgTimers.clear();
-          if (imgRaf != null) cancelAnimationFrame(imgRaf);
+          stopImage();
           if (imgHoverEnter) host.removeEventListener('pointerenter', imgHoverEnter);
           if (imgHoverLeave) host.removeEventListener('pointerleave', imgHoverLeave);
           if (revealMode) restoreImage();
@@ -664,7 +685,6 @@ export default {
     }
     const originalHTML = el.innerHTML;
     const originalStyle = el.getAttribute('style');
-    const restoreAttributes = snapshotAttributes(el, ['aria-label']);
     const text = el.textContent || '';
     // Colored duplicates must read on any background: screen-blend disappears
     // on light panels, multiply disappears on dark ones — pick per background.
@@ -681,7 +701,6 @@ export default {
       return { el, type: 'glitch', replay() {}, pause() {}, resume() {}, destroy() {} };
     }
 
-    el.setAttribute('aria-label', text);
     el.innerHTML = '';
     el.style.position = 'relative';
     el.style.display = 'inline-block';
@@ -696,6 +715,9 @@ export default {
     source.style.cssText = 'position:relative;display:block;white-space:inherit;font:inherit;letter-spacing:inherit;text-align:inherit;will-change:transform;';
     base.appendChild(source);
     el.appendChild(base);
+    // The glyph layers are aria-hidden; screen readers read this one hidden
+    // text node (not the scrambled noise frames).
+    const screenReaderText = srText(el, text);
 
     const layers = colors.slice(0, 3).map((color, index) => {
       const layer = document.createElement('span');
@@ -990,9 +1012,12 @@ export default {
       else rgbBurst();
     };
 
+    // A burst chain is running: a burst is playing or the next one is queued.
+    const chainActive = () => timers.size > 0 || running.size > 0 || pixelRafs.size > 0;
     let hoverEnter = null;
     let hoverLeave = null;
     let observer = null;
+    let inView = false;
     if (trigger === 'hover') {
       hoverEnter = () => { alive = true; burst(); };
       hoverLeave = () => { stopWork(); };
@@ -1000,7 +1025,12 @@ export default {
       el.addEventListener('pointerleave', hoverLeave);
     } else if (trigger === 'scroll' || trigger === 'view') {
       observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => { if (entry.isIntersecting) burst(); });
+        entries.forEach((entry) => {
+          inView = entry.isIntersecting;
+          // Every notice used to start a burst, and with `loop` each one a
+          // chain of its own: scrolling in and out stacked chains.
+          if (inView && alive && !chainActive()) burst();
+        });
       }, { threshold: 0.4 });
       observer.observe(el);
     } else {
@@ -1016,6 +1046,8 @@ export default {
       resume: () => {
         if (destroyed || alive) return;
         alive = true;
+        // A hover glitch waits for the pointer, a view glitch for its element.
+        if (trigger === 'hover' || (observer && !inView)) return;
         later(burst, 120);
       },
       destroy: () => {
@@ -1026,9 +1058,9 @@ export default {
         if (hoverEnter) el.removeEventListener('pointerenter', hoverEnter);
         if (hoverLeave) el.removeEventListener('pointerleave', hoverLeave);
         observer?.disconnect();
+        screenReaderText.restore();
         el.innerHTML = originalHTML;
         if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);
-        restoreAttributes();
       }
     };
   },
