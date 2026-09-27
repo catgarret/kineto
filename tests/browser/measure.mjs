@@ -167,11 +167,21 @@ console.log('\n===== CURSOR per-element pill =====');
 const cursorStage = page.locator('.cursor-custom-stage').first();
 await cursorStage.scrollIntoViewIfNeeded();
 const cursorTarget = cursorStage.locator('.cursor-target').first();
-const cursorTargetBox = await cursorTarget.boundingBox();
-await page.mouse.move(
-  cursorTargetBox.x + cursorTargetBox.width * 0.55,
-  cursorTargetBox.y + cursorTargetBox.height * 0.5
-);
+// Wait for the hover state instead of a fixed 320ms. Under a full lane the page
+// could still move after scrollIntoViewIfNeeded (the stage was once 1,000px
+// above the viewport when the pointer arrived), so each attempt brings the
+// stage back into view, moves onto the target's CURRENT box and waits for the
+// cursor to report the hover (at most ~3 s); the pill is measured after that.
+const cursorIsHovering = () => cursorStage.evaluate((stage) => window.Kineto.getInstance(stage, 'cursor')?.cursor?.classList.contains('is-hover') === true);
+for (let attempt = 0; attempt < 10 && !(await cursorIsHovering()); attempt += 1) {
+  await cursorStage.scrollIntoViewIfNeeded();
+  const cursorTargetBox = await cursorTarget.boundingBox();
+  await page.mouse.move(
+    cursorTargetBox.x + cursorTargetBox.width * 0.55 + (attempt % 2),
+    cursorTargetBox.y + cursorTargetBox.height * 0.5
+  );
+  await sleep(300);
+}
 await sleep(320);
 const cursorHover = await cursorStage.evaluate((stage) => {
   const instance = window.Kineto.getInstance(stage, 'cursor');
