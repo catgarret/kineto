@@ -1,5 +1,23 @@
 import { G, snapshotInlineStyles, ST } from '../utils.js';
 
+// Below this speed (px/s) a hovered or focused strip counts as stopped, so the
+// loop can rest instead of easing toward zero forever.
+const REST_VELOCITY = 0.5;
+const FOCUSABLE = 'a[href], area[href], button, input, select, textarea, iframe, summary, [tabindex], [contenteditable]';
+
+// A clone repeats the strip only for the eye. `aria-hidden` kept it out of the
+// accessibility tree, but its links and buttons were still in the Tab order —
+// focus landed on things a screen reader was told do not exist — and every
+// id inside it existed twice. `inert` removes it from both.
+function silenceClone(clone) {
+  const inertSupported = 'inert' in clone;
+  clone.setAttribute('aria-hidden', 'true');
+  clone.inert = true;
+  clone.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
+  // Browsers without `inert` still get the clone out of the Tab order.
+  if (!inertSupported) clone.querySelectorAll(FOCUSABLE).forEach((node) => node.setAttribute('tabindex', '-1'));
+}
+
 export default {
   // Kineto.config({ defer: true }) may create this only when the element nears
   // the viewport (src/deferCreate.js): it only matters where it can be seen.
@@ -38,49 +56,73 @@ export default {
     el.appendChild(group);
     for (let index = 0; index < cloneCount; index += 1) {
       const clone = group.cloneNode(true);
-      clone.setAttribute('aria-hidden', 'true');
+      silenceClone(clone);
       el.appendChild(clone);
     }
     const groups = Array.from(el.children);
 
     let baseVelocity = speed * direction;
     let targetVelocity = baseVelocity;
+    // `hovered` holds the strip still: the pointer is over it (pauseOnHover)
+    // or keyboard focus is inside it, where a moving link cannot be read.
     let hovered = false;
+    let pointerOver = false;
+    let focusInside = false;
     let currentVelocity = baseVelocity;
-    // Cache the group width (reading offsetWidth every frame forces a layout
-    // flush on the continuous loop); re-measure only on resize.
-    let groupWidth = group.offsetWidth || 0;
-    let position = direction < 0 ? 0 : -groupWidth;
+    let groupWidth = 0;
+    let position = 0;
     let alive = true;
     let rafId = null;
     let previousTime = performance.now();
-    const measureWidth = () => { groupWidth = group.offsetWidth || 0; };
+    // The width comes from the ResizeObserver's first report instead of an
+    // offsetWidth read here, right after building the strip (a forced layout
+    // per marquee during create). The loop rests until it is known.
+    const measureWidth = () => {
+      const firstMeasure = groupWidth === 0;
+      groupWidth = group.offsetWidth || 0;
+      if (firstMeasure && direction > 0) position = -groupWidth;
+      wake();
+    };
     const marqueeResizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measureWidth) : null;
     marqueeResizeObserver?.observe(group);
 
+    // One setter for the whole strip: gsap.set() per frame built a new tween
+    // object every frame; quickSetter reuses one.
+    const setGsapX = gsap?.quickSetter ? gsap.quickSetter(groups, 'x', 'px') : null;
     const setX = (value) => {
-      if (gsap) gsap.set(groups, { x: value });
+      if (setGsapX) setGsapX(value);
+      else if (gsap) gsap.set(groups, { x: value });
       else groups.forEach((item) => { item.style.transform = `translate3d(${value}px,0,0)`; });
     };
 
     const tick = (time = performance.now()) => {
+      rafId = null;
       if (!alive) return;
       const delta = Math.min(0.05, Math.max(0, (time - previousTime) / 1000));
       previousTime = time;
       const width = groupWidth;
-      if (width > 0) {
-        currentVelocity += (targetVelocity - currentVelocity) * Math.min(1, delta * 8);
-        position += currentVelocity * delta;
-        while (position <= -width) position += width;
-        while (position > 0) position -= width;
-        setX(position);
-        // Drift back toward the base speed (scroll-boost recovery) — but never
-        // while hovered, or pauseOnHover would immediately un-pause itself.
-        if (!hovered) targetVelocity += (baseVelocity - targetVelocity) * Math.min(1, delta * 4);
+      if (width <= 0) return; // measureWidth() wakes the loop
+      currentVelocity += (targetVelocity - currentVelocity) * Math.min(1, delta * 8);
+      // Held still and (almost) there: stop, and let pointerleave/focusout wake it.
+      if (hovered && Math.abs(currentVelocity) < REST_VELOCITY && Math.abs(targetVelocity) < REST_VELOCITY) {
+        currentVelocity = 0;
+        return;
       }
+      position += currentVelocity * delta;
+      while (position <= -width) position += width;
+      while (position > 0) position -= width;
+      setX(position);
+      // Drift back toward the base speed (scroll-boost recovery) — but never
+      // while hovered, or pauseOnHover would immediately un-pause itself.
+      if (!hovered) targetVelocity += (baseVelocity - targetVelocity) * Math.min(1, delta * 4);
       rafId = requestAnimationFrame(tick);
     };
-    rafId = requestAnimationFrame(tick);
+    function wake() {
+      if (!alive || rafId != null) return;
+      previousTime = performance.now();
+      rafId = requestAnimationFrame(tick);
+    }
+    if (!marqueeResizeObserver) measureWidth();
 
     let velocityTrigger = null;
     // Optional scroll-reactive skew: the line leans with scroll velocity and
@@ -115,6 +157,7 @@ export default {
           if (!hovered && (reverseOnScrollUp || scrollAcceleration > 0)) {
             targetVelocity = baseVelocity + (scrollVelocity / 50) * scrollAcceleration * -direction;
           }
+          wake();
           if (maxSkew > 0) {
             skewTarget = Math.max(-maxSkew, Math.min(maxSkew, (scrollVelocity / 220) * maxSkew));
             wakeSkew();
@@ -124,12 +167,30 @@ export default {
       wakeSkew();
     }
 
-    const onEnter = () => { hovered = true; targetVelocity = 0; };
-    const onLeave = () => { hovered = false; targetVelocity = baseVelocity; };
+    const syncHeld = () => {
+      const held = pointerOver || focusInside;
+      if (held === hovered) return;
+      hovered = held;
+      targetVelocity = hovered ? 0 : baseVelocity;
+      wake();
+    };
+    const onEnter = () => { pointerOver = true; syncHeld(); };
+    const onLeave = () => { pointerOver = false; syncHeld(); };
+    // Keyboard focus always stops the strip (WCAG 2.2.2): a link that keeps
+    // sliding away cannot be read or activated, and a keyboard user has no
+    // hover to pause it with.
+    const onFocusIn = () => { focusInside = true; syncHeld(); };
+    const onFocusOut = (event) => {
+      if (event.relatedTarget && el.contains(event.relatedTarget)) return;
+      focusInside = false;
+      syncHeld();
+    };
     if (pauseOnHover) {
       el.addEventListener('pointerenter', onEnter);
       el.addEventListener('pointerleave', onLeave);
     }
+    el.addEventListener('focusin', onFocusIn);
+    el.addEventListener('focusout', onFocusOut);
 
     return {
       el,
@@ -137,6 +198,7 @@ export default {
       pause: () => {
         alive = false;
         if (rafId != null) cancelAnimationFrame(rafId);
+        rafId = null;
         if (skewRaf != null) cancelAnimationFrame(skewRaf);
         skewRaf = null;
       },
@@ -145,8 +207,7 @@ export default {
       resume: () => {
         if (alive) return;
         alive = true;
-        previousTime = performance.now();
-        rafId = requestAnimationFrame(tick);
+        wake();
         if (velocityTrigger) wakeSkew();
       },
       destroy: () => {
@@ -157,6 +218,8 @@ export default {
         velocityTrigger?.kill();
         el.removeEventListener('pointerenter', onEnter);
         el.removeEventListener('pointerleave', onLeave);
+        el.removeEventListener('focusin', onFocusIn);
+        el.removeEventListener('focusout', onFocusOut);
         el.innerHTML = originalHTML;
         if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);
       }
