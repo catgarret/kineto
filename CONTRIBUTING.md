@@ -4,6 +4,13 @@
 
 `OWNER_REQUIREMENTS.md`, `FEATURE_CONTRACT.md`, `docs/AGENTS.md`, 영향을 받는 테스트를 먼저 읽습니다. 현재 공개 범위는 **55개 모듈·31개 Core API·52개 소유자 요구사항**이며, 기능명뿐 아니라 카테고리·variant 의미·공개 option·시각 동작도 계약입니다.
 
+## 처음 clone한 뒤
+
+```bash
+npm ci
+npm run build   # dist/는 커밋하지 않습니다(0.13+) — 테스트·예제·데모가 빌드 결과를 읽습니다
+```
+
 ## 변경 원칙
 
 - 버그 수정은 기존 기능을 보존하는 가장 작은 변경이어야 합니다.

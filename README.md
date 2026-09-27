@@ -490,7 +490,7 @@ Latest Chrome, Edge, Firefox, and Safari (desktop and mobile). With `prefers-red
 
 ```bash
 npm install
-npm run build   # emits dist/
+npm run build   # emits dist/ (build output, not committed — run it after cloning)
 npm run ci      # lint, build, Node/Chromium tests, contract and package checks
 npm run verify  # full CI suite plus dependency security audit
 ```

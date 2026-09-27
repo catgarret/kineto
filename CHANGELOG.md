@@ -4,9 +4,13 @@
 
 ### English
 
+- `dist/` is no longer committed. Every workflow already builds the commit it tests; the committed copy hid size regressions and conflicted in every merge. Run `npm run build` after cloning.
+
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- `dist/`를 더 이상 커밋하지 않습니다. 모든 워크플로우가 이미 검사하는 커밋을 직접 빌드하며, 커밋된 사본은 용량 회귀를 가리고 병합마다 충돌했습니다. clone 뒤 `npm run build`를 실행하세요.
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
