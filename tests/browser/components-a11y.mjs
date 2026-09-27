@@ -111,6 +111,18 @@ async function check(name, fn) {
   }
 }
 
+// A probe collects one page state that several checks then judge separately,
+// so each finding keeps its own pass/fail line.
+async function probe(name, fn) {
+  try {
+    return await fn();
+  } catch (error) {
+    failures.push(`${name}: ${error.message}`);
+    console.log(`FAIL ${name}: ${error.message}`);
+    return {};
+  }
+}
+
 const { page, context, errors } = await openPage();
 const clearStage = () => page.evaluate(() => { document.getElementById('stage').innerHTML = ''; });
 
@@ -424,6 +436,355 @@ await check('lenis-prevent', async () => {
   assert.ok(result.plainReads <= result.pathLength, `prevent() must read each element's style at most once per event (${result.plainReads} reads for ${result.pathLength} elements)`);
   assert.equal(result.scrolling, true, 'a scrolling ancestor must still let native scroll through');
   assert.equal(result.flagged, true, 'data-lenis-prevent must still be honoured');
+});
+await clearStage();
+
+const cursorState = await probe('cursor-native-pointer', () => page.evaluate(async () => {
+  const stage = document.getElementById('stage');
+  stage.innerHTML = '<input id="field" type="text"><div id="plain">plain</div><div id="nocustom" data-kt-cursor-hide>hidden zone</div>';
+  const instance = window.Kineto.create('cursor', document.body, {});
+  const cursorOf = (id) => getComputedStyle(document.getElementById(id)).cursor;
+  const active = { field: cursorOf('field'), plain: cursorOf('plain'), hideZone: cursorOf('nocustom') };
+  instance.pause();
+  const pausedClass = document.documentElement.classList.contains('kt-cursor-active');
+  const pausedPlain = cursorOf('plain');
+  instance.resume();
+  const resumedClass = document.documentElement.classList.contains('kt-cursor-active');
+  instance.destroy();
+  return { active, pausedClass, pausedPlain, resumedClass };
+}));
+await check('cursor-native-fields', async () => {
+  assert.equal(cursorState.active.plain, 'none', 'the page cursor must still replace the native pointer elsewhere');
+  assert.notEqual(cursorState.active.field, 'none', `a text field must keep its native caret cursor (${JSON.stringify(cursorState)})`);
+  assert.notEqual(cursorState.active.hideZone, 'none', 'where the custom cursor hides, the native pointer must show');
+});
+await check('cursor-pause-pointer', async () => {
+  assert.equal(cursorState.pausedClass, false, 'a paused cursor must give the native pointer back');
+  assert.notEqual(cursorState.pausedPlain, 'none', 'a paused cursor must not leave the page without a pointer');
+  assert.equal(cursorState.resumedClass, true, 'resume() must hide the native pointer again');
+});
+await clearStage();
+
+await check('cursor-hidden-moves', async () => {
+  const frames = await page.evaluate(async () => {
+    const stage = document.getElementById('stage');
+    stage.innerHTML = '<div id="scope" style="width:200px;height:100px;background:#eee">scoped cursor here</div><div id="elsewhere" style="height:100px">elsewhere</div>';
+    const instance = window.Kineto.create('cursor', document.getElementById('scope'), {});
+    await window.__frames(3);
+    const elsewhere = document.getElementById('elsewhere');
+    const rect = elsewhere.getBoundingClientRect();
+    const real = window.requestAnimationFrame;
+    let requested = 0;
+    window.requestAnimationFrame = (callback) => { requested += 1; return real.call(window, callback); };
+    for (let i = 0; i < 8; i += 1) {
+      elsewhere.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: rect.left + 10 + i * 5, clientY: rect.top + 20 }));
+      await new Promise((resolve) => real.call(window, resolve));
+    }
+    window.requestAnimationFrame = real;
+    instance.destroy();
+    return requested;
+  });
+  assert.equal(frames, 0, `a scoped cursor must not wake frames for pointer moves outside its scope (${frames})`);
+});
+await clearStage();
+
+await check('cursor-sparkle-layout', async () => {
+  const reads = await page.evaluate(async () => {
+    const instance = window.Kineto.create('cursor', document.body, { type: 'sparkle', sparkleThrottle: 16 });
+    const descriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth');
+    let count = 0;
+    Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, get() { count += 1; return descriptor.get.call(this); } });
+    for (let i = 0; i < 6; i += 1) {
+      document.body.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 100 + i * 12, clientY: 100 }));
+      await window.__wait(25);
+    }
+    Object.defineProperty(HTMLElement.prototype, 'offsetWidth', descriptor);
+    const stars = document.querySelectorAll('.kt-cursor span[aria-hidden="true"]').length;
+    instance.destroy();
+    return { count, stars };
+  });
+  assert.ok(reads.stars > 0, 'sparkles must still spawn');
+  assert.equal(reads.count, 0, `spawning a sparkle must not force a layout (${reads.count} offsetWidth reads)`);
+});
+await clearStage();
+
+const tooltipState = await probe('tooltip-a11y', () => page.evaluate(async () => {
+  const stage = document.getElementById('stage');
+  stage.innerHTML = '<button id="iconBtn" title="Settings"><svg width="16" height="16" aria-hidden="true"></svg></button>'
+    + '<button id="namedBtn" aria-label="Close"></button><button id="hoverBtn">Hover me</button><button id="away">away</button>';
+  const icon = window.Kineto.create('tooltip', document.getElementById('iconBtn'), {});
+  const named = window.Kineto.create('tooltip', document.getElementById('namedBtn'), {});
+  const hover = window.Kineto.create('tooltip', document.getElementById('hoverBtn'), { content: 'More about this', delay: 0, hideDelay: 60 });
+  const iconBtn = document.getElementById('iconBtn');
+  const iconName = iconBtn.getAttribute('aria-label');
+  const iconDescribed = iconBtn.hasAttribute('aria-describedby');
+  const namedDescribed = document.getElementById('namedBtn').hasAttribute('aria-describedby');
+  // Hover the trigger, then move onto the tip itself: it must stay.
+  const trigger = document.getElementById('hoverBtn');
+  trigger.dispatchEvent(new PointerEvent('pointerenter'));
+  await window.__wait(60);
+  const tipId = trigger.getAttribute('aria-describedby');
+  const tip = document.getElementById(tipId);
+  trigger.dispatchEvent(new PointerEvent('pointerleave'));
+  tip.dispatchEvent(new PointerEvent('pointerenter'));
+  await window.__wait(250);
+  const hoverable = !tip.hidden;
+  // Escape closes it wherever focus is.
+  hover.show();
+  await window.__wait(50);
+  const shownForEscape = !tip.hidden;
+  document.getElementById('away').focus();
+  document.getElementById('away').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  await window.__wait(250);
+  const escaped = shownForEscape && tip.hidden;
+  const unsupported = hover.update({ placement: 'bottom' });
+  icon.destroy(); named.destroy(); hover.destroy();
+  const restored = iconBtn.getAttribute('title') === 'Settings' && !iconBtn.hasAttribute('aria-label');
+  return { iconName, iconDescribed, namedDescribed, hoverable, escaped, unsupported, restored };
+}));
+await check('tooltip-name', async () => {
+  assert.equal(tooltipState.iconName, 'Settings', `an icon-only button must keep its title as its name (${JSON.stringify(tooltipState)})`);
+  assert.equal(tooltipState.iconDescribed, false, 'a tip equal to the name must not be read twice');
+  assert.equal(tooltipState.namedDescribed, false, 'a tip taken from aria-label must not describe the same element');
+  assert.equal(tooltipState.restored, true, 'destroy() must put the title back and drop the aria-label it added');
+});
+await check('tooltip-hoverable', async () => {
+  assert.equal(tooltipState.hoverable, true, 'the pointer must be able to move onto a hover tip');
+});
+await check('tooltip-escape', async () => {
+  assert.equal(tooltipState.escaped, true, 'Escape must close a tip wherever focus is');
+});
+await check('tooltip-update', async () => {
+  assert.equal(tooltipState.unsupported, false, 'update() must decline options it cannot apply live');
+});
+await clearStage();
+
+const toastState = await probe('toast-announce-focus', () => page.evaluate(async () => {
+  const stage = document.getElementById('stage');
+  stage.innerHTML = '<button id="saveBtn">Save</button>';
+  const trigger = document.getElementById('saveBtn');
+  const instance = window.Kineto.create('toast', trigger, { duration: 10000 });
+  const politeBefore = document.querySelector('[aria-live="polite"]');
+  const assertiveBefore = document.querySelector('[aria-live="assertive"]');
+  const shown = instance.show('Saved');
+  await window.__frames(3);
+  const politeText = politeBefore?.textContent || '';
+  instance.show('Failed', { type: 'error' });
+  await window.__frames(3);
+  const assertiveText = assertiveBefore?.textContent || '';
+  trigger.focus();
+  const close = shown.el.querySelector('.kt-toast__close');
+  close.focus();
+  close.click();
+  await window.__wait(400);
+  const focusedAfter = document.activeElement?.id || document.activeElement?.tagName;
+  instance.destroy();
+  const leftovers = document.querySelectorAll('.kt-toast-announcer, .kt-toast-region').length;
+  return { hadRegions: Boolean(politeBefore && assertiveBefore), politeText, assertiveText, focusedAfter, leftovers };
+}));
+await check('toast-announce', async () => {
+  assert.equal(toastState.hadRegions, true, 'empty live regions must exist before the first toast');
+  assert.match(toastState.politeText, /Saved/, 'a status toast must be announced through the polite region');
+  assert.match(toastState.assertiveText, /Failed/, 'an error toast must be announced through the assertive region');
+  assert.equal(toastState.leftovers, 0, 'destroying the last toast instance must remove its regions');
+});
+await check('toast-focus-return', async () => {
+  assert.equal(toastState.focusedAfter, 'saveBtn', `dismissing a focused toast must return focus (${toastState.focusedAfter})`);
+});
+await clearStage();
+
+const sheetState = await probe('bottom-sheet-modal', () => page.evaluate(async () => {
+  const stage = document.getElementById('stage');
+  stage.innerHTML = '<button id="opener">Open</button><a id="bgLink" href="#bg">background</a>'
+    + '<div id="sheetA" style="height:200px"><h2>Sheet</h2><button hidden id="ghost">ghost</button><p>Plain text</p><button data-kt-sheet-close id="closeBtn">Close</button></div>'
+    + '<div id="sheetB" style="height:200px"><p>Nothing to focus</p></div>';
+  const a = window.Kineto.create('bottomSheet', document.getElementById('sheetA'), { duration: 0.05, resizable: true });
+  const b = window.Kineto.create('bottomSheet', document.getElementById('sheetB'), { duration: 0.05 });
+  document.getElementById('opener').focus();
+  a.open();
+  await window.__wait(120);
+  const backgroundInert = Boolean(document.getElementById('bgLink').closest('[inert]'));
+  const firstFocus = document.activeElement?.id;
+  // Keyboard resize on the handle.
+  const handle = document.querySelector('#sheetA .kt-sheet__handle');
+  const before = document.getElementById('sheetA').getBoundingClientRect().height;
+  handle.focus();
+  handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, cancelable: true }));
+  const after = document.getElementById('sheetA').getBoundingClientRect().height;
+  document.getElementById('closeBtn').click();
+  await window.__wait(150);
+  const closedByButton = document.getElementById('sheetA').hidden;
+  const backgroundBack = !document.getElementById('bgLink').closest('[inert]');
+  b.open();
+  await window.__wait(120);
+  const emptyFocus = document.activeElement?.id;
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+  const stillInside = document.getElementById('sheetB').contains(document.activeElement);
+  b.close();
+  a.destroy(); b.destroy();
+  return { backgroundInert, firstFocus, grew: after > before, closedByButton, backgroundBack, emptyFocus, stillInside };
+}));
+await check('sheet-inert-background', async () => {
+  assert.equal(sheetState.backgroundInert, true, `the page behind an open sheet must be inert (${JSON.stringify(sheetState)})`);
+  assert.equal(sheetState.backgroundBack, true, 'closing must give the page back');
+});
+await check('sheet-focus', async () => {
+  assert.equal(sheetState.firstFocus, 'closeBtn', 'focus must skip controls that are not drawn');
+  assert.equal(sheetState.emptyFocus, 'sheetB', 'a sheet with nothing focusable must take focus itself');
+  assert.equal(sheetState.stillInside, true, 'Tab must not leave a sheet with nothing focusable');
+});
+await check('sheet-keyboard-resize', async () => {
+  assert.equal(sheetState.grew, true, 'ArrowUp on the resize handle must grow the sheet');
+});
+await check('sheet-close-button', async () => {
+  assert.equal(sheetState.closedByButton, true, 'a [data-kt-sheet-close] button must close the sheet');
+});
+await clearStage();
+
+const menuState = await probe('mega-menu-keys', () => page.evaluate(async () => {
+  const stage = document.getElementById('stage');
+  stage.innerHTML = '<nav id="nav"><ul style="display:flex;gap:10px;list-style:none">'
+    + '<li><a id="prodLink" href="#products">Products</a><div class="kt-menu-panel"><a href="#p1">One</a></div></li>'
+    + '<li><a id="aboutLink" href="#about">About</a></li>'
+    + '<li><button id="helpBtn">Help</button><div class="kt-menu-panel"><a href="#h1">Docs</a></div></li>'
+    + '</ul></nav>';
+  const instance = window.Kineto.create('megaMenu', document.getElementById('nav'), {});
+  const prod = document.getElementById('prodLink');
+  const haspopup = prod.getAttribute('aria-haspopup');
+  const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+  prod.dispatchEvent(enter);
+  const enterKeptForLink = !enter.defaultPrevented;
+  prod.focus();
+  prod.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
+  const afterRight = document.activeElement?.id;
+  instance.destroy();
+  return { haspopup, enterKeptForLink, afterRight };
+}));
+await check('menu-disclosure', async () => {
+  assert.equal(menuState.haspopup, null, 'a disclosure trigger must not announce a menu popup');
+});
+await check('menu-link-enter', async () => {
+  assert.equal(menuState.enterKeptForLink, true, 'Enter on a link trigger must follow the link');
+});
+await check('menu-arrow-plain-links', async () => {
+  assert.equal(menuState.afterRight, 'aboutLink', `ArrowRight must reach plain top-level links (${menuState.afterRight})`);
+});
+await clearStage();
+
+const fullpageState = await probe('fullpage-keys', () => page.evaluate(async () => {
+  const stage = document.getElementById('stage');
+  stage.innerHTML = '<div id="fp" style="height:300px;position:relative"><section><button id="fpBtn">Act</button><input id="fpInput" value="text"></section>'
+    + '<section><div style="height:900px">long</div></section><section>three</section></div>';
+  const el = document.getElementById('fp');
+  const instance = window.Kineto.create('fullpage', el, { duration: 0.05 });
+  await window.__wait(100);
+  const press = (target, key) => {
+    const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+    target.dispatchEvent(event);
+    return event.defaultPrevented;
+  };
+  document.getElementById('fpBtn').focus();
+  const spaceOnButton = press(document.getElementById('fpBtn'), ' ');
+  document.getElementById('fpInput').focus();
+  const arrowInInput = press(document.getElementById('fpInput'), 'ArrowDown');
+  el.focus();
+  press(el, 'ArrowDown'); // to the long section
+  await window.__wait(250);
+  const section = el.querySelectorAll('section')[1];
+  const scrollBefore = section.scrollTop;
+  press(el, 'ArrowDown');
+  await window.__wait(100);
+  const scrolledInside = section.scrollTop > scrollBefore;
+  const dots = el.querySelector('.kt-fullpage-dots');
+  const dotRole = dots?.getAttribute('role');
+  const dot = el.querySelector('.kt-fullpage-dot');
+  const box = dot.getBoundingClientRect();
+  const hit = document.elementFromPoint(box.left + box.width / 2 + 9, box.top + box.height / 2);
+  const bigTarget = hit === dot;
+  instance.destroy();
+  return { spaceOnButton, arrowInInput, scrolledInside, dotRole, bigTarget };
+}));
+await check('fullpage-keys-in-controls', async () => {
+  assert.equal(fullpageState.spaceOnButton, false, `Space on a button inside a section must press the button (${JSON.stringify(fullpageState)})`);
+  assert.equal(fullpageState.arrowInInput, false, 'arrow keys in a text field must stay with the field');
+});
+await check('fullpage-long-section', async () => {
+  assert.equal(fullpageState.scrolledInside, true, 'a long section must scroll by keyboard before paging');
+});
+await check('fullpage-dots', async () => {
+  assert.equal(fullpageState.dotRole, 'group', 'the dots are a group of buttons, not a tablist');
+  assert.equal(fullpageState.bigTarget, true, 'a fullpage dot must be a 24px target');
+});
+await clearStage();
+
+const controlsState = await probe('small-controls', () => page.evaluate(async (markup) => {
+  const stage = document.getElementById('stage');
+  stage.innerHTML = `${markup}<div id="sw-host" style="background:#fff;color:#000;padding:10px"><button id="sw">Notify</button></div>`
+    + '<div id="dragBox" style="width:200px;padding:10px;background:#ddd"><input id="dragField" value="abc"></div>';
+  const slider = window.Kineto.create('slider', document.getElementById('sl'), { dots: true });
+  const dot = document.querySelector('#sl .kt-slider-dot:not(.is-active)');
+  const painted = getComputedStyle(dot).width;
+  // Probe 10px below the painted dot's centre: inside a 24px target only.
+  const box = dot.getBoundingClientRect();
+  const hitBelow = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2 + 10);
+  const toast = window.Kineto.create('toast', document.getElementById('sw'), { duration: 10000 });
+  const shown = toast.show('Hi');
+  const closeBox = shown.el.querySelector('.kt-toast__close').getBoundingClientRect();
+  toast.destroy();
+  const sw = window.Kineto.create('switch', document.getElementById('sw'), {});
+  // The track colour transitions in from the button's own background.
+  await window.__wait(400);
+  const parse = (value) => {
+    const numbers = (value.match(/[\d.]+/g) || []).map(Number);
+    if (/^color\(/.test(value)) return { r: numbers[0] * 255, g: numbers[1] * 255, b: numbers[2] * 255, a: numbers[3] ?? 1 };
+    return { r: numbers[0], g: numbers[1], b: numbers[2], a: numbers[3] ?? 1 };
+  };
+  const track = parse(getComputedStyle(document.getElementById('sw')).backgroundColor);
+  const over = (channel) => channel * track.a + 255 * (1 - track.a);
+  const lum = (c) => { const v = c / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+  const L = 0.2126 * lum(over(track.r)) + 0.7152 * lum(over(track.g)) + 0.0722 * lum(over(track.b));
+  const contrast = 1.05 / (L + 0.05);
+  sw.destroy();
+  const drag = window.Kineto.create('drag', document.getElementById('dragBox'), {});
+  const field = document.getElementById('dragField');
+  const arrow = new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true });
+  field.dispatchEvent(arrow);
+  const dragMovedFromField = arrow.defaultPrevented;
+  drag.destroy();
+  slider.destroy();
+  return { painted, hitBelow: hitBelow === dot, closeWidth: closeBox.width, closeHeight: closeBox.height, contrast, dragMovedFromField };
+}, sliderMarkup('sl')));
+await check('slider-dot-target', async () => {
+  assert.equal(controlsState.painted, '8px', 'the slider dot must keep its painted size');
+  assert.equal(controlsState.hitBelow, true, `a slider dot must be a 24px target (${JSON.stringify(controlsState)})`);
+});
+await check('toast-close-target', async () => {
+  assert.ok(controlsState.closeWidth >= 24 && controlsState.closeHeight >= 24, `the toast close button must be at least 24px (${controlsState.closeWidth}×${controlsState.closeHeight})`);
+});
+await check('switch-contrast', async () => {
+  assert.ok(controlsState.contrast >= 3, `an off switch must contrast 3:1 with the page (${controlsState.contrast.toFixed(2)}:1)`);
+});
+await check('drag-keys-in-fields', async () => {
+  assert.equal(controlsState.dragMovedFromField, false, 'arrow keys in a field inside a draggable must not move it');
+});
+await clearStage();
+
+await check('progress-hidden-button', async () => {
+  const result = await page.evaluate(async () => {
+    window.scrollTo(0, 0);
+    const host = document.createElement('div');
+    document.getElementById('stage').appendChild(host);
+    const instance = window.Kineto.create('progress', host, { ui: 'ring', clickToTop: true, showAfter: 300 });
+    await window.__frames(3);
+    const ring = document.querySelector('.kt-progress-ring');
+    const hiddenOpacity = ring?.style.opacity;
+    ring?.focus();
+    const focusable = document.activeElement === ring;
+    instance.destroy();
+    return { hiddenOpacity, focusable };
+  });
+  assert.equal(result.hiddenOpacity, '0', 'the back-to-top ring starts hidden before showAfter');
+  assert.equal(result.focusable, false, 'a hidden back-to-top button must not take focus');
 });
 await clearStage();
 
