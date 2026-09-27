@@ -27,6 +27,26 @@ const DEFAULT_LABELS = { region: 'Notifications', dismiss: 'Dismiss' };
 // 지우지 않으면 토스트가 하나도 없는 페이지에 `role="region"` 랜드마크가 영원히 남아,
 // 스크린 리더 사용자에게 빈 "Notifications" 영역이 계속 들립니다.
 const liveInstances = new Set();
+
+// 스크린 리더 알림 전용 live region 두 개(polite · assertive). 화면의 토스트는 내용이
+// 이미 채워진 채로 붙기 때문에, 그 자체를 live region 으로 두면 "처음 나타난 영역"이라
+// 읽히지 않는 경우가 많았습니다. 알림은 **미리 있던 빈 영역**에 문장을 추가해야
+// 확실히 읽힙니다 — 그래서 첫 인스턴스가 만들어질 때 비어 있는 채로 붙여 둡니다.
+const ANNOUNCERS = {};
+const ANNOUNCER_STYLE = 'position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;';
+const ensureAnnouncers = () => {
+  [['polite', 'status'], ['assertive', 'alert']].forEach(([politeness, role]) => {
+    if (ANNOUNCERS[politeness]?.isConnected) return;
+    const announcer = document.createElement('div');
+    announcer.className = `kt-toast-announcer kt-toast-announcer--${politeness}`;
+    announcer.setAttribute('role', role);
+    announcer.setAttribute('aria-live', politeness);
+    announcer.style.cssText = ANNOUNCER_STYLE;
+    document.body.appendChild(announcer);
+    ANNOUNCERS[politeness] = announcer;
+  });
+};
+
 const dropEmptyRegions = () => {
   if (liveInstances.size) return;
   for (const [position, region] of Object.entries(REGIONS)) {
@@ -34,6 +54,11 @@ const dropEmptyRegions = () => {
     if (region.children.length) continue;
     region.remove();
     delete REGIONS[position];
+  }
+  if (Object.keys(REGIONS).length) return;
+  for (const [politeness, announcer] of Object.entries(ANNOUNCERS)) {
+    announcer.remove();
+    delete ANNOUNCERS[politeness];
   }
 };
 
@@ -66,6 +91,7 @@ export default {
     // 떠난 컴포넌트의 알림이 계속 떠 있으면 안 되고, 남겨 두면 teardown 이 "언젠가
     // 타이머가 정리해 주겠지"에 기대게 됩니다.
     const liveToasts = new Set();
+    ensureAnnouncers();
 
     const show = (message, overrides = {}) => {
       const kind = overrides.type || type;
@@ -73,9 +99,10 @@ export default {
       const region = regionFor(overrides.position || position, label);
       while (region.children.length >= maxVisible) region.firstElementChild?.remove();
 
+      // 화면의 토스트에는 live role 을 두지 않습니다(알림은 아래 announcer 가 맡습니다).
+      // 둘 다 두면 읽히는 환경에서는 같은 문장을 두 번 듣게 됩니다.
       const toast = document.createElement('div');
       toast.className = `kt-toast kt-toast--${kind}`;
-      toast.setAttribute('role', kind === 'error' || kind === 'warning' ? 'alert' : 'status');
       if (opts.barColor) toast.style.setProperty('--kt-toast-bar', opts.barColor);
 
       // Icon HTML (customizable): default clean type symbol, unless type is
@@ -96,8 +123,35 @@ export default {
       body.textContent = message ?? defaultMessage;
       toast.appendChild(body);
 
+      // 알림: 미리 있던 빈 live region 에 문장 하나를 **추가**합니다(추가는 읽힙니다).
+      // 같은 작업 안에서 announcer 가 막 생겼을 수도 있으니 한 프레임 뒤에 넣습니다.
+      ensureAnnouncers();
+      const announcer = ANNOUNCERS[kind === 'error' || kind === 'warning' ? 'assertive' : 'polite'];
+      const spoken = document.createElement('p');
+      spoken.textContent = body.textContent;
+      let announceFrame = requestAnimationFrame(() => { announceFrame = null; if (!closed) announcer.appendChild(spoken); });
+
+      // 닫기 버튼으로 닫으면 포커스가 사라진 토스트와 함께 <body> 로 떨어졌습니다.
+      // 포커스가 들어오기 직전에 있던 곳(없으면 트리거)으로 돌려보냅니다.
+      let returnFocusTo = null;
+      const onFocusEnter = (event) => {
+        if (!returnFocusTo && event.relatedTarget && !toast.contains(event.relatedTarget)) returnFocusTo = event.relatedTarget;
+      };
+      toast.addEventListener('focusin', onFocusEnter);
+
       let closed = false;
-      const removeNow = () => { liveToasts.delete(closeNow); toast.remove(); dropEmptyRegions(); };
+      const removeNow = () => {
+        liveToasts.delete(closeNow);
+        if (announceFrame != null) cancelAnimationFrame(announceFrame);
+        spoken.remove();
+        const hadFocus = toast.contains(document.activeElement);
+        toast.remove();
+        if (hadFocus) {
+          const target = returnFocusTo?.isConnected ? returnFocusTo : el;
+          target.focus?.();
+        }
+        dropEmptyRegions();
+      };
       const stopProgressAnimation = () => {
         if (!barAnim) return;
         // WAAPI animations without a fill mode snap back to their authored
