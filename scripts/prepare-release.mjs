@@ -38,8 +38,14 @@ const changelog = fs.readFileSync(changelogPath, 'utf8');
 const unreleasedPattern = /## \[Unreleased\]\s*\n+### English\s*\n([\s\S]*?)\n+### 한국어\s*\n([\s\S]*?)(?=\n## \[)/;
 const match = changelog.match(unreleasedPattern);
 if (!match) fail('top Unreleased section must contain English then 한국어 headings');
-const english = match[1].trim();
-const korean = match[2].trim();
+// The fresh Unreleased section carries one placeholder comment per language.
+// Bullets appended after it (instead of replacing it) used to carry the comment
+// into the dated section and the GitHub Release notes (v0.12.3 preparation).
+const withoutPlaceholders = (text) => text.split('\n')
+  .filter((line) => !/^<!--.*-->$/.test(line.trim()))
+  .join('\n').replace(/\n{3,}/g, '\n\n').trim();
+const english = withoutPlaceholders(match[1]);
+const korean = withoutPlaceholders(match[2]);
 if (!/-\s+\S/.test(english) || !/-\s+\S/.test(korean)) {
   fail('both Unreleased language sections need at least one release bullet');
 }
