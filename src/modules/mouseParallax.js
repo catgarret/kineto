@@ -24,6 +24,7 @@ export default {
       let target = 0;
       let current = 0;
       let alive = true;
+      let destroyed = false; // pause() clears `alive`, only destroy() sets this
       let rafId = null;
       // On touch devices the dial follows the real device heading (gyro).
       const useGyro = opts.gyro !== false && environment.touch && environment.hasGyro;
@@ -67,8 +68,11 @@ export default {
         if (Math.abs(delta) > 0.01) rafId = requestAnimationFrame(tick);
       }
       if (useGyro) {
+        // Attach unless destroyed: an off-screen (paused) dial at the moment
+        // permission arrived used to lose its gyro for good. wake() does
+        // nothing while paused.
         ensureGyroPermission().then((granted) => {
-          if (granted && alive) window.addEventListener('deviceorientation', onGyroCompass, { passive: true });
+          if (granted && !destroyed) window.addEventListener('deviceorientation', onGyroCompass, { passive: true });
         });
       } else {
         eventTarget.addEventListener('pointermove', onMove, { passive: true });
@@ -82,6 +86,7 @@ export default {
         resume: () => { if (!alive) { alive = true; wake(); } },
         destroy: () => {
           alive = false;
+          destroyed = true;
           if (rafId != null) cancelAnimationFrame(rafId);
           eventTarget.removeEventListener('pointermove', onMove);
           window.removeEventListener('deviceorientation', onGyroCompass);
@@ -106,6 +111,7 @@ export default {
     let xTarget = 0;
     let yTarget = 0;
     let alive = true;
+    let destroyed = false; // pause() clears `alive`, only destroy() sets this
     let rafId = null;
     const currentX = targets.map(() => 0);
     const currentY = targets.map(() => 0);
@@ -130,8 +136,9 @@ export default {
     };
 
     if (useGyro) {
+      // Same rule as the compass: a paused instance still gets its gyro.
       ensureGyroPermission().then((granted) => {
-        if (granted && alive) window.addEventListener('deviceorientation', onGyro, { passive: true });
+        if (granted && !destroyed) window.addEventListener('deviceorientation', onGyro, { passive: true });
       });
     } else {
       eventTarget.addEventListener('pointermove', onPointerMove, { passive: true });
@@ -176,6 +183,7 @@ export default {
       },
       destroy: () => {
         alive = false;
+        destroyed = true;
         if (rafId != null) cancelAnimationFrame(rafId);
         eventTarget.removeEventListener('pointermove', onPointerMove);
         window.removeEventListener('deviceorientation', onGyro);
