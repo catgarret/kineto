@@ -440,7 +440,12 @@
           return [...s];};
         const unitSel='.card, .reveal-demo-card, .hscroll-demo-unit, .scroll-demo-unit, [data-demo-module], [data-kt-sticky-stack], [data-kt-horizontal-scroll], [data-kt-scroll-sequence], [data-loader-type]';
         const raw=[...document.querySelectorAll('main '+unitSel)];
-        const units=raw.filter(u=>!raw.some(o=>o!==u&&o.contains(u)));
+        // Outermost units only: drop a unit that sits inside another unit. Walking
+        // each unit's ancestors against a Set is O(units × depth); comparing
+        // every pair with contains() was ~90,000 calls at start-up.
+        const rawSet=new Set(raw);
+        const insideAnother=(u)=>{ for(let p=u.parentElement;p;p=p.parentElement){ if(rawSet.has(p))return true; } return false; };
+        const units=raw.filter(u=>!insideAnother(u));
         // Owner: explicit tag → the single module in the unit → the FIRST module
         // when several are combined (combo demos keep one owner) → null ONLY when
         // the unit carries no module signal at all. A null owner never causes a
@@ -1292,6 +1297,10 @@
       // Records arrive oldest-first; the last one is the hero's current state.
       new IntersectionObserver((entries)=>{
         heroPassed=!entries[entries.length-1].isIntersecting;
+        // The hero title's gradient flow is a main-thread animation (it moves a
+        // background, which the compositor cannot do): hold it while the hero
+        // is out of sight (styles.css `.hero.is-past .hero-title`).
+        heroEl.classList.toggle('is-past',heroPassed);
         syncSmoothForScroll();
       },{rootMargin:`-${HERO_EXIT_MARGIN}px 0px 0px 0px`}).observe(heroEl);
     }else if(heroEl){
@@ -1705,9 +1714,21 @@
         scrollScene(0);
         try{history.replaceState(null,'',location.pathname+location.search);}catch(_){/* file:// */}
       };
-      const inHero=()=>window.scrollY<hero.offsetHeight-120;
-      const heroFullySeen=()=>window.scrollY+window.innerHeight>=hero.offsetHeight-4;
-      const nearFirstSection=()=>window.scrollY>60&&window.scrollY<=landing.offsetTop+24;
+      // The snap handlers below run on EVERY wheel and touchmove of the session
+      // (non-passive, never removed), so they read cached geometry: reading
+      // offsetHeight/offsetTop there forced a layout per event. A ResizeObserver
+      // is told after layout, so re-reading there is free.
+      let heroHeight=hero.offsetHeight;
+      let landingTop=landing.offsetTop;
+      const remeasureHero=()=>{ heroHeight=hero.offsetHeight; landingTop=landing.offsetTop; };
+      if('ResizeObserver' in window){
+        const heroGeometry=new ResizeObserver(remeasureHero);
+        heroGeometry.observe(hero);
+        heroGeometry.observe(document.body);
+      }else window.addEventListener('resize',remeasureHero,{passive:true});
+      const inHero=()=>window.scrollY<heroHeight-120;
+      const heroFullySeen=()=>window.scrollY+window.innerHeight>=heroHeight-4;
+      const nearFirstSection=()=>window.scrollY>60&&window.scrollY<=landingTop+24;
       const snap=()=>{
         beginGesture();
         // Use an explicit document position. `scrollIntoView()` can be ignored
@@ -1944,7 +1965,19 @@
         let previousFocus=null;
         let inertState=[];
         const focusables=()=>[...overlay.querySelectorAll('a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(el=>!el.hidden);
+        // The closing fade (styles.css .sitemap-overlay) — the overlay is hidden
+        // after it. Reopening during the fade must cancel that hide, or the page
+        // stayed inert behind a hidden overlay that Escape could no longer close.
+        const SITEMAP_FADE_MS=260;
+        let hideTimer=0;
+        // Set at once (the `is-open` class waits a frame): a second open in the
+        // same frame would snapshot the page as already inert and never release it.
+        let isOpen=false;
         const open=()=>{
+          clearTimeout(hideTimer);
+          hideTimer=0;
+          if(isOpen)return;
+          isOpen=true;
           previousFocus=document.activeElement;
           // Scroll lock is a root class (`html.is-locked`), not an inline style —
           // see styles.css. Nothing to snapshot or restore by hand.
@@ -1955,10 +1988,14 @@
           requestAnimationFrame(()=>{overlay.classList.add('is-open');overlay.querySelector('.sitemap-close')?.focus();});
         };
         const close=()=>{
+          if(!isOpen)return;
+          isOpen=false;
           overlay.classList.remove('is-open');
           document.documentElement.classList.remove('is-locked');
           inertState.forEach(([el,wasInert])=>{el.inert=wasInert;});
-          setTimeout(()=>{overlay.hidden=true;previousFocus?.focus?.();},260);
+          inertState=[];
+          clearTimeout(hideTimer);
+          hideTimer=setTimeout(()=>{hideTimer=0;overlay.hidden=true;previousFocus?.focus?.();},SITEMAP_FADE_MS);
         };
         btn.addEventListener('click',open);
         overlay.addEventListener('click',(e)=>{ if(e.target===overlay)close(); });
@@ -1967,7 +2004,7 @@
           event.preventDefault();
           const moduleName=a.dataset.module;
           close();
-          setTimeout(()=>navigateToModule(moduleName,{source:'click',history:'push'}),270);
+          setTimeout(()=>navigateToModule(moduleName,{source:'click',history:'push'}),SITEMAP_FADE_MS+10);
         }));
         document.addEventListener('keydown',(e)=>{
           if(overlay.hidden)return;
