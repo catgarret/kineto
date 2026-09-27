@@ -176,7 +176,12 @@ export default {
       el.appendChild(dotsWrap);
     }
 
-    const settle = () => { animating = false; };
+    let settleTimer = null;
+    const settle = () => {
+      if (settleTimer != null) clearTimeout(settleTimer);
+      settleTimer = null;
+      animating = false;
+    };
     track.addEventListener('transitionend', settle);
 
     const go = (next, immediate = false) => {
@@ -197,6 +202,7 @@ export default {
           ? { behavior: immediate ? 'auto' : 'smooth', inline: 'start', block: 'nearest' }
           : { behavior: immediate ? 'auto' : 'smooth', block: 'start' });
       } else {
+        settle();
         animating = !immediate;
         track.style.transition = immediate ? 'none' : `transform ${duration}s ${easing}`;
         track.style.transform = mixed
@@ -204,7 +210,7 @@ export default {
           : horizontal
             ? `translate3d(${-index * 100}%,0,0)`
             : `translate3d(0,${-index * 100}%,0)`;
-        if (!immediate) setTimeout(settle, duration * 1000 + 120);
+        if (!immediate) settleTimer = setTimeout(settle, duration * 1000 + 120);
       }
       syncDots();
       if (autoAdvance) startAuto(); // reset the timer on every navigation
@@ -444,7 +450,7 @@ export default {
     }
 
     go(index, true);
-    requestAnimationFrame(syncSectionScroll);
+    const sectionRaf = requestAnimationFrame(syncSectionScroll);
     let sectionRO = null;
     if (typeof ResizeObserver !== 'undefined') { sectionRO = new ResizeObserver(syncSectionScroll); sectionRO.observe(el); }
     startAuto();
@@ -461,6 +467,8 @@ export default {
       destroy() {
         alive = false;
         stopAuto();
+        settle();
+        cancelAnimationFrame(sectionRaf);
         sectionRO?.disconnect();
         el.removeEventListener('wheel', onWheel);
         el.removeEventListener('touchstart', onTouchStart);

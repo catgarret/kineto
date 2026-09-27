@@ -1,4 +1,4 @@
-import { dropEmptyAttributes, env, numberOption, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
+import { canHover as anyInputCanHover, dropEmptyAttributes, env, numberOption, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
 
 let panelUid = 0;
 
@@ -224,9 +224,10 @@ export default {
     // `any-hover` / `any-pointer` are the queries for "at least one available
     // input can do this", which is the actual question being asked. A phone still
     // answers no (it has no fine, hovering input), so touch behaviour is
-    // unchanged.
-    const canHover = typeof matchMedia !== 'undefined'
-      && matchMedia('(any-hover: hover) and (any-pointer: fine)').matches;
+    // unchanged. The shared answer lives in utils.canHover()
+    // (docs/hover-touch-policy.md). Without media queries at all the menu
+    // keeps treating the reader as touch, so a tap always opens it.
+    const canHover = typeof matchMedia !== 'undefined' && anyInputCanHover();
     const trigger = opts.trigger === 'click' ? 'click' : 'hover';
     const layout = ['mega', 'radial'].includes(opts.layout) ? opts.layout : 'dropdown';
     const openDelay = numberOption(opts.openDelay, 60, 0);

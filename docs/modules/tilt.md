@@ -21,3 +21,7 @@ Pointer 위치에 따라 card를 3D로 기울이고 선택적으로 glare와 입
 CSS 변수는 JS option보다 우선하며, `--kt-tilt-shadow`를 지정하면 완성된 shadow 표현을 통째로 교체합니다. Card Glow와 함께 사용해도 각 모듈의 그림자 채널과 기존 `box-shadow`가 합성됩니다.
 
 `x-only`, `y-only`, `reverse`, `tilt`, `tilt-glare` variant를 제공하며 Card Glow와 같은 Card Interaction 카테고리지만 서로 독립된 모듈입니다.
+
+## 입력 장치
+
+호버할 수 있는 입력이 있으면(데스크톱, 마우스를 쓰는 터치스크린 노트북) 포인터로 기울고, 휴대폰처럼 하나도 없으면 자이로스코프로 기웁니다(`gyro: false` 면 인스턴스를 만들지 않음, `disableOnMobile: true` 면 휴대폰에서 건너뜀). 판단 기준과 다른 모듈의 동작은 [입력 정책](../hover-touch-policy.md)에 있습니다.

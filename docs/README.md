@@ -11,6 +11,7 @@ Kineto v0.12.2의 공개 API와 소유자 의도를 기준으로 정리한 문�
 - [Presence Core RFC](presence-core-rfc.md)
 - [공통 옵션과 데이터 속성](common-options.md)
 - [접근성](accessibility.md)
+- [호버·터치·키보드 입력 정책](hover-touch-policy.md)
 - [성능과 fallback](performance.md)
 - [모듈 사용·품질 매트릭스](module-usage-matrix.md)
 - [모듈 유지 상태표](module-status.md)

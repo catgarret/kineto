@@ -133,7 +133,11 @@ try {
 
   // The real touch-only module path must use the same image controller.
   await page.evaluate((source) => {
-    Object.defineProperty(navigator, 'maxTouchPoints', { value: 1, configurable: true });
+    // A touch-only device: no attached input can hover (utils.canHover()).
+    const realMatchMedia = window.matchMedia.bind(window);
+    window.matchMedia = (query) => (/any-hover|any-pointer|\(hover|\(pointer/.test(query)
+      ? { matches: /any-hover: none|hover: none|pointer: coarse/.test(query), media: query, addEventListener() {}, removeEventListener() {} }
+      : realMatchMedia(query));
     const target = document.querySelector('#touch');
     const module = window.__cursorModule.default || window.__cursorModule;
     window.__touchCursor = module.create(target, { clickImage: source, clickImageDuration: 100 });
