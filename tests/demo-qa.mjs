@@ -959,13 +959,17 @@ try {
     const noiseImage=document.createElement('img'); noiseHost.appendChild(noiseImage); document.body.appendChild(noiseHost);
     const printInstance=Kineto.lazy(noiseImage,{effect:'print',src:'./assets/gallery-01.webp',duration:0.8,delay:0,nativeLazy:false,rootMargin:'10000px'});
     let noise=null; for(let i=0;i<40&&!noise;i+=1){await sleep(25);noise=noiseHost.querySelector('.kt-lazy-noise');}
-    const a=Number(noise?.dataset.frames||0); await sleep(180); const b=Number(noise?.dataset.frames||0);
+    // The noise redraws at its own frame rate: wait (at most 2 s) for one more frame instead of a fixed 180 ms.
+    const a=Number(noise?.dataset.frames||0); let b=a; for (let wait=0; wait<100 && b<=a; wait+=1) { await sleep(20); b=Number(noise?.dataset.frames||0); }
     result.dynamicNoise=b>a; printInstance?.destroy(); noiseHost.remove();
     // Overflow modes and mask directions.
     const rewind=document.querySelector('[data-kt-overflow-text="rewind"]'); const rewindInstance=Kineto.getInstance(rewind,'overflowText');
     result.rewind=Boolean(rewindInstance)&&rewind.querySelector('.kt-overflow-text-track')!==null;
     // In view: off screen the core suspends it (SYSTEM SUSPENSION in src/core.js).
-    const rolling=document.querySelector('[data-kt-overflow-text="rolling"]'); rolling.scrollIntoView({block:'center'}); await sleep(250); const rollingInstance=Kineto.getInstance(rolling,'overflowText'); const ri=rollingInstance?.index; await sleep(1650); result.rolling=rollingInstance?.index!==ri;
+    const rolling=document.querySelector('[data-kt-overflow-text="rolling"]'); rolling.scrollIntoView({block:'center'}); await sleep(250); const rollingInstance=Kineto.getInstance(rolling,'overflowText'); const ri=rollingInstance?.index;
+    // It advances on its own timer: poll (at most 4 s) instead of a fixed 1.65 s, which a busy run missed.
+    for (let wait=0; wait<200 && rollingInstance?.index===ri; wait+=1) await sleep(20);
+    result.rolling=rollingInstance?.index!==ri;
     // Card surface + border.
     const surfaceCard=Array.from(document.querySelectorAll('[data-kt-card-glow]')).find((el)=>el.dataset.ktSurface==='true');
     result.card=Boolean(surfaceCard?.querySelector('.kt-card-glow-surface')&&surfaceCard?.querySelector('.kt-card-glow-border'));
@@ -991,10 +995,15 @@ try {
     result.shadowRestoresBase=getComputedStyle(shadowHost).boxShadow===baseShadow;
     shadowHost.remove();
     // Text transition and RGB glitch.
-    const transition=document.querySelector('[data-kt-text-transition]'); transition.scrollIntoView({block:'center'}); await sleep(250); const ti=Kineto.getInstance(transition,'textTransition'); const before=ti.index; ti.next(); await sleep(1050); result.transition=ti.index!==before;
+    const transition=document.querySelector('[data-kt-text-transition]'); transition.scrollIntoView({block:'center'}); await sleep(250); const ti=Kineto.getInstance(transition,'textTransition'); const before=ti.index; ti.next();
+    for (let wait=0; wait<150 && ti.index===before; wait+=1) await sleep(20); // at most 3 s (was a fixed 1.05 s)
+    result.transition=ti.index!==before;
     const glitch=document.querySelector('[data-kt-glitch="rgb"]'); result.glitch=glitch.querySelectorAll('span').length>=5;
     // Class-only reveal.
-    const classReveal=document.querySelector('[data-kt-reveal="class"]'); Kineto.getInstance(classReveal,'reveal').replay(); await sleep(40); result.classHook=classReveal.classList.contains('is-inview');
+    const classReveal=document.querySelector('[data-kt-reveal="class"]'); Kineto.getInstance(classReveal,'reveal').replay();
+    // Poll (at most 1.5 s) instead of a fixed 40 ms: on a busy run the class arrived later (a flake in npm run verify).
+    for (let wait=0; wait<75 && !classReveal.classList.contains('is-inview'); wait+=1) await sleep(20);
+    result.classHook=classReveal.classList.contains('is-inview');
     // Spring velocity and vertical sticky.
     result.spring=document.querySelector('[data-kt-scroll-velocity][data-kt-spring="true"]')!==null;
     result.sticky=Array.from(document.querySelectorAll('.stack-vertical > article')).every((item)=>getComputedStyle(item).position==='sticky');
@@ -1032,7 +1041,10 @@ try {
     // Cursor variants are exposed and created.
     result.cursor=document.querySelectorAll('.kt-cursor').length>=1;
     // Loader manual API.
-    const overlay=document.createElement('div'); overlay.style.cssText='position:fixed;inset:0;'; document.body.appendChild(overlay); const loader=Kineto.loader(overlay,{type:'bar',source:'manual',hideScrollbar:false}); loader.setProgress(47); await sleep(180); result.loader=loader.progress>0&&Boolean(overlay.querySelector('.kt-loader-bar-progress'));  loader.destroy(); overlay.remove();
+    const overlay=document.createElement('div'); overlay.style.cssText='position:fixed;inset:0;'; document.body.appendChild(overlay); const loader=Kineto.loader(overlay,{type:'bar',source:'manual',hideScrollbar:false}); loader.setProgress(47);
+    // The shown progress eases toward 47 frame by frame: poll (at most 2 s) instead of a fixed 180 ms, which failed with the CPU busy.
+    for (let wait=0; wait<100 && !(loader.progress>0); wait+=1) await sleep(20);
+    result.loader=loader.progress>0&&Boolean(overlay.querySelector('.kt-loader-bar-progress'));  loader.destroy(); overlay.remove();
     // Smooth scroll API is explicitly toggleable.
     Kineto.enableSmooth(); result.smoothOn=Kineto.smoothEnabled||typeof window.Lenis==='undefined'; Kineto.disableSmooth(); result.smoothOff=!Kineto.smoothEnabled;
     return result;
