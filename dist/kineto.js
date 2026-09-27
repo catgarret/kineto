@@ -1271,20 +1271,24 @@ function Kt(e, t = !0, n = !0) {
 function qt(e, t) {
 	return t.some((t) => typeof document < "u" && t === document || typeof window < "u" && t === window || e.sourceEl === t || e.instance.el === t || typeof t.contains == "function" && (t.contains(e.sourceEl) || t.contains(e.instance.el)));
 }
-function Jt() {
-	Array.from(it).forEach((e) => {
-		let t = e.sourceEl;
-		t && t.isConnected === !1 && Kt(e);
+function Jt(e) {
+	let t = (e) => {
+		if (!e || e.isConnected !== !1) return;
+		let t = Lt(e);
+		t?.size && [...t.values()].forEach((e) => Kt(e));
+	};
+	e.forEach((e) => {
+		e && e.nodeType === 1 && !e.isConnected && (t(e), e.querySelectorAll?.("*").forEach(t));
 	}), St.prune();
 }
 function Yt(e, t) {
-	let n = t.attributes === !0, r = /* @__PURE__ */ new Set(), i = !1, a = !1, o = !0, s = () => {
+	let n = t.attributes === !0, r = /* @__PURE__ */ new Set(), i = /* @__PURE__ */ new Set(), a = !1, o = !0, s = () => {
 		if (!o) return;
 		a = !1;
 		let t = r;
 		r = /* @__PURE__ */ new Set();
 		let n = i;
-		i = !1, t.forEach((n) => {
+		i = /* @__PURE__ */ new Set(), t.forEach((n) => {
 			if (o && n.isConnected && e.contains(n)) {
 				for (let r = n.parentNode; r; r = r.parentNode) {
 					if (t.has(r)) return;
@@ -1292,7 +1296,10 @@ function Yt(e, t) {
 				}
 				on.scan(n);
 			}
-		}), o && n && Jt();
+		}), o && n.size && n.forEach((e) => {
+			for (let t = e.parentNode; t; t = t.parentNode) if (n.has(t)) return;
+			Jt([e]);
+		});
 	}, c = () => {
 		a || (a = !0, Promise.resolve().then(s));
 	}, l = new MutationObserver((e) => {
@@ -1304,15 +1311,17 @@ function Yt(e, t) {
 			}
 			e.addedNodes.forEach((e) => {
 				e.nodeType === 1 && r.add(e);
-			}), e.removedNodes.length && (i = !0);
-		}), (r.size || i) && c();
+			}), e.removedNodes.forEach((e) => {
+				e.nodeType === 1 && i.add(e);
+			});
+		}), (r.size || i.size) && c();
 	});
 	return l.observe(e, {
 		childList: !0,
 		subtree: !0,
 		attributes: n
 	}), { disconnect() {
-		o = !1, l.disconnect(), r.clear();
+		o = !1, l.disconnect(), r.clear(), i.clear();
 	} };
 }
 function Xt() {
@@ -2510,12 +2519,16 @@ var kn = {
 				}), b(i);
 			} else {
 				r.forEach((e, t) => {
-					e.style.opacity = "0", e.style.transformOrigin = a, e.style.transform = `scale(${o})`, e.style.transition = `opacity ${l}s ease ${t * f}s,transform ${l}s cubic-bezier(.2,.9,.3,1.25) ${t * f}s`, requestAnimationFrame(() => {
+					e.style.opacity = "0", e.style.transformOrigin = a, e.style.transform = `scale(${o})`, e.style.transition = `opacity ${l}s ease ${t * f}s,transform ${l}s cubic-bezier(.2,.9,.3,1.25) ${t * f}s`;
+				});
+				let n = requestAnimationFrame(() => {
+					r.forEach((e) => {
 						e.style.opacity = "1", e.style.transform = "scale(1)";
 					});
-				});
-				let n = setTimeout(() => t.onComplete?.(e), (l + f * r.length) * 1e3);
-				b({ kill: () => clearTimeout(n) });
+				}), i = setTimeout(() => t.onComplete?.(e), (l + f * r.length) * 1e3);
+				b({ kill: () => {
+					cancelAnimationFrame(n), clearTimeout(i);
+				} });
 			}
 		} else if (s === "flip") {
 			e.innerHTML = "", e.style.display = "inline-flex", e.style.alignItems = "center", e.style.gap = `${Math.max(0, Number(t.gap ?? 3))}px`, wn(e, p, "kt-counter-prefix");
@@ -2700,12 +2713,19 @@ var kn = {
 					stack: r,
 					value: e
 				};
-			}, S = Cn(t), C = {
+			}, S = Cn(t), C = /* @__PURE__ */ new Set(), w = (e, t) => {
+				let n = setTimeout(() => {
+					C.delete(n), e();
+				}, t);
+				C.add(n);
+			}, T = () => {
+				C.forEach(clearTimeout), C.clear();
+			}, E = {
 				tileColor: t.tileColor || "#191b20",
 				tileText: t.tileTextColor || "#f6f7fb",
 				radius: Math.max(0, Number(t.tileRadius ?? 6))
-			}, w = (e) => {
-				let t = C, n = "1.24em", r = (e) => `position:absolute;left:0;right:0;height:50%;overflow:hidden;${e ? `top:0;border-radius:${t.radius}px ${t.radius}px 0 0` : `bottom:0;border-radius:0 0 ${t.radius}px ${t.radius}px`};background:${t.tileColor};backface-visibility:hidden;`, i = (e) => `position:absolute;left:0;width:100%;height:${n};line-height:${n};text-align:center;${e ? "top:0" : "bottom:0"};color:${t.tileText};`, a = (t, n) => {
+			}, D = (e) => {
+				let t = E, n = "1.24em", r = (e) => `position:absolute;left:0;right:0;height:50%;overflow:hidden;${e ? `top:0;border-radius:${t.radius}px ${t.radius}px 0 0` : `bottom:0;border-radius:0 0 ${t.radius}px ${t.radius}px`};background:${t.tileColor};backface-visibility:hidden;`, i = (e) => `position:absolute;left:0;width:100%;height:${n};line-height:${n};text-align:center;${e ? "top:0" : "bottom:0"};color:${t.tileText};`, a = (t, n) => {
 					let a = document.createElement("span");
 					a.setAttribute("aria-hidden", "true"), a.style.cssText = r(t) + (n ? `transform-origin:50% ${t ? "100%" : "0%"};will-change:transform;z-index:3;` : "z-index:1;");
 					let o = document.createElement("span");
@@ -2728,7 +2748,7 @@ var kn = {
 					parts: s,
 					value: e
 				};
-			}, T = (e, t) => {
+			}, O = (e, t) => {
 				let n = e.value;
 				e.value = t;
 				let r = e.parts;
@@ -2762,32 +2782,32 @@ var kn = {
 					duration: i,
 					easing: "cubic-bezier(.55,0,.85,.5)",
 					fill: "forwards"
-				}), setTimeout(() => {
+				}), w(() => {
 					r.bottomFlap.half.animate(o, {
 						duration: i,
 						easing: "cubic-bezier(.15,.6,.3,1.15)",
 						fill: "forwards"
-					}), setTimeout(() => {
+					}), w(() => {
 						r.bottomStatic.glyph.textContent = t, r.bottomStatic.half.style.visibility = "visible";
 					}, i);
 				}, i);
-			}, E = [], D = null, O = null, k = "", A = /* @__PURE__ */ new Set(), j = (e) => e != null && (e > 0 || t.showDays === !0), M = (e) => `${j(e.days) ? String(e.days).length : 0}|${e.text.length}`, N = (t) => {
-				A.forEach((e) => e.cancel()), A.clear(), e.innerHTML = "", E = [], D = null, O = null, wn(e, p, "kt-counter-prefix"), j(t.days) && (O = document.createElement("span"), O.className = "kt-counter-days", O.style.cssText = "margin-right:.5ch;", O.textContent = `${t.days}${f}`, e.appendChild(O));
+			}, k = [], A = null, j = null, M = "", N = /* @__PURE__ */ new Set(), P = (e) => e != null && (e > 0 || t.showDays === !0), F = (e) => `${P(e.days) ? String(e.days).length : 0}|${e.text.length}`, I = (t) => {
+				T(), N.forEach((e) => e.cancel()), N.clear(), e.innerHTML = "", k = [], A = null, j = null, wn(e, p, "kt-counter-prefix"), P(t.days) && (j = document.createElement("span"), j.className = "kt-counter-days", j.style.cssText = "margin-right:.5ch;", j.textContent = `${t.days}${f}`, e.appendChild(j));
 				for (let n of t.text) if (/\d/.test(n)) {
-					let t = u === "flip" ? w(n) : x(n);
-					e.appendChild(t.viewport), E.push(t);
+					let t = u === "flip" ? D(n) : x(n);
+					e.appendChild(t.viewport), k.push(t);
 				} else {
 					let t = Tn(e, n, "kt-counter-separator kt-counter-clock-separator");
 					if (l && n === c) {
 						let e = Sn(t);
-						e && A.add(e);
+						e && N.add(e);
 					}
-					E.push(null);
+					k.push(null);
 				}
-				s && !h && !g && (D = document.createElement("span"), D.className = "kt-counter-suffix kt-counter-meridiem", D.style.cssText = "margin-left:.4ch;font-size:.55em;opacity:.75;align-self:center;", D.textContent = t.meridiem, e.appendChild(D)), wn(e, m, "kt-counter-suffix");
-			}, P = (e, r) => {
+				s && !h && !g && (A = document.createElement("span"), A.className = "kt-counter-suffix kt-counter-meridiem", A.style.cssText = "margin-left:.4ch;font-size:.55em;opacity:.75;align-self:center;", A.textContent = t.meridiem, e.appendChild(A)), wn(e, m, "kt-counter-suffix");
+			}, L = (e, r) => {
 				if (u === "flip") {
-					T(e, r);
+					O(e, r);
 					return;
 				}
 				e.value = r;
@@ -2811,7 +2831,7 @@ var kn = {
 					], {
 						duration: d,
 						easing: "ease"
-					}), setTimeout(() => {
+					}), w(() => {
 						i.textContent = r;
 					}, d / 2);
 					return;
@@ -2827,39 +2847,39 @@ var kn = {
 				s.finished.catch(() => {}).finally(() => {
 					e.stack.children.length > 1 && (a ? e.stack.lastChild.remove() : e.stack.firstChild.remove()), s.cancel?.();
 				});
-			}, F = (t) => {
-				let n = j(t.days) ? `${t.days}${f} ` : "";
+			}, R = (t) => {
+				let n = P(t.days) ? `${t.days}${f} ` : "";
 				e.setAttribute("aria-label", `${n}${t.text}${t.meridiem ? ` ${t.meridiem}` : ""}`);
-			}, I = y();
-			k = M(I), N(I), F(I);
-			let L = !0, R = () => {
-				if (!L) return;
-				let e = y(), t = M(e);
-				if (t !== k) k = t, N(e);
+			}, z = y();
+			M = F(z), I(z), R(z);
+			let B = !0, V = () => {
+				if (!B) return;
+				let e = y(), t = F(e);
+				if (t !== M) M = t, I(e);
 				else {
 					if (Array.from(e.text).forEach((e, t) => {
-						let n = E[t];
-						n && n.value !== e && P(n, e);
-					}), O) {
+						let n = k[t];
+						n && n.value !== e && L(n, e);
+					}), j) {
 						let t = `${e.days}${f}`;
-						O.textContent !== t && (O.textContent = t);
+						j.textContent !== t && (j.textContent = t);
 					}
-					D && D.textContent !== e.meridiem && (D.textContent = e.meridiem);
+					A && A.textContent !== e.meridiem && (A.textContent = e.meridiem);
 				}
-				F(e);
-			}, z = setInterval(R, 250);
+				R(e);
+			}, H = setInterval(V, 250);
 			b({
 				kill: () => {
-					L = !1, clearInterval(z), A.forEach((e) => e.cancel());
+					B = !1, clearInterval(H), T(), N.forEach((e) => e.cancel());
 				},
 				pause: () => {
-					L = !1, clearInterval(z), A.forEach((e) => e.pause());
+					B = !1, clearInterval(H), N.forEach((e) => e.pause());
 				},
 				resume: () => {
-					L || (L = !0, z = setInterval(R, 250)), A.forEach((e) => e.play());
+					B || (B = !0, H = setInterval(V, 250)), N.forEach((e) => e.play());
 				},
 				restart: () => {
-					L || (L = !0, z = setInterval(R, 250));
+					B || (B = !0, H = setInterval(V, 250));
 				}
 			});
 		} else {
@@ -12689,13 +12709,13 @@ var ms = {
 		});
 		t.dots !== !1 && (T = document.createElement("div"), T.className = "kt-fullpage-dots", T.setAttribute("role", "tablist"), T.style.cssText = m ? "position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;flex-direction:row;gap:10px;z-index:5;" : "position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:5;", E = a.map((e, t) => {
 			let r = document.createElement("button");
-			return r.type = "button", r.className = "kt-fullpage-dot", r.setAttribute("aria-label", n("dot", { n: t + 1 })), r.style.cssText = "width:8px;height:8px;border-radius:50%;border:0;padding:0;cursor:pointer;background:var(--kt-fullpage-dot,currentColor);opacity:.45;transition:transform .25s var(--kt-ease-ui, ease),opacity .25s var(--kt-ease-ui, ease);", r.addEventListener("click", () => k(t)), T.appendChild(r), r;
+			return r.type = "button", r.className = "kt-fullpage-dot", r.setAttribute("aria-label", n("dot", { n: t + 1 })), r.style.cssText = "width:8px;height:8px;border-radius:50%;border:0;padding:0;cursor:pointer;background:var(--kt-fullpage-dot,currentColor);opacity:.45;transition:transform .25s var(--kt-ease-ui, ease),opacity .25s var(--kt-ease-ui, ease);", r.addEventListener("click", () => A(t)), T.appendChild(r), r;
 		}), e.appendChild(T));
-		let O = () => {
-			b = !1;
+		let O = null, k = () => {
+			O != null && clearTimeout(O), O = null, b = !1;
 		};
-		C.addEventListener("transitionend", O);
-		let k = (e, n = !1) => {
+		C.addEventListener("transitionend", k);
+		let A = (e, n = !1) => {
 			if (!x) return;
 			let r = e;
 			if (c && (r = (e + a.length) % a.length), r = Math.min(a.length - 1, Math.max(0, r)), r === v && !n) return;
@@ -12707,33 +12727,33 @@ var ms = {
 			} : {
 				behavior: n ? "auto" : "smooth",
 				block: "start"
-			}) : (b = !n, C.style.transition = n ? "none" : `transform ${o}s ${s}`, C.style.transform = u ? `translate3d(${-p[v].x * 100}%,${-p[v].y * 100}%,0)` : f ? `translate3d(${-v * 100}%,0,0)` : `translate3d(0,${-v * 100}%,0)`, n || setTimeout(O, o * 1e3 + 120)), D(), g && P(), t.onChange?.(v, a[v]);
-		}, A = (e) => c || (e > 0 ? v < a.length - 1 : v > 0), j = () => a.forEach((e) => {
+			}) : (k(), b = !n, C.style.transition = n ? "none" : `transform ${o}s ${s}`, C.style.transform = u ? `translate3d(${-p[v].x * 100}%,${-p[v].y * 100}%,0)` : f ? `translate3d(${-v * 100}%,0,0)` : `translate3d(0,${-v * 100}%,0)`, n || (O = setTimeout(k, o * 1e3 + 120))), D(), g && F(), t.onChange?.(v, a[v]);
+		}, j = (e) => c || (e > 0 ? v < a.length - 1 : v > 0), M = () => a.forEach((e) => {
 			e.style.overflowY = e.scrollHeight > e.clientHeight + 2 ? "auto" : "hidden";
-		}), M = (e) => {
+		}), N = (e) => {
 			let t = a[v];
 			if (!t) return !1;
 			let n = t.scrollHeight - t.clientHeight;
 			return n <= 2 ? !1 : e > 0 ? t.scrollTop < n - 1 : t.scrollTop > 1;
-		}, N = () => {
-			_ &&= (clearInterval(_), null);
 		}, P = () => {
-			g && x && (N(), _ = setInterval(() => {
-				b || (v >= a.length - 1 && !c ? k(0) : k(v + 1));
+			_ &&= (clearInterval(_), null);
+		}, F = () => {
+			g && x && (P(), _ = setInterval(() => {
+				b || (v >= a.length - 1 && !c ? A(0) : A(v + 1));
 			}, g));
-		}, F = 0, I = 0, L = !1, R = (t) => {
+		}, I = 0, L = 0, R = !1, z = (t) => {
 			if (d && !f) return;
-			let n = performance.now(), r = n - I < 140;
-			I = n, r || (L = !1);
+			let n = performance.now(), r = n - L < 140;
+			L = n, r || (R = !1);
 			let i = t.deltaMode === 1 ? 16 : t.deltaMode === 2 ? e.clientHeight : 1, s = t.deltaY * i, c = t.deltaX * i, l = m && Math.abs(c) >= Math.abs(s) ? c : s;
 			if (Math.abs(l) < 4) return;
 			let u = l > 0 ? 1 : -1;
-			if (b || L) {
+			if (b || R) {
 				t.preventDefault(), t.stopPropagation();
 				return;
 			}
-			if (!f && M(u)) {
-				t.preventDefault(), t.stopPropagation(), a[v].scrollTop += s, g && P();
+			if (!f && N(u)) {
+				t.preventDefault(), t.stopPropagation(), a[v].scrollTop += s, g && F();
 				return;
 			}
 			let p = S();
@@ -12744,39 +12764,39 @@ var ms = {
 					return;
 				}
 			}
-			if (!A(u)) {
-				if (t.preventDefault(), t.stopPropagation(), b || L) return;
+			if (!j(u)) {
+				if (t.preventDefault(), t.stopPropagation(), b || R) return;
 				p ? p.scrollTop += s : window.scrollBy(0, s);
 				return;
 			}
-			t.preventDefault(), t.stopPropagation(), !(b || n < F) && (F = n + Math.max(320, o * 1e3 + 90), k(v + u), L = !0);
-		}, z = null, B = null, V = !1, H = (e) => {
-			let t = z.x - e.x, n = z.y - e.y;
+			t.preventDefault(), t.stopPropagation(), !(b || n < I) && (I = n + Math.max(320, o * 1e3 + 90), A(v + u), R = !0);
+		}, B = null, V = null, H = !1, U = (e) => {
+			let t = B.x - e.x, n = B.y - e.y;
 			return f || u && Math.abs(t) >= Math.abs(n) ? t : n;
-		}, U = (e) => {
+		}, ee = (e) => {
 			let t = e.touches[0];
-			z = {
+			B = {
 				x: t.clientX,
 				y: t.clientY
-			}, B = {
+			}, V = {
 				x: t.clientX,
 				y: t.clientY
-			}, V = !1;
-		}, ee = (t) => {
-			if (d || !z) return;
+			}, H = !1;
+		}, te = (t) => {
+			if (d || !B) return;
 			let n = t.touches[0], r = {
 				x: n.clientX,
 				y: n.clientY
-			}, i = B.y - r.y;
-			B = r;
-			let o = H(r);
+			}, i = V.y - r.y;
+			V = r;
+			let o = U(r);
 			if (Math.abs(o) < 3) return;
 			let s = o > 0 ? 1 : -1;
-			if (b || V) {
+			if (b || H) {
 				t.preventDefault();
 				return;
 			}
-			if (!f && M(s)) {
+			if (!f && N(s)) {
 				t.preventDefault(), a[v].scrollTop += i;
 				return;
 			}
@@ -12788,14 +12808,14 @@ var ms = {
 					return;
 				}
 			}
-			if (!A(s)) {
+			if (!j(s)) {
 				f || (t.preventDefault(), c ? c.scrollTop += i : window.scrollBy(0, i));
 				return;
 			}
-			t.preventDefault(), Math.abs(o) >= h && (V = !0, k(v + s));
-		}, te = () => {
-			z = null, B = null;
-		}, W = (t) => {
+			t.preventDefault(), Math.abs(o) >= h && (H = !0, A(v + s));
+		}, W = () => {
+			B = null, V = null;
+		}, G = (t) => {
 			if (!e.contains(document.activeElement)) return;
 			let n = u ? [
 				"ArrowRight",
@@ -12815,39 +12835,39 @@ var ms = {
 				"ArrowUp",
 				"PageUp"
 			] : f ? ["ArrowLeft", "PageUp"] : ["ArrowUp", "PageUp"], i = n.includes(t.key), o = r.includes(t.key);
-			(i || o || t.key === "Home" || t.key === "End") && (t.preventDefault(), t.key === "Home" ? k(0) : t.key === "End" ? k(a.length - 1) : k(v + (i ? 1 : -1)));
-		}, G = null, K = !1, q = (t) => {
-			d || t.pointerType !== "mouse" || t.button !== 0 || t.target.closest(".kt-fullpage-dot") || (G = f ? t.clientX : t.clientY, K = !1, e.style.cursor = "grabbing");
-		}, ne = (e) => {
-			if (G == null || K || b || e.pointerType !== "mouse") return;
-			let t = G - (f ? e.clientX : e.clientY);
+			(i || o || t.key === "Home" || t.key === "End") && (t.preventDefault(), t.key === "Home" ? A(0) : t.key === "End" ? A(a.length - 1) : A(v + (i ? 1 : -1)));
+		}, K = null, q = !1, ne = (t) => {
+			d || t.pointerType !== "mouse" || t.button !== 0 || t.target.closest(".kt-fullpage-dot") || (K = f ? t.clientX : t.clientY, q = !1, e.style.cursor = "grabbing");
+		}, re = (e) => {
+			if (K == null || q || b || e.pointerType !== "mouse") return;
+			let t = K - (f ? e.clientX : e.clientY);
 			if (Math.abs(t) >= h) {
-				K = !0;
+				q = !0;
 				let e = t > 0 ? 1 : -1;
-				A(e) && k(v + e);
+				j(e) && A(v + e);
 			}
-		}, re = () => {
-			G = null, e.style.cursor = t.drag === !1 ? "" : "grab";
+		}, J = () => {
+			K = null, e.style.cursor = t.drag === !1 ? "" : "grab";
 		};
-		t.drag !== !1 && !d && (e.style.cursor = "grab", e.style.userSelect = "none", e.addEventListener("pointerdown", q), window.addEventListener("pointermove", ne), window.addEventListener("pointerup", re)), t.wheel !== !1 && e.addEventListener("wheel", R, { passive: !1 }), t.touch !== !1 && (e.addEventListener("touchstart", U, { passive: !0 }), e.addEventListener("touchmove", ee, { passive: !1 }), e.addEventListener("touchend", te, { passive: !0 })), t.keyboard !== !1 && (e.hasAttribute("tabindex") || e.setAttribute("tabindex", "0"), e.addEventListener("keydown", W)), k(v, !0), requestAnimationFrame(j);
-		let J = null;
-		return typeof ResizeObserver < "u" && (J = new ResizeObserver(j), J.observe(e)), P(), {
+		t.drag !== !1 && !d && (e.style.cursor = "grab", e.style.userSelect = "none", e.addEventListener("pointerdown", ne), window.addEventListener("pointermove", re), window.addEventListener("pointerup", J)), t.wheel !== !1 && e.addEventListener("wheel", z, { passive: !1 }), t.touch !== !1 && (e.addEventListener("touchstart", ee, { passive: !0 }), e.addEventListener("touchmove", te, { passive: !1 }), e.addEventListener("touchend", W, { passive: !0 })), t.keyboard !== !1 && (e.hasAttribute("tabindex") || e.setAttribute("tabindex", "0"), e.addEventListener("keydown", G)), A(v, !0);
+		let ie = requestAnimationFrame(M), ae = null;
+		return typeof ResizeObserver < "u" && (ae = new ResizeObserver(M), ae.observe(e)), F(), {
 			el: e,
 			type: "fullpage",
-			go: k,
-			next: () => k(v + 1),
-			prev: () => k(v - 1),
+			go: A,
+			next: () => A(v + 1),
+			prev: () => A(v - 1),
 			get index() {
 				return v;
 			},
 			pause() {
-				N();
-			},
-			resume() {
 				P();
 			},
+			resume() {
+				F();
+			},
 			destroy() {
-				x = !1, N(), J?.disconnect(), e.removeEventListener("wheel", R), e.removeEventListener("touchstart", U), e.removeEventListener("touchmove", ee), e.removeEventListener("touchend", te), e.removeEventListener("keydown", W), e.removeEventListener("pointerdown", q), window.removeEventListener("pointermove", ne), window.removeEventListener("pointerup", re), w && e.removeEventListener("scroll", w), C.removeEventListener("transitionend", O), e.classList.remove("kt-fullpage"), e.innerHTML = r, i == null ? e.removeAttribute("style") : e.setAttribute("style", i);
+				x = !1, P(), k(), cancelAnimationFrame(ie), ae?.disconnect(), e.removeEventListener("wheel", z), e.removeEventListener("touchstart", ee), e.removeEventListener("touchmove", te), e.removeEventListener("touchend", W), e.removeEventListener("keydown", G), e.removeEventListener("pointerdown", ne), window.removeEventListener("pointermove", re), window.removeEventListener("pointerup", J), w && e.removeEventListener("scroll", w), C.removeEventListener("transitionend", k), e.classList.remove("kt-fullpage"), e.innerHTML = r, i == null ? e.removeAttribute("style") : e.setAttribute("style", i);
 			}
 		};
 	},
