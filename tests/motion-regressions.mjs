@@ -815,7 +815,7 @@ authoredPop.remove();
 // Clock flip schedules the second half of its fold after the first half starts.
 // Destroying during that gap must cancel the delayed animation instead of
 // touching detached/replaced digit nodes later.
-const nativeAnimate = window.HTMLElement.prototype.animate;
+const clockNativeAnimate = window.HTMLElement.prototype.animate;
 let clockDestroyed = false;
 let animationsAfterClockDestroy = 0;
 window.HTMLElement.prototype.animate = function () {
@@ -928,7 +928,7 @@ fixedUnitRelativeTime.remove();
 // Record the WAAPI frames so a future refactor cannot collapse them into the
 // same opacity curve again.
 const pageRevealFrames = [];
-const clockNativeAnimate = window.HTMLElement.prototype.animate;
+const nativeAnimate = window.HTMLElement.prototype.animate;
 window.HTMLElement.prototype.animate = function recordPageReveal(frames, options) {
   pageRevealFrames.push({ frames, options, background: this.style.background, filter: this.style.filter });
   return { finished: new Promise(() => {}), cancel() {}, pause() {}, play() {} };
