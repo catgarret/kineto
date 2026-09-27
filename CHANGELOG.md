@@ -4,6 +4,16 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.13.0] - 2026-09-27
+
+### English
+
 - **Entry points (toward 1.0).** New `@dong-gri/kineto/auto`: the core first, every module known by name and imported the first time markup uses it (one chunk per module; all 55 `data-kt-*` modules keep working). `Kineto.loadModules(names?)` waits for modules before the JS API, `Kineto.registerLazy(name, importer)` adds your own on-demand modules. New `@dong-gri/kineto/all`: the full runtime, explicitly. The default `@dong-gri/kineto` is still the full runtime (same file and instance as `/all`), but its meaning is deprecated: in 1.0 it becomes the on-demand core. With diagnostics on it reports `KT_DEPRECATED` once; TypeScript marks the default export `@deprecated`. A failed on-demand import is reported as `KT_MODULE_LOAD_FAILED`, leaves the markup static and is not retried by later scans. The React, Vue and jQuery adapters import `/all`, so their users change nothing. Guide: `docs/entry-points.md`. Entry points are declared in `kineto.features.json#entryPoints` and checked against `package.json`, the types and the build.
 - Package metadata: `LICENSE` is now the verbatim MIT text with the owner's copyright (the old copyright holder and an appended third-party paragraph made GitHub report "Other (NOASSERTION)" while README and `package.json` said MIT); the third-party note moved to the README. Both packages share one `author`, the MCP package ships the same LICENSE, and the npm description no longer carries a module count (it said 53). Gate: `tests/license.mjs`.
 - Package-consumer lint: `npm run test:package-lint` runs `publint --strict` and arethetypeswrong on the packed tarball (Node and release-package lanes); findings that are true by design (TypeScript's legacy node10 resolution, `require()` of the ESM-only subpaths, the script-tag `./umd` file) are allowed by shape only. `require('@dong-gri/kineto')` and `require('@dong-gri/kineto/all')` now get CommonJS declarations (`types/index.d.cts`) instead of ESM ones.
@@ -23,9 +33,7 @@
 - Demo: the settings drawer, once closed, is inert and no longer a modal dialog (Tab reached its hidden buttons); a sitemap reopened during its closing fade stays open (the page was left inert with no way out); demo tab strips follow the tabs pattern (panels, `aria-controls`, one tab stop, arrow keys); the hero title's gradient rests once the hero is scrolled away; the hero snap no longer reads layout on every wheel or touch event. Gate: `tests/browser/demo-a11y.mjs`.
 - Fullpage: a deck the page gives a height (the demo's 420px cards) no longer grows as tall as the window. A deck with no height of its own fills the screen (`height: 100svh`), and that was decided from one size read when the deck was created — so a deck created before it was laid out (inside a hidden panel, before it was attached, or in a part of the page the browser had not laid out yet) measured 0 and was pinned at the window's height for good; the first Fullpage card in the demo did this just by scrolling to it. A read under 10px is now confirmed on the laid-out deck (one ResizeObserver report) before the fallback applies, and reduced motion keeps an explicit `height` too. Gate: `tests/browser/components-a11y.mjs` `fullpage-hidden-panel` (Chromium, WebKit, Firefox).
 - Demo: a settings drawer closed in the frame it opened in (a quick double click on its summary) no longer stays open. Its frame callbacks opened the dim backdrop again after the close, so the page was covered with nothing left to close it; they now check that the panel is still the one shown. This was also the flaky click in `tests/browser/demo-code-access.mjs`. Gate: `tests/browser/demo-a11y.mjs`.
-- Tests: `create-cost` counts forced layouts only in the creating task and the next frame's shared read (its trace ran on until it was stopped and sometimes counted a Lazy image's later work: 6 or 10 instead of 1 on a busy machine), and `measure` waits for the cursor's hover state with the stage in view instead of a fixed 320 ms (under a full lane the stage was once 1,000 px above the viewport when the pointer arrived).
-
-<!-- Add matching English release bullets here. -->
+- Tests: `create-cost` counts forced layouts only in the creating task and the next frame's shared read (its trace ran on until it was stopped and sometimes counted a Lazy image's later work: 6 or 10 instead of 1 on a busy machine), and `measure` waits for the cursor's hover state with the stage in view instead of a fixed 320 ms (under a full lane the stage was once 1,000 px above the viewport when the pointer arrived); demo QA polls its five timed checks (class Reveal, Loader progress, Overflow Text rolling, Text Transition, dynamic noise) instead of fixed sleeps that a busy run missed.
 
 ### 한국어
 
@@ -48,10 +56,7 @@
 - 데모: 닫은 설정 드로어는 inert이고 더 이상 모달 대화상자가 아닙니다(Tab이 숨은 버튼에 닿았음). 닫히는 페이드 중에 다시 연 사이트맵은 열린 채로 남습니다(페이지가 빠져나갈 길 없이 inert로 남았음). 데모 탭 줄은 탭 패턴을 따르고(패널, `aria-controls`, 탭 정지점 하나, 화살표 키), 히어로를 지나 스크롤하면 히어로 제목의 그라디언트가 쉬며, 히어로 스냅은 휠·터치 이벤트마다 레이아웃을 읽지 않습니다. 게이트: `tests/browser/demo-a11y.mjs`.
 - Fullpage: 페이지가 높이를 준 덱(데모의 420px 카드)이 더 이상 창 높이만큼 커지지 않습니다. 높이가 없는 덱은 화면을 채우는데(`height: 100svh`), 이 판단을 덱을 만들 때 한 번 잰 크기로 했습니다. 그래서 배치되기 전에 만들어진 덱(숨겨진 패널 안, 붙기 전, 브라우저가 아직 배치하지 않은 영역)은 0으로 재져 창 높이에 고정됐고, 데모의 첫 Fullpage 카드가 스크롤만 해도 그렇게 됐습니다. 이제 10px 미만으로 재지면 배치된 덱에서 한 번 더 확인(ResizeObserver 보고 한 번)한 뒤에만 대체 높이를 씁니다. reduced motion에서도 명시한 `height`를 지킵니다. 게이트: `tests/browser/components-a11y.mjs` `fullpage-hidden-panel`(Chromium·WebKit·Firefox).
 - 데모: 연 프레임 안에 바로 닫은 설정 드로어(요약을 빠르게 두 번 클릭)가 더 이상 열린 채로 남지 않습니다. 닫은 뒤에 프레임 콜백이 어두운 배경을 다시 열어, 닫을 방법 없이 페이지가 덮였습니다. 이제 콜백이 그 패널이 아직 보이는 패널인지 먼저 확인합니다. `tests/browser/demo-code-access.mjs`의 흔들리던 클릭도 이것이었습니다. 게이트: `tests/browser/demo-a11y.mjs`.
-- 테스트: `create-cost`는 강제 레이아웃을 만드는 작업과 다음 프레임의 공유 읽기 안에서만 셉니다(트레이스가 멈출 때까지 이어져 Lazy 이미지의 나중 작업까지 세는 일이 있었음 — 바쁜 기계에서 1 대신 6·10). `measure`는 고정 320ms 대신 무대를 화면에 둔 채 커서의 hover 상태를 기다립니다(전체 레인에서 포인터가 도착했을 때 무대가 화면 위 1,000px에 있던 적이 있음).
-
-<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
-
+- 테스트: `create-cost`는 강제 레이아웃을 만드는 작업과 다음 프레임의 공유 읽기 안에서만 셉니다(트레이스가 멈출 때까지 이어져 Lazy 이미지의 나중 작업까지 세는 일이 있었음 — 바쁜 기계에서 1 대신 6·10). `measure`는 고정 320ms 대신 무대를 화면에 둔 채 커서의 hover 상태를 기다립니다(전체 레인에서 포인터가 도착했을 때 무대가 화면 위 1,000px에 있던 적이 있음). 데모 QA는 시간이 걸리는 확인 다섯 개(class Reveal, Loader 진행률, Overflow Text rolling, Text Transition, 동적 노이즈)를 고정 대기 대신 조건으로 기다립니다(바쁜 실행에서 놓쳤음).
 ## [0.12.3] - 2026-09-27
 
 ### English

@@ -1,7 +1,7 @@
-# Kineto v0.12.3 QA Report
+# Kineto v0.13.0 QA Report
 
 검증일: 2026-09-20
-대상: v0.12.3 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
+대상: v0.13.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
 ## 2026-09-27 감사 수정 · 데모 접근성 · CI와 로컬 확인 속도 (Unreleased)
 
@@ -63,6 +63,30 @@ Counter·Fullpage teardown, `observe()` 하위 트리 정리, `KT_ENGINE_UNAVAIL
 
 검증하지 못한 것: 새 shard matrix의 실제 CI 시간(PR의 첫 CI가 첫 측정), 실기기 iOS/Android, 스크린 리더 실제 낭독
 (NVDA·JAWS·VoiceOver). 스크린 리더 동작은 접근성 트리와 DOM 규칙으로만 확인했습니다.
+
+PR #52(`agent/claude/perf-a11y-ci`, `18d5a80`)의 첫 CI: 11개 job 모두 통과. 가장 느린 job은 WebKit 3/3의 245초였습니다
+(전에는 Firefox 1/1이 363초). Chromium 171/189/172초, WebKit 196/200/245초, Firefox 191/214초, Node 24 job 206초.
+
+### 소유자 보고 — Fullpage 첫 카드가 창 높이만큼 커짐
+
+접속해서 스크롤만 해도 첫 카드의 덱이 `style="height: 100svh; …"`였습니다(소유자 콘솔 확인). 높이 없는 덱을 화면에
+채우는 대체 규칙을 만들 때 한 번 잰 `clientHeight`로 정했고, 배치되기 전에 만들어진 덱은 0으로 재져 창 높이에
+고정됐습니다. 이 컨테이너의 Chromium·WebKit에서는 같은 순서가 재현되지 않았지만(여러 창 크기, 첫 방문, 스크롤로 이동,
+설정 변경, 비교 시트 — 라이브 사이트 포함), 숨긴 패널·붙기 전 요소에서는 옛 코드가 매번 `100svh`를 씁니다
+(`components-a11y`의 `fullpage-hidden-panel`, 옛 코드에서 실패). 이제 10px 미만으로 재지면 배치된 덱의 ResizeObserver
+보고로 한 번 더 확인합니다.
+
+### v0.13.0 준비 (브랜치 `agent/claude/release-0.13.0`)
+
+- 준비 중 `npm run verify`에서 흔들림 셋을 찾아 고쳤습니다.
+  - `demo-code-access`의 30초 클릭 실패: 설정 드로어를 연 프레임 안에 닫으면 프레임 콜백이 배경을 다시 열었습니다. 데모 결함이며, `demo-a11y`에 게이트를 추가했습니다.
+  - `create-cost`: 트레이스 창이 너무 길었습니다.
+  - `measure`: 포인터가 도착했을 때 무대가 화면 밖에 있었습니다.
+  - `demo-qa`: 시간이 걸리는 확인 다섯 개가 고정 대기였습니다.
+  - 고친 뒤 결과: demo QA는 코어 하나를 바쁘게 둔 채 5/5, `create-cost`는 부하 중 3/3입니다.
+- 최종 `npm run verify` 통과. 결과는 Node 64/64, 데모 QA(한 번 흔들린 뒤 위 수정), Chromium 레인 48/48(flaky 0), pack, lockfile 5개 감사 0건입니다.
+- `release:prepare -- minor`: 모든 버전 소스를 0.13.0으로 올리고, `[0.13.0]` 절(영/한 각 20개)과 `.github/release-notes/v0.13.0.md`를 만들고, `docs/module-cost.md`(core 16.1 KB gzip)를 갱신했습니다. `docs/consumer-bundle-size.md`는 다시 측정했습니다.
+- 게시(`release:ship -- v0.13.0`)는 소유자의 명시적 승인 뒤에만 합니다.
 
 ## 2026-09-26 아이폰 탭 튐 · 유령 커서 · 스크롤 중 ScrollTrigger refresh (v0.12.3)
 
@@ -1280,7 +1304,7 @@ registry의 해제 크기는 1,797,191 bytes로 확인했습니다. 이 수치�
 
 <!-- release:prepare updates this source label, not the publication evidence below. -->
 현재 소스의 패키지명은
-`@dong-gri/kineto`, 버전은 `0.12.3`입니다.
+`@dong-gri/kineto`, 버전은 `0.13.0`입니다.
 
 ## 배포 후 확인
 
