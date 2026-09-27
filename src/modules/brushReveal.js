@@ -49,9 +49,13 @@ export default {
         return count / (48 * 48);
       } catch (_e) { return null; }
     };
+    // Paint laid down since the reveal was last sampled; while there is some,
+    // a persistent canvas keeps a frame coming until the sample is taken.
+    let inkSinceSample = false;
     const emitProgress = (now) => {
       if (now - lastSample < 120) return;
       lastSample = now;
+      inkSinceSample = false;
       const p = computeReveal();
       if (p == null) return;
       if (Math.abs(p - lastProgress) > 0.004) {
@@ -174,6 +178,7 @@ export default {
         maskContext.restore();
       }
       hasInk = true;
+      inkSinceSample = true;
       inkLevel = Math.min(1.5, inkLevel + 0.06);
     };
 
@@ -209,7 +214,10 @@ export default {
         maskContext.fillRect(0, 0, mask.width, mask.height);
         inkLevel *= (1 - step);
       }
-      if (active && lastX != null) stamp(lastX, lastY);
+      // Healing re-inks the spot under the pointer so it stays revealed.
+      // Persistent paint does not fade, so it needs no re-inking (which also
+      // hardened a still pointer's rim frame after frame).
+      if (!persist && active && lastX != null) stamp(lastX, lastY);
       context.clearRect(0, 0, canvas.width, canvas.height);
       if (ready && hasInk) {
         const map = coverMap(image.naturalWidth, image.naturalHeight, canvas.width, canvas.height);
@@ -229,7 +237,11 @@ export default {
         rafId = null;
         return;
       }
-      if (active || (!persist && hasInk) || (persist && active)) rafId = requestAnimationFrame(render);
+      // Healing strokes need every frame. Persistent ones need a frame only
+      // until the latest paint has been sampled for progress; after that the
+      // canvas rests until the pointer paints again (onMove wakes it). It
+      // used to redraw the whole canvas every frame while hovered.
+      if ((!persist && hasInk) || (persist && inkSinceSample)) rafId = requestAnimationFrame(render);
       else rafId = null;
     };
     const wake = () => { if (alive && rafId == null) rafId = requestAnimationFrame(render); };
