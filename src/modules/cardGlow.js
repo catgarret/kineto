@@ -1,6 +1,6 @@
 import { canHover, clamp, frameClock, frameEase, lerp, resolveMotion, snapshotInlineStyles } from '../utils.js';
 import { createInteractiveShadow } from '../interactiveShadow.js';
-import { bevelBand, bevelShading, buildDisplacementMap, displacementScale, supportsBackdrop, supportsBackdropRefraction } from './surface/glass.js';
+import { bevelBand, bevelShading, glassFilterMarkup, glassMapUrl, paneCornerK, supportsBackdrop, supportsBackdropRefraction } from './surface/glass.js';
 
 function bool(value, fallback = false) {
   if (value == null) return fallback;
@@ -78,6 +78,7 @@ export default {
     let glassFilterId = '';
     let glassSheen = null;
     let glassMap = null;
+    let glassOptics = null;
 
     const root = document.createElement('span');
     root.className = `kt-card-glow kt-card-glow-${mode}`;
@@ -140,7 +141,6 @@ export default {
     } else if (mode === 'shine') {
       spotlight.style.cssText = `position:absolute;top:0;bottom:0;left:-55%;width:42%;border-radius:0;background:linear-gradient(90deg,transparent,${color},transparent);filter:blur(${blur}px);opacity:${opacity};transform:skewX(-20deg);will-change:transform;`;
     } else if (mode === 'glass') {
-      const glassBlur = Math.max(0, Number(opts.glassBlur ?? 14));
       const glassSaturate = Math.max(0, Number(opts.glassSaturate ?? 1.7));
       const rimWidth = Math.max(0.5, Number(opts.glassRim ?? 1.5));
       const rimOpacity = clamp(Number(opts.glassRimOpacity ?? 0.9), 0, 1);
@@ -152,12 +152,23 @@ export default {
       // so this is the one part that simply does not happen elsewhere.
       refracting = supportsBackdrop() && wantsRefraction && supportsBackdropRefraction();
       glassFilterId = refracting ? `kt-glass-${Math.random().toString(36).slice(2, 10)}` : '';
-      const glassFilter = `${refracting ? `url(#${glassFilterId}) ` : ''}blur(${glassBlur}px) saturate(${glassSaturate})`;
+      // A bending pane blurs lightly and INSIDE its filter, before the bend
+      // (see glassFilterMarkup): the lens has to stay readable. Without the
+      // bend the frosted blur is what carries the look, so it stays strong.
+      const glassBlur = Math.max(0, Number(opts.glassBlur ?? (refracting ? 4 : 14)));
+      glassOptics = {
+        blur: glassBlur,
+        saturate: glassSaturate,
+        ior: clamp(Number(opts.glassIor ?? 1.5), 1, 2.4),
+        dispersion: clamp(Number(opts.glassDispersion ?? 0.12), 0, 0.5),
+        specular: clamp(Number(opts.glassSpecular ?? 0.25), 0, 1)
+      };
+      const glassFilter = refracting ? `url(#${glassFilterId})` : `blur(${glassBlur}px) saturate(${glassSaturate})`;
       // The pane itself: a blurred, colour-pushed backdrop under a faint tint.
       // It is always on — glass is a material the card is made of, not a hover
       // reaction — and it keeps the card's own corner radius.
       const tint = opts.glassTint || 'rgba(255,255,255,.10)';
-      root.style.cssText = `position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none;overflow:hidden;opacity:1;background:${tint};box-shadow:inset 0 1px 1px #ffffff40,inset 0 -1px 2px #00000020;`;
+      root.style.cssText = `position:absolute;inset:0;z-index:0;border-radius:inherit;corner-shape:inherit;pointer-events:none;overflow:hidden;opacity:1;background:${tint};box-shadow:inset 0 1px 1px #ffffff40,inset 0 -1px 2px #00000020;`;
       if (supportsBackdrop()) {
         root.style.backdropFilter = glassFilter;
         root.style.webkitBackdropFilter = glassFilter;
@@ -165,14 +176,14 @@ export default {
       // The rim is the part people recognise. A ring one and a half pixels
       // wide, bright where the light falls and gone round the back, drawn with
       // the same mask-composite trick the border mode uses.
-      spotlight.style.cssText = `position:absolute;inset:0;border-radius:inherit;padding:${rimWidth}px;opacity:${rimOpacity};`
+      spotlight.style.cssText = `position:absolute;inset:0;border-radius:inherit;corner-shape:inherit;padding:${rimWidth}px;opacity:${rimOpacity};`
         + '-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;'
         + 'mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;will-change:background;';
       // …and a soft sheen inside the lit edge, which is what stops the pane
       // from reading as a flat sheet of frosted plastic.
       const sheen = document.createElement('span');
       sheen.className = 'kt-card-glow-sheen';
-      sheen.style.cssText = `position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:${sheenOpacity};`;
+      sheen.style.cssText = `position:absolute;inset:0;border-radius:inherit;corner-shape:inherit;pointer-events:none;opacity:${sheenOpacity};`;
       root.appendChild(sheen);
       glassSheen = sheen;
     }
@@ -198,14 +209,17 @@ export default {
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svg.setAttribute('aria-hidden', 'true');
       svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;';
-      svg.innerHTML = `<filter id="${glassFilterId}" color-interpolation-filters="sRGB" x="0" y="0" width="100%" height="100%">`
-        + '<feImage x="0" y="0" result="kt-map"></feImage>'
-        + '<feDisplacementMap in="SourceGraphic" in2="kt-map" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>'
-        + '</filter>';
+      // Only numbers reach this markup (clamped options + a random id).
+      svg.innerHTML = glassFilterMarkup(glassFilterId, { ...glassOptics, surface: glassDepth * 0.25 });
       // Inside the pane's own layer, so it leaves with it and no id is left
       // behind in the document for the next card to collide with.
       root.appendChild(svg);
-      return { svg, image: svg.querySelector('feImage'), displace: svg.querySelector('feDisplacementMap') };
+      return {
+        svg,
+        image: svg.querySelector('feImage'),
+        displace: Array.from(svg.querySelectorAll('feDisplacementMap')),
+        light: svg.querySelector('feDistantLight')
+      };
     };
     const drawRefraction = () => {
       if (!refracting) return;
@@ -213,20 +227,25 @@ export default {
       const height = Math.round(el.clientHeight);
       if (width < 2 || height < 2) return;
       if (!glassMap) glassMap = createRefraction();
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const context = canvas.getContext('2d', { willReadFrequently: false });
-      if (!context) return;
-      const paneRadius = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
+      const paneStyle = getComputedStyle(el);
+      const paneRadius = parseFloat(paneStyle.borderTopLeftRadius) || 0;
       const band = bevelBand(width, height, glassDepth);
-      context.putImageData(buildDisplacementMap(context, width, height, paneRadius, band), 0, 0);
-      glassMap.image.setAttribute('href', canvas.toDataURL());
+      // A squircle (the Squircle module, or CSS corner-shape) bends along its
+      // own outline, not along a plain rounded rectangle.
+      const cornerK = paneCornerK(el, paneStyle.cornerShape || paneStyle.getPropertyValue('corner-shape'));
+      // Built at the screen's pixel density (up to 2×) and shown at CSS size,
+      // so the lens is not an upscaled 1× bitmap on a retina screen.
+      const lens = glassMapUrl(width, height, paneRadius, {
+        band, ior: glassOptics.ior, dpr: window.devicePixelRatio || 1, k: cornerK
+      });
+      if (!lens) return;
+      glassMap.image.setAttribute('href', lens.href);
       glassMap.image.setAttribute('width', String(width));
       glassMap.image.setAttribute('height', String(height));
-      // How far the backdrop is allowed to travel. Tied to the bevel, so a
-      // deeper edge bends more — which is what a thicker piece of glass does.
-      glassMap.displace.setAttribute('scale', displacementScale(band).toFixed(2));
+      // One displacement per colour channel; each carries its dispersion factor.
+      glassMap.displace.forEach((node) => {
+        node.setAttribute('scale', (lens.scale * Number(node.dataset.ktScale || 1)).toFixed(2));
+      });
     };
     let glassResize = null;
     if (refracting && typeof ResizeObserver !== 'undefined') {
@@ -310,6 +329,8 @@ export default {
         // The bevel is lit from the same direction as the rim.
         root.style.boxShadow = bevelShading(Math.cos(radians), Math.sin(radians),
           bevelBand(el.clientWidth, el.clientHeight, glassDepth));
+        // The specular highlight in the filter is lit from the same side.
+        glassMap?.light?.setAttribute('azimuth', (radians * 180 / Math.PI).toFixed(1));
         spotlight.style.background = `linear-gradient(${angle + 180}deg,`
           + 'rgba(255,255,255,.95) 0%,rgba(255,255,255,.22) 34%,'
           + 'rgba(255,255,255,0) 52%,rgba(255,255,255,.5) 100%)';

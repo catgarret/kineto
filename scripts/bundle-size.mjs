@@ -247,7 +247,10 @@ const BUDGETS = {
   // of the 0.13 entry-point work (before the spring work: 622.8 / 169.9,
   // 487.2 / 150.9, 485.2 / 150.2 measured on b7b0f6f).
   // Headroom policy: raw ≈ +1%, gzip to the next whole KiB; variance unchanged.
-  'kineto.js': { raw: 647, gz: 176, variance: 2 },
+  // 2026-09-27 (liquid glass optics: Snell lens map, dispersion + specular
+  // filter graph, lens cache): 645.9 / 177.0 ESM, 504.4 / 156.9 minified,
+  // 502.5 / 156.3 UMD. Same headroom policy.
+  'kineto.js': { raw: 653, gz: 177, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
   // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/
@@ -265,7 +268,7 @@ const BUDGETS = {
   // 2026-09-21 (fold): FLIP's fold move style measures 454.3 KiB raw / 139.0
   // KiB gzip minified — the raw ceiling is what moves.
   // 2026-09-27 (springs + split, see the kineto.js note): 501.8 / 155.9.
-  'kineto.min.js': { raw: 506, gz: 156, variance: 2 },
+  'kineto.min.js': { raw: 510, gz: 157, variance: 2 },
   // 2026-09-20 (shared-element teardown): the UMD gzip crosses its exact 133 KB
   // boundary at a measured 134.0 KB while raw stays inside 440 KB. Round only
   // the compressed ceiling; runner variance and consumer budgets are unchanged.
@@ -274,8 +277,8 @@ const BUDGETS = {
   // strict upper bound on the shipped file.
   // v0.12.1 (see the kineto.js note): 483.0 KiB raw → 484; headroom policy → 488.
   // 2026-09-27 (springs + split): 500.0 / 155.3 → raw 505, gz 156 (deps-boundary reads raw strictly).
-  'kineto.umd.js': { raw: 505, gz: 156, variance: 1 },
-  'kineto.umd.min.js': { raw: 505, gz: 156, variance: 1 },
+  'kineto.umd.js': { raw: 508, gz: 157, variance: 1 },
+  'kineto.umd.min.js': { raw: 508, gz: 157, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

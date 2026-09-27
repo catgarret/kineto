@@ -2662,7 +2662,10 @@
   }
   const cardGlass = {
     "ko": {
-      "glassBlur": "뒤에 있는 것을 얼마나 흐리게 볼지입니다(px). 0이면 유리가 투명해져 색만 얹힙니다.",
+      "glassBlur": "뒤에 있는 것을 얼마나 흐리게 볼지입니다(px). 비워 두면 굴절이 되는 브라우저는 4(렌즈가 보이게), 아니면 14입니다. 0이면 유리가 투명해집니다.",
+      "glassIor": "유리의 굴절률입니다. 1이면 공기처럼 휘지 않고, 1.5는 유리, 클수록 테두리가 더 크게 휩니다(크로미엄).",
+      "glassDispersion": "빨강·초록·파랑이 조금씩 다르게 휘는 정도입니다. 테두리에 무지개 번짐이 생깁니다. 0이면 끕니다(크로미엄).",
+      "glassSpecular": "유리 모양에서 계산한 반사광의 세기입니다. 빛은 포인터 쪽에서 옵니다(크로미엄).",
       "glassSaturate": "뒤에 비치는 색의 채도입니다. 1보다 크면 색이 진해져 유리를 통과한 느낌이 납니다.",
       "glassDepth": "테두리에서 안쪽으로 몇 px까지 빛이 휘는지 — 유리의 두께입니다. 깊을수록 가장자리가 많이 굴절됩니다.",
       "glassRefraction": "가장자리에서 배경이 실제로 휘게 할지입니다. SVG 필터를 backdrop-filter로 쓸 수 있는 브라우저(현재 크로미엄)에서만 동작하고, 나머지는 자동으로 빠집니다.",
@@ -2672,7 +2675,10 @@
       "glassSheen": "유리 안쪽 윗면에 도는 은은한 반사의 세기입니다."
     },
     "en": {
-      "glassBlur": "How far the backdrop is blurred, in px. At 0 the pane is clear and only the tint remains.",
+      "glassBlur": "How far the backdrop is blurred, in px. Unset: 4 where the pane bends (so the lens reads), 14 elsewhere. At 0 the pane is clear.",
+      "glassIor": "Index of refraction. 1 is air (no bend), 1.5 is glass; higher bends the rim more (Chromium).",
+      "glassDispersion": "How differently red, green and blue bend — the rainbow fringe of real glass at the rim. 0 turns it off (Chromium).",
+      "glassSpecular": "Strength of the highlight computed from the pane’s shape, lit from the pointer’s side (Chromium).",
       "glassSaturate": "How much the colour behind is pushed. Above 1 it deepens, which is what reads as looking through glass.",
       "glassDepth": "How far in from the rim the light bends — the thickness of the glass. Deeper bends more of the edge.",
       "glassRefraction": "Whether the backdrop actually bends at the rim. Needs an SVG filter used as a backdrop-filter (Chromium today); elsewhere it is dropped automatically.",
@@ -2682,7 +2688,10 @@
       "glassSheen": "Strength of the soft reflection inside the top of the pane."
     },
     "ja": {
-      "glassBlur": "背景をどれだけぼかすか（px）。0 なら透明になり色味だけが残ります。",
+      "glassBlur": "背景をどれだけぼかすか(px)。未指定なら屈折できるブラウザでは 4(レンズが見えるよう)、それ以外は 14。0 で透明。",
+      "glassIor": "屈折率です。1 は空気(曲がらない)、1.5 がガラス、大きいほど縁が大きく曲がります(Chromium)。",
+      "glassDispersion": "赤・緑・青の曲がり方の差です。縁に虹色のにじみが出ます。0 でオフ(Chromium)。",
+      "glassSpecular": "ガラスの形から計算したハイライトの強さ。光はポインター側から当たります(Chromium)。",
       "glassSaturate": "透けて見える色の彩度です。1 より大きいと色が濃くなり、ガラス越しらしくなります。",
       "glassDepth": "縁から内側へ何 px まで光が曲がるか — ガラスの厚みです。深いほど縁が大きく屈折します。",
       "glassRefraction": "縁で背景を実際に曲げるかどうか。SVG フィルターを backdrop-filter に使えるブラウザ（現状は Chromium）だけで動き、他では自動的に外れます。",
@@ -2692,7 +2701,10 @@
       "glassSheen": "ガラス内側の上面に乗る、やわらかな反射の強さです。"
     },
     "zh-CN": {
-      "glassBlur": "背后内容的模糊程度（px）。为 0 时玻璃变透明，只留下色调。",
+      "glassBlur": "背景模糊程度（px）。未设置时，可折射的浏览器用 4（让透镜可见），其他为 14。为 0 时玻璃透明。",
+      "glassIor": "折射率。1 为空气（不弯折），1.5 为玻璃，越大边缘弯折越强（Chromium）。",
+      "glassDispersion": "红绿蓝弯折程度的差异，边缘出现彩虹色散。0 关闭（Chromium）。",
+      "glassSpecular": "根据玻璃形状计算的高光强度，光来自指针一侧（Chromium）。",
       "glassSaturate": "透出的颜色的饱和度。大于 1 时颜色更浓，像是隔着玻璃看。",
       "glassDepth": "光线从边缘向内弯折的距离 —— 玻璃的厚度。越深，边缘折射越明显。",
       "glassRefraction": "是否让背景在边缘真正弯折。需要浏览器支持把 SVG 滤镜用作 backdrop-filter（目前只有 Chromium），其他浏览器会自动省略。",
@@ -2702,7 +2714,10 @@
       "glassSheen": "玻璃内侧上方那层柔和反射的强度。"
     },
     "zh-TW": {
-      "glassBlur": "背後內容的模糊程度（px）。為 0 時玻璃變透明，只留下色調。",
+      "glassBlur": "背景模糊程度（px）。未設定時，可折射的瀏覽器用 4（讓透鏡可見），其他為 14。為 0 時玻璃透明。",
+      "glassIor": "折射率。1 為空氣（不彎折），1.5 為玻璃，越大邊緣彎折越強（Chromium）。",
+      "glassDispersion": "紅綠藍彎折程度的差異，邊緣出現彩虹色散。0 關閉（Chromium）。",
+      "glassSpecular": "依玻璃形狀計算的高光強度，光來自指標一側（Chromium）。",
       "glassSaturate": "透出的顏色的飽和度。大於 1 時顏色更濃，像是隔著玻璃看。",
       "glassDepth": "光線從邊緣向內彎折的距離 —— 玻璃的厚度。越深，邊緣折射越明顯。",
       "glassRefraction": "是否讓背景在邊緣真正彎折。需要瀏覽器支援把 SVG 濾鏡用作 backdrop-filter（目前只有 Chromium），其他瀏覽器會自動省略。",
@@ -2712,7 +2727,10 @@
       "glassSheen": "玻璃內側上方那層柔和反射的強度。"
     },
     "ru": {
-      "glassBlur": "Насколько размыт фон, в px. При 0 панель прозрачная и остаётся только оттенок.",
+      "glassBlur": "Насколько размыт фон, px. Без значения: 4 там, где стекло преломляет (чтобы линза читалась), иначе 14. При 0 стекло прозрачное.",
+      "glassIor": "Показатель преломления. 1 — воздух (без изгиба), 1,5 — стекло; больше — сильнее изгиб у кромки (Chromium).",
+      "glassDispersion": "Насколько по-разному преломляются красный, зелёный и синий — радужная кайма у кромки. 0 выключает (Chromium).",
+      "glassSpecular": "Сила блика, рассчитанного по форме стекла; свет со стороны указателя (Chromium).",
       "glassSaturate": "Насколько усилен цвет за панелью. Больше 1 — цвет глубже, и это читается как взгляд сквозь стекло.",
       "glassDepth": "Как далеко от кромки внутрь гнётся свет — толщина стекла. Глубже — сильнее преломление по краю.",
       "glassRefraction": "Гнуть ли фон у кромки по-настоящему. Нужен SVG-фильтр в backdrop-filter (сегодня только Chromium); в остальных он отбрасывается сам.",
@@ -2722,7 +2740,10 @@
       "glassSheen": "Сила мягкого отражения внутри верхней части панели."
     },
     "it": {
-      "glassBlur": "Quanto è sfocato ciò che sta dietro, in px. A 0 il pannello è limpido e resta solo la tinta.",
+      "glassBlur": "Quanto è sfocato lo sfondo, in px. Se vuoto: 4 dove il vetro rifrange (così la lente si legge), altrimenti 14. A 0 è trasparente.",
+      "glassIor": "Indice di rifrazione. 1 è aria (nessuna curva), 1,5 il vetro; più alto piega di più il bordo (Chromium).",
+      "glassDispersion": "Quanto rosso, verde e blu si piegano in modo diverso: la frangia iridescente del vetro sul bordo. 0 la spegne (Chromium).",
+      "glassSpecular": "Forza del riflesso calcolato dalla forma del vetro, illuminato dal lato del puntatore (Chromium).",
       "glassSaturate": "Quanto viene spinto il colore dietro. Sopra 1 si intensifica, ed è ciò che fa sembrare di guardare attraverso il vetro.",
       "glassDepth": "Quanto la luce si piega dal bordo verso l’interno — lo spessore del vetro. Più è profondo, più il bordo rifrange.",
       "glassRefraction": "Se il fondo debba davvero piegarsi sul bordo. Richiede un filtro SVG usato come backdrop-filter (oggi solo Chromium); altrove viene tolto da solo.",

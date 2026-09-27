@@ -222,7 +222,8 @@ const BUDGET = {
   // measure 649.5 KB packed locally; + 1.5 KB runner margin + ~1% → 657.
   // 2026-09-27 (springs everywhere + Reveal split — requested features, see
   // scripts/bundle-size.mjs): 671.9 KB packed on the same 88 files → 680.
-  packedKb: 680,
+  // 2026-09-27 (liquid glass optics + squircle-aware lens): 677.5 KB → 684.
+  packedKb: 684,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -270,8 +271,12 @@ const BUDGET = {
   // types/index.d.cts (CommonJS declarations for `require`). Measures 649.5 KB
   // packed / 2091.6 KB unpacked on 88 files; unpacked keeps ~1% headroom → 2112.
   // 2026-09-27 (springs + split): 2156.1 KB unpacked, same 88 files → 2178.
-  unpackedKb: 2178,
-  files: 88
+  // 2026-09-27 (liquid glass on squircles): the Card Glow lens now reads the
+  // superellipse maths Squircle already ships, so the modular build shares it
+  // as one chunk instead of duplicating it — the 89th file (a decision: sharing
+  // beats two copies). 2170.2 KB unpacked → 2192.
+  unpackedKb: 2192,
+  files: 89
 };
 
 console.log(`release package: ${packedKb.toFixed(1)} KB packed · ${unpackedKb.toFixed(1)} KB unpacked · ${files.length} files`);

@@ -11,7 +11,7 @@
 // backdrop avoids root-canvas background special cases; no PNG-size heuristic.
 // Run: npm run build && node tests/browser/card-glass.mjs
 import assert from 'node:assert/strict';
-import { bevelBand, buildDisplacementMap, displacementScale } from '../../src/modules/surface/glass.js';
+import { bevelBand, buildDisplacementMap, buildGlassMap, cornerShapeDistance, displacementScale, glassFilterMarkup, paneCornerK, roundedRectDistance, snellOffset, thicknessProfile } from '../../src/modules/surface/glass.js';
 
 const map = buildDisplacementMap({ createImageData: (w, h) => ({ data: new Uint8ClampedArray(w * h * 4) }) }, 100, 60, 30, 18);
 assert.equal(map.data[(30 * 100 + 50) * 4], 128, 'lens centre must remain neutral');
@@ -29,6 +29,31 @@ for (let x = 0; x < 20; x += 1) {
 assert.ok(sampleAt(17) - sampleAt(16) > 0.75, `the band must meet the clear centre without a seam (step ${(sampleAt(17) - sampleAt(16)).toFixed(2)})`);
 // A 52px pill keeps a clear centre: the bevel is capped by the pane's size.
 assert.ok(bevelBand(300, 52, 18) < 18 && bevelBand(300, 52, 18) > 10, 'a thin pane must get a narrower bevel than it asked for');
+
+// The physical lens (2026-09-27): Snell's law over a rounded-edge thickness field.
+assert.equal(snellOffset(0, 10, 1.5), 0, 'a flat surface must not bend the ray');
+assert.equal(snellOffset(2, 10, 1), 0, 'n = 1 (air) must not bend the ray');
+assert.ok(snellOffset(2, 10, 1.5) > snellOffset(1, 10, 1.5), 'travel must grow with the slope');
+assert.ok(snellOffset(2, 10, 2) > snellOffset(2, 10, 1.5), 'travel must grow with the index of refraction');
+assert.ok(thicknessProfile(0) === 0 && thicknessProfile(1) === 1 && thicknessProfile(0.5) > 0.5, 'the edge must round off like a quarter circle');
+const fakeContext = { createImageData: (w, h) => ({ width: w, height: h, data: new Uint8ClampedArray(w * h * 4) }) };
+const lens = buildGlassMap(fakeContext, 100, 60, 30, { band: 18, ior: 1.5, dpr: 2 });
+assert.equal(lens.image.width, 200, 'the lens map is built at the screen density');
+const at = (x, y, c) => lens.image.data[((y * 2) * 200 + x * 2) * 4 + c];
+assert.equal(at(50, 30, 0), 128, 'the clear centre must not move');
+assert.equal(at(50, 30, 2), 255, 'the centre is the full thickness (blue = height)');
+assert.ok(at(3, 30, 0) > 128 && Math.abs(at(3, 30, 1) - 128) <= 1, 'the left rim samples inward (to the right), not up or down');
+assert.ok(at(3, 30, 0) > at(12, 30, 0), 'the bend is strongest near the rim');
+assert.ok(lens.scale > displacementScale(18), `the physical lens must bend further than the old 0.42·band cap (${lens.scale.toFixed(1)} px)`);
+const graph = glassFilterMarkup('probe', { blur: 4, saturate: 1.7, dispersion: 0.12, specular: 0.35, surface: 7 });
+assert.equal((graph.match(/<feDisplacementMap/g) || []).length, 3, 'one displacement per colour channel (dispersion)');
+assert.ok(graph.indexOf('feGaussianBlur') < graph.indexOf('feDisplacementMap'), 'the backdrop must be blurred BEFORE it is bent');
+assert.match(graph, /<feSpecularLighting[^>]*><feDistantLight/, 'the highlight must come from the height field');
+// Glass on a squircle bends along the squircle, not along a rounded rectangle.
+assert.equal(cornerShapeDistance(10, 10, 100, 100, 30, 1), roundedRectDistance(10, 10, 100, 100, 30), 'k = 1 is the round corner');
+assert.ok(cornerShapeDistance(10, 10, 100, 100, 30, 2) < roundedRectDistance(10, 10, 100, 100, 30) - 3, 'a squircle corner is fuller, so its corner point lies deeper inside');
+assert.equal(cornerShapeDistance(50, 1, 100, 100, 30, 2), roundedRectDistance(50, 1, 100, 100, 30), 'straight edges are the same for every corner shape');
+assert.ok(paneCornerK(null, 'squircle') === 2 && paneCornerK(null, 'superellipse(3)') === 3 && paneCornerK(null, '') === 1, 'corner-shape values map to K');
 import { chromium, firefox, webkit } from 'playwright';
 import http from 'node:http';
 import fs from 'node:fs';
@@ -113,6 +138,11 @@ const report = await page.evaluate(async () => {
     // The SVG filter lives inside the pane's own layer, so it leaves with it.
     filtersInDocument: document.querySelectorAll('filter[id^="kt-glass-"]').length,
     filtersInsideLayer: glassLayer.querySelectorAll('filter[id^="kt-glass-"]').length,
+    innerBlur: glassLayer.querySelector('feGaussianBlur')?.getAttribute('stdDeviation') || '',
+    innerSaturate: Number(glassLayer.querySelector('feColorMatrix[type="saturate"]')?.getAttribute('values') || 0),
+    displacements: glassLayer.querySelectorAll('feDisplacementMap').length,
+    scales: Array.from(glassLayer.querySelectorAll('feDisplacementMap')).map((node) => Number(node.getAttribute('scale'))),
+    hasSpecular: Boolean(glassLayer.querySelector('feSpecularLighting feDistantLight')),
     bare: Boolean(layerOf('bare'))
   };
 });
@@ -151,8 +181,18 @@ await page.waitForTimeout(500);
 assert.notEqual(await page.evaluate(() => window.__glassRim()), pausedRim, 'resume must schedule rendering again');
 
 
-assert.match(report.filter, /blur\(12px\)/, 'the pane must blur its backdrop by the requested amount');
-assert.match(report.filter, /saturate\(/, 'the pane must push the colour behind it');
+if (report.refracting) {
+  // A bending pane blurs and saturates inside its own filter, before the bend.
+  assert.equal(report.filter.trim().startsWith('url('), true, 'the refracting pane must use its SVG filter');
+  assert.equal(report.innerBlur, '12', 'the pane must blur its backdrop by the requested amount (inside the filter)');
+  assert.ok(report.innerSaturate > 1, 'the pane must push the colour behind it (inside the filter)');
+  assert.equal(report.displacements, 3, 'one displacement per colour channel');
+  assert.ok(report.scales.length === 3 && report.scales[0] > report.scales[1] && report.scales[1] > report.scales[2], `dispersion must split the channel strengths (${report.scales})`);
+  assert.equal(report.hasSpecular, true, 'the filter must light the pane’s shape');
+} else {
+  assert.match(report.filter, /blur\(12px\)/, 'the pane must blur its backdrop by the requested amount');
+  assert.match(report.filter, /saturate\(/, 'the pane must push the colour behind it');
+}
 assert.equal(report.hasRim, true, 'the pane must draw a lit rim');
 assert.equal(report.hasSheen, true, 'the pane must draw an inner sheen');
 assert.equal(report.opacityAtRest, '1', 'glass is the material, so it must stay on when the pointer leaves');

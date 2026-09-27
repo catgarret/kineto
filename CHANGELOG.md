@@ -16,6 +16,7 @@
 - New `Kineto.spring(spec)` → `{ easing, duration, durationMs, fn, stiffness, damping, mass, velocity }`, typed together with `Kineto.easing`, `Kineto.easingFn` and `Kineto.easings` (they were missing from `types/index.d.ts`).
 - CSS tokens for pages without Kineto JS: `--kt-spring-{smooth,snappy,bouncy,apple,interactive}` (+ `-duration`) and `--kt-ease-apple-*` in `kineto.css`, generated from `src/easings.js` (`scripts/generate-easing-tokens.mjs`, checked by `test:easings`).
 - Reveal `split`: a group rises on a spring as one blob in the middle, squashes into a circle, then splits into its children, each opening from the circle into its own box; their content arrives last (`src/modules/reveal/split.js`). Options `morphEase`, `contentDelay`, `color`, plus `ease`, `distance`, `stagger`, `duration`, class hooks and callbacks like every preset. Demo card, compare-sheet tile and a browser test (`tests/browser/spring-motion.mjs`).
+- Card Glow Liquid Glass: the Chromium lens is computed from optics instead of a hand-tuned pull — a rounded-edge thickness field, Snell refraction with a new `glassIor` (1.5), a softened meniscus at the rim, chromatic dispersion (`glassDispersion`, 0.12: one displacement per colour channel) and a specular highlight lit from the pane's height field toward the pointer (`glassSpecular`, 0.25). The backdrop is now blurred before it is bent (the old `url() blur()` order smeared the bend away), and an unset `glassBlur` is 4 where the pane bends (14 elsewhere, unchanged). Lens maps are built at the screen density (up to 2×) and cached by geometry, so identical cards share one encode. On a squircle (the Squircle module or CSS `corner-shape`) the lens, rim and sheen follow the superellipse outline instead of a rounded rectangle.
 
 <!-- Add matching English release bullets here. -->
 
@@ -33,6 +34,7 @@
 - 새 `Kineto.spring(spec)` → `{ easing, duration, durationMs, fn, stiffness, damping, mass, velocity }`. `Kineto.easing`·`Kineto.easingFn`·`Kineto.easings`와 함께 타입을 선언했습니다(`types/index.d.ts`에 빠져 있었음).
 - Kineto JS 없이 쓰는 CSS 토큰: `kineto.css`의 `--kt-spring-{smooth,snappy,bouncy,apple,interactive}`(+ `-duration`)와 `--kt-ease-apple-*`. `src/easings.js`에서 생성합니다(`scripts/generate-easing-tokens.mjs`, `test:easings`가 최신 여부 검사).
 - Reveal `split`: 그룹이 스프링으로 가운데 한 덩어리로 솟아 원으로 눌린 뒤 자식들로 갈라져 각자 자리로 펼쳐지고, 내용은 마지막에 들어옵니다(`src/modules/reveal/split.js`). 옵션 `morphEase`·`contentDelay`·`color`와 다른 preset과 같은 `ease`·`distance`·`stagger`·`duration`·class hook·콜백. 데모 카드, 비교 시트 타일, 브라우저 테스트(`tests/browser/spring-motion.mjs`).
+- Card Glow Liquid Glass: Chromium의 렌즈를 손으로 맞춘 당김 대신 광학으로 계산합니다 — 둥근 가장자리의 두께장, 새 `glassIor`(1.5)로 하는 스넬 굴절, 테두리의 부드러운 메니스커스, 색 분산(`glassDispersion` 0.12, 채널마다 displacement 하나), 높이장에서 포인터 쪽으로 비추는 반사광(`glassSpecular` 0.25). 배경을 휘기 **전에** 흐립니다(예전 `url() blur()` 순서는 굴절을 다시 흐려 지웠음). `glassBlur`를 비우면 굴절하는 경우 4(그 밖은 기존 14). 렌즈 지도는 화면 밀도(최대 2배)로 만들고 모양별로 캐시해 같은 카드끼리 한 번만 인코딩합니다. 스쿼클(Squircle 모듈 또는 CSS `corner-shape`) 위에서는 렌즈·테두리·광택이 둥근 사각형이 아니라 초타원 윤곽을 따릅니다.
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
