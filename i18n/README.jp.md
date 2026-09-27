@@ -45,12 +45,23 @@ Kineto.autoInit();
 
 `core` は約 15 KB（gzip）です。モジュールごとの追加コストは [`docs/module-cost.md`](../docs/module-cost.md)（中央値 約 2 KB）、アプリ全体の計測は [`docs/consumer-bundle-size.md`](../docs/consumer-bundle-size.md) にあります。登録していないモジュールの `data-kt-*` 属性が動かないのは正常です。
 
+### マークアップ優先：`auto`（0.13.0+）
+
+```js
+import Kineto from '@dong-gri/kineto/auto';
+import '@dong-gri/kineto/style.css';
+
+Kineto.observe();
+```
+
+`/auto` はコアだけを先に読み込み、マークアップが使うモジュールだけを必要なときに読み込みます。登録は不要です。JS API は `await Kineto.loadModules('tilt')` の後に使ってください。デフォルトエントリ（`@dong-gri/kineto`）は 0.13 では `/all` と同じで、1.0 で `/auto` と同じ動作になります — [エントリの選び方](../docs/entry-points.md)。
+
 ### いちばん手早く：フルバンドル
 
 デフォルトエントリはすべてのモジュールを一度に登録します。ランディングページやプロトタイプには最も簡単ですが、フルバンドル（約 169 KB gzip）になります。
 
 ```js
-import Kineto from '@dong-gri/kineto';
+import Kineto from '@dong-gri/kineto/all';
 import '@dong-gri/kineto/style.css';
 
 Kineto.autoInit();

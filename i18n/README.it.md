@@ -45,12 +45,23 @@ Kineto.autoInit();
 
 `core` pesa circa 15 KB (gzip); quanto aggiunge ogni modulo è in [`docs/module-cost.md`](../docs/module-cost.md) (mediana circa 2 KB), le misure dell'intera app in [`docs/consumer-bundle-size.md`](../docs/consumer-bundle-size.md). Un attributo `data-kt-*` di un modulo non registrato non fa nulla: è previsto.
 
+### Prima il markup: `auto` (0.13.0+)
+
+```js
+import Kineto from '@dong-gri/kineto/auto';
+import '@dong-gri/kineto/style.css';
+
+Kineto.observe();
+```
+
+`/auto` scarica prima solo il core e ogni modulo quando il markup lo usa la prima volta; non serve registrare nulla. Prima dell'API JS attendi il modulo: `await Kineto.loadModules('tilt')`. L'entry predefinito (`@dong-gri/kineto`) in 0.13 equivale a `/all` e in 1.0 si comporterà come `/auto` — [guida agli entry](../docs/entry-points.md).
+
 ### Avvio più rapido: pacchetto completo
 
 L'entry predefinita registra tutti i moduli in una volta: la via più semplice per una landing o un prototipo, al costo del bundle completo (circa 169 KB gzip).
 
 ```js
-import Kineto from '@dong-gri/kineto';
+import Kineto from '@dong-gri/kineto/all';
 import '@dong-gri/kineto/style.css';
 
 Kineto.autoInit();

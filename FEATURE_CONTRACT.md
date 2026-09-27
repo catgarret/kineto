@@ -5,13 +5,15 @@
 ## 공개 범위
 
 - 라이브러리 버전: `0.12.3`
-- 기능 계약 버전: `1.7.0`
+- 기능 계약 버전: `1.8.0`
 - 동작 계약 버전: `1.2.0`
 - 공개 모듈: 정확히 **55개**
 - Core public property: **12개**
 - Core API: **31개**
 - compatibility API: **9개**
 - additional named export: `modules`
+
+- 패키지 엔트리: `kineto.features.json#entryPoints` (`package.json#exports`·타입·빌드가 `tests/entry-points.mjs`로 대조됨). `@dong-gri/kineto/auto`는 Core API 위에 `registerLazy`·`loadModules`를 더하며, 기본 엔트리의 의미는 1.0에서 `/auto`로 바뀝니다([entry-points.md](docs/entry-points.md)).
 
 모듈명, `data-kt-*` 활성화 속성, 기본 variant, 허용 variant, 공개 option은 정확한 allowlist입니다. 자동 생성된 세부 표는 [`docs/module-reference.md`](docs/module-reference.md)를 확인합니다.
 

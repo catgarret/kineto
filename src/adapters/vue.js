@@ -1,5 +1,5 @@
 import { Comment, defineComponent, h, inject, onBeforeUnmount, onMounted, onUpdated, provide, ref, shallowRef, toRef, unref, watch } from 'vue';
-import Kineto from '@dong-gri/kineto';
+import Kineto from '@dong-gri/kineto/all';
 import presence from '@dong-gri/kineto/presence';
 
 const PresenceParentKey = Symbol('kineto-presence-parent');

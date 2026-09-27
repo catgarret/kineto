@@ -45,12 +45,23 @@ Kineto.autoInit();
 
 `core` 约 15 KB（gzip）；每个模块的额外成本见 [`docs/module-cost.md`](../docs/module-cost.md)（中位数约 2 KB），整个应用的测量见 [`docs/consumer-bundle-size.md`](../docs/consumer-bundle-size.md)。未注册模块的 `data-kt-*` 属性不会生效，这是预期行为。
 
+### 标记优先：`auto`（0.13.0+）
+
+```js
+import Kineto from '@dong-gri/kineto/auto';
+import '@dong-gri/kineto/style.css';
+
+Kineto.observe();
+```
+
+`/auto` 先只加载核心，标记用到的模块在需要时才加载，无需注册。使用 JS API 前请先 `await Kineto.loadModules('tilt')`。默认入口（`@dong-gri/kineto`）在 0.13 中与 `/all` 相同，在 1.0 中改为 `/auto` 的行为 — [入口说明](../docs/entry-points.md)。
+
 ### 最快上手：完整包
 
 默认入口一次注册所有模块，最适合落地页或原型，但体积是完整包（约 169 KB gzip）。
 
 ```js
-import Kineto from '@dong-gri/kineto';
+import Kineto from '@dong-gri/kineto/all';
 import '@dong-gri/kineto/style.css';
 
 Kineto.autoInit();

@@ -1,6 +1,6 @@
 {
   "$schema": "./kineto.features.schema.json",
-  "contractVersion": "1.7.0",
+  "contractVersion": "1.8.0",
   "libraryVersion": "0.12.3",
   "moduleCount": 55,
   "modules": [
@@ -7552,6 +7552,81 @@
     "defineCanvasEffect",
     "listCanvasEffects"
   ],
+  "entryPoints": {
+    ".": {
+      "runtime": "full",
+      "types": "default",
+      "deprecated": {
+        "since": "0.13.0",
+        "becomes": "./auto",
+        "changesIn": "1.0.0",
+        "replacements": [
+          "./auto",
+          "./all"
+        ]
+      },
+      "summary": "Full runtime today; becomes the on-demand core (./auto) in 1.0. Emits an opt-in KT_DEPRECATED notice."
+    },
+    "./all": {
+      "runtime": "full",
+      "types": "all",
+      "summary": "Every module imported and registered up front (the 0.12 default)."
+    },
+    "./auto": {
+      "runtime": "on-demand",
+      "types": "auto",
+      "api": [
+        "loadModules",
+        "registerLazy"
+      ],
+      "summary": "Core plus every module known by name; a module is imported the first time markup or loadModules() asks for it."
+    },
+    "./core": {
+      "runtime": "core",
+      "types": "core",
+      "summary": "Core only; register the modules you import from ./modules/<name>."
+    },
+    "./modules/*": {
+      "runtime": "module",
+      "types": "module",
+      "summary": "One module definition, for Kineto.register(name, module)."
+    },
+    "./states": {
+      "runtime": "addon",
+      "types": "states",
+      "summary": "Motion States controller on the modular core."
+    },
+    "./presence": {
+      "runtime": "addon",
+      "types": "presence",
+      "summary": "Presence primitive on the modular core."
+    },
+    "./react": {
+      "runtime": "adapter",
+      "types": "react",
+      "summary": "React hooks and components over ./all."
+    },
+    "./vue": {
+      "runtime": "adapter",
+      "types": "vue",
+      "summary": "Vue plugin and components over ./all."
+    },
+    "./jquery": {
+      "runtime": "adapter",
+      "types": "jquery",
+      "summary": "jQuery plugin installer over ./all."
+    },
+    "./min": {
+      "runtime": "full",
+      "types": "index",
+      "summary": "Alias of the minified full ESM file."
+    },
+    "./umd": {
+      "runtime": "full",
+      "types": "index",
+      "summary": "Minified UMD build for script tags."
+    }
+  },
   "criticalBehaviors": {
     "duplicateInitialization": "Creating the same module on the same source element returns the existing instance.",
     "destroy": "Destroy removes listeners, observers, timers, RAF handles, generated UI and restores owned DOM state.",

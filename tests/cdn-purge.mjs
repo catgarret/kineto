@@ -12,6 +12,7 @@ const publishedRootFiles = packageJson.files
 
 assert.deepEqual(PURGE_FILES, [
   'kineto.min.js',
+  'kineto.default.js',
   'kineto.umd.cjs',
   'kineto.umd.min.js',
   'kineto.min.css'
@@ -30,8 +31,8 @@ const success = await purgeAliases({
   }
 });
 
-assert.equal(success.ok, 4);
-assert.equal(success.total, 4);
+assert.equal(success.ok, PURGE_FILES.length);
+assert.equal(success.total, PURGE_FILES.length);
 assert.deepEqual(calls, PURGE_FILES.map((file) => `https://purge.example.test/dist/${file}`));
 
 let transientAttempts = 0;
@@ -47,7 +48,7 @@ const partial = await purgeAliases({
 });
 
 assert.equal(transientAttempts, 2, 'transient failures must be retried');
-assert.equal(partial.ok, 3);
+assert.equal(partial.ok, PURGE_FILES.length - 1);
 assert.equal(partial.failures.length, 1);
 assert.equal(partial.failures[0].file, 'kineto.min.css');
 assert.equal(partial.failures[0].error, 'network unavailable');

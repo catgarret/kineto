@@ -86,17 +86,45 @@ attribute whose module is not registered does nothing — that is expected; see
 [modular imports](#modular-imports) and
 [troubleshooting](docs/troubleshooting.md#모듈형-엔트리가-동작하지-않음).
 
+### Markup-first: `auto` (0.13.0+)
+
+Every `data-kt-*` module works with no registration, and only the modules the
+markup uses are downloaded — each one when it is first needed.
+
+```js
+import Kineto from '@dong-gri/kineto/auto';
+import '@dong-gri/kineto/style.css';
+
+Kineto.observe(); // scans now and follows later DOM changes
+```
+
+For the JS API, wait for the module first:
+`await Kineto.loadModules('tilt'); Kineto.tilt('.card')`.
+
 ### Quickest start: everything
 
-The default entry registers every module at once — the simplest path for a
+`@dong-gri/kineto/all` registers every module at once — the simplest path for a
 landing page or a prototype, at the cost of the full bundle (about 169 KB gzip).
 
 ```js
-import Kineto from '@dong-gri/kineto';
+import Kineto from '@dong-gri/kineto/all';
 import '@dong-gri/kineto/style.css';
 
 Kineto.autoInit();
 ```
+
+| Entry | First download | Registers | Use it for |
+| --- | --- | --- | --- |
+| `@dong-gri/kineto/core` + `/modules/<name>` | core + what you import | only what you register | the smallest bundle, full control |
+| `@dong-gri/kineto/auto` | core + a name → import() table | every module, imported on demand | product pages that use `data-kt-*` markup |
+| `@dong-gri/kineto/all` | full runtime | every module, up front | prototypes, landing pages, JS API everywhere |
+| `@dong-gri/kineto` (default) | full runtime | same as `/all` | **changes in 1.0** to behave like `/auto` |
+
+The default entry is still the full runtime in 0.13, so nothing breaks today. In
+1.0 it becomes the on-demand core: choose an entry explicitly now. With
+`Kineto.config({ debug: true })` the default entry reports this once as a
+`KT_DEPRECATED` diagnostic. Details and migration:
+[`docs/entry-points.md`](docs/entry-points.md).
 
 ### CDN, no build step
 
@@ -416,8 +444,10 @@ against the feature contract on every CI run.
 
 ## Modular imports
 
-The default entry includes and registers all modules for zero-configuration use.
-For a smaller application bundle, import the core and only the modules you use:
+`@dong-gri/kineto/all` includes and registers all modules for zero-configuration
+use, and `@dong-gri/kineto/auto` imports each module when markup first uses it
+(see [Installation](#installation)). For full control over the bundle, import
+the core and only the modules you use:
 
 ```js
 import Kineto from '@dong-gri/kineto/core';
@@ -437,8 +467,9 @@ The bytes each module adds on top of `core` are generated per release in
 
 권장 판단은 다음과 같습니다.
 
-- 랜딩 페이지나 짧은 프로토타입: 기본 엔트리로 빠르게 시작합니다.
-- 제품 번들: `@dong-gri/kineto/core`와 `@dong-gri/kineto/modules/<name>`만 가져옵니다.
+- 랜딩 페이지나 짧은 프로토타입: `@dong-gri/kineto/all`로 빠르게 시작합니다.
+- 마크업(`data-kt-*`) 중심 제품 페이지: `@dong-gri/kineto/auto` — 쓰는 모듈만 받습니다.
+- 번들을 직접 통제하는 제품: `@dong-gri/kineto/core`와 `@dong-gri/kineto/modules/<name>`만 가져옵니다.
 - 기능을 늦게 열어야 하는 경우: 해당 모듈 엔트리를 동적 import하고, 로드가 끝난 뒤
   `Kineto.register()`와 `Kineto.scan()`을 호출합니다.
 

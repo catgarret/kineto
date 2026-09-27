@@ -1,4 +1,4 @@
-import Kineto from '@dong-gri/kineto';
+import Kineto from '@dong-gri/kineto/all';
 
 export function installKineto($) {
   if (!$?.fn) throw new TypeError('A jQuery-compatible instance is required.');

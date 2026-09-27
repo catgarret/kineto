@@ -31,7 +31,8 @@ Kineto.init(document);
 ## 모듈형 엔트리가 동작하지 않음
 
 `@dong-gri/kineto/core`는 모듈을 자동 등록하지 않습니다. 사용하는 모듈 엔트리를
-등록한 뒤 스캔해야 합니다.
+등록한 뒤 스캔해야 합니다. 등록 없이 마크업만으로 쓰려면 `@dong-gri/kineto/auto`를
+쓰세요(마크업이 쓰는 모듈만 필요할 때 불러옵니다).
 
 ```js
 import Kineto from '@dong-gri/kineto/core';
@@ -44,6 +45,24 @@ Kineto.scan();
 `data-kt-slider`가 있어도 `slider`를 등록하지 않았으면 아무 일도 일어나지 않는 것이
 정상입니다. `Kineto.registry.slider`와 `Kineto.instanceCount`를 먼저 확인하고,
 동적 import를 쓰는 경우 모듈 로드가 완료된 뒤 `register()`를 호출하십시오.
+
+## `auto` 엔트리에서 JS API가 `null`을 돌려줌
+
+`@dong-gri/kineto/auto`는 모듈을 **필요할 때** 불러옵니다. 마크업(`data-kt-*`)은
+스캔이 알아서 불러온 뒤 만들지만, `Kineto.create()`/`Kineto.tilt()`는 동기 함수라서
+기다릴 수 없습니다. 아직 안 불러온 모듈이면 import를 시작하고 경고와 함께 `null`을
+돌려줍니다. 먼저 기다리십시오.
+
+```js
+import Kineto from '@dong-gri/kineto/auto';
+await Kineto.loadModules(['tilt']);
+Kineto.tilt('.card');
+```
+
+모듈 청크를 받지 못하면(배포 뒤 옛 청크 삭제, 네트워크 오류) 콘솔 경고와
+`KT_MODULE_LOAD_FAILED` 진단이 한 번 나가고 마크업은 정적으로 남습니다.
+`Kineto.loadModules(name)`으로 다시 시도할 수 있습니다. 자세한 것은
+[entry-points.md](entry-points.md).
 
 ## 숨겨진 컨테이너에서 크기·정렬이 틀림
 

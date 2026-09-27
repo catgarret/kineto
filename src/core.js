@@ -141,6 +141,13 @@ function reportEngineUnavailable(engine, modules = []) {
   });
 }
 
+// Modules known by name but not imported yet. Only the `@dong-gri/kineto/auto`
+// entry installs a source (src/lazyModules.js via setModuleSource()); the full
+// and core entries leave it null, so scan() takes exactly its old path and they
+// carry none of the loading code. Shape:
+//   { discoverable(): string[], has(name), loadAll(names): Promise, notLoaded(name): null }
+let moduleSource = null;
+
 // Watch the OS reduced-motion setting for RUNTIME changes and keep the cached
 // env in sync, dispatching `kineto:reduced-motion` so live views/instances can
 // react instead of the value being read only once at first access (D-1 / J-5).
@@ -813,6 +820,9 @@ const Kineto = {
 
   create(name, target, options = {}) {
     const module = modules.get(name);
+    // Known but not imported yet (auto entry): create() is synchronous and
+    // cannot wait, so the source starts the import and says how to wait for it.
+    if (!module && moduleSource?.has(name)) return moduleSource.notLoaded(name);
     if (!module) {
       console.warn(`[Kineto] Unknown module: ${name}`);
       emitDiagnostic({ code: DIAGNOSTIC_CODES.UNKNOWN_MODULE, module: String(name || 'unknown'), phase: 'create', recoverable: true });
@@ -890,11 +900,15 @@ const Kineto = {
     const discoverModules = (engine) => {
       const names = [];
       const byAttribute = new Map();
-      modules.forEach((_module, name) => {
+      const add = (name) => {
         if (GSAP_MODULES.has(name) !== engine) return;
         names.push(name);
         byAttribute.set(`data-kt-${dash(name)}`, name);
-      });
+      };
+      modules.forEach((_module, name) => add(name));
+      // On-demand modules (auto entry) are found by the same traversal and
+      // created by the rescan that follows their import (see below).
+      moduleSource?.discoverable().forEach((name) => { if (!modules.has(name)) add(name); });
       const discovered = new Map(names.map((name) => [name, []]));
       if (!names.length) return discovered;
 
@@ -937,10 +951,26 @@ const Kineto = {
     // Effects that don't need GSAP init immediately — they must never wait on a
     // network fetch. Discover the whole tier once, then preserve registry-order
     // creation from that snapshot.
-    scanDiscovered(discoverModules(false));
+    const plainDiscovered = discoverModules(false);
+    scanDiscovered(plainDiscovered);
 
     const gsapDiscovered = discoverModules(true);
     const needsGsap = Array.from(gsapDiscovered.values()).some((candidates) => candidates.length > 0);
+
+    // Auto entry: modules the markup asked for that are known but not imported.
+    // Import them, then scan once more — the rescan creates them and releases
+    // the veil, so on-demand effects apply their first frame before content
+    // shows, like GSAP modules do. A failed import is left out of discovery,
+    // so the rescan always terminates. Without a source this is always empty.
+    const toLoad = moduleSource
+      ? [plainDiscovered, gsapDiscovered].flatMap((found) => Array.from(found)
+        .filter(([name, candidates]) => candidates.length && !modules.has(name))
+        .map(([name]) => name))
+      : [];
+    const release = toLoad.length ? () => {} : releaseVeil;
+    if (toLoad.length) {
+      moduleSource.loadAll(toLoad).then(() => (root.isConnected === false ? releaseVeil() : this.scan(root)));
+    }
 
     if (needsGsap && !gsapReady()) {
       // Fetch the engine (page global or CDN), THEN create the scroll modules so
@@ -953,11 +983,11 @@ const Kineto = {
             .filter(([, candidates]) => candidates.length > 0).map(([name]) => name));
         }
         scanDiscovered(discoverModules(true));
-        releaseVeil();
+        release();
       });
     } else {
       scanDiscovered(gsapDiscovered);
-      releaseVeil();
+      release();
     }
     return this;
   },
@@ -1142,6 +1172,7 @@ const Kineto = {
   }
 };
 
+
 Kineto.core = {
   initModules: (targets) => Kineto.initModules(targets),
   destroyModule: (target, name) => Kineto.destroyModule(target, name),
@@ -1153,5 +1184,14 @@ Kineto.core = {
   toggleSmooth: (force, options) => Kineto.toggleSmooth(force, options),
   scrollTo: (target, options) => Kineto.scrollTo(target, options)
 };
+
+/**
+ * Internal: installs the on-demand module source (see `moduleSource`). Only
+ * src/lazyModules.js calls it; it is not part of the Kineto object, so bundles
+ * that never import the auto entry drop it.
+ */
+export function setModuleSource(source) {
+  moduleSource = source;
+}
 
 export default Kineto;

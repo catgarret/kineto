@@ -1,15 +1,21 @@
+// Vite consumer-bundle measurement. Each fixture in fixture-config.mjs is one
+// way a product imports Kineto; this builds it like a consumer would and
+// checks the product budget. `--write` regenerates docs/consumer-bundle-size.md,
+// `--check` (CI) also fails when that report no longer matches the bundles.
 import fs from 'node:fs';
 import path from 'node:path';
-import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { build } from 'vite';
-import { fixturesFor, treeShakenEntries } from './fixture-config.mjs';
+import { fixturesFor, onDemandEntries, treeShakenEntries } from './fixture-config.mjs';
+import { checkReportTable, formatTable, sizeChunks } from './report.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../..');
+const reportPath = path.join(root, 'docs/consumer-bundle-size.md');
 const outputRoot = path.join(here, '.output');
 const fixtures = fixturesFor('vite');
-const kb = (value) => value / 1024;
+const { moduleCount } = JSON.parse(fs.readFileSync(path.join(root, 'kineto.features.json'), 'utf8'));
+const LABEL = 'Consumer entry';
 const assertCheck = (condition, message) => {
   if (!condition) {
     console.error(`::error title=Consumer bundle check failed::${message.replaceAll('\n', ' ')}`);
@@ -18,14 +24,13 @@ const assertCheck = (condition, message) => {
 };
 
 async function measure({ name, entry = name, budget, variance = 0 }) {
-  const outDir = path.join(outputRoot, name);
-  await build({
+  const result = await build({
     configFile: false,
     logLevel: 'error',
     root: here,
     build: {
       emptyOutDir: true,
-      outDir,
+      outDir: path.join(outputRoot, name),
       lib: {
         entry: path.join(here, 'entries', `${entry}.js`),
         formats: ['es'],
@@ -36,12 +41,10 @@ async function measure({ name, entry = name, budget, variance = 0 }) {
       }
     }
   });
-  const files = fs.readdirSync(outDir, { recursive: true })
-    .filter((file) => file.endsWith('.js'));
-  const bytes = files.reduce((total, file) => total + fs.statSync(path.join(outDir, file)).size, 0);
-  const gzip = files.reduce((total, file) => total + zlib.gzipSync(fs.readFileSync(path.join(outDir, file)), { level: 9 }).length, 0);
-  assertCheck(kb(gzip) <= budget + variance, `${name} consumer bundle is ${kb(gzip).toFixed(1)} KB gzip (budget ≤ ${budget} KB${variance ? ` + ${variance} KB runner variance` : ''})`);
-  return { name, files: files.length, raw: kb(bytes), gzip: kb(gzip), budget, variance };
+  const outputs = (Array.isArray(result) ? result : [result]).flatMap((item) => item.output);
+  const size = sizeChunks(outputs.filter((item) => item.type === 'chunk'));
+  assertCheck(size.gzip <= budget + variance, `${name} consumer bundle is ${size.gzip.toFixed(1)} KB gzip (budget ≤ ${budget} KB${variance ? ` + ${variance} KB runner variance` : ''})`);
+  return { name, ...size, budget, variance };
 }
 
 const rows = [];
@@ -50,35 +53,50 @@ const byName = Object.fromEntries(rows.map((row) => [row.name, row]));
 treeShakenEntries.forEach((name) => {
   assertCheck(byName[name].gzip < byName.full.gzip, `${name} must remain smaller than the full entry`);
 });
+onDemandEntries.forEach((name) => {
+  // Every module must be its own on-demand chunk, never part of the first download.
+  assertCheck(byName[name].lazyFiles >= moduleCount, `${name} must split each of the ${moduleCount} modules into an on-demand chunk (found ${byName[name].lazyFiles})`);
+  assertCheck(byName[name].gzip < byName['core-three'].gzip, `${name} first download must stay below core + three modules`);
+});
 
-const table = [
-  '| Consumer entry | JS files | Raw | Gzip | Budget (gzip) |',
-  '| --- | ---: | ---: | ---: | ---: |',
-  ...rows.map((row) => `| ${row.name} | ${row.files} | ${row.raw.toFixed(1)} KB | ${row.gzip.toFixed(1)} KB | ≤ ${row.budget} KB${row.variance ? ` (+${row.variance} KB runner variance)` : ''} |`)
-].join('\n');
+const table = formatTable(rows, LABEL);
+console.log(`consumer-bundles OK\n${table}`);
+
 const measurementNotes = [
   '## Measurement scope',
   '',
   '- Bundler: Vite library build with the repository\'s pinned Vite toolchain.',
   '- React and Vue are externalized; each row measures Kineto entry cost rather than framework cost.',
+  '- **Gzip is the first download**: the entry chunk and everything it imports statically. Module chunks that are only reached through `import()` (the `auto` entry) are listed under *On-demand chunks* and fetched when markup uses them.',
+  '- `full` is the default entry (`@dong-gri/kineto`, full runtime in 0.13); `all` is the explicit `@dong-gri/kineto/all`. They must stay the same size.',
   '- Vite and Rolldown share one public-entry matrix, product gzip budgets, and modular tree-shaking boundaries; only bounded runner variance is bundler-specific.',
-  '- The fixture proves relative tree-shaking boundaries for full, core + one module, core + three modules, States, Presence, React, and Vue.',
+  '- CI runs `--check`: rows and budgets must match `tests/consumer-bundles/fixture-config.mjs` and each recorded size must be within its runner variance + 0.5 KB of the fresh measurement. Regenerate with `npm --prefix tests/consumer-bundles run write-report`.',
   '- An independent Rolldown fixture is pinned separately; its absolute bytes are recorded as a second bundler signal, not a universal cross-bundler promise.'
 ].join('\n');
-console.log(`consumer-bundles OK\n${table}`);
 
 if (process.argv.includes('--write')) {
+  const current = fs.existsSync(reportPath) ? fs.readFileSync(reportPath, 'utf8') : '';
+  const rolldownSection = current.match(/<!-- rolldown-bundle-report:begin -->[\s\S]*?<!-- rolldown-bundle-report:end -->/)?.[0];
   const report = [
     '# Consumer bundle measurements',
     '',
     '> Generated by `npm --prefix tests/consumer-bundles run write-report`.',
     '> React and Vue are externalized so adapter rows measure Kineto package cost, not framework cost.',
     '',
+    '<!-- vite-bundle-report:begin -->',
     table,
+    '<!-- vite-bundle-report:end -->',
     '',
-    'The fixture test also requires `core + one module`, `core + three modules`, `core + states`, and `core + presence` to remain smaller than the full entry.',
+    'The fixture test also requires `core + one module`, `core + three modules`, `core + states`, `core + presence` and the on-demand `auto` entry to remain smaller than the full entry, and `auto` to split every module into its own chunk.',
     '',
-    measurementNotes
+    measurementNotes,
+    ...(rolldownSection ? ['', rolldownSection] : [])
   ].join('\n');
-  fs.writeFileSync(path.join(root, 'docs/consumer-bundle-size.md'), `${report}\n`);
+  fs.writeFileSync(reportPath, `${report}\n`);
+} else if (process.argv.includes('--check')) {
+  const current = fs.readFileSync(reportPath, 'utf8');
+  const section = current.match(/<!-- vite-bundle-report:begin -->([\s\S]*?)<!-- vite-bundle-report:end -->/)?.[1] || '';
+  const problems = checkReportTable(section, rows, LABEL);
+  assertCheck(!problems.length, `docs/consumer-bundle-size.md is stale (run npm --prefix tests/consumer-bundles run write-report):\n${problems.join('\n')}`);
+  console.log('consumer-bundle report OK — docs/consumer-bundle-size.md matches the Vite measurements.');
 }

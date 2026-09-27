@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 
 const contract = JSON.parse(await readFile(new URL('../kineto.features.json', import.meta.url), 'utf8'));
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-const expectedContractKeys = ['$schema', 'additionalNamedExports', 'behaviorContractVersion', 'compatibilityApi', 'contractVersion', 'coreApi', 'coreProperties', 'criticalBehaviors', 'libraryVersion', 'moduleCount', 'modules', 'variantCapabilities'].sort();
+const expectedContractKeys = ['$schema', 'additionalNamedExports', 'behaviorContractVersion', 'compatibilityApi', 'contractVersion', 'coreApi', 'coreProperties', 'criticalBehaviors', 'entryPoints', 'libraryVersion', 'moduleCount', 'modules', 'variantCapabilities'].sort();
 assert.deepEqual(Object.keys(contract).sort(), expectedContractKeys, 'feature contract top-level shape drifted');
 const expectedModuleKeys = ['attribute', 'defaultVariant', 'name', 'publicOptions', 'variants'].sort();
 const dash = (value) => value.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();

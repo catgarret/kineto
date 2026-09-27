@@ -28,7 +28,11 @@ export const DIAGNOSTIC_CODES = Object.freeze({
   // out, or setEngineSource() disabled it. Modules degrade (scroll effects use
   // their fallback, smooth scroll stays native); `detail` names the engine, the
   // reason and the modules that were waiting (docs/diagnostics-and-deprecation.md).
-  ENGINE_UNAVAILABLE: 'KT_ENGINE_UNAVAILABLE'
+  ENGINE_UNAVAILABLE: 'KT_ENGINE_UNAVAILABLE',
+  // An on-demand module (registered with `Kineto.registerLazy()`, e.g. by the
+  // `@dong-gri/kineto/auto` entry) could not be imported — a chunk failed to
+  // download or did not export a module. Its markup keeps its static content.
+  MODULE_LOAD_FAILED: 'KT_MODULE_LOAD_FAILED'
 });
 
 export function createDiagnostic({ code, module = 'core', phase = 'runtime', recoverable = false, cause, detail } = {}) {

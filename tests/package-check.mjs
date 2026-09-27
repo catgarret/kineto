@@ -18,13 +18,19 @@ for (const path of required) await access(new URL(`../${path}`, import.meta.url)
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 // The module count comes from the feature contract, never a literal here.
 const { moduleCount } = JSON.parse(await readFile(new URL('../kineto.features.json', import.meta.url), 'utf8'));
-assert.equal(packageJson.module, './dist/kineto.min.js');
+// The default entry is dist/kineto.default.js over the full runtime; `/all` is
+// the full runtime itself; `require` of either gets the UMD build with .d.cts
+// declarations. The whole map is also checked against the contract by
+// tests/entry-points.mjs.
+assert.equal(packageJson.module, './dist/kineto.default.js');
 assert.equal(packageJson.browser, './dist/kineto.umd.cjs');
-assert.equal(packageJson.exports['.'].import, './dist/kineto.min.js');
-assert.equal(packageJson.exports['.'].require, './dist/kineto.umd.cjs');
+assert.deepEqual(packageJson.exports['.'].import, { types: './types/default.d.ts', default: './dist/kineto.default.js' });
+assert.deepEqual(packageJson.exports['.'].require, { types: './types/index.d.cts', default: './dist/kineto.umd.cjs' });
+assert.deepEqual(packageJson.exports['./all'].import, { types: './types/all.d.ts', default: './dist/kineto.min.js' });
+assert.deepEqual(packageJson.exports['./all'].require, { types: './types/index.d.cts', default: './dist/kineto.umd.cjs' });
+assert.deepEqual(packageJson.exports['./auto'], { types: './types/auto.d.ts', default: './dist/modular/auto.js' });
 assert.equal(packageJson.exports['./style.css'], './dist/kineto.min.css');
 assert.equal(packageJson.types, './types/index.d.ts');
-assert.equal(packageJson.exports['.'].types, './types/index.d.ts');
 assert.equal(packageJson.exports['./core'].types, './types/core.d.ts');
 assert.equal(packageJson.exports['./core'].default, './dist/modular/core.js');
 assert.equal(packageJson.exports['./states'].types, './types/states.d.ts');
@@ -39,7 +45,7 @@ assert.equal(packageJson.exports['./jquery'].types, './types/jquery.d.ts');
 assert.equal(packageJson.exports['./package.json'], './package.json');
 assert.ok(!packageJson.dependencies?.[packageJson.name], 'package must not depend on itself');
 
-for (const declaration of ['index', 'core', 'states', 'presence', 'module', 'react', 'vue', 'jquery']) {
+for (const declaration of ['index', 'default', 'all', 'auto', 'core', 'states', 'presence', 'module', 'react', 'vue', 'jquery']) {
   await access(new URL(`../types/${declaration}.d.ts`, import.meta.url));
 }
 
@@ -48,6 +54,15 @@ assert.equal(esm.default.version, packageJson.version);
 assert.equal(Object.keys(esm.default.registry).length, moduleCount);
 assert.equal(typeof esm.lazy, 'function');
 assert.equal(typeof esm.scrollSequence, 'function');
+const all = await import('@dong-gri/kineto/all');
+assert.equal(all.default, esm.default, 'the default entry and /all are one Kineto instance');
+assert.equal(typeof all.lazy, 'function', '/all keeps the named factories');
+
+const auto = (await import('@dong-gri/kineto/auto')).default;
+assert.equal(Object.keys(auto.registry).length, 0, 'the auto entry registers nothing up front');
+await auto.loadModules('slider');
+assert.deepEqual(Object.keys(auto.registry), ['slider'], 'loadModules() imports exactly the module asked for');
+auto.unregister('slider');
 
 const modularCore = (await import('@dong-gri/kineto/core')).default;
 const modularStates = (await import('@dong-gri/kineto/states')).default;
@@ -71,14 +86,16 @@ assert.equal(typeof commonJs.autoInit, 'function');
 
 for (const adapter of ['react', 'vue', 'jquery']) {
   const source = await readFile(new URL(`../src/adapters/${adapter}.js`, import.meta.url), 'utf8');
-  assert.match(source, /from ['"]@dong-gri\/kineto['"]/, `${adapter} adapter must resolve the packaged core`);
+  // Adapters take the full runtime explicitly, so their users never see the
+  // default-entry deprecation and behave exactly as before.
+  assert.match(source, /from ['"]@dong-gri\/kineto\/all['"]/, `${adapter} adapter must resolve the packaged full runtime (@dong-gri/kineto/all)`);
 }
 
 // Entry points that do their work ON IMPORT must be declared side-effectful, or
 // a bundler drops a bare `import '@dong-gri/kineto/jquery'` and the plugin is
 // never installed: the jQuery adapter installs itself on window.jQuery, and
 // the UMD builds assign window.Kineto.
-for (const file of ['./src/adapters/jquery.js', './dist/kineto.umd.js', './dist/kineto.umd.min.js', './dist/kineto.umd.cjs']) {
+for (const file of ['./src/adapters/jquery.js', './dist/kineto.umd.js', './dist/kineto.umd.min.js', './dist/kineto.umd.cjs', './dist/kineto.default.js', './dist/kineto.min.js', './dist/modular/auto.js']) {
   assert.ok(packageJson.sideEffects.includes(file), `package.json sideEffects must list ${file}`);
 }
 assert.ok(packageJson.sideEffects.includes('**/*.css'), 'stylesheets stay side-effectful');

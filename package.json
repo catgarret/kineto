@@ -37,20 +37,52 @@
     "access": "public"
   },
   "main": "./dist/kineto.umd.cjs",
-  "module": "./dist/kineto.min.js",
+  "module": "./dist/kineto.default.js",
   "browser": "./dist/kineto.umd.cjs",
   "types": "./types/index.d.ts",
   "unpkg": "./dist/kineto.umd.min.js",
   "jsdelivr": "./dist/kineto.umd.min.js",
   "exports": {
     ".": {
+      "import": {
+        "types": "./types/default.d.ts",
+        "default": "./dist/kineto.default.js"
+      },
+      "require": {
+        "types": "./types/index.d.cts",
+        "default": "./dist/kineto.umd.cjs"
+      },
+      "default": {
+        "types": "./types/default.d.ts",
+        "default": "./dist/kineto.default.js"
+      }
+    },
+    "./all": {
+      "import": {
+        "types": "./types/all.d.ts",
+        "default": "./dist/kineto.min.js"
+      },
+      "require": {
+        "types": "./types/index.d.cts",
+        "default": "./dist/kineto.umd.cjs"
+      },
+      "default": {
+        "types": "./types/all.d.ts",
+        "default": "./dist/kineto.min.js"
+      }
+    },
+    "./auto": {
+      "types": "./types/auto.d.ts",
+      "default": "./dist/modular/auto.js"
+    },
+    "./min": {
       "types": "./types/index.d.ts",
-      "import": "./dist/kineto.min.js",
-      "require": "./dist/kineto.umd.cjs",
       "default": "./dist/kineto.min.js"
     },
-    "./min": "./dist/kineto.min.js",
-    "./umd": "./dist/kineto.umd.min.js",
+    "./umd": {
+      "types": "./types/index.d.ts",
+      "default": "./dist/kineto.umd.min.js"
+    },
     "./core": {
       "types": "./types/core.d.ts",
       "default": "./dist/modular/core.js"
@@ -84,6 +116,7 @@
   },
   "files": [
     "dist/kineto.min.js",
+    "dist/kineto.default.js",
     "dist/kineto.umd.cjs",
     "dist/kineto.umd.min.js",
     "dist/kineto.min.css",
@@ -94,6 +127,9 @@
   ],
   "sideEffects": [
     "**/*.css",
+    "./dist/kineto.default.js",
+    "./dist/kineto.min.js",
+    "./dist/modular/auto.js",
     "./src/adapters/jquery.js",
     "./dist/kineto.umd.js",
     "./dist/kineto.umd.min.js",
@@ -106,7 +142,8 @@
     "build:umd": "vite build --config vite.config.umd.js && node scripts/copy-umd.mjs",
     "build:min": "node scripts/build-min.mjs",
     "build:modular": "node scripts/build-modular.mjs",
-    "build": "npm run build:esm && npm run build:umd && npm run build:min && npm run build:modular && npm run derive:variant-options && npm run sync:options && npm run catalog:variants && npm run demo:cdn && npm run integrations:build",
+    "build:loaders": "node scripts/generate-module-loaders.mjs",
+    "build": "npm run build:loaders && npm run build:esm && npm run build:umd && npm run build:min && npm run build:modular && npm run derive:variant-options && npm run sync:options && npm run catalog:variants && npm run demo:cdn && npm run integrations:build",
     "integrations:build": "node scripts/generate-integrations.mjs && node scripts/build-registry.mjs && node scripts/build-mcp.mjs",
     "integrations:check": "node scripts/generate-integrations.mjs --check && node scripts/build-registry.mjs --check && node scripts/build-mcp.mjs --check",
     "demo:cdn": "node scripts/build-demo-cdn.mjs",
@@ -134,9 +171,9 @@
     "test:size": "node scripts/bundle-size.mjs --check",
     "size": "node scripts/bundle-size.mjs",
     "size:md": "node scripts/bundle-size.mjs --md",
-    "test:node": "npm run test:utils && npm run test:diagnostics && npm run test:states && npm run test:observe && npm run test:presence && npm run test:contract && npm run test:requirements && npm run test:docs && npm run test:docs-navigation && npm run test:roadmap-readiness && npm run test:readiness-gates && npm run test:readiness-evidence && npm run test:lockfile-boundary && npm run test:supply-chain-automation && npm run test:module-metadata && npm run test:module-status && npm run test:taxonomy && npm run test:mobile-device-manifest && npm run test:package && npm run test:license && npm run test:types && npm run test:package-size && npm run test:package-tarball && npm run test:consumer-bundles && npm run test:framework && npm run test:integrations && npm run test:mcp && npm run test:parity && npm run test:structure && npm run test:copy && npm run test:lazy && npm run test:options && npm run test:demo-controls && npm run test:variants && npm run test:help && npm run test:inline && npm run test:defaults && npm run test:variant-options && npm run test:variant-distinctness && npm run test:variant-compare && npm run test:easings && npm run test:reduced && npm run test:update && npm run test:canvas-effect && npm run test:scroll-velocity && npm run test:audit && npm run test:leak && npm run test:perf && npm run test:activation && npm run test:deps && npm run test:engine && npm run test:sequence-sources && npm run test:control-labels && npm run test:regressions && npm run test:cursor-click-media && npm run test:site && npm run test:live-site-script && npm run test:release && npm run test:size",
+    "test:node": "npm run test:utils && npm run test:diagnostics && npm run test:states && npm run test:observe && npm run test:auto-entry && npm run test:module-loaders && npm run test:presence && npm run test:contract && npm run test:requirements && npm run test:docs && npm run test:docs-navigation && npm run test:roadmap-readiness && npm run test:readiness-gates && npm run test:readiness-evidence && npm run test:lockfile-boundary && npm run test:supply-chain-automation && npm run test:module-metadata && npm run test:module-status && npm run test:taxonomy && npm run test:mobile-device-manifest && npm run test:package && npm run test:entry-points && npm run test:license && npm run test:package-lint && npm run test:types && npm run test:package-size && npm run test:package-tarball && npm run test:consumer-bundles && npm run test:framework && npm run test:integrations && npm run test:mcp && npm run test:parity && npm run test:structure && npm run test:copy && npm run test:lazy && npm run test:options && npm run test:demo-controls && npm run test:variants && npm run test:help && npm run test:inline && npm run test:defaults && npm run test:variant-options && npm run test:variant-distinctness && npm run test:variant-compare && npm run test:easings && npm run test:reduced && npm run test:update && npm run test:canvas-effect && npm run test:scroll-velocity && npm run test:audit && npm run test:leak && npm run test:perf && npm run test:activation && npm run test:deps && npm run test:engine && npm run test:sequence-sources && npm run test:control-labels && npm run test:regressions && npm run test:cursor-click-media && npm run test:site && npm run test:live-site-script && npm run test:release && npm run test:size",
     "test:node:lane": "node scripts/run-lane.mjs test:node",
-    "test:release-package": "npm run test:package && npm run test:license && npm run test:types && npm run test:package-size && npm run test:package-tarball && npm run test:size && npm run test:release",
+    "test:release-package": "npm run test:package && npm run test:entry-points && npm run test:license && npm run test:package-lint && npm run test:types && npm run test:package-size && npm run test:package-tarball && npm run test:size && npm run test:release",
     "test:all": "npm run lint && npm run build && npm run test:node:lane && npm run test:demo && npm run test:browser:lane && npm pack --dry-run",
     "ci": "npm run test:all",
     "verify": "npm run test:all && npm run audit:lockfiles",
@@ -200,7 +237,11 @@
     "test:canvas-effect": "node tests/canvas-effect.mjs",
     "test:scroll-velocity": "node tests/scroll-velocity.mjs",
     "docs:module-cost": "node scripts/module-cost.mjs --write",
-    "test:license": "node tests/license.mjs"
+    "test:module-loaders": "node scripts/generate-module-loaders.mjs --check",
+    "test:entry-points": "node tests/entry-points.mjs",
+    "test:auto-entry": "node tests/auto-entry.mjs",
+    "test:license": "node tests/license.mjs",
+    "test:package-lint": "node scripts/check-package-lint.mjs"
   },
   "author": {
     "name": "dongri",
@@ -233,12 +274,14 @@
     }
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "eslint": "^10.10.0",
     "gsap": "^3.15.0",
     "jsdom": "^29.1.1",
     "lenis": "^1.3.26",
     "playwright": "^1.62.1",
     "playwright-core": "^1.62.1",
+    "publint": "^0.3.24",
     "typescript": "^6.0.3",
     "vite": "^8.2.2"
   },

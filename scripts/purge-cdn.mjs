@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 export const PURGE_FILES = Object.freeze([
   'kineto.min.js',
+  // The default ESM entry (0.13+) — jsDelivr's `/npm/@dong-gri/kineto/+esm`.
+  'kineto.default.js',
   'kineto.umd.cjs',
   'kineto.umd.min.js',
   'kineto.min.css'

@@ -40,7 +40,10 @@ another agent's prose report are leads to verify, not evidence of completion.
 - If useful composition would materially increase bundle size or API
   complexity, document the candidate and defer it.
 - Do not change package exports or introduce per-module entry points during a
-  patch release. Tree-shaking work requires a separate compatibility plan.
+  patch release. Entry points are declared in `kineto.features.json#entryPoints`
+  and the compatibility plan is `docs/entry-points.md` (0.13 adds `/auto` and
+  `/all`; the default entry changes meaning in 1.0). A new subpath needs the
+  contract entry, its types file, `tests/entry-points.mjs` and the package budget.
 - Delete or merge a file only after repository-wide import, build, test,
   documentation, and package-reference searches prove it is unused.
 
@@ -65,6 +68,7 @@ distinct positions, gesture-tail ownership and final-position assertions.
 - Package: `@dong-gri/kineto`
 - Current source version: `0.12.3`
 - Latest published npm version at the time of this handoff: `0.12.2` (tag `v0.12.2`, GitHub Release and demo deployed; verify with `npm view @dong-gri/kineto version`)
+  — the entry-point work in `[Unreleased]` is planned as the minor `0.13.0`
 - Public surface: 55 modules and 31 Core APIs
 - Primary branch: `main`
 - Remote: `https://github.com/catgarret/kineto`
@@ -210,6 +214,16 @@ or a tag; release approval remains separate.
   inspects the whole page calls `KINETO_BLOCKS.balanceAll()` after
   `KINETO_FOLD.openAll()`; one that reads a single far grid scrolls to it
   first (rows are balanced when a grid comes near).
+- **Entry points come from the contract** (2026-09-27): `kineto.features.json#entryPoints`
+  lists every public subpath; `tests/entry-points.mjs` holds `package.json#exports`,
+  the type files, `files` and `sideEffects` to it. The auto entry's module table
+  `src/moduleLoaders.js` is generated (`npm run build:loaders`, checked by
+  `npm run test:module-loaders`) — never edit it. The core only has a hook
+  (`moduleSource`, installed by `src/lazyModules.js` through `setModuleSource()`):
+  keep loading logic out of `src/core.js` so `/core` and `/all` do not pay for it.
+  Adapters import `@dong-gri/kineto/all`, not the deprecated default.
+- **`dist/` is build output and is not committed** (2026-09-27). Build before
+  running tests locally; CI, Pages, Release and the backup sync all build.
 - **Visual effects can wait for the viewport**: with
   `Kineto.config({ defer: true })` (the demo turns it on for touch devices)
   a module that declares `defer: true` is created only near the screen

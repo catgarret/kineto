@@ -45,12 +45,23 @@ Kineto.autoInit();
 
 `core` — около 15 КБ (gzip); сколько добавляет каждый модуль — в [`docs/module-cost.md`](../docs/module-cost.md) (медиана около 2 КБ), замеры целого приложения — в [`docs/consumer-bundle-size.md`](../docs/consumer-bundle-size.md). Атрибут `data-kt-*` незарегистрированного модуля ничего не делает — это ожидаемо.
 
+### Сначала разметка: `auto` (0.13.0+)
+
+```js
+import Kineto from '@dong-gri/kineto/auto';
+import '@dong-gri/kineto/style.css';
+
+Kineto.observe();
+```
+
+`/auto` сначала загружает только ядро, а модули — когда их впервые использует разметка; регистрировать ничего не нужно. Перед JS API дождитесь модуля: `await Kineto.loadModules('tilt')`. Точка входа по умолчанию (`@dong-gri/kineto`) в 0.13 совпадает с `/all`, а в 1.0 станет работать как `/auto` — [о точках входа](../docs/entry-points.md).
+
 ### Быстрее всего: полный пакет
 
 Точка входа по умолчанию регистрирует все модули сразу — проще всего для лендинга или прототипа, но это полный бандл (около 169 КБ gzip).
 
 ```js
-import Kineto from '@dong-gri/kineto';
+import Kineto from '@dong-gri/kineto/all';
 import '@dong-gri/kineto/style.css';
 
 Kineto.autoInit();
