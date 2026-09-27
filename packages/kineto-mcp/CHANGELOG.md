@@ -7,9 +7,13 @@ names the Kineto contract version its bundled copies were generated from.
 
 ### English
 
+- The package ships the MIT `LICENSE` and uses the same `author` as `@dong-gri/kineto`.
+
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
+
+- 패키지에 MIT `LICENSE`를 싣고 `@dong-gri/kineto`와 같은 `author`를 씁니다.
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 

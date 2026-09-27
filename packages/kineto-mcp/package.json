@@ -3,7 +3,11 @@
   "version": "0.1.0",
   "description": "MCP server that lets coding agents (Claude Code, Cursor, Codex, Figma MCP flows) pick, configure and validate Kineto motion modules from the real feature contract instead of guessing.",
   "license": "MIT",
-  "author": "dongri <official@dongri.me>",
+  "author": {
+    "name": "dongri",
+    "email": "official@dongri.me",
+    "url": "https://dongri.me"
+  },
   "type": "module",
   "bin": {
     "kineto-mcp": "bin/kineto-mcp.mjs"
