@@ -172,6 +172,15 @@ has been tested against current main.
 The publish step is idempotent: a workflow retry detects an already published
 version and skips the duplicate npm publish.
 
+After the release, confirm all three sources agree before reporting success:
+`npm view @dong-gri/kineto version`, the annotated tag (`git ls-remote --tags
+origin v<version>`), and `package.json`. Then update the one line in
+`docs/AI-HANDOFF.md` that records the last verified publication
+(`- Latest published npm version …`). `release:prepare` deliberately leaves
+that line alone — preparing a version is not evidence that npm shipped it — so
+it only changes once the published version has been seen. It stayed at 0.10.0
+through three later publications because nothing named this step.
+
 ## Releasing the MCP server (`@dong-gri/kineto-mcp`)
 
 `packages/kineto-mcp` is a second npm package released from the same `main`
