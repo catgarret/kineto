@@ -388,6 +388,31 @@ await check('tilt-gyro-after-pause', async () => {
 });
 await clearStage();
 
+await check('mouse-parallax-gyro-after-pause', async () => {
+  const transform = await page.evaluate(async () => {
+    const stage = document.getElementById('stage');
+    stage.innerHTML = '<div id="mp" class="box"><span data-kt-mouse-speed="1">layer</span></div>';
+    // A phone: touch, and an orientation API without a permission gate.
+    const realOrientation = window.DeviceOrientationEvent;
+    window.ontouchstart = null;
+    window.DeviceOrientationEvent = class FakeOrientationEvent extends Event {};
+    const instance = window.Kineto.create('mouseParallax', document.getElementById('mp'), { smoothing: 1 });
+    // Paused when the permission arrives, resumed later.
+    instance.pause();
+    await window.__wait(30);
+    instance.resume();
+    window.dispatchEvent(Object.assign(new Event('deviceorientation'), { gamma: 20, beta: 20 }));
+    await window.__wait(200);
+    const value = document.querySelector('#mp span').style.transform;
+    instance.destroy();
+    delete window.ontouchstart;
+    window.DeviceOrientationEvent = realOrientation;
+    return value;
+  });
+  assert.match(transform, /translate3d\(-?[1-9]/, `a Mouse Parallax paused when the gyro permission arrived must still follow the gyro ("${transform}")`);
+});
+await clearStage();
+
 await check('lenis-prevent', async () => {
   const result = await page.evaluate(async () => {
     window.Lenis = class FakeLenis {
