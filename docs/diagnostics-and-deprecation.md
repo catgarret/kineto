@@ -8,7 +8,7 @@
 |---|---|---|
 | public error code | 구현 | `Kineto.diagnosticCodes`와 `Kineto.diagnostics.create()`가 `KT_*` 코드와 공통 shape를 제공합니다. |
 | opt-in debug output | 구현 | `Kineto.config({ debug: true, debugSink })` 또는 `Kineto.diagnostics.subscribe()`로 명시적으로 켭니다. 기본값은 비활성입니다. |
-| deprecated public API | 1건 | `data-kt-lazy="dither|ascii|halftone"` (v0.11.0에서 Stylize로 이관, 한 minor 유예) |
+| deprecated public API | 2건 | `data-kt-lazy="dither|ascii|halftone"` (v0.11.0에서 Stylize로 이관, 한 minor 유예) · 기본 엔트리 `@dong-gri/kineto`의 의미(v0.13.0, 1.0에서 `/auto`로) |
 | migration fixture | 구현 | `KT_DEPRECATED` 진단과 아래 migration 예제, `tests/lazy-stylized-media.mjs`의 alias 검사 |
 
 ## 제안하는 오류 shape
@@ -115,7 +115,36 @@ URL, 서버 응답을 자동 수집하지 않으며, 최근 50개 이벤트만 o
 진단 API는 Core와 어댑터가 공유하는 sink·shape만 제공하며, 어댑터가 임의로
 다른 오류 의미를 만들지 않습니다.
 
+### `KT_MODULE_LOAD_FAILED` — 필요할 때 불러오는 모듈을 가져오지 못한 경우
+
+`@dong-gri/kineto/auto`(또는 `Kineto.registerLazy()`)로 이름만 알려 둔 모듈을 마크업이나
+`loadModules()`가 요청했는데 import가 실패한 경우입니다(청크 다운로드 실패, importer가 모듈을
+돌려주지 않음). 마크업은 정적 상태로 남고 preload veil은 풀립니다. 같은 이름은 이후 scan에서
+다시 시도하지 않으며, `Kineto.loadModules(name)`이 명시적으로 재시도합니다. 콘솔 경고는 항상
+한 번 나가고(실제 실패이므로), 진단 이벤트는 다른 진단과 같이 opt-in입니다.
+
+```js
+// { code: 'KT_MODULE_LOAD_FAILED', module: 'tilt', phase: 'register', recoverable: true, cause: Error }
+```
+
 ## 현재 deprecated 목록
+
+### 기본 엔트리 `@dong-gri/kineto` → `@dong-gri/kineto/auto` 또는 `@dong-gri/kineto/all`
+
+v0.13.0부터 기본 엔트리의 **의미**가 deprecated입니다. 0.13에서는 여전히 전체 런타임이고
+`@dong-gri/kineto/all`과 같은 파일·같은 인스턴스이므로 동작은 그대로입니다. 1.0에서 기본
+엔트리는 필요할 때 모듈을 불러오는 코어(`/auto`)가 됩니다. 대체 경로(`/auto`, `/all`)와
+migration 표는 [entry-points.md](entry-points.md)에 있습니다.
+
+- 진단: `debug`/`debugSink`를 켠 페이지에만, 첫 `config()`/`scan()` 때 한 번.
+  ```js
+  // { code: 'KT_DEPRECATED', module: 'core', phase: 'runtime', recoverable: true,
+  //   detail: { entry: '@dong-gri/kineto', replacement: ['@dong-gri/kineto/auto', '@dong-gri/kineto/all'],
+  //             becomes: '@dong-gri/kineto/auto', changesIn: '1.0.0' } }
+  ```
+- TypeScript: `types/default.d.ts`의 기본 export에 `@deprecated`.
+- 원본: `kineto.features.json#entryPoints["."].deprecated` — 문구·대체 경로는 여기서 생성됩니다.
+
 
 ### `data-kt-lazy="dither|ascii|halftone"` → `data-kt-stylize`
 

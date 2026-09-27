@@ -1,5 +1,5 @@
 import { Children, createContext, createElement, forwardRef, useContext, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import Kineto from '@dong-gri/kineto';
+import Kineto from '@dong-gri/kineto/all';
 import presence from '@dong-gri/kineto/presence';
 
 const PresenceParentContext = createContext(null);

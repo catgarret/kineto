@@ -84,12 +84,23 @@ Kineto.autoInit();
 
 `core`는 약 15 KB(gzip)이고, 모듈별 추가 비용은 [`docs/module-cost.md`](../docs/module-cost.md)(중앙값 약 2 KB), 앱 전체 측정은 [`docs/consumer-bundle-size.md`](../docs/consumer-bundle-size.md)에 있습니다. 등록하지 않은 모듈의 `data-kt-*` 속성은 동작하지 않는 것이 정상입니다.
 
+### 마크업 우선: `auto` (0.13.0+)
+
+```js
+import Kineto from '@dong-gri/kineto/auto';
+import '@dong-gri/kineto/style.css';
+
+Kineto.observe();
+```
+
+`/auto`는 코어만 먼저 받고 마크업이 쓰는 모듈만 그때 불러옵니다. 등록할 필요가 없습니다. JS API는 `await Kineto.loadModules('tilt')` 뒤에 쓰세요. 기본 엔트리(`@dong-gri/kineto`)는 0.13에서는 `/all`과 같고 1.0에서 `/auto`처럼 바뀝니다 — [엔트리 안내](../docs/entry-points.md).
+
 ### 가장 빠른 시작: 전체 번들
 
 기본 엔트리는 모든 모듈을 한 번에 등록합니다. 랜딩 페이지·프로토타입에 가장 간단하지만 전체 번들(약 169 KB gzip)을 받습니다.
 
 ```js
-import Kineto from '@dong-gri/kineto';
+import Kineto from '@dong-gri/kineto/all';
 import '@dong-gri/kineto/style.css';
 
 Kineto.autoInit();

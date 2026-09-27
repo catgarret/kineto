@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "measure": "node measure.mjs --check",
-    "measure:rolldown": "node measure-rolldown.mjs",
+    "measure:rolldown": "node measure-rolldown.mjs --check",
     "write-report": "node measure.mjs --write && node measure-rolldown.mjs --write"
   },
   "dependencies": {

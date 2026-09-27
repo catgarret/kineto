@@ -7,13 +7,13 @@ names the Kineto contract version its bundled copies were generated from.
 
 ### English
 
-- The package ships the MIT `LICENSE` and uses the same `author` as `@dong-gri/kineto`.
+- The package ships the MIT `LICENSE` and uses the same `author` as `@dong-gri/kineto`. The bundled feature contract is 1.8.0 (it now lists the package entry points).
 
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
-- 패키지에 MIT `LICENSE`를 싣고 `@dong-gri/kineto`와 같은 `author`를 씁니다.
+- 패키지에 MIT `LICENSE`를 싣고 `@dong-gri/kineto`와 같은 `author`를 씁니다. 동봉한 기능 계약은 1.8.0입니다(패키지 엔트리 포인트를 담음).
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 

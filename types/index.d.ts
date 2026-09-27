@@ -122,7 +122,8 @@ export type KinetoDiagnosticCode =
   | 'KT_TRANSFORM_CONFLICT'
   | 'KT_DEPRECATED'
   | 'KT_NATIVE_FALLBACK'
-  | 'KT_ENGINE_UNAVAILABLE';
+  | 'KT_ENGINE_UNAVAILABLE'
+  | 'KT_MODULE_LOAD_FAILED';
 
 export interface KinetoDiagnostic {
   readonly code: KinetoDiagnosticCode | (string & {});
@@ -199,6 +200,28 @@ export interface KinetoPresenceController {
   readonly ssr: boolean;
   readonly childCount: number;
 }
+
+/** What `Kineto.registerLazy()` calls: a function resolving to a module or an ES module namespace with a default export. */
+export type KinetoModuleImporter = () => Promise<KinetoModule | { default: KinetoModule }>;
+
+/** Methods the `@dong-gri/kineto/auto` entry adds (see types/auto.d.ts). */
+export interface KinetoOnDemandApi {
+  /**
+   * Make a module known by name without importing it. scan()/observe() import
+   * it the first time markup uses its `data-kt-*` attribute; `loadModules()`
+   * imports it on request. `importer` is usually `() => import('./my-module.js')`.
+   */
+  registerLazy(name: string, importer: KinetoModuleImporter): KinetoOnDemand;
+  /**
+   * Import on-demand modules now (one name or a list). Without names, waits for
+   * every import already in flight. Resolves once they are registered; a failed
+   * import is reported as KT_MODULE_LOAD_FAILED and does not reject.
+   */
+  loadModules(names?: ModuleName | (string & {}) | readonly string[]): Promise<KinetoOnDemand>;
+}
+
+/** The `@dong-gri/kineto/auto` default export. */
+export type KinetoOnDemand = KinetoStatic & KinetoOnDemandApi & Record<ModuleName, KinetoFactory>;
 
 export interface KinetoStatic {
   readonly version: string;

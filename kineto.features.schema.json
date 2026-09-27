@@ -14,6 +14,7 @@
     "coreApi",
     "compatibilityApi",
     "additionalNamedExports",
+    "entryPoints",
     "criticalBehaviors"
   ],
   "properties": {
@@ -48,6 +49,33 @@
     "coreApi": { "type": "array", "items": { "type": "string" } },
     "compatibilityApi": { "type": "array", "items": { "type": "string" } },
     "additionalNamedExports": { "type": "array", "items": { "type": "string" } },
+    "entryPoints": {
+      "description": "Public package subpaths (package.json#exports minus ./style.css and ./package.json) and what each registers. package.json and the type files are checked against it.",
+      "type": "object",
+      "propertyNames": { "pattern": "^\\.(/[a-z*]+)*$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["runtime", "types", "summary"],
+        "properties": {
+          "runtime": { "enum": ["full", "on-demand", "core", "module", "addon", "adapter"] },
+          "types": { "type": "string", "pattern": "^[a-z]+$" },
+          "summary": { "type": "string", "minLength": 1 },
+          "api": { "description": "Methods this entry adds to Kineto on top of coreApi.", "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+          "deprecated": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["since", "becomes", "changesIn", "replacements"],
+            "properties": {
+              "since": { "type": "string" },
+              "becomes": { "type": "string" },
+              "changesIn": { "type": "string" },
+              "replacements": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+            }
+          }
+        }
+      }
+    },
     "criticalBehaviors": { "type": "object" }
   }
 }

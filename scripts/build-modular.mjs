@@ -15,7 +15,10 @@ const moduleNames = (await readdir(modulesDir, { withFileTypes: true }))
 const input = {
   core: new URL('src/core.js', root).pathname,
   states: new URL('src/states-entry.js', root).pathname,
-  presence: new URL('src/presence-entry.js', root).pathname
+  presence: new URL('src/presence-entry.js', root).pathname,
+  // Core + every module known by name, imported on demand (src/auto.js). Its
+  // import() calls point at the module entries below, so no module is copied.
+  auto: new URL('src/auto.js', root).pathname
 };
 moduleNames.forEach((name) => { input[`modules/${name}`] = new URL(`src/modules/${name}.js`, root).pathname; });
 
@@ -30,4 +33,4 @@ await build.write({
 });
 await build.close();
 
-console.log(`Modular ESM: core + states + presence + ${moduleNames.length} module entries.`);
+console.log(`Modular ESM: core + auto + states + presence + ${moduleNames.length} module entries.`);

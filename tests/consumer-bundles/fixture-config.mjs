@@ -54,7 +54,17 @@ export const consumerFixtures = [
   // counter/fullpage teardown): Vite measures 168.8 KB full, 172.9 KB React,
   // 174.0 KB Vue; Rolldown 168.5 / 173.1 / 174.7 KB. Same rule: each product
   // ceiling moves to the next KB over its larger measurement (169 / 174 / 175).
-  { name: 'full', entry: 'full', budget: 169, variance: { vite: 4, rolldown: 4 } },
+  { name: 'full', entry: 'full', budget: 170, variance: { vite: 4, rolldown: 4 } },
+  // 2026-09-27 (entry points, 0.13): `@dong-gri/kineto/all` is the file the
+  // default entry wraps, so it carries the same ceiling. The default entry adds
+  // the notice wrapper (+0.3 KB, default only); the core gained only the
+  // on-demand hook in scan() (+0.1 KB in every entry). With both, Rolldown
+  // measures full 169.6 KB: full and all move to the next KB (170) by the rule.
+  { name: 'all', entry: 'all', budget: 170, variance: { vite: 4, rolldown: 4 } },
+  // The on-demand entry: the budget is the FIRST download (core + the loader
+  // table + the Canvas Effect registry; Vite 19.5 KB in 4 files, Rolldown
+  // 18.0 KB); every module is its own chunk (onDemandEntries below).
+  { name: 'auto', entry: 'auto', budget: 22, variance: { rolldown: 1 } },
   { name: 'core-reveal', entry: 'core-reveal', budget: 30, variance: { rolldown: 1 } },
   { name: 'core-three', entry: 'core-three', budget: 65, variance: { rolldown: 1 } },
   { name: 'core-states', entry: 'core-states', budget: 35 },
@@ -89,17 +99,21 @@ export const consumerFixtures = [
 ];
 
 export const treeShakenEntries = [
+  'auto',
   'core-reveal',
   'core-three',
   'core-states',
   'core-presence'
 ];
 
+// Entries whose modules must be split into on-demand chunks.
+export const onDemandEntries = ['auto'];
+
 const fixtureNames = consumerFixtures.map(({ name }) => name);
 if (new Set(fixtureNames).size !== fixtureNames.length) {
   throw new Error('Consumer bundle fixture names must be unique');
 }
-treeShakenEntries.forEach((name) => {
+[...treeShakenEntries, ...onDemandEntries].forEach((name) => {
   if (!fixtureNames.includes(name)) throw new Error(`Unknown tree-shaking fixture: ${name}`);
 });
 

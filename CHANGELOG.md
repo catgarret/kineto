@@ -4,15 +4,21 @@
 
 ### English
 
+- **Entry points (toward 1.0).** New `@dong-gri/kineto/auto`: the core first, every module known by name and imported the first time markup uses it (one chunk per module; all 55 `data-kt-*` modules keep working). `Kineto.loadModules(names?)` waits for modules before the JS API, `Kineto.registerLazy(name, importer)` adds your own on-demand modules. New `@dong-gri/kineto/all`: the full runtime, explicitly. The default `@dong-gri/kineto` is still the full runtime (same file and instance as `/all`), but its meaning is deprecated: in 1.0 it becomes the on-demand core. With diagnostics on it reports `KT_DEPRECATED` once; TypeScript marks the default export `@deprecated`. A failed on-demand import is reported as `KT_MODULE_LOAD_FAILED`, leaves the markup static and is not retried by later scans. The React, Vue and jQuery adapters import `/all`, so their users change nothing. Guide: `docs/entry-points.md`. Entry points are declared in `kineto.features.json#entryPoints` and checked against `package.json`, the types and the build.
 - Package metadata: `LICENSE` is now the verbatim MIT text with the owner's copyright (the old copyright holder and an appended third-party paragraph made GitHub report "Other (NOASSERTION)" while README and `package.json` said MIT); the third-party note moved to the README. Both packages share one `author`, the MCP package ships the same LICENSE, and the npm description no longer carries a module count (it said 53). Gate: `tests/license.mjs`.
+- Package-consumer lint: `npm run test:package-lint` runs `publint --strict` and arethetypeswrong on the packed tarball (Node and release-package lanes); findings that are true by design (TypeScript's legacy node10 resolution, `require()` of the ESM-only subpaths, the script-tag `./umd` file) are allowed by shape only. `require('@dong-gri/kineto')` and `require('@dong-gri/kineto/all')` now get CommonJS declarations (`types/index.d.cts`) instead of ESM ones.
 - `dist/` is no longer committed. Every workflow already builds the commit it tests; the committed copy hid size regressions and conflicted in every merge. Run `npm run build` after cloning.
+- `docs/consumer-bundle-size.md` is checked in CI: rows and budgets must match the fixture matrix and each size must be within its runner variance + 0.5 KB of a fresh measurement (it had drifted by 20 KB). Measurements now report the first download separately from on-demand chunks, with new `all` and `auto` rows.
 
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
+- **엔트리 포인트(1.0 준비).** 새 `@dong-gri/kineto/auto`: 코어만 먼저 받고, 모든 모듈을 이름으로 알고 있다가 마크업이 처음 쓸 때 import합니다(모듈마다 청크 하나, `data-kt-*` 55개 모두 그대로 동작). JS API 전에는 `Kineto.loadModules(names?)`로 기다리고, `Kineto.registerLazy(name, importer)`로 직접 만든 모듈도 필요할 때 불러올 수 있습니다. 새 `@dong-gri/kineto/all`: 전체 런타임을 명시적으로. 기본 `@dong-gri/kineto`는 여전히 전체 런타임(`/all`과 같은 파일·같은 인스턴스)이지만 의미가 deprecated입니다 — 1.0에서 필요할 때 불러오는 코어가 됩니다. 진단을 켜면 `KT_DEPRECATED`를 한 번 보내고, TypeScript에서는 기본 export가 `@deprecated`로 보입니다. 필요할 때 불러오기가 실패하면 `KT_MODULE_LOAD_FAILED`로 알리고 마크업은 정적 상태로 두며, 이후 scan은 다시 시도하지 않습니다. React·Vue·jQuery 어댑터는 `/all`을 가져오므로 사용자는 바꿀 것이 없습니다. 안내: `docs/entry-points.md`. 엔트리는 `kineto.features.json#entryPoints`에 선언되고 `package.json`·타입·빌드와 대조됩니다.
 - 패키지 메타데이터: `LICENSE`를 소유자 저작권이 적힌 MIT 원문 그대로로 바꿨습니다(예전 저작권자와 덧붙인 서드파티 문단 때문에 README·`package.json`은 MIT인데 GitHub는 "Other (NOASSERTION)"으로 표시). 서드파티 안내는 README로 옮겼습니다. 두 패키지가 같은 `author`를 쓰고, MCP 패키지도 같은 LICENSE를 싣고, npm 설명에서 모듈 수(53으로 남아 있었음)를 뺐습니다. 게이트: `tests/license.mjs`.
+- 패키지 소비자 검사: `npm run test:package-lint`가 패킹한 tarball에 `publint --strict`와 arethetypeswrong을 돌립니다(Node·release-package 레인). 설계상 맞는 결과(TypeScript의 옛 node10 해석, ESM 전용 하위 경로의 `require()`, script 태그용 `./umd`)는 모양으로만 허용합니다. `require('@dong-gri/kineto')`·`require('@dong-gri/kineto/all')`은 이제 ESM 선언 대신 CommonJS 선언(`types/index.d.cts`)을 받습니다.
 - `dist/`를 더 이상 커밋하지 않습니다. 모든 워크플로우가 이미 검사하는 커밋을 직접 빌드하며, 커밋된 사본은 용량 회귀를 가리고 병합마다 충돌했습니다. clone 뒤 `npm run build`를 실행하세요.
+- `docs/consumer-bundle-size.md`를 CI가 검사합니다: 행과 예산은 fixture 표와 같아야 하고, 크기는 새 측정값과 runner 편차 + 0.5 KB 안이어야 합니다(20 KB 어긋나 있었음). 측정은 첫 다운로드와 필요할 때 받는 청크를 나눠 보고하고, `all`·`auto` 행이 추가됐습니다.
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 

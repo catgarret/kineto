@@ -125,6 +125,13 @@ push 전 `npm run verify:push`(선택형 pre-push hook), 목록은 `package.json
    사용자는 전체(약 167KB gzip)를 냅니다. `@dong-gri/kineto/core` + 모듈별 import는 이미
    있으니, 문서·레시피·MCP 스니펫의 **기본값**을 모듈형으로 바꾸는 것이 먼저이고 코드
    변경은 작습니다.
+   **진행(2026-09-27, 0.13 예정):** `@dong-gri/kineto/auto`(코어 + 모듈별 on-demand import,
+   `data-kt-*` 55개 그대로 동작)와 `@dong-gri/kineto/all`(전체)을 추가하고, 기본 엔트리는
+   0.13에서 `/all`과 같은 인스턴스로 두되 의미를 deprecated로 표시(1.0에서 `/auto`). 엔트리는
+   `kineto.features.json#entryPoints`가 원본이고 `docs/entry-points.md`가 migration 안내입니다.
+   남은 것: 연동 스니펫·shadcn 레지스트리·MCP의 기본 import를 `/auto`로 옮기기 — **npm에
+   0.13이 게시된 뒤에** 합니다(데모 사이트는 main CI 초록이면 먼저 배포되므로, 그 전에
+   레지스트리가 새 경로를 가리키면 0.12.2 사용자의 설치가 깨집니다).
 4. **어댑터를 `/core` 위로** — React/Vue 어댑터가 전체 패키지를 가져와 171~173KB가
    됩니다. 어댑터는 코어와 사용하는 모듈만 받아야 합니다(브레이킹이므로 다음 minor에서
    병행 제공 후 전환).

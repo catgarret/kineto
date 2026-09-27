@@ -1,5 +1,8 @@
 import Kineto, { reveal, slider, states, defineCanvasEffect, listCanvasEffects, type KinetoInstance, type KinetoModule, type KinetoDiagnostic, type KinetoObserverHandle } from '@dong-gri/kineto';
 import ModularCore from '@dong-gri/kineto/core';
+import AllKineto, { reveal as allReveal, type KinetoOptions } from '@dong-gri/kineto/all';
+import AutoKineto from '@dong-gri/kineto/auto';
+import type { KinetoModule as AutoModuleType } from '@dong-gri/kineto/auto';
 import sliderModule from '@dong-gri/kineto/modules/slider';
 import modularPresence from '@dong-gri/kineto/presence';
 
@@ -54,3 +57,17 @@ void effectNames;
 
 void result;
 void diagnostic;
+
+// Entry points (docs/entry-points.md): `/all` is the full runtime with named
+// factories; `/auto` adds registerLazy/loadModules and re-exports types only.
+const allOptions: KinetoOptions = { preset: 'fade-up' };
+allReveal('.card', allOptions);
+AllKineto.autoInit();
+const onDemand: AutoModuleType = { create: (el: Element) => ({ el, destroy() {} }) as unknown as KinetoInstance };
+AutoKineto.registerLazy('customEffect', async () => ({ default: onDemand }));
+AutoKineto.registerLazy('otherEffect', async () => onDemand);
+void AutoKineto.loadModules('tilt').then((loaded) => loaded.tilt('.card'));
+void AutoKineto.loadModules(['reveal', 'customEffect']);
+void AutoKineto.loadModules();
+// @ts-expect-error — the full runtime does not have the auto-only API.
+AllKineto.loadModules('tilt');

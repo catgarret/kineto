@@ -218,7 +218,9 @@ const BUDGET = {
   // → 650 packed; 2068.6 → 2090 unpacked). The file count stays exact: a new
   // shipped file is always a decision. When a change needs more than the
   // headroom, set the ceiling to the new measurement + ~1% and say why here.
-  packedKb: 650,
+  // 2026-09-27 (entry points, 0.13): the seven new files listed under `files`
+  // measure 649.5 KB packed locally; + 1.5 KB runner margin + ~1% → 657.
+  packedKb: 657,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -259,8 +261,14 @@ const BUDGET = {
   // frameClock time-based easing, numeric `ease` parsing, rebased on the
   // remote Lightbox toolbar fix): 2067.8 KB, same 81 files.
   // Headroom policy (see packedKb): 2068.6 KB → 2090.
-  unpackedKb: 2090,
-  files: 81
+  // 2026-09-27 (entry points, 0.13): seven new shipped files, each a decision —
+  // dist/kineto.default.js (the default entry over the full runtime),
+  // dist/modular/auto.js and its shared Canvas Effect registry chunk (the
+  // on-demand entry), types/default.d.ts / all.d.ts / auto.d.ts and
+  // types/index.d.cts (CommonJS declarations for `require`). Measures 649.5 KB
+  // packed / 2091.6 KB unpacked on 88 files; unpacked keeps ~1% headroom → 2112.
+  unpackedKb: 2112,
+  files: 88
 };
 
 console.log(`release package: ${packedKb.toFixed(1)} KB packed · ${unpackedKb.toFixed(1)} KB unpacked · ${files.length} files`);
@@ -286,10 +294,16 @@ const required = [
   'dist/kineto.umd.cjs',
   'dist/kineto.umd.min.js',
   'dist/modular/core.js',
+  'dist/modular/auto.js',
+  'dist/kineto.default.js',
   'dist/modular/states.js',
   'dist/modular/presence.js',
   'dist/modular/modules/slider.js',
   'types/index.d.ts',
+  'types/index.d.cts',
+  'types/default.d.ts',
+  'types/all.d.ts',
+  'types/auto.d.ts',
   'types/states.d.ts',
   'types/presence.d.ts',
   'types/core.d.ts',
