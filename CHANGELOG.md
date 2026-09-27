@@ -17,6 +17,8 @@
 - Counter's delayed work obeys teardown: native Pop wakes every character from one shared animation frame (it asked for one per glyph) and owns its completion timeout, and Clock flip/fade track their delayed callbacks, clear them before a rebuild and cancel them on destroy — a destroyed counter no longer animates restored markup or reports `onComplete` late. Gate: `tests/motion-regressions.mjs` (from PR #46).
 - Fullpage transition fallbacks have one owner: a new programmatic navigation cancels the previous settle timeout, `transitionend` cancels its fallback, and destroy clears the settle timeout and the first section-measure frame, so an older transition can no longer unlock input in the middle of a newer one. Gate: `tests/motion-regressions.mjs` (from PR #47).
 - `Kineto.observe()` cleans up only the subtrees that were removed. Any child removal used to re-check every live instance on the page; it now walks the removed element trees, and an element moved elsewhere before the batched flush keeps its instance. Gate: `tests/performance-runtime.mjs` (from PR #41). The Lightbox CSS compaction (#43, #40) and Loading Indicator preset clean-up (#44) from the same PR stack were already on `main`.
+- README (all seven languages): installation leads with `core` + only the modules you use — npm, and native ES modules straight from the CDN (`dist/modular/…`) — then the full bundle as the quickest start, then React and Vue. What each module adds on top of `core` is a new generated table, `docs/module-cost.md` (`npm run docs:module-cost`, refreshed by `release:prepare`; `core` 14.9 KB gzip, median module about 2 KB), and the whole-app report `docs/consumer-bundle-size.md` is current again. Five localized READMEs and three agent docs still said 53 modules; every "N modules" phrase is now checked against the contract.
+- Tests: `drawer-layout` waits for the selected tab and a settled sheet height instead of fixed sleeps (it flaked once in a full 2-core lane), and `states`, `slider-scroll-snap` and `glitch-wave` honour `KT_CHROME` like every other browser suite.
 
 ### 한국어
 
@@ -33,6 +35,8 @@
 - Counter 의 지연 작업이 destroy 를 따릅니다. 네이티브 Pop 은 글자마다 요청하던 애니메이션 프레임을 하나로 합쳐 모든 글자를 시작하고 완료 타이머도 소유하며, Clock flip/fade 는 지연 콜백을 추적해 재구성 전에 정리하고 destroy 에서 취소합니다. destroy 된 카운터가 복원된 마크업을 움직이거나 늦게 `onComplete` 를 부르지 않습니다. 게이트: `tests/motion-regressions.mjs`(PR #46).
 - Fullpage 전환의 대체 타이머가 최신 전환 하나에만 속합니다. 새 programmatic 이동은 이전 settle 타이머를 취소하고, `transitionend` 가 오면 대체 타이머를 지우며, destroy 는 settle 타이머와 첫 섹션 측정 프레임까지 취소합니다. 이전 전환이 새 전환 도중 입력 잠금을 풀지 못합니다. 게이트: `tests/motion-regressions.mjs`(PR #47).
 - `Kineto.observe()` 가 실제로 빠진 하위 트리만 정리합니다. 자식 하나가 빠질 때마다 페이지의 모든 인스턴스를 다시 검사하던 것을 빠진 요소 트리만 훑도록 좁혔고, 묶음 처리 전에 다른 곳으로 옮겨진 요소는 인스턴스를 유지합니다. 게이트: `tests/performance-runtime.mjs`(PR #41). 같은 PR 묶음의 Lightbox CSS 압축(#43, #40)과 Loading Indicator 프리셋 정리(#44)는 이미 `main` 에 있었습니다.
+- README(7개 언어): 설치 절이 `core` + 쓰는 모듈만으로 시작합니다 — npm, 그리고 CDN 에서 바로 쓰는 네이티브 ES 모듈(`dist/modular/…`) — 이어서 가장 빠른 시작인 전체 번들, React·Vue 순입니다. 모듈마다 `core` 위에 더해지는 크기를 생성 표 `docs/module-cost.md`(`npm run docs:module-cost`, `release:prepare` 가 갱신; `core` 14.9 KB gzip, 모듈 중앙값 약 2 KB)로 공개하고, 앱 전체 측정 `docs/consumer-bundle-size.md` 도 현재 값으로 갱신했습니다. 번역 README 5개와 에이전트 문서 3개가 아직 53개 모듈이라고 적고 있어, 이제 모든 "N개 모듈" 문구를 계약과 대조합니다.
+- 테스트: `drawer-layout` 이 고정 대기 대신 선택된 탭과 높이가 멈춘 시트를 기다립니다(2코어 전체 레인에서 한 번 흔들림). `states`·`slider-scroll-snap`·`glitch-wave` 도 다른 브라우저 테스트처럼 `KT_CHROME` 을 따릅니다.
 
 ## [0.12.2] - 2026-09-25
 
