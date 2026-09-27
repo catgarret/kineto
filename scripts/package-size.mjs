@@ -218,7 +218,9 @@ const BUDGET = {
   // → 650 packed; 2068.6 → 2090 unpacked). The file count stays exact: a new
   // shipped file is always a decision. When a change needs more than the
   // headroom, set the ceiling to the new measurement + ~1% and say why here.
-  packedKb: 650,
+  // 2026-09-27 (v0.12.3 audit fixes: accessibility, lifecycle races, resting
+  // loops across ~40 modules): 665.9 KB packed → 673 (headroom policy).
+  packedKb: 673,
   // Low-tier Reveal preset routing measures 1766.1 KB unpacked. Preserve the
   // packed ceiling and file allowlist; round only this measured source cost.
   // Terminal Glitch guards and priority-preserving owned-style restoration:
@@ -259,7 +261,8 @@ const BUDGET = {
   // frameClock time-based easing, numeric `ease` parsing, rebased on the
   // remote Lightbox toolbar fix): 2067.8 KB, same 81 files.
   // Headroom policy (see packedKb): 2068.6 KB → 2090.
-  unpackedKb: 2090,
+  // 2026-09-27 (v0.12.3 audit fixes): 2132.7 KB, same 81 files → 2154.
+  unpackedKb: 2154,
   files: 81
 };
 

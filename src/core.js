@@ -8,7 +8,7 @@
 // ensureLenis() (page global or official CDN) the first time enableSmooth() is
 // called. Smooth scroll is opt-in and off by default, so a page that never
 // enables it never fetches Lenis. See src/runtime.js for the engine loader.
-import { dash, dropEmptyAttributes, env, G, noopInstance, q, readOpts, ST, setMotionDefaults } from './utils.js';
+import { dash, dropEmptyAttributes, env, G, NATIVE_POINTER_FIELDS, noopInstance, q, readOpts, ST, setMotionDefaults } from './utils.js';
 import { setAnimationEngine, setEngineSource, getEngineSource, ensureGSAP, ensureLenis, gsapReady } from './runtime.js';
 import { createDiagnosticHub, DIAGNOSTIC_CODES } from './diagnostics.js';
 
@@ -658,6 +658,9 @@ function injectCSSFallback() {
     @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
     .kt-cursor-active, .kt-cursor-active * { cursor: none !important; }
     .kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }
+    .kt-cursor-active :is(${NATIVE_POINTER_FIELDS}), .kt-cursor-scope :is(${NATIVE_POINTER_FIELDS}),
+    .kt-cursor-active [data-kt-cursor-hide], .kt-cursor-active [data-kt-cursor-hide] *,
+    .kt-cursor-scope [data-kt-cursor-hide], .kt-cursor-scope [data-kt-cursor-hide] * { cursor: auto !important; }
     .kt-tw-caret { animation: kt-caret .8s step-end infinite; }
     .kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }
     .kt-slider-wrap { position: relative; overflow: hidden; }

@@ -1,4 +1,4 @@
-import { clamp, frameEase, lerp, numberOption } from '../utils.js';
+import { clamp, frameEase, lerp, NATIVE_POINTER_FIELDS, numberOption } from '../utils.js';
 import { createCursorClickEffects } from './cursor/clickEffects.js';
 
 // Keep the click-effect option boundary in the public module entry. Besides
@@ -43,12 +43,10 @@ function textRing(size, radius, pathId, text) {
   return svg;
 }
 
-// Where the NATIVE pointer must stay visible: the text caret of a field (a
-// custom dot hides where the insertion point goes) and a select. The stylesheet
-// has the same list (kineto.css, `.kt-cursor-active :is(...)`), and the default
-// `hiddenSelector` hides the custom cursor there, so only one pointer shows.
-const NATIVE_CURSOR_FIELDS = 'input:not([type=range],[type=checkbox],[type=radio],[type=button],[type=submit],[type=reset],[type=color],[type=file],[type=image]),'
-  + 'textarea,select,[contenteditable]:not([contenteditable=false])';
+// Where the native pointer stays visible (fields, selects): one shared list,
+// see NATIVE_POINTER_FIELDS in src/utils.js. The default `hiddenSelector`
+// hides the custom cursor there, so only one pointer shows.
+const NATIVE_CURSOR_FIELDS = NATIVE_POINTER_FIELDS;
 
 // Page-wide cursors that are running (not paused, not destroyed). They share
 // the root class that hides the native pointer, so the class goes only when

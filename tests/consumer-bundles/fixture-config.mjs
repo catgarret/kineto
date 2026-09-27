@@ -50,7 +50,12 @@ export const consumerFixtures = [
   // 167.3 KB full, 171.3 KB React, 172.5 KB Vue; Rolldown 167.0 / 171.6 /
   // 173.1 KB. Same rule: each product ceiling moves to the next KB over its
   // larger measurement (168 / 172 / 174); runner variance is unchanged.
-  { name: 'full', entry: 'full', budget: 168, variance: { vite: 4, rolldown: 4 } },
+  // 2026-09-27 (v0.12.3 audit fixes — accessibility, lifecycle races, resting
+  // loops across ~40 modules): Vite 174.2 full / 178.3 React / 179.5 Vue, Rolldown
+  // 173.9 / 178.5 / 180.1 KB gzip. Budgets move to the next KB over the larger
+  // measurement (175 / 179 / 181); runner variance and the core-only and
+  // tree-shaking budgets are unchanged.
+  { name: 'full', entry: 'full', budget: 175, variance: { vite: 4, rolldown: 4 } },
   { name: 'core-reveal', entry: 'core-reveal', budget: 30, variance: { rolldown: 1 } },
   { name: 'core-three', entry: 'core-three', budget: 65, variance: { rolldown: 1 } },
   { name: 'core-states', entry: 'core-states', budget: 35 },
@@ -65,7 +70,7 @@ export const consumerFixtures = [
   // 2026-09-20 (effect quality): the four effect rewrites measure 155.4 KiB gzip
   // in the Vite React entry. Round only this measured cost; variance unchanged.
   // See the squircle note above: Vite measures 157.5 KB in the React entry.
-  { name: 'react-adapter', entry: 'react', budget: 172, variance: { vite: 1, rolldown: 1 } },
+  { name: 'react-adapter', entry: 'react', budget: 179, variance: { vite: 1, rolldown: 1 } },
   // 2026-09-18: the Presence status subscription that keeps both adapters in
   // sync with a propagating parent measures 144.1 KB in the Vite Vue entry
   // (React 143.x stays inside its ceiling). Round the Vue product ceiling by
@@ -81,7 +86,7 @@ export const consumerFixtures = [
   // Vue measures 163.2 KiB gzip in Vite (163.8 in Rolldown, inside its own
   // variance), while full at 158.2 and React at 162.4 stay inside theirs.
   // Round only the ceiling that actually moved.
-  { name: 'vue-adapter', entry: 'vue', budget: 174, variance: { vite: 1, rolldown: 2 } }
+  { name: 'vue-adapter', entry: 'vue', budget: 181, variance: { vite: 1, rolldown: 2 } }
 ];
 
 export const treeShakenEntries = [

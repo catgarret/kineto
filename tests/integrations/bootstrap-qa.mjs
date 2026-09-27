@@ -166,15 +166,20 @@ try {
   await page.waitForFunction(() => document.querySelectorAll('#toasts .toast').length === 0, null, { timeout: 5000 });
   await page.waitForFunction((expected) => window.Kineto.instanceCount === expected, countWithToast - 1, { timeout: 5000 });
 
-  // KPI counters announce their final value and land on it after scrolling
-  // into view (the slot reel keeps its digit strip, so it is checked by its
-  // last reel digit rather than by textContent).
+  // KPI counters land on their final value after scrolling into view. A
+  // screen reader reads plain digits as they are, and split digits (aria-hidden)
+  // from one visually hidden node (`.kt-sr-only`); the painted text is the rest. The slot
+  // reel keeps its digit strip, so it is checked by its last reel digit.
   await page.evaluate(() => document.getElementById('kpi').scrollIntoView({ block: 'center' }));
   await page.waitForFunction(() => {
     const [pop, slot, plain] = document.querySelectorAll('#kpi [data-kt-counter]');
-    const labels = [pop, slot, plain].map((el) => el.getAttribute('aria-label'));
+    const painted = (el) => [...el.childNodes]
+      .filter((node) => !(node.nodeType === 1 && node.classList.contains('kt-sr-only')))
+      .map((node) => node.textContent).join('').trim();
+    // Plain text is read as it is; split digits are read from the hidden copy.
+    const spoken = (el) => el.querySelector(':scope > .kt-sr-only')?.textContent ?? el.getAttribute('aria-label') ?? painted(el);
     const reels = [...slot.querySelectorAll('.kt-counter-reel')].map((reel) => reel.lastElementChild?.textContent);
-    return labels.join('|') === '12,800|98%|42' && pop.textContent.trim() === '12,800' && plain.textContent.trim() === '42' && reels.join('') === '98';
+    return [pop, slot, plain].map(spoken).join('|') === '12,800|98%|42' && painted(pop) === '12,800' && painted(plain) === '42' && reels.join('') === '98';
   }, null, { timeout: 10000 });
 
   // 4. Global teardown releases everything Kineto created; Bootstrap components keep working.

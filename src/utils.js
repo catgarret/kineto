@@ -959,6 +959,16 @@ export function srText(el, text) {
   };
 }
 
+/**
+ * Where the NATIVE pointer must stay visible under a custom cursor: the text
+ * caret of a field (a custom dot hides where the insertion point goes) and a
+ * select. One list for the cursor module (its default `hiddenSelector`) and the
+ * core's inline fallback stylesheet; kineto.css repeats it by hand (CSS cannot
+ * import it), so change both together.
+ */
+export const NATIVE_POINTER_FIELDS = 'input:not([type=range],[type=checkbox],[type=radio],[type=button],[type=submit],[type=reset],[type=color],[type=file],[type=image]),'
+  + 'textarea,select,[contenteditable]:not([contenteditable=false])';
+
 export function parseColor(input) {
   const value = String(input).trim();
   const hex = value.match(/^#([0-9a-f]{3,8})$/i);
