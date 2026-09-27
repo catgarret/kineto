@@ -398,6 +398,35 @@ assert.equal(fullpageSections[1].scrollTop, 540, 're-entering a long section mus
 fullpage.destroy();
 fullpageEl.remove();
 
+// Programmatic Fullpage navigation can supersede a transition before its
+// transitionend/fallback fires. Only the newest fallback may remain pending,
+// otherwise an older timeout can clear the animation gate during the new move.
+const nativeSetTimeoutForFullpage = globalThis.setTimeout;
+const nativeClearTimeoutForFullpage = globalThis.clearTimeout;
+const pendingFullpageTimers = new Map();
+let nextFullpageTimer = 0;
+globalThis.setTimeout = (callback) => {
+  const id = ++nextFullpageTimer;
+  pendingFullpageTimers.set(id, callback);
+  return id;
+};
+globalThis.clearTimeout = (id) => { pendingFullpageTimers.delete(id); };
+const timerFullpageEl = document.createElement('div');
+timerFullpageEl.innerHTML = '<section>A</section><section>B</section><section>C</section>';
+document.body.appendChild(timerFullpageEl);
+const timerFullpage = fullpageModule.create(timerFullpageEl, { dots: false, duration: 0.15 });
+timerFullpage.go(1);
+assert.equal(pendingFullpageTimers.size, 1, 'first Fullpage transition must own one fallback timer');
+const firstSettleTimer = [...pendingFullpageTimers.keys()][0];
+timerFullpage.go(2);
+assert.equal(pendingFullpageTimers.size, 1, 'superseding Fullpage navigation must replace, not stack, the fallback timer');
+assert.equal(pendingFullpageTimers.has(firstSettleTimer), false, 'old Fullpage settle fallback must be cancelled');
+timerFullpage.destroy();
+assert.equal(pendingFullpageTimers.size, 0, 'Fullpage destroy must cancel the current settle fallback');
+timerFullpageEl.remove();
+globalThis.setTimeout = nativeSetTimeoutForFullpage;
+globalThis.clearTimeout = nativeClearTimeoutForFullpage;
+
 const sliderModule = (await import('../src/modules/slider.js')).default;
 const counterModule = (await import('../src/modules/counter.js')).default;
 const dateTimeModule = (await import('../src/modules/dateTime.js')).default;
@@ -755,6 +784,60 @@ const countdownSeconds = Number(countdownSecondsCounter.textContent.replace('S',
 assert.ok(countdownSeconds > 0 && countdownSeconds <= 12, 'secondsOnly must support a future until timestamp as a remaining-seconds countdown');
 countdownSecondsInstance.destroy();
 countdownSecondsCounter.remove();
+
+// Counter fallback work must be bounded and terminal on destroy. The non-GSAP
+// Pop renderer used to schedule one rAF per character plus an unowned completion
+// timeout, so teardown could still call user code after restoring author markup.
+const authoredPop = document.createElement('span');
+authoredPop.innerHTML = '<em>author</em>';
+document.body.appendChild(authoredPop);
+const nativeRaf = globalThis.requestAnimationFrame;
+const nativeCancelRaf = globalThis.cancelAnimationFrame;
+let popRafCount = 0;
+let popCompleted = 0;
+globalThis.requestAnimationFrame = (callback) => {
+  popRafCount += 1;
+  return nativeRaf(callback);
+};
+const popInstance = counterModule.create(authoredPop, {
+  mode: 'pop', to: 123456, duration: 0.06, stagger: 0.01, start: false,
+  onComplete() { popCompleted += 1; }
+});
+assert.equal(popRafCount, 1, 'native Pop must wake all characters with one shared animation frame');
+popInstance.destroy();
+await new Promise((resolve) => setTimeout(resolve, 180));
+assert.equal(popCompleted, 0, 'destroyed Pop must cancel its delayed completion callback');
+assert.equal(authoredPop.innerHTML, '<em>author</em>', 'destroyed Pop must keep restored author markup untouched');
+globalThis.requestAnimationFrame = nativeRaf;
+globalThis.cancelAnimationFrame = nativeCancelRaf;
+authoredPop.remove();
+
+// Clock flip schedules the second half of its fold after the first half starts.
+// Destroying during that gap must cancel the delayed animation instead of
+// touching detached/replaced digit nodes later.
+const clockNativeAnimate = window.HTMLElement.prototype.animate;
+let clockDestroyed = false;
+let animationsAfterClockDestroy = 0;
+window.HTMLElement.prototype.animate = function () {
+  if (clockDestroyed) animationsAfterClockDestroy += 1;
+  return { onfinish: null, oncancel: null, cancel() {}, pause() {}, play() {}, finished: Promise.resolve() };
+};
+const flipClock = document.createElement('span');
+flipClock.innerHTML = '<b>clock</b>';
+document.body.appendChild(flipClock);
+const flipClockInstance = counterModule.create(flipClock, {
+  mode: 'clock', clockStyle: 'flip', secondsOnly: true, secondsDigits: 2,
+  secondsLabel: 'S', until: new Date(Date.now() + 1250).toISOString(),
+  rollDuration: 0.4
+});
+await new Promise((resolve) => setTimeout(resolve, 320));
+clockDestroyed = true;
+flipClockInstance.destroy();
+await new Promise((resolve) => setTimeout(resolve, 360));
+assert.equal(animationsAfterClockDestroy, 0, 'destroyed flip clock must cancel delayed fold callbacks');
+assert.equal(flipClock.innerHTML, '<b>clock</b>', 'flip clock destroy must keep restored author markup untouched');
+window.HTMLElement.prototype.animate = clockNativeAnimate;
+flipClock.remove();
 
 const relativeTime = document.createElement('time');
 relativeTime.textContent = '2026년 8월 9일 10:30';
