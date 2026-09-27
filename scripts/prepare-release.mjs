@@ -111,6 +111,8 @@ fs.writeFileSync(path.join(noteDir, `v${next}.md`), releaseNote);
 run('npm', ['run', 'docs:contract']);
 run(process.execPath, [path.join(root, 'scripts', 'generate-module-metadata.mjs')]);
 run('npm', ['run', 'build']);
+// The per-module cost table records this version's numbers (docs/module-cost.md).
+run(process.execPath, [path.join(root, 'scripts', 'module-cost.mjs'), '--write']);
 run(process.execPath, [path.join(root, 'scripts', 'check-release.mjs'), `v${next}`]);
 
 console.log(`\nPrepared Kineto v${next}.`);

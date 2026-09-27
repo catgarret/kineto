@@ -86,7 +86,8 @@ This command:
 - bumps every tracked version source;
 - moves bilingual Unreleased notes into the new dated changelog section;
 - writes `.github/release-notes/v<version>.md`;
-- regenerates contract documentation and distributable builds.
+- regenerates contract documentation and distributable builds;
+- refreshes the per-module cost table `docs/module-cost.md` (`npm run docs:module-cost`).
 - checks that the npm/GitHub Release tarball contains only minimized runtime
   entry points and remains within its compressed, unpacked, and file-count
   budgets.
@@ -95,6 +96,10 @@ Preparation updates the current source labels in the QA report and AI handoff,
 but preserves the last verified npm version, historical workflow runs, dates,
 and artifact hashes. Record new publication and deployment evidence only after
 the corresponding remote operations succeed.
+
+Refresh the whole-app measurements too, so the published numbers match the
+release (needs the fixture's `npm ci`, which `npm run test:consumer-bundles`
+already does): `npm --prefix tests/consumer-bundles run write-report`.
 
 Review the result, then run:
 
