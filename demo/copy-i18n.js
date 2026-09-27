@@ -655,13 +655,13 @@ window.KINETO_COPY_I18N = {
       "Циклическое переключение элементов списка по вертикали.",
       "Scorre verticalmente gli elementi dell'elenco."
     ],
-    "호버하면 라벨이 굴러 올라가고, 벗어나면 돌아옵니다.": [
-      "The label rolls up when you hover, and returns when you move away.",
-      "ホバーするとラベルが巻き上がり、離れると元に戻ります。",
-      "当您悬停时标签会卷起，当您移开时标签会返回。",
-      "當您懸停時標籤會捲起，當您移開時標籤會返回。",
-      "Метка сворачивается при наведении курсора и возвращается, когда вы уходите.",
-      "L'etichetta si arrotola quando passi il mouse e ritorna quando ti allontani."
+    "마우스는 호버로, 터치는 탭하면 한 번 굴러간 뒤 이동합니다.": [
+      "With a mouse it rolls on hover; on touch, a tap rolls once and then follows the link.",
+      "マウスではホバーで、タッチではタップで一度ロールしてからリンク先へ移動します。",
+      "鼠标悬停即滚动；触屏点按会先滚动一次，再跳转链接。",
+      "滑鼠懸停即滾動；觸控點按會先滾動一次，再前往連結。",
+      "Мышью — при наведении; касанием — метка прокручивается один раз, затем открывается ссылка.",
+      "Con il mouse ruota al passaggio; al tocco ruota una volta e poi segue il link."
     ],
     "문구를 끊김 없이 흘리고 스크롤 방향에 반응합니다.": [
       "It flows text seamlessly and responds to scroll direction.",
