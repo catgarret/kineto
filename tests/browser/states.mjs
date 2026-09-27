@@ -16,7 +16,8 @@ const server = http.createServer((req, res) => {
 });
 await new Promise((resolve) => server.listen(0, resolve));
 const port = server.address().port;
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-gpu'] });
+// KT_CHROME points at a local Chromium when the installed Playwright revision differs (AGENTS.md).
+const browser = await chromium.launch({ headless: true, ...(process.env.KT_CHROME ? { executablePath: process.env.KT_CHROME } : {}), args: ['--no-sandbox', '--disable-gpu'] });
 try {
   const page = await browser.newPage();
   await page.setContent(`<!doctype html><script src="http://localhost:${port}/dist/kineto.umd.js"></script>`, { waitUntil: 'load' });
