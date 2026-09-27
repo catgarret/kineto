@@ -597,28 +597,21 @@
   pointer-events: auto;
 }
 
-/* The painted dot keeps its 8px size, but the button around it is a 24px
-   target (WCAG 2.5.8): padding enlarges the hit area, `background-clip`
-   paints only the content box, and a matching negative margin keeps the row
-   exactly where it was. */
 .kt-slider-dot {
-  --kt-slider-dot-hit-pad: max(0px, (24px - var(--kt-slider-dot-size)) / 2);
   -webkit-appearance: none;
   appearance: none;
   display: block;
-  box-sizing: content-box;
+  box-sizing: border-box;
   flex: none;
   min-width: var(--kt-slider-dot-size);
   max-width: var(--kt-slider-dot-size);
   min-height: 0;
   width: var(--kt-slider-dot-size);
   height: var(--kt-slider-dot-size);
-  padding: var(--kt-slider-dot-hit-pad);
-  margin: calc(var(--kt-slider-dot-hit-pad) * -1);
+  padding: 0;
   border: 0;
   border-radius: 999px;
   background: currentColor;
-  background-clip: content-box;
   opacity: var(--kt-slider-dot-opacity, .42);
   cursor: pointer;
   font-size: 0;
