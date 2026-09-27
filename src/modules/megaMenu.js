@@ -307,7 +307,9 @@ export default {
       ];
       if (!panel.id) panel.id = nextPanelId(panel);
       panel.hidden = true;
-      trg.setAttribute('aria-haspopup', 'true');
+      // A disclosure, not a menu: aria-expanded + aria-controls say it all.
+      // `aria-haspopup="true"` announced a role=menu popup that never came
+      // (the panel holds ordinary links). An authored value is left alone.
       trg.setAttribute('aria-expanded', 'false');
       trg.setAttribute('aria-controls', panel.id);
       trg.classList.add('kt-menu-trigger');
@@ -325,7 +327,6 @@ export default {
         i: li, p: panel, t: trg, a: null,
         r: restore
       };
-      const index = () => entries.indexOf(entry);
 
       const onEnter = () => { clearTimeout(closeTimer); clearTimeout(openTimer); openTimer = setTimeout(() => doOpen(entry), openDelay); };
       const onLeave = () => { clearTimeout(openTimer); clearTimeout(closeTimer); closeTimer = setTimeout(() => doClose(entry), closeDelay); };
@@ -338,15 +339,16 @@ export default {
         event.preventDefault();
         (openEntry === entry) ? doClose(entry) : doOpen(entry);
       };
+      // A link trigger keeps Enter for following the link (it used to be
+      // swallowed, so the page it names was unreachable from the keyboard);
+      // Space and ArrowDown open its panel. Other triggers open on all three.
+      const linkTrigger = trg.matches('a[href]');
       const onKey = (event) => {
-        if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+        const opens = event.key === 'ArrowDown' || event.key === ' ' || (event.key === 'Enter' && !linkTrigger);
+        if (opens) {
           event.preventDefault(); doOpen(entry); focusables(panel)[0]?.focus();
         } else if (event.key === 'Escape') {
           doClose(entry); trg.focus();
-        } else if (event.key === 'ArrowRight') {
-          event.preventDefault(); entries[(index() + 1) % entries.length].t.focus();
-        } else if (event.key === 'ArrowLeft') {
-          event.preventDefault(); entries[(index() - 1 + entries.length) % entries.length].t.focus();
         }
       };
       const onPanelKey = (event) => {
@@ -398,6 +400,25 @@ export default {
 
     if (!entries.length) { restoreMenu(); return null; }
 
+    // ←/→ move along the top row — every item of it, plain links included
+    // (the old order held only the items with a panel, so a keyboard user
+    // skipped straight past "About" or "Contact").
+    const onBarKey = (event) => {
+      if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+      const item = event.target.closest?.('li');
+      if (!item || !el.contains(item) || item.closest('.kt-menu-panel')) return;
+      const row = Array.from(item.parentElement.children)
+        .filter((node) => node.tagName === 'LI')
+        .map((node) => entries.find((entry) => entry.i === node)?.t || node.querySelector(FOCUSABLE))
+        .filter(Boolean);
+      const at = row.indexOf(event.target);
+      if (at < 0 || row.length < 2) return;
+      event.preventDefault();
+      const step = event.key === 'ArrowRight' ? 1 : -1;
+      row[(at + step + row.length) % row.length].focus();
+    };
+    el.addEventListener('keydown', onBarKey);
+
     // Click / Esc anywhere outside an open menu closes it.
     const onDocDown = (event) => { if (openEntry && !openEntry.i.contains(event.target)) doClose(openEntry); };
     const onDocKey = (event) => { if (event.key === 'Escape' && openEntry) { const e = openEntry; doClose(e); e.t.focus(); } };
@@ -414,6 +435,7 @@ export default {
         clearTimeout(closeTimer);
         document.removeEventListener('pointerdown', onDocDown, true);
         document.removeEventListener('keydown', onDocKey);
+        el.removeEventListener('keydown', onBarKey);
         entries.forEach((entry) => {
           const { i: item, p: panel, t: trigger, h: handlers, r: restore } = entry;
           const [onEnter, onLeave, onClick, onPointerUp, onKey, onPanelKey, onFocusOut, zones] = handlers;
