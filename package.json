@@ -195,6 +195,7 @@
     "test:lockfile-boundary": "node tests/lockfile-boundary.mjs",
     "test:supply-chain-automation": "node tests/supply-chain-automation.mjs",
     "test:workflow-build-order": "node tests/workflow-build-order.mjs",
+    "audit:hidden-panel": "node scripts/audit-hidden-panel.mjs",
     "audit:lockfiles": "node scripts/audit-lockfiles.mjs",
     "test:module-metadata": "node scripts/generate-module-metadata.mjs --check && node tests/module-metadata.mjs",
     "test:module-status": "node tests/module-status.mjs",
