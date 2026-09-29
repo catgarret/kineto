@@ -166,7 +166,11 @@ or a tag; release approval remains separate.
   `lerp(current, target, smoothing)` per rAF, which runs about 40% further in
   the same time on 120Hz screens. A numeric factor is read with
   `numberOption()`, so a curve string cannot turn it into NaN.
-  `tests/browser/motion-timing.mjs`.
+  `tests/browser/motion-timing.mjs`. A clock that adds elapsed time to a
+  timeline caps each frame at `MAX_FRAME_STEP_MS` (four 60Hz frames): one
+  300ms frame during a page load otherwise finishes a short entrance before it
+  is ever drawn (Reveal's native mask/wipe/clock did; the "300ms frame" case in
+  `tests/reveal-variant-browser.mjs`).
 - **Verify the change, then push once**: run the tests that cover what you
   touched (`node scripts/run-lane.mjs test:browser --only <name> --repeat 3`,
   three engines for new browser gates), then `npm run verify:push -- --changed`

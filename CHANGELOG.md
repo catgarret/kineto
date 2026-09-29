@@ -4,11 +4,13 @@
 
 ### English
 
-<!-- Add matching English release bullets here. -->
+- Reveal's `mask`, `wipe` and `clock` entrances without GSAP no longer skip their motion after one long frame. Their clock added the whole gap between frames, so a 300 ms frame during a busy page load finished a short entrance at once and the element simply appeared; one frame now advances at most four 60 Hz frames (`MAX_FRAME_STEP_MS` in `src/utils.js`, the same limit `frameEase()` already used), so the entrance slows for a moment and stays visible. A new case in `tests/reveal-variant-browser.mjs` puts two 300 ms frames at the start of a native mask and wipe; the old clock showed 0 frames in motion, the new one 7.
+- Tests: the WebKit browser shard that included these checks took 60–140 s longer than the others on every CI run, because two tests failed their first attempt and ran again. `reveal-variant-browser` now samples until every entrance has completed (at least 450 ms, at most 2.5 s) instead of a fixed 450 ms, and `components-a11y` `tilt-rest` waits for the tilt to settle (at most 4 s) instead of a fixed 1.2 s — the default smoothing needs about a second of 60 Hz frames, so the old wait left no room on a slower runner. A failure now reports how long after the last move the tilt was still requesting frames.
 
 ### 한국어
 
-<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- GSAP 없이 도는 Reveal `mask`·`wipe`·`clock` 등장이 긴 프레임 하나 뒤에 움직임을 건너뛰지 않습니다. 시계가 프레임 사이 간격을 통째로 더해서, 바쁜 페이지 로드 중 300ms 프레임 하나가 짧은 등장을 한 번에 끝냈고 요소는 그냥 나타나기만 했습니다. 이제 프레임 하나는 60Hz 4프레임까지만 나아가므로(`src/utils.js`의 `MAX_FRAME_STEP_MS`, `frameEase()`가 이미 쓰던 한도와 같음) 등장은 잠깐 느려질 뿐 계속 보입니다. `tests/reveal-variant-browser.mjs`에 native mask·wipe의 시작 직후 300ms 프레임 두 개를 넣는 케이스를 추가했습니다. 옛 시계는 움직이는 프레임이 0개, 새 시계는 7개였습니다.
+- 테스트: 이 검사가 들어 있는 WebKit 브라우저 shard는 CI마다 다른 shard보다 60~140초 오래 걸렸습니다. 테스트 두 개가 첫 시도에서 실패해 다시 돌았기 때문입니다. `reveal-variant-browser`는 고정 450ms 대신 모든 등장이 끝날 때까지(최소 450ms, 최대 2.5초) 표본을 읽고, `components-a11y`의 `tilt-rest`는 고정 1.2초 대신 틸트가 멈출 때까지(최대 4초) 기다립니다. 기본 smoothing은 60Hz로 약 1초가 걸려서, 옛 대기는 느린 runner에서 여유가 없었습니다. 실패하면 마지막 움직임 뒤 몇 ms까지 프레임을 요청했는지 메시지에 남습니다.
 
 ## [0.13.0] - 2026-09-27
 
