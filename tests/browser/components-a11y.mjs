@@ -350,16 +350,22 @@ const tiltState = await page.evaluate(async () => {
   const at = { bubbles: true, clientX: rect.left + 5, clientY: rect.top + 5 };
   el.dispatchEvent(new PointerEvent('pointerenter', at));
   el.dispatchEvent(new PointerEvent('pointermove', at));
-  await window.__wait(1200);
+  // The default smoothing needs about a second of 60 Hz frames to catch up,
+  // and a slow runner drops frames (WebKit on CI still moved at 1.2s). Wait for
+  // the rest instead of guessing a time, but not forever: 4s is a real failure.
+  const movedAt = window.performance.now();
+  await window.__wait(300);
   const tilted = /rotateX\((?!0deg)/.test(el.style.transform);
-  const frames = await window.__countFrames(10);
+  let frames = await window.__countFrames(10);
+  while (frames > 1 && window.performance.now() - movedAt < 4000) frames = await window.__countFrames(10);
+  const restMs = Math.round(window.performance.now() - movedAt);
   const shadowAfter = el.style.getPropertyValue('--kt-tilt-shadow-runtime');
   instance.destroy();
-  return { tilted, frames, shadowUnchanged: shadowBefore === shadowAfter, pausesOffscreen: window.Kineto.registry.tilt.offscreen === 'pause' };
+  return { tilted, frames, restMs, shadowUnchanged: shadowBefore === shadowAfter, pausesOffscreen: window.Kineto.registry.tilt.offscreen === 'pause' };
 });
 await check('tilt-rest', async () => {
   assert.equal(tiltState.tilted, true, 'tilt must follow the pointer');
-  assert.ok(tiltState.frames <= 1, `a tilt under a resting pointer must stop requesting frames (${tiltState.frames})`);
+  assert.ok(tiltState.frames <= 1, `a tilt under a resting pointer must stop requesting frames (${tiltState.frames} still requested ${tiltState.restMs}ms after the last move)`);
 });
 await check('tilt-shadow-disabled', async () => {
   assert.equal(tiltState.shadowUnchanged, true, 'a disabled shadow must not be rewritten while tilting');

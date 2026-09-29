@@ -1,4 +1,4 @@
-import { clamp, G, gsapEaseName, latestEntry, motionDefaults, observeOnce, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
+import { clamp, G, gsapEaseName, latestEntry, MAX_FRAME_STEP_MS, motionDefaults, observeOnce, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
 import { cubicBezierFn, fn as easingFn } from '../easings.js';
 
 const PRESETS = {
@@ -198,7 +198,10 @@ function maskedReveal(el, opts, gsap, scrollTrigger, clock, clipAt) {
   const frame = (time) => {
     raf = null;
     if (destroyed || paused) return;
-    if (lastTime != null) state.time = clamp(state.time + (time - lastTime) * rate / 1000, 0, total);
+    // One long frame (a busy page load) advances at most MAX_FRAME_STEP_MS, so
+    // a short entrance slows for a moment instead of jumping straight to its end.
+    const step = lastTime == null ? 0 : clamp(time - lastTime, 0, MAX_FRAME_STEP_MS);
+    state.time = clamp(state.time + step * rate / 1000, 0, total);
     lastTime = time;
     paint();
     if (rate > 0 ? state.time < total : state.time > 0) raf = requestAnimationFrame(frame);
