@@ -135,14 +135,18 @@ try {
       window.ScrollTrigger?.refresh();
     });
     // Sample actual intermediate values via RAF; a jump from hidden to final
-    // state must not satisfy these transition checks.
+    // state must not satisfy these transition checks. Sample for at least
+    // 450ms and on until every entrance has completed (at most 2.5s): a slow
+    // runner that starts an entrance late must not read as "no motion" or
+    // "never finished" (WebKit on CI started some a frame or two late).
     const samples = await page.evaluate(async () => {
       const { records, read } = window.__revealTest;
       const seen = new Set();
       const clips = {};
       const premature = new Set();
-      const until = window.performance.now() + 450;
-      while (window.performance.now() < until) {
+      const started = window.performance.now();
+      const pending = () => records.some(({ preset, completed }) => preset !== 'class' && !completed);
+      while (window.performance.now() - started < 450 || (pending() && window.performance.now() - started < 2500)) {
         for (const { preset, element, completed } of records) {
           const current = read(element);
           if (preset === 'class') continue;
@@ -194,6 +198,50 @@ try {
         return { completed: record.completed, opacity: window.getComputedStyle(record.element).opacity };
       });
       check(resumed.completed === 2 && resumed.opacity === '1', 'gsap/fade-up: resume must finish the paused replay once');
+    }
+    if (engine === 'native') {
+      // One long frame right after a native mask/wipe starts (a busy page load)
+      // must slow the entrance, not skip it: the old clock added the whole gap
+      // and a 300ms frame finished a .22s reveal with no motion on screen.
+      const hitch = await page.evaluate(async () => {
+        const { core } = window.__revealTest;
+        const holder = document.createElement('div');
+        holder.style.cssText = 'position:absolute;top:1600px;left:0;display:flex;gap:20px';
+        document.body.append(holder);
+        const records = ['mask', 'wipe'].map((preset) => {
+          const element = document.createElement('div');
+          element.className = 'probe';
+          element.textContent = preset;
+          holder.append(element);
+          return { preset, element, frames: 0, instance: core.create('reveal', element, { preset, duration: .22, ease: 'linear' }) };
+        });
+        await new Promise((resolve) => window.requestAnimationFrame(() => window.requestAnimationFrame(resolve)));
+        holder.style.top = '470px';
+        // The entrance starts when `is-inview` lands; its clock reads its first
+        // frame time on the next frame. Two 300ms frames from that moment put
+        // one long gap between the clock's first and second frames.
+        let longFrames = 0;
+        const until = window.performance.now() + 1200;
+        while (window.performance.now() < until) {
+          for (const record of records) {
+            const clip = window.getComputedStyle(record.element).clipPath;
+            if (clip !== 'none' && /[1-9]/.test(clip) && !clip.includes('100%')) record.frames += 1;
+          }
+          await new Promise(window.requestAnimationFrame);
+          if (longFrames < 2 && records.every(({ element }) => element.classList.contains('is-inview'))) {
+            longFrames += 1;
+            const start = window.performance.now();
+            while (window.performance.now() - start < 300) { /* a 300ms frame */ }
+          }
+        }
+        records.forEach(({ instance }) => instance.destroy());
+        holder.remove();
+        return { blocked: longFrames === 2, frames: Object.fromEntries(records.map(({ preset, frames }) => [preset, frames])) };
+      });
+      check(hitch.blocked, 'native hitch: the entrances must start so the long frames land inside them');
+      for (const [preset, frames] of Object.entries(hitch.frames)) {
+        check(frames >= 2, `native/${preset}: a 300ms frame after the start must not skip the motion (${frames} frame(s) in motion)`);
+      }
     }
     // Replay first, then destroy while work is still queued/running. Inspect
     // after the original duration so stale RAFs/tweens cannot hide behind an

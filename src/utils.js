@@ -131,6 +131,17 @@ export function clamp(value, min, max) {
 export const FRAME_MS = 1000 / 60;
 
 /**
+ * 시간 기준 애니메이션이 프레임 하나에서 앞으로 갈 수 있는 최대치: 60Hz 4프레임(약 67ms).
+ *
+ * 긴 작업 하나(페이지 로드 중 이미지 디코드, 폰트, 무거운 스크립트)로 프레임 사이가
+ * 300ms 벌어지면, 흐른 시간을 그대로 쓰는 루프는 0.22초짜리 등장을 한 프레임에 끝내
+ * 버립니다 — 사용자는 움직임 없이 툭 나타나는 것만 봅니다. 이 한도만큼만 가면 그 순간은
+ * 조금 느려질 뿐, 움직임은 보입니다. `frameEase()` 가 따라잡는 한도와 같은 값입니다.
+ */
+export const MAX_FRAME_STEPS = 4;
+export const MAX_FRAME_STEP_MS = FRAME_MS * MAX_FRAME_STEPS;
+
+/**
  * "매 프레임 남은 거리의 `amount` 만큼 다가간다"를 **시간 기준**으로 바꾼 계수.
  *
  * `lerp(current, target, smoothing)` 를 rAF 마다 부르면 움직이는 속도가 화면 주사율에
@@ -142,12 +153,12 @@ export const FRAME_MS = 1000 / 60;
  *   const k = frameEase(smoothing, elapsedMs);
  *   current = lerp(current, target, k);
  *
- * 한 번에 4프레임 분까지만 따라잡습니다(멈춰 있던 탭이 깨어날 때 한 번에 튀지 않게).
+ * 한 번에 `MAX_FRAME_STEPS`(4프레임) 분까지만 따라잡습니다(멈춰 있던 탭이 깨어날 때 한 번에 튀지 않게).
  */
 export function frameEase(amount, elapsedMs = FRAME_MS) {
   const step = clamp(Number(amount) || 0, 0, 1);
   if (step >= 1) return 1;
-  const frames = clamp((Number(elapsedMs) || FRAME_MS) / FRAME_MS, 0.25, 4);
+  const frames = clamp((Number(elapsedMs) || FRAME_MS) / FRAME_MS, 0.25, MAX_FRAME_STEPS);
   return 1 - ((1 - step) ** frames);
 }
 

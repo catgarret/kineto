@@ -1,7 +1,7 @@
 {
   "$schema": "./kineto.features.schema.json",
   "contractVersion": "1.8.0",
-  "libraryVersion": "0.13.0",
+  "libraryVersion": "0.13.1",
   "moduleCount": 55,
   "modules": [
     {
@@ -7557,7 +7557,7 @@
       "runtime": "full",
       "types": "default",
       "deprecated": {
-        "since": "0.13.0",
+        "since": "0.13.1",
         "becomes": "./auto",
         "changesIn": "1.0.0",
         "replacements": [

@@ -1,6 +1,6 @@
 {
   "generatedBy": "scripts/build-mcp.mjs",
-  "kinetoVersion": "0.13.0",
+  "kinetoVersion": "0.13.1",
   "featureContractVersion": "1.8.0",
   "integrationsVersion": "1.0.0",
   "moduleCount": 55,
