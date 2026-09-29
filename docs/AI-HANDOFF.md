@@ -155,6 +155,11 @@ or a tag; release approval remains separate.
   tall as the window just by scrolling to it): a read under 10px is now
   confirmed by a ResizeObserver report on the laid-out deck before any
   fallback applies (`fullpage-hidden-panel` in `components-a11y.mjs`).
+  Squircle's native path measured once and had no ResizeObserver, so a squircle
+  in a hidden tab stayed a rectangle in Chromium (`tests/browser/squircle.mjs`).
+  `npm run audit:hidden-panel` creates every demo module visible and inside
+  `display:none`, and lists the ones that end up different — run it when a
+  change touches how a module measures itself.
 - **A geometry repair snaps; only a state change animates**: first placement,
   a reveal, a resize and `refresh()` write the measured position with the
   transition off, and nothing is written while the element has no box (a

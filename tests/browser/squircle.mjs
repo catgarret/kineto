@@ -157,6 +157,58 @@ const result = await page.evaluate(() => {
   return report;
 });
 
+// Created inside a hidden panel (a closed tab, accordion or dialog) the box is
+// 0×0. The polyfill always redrew on resize, but the native path measured once
+// at create, found nothing, and never looked again: in Chromium a squircle in a
+// hidden tab stayed a plain rectangle after the tab opened. Both paths must
+// shape the element once it is shown, and a percentage radius must follow the
+// box as it resizes.
+const hiddenPanel = await page.evaluate(async () => {
+  const { Kineto } = window;
+  const main = document.querySelector('main');
+  main.innerHTML = '';
+  const frames = (count = 3) => new Promise((resolve) => {
+    const step = () => (--count <= 0 ? resolve() : requestAnimationFrame(step));
+    requestAnimationFrame(step);
+  });
+  const panel = document.createElement('div');
+  panel.style.display = 'none';
+  panel.innerHTML = '<div class="cell" id="h-native" data-kt-squircle="squircle" data-kt-corner-radius="40"></div>'
+    + '<div class="cell" id="h-poly" style="left:300px" data-kt-squircle="squircle" data-kt-corner-radius="40" data-kt-native-shape="off"></div>';
+  main.append(panel);
+  Kineto.init();
+  const native = document.getElementById('h-native');
+  const poly = document.getElementById('h-poly');
+  const whileHidden = { radius: native.style.borderRadius, clip: poly.style.clipPath };
+  panel.style.display = '';
+  await frames();
+  const shown = { radius: native.style.borderRadius, shape: native.style.cornerShape, clip: poly.style.clipPath };
+
+  const percent = document.createElement('div');
+  percent.className = 'cell';
+  percent.style.cssText = 'left:600px;width:200px;height:100px';
+  percent.setAttribute('data-kt-squircle', 'squircle');
+  percent.setAttribute('data-kt-corner-radius', '50%');
+  main.append(percent);
+  Kineto.init();
+  await frames();
+  const drawn = () => percent.style.clipPath && percent.style.clipPath !== 'none' ? percent.style.clipPath : percent.style.borderRadius;
+  const before = drawn();
+  percent.style.height = '160px';
+  await frames();
+  const after = drawn();
+  Kineto.destroy();
+  return { whileHidden, shown, before, after };
+});
+assert.equal(hiddenPanel.whileHidden.radius, '', 'nothing is drawn for a 0×0 box');
+assert.match(hiddenPanel.shown.clip, /^polygon\(/, 'the polyfill shapes an element created in a hidden panel once it is shown');
+if (result.supportsNative) {
+  assert.match(hiddenPanel.shown.radius, /^40px( 40px){0,3}$/, `the native path writes its radius once a hidden panel is shown ("${hiddenPanel.shown.radius}")`);
+  assert.ok(hiddenPanel.shown.shape, 'the native path writes corner-shape once a hidden panel is shown');
+}
+assert.ok(hiddenPanel.before && hiddenPanel.after && hiddenPanel.before !== hiddenPanel.after,
+  `a percentage radius follows the box as it resizes (${hiddenPanel.before} → ${hiddenPanel.after})`);
+
 assert.deepEqual(errors, [], 'squircle must not raise page errors');
 
 // Where the outline meets the 45° diagonal. On that line the two coordinates
