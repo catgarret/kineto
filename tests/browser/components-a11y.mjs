@@ -57,6 +57,18 @@ const html = `<!doctype html><html><head><meta charset="utf-8">
     };
     window.__frames = (count = 2) => new Promise((resolve) => { let left = count; const step = () => (--left <= 0 ? resolve() : requestAnimationFrame(step)); requestAnimationFrame(step); });
     window.__wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    // Resolves true as soon as check() is true, or false after timeoutMs.
+    // For a result that arrives with an animation's end: a fixed sleep sized
+    // for a normal frame rate failed when a WebKit CI runner stalled rendering.
+    window.__until = (check, timeoutMs = 2000) => new Promise((resolve) => {
+      const started = performance.now();
+      const poll = () => {
+        if (check()) resolve(true);
+        else if (performance.now() - started > timeoutMs) resolve(false);
+        else setTimeout(poll, 16);
+      };
+      poll();
+    });
     // A phone's answers to the hover/pointer media queries (utils.canHover()
     // asks "(any-hover: hover) and (any-pointer: fine)", then "(any-hover: none)").
     // Returns the function that puts the real matchMedia back. (This script is
@@ -650,8 +662,8 @@ const sheetState = await probe('bottom-sheet-modal', () => page.evaluate(async (
   handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, cancelable: true }));
   const after = document.getElementById('sheetA').getBoundingClientRect().height;
   document.getElementById('closeBtn').click();
-  await window.__wait(150);
-  const closedByButton = document.getElementById('sheetA').hidden;
+  // The sheet is hidden when its 40 ms close animation finishes.
+  const closedByButton = await window.__until(() => document.getElementById('sheetA').hidden);
   const backgroundBack = !document.getElementById('bgLink').closest('[inert]');
   b.open();
   await window.__wait(120);

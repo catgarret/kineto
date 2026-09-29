@@ -13,6 +13,21 @@ import fs from 'node:fs';
 /** True inside a GitHub Actions job. */
 export const inGitHubActions = (env = process.env) => env.GITHUB_ACTIONS === 'true';
 
+// Some tools exit non-zero by design and the caller judges the result itself:
+// attw exits 1 for every finding, including the ones scripts/check-package-lint.mjs
+// allows. tests/ci-annotate.mjs would otherwise publish that as a red
+// "exited with code 1" annotation on a green job, and an agent reading the
+// public annotations could not tell it from a real failure (every CI run from
+// v0.13.0 on carried one). The caller passes `expectedExitEnv()` as the child's
+// environment; the child — and anything it starts — stays silent.
+const ANNOTATE_SWITCH = 'KT_CI_ANNOTATE';
+
+/** An environment for a child process whose exit code the caller checks itself. */
+export const expectedExitEnv = (env = process.env) => ({ ...env, [ANNOTATE_SWITCH]: 'off' });
+
+/** True when the failure annotation hook should run in this process. */
+export const failureAnnotationsEnabled = (env = process.env) => inGitHubActions(env) && env[ANNOTATE_SWITCH] !== 'off';
+
 // Workflow-command escaping, as in the GitHub Actions toolkit (`escapeData`,
 // `escapeProperty`). Without it a newline in a message could start a second,
 // attacker-shaped workflow command.
