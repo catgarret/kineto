@@ -155,6 +155,15 @@ or a tag; release approval remains separate.
   tall as the window just by scrolling to it): a read under 10px is now
   confirmed by a ResizeObserver report on the laid-out deck before any
   fallback applies (`fullpage-hidden-panel` in `components-a11y.mjs`).
+  Squircle's native path measured once and had no ResizeObserver, so a squircle
+  in a hidden tab stayed a rectangle in Chromium (`tests/browser/squircle.mjs`).
+  A native Reveal slide-left/right in a closed panel never played on pages
+  that clip horizontal overflow: its IntersectionObserver saw only a sliver of
+  the box it had moved aside. An observer that watches a moved or 0×0 box
+  needs a ResizeObserver too (`tests/browser/reveal-hidden-panel.mjs`).
+  `npm run audit:hidden-panel` creates every demo module visible and inside
+  `display:none`, and lists the ones that end up different (`--each` for every
+  demo variant) — run it when a change touches how a module measures itself.
 - **A geometry repair snaps; only a state change animates**: first placement,
   a reveal, a resize and `refresh()` write the measured position with the
   transition off, and nothing is written while the element has no box (a
@@ -166,7 +175,11 @@ or a tag; release approval remains separate.
   `lerp(current, target, smoothing)` per rAF, which runs about 40% further in
   the same time on 120Hz screens. A numeric factor is read with
   `numberOption()`, so a curve string cannot turn it into NaN.
-  `tests/browser/motion-timing.mjs`.
+  `tests/browser/motion-timing.mjs`. A clock that adds elapsed time to a
+  timeline caps each frame at `MAX_FRAME_STEP_MS` (four 60Hz frames): one
+  300ms frame during a page load otherwise finishes a short entrance before it
+  is ever drawn (Reveal's native mask/wipe/clock did; the "300ms frame" case in
+  `tests/reveal-variant-browser.mjs`).
 - **Verify the change, then push once**: run the tests that cover what you
   touched (`node scripts/run-lane.mjs test:browser --only <name> --repeat 3`,
   three engines for new browser gates), then `npm run verify:push -- --changed`
