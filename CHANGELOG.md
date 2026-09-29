@@ -4,6 +4,16 @@
 
 ### English
 
+<!-- Add matching English release bullets here. -->
+
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.13.1] - 2026-09-29
+
+### English
+
 - First published 0.13 release. `v0.13.0` was tagged, but its release audit failed on a new advisory for a dev dependency (undici, see below), so nothing was published under that tag: npm stayed on 0.12.3, while the demo site, which deploys from `main`, already showed 0.13.0. Everything listed under 0.13.0 ships in this version.
 - Reveal's `mask`, `wipe` and `clock` entrances without GSAP no longer skip their motion after one long frame. Their clock added the whole gap between frames, so a 300 ms frame during a busy page load finished a short entrance at once and the element simply appeared; one frame now advances at most four 60 Hz frames (`MAX_FRAME_STEP_MS` in `src/utils.js`, the same limit `frameEase()` already used), so the entrance slows for a moment and stays visible. A new case in `tests/reveal-variant-browser.mjs` puts two 300 ms frames at the start of a native mask and wipe; the old clock showed 0 frames in motion, the new one 7.
 - Tests: the WebKit browser shard that included these checks took 60–140 s longer than the others on every CI run, because two tests failed their first attempt and ran again. `reveal-variant-browser` now samples until every entrance has completed (at least 450 ms, at most 2.5 s) instead of a fixed 450 ms, and `components-a11y` `tilt-rest` waits for the tilt to settle (at most 4 s) instead of a fixed 1.2 s — the default smoothing needs about a second of 60 Hz frames, so the old wait left no room on a slower runner. A failure now reports how long after the last move the tilt was still requesting frames.
@@ -25,7 +35,6 @@
 - 숨긴 패널 안에서 만든 네이티브 Reveal `slide-left`/`slide-right`가 패널이 열리면 재생됩니다. GSAP이 없으면(차단·오프라인, 또는 데이터 절약 기기의 low 성능 단계) Reveal은 요소의 IntersectionObserver로 "화면에 들어왔는지"를 판단합니다. 그런데 slide는 요소 너비만큼 옆에서 기다립니다. 가로 넘침을 자르는 페이지(html/body `overflow-x: clip`)에서는 넓은 카드일수록 옮겨진 상자가 관찰자에게 조금밖에 보이지 않아 10% 기준에 못 미쳤습니다. 그래서 패널을 열어도 알림이 오지 않았고, Chromium·WebKit·Firefox 모두에서 카드가 계속 보이지 않았습니다. 이제 요소 크기가 바뀌면(패널이 열리며 0×0에서 커질 때) ResizeObserver도 판단을 다시 깨웁니다. 판단은 여전히 옮기지 않은 상자로 합니다. 같은 판단에서 위/아래 퍼센트 `rootMargin`을 IntersectionObserver처럼 뷰포트 높이 기준으로 계산합니다(전에는 너비 기준). 새 게이트는 `tests/browser/reveal-hidden-panel.mjs`입니다(두 브라우저 레인, GSAP CDN 차단). 옛 코드는 두 카드를 opacity 0으로 남깁니다. `npm run audit:hidden-panel -- --each`는 첫 번째만이 아니라 데모의 모든 변형을 검사합니다(Chromium 291개, 이 수정 뒤 차이 없음).
 - `release:ship`이 CI 통과 뒤, 태그를 만들기 전에 모든 lockfile 감사를 돌립니다. 릴리스 워크플로는 태그가 생긴 뒤에야 이 감사를 해서, CI와 태그 사이에 공개된 advisory 하나가 버전 번호를 써 버렸습니다. `v0.13.0`은 초록 CI 커밋에 태그됐는데, 그 뒤 undici(jsdom 경유 개발 의존성)의 새 advisory 때문에 릴리스 감사가 실패해 npm에 아무것도 올라가지 않았습니다. 이제 감사가 실패하면 태그 전에 멈추고 버전은 그대로 남습니다. 게이트: `tests/release-automation.mjs`.
 - 루트 lockfile: undici를 7.29.0에서 7.30.0으로 올렸습니다(jsdom의 `^7.25.0` 범위 안). GHSA-rfgv-xxqx-mfg5, GHSA-w293-vg96-wgc3와 그보다 낮은 undici advisory 8개가 해소됩니다. Node 테스트에서만 쓰이고, 패키지 자체에는 런타임 의존성이 없습니다.
-
 ## [0.13.0] - 2026-09-27
 
 ### English

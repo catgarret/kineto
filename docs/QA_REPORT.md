@@ -1,9 +1,9 @@
-# Kineto v0.13.0 QA Report
+# Kineto v0.13.1 QA Report
 
 검증일: 2026-09-20
-대상: v0.13.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
+대상: v0.13.1 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
-## 2026-09-29 WebKit shard 3 · Reveal 긴 프레임 · jsdom 30 탐색 selector · 숨긴 패널의 Squircle·Reveal (Unreleased)
+## 2026-09-29 WebKit shard 3 · Reveal 긴 프레임 · jsdom 30 탐색 selector · 숨긴 패널의 Squircle·Reveal (v0.13.1)
 
 - 증상: PR #52·#53과 main push CI에서 `webkit · test:browser:cross · 3/3`의 lane 시간이 202~284초였습니다. 다른 shard는 약 140~150초이고, 측정 시간 기준 예상은 세 shard 모두 134초입니다. 비인증 API로 check-run annotation을 읽으니 매번 `reveal-variant-browser`(native mask·wipe "must render intermediate frames", 한 번은 gsap/fade "must finish fully visible")와 `components-a11y` `tilt-rest`(7~10프레임 요청)가 첫 시도에 실패하고 재시도로 통과했습니다. 이 컨테이너에서도 첫 WebKit shard 실행에서 둘 다 같은 방식으로 흔들렸습니다(3.5분, 예상 134초).
 - Reveal(라이브러리 결함): GSAP 없는 mask·wipe·clock은 rAF 시계에 프레임 간격을 그대로 더했습니다. 탐침에서 시작 직후 300ms 프레임 하나를 넣으면 WebKit·Chromium 모두 mask·wipe의 움직이는 프레임이 0개였고(요소가 그냥 나타남), 150ms일 때는 4~5개였습니다. WAAPI로 도는 다른 preset은 영향이 없었습니다. 수정: 한 프레임의 진행을 `MAX_FRAME_STEP_MS`(60Hz 4프레임, `frameEase()`와 같은 한도)로 제한 → 같은 탐침에서 10개. 게이트: `reveal-variant-browser`의 native "300ms frame" 케이스. 옛 코드에서는 0 frame으로 실패하고, 새 코드는 Chromium 7·WebKit·Firefox 통과입니다.
@@ -1323,7 +1323,7 @@ registry의 해제 크기는 1,797,191 bytes로 확인했습니다. 이 수치�
 
 <!-- release:prepare updates this source label, not the publication evidence below. -->
 현재 소스의 패키지명은
-`@dong-gri/kineto`, 버전은 `0.13.0`입니다.
+`@dong-gri/kineto`, 버전은 `0.13.1`입니다.
 
 ## 배포 후 확인
 
