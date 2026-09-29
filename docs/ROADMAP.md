@@ -90,6 +90,14 @@ v0.13.0에서 엔트리 포인트를 1.0 방향으로 정리합니다. `@dong-gr
 확인은 바뀐 파일이 영향을 주는 테스트만 고르는 `npm run verify:push -- --changed`입니다
 ([QA 보고서](QA_REPORT.md)의 2026-09-27 항목).
 
+v0.13.1에서 0.13 라인이 처음 npm에 게시됩니다. `v0.13.0` 태그는 초록 CI 커밋에 만들어졌지만, 그 사이 공개된 개발
+의존성(undici) advisory 때문에 태그 뒤의 lockfile 감사가 실패해 게시되지 않았습니다. 그래서 `release:ship`이 CI
+대기 다음, 태그 직전에 같은 감사를 먼저 돌립니다 — 실패해도 버전 번호가 남습니다. 함께 들어가는 것은 "숨긴 패널에서
+만든 모듈" 묶음입니다: 닫힌 탭·아코디언 안에서 만든 네이티브 Squircle과 GSAP 없는 Reveal slide가 패널이 열리면
+제대로 그려지고, 이런 경우를 모듈 전체에서 찾는 `npm run audit:hidden-panel`을 추가했습니다. 그 밖에 긴 프레임
+하나가 native Reveal 등장을 건너뛰던 시계, jsdom 30의 selector 길이 한도에서 `Kineto.scan()`이 던지던 오류,
+WebKit shard를 매번 60~140초 늘리던 재시도 두 개를 고쳤습니다([QA 보고서](QA_REPORT.md)의 2026-09-29 항목).
+
 ## 1. 결론
 
 Kineto는 Motion, GSAP, Swiper를 정면으로 대체하는 범용 애니메이션 엔진을 목표로 하지 않습니다.
