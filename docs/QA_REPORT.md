@@ -3,12 +3,13 @@
 검증일: 2026-09-20
 대상: v0.13.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
-## 2026-09-29 WebKit shard 3가 매번 늦던 이유 — Reveal 긴 프레임 · tilt-rest 대기 (Unreleased)
+## 2026-09-29 WebKit shard 3가 매번 늦던 이유 — Reveal 긴 프레임 · tilt-rest 대기 · jsdom 30 탐색 selector (Unreleased)
 
 - 증상: PR #52·#53과 main push CI에서 `webkit · test:browser:cross · 3/3`의 lane 시간이 202~284초였습니다. 다른 shard는 약 140~150초이고, 측정 시간 기준 예상은 세 shard 모두 134초입니다. 비인증 API로 check-run annotation을 읽으니 매번 `reveal-variant-browser`(native mask·wipe "must render intermediate frames", 한 번은 gsap/fade "must finish fully visible")와 `components-a11y` `tilt-rest`(7~10프레임 요청)가 첫 시도에 실패하고 재시도로 통과했습니다. 이 컨테이너에서도 첫 WebKit shard 실행에서 둘 다 같은 방식으로 흔들렸습니다(3.5분, 예상 134초).
 - Reveal(라이브러리 결함): GSAP 없는 mask·wipe·clock은 rAF 시계에 프레임 간격을 그대로 더했습니다. 탐침에서 시작 직후 300ms 프레임 하나를 넣으면 WebKit·Chromium 모두 mask·wipe의 움직이는 프레임이 0개였고(요소가 그냥 나타남), 150ms일 때는 4~5개였습니다. WAAPI로 도는 다른 preset은 영향이 없었습니다. 수정: 한 프레임의 진행을 `MAX_FRAME_STEP_MS`(60Hz 4프레임, `frameEase()`와 같은 한도)로 제한 → 같은 탐침에서 10개. 게이트: `reveal-variant-browser`의 native "300ms frame" 케이스. 옛 코드에서는 0 frame으로 실패하고, 새 코드는 Chromium 7·WebKit·Firefox 통과입니다.
 - 테스트 결함 둘: reveal 표본 창이 고정 450ms였고, tilt-rest는 고정 1.2초였습니다. 기본 smoothing 0.1은 60Hz에서 약 1.05초가 걸려 수렴해서 여유가 0.15초뿐이었습니다. 이제 reveal은 최소 450ms를 보고 모든 등장이 끝날 때까지(최대 2.5초) 읽고, tilt-rest는 멈출 때까지(최대 4초) 기다립니다. 실패하면 마지막 움직임 뒤 몇 ms인지 남깁니다.
-- 검증(2코어 컨테이너): WebKit shard 3는 11/11, 2.2분, 재시도 0. Chromium 브라우저 레인 48/48, 재시도 0. `components-a11y`는 세 엔진 통과, `reveal-variant-browser`도 세 엔진 통과. Node 레인 65/65, lint OK. CI에서 shard 3가 다른 shard와 비슷해지는지는 push 뒤 PR CI로 확인합니다.
+- Dependabot 점검: react 19.3·vue 3.5.43·vite 8.3·scheduler 0.28 PR(#18·#20·#22·#23·#24·#31·#33)은 이미 main lockfile에 들어 있어 할 일이 없습니다. 실제로 남은 것은 rolldown 1.2.11(#54), vuetify 3.13.5(#55), MCP SDK 1.30.1(#56)이고 셋 다 CI 초록입니다. major는 따로 시험했습니다. TypeScript 7.0.2(#9)는 `test:types`를 통과하지만 공급망 정책(`dependency-floors`)이 major 변경 검토를 요구합니다. jsdom 30.1.1(#7)에서는 Node 레인 65개 중 3개가 실패했습니다: 공급망 정책(TS 7을 같이 올렸기 때문), `test:perf`, `test:leak`. `test:perf`는 Kineto 결함이었습니다. 모듈 100개의 탐색 selector(2.3 KB)가 jsdom 30의 2048자 한도에 걸려 `RangeError`가 났습니다. 이 브랜치에서 selector를 한도 안으로 나눠 고쳤습니다. `test:leak`은 jsdom 쪽 결함입니다. jsdom 30의 CSSOM은 `removeProperty('background-position')` 뒤에도 `background-position-x/y`를 남깁니다(jsdom 29와 브라우저는 모두 지움). 그래서 scrollShadows의 destroy 뒤 style이 남은 것처럼 보이므로 #7은 보류합니다. jQuery 4(#16)는 공급망 정책이 거부합니다. download-artifact v8(#25)은 릴리스 파이프라인이라, playwright 1.63(#17·#19)은 새 브라우저 빌드가 필요해 이 컨테이너에서 확인할 수 없어 보류합니다.
+- 검증(2코어 컨테이너): WebKit shard 3는 11/11, 2.2분, 재시도 0. selector 분할 뒤 Node 레인 65/65와 Chromium 브라우저 레인 48/48 재통과. Chromium 브라우저 레인 48/48, 재시도 0. `components-a11y`는 세 엔진 통과, `reveal-variant-browser`도 세 엔진 통과. Node 레인 65/65, lint OK. CI에서 shard 3가 다른 shard와 비슷해지는지는 push 뒤 PR CI로 확인합니다.
 
 ## 2026-09-27 감사 수정 · 데모 접근성 · CI와 로컬 확인 속도 (v0.13.0)
 
