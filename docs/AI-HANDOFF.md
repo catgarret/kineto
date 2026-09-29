@@ -157,9 +157,13 @@ or a tag; release approval remains separate.
   fallback applies (`fullpage-hidden-panel` in `components-a11y.mjs`).
   Squircle's native path measured once and had no ResizeObserver, so a squircle
   in a hidden tab stayed a rectangle in Chromium (`tests/browser/squircle.mjs`).
+  A native Reveal slide-left/right in a closed panel never played on pages
+  that clip horizontal overflow: its IntersectionObserver saw only a sliver of
+  the box it had moved aside. An observer that watches a moved or 0×0 box
+  needs a ResizeObserver too (`tests/browser/reveal-hidden-panel.mjs`).
   `npm run audit:hidden-panel` creates every demo module visible and inside
-  `display:none`, and lists the ones that end up different — run it when a
-  change touches how a module measures itself.
+  `display:none`, and lists the ones that end up different (`--each` for every
+  demo variant) — run it when a change touches how a module measures itself.
 - **A geometry repair snaps; only a state change animates**: first placement,
   a reveal, a resize and `refresh()` write the measured position with the
   transition off, and nothing is written while the element has no box (a

@@ -3,13 +3,15 @@
 //
 // A module that decides what it is from a size read at create() sees 0×0 in a
 // hidden panel. That class of bug has shipped several times — Cursor's scope,
-// Media's wrapper, Radial's radius, Fullpage's height (an owner report) and
-// Squircle's native path, which this script found. It is not a CI gate: it
+// Media's wrapper, Radial's radius, Fullpage's height (an owner report), and
+// two this script found: Squircle's native path, and a native slide-left/right
+// Reveal that never played on a page clipping horizontal overflow. It is not a CI gate: it
 // takes a few minutes and some modules differ between two plain runs. Run it
 // when a change touches how a module measures itself.
 //
 // For every registered module with markup in site/index.html (the demo), the
-// first such element is created three times on a blank page with the demo's
+// first such element (with --each: every distinct one) is created three times
+// on a blank page with the demo's
 // CSS: visible, visible again (the control), and inside `display:none` that is
 // removed 80ms later. After the same settle time each copy is measured: the
 // layout box of every node, the node count, and the inline style properties on
@@ -18,6 +20,7 @@
 //
 //   npm run build && node scripts/audit-hidden-panel.mjs    # every module
 //   node scripts/audit-hidden-panel.mjs squircle            # names containing "squircle"
+//   node scripts/audit-hidden-panel.mjs --each slider       # every demo variant, not just the first
 //   KT_BROWSER=webkit KT_SETTLE_MS=2500 node scripts/audit-hidden-panel.mjs
 //
 // Exits with 1 when a module differs only because it was created hidden and it
@@ -33,7 +36,10 @@ const browserName = process.env.KT_BROWSER || 'chromium';
 const browserType = { chromium, firefox, webkit }[browserName];
 if (!browserType) throw new Error(`Unsupported KT_BROWSER: ${browserName}`);
 const settleMs = Math.max(200, Number(process.env.KT_SETTLE_MS) || 1500);
-const filter = (process.argv[2] || '').toLowerCase();
+const args = process.argv.slice(2);
+// --each: every distinct demo element of a module (its variants), not just the first.
+const each = args.includes('--each');
+const filter = (args.find((arg) => !arg.startsWith('--')) || '').toLowerCase();
 // Layout boxes within this many pixels count as equal (sub-pixel rounding).
 const BOX_TOLERANCE_PX = 2;
 
@@ -71,7 +77,7 @@ await page.route('**/*', (route) => {
 });
 await page.goto(`${SITE}/`);
 
-const results = await page.evaluate(async ({ demoHtml, filter, settleMs, tolerance }) => {
+const results = await page.evaluate(async ({ demoHtml, filter, settleMs, tolerance, each }) => {
   const { Kineto } = window;
   const dash = (name) => name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
   const demo = new window.DOMParser().parseFromString(demoHtml, 'text/html');
@@ -118,26 +124,32 @@ const results = await page.evaluate(async ({ demoHtml, filter, settleMs, toleran
   const out = [];
   for (const name of Object.keys(Kineto.registry)) {
     if (filter && !name.toLowerCase().includes(filter)) continue;
-    const source = demo.querySelector(`[data-kt-${dash(name)}]`);
-    if (!source) { out.push({ name, status: 'no-markup' }); continue; }
-    const visible = await createOnce(source, false);
-    const control = await createOnce(source, false);
-    const varies = differences(visible, control);
-    if (varies.length) { out.push({ name, status: 'varies', detail: varies }); continue; }
-    const hidden = await createOnce(source, true);
-    const found = differences(visible, hidden);
-    out.push({ name, status: found.length ? 'differs' : 'same', detail: found });
+    const all = [...demo.querySelectorAll(`[data-kt-${dash(name)}]`)];
+    if (!all.length) { out.push({ name, module: name, status: 'no-markup' }); continue; }
+    // Identical markup is checked once.
+    const distinct = [...new Map(all.map((element) => [element.outerHTML, element])).values()];
+    const sources = each ? distinct : distinct.slice(0, 1);
+    for (const [index, source] of sources.entries()) {
+      const label = sources.length > 1 ? `${name}#${index + 1}` : name;
+      const visible = await createOnce(source, false);
+      const control = await createOnce(source, false);
+      const varies = differences(visible, control);
+      if (varies.length) { out.push({ name: label, module: name, status: 'varies', detail: varies }); continue; }
+      const hidden = await createOnce(source, true);
+      const found = differences(visible, hidden);
+      out.push({ name: label, module: name, status: found.length ? 'differs' : 'same', detail: found });
+    }
   }
   return out;
-}, { demoHtml, filter, settleMs, tolerance: BOX_TOLERANCE_PX });
+}, { demoHtml, filter, settleMs, tolerance: BOX_TOLERANCE_PX, each });
 await browser.close();
 
 let failing = 0;
-for (const { name, status, detail } of results) {
+for (const { name, module, status, detail } of results) {
   if (status === 'same') continue;
   if (status === 'no-markup') { console.log(`  ${name}: no demo markup, not checked`); continue; }
   if (status === 'varies') { console.log(`  ${name}: varies between two visible runs, not compared (${detail[0]})`); continue; }
-  if (KNOWN[name]) { console.log(`  ${name}: known — ${KNOWN[name]}`); continue; }
+  if (KNOWN[module]) { console.log(`  ${name}: known — ${KNOWN[module]}`); continue; }
   failing += 1;
   console.log(`✗ ${name}: differs when created hidden — ${detail.join(' | ')}`);
 }
