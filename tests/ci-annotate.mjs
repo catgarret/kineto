@@ -12,13 +12,17 @@
 // process printed and, if the process dies from an uncaught error or exits with
 // a non-zero code, prints ONE `::error` line naming the script and the reason.
 //
+// A child whose non-zero exit its caller expects (attw in
+// scripts/check-package-lint.mjs) is started with `expectedExitEnv()` from
+// scripts/gh-actions.mjs and stays silent here.
+//
 // Safety: the text is our own test output. Newlines, `%`, and (in the title)
 // `:` and `,` are escaped as the workflow-command format requires, so a message
 // can never start a second workflow command. Nothing from the environment is
 // printed.
 import path from 'node:path';
 import process from 'node:process';
-import { escapeData, escapeProperty, inGitHubActions } from '../scripts/gh-actions.mjs';
+import { escapeData, escapeProperty, failureAnnotationsEnabled } from '../scripts/gh-actions.mjs';
 
 const entry = process.argv[1] || '';
 // npm/npx only relay a child's exit code; the child reports for itself.
@@ -29,7 +33,7 @@ const isPackageManager = /(?:^|[\\/])(?:npm|npx)(?:-cli)?(?:\.js)?$/.test(entry)
 const WRAPPERS = new Set(['scripts/run-lane.mjs', 'scripts/retry-command.mjs', 'tests/retry-browser-test.mjs']);
 const isWrapper = WRAPPERS.has(path.relative(process.cwd(), entry).split(path.sep).join('/'));
 
-if (inGitHubActions() && !isPackageManager && !isWrapper) {
+if (failureAnnotationsEnabled() && !isPackageManager && !isWrapper) {
   const script = path.relative(process.cwd(), entry) || 'node';
   const MAX_LINES = 24;
   const MAX_CHARS = 3000;

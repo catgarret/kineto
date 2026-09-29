@@ -4,11 +4,13 @@
 
 ### English
 
-<!-- Add matching English release bullets here. -->
+- CI: a green job no longer carries a failure annotation for `attw`. The type-resolution check (`scripts/check-package-lint.mjs`) judges attw's JSON report and ignores its exit code, because attw exits 1 for every finding, including the by-design ones it allows; `tests/ci-annotate.mjs` still published that exit as "exited with code 1" on every Node job since v0.13.0, and an agent reading the public annotations could not tell it from a real failure. A child whose exit code the caller checks itself now runs with `expectedExitEnv()` from `scripts/gh-actions.mjs`, and the hook stays silent for it. Gate: `tests/release-automation.mjs`.
+- Tests: two WebKit checks that failed their first CI attempt and passed on the retry. `slider-variant-browser` gave up after 4 s of wall-clock time on a dissolve that stood at 98% — no frame had run in between, as WebKit on a CI runner can stop rendering for seconds. Its waits now give up only once their time is up and enough frames have run (half of 60 Hz), with a hard limit for a page that never renders, and the message reports the frame count and the longest gap; with a 4.3 s main-thread stall injected, the old wait fails and the new one passes. `components-a11y` `sheet-close-button` read the sheet's `hidden` after a fixed 150 ms; it now polls until the 40 ms close animation has finished (at most 2 s).
 
 ### 한국어
 
-<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+- CI: 초록 job에 `attw` 실패 annotation이 더는 붙지 않습니다. 타입 해석 검사(`scripts/check-package-lint.mjs`)는 attw의 JSON 보고서로 판단하고 종료 코드는 무시합니다. attw는 허용하는 설계상 항목까지 포함해 찾은 것이 있으면 1로 끝나기 때문입니다. 그런데 `tests/ci-annotate.mjs`는 v0.13.0 이후 모든 Node job에서 그 종료를 "exited with code 1"로 공개했고, 공개 annotation을 읽는 에이전트는 진짜 실패와 구분할 수 없었습니다. 이제 호출한 쪽이 종료 코드를 직접 판단하는 자식 프로세스는 `scripts/gh-actions.mjs`의 `expectedExitEnv()`로 실행되고, 훅은 그 프로세스에 대해 조용합니다. 게이트: `tests/release-automation.mjs`.
+- 테스트: CI 첫 시도에서 실패하고 재시도로 통과하던 WebKit 검사 두 개. `slider-variant-browser`는 98%에 멈춘 dissolve를 실제 시간 4초 뒤 포기했는데, 그동안 프레임이 하나도 돌지 않았습니다. CI runner의 WebKit은 몇 초씩 렌더링을 멈출 때가 있습니다. 이제 대기는 시간이 지나고 충분한 프레임(60Hz의 절반)이 돌았을 때만 포기하고, 전혀 그리지 않는 페이지를 위한 상한은 남기며, 실패 메시지에 프레임 수와 가장 긴 간격을 적습니다. 메인 스레드를 4.3초 멈추게 넣으면 옛 대기는 실패하고 새 대기는 통과합니다. `components-a11y` `sheet-close-button`은 고정 150ms 뒤 시트의 `hidden`을 읽었는데, 이제 40ms 닫힘 애니메이션이 끝날 때까지(최대 2초) 확인합니다.
 
 ## [0.13.1] - 2026-09-29
 

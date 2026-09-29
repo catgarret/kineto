@@ -3,6 +3,14 @@
 검증일: 2026-09-20
 대상: v0.13.1 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-30 CI annotation 잡음 · WebKit 흔들림 2개 (Unreleased)
+
+- PR #57 CI(run 36633320041, ed170fa)는 성공했고 가장 느린 job이 226초였습니다(WebKit 3/3 211초, 이전 202~284초). 비인증 API로 annotation을 읽으니 새 재시도 두 개와 잡음 하나가 있었습니다.
+- 잡음: 모든 Node job에 `node_modules/.bin/attw` "exited with code 1" 실패 annotation이 있었습니다(dc215ba main CI와 v0.13.0 Release에도). `check-package-lint`는 attw의 JSON으로 판단하고 종료 코드를 일부러 무시하는데, `tests/ci-annotate.mjs`가 NODE_OPTIONS를 물려받은 attw 프로세스의 종료를 실패로 알렸습니다. 이 컨테이너에서 `GITHUB_ACTIONS=true`와 같은 NODE_OPTIONS로 옛 코드를 돌리면 `::error` 1줄에 종료 코드 0, 새 코드는 0줄입니다. `expectedExitEnv()`(`scripts/gh-actions.mjs`)가 `KT_CI_ANNOTATE=off`를 넘기고, 훅은 그때 조용합니다.
+- WebKit 2/3 `slider-variant-browser`: "dissolve did not settle at 1" — 들어오는 슬라이드가 progress 0.9811, 나가는 슬라이드가 0.0189로 4초 동안 그대로였습니다. 슬라이더 루프는 rAF가 돌기만 하면 몇 프레임 안에 도착하므로(dt 64ms 상한에서 한 프레임에 남은 거리의 약 55%를 줄임) 그 사이 프레임이 없었다고 판단했습니다. 대기(`waitForLanding`, `transition`)가 `__frameDeadline`으로 시간과 그린 프레임 수를 함께 봅니다. 게이트 확인: 착지 대기 직후 메인 스레드를 4.3초 막는 복사본을 돌리면 옛 테스트는 첫 효과에서 "did not settle"로 실패하고 새 테스트는 10개 효과 모두 통과합니다.
+- WebKit 3/3 `components-a11y` `sheet-close-button`: 고정 150ms 대기 뒤 `hidden`을 읽었습니다. 같은 시점의 `backgroundBack`(inert 해제, 닫을 때 바로 실행)은 통과했으니 닫힘 자체는 일어났고 40ms WAAPI 애니메이션의 끝이 늦었습니다. `__until()`로 최대 2초 확인합니다.
+- 로컬 확인: `slider-variant-browser`·`components-a11y` Chromium·WebKit·Firefox 모두 통과, lint, `test:release`.
+
 ## 2026-09-29 WebKit shard 3 · Reveal 긴 프레임 · jsdom 30 탐색 selector · 숨긴 패널의 Squircle·Reveal (v0.13.1)
 
 - 증상: PR #52·#53과 main push CI에서 `webkit · test:browser:cross · 3/3`의 lane 시간이 202~284초였습니다. 다른 shard는 약 140~150초이고, 측정 시간 기준 예상은 세 shard 모두 134초입니다. 비인증 API로 check-run annotation을 읽으니 매번 `reveal-variant-browser`(native mask·wipe "must render intermediate frames", 한 번은 gsap/fade "must finish fully visible")와 `components-a11y` `tilt-rest`(7~10프레임 요청)가 첫 시도에 실패하고 재시도로 통과했습니다. 이 컨테이너에서도 첫 WebKit shard 실행에서 둘 다 같은 방식으로 흔들렸습니다(3.5분, 예상 134초).
