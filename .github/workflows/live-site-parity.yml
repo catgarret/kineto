@@ -31,6 +31,11 @@ jobs:
       - name: Install dependencies
         run: npm ci --prefer-offline --fetch-retries=3 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=5000 --fetch-timeout=30000
 
+      # dist/ is not tracked. The check compares the live runtime bytes with
+      # this build of the same commit (tests/workflow-build-order.mjs).
+      - name: Build distributions
+        run: npm run build
+
       - name: Verify live-site parity
         env:
           KT_EXPECTED_BUILD: ${{ github.sha }}

@@ -51,6 +51,15 @@ jobs:
           set -o pipefail
           node scripts/retry-command.mjs npm run lint 2>&1 | tee -a release-mcp.log
 
+      # dist/ is not tracked; the feature contract below imports the build
+      # (tests/workflow-build-order.mjs). The build must leave tracked files
+      # unchanged, so the MCP tarball packed later is exactly the tagged source.
+      - name: Build distributions
+        run: |
+          set -o pipefail
+          node scripts/retry-command.mjs npm run build 2>&1 | tee -a release-mcp.log
+          git diff --exit-code --stat
+
       - name: Verify the integration map and generated artefacts
         run: |
           set -euo pipefail

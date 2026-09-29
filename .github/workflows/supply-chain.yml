@@ -45,6 +45,12 @@ jobs:
           mkdir -p artifacts
           npm sbom --sbom-format=spdx > artifacts/kineto-sbom.spdx.json
 
+      # dist/ is not tracked; the package checks below read what this builds.
+      # tests/workflow-build-order.mjs keeps the build ahead of them.
+      - name: Build the package files
+        if: always()
+        run: npm run build
+
       - name: Check package surface
         if: always()
         run: |

@@ -2,7 +2,7 @@
 /* global window */
 window.KINETO_VARIANT_CATALOG = Object.freeze({
   "schemaVersion": "1.0.0",
-  "libraryVersion": "0.12.3",
+  "libraryVersion": "0.13.0",
   "moduleCount": 38,
   "variantCount": 228,
   "capabilities": {

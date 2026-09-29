@@ -112,7 +112,8 @@ workflow에서 같은 명령을 실행합니다. lockfile을 갱신할 때 regis
 공급망 점검을 실행합니다. `npm ci --ignore-scripts`로 루트 잠금 설치를 재현한 뒤
 registry 경계를 확인하고 루트·consumer fixture·framework fixture의
 `npm audit --audit-level=low` 결과를 각각 JSON으로 저장합니다. audit가 실패해도
-SPDX SBOM, package-size, tarball 검사를 계속 실행하고 모든 보고서를 업로드한 뒤
+SPDX SBOM을 만들고, `dist/`를 빌드한 뒤(`dist/`는 커밋하지 않음) package-size·tarball
+검사를 계속 실행하고 모든 보고서를 업로드한 뒤
 job을 실패시켜 원인을 잃지 않습니다. 산출물은 14일 동안 workflow artifact로
 보관합니다. 로컬 `npm run audit:lockfiles` 보고서는 `/artifacts/`에 생성하되 Git에서
 제외해 `npm run verify` 뒤의 릴리스 준비 worktree를 오염시키지 않습니다.

@@ -6,15 +6,15 @@
 <!-- vite-bundle-report:begin -->
 | Consumer entry | JS files | Raw | Gzip | On-demand chunks | Budget (gzip) |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| full | 1 | 639.7 KB | 175.3 KB | — | ≤ 176 KB (+4 KB runner variance) |
-| all | 1 | 639.0 KB | 175.0 KB | — | ≤ 176 KB (+4 KB runner variance) |
-| auto | 4 | 59.7 KB | 20.7 KB | 57 (196.5 KB) | ≤ 22 KB |
+| full | 1 | 640.1 KB | 175.4 KB | — | ≤ 176 KB (+4 KB runner variance) |
+| all | 1 | 639.4 KB | 175.1 KB | — | ≤ 176 KB (+4 KB runner variance) |
+| auto | 4 | 59.7 KB | 20.7 KB | 57 (196.7 KB) | ≤ 22 KB |
 | core-reveal | 1 | 56.9 KB | 17.8 KB | — | ≤ 30 KB |
 | core-three | 1 | 122.6 KB | 35.1 KB | — | ≤ 65 KB |
 | core-states | 1 | 43.6 KB | 13.9 KB | — | ≤ 35 KB |
 | core-presence | 1 | 45.5 KB | 14.3 KB | — | ≤ 35 KB |
-| react-adapter | 1 | 652.8 KB | 179.1 KB | — | ≤ 180 KB (+1 KB runner variance) |
-| vue-adapter | 1 | 656.7 KB | 180.3 KB | — | ≤ 181 KB (+1 KB runner variance) |
+| react-adapter | 1 | 653.2 KB | 179.2 KB | — | ≤ 180 KB (+1 KB runner variance) |
+| vue-adapter | 1 | 657.1 KB | 180.4 KB | — | ≤ 181 KB (+1 KB runner variance) |
 <!-- vite-bundle-report:end -->
 
 The fixture test also requires `core + one module`, `core + three modules`, `core + states`, `core + presence` and the on-demand `auto` entry to remain smaller than the full entry, and `auto` to split every module into its own chunk.
@@ -37,15 +37,15 @@ The fixture test also requires `core + one module`, `core + three modules`, `cor
 
 | Rolldown consumer entry | JS files | Raw | Gzip | On-demand chunks | Budget (gzip) |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| full | 1 | 641.9 KB | 175.6 KB | — | ≤ 176 KB (+4 KB runner variance) |
-| all | 1 | 639.9 KB | 174.7 KB | — | ≤ 176 KB (+4 KB runner variance) |
-| auto | 1 | 60.3 KB | 19.2 KB | 57 (195.6 KB) | ≤ 22 KB (+1 KB runner variance) |
+| full | 1 | 642.3 KB | 175.7 KB | — | ≤ 176 KB (+4 KB runner variance) |
+| all | 1 | 640.2 KB | 174.8 KB | — | ≤ 176 KB (+4 KB runner variance) |
+| auto | 1 | 60.3 KB | 19.2 KB | 57 (195.8 KB) | ≤ 22 KB (+1 KB runner variance) |
 | core-reveal | 1 | 57.5 KB | 18.1 KB | — | ≤ 30 KB (+1 KB runner variance) |
 | core-three | 1 | 123.4 KB | 35.6 KB | — | ≤ 65 KB (+1 KB runner variance) |
 | core-states | 1 | 44.2 KB | 14.0 KB | — | ≤ 35 KB |
 | core-presence | 1 | 46.0 KB | 14.4 KB | — | ≤ 35 KB |
-| react-adapter | 1 | 655.7 KB | 179.3 KB | — | ≤ 180 KB (+1 KB runner variance) |
-| vue-adapter | 1 | 661.3 KB | 180.8 KB | — | ≤ 181 KB (+2 KB runner variance) |
+| react-adapter | 1 | 656.0 KB | 179.4 KB | — | ≤ 180 KB (+1 KB runner variance) |
+| vue-adapter | 1 | 661.6 KB | 181.0 KB | — | ≤ 181 KB (+2 KB runner variance) |
 
 This uses the same public-entry matrix, product gzip budgets, and modular tree-shaking boundaries as Vite. It is a second bundler signal, not a promise that every bundler produces identical bytes.
 <!-- rolldown-bundle-report:end -->
