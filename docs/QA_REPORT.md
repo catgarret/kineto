@@ -88,6 +88,14 @@ PR #52(`agent/claude/perf-a11y-ci`, `18d5a80`)의 첫 CI: 11개 job 모두 통�
 - `release:prepare -- minor`: 모든 버전 소스를 0.13.0으로 올리고, `[0.13.0]` 절(영/한 각 20개)과 `.github/release-notes/v0.13.0.md`를 만들고, `docs/module-cost.md`(core 16.1 KB gzip)를 갱신했습니다. `docs/consumer-bundle-size.md`는 다시 측정했습니다.
 - 게시(`release:ship -- v0.13.0`)는 소유자의 명시적 승인 뒤에만 합니다.
 
+### #52 병합 뒤 첫 예약 실행 — `dist/`를 빌드 없이 읽던 job 셋 (2026-09-29)
+
+- 2026-09-28 월요일 예약 실행 두 개가 `main` `41d3319`에서 실패했습니다: [Supply-chain audit `36407856338`](https://github.com/catgarret/kineto/actions/runs/36407856338)의 `Check package surface`와 [Live-site parity `36405966893`](https://github.com/catgarret/kineto/actions/runs/36405966893)의 `Verify live-site parity`. 깨끗한 checkout에서 재현했습니다. `package-size`는 `required release file missing: dist/…`, `package-tarball`은 `ERR_MODULE_NOT_FOUND …/dist/kineto.default.js`, `verify-live-site`는 `ENOENT dist/kineto.umd.min.js`로 실패했습니다.
+- 원인: v1 Phase 1이 `dist/`를 추적에서 뺄 때 이 두 워크플로와 태그 전용 `release-mcp.yml`(`test:contract`가 `dist/kineto.js`를 import)이 빌드 없이 옛 커밋 사본을 읽고 있었습니다. MCP 릴리스는 아직 태그가 없어 실패가 드러나지 않았을 뿐입니다.
+- 조치: 세 job에 `npm run build`를 추가했습니다. MCP 릴리스는 빌드 뒤 `git diff --exit-code`로 추적 파일이 그대로인지 확인해, 패킹하는 tarball이 태그 소스와 같게 합니다. 새 게이트 `tests/workflow-build-order.mjs`(`test:workflow-build-order`, Node 레인)는 모든 워크플로의 job을 순서대로 읽습니다. npm 스크립트와 그 스크립트가 실행하는 파일을 따라가, `dist/`를 읽는 명령이 `npm run build`보다 앞서면 실패합니다. 수정 전 트리에서는 정확히 이 세 job만 잡고 다른 job은 오탐이 없습니다. fixture 16개로 래퍼 인자, `for` 목록, import 경유, 다른 패키지, 주석, job 경계를 고정했습니다.
+- 빌드 뒤 `test:live-site:parity`: canonical `kineto.dongri.me`는 `41d3319`와 런타임 해시까지 일치했습니다. 백업 `git.dongri.me/example/kineto`는 build `1b28eb9`(2026-08-25, v0.8.104)를 서빙했습니다. 백업 저장소의 `sync-kineto.yml`은 "가장 최근 성공한 main push CI"를 묻는데, 2026-09-29 06:11 UTC 실행에서 그 질의가 8월 run을 돌려줬고 백업이 v0.12.3에서 v0.8.104로 되돌아갔습니다. 같은 질의를 다시 하면 `41d3319`를 돌려주므로 일시적인 응답 오류로 보입니다. 이 저장소 밖의 파일이라, main 끝 커밋(`git ls-remote`)을 정하고 그 SHA의 push CI가 성공했을 때만 배포하는 패치를 소유자에게 전달했습니다. 이 방식은 CI가 도는 동안 백업이 뒤처질 수는 있어도 뒤로 가지는 않습니다.
+- 검증: `dist/`가 없는 깨끗한 checkout에서 고친 job의 명령을 순서대로 실행했습니다. Supply-chain은 boundary → build → package-size·tarball 통과. MCP 릴리스는 build 뒤 추적 파일 변화 없음 → `integrations:check`·`test:contract`·integrations-contract·MCP stdio 통과. Live-site parity는 main 트리에서 build 뒤 canonical 런타임 해시가 일치했습니다. 이 브랜치 트리에서는 v0.13.0이 아직 배포 전이라 설계대로 불일치를 보고합니다. Node 레인은 65/65 통과(새 게이트 포함), lint·`release:check` OK.
+
 ## 2026-09-26 아이폰 탭 튐 · 유령 커서 · 스크롤 중 ScrollTrigger refresh (v0.12.3)
 
 v0.12.2 게시(태그 `v0.12.2` → `3cc58bb`, Release·데모 배포 성공) 뒤의 소유자 보고 셋:

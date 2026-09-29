@@ -262,7 +262,12 @@ or a tag; release approval remains separate.
   keep loading logic out of `src/core.js` so `/core` and `/all` do not pay for it.
   Adapters import `@dong-gri/kineto/all`, not the deprecated default.
 - **`dist/` is build output and is not committed** (2026-09-27). Build before
-  running tests locally; CI, Pages, Release and the backup sync all build.
+  running tests locally. Every workflow job that reads `dist/` runs
+  `npm run build` first — CI, Pages, Release, the MCP release, the weekly
+  supply-chain audit and live-site parity check (the last three were missed at
+  first and failed their next run), and the backup sync in the backup site's own
+  repository. `tests/workflow-build-order.mjs` checks the order of every job on
+  every PR: a new job or step that reads `dist/` must come after the build.
 - **Visual effects can wait for the viewport**: with
   `Kineto.config({ defer: true })` (the demo turns it on for touch devices)
   a module that declares `defer: true` is created only near the screen

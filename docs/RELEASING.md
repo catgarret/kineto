@@ -66,9 +66,16 @@ canonical and backup URLs together, including their build markers and runtime
 asset hashes.
 
 `.github/workflows/live-site-parity.yml` runs the same check weekly and on manual
-dispatch. It is intentionally independent of the Pages deploy workflow, so a
-delayed or failed backup sync raises a separate signal instead of blocking a
-canonical deploy.
+dispatch. It builds the commit first, because the asset hashes are compared
+with that build and `dist/` is not committed. It is intentionally independent of
+the Pages deploy workflow, so a delayed or failed backup sync raises a separate
+signal instead of blocking a canonical deploy.
+
+The backup sync lives in the backup site's repository
+(`.github/workflows/sync-kineto.yml`). It must only publish the current tip of
+`main`, and only once that commit's push CI has passed. Trusting a "latest
+successful run" query is not enough: it can answer with an older run, and on
+2026-09-29 such an answer replaced the backup with an August build (v0.8.104).
 
 ## Preparing a version
 
