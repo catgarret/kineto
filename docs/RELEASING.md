@@ -127,7 +127,9 @@ npm run release:ship -- v<version>
 The command validates the release, quietly checks that neither the local nor
 remote tag exists, refuses (before pushing anything) when `origin/main` has
 commits this checkout lacks, pushes `main`, **waits for the CI run of that exact commit
-to pass**, and only then creates and pushes the annotated tag. The wait reads
+to pass**, runs the all-lockfile audit (`scripts/audit-lockfiles.mjs`, the one the
+release workflow runs after the tag), and only then creates and pushes the
+annotated tag. The wait reads
 the public GitHub Actions API without a token (`scripts/ci-status.mjs`) and
 takes as long as CI does (every CI job runs at once — about 6–10 minutes when
 green; it gives up after 45). If CI fails, is cancelled, or never starts, the
@@ -139,7 +141,13 @@ again. `--skip-ci-wait` skips the check when you have already seen CI green for
 Why: a pushed tag is never moved, so a tag cut on a commit whose CI later fails
 uses up the version. `v0.12.0` was tagged together with an unverified push;
 CI and the release gate failed, nothing reached npm, the demo site stayed on
-the previous build, and the fixes shipped as `v0.12.1`.
+the previous build, and the fixes shipped as `v0.12.1`. The audit is checked
+last for the same reason: advisories appear at any time, and `v0.13.0` was
+tagged on a green commit whose root lockfile then had a new advisory for a dev
+dependency (undici, through jsdom); the release audit failed after the tag and
+the version was used up (0.13 first shipped as `v0.13.1`). If the audit fails,
+no tag exists: update the package it names in that lockfile, merge it to
+`main`, and run the command again.
 
 The tag starts `.github/workflows/release.yml`, which:
 
