@@ -79,6 +79,47 @@ function setClasses(el, opts, active) {
 const addClasses = (el, opts) => setClasses(el, opts, true);
 const removeClasses = (el, opts) => setClasses(el, opts, false);
 
+// PANELS THAT OPEN AND CLOSE (a tab, an accordion, a dialog)
+//
+// An element inside a closed panel (display:none on it or an ancestor) has no
+// layout box. ScrollTrigger measures it as a 0×0 box at the top of the
+// viewport, so its trigger could fire — and the entrance run — while nobody
+// could see it; the boundary observer below took the 0×0 rect for "above the
+// viewport" and played a leave. Opening the panel then showed the content with
+// no entrance (once:true), or only the tail of one (once:false), and a
+// reopened panel did not replay at all. Every path now follows three rules:
+//   • nothing plays while the element has no box;
+//   • losing the box puts a repeatable entrance (once:false), or one that has
+//     not been seen yet, back to its start at once — nobody sees that jump;
+//   • getting the box back re-measures the element's trigger, and the usual
+//     "is it on screen" check plays the entrance when it is.
+// A panel closing is not a scroll exit, so it fires no onLeave/onLeaveBack.
+
+/**
+ * True when the element has a layout box (it is not inside a closed panel).
+ * Without a layout engine (jsdom in an app's unit tests) nothing has a box,
+ * not even the root element; everything counts as boxed there, as before.
+ */
+const hasBox = (el) => el.getClientRects().length > 0 || document.documentElement.getClientRects().length === 0;
+
+/**
+ * Calls `onChange(hasBox)` when the element gains or loses its layout box. The
+ * first report only records where it starts. Returns the observer, or null
+ * where ResizeObserver is missing (then panels behave as they did before).
+ */
+function watchBox(el, onChange) {
+  if (typeof ResizeObserver === 'undefined') return null;
+  let boxed = null;
+  const observer = new ResizeObserver(() => {
+    const now = hasBox(el);
+    const was = boxed;
+    boxed = now;
+    if (was !== null && was !== now) onChange(now);
+  });
+  observer.observe(el);
+  return observer;
+}
+
 // A shared, frame-coalesced boundary observer for native timelines. IO wakes it
 // on layout changes; captured scroll events include nested scrolling containers.
 //
@@ -90,8 +131,19 @@ const removeClasses = (el, opts) => setClasses(el, opts, false);
 // it watches one element width aside, and a page that clips horizontal
 // overflow (`overflow-x: clip` on html/body) leaves only a sliver of it, under
 // the threshold. The element's size changing from 0×0 is the signal to measure.
-function observeBoundaries(el, opts, clock, boundary, watch, visibleOnly, bounds = () => el.getBoundingClientRect()) {
-  let stopped = false, raf = null, zone = null, observer = null, sizeObserver = null;
+//
+// An element with no box at all (a closed panel) is in no zone: `onBox(false)`
+// reports that it lost its box, and when it has one again (`onBox(true)`) the
+// next measurement starts afresh, so a visible element enters.
+//
+// options: `boundary(next)` — 0 enter, 1 leave, 2 enterBack, 3 leaveBack;
+// `clock` (clock preset defaults); `watch` — also follow scroll and resize;
+// `visibleOnly()` — only report "visible" (a ScrollTrigger drives the rest);
+// `bounds()` — the rect that decides; `onBox(hasBox)`.
+function observeBoundaries(el, opts, {
+  clock = false, boundary, watch = false, visibleOnly = null, bounds = () => el.getBoundingClientRect(), onBox = null
+}) {
+  let stopped = false, raf = null, zone = null, observer = null, sizeObserver = null, boxed = null;
   const threshold = Number(opts.threshold ?? (clock ? .2 : .1));
   const margin = String(opts.rootMargin || (clock ? '0px' : '0px 0px -10% 0px')).trim().split(/\s+/);
   const side = (index) => margin[index] || margin[index % 2] || margin[0];
@@ -108,6 +160,19 @@ function observeBoundaries(el, opts, clock, boundary, watch, visibleOnly, bounds
       return Number.parseFloat(value) * (value.endsWith('%') ? axis / 100 : 1);
     });
     const rect = bounds();
+    if (!rect.width && !rect.height && !hasBox(el)) {
+      const had = boxed;
+      boxed = false;
+      zone = null;
+      if (had) onBox?.(false);
+      return;
+    }
+    if (boxed === false) {
+      boxed = true;
+      onBox?.(true);
+      if (stopped) return;
+    }
+    boxed = true;
     let top = -offsets[0], bottom = height + offsets[2], left = -offsets[3], right = width + offsets[1];
     for (let parent = el.parentElement; parent; parent = parent.parentElement) {
       const style = getComputedStyle(parent);
@@ -273,13 +338,33 @@ function maskedReveal(el, opts, gsap, scrollTrigger, clock, clipAt) {
   };
   prepare();
 
+  // Closed panel (see "PANELS THAT OPEN AND CLOSE"): back to the start at once.
+  const reset = () => {
+    stop();
+    tween?.pause(0);
+    state.time = 0;
+    rate = 1;
+    phase = -1;
+    played = false;
+    paint();
+    if (opts.removeClassOnLeave !== false) removeClasses(el, opts);
+  };
+  const onBox = (boxed) => {
+    if (boxed) trigger?.refresh();
+    else if (!once || phase === -1) reset();
+  };
+  // A trigger measured while the panel was closed can fire at any scroll
+  // position; only an element with a box can enter or leave.
+  const fromTrigger = (next) => () => { if (hasBox(el)) boundary(next); };
   if (scrollTrigger) trigger = scrollTrigger.create({
     trigger: el, start: opts.start || 'top 85%', end: opts.end,
-    onEnter: () => boundary(0), onLeave: () => boundary(1),
-    onEnterBack: () => boundary(2), onLeaveBack: () => boundary(3)
+    onEnter: fromTrigger(0), onLeave: fromTrigger(1),
+    onEnterBack: fromTrigger(2), onLeaveBack: fromTrigger(3)
   });
-  observer = observeBoundaries(el, opts, clock, boundary, watch,
-    scrollTrigger ? () => { if (!played) boundary(0); } : null);
+  observer = observeBoundaries(el, opts, {
+    clock, boundary, watch, onBox,
+    visibleOnly: scrollTrigger ? () => { if (!played) boundary(0); } : null
+  });
   return {
     el, type: 'reveal',
     replay(nextOptions) {
@@ -326,6 +411,8 @@ export default {
     if (classOnly) {
       let observer = null;
       let trigger = null;
+      let boxObserver = null;
+      let showObserver = null;
       let replayRaf = null;
       let destroyed = false;
       let paused = false;
@@ -342,6 +429,16 @@ export default {
         removeClasses(el, opts);
         if (!destroyed) opts.onLeave?.(el);
       };
+      // Closed panel (see "PANELS THAT OPEN AND CLOSE"): the class goes, with
+      // no onLeave; an opened panel adds it back once the element is on screen.
+      const hide = () => {
+        if (destroyed || paused || (once && entered) || opts.removeClassOnLeave === false) return;
+        removeClasses(el, opts);
+      };
+      const showWhenVisible = () => {
+        showObserver?.disconnect?.();
+        showObserver = observeOnce(el, () => { showObserver = null; enter(); }, { threshold: Number(opts.threshold ?? 0.1), rootMargin: opts.rootMargin || '0px 0px -10% 0px' });
+      };
       const resume = () => {
         if (destroyed || !paused) return;
         paused = false;
@@ -349,20 +446,36 @@ export default {
         if (!once || !entered) observer?.observe?.(el);
       };
       if (scrollTrigger) {
+        // A trigger measured while the panel was closed can fire at any scroll
+        // position; only an element with a box can enter or leave.
+        const boxed = (callback) => () => { if (hasBox(el)) callback(); };
         trigger = scrollTrigger.create({
           trigger: el,
           start: opts.start || 'top 85%',
           end: opts.end || 'bottom 15%',
           once,
-          onEnter: enter,
-          onEnterBack: () => { enter(); if (!destroyed) opts.onEnterBack?.(el); },
-          onLeave: leave,
-          onLeaveBack: () => { leave(); if (!destroyed) opts.onLeaveBack?.(el); }
+          onEnter: boxed(enter),
+          onEnterBack: boxed(() => { enter(); if (!destroyed) opts.onEnterBack?.(el); }),
+          onLeave: boxed(leave),
+          onLeaveBack: boxed(() => { leave(); if (!destroyed) opts.onLeaveBack?.(el); })
+        });
+        boxObserver = watchBox(el, (shown) => {
+          if (destroyed || paused) return;
+          if (!shown) { hide(); return; }
+          trigger?.refresh?.();
+          if (!once || !entered) showWhenVisible();
         });
       } else if (once) {
         observer = observeOnce(el, enter, { threshold: Number(opts.threshold ?? 0.1), rootMargin: opts.rootMargin || '0px 0px -10% 0px' });
       } else if (typeof IntersectionObserver !== 'undefined') {
-        observer = new IntersectionObserver((entries) => (latestEntry(entries, el)?.isIntersecting ? enter() : leave()), {
+        observer = new IntersectionObserver((entries) => {
+          const entry = latestEntry(entries, el);
+          if (!entry) return;
+          if (entry.isIntersecting) { enter(); return; }
+          // A 0×0 report is a closed panel, not a scroll exit.
+          const box = entry.boundingClientRect;
+          if (box.width || box.height) leave(); else hide();
+        }, {
           threshold: Number(opts.threshold ?? 0.1), rootMargin: opts.rootMargin || '0px'
         });
         observer.observe(el);
@@ -379,13 +492,15 @@ export default {
           if (destroyed) return;
           replayRaf = requestAnimationFrame(() => { replayRaf = null; enter(); });
         },
-        pause() { if (destroyed) return; paused = true; trigger?.disable?.(); observer?.disconnect?.(); },
+        pause() { if (destroyed) return; paused = true; trigger?.disable?.(); observer?.disconnect?.(); showObserver?.disconnect?.(); showObserver = null; },
         resume,
         destroy() {
           destroyed = true;
           if (replayRaf != null) cancelAnimationFrame(replayRaf);
           trigger?.kill?.();
           observer?.disconnect?.();
+          boxObserver?.disconnect();
+          showObserver?.disconnect?.();
           if (originalClass == null) el.removeAttribute('class'); else el.setAttribute('class', originalClass);
         }
       };
@@ -459,10 +574,22 @@ export default {
     };
     let tween = null;
     let activeTween = null;
+    // An entrance has started while the element had a box (someone could see it).
+    let seen = false;
     const useScrollTween = () => {
       if (!tween) return;
       if (activeTween !== tween) activeTween?.kill();
       activeTween = tween;
+    };
+    // Closed panel (see "PANELS THAT OPEN AND CLOSE"): the trigger's toggle
+    // action has already run by the time its callback does, so a callback on
+    // an element without a box puts the entrance back to its start instead.
+    const inPanel = () => {
+      if (hasBox(el)) return false;
+      // During gsap.fromTo() itself (a trigger already past its start) the
+      // tween is not assigned yet; it is reset right after creation below.
+      if (tween) { useScrollTween(); tween.pause(0); }
+      return true;
     };
     const to = {
       ...animateVars(),
@@ -471,22 +598,23 @@ export default {
         start: opts.start || 'top 85%',
         end: opts.end,
         toggleActions: once ? 'play none none none' : 'play reverse play reverse',
-        onEnter: () => { if (destroyed) return; useScrollTween(); opts.onEnter?.(el); },
+        onEnter: () => { if (destroyed || inPanel()) return; seen = true; useScrollTween(); opts.onEnter?.(el); },
         onLeave: () => {
-          if (destroyed) return;
+          if (destroyed || inPanel()) return;
           useScrollTween();
           opts.onLeave?.(el);
           if (destroyed) return;
           if (!once && opts.removeClassOnLeave !== false) removeClasses(el, opts);
         },
         onEnterBack: () => {
-          if (destroyed) return;
+          if (destroyed || inPanel()) return;
+          seen = true;
           useScrollTween();
           addClasses(el, opts);
           if (!destroyed) opts.onEnterBack?.(el);
         },
         onLeaveBack: () => {
-          if (destroyed) return;
+          if (destroyed || inPanel()) return;
           useScrollTween();
           opts.onLeaveBack?.(el);
           if (destroyed) return;
@@ -497,10 +625,12 @@ export default {
     targets.forEach((node) => { node.style.willChange = 'transform,opacity,filter,clip-path'; });
     tween = gsap.fromTo(targets, from, to);
     activeTween = tween;
+    if (!hasBox(el)) tween.pause(0);
     const playImmediate = (delay = 0) => {
       if (destroyed) return;
       io?.disconnect();
       io = null;
+      if (hasBox(el)) seen = true;
       // A repeatable entrance still needs its original timeline and trigger
       // for later leave/re-enter actions. The replay only temporarily owns the
       // rendered properties; a scroll boundary hands them back to that tween.
@@ -517,7 +647,8 @@ export default {
     // once the element is actually on screen, and yields to ScrollTrigger if it
     // already ran (tween.progress() > 0).
     let io = null;
-    if (typeof IntersectionObserver !== 'undefined') {
+    const armBackup = () => {
+      if (io || destroyed || typeof IntersectionObserver === 'undefined') return;
       io = new IntersectionObserver((entries) => {
         if (!latestEntry(entries, el)?.isIntersecting) return;
         io.disconnect(); io = null;
@@ -526,7 +657,22 @@ export default {
         }
       }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
       io.observe(el);
-    }
+    };
+    armBackup();
+    // A panel closing puts a repeatable entrance (or one nobody saw) back to
+    // its start; opening it re-measures the trigger and lets the backup
+    // observer above play the entrance once the element is on screen.
+    const boxObserver = watchBox(el, (boxed) => {
+      if (destroyed || (once && seen)) return;
+      if (!boxed) {
+        useScrollTween();
+        tween.pause(0);
+        if (!once && opts.removeClassOnLeave !== false) removeClasses(el, opts);
+        return;
+      }
+      tween.scrollTrigger?.refresh?.();
+      armBackup();
+    });
     // The tween pause() stopped while it was playing. An entrance still
     // waiting for its ScrollTrigger is paused already, and resume() must leave
     // it for the trigger: resuming it played every entrance below the fold as
@@ -551,6 +697,7 @@ export default {
       destroy() {
         destroyed = true;
         io?.disconnect();
+        boxObserver?.disconnect();
         tween.scrollTrigger?.kill?.();
         activeTween.kill();
         tween.kill();
@@ -729,7 +876,17 @@ export default {
       else el.style.removeProperty('transform');
       return rect;
     };
-    observer = observeBoundaries(el, opts, false, boundary, watch, null, bounds);
+    // Closed panel (see "PANELS THAT OPEN AND CLOSE"): a repeatable entrance,
+    // or one that has not played yet, goes back to its start at once.
+    const onBox = (boxed) => {
+      if (boxed || (once && played)) return;
+      stop();
+      targets.forEach(initial);
+      played = false;
+      rate = 1;
+      if (opts.removeClassOnLeave !== false) removeClasses(el, opts);
+    };
+    observer = observeBoundaries(el, opts, { boundary, watch, bounds, onBox });
     return {
       el,
       type: 'reveal',

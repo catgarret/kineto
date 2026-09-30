@@ -127,6 +127,22 @@ entrance.resume(); // 같은 지점에서 계속
 후속 변경과 예약 작업을 막습니다. 기본 1회 재생에 경계 callback이 없으면
 완료 후 감지기를 해제합니다.
 
+### 열고 닫는 패널 안의 Reveal (탭·아코디언·대화상자)
+
+닫힌 패널 안(자신이나 조상이 `display:none`)의 요소에는 레이아웃 상자가 없습니다. 모든 경로(GSAP·native,
+일반 프리셋·`mask`/`wipe`/`clock`·`class`)가 같은 세 규칙을 따릅니다.
+
+- 상자가 없는 동안에는 아무것도 재생하지 않습니다. 패널이 닫힌 채 ScrollTrigger가 요소를 뷰포트 맨 위의 0×0
+  상자로 재도 등장이 몰래 끝나지 않습니다.
+- 패널이 닫히면 `once:false` 등장(그리고 아직 아무도 보지 못한 등장)은 즉시 시작 상태로 돌아갑니다. 보이지 않는
+  순간이라 튀는 것이 보이지 않습니다. 패널이 닫히는 것은 스크롤 이탈이 아니므로 `onLeave`·`onLeaveBack`은
+  부르지 않습니다(`class`는 `removeClassOnLeave`가 `false`가 아니면 클래스를 뗍니다).
+- 패널이 열리면 그 요소의 trigger를 다시 재고, 요소가 화면에 들어와 있으면 등장을 처음부터 재생합니다.
+  `once:true`는 처음 보였을 때 한 번만 재생하고, 다시 열어도 재생하지 않습니다.
+
+Bootstrap 아코디언·모달처럼 라이브러리가 여닫고 Kineto는 내용만 등장시키는 조합이 이 경우입니다.
+게이트는 `tests/browser/reveal-panel-reopen.mjs`(세 엔진, GSAP 유무 두 경로)입니다.
+
 Native 경로는 `threshold`·`rootMargin`과 overflow 조상의 가시 영역을 기준으로
 감지합니다. GSAP의 `start`·`end` 문자열 문법 전체를 대체하지는 않습니다.
 스크롤 측정은 passive 이벤트를 프레임당 한 번으로 모으며, 상시 측정 루프나
