@@ -61,6 +61,7 @@
 - `digit`와 `pop`은 세로 reel을 만들지 않습니다.
 - `pop`은 최종 문자열을 다른 숫자로 바꾸지 않습니다.
 - `destroy()`는 원래 HTML, style, ARIA를 복원합니다.
+- 탭·아코디언·대화상자처럼 여닫는 패널 안에서는 패널이 열릴 때 카운트를 재생합니다. 기본 `once:true`는 처음 열 때 한 번, `once:false`는 열 때마다 처음부터입니다. 닫힌 패널 안에서는 아무것도 재생하지 않습니다 — 예전에는 ScrollTrigger가 닫힌 요소를 뷰포트 맨 위의 0×0 상자로 재서 닫힌 탭의 Counter가 아무도 못 보는 사이에 세어 버렸습니다(열면 끝 숫자나 중간부터). 규칙은 `src/utils.js`의 `panelGate()`이고, 게이트는 `tests/browser/panel-entrances.mjs`입니다(GSAP 경로).
 - `plain`을 뺀 모드의 숫자 릴·flip 반쪽·pop 글자는 `aria-hidden`이고, 값은 요소 안의 보이지 않는
   텍스트 하나(`kt-sr-only`)로 읽힙니다. Clock은 `"1d 02:03:04"`, `"10:15 PM"`, `"012S"`처럼 화면에
   보이는 시간을 읽으며, 그 문구가 바뀔 때만 고칩니다.

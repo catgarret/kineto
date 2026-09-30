@@ -245,7 +245,11 @@ const BUDGETS = {
   // lifecycle races, resting loops): 640.4 / 175.7 ESM, 500.5 / 156.1
   // minified, 498.6 / 155.5 UMD. These are correctness and accessibility
   // bytes. Headroom policy: raw +~1%, gzip to the next KiB.
-  'kineto.js': { raw: 647, gz: 176, variance: 2 },
+  // 2026-09-30 (entrances in panels that open and close: Reveal's four paths,
+  // utils.panelGate for Counter / Blur Text / Text Split, and the Slider frame
+  // clock): 647.7 / 177.7 ESM, 505.9 / 157.9 minified, 504.0 / 157.3 UMD.
+  // Correctness bytes; same policy: raw +~1%, gzip to the next KiB.
+  'kineto.js': { raw: 654, gz: 178, variance: 2 },
   // Glitch terminal cleanup: min ESM 125.0 KB gzip and UMD 413.0 KB raw
   // cross their prior exact boundaries. Retain gzip runner variance.
   // 2026-09-18: the shared priority-preserving inline-style snapshot (kebab/
@@ -263,7 +267,8 @@ const BUDGETS = {
   // 2026-09-21 (fold): FLIP's fold move style measures 454.3 KiB raw / 139.0
   // KiB gzip minified — the raw ceiling is what moves.
   // 2026-09-27 (v0.12.3 audit fixes, see the kineto.js note): 500.5 / 156.1.
-  'kineto.min.js': { raw: 506, gz: 157, variance: 2 },
+  // 2026-09-30 (panels, see the kineto.js note): 505.9 / 157.9.
+  'kineto.min.js': { raw: 511, gz: 158, variance: 2 },
   // 2026-09-20 (shared-element teardown): the UMD gzip crosses its exact 133 KB
   // boundary at a measured 134.0 KB while raw stays inside 440 KB. Round only
   // the compressed ceiling; runner variance and consumer budgets are unchanged.
@@ -272,8 +277,9 @@ const BUDGETS = {
   // strict upper bound on the shipped file.
   // v0.12.1 (see the kineto.js note): 483.0 KiB raw → 484; headroom policy → 488.
   // 2026-09-27 (v0.12.3 audit fixes, see the kineto.js note): 498.6 / 155.5.
-  'kineto.umd.js': { raw: 504, gz: 156, variance: 1 },
-  'kineto.umd.min.js': { raw: 504, gz: 156, variance: 1 },
+  // 2026-09-30 (panels, see the kineto.js note): 504.0 / 157.3.
+  'kineto.umd.js': { raw: 509, gz: 158, variance: 1 },
+  'kineto.umd.min.js': { raw: 509, gz: 158, variance: 1 },
   // The Loading Indicator visuals are deliberately CSS-first. Keep both JS
   // and CSS ceilings close to the 51-module build so future bloat still fails.
   // Continuous grow keyframes add ~0.1 KB raw while gzip remains 7.8 KB.

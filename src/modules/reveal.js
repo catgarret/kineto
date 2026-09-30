@@ -1,4 +1,4 @@
-import { clamp, G, gsapEaseName, latestEntry, MAX_FRAME_STEP_MS, motionDefaults, observeOnce, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
+import { clamp, G, gsapEaseName, hasBox, latestEntry, MAX_FRAME_STEP_MS, motionDefaults, observeOnce, snapshotAttributes, snapshotInlineStyles, ST, watchBox } from '../utils.js';
 import { cubicBezierFn, fn as easingFn } from '../easings.js';
 
 const PRESETS = {
@@ -79,46 +79,13 @@ function setClasses(el, opts, active) {
 const addClasses = (el, opts) => setClasses(el, opts, true);
 const removeClasses = (el, opts) => setClasses(el, opts, false);
 
-// PANELS THAT OPEN AND CLOSE (a tab, an accordion, a dialog)
-//
-// An element inside a closed panel (display:none on it or an ancestor) has no
-// layout box. ScrollTrigger measures it as a 0×0 box at the top of the
-// viewport, so its trigger could fire — and the entrance run — while nobody
-// could see it; the boundary observer below took the 0×0 rect for "above the
-// viewport" and played a leave. Opening the panel then showed the content with
-// no entrance (once:true), or only the tail of one (once:false), and a
-// reopened panel did not replay at all. Every path now follows three rules:
-//   • nothing plays while the element has no box;
-//   • losing the box puts a repeatable entrance (once:false), or one that has
-//     not been seen yet, back to its start at once — nobody sees that jump;
-//   • getting the box back re-measures the element's trigger, and the usual
-//     "is it on screen" check plays the entrance when it is.
-// A panel closing is not a scroll exit, so it fires no onLeave/onLeaveBack.
-
-/**
- * True when the element has a layout box (it is not inside a closed panel).
- * Without a layout engine (jsdom in an app's unit tests) nothing has a box,
- * not even the root element; everything counts as boxed there, as before.
- */
-const hasBox = (el) => el.getClientRects().length > 0 || document.documentElement.getClientRects().length === 0;
-
-/**
- * Calls `onChange(hasBox)` when the element gains or loses its layout box. The
- * first report only records where it starts. Returns the observer, or null
- * where ResizeObserver is missing (then panels behave as they did before).
- */
-function watchBox(el, onChange) {
-  if (typeof ResizeObserver === 'undefined') return null;
-  let boxed = null;
-  const observer = new ResizeObserver(() => {
-    const now = hasBox(el);
-    const was = boxed;
-    boxed = now;
-    if (was !== null && was !== now) onChange(now);
-  });
-  observer.observe(el);
-  return observer;
-}
+// PANELS THAT OPEN AND CLOSE (a tab, an accordion, a dialog): the rules are
+// described next to hasBox() in src/utils.js. ScrollTrigger measured an
+// element in a closed panel as a 0×0 box at the top of the viewport, and the
+// boundary observer below took its 0×0 rect for "above the viewport" and
+// played a leave. Opening the panel then showed the content with no entrance
+// (once:true), or only the tail of one (once:false), and a reopened panel did
+// not replay at all. Every path below applies the rules its own way.
 
 // A shared, frame-coalesced boundary observer for native timelines. IO wakes it
 // on layout changes; captured scroll events include nested scrolling containers.
