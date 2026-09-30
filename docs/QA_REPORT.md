@@ -3,6 +3,15 @@
 검증일: 2026-09-20
 대상: v0.13.1 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-30 열고 닫는 패널 안의 Reveal (Unreleased)
+
+- 발견 경위: `tests/integrations/bootstrap-qa.mjs:139`(아코디언 본문 reveal, 8초 안에 opacity > 0.95)가 CPU 부하에서 가끔 늦는다는 메모를 조사했습니다. 부하 재현은 되지 않았지만, 패널 안 요소의 ScrollTrigger가 닫힌 상태에서 `start -765 / end 0`(뷰포트 맨 위 0×0 상자)으로 재져 있었고, 첫 열림은 백업 IntersectionObserver 덕분에만 재생됐습니다. 여닫기를 반복하는 탐침으로 결정적 결함을 찾았습니다: 모달·FAQ를 **두 번째로** 열면(`data-kt-once="false"`) 가장 낮은 opacity가 1.00 — 등장 없이 내용만 나타났습니다.
+- 게이트 `tests/browser/reveal-panel-reopen.mjs`: 닫힌 패널 네 개(GSAP tween `fade-up` once:false, `wipe` once:false, `class` once:false, 기본 `fade-up` once:true)를 GSAP이 있을 때와 없을 때(CDN 차단) 열고 닫고 다시 엽니다. 옛 코드는 세 엔진 모두 다섯 곳에서 실패했습니다: GSAP once:true 첫 열림 1.00(등장이 숨은 채 끝남), GSAP tween·wipe 재열림 0.80, native tween 0.58·wipe 0.63~0.67(닫히는 동안 역재생이 절반쯤 진행된 채 다시 재생). 수정 뒤 Chromium·WebKit·Firefox 통과, 약 5~7초(패널 네 개를 동시에 엽니다).
+- 원인과 수정(`src/modules/reveal.js` "PANELS THAT OPEN AND CLOSE"): 닫힌 패널 안 요소에는 레이아웃 상자가 없는데, ScrollTrigger는 이를 뷰포트 맨 위 0×0으로 재고, native 경계 관찰자는 0×0 rect를 "뷰포트 위"로 보아 leave를 재생했습니다. 이제 네 경로 모두 (1) 상자가 없는 동안 재생하지 않고(ScrollTrigger 콜백은 `hasBox()`로 거르고, 토글 동작이 이미 돈 tween은 `pause(0)`), (2) 상자를 잃으면 once:false 또는 아직 보이지 않은 등장을 즉시 시작 상태로 되돌리며(`onLeave` 없음), (3) 상자를 다시 얻으면 trigger를 다시 재고 화면에 있으면 처음부터 재생합니다. 경계 관찰자 `observeBoundaries()`는 인자 7개 대신 옵션 객체를 받고 `onBox(hasBox)`를 알립니다. jsdom처럼 레이아웃이 없는 환경(루트도 상자가 없음)은 예전처럼 모두 상자가 있는 것으로 봅니다.
+- Bootstrap QA에 재열림 검사를 더했습니다: FAQ를 닫았다 다시 열면 opacity가 0.5 아래로 내려갔다가 0.95 위로 올라가야 합니다. 옛 코드 `{"lowest":1,"opacity":1}`로 실패, 새 코드 통과.
+- 비용: `dist/modular/modules/reveal.js` gzip 5,369 → 5,880 B. 제품 번들이 예산 규칙대로 옮겨졌습니다(Vite 176.1 full / 179.9 React / 181.1 Vue, Rolldown 176.4 / 180.1 / 181.7 → 177 / 181 / 182 KB, `docs/consumer-bundle-size.md` 갱신).
+- 로컬 확인: 새 게이트 세 엔진, WebKit·Firefox에서 `reveal-variant-browser`·`reveal-hidden-panel`·lifecycle 3종·`idle-cost`·`create-cost`·`layout-refresh`·`deferred-create`·`demo-blocks` 11/11, Bootstrap QA 2회, Node 레인, `verify:push`.
+
 ## 2026-09-30 CI annotation 잡음 · Slider 반복 타임스탬프 멈춤 · 테스트 흔들림 (Unreleased)
 
 - PR #57 CI(run 36633320041, ed170fa)는 성공했고 가장 느린 job이 226초였습니다(WebKit 3/3 211초, 이전 202~284초). 비인증 API로 annotation을 읽으니 새 재시도 두 개와 잡음 하나가 있었습니다.

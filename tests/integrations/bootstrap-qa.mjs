@@ -142,6 +142,31 @@ try {
     bodyReveal: Boolean(window.Kineto.getInstance(document.querySelector('#faq-1 .accordion-body'), 'reveal'))
   }));
   assert.deepEqual(accordionOwners, { kinetoAccordion: false, bodyReveal: true }, 'Bootstrap owns open/close, Kineto only reveals the content');
+  // The answer is `data-kt-once="false"`: opening it again plays the entrance
+  // again. It used to appear with no entrance the second time — its trigger was
+  // measured while the panel was closed (see "PANELS THAT OPEN AND CLOSE" in
+  // src/modules/reveal.js).
+  await page.click('[data-bs-target="#faq-1"]');
+  await page.waitForFunction(() => {
+    const panel = document.getElementById('faq-1');
+    return !panel.classList.contains('show') && !panel.classList.contains('collapsing');
+  }, null, { timeout: 5000 });
+  const reopened = page.evaluate(() => new Promise((resolve) => {
+    const body = document.querySelector('#faq-1 .accordion-body');
+    const panel = document.getElementById('faq-1');
+    const started = window.performance.now();
+    let lowest = 1;
+    const tick = () => {
+      const opacity = Number(getComputedStyle(body).opacity);
+      if (panel.classList.contains('show') || panel.classList.contains('collapsing')) lowest = Math.min(lowest, opacity);
+      if ((opacity > 0.95 && lowest < 0.5) || window.performance.now() - started > 8000) resolve({ lowest, opacity });
+      else window.requestAnimationFrame(tick);
+    };
+    window.requestAnimationFrame(tick);
+  }));
+  await page.click('[data-bs-target="#faq-1"]');
+  const replay = await reopened;
+  assert.ok(replay.lowest < 0.5 && replay.opacity > 0.95, `a once:false answer must play its entrance again when the accordion reopens (${JSON.stringify(replay)})`);
 
   // 2d. Carousel: Bootstrap slides; Kineto has no slider instance on it.
   await page.click('#story .carousel-control-next');

@@ -58,13 +58,18 @@ export const consumerFixtures = [
   // loops across ~40 modules): Vite 175.3 full / 179.1 React / 180.3 Vue,
   // Rolldown 175.6 / 179.3 / 180.8 KB. Same rule: next KB over the larger
   // measurement (176 / 180 / 181); `all` keeps the full ceiling.
-  { name: 'full', entry: 'full', budget: 176, variance: { vite: 4, rolldown: 4 } },
+  // 2026-09-30 (Reveal in panels that open and close — every path now resets
+  // and replays around a closed tab/accordion/dialog — and the Slider frame
+  // clock): Vite 176.1 full / 179.9 React / 181.1 Vue, Rolldown 176.4 / 180.1 /
+  // 181.7 KB. Same rule: next KB over the larger measurement (177 / 181 / 182);
+  // `all` keeps the full ceiling.
+  { name: 'full', entry: 'full', budget: 177, variance: { vite: 4, rolldown: 4 } },
   // 2026-09-27 (entry points, 0.13): `@dong-gri/kineto/all` is the file the
   // default entry wraps, so it carries the same ceiling. The default entry adds
   // the notice wrapper (+0.3 KB, default only); the core gained only the
   // on-demand hook in scan() (+0.1 KB in every entry). With both, Rolldown
   // measures full 169.6 KB: full and all move to the next KB (170) by the rule.
-  { name: 'all', entry: 'all', budget: 176, variance: { vite: 4, rolldown: 4 } },
+  { name: 'all', entry: 'all', budget: 177, variance: { vite: 4, rolldown: 4 } },
   // The on-demand entry: the budget is the FIRST download (core + the loader
   // table + the Canvas Effect registry; Vite 19.5 KB in 4 files, Rolldown
   // 18.0 KB); every module is its own chunk (onDemandEntries below).
@@ -83,7 +88,8 @@ export const consumerFixtures = [
   // 2026-09-20 (effect quality): the four effect rewrites measure 155.4 KiB gzip
   // in the Vite React entry. Round only this measured cost; variance unchanged.
   // See the squircle note above: Vite measures 157.5 KB in the React entry.
-  { name: 'react-adapter', entry: 'react', budget: 180, variance: { vite: 1, rolldown: 1 } },
+  // See the 2026-09-30 note above: Rolldown measures 180.1 KB in the React entry.
+  { name: 'react-adapter', entry: 'react', budget: 181, variance: { vite: 1, rolldown: 1 } },
   // 2026-09-18: the Presence status subscription that keeps both adapters in
   // sync with a propagating parent measures 144.1 KB in the Vite Vue entry
   // (React 143.x stays inside its ceiling). Round the Vue product ceiling by
@@ -99,7 +105,8 @@ export const consumerFixtures = [
   // Vue measures 163.2 KiB gzip in Vite (163.8 in Rolldown, inside its own
   // variance), while full at 158.2 and React at 162.4 stay inside theirs.
   // Round only the ceiling that actually moved.
-  { name: 'vue-adapter', entry: 'vue', budget: 181, variance: { vite: 1, rolldown: 2 } }
+  // See the 2026-09-30 note above: Rolldown measures 181.7 KB in the Vue entry.
+  { name: 'vue-adapter', entry: 'vue', budget: 182, variance: { vite: 1, rolldown: 2 } }
 ];
 
 export const treeShakenEntries = [
