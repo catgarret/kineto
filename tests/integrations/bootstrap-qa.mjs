@@ -136,7 +136,29 @@ try {
   // 2c. Accordion: Bootstrap expands the panel; Kineto reveals the body once it is visible.
   await page.click('[data-bs-target="#faq-1"]');
   await page.waitForSelector('#faq-1.show', { state: 'visible' });
-  await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('#faq-1 .accordion-body')).opacity) > 0.95, null, { timeout: 8000 });
+  // Bring the answer on screen before expecting its entrance. Bootstrap's
+  // `scroll-behavior: smooth` animates the scroll Playwright makes for the
+  // click, and on a busy runner it could settle with the opened answer just
+  // below the fold (scrollY 1593, its trigger starting at 1768), where Reveal
+  // rightly waits: the wait below timed out about once in fifteen runs.
+  const showAnswer = () => page.evaluate(() => document.querySelector('#faq-1 .accordion-body').scrollIntoView({ block: 'center', behavior: 'instant' }));
+  await showAnswer();
+  // What the answer's Reveal looked like when a wait gives up: its opacity,
+  // its ScrollTrigger (start/end/progress) and that trigger's tween.
+  const revealState = (selector) => page.evaluate((selector) => {
+    const body = document.querySelector(selector);
+    const trigger = window.ScrollTrigger?.getAll?.().find((candidate) => candidate.trigger === body);
+    const tween = trigger?.animation;
+    return {
+      opacity: getComputedStyle(body).opacity,
+      boxes: body.getClientRects().length,
+      scrollY: Math.round(window.scrollY),
+      trigger: trigger && { start: Math.round(trigger.start), end: Math.round(trigger.end), progress: trigger.progress, active: trigger.isActive },
+      tween: tween && { progress: tween.progress(), paused: tween.paused(), reversed: tween.reversed() }
+    };
+  }, selector);
+  await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('#faq-1 .accordion-body')).opacity) > 0.95, null, { timeout: 8000 })
+    .catch(async (error) => { throw new Error(`the accordion answer did not reveal after opening: ${JSON.stringify(await revealState('#faq-1 .accordion-body'))}`, { cause: error }); });
   const accordionOwners = await page.evaluate(() => ({
     kinetoAccordion: Boolean(window.Kineto.getInstance(document.getElementById('faq-accordion'), 'accordion')),
     bodyReveal: Boolean(window.Kineto.getInstance(document.querySelector('#faq-1 .accordion-body'), 'reveal'))
@@ -165,6 +187,8 @@ try {
     window.requestAnimationFrame(tick);
   }));
   await page.click('[data-bs-target="#faq-1"]');
+  await page.waitForSelector('#faq-1.show', { state: 'attached' });
+  await showAnswer();
   const replay = await reopened;
   assert.ok(replay.lowest < 0.5 && replay.opacity > 0.95, `a once:false answer must play its entrance again when the accordion reopens (${JSON.stringify(replay)})`);
 

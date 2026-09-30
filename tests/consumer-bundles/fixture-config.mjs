@@ -106,7 +106,10 @@ export const consumerFixtures = [
   // variance), while full at 158.2 and React at 162.4 stay inside theirs.
   // Round only the ceiling that actually moved.
   // See the 2026-09-30 note above: Rolldown measures 181.7 KB in the Vue entry.
-  { name: 'vue-adapter', entry: 'vue', budget: 182, variance: { vite: 1, rolldown: 2 } }
+  // 2026-09-30 (utils.panelGate for Counter / Blur Text / Text Split): Rolldown
+  // measures 182.2 KB in the Vue entry (Vite 181.5; full 176.9 and React 180.6
+  // stay inside theirs). Round only the ceiling that moved.
+  { name: 'vue-adapter', entry: 'vue', budget: 183, variance: { vite: 1, rolldown: 2 } }
 ];
 
 export const treeShakenEntries = [

@@ -124,6 +124,10 @@ Text Reveal도 authored `<br>`와 `text` 옵션의 `\n`을 같은 방식으로
 
 ---
 
+## 여닫는 패널 안에서
+
+탭·아코디언·대화상자처럼 여닫는 패널 안에서는 패널이 열릴 때 등장을 재생합니다. 기본 `once:true`는 처음 열 때 한 번, `once:false`는 열 때마다 처음부터입니다. 닫힌 패널 안에서는 아무것도 재생하지 않습니다 — 예전에는 ScrollTrigger가 닫힌 요소를 뷰포트 맨 위의 0×0 상자로 재서 `once:false`가 다시 열 때 재생되지 않았습니다. 규칙은 `src/utils.js`의 `panelGate()`이고, 게이트는 `tests/browser/panel-entrances.mjs`입니다(GSAP 경로). 인라인 `<span>`에 붙여도 가장 가까운 블록 조상의 상자로 패널 여닫힘을 알아챕니다.
+
 ## 알려진 한계
 
 - **일반 애니메이션의 HTML 태그 제거**: 텍스트를 추출해 새 span으로 나누므로 `<em>`, `<strong>` 같은 inline 태그는 사라집니다. `<br>`는 줄바꿈으로 복원합니다.

@@ -1,4 +1,4 @@
-import { formatNumber, G, observeOnce, snapshotAttributes, srText, textOption } from '../utils.js';
+import { formatNumber, G, observeOnce, panelGate, snapshotAttributes, srText, textOption } from '../utils.js';
 
 function normalizedFormat(opts) {
   if (opts.format) return opts.format;
@@ -133,8 +133,18 @@ export default {
     const formatOptions = { decimals, format, locale: opts.locale };
     const finalNumericString = formatNumber(to, formatOptions);
     const finalValue = `${prefix}${finalNumericString}${suffix}`;
-    const scrollTrigger = buildScrollTrigger(el, opts);
     const animations = [];
+    // The count that a ScrollTrigger starts follows the panel rules (a counter
+    // in a closed tab counted while nobody could see it — see panelGate in
+    // src/utils.js). Only one animation per counter is trigger-driven.
+    const triggered = () => animations.find((animation) => animation.scrollTrigger);
+    const builtTrigger = buildScrollTrigger(el, opts);
+    const panel = builtTrigger ? panelGate(el, {
+      once: opts.once !== false,
+      enter: () => triggered()?.restart(true),
+      reset: () => triggered()?.pause(0)
+    }) : null;
+    const scrollTrigger = panel ? panel.trigger(builtTrigger) : builtTrigger;
 
     // Every mode but `plain` draws the value as separate pieces: slot reels
     // hold a dozen digits each, flip cells four halves, pop and digit one box
@@ -855,6 +865,8 @@ export default {
       });
     }
 
+    panel?.watch(triggered()?.scrollTrigger);
+
     // GSAP tweens that pause() stopped while they played. A tween still waiting
     // for its ScrollTrigger is paused already; resuming it counted every
     // counter below the fold up as soon as a hidden tab came back.
@@ -876,6 +888,7 @@ export default {
         else if (pausedTweens.delete(animation)) animation.resume();
       }),
       destroy: () => {
+        panel?.disconnect();
         killAnimations();
         screenReaderText?.restore();
         el.innerHTML = originalHTML;

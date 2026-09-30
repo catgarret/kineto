@@ -1,4 +1,4 @@
-import { G, gsapEaseName, labelStaticText, observeOnce, renderTextLineBreaks, segmentText, snapshotAttributes, snapshotChildNodes, snapshotInlineStyles, srText, ST, textWithLineBreaks, wordSink } from '../utils.js';
+import { G, gsapEaseName, labelStaticText, observeOnce, panelGate, renderTextLineBreaks, segmentText, snapshotAttributes, snapshotChildNodes, snapshotInlineStyles, srText, ST, textWithLineBreaks, wordSink } from '../utils.js';
 
 export default {
   // Kineto.config({ defer: true }) may create this only when the element nears
@@ -76,7 +76,13 @@ export default {
       });
     };
 
-    if (gsap && scrollTrigger) {
+    // A closed tab, accordion or dialog: see panelGate in src/utils.js.
+    const panel = gsap && scrollTrigger ? panelGate(el, {
+      once: opts.once !== false,
+      enter: () => tween?.restart(),
+      reset: () => tween?.pause(0)
+    }) : null;
+    if (panel) {
       tween = gsap.to(chars, {
         filter: 'blur(0px)',
         opacity: 1,
@@ -84,12 +90,13 @@ export default {
         stagger,
         ease: opts.ease ? gsapEaseName(opts.ease) : 'power2.out',
         onComplete: () => { releaseWillChange(); opts.onComplete?.(); },
-        scrollTrigger: {
+        scrollTrigger: panel.trigger({
           trigger: el,
           start: opts.start || 'top 85%',
           toggleActions: opts.once === false ? 'play reverse play reverse' : 'play none none none'
-        }
+        })
       });
+      panel.watch(tween.scrollTrigger);
     } else {
       observer = observeOnce(el, fallbackPlay, { threshold: 0.1 });
     }
@@ -138,6 +145,7 @@ export default {
       },
       destroy: () => {
         observer?.disconnect();
+        panel?.disconnect();
         clearTimers();
         tween?.scrollTrigger?.kill();
         tween?.kill();

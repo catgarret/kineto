@@ -548,6 +548,112 @@ export function observeOnce(el, callback, options = {}) {
   return observer;
 }
 
+// PANELS THAT OPEN AND CLOSE (a tab, an accordion, a dialog)
+//
+// An element inside a closed panel (display:none on it or an ancestor) has no
+// layout box. ScrollTrigger measures it as a 0×0 box at the top of the
+// viewport, so a trigger created there can fire — and an entrance run — while
+// nobody can see it; opening the panel then shows the end state with no
+// entrance, and a reopened panel does not replay. Entrances follow three
+// rules (Reveal applies them to its own paths, src/modules/reveal.js):
+//   • nothing plays while the element has no box;
+//   • losing the box puts a repeatable entrance (once:false), or one nobody
+//     has seen yet, back to its start at once — nobody sees that jump;
+//   • getting the box back re-measures the trigger and plays the entrance
+//     from its start once the element is on screen.
+// A panel closing is not a scroll exit, so it fires no onLeave/onLeaveBack.
+
+/**
+ * True when the element has a layout box (it is not inside a closed panel).
+ * Without a layout engine (jsdom in an app's unit tests) nothing has a box,
+ * not even the root element; everything counts as boxed there.
+ */
+export function hasBox(el) {
+  return el.getClientRects().length > 0 || document.documentElement.getClientRects().length === 0;
+}
+
+/**
+ * Calls `onChange(hasBox)` when the element gains or loses its layout box. The
+ * first report only records where it starts. Returns the observer, or null
+ * where ResizeObserver is missing (then panels behave as they did before).
+ *
+ * ResizeObserver reports an inline element (a `<span>` headline, the usual
+ * home of Blur Text and Text Split) as 0×0 whether it is shown or not, so a
+ * panel opening around it changed nothing it could see. The nearest ancestor
+ * that is not inline is watched too; its box appears and disappears with the
+ * panel.
+ */
+export function watchBox(el, onChange) {
+  if (typeof ResizeObserver === 'undefined') return null;
+  let boxed = null;
+  const observer = new ResizeObserver(() => {
+    const now = hasBox(el);
+    const was = boxed;
+    boxed = now;
+    if (was !== null && was !== now) onChange(now);
+  });
+  observer.observe(el);
+  let holder = el;
+  while (holder.parentElement && /^(inline|contents)$/.test(getComputedStyle(holder).display)) holder = holder.parentElement;
+  if (holder !== el) observer.observe(holder);
+  return observer;
+}
+
+/**
+ * The panel rules for an entrance a ScrollTrigger starts.
+ *
+ *   const panel = panelGate(el, { once, enter: () => tween.restart(), reset: () => tween.pause(0) });
+ *   const tween = gsap.to(targets, { …, scrollTrigger: panel.trigger({ trigger: el, start, toggleActions }) });
+ *   panel.watch(tween.scrollTrigger);   // once the trigger exists
+ *   …destroy(): panel.disconnect();
+ *
+ * `trigger(config)` wraps the four boundary callbacks: on an element without
+ * a box they do nothing but `reset()` (a toggle action has already run by the
+ * time a callback does, so this undoes it). `enter()` plays the entrance from
+ * its start; `reset()` puts it back there without animating.
+ */
+export function panelGate(el, { once = true, enter, reset, threshold = 0.1 }) {
+  let seen = false;
+  let triggers = [];
+  let boxes = null;
+  let visibility = null;
+  const guard = (callback, entering) => (...args) => {
+    if (!hasBox(el)) {
+      if (!once || !seen) reset();
+      return;
+    }
+    if (entering) seen = true;
+    callback?.(...args);
+  };
+  return {
+    trigger: (config) => ({
+      ...config,
+      onEnter: guard(config.onEnter, true),
+      onEnterBack: guard(config.onEnterBack, true),
+      onLeave: guard(config.onLeave),
+      onLeaveBack: guard(config.onLeaveBack)
+    }),
+    watch(...instances) {
+      triggers = instances.filter(Boolean);
+      // A trigger already past its start fires while it is being created.
+      if (!hasBox(el) && (!once || !seen)) reset();
+      boxes = watchBox(el, (boxed) => {
+        visibility?.disconnect();
+        visibility = null;
+        if (once && seen) return;
+        if (!boxed) { reset(); return; }
+        triggers.forEach((instance) => instance.refresh?.());
+        visibility = observeOnce(el, () => { visibility = null; seen = true; enter(); }, { threshold });
+      });
+    },
+    disconnect() {
+      boxes?.disconnect();
+      visibility?.disconnect();
+      boxes = visibility = null;
+    }
+  };
+}
+
 
 /**
  * `class=""` · `style=""` 처럼 **값이 빈 속성**을 지웁니다.

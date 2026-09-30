@@ -3,6 +3,16 @@
 검증일: 2026-09-20
 대상: v0.13.1 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-30 여닫는 패널 안의 Counter·Blur Text·Text Split (Unreleased)
+
+- Reveal 수정 뒤 `once` 옵션을 가진 다른 모듈(blurText·counter·lazy·reveal·textSplit·confetti)을 같은 탐침(닫힌 패널 → 열기 → 닫기 → 다시 열기, 프레임마다 텍스트·opacity·filter·transform 지문)으로 봤습니다. GSAP 경로에서: Counter는 닫힌 동안 세고 있었고(`hidden:3454`), `once:false` Text Split은 다시 열어도 1프레임(정지), Blur Text `once:false`는 재열림이 일부만 보였습니다. GSAP 없는 Counter·Blur Text `once:false`는 원래 애니메이션을 하지 않거나(최종값) 한 번만 하는 설계라 대상이 아닙니다.
+- 첫 수정 뒤에도 인라인 `<span>`의 Blur Text·Text Split은 여전히 1프레임이었습니다. ResizeObserver는 인라인 요소를 보이든 안 보이든 0×0으로 알리므로 패널이 열린 것을 몰랐습니다. `watchBox()`가 인라인이 아닌 가장 가까운 조상도 관찰합니다.
+- `src/utils.js`: `hasBox()`·`watchBox()`를 Reveal에서 옮기고, ScrollTrigger가 시작하는 등장용 `panelGate(el, { once, enter, reset })`를 추가했습니다(`trigger(config)`가 네 경계 콜백을 감싸고, `watch(trigger)`가 상자 변화를 따라감). Counter(plain·digit·pop·slot의 trigger 구동 애니메이션), Blur Text, Text Split이 사용합니다.
+- 게이트 `tests/browser/panel-entrances.mjs`(두 레인): 옛 코드는 `splitRepeat` 재열림 1프레임, `counterOnce` 닫힌 동안 3445로 실패. 새 코드는 Chromium·WebKit·Firefox 통과. WebKit은 로드 직후 첫 1.6초에 5개 상태만 그려서, "재생됨"을 프레임 수가 아니라 시작·중간·끝 세 상태 이상으로 판정합니다.
+- 크기: 전체 번들이 상한을 넘어 예산 규칙대로 옮겼습니다 — `kineto.js` 647.7 / 177.7 → 654 / 178, `kineto.min.js` 505.9 / 157.9 → 511 / 158, UMD 504.0 / 157.3 → 509 / 158, Rolldown Vue 182.2 → 183.
+- `verify:push`의 Node 레인에서 Bootstrap QA 아코디언 대기(8초)가 한 번 시간 초과됐습니다. CPU 부하에서 약 15회에 1회 재현했고, 실패 시 상태를 남기게 한 뒤 잡은 값: `opacity 0, scrollY 1593, trigger start 1768 / end 2589, progress 0, tween reversed`. trigger는 제대로 다시 재져 있었고, 답변이 화면 아래(85% 선 밖)에 있어 Reveal이 올바르게 기다린 것입니다. Bootstrap의 `scroll-behavior: smooth`가 Playwright 클릭 스크롤을 애니메이션해 최종 위치가 흔들렸습니다. 테스트가 답변을 `scrollIntoView({ block: 'center', behavior: 'instant' })`로 먼저 보이게 합니다: 부하 30회 실패 0.
+- 로컬 확인: 새 게이트 세 엔진, Chromium에서 `create-cost`·`idle-cost`·텍스트/lifecycle 테스트·`components-a11y`·`deferred-create`·`demo-blocks`·Reveal 게이트 12/12, `test:size`·`test:consumer-bundles`·`deps-boundary`, `verify:push`.
+
 ## 2026-09-30 열고 닫는 패널 안의 Reveal (Unreleased)
 
 - 발견 경위: `tests/integrations/bootstrap-qa.mjs:139`(아코디언 본문 reveal, 8초 안에 opacity > 0.95)가 CPU 부하에서 가끔 늦는다는 메모를 조사했습니다. 부하 재현은 되지 않았지만, 패널 안 요소의 ScrollTrigger가 닫힌 상태에서 `start -765 / end 0`(뷰포트 맨 위 0×0 상자)으로 재져 있었고, 첫 열림은 백업 IntersectionObserver 덕분에만 재생됐습니다. 여닫기를 반복하는 탐침으로 결정적 결함을 찾았습니다: 모달·FAQ를 **두 번째로** 열면(`data-kt-once="false"`) 가장 낮은 opacity가 1.00 — 등장 없이 내용만 나타났습니다.
