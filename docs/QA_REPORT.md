@@ -3,6 +3,25 @@
 검증일: 2026-09-20
 대상: v0.13.1 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
+## 2026-09-30 여닫는 패널 안의 Counter·Blur Text·Text Split (Unreleased)
+
+- Reveal 수정 뒤 `once` 옵션을 가진 다른 모듈(blurText·counter·lazy·reveal·textSplit·confetti)을 같은 탐침(닫힌 패널 → 열기 → 닫기 → 다시 열기, 프레임마다 텍스트·opacity·filter·transform 지문)으로 봤습니다. GSAP 경로에서: Counter는 닫힌 동안 세고 있었고(`hidden:3454`), `once:false` Text Split은 다시 열어도 1프레임(정지), Blur Text `once:false`는 재열림이 일부만 보였습니다. GSAP 없는 Counter·Blur Text `once:false`는 원래 애니메이션을 하지 않거나(최종값) 한 번만 하는 설계라 대상이 아닙니다.
+- 첫 수정 뒤에도 인라인 `<span>`의 Blur Text·Text Split은 여전히 1프레임이었습니다. ResizeObserver는 인라인 요소를 보이든 안 보이든 0×0으로 알리므로 패널이 열린 것을 몰랐습니다. `watchBox()`가 인라인이 아닌 가장 가까운 조상도 관찰합니다.
+- `src/utils.js`: `hasBox()`·`watchBox()`를 Reveal에서 옮기고, ScrollTrigger가 시작하는 등장용 `panelGate(el, { once, enter, reset })`를 추가했습니다(`trigger(config)`가 네 경계 콜백을 감싸고, `watch(trigger)`가 상자 변화를 따라감). Counter(plain·digit·pop·slot의 trigger 구동 애니메이션), Blur Text, Text Split이 사용합니다.
+- 게이트 `tests/browser/panel-entrances.mjs`(두 레인): 옛 코드는 `splitRepeat` 재열림 1프레임, `counterOnce` 닫힌 동안 3445로 실패. 새 코드는 Chromium·WebKit·Firefox 통과. WebKit은 로드 직후 첫 1.6초에 5개 상태만 그려서, "재생됨"을 프레임 수가 아니라 시작·중간·끝 세 상태 이상으로 판정합니다.
+- 크기: 전체 번들이 상한을 넘어 예산 규칙대로 옮겼습니다 — `kineto.js` 647.7 / 177.7 → 654 / 178, `kineto.min.js` 505.9 / 157.9 → 511 / 158, UMD 504.0 / 157.3 → 509 / 158, Rolldown Vue 182.2 → 183.
+- `verify:push`의 Node 레인에서 Bootstrap QA 아코디언 대기(8초)가 한 번 시간 초과됐습니다. CPU 부하에서 약 15회에 1회 재현했고, 실패 시 상태를 남기게 한 뒤 잡은 값: `opacity 0, scrollY 1593, trigger start 1768 / end 2589, progress 0, tween reversed`. trigger는 제대로 다시 재져 있었고, 답변이 화면 아래(85% 선 밖)에 있어 Reveal이 올바르게 기다린 것입니다. Bootstrap의 `scroll-behavior: smooth`가 Playwright 클릭 스크롤을 애니메이션해 최종 위치가 흔들렸습니다. 테스트가 답변을 `scrollIntoView({ block: 'center', behavior: 'instant' })`로 먼저 보이게 합니다: 부하 30회 실패 0.
+- 로컬 확인: 새 게이트 세 엔진, Chromium에서 `create-cost`·`idle-cost`·텍스트/lifecycle 테스트·`components-a11y`·`deferred-create`·`demo-blocks`·Reveal 게이트 12/12, `test:size`·`test:consumer-bundles`·`deps-boundary`, `verify:push`.
+
+## 2026-09-30 열고 닫는 패널 안의 Reveal (Unreleased)
+
+- 발견 경위: `tests/integrations/bootstrap-qa.mjs:139`(아코디언 본문 reveal, 8초 안에 opacity > 0.95)가 CPU 부하에서 가끔 늦는다는 메모를 조사했습니다. 부하 재현은 되지 않았지만, 패널 안 요소의 ScrollTrigger가 닫힌 상태에서 `start -765 / end 0`(뷰포트 맨 위 0×0 상자)으로 재져 있었고, 첫 열림은 백업 IntersectionObserver 덕분에만 재생됐습니다. 여닫기를 반복하는 탐침으로 결정적 결함을 찾았습니다: 모달·FAQ를 **두 번째로** 열면(`data-kt-once="false"`) 가장 낮은 opacity가 1.00 — 등장 없이 내용만 나타났습니다.
+- 게이트 `tests/browser/reveal-panel-reopen.mjs`: 닫힌 패널 네 개(GSAP tween `fade-up` once:false, `wipe` once:false, `class` once:false, 기본 `fade-up` once:true)를 GSAP이 있을 때와 없을 때(CDN 차단) 열고 닫고 다시 엽니다. 옛 코드는 세 엔진 모두 다섯 곳에서 실패했습니다: GSAP once:true 첫 열림 1.00(등장이 숨은 채 끝남), GSAP tween·wipe 재열림 0.80, native tween 0.58·wipe 0.63~0.67(닫히는 동안 역재생이 절반쯤 진행된 채 다시 재생). 수정 뒤 Chromium·WebKit·Firefox 통과, 약 5~7초(패널 네 개를 동시에 엽니다).
+- 원인과 수정(`src/modules/reveal.js` "PANELS THAT OPEN AND CLOSE"): 닫힌 패널 안 요소에는 레이아웃 상자가 없는데, ScrollTrigger는 이를 뷰포트 맨 위 0×0으로 재고, native 경계 관찰자는 0×0 rect를 "뷰포트 위"로 보아 leave를 재생했습니다. 이제 네 경로 모두 (1) 상자가 없는 동안 재생하지 않고(ScrollTrigger 콜백은 `hasBox()`로 거르고, 토글 동작이 이미 돈 tween은 `pause(0)`), (2) 상자를 잃으면 once:false 또는 아직 보이지 않은 등장을 즉시 시작 상태로 되돌리며(`onLeave` 없음), (3) 상자를 다시 얻으면 trigger를 다시 재고 화면에 있으면 처음부터 재생합니다. 경계 관찰자 `observeBoundaries()`는 인자 7개 대신 옵션 객체를 받고 `onBox(hasBox)`를 알립니다. jsdom처럼 레이아웃이 없는 환경(루트도 상자가 없음)은 예전처럼 모두 상자가 있는 것으로 봅니다.
+- Bootstrap QA에 재열림 검사를 더했습니다: FAQ를 닫았다 다시 열면 opacity가 0.5 아래로 내려갔다가 0.95 위로 올라가야 합니다. 옛 코드 `{"lowest":1,"opacity":1}`로 실패, 새 코드 통과.
+- 비용: `dist/modular/modules/reveal.js` gzip 5,369 → 5,880 B. 제품 번들이 예산 규칙대로 옮겨졌습니다(Vite 176.1 full / 179.9 React / 181.1 Vue, Rolldown 176.4 / 180.1 / 181.7 → 177 / 181 / 182 KB, `docs/consumer-bundle-size.md` 갱신).
+- 로컬 확인: 새 게이트 세 엔진, WebKit·Firefox에서 `reveal-variant-browser`·`reveal-hidden-panel`·lifecycle 3종·`idle-cost`·`create-cost`·`layout-refresh`·`deferred-create`·`demo-blocks` 11/11, Bootstrap QA 2회, Node 레인, `verify:push`.
+
 ## 2026-09-30 CI annotation 잡음 · Slider 반복 타임스탬프 멈춤 · 테스트 흔들림 (Unreleased)
 
 - PR #57 CI(run 36633320041, ed170fa)는 성공했고 가장 느린 job이 226초였습니다(WebKit 3/3 211초, 이전 202~284초). 비인증 API로 annotation을 읽으니 새 재시도 두 개와 잡음 하나가 있었습니다.
@@ -10,6 +29,7 @@
 - WebKit 2/3 `slider-variant-browser`: "dissolve did not settle at 1" — 들어오는 슬라이드 progress 0.9811080386818688, 나가는 슬라이드 0.0188919613181312. 처음에는 렌더링 정지로 보고 대기를 프레임 수 기준으로 바꿨지만(`__frameDeadline`), PR #58 CI(run 36645204708, f7abb25)에서 **소수점 끝자리까지 같은 값**으로 다시 실패했습니다. 무작위 정지라면 값이 매번 달라야 하므로 결정적 결함입니다. 0.0188919613181312는 0.82^20과 16자리까지 같습니다. 즉 smoothing 0.18로 정확히 16ms 프레임 20개를 간 뒤 더 나아가지 않았습니다. 슬라이더 트랙 루프는 `dt = Math.min(64, time - lastFrameTime)`이라 같은 타임스탬프가 반복되면 dt 0 → 진행 0이면서 프레임은 계속 요청합니다(방사형 루프는 `time`을 `performance.now()`와 비교). CI 러너의 WebKit이 실제로 타임스탬프를 반복하는지는 로그 없이 확인하지 못했지만, 같은 모양의 멈춤을 재현하는 게이트를 만들었습니다: `tests/browser/motion-timing.mjs`가 수동 rAF 큐로 5프레임 뒤 같은 타임스탬프 콜백 90번을 주면 옛 트랙은 fade 80%(0.802)에 머물고 방사형도 끝나지 않습니다. 두 루프를 `frameClock()` + `frameEase()`(반복·역행 타임스탬프 = 한 프레임, 한 번에 최대 `MAX_FRAME_STEP_MS`)로 옮겼고 세 엔진에서 통과합니다. 다음에 또 실패하면 메시지가 반복된 타임스탬프 수와 페이지 오류를 알려 줍니다.
 - WebKit 3/3 `components-a11y` `sheet-close-button`: 고정 150ms 대기 뒤 `hidden`을 읽었습니다. 같은 시점의 `backgroundBack`(inert 해제, 닫을 때 바로 실행)은 통과했으니 닫힘 자체는 일어났고 40ms WAAPI 애니메이션의 끝이 늦었습니다. `__until()`로 최대 2초 확인합니다.
 - Firefox 2/2 `stylize-patterns`(PR #58 CI): "these motions paint the same frame forever: dither-noise:flow"가 두 번 실패한 뒤 세 번째 통과. 같은 룩의 drift·shuffle·scan·pulse는 움직였으니 시계 정지는 아닙니다. `flow`는 셀 하나만큼 이동할 때마다 같은 그림으로 돌아오고(이 속도·셀 4px에서 약 390ms), 650ms 한 점 비교는 그 주기에 걸리면 "안 움직임"으로 봅니다. 250·450·650ms 세 점에서 보고, `none`은 세 점 모두 멈춰 있어야 합니다(더 엄격). 로컬 Firefox 4회 반복에서는 재현되지 않았습니다.
+- PR #59 CI(run 36656454672, a3e652b): 성공, 가장 느린 job 235초. Node job의 attw 실패 annotation이 사라졌고(0개), WebKit 2/3 Slider 재시도도 없었습니다. 새 재시도 하나: WebKit 1/3 `flip-fold` "the pinned copies must be gone once the change is over 12 !== 0" — 0.6초 변경 뒤 1.2초 고정 대기에서 두 패널의 복사본 12개가 모두 남아 있었습니다(애니메이션 종료 전). 이 러너의 WebKit에서 문서 타임라인이 잠시 멈추는 것과 같은 모양입니다. 사라질 때까지(최대 5초) 폴링하고 걸린 시간을 메시지에 남깁니다. 세 엔진 통과.
 - 로컬 확인: `motion-timing`(새 Slider 케이스)·`slider-variant-browser`·`stylize-patterns` Chromium·WebKit·Firefox, `slider-scroll-snap`, `components-a11y` 세 엔진, lint, `test:release`, Node 레인 65/65.
 
 ## 2026-09-29 WebKit shard 3 · Reveal 긴 프레임 · jsdom 30 탐색 selector · 숨긴 패널의 Squircle·Reveal (v0.13.1)
