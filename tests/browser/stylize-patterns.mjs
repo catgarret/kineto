@@ -123,9 +123,21 @@ try {
       const mounted = await Promise.all(types.map((type) => mount({ ...base, motion: type, motionSpeed: 1.6, motionAmount: 0.8, renderFps: 60 })));
       const canvases = mounted.map(({ media }) => canvasOf(media));
       const before = canvases.map((canvas) => canvas && readCanvas(canvas).slice());
-      await wait(650);
+      // Three looks instead of one at 650ms: a periodic motion can come back to
+      // the first frame at a single sample point (`flow` repeats every cell of
+      // travel — about 390ms at this speed), and a Firefox CI run failed
+      // `dither-noise:flow` that way twice before passing. A motion must change
+      // the picture at one of them at least; `none` must hold still at all of
+      // them.
+      const most = types.map(() => 0);
+      for (const at of [250, 450, 650]) {
+        await wait(at === 250 ? 250 : 200);
+        canvases.forEach((canvas, index) => {
+          if (canvas) most[index] = Math.max(most[index], changedPixels(before[index], readCanvas(canvas)));
+        });
+      }
       types.forEach((type, index) => {
-        motion[`${label}:${type}`] = canvases[index] ? changedPixels(before[index], readCanvas(canvases[index])) : -1;
+        motion[`${label}:${type}`] = canvases[index] ? most[index] : -1;
       });
       mounted.forEach(teardown);
     }

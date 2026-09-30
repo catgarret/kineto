@@ -3,13 +3,14 @@
 검증일: 2026-09-20
 대상: v0.13.1 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
-## 2026-09-30 CI annotation 잡음 · WebKit 흔들림 2개 (Unreleased)
+## 2026-09-30 CI annotation 잡음 · Slider 반복 타임스탬프 멈춤 · 테스트 흔들림 (Unreleased)
 
 - PR #57 CI(run 36633320041, ed170fa)는 성공했고 가장 느린 job이 226초였습니다(WebKit 3/3 211초, 이전 202~284초). 비인증 API로 annotation을 읽으니 새 재시도 두 개와 잡음 하나가 있었습니다.
 - 잡음: 모든 Node job에 `node_modules/.bin/attw` "exited with code 1" 실패 annotation이 있었습니다(dc215ba main CI와 v0.13.0 Release에도). `check-package-lint`는 attw의 JSON으로 판단하고 종료 코드를 일부러 무시하는데, `tests/ci-annotate.mjs`가 NODE_OPTIONS를 물려받은 attw 프로세스의 종료를 실패로 알렸습니다. 이 컨테이너에서 `GITHUB_ACTIONS=true`와 같은 NODE_OPTIONS로 옛 코드를 돌리면 `::error` 1줄에 종료 코드 0, 새 코드는 0줄입니다. `expectedExitEnv()`(`scripts/gh-actions.mjs`)가 `KT_CI_ANNOTATE=off`를 넘기고, 훅은 그때 조용합니다.
-- WebKit 2/3 `slider-variant-browser`: "dissolve did not settle at 1" — 들어오는 슬라이드가 progress 0.9811, 나가는 슬라이드가 0.0189로 4초 동안 그대로였습니다. 슬라이더 루프는 rAF가 돌기만 하면 몇 프레임 안에 도착하므로(dt 64ms 상한에서 한 프레임에 남은 거리의 약 55%를 줄임) 그 사이 프레임이 없었다고 판단했습니다. 대기(`waitForLanding`, `transition`)가 `__frameDeadline`으로 시간과 그린 프레임 수를 함께 봅니다. 게이트 확인: 착지 대기 직후 메인 스레드를 4.3초 막는 복사본을 돌리면 옛 테스트는 첫 효과에서 "did not settle"로 실패하고 새 테스트는 10개 효과 모두 통과합니다.
+- WebKit 2/3 `slider-variant-browser`: "dissolve did not settle at 1" — 들어오는 슬라이드 progress 0.9811080386818688, 나가는 슬라이드 0.0188919613181312. 처음에는 렌더링 정지로 보고 대기를 프레임 수 기준으로 바꿨지만(`__frameDeadline`), PR #58 CI(run 36645204708, f7abb25)에서 **소수점 끝자리까지 같은 값**으로 다시 실패했습니다. 무작위 정지라면 값이 매번 달라야 하므로 결정적 결함입니다. 0.0188919613181312는 0.82^20과 16자리까지 같습니다. 즉 smoothing 0.18로 정확히 16ms 프레임 20개를 간 뒤 더 나아가지 않았습니다. 슬라이더 트랙 루프는 `dt = Math.min(64, time - lastFrameTime)`이라 같은 타임스탬프가 반복되면 dt 0 → 진행 0이면서 프레임은 계속 요청합니다(방사형 루프는 `time`을 `performance.now()`와 비교). CI 러너의 WebKit이 실제로 타임스탬프를 반복하는지는 로그 없이 확인하지 못했지만, 같은 모양의 멈춤을 재현하는 게이트를 만들었습니다: `tests/browser/motion-timing.mjs`가 수동 rAF 큐로 5프레임 뒤 같은 타임스탬프 콜백 90번을 주면 옛 트랙은 fade 80%(0.802)에 머물고 방사형도 끝나지 않습니다. 두 루프를 `frameClock()` + `frameEase()`(반복·역행 타임스탬프 = 한 프레임, 한 번에 최대 `MAX_FRAME_STEP_MS`)로 옮겼고 세 엔진에서 통과합니다. 다음에 또 실패하면 메시지가 반복된 타임스탬프 수와 페이지 오류를 알려 줍니다.
 - WebKit 3/3 `components-a11y` `sheet-close-button`: 고정 150ms 대기 뒤 `hidden`을 읽었습니다. 같은 시점의 `backgroundBack`(inert 해제, 닫을 때 바로 실행)은 통과했으니 닫힘 자체는 일어났고 40ms WAAPI 애니메이션의 끝이 늦었습니다. `__until()`로 최대 2초 확인합니다.
-- 로컬 확인: `slider-variant-browser`·`components-a11y` Chromium·WebKit·Firefox 모두 통과, lint, `test:release`.
+- Firefox 2/2 `stylize-patterns`(PR #58 CI): "these motions paint the same frame forever: dither-noise:flow"가 두 번 실패한 뒤 세 번째 통과. 같은 룩의 drift·shuffle·scan·pulse는 움직였으니 시계 정지는 아닙니다. `flow`는 셀 하나만큼 이동할 때마다 같은 그림으로 돌아오고(이 속도·셀 4px에서 약 390ms), 650ms 한 점 비교는 그 주기에 걸리면 "안 움직임"으로 봅니다. 250·450·650ms 세 점에서 보고, `none`은 세 점 모두 멈춰 있어야 합니다(더 엄격). 로컬 Firefox 4회 반복에서는 재현되지 않았습니다.
+- 로컬 확인: `motion-timing`(새 Slider 케이스)·`slider-variant-browser`·`stylize-patterns` Chromium·WebKit·Firefox, `slider-scroll-snap`, `components-a11y` 세 엔진, lint, `test:release`, Node 레인 65/65.
 
 ## 2026-09-29 WebKit shard 3 · Reveal 긴 프레임 · jsdom 30 탐색 selector · 숨긴 패널의 Squircle·Reveal (v0.13.1)
 

@@ -673,8 +673,10 @@ bounceHost.remove();
 
 // Track settling is elapsed-time based rather than frame-count based: driving
 // the same 100ms at 60Hz and 120Hz should land at practically the same point.
-// The first callback also establishes a normal frame interval, while a long
-// gap is capped inside the solver so a background-tab resume cannot teleport.
+// The first callback of a move counts as one normal (60Hz) frame at any
+// refresh rate — utils.frameClock(), like every other following loop — so both
+// runs start with a callback at 1000ms and then cover the same 100ms. A long gap
+// counts as one frame too, so a background-tab resume cannot teleport.
 const realRequestAnimationFrame = globalThis.requestAnimationFrame;
 const realCancelAnimationFrame = globalThis.cancelAnimationFrame;
 let queuedFrame = null;
@@ -698,10 +700,10 @@ const driveSlider = (times) => {
   host.remove();
   return Number(transform.match(/translate3d\((-?[\d.]+)px/)?.[1] || 0);
 };
-const at60Hz = driveSlider([16.667, 33.334, 50.001, 66.668, 83.335, 100.002]);
-const at120Hz = driveSlider(Array.from({ length: 12 }, (_, index) => (index + 1) * 8.333));
+const at60Hz = driveSlider([0, 16.667, 33.334, 50.001, 66.668, 83.335, 100.002].map((time) => 1000 + time));
+const at120Hz = driveSlider(Array.from({ length: 13 }, (_, index) => 1000 + index * 8.333));
 assert.ok(Math.abs(at60Hz - at120Hz) < 0.02, `slider settling must be refresh-rate invariant — ${at60Hz} vs ${at120Hz}`);
-const cappedGap = driveSlider([16.667, 500]);
+const cappedGap = driveSlider([1000, 1500]);
 assert.ok(cappedGap < 0.99, `a long frame gap must be capped instead of teleporting — ${cappedGap}`);
 const springHost = document.createElement('div');
 springHost.innerHTML = '<div class="kt-slider-wrap"><div class="kt-slider-track"><div class="kt-slide">A</div><div class="kt-slide">B</div><div class="kt-slide">C</div></div></div>';
