@@ -1,4 +1,4 @@
-import { clamp, G, gsapEaseName, latestEntry, motionDefaults, observeOnce, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
+import { clamp, G, gsapEaseName, latestEntry, MAX_FRAME_STEP_MS, motionDefaults, observeOnce, snapshotAttributes, snapshotInlineStyles, ST } from '../utils.js';
 import { cubicBezierFn, fn as easingFn } from '../easings.js';
 
 const PRESETS = {
@@ -81,18 +81,31 @@ const removeClasses = (el, opts) => setClasses(el, opts, false);
 
 // A shared, frame-coalesced boundary observer for native timelines. IO wakes it
 // on layout changes; captured scroll events include nested scrolling containers.
+//
+// `bounds` measures the box that decides (the native transform path measures
+// the element without the transform it is animating). A ResizeObserver also
+// wakes it: an element created inside a hidden panel (a closed tab, accordion
+// or dialog) measures 0×0, and when the panel opens nothing scrolls, and the
+// IntersectionObserver may never report — a slide-left/right has moved the box
+// it watches one element width aside, and a page that clips horizontal
+// overflow (`overflow-x: clip` on html/body) leaves only a sliver of it, under
+// the threshold. The element's size changing from 0×0 is the signal to measure.
 function observeBoundaries(el, opts, clock, boundary, watch, visibleOnly, bounds = () => el.getBoundingClientRect()) {
-  let stopped = false, raf = null, zone = null, observer = null;
+  let stopped = false, raf = null, zone = null, observer = null, sizeObserver = null;
   const threshold = Number(opts.threshold ?? (clock ? .2 : .1));
   const margin = String(opts.rootMargin || (clock ? '0px' : '0px 0px -10% 0px')).trim().split(/\s+/);
+  const side = (index) => margin[index] || margin[index % 2] || margin[0];
   const measure = () => {
     raf = null;
     if (stopped) return;
     const width = document.documentElement.clientWidth || window.innerWidth;
     const height = document.documentElement.clientHeight || window.innerHeight;
+    // Like IntersectionObserver's rootMargin: a percentage on top/bottom is of
+    // the root's height, on left/right of its width.
     const offsets = [0, 1, 2, 3].map((index) => {
-      const value = margin[index] || margin[index % 2] || margin[0];
-      return Number.parseFloat(value) * (value.endsWith('%') ? width / 100 : 1);
+      const value = side(index);
+      const axis = index % 2 === 0 ? height : width;
+      return Number.parseFloat(value) * (value.endsWith('%') ? axis / 100 : 1);
     });
     const rect = bounds();
     let top = -offsets[0], bottom = height + offsets[2], left = -offsets[3], right = width + offsets[1];
@@ -130,6 +143,10 @@ function observeBoundaries(el, opts, clock, boundary, watch, visibleOnly, bounds
     observer = new IntersectionObserver(schedule, { threshold, rootMargin: margin.join(' ') });
     observer.observe(el);
   } else if (!visibleOnly) boundary(0);
+  if (typeof ResizeObserver !== 'undefined') {
+    sizeObserver = new ResizeObserver(schedule);
+    sizeObserver.observe(el);
+  }
   if (watch && !visibleOnly) {
     document.addEventListener('scroll', schedule, { passive: true, capture: true });
     window.addEventListener('resize', schedule, { passive: true });
@@ -137,6 +154,7 @@ function observeBoundaries(el, opts, clock, boundary, watch, visibleOnly, bounds
   return { disconnect() {
     stopped = true;
     observer?.disconnect();
+    sizeObserver?.disconnect();
     if (raf != null) cancelAnimationFrame(raf);
     document.removeEventListener('scroll', schedule, true);
     window.removeEventListener('resize', schedule);
@@ -198,7 +216,10 @@ function maskedReveal(el, opts, gsap, scrollTrigger, clock, clipAt) {
   const frame = (time) => {
     raf = null;
     if (destroyed || paused) return;
-    if (lastTime != null) state.time = clamp(state.time + (time - lastTime) * rate / 1000, 0, total);
+    // One long frame (a busy page load) advances at most MAX_FRAME_STEP_MS, so
+    // a short entrance slows for a moment instead of jumping straight to its end.
+    const step = lastTime == null ? 0 : clamp(time - lastTime, 0, MAX_FRAME_STEP_MS);
+    state.time = clamp(state.time + step * rate / 1000, 0, total);
     lastTime = time;
     paint();
     if (rate > 0 ? state.time < total : state.time > 0) raf = requestAnimationFrame(frame);

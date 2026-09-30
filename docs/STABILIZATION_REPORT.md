@@ -1,4 +1,4 @@
-# Kineto v0.13.0 Stabilization Report
+# Kineto v0.13.1 Stabilization Report
 
 ## 범위
 

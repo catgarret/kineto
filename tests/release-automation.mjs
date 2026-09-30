@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { assertPinnedAction } from './workflow-action-pins.mjs';
 import { ciVerdict, githubRepo, readCiVerdict, waitForCi } from '../scripts/ci-status.mjs';
 import { parseArgs, parseLane, parseShard, selectSteps } from '../scripts/run-lane.mjs';
-import { annotation, reportFlaky } from '../scripts/gh-actions.mjs';
+import { annotation, expectedExitEnv, reportFlaky } from '../scripts/gh-actions.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8');
@@ -449,6 +449,14 @@ const waitAt = shipReleaseScript.indexOf('await waitForCi(');
 const tagAt = shipReleaseScript.indexOf("run('git', ['tag', '-a'");
 assert.ok(pushAt > 0 && waitAt > pushAt && tagAt > waitAt, 'release:ship must push main, then wait for CI, then create the tag');
 assert.match(shipReleaseScript, /verdict !== 'success'[\s\S]*?fail\(/, 'release:ship must stop before tagging unless CI succeeded');
+// The release workflow's lockfile audit runs after the tag; an advisory that
+// appears after CI then burns the version (v0.13.0). release:ship runs the same
+// audit script last, before the tag, and stops if it fails.
+const auditAt = shipReleaseScript.indexOf("'scripts/audit-lockfiles.mjs'");
+assert.ok(auditAt > waitAt && auditAt < tagAt, 'release:ship must audit the lockfiles after CI and before creating the tag');
+assert.match(shipReleaseScript, /audit\.status !== 0\) \{\s*fail\(`the lockfile audit failed[\s\S]*?No tag was created/,
+  'a failed audit must stop release:ship before the tag, saying the version is still available');
+assert.match(workflow, /npm run audit:lockfiles/, 'the release workflow audits the lockfiles release:ship audits');
 assert.doesNotMatch(shipReleaseScript, /console\.log\([^)]*get-url/, 'the origin URL can hold credentials and must never be printed');
 const ciStatusScript = read('scripts/ci-status.mjs');
 assert.doesNotMatch(ciStatusScript, /process\.env/, 'the CI check never reads the environment; a caller passes a token explicitly');
@@ -521,6 +529,12 @@ for (const [name, source, steps] of [['ci.yml', ciWorkflow, ['Run Node tests', '
   assert.match(inCi[0], /%0A::warning::injected/, 'text that looks like a workflow command stays escaped inside the annotation');
   const local = run({ GITHUB_ACTIONS: '' }).split('\n').filter((line) => line.startsWith('::error title='));
   assert.equal(local.length, 0, 'outside GitHub Actions the hook stays silent');
+  // A child whose non-zero exit the caller judges (attw) must not paint a green
+  // job with a failure annotation.
+  const expected = run(expectedExitEnv({ GITHUB_ACTIONS: 'true' })).split('\n').filter((line) => line.startsWith('::error title='));
+  assert.equal(expected.length, 0, 'a child started with expectedExitEnv() stays silent in CI');
+  const packageLint = fs.readFileSync(path.join(root, 'scripts/check-package-lint.mjs'), 'utf8');
+  assert.match(packageLint, /execFileSync\(bin\('attw'\), \[[^\]]*\], \{[^}]*env: expectedExitEnv\(\)/, 'attw runs with expectedExitEnv(): its exit 1 is judged from the JSON report');
 }
 
 console.log('release-automation OK — gated least-privilege publish, verified tarball reuse, rerun safety, pinned actions, sharded engine CI from one lane list, flaky-test reporting, the green-CI release gate, verify:push, CDN failure handling, the mcp-v release path, and release:ship waiting for green CI before tagging.');

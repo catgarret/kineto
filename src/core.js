@@ -413,6 +413,41 @@ function coversNode(root, node) {
 // Kineto.destroy(root), or removing the root, used to be undone a moment later
 // when the engine arrived and the scan created instances on nodes the page had
 // already let go of (and that nothing would ever destroy).
+// jsdom 30 and later reject a selector longer than 2048 characters (a guard
+// against runaway selectors; browsers have no limit), and jsdom is where most
+// apps run their unit tests. The built-in registry's activation selector is
+// about 1.1 KB, so it stays one traversal; a page that registers many modules
+// of its own gets a few selectors under the limit instead of a RangeError.
+const MAX_SELECTOR_LENGTH = 2048;
+const DOCUMENT_POSITION_FOLLOWING = 4; // Node.DOCUMENT_POSITION_FOLLOWING
+
+// `root` itself and the elements under it that match any of `parts` (simple
+// selectors), each once and in document order.
+function queryAny(root, parts) {
+  const selectors = [];
+  let current = '';
+  for (const part of parts) {
+    const joined = current ? `${current},${part}` : part;
+    if (current && joined.length > MAX_SELECTOR_LENGTH) {
+      selectors.push(current);
+      current = part;
+    } else current = joined;
+  }
+  if (current) selectors.push(current);
+  const found = selectors.some((selector) => root.matches?.(selector)) ? [root] : [];
+  if (selectors.length === 1) {
+    root.querySelectorAll?.(selectors[0]).forEach((el) => found.push(el));
+    return found;
+  }
+  const seen = new Set(found);
+  selectors.forEach((selector) => root.querySelectorAll?.(selector).forEach((el) => {
+    if (!seen.has(el)) { seen.add(el); found.push(el); }
+  }));
+  // Separate traversals interleave: put the union back in document order, so
+  // each module still creates its elements top to bottom.
+  return found.sort((a, b) => (a.compareDocumentPosition(b) & DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
+}
+
 const pendingScans = new Set(); // { root, cancelled, released: [roots destroyed meanwhile] }
 function forgetPendingScans(roots = null) {
   pendingScans.forEach((pending) => {
@@ -714,7 +749,7 @@ function injectCSSFallback() {
 }
 
 const Kineto = {
-  version: '0.13.0',
+  version: '0.13.1',
 
   // Central easing subsystem (audit C / J-3). `Kineto.easing(name)` resolves any
   // token — CSS keyword, easings.net name, 'elastic-out'/'bounce-in-out'
@@ -921,7 +956,8 @@ const Kineto = {
     ensureCoreServices();
 
     const eligible = (el, name) => !getElementMap(el)?.has(name) && !deferral.has(el, name) && !activationIsOwnedOption(el, name);
-    // Discover one engine tier with a single selector traversal instead of one
+    // Discover one engine tier with one selector traversal (a few for a very
+    // large registry — see queryAny) instead of one
     // querySelectorAll() per registered module. Keep results grouped by module
     // so create order remains the registry order, not DOM order across modules.
     const discoverModules = (engine) => {
@@ -939,7 +975,6 @@ const Kineto = {
       const discovered = new Map(names.map((name) => [name, []]));
       if (!names.length) return discovered;
 
-      const selector = names.map((name) => `[data-kt-${dash(name)}]`).join(',');
       const collect = (el) => {
         const attributes = el.getAttributeNames?.() || [];
         attributes.forEach((attribute) => {
@@ -951,8 +986,7 @@ const Kineto = {
       // Snapshot the tier before creating from it: a factory may clone markup
       // carrying the same activation attribute, and that clone belongs to a
       // subsequent scan rather than recursively expanding this one.
-      if (root.matches?.(selector)) collect(root);
-      root.querySelectorAll?.(selector).forEach(collect);
+      queryAny(root, names.map((name) => `[data-kt-${dash(name)}]`)).forEach(collect);
       return discovered;
     };
     const scanDiscovered = (discovered, keep = null) => {

@@ -1,9 +1,29 @@
-# Kineto v0.13.0 QA Report
+# Kineto v0.13.1 QA Report
 
 검증일: 2026-09-20
-대상: v0.13.0 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
+대상: v0.13.1 릴리스 후보 소스 · 이전 공개 배포 근거는 버전별로 유지
 
-## 2026-09-27 감사 수정 · 데모 접근성 · CI와 로컬 확인 속도 (Unreleased)
+## 2026-09-30 CI annotation 잡음 · Slider 반복 타임스탬프 멈춤 · 테스트 흔들림 (Unreleased)
+
+- PR #57 CI(run 36633320041, ed170fa)는 성공했고 가장 느린 job이 226초였습니다(WebKit 3/3 211초, 이전 202~284초). 비인증 API로 annotation을 읽으니 새 재시도 두 개와 잡음 하나가 있었습니다.
+- 잡음: 모든 Node job에 `node_modules/.bin/attw` "exited with code 1" 실패 annotation이 있었습니다(dc215ba main CI와 v0.13.0 Release에도). `check-package-lint`는 attw의 JSON으로 판단하고 종료 코드를 일부러 무시하는데, `tests/ci-annotate.mjs`가 NODE_OPTIONS를 물려받은 attw 프로세스의 종료를 실패로 알렸습니다. 이 컨테이너에서 `GITHUB_ACTIONS=true`와 같은 NODE_OPTIONS로 옛 코드를 돌리면 `::error` 1줄에 종료 코드 0, 새 코드는 0줄입니다. `expectedExitEnv()`(`scripts/gh-actions.mjs`)가 `KT_CI_ANNOTATE=off`를 넘기고, 훅은 그때 조용합니다.
+- WebKit 2/3 `slider-variant-browser`: "dissolve did not settle at 1" — 들어오는 슬라이드 progress 0.9811080386818688, 나가는 슬라이드 0.0188919613181312. 처음에는 렌더링 정지로 보고 대기를 프레임 수 기준으로 바꿨지만(`__frameDeadline`), PR #58 CI(run 36645204708, f7abb25)에서 **소수점 끝자리까지 같은 값**으로 다시 실패했습니다. 무작위 정지라면 값이 매번 달라야 하므로 결정적 결함입니다. 0.0188919613181312는 0.82^20과 16자리까지 같습니다. 즉 smoothing 0.18로 정확히 16ms 프레임 20개를 간 뒤 더 나아가지 않았습니다. 슬라이더 트랙 루프는 `dt = Math.min(64, time - lastFrameTime)`이라 같은 타임스탬프가 반복되면 dt 0 → 진행 0이면서 프레임은 계속 요청합니다(방사형 루프는 `time`을 `performance.now()`와 비교). CI 러너의 WebKit이 실제로 타임스탬프를 반복하는지는 로그 없이 확인하지 못했지만, 같은 모양의 멈춤을 재현하는 게이트를 만들었습니다: `tests/browser/motion-timing.mjs`가 수동 rAF 큐로 5프레임 뒤 같은 타임스탬프 콜백 90번을 주면 옛 트랙은 fade 80%(0.802)에 머물고 방사형도 끝나지 않습니다. 두 루프를 `frameClock()` + `frameEase()`(반복·역행 타임스탬프 = 한 프레임, 한 번에 최대 `MAX_FRAME_STEP_MS`)로 옮겼고 세 엔진에서 통과합니다. 다음에 또 실패하면 메시지가 반복된 타임스탬프 수와 페이지 오류를 알려 줍니다.
+- WebKit 3/3 `components-a11y` `sheet-close-button`: 고정 150ms 대기 뒤 `hidden`을 읽었습니다. 같은 시점의 `backgroundBack`(inert 해제, 닫을 때 바로 실행)은 통과했으니 닫힘 자체는 일어났고 40ms WAAPI 애니메이션의 끝이 늦었습니다. `__until()`로 최대 2초 확인합니다.
+- Firefox 2/2 `stylize-patterns`(PR #58 CI): "these motions paint the same frame forever: dither-noise:flow"가 두 번 실패한 뒤 세 번째 통과. 같은 룩의 drift·shuffle·scan·pulse는 움직였으니 시계 정지는 아닙니다. `flow`는 셀 하나만큼 이동할 때마다 같은 그림으로 돌아오고(이 속도·셀 4px에서 약 390ms), 650ms 한 점 비교는 그 주기에 걸리면 "안 움직임"으로 봅니다. 250·450·650ms 세 점에서 보고, `none`은 세 점 모두 멈춰 있어야 합니다(더 엄격). 로컬 Firefox 4회 반복에서는 재현되지 않았습니다.
+- 로컬 확인: `motion-timing`(새 Slider 케이스)·`slider-variant-browser`·`stylize-patterns` Chromium·WebKit·Firefox, `slider-scroll-snap`, `components-a11y` 세 엔진, lint, `test:release`, Node 레인 65/65.
+
+## 2026-09-29 WebKit shard 3 · Reveal 긴 프레임 · jsdom 30 탐색 selector · 숨긴 패널의 Squircle·Reveal (v0.13.1)
+
+- 증상: PR #52·#53과 main push CI에서 `webkit · test:browser:cross · 3/3`의 lane 시간이 202~284초였습니다. 다른 shard는 약 140~150초이고, 측정 시간 기준 예상은 세 shard 모두 134초입니다. 비인증 API로 check-run annotation을 읽으니 매번 `reveal-variant-browser`(native mask·wipe "must render intermediate frames", 한 번은 gsap/fade "must finish fully visible")와 `components-a11y` `tilt-rest`(7~10프레임 요청)가 첫 시도에 실패하고 재시도로 통과했습니다. 이 컨테이너에서도 첫 WebKit shard 실행에서 둘 다 같은 방식으로 흔들렸습니다(3.5분, 예상 134초).
+- Reveal(라이브러리 결함): GSAP 없는 mask·wipe·clock은 rAF 시계에 프레임 간격을 그대로 더했습니다. 탐침에서 시작 직후 300ms 프레임 하나를 넣으면 WebKit·Chromium 모두 mask·wipe의 움직이는 프레임이 0개였고(요소가 그냥 나타남), 150ms일 때는 4~5개였습니다. WAAPI로 도는 다른 preset은 영향이 없었습니다. 수정: 한 프레임의 진행을 `MAX_FRAME_STEP_MS`(60Hz 4프레임, `frameEase()`와 같은 한도)로 제한 → 같은 탐침에서 10개. 게이트: `reveal-variant-browser`의 native "300ms frame" 케이스. 옛 코드에서는 0 frame으로 실패하고, 새 코드는 Chromium 7·WebKit·Firefox 통과입니다.
+- 테스트 결함 둘: reveal 표본 창이 고정 450ms였고, tilt-rest는 고정 1.2초였습니다. 기본 smoothing 0.1은 60Hz에서 약 1.05초가 걸려 수렴해서 여유가 0.15초뿐이었습니다. 이제 reveal은 최소 450ms를 보고 모든 등장이 끝날 때까지(최대 2.5초) 읽고, tilt-rest는 멈출 때까지(최대 4초) 기다립니다. 실패하면 마지막 움직임 뒤 몇 ms인지 남깁니다.
+- Dependabot 점검: react 19.3·vue 3.5.43·vite 8.3·scheduler 0.28 PR(#18·#20·#22·#23·#24·#31·#33)은 이미 main lockfile에 들어 있어 할 일이 없습니다. 실제로 남은 것은 rolldown 1.2.11(#54), vuetify 3.13.5(#55), MCP SDK 1.30.1(#56)이고 셋 다 CI 초록입니다. major는 따로 시험했습니다. TypeScript 7.0.2(#9)는 `test:types`를 통과하지만 공급망 정책(`dependency-floors`)이 major 변경 검토를 요구합니다. jsdom 30.1.1(#7)에서는 Node 레인 65개 중 3개가 실패했습니다: 공급망 정책(TS 7을 같이 올렸기 때문), `test:perf`, `test:leak`. `test:perf`는 Kineto 결함이었습니다. 모듈 100개의 탐색 selector(2.3 KB)가 jsdom 30의 2048자 한도에 걸려 `RangeError`가 났습니다. 이 브랜치에서 selector를 한도 안으로 나눠 고쳤습니다. `test:leak`은 jsdom 쪽 결함입니다. jsdom 30의 CSSOM은 `removeProperty('background-position')` 뒤에도 `background-position-x/y`를 남깁니다(jsdom 29와 브라우저는 모두 지움). 그래서 scrollShadows의 destroy 뒤 style이 남은 것처럼 보이므로 #7은 보류합니다. jQuery 4(#16)는 공급망 정책이 거부합니다. download-artifact v8(#25)은 릴리스 파이프라인이라, playwright 1.63(#17·#19)은 새 브라우저 빌드가 필요해 이 컨테이너에서 확인할 수 없어 보류합니다.
+- 숨긴 패널 점검(새 도구 `npm run audit:hidden-panel`): 데모 마크업이 있는 모듈 53개를 보이게 두 번, `display:none` 안에서 한 번 만들어 비교했습니다. 숨겨서 만들었을 때만 다른 것은 **Squircle**(Chromium 네이티브 경로)이었습니다. 만들 때 한 번 재서 0×0이면 아무것도 쓰지 않고, 네이티브 경로에는 ResizeObserver가 없어 탭이 열려도 직사각형으로 남았습니다(WebKit·Firefox의 polyfill 경로는 정상). 퍼센트 `cornerRadius`도 요소 크기가 바뀌면 옛 픽셀 값에 머물렀습니다. 두 경로 모두 상자를 관찰하게 고쳤고, `tests/browser/squircle.mjs`에 숨긴 패널·`50%` 리사이즈 게이트를 추가했습니다(옛 코드에서는 `""`로 실패). 수정 뒤 세 엔진 모두 51개가 같습니다. Counter·Page Transition은 두 번의 일반 실행끼리도 달라 제외했습니다. Tilt·Card Glow의 재개 뒤 항등 transform은 알려진 차이로 표시했고, hover 뒤와 같은 상태입니다. WebKit Flip은 lazy 이미지 때문에 1.5초 settle에서 가끔 달랐지만 3.5초에서는 3/3 같았습니다.
+- 숨긴 패널 점검을 데모의 모든 변형(`--each`, Chromium 291개)으로 넓혔습니다. 그 결과 **Reveal native slide-right/left**(데모의 비교 카드 두 개)를 찾았습니다. 숨겨서 만들면 패널이 열려도 opacity 0, 옮겨진 위치에 그대로 남았습니다. 조건은 GSAP 없음(CDN 차단·오프라인·데이터 절약 low 단계)과 html/body `overflow-x: clip`(데모도 해당)입니다. 이때 옮겨진 상자는 뷰포트에 7.6%만 걸쳐 IntersectionObserver 기준 10%에 못 미쳤고, 패널이 열려도 새 알림이 없었습니다. 요소에 ResizeObserver를 붙여 크기 변화 때 판단(옮기지 않은 상자 기준)을 다시 하게 했습니다. 처음 시도한 "관찰 root를 옆으로 넓히기"는 html/body의 clip이 교차 영역을 먼저 잘라서 효과가 없었습니다. 위/아래 퍼센트 margin이 너비 기준이던 계산도 IO처럼 높이 기준으로 고쳤습니다. 게이트 `tests/browser/reveal-hidden-panel.mjs`는 옛 코드에서 세 엔진 모두 3초 뒤 opacity 0,0으로 실패하고, 새 코드에서는 세 엔진 모두 약 420ms에 재생됩니다. 수정 뒤 `--each reveal` 38개 모두 차이가 없습니다.
+- **v0.13.0 릴리스 실패(2026-09-29 21:27 UTC)**: 소유자가 `release:ship -- v0.13.0`을 실행했고, CI 초록 뒤 태그가 푸시됐습니다. 그런데 [Release 실행 `36633306727`](https://github.com/catgarret/kineto/actions/runs/36633306727)의 `Audit root and fixture lockfiles` 단계가 3번 모두 실패해 publish job이 건너뛰어졌고, npm은 0.12.3 그대로입니다. 태그 트리(`dc215ba`)에서 재현해 보니 root lockfile의 undici 7.29.0(jsdom 29의 `^7.25.0`, dev 전용)에 새 advisory 10개가 있었습니다(high 2: GHSA-rfgv-xxqx-mfg5, GHSA-w293-vg96-wgc3, 수정 7.29.1). 나머지 lockfile 4개는 0건입니다. RELEASING.md 규칙대로 태그는 그대로 두고 0.13.1로 게시합니다. 조치는 두 가지입니다. `npm update undici`로 7.30.0으로 올려 5개 lockfile 모두 0건이 됐습니다. 그리고 `release:ship`이 CI 뒤·태그 전에 같은 감사 스크립트를 돌려, 실패하면 태그 없이 멈추게 했습니다(`tests/release-automation.mjs` 게이트). CI는 감사를 돌리지 않고 릴리스 워크플로만 태그 뒤에 돌렸기 때문에, CI와 태그 사이에 나온 advisory가 버전을 소진시킨 것입니다(v0.12.0에 이은 두 번째 사례).
+- 검증(2코어 컨테이너): WebKit shard 3는 11/11, 2.2분, 재시도 0. selector 분할 뒤 Node 레인 65/65와 Chromium 브라우저 레인 48/48 재통과. Chromium 브라우저 레인 48/48, 재시도 0. `components-a11y`는 세 엔진 통과, `reveal-variant-browser`도 세 엔진 통과. Node 레인 65/65, lint OK. CI에서 shard 3가 다른 shard와 비슷해지는지는 push 뒤 PR CI로 확인합니다.
+
+## 2026-09-27 감사 수정 · 데모 접근성 · CI와 로컬 확인 속도 (v0.13.0)
 
 소유자 요청: "대폭 성능 최적화, 접근성, 오류 등 잡는 리팩토링 거하게. 그리고 CI나 지금 작업하는 데
 반나절+하루 걸리는 것도 이슈라 생각해서 그것까지 개선."
@@ -1312,7 +1332,7 @@ registry의 해제 크기는 1,797,191 bytes로 확인했습니다. 이 수치�
 
 <!-- release:prepare updates this source label, not the publication evidence below. -->
 현재 소스의 패키지명은
-`@dong-gri/kineto`, 버전은 `0.13.0`입니다.
+`@dong-gri/kineto`, 버전은 `0.13.1`입니다.
 
 ## 배포 후 확인
 
