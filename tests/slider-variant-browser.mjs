@@ -67,25 +67,41 @@ try {
   await page.evaluate(async (useSource) => {
     window.__sourceSlider = (await import('/src/modules/slider.js')).default;
     if (useSource) window.Kineto.register('slider', window.__sourceSlider);
-    // Waits count rendered frames as well as time. WebKit on a CI runner can
-    // stop rendering for seconds: one run gave up on a dissolve that stood at
-    // 98% because no frame had run for the rest of its 4 s, then passed on the
-    // retry. A wait now gives up only once its time is up AND enough frames
-    // have run to show the page was animating (half of 60 Hz by default);
-    // `hardMs` still ends a wait on a page that never renders. The failure
-    // message says how many frames ran and the longest gap between two.
+    // Waits count rendered frames as well as time, so a runner that stops
+    // rendering for a few seconds does not fail a wait that had no frames to
+    // work with: a wait gives up only once its time is up AND enough frames
+    // have run (half of 60 Hz by default); `hardMs` still ends a wait on a
+    // page that never renders. A failure says how many frames ran, the longest
+    // gap, how often the requestAnimationFrame timestamp repeated, and the
+    // page's errors — the evidence two WebKit CI failures lacked (a dissolve
+    // stopped at 98.1%, the same value both times; see src/modules/slider.js).
+    window.__pageErrors = [];
+    window.addEventListener('error', (event) => window.__pageErrors.push(String(event.message)));
+    window.addEventListener('unhandledrejection', (event) => window.__pageErrors.push(String(event.reason)));
     window.__frameDeadline = (ms, { minFrames = Math.round(ms / 32), hardMs = ms * 4 } = {}) => {
       const started = window.performance.now();
       let frames = 0;
       let last = started;
       let longestGap = 0;
+      let lastStamp = null;
+      let repeatedStamps = 0;
       return {
-        frame(now = window.performance.now()) { frames += 1; longestGap = Math.max(longestGap, now - last); last = now; },
+        frame(stamp) {
+          const now = window.performance.now();
+          frames += 1;
+          longestGap = Math.max(longestGap, now - last);
+          last = now;
+          if (stamp === lastStamp) repeatedStamps += 1;
+          lastStamp = stamp;
+        },
         expired(now = window.performance.now()) {
           const elapsed = now - started;
           return (elapsed > ms && frames >= minFrames) || elapsed > hardMs;
         },
-        describe() { return `${frames} frames in ${Math.round(last - started)} ms, longest gap ${Math.round(longestGap)} ms`; }
+        describe() {
+          const errors = window.__pageErrors.length ? `, page errors: ${window.__pageErrors.slice(0, 3).join(' | ')}` : '';
+          return `${frames} frames in ${Math.round(last - started)} ms, longest gap ${Math.round(longestGap)} ms, repeated rAF timestamps ${repeatedStamps}${errors}`;
+        }
       };
     };
     window.__makeSliderFixture = (effect, source = false, overrides = {}) => {
@@ -141,8 +157,8 @@ try {
       const waitForLanding = (index) => new Promise((resolve, reject) => {
         const deadline = window.__frameDeadline(4000);
         const reference = [...new window.DOMMatrixReadOnly(initial).toFloat64Array()];
-        const tick = () => {
-          deadline.frame();
+        const tick = (stamp) => {
+          deadline.frame(stamp);
           const state = capture();
           const completeProgress = !Number.isFinite(state[index].progress) || state[index].progress === 1;
           if (api.index === index && completeProgress && state[index].matrix.every((value, offset) => Math.abs(value - reference[offset]) < 0.001)) resolve(state);
@@ -155,8 +171,8 @@ try {
         const beforeMotion = capture();
         const deadline = window.__frameDeadline(1500);
         api[method]();
-        const tick = () => {
-          deadline.frame();
+        const tick = (stamp) => {
+          deadline.frame(stamp);
           const state = capture();
           const changed = state[0].matrix.some((value, offset) => Math.abs(value - beforeMotion[0].matrix[offset]) > 0.01)
             || Math.abs(state[0].opacity - beforeMotion[0].opacity) > 0.01
