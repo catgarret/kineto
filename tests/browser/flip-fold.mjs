@@ -89,10 +89,19 @@ const report = await page.evaluate(async () => {
     .flatMap((ghost) => (ghost.getAnimations()[0]?.effect?.getKeyframes?.() || []).map((frame) => frame.filter || 'none'));
   const plainFrames = framesOf(plainPanel);
 
-  await new Promise((resolve) => setTimeout(resolve, 1200));
+  // The pinned copies go when their 0.6 s animations finish. Poll for that
+  // (at most 5 s) instead of reading once after a fixed 1.2 s: a WebKit CI
+  // runner once had all 12 still in place at that moment, and passed on the
+  // retry — its animations had not finished yet, not failed to clean up.
+  const ghosts = () => document.querySelectorAll('body > .tile[aria-hidden="true"]').length;
+  const settleStarted = performance.now();
+  while (ghosts() > 0 && performance.now() - settleStarted < 5000) {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
   return {
     ghostsDuring,
-    ghostsAfter: document.querySelectorAll('body > .tile[aria-hidden="true"]').length,
+    ghostsAfter: ghosts(),
+    ghostsGoneAfterMs: Math.round(performance.now() - settleStarted),
     // The soft middle is made by the PAIR: the arriving layout comes in
     // blurred and sharpens, while the pinned copy of the old one fades out
     // going the other way. So the incoming half is blur → sharp…
@@ -117,7 +126,7 @@ assert.ok(report.ghostsDuring >= 6, `the old layout must hold its place while th
 // …and the outgoing half is sharp → blur, which is the other side of the same
 // soft moment. A fade alone would leave both halves crisp all the way through.
 assert.ok(report.ghostBlurs >= 6, 'the outgoing layout must blur as it goes, not just fade');
-assert.equal(report.ghostsAfter, 0, 'the pinned copies must be gone once the change is over');
+assert.equal(report.ghostsAfter, 0, `the pinned copies must be gone once the change is over (${report.ghostsAfter} left after ${report.ghostsGoneAfterMs} ms)`);
 // The control: if `fold` were quietly behaving like `crossfade`, the assertions
 // above would still pass on a build where the blur was dropped — unless the
 // difference between the two is itself checked.
