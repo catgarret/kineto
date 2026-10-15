@@ -36,6 +36,7 @@ Kineto v0.13.0의 공개 API와 소유자 의도를 기준으로 정리한 문�
 
 ## 디자인 시스템·UI 라이브러리·AI 도구 연동
 
+- [Kineto 디자인 시스템 (제안)](design-system.md) — 데모·예제·문서 같은 Kineto 자체 화면의 색(Ember 포인트·잉크 메인)·투명도·크기·간격·모션 규칙. 모듈은 디자인 시스템 중립을 유지
 - [연동 가이드 인덱스](integrations/README.md) — shadcn/ui·Tailwind·Bootstrap 5·MUI·Mantine·Chakra·Ant Design·daisyUI·Nuxt UI·PrimeVue·Vuetify 각각의 붙이는 방식, 라이브러리가 이미 제공하는 것, 충돌 규칙, 의도별 레시피
 - [Figma MCP → 코드 → Kineto 워크플로우](integrations/figma-mcp.md)
 - [AI 에이전트 규칙 파일](../ai/kineto.rules.md) (`kineto.dongri.me/llms.txt`로도 제공) · Cursor 규칙 `ai/cursor/kineto.mdc`
