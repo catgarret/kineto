@@ -21,15 +21,22 @@
 | 역할 | 이름 | 다크(기본) | 라이트 | 쓰는 곳 |
 |---|---|---|---|---|
 | **메인** | Ink / Bone | `#f2f3f7` (뼈색 면 + 잉크 글자) | `#16130f` (따뜻한 잉크 면 + 흰 글자) | 가장 중요한 버튼, 선택된 칩 · 세그먼트 · 탭 표시, 입력 포커스 테두리 |
-| **포인트** | **Ember** | `#ff5b1c` | `#e14e12` | 강조 버튼, 켜짐 · 진행, 커서(`var(--accent)` 계승), 포커스 링, 강조 단어 |
-| **보조 강조** | Amber | `#ffd166` | `#ffd166` 면 / `#816323` 글자 | 표시점, 배지 면, 하이라이트 밑줄 — 넓은 면 · 본문 글자에 쓰지 않음 |
+| **포인트** | **Ember** | `#ff6a22` (잉크 글자) | `#d34303` (흰 글자) · 글자 `#ae3819` | 강조 버튼, 켜짐 · 진행, 커서(`var(--accent)` 계승), 포커스 링, 강조 단어 |
+| **빛** | Ember Glow | `rgba(255,106,34,.38)` | `rgba(255,106,34,.28)` | 커서 후광 · 트레일 · 진행 끝의 번짐 — 블러와 함께, 움직이는 순간에만 |
+| **보조 강조** | Sun | `#ffbd47` | `#ffbd47` 면 / `#926422` 글자 | 표시점, 배지 면, 하이라이트 밑줄, 브랜드 그라데이션의 끝 — 넓은 면 · 본문 글자에 쓰지 않음 |
+| **브랜드 그라데이션** | Ember → Sun | `linear-gradient(120deg, #ff6a22, #ffbd47)` | `linear-gradient(120deg, #d34303, #e19b34)` | 워드마크 · 히어로 한 단어 · 로더처럼 "Kineto 다운" 순간 한 곳 |
 
 **왜 이 조합인가**
 
-- Ember `#ff5b1c` 와 Amber `#ffd166` 는 이미 데모의 정체성입니다(페이지 커서 = 주황 점 + 주황 링, 소유자 규칙 "데모의 브랜드 색을 검정 · 회색으로 바꾸지 않음"). 새 색을 만들지 않고 이 둘을 체계 안에 넣었습니다.
+- **주황은 유지하되 다시 설계했습니다(Ember 2).** 지금 데모의 주황 `#ff5b1c` · `#e14e12` 와 노랑 `#ffd166` 은 각각 따로 고른 값이라 단계가 없고, 라이트 주황은 흰 글자 대비가 3.96:1 이라 "굵은 큰 글자만" 같은 예외 규칙이 붙었습니다. 그래서 OKLCH(지각 균일 색공간)에서 색상각 · 명도 · 채도 곡선을 직접 설계했습니다.
+  - **500 `#ff6a22`**: 색상각 38° → 42° 로 살짝 노란 쪽, 명도 0.683 → 0.705 로 조금 밝게. 어두운 바탕에서 "빛나는 점"처럼 보여 모션 데모의 커서 · 진행 표시가 더 또렷합니다.
+  - **600 `#d34303`**: 흰 글자 **4.59:1** — 라이트에서도 포인트 버튼에 예외 규칙이 필요 없습니다.
+  - **램프 전체가 불꽃처럼 흐릅니다**: 밝은 단계는 복숭아 쪽(색상각 58°), 어두운 단계는 붉은 숯 쪽(31°). 같은 색상각에 명도만 바꾼 램프보다 틴트가 탁하지 않고 그림자 쪽이 깊습니다.
+  - **Sun `#ffbd47`**: 예전 노랑 `#ffd166`(86°)을 오렌지 쪽으로 당겨(78°) 둘이 한 가족처럼 보이게 했습니다. Ember → Sun 그라데이션이 브랜드 서명입니다.
+  - **Glow**: 모션 라이브러리답게 "움직임의 빛"을 따로 토큰으로 두었습니다 — 커서 후광 · 트레일 · 진행 끝 번짐에만, 정지 상태에는 남기지 않습니다.
 - 메인을 Ember 가 아니라 **잉크/뼈색**으로 둔 이유: 모션 라이브러리의 데모는 움직이는 요소 자체가 주인공입니다. 주황 면이 많으면 효과보다 버튼이 먼저 보입니다. 무채색 메인이 효과를 돋보이게 하고, Ember 는 "여기가 살아 있다"는 신호로만 씁니다(기반 시스템의 "메인은 무게, 포인트는 신호" 원칙).
-- 다크에서 Ember 버튼 글자는 **잉크(`#0d0e12`)** 입니다. 흰 글자는 3.1:1 이지만 잉크 글자는 6.21:1 입니다. 라이트에서는 `#e14e12` 위 흰 글자 3.96:1 → 굵은 16px 이상 라벨에만, 작은 글자 · 고대비는 `#bf4210`(5.25:1).
-- 오류색은 Ember 와 헷갈리지 않게 **진홍**(`#d22030` / `#fa616d`)으로 분리했습니다.
+- 다크에서 Ember 버튼 글자는 **잉크(`#0d0e12`)** 입니다. 흰 글자는 2.86:1 이지만 잉크 글자는 6.74:1 입니다. 라이트에서는 `#d34303` 위 흰 글자 4.59:1(모든 크기 가능), 더 강한 대비가 필요하면 `#ae3819`(6.21:1).
+- 오류색은 Ember 와 헷갈리지 않게 **장미빛 진홍**(`#c81e5a` / `#ff6b8a`, Ember 600 과 색상각 30° 차이)으로 분리했습니다.
 
 **하지 말 것**
 
@@ -37,8 +44,9 @@
 |---|---|
 | Ember 를 섹션 바탕 · 카드 면처럼 넓게 칠하기 | 신호가 소음이 됨 → `accent-tint`(투명) |
 | Ember 버튼과 메인 버튼을 같은 무게로 나란히 | 주 행동이 흐려짐 → 하나는 약한 변형 |
-| 라이트에서 `#e14e12` 를 작은 본문 글자로 | 대비 부족 → `accent-text`(`#bf4210`) |
-| Amber 를 글자색으로(라이트) | 2:1 미만 → `highlight-text` |
+| 라이트에서 `#d34303` 을 페이지 바탕(`#f6f5f2`) 위 작은 글자로 | 4.21:1 로 부족 → `accent-text`(`#ae3819`) |
+| Sun 을 글자색으로(라이트) | 2:1 미만 → `highlight-text`(`#926422`) |
+| Glow 를 정지 상태에 남기기 · 그라데이션을 여러 곳에 | 빛 · 서명이 흔해지면 효과가 묻힘 → 움직이는 순간 · 화면당 한 곳 |
 | 오류를 Ember 로 표시 | 브랜드 색과 경고가 섞임 → `negative-text` |
 
 ---
@@ -65,16 +73,17 @@
 |---|---|---|---|---|---|---|---|---|---|---|
 | **stone (light neutral)** | `#f6f5f2` | `#edecea` | `#e4e1da` | `#c5c2ba` | `#a8a39b` | `#8b867e` | `#6f6a61` | `#4f4b43` | `#312e28` | `#16130f` |
 | **graphite (dark neutral)** | `#0d0e12` | `#15171c` | `#1c1f26` | `#262a32` | `#464c56` | `#6a707d` | `#8f97a6` | `#afb5c0` | `#d0d3db` | `#f2f3f7` |
-| **ember light** | `#fff6f3` | `#ffe1d6` | `#ffc3ad` | `#ffa384` | `#ff8258` | `#ff5b1c` | `#e14e12` | `#bf4210` | `#9e350a` | `#7f2805` |
-| **ember dark** | `#2a1a18` | `#3f221c` | `#642e21` | `#9a3f24` | `#cb4d23` | `#ff5b1c` | `#ff8258` | `#ffa384` | `#ffc2ad` | `#ffe1d6` |
-| **amber light** | `#fff9e9` | `#fff3d7` | `#ffebbd` | `#ffe2a3` | `#ffda86` | `#ffd166` | `#e1b756` | `#c09a45` | `#a07e34` | `#816323` |
-| **amber dark** | `#24211d` | `#393226` | `#5d5034` | `#937b46` | `#c8a556` | `#ffd166` | `#ffdb88` | `#ffe4a5` | `#ffedc1` | `#fff6dc` |
+| **ember light** | `#fff3e8` | `#ffe2cd` | `#ffc9ab` | `#ffad84` | `#ff8d5a` | `#ff6a22` | `#d34303` | `#ae3819` | `#882d1b` | `#632319` |
+| **ember dark** | `#2a1b19` | `#3f241d` | `#643322` | `#9a4726` | `#cb5826` | `#ff6a22` | `#ff8d5a` | `#ffad84` | `#ffc8a9` | `#ffe2cd` |
+| **sun light** | `#fff8e7` | `#ffedca` | `#ffdfa7` | `#ffd285` | `#ffc767` | `#ffbd47` | `#e19b34` | `#b97f2b` | `#926422` | `#6e4a19` |
+| **sun dark** | `#24201b` | `#392f22` | `#5d4a2c` | `#937038` | `#c89640` | `#ffbd47` | `#ffc767` | `#ffd896` | `#ffe8bf` | `#fff8e7` |
 
 
 - stone: 데모 라이트 `#f6f5f2`(50) · `#edecea`(100) · `#e4e1da`(200) · `#6f6a61`(600) · `#16130f`(900) 고정, 나머지 OKLab 보간
 - graphite: 데모 다크 `#0d0e12`(50) · `#15171c`(100) · `#1c1f26`(200) · `#262a32`(300) · `#8f97a6`(600) · `#f2f3f7`(900) 고정
-- ember light: 500 `#ff5b1c` 기준 램프, 600 은 데모 라이트 강조색 `#e14e12` 로 고정
-- ember dark · amber dark: 어두운 바탕에서 50 = 가장 어두운 틴트(바탕 `#0d0e12` 와 섞음)
+- ember light: OKLCH 설계 — 명도 0.972 → 0.350, 채도 최고 0.205(500), 색상각 58° → 31°(밝은 쪽 복숭아 · 어두운 쪽 숯)
+- sun light: 색상각 78°(600 부터 72°), 채도 최고 0.150
+- ember dark · sun dark: 어두운 바탕에서 50 = 가장 어두운 틴트(바탕 `#0d0e12` 와 섞음), 600~900 은 밝은 단계(글자 · 빛)
 
 그 밖의 카테고리 색(그래프 · 태그)은 기반 시스템의 blue · green · teal · violet · magenta 램프를 그대로 씁니다(13장에는 넣지 않음 — 필요할 때 추가).
 
@@ -101,17 +110,18 @@
 | `--kt-line-strong` | `#c5c2ba` | `#464c56` | 입력 테두리 |
 | `--kt-primary-solid` | `#16130f` | `#f2f3f7` | 메인 키컬러 — 주 버튼·선택 상태 (다크에서 뼈색으로 뒤집힘) |
 | `--kt-primary-on` | `#ffffff` | `#0d0e12` | 주 버튼 글자 |
-| `--kt-accent-solid` | `#e14e12` | `#ff5b1c` | 포인트 키컬러 Ember — 강조 버튼·켜짐·진행·커서 |
-| `--kt-accent-solid-hc` | `#bf4210` | `#ff5b1c` | 고대비 포인트 면 |
-| `--kt-accent-on` | `#ffffff` | `#0d0e12` | 포인트 버튼 글자 (다크는 잉크 글자) |
-| `--kt-accent-text` | `#bf4210` | `#ff8258` | 포인트 글자·링크 |
-| `--kt-highlight` | `#ffd166` | `#ffd166` | 보조 강조 Amber — 장식·배지 면·표시점 |
-| `--kt-highlight-text` | `#816323` | `#ffdb88` | Amber 글자 |
+| `--kt-accent-solid` | `#d34303` | `#ff6a22` | 포인트 키컬러 Ember — 강조 버튼·켜짐·진행·커서 |
+| `--kt-accent-glow` | `rgba(255,106,34,.28)` | `rgba(255,106,34,.38)` | 움직임의 빛 — 커서 후광·트레일·포커스 번짐(블러와 함께) |
+| `--kt-accent-solid-hc` | `#ae3819` | `#ff6a22` | 고대비 포인트 면(작은 라벨·접근성 우선) |
+| `--kt-accent-on` | `#ffffff` | `#0d0e12` | 포인트 버튼 글자 (라이트 흰 글자 4.59:1 · 다크 잉크 글자 6.74:1) |
+| `--kt-accent-text` | `#ae3819` | `#ff8d5a` | 포인트 글자·링크 |
+| `--kt-highlight` | `#ffbd47` | `#ffbd47` | 보조 강조 Sun — 장식·배지 면·표시점 |
+| `--kt-highlight-text` | `#926422` | `#ffc767` | Sun 글자 |
 | `--kt-info-text` | `#1b64da` | `#449bff` | 정보 |
 | `--kt-positive-text` | `#007a36` | `#29CF73` | 성공 |
-| `--kt-negative-text` | `#d22030` | `#fa616d` | 오류 (Ember 와 구분되는 진홍) |
+| `--kt-negative-text` | `#c81e5a` | `#ff6b8a` | 오류 — Ember 와 색상각 30° 이상 떨어진 장미빛 진홍 |
 | `--kt-attention-text` | `#9c5c00` | `#ffb134` | 주의 |
-| `--kt-line-focus` | `#e14e12` | `#ff5b1c` | 포커스 링 |
+| `--kt-line-focus` | `#d34303` | `#ff6a22` | 포커스 링 |
 
 
 ---
@@ -126,16 +136,16 @@
 | Material 3 state layers | 호버 .08 · 포커스 .10 · 누름 .10 · 끌기 .16 · 선택 .12 · 비활성 .38 |
 | Apple HIG system fills | 회색 채움 4단계, 다크는 투명도를 더 높게 |
 
-**알파 램프** (`--kt-{neutral|ember|amber}-a{50~900}`, 계산 결과 30색 × 2테마 모두 기준 바탕 위에서 단색과 차이 0)
+**알파 램프** (`--kt-{neutral|ember|sun}-a{50~900}`, 계산 결과 30색 × 2테마 모두 기준 바탕 위에서 단색과 차이 0)
 
 | 램프 | 테마 | a50 | a100 | a200 | a300 | a400 | a500 | a600 | a700 | a800 | a900 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | neutral (stone · graphite) | light | `rgba(79,59,0,0.051)` | `rgba(38,26,2,0.083)` | `rgba(70,50,2,0.146)` | `rgba(41,30,0,0.271)` | `rgba(34,21,1,0.393)` | `rgba(26,16,0,0.506)` | `rgba(23,15,0,0.62)` | `rgba(17,11,0,0.738)` | `rgba(11,7,0,0.844)` | `rgba(8,4,0,0.942)` |
 | neutral (stone · graphite) | dark | `rgba(0,0,0,0)` | `rgba(199,223,251,0.043)` | `rgba(189,214,253,0.085)` | `rgba(197,220,253,0.136)` | `rgba(212,230,255,0.287)` | `rgba(219,231,255,0.452)` | `rgba(221,233,255,0.625)` | `rgba(233,241,255,0.735)` | `rgba(243,246,255,0.849)` | `rgba(250,251,255,0.967)` |
-| ember | light | `rgba(255,68,5,0.048)` | `rgba(255,69,0,0.161)` | `rgba(255,69,0,0.322)` | `rgba(255,65,0,0.483)` | `rgba(255,64,0,0.655)` | `rgba(255,71,0,0.891)` | `rgba(223,65,0,0.93)` | `rgba(187,54,0,0.938)` | `rgba(154,45,0,0.961)` | `rgba(125,36,0,0.981)` |
-| ember | dark | `rgba(255,114,68,0.12)` | `rgba(255,111,66,0.207)` | `rgba(255,103,60,0.36)` | `rgba(255,98,49,0.583)` | `rgba(255,94,40,0.786)` | `rgba(255,91,28,1)` | `rgba(255,130,88,1)` | `rgba(255,163,132,1)` | `rgba(255,194,173,1)` | `rgba(255,225,214,1)` |
-| amber | light | `rgba(255,186,2,0.087)` | `rgba(255,179,0,0.157)` | `rgba(255,178,0,0.259)` | `rgba(255,175,0,0.361)` | `rgba(255,177,0,0.475)` | `rgba(255,178,0,0.6)` | `rgba(210,146,0,0.663)` | `rgba(169,117,0,0.73)` | `rgba(136,93,0,0.797)` | `rgba(109,74,0,0.863)` |
-| amber | dark | `rgba(253,212,133,0.096)` | `rgba(255,212,128,0.182)` | `rgba(255,213,121,0.331)` | `rgba(255,211,112,0.554)` | `rgba(255,209,106,0.773)` | `rgba(255,209,102,1)` | `rgba(255,219,136,1)` | `rgba(255,228,165,1)` | `rgba(255,237,193,1)` | `rgba(255,246,220,1)` |
+| ember | light | `rgba(255,123,2,0.091)` | `rgba(255,108,1,0.197)` | `rgba(255,91,0,0.33)` | `rgba(255,85,0,0.483)` | `rgba(255,79,0,0.648)` | `rgba(255,83,0,0.867)` | `rgba(211,65,0,0.989)` | `rgba(165,34,0,0.902)` | `rgba(122,20,0,0.895)` | `rgba(82,11,0,0.902)` |
+| ember | dark | `rgba(255,122,76,0.12)` | `rgba(255,120,71,0.207)` | `rgba(255,117,62,0.36)` | `rgba(255,112,52,0.583)` | `rgba(255,108,43,0.786)` | `rgba(255,106,34,1)` | `rgba(255,141,90,1)` | `rgba(255,173,132,1)` | `rgba(255,200,169,1)` | `rgba(255,226,205,1)` |
+| sun | light | `rgba(255,181,2,0.095)` | `rgba(255,168,0,0.208)` | `rgba(255,163,1,0.346)` | `rgba(255,161,0,0.479)` | `rgba(255,161,0,0.597)` | `rgba(255,164,0,0.722)` | `rgba(217,130,0,0.797)` | `rgba(171,101,0,0.832)` | `rgba(129,76,0,0.867)` | `rgba(94,54,0,0.902)` |
+| sun | dark | `rgba(253,201,112,0.096)` | `rgba(255,195,106,0.182)` | `rgba(255,195,97,0.331)` | `rgba(255,191,87,0.554)` | `rgba(255,190,78,0.773)` | `rgba(255,189,71,1)` | `rgba(255,199,103,1)` | `rgba(255,216,150,1)` | `rgba(255,232,191,1)` | `rgba(255,248,231,1)` |
 
 
 **중립 채움 · 덮개**
@@ -149,9 +159,10 @@
 | `--kt-overlay-hover` | `rgba(242,243,247,.06)` | `rgba(28,22,12,.05)` | 옅은 면 위 호버 덮개 |
 | `--kt-overlay-press` | `rgba(242,243,247,.10)` | `rgba(28,22,12,.09)` | 눌림 |
 | `--kt-overlay-solid-hover` | `rgba(13,14,18,.10)` | `rgba(255,255,255,.12)` | 색 있는 면(메인 · 포인트 버튼) 위 호버 |
-| `--kt-accent-tint` | `rgba(255,91,28,.14)` | `rgba(225,78,18,.10)` | 포인트 옅은 면 · 선택 배경 |
-| `--kt-accent-tint-strong` | `rgba(255,91,28,.22)` | `rgba(225,78,18,.16)` | 약한 포인트 버튼 면 |
-| `--kt-accent-line` | `rgba(255,91,28,.45)` | `rgba(225,78,18,.36)` | 틴트 위 테두리 |
+| `--kt-accent-tint` | `rgba(255,106,34,.14)` | `rgba(211,67,3,.10)` | 포인트 옅은 면 · 선택 배경 |
+| `--kt-accent-tint-strong` | `rgba(255,106,34,.22)` | `rgba(211,67,3,.16)` | 약한 포인트 버튼 면 |
+| `--kt-accent-line` | `rgba(255,106,34,.45)` | `rgba(211,67,3,.36)` | 틴트 위 테두리 |
+| `--kt-accent-glow` | `rgba(255,106,34,.38)` | `rgba(255,106,34,.28)` | 움직임의 빛(후광 · 트레일) |
 | `--kt-line-alpha` | `rgba(242,243,247,.10)` | `rgba(28,22,12,.10)` | 다른 면 위 구분선 · 카드 링 |
 
 라이트 덮개의 기준색 `rgb(28,22,12)` 는 데모 라이트 그림자에 이미 쓰는 따뜻한 잉크, 다크 덮개의 기준색은 본문 글자 `#f2f3f7` 입니다 — 회색 덮개가 테마 온도를 따라갑니다.
@@ -170,24 +181,24 @@
 | light fg-subtle / bg-page | `#4f4b43` | `#f6f5f2` | 7.96:1 | 4.5 | 통과 |
 | light fg-muted / bg-surface | `#6f6a61` | `#ffffff` | 5.37:1 | 4.5 | 통과 |
 | light fg-muted / bg-page | `#6f6a61` | `#f6f5f2` | 4.93:1 | 4.5 | 통과 |
-| light accent-text / bg-surface | `#bf4210` | `#ffffff` | 5.25:1 | 4.5 | 통과 |
-| light accent-text / bg-page | `#bf4210` | `#f6f5f2` | 4.81:1 | 4.5 | 통과 |
-| light highlight-text / bg-surface | `#816323` | `#ffffff` | 5.61:1 | 4.5 | 통과 |
-| light highlight-text / bg-page | `#816323` | `#f6f5f2` | 5.15:1 | 4.5 | 통과 |
+| light accent-text / bg-surface | `#ae3819` | `#ffffff` | 6.21:1 | 4.5 | 통과 |
+| light accent-text / bg-page | `#ae3819` | `#f6f5f2` | 5.7:1 | 4.5 | 통과 |
+| light highlight-text / bg-surface | `#926422` | `#ffffff` | 5.16:1 | 4.5 | 통과 |
+| light highlight-text / bg-page | `#926422` | `#f6f5f2` | 4.73:1 | 4.5 | 통과 |
 | light info-text / bg-surface | `#1b64da` | `#ffffff` | 5.41:1 | 4.5 | 통과 |
 | light info-text / bg-page | `#1b64da` | `#f6f5f2` | 4.96:1 | 4.5 | 통과 |
 | light positive-text / bg-surface | `#007a36` | `#ffffff` | 5.47:1 | 4.5 | 통과 |
 | light positive-text / bg-page | `#007a36` | `#f6f5f2` | 5.02:1 | 4.5 | 통과 |
-| light negative-text / bg-surface | `#d22030` | `#ffffff` | 5.26:1 | 4.5 | 통과 |
-| light negative-text / bg-page | `#d22030` | `#f6f5f2` | 4.83:1 | 4.5 | 통과 |
+| light negative-text / bg-surface | `#c81e5a` | `#ffffff` | 5.54:1 | 4.5 | 통과 |
+| light negative-text / bg-page | `#c81e5a` | `#f6f5f2` | 5.08:1 | 4.5 | 통과 |
 | light attention-text / bg-surface | `#9c5c00` | `#ffffff` | 5.32:1 | 4.5 | 통과 |
 | light attention-text / bg-page | `#9c5c00` | `#f6f5f2` | 4.88:1 | 4.5 | 통과 |
 | light fg-muted / bg-canvas | `#6f6a61` | `#edecea` | 4.55:1 | 4.5 | 통과 |
 | light fg-faint / bg-surface (보조) | `#8b867e` | `#ffffff` | 3.62:1 | 3.0 | 통과 |
 | light primary-on / primary-solid | `#ffffff` | `#16130f` | 18.52:1 | 4.5 | 통과 |
-| light accent-on / accent-solid | `#ffffff` | `#e14e12` | 3.96:1 | 3.0 | 통과 |
-| light accent-on / accent-solid-hc | `#ffffff` | `#bf4210` | 5.25:1 | 4.5 | 통과 |
-| light accent-solid / bg-page (UI 윤곽) | `#e14e12` | `#f6f5f2` | 3.63:1 | 3.0 | 통과 |
+| light accent-on / accent-solid | `#ffffff` | `#d34303` | 4.59:1 | 3.0 | 통과 |
+| light accent-on / accent-solid-hc | `#ffffff` | `#ae3819` | 6.21:1 | 4.5 | 통과 |
+| light accent-solid / bg-page (UI 윤곽) | `#d34303` | `#f6f5f2` | 4.21:1 | 3.0 | 통과 |
 | dark fg-strong / bg-surface | `#f2f3f7` | `#15171c` | 16.17:1 | 4.5 | 통과 |
 | dark fg-strong / bg-page | `#f2f3f7` | `#0d0e12` | 17.4:1 | 4.5 | 통과 |
 | dark fg-default / bg-surface | `#d0d3db` | `#15171c` | 11.97:1 | 4.5 | 통과 |
@@ -196,27 +207,27 @@
 | dark fg-subtle / bg-page | `#afb5c0` | `#0d0e12` | 9.36:1 | 4.5 | 통과 |
 | dark fg-muted / bg-surface | `#8f97a6` | `#15171c` | 6.1:1 | 4.5 | 통과 |
 | dark fg-muted / bg-page | `#8f97a6` | `#0d0e12` | 6.56:1 | 4.5 | 통과 |
-| dark accent-text / bg-surface | `#ff8258` | `#15171c` | 7.33:1 | 4.5 | 통과 |
-| dark accent-text / bg-page | `#ff8258` | `#0d0e12` | 7.89:1 | 4.5 | 통과 |
-| dark highlight-text / bg-surface | `#ffdb88` | `#15171c` | 13.44:1 | 4.5 | 통과 |
-| dark highlight-text / bg-page | `#ffdb88` | `#0d0e12` | 14.46:1 | 4.5 | 통과 |
+| dark accent-text / bg-surface | `#ff8d5a` | `#15171c` | 7.86:1 | 4.5 | 통과 |
+| dark accent-text / bg-page | `#ff8d5a` | `#0d0e12` | 8.46:1 | 4.5 | 통과 |
+| dark highlight-text / bg-surface | `#ffc767` | `#15171c` | 11.63:1 | 4.5 | 통과 |
+| dark highlight-text / bg-page | `#ffc767` | `#0d0e12` | 12.51:1 | 4.5 | 통과 |
 | dark info-text / bg-surface | `#449bff` | `#15171c` | 6.3:1 | 4.5 | 통과 |
 | dark info-text / bg-page | `#449bff` | `#0d0e12` | 6.78:1 | 4.5 | 통과 |
 | dark positive-text / bg-surface | `#29CF73` | `#15171c` | 8.77:1 | 4.5 | 통과 |
 | dark positive-text / bg-page | `#29CF73` | `#0d0e12` | 9.43:1 | 4.5 | 통과 |
-| dark negative-text / bg-surface | `#fa616d` | `#15171c` | 5.97:1 | 4.5 | 통과 |
-| dark negative-text / bg-page | `#fa616d` | `#0d0e12` | 6.43:1 | 4.5 | 통과 |
+| dark negative-text / bg-surface | `#ff6b8a` | `#15171c` | 6.59:1 | 4.5 | 통과 |
+| dark negative-text / bg-page | `#ff6b8a` | `#0d0e12` | 7.09:1 | 4.5 | 통과 |
 | dark attention-text / bg-surface | `#ffb134` | `#15171c` | 9.9:1 | 4.5 | 통과 |
 | dark attention-text / bg-page | `#ffb134` | `#0d0e12` | 10.65:1 | 4.5 | 통과 |
 | dark fg-muted / bg-canvas | `#8f97a6` | `#111217` | 6.36:1 | 4.5 | 통과 |
 | dark fg-faint / bg-surface (보조) | `#6a707d` | `#15171c` | 3.61:1 | 3.0 | 통과 |
 | dark primary-on / primary-solid | `#0d0e12` | `#f2f3f7` | 17.4:1 | 4.5 | 통과 |
-| dark accent-on / accent-solid | `#0d0e12` | `#ff5b1c` | 6.21:1 | 3.0 | 통과 |
-| dark accent-on / accent-solid-hc | `#0d0e12` | `#ff5b1c` | 6.21:1 | 4.5 | 통과 |
-| dark accent-solid / bg-page (UI 윤곽) | `#ff5b1c` | `#0d0e12` | 6.21:1 | 3.0 | 통과 |
+| dark accent-on / accent-solid | `#0d0e12` | `#ff6a22` | 6.74:1 | 3.0 | 통과 |
+| dark accent-on / accent-solid-hc | `#0d0e12` | `#ff6a22` | 6.74:1 | 4.5 | 통과 |
+| dark accent-solid / bg-page (UI 윤곽) | `#ff6a22` | `#0d0e12` | 6.74:1 | 3.0 | 통과 |
 
 
-> 모두 통과합니다. 라이트 포인트 버튼(흰 글자 / `#e14e12`, 3.96:1)은 굵은 16px 이상 라벨에만 쓰고, 작은 라벨 · 접근성 우선 화면은 `accent-solid-hc`(`#bf4210`)를 씁니다. `fg-faint` 는 3:1 기준의 보조 정보(자리표시 · 메타)에만 씁니다.
+> 모두 통과합니다. 라이트 포인트 버튼(흰 글자 / `#d34303`)이 4.59:1 이라 크기 예외 규칙이 없습니다. 더 강한 대비가 필요한 화면은 `accent-solid-hc`(`#ae3819`). `fg-faint` 는 3:1 기준의 보조 정보(자리표시 · 메타)에만 씁니다.
 
 ---
 
@@ -405,7 +416,7 @@
 | 아코디언 | 오른쪽 꺾쇠는 **20~22px 아이콘 + 32px 이상 누름 영역**, 열리면 180° 회전 + 아이콘 면이 메인 색으로. 제목은 줄바꿈 허용, 아이콘은 줄지 않음 |
 | 토스트 · 떠 있는 막대 | 최대 폭 = 화면 − 좌우 여백, 문장은 최대 2~3줄, 버튼은 줄지 않고 가운데 고정 |
 | 코드 블록 | `bg-canvas` + 모노, 옵션 이름은 `accent-text`, 값은 `fg-default` |
-| 커서 | 페이지 커서 = Ember 점 + Ember 링(`--kt-accent-solid`, 지금 데모 `var(--accent)` 와 같음) |
+| 커서 | 페이지 커서 = Ember 점 + Ember 링(`--kt-accent-solid`, 지금 데모 `var(--accent)` 자리), 움직이는 동안만 `--kt-accent-glow` 후광 |
 | 포커스 링 | `line-focus`(Ember) 2px, offset 2px — 키보드 입력일 때만 |
 
 ---
@@ -420,13 +431,14 @@
 | `--text` | `--kt-fg-strong` | 같은 값 |
 | `--muted` | `--kt-fg-muted` | 같은 값 |
 | `--line` | `--kt-line-default` | 같은 값 |
-| `--accent` | `--kt-accent-solid` | 같은 값(다크 `#ff5b1c`, 라이트 `#e14e12`) |
-| `--accent2` | `--kt-highlight` | 라이트는 면 `#ffd166`, 글자는 `--kt-highlight-text`(데모 `#c99516` 은 글자로 쓰면 대비 부족) |
+| `--accent` | `--kt-accent-solid` | **값이 바뀜**: 다크 `#ff5b1c` → `#ff6a22`, 라이트 `#e14e12` → `#d34303` (Ember 2). 다크 포인트 버튼 글자는 흰색 → 잉크 |
+| `--accent2` | `--kt-highlight` | **값이 바뀜**: `#ffd166` → `#ffbd47`(Sun). 라이트 글자는 `--kt-highlight-text` `#926422` (데모 `#c99516` 은 글자로 쓰면 대비 부족) |
 | `--shadow` / `--shadow-hover` | `--kt-shadow-md` / `--kt-shadow-lg` | 같은 값 |
 | `--sp-1~16` | `--kt-space-*` | 부분집합 |
 | `--r-card` 14 / `--r-stage` 10 | `--kt-radius-lg` 16 / `--kt-radius-md` 12 | 값이 다름 — 눈으로 확인 후 |
 | `html.light` | `[data-kt-theme="light"]` | 옮기는 동안 둘 다 같은 블록에 걸면 호환 |
 | `.u-amber { color: #ffd166 }` | `color: var(--kt-highlight-text)` | 하드코딩 제거 |
+| (없음) | `--kt-accent-glow` · `--kt-gradient-brand` | 새로 생김 — 커서 후광 · 워드마크 |
 
 옮기는 순서 제안: ① 13장 블록을 `demo/styles.css` 맨 위에 추가하고 옛 변수를 새 토큰의 별칭으로(`--bg: var(--kt-bg-page)`) → ② 화면이 같은지 데모 QA → ③ 사용처를 새 이름으로 바꾸고 별칭 제거. 각 단계가 따로 커밋 · PR 이어야 시각 회귀를 찾기 쉽습니다.
 
@@ -438,12 +450,12 @@
 /* Kineto design tokens — dark first. Values: docs/design-system.md §3–§9 */
 :root {
   color-scheme: dark;
-  --kt-bg-page: #0d0e12; --kt-bg-canvas: #111217; --kt-bg-surface: #15171c; --kt-bg-raised: #1c1f26; --kt-bg-float: #21242c; --kt-bg-inverse: #f2f3f7; --kt-fg-strong: #f2f3f7; --kt-fg-default: #d0d3db; --kt-fg-subtle: #afb5c0; --kt-fg-muted: #8f97a6; --kt-fg-faint: #6a707d; --kt-fg-inverse: #0d0e12; --kt-line-subtle: #1c1f26; --kt-line-default: #262a32; --kt-line-strong: #464c56; --kt-primary-solid: #f2f3f7; --kt-primary-on: #0d0e12; --kt-accent-solid: #ff5b1c; --kt-accent-solid-hc: #ff5b1c; --kt-accent-on: #0d0e12; --kt-accent-text: #ff8258; --kt-highlight: #ffd166; --kt-highlight-text: #ffdb88; --kt-info-text: #449bff; --kt-positive-text: #29CF73; --kt-negative-text: #fa616d; --kt-attention-text: #ffb134; --kt-line-focus: #ff5b1c;
+  --kt-bg-page: #0d0e12; --kt-bg-canvas: #111217; --kt-bg-surface: #15171c; --kt-bg-raised: #1c1f26; --kt-bg-float: #21242c; --kt-bg-inverse: #f2f3f7; --kt-fg-strong: #f2f3f7; --kt-fg-default: #d0d3db; --kt-fg-subtle: #afb5c0; --kt-fg-muted: #8f97a6; --kt-fg-faint: #6a707d; --kt-fg-inverse: #0d0e12; --kt-line-subtle: #1c1f26; --kt-line-default: #262a32; --kt-line-strong: #464c56; --kt-primary-solid: #f2f3f7; --kt-primary-on: #0d0e12; --kt-accent-solid: #ff6a22; --kt-accent-glow: rgba(255,106,34,.38); --kt-accent-solid-hc: #ff6a22; --kt-accent-on: #0d0e12; --kt-accent-text: #ff8d5a; --kt-highlight: #ffbd47; --kt-highlight-text: #ffc767; --kt-info-text: #449bff; --kt-positive-text: #29CF73; --kt-negative-text: #ff6b8a; --kt-attention-text: #ffb134; --kt-line-focus: #ff6a22;
   --kt-neutral-a50: rgba(0,0,0,0); --kt-neutral-a100: rgba(199,223,251,0.043); --kt-neutral-a200: rgba(189,214,253,0.085); --kt-neutral-a300: rgba(197,220,253,0.136); --kt-neutral-a400: rgba(212,230,255,0.287); --kt-neutral-a500: rgba(219,231,255,0.452); --kt-neutral-a600: rgba(221,233,255,0.625); --kt-neutral-a700: rgba(233,241,255,0.735); --kt-neutral-a800: rgba(243,246,255,0.849); --kt-neutral-a900: rgba(250,251,255,0.967);
-  --kt-ember-a50: rgba(255,114,68,0.12); --kt-ember-a100: rgba(255,111,66,0.207); --kt-ember-a200: rgba(255,103,60,0.36); --kt-ember-a300: rgba(255,98,49,0.583); --kt-ember-a400: rgba(255,94,40,0.786); --kt-ember-a500: rgba(255,91,28,1); --kt-ember-a600: rgba(255,130,88,1); --kt-ember-a700: rgba(255,163,132,1); --kt-ember-a800: rgba(255,194,173,1); --kt-ember-a900: rgba(255,225,214,1);
-  --kt-amber-a50: rgba(253,212,133,0.096); --kt-amber-a100: rgba(255,212,128,0.182); --kt-amber-a200: rgba(255,213,121,0.331); --kt-amber-a300: rgba(255,211,112,0.554); --kt-amber-a400: rgba(255,209,106,0.773); --kt-amber-a500: rgba(255,209,102,1); --kt-amber-a600: rgba(255,219,136,1); --kt-amber-a700: rgba(255,228,165,1); --kt-amber-a800: rgba(255,237,193,1); --kt-amber-a900: rgba(255,246,220,1);
+  --kt-ember-a50: rgba(255,122,76,0.12); --kt-ember-a100: rgba(255,120,71,0.207); --kt-ember-a200: rgba(255,117,62,0.36); --kt-ember-a300: rgba(255,112,52,0.583); --kt-ember-a400: rgba(255,108,43,0.786); --kt-ember-a500: rgba(255,106,34,1); --kt-ember-a600: rgba(255,141,90,1); --kt-ember-a700: rgba(255,173,132,1); --kt-ember-a800: rgba(255,200,169,1); --kt-ember-a900: rgba(255,226,205,1);
+  --kt-sun-a50: rgba(253,201,112,0.096); --kt-sun-a100: rgba(255,195,106,0.182); --kt-sun-a200: rgba(255,195,97,0.331); --kt-sun-a300: rgba(255,191,87,0.554); --kt-sun-a400: rgba(255,190,78,0.773); --kt-sun-a500: rgba(255,189,71,1); --kt-sun-a600: rgba(255,199,103,1); --kt-sun-a700: rgba(255,216,150,1); --kt-sun-a800: rgba(255,232,191,1); --kt-sun-a900: rgba(255,248,231,1);
   --kt-fill-1: rgba(242,243,247,.16); --kt-fill-2: rgba(242,243,247,.12); --kt-fill-3: rgba(242,243,247,.08); --kt-fill-4: rgba(242,243,247,.05);
-  --kt-overlay-hover: rgba(242,243,247,.06); --kt-overlay-press: rgba(242,243,247,.10); --kt-overlay-solid-hover: rgba(13,14,18,.10); --kt-accent-tint: rgba(255,91,28,.14); --kt-accent-tint-strong: rgba(255,91,28,.22); --kt-accent-line: rgba(255,91,28,.45); --kt-line-alpha: rgba(242,243,247,.10); --kt-shadow-sm: inset 0 1px 0 rgba(255,255,255,.03), 0 4px 12px rgba(0,0,0,.25); --kt-shadow-md: inset 0 1px 0 rgba(255,255,255,.03), 0 14px 40px rgba(0,0,0,.35); --kt-shadow-lg: inset 0 1px 0 rgba(255,255,255,.05), 0 22px 60px rgba(0,0,0,.5);
+  --kt-overlay-hover: rgba(242,243,247,.06); --kt-overlay-press: rgba(242,243,247,.10); --kt-overlay-solid-hover: rgba(13,14,18,.10); --kt-accent-tint: rgba(255,106,34,.14); --kt-accent-tint-strong: rgba(255,106,34,.22); --kt-accent-line: rgba(255,106,34,.45); --kt-line-alpha: rgba(242,243,247,.10); --kt-gradient-brand: linear-gradient(120deg, #ff6a22 0%, #ffbd47 100%); --kt-shadow-sm: inset 0 1px 0 rgba(255,255,255,.03), 0 4px 12px rgba(0,0,0,.25); --kt-shadow-md: inset 0 1px 0 rgba(255,255,255,.03), 0 14px 40px rgba(0,0,0,.35); --kt-shadow-lg: inset 0 1px 0 rgba(255,255,255,.05), 0 22px 60px rgba(0,0,0,.5);
   --kt-font-sans: "Wanted Sans Variable", "Wanted Sans", Pretendard, Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --kt-font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --kt-hairline: 1px;
@@ -453,12 +465,12 @@
 }
 [data-kt-theme="light"], html.light {
   color-scheme: light;
-  --kt-bg-page: #f6f5f2; --kt-bg-canvas: #edecea; --kt-bg-surface: #ffffff; --kt-bg-raised: #ffffff; --kt-bg-float: #ffffff; --kt-bg-inverse: #16130f; --kt-fg-strong: #16130f; --kt-fg-default: #312e28; --kt-fg-subtle: #4f4b43; --kt-fg-muted: #6f6a61; --kt-fg-faint: #8b867e; --kt-fg-inverse: #ffffff; --kt-line-subtle: #edecea; --kt-line-default: #e4e1da; --kt-line-strong: #c5c2ba; --kt-primary-solid: #16130f; --kt-primary-on: #ffffff; --kt-accent-solid: #e14e12; --kt-accent-solid-hc: #bf4210; --kt-accent-on: #ffffff; --kt-accent-text: #bf4210; --kt-highlight: #ffd166; --kt-highlight-text: #816323; --kt-info-text: #1b64da; --kt-positive-text: #007a36; --kt-negative-text: #d22030; --kt-attention-text: #9c5c00; --kt-line-focus: #e14e12;
+  --kt-bg-page: #f6f5f2; --kt-bg-canvas: #edecea; --kt-bg-surface: #ffffff; --kt-bg-raised: #ffffff; --kt-bg-float: #ffffff; --kt-bg-inverse: #16130f; --kt-fg-strong: #16130f; --kt-fg-default: #312e28; --kt-fg-subtle: #4f4b43; --kt-fg-muted: #6f6a61; --kt-fg-faint: #8b867e; --kt-fg-inverse: #ffffff; --kt-line-subtle: #edecea; --kt-line-default: #e4e1da; --kt-line-strong: #c5c2ba; --kt-primary-solid: #16130f; --kt-primary-on: #ffffff; --kt-accent-solid: #d34303; --kt-accent-glow: rgba(255,106,34,.28); --kt-accent-solid-hc: #ae3819; --kt-accent-on: #ffffff; --kt-accent-text: #ae3819; --kt-highlight: #ffbd47; --kt-highlight-text: #926422; --kt-info-text: #1b64da; --kt-positive-text: #007a36; --kt-negative-text: #c81e5a; --kt-attention-text: #9c5c00; --kt-line-focus: #d34303;
   --kt-neutral-a50: rgba(79,59,0,0.051); --kt-neutral-a100: rgba(38,26,2,0.083); --kt-neutral-a200: rgba(70,50,2,0.146); --kt-neutral-a300: rgba(41,30,0,0.271); --kt-neutral-a400: rgba(34,21,1,0.393); --kt-neutral-a500: rgba(26,16,0,0.506); --kt-neutral-a600: rgba(23,15,0,0.62); --kt-neutral-a700: rgba(17,11,0,0.738); --kt-neutral-a800: rgba(11,7,0,0.844); --kt-neutral-a900: rgba(8,4,0,0.942);
-  --kt-ember-a50: rgba(255,68,5,0.048); --kt-ember-a100: rgba(255,69,0,0.161); --kt-ember-a200: rgba(255,69,0,0.322); --kt-ember-a300: rgba(255,65,0,0.483); --kt-ember-a400: rgba(255,64,0,0.655); --kt-ember-a500: rgba(255,71,0,0.891); --kt-ember-a600: rgba(223,65,0,0.93); --kt-ember-a700: rgba(187,54,0,0.938); --kt-ember-a800: rgba(154,45,0,0.961); --kt-ember-a900: rgba(125,36,0,0.981);
-  --kt-amber-a50: rgba(255,186,2,0.087); --kt-amber-a100: rgba(255,179,0,0.157); --kt-amber-a200: rgba(255,178,0,0.259); --kt-amber-a300: rgba(255,175,0,0.361); --kt-amber-a400: rgba(255,177,0,0.475); --kt-amber-a500: rgba(255,178,0,0.6); --kt-amber-a600: rgba(210,146,0,0.663); --kt-amber-a700: rgba(169,117,0,0.73); --kt-amber-a800: rgba(136,93,0,0.797); --kt-amber-a900: rgba(109,74,0,0.863);
+  --kt-ember-a50: rgba(255,123,2,0.091); --kt-ember-a100: rgba(255,108,1,0.197); --kt-ember-a200: rgba(255,91,0,0.33); --kt-ember-a300: rgba(255,85,0,0.483); --kt-ember-a400: rgba(255,79,0,0.648); --kt-ember-a500: rgba(255,83,0,0.867); --kt-ember-a600: rgba(211,65,0,0.989); --kt-ember-a700: rgba(165,34,0,0.902); --kt-ember-a800: rgba(122,20,0,0.895); --kt-ember-a900: rgba(82,11,0,0.902);
+  --kt-sun-a50: rgba(255,181,2,0.095); --kt-sun-a100: rgba(255,168,0,0.208); --kt-sun-a200: rgba(255,163,1,0.346); --kt-sun-a300: rgba(255,161,0,0.479); --kt-sun-a400: rgba(255,161,0,0.597); --kt-sun-a500: rgba(255,164,0,0.722); --kt-sun-a600: rgba(217,130,0,0.797); --kt-sun-a700: rgba(171,101,0,0.832); --kt-sun-a800: rgba(129,76,0,0.867); --kt-sun-a900: rgba(94,54,0,0.902);
   --kt-fill-1: rgba(28,22,12,.12); --kt-fill-2: rgba(28,22,12,.08); --kt-fill-3: rgba(28,22,12,.05); --kt-fill-4: rgba(28,22,12,.03);
-  --kt-overlay-hover: rgba(28,22,12,.05); --kt-overlay-press: rgba(28,22,12,.09); --kt-overlay-solid-hover: rgba(255,255,255,.12); --kt-accent-tint: rgba(225,78,18,.10); --kt-accent-tint-strong: rgba(225,78,18,.16); --kt-accent-line: rgba(225,78,18,.36); --kt-line-alpha: rgba(28,22,12,.10); --kt-shadow-sm: 0 1px 2px rgba(28,22,12,.05), 0 4px 12px rgba(28,22,12,.05); --kt-shadow-md: 0 1px 2px rgba(28,22,12,.05), 0 12px 34px rgba(28,22,12,.07); --kt-shadow-lg: 0 2px 4px rgba(28,22,12,.06), 0 20px 50px rgba(28,22,12,.11);
+  --kt-overlay-hover: rgba(28,22,12,.05); --kt-overlay-press: rgba(28,22,12,.09); --kt-overlay-solid-hover: rgba(255,255,255,.12); --kt-accent-tint: rgba(211,67,3,.10); --kt-accent-tint-strong: rgba(211,67,3,.16); --kt-accent-line: rgba(211,67,3,.36); --kt-line-alpha: rgba(28,22,12,.10); --kt-gradient-brand: linear-gradient(120deg, #d34303 0%, #e19b34 100%); --kt-shadow-sm: 0 1px 2px rgba(28,22,12,.05), 0 4px 12px rgba(28,22,12,.05); --kt-shadow-md: 0 1px 2px rgba(28,22,12,.05), 0 12px 34px rgba(28,22,12,.07); --kt-shadow-lg: 0 2px 4px rgba(28,22,12,.06), 0 20px 50px rgba(28,22,12,.11);
 }
 @media (min-resolution: 2dppx) { :root { --kt-hairline: 0.5px; } }
 @media (prefers-reduced-motion: reduce) { :root { --kt-duration-fast: 1ms; --kt-duration-quick: 1ms; --kt-duration-base: 1ms; --kt-duration-slow: 1ms; --kt-duration-slower: 1ms; --kt-duration-cinematic: 1ms; } }
@@ -474,3 +486,4 @@
 2. 라이브러리 모듈 · `kineto.features.json` 기본값에는 넣지 않습니다. 모듈의 색 옵션 기본값은 지금처럼 "작성자 페이지의 색을 따름"을 유지합니다(디자인 시스템 중립 — 연동 가이드의 원칙).
 3. 색을 바꿀 때는 기준점(데모 값)을 먼저 바꾸고, 램프 · 알파 · 대비를 다시 계산해 이 문서의 표를 함께 고칩니다. 대비가 기준 아래로 내려가면 단계를 조정합니다(4.5:1 본문, 3:1 큰 글자 · UI 윤곽).
 4. 회사 · 제품 이름을 이 문서에 넣지 않습니다(저장소 문서 규칙).
+5. 데모 주황을 Ember 2 로 바꾸는 것은 소유자의 리브랜딩 결정(2026-10-16)입니다. "데모 브랜드 색을 검정 · 회색으로 바꾸지 않음" 규칙은 그대로 — 주황 계열은 유지됩니다.
