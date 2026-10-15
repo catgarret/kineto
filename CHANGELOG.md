@@ -4,13 +4,13 @@
 
 ### English
 
-- **Design system proposal (docs only).** `docs/design-system.md` defines the visual language for Kineto's own surfaces (demo, examples, docs): ink/bone main colour, a redesigned Ember point colour (OKLCH ramp: `#ff6a22` on dark, `#d34303` with 4.59:1 white text on light), a Sun highlight, an Ember Glow token for moving highlights, an Ember → Sun brand gradient, dark-first graphite and light stone neutrals, alpha tints that blend over moving backgrounds, XSM–XLG sizes × input density × screen tiers, spacing, motion tokens with the literal values `data-kt-ease` accepts, WCAG contrast results and a mapping from the current demo variables. Modules and contracts are unchanged; the demo adopts it in a separate change.
+- **Design system proposal (docs only).** `docs/design-system.md` defines the visual language for Kineto's own surfaces (demo, examples, docs): ink/bone main colour, a redesigned Ember point colour (OKLCH ramp: `#ff6a22` on dark, `#d34303` with 4.59:1 white text on light), a Sun highlight, an Ember Glow token for moving highlights, an Ember → Sun brand gradient, a brand identity ("Kinetic Instrument": quiet chrome, expressive stage) with its own type scale (tight variable-weight display, wide mono labels), machined radii (controls = height × 0.2, card 14, stage 10, tags 4), the "Ignite" entrance signature and per-input interaction rules, dark-first graphite and light stone neutrals, alpha tints that blend over moving backgrounds, XSM–XLG sizes × input density × screen tiers, spacing, motion tokens with the literal values `data-kt-ease` accepts, WCAG contrast results and a mapping from the current demo variables. Modules and contracts are unchanged; the demo adopts it in a separate change.
 
 <!-- Add matching English release bullets here. -->
 
 ### 한국어
 
-- **디자인 시스템 제안(문서만).** `docs/design-system.md` 에 Kineto 자체 화면(데모 · 예제 · 문서)의 디자인 언어를 정리했습니다: 잉크/뼈색 메인, OKLCH 로 다시 설계한 Ember 포인트(다크 `#ff6a22`, 라이트 `#d34303` — 흰 글자 4.59:1), Sun 보조 강조, 움직임의 빛 Ember Glow, Ember → Sun 브랜드 그라데이션, 다크 우선 흑연 · 라이트 돌색 중립, 움직이는 배경 위에서도 섞이는 알파 틴트, XSM~XLG 크기 × 입력 장치 밀도 × 화면 등급, 간격, `data-kt-ease` 에 그대로 넣는 모션 값, WCAG 대비 결과, 지금 데모 변수와의 대응표. 모듈 · 계약은 바뀌지 않고, 데모 적용은 별도 변경에서 합니다.
+- **디자인 시스템 제안(문서만).** `docs/design-system.md` 에 Kineto 자체 화면(데모 · 예제 · 문서)의 디자인 언어를 정리했습니다: 잉크/뼈색 메인, OKLCH 로 다시 설계한 Ember 포인트(다크 `#ff6a22`, 라이트 `#d34303` — 흰 글자 4.59:1), Sun 보조 강조, 움직임의 빛 Ember Glow, Ember → Sun 브랜드 그라데이션, 브랜드 아이덴티티("Kinetic Instrument": 조용한 크롬 · 표현하는 무대)와 그에 맞춘 타이포(조인 가변 굵기 디스플레이 · 넓은 모노 라벨) · 반경(컨트롤 = 높이 × 0.2, 카드 14, 무대 10, 태그 4) · "Ignite" 등장 시그니처 · 입력별 인터랙션 규칙, 다크 우선 흑연 · 라이트 돌색 중립, 움직이는 배경 위에서도 섞이는 알파 틴트, XSM~XLG 크기 × 입력 장치 밀도 × 화면 등급, 간격, `data-kt-ease` 에 그대로 넣는 모션 값, WCAG 대비 결과, 지금 데모 변수와의 대응표. 모듈 · 계약은 바뀌지 않고, 데모 적용은 별도 변경에서 합니다.
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 

@@ -4,7 +4,7 @@
 >
 > **상태: 제안(2026-10-16).** 데모 사이트 · 예제 · 문서 페이지 같은 Kineto 자체 화면의 디자인 언어입니다. 라이브러리(모듈)는 지금처럼 어떤 디자인 시스템에도 붙는 중립을 유지하고, 이 색을 모듈에 넣지 않습니다. `demo/` 는 별도 작업에서 옮기기 전까지 바뀌지 않습니다.
 
-이 문서는 범용 통합 디자인 시스템(라이트/다크 · 투명도 레이어 · XSM~XLG 크기 · 입력 장치 밀도 · 화면 등급 · 모션 규칙)을 **그대로 기반**으로 하고, **색 · 서체 · 면만 Kineto 브랜드로** 바꾼 판입니다. 간격 · 크기 · 행간 · 반경 · 모션 값은 기반과 같습니다(6~9장).
+이 문서는 범용 통합 디자인 시스템(라이트/다크 · 투명도 레이어 · XSM~XLG 크기 · 입력 장치 밀도 · 화면 등급 · 모션 규칙)을 **원칙의 기반**으로 하고, 색 · 서체 · 글자 크기 · 행간 · 반경 · 모션 · 인터랙션은 **Kineto 브랜드에 맞춰 따로 설계**한 판입니다. 간격 척도와 컨트롤 높이 · 화면 등급 · 고해상도 규칙은 기반과 같습니다.
 
 - 토큰 접두사: `--kt-` (기존 `data-kt-*` 속성과 같은 이름 공간)
 - 테마: **다크가 기본**(데모의 정체성), 라이트는 `data-kt-theme="light"` (지금 데모는 `html.light` — 12장 대응표)
@@ -12,7 +12,7 @@
 
 ## 목차
 
-1. 브랜드 키컬러 · 2. 테마 · 3. 원시 램프 · 4. 의미 토큰 · 5. 투명도(알파) · 6. 대비 검증 · 7. 서체 · 타이포 · 8. 크기 · 밀도 · 화면 등급 · 9. 간격 · 반경 · 면 · 10. 모션 · 11. 컴포넌트 규칙 · 12. 데모 변수 대응표 · 13. 복사용 토큰 블록 · 14. 적용 순서 · 유지보수
+1. 브랜드 키컬러 · 1-1. 브랜드 아이덴티티 · 2. 테마 · 3. 원시 램프 · 4. 의미 토큰 · 5. 투명도(알파) · 6. 대비 검증 · 7. 서체 · 타이포 · 8. 크기 · 밀도 · 화면 등급 · 9. 간격 · 반경 · 면 · 10. 모션 아이덴티티 · 11. 컴포넌트 규칙 · 12. 데모 변수 대응표 · 13. 복사용 토큰 블록 · 14. 적용 순서 · 유지보수
 
 ---
 
@@ -51,6 +51,39 @@
 
 ---
 
+## 1-1. 브랜드 아이덴티티 — "Kinetic Instrument"
+
+### 진단
+
+| 관찰 | 의미 |
+|---|---|
+| 모션 라이브러리. 데모 사이트가 곧 제품 | 화면의 주인공은 **효과**. UI 는 무대 장치 |
+| 쓰는 사람 = 디자이너(옵션을 만져 보고 코드 복사) + 개발자(`data-kt-*` · JS API) | **만져 보고 싶은 반응** + **정확한 수치 · 코드** 둘 다 |
+| 다크 무대, 주황 커서, 모노 라벨(IBM Plex Mono), 기하학적 가변 서체(Wanted Sans Variable) | 이미 "어두운 작업실 + 정밀 계기" 인상 |
+| 55개 모듈, 진단 코드, 예산 · 측정 문서 | 정량 · 공학적인 신뢰가 브랜드 자산 |
+
+### 아이덴티티 한 줄
+
+> **"Kinetic Instrument — 무대는 조용하게, 움직임은 선명하게."**
+> 정밀하게 만든 악기처럼: 틀(UI)은 단단하고 절제되어 있고, 연주(효과)는 표현력이 넘친다.
+
+| 키워드 | 형태 | 움직임 |
+|---|---|---|
+| **Stage** 무대 | 어두운 흑연 면, 장식 없는 카드 틀, 효과가 놓이는 "무대"(stage) 칸 | UI 크롬은 200ms 표준 곡선, 튕김 없음 |
+| **Signal** 신호 | Ember 2 한 점, Glow 는 움직이는 순간에만 | 등장 끝에 Ember 빛이 한 번 번졌다 사라짐 |
+| **Precision** 정밀 | 작은 반경 · 모노 라벨 · 수치가 보이는 UI | 시간 기준 이징, 프레임과 무관한 같은 속도 |
+| **Play** 놀이 | 손이 가면 반응하는 CTA · 카드 | 자석 · 굵기 모핑 · 스프링 복귀 — 쇼케이스에서는 살짝 넘침(overshoot) 허용 |
+
+### 레퍼런스에서 무엇을 가져왔나
+
+| 통합 규격의 요소 | Kineto 채택 | 이유 |
+|---|---|---|
+| 브랜드 랜딩의 스크롤 연출(블러 등장 · 고정 장면 · 카드 → 전체 화면 · 마스크 전환) | **적극 채택 — 소개 페이지 · 쇼케이스** | 이것 자체가 Kineto 모듈의 시연 |
+| 결제 UI 의 표준 전환 `.33,0,.2,1` · 300/200 | **채택 — 데모 UI 크롬(헤더 · 설정창 · 탭)** | 무대 장치는 조용하고 정확해야 효과가 산다 |
+| 마이크로 피드백(팝 · 롤링 · 숫자 슬롯) | 채택 — 코드 복사 · 수치 표시 | 개발자용 피드백 |
+| 큰 굵은 제목 | **더 크고 더 조이게** — 가변 서체로 굵기까지 움직임 | 표현력 |
+
+---
 ## 2. 테마
 
 ```html
@@ -231,51 +264,55 @@
 
 ---
 
-## 7. 서체 · 타이포
+## 7. 서체 · 타이포 — "Geometric Display, Technical Labels"
 
 | 토큰 | 값 | 쓰임 |
 |---|---|---|
-| `--kt-font-sans` | `"Wanted Sans Variable", "Wanted Sans", Pretendard, Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif` | 본문 · 제목 (데모와 같음) |
-| `--kt-font-mono` | `"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | 코드 · 옵션 이름 · 숫자 라벨 · eyebrow |
+| `--kt-font-sans` | `"Wanted Sans Variable", "Wanted Sans", Pretendard, Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif` | 제목 · 본문 (가변 굵기 400~900) |
+| `--kt-font-mono` | `"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | 코드 · `data-kt-*` · 옵션 이름 · 수치 · eyebrow |
 
-- 자간: 제목 -0.02em, 본문 -0.01em, 모노 0. 한글은 `word-break: keep-all` + `overflow-wrap: anywhere`.
-- 코드 · `data-kt-*` 속성 이름은 항상 모노. 데모 카드 제목의 모듈 이름도 모노 라벨로 붙입니다.
-- 크기 · 행간은 기반과 같습니다:
+**성격**: 기하학적 가변 산세리프를 **크고 조이게**(디스플레이) + 모노를 **작고 넓게**(라벨). 두 서체의 대비가 "표현 + 정밀"을 그대로 보여 준다.
 
-#### 디스플레이 타이포 (반응형)
-| 토큰 | ≥1600 | ≤1599 | ≤1439 | ≤1023 | ≤767 | 행간 | 굵기 | 자간 | 쓰임 |
-|---|---|---|---|---|---|---|---|---|---|
-| `display-xl` | 80 | 64 | 56 | 48 | 44 | 1.2 | 700 | -0.02em | 히어로 슬로건 |
-| `display-lg` | 64 | 52 | 48 | 48 | 36 | 1.28 | 700 | -0.02em | 섹션 대제목 |
-| `display-md` | 56 | 48 | 36 | 28 | 28 | 1.28 | 700 | -0.02em | 섹션 제목 |
-| `heading-xl` | 48 | 40 | 40 | 32 | 28 | 1.4 | 700 | -0.02em | 블록 제목 |
-| `heading-lg` | 40 | 32 | 32 | 28 | 28 | 1.4 | 700 | -0.02em | 블록 제목(작게) |
-| `heading-md` | 32 | 28 | 24 | 22 | 22 | 1.4 | 700 | -0.02em | 카드 큰 제목 |
-| `heading-sm` | 24 | 20 | 20 | 18 | 18 | 1.48 | 700 | -0.02em | 카드 제목 |
+### 7-1. 디스플레이 · 제목 (화면 등급별, px · 루트 배율 적용 전)
 
-#### UI 타이포 (고정)
-| 토큰 | 크기 | 행간 | 굵기 | 자간 | 쓰임 |
+| 스타일 | mo ≤767 | ta 768~1023 | pc 1024~1439 | pcl 1440~1919 | hd+ ≥1920 | 행간 | 굵기 | 자간 |
+|---|---|---|---|---|---|---|---|---|
+| `display-xl` 히어로 | 44 | 56 | 72 | 88 | 96 | 1.0 | 760 | -0.045em |
+| `display-lg` 섹션 대제목 | 36 | 44 | 56 | 64 | 72 | 1.05 | 720 | -0.04em |
+| `display-md` 섹션 제목 | 28 | 32 | 40 | 48 | 52 | 1.1 | 700 | -0.035em |
+| `heading-lg` 블록 제목 | 22 | 24 | 28 | 32 | 32 | 1.2 | 680 | -0.025em |
+| `heading-md` 카드 제목 | 18 | 18 | 20 | 22 | 22 | 1.3 | 640 | -0.015em |
+
+- 행간을 기반(1.2~1.4)보다 **좁게** — 큰 글자가 한 덩어리로 보여 움직일 때(블러 등장 · 줄 단위 순차) 형태가 또렷하다. 한글 두 줄 제목은 `display-*` 행간 +0.05 를 허용.
+- 가변 굵기를 단계 사이 값(640 · 680 · 720 · 760)으로 써서 크기마다 획 두께가 눈으로 같아 보이게 한다(큰 글자는 덜 굵게 보이므로 더 굵게).
+
+### 7-2. 본문 · 라벨 · 코드
+
+| 스타일 | mo | ta · pc | pcl+ | 굵기 · 자간 | 쓰임 |
 |---|---|---|---|---|---|
-| `--kt-text-title-lg` | 22px | 28px | 700 | -0.02em | 모달·시트 제목 |
-| `--kt-text-title-md` | 20px | 28px | 700 | -0.02em | 카드 제목 |
-| `--kt-text-title-sm` | 18px | 24px | 700 | -0.02em | 목록 제목 |
-| `--kt-text-label-lg` | 17px | 22px | 600 | -0.02em | 큰 버튼 |
-| `--kt-text-label-md` | 16px | 21px | 600 | -0.02em | 버튼·탭 |
-| `--kt-text-label-sm` | 15px | 20px | 500 | -0.02em | 칩·작은 버튼 |
-| `--kt-text-label-xs` | 14px | 19px | 500 | -0.02em | 태그·보조 버튼 |
-| `--kt-text-body-lg` | 18px | 29px | 400 | -0.02em | 랜딩 본문 |
-| `--kt-text-body-md` | 16px | 26px | 400 | -0.02em | 기본 본문 |
-| `--kt-text-body-sm` | 15px | 24px | 400 | -0.02em | 촘촘한 본문 |
-| `--kt-text-body-xs` | 14px | 22px | 400 | -0.01em | 보조 본문 |
-| `--kt-text-caption-lg` | 13px | 18px | 500 | -0.01em | 캡션 |
-| `--kt-text-caption-md` | 12px | 16px | 500 | -0.01em | 메타 |
-| `--kt-text-caption-sm` | 11px | 14px | 500 | 0 | 아주 작은 메타 |
-| `--kt-text-overline` | 13px | 16px | 500 | 0 | 모노 라벨(eyebrow) — mono 서체 |
+| `body-lg` | 17 / 28 | 18 / 30 | 19 / 31 | 420 · -0.01em | 소개 문단 |
+| `body-md` | 15 / 24 | 16 / 26 | 16 / 26 | 420 · -0.005em | 문서 · 카드 설명 |
+| `body-sm` | 14 / 22 | 14 / 22 | 15 / 23 | 420 | 보조 설명 |
+| `label` | 14 / 20 | 14 / 20 | 15 / 21 | 560 | 버튼 · 탭 · 설정 이름 |
+| `eyebrow` (모노) | 11 / 16 | 12 / 16 | 12 / 16 | 500 · **+0.08em · 대문자** | 섹션 라벨 `● MOTION` · 카테고리 |
+| `code` (모노) | 12.5 / 20 | 13 / 21 | 14 / 22 | 450 · 0 | 코드 블록 · 인라인 `data-kt-*` |
+| `metric` (모노) | 13 / 16 | 13 / 16 | 14 / 18 | 500 · 고정폭 숫자 | 모듈 수 · 바이트 · ms 같은 수치 |
 
+### 7-3. 컨트롤 글자 (XSM~XLG × 밀도)
+
+| 단계 | 마우스 | 터치 | 촘촘 | 굵기 |
+|---|---|---|---|---|
+| XSM | 12 / 16 | 13 / 16 | 11 / 14 | 560 |
+| SM | 13 / 18 | 14 / 18 | 12 / 16 | 560 |
+| MD | 14 / 20 | 15 / 20 | 13 / 18 | 600 |
+| LG | 15 / 22 | 16 / 22 | 14 / 20 | 620 |
+| XLG | 17 / 24 | 18 / 24 | 15 / 22 | 660 |
+
+- 한글은 `word-break: keep-all` + `overflow-wrap: anywhere`, 제목은 `text-wrap: balance`, 본문은 `pretty`.
+- 코드 · `data-kt-*` 속성 이름 · 단위가 있는 수치는 항상 모노. 데모 카드에는 모듈 이름을 모노 `eyebrow` 로 붙인다.
 
 ---
-
-## 8. 크기 · 밀도 · 화면 등급 (기반과 같음)
+## 8. 크기 · 밀도 · 화면 등급
 
 ```
 실제 크기 = 크기 단계(data-size: xsm~xlg) × 입력 장치 밀도(mouse / touch / compact — `data-kt-density` 로 강제) × 화면 배율(루트 글자 100~125%)
@@ -284,33 +321,15 @@
 - 같은 MD 라도 마우스 40px · 터치 44px · 촘촘 32px. 자동 판정은 `@media (pointer: coarse)` — Kineto 의 호버 판단 `canHover()` 와 같은 원칙(장치가 아니라 입력 정밀도로 판단).
 - 기기 픽셀 비율(DPR)은 크기를 바꾸지 않습니다. 고밀도 화면에서는 0.5px 헤어라인(`--kt-hairline`).
 - 1920 · 2560 · 3200px 이상에서는 루트 글자가 106.25 · 112.5 · 125% 로 커져 모든 rem 이 비례 확대(끄기: `data-kt-scale="fixed"`).
+- **높이 · 간격은 통합 시스템과 같고, 글자 · 행간(§7-3) · 반경(§9-1)은 Kineto 값**입니다.
 
-#### 컴포넌트 크기 XSM~XLG (`--kt-size-{속성}-{크기}`) — 입력 장치별
-같은 `data-size="md"` 라도 마우스(fine)·터치(coarse)·촘촘(compact)에서 실제 값이 다릅니다. 모두 rem 이라 고해상도 배율(아래)도 함께 적용됩니다.
-
-| 속성 | 뜻 | 밀도 | XSM | SM | MD | LG | XLG |
-|---|---|---|---|---|---|---|---|
-| `h` | 컨트롤 높이 | 마우스 | 28 | 32 | 40 | 48 | 56 |
-| `h` | 컨트롤 높이 | 터치 | 32 | 36 | 44 | 52 | 60 |
-| `h` | 컨트롤 높이 | 촘촘 | 24 | 28 | 32 | 40 | 48 |
-| `px` | 좌우 안쪽 여백 | 마우스 | 8 | 12 | 16 | 20 | 24 |
-| `px` | 좌우 안쪽 여백 | 터치 | 10 | 12 | 16 | 20 | 24 |
-| `px` | 좌우 안쪽 여백 | 촘촘 | 6 | 8 | 12 | 16 | 20 |
-| `gap` | 아이콘↔글자 간격 | 마우스 | 4 | 6 | 6 | 8 | 8 |
-| `gap` | 아이콘↔글자 간격 | 터치 | 4 | 6 | 8 | 8 | 10 |
-| `gap` | 아이콘↔글자 간격 | 촘촘 | 4 | 4 | 6 | 6 | 8 |
-| `font` | 글자 크기 | 마우스 | 12 | 14 | 15 | 16 | 18 |
-| `font` | 글자 크기 | 터치 | 13 | 14 | 16 | 17 | 18 |
-| `font` | 글자 크기 | 촘촘 | 12 | 13 | 14 | 15 | 16 |
-| `lh` | 행간 | 마우스 | 16 | 20 | 22 | 24 | 26 |
-| `lh` | 행간 | 터치 | 18 | 20 | 22 | 24 | 26 |
-| `lh` | 행간 | 촘촘 | 16 | 18 | 20 | 22 | 24 |
-| `icon` | 아이콘 크기 | 마우스 | 14 | 16 | 18 | 20 | 24 |
-| `icon` | 아이콘 크기 | 터치 | 16 | 16 | 20 | 22 | 24 |
-| `icon` | 아이콘 크기 | 촘촘 | 12 | 14 | 16 | 18 | 20 |
-| `radius` | 모서리 | 마우스 | 6 | 8 | 10 | 12 | 16 |
-| `radius` | 모서리 | 터치 | 6 | 8 | 12 | 14 | 16 |
-| `radius` | 모서리 | 촘촘 | 4 | 6 | 8 | 10 | 12 |
+| 컨트롤 높이 | XSM | SM | MD | LG | XLG |
+|---|---|---|---|---|---|
+| 마우스 | 28 | 32 | 40 | 48 | 56 |
+| 터치 | 32 | 36 | 44 | 52 | 60 |
+| 촘촘 | 24 | 28 | 32 | 40 | 48 |
+| 좌우 안쪽 여백(마우스) | 8 | 12 | 16 | 20 | 24 |
+| 아이콘(마우스) | 14 | 16 | 18 | 20 | 24 |
 
 #### 화면 등급 (tier) · 루트 배율
 | 등급 | 폭(px) | 루트 글자 | 1rem 실제 | 쓰임 |
@@ -339,22 +358,33 @@
 
 
 ---
-
-## 9. 간격 · 반경 · 면 (간격 · 반경은 기반과 같음)
+## 9. 간격 · 반경 · 면
 
 #### 간격 별칭
 | 별칭 | none | 4xs | 3xs | 2xs | xs | sm | md | lg | xl | 2xl | 3xl | 4xl | 5xl | 6xl | 7xl | 8xl |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | px | 0 | 2 | 4 | 6 | 8 | 12 | 16 | 20 | 24 | 32 | 40 | 48 | 64 | 80 | 120 | 160 |
 
-#### 반경
-| 별칭 | none | 2xs | xs | sm | md | lg | xl | 2xl | 3xl | 4xl | full |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| px | 0 | 4 | 6 | 8 | 12 | 16 | 20 | 24 | 32 | 40 | 999 |
-
-
 - 데모의 현재 간격 척도 `--sp-1~16`(4 · 8 · 12 · 16 · 20 · 24 · 32 · 48 · 64)은 위 척도의 부분집합이라 그대로 호환됩니다(12장).
-- 데모 카드 반경 `--r-card: 14px`, 무대 `--r-stage: 10px` 는 이 척도 밖입니다 → 옮길 때 카드 `lg`(16) · 무대 `md`(12) 로 맞추는 것을 권합니다(눈으로 비교 후 결정).
+
+### 9-1. 반경 — "Machined Edges"
+
+정밀 기계로 깎은 모서리처럼 **작고 일정하게**. 둥근 정도가 아니라 **크기 비율**로 정해 어떤 크기에서도 같은 성격이 나오게 합니다.
+
+| 대상 | 규칙 / 값 | 근거 |
+|---|---|---|
+| 컨트롤(버튼 · 입력 · 세그먼트) | **높이 × 0.2** → 마우스 XSM 6 · SM 6 · MD 8 · LG 10 · XLG 11 / 터치 6 · 7 · 9 · 10 · 12 | 기반(높이의 약 25%)보다 각지게 — 계기판 버튼 |
+| 태그 · `kbd` · 인라인 코드 | **4** | 기술 문서의 질감 |
+| 칩(토글형 필터) | 알약 999 | 글자가 있는 둥근 토글만 |
+| 카드(데모 카드 틀) | **14** (지금 데모 `--r-card` 유지) | 브랜드 유산 — 바꾸지 않음 |
+| 무대(stage: 효과가 놓이는 안쪽 칸) | **10** (지금 `--r-stage` 유지) | 카드 14 − 안쪽 여백 4 = 중첩 규칙과 맞음 |
+| 코드 블록 | **10** | 무대와 같은 층 |
+| 팝오버 · 설정창 · 시트 | **12** / 시트 위 모서리 **16** | |
+| 툴팁 | **6** | |
+| 커서 · 상태 점 | 원 | |
+| 로고 · 모듈 아이콘 타일 | **squircle 모듈**(`data-kt-squircle`) | Kineto 의 squircle 모듈을 자기 브랜드에 씀 — 도그푸딩 |
+
+> 기반 시스템 권장(카드 16 · 무대 12)과 다르게 **14 · 10 을 유지**합니다. 이미 데모의 인상을 만든 값이고, 작은 반경 규칙과도 맞습니다.
 
 **면 · 그림자 (Kineto 판)**
 
@@ -366,41 +396,87 @@
 | `--kt-glass` | `color-mix(in srgb, #15171c 70%, transparent)` + `blur(20px) saturate(1.4)` | `color-mix(in srgb, #ffffff 75%, transparent)` + 같은 blur |
 
 ---
+## 10. 모션 아이덴티티 — "Quiet Chrome, Expressive Stage"
 
-## 10. 모션
+Kineto 화면의 움직임은 **두 층**으로 나뉩니다. 이 구분이 Kineto 모션 브랜드의 핵심입니다.
 
-기반 시스템의 모션 토큰과 같습니다. Kineto 옵션(`data-kt-ease`, `data-kt-duration`)에는 **리터럴**을 넣습니다(JS 가 읽는 옵션이라 `var()` 를 해석하지 않음).
+| 층 | 무엇 | 성격 | 기준값 |
+|---|---|---|---|
+| **크롬(Chrome)** | 헤더 · 사이드 내비 · 설정창(playground) · 탭 · 코드 복사 · 토스트 | 조용 · 정확 · 튕김 없음 | `cubic-bezier(.33,0,.2,1)` 200ms(상태) · 300/200ms(등장/퇴장) |
+| **무대(Stage)** | 히어로 · 섹션 제목 · 쇼케이스 · 데모 카드 안 효과 | 표현 · 물리 · 살짝 넘침 허용 | expo `cubic-bezier(.16,1,.3,1)` 800ms · Kineto 물리 스프링 `spring(170, 26)` |
 
-#### 모션
-| 지속 | instant | fast | quick | base | moderate | slow | slower | cinematic |
-|---|---|---|---|---|---|---|---|---|
-| ms | 100 | 150 | 200 | 300 | 400 | 500 | 800 | 1000 |
+### 10-1. 모션 토큰
 
-| 이징 | 값 | 쓰임 |
+| 토큰 | 값 | 층 | 쓰임 |
+|---|---|---|---|
+| `--kt-ease-standard` | `cubic-bezier(.33,0,.2,1)` | 크롬 | 상태 전환 기본 |
+| `--kt-ease-exit` | `cubic-bezier(.32,0,.67,0)` | 크롬 | 사라짐 |
+| `--kt-ease-expo` | `cubic-bezier(.16,1,.3,1)` | 무대 | **Kineto 시그니처 곡선** — 빠르게 출발해 길게 미끄러짐 |
+| `--kt-ease-emphasized` | `cubic-bezier(.37,.31,0,1)` | 무대 | 제목 줄 단위 블러 등장 |
+| `--kt-ease-spring` | `cubic-bezier(.34,1.56,.64,1)` / 물리 `spring(170, 26)` | 무대 | 자석 복귀 · 누름 복귀 · 토글 |
+| `--kt-duration-fast` · `quick` · `base` | 150 · 200 · 300ms | 크롬 | |
+| `--kt-duration-slow` · `slower` · `cinematic` | 500 · 800 · 1000ms | 무대 | |
+| `--kt-duration-glow` | 600ms | 무대 | Ember 빛이 번졌다 사라지는 시간 |
+
+`data-kt-ease` 에는 리터럴을 넣습니다(JS 옵션이라 `var()` 를 읽지 않음): `cubic-bezier(.16,1,.3,1)`, `spring(170, 26)` 등. Magnetic · Cursor 의 `ease` 는 곡선이 아니라 숫자(따라가는 정도)입니다.
+
+### 10-2. 시그니처 — "Ignite" 등장
+
+Kineto 를 알아보게 하는 한 가지 동작: **흐림 속에서 떠올라 선명해지고, 강조 요소에 Ember 빛이 한 번 번졌다 사라진다.**
+
+1. 제목 줄이 `y 16px · blur 8px · opacity 0` → 제자리, 800ms expo, 줄 간격 80ms
+2. 마지막 줄이 자리 잡는 순간 강조 단어 · CTA 에 `--kt-accent-glow` 가 `box-shadow / text-shadow 0 0 24px` 로 켜졌다가 600ms 에 걸쳐 0
+3. 움직임 줄이기: 1·2 모두 생략, 최종 상태로
+
+```html
+<h2 class="kt-display-md" data-kt-reveal="blur" data-kt-duration="0.8" data-kt-stagger="0.08"
+    data-kt-distance="16" data-kt-ease="cubic-bezier(.16,1,.3,1)" data-kt-enter-class="is-revealed">
+  <span style="display:block">움직임을</span>
+  <span style="display:block"><em class="kt-ignite">설계하는</em> 라이브러리</span>
+</h2>
+```
+
+```css
+/* Ignite: 등장 끝의 빛 한 번 — 정지 상태에 빛을 남기지 않음 */
+@keyframes kt-ignite { 0% { text-shadow: 0 0 0 transparent; } 30% { text-shadow: 0 0 24px var(--kt-accent-glow); } 100% { text-shadow: 0 0 0 transparent; } }
+.is-revealed .kt-ignite { color: var(--kt-accent-text); animation: kt-ignite var(--kt-duration-glow) var(--kt-ease-expo) .2s both; }
+@media (prefers-reduced-motion: reduce) { .kt-ignite { animation: none; } }
+```
+
+### 10-3. 인터랙션 아이덴티티
+
+| 입력 | Kineto 다운 반응 | 구현 |
 |---|---|---|
-| `--kt-ease-standard` | `cubic-bezier(.33,0,.2,1)` | UI 상태 전환 기본 |
-| `--kt-ease-enter` | `cubic-bezier(.25,.46,.45,.94)` | 목록·아코디언·등장 |
-| `--kt-ease-exit` | `cubic-bezier(.32,0,.67,0)` | 사라짐 |
-| `--kt-ease-move` | `cubic-bezier(.65,0,.35,1)` | 위치 이동 |
-| `--kt-ease-emphasized` | `cubic-bezier(.37,.31,0,1)` | 제목 블러 등장(1s) |
-| `--kt-ease-expo` | `cubic-bezier(.16,1,.3,1)` | 큰 요소가 길게 감속 |
-| `--kt-ease-sharp` | `cubic-bezier(.6,0,0,.6)` | 짧은 대칭 전환(.2~.4s) |
-| `--kt-ease-menu` | `cubic-bezier(.44,0,.56,1)` | 드롭다운 항목 |
-| `--kt-ease-spring` | `cubic-bezier(.34,1.56,.64,1)` | 살짝 튕김 |
-| `--kt-ease-spring-strong` | `cubic-bezier(.45,1.8,.57,.92)` | 팝·넛지 |
-| `--kt-ease-linear` | `linear` | 진행 표시·스크롤 동기 |
+| CTA 호버 | 자석: 포인터 쪽으로 최대 6px 끌림, 떠나면 스프링 복귀 | `data-kt-magnetic="pointer" data-kt-strength="0.25"` (정밀 포인터만 — `canHover()`) |
+| 내비 호버 | **굵기 모핑**: 가변 서체 500 → 650, 200ms standard. 폭은 `::after` 로 미리 고정 | CSS `font-variation-settings` / `font-weight` 전환 |
+| 데모 카드 호버 | 카드 가장자리를 따라 Ember 선이 포인터를 따라감 | `data-kt-card-glow="edge"` + `data-kt-color` Ember |
+| 누름 | 0.96 수축 → 스프링 복귀 + 강조 버튼은 Glow 120ms 깜빡 | CSS `:active` + `--kt-ease-spring` |
+| 페이지 커서 | Ember 점 + 늦게 따라오는 링, 움직이는 동안만 Glow | `data-kt-cursor="ring"` `data-kt-smoothing="0.15"` |
+| 코드 복사 | 버튼 글자가 "Copy" → "Copied" 로 위로 굴러 바뀜 300ms, 1.2s 뒤 되돌림 | `data-kt-text-transition="slide-up"` |
+| 수치(모듈 수 · 바이트) | 자리별 슬롯이 굴러 도착, 한 번만 | `data-kt-counter="slot"` |
+| 테마 전환 | 토글 위치에서 원이 퍼지며 새 테마가 드러남 500ms expo | `data-kt-page-reveal="iris"` 또는 View Transitions `clip-path` |
+| 키보드 포커스 | Ember 링 2px + 바깥 Glow 6px | `:focus-visible` |
+| 터치 | 호버 효과 대신 누름 · 끌기 · 자이로(Tilt) 대체 경로 | `docs/hover-touch-policy.md` 정책 그대로 |
 
+### 10-4. 트랜지션
 
-| 토큰 | `data-kt-ease` 에 넣는 값 |
+| 전환 | 값 |
 |---|---|
-| standard | `cubic-bezier(.33,0,.2,1)` |
-| enter | `cubic-bezier(.25,.46,.45,.94)` |
-| exit | `cubic-bezier(.32,0,.67,0)` |
-| emphasized | `cubic-bezier(.37,.31,0,1)` |
-| expo | `cubic-bezier(.16,1,.3,1)` |
-| spring | `cubic-bezier(.34,1.56,.64,1)` 또는 물리 스프링 `spring(200, 30)` |
+| 섹션 이동(내비 클릭) | `KINETO_BLOCKS.jumpTo` 글라이드 — 네이티브 smooth scroll 대신(먼 목표 정확도) |
+| 설정창(playground) 열고 닫기 | 오른쪽에서 24px + 페이드, 300 / 200ms standard |
+| 모든 variant 비교 시트 | 아래에서 `spring(170, 26)`, 타일은 60ms 간격 순차 |
+| 데모 블록 "더 보기" | 펼침 500ms expo, 닫힘 즉시(버튼 위치 고정 — 지금 규칙) |
+| 토스트 | 아래에서 16px, 300ms standard / 200ms exit |
+| 히어로 → 첫 섹션 | 카드 → 전체 화면 확장(`cssScroll`), radius 14 → 0 |
 
-안무 규칙: 들어올 때 길게 · 나갈 때 짧게(300/200), UI 상태는 150~300ms, 연출 등장은 500~1000ms, 순차 간격 항목 50 · 줄 100 · 카드 80~120ms, 총 1.2초 이하, 동시에 움직이는 덩어리는 하나, 블러는 등장에만(최대 16px), 바꾸는 속성은 transform · opacity · filter · clip-path. 데모는 "효과를 보여 주는 무대"이므로 **데모 UI(헤더 · 설정창 · 카드 틀)는 조용하게**(standard · 200ms), 효과만 크게 움직이게 합니다.
+### 10-5. 안무 규칙 (Kineto 판)
+
+1. **크롬은 효과를 이기지 않는다.** 크롬 전환은 300ms 이하 · 튕김 없음 · 블러 없음.
+2. **무대에서는 한 번에 하나의 시연.** 화면에 보이는 데모 카드 중 자동 재생은 하나, 나머지는 손이 가거나 화면 가운데 올 때.
+3. **순차 간격**: 줄 80ms · 카드 60ms · 글자 30ms, 총 1.2초 이하.
+4. **빛은 순간에만**: Glow 는 600ms 안에 0 으로. 정지 화면에 빛이 남으면 신호가 아니라 장식.
+5. **시간 기준**: 120Hz 에서도 60Hz 와 같은 속도(`frameClock` · `frameEase`) — 라이브러리 원칙을 자기 화면에도.
+6. **움직임 줄이기**: 크롬은 즉시, 무대는 최종 상태 + "재생" 단추로 사용자가 고를 수 있게.
 
 ---
 
@@ -408,19 +484,19 @@
 
 | 컴포넌트 | 규칙 |
 |---|---|
-| 버튼 | 메인 = `primary-solid`/`primary-on`, 포인트 = `accent-solid`/`accent-on`, 약하게 = `accent-tint-strong` + `accent-text`, 중립 = `fill-2`. 크기 `data-size`, 글자 넘침은 말줄임(글자 span 에 `min-width: 0`) |
-| 칩 · 세그먼트 · 탭 | 선택 = 메인 색. 굵기가 바뀌어도 폭 고정(`::after` 에 굵은 글자 미리 자리) |
-| 스위치 | 꺼짐 `fill-1` → 켜짐 Ember. 손잡이 `spring` 300ms |
+| 버튼 | 메인 = `primary-solid`/`primary-on`, 포인트 = `accent-solid`/`accent-on`(다크 잉크 글자), 약하게 = `accent-tint-strong` + `accent-text`, 중립 = `fill-2`. 반경 = 높이 × 0.2, 누름 0.96 + 스프링 |
+| 칩 · 세그먼트 · 탭 | 선택 = 메인 색. 탭 글자는 굵기 모핑(폭 고정) |
+| 스위치 | 꺼짐 `fill-1` → 켜짐 Ember, 손잡이 `spring(170, 26)` |
 | 입력 | 테두리 `line-strong` → 포커스 메인 색 2px(안쪽 여백 1px 줄여 크기 유지) → 오류 `negative-text` |
-| 카드 | 다크 `bg-surface` + `shadow-sm`(위쪽 흰 선), 라이트 흰 면 + `line-alpha` 링. 데모 카드는 효과가 주인공이므로 장식 그림자 최소 |
-| 아코디언 | 오른쪽 꺾쇠는 **20~22px 아이콘 + 32px 이상 누름 영역**, 열리면 180° 회전 + 아이콘 면이 메인 색으로. 제목은 줄바꿈 허용, 아이콘은 줄지 않음 |
-| 토스트 · 떠 있는 막대 | 최대 폭 = 화면 − 좌우 여백, 문장은 최대 2~3줄, 버튼은 줄지 않고 가운데 고정 |
-| 코드 블록 | `bg-canvas` + 모노, 옵션 이름은 `accent-text`, 값은 `fg-default` |
-| 커서 | 페이지 커서 = Ember 점 + Ember 링(`--kt-accent-solid`, 지금 데모 `var(--accent)` 자리), 움직이는 동안만 `--kt-accent-glow` 후광 |
-| 포커스 링 | `line-focus`(Ember) 2px, offset 2px — 키보드 입력일 때만 |
+| 카드 | 반경 14, 다크 `bg-surface` + `shadow-sm`, 라이트 흰 면 + `line-alpha` 링. 호버 시 가장자리 Ember 선(cardGlow edge) |
+| 무대(stage) | 반경 10, `bg-canvas`, 안쪽 효과만 움직임 |
+| 아코디언 | 오른쪽 꺾쇠 20~22px 아이콘 + 32px 이상 누름 영역, 열리면 180° 회전 + 아이콘 면이 메인 색, 펼침 500ms expo |
+| 토스트 · 떠 있는 막대 | 최대 폭 = 화면 − 좌우 여백, 문장 최대 2~3줄, 버튼은 줄지 않음 |
+| 코드 블록 | 반경 10, `bg-canvas` + 모노 13/21, 옵션 이름 `accent-text`, 복사 단추는 글자 굴림 |
+| 커서 | Ember 점 + 링, 움직이는 동안만 Glow |
+| 포커스 링 | Ember 2px + Glow 6px, 키보드 입력일 때만 |
 
 ---
-
 ## 12. 데모 변수 대응표 (옮길 때)
 
 | 지금 `demo/styles.css` | 이 문서 | 비고 |
@@ -435,7 +511,7 @@
 | `--accent2` | `--kt-highlight` | **값이 바뀜**: `#ffd166` → `#ffbd47`(Sun). 라이트 글자는 `--kt-highlight-text` `#926422` (데모 `#c99516` 은 글자로 쓰면 대비 부족) |
 | `--shadow` / `--shadow-hover` | `--kt-shadow-md` / `--kt-shadow-lg` | 같은 값 |
 | `--sp-1~16` | `--kt-space-*` | 부분집합 |
-| `--r-card` 14 / `--r-stage` 10 | `--kt-radius-lg` 16 / `--kt-radius-md` 12 | 값이 다름 — 눈으로 확인 후 |
+| `--r-card` 14 / `--r-stage` 10 | `--kt-radius-card` 14 / `--kt-radius-stage` 10 | 같은 값 — 브랜드 유산으로 유지 |
 | `html.light` | `[data-kt-theme="light"]` | 옮기는 동안 둘 다 같은 블록에 걸면 호환 |
 | `.u-amber { color: #ffd166 }` | `color: var(--kt-highlight-text)` | 하드코딩 제거 |
 | (없음) | `--kt-accent-glow` · `--kt-gradient-brand` | 새로 생김 — 커서 후광 · 워드마크 |
@@ -461,7 +537,8 @@
   --kt-hairline: 1px;
   --kt-ease-standard: cubic-bezier(.33,0,.2,1); --kt-ease-enter: cubic-bezier(.25,.46,.45,.94); --kt-ease-exit: cubic-bezier(.32,0,.67,0);
   --kt-ease-emphasized: cubic-bezier(.37,.31,0,1); --kt-ease-expo: cubic-bezier(.16,1,.3,1); --kt-ease-spring: cubic-bezier(.34,1.56,.64,1);
-  --kt-duration-fast: 150ms; --kt-duration-quick: 200ms; --kt-duration-base: 300ms; --kt-duration-slow: 500ms; --kt-duration-slower: 800ms; --kt-duration-cinematic: 1000ms;
+  --kt-duration-fast: 150ms; --kt-duration-quick: 200ms; --kt-duration-base: 300ms; --kt-duration-slow: 500ms; --kt-duration-slower: 800ms; --kt-duration-cinematic: 1000ms; --kt-duration-glow: 600ms;
+  --kt-radius-ratio: 0.2; --kt-radius-tag: 4px; --kt-radius-tooltip: 6px; --kt-radius-stage: 10px; --kt-radius-code: 10px; --kt-radius-popover: 12px; --kt-radius-card: 14px; --kt-radius-sheet: 16px;
 }
 [data-kt-theme="light"], html.light {
   color-scheme: light;
