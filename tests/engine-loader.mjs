@@ -21,10 +21,10 @@ if (!w.Element.prototype.animate) w.Element.prototype.animate = () => ({ onfinis
 const { default: Kineto } = await import('../dist/kineto.js');
 
 const defaults = Kineto.getEngineSource();
-assert.match(defaults.gsap, /gsap@3\.15\.0/, 'default GSAP URL must be version-pinned for deterministic caching');
-assert.match(defaults.scrollTrigger, /gsap@3\.15\.0/, 'default ScrollTrigger URL must match the pinned GSAP version');
-assert.equal(defaults.lenis, 'https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js', 'default Lenis URL must match the audited immutable CDN asset');
-assert.equal(defaults.lenisIntegrity, 'sha384-jqpi9VmOdhyLoLURgjCn7EpnG9BbnHW57ibIZoeaIU+erWDH3k8fQQg0xH2ySjnw', 'default Lenis SRI must match the audited 1.3.26 bytes');
+assert.match(defaults.gsap, /gsap@3\.15\.1/, 'default GSAP URL must be version-pinned for deterministic caching');
+assert.match(defaults.scrollTrigger, /gsap@3\.15\.1/, 'default ScrollTrigger URL must match the pinned GSAP version');
+assert.equal(defaults.lenis, 'https://cdn.jsdelivr.net/npm/lenis@1.3.27/dist/lenis.min.js', 'default Lenis URL must match the audited immutable CDN asset');
+assert.equal(defaults.lenisIntegrity, 'sha384-R18XzqnxvVLEF+BYfhpmDx30v7eP83fAckyfoRzK7/Uf6nGqufcmsk0eAKo7S3RU', 'default Lenis SRI must match the audited 1.3.26 bytes');
 
 // An unverified tag for the same engine URL (added by another script, or
 // injected) must not be trusted in place of the SRI-protected injection.

@@ -6,6 +6,7 @@
 // the source imports or the built bundles.
 // Run: node tests/deps-boundary.mjs
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -75,8 +76,21 @@ for (const [label, pattern] of [
 }
 
 const runtimeSource = read('src/runtime.js');
-assert.match(runtimeSource, /https:\/\/cdn\.jsdelivr\.net\/npm\/lenis@1\.3\.26\/dist\/lenis\.min\.js/, 'source must use the audited immutable Lenis 1.3.26 CDN asset');
-assert.match(runtimeSource, /sha384-jqpi9VmOdhyLoLURgjCn7EpnG9BbnHW57ibIZoeaIU\+erWDH3k8fQQg0xH2ySjnw/, 'source must carry the audited Lenis 1.3.26 SHA-384 integrity');
+assert.match(runtimeSource, /https:\/\/cdn\.jsdelivr\.net\/npm\/lenis@1\.3\.27\/dist\/lenis\.min\.js/, 'source must use the audited immutable Lenis 1.3.27 CDN asset');
+assert.match(runtimeSource, /sha384-R18XzqnxvVLEF\+BYfhpmDx30v7eP83fAckyfoRzK7\/Uf6nGqufcmsk0eAKo7S3RU/, 'source must carry the audited Lenis 1.3.27 SHA-384 integrity');
+
+// The pinned CDN engines are the exact versions the repository installs as
+// devDependencies, byte for byte: the demo, the Bootstrap QA and the browser
+// suites serve those files from node_modules and the browser checks the SRI.
+const pinned = (key) => runtimeSource.match(new RegExp(`\\b${key}: '([^']+)'`))?.[1];
+for (const engine of ['gsap', 'scrollTrigger', 'lenis']) {
+  const url = pinned(engine);
+  const [, pkg, version, file] = url.match(/\/npm\/(gsap|lenis)@([^/]+)\/(.+)$/);
+  const installed = JSON.parse(read(`node_modules/${pkg}/package.json`)).version;
+  assert.equal(version, installed, `${url} pins ${pkg}@${version} but the repository installs ${pkg}@${installed} — update the pin and its SRI together`);
+  const digest = `sha384-${crypto.createHash('sha384').update(fs.readFileSync(path.join(root, 'node_modules', pkg, file))).digest('base64')}`;
+  assert.equal(pinned(`${engine}Integrity`), digest, `${url}: the pinned SRI does not match ${pkg}@${installed}/${file}`);
+}
 
 // 2. Built bundles must carry the on-demand CDN loader (proof they fetch, not
 //    bundle) and must NOT balloon to the size that bundling GSAP+Lenis caused

@@ -6,9 +6,21 @@
 
 <!-- Add matching English release bullets here. -->
 
+- **Node 20 is no longer supported** (end of life 2026-04-30). `engines.node` is now `^22.22.2 || >=24.15.0` for the library and the MCP server, the public-engine CI matrix runs exactly those two floors, and `test:release` fails if the matrix and `engines` drift apart. The browser runtime is unchanged.
+- Default CDN engines move to GSAP / ScrollTrigger 3.15.1 and Lenis 1.3.27, each checked byte for byte against its npm tarball and pinned with a new SHA-384. `test:deps` now fails when a pinned engine differs from the installed devDependency or its SRI does not match that file, so the pin cannot be left behind by a dependency bump. Pages that pin their own engine with `setEngineSource()` are unaffected.
+- Toolchain and fixtures updated to current releases: TypeScript 7, jsdom 31, ESLint 10.15, Vite 8.3, Playwright 1.65, publint 0.3.25, rolldown 1.3.2, React 19.3, Vue 3.5.45, MCP SDK 1.32 and zod 4.6. The jQuery adapter is now verified against jQuery 4 (the peer range `>=3.6.0` already allowed it).
+- Integration map verified against the current UI-library majors: MUI 9, Mantine 9, Ant Design 6, Vuetify 4 and the shadcn 4 CLI (the registry consumer no longer needs `baseUrl`, which TypeScript 7 removed). PrimeVue stays on 4: PrimeVue 5 is no longer MIT and needs a PrimeUI license key; the map notes this. The Bootstrap example loads Bootstrap 5.3.9 with new SRI hashes.
+- Cleanup: lint now covers every demo script and the browser tests (it applied no rules to most of them); the reduced-motion watcher drops the `MediaQueryList.addListener` fallback that no supported browser needs; the unused `tests/smoke.html` is removed; the Scroll Sequence frame generator gets `npm run demo:sequence`; docs pointing at the removed `src/modules/lazy/stylizedMedia.js` now name `src/modules/media/rasterizer.js`.
+
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+- **Node 20 지원을 종료합니다**(2026-04-30 EOL). 라이브러리와 MCP 서버의 `engines.node`는 `^22.22.2 || >=24.15.0`이며, public-engine CI matrix는 이 두 하한을 그대로 실행하고 matrix와 `engines`가 어긋나면 `test:release`가 실패합니다. 브라우저 런타임은 바뀌지 않습니다.
+- 기본 CDN 엔진을 GSAP·ScrollTrigger 3.15.1, Lenis 1.3.27로 올렸습니다. 세 파일을 npm tarball과 byte 단위로 대조하고 새 SHA-384로 고정했습니다. 고정한 엔진 버전이 설치된 devDependency와 다르거나 SRI가 그 파일과 맞지 않으면 `test:deps`가 실패하므로, 의존성만 올리고 pin을 남겨 두는 일이 생기지 않습니다. `setEngineSource()`로 엔진을 직접 지정한 페이지는 영향이 없습니다.
+- 도구와 fixture를 최신 릴리스로 올렸습니다: TypeScript 7, jsdom 31, ESLint 10.15, Vite 8.3, Playwright 1.65, publint 0.3.25, rolldown 1.3.2, React 19.3, Vue 3.5.45, MCP SDK 1.32, zod 4.6. jQuery 어댑터는 이제 jQuery 4에서 검증합니다(peer 범위 `>=3.6.0`은 이미 허용).
+- 통합 맵을 현재 UI 라이브러리 메이저에서 검증했습니다: MUI 9, Mantine 9, Ant Design 6, Vuetify 4, shadcn 4 CLI(registry 소비 프로젝트는 TypeScript 7에서 제거된 `baseUrl` 없이 동작). PrimeVue는 4에 둡니다. PrimeVue 5는 MIT가 아니며 PrimeUI 라이선스 키가 필요하고, 맵에 그 사실을 적었습니다. Bootstrap 예제는 Bootstrap 5.3.9를 새 SRI로 불러옵니다.
+- 정리: lint가 모든 데모 스크립트와 브라우저 테스트를 검사합니다(대부분 규칙이 적용되지 않던 상태); reduced-motion 감시에서 지원 브라우저에 필요 없는 `MediaQueryList.addListener` 대체 경로를 뺐습니다; 쓰이지 않던 `tests/smoke.html`을 지웠고, Scroll Sequence 프레임 생성기에 `npm run demo:sequence`를 붙였으며, 없어진 `src/modules/lazy/stylizedMedia.js`를 가리키던 문서는 `src/modules/media/rasterizer.js`를 가리킵니다.
 
 ## [0.13.0] - 2026-09-27
 

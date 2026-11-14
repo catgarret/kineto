@@ -23,7 +23,7 @@
 - [daisyUI](https://github.com/catgarret/kineto/blob/main/docs/integrations/daisyui.md)
 - [Nuxt UI (Reka UI + Tailwind)](https://github.com/catgarret/kineto/blob/main/docs/integrations/nuxt-ui.md)
 - [PrimeVue v4](https://github.com/catgarret/kineto/blob/main/docs/integrations/primevue.md)
-- [Vuetify 3](https://github.com/catgarret/kineto/blob/main/docs/integrations/vuetify.md)
+- [Vuetify 4](https://github.com/catgarret/kineto/blob/main/docs/integrations/vuetify.md)
 - [Figma MCP workflow](https://github.com/catgarret/kineto/blob/main/docs/integrations/figma-mcp.md)
 
 ## Tools

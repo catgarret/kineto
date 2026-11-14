@@ -43,11 +43,13 @@ for (const [tag] of html.matchAll(/<(?:link|script)\b[^>]*https?:\/\/[^>]*>/g)) 
 // Engines: Kineto loads GSAP/ScrollTrigger/Lenis from jsDelivr at runtime with
 // SRI. The repository devDependencies hold the same pinned versions, so they
 // are served from disk here and the browser still verifies the hashes.
-const engineFiles = {
-  'https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js': 'node_modules/gsap/dist/gsap.min.js',
-  'https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js': 'node_modules/gsap/dist/ScrollTrigger.min.js',
-  'https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js': 'node_modules/lenis/dist/lenis.min.js'
-};
+// The URLs are read from the runtime so a pin bump cannot leave this list behind.
+const runtimeSource = fs.readFileSync(path.join(root, 'src/runtime.js'), 'utf8');
+const engineFiles = Object.fromEntries(
+  [...runtimeSource.matchAll(/'(https:\/\/cdn\.jsdelivr\.net\/npm\/(gsap|lenis)@[^/']+\/(dist\/[^']+))'/g)]
+    .map(([, url, pkg, file]) => [url, `node_modules/${pkg}/${file}`])
+);
+assert.equal(Object.keys(engineFiles).length, 3, 'src/runtime.js must pin the GSAP, ScrollTrigger and Lenis CDN URLs');
 const localFiles = new Map([
   ...cdnAssets.map((asset) => [asset.url, asset.local]),
   ...Object.entries(engineFiles).map(([url, file]) => [url, path.join(root, file)])

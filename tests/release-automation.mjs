@@ -177,7 +177,14 @@ assert.match(githubRelease, /"\$RELEASE_TARBALL"/);
 assert.doesNotMatch(publishJob, /release-artifact\/\*\.tgz|-print -quit/,
   'publish steps must not rediscover or wildcard a different tarball after digest verification');
 assert.match(workflow, /fetch-retries=3/);
-assert.match(ciNodeCompatibilityJob, /node:\s*\["20\.19\.0", "22\.12\.0"\]/);
+// The engine matrix runs exactly the lowest version of each range in
+// package.json#engines, so the floor that is published is the one CI proves.
+const rootPackage = JSON.parse(read('package.json'));
+const engineFloors = [...rootPackage.engines.node.matchAll(/(\d+\.\d+\.\d+)/g)].map(([version]) => version);
+assert.deepEqual(engineFloors, ['22.22.2', '24.15.0'], 'engines.node must stay on maintained Node lines (Node 20 reached end of life on 2026-04-30)');
+assert.match(ciNodeCompatibilityJob, new RegExp(`node:\\s*\\[${engineFloors.map((version) => `"${version.replaceAll('.', '\\.')}"`).join(', ')}\\]`),
+  'the public engine matrix must run the floors declared in package.json#engines');
+assert.equal(JSON.parse(read('packages/kineto-mcp/package.json')).engines.node, rootPackage.engines.node, 'the MCP server declares the same Node engines as the library');
 assert.match(ciNodeCompatibilityJob, /Node \$\{\{ matrix\.node \}\} · public engine contract/);
 assert.match(ciNodeCompatibilityJob, /node-version:\s*\$\{\{ matrix\.node \}\}/);
 assert.match(ciNodeCompatibilityJob, /npm ci --ignore-scripts/);

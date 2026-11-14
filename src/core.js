@@ -174,8 +174,7 @@ function installReducedMotionWatch() {
     if (config.respectReducedMotion && !config.forceReducedMotion) reapplyReducedMotion();
     try { document.dispatchEvent(new CustomEvent('kineto:reduced-motion', { detail: { reduced: Kineto.prefersReducedMotion } })); } catch (_e) { /* older */ }
   };
-  if (mq.addEventListener) mq.addEventListener('change', onChange);
-  else if (mq.addListener) mq.addListener(onChange);
+  mq.addEventListener?.('change', onChange);
   rmMediaQuery = mq;
   rmChangeHandler = onChange;
   installConnectionWatch();
@@ -657,8 +656,7 @@ function teardownInstanceServices() {
   visibilityHandler = null;
 
   if (rmMediaQuery && rmChangeHandler) {
-    if (rmMediaQuery.removeEventListener) rmMediaQuery.removeEventListener('change', rmChangeHandler);
-    else rmMediaQuery.removeListener?.(rmChangeHandler);
+    rmMediaQuery.removeEventListener?.('change', rmChangeHandler);
   }
   rmMediaQuery = null;
   rmChangeHandler = null;

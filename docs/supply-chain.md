@@ -78,12 +78,17 @@ module과 공유 runtime만 받습니다. 경로 목록은 `npm run test:deps`�
 | Ambient Media, Brush Reveal, Cursor, Lazy, Scroll Sequence | 각각의 modular module과 full entry | 소비자가 제공한 image/video/frame/sprite URL을 DOM `src`에 연결할 때 브라우저가 media를 요청합니다. library가 고정한 외부 host는 없습니다. |
 | Cursor 클릭 애니메이션 | `cursor/clickEffects.js`, cursor modular entry와 full entry | `clickImage`를 지정한 경우에만 소비자 URL을 CORS·same-origin credentials로 읽어 GIF/APNG/WebP의 반복 메타데이터를 바꿉니다. 요청은 15초 안에 종료하고 destroy에서 취소합니다. 읽기가 차단되면 원본 이미지의 시간 제한 표시로 대체하며 새 고정 외부 host는 추가하지 않습니다. |
 
-0.9.3 공개 bundle의 기본 Lenis는 1.3.25였습니다. 다음 build의 1.3.26 CDN
-자산은 jsDelivr 응답의 `x-jsd-version: 1.3.26`을 확인하고 npm
-`lenis@1.3.26` tarball의 `dist/lenis.min.js`와 byte-for-byte 대조했습니다. 두 파일은
-모두 18,722 bytes이며 SHA-384는
-`sha384-jqpi9VmOdhyLoLURgjCn7EpnG9BbnHW57ibIZoeaIU+erWDH3k8fQQg0xH2ySjnw`입니다.
-이 값은 runtime default와 engine regression test에 함께 고정합니다.
+0.13.0 build의 기본 CDN engine은 GSAP·ScrollTrigger 3.15.1과 Lenis 1.3.27입니다.
+세 자산은 jsDelivr 응답의 `x-jsd-version`을 확인하고 npm tarball의 같은 파일과
+byte-for-byte 대조했습니다(gsap.min.js 73,357 bytes, ScrollTrigger.min.js 44,683 bytes,
+lenis.min.js 18,815 bytes). SHA-384는 차례로
+`sha384-3vCAhD+a3BOliP3QqjQINn6ZWiZxoqu0WFxX5ZQZgqekDZuSb1mJBrrLMmu94H8f`,
+`sha384-H2WL1iy/jKQQ7MTHU2hskZKNHTYWWD/KgKE1vCNnaWY8An2ESTh23KN/fTp8XS3j`,
+`sha384-R18XzqnxvVLEF+BYfhpmDx30v7eP83fAckyfoRzK7/Uf6nGqufcmsk0eAKo7S3RU`입니다.
+이 값은 runtime default와 engine regression test에 함께 고정합니다. `npm run
+test:deps`는 고정한 CDN 버전이 repository가 설치한 `gsap`·`lenis` devDependency
+버전과 같고 SRI가 그 파일의 SHA-384와 같은지 검사하므로, devDependency만 올리고
+pin을 두고 가는 일은 생기지 않습니다.
 
 ## 패키지 metadata 경계
 
@@ -95,7 +100,7 @@ test:deps`가 이 metadata 경계, source import, built bundle의 CDN loader와 
 
 ## 잠금파일 registry 경계
 
-세 개의 npm 잠금파일(`package-lock.json`, consumer fixture, framework fixture)은
+다섯 개의 npm 잠금파일(`package-lock.json`, consumer·framework·integrations fixture, `packages/kineto-mcp`)은
 lockfileVersion 3을 사용하고, 외부 패키지의 `resolved` URL을
 `https://registry.npmjs.org/*.tgz`로 고정합니다. 각 registry 항목은 무결성
 `integrity` 값을 가져야 하며, git·사설 registry·임의 tarball URL을 허용하지

@@ -35,6 +35,10 @@ Kineto.observe();
 - PrimeVue `Carousel`/`Galleria` and `data-kt-slider` on the same element: choose one.
 - PrimeVue `Ripple` directive and `data-kt-ripple` on one button: choose one.
 
+## 참고
+
+- Verified on PrimeVue 4, the MIT-licensed line. PrimeVue 5 moved to the commercial PrimeUI license, which needs a license key; the same attribute fall-through renders there, but the repository fixture stays on the MIT line.
+
 ## 의도별 레시피
 
 ### 히어로 헤드라인 등장 (`hero-headline`)

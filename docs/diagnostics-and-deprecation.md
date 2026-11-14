@@ -83,7 +83,7 @@ CDN이 막혔거나 오프라인이거나, SRI 해시가 맞지 않거나, 12초
 
 ```js
 // { code: 'KT_ENGINE_UNAVAILABLE', module: 'core', phase: 'runtime', recoverable: true,
-//   detail: { engine: 'gsap', reason: 'Kineto: load failed https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js',
+//   detail: { engine: 'gsap', reason: 'Kineto: load failed https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/gsap.min.js',
 //             modules: ['parallax', 'reveal'] } }
 ```
 

@@ -387,7 +387,7 @@
     tile.dataset.variantPending = 'false';
     var stage = tile.querySelector('.variant-tile__stage');
     if (!stage || !window.Kineto) return;
-    try { window.Kineto.init(stage); } catch (error) { tile.dataset.variantFailed = 'true'; }
+    try { window.Kineto.init(stage); } catch { tile.dataset.variantFailed = 'true'; }
     fitToStage(stage);
   }
 
@@ -411,7 +411,7 @@
       if (box.height < 40 && !stage.classList.contains('is-filled')) {
         stage.classList.add('is-filled');
         if (window.Kineto) {
-          try { window.Kineto.destroy(stage); window.Kineto.init(stage); } catch (error) { /* 이 소재는 이대로 둡니다 */ }
+          try { window.Kineto.destroy(stage); window.Kineto.init(stage); } catch { /* 이 소재는 이대로 둡니다 */ }
         }
         return;
       }
@@ -460,7 +460,7 @@
 
   function clearSheet(sheet) {
     if (sheet.dataset.variantBuilt !== 'true') return;
-    if (window.Kineto) { try { window.Kineto.destroy(sheet); } catch (error) { /* 이미 정리됨 */ } }
+    if (window.Kineto) { try { window.Kineto.destroy(sheet); } catch { /* 이미 정리됨 */ } }
     Array.prototype.forEach.call(sheet.querySelectorAll('.variant-tile'), function (tile) {
       if (pendingObserver) pendingObserver.unobserve(tile);
       // 이미 줄에 선 교차 알림이 늦게 와도 initTile 이 이 타일을 만들지 않게 합니다.
@@ -524,7 +524,7 @@
   function writeHash(name, open) {
     var next = (open ? '#cmp-' : '#mod-') + name;
     if (window.location.hash === next) return;
-    try { window.history.replaceState(window.history.state, '', next); } catch (error) { /* file:// */ }
+    try { window.history.replaceState(window.history.state, '', next); } catch { /* file:// */ }
   }
 
   function setSheetOpen(wrapper, open, options) {
@@ -590,7 +590,7 @@
     if (!stage || !window.Kineto) return;
     if (tile.dataset.variantPending === 'true') { initTile(tile); return; }
     var name = tile.dataset.variantModule;
-    try { window.Kineto.replay(materialOf(stage), name); } catch (error) { /* 이 모듈은 replay 를 제공하지 않습니다 */ }
+    try { window.Kineto.replay(materialOf(stage), name); } catch { /* 이 모듈은 replay 를 제공하지 않습니다 */ }
   }
 
   function replayAll(trigger) {
