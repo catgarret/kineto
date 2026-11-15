@@ -6,6 +6,14 @@
 
 <!-- Add matching English release bullets here. -->
 
+### 한국어
+
+<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+## [0.15.0] - 2026-11-15
+
+### English
+
 - **Entrances inside closed panels play when the panel opens.** Reveal, Counter, Blur Text and Text Split created inside a hidden tab, accordion or dialog used to finish (or never start) while nobody could see them; they now wait until the element has a box and play then. A native Reveal `slide-left`/`slide-right` and a Squircle created in a hidden panel behave the same way (Chromium's native `corner-shape` path too).
 - Reveal's `mask`, `wipe` and `clock` entrances without GSAP no longer skip their motion after one long frame: one frame advances the clock by at most `MAX_FRAME_STEP_MS`. Slider's track and Radial loops now count a repeated `requestAnimationFrame` timestamp as one frame (`frameClock()`), so a carousel fed the same timestamp no longer stalls at 98%.
 - `Kineto.scan()` works under jsdom 30 and later with a large registry: discovery splits its joined `[data-kt-*]` selector below jsdom's 2048-character limit.
@@ -20,8 +28,6 @@
 
 ### 한국어
 
-<!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
-
 - **닫힌 패널 안의 등장 효과가 패널이 열릴 때 재생됩니다.** 숨긴 탭·아코디언·대화상자 안에서 만든 Reveal·Counter·Blur Text·Text Split은 아무도 못 보는 사이에 끝나거나 시작하지 못했는데, 이제 요소에 크기가 생길 때까지 기다렸다가 재생합니다. 숨긴 패널 안의 네이티브 Reveal `slide-left`/`slide-right`와 Squircle도 같습니다(Chromium의 네이티브 `corner-shape` 경로 포함).
 - GSAP 없이 도는 Reveal `mask`·`wipe`·`clock` 등장이 긴 프레임 하나 뒤에 움직임을 건너뛰지 않습니다. 한 프레임은 시계를 최대 `MAX_FRAME_STEP_MS`만큼만 진행합니다. Slider의 트랙·Radial 루프는 같은 `requestAnimationFrame` 타임스탬프가 반복되면 한 프레임으로 셉니다(`frameClock()`). 같은 타임스탬프를 받던 캐러셀이 98%에서 멈추던 문제가 사라졌습니다.
 - 모듈을 많이 등록해도 `Kineto.scan()`이 jsdom 30 이상에서 동작합니다. 합친 `[data-kt-*]` selector를 jsdom의 2048자 제한 아래로 나눕니다.
@@ -33,7 +39,6 @@
 
 - **모듈형 빌드에서 Lazy가 42% 작아졌습니다**(`/core` 위 gzip 16.6 → 9.7 KB). Lazy는 더 이상 dither·ASCII·halftone 렌더러를 싣지 않습니다. 폐기 예정 별칭 `dither`·`ascii`·`halftone`은 이제 Stylize 모듈이 로드될 때 제공하는 렌더러로 그립니다. 전체 빌드(기본, `/all`, UMD)는 Stylize를 항상 포함하므로 달라지는 것이 없고, `/auto`는 별칭을 처음 쓸 때 Stylize를 불러오며, 별칭을 쓰는 `/core` 페이지는 `@dong-gri/kineto/modules/stylize`도 import해야 합니다(없으면 원본 이미지를 그대로 표시). 공용 미디어 헬퍼는 `src/modules/media/common.js`로 옮겼습니다.
 - 동작은 그대로 두고 전체 번들을 줄였습니다(UMD 원본 −3.9 KB, gzip −0.3 KB; Counter·Loader·Loading Indicator·Overflow Text 모듈이 각각 gzip 약 0.2 KB 가벼워짐). Loader·Loading Indicator·Overflow Text·Lazy는 공용 `snapshotAttributes()`로 속성을 복원하며, 일부 엔진이 남기던 빈 `style=""`도 지웁니다. 플립 카운터와 플립 시계는 타일을 한 함수로 만들고(DOM은 바이트 단위로 동일), Text Transition과 Overflow Text는 dissolve 키프레임을 공유하며, Lazy의 리빌 루프 네 개는 일시정지 가능한 시계 하나를 공유합니다. 모듈 안의 `clamp`/`lerp` 복사본은 없앴습니다.
-
 ## [0.14.1] - 2026-11-15
 
 ### English
