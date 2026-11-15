@@ -676,9 +676,20 @@ try {
   }
   const solutionTrigger=page.locator('#mod-megaMenu .demo-tabpanel:not([hidden]) .kt-menu-trigger',{hasText:'솔루션'});
   await solutionTrigger.hover();
-  await page.waitForTimeout(260);
+  // One hover, then a bounded wait for the open state (a fixed 260ms sleep
+  // flaked when the page was still settling after the resize).
+  const openedOnFirstHover = await solutionTrigger
+    .evaluate((trigger) => new Promise((resolve) => {
+      const deadline = performance.now() + 2000;
+      const check = () => {
+        if (trigger.getAttribute('aria-expanded') === 'true') resolve(true);
+        else if (performance.now() > deadline) resolve(false);
+        else requestAnimationFrame(check);
+      };
+      check();
+    }));
   assert.equal(
-    await solutionTrigger.getAttribute('aria-expanded'),
+    openedOnFirstHover ? 'true' : await solutionTrigger.getAttribute('aria-expanded'),
     'true',
     'wrapped medium-width mega-menu trigger must open on its first hover'
   );

@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.14.0 · 작성일: 2026-08-02 · 검토: 2026-09-19
+> 기준 버전: v0.14.1 · 작성일: 2026-08-02 · 검토: 2026-09-19
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -79,6 +79,10 @@ v0.12.3에서 휴대폰 탭 튐(에뮬레이션 스윕 20px 초과 10 → 0)·�
 ([입력 정책](hover-touch-policy.md)). 열린 품질 PR(Hover Roll 터치, Counter·Fullpage 지연 작업, observe 정리)을
 흡수했고, README 설치 절을 `core` + 쓰는 모듈 우선으로 바꾸며 모듈별 비용 표([module-cost](module-cost.md))를
 공개했습니다. 엔진(GSAP·Lenis)을 불러오지 못하면 `KT_ENGINE_UNAVAILABLE` 진단이 이유를 알려 줍니다.
+
+v0.14.1에서 release workflow의 잠금파일 audit를 다시 통과시킵니다. v0.14.0 tag는 integrations fixture의 shadcn CLI가
+끌어오는 `deepmerge`(4.2.0 이후 전부 영향, 패치 없음)와 `minimatch` 때문에 게시 단계에서 멈췄고, fixture overrides로
+`deepmerge` 4.1.2와 패치된 `minimatch`를 고정했습니다. 따라서 v0.14.1이 0.12.3 다음 첫 npm 릴리스입니다.
 
 v0.14.0에서 의존성과 실행 환경을 현재 기준으로 맞춥니다. v0.13.0은 npm에 게시되지 않았으므로 0.12.3 다음
 첫 릴리스가 v0.13.0의 엔트리 포인트 변경을 함께 담습니다. 2026-04-30 EOL인 Node 20 지원을 끝내고
