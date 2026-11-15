@@ -6,14 +6,19 @@
 
 <!-- Add matching English release bullets here. -->
 
-- The release audit is clean again: the integrations test fixture pins `deepmerge` 4.1.2 (every release from 4.2.0 on is affected by GHSA-gcqx-w48m-w2h4 and none is patched) and a patched `minimatch` for the shadcn CLI, and `test:supply-chain-automation` keeps those overrides. The `v0.14.0` tag was never published to npm because this audit failed in the release workflow; v0.14.1 is the first npm release after 0.12.3 and contains everything listed under [0.14.0] and [0.13.0].
-
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
-- 릴리스 audit가 다시 깨끗합니다. integrations 테스트 fixture가 shadcn CLI용으로 `deepmerge` 4.1.2(4.2.0 이후 모든 버전이 GHSA-gcqx-w48m-w2h4 대상이고 패치 버전이 없음)와 패치된 `minimatch`를 고정하고, `test:supply-chain-automation`이 이 overrides를 지킵니다. `v0.14.0` tag는 release workflow에서 이 audit가 실패해 npm에 게시되지 않았습니다. v0.14.1이 0.12.3 다음 첫 npm 릴리스이며 [0.14.0]과 [0.13.0]의 내용을 모두 담습니다.
+## [0.14.1] - 2026-11-15
 
+### English
+
+- The release audit is clean again: the integrations test fixture pins `deepmerge` 4.1.2 (every release from 4.2.0 on is affected by GHSA-gcqx-w48m-w2h4 and none is patched) and a patched `minimatch` for the shadcn CLI, and `test:supply-chain-automation` keeps those overrides. The `v0.14.0` tag was never published to npm because this audit failed in the release workflow; v0.14.1 is the first npm release after 0.12.3 and contains everything listed under [0.14.0] and [0.13.0].
+
+### 한국어
+
+- 릴리스 audit가 다시 깨끗합니다. integrations 테스트 fixture가 shadcn CLI용으로 `deepmerge` 4.1.2(4.2.0 이후 모든 버전이 GHSA-gcqx-w48m-w2h4 대상이고 패치 버전이 없음)와 패치된 `minimatch`를 고정하고, `test:supply-chain-automation`이 이 overrides를 지킵니다. `v0.14.0` tag는 release workflow에서 이 audit가 실패해 npm에 게시되지 않았습니다. v0.14.1이 0.12.3 다음 첫 npm 릴리스이며 [0.14.0]과 [0.13.0]의 내용을 모두 담습니다.
 ## [0.14.0] - 2026-11-15
 
 ### English
