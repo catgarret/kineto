@@ -141,8 +141,15 @@ try {
       const seen = new Set();
       const clips = {};
       const premature = new Set();
-      const until = window.performance.now() + 450;
-      while (window.performance.now() < until) {
+      // Sample for at least 450ms, and until every animated preset has shown
+      // an intermediate frame (bounded): a loaded WebKit runner can start the
+      // clip-path reveals later than a fixed 450ms window covered.
+      const wanted = new Set(records.map(({ preset }) => preset).filter((preset) => preset !== 'class'));
+      const start = window.performance.now();
+      const minimum = start + 450;
+      const deadline = start + 4000;
+      const covered = () => [...wanted].every((preset) => seen.has(preset)) && Boolean(clips.mask && clips.wipe);
+      while (window.performance.now() < minimum || (!covered() && window.performance.now() < deadline)) {
         for (const { preset, element, completed } of records) {
           const current = read(element);
           if (preset === 'class') continue;
