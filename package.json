@@ -60,7 +60,7 @@
     "./all": {
       "import": {
         "types": "./types/all.d.ts",
-        "default": "./dist/kineto.min.js"
+        "default": "./dist/modular/all.js"
       },
       "require": {
         "types": "./types/index.d.cts",
@@ -68,7 +68,7 @@
       },
       "default": {
         "types": "./types/all.d.ts",
-        "default": "./dist/kineto.min.js"
+        "default": "./dist/modular/all.js"
       }
     },
     "./auto": {
@@ -130,6 +130,7 @@
     "./dist/kineto.default.js",
     "./dist/kineto.min.js",
     "./dist/modular/auto.js",
+    "./dist/modular/all.js",
     "./src/adapters/jquery.js",
     "./dist/kineto.umd.js",
     "./dist/kineto.umd.min.js",

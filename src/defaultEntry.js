@@ -14,7 +14,8 @@
  * original methods — the core itself carries none of this.
  *
  * Build: scripts/build-min.mjs copies this file to dist/kineto.default.js with
- * `./index.js` pointing at the minified full runtime and __NOTICE__ replaced by
+ * `./index.js` pointing at the modular full runtime (dist/modular/all.js, which
+ * shares its core with /auto, /core and the adapters) and __NOTICE__ replaced by
  * the notice generated from kineto.features.json#entryPoints (scripts/entry-points.mjs).
  */
 import Kineto from './index.js';

@@ -260,7 +260,12 @@ or a tag; release approval remains separate.
   `npm run test:module-loaders`) — never edit it. The core only has a hook
   (`moduleSource`, installed by `src/lazyModules.js` through `setModuleSource()`):
   keep loading logic out of `src/core.js` so `/core` and `/all` do not pay for it.
-  Adapters import `@dong-gri/kineto/all`, not the deprecated default.
+  The jQuery adapter imports `@dong-gri/kineto/all`, not the deprecated default.
+  Since 0.15 the React/Vue adapters import `/auto` and create a component's
+  module after `loadModules()` (`createWhenReady()` in each adapter); every ESM
+  entry shares ONE core (`/all` and the default entry resolve to
+  dist/modular/all.js), so mixing entries never loads Kineto twice.
+  `tests/framework-qa/on-demand-qa.mjs` holds the adapter-only path.
 - **`dist/` is build output and is not committed** (2026-09-27). Build before
   running tests locally. Every workflow job that reads `dist/` runs
   `npm run build` first — CI, Pages, Release, the MCP release, the weekly

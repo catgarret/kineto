@@ -1,6 +1,8 @@
 import type { App, DefineComponent, Directive, Ref, WatchSource } from 'vue';
 import type { KinetoInstance, KinetoOptions, KinetoPresenceController, KinetoPresenceOptions, KinetoPresenceResult, KinetoPresenceStatus } from './index.js';
-import Kineto from './index.js';
+// The adapters use the on-demand entry (it shares one core with every ESM
+// entry): call `await Kineto.loadModules('tilt')` before `Kineto.tilt(…)`.
+import Kineto from './auto.js';
 
 export interface MotionBinding {
   type: string;

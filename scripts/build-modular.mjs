@@ -18,7 +18,11 @@ const input = {
   presence: new URL('src/presence-entry.js', root).pathname,
   // Core + every module known by name, imported on demand (src/auto.js). Its
   // import() calls point at the module entries below, so no module is copied.
-  auto: new URL('src/auto.js', root).pathname
+  auto: new URL('src/auto.js', root).pathname,
+  // The full runtime as a modular entry: `@dong-gri/kineto/all` and the default
+  // entry resolve here, so every ESM entry (default, /all, /auto, /core, the
+  // module entries and the React/Vue adapters) shares ONE core and registry.
+  all: new URL('src/index.js', root).pathname
 };
 moduleNames.forEach((name) => { input[`modules/${name}`] = new URL(`src/modules/${name}.js`, root).pathname; });
 
@@ -33,4 +37,4 @@ await build.write({
 });
 await build.close();
 
-console.log(`Modular ESM: core + auto + states + presence + ${moduleNames.length} module entries.`);
+console.log(`Modular ESM: core + all + auto + states + presence + ${moduleNames.length} module entries (one shared core).`);

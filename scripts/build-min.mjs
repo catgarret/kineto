@@ -35,7 +35,7 @@ console.log('Minified: kineto.min.js (ESM), kineto.default.js (default entry), k
 function defaultEntrySource() {
   const source = readFileSync(rel('src/defaultEntry.js'), 'utf8');
   const swaps = [
-    [/'\.\/index\.js'/g, "'./kineto.min.js'", 2],
+    [/'\.\/index\.js'/g, "'./modular/all.js'", 2],
     [/\/\* __NOTICE__ \*\/ null/g, JSON.stringify(DEFAULT_ENTRY_NOTICE), 1]
   ];
   return swaps.reduce((code, [pattern, replacement, expected]) => {

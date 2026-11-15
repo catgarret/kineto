@@ -6,9 +6,12 @@
 //   - each subpath's `types` file exists and is the one the contract names;
 //   - files with import-time side effects are declared, so a bundler never drops
 //     a bare `import '@dong-gri/kineto/all'`;
-//   - the default entry and `/all` are the SAME Kineto instance, and the default
-//     entry's KT_DEPRECATED notice is opt-in, sent once, and then gets out of the way;
-//   - the auto entry's extra API exists there and nowhere else.
+//   - every ESM entry shares ONE Kineto instance: the default entry, `/all`,
+//     `/core` and `/auto` (and so the React/Vue adapters, which import `/auto`);
+//     the default entry's KT_DEPRECATED notice is opt-in, sent once, and then
+//     gets out of the way;
+//   - the auto entry's extra API is added by importing `/auto`, not by the
+//     full runtime on its own.
 //
 // Run after `npm run build`: node tests/entry-points.mjs
 import assert from 'node:assert/strict';
@@ -49,7 +52,7 @@ const defaultImport = leaves(packageJson.exports['.']).find(({ path: keys }) => 
 assert.equal(packageJson.module, defaultImport, 'the legacy `module` field must point at the default entry');
 
 // 3. Import-time side effects are declared.
-for (const file of ['./dist/kineto.default.js', './dist/kineto.min.js', './dist/modular/auto.js']) {
+for (const file of ['./dist/kineto.default.js', './dist/kineto.min.js', './dist/modular/all.js', './dist/modular/auto.js']) {
   assert.ok(packageJson.sideEffects.includes(file), `${file} registers modules when imported and must be listed in sideEffects`);
 }
 
@@ -60,8 +63,10 @@ autoApi.forEach((method) => assert.ok(!contract.coreApi.includes(method), `${met
 
 // 5. Default entry vs /all at runtime (Node, no DOM: scan() is an SSR no-op).
 const { default: Default } = await import('../dist/kineto.default.js');
-const { default: All } = await import('../dist/kineto.min.js');
+const { default: All } = await import('../dist/modular/all.js');
+const { default: Core } = await import('../dist/modular/core.js');
 assert.equal(Default, All, 'the default entry and /all must share one Kineto instance');
+assert.equal(Core, All, '/core and /all must share one Kineto instance (one modular core)');
 assert.equal(Object.keys(All.registry).length, contract.moduleCount, 'the default entry is still the full runtime in 0.13');
 autoApi.forEach((method) => assert.equal(All[method], undefined, `the full runtime must not grow the auto-only ${method}()`));
 
@@ -81,6 +86,13 @@ assert.notEqual(All.scan.name, 'kinetoDefaultEntryNotice', 'after the notice the
 assert.notEqual(All.config.name, 'kinetoDefaultEntryNotice', 'after the notice the original config() is restored');
 All.config({ debugSink: null });
 
+// /auto (what the React/Vue adapters import) is the same instance too: it adds
+// its API to it, and the modules /all registered stay registered.
+const { default: Auto } = await import('../dist/modular/auto.js');
+assert.equal(Auto, All, '/auto must share the one Kineto instance with /all, /core and the default entry');
+autoApi.forEach((method) => assert.equal(typeof All[method], 'function', `importing /auto adds ${method}() to the shared instance`));
+assert.equal(Object.keys(All.registry).length, contract.moduleCount, '/auto must not drop the modules /all registered');
+
 // 6. The deprecation is declared where the procedure says (docs/diagnostics-and-deprecation.md).
 const defaultTypes = fs.readFileSync(path.join(root, 'types/default.d.ts'), 'utf8');
 assert.match(defaultTypes, /@deprecated/, 'types/default.d.ts must mark the default export deprecated');
@@ -94,4 +106,4 @@ let tracked = null;
 try { tracked = execFileSync('git', ['ls-files', '--', 'dist'], { cwd: root, encoding: 'utf8' }).trim(); } catch (_error) { /* not a Git checkout */ }
 if (tracked !== null) assert.equal(tracked, '', 'dist/ must not be tracked by Git (it is build output; see .gitignore)');
 
-console.log(`entry-points OK — ${exported.length} subpaths match the contract; default = /all instance, opt-in notice once; auto API isolated.`);
+console.log(`entry-points OK — ${exported.length} subpaths match the contract; default = /all = /core = /auto instance, opt-in notice once; auto API added only by /auto.`);

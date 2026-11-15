@@ -24,9 +24,12 @@ await Kineto.loadModules(['tilt', 'reveal']);
 Kineto.tilt('.card');
 ```
 
-Use **one** entry per page. Each entry builds its own Kineto object (`/all` and the
-default entry are the same one; `/auto` and `/core` share the modular core), so
-mixing `/all` with `/auto` gives a page two independent registries.
+Every ESM entry shares **one** Kineto object: the default entry, `/all`, `/auto`,
+`/core`, the `modules/*` entries and the React/Vue adapters all resolve to the same
+modular core (`dist/modular/`). Mixing them is safe — importing `/all` next to
+`/auto` simply registers every module on that one instance, and `/auto` adds its
+on-demand API to it. Only `require()` (the UMD build) and the single-file
+`/min` build are separate copies.
 
 ## The default entry is changing
 
@@ -59,7 +62,9 @@ TypeScript shows the default export as `@deprecated` (types/default.d.ts);
 | `Kineto.tilt(el)` / `Kineto.create('tilt', el)` right after import | `/all`, or `/auto` + `await Kineto.loadModules('tilt')` |
 | `Kineto.states(…)` / `Kineto.listTerminalFramePresets()` | `/all`, or `@dong-gri/kineto/states` for States |
 | `require('@dong-gri/kineto')` | unchanged (the UMD build); `require('@dong-gri/kineto/all')` is the same file |
-| The React / Vue / jQuery adapters | nothing — they import `/all` themselves |
+| `import { Kineto } from '@dong-gri/kineto/react'` (or `/vue`) then `Kineto.tilt(el)` | `await Kineto.loadModules('tilt')` first, or also `import '@dong-gri/kineto/all'` (same instance) — the adapters load modules on demand since 0.15 |
+| React / Vue components and hooks (`Motion`, `useKineto`, `v-motion`, …) | nothing — they import the module they use, then create it |
+| The jQuery adapter | nothing — it imports `/all` |
 
 ## How `auto` works
 
@@ -117,7 +122,7 @@ when that report no longer matches a fresh measurement.
 - **`@dong-gri/kineto/auto`** — 코어만 먼저 받습니다. 모든 모듈을 이름으로 알고 있다가, 마크업이 처음 쓰는 순간 그 모듈만 import → 등록 → 생성합니다. `data-kt-*` 55개 모두 그대로 동작합니다. JS API는 `await Kineto.loadModules('tilt')` 뒤에 씁니다.
 - **`@dong-gri/kineto/all`** — 0.12까지의 기본 엔트리와 같습니다(모든 모듈을 처음부터 등록, named export 포함).
 - **`@dong-gri/kineto`(기본)** — 0.13에서는 `/all`과 같은 파일·같은 인스턴스라 깨지는 것이 없습니다. 의미가 1.0에서 `/auto`로 바뀌므로 deprecated이며, `debug`를 켠 페이지에만 `KT_DEPRECATED`를 한 번 보냅니다. TypeScript에서는 기본 export가 `@deprecated`로 보입니다.
-- React·Vue·jQuery 어댑터는 스스로 `/all`을 가져오므로 사용자는 바꿀 것이 없습니다.
-- 한 페이지에서는 엔트리를 **하나만** 쓰세요. `/all`과 `/auto`를 섞으면 Kineto 객체가 둘이 됩니다.
+- React·Vue 어댑터는 모듈을 필요할 때 불러옵니다. 컴포넌트가 처음 쓰는 순간 그 모듈만 import한 뒤 생성하므로, 어댑터만 쓰는 앱은 코어와 쓰는 모듈만 받습니다(gzip 약 24 KB, 전체 런타임은 175 KB). 어댑터가 내보내는 `Kineto`로 모듈을 직접 부를 때는 `await Kineto.loadModules('tilt')` 뒤에 `Kineto.tilt(…)`를 쓰거나, 앱에서 `@dong-gri/kineto/all`도 import하세요. jQuery 어댑터는 그대로 `/all`을 씁니다.
+- 모든 ESM 엔트리(기본, `/all`, `/auto`, `/core`, `modules/*`, 어댑터)는 Kineto 객체 **하나**를 공유합니다. 섞어 써도 두 벌이 되지 않습니다. 별도 사본은 `require()`(UMD)와 단일 파일 `/min`뿐입니다.
 - 실패한 import는 `KT_MODULE_LOAD_FAILED`로 한 번 알리고 마크업은 정적 상태로 둡니다. 이후 scan은 다시 시도하지 않고, `loadModules(name)`이 명시적으로 재시도합니다.
 - 보안: 마크업은 무엇을 import할지 고를 수 없습니다. 속성은 페이지가 등록한 이름에만 맞고, importer는 문자열이 아니라 함수입니다.

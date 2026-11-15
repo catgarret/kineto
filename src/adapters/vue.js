@@ -1,5 +1,5 @@
 import { Comment, defineComponent, h, inject, onBeforeUnmount, onMounted, onUpdated, provide, ref, shallowRef, toRef, unref, watch } from 'vue';
-import Kineto from '@dong-gri/kineto/all';
+import Kineto from '@dong-gri/kineto/auto';
 import presence from '@dong-gri/kineto/presence';
 
 const PresenceParentKey = Symbol('kineto-presence-parent');
@@ -25,6 +25,26 @@ function sameValue(a, b) {
   return keys.every((key) => Object.prototype.hasOwnProperty.call(b, key) && sameValue(a[key], b[key]));
 }
 
+// The adapters import the on-demand entry, which shares its core with every
+// ESM entry. A page that imports '@dong-gri/kineto' or '/all' has every module
+// registered already, so nothing changes there; otherwise a module is imported
+// the first time a component uses it, and created only if it is still wanted.
+function createWhenReady(type, el, options, stillWanted, onCreate) {
+  if (typeof Kineto[type] === 'function' || typeof Kineto.loadModules !== 'function') {
+    const instance = Kineto.create(type, el, options);
+    onCreate?.(instance);
+    return instance;
+  }
+  Kineto.loadModules([type]).then(() => {
+    if (!stillWanted()) return;
+    // Create first: `onCreate?.(Kineto.create(…))` would skip the create
+    // itself when no callback is passed (optional-call short-circuit).
+    const instance = Kineto.create(type, el, options);
+    onCreate?.(instance);
+  });
+  return null;
+}
+
 // Destroy the module instance ON `el` only. Kineto.destroyModule(el, type)
 // also destroys every same-module instance nested inside `el`, which belong
 // to other components (a v-motion reveal inside another v-motion reveal).
@@ -38,7 +58,7 @@ export const vMotion = {
     if (!type) return;
     el.__kinetoType = type;
     el.__kinetoOptions = options;
-    Kineto.create(type, el, options);
+    createWhenReady(type, el, options, () => el.__kinetoType === type && el.__kinetoOptions === options);
   },
   updated(el, binding) {
     const next = normalizeBinding(binding);
@@ -57,7 +77,7 @@ export const vMotion = {
     if (el.__kinetoType) destroyOwn(el, el.__kinetoType);
     el.__kinetoType = next.type;
     el.__kinetoOptions = next.options;
-    Kineto.create(next.type, el, next.options);
+    createWhenReady(next.type, el, next.options, () => el.__kinetoType === next.type && el.__kinetoOptions === next.options);
   },
   unmounted(el) {
     if (el.__kinetoType) destroyOwn(el, el.__kinetoType);
@@ -75,15 +95,22 @@ export function useKineto(type, options = {}, watchSources = []) {
   const element = ref(null);
   const instance = ref(null);
 
+  // Each mount() supersedes the one before it, including a module import
+  // still in flight.
+  let generation = 0;
   const mount = () => {
     if (!element.value || !type) return;
-    destroyOwn(element.value, type);
-    instance.value = Kineto.create(type, element.value, resolveKinetoOptions(options));
+    const target = element.value;
+    const id = ++generation;
+    destroyOwn(target, type);
+    createWhenReady(type, target, resolveKinetoOptions(options), () => id === generation && element.value === target,
+      (created) => { instance.value = created; });
   };
 
   onMounted(mount);
   if (watchSources.length) watch(watchSources, mount, { deep: true });
   onBeforeUnmount(() => {
+    generation += 1;
     if (element.value && type) destroyOwn(element.value, type);
     instance.value = null;
   });
@@ -138,9 +165,12 @@ export function useKinetoTransition(type, options = {}) {
     config.onComplete = (...args) => {
       try { userComplete?.(...args); } finally { finish(run); }
     };
+    const attach = (instance) => {
+      run.instance = instance;
+      if (!instance) finish(run);
+    };
     try {
-      run.instance = Kineto.create(type, el, config);
-      if (!run.instance) finish(run);
+      createWhenReady(type, el, config, () => active.get(el) === run && !run.finished, attach);
     } catch (_error) {
       finish(run);
     }

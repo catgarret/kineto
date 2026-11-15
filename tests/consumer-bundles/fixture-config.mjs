@@ -83,7 +83,10 @@ export const consumerFixtures = [
   // 2026-09-20 (effect quality): the four effect rewrites measure 155.4 KiB gzip
   // in the Vite React entry. Round only this measured cost; variance unchanged.
   // See the squircle note above: Vite measures 157.5 KB in the React entry.
-  { name: 'react-adapter', entry: 'react', budget: 180, variance: { vite: 1, rolldown: 1 } },
+  // 2026-11-15: the adapters import the on-demand entry, which shares one core
+  // with every ESM entry; a page that uses only the adapter gets the core plus
+  // the modules its components use. React measures 23.8 KB (was 178.4 KB).
+  { name: 'react-adapter', entry: 'react', budget: 25, variance: { vite: 1, rolldown: 1 } },
   // 2026-09-18: the Presence status subscription that keeps both adapters in
   // sync with a propagating parent measures 144.1 KB in the Vite Vue entry
   // (React 143.x stays inside its ceiling). Round the Vue product ceiling by
@@ -99,7 +102,8 @@ export const consumerFixtures = [
   // Vue measures 163.2 KiB gzip in Vite (163.8 in Rolldown, inside its own
   // variance), while full at 158.2 and React at 162.4 stay inside theirs.
   // Round only the ceiling that actually moved.
-  { name: 'vue-adapter', entry: 'vue', budget: 181, variance: { vite: 1, rolldown: 2 } }
+  // 2026-11-15: on-demand like React above; Vue measures 25.0 KB (was 179.6 KB).
+  { name: 'vue-adapter', entry: 'vue', budget: 26, variance: { vite: 1, rolldown: 2 } }
 ];
 
 export const treeShakenEntries = [
@@ -107,11 +111,13 @@ export const treeShakenEntries = [
   'core-reveal',
   'core-three',
   'core-states',
-  'core-presence'
+  'core-presence',
+  'react-adapter',
+  'vue-adapter'
 ];
 
 // Entries whose modules must be split into on-demand chunks.
-export const onDemandEntries = ['auto'];
+export const onDemandEntries = ['auto', 'react-adapter', 'vue-adapter'];
 
 const fixtureNames = consumerFixtures.map(({ name }) => name);
 if (new Set(fixtureNames).size !== fixtureNames.length) {
