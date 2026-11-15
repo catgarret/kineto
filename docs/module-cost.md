@@ -10,31 +10,31 @@ two modules together is at most the sum of their rows. A bundler usually lands a
 (one output file compresses better than several); whole-app numbers are in
 [consumer-bundle-size.md](consumer-bundle-size.md).
 
-**`core` itself:** 42.3 KB raw · **16.2 KB gzip**. The CSS (`style.css`) is one file for every entry.
+**`core` itself:** 43.6 KB raw · **16.7 KB gzip**. The CSS (`style.css`) is one file for every entry.
 
 | Module | Extra files | Raw | Gzip |
 | --- | ---: | ---: | ---: |
 | `radial` | 2 | 28.6 KB | 10.1 KB |
-| `stylize` | 2 | 23.9 KB | 10.0 KB |
-| `loadingIndicator` | 1 | 31.2 KB | 9.8 KB |
+| `stylize` | 3 | 23.9 KB | 9.9 KB |
+| `loadingIndicator` | 2 | 31.3 KB | 9.9 KB |
 | `slider` | 1 | 28.1 KB | 9.8 KB |
 | `lazy` | 2 | 25.7 KB | 9.6 KB |
-| `cursor` | 1 | 24.3 KB | 8.5 KB |
+| `cursor` | 2 | 24.4 KB | 8.5 KB |
 | `lightbox` | 1 | 23.1 KB | 8.1 KB |
 | `glitch` | 1 | 23.5 KB | 7.9 KB |
-| `counter` | 1 | 19.7 KB | 6.1 KB |
+| `counter` | 1 | 19.9 KB | 6.2 KB |
 | `overflowText` | 1 | 20.5 KB | 6.1 KB |
-| `canvasEffect` | 2 | 11.9 KB | 5.3 KB |
-| `cardGlow` | 2 | 14.1 KB | 5.2 KB |
-| `reveal` | 1 | 12.9 KB | 5.2 KB |
+| `reveal` | 1 | 14.2 KB | 5.6 KB |
+| `canvasEffect` | 3 | 11.9 KB | 5.4 KB |
+| `cardGlow` | 3 | 14.1 KB | 5.3 KB |
 | `loader` | 1 | 14.1 KB | 5.2 KB |
 | `pageReveal` | 1 | 12.0 KB | 4.1 KB |
 | `coverReveal` | 1 | 8.9 KB | 3.7 KB |
 | `fullpage` | 1 | 9.4 KB | 3.7 KB |
 | `bottomSheet` | 1 | 7.6 KB | 3.0 KB |
 | `stickyStack` | 1 | 8.6 KB | 2.9 KB |
-| `textReveal` | 1 | 6.4 KB | 2.8 KB |
 | `textTransition` | 1 | 7.2 KB | 2.8 KB |
+| `textReveal` | 1 | 6.4 KB | 2.8 KB |
 | `megaMenu` | 1 | 6.6 KB | 2.7 KB |
 | `tilt` | 2 | 5.4 KB | 2.6 KB |
 | `brushReveal` | 1 | 5.4 KB | 2.4 KB |
@@ -42,26 +42,26 @@ two modules together is at most the sum of their rows. A bundler usually lands a
 | `tabs` | 1 | 5.6 KB | 2.3 KB |
 | `toast` | 1 | 5.5 KB | 2.2 KB |
 | `progress` | 1 | 5.2 KB | 2.2 KB |
-| `gesture` | 1 | 5.3 KB | 2.2 KB |
+| `gesture` | 1 | 5.3 KB | 2.1 KB |
 | `flip` | 1 | 4.9 KB | 2.1 KB |
 | `dateTime` | 1 | 5.5 KB | 2.1 KB |
 | `hold` | 1 | 5.6 KB | 2.1 KB |
+| `squircle` | 2 | 4.3 KB | 2.1 KB |
 | `ambientMedia` | 1 | 4.9 KB | 2.0 KB |
-| `squircle` | 1 | 4.3 KB | 2.0 KB |
 | `scrollShadows` | 1 | 5.7 KB | 1.9 KB |
+| `textSplit` | 1 | 4.0 KB | 1.8 KB |
 | `tooltip` | 1 | 4.6 KB | 1.8 KB |
-| `textSplit` | 1 | 3.9 KB | 1.8 KB |
 | `scrollSequence` | 1 | 3.7 KB | 1.8 KB |
 | `magnetic` | 1 | 3.6 KB | 1.7 KB |
 | `marquee` | 1 | 3.2 KB | 1.6 KB |
 | `confetti` | 1 | 2.5 KB | 1.3 KB |
 | `mouseParallax` | 1 | 3.0 KB | 1.3 KB |
 | `switch` | 1 | 2.8 KB | 1.3 KB |
+| `blurText` | 1 | 2.2 KB | 1.2 KB |
 | `cssScroll` | 1 | 2.8 KB | 1.2 KB |
 | `horizontalScroll` | 1 | 2.4 KB | 1.2 KB |
 | `scrollVelocity` | 1 | 2.2 KB | 1.1 KB |
 | `drag` | 1 | 2.5 KB | 1.1 KB |
-| `blurText` | 1 | 2.1 KB | 1.1 KB |
 | `accordion` | 1 | 2.1 KB | 1.0 KB |
 | `ripple` | 1 | 1.8 KB | 0.9 KB |
 | `typewriter` | 1 | 1.7 KB | 0.9 KB |
