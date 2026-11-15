@@ -22,9 +22,16 @@ const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
 // can read the sampled pixels back (a cross-origin image taints the canvas and
 // the effect deliberately steps aside, which is not what this test measures).
 const FIXTURE_PATH = '/__lazy-stylized__.html';
+// A blank page for the modular entries (/core, /auto), which load as ES modules.
+const MODULAR_PATH = '/__lazy-modular__.html';
 const fixtureHtml = () => `<!doctype html><html><head><link rel="stylesheet" href="/dist/kineto.css"><style>body{margin:0;background:#222}.cell{width:240px;height:160px;display:inline-block;margin:8px}.cell img,.cell video{width:100%;height:100%;object-fit:cover}</style></head><body><main></main><script src="/dist/kineto.umd.js"></script></body></html>`;
 const server = http.createServer((request, response) => {
   const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
+  if (pathname === MODULAR_PATH) {
+    response.writeHead(200, { 'content-type': 'text/html' });
+    response.end('<!doctype html><html><head><link rel="stylesheet" href="/dist/kineto.css"></head><body><main></main></body></html>');
+    return;
+  }
   if (pathname === FIXTURE_PATH) {
     response.writeHead(200, { 'content-type': 'text/html' });
     response.end(fixtureHtml());
@@ -318,7 +325,53 @@ assert.ok(mosaic.first.largestAreaShare > 0.08,
 assert.notEqual(mosaic.first.layout, mosaic.second.layout,
   `replaying must lay the tiles out afresh — replaying into the identical pattern is what made the effect look canned (${mosaic.first.count} then ${mosaic.second.count} tiles)`);
 
-  console.log(`Lazy stylized OK (${browserName}): dither/ascii/halftone persist + reveal, palette/type/inverted pixels, live-source re-render, pause freeze, mosaic tile variety, full cleanup${skipped.length ? ` (${skipped.join('; ')})` : ''}.`);
+  // The aliases render through the Stylize module (media/common.js), so the
+  // modular Lazy chunk never carries the renderer. /core without Stylize: the
+  // picture shows unstyled and no renderer chunk is requested. /auto: Lazy
+  // loads Stylize on first use and the alias renders as before.
+  const modularAlias = async (entry) => {
+    const modularPage = await browser.newPage({ viewport: { width: 900, height: 700 }, reducedMotion: 'no-preference' });
+    const requested = [];
+    modularPage.on('request', (request) => requested.push(new URL(request.url()).pathname));
+    modularPage.on('pageerror', (error) => errors.push(`${entry}: ${error.message}`));
+    try {
+      await modularPage.goto(`${origin}${MODULAR_PATH}`, { waitUntil: 'load' });
+      await modularPage.evaluate(async ({ base, entry }) => {
+        const { default: Kineto } = await import(`${base}/dist/modular/${entry}.js`);
+        window.Kineto = Kineto;
+        if (entry === 'core') Kineto.register('lazy', (await import(`${base}/dist/modular/modules/lazy.js`)).default);
+        const image = document.createElement('img');
+        Object.entries({ 'data-kt-lazy': 'dither', 'data-kt-persist': 'true', 'data-src': `${base}/demo/assets/gallery-01.webp` })
+          .forEach(([name, value]) => image.setAttribute(name, value));
+        image.style.cssText = 'display:block;width:240px;height:160px';
+        document.querySelector('main').appendChild(image);
+        Kineto.scan(document.querySelector('main'));
+        if (entry === 'auto') await Kineto.loadModules();
+      }, { base: origin, entry });
+      await modularPage.waitForFunction((entry) => {
+        const image = document.querySelector('main img');
+        const canvas = image?.closest('.kt-lazy-wrap')?.querySelector('.kt-lazy-stylized-canvas');
+        const shown = image && image.getAttribute('src') && image.style.opacity === '1';
+        return entry === 'core' ? Boolean(shown) : Boolean(canvas);
+      }, entry, { timeout: 10000 });
+      return await modularPage.evaluate(() => ({
+        canvas: Boolean(document.querySelector('.kt-lazy-stylized-canvas')),
+        stylizeRegistered: typeof window.Kineto.stylize === 'function'
+      })).then((state) => ({ ...state, requested }));
+    } finally {
+      await modularPage.close();
+    }
+  };
+  const core = await modularAlias('core');
+  assert.equal(core.canvas, false, '/core without Stylize: the alias must show the picture without a stylized canvas');
+  assert.ok(!core.requested.some((pathname) => /stylizer|modules\/stylize\.js/.test(pathname)),
+    `/core Lazy must not request the Stylize renderer (requested: ${core.requested.filter((pathname) => pathname.includes('/dist/')).join(', ')})`);
+  const auto = await modularAlias('auto');
+  assert.ok(auto.canvas, '/auto: the alias must load Stylize on first use and render');
+  assert.ok(auto.stylizeRegistered, '/auto: Lazy must load the Stylize module for the alias');
+  assert.deepEqual(errors, [], 'modular Lazy aliases must not raise page errors');
+
+  console.log(`Lazy stylized OK (${browserName}): dither/ascii/halftone persist + reveal, palette/type/inverted pixels, live-source re-render, pause freeze, mosaic tile variety, renderer loaded only through Stylize (/core, /auto), full cleanup${skipped.length ? ` (${skipped.join('; ')})` : ''}.`);
 } finally {
   await browser.close();
   server.close();

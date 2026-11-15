@@ -16,7 +16,9 @@ import { fn as easingFunction } from '../../easings.js';
 import { createLayer } from './wrapper.js';
 import { LIVE_LOOK_KEYS, createStylizedRenderer, resolveLiveLook, resolveStyleConfig } from './rasterizer.js';
 
-export const STYLIZED_EFFECTS = Object.freeze(['dither', 'ascii', 'halftone']);
+import { ANIMATED_EXTENSIONS, STYLIZED_EFFECTS, durationMs, isStylizedEffect } from './common.js';
+
+export { ANIMATED_EXTENSIONS, STYLIZED_EFFECTS, durationMs, isStylizedEffect };
 const EFFECT_SET = new Set(STYLIZED_EFFECTS);
 // Starting cell (CSS px) per effect and the smallest cell a reveal shrinks to
 // before the layer crossfades into the original.
@@ -25,7 +27,6 @@ const HANDOFF_CELL = { dither: 2, ascii: 5, halftone: 3 };
 // Cells shrink for the first 70% of a reveal, then the layer fades out.
 const SHRINK_PORTION = 0.7;
 export const REVEAL_TRANSITIONS = Object.freeze(['shrink', 'dissolve', 'wipe']);
-export const ANIMATED_EXTENSIONS = /\.(?:gif|apng|webp)(?:$|[?#])/i;
 
 /**
  * Follow the pointer over the wrapper so the renderer can react to it. Returns
@@ -55,16 +56,7 @@ export function trackPointer(wrapper) {
   };
 }
 
-export function isStylizedEffect(name) {
-  return EFFECT_SET.has(name);
-}
 
-/** Seconds (≤ 30) or milliseconds, as the media modules have always accepted. */
-export function durationMs(value, fallbackSeconds) {
-  const number = Number(value ?? fallbackSeconds);
-  if (!Number.isFinite(number)) return fallbackSeconds * 1000;
-  return number <= 30 ? number * 1000 : number;
-}
 
 /**
  * One frame of the reveal timeline, shared by the <img> and <video> paths:
