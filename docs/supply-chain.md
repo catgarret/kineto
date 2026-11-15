@@ -107,6 +107,11 @@ lockfileVersion 3을 사용하고, 외부 패키지의 `resolved` URL을
 않습니다. fixture가 로컬 Kineto 소스를 소비하는 경우에만
 `node_modules/@dong-gri/kineto`가 `../..` npm link로 예외 처리됩니다.
 
+integrations fixture의 shadcn CLI가 끌어오는 `deepmerge`는 4.2.0 이후 모든 버전이 GHSA-gcqx-w48m-w2h4 대상이고
+패치 버전이 없어서, fixture `overrides`로 영향 없는 마지막 버전 4.1.2와 패치된 `minimatch` ^11.0.8을 고정합니다.
+release workflow는 다섯 잠금파일 audit이 하나라도 실패하면 게시하지 않으므로(v0.14.0은 그래서 tag만 남고 게시되지
+않았습니다) `test:supply-chain-automation`이 이 overrides를 지킵니다.
+
 이 경계는 `npm run test:lockfile-boundary`로 검사하며 `test:node`, CI, release
 workflow에서 같은 명령을 실행합니다. lockfile을 갱신할 때 registry 변경이나
 새로운 workspace link가 생기면 코드 변경과 같은 검토·근거를 남겨야 합니다.

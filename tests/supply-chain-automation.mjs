@@ -15,6 +15,7 @@ const gitignore = read('.gitignore');
 const packageJson = JSON.parse(read('package.json'));
 const consumerPackage = JSON.parse(read('tests/consumer-bundles/package.json'));
 const frameworkPackage = JSON.parse(read('tests/framework-qa/package.json'));
+const integrationsPackage = JSON.parse(read('tests/integrations/package.json'));
 const auditedLockfiles = ['package-lock.json', 'tests/consumer-bundles/package-lock.json', 'tests/framework-qa/package-lock.json', 'tests/integrations/package-lock.json', 'packages/kineto-mcp/package-lock.json'];
 
 // OS major upgrades must be reviewed rather than inherited from a moving label.
@@ -108,6 +109,14 @@ assertDependencyFloor(frameworkPackage.dependencies['react-dom'], '^19.3.1', 'fr
 assertDependencyFloor(frameworkPackage.dependencies.vue, '^3.5.45', 'framework Vue');
 assertDependencyFloor(frameworkPackage.devDependencies['playwright-core'], '^1.65.1', 'framework playwright-core');
 assertDependencyFloor(frameworkPackage.devDependencies.vite, '^8.3.8', 'framework vite');
+// The release workflow audits every lockfile and refuses to publish on any
+// advisory (v0.14.0 was tagged but never published for this reason). The
+// shadcn CLI pulls deepmerge, whose GHSA-gcqx-w48m-w2h4 covers every release
+// from 4.2.0 on (none is patched), and an unpatched minimatch 10 through
+// ts-morph. The fixture pins the last unaffected deepmerge and a patched
+// minimatch; dropping either makes `npm run audit:lockfiles` fail again.
+assert.deepEqual(integrationsPackage.overrides, { deepmerge: '4.1.2', minimatch: '^11.0.8' },
+  'tests/integrations must keep the audit overrides for the shadcn CLI (deepmerge 4.1.2, minimatch ^11.0.8)');
 
 // Every picomatch copy in an audited lockfile must sit on a patched line.
 // The 4.x line (Vite, fdir, tinyglobby) is held at >= 4.0.7. The 2.x line is
