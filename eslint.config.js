@@ -1,3 +1,5 @@
+import globals from 'globals';
+
 const browserGlobals = {
   window: 'readonly', document: 'readonly', navigator: 'readonly', Element: 'readonly',
   NodeList: 'readonly', HTMLCollection: 'readonly', IntersectionObserver: 'readonly',
@@ -33,6 +35,18 @@ export default [
       sourceType: 'module',
       // Node scripts and QA fixtures; the browser names cover jsdom/Playwright page code.
       globals: { console: 'readonly', process: 'readonly', fetch: 'readonly', setTimeout: 'readonly', clearTimeout: 'readonly', URL: 'readonly', window: 'readonly', document: 'readonly', Buffer: 'readonly', AbortSignal: 'readonly', globalThis: 'readonly', getComputedStyle: 'readonly', Element: 'readonly', MutationObserver: 'readonly' }
+    },
+    rules: baseRules
+  },
+  {
+    // The demo's page scripts and the browser tests (Node code driving pages
+    // whose callbacks run in the browser). Both read the page's Kineto global.
+    files: ['demo/*.js', 'tests/*.js', 'tests/browser/*.mjs'],
+    ignores: ['demo/variant-catalog.js', 'demo/playground.js', 'tests/browser-smoke-page.js'],
+    languageOptions: {
+      ecmaVersion: 2024,
+      sourceType: 'module',
+      globals: { ...globals.browser, ...globals.node, Kineto: 'readonly', KinetoPlayground: 'readonly' }
     },
     rules: baseRules
   }

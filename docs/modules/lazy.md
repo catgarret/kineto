@@ -158,7 +158,7 @@ v0.11.0에서 이 셋은 [Stylize](stylize.md) 모듈이 되었습니다. Lazy�
 <video data-kt-lazy="halftone" data-src="./clip.mp4" data-kt-persist data-kt-halftone-shape="dot" muted loop playsinline></video>
 ```
 
-세 효과는 `src/modules/lazy/stylizedMedia.js`의 canvas rasterizer를 공유합니다.
+세 효과는 `src/modules/media/rasterizer.js`의 canvas rasterizer를 공유합니다.
 원본 미디어는 canvas 아래에 그대로 남아 있으므로, CORS 없이 다른 origin에서
 불러온 이미지처럼 canvas가 픽셀을 읽을 수 없는 경우에도 그림은 보입니다(효과만
 생략). 리빌은 `duration`의 앞 70%에서 셀을 `cellSize`부터 효과별 최소 셀까지

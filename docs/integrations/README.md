@@ -42,7 +42,7 @@ Kineto.observe(); // scans now and follows later DOM changes
 | [daisyUI](daisyui.md) | html | data-attributes |
 | [Nuxt UI (Reka UI + Tailwind)](nuxt-ui.md) | vue | attrs-fallthrough |
 | [PrimeVue v4](primevue.md) | vue | attrs-fallthrough |
-| [Vuetify 3](vuetify.md) | vue | attrs-fallthrough |
+| [Vuetify 4](vuetify.md) | vue | attrs-fallthrough |
 
 [Figma MCP → 코드 → Kineto 워크플로우](figma-mcp.md)도 함께 보세요.
 

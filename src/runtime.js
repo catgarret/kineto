@@ -37,12 +37,12 @@ function pageEngine(name) {
 // CDN sources — overridable via Kineto.setEngineSource() to pin an exact
 // version, self-host, or point at an internal mirror.
 const sources = {
-  gsap: 'https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js',
-  scrollTrigger: 'https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js',
-  lenis: 'https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js',
-  gsapIntegrity: 'sha384-XmJ9SoHtVOHoQUcKvFAzVXwdkKo1Ie3bhmSoIAkcdsHGaIrVJIkmozyq0FJeb/Ly',
-  scrollTriggerIntegrity: 'sha384-wl5TeDVvOWt30Pbf8aSo2ZrzsOjddu3avOBvHe+p+OhJt9gP6w9YXmDkN5DK2/dF',
-  lenisIntegrity: 'sha384-jqpi9VmOdhyLoLURgjCn7EpnG9BbnHW57ibIZoeaIU+erWDH3k8fQQg0xH2ySjnw'
+  gsap: 'https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/gsap.min.js',
+  scrollTrigger: 'https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/ScrollTrigger.min.js',
+  lenis: 'https://cdn.jsdelivr.net/npm/lenis@1.3.27/dist/lenis.min.js',
+  gsapIntegrity: 'sha384-3vCAhD+a3BOliP3QqjQINn6ZWiZxoqu0WFxX5ZQZgqekDZuSb1mJBrrLMmu94H8f',
+  scrollTriggerIntegrity: 'sha384-H2WL1iy/jKQQ7MTHU2hskZKNHTYWWD/KgKE1vCNnaWY8An2ESTh23KN/fTp8XS3j',
+  lenisIntegrity: 'sha384-R18XzqnxvVLEF+BYfhpmDx30v7eP83fAckyfoRzK7/Uf6nGqufcmsk0eAKo7S3RU'
 };
 
 let gsapInstance = pageEngine('gsap');

@@ -54,8 +54,8 @@ const consumer = fs.mkdtempSync(path.join(os.tmpdir(), 'kineto-shadcn-'));
 try {
   fs.mkdirSync(path.join(consumer, 'r'));
   fs.mkdirSync(path.join(consumer, 'src/app'), { recursive: true });
-  fs.writeFileSync(path.join(consumer, 'package.json'), JSON.stringify({ name: 'kineto-shadcn-consumer', private: true, type: 'module', dependencies: { react: '^19.2.8', 'react-dom': '^19.2.8' } }, null, 2));
-  fs.writeFileSync(path.join(consumer, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ES2022', module: 'ESNext', moduleResolution: 'Bundler', jsx: 'react-jsx', strict: true, baseUrl: '.', paths: { '@/*': ['./src/*'] } }, include: ['src'] }, null, 2));
+  fs.writeFileSync(path.join(consumer, 'package.json'), JSON.stringify({ name: 'kineto-shadcn-consumer', private: true, type: 'module', dependencies: { react: '^19.3.1', 'react-dom': '^19.3.1' } }, null, 2));
+  fs.writeFileSync(path.join(consumer, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ES2022', module: 'ESNext', moduleResolution: 'Bundler', jsx: 'react-jsx', strict: true, paths: { '@/*': ['./src/*'] } }, include: ['src'] }, null, 2));
   fs.writeFileSync(path.join(consumer, 'components.json'), JSON.stringify({
     $schema: 'https://ui.shadcn.com/schema.json', style: 'new-york', rsc: true, tsx: true,
     tailwind: { config: '', css: 'src/app/globals.css', baseColor: 'neutral', cssVariables: true },

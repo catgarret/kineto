@@ -162,9 +162,9 @@ assert.deepEqual(errors, [], 'squircle must not raise page errors');
 // Where the outline meets the 45° diagonal. On that line the two coordinates
 // are equal, so solving `u^n + u^n = 1` for u gives u = 2^(-1/n) and the probe's
 // own coordinate is r·(1 − 2^(-1/n)): 15.9px for a squircle, 29.3 for a circle,
-// 50 for a bevel, 75 for a scoop.
+// 50 for a bevel, 75 for a scoop. The module reports that fraction itself
+// (`shape.diagonal`); the probe checks the drawn outline against it.
 const RADIUS = 100;
-const idealDiagonal = (exponent) => RADIUS * (1 - Math.pow(2, -1 / exponent));
 for (const [shape, entry] of Object.entries(result.shapes)) {
   assert.equal(entry.renderer, 'polyfill', `${shape}: nativeShape:"off" must use the polyfill`);
   assert.ok(entry.clipped, `${shape}: the polyfill must write a clip-path`);

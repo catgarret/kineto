@@ -91,23 +91,23 @@ for (const [actual, minimum] of [
     `${String(actual)} must not bypass the existing ${minimum} policy`);
 }
 
-assertDependencyFloor(packageJson.devDependencies.eslint, '^10.10.0', 'root eslint');
-assertDependencyFloor(packageJson.devDependencies.lenis, '^1.3.26', 'root lenis');
-assertDependencyFloor(packageJson.devDependencies.playwright, '^1.62.1', 'root playwright');
-assertDependencyFloor(packageJson.devDependencies['playwright-core'], '^1.62.1', 'root playwright-core');
-assertDependencyFloor(packageJson.devDependencies.vite, '^8.2.2', 'root vite');
-assertDependencyFloor(packageJson.devDependencies.typescript, '^6.0.3', 'root TypeScript');
-assertDependencyFloor(consumerPackage.dependencies.react, '^19.2.8', 'consumer React');
-assertDependencyFloor(consumerPackage.dependencies.vue, '^3.5.42', 'consumer Vue');
-assertDependencyFloor(consumerPackage.devDependencies.rolldown, '1.2.7', 'consumer rolldown');
-assertDependencyFloor(consumerPackage.devDependencies.vite, '^8.2.2', 'consumer vite');
-assertDependencyFloor(frameworkPackage.dependencies.jquery, '^3.7.1', 'framework jQuery');
+assertDependencyFloor(packageJson.devDependencies.eslint, '^10.15.0', 'root eslint');
+assertDependencyFloor(packageJson.devDependencies.lenis, '^1.3.27', 'root lenis');
+assertDependencyFloor(packageJson.devDependencies.playwright, '^1.65.1', 'root playwright');
+assertDependencyFloor(packageJson.devDependencies['playwright-core'], '^1.65.1', 'root playwright-core');
+assertDependencyFloor(packageJson.devDependencies.vite, '^8.3.8', 'root vite');
+assertDependencyFloor(packageJson.devDependencies.typescript, '^7.0.2', 'root TypeScript');
+assertDependencyFloor(consumerPackage.dependencies.react, '^19.3.1', 'consumer React');
+assertDependencyFloor(consumerPackage.dependencies.vue, '^3.5.45', 'consumer Vue');
+assertDependencyFloor(consumerPackage.devDependencies.rolldown, '1.3.2', 'consumer rolldown');
+assertDependencyFloor(consumerPackage.devDependencies.vite, '^8.3.8', 'consumer vite');
+assertDependencyFloor(frameworkPackage.dependencies.jquery, '^4.0.0', 'framework jQuery');
 assertDependencyFloor(frameworkPackage.dependencies.picomatch, '4.0.7', 'framework picomatch');
-assertDependencyFloor(frameworkPackage.dependencies.react, '^19.2.8', 'framework React');
-assertDependencyFloor(frameworkPackage.dependencies['react-dom'], '^19.2.8', 'framework React DOM');
-assertDependencyFloor(frameworkPackage.dependencies.vue, '^3.5.42', 'framework Vue');
-assertDependencyFloor(frameworkPackage.devDependencies['playwright-core'], '^1.62.1', 'framework playwright-core');
-assertDependencyFloor(frameworkPackage.devDependencies.vite, '^8.2.2', 'framework vite');
+assertDependencyFloor(frameworkPackage.dependencies.react, '^19.3.1', 'framework React');
+assertDependencyFloor(frameworkPackage.dependencies['react-dom'], '^19.3.1', 'framework React DOM');
+assertDependencyFloor(frameworkPackage.dependencies.vue, '^3.5.45', 'framework Vue');
+assertDependencyFloor(frameworkPackage.devDependencies['playwright-core'], '^1.65.1', 'framework playwright-core');
+assertDependencyFloor(frameworkPackage.devDependencies.vite, '^8.3.8', 'framework vite');
 
 // Every picomatch copy in an audited lockfile must sit on a patched line.
 // The 4.x line (Vite, fdir, tinyglobby) is held at >= 4.0.7. The 2.x line is

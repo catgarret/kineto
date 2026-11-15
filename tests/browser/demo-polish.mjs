@@ -644,6 +644,36 @@ try {
   checkpoint('mega-menu-structure');
 
   await page.setViewportSize({width:700,height:807});
+  // Narrowing the page reflows everything above and can leave this far block
+  // off screen, skipping rendering: everything inside it measures 0×0 and
+  // hover() cannot reach it (WebKit 27 reports it as not visible). Only then,
+  // jump to the block itself (its own box is real) and let the glide settle.
+  // Headless WebKit 27 also keeps the stale 0×0 layout of a block that was
+  // skipped across a viewport resize until something lays it out again, so
+  // a block still empty on screen gets one forced layout. This step checks
+  // the menu's first hover; render skipping has its own test (demo-blocks).
+  const triggerBox = () => page.evaluate(() => {
+    const trigger = [...document.querySelectorAll('#mod-megaMenu .demo-tabpanel:not([hidden]) .kt-menu-trigger')].find((button) => button.textContent.includes('솔루션'));
+    return trigger ? trigger.getBoundingClientRect().height : 0;
+  });
+  if (await triggerBox() === 0) {
+    await bringNear('#mod-megaMenu');
+    await page.waitForFunction(() => new Promise((resolve) => {
+      const start = scrollY;
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve(scrollY === start)));
+    }), null, { timeout: 10000 });
+    await page.evaluate(() => {
+      const block = document.querySelector('#mod-megaMenu');
+      if (block.querySelector('.card').getBoundingClientRect().height > 0) return;
+      block.style.display = 'none';
+      void block.offsetHeight;
+      block.style.removeProperty('display');
+    });
+    await page.waitForFunction(() => {
+      const trigger = [...document.querySelectorAll('#mod-megaMenu .demo-tabpanel:not([hidden]) .kt-menu-trigger')].find((button) => button.textContent.includes('솔루션'));
+      return Boolean(trigger && trigger.getBoundingClientRect().height > 0);
+    }, null, { timeout: 10000, polling: 'raf' });
+  }
   const solutionTrigger=page.locator('#mod-megaMenu .demo-tabpanel:not([hidden]) .kt-menu-trigger',{hasText:'솔루션'});
   await solutionTrigger.hover();
   await page.waitForTimeout(260);

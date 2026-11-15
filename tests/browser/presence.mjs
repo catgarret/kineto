@@ -25,7 +25,6 @@ try {
   await page.setContent(`<!doctype html><script src="http://localhost:${port}/dist/kineto.umd.js"></script><script type="module">import presence from 'http://localhost:${port}/dist/modular/presence.js'; window.KinetoPresence = presence;</script>`, { waitUntil: 'load' });
   await page.waitForFunction(() => Boolean(window.KinetoPresence));
   const result = await page.evaluate(async () => {
-    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     const host = document.createElement('section');
     const child = document.createElement('button');
     child.textContent = 'focus';

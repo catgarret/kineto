@@ -18,7 +18,6 @@
       "react",
       "react-dom"
     ],
-    "baseUrl": ".",
     "paths": {
       "@dong-gri/kineto": [
         "../../types/index.d.ts"

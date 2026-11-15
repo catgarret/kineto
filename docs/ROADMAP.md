@@ -27,7 +27,7 @@ v0.9.9에서 공개 데모의 `?kt=` 공유 링크 XSS를 차단하고, SRI 검�
 증거는 [QA 보고서 v0.9.9](QA_REPORT.md#v099)에 기록했습니다(backup parity는 동기화 후 별도).
 
 v0.10.0에서 Lazy에 `dither`·`ascii`·`halftone`을 추가했습니다. 세 variant는
-`src/modules/lazy/stylizedMedia.js` 하나의 canvas rasterizer를 공유하고 `<img>`(GIF·APNG·WebP 포함)와
+하나의 canvas rasterizer(당시 `src/modules/lazy/stylizedMedia.js`, 현재 `src/modules/media/rasterizer.js`)를 공유하고 `<img>`(GIF·APNG·WebP 포함)와
 `<video>`에 리빌 또는 `persist` 영구 필터로 적용됩니다. 새 모듈을 늘리지 않고 기존 모듈의 variant로
 효과를 도입하는 경로(§3 ‘하지 않을 일’의 승격 기준)를 처음 적용한 사례이며, 설정창이 열리는 순간부터
 variant 옵션 gating을 적용하도록 데모의 오래된 결함도 함께 고쳤습니다. 로컬 검증은

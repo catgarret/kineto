@@ -8,15 +8,15 @@
   },
   "dependencies": {
     "@dong-gri/kineto": "file:../..",
-    "jquery": "^3.7.1",
+    "jquery": "^4.0.0",
     "picomatch": "4.0.7",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "scheduler": "0.28.0",
-    "vue": "^3.5.42"
+    "vue": "^3.5.45"
   },
   "devDependencies": {
-    "playwright-core": "^1.62.1",
-    "vite": "^8.2.2"
+    "playwright-core": "^1.65.1",
+    "vite": "^8.3.8"
   }
 }

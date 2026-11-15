@@ -136,7 +136,7 @@ const BUDGETS = {
   // UMD. These are correctness bytes, not variance or bundled engines.
   // Opt-in Wave colors/blending adds ~0.3 KB gzip; keep variance unchanged.
   // 2026-09-19: Lazy `dither` / `ascii` / `halftone` add one shared canvas
-  // rasterizer (src/modules/lazy/stylizedMedia.js: Bayer + random + two
+  // rasterizer (now src/modules/media/rasterizer.js: Bayer + random + two
   // error-diffusion ditherers, halftone dot/square/line, ASCII glyph ramp,
   // palette/original-colour quantisation) plus the <img>/<video> reveal and
   // persist paths. Measured 540.2/144.2 KB readable ESM, 424.5/128.7 KB min

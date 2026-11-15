@@ -375,7 +375,7 @@ external case studies remain open.
 
 The 2026-09-19 Unreleased batch (targeting v0.10.0) adds the Lazy stylized
 media variants `dither` / `ascii` / `halftone` on one shared canvas rasterizer
-(`src/modules/lazy/stylizedMedia.js`; option reading and canvas layering are
+(then `src/modules/lazy/stylizedMedia.js`, now `src/modules/media/rasterizer.js`; option reading and canvas layering are
 shared by the `<img>` and `<video>` paths through `readStylizedSettings()` /
 `createStylizedCanvasLayer()` in `src/modules/lazy.js`). Contract: owner
 requirements MK-LAZY-008 and MK-STYLIZE-001 (50 total, requirements 3.3.0), feature contract 1.7.0

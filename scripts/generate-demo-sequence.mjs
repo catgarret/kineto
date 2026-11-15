@@ -8,7 +8,7 @@
 // lives inside a centred SAFE ZONE that survives that crop, and the numbers
 // that decide it are written down once instead of in eight hand-edited files.
 //
-//   node scripts/generate-demo-sequence.mjs
+//   npm run demo:sequence   (node scripts/generate-demo-sequence.mjs)
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

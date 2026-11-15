@@ -92,7 +92,7 @@ const revealEl = w.document.body.appendChild(w.document.createElement('div'));
 revealEl.textContent = 'Keep the selected direction';
 const revealOriginal = revealEl.outerHTML;
 const lowReveal = Kineto.create('reveal', revealEl, { preset: 'slide-left', distance: 18 });
-assert.match(revealEl.style.transform, /translate3d\(-18px,0px,0\)/, 'low tier must preserve Reveal direction and distance');
+assert.match(revealEl.style.transform, /translate3d\(-18px,\s*0(?:px)?,\s*0(?:px)?\)/, 'low tier must preserve Reveal direction and distance');
 lowReveal.destroy();
 assert.equal(revealEl.outerHTML, revealOriginal, 'low-tier Reveal must restore authored DOM');
 const classReveal = Kineto.create('reveal', revealEl, { preset: 'class' });

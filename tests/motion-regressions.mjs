@@ -1168,6 +1168,8 @@ flipGrid.remove();
 // original box-shadow. Each module owns only its CSS-variable channel.
 const shadowCard = document.createElement('div');
 shadowCard.style.boxShadow = '0 1px 3px rgb(0 0 0 / 20%)';
+// Compare with how this DOM serialises the authored value, not with the literal.
+const authoredShadow = shadowCard.style.boxShadow;
 document.body.appendChild(shadowCard);
 Object.defineProperty(shadowCard, 'clientWidth', { configurable: true, value: 240 });
 Object.defineProperty(shadowCard, 'clientHeight', { configurable: true, value: 140 });
@@ -1196,7 +1198,7 @@ const tiltShadow = tiltModule.create(shadowCard, {
 assert.ok(shadowCard.classList.contains('kt-interactive-shadow'), 'interactive shadow host class missing');
 assert.match(shadowCard.style.getPropertyValue('--kt-card-glow-shadow-runtime'), /color-mix/);
 assert.match(shadowCard.style.getPropertyValue('--kt-tilt-shadow-runtime'), /color-mix/);
-assert.match(shadowCard.style.getPropertyValue('--kt-shadow-base-runtime'), /0 1px 3px/);
+assert.match(shadowCard.style.getPropertyValue('--kt-shadow-base-runtime'), /\b0(?:px)? 1px 3px/);
 glowShadow.destroy();
 assert.ok(shadowCard.classList.contains('kt-interactive-shadow'), 'destroying Card Glow must preserve Tilt shadow');
 assert.equal(shadowCard.style.getPropertyValue('--kt-card-glow-shadow-runtime'), '');
@@ -1243,7 +1245,7 @@ comboTilt.destroy();
 assert.equal(combo.children.length, 0, 'both modules must clean up after themselves');
 combo.remove();
 assert.ok(!shadowCard.classList.contains('kt-interactive-shadow'), 'last shadow module must clean up host class');
-assert.equal(shadowCard.style.boxShadow, '0 1px 3px rgb(0 0 0 / 20%)', 'original box-shadow must be preserved');
+assert.equal(shadowCard.style.boxShadow, authoredShadow, 'original box-shadow must be preserved');
 shadowCard.remove();
 
 const sliderEl = document.querySelector('#slider');

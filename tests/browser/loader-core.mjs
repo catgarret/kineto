@@ -44,7 +44,7 @@ const check = (n, c, d) => { console.log(`  [${c ? 'PASS' : 'FAIL'}] ${n}${d ? '
     inst.destroy();
     const afterDestroy = window.Kineto.instanceCount;
     // idempotent: second destroy must not throw
-    let threw = false; try { inst.destroy(); } catch (e) { threw = true; }
+    let threw = false; try { inst.destroy(); } catch { threw = true; }
     return { base, created, progAfterComplete, progLater, display1, afterDestroy, threw };
   });
   console.log('  normal:', JSON.stringify(r));
@@ -64,7 +64,7 @@ const check = (n, c, d) => { console.log(`  [${c ? 'PASS' : 'FAIL'}] ${n}${d ? '
   const r = await page.evaluate(async () => {
     const el = document.createElement('div'); document.body.appendChild(el);
     let calls = 0;
-    const inst = window.Kineto.loader(el, { type: 'bar', onComplete: () => { calls++; } });
+    window.Kineto.loader(el, { type: 'bar', onComplete: () => { calls++; } });
     const immediate = calls; // must be 0 synchronously (async contract)
     await new Promise((res) => setTimeout(res, 100));
     return { immediate, calls, display: getComputedStyle(el).display };

@@ -1,5 +1,5 @@
 // Unit checks for the shared stylized-media rasterizer behind Lazy `dither`,
-// `ascii` and `halftone` (src/modules/lazy/stylizedMedia.js).
+// `ascii` and `halftone` (src/modules/media/rasterizer.js).
 //
 // The browser suite (tests/browser/lazy-stylized.mjs) proves real pixels on
 // three engines. This file pins the pure parts that do not need a browser:
