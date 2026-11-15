@@ -14,11 +14,11 @@ two modules together is at most the sum of their rows. A bundler usually lands a
 
 | Module | Extra files | Raw | Gzip |
 | --- | ---: | ---: | ---: |
-| `lazy` | 2 | 42.7 KB | 16.6 KB |
-| `stylize` | 2 | 23.8 KB | 10.1 KB |
 | `radial` | 2 | 28.6 KB | 10.1 KB |
+| `stylize` | 2 | 23.9 KB | 10.0 KB |
 | `loadingIndicator` | 1 | 32.1 KB | 10.0 KB |
 | `slider` | 1 | 28.1 KB | 9.8 KB |
+| `lazy` | 2 | 26.3 KB | 9.7 KB |
 | `cursor` | 1 | 24.3 KB | 8.5 KB |
 | `lightbox` | 1 | 23.2 KB | 8.1 KB |
 | `glitch` | 1 | 23.5 KB | 7.9 KB |

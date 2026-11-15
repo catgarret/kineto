@@ -38,6 +38,16 @@ v0.11.0에서 이 셋은 [Stylize](stylize.md) 모듈이 되었습니다. Lazy�
 이전 방법은 [diagnostics-and-deprecation.md](../diagnostics-and-deprecation.md)에
 예제와 함께 있습니다.
 
+v0.14.1 다음 릴리스부터 이 별칭은 Stylize 모듈의 렌더러로 그립니다. Lazy 자체는 렌더러를 싣지
+않으므로, 모듈을 골라 쓰는 `/core` 빌드에서 Lazy 비용이 gzip 16.6 KB에서 9.7 KB로
+줄었습니다. 엔트리별 동작은 다음과 같습니다.
+
+| 엔트리 | 별칭 동작 |
+|---|---|
+| 기본 · `/all` · UMD | Stylize가 항상 포함되어 있어 그대로 동작 |
+| `/auto` | 별칭을 처음 만날 때 Stylize를 불러와 동작 |
+| `/core` | `@dong-gri/kineto/modules/stylize`도 import하면 동작, 없으면 원본 이미지를 그대로 표시 |
+
 ## Wave와 Film Grain
 
 ```html

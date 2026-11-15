@@ -1,10 +1,20 @@
 import { clamp, observeOnce } from '../utils.js';
 import { fn as easingFunction } from '../easings.js';
-import { coverMap } from './media/rasterizer.js';
+import { ANIMATED_EXTENSIONS, aliasRendererApi, coverMap, durationMs, isStylizedEffect } from './media/common.js';
 import { createLayer, ensureWrapper, releaseWrapper } from './media/wrapper.js';
-import {
-  ANIMATED_EXTENSIONS, createImageStylizer, createVideoStylizer, durationMs, isStylizedEffect, resolveStylizedSettings
-} from './media/stylizer.js';
+
+// The deprecated stylized aliases render through the Stylize module, which
+// provides its renderer when it loads (media/common.js). The full builds
+// always include it; the /auto entry loads it here on first use; a /core page
+// imports it like any other module. Without it the picture shows unstyled and
+// the KT_DEPRECATED notice names the module to import.
+function loadStylizer(kineto) {
+  const ready = aliasRendererApi();
+  if (ready) return Promise.resolve(ready);
+  const load = kineto?.loadModules;
+  if (typeof load !== 'function') return Promise.resolve(null);
+  return Promise.resolve(load.call(kineto, ['stylize'])).then(() => aliasRendererApi(), () => null);
+}
 
 // `dither` / `ascii` / `halftone` were Lazy variants in 0.10.0. They are now
 // the Stylize module (`data-kt-stylize`); Lazy keeps them for one minor as
@@ -258,17 +268,30 @@ function createStylizedVideo(el, opts, effect, kineto = null) {
   el.style.height = '100%';
   el.style.objectFit = opts.objectFit || 'cover';
   // Video renders every playing frame, so it starts from a lighter DPR budget.
-  const settings = resolveStylizedSettings(effect, readStylizedInput(effect, opts, el), { lowTier, persistFps: 24, revealFps: 24, maxDpr: 1.5 });
-  const stylizer = createVideoStylizer({
-    el, wrapper, effect, settings, prefix: 'kt-lazy',
-    durationMs: Math.max(120, durationMs(opts.duration, 1.6)),
-    onProgress: (progress, target) => opts.onProgress?.(progress, target)
+  // The renderer arrives asynchronously; until then the calls it would take
+  // are remembered (revealed → start, paused → pause) and applied on arrival.
+  let stylizer = null;
+  let destroyed = false;
+  let revealed = false;
+  let paused = false;
+  loadStylizer(kineto).then((api) => {
+    if (destroyed || !api) return;
+    const { createVideoStylizer, resolveStylizedSettings } = api;
+    const settings = resolveStylizedSettings(effect, readStylizedInput(effect, opts, el), { lowTier, persistFps: 24, revealFps: 24, maxDpr: 1.5 });
+    stylizer = createVideoStylizer({
+      el, wrapper, effect, settings, prefix: 'kt-lazy',
+      durationMs: Math.max(120, durationMs(opts.duration, 1.6)),
+      onProgress: (progress, target) => opts.onProgress?.(progress, target)
+    });
+    if (revealed) stylizer.start();
+    if (paused) stylizer.pause();
   });
   const inner = createVideoReveal(el, {
     ...opts,
     onReveal: (video) => {
       opts.onReveal?.(video);
-      stylizer.start();
+      revealed = true;
+      stylizer?.start();
     }
   });
 
@@ -276,11 +299,13 @@ function createStylizedVideo(el, opts, effect, kineto = null) {
     el,
     type: 'lazy',
     get animatedMedia() { return true; },
-    replay() { inner.replay(); stylizer.replay(); },
-    pause() { stylizer.pause(); inner.pause(); },
-    resume() { stylizer.resume(); inner.resume(); },
+    replay() { inner.replay(); stylizer?.replay(); },
+    pause() { paused = true; stylizer?.pause(); inner.pause(); },
+    resume() { paused = false; stylizer?.resume(); inner.resume(); },
     destroy() {
-      stylizer.destroy();
+      destroyed = true;
+      stylizer?.destroy();
+      stylizer = null;
       inner.destroy();
       releaseWrapper(el, wrapping);
       if (originalStyle == null) el.removeAttribute('style');
@@ -453,6 +478,8 @@ export default {
       started = true;
       const current = mine();
       const startedAt = performance.now();
+      // Start fetching the alias renderer alongside the image.
+      const stylizerModule = isStylizedEffect(effect) ? loadStylizer(kineto) : null;
       let image;
       try {
         image = await preload(src, el, opts);
@@ -1010,8 +1037,13 @@ export default {
         // keep the look with `persist`). The original stays visible underneath
         // the canvas so a source the canvas cannot read back (cross-origin
         // without CORS) still shows the picture.
+        const stylizerApi = await stylizerModule;
+        if (!current()) return;
         el.src = src;
         el.style.opacity = '1';
+        // No Stylize module on this page (or it failed to load): show the picture as is.
+        if (!stylizerApi) { finish(); return; }
+        const { createImageStylizer, resolveStylizedSettings } = stylizerApi;
         // A still image only animates while revealing, so the reveal gets a
         // higher frame budget than a permanent (persist) stylization.
         const settings = resolveStylizedSettings(effect, readStylizedInput(effect, opts, el), { lowTier, persistFps: 24, revealFps: 30, maxDpr: 2 });

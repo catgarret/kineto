@@ -22,6 +22,10 @@ import {
   ANIMATED_EXTENSIONS, LIVE_LOOK_KEYS, STYLIZED_EFFECTS, createImageStylizer, createVideoStylizer,
   durationMs, isStylizedEffect, resolveStylizedSettings, updateLiveLook
 } from './media/stylizer.js';
+import { provideAliasRenderer } from './media/common.js';
+
+// Lazy's deprecated stylized aliases render through this module's renderer.
+provideAliasRenderer({ createImageStylizer, createVideoStylizer, resolveStylizedSettings });
 
 const TRIGGERS = new Set(['load', 'view', 'manual']);
 const WRAPPER_CLASS = 'kt-stylize-wrap';

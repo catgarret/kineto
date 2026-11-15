@@ -16,6 +16,7 @@
 // ./stylizer.js and call `renderer.render(source, cellSize)` for every frame
 // they want; this file only knows how to draw.
 import { clamp, numberOption } from '../../utils.js';
+import { coverMap } from './common.js';
 
 // Ordered-dither threshold matrices, normalised to 0..1.
 //
@@ -168,12 +169,7 @@ export function parseColor(value, fallback = [0, 0, 0], scope = null) {
 const mix = (from, to, amount) => from + (to - from) * amount;
 const luminance = (r, g, b) => (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
 
-export function coverMap(sourceWidth, sourceHeight, boxWidth, boxHeight) {
-  const scale = Math.max(boxWidth / sourceWidth, boxHeight / sourceHeight);
-  const sw = Math.min(sourceWidth, boxWidth / scale);
-  const sh = Math.min(sourceHeight, boxHeight / scale);
-  return { sx: (sourceWidth - sw) / 2, sy: (sourceHeight - sh) / 2, sw, sh };
-}
+export { coverMap } from './common.js';
 
 // Natural dimensions for the three drawable kinds Lazy hands us.
 export function sourceSize(source) {

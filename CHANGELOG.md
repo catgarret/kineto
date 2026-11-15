@@ -6,9 +6,13 @@
 
 <!-- Add matching English release bullets here. -->
 
+- **Lazy is 42% smaller in the modular build** (gzip 16.6 → 9.7 KB on top of `/core`). It no longer carries the dither/ASCII/halftone renderer: its deprecated `dither` / `ascii` / `halftone` aliases now render through the Stylize module, which provides the renderer when it loads. The full builds (default, `/all`, UMD) always include Stylize, so nothing changes there; `/auto` loads Stylize the first time an alias is used; a `/core` page that uses an alias imports `@dong-gri/kineto/modules/stylize` as well, and without it the picture shows unstyled. The shared media helpers moved to `src/modules/media/common.js`.
+
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+- **모듈형 빌드에서 Lazy가 42% 작아졌습니다**(`/core` 위 gzip 16.6 → 9.7 KB). Lazy는 더 이상 dither·ASCII·halftone 렌더러를 싣지 않습니다. 폐기 예정 별칭 `dither`·`ascii`·`halftone`은 이제 Stylize 모듈이 로드될 때 제공하는 렌더러로 그립니다. 전체 빌드(기본, `/all`, UMD)는 Stylize를 항상 포함하므로 달라지는 것이 없고, `/auto`는 별칭을 처음 쓸 때 Stylize를 불러오며, 별칭을 쓰는 `/core` 페이지는 `@dong-gri/kineto/modules/stylize`도 import해야 합니다(없으면 원본 이미지를 그대로 표시). 공용 미디어 헬퍼는 `src/modules/media/common.js`로 옮겼습니다.
 
 ## [0.14.1] - 2026-11-15
 
