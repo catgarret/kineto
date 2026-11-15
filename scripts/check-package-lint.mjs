@@ -25,6 +25,7 @@ import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import { expectedExitEnv } from './gh-actions.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const bin = (name) => path.join(root, 'node_modules', '.bin', process.platform === 'win32' ? `${name}.cmd` : name);
@@ -48,11 +49,12 @@ try {
   const tarball = path.join(temp, packed.filename);
   // attw exits (1) as soon as it finds any problem, which can cut a piped JSON
   // report short; writing to a file keeps it whole. The exit code is ignored:
-  // the JSON is what gets judged below.
+  // the JSON is what gets judged below — so attw runs with expectedExitEnv(),
+  // or CI would annotate its by-design exit 1 as a failure on a green job.
   const reportPath = path.join(temp, 'attw.json');
   const out = fs.openSync(reportPath, 'w');
   try {
-    execFileSync(bin('attw'), [tarball, '--format', 'json', '--exclude-entrypoints', ...EXCLUDED], { cwd: root, stdio: ['ignore', out, 'inherit'] });
+    execFileSync(bin('attw'), [tarball, '--format', 'json', '--exclude-entrypoints', ...EXCLUDED], { cwd: root, env: expectedExitEnv(), stdio: ['ignore', out, 'inherit'] });
   } catch (error) {
     if (typeof error.status !== 'number') throw error;
   } finally {

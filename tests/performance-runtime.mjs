@@ -25,26 +25,47 @@ const { default: Kineto } = await import('../src/core.js');
 const app = document.querySelector('main');
 
 // scan() discovery cost must scale with engine tiers, not registered module
-// count. A hundred activation names still require one selector traversal for
-// the native tier; adding a GSAP-tier module makes that two, not 101+.
+// count: a hundred activation names share one selector per tier. jsdom 30+
+// rejects selectors over 2048 characters (browsers have no limit), so a very
+// large registry splits into a few selectors under that limit — never one
+// traversal per module, and never a RangeError in an app's unit tests.
+const SELECTOR_LIMIT = 2048;
+const created = [];
 for (let i = 0; i < 100; i += 1) {
-  Kineto.register(`bulkProbe${i}`, { create: (el) => ({ el, destroy() {} }) });
+  Kineto.register(`bulkProbe${i}`, { create: (el) => { created.push(`${i}:${el.id}`); return { el, destroy() {} }; } });
 }
 const discoveryRoot = document.createElement('section');
 for (let i = 0; i < 100; i += 1) {
   const el = document.createElement('div');
+  el.id = `b${i}`;
   el.setAttribute(`data-kt-bulk-probe${i}`, '');
   discoveryRoot.append(el);
 }
+// One element carries a name from each end of the list (so from different
+// selectors) and sits after b99: it is found once, and created after b99.
+const both = document.createElement('div');
+both.id = 'both';
+both.setAttribute('data-kt-bulk-probe0', '');
+both.setAttribute('data-kt-bulk-probe99', '');
+discoveryRoot.append(both);
 let selectorTraversals = 0;
-const realQuerySelectorAll = discoveryRoot.querySelectorAll.bind(discoveryRoot);
-discoveryRoot.querySelectorAll = (...args) => {
-  selectorTraversals += 1;
-  return realQuerySelectorAll(...args);
+const selectorLengths = [];
+const withinLimit = (selector) => {
+  selectorLengths.push(selector.length);
+  if (selector.length > SELECTOR_LIMIT) throw new RangeError(`Selector exceeds maximum allowed length of ${SELECTOR_LIMIT}.`);
 };
+const realQuerySelectorAll = discoveryRoot.querySelectorAll.bind(discoveryRoot);
+const realMatches = discoveryRoot.matches.bind(discoveryRoot);
+discoveryRoot.querySelectorAll = (selector) => { selectorTraversals += 1; withinLimit(selector); return realQuerySelectorAll(selector); };
+discoveryRoot.matches = (selector) => { withinLimit(selector); return realMatches(selector); };
 Kineto.scan(discoveryRoot);
-assert.equal(Kineto.instanceCount, 100);
-assert.equal(selectorTraversals, 1, '100 native modules must share one selector traversal');
+assert.equal(Kineto.instanceCount, 102);
+assert.ok(Math.max(...selectorLengths) <= SELECTOR_LIMIT, 'every discovery selector stays within jsdom\'s 2048-character limit');
+assert.equal(selectorTraversals, 2, '100 native modules (a 2.3 KB selector) share two traversals, not 100');
+assert.deepEqual(created.filter((entry) => entry.startsWith('99:')), ['99:b99', '99:both'],
+  'each module creates its elements in document order across split selectors');
+assert.deepEqual(created.filter((entry) => entry.startsWith('0:')), ['0:b0', '0:both'],
+  'an element found by two selectors is created once per module');
 Kineto.destroy();
 for (let i = 0; i < 100; i += 1) Kineto.unregister(`bulkProbe${i}`);
 

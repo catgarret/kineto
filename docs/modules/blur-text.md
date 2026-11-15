@@ -37,4 +37,6 @@ span으로 나누므로 `<em>` 같은 inline markup의 표현은 유지하지 �
 GSAP 경로의 `resume()`은 `pause()`가 멈춘 등장만 이어 갑니다. 아직 화면에 들어오지 않아 ScrollTrigger를
 기다리던 요소는 숨긴 탭에서 돌아와도 미리 재생되지 않습니다.
 
+탭·아코디언·대화상자처럼 여닫는 패널 안에서는 패널이 열릴 때 등장을 재생합니다. 기본 `once:true`는 처음 열 때 한 번, `once:false`는 열 때마다 처음부터입니다. 닫힌 패널 안에서는 아무것도 재생하지 않습니다 — 예전에는 ScrollTrigger가 닫힌 요소를 뷰포트 맨 위의 0×0 상자로 재서 `once:false` 재열림이 끝부분만 보였습니다. 규칙은 `src/utils.js`의 `panelGate()`이고, 게이트는 `tests/browser/panel-entrances.mjs`입니다(GSAP 경로). 인라인 `<span>`에 붙여도 가장 가까운 블록 조상의 상자로 패널 여닫힘을 알아챕니다.
+
 `destroy()`는 원래 HTML·ARIA와 모듈이 변경한 inline style을 복원합니다.

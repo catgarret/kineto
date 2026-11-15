@@ -67,6 +67,43 @@ try {
   await page.evaluate(async (useSource) => {
     window.__sourceSlider = (await import('/src/modules/slider.js')).default;
     if (useSource) window.Kineto.register('slider', window.__sourceSlider);
+    // Waits count rendered frames as well as time, so a runner that stops
+    // rendering for a few seconds does not fail a wait that had no frames to
+    // work with: a wait gives up only once its time is up AND enough frames
+    // have run (half of 60 Hz by default); `hardMs` still ends a wait on a
+    // page that never renders. A failure says how many frames ran, the longest
+    // gap, how often the requestAnimationFrame timestamp repeated, and the
+    // page's errors — the evidence two WebKit CI failures lacked (a dissolve
+    // stopped at 98.1%, the same value both times; see src/modules/slider.js).
+    window.__pageErrors = [];
+    window.addEventListener('error', (event) => window.__pageErrors.push(String(event.message)));
+    window.addEventListener('unhandledrejection', (event) => window.__pageErrors.push(String(event.reason)));
+    window.__frameDeadline = (ms, { minFrames = Math.round(ms / 32), hardMs = ms * 4 } = {}) => {
+      const started = window.performance.now();
+      let frames = 0;
+      let last = started;
+      let longestGap = 0;
+      let lastStamp = null;
+      let repeatedStamps = 0;
+      return {
+        frame(stamp) {
+          const now = window.performance.now();
+          frames += 1;
+          longestGap = Math.max(longestGap, now - last);
+          last = now;
+          if (stamp === lastStamp) repeatedStamps += 1;
+          lastStamp = stamp;
+        },
+        expired(now = window.performance.now()) {
+          const elapsed = now - started;
+          return (elapsed > ms && frames >= minFrames) || elapsed > hardMs;
+        },
+        describe() {
+          const errors = window.__pageErrors.length ? `, page errors: ${window.__pageErrors.slice(0, 3).join(' | ')}` : '';
+          return `${frames} frames in ${Math.round(last - started)} ms, longest gap ${Math.round(longestGap)} ms, repeated rAF timestamps ${repeatedStamps}${errors}`;
+        }
+      };
+    };
     window.__makeSliderFixture = (effect, source = false, overrides = {}) => {
       const host = document.createElement('section');
       host.className = 'fixture authored-slider';
@@ -118,28 +155,30 @@ try {
         };
       });
       const waitForLanding = (index) => new Promise((resolve, reject) => {
-        const started = window.performance.now();
+        const deadline = window.__frameDeadline(4000);
         const reference = [...new window.DOMMatrixReadOnly(initial).toFloat64Array()];
-        const tick = () => {
+        const tick = (stamp) => {
+          deadline.frame(stamp);
           const state = capture();
           const completeProgress = !Number.isFinite(state[index].progress) || state[index].progress === 1;
           if (api.index === index && completeProgress && state[index].matrix.every((value, offset) => Math.abs(value - reference[offset]) < 0.001)) resolve(state);
-          else if (window.performance.now() - started > 4000) reject(new Error(`${effect} did not settle at ${index}: ${JSON.stringify(state)}`));
+          else if (deadline.expired()) reject(new Error(`${effect} did not settle at ${index} (${deadline.describe()}): ${JSON.stringify(state)}`));
           else window.requestAnimationFrame(tick);
         };
         window.requestAnimationFrame(tick);
       });
       const transition = (method) => new Promise((resolve, reject) => {
         const beforeMotion = capture();
-        const started = window.performance.now();
+        const deadline = window.__frameDeadline(1500);
         api[method]();
-        const tick = () => {
+        const tick = (stamp) => {
+          deadline.frame(stamp);
           const state = capture();
           const changed = state[0].matrix.some((value, offset) => Math.abs(value - beforeMotion[0].matrix[offset]) > 0.01)
             || Math.abs(state[0].opacity - beforeMotion[0].opacity) > 0.01
             || state[1].clip !== beforeMotion[1].clip;
           if (changed && (effect === 'slide' || effect === 'coverflow' || effect === 'radial' || (state[1].progress > 0.03 && state[1].progress < 0.97))) resolve(state);
-          else if (window.performance.now() - started > 1500) reject(new Error(`${effect} did not expose an intermediate animation frame`));
+          else if (deadline.expired()) reject(new Error(`${effect} did not expose an intermediate animation frame (${deadline.describe()})`));
           else window.requestAnimationFrame(tick);
         };
         window.requestAnimationFrame(tick);

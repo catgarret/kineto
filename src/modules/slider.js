@@ -1,4 +1,4 @@
-import { clamp, cssString, env, frameEase, labeller, latestEntry, lerp, numberOption, selectAll, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
+import { MAX_FRAME_STEP_MS, clamp, cssString, env, frameClock, frameEase, labeller, latestEntry, lerp, numberOption, selectAll, snapshotAttributes, snapshotInlineStyles } from '../utils.js';
 
 // Do not rewind presentation owned by a composing module or application.
 const snapshotPresentation = (el, properties, classes = [], attributes = []) => {
@@ -177,7 +177,6 @@ export default {
       let targetActive = active;
       let radialFrame = null;
       let radialVelocity = 0;
-      let radialLastTime = -16;
       let offscreen = false;
       let visibilityObserver = null;
       const renderRadial = (positionValue) => {
@@ -244,11 +243,14 @@ export default {
           return;
         }
         const from = visualActive;
-        const started = performance.now();
-        radialLastTime = started - 16;
+        // Time comes from frameClock(), not from `time - started`: a frame
+        // timestamp that repeats (or steps back) counts as one frame instead of
+        // none, and the frame clock is never mixed with performance.now().
+        const clock = frameClock();
+        let elapsed = 0;
         const tick = (time) => {
-          const dt = Math.min(64, Math.max(0, time - radialLastTime));
-          radialLastTime = time;
+          const dt = Math.min(MAX_FRAME_STEP_MS, clock.tick(time));
+          elapsed += dt;
           if (radialSpring) {
             const seconds = dt / 1000;
             const acceleration = ((targetActive - visualActive) * radialStiffness - radialVelocity * radialDamping) / radialMass;
@@ -257,7 +259,7 @@ export default {
           } else if (radialSmoothing) {
             visualActive = lerp(visualActive, targetActive, frameEase(radialSmoothing, dt));
           } else {
-            const progress = Math.min(1, (time - started) / (duration * 1000));
+            const progress = Math.min(1, elapsed / (duration * 1000));
             const eased = 1 - ((1 - progress) ** 3);
             visualActive = from + (targetActive - from) * eased;
           }
@@ -266,7 +268,7 @@ export default {
             ? Math.abs(visualActive - targetActive) <= 0.0015 && Math.abs(radialVelocity) <= 0.0015
             : radialSmoothing
             ? Math.abs(visualActive - targetActive) <= 0.0015
-            : (time - started) >= duration * 1000;
+            : elapsed >= duration * 1000;
           if (!done) radialFrame = requestAnimationFrame(tick);
           else {
             visualActive = targetActive;
@@ -629,7 +631,8 @@ export default {
     let sampleCount = 0;
     let pointerId = null;
     let rafId = null;
-    let lastFrameTime = -16;
+    // Elapsed time between frames for the settle loop (see tick below).
+    const frameTime = frameClock();
     let timer = null;
     let timerStartedAt = 0;
     let remaining = autoplayDelay;
@@ -901,10 +904,15 @@ export default {
       if (!alive) return;
       if (offscreen) { rafId = null; return; }
       // Normalize the frame lerp to elapsed time so 60/90/120Hz displays
-      // settle at the same rate. A long background-tab gap is capped to avoid
-      // a single callback teleporting the carousel across its target.
-      const dt = Math.min(64, time - lastFrameTime);
-      lastFrameTime = time;
+      // settle at the same rate (frameClock + frameEase, like every other
+      // following loop). One callback advances at most MAX_FRAME_STEP_MS, so a
+      // background-tab gap does not teleport the carousel across its target.
+      // A timestamp that repeats or steps back counts as one frame: the old
+      // `time - lastFrameTime` gave 0 there, so a carousel fed the same
+      // timestamp stood still short of its target and kept requesting frames
+      // (tests/browser/motion-timing.mjs). That is the likely cause of a WebKit
+      // CI run where a dissolve stopped at 98.1% — the same value on two runs.
+      const dt = Math.min(MAX_FRAME_STEP_MS, frameTime.tick(time));
       const physicsEnabled = springEnabled || bounceActive;
       if (physicsEnabled && !dragging) {
         // Semi-implicit Euler keeps the public spring controls deterministic
@@ -917,8 +925,7 @@ export default {
         position += springVelocity * seconds;
       } else {
         if (dragging) springVelocity = 0;
-        const amount = 1 - ((1 - (dragging ? 0.55 : smoothing)) ** (dt / 16));
-        position = lerp(position, target, amount);
+        position = lerp(position, target, frameEase(dragging ? 0.55 : smoothing, dt));
       }
       render();
       const settled = physicsEnabled

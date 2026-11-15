@@ -1,5 +1,6 @@
 // Ship a release tag from a clean `main`: validate, push main, WAIT for CI to
-// pass on that exact commit, then create and push the annotated tag. Which
+// pass on that exact commit, audit the lockfiles, then create and push the
+// annotated tag. Which
 // package the tag belongs to (and which validation runs first) comes from
 // scripts/release-targets.mjs:
 //   npm run release:ship -- v0.11.0       # @dong-gri/kineto
@@ -81,6 +82,19 @@ if (skipCiWait) {
     fail(`CI for ${sha.slice(0, 7)} ended as "${verdict}". No tag was created, so ${tag} is still available: fix main — or, if a test flaked, re-run the failed CI jobs — and run this command again.`);
   }
   console.log(`CI passed for ${sha.slice(0, 7)}.`);
+}
+
+// The release workflow audits every lockfile after the tag exists, and a
+// failure there uses the version up just as red CI would: v0.13.0 was tagged on
+// a green commit, then an advisory for a dev dependency (undici) published in
+// between failed the release audit, so nothing reached npm. Run the same audit
+// here, as the last step before the tag.
+console.log('Auditing the lockfiles the release workflow audits…');
+const audit = spawnSync(process.execPath, [path.join(root, 'scripts/audit-lockfiles.mjs')], { cwd: root, stdio: 'inherit' });
+if (audit.error) throw audit.error;
+if (audit.status !== 0) {
+  fail(`the lockfile audit failed (see above). No tag was created, so ${tag} is still available: update the package it names `
+    + '(npm update <package> in that lockfile\'s folder), merge that to main, and run this command again.');
 }
 
 run('git', ['tag', '-a', tag, '-m', `${target.label} ${tag}`]);

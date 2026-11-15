@@ -142,6 +142,49 @@ assert.doesNotMatch(numericEase.magnetic, /NaN/, 'Magnetic must never write NaN'
 assert.equal(numericEase.parallaxArrivesInOneFrame, true, 'Mouse Parallax (layers) must honour `smoothing`');
 assert.doesNotMatch(numericEase.cursor, /NaN/, `Cursor with a curve-valued ease must not write NaN (${numericEase.cursor})`);
 
+// Slider: a frame timestamp that repeats counts as one frame. The track loop
+// used `time - lastFrameTime`, which is 0 for a repeated timestamp, so a
+// carousel fed the same timestamp stood still short of its slide and kept
+// requesting frames; the radial loop's duration curve measured `time` against
+// performance.now() and never finished. Five normal frames start each move,
+// then 90 callbacks all carry the same timestamp.
+const repeatedFrames = await page.evaluate(() => {
+  const stuckAt = (time) => window.__runFrames(90, 0, time);
+  const slide = (label) => `<article class="kt-slide" style="width:300px;height:120px">${label}</article>`;
+  const track = document.createElement('section');
+  track.innerHTML = `<div class="kt-slider-wrap"><div class="kt-slider-track">${slide('A')}${slide('B')}${slide('C')}</div></div>`;
+  document.getElementById('stage').appendChild(track);
+  const carousel = window.Kineto.create('slider', track, { effect: 'fade', loop: 'off', smoothing: 0.18, momentum: false, pauseWhenOffscreen: false });
+  window.__runFrames(3, 1000 / 60, 20000);
+  carousel.next();
+  stuckAt(window.__runFrames(5, 1000 / 60, 21000));
+  const progress = Number(track.querySelectorAll('.kt-slide')[1].style.getPropertyValue('--kt-slider-slide-progress'));
+  const trackPending = window.__frames.filter(Boolean).length;
+  carousel.destroy();
+  track.remove();
+
+  const orbit = document.createElement('section');
+  orbit.className = 'kt-radial';
+  orbit.style.cssText = 'width:300px;height:300px;position:relative';
+  orbit.innerHTML = ['1', '2', '3', '4'].map((label) => `<div class="orbit-item" style="width:40px;height:40px">${label}</div>`).join('');
+  document.getElementById('stage').appendChild(orbit);
+  const radial = window.Kineto.create('slider', orbit, { effect: 'radial', loop: 'off', duration: 0.4, initialIndex: 0, pauseWhenOffscreen: false });
+  window.__runFrames(3, 1000 / 60, 30000);
+  radial.next();
+  stuckAt(window.__runFrames(5, 1000 / 60, 31000));
+  const item = orbit.querySelectorAll('.orbit-item')[1];
+  const afterStuck = item.style.transform;
+  const pending = window.__frames.filter(Boolean).length;
+  window.__runFrames(40, 1000 / 60, 40000);
+  const radialSettled = { active: item.classList.contains('kt-active'), pending, landed: item.style.transform === afterStuck };
+  radial.destroy();
+  orbit.remove();
+  return { progress, trackPending, radialSettled };
+});
+assert.equal(repeatedFrames.progress, 1, `a slider fed a repeated frame timestamp must still land on its slide (progress ${repeatedFrames.progress})`);
+assert.equal(repeatedFrames.trackPending, 0, 'a landed slider must stop requesting frames');
+assert.deepEqual(repeatedFrames.radialSettled, { active: true, pending: 0, landed: true }, `the radial slider must finish its move on repeated timestamps too (${JSON.stringify(repeatedFrames.radialSettled)})`);
+
 assert.deepEqual(errors, [], `page errors:\n${errors.join('\n')}`);
 await browser.close();
-console.log(`motion-timing OK (${browserName}) — Tilt covers ${at60.toFixed(2)}° in 150ms at 60Hz and ${at120.toFixed(2)}° at 120Hz; Tilt, Magnetic and Cursor keep moving with a curve-valued ease; Mouse Parallax honours smoothing.`);
+console.log(`motion-timing OK (${browserName}) — Tilt covers ${at60.toFixed(2)}° in 150ms at 60Hz and ${at120.toFixed(2)}° at 120Hz; Tilt, Magnetic and Cursor keep moving with a curve-valued ease; Mouse Parallax honours smoothing; the track and radial Slider land on repeated frame timestamps.`);

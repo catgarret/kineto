@@ -185,9 +185,12 @@ export default {
     };
 
     apply();
-    // The polyfill is drawn in pixels, so it has to be redrawn when the box
-    // changes. The native path needs no observer at all.
-    if (!useNative && typeof ResizeObserver !== 'undefined') {
+    // Both paths watch the box. The polyfill is drawn in pixels, so every
+    // resize redraws it. The native path writes its radius in pixels too, so a
+    // percentage radius has to follow the box — and an element created inside
+    // a hidden panel (a closed tab, accordion or dialog) measures 0×0 above and
+    // is only shaped once it is shown. apply() skips an unchanged box.
+    if (typeof ResizeObserver !== 'undefined') {
       observer = new ResizeObserver(() => apply());
       observer.observe(el);
     }

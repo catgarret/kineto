@@ -57,6 +57,18 @@ const html = `<!doctype html><html><head><meta charset="utf-8">
     };
     window.__frames = (count = 2) => new Promise((resolve) => { let left = count; const step = () => (--left <= 0 ? resolve() : requestAnimationFrame(step)); requestAnimationFrame(step); });
     window.__wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    // Resolves true as soon as check() is true, or false after timeoutMs.
+    // For a result that arrives with an animation's end: a fixed sleep sized
+    // for a normal frame rate failed when a WebKit CI runner stalled rendering.
+    window.__until = (check, timeoutMs = 2000) => new Promise((resolve) => {
+      const started = performance.now();
+      const poll = () => {
+        if (check()) resolve(true);
+        else if (performance.now() - started > timeoutMs) resolve(false);
+        else setTimeout(poll, 16);
+      };
+      poll();
+    });
     // A phone's answers to the hover/pointer media queries (utils.canHover()
     // asks "(any-hover: hover) and (any-pointer: fine)", then "(any-hover: none)").
     // Returns the function that puts the real matchMedia back. (This script is
@@ -350,16 +362,22 @@ const tiltState = await page.evaluate(async () => {
   const at = { bubbles: true, clientX: rect.left + 5, clientY: rect.top + 5 };
   el.dispatchEvent(new PointerEvent('pointerenter', at));
   el.dispatchEvent(new PointerEvent('pointermove', at));
-  await window.__wait(1200);
+  // The default smoothing needs about a second of 60 Hz frames to catch up,
+  // and a slow runner drops frames (WebKit on CI still moved at 1.2s). Wait for
+  // the rest instead of guessing a time, but not forever: 4s is a real failure.
+  const movedAt = window.performance.now();
+  await window.__wait(300);
   const tilted = /rotateX\((?!0deg)/.test(el.style.transform);
-  const frames = await window.__countFrames(10);
+  let frames = await window.__countFrames(10);
+  while (frames > 1 && window.performance.now() - movedAt < 4000) frames = await window.__countFrames(10);
+  const restMs = Math.round(window.performance.now() - movedAt);
   const shadowAfter = el.style.getPropertyValue('--kt-tilt-shadow-runtime');
   instance.destroy();
-  return { tilted, frames, shadowUnchanged: shadowBefore === shadowAfter, pausesOffscreen: window.Kineto.registry.tilt.offscreen === 'pause' };
+  return { tilted, frames, restMs, shadowUnchanged: shadowBefore === shadowAfter, pausesOffscreen: window.Kineto.registry.tilt.offscreen === 'pause' };
 });
 await check('tilt-rest', async () => {
   assert.equal(tiltState.tilted, true, 'tilt must follow the pointer');
-  assert.ok(tiltState.frames <= 1, `a tilt under a resting pointer must stop requesting frames (${tiltState.frames})`);
+  assert.ok(tiltState.frames <= 1, `a tilt under a resting pointer must stop requesting frames (${tiltState.frames} still requested ${tiltState.restMs}ms after the last move)`);
 });
 await check('tilt-shadow-disabled', async () => {
   assert.equal(tiltState.shadowUnchanged, true, 'a disabled shadow must not be rewritten while tilting');
@@ -644,8 +662,8 @@ const sheetState = await probe('bottom-sheet-modal', () => page.evaluate(async (
   handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, cancelable: true }));
   const after = document.getElementById('sheetA').getBoundingClientRect().height;
   document.getElementById('closeBtn').click();
-  await window.__wait(150);
-  const closedByButton = document.getElementById('sheetA').hidden;
+  // The sheet is hidden when its 40 ms close animation finishes.
+  const closedByButton = await window.__until(() => document.getElementById('sheetA').hidden);
   const backgroundBack = !document.getElementById('bgLink').closest('[inert]');
   b.open();
   await window.__wait(120);

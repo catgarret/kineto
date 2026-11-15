@@ -58,13 +58,18 @@ export const consumerFixtures = [
   // loops across ~40 modules): Vite 175.3 full / 179.1 React / 180.3 Vue,
   // Rolldown 175.6 / 179.3 / 180.8 KB. Same rule: next KB over the larger
   // measurement (176 / 180 / 181); `all` keeps the full ceiling.
-  { name: 'full', entry: 'full', budget: 176, variance: { vite: 4, rolldown: 4 } },
+  // 2026-09-30 (Reveal in panels that open and close — every path now resets
+  // and replays around a closed tab/accordion/dialog — and the Slider frame
+  // clock): Vite 176.1 full / 179.9 React / 181.1 Vue, Rolldown 176.4 / 180.1 /
+  // 181.7 KB. Same rule: next KB over the larger measurement (177 / 181 / 182);
+  // `all` keeps the full ceiling.
+  { name: 'full', entry: 'full', budget: 177, variance: { vite: 4, rolldown: 4 } },
   // 2026-09-27 (entry points, 0.13): `@dong-gri/kineto/all` is the file the
   // default entry wraps, so it carries the same ceiling. The default entry adds
   // the notice wrapper (+0.3 KB, default only); the core gained only the
   // on-demand hook in scan() (+0.1 KB in every entry). With both, Rolldown
   // measures full 169.6 KB: full and all move to the next KB (170) by the rule.
-  { name: 'all', entry: 'all', budget: 176, variance: { vite: 4, rolldown: 4 } },
+  { name: 'all', entry: 'all', budget: 177, variance: { vite: 4, rolldown: 4 } },
   // The on-demand entry: the budget is the FIRST download (core + the loader
   // table + the Canvas Effect registry; Vite 19.5 KB in 4 files, Rolldown
   // 18.0 KB); every module is its own chunk (onDemandEntries below).

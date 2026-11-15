@@ -2,6 +2,7 @@ import {
   G,
   gsapEaseName,
   normalizeTextLineBreaks,
+  panelGate,
   renderTextLineBreaks,
   segmentText,
   snapshotAttributes,
@@ -192,7 +193,20 @@ export default {
     };
 
     let started = false;
-    const trigger = scrollTrigger.create({
+    // Back to the units' start state, as before an entrance.
+    const rewind = () => {
+      started = false;
+      clearTimeout(swapTimer);
+      tween?.kill();
+      gsap.set(units, { ...definition.from });
+    };
+    // A closed tab, accordion or dialog: see panelGate in src/utils.js.
+    const panel = panelGate(el, {
+      once: opts.once !== false,
+      enter: () => { rewind(); started = true; playIn(texts ? scheduleSwap : null); },
+      reset: rewind
+    });
+    const trigger = scrollTrigger.create(panel.trigger({
       trigger: el,
       start: opts.start || 'top 85%',
       onEnter: () => {
@@ -201,15 +215,11 @@ export default {
         playIn(texts ? scheduleSwap : null);
       },
       onLeaveBack: () => {
-        if (opts.once === false) {
-          started = false;
-          clearTimeout(swapTimer);
-          tween?.kill();
-          gsap.set(units, { ...definition.from });
-        }
+        if (opts.once === false) rewind();
       }
-    });
+    }));
     gsap.set(units, { ...definition.from });
+    panel.watch(trigger);
 
     return {
       el,
@@ -234,6 +244,7 @@ export default {
       },
       destroy: () => {
         alive = false;
+        panel.disconnect();
         clearTimeout(swapTimer);
         trigger.kill();
         tween?.kill();

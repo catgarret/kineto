@@ -6,6 +6,12 @@
 
 <!-- Add matching English release bullets here. -->
 
+- **Entrances inside closed panels play when the panel opens.** Reveal, Counter, Blur Text and Text Split created inside a hidden tab, accordion or dialog used to finish (or never start) while nobody could see them; they now wait until the element has a box and play then. A native Reveal `slide-left`/`slide-right` and a Squircle created in a hidden panel behave the same way (Chromium's native `corner-shape` path too).
+- Reveal's `mask`, `wipe` and `clock` entrances without GSAP no longer skip their motion after one long frame: one frame advances the clock by at most `MAX_FRAME_STEP_MS`. Slider's track and Radial loops now count a repeated `requestAnimationFrame` timestamp as one frame (`frameClock()`), so a carousel fed the same timestamp no longer stalls at 98%.
+- `Kineto.scan()` works under jsdom 30 and later with a large registry: discovery splits its joined `[data-kt-*]` selector below jsdom's 2048-character limit.
+- `release:ship` runs the all-lockfile audit after CI passes and before it creates the tag. The release workflow audits only after the tag exists, which is how `v0.14.0` was tagged and never published.
+- Tooling: `npm run audit:hidden-panel` creates every demo module visible, visible again and inside a hidden panel and reports the ones that misbehave; CI no longer shows a false `attw exited with code 1` annotation on green jobs; the Flip fold test polls for its pinned copies.
+
 - **React and Vue adapters load modules on demand — an adapter-only app drops from about 178 KB to 24 KB gzip** (Vite: React 178.4 → 23.8 KB, Vue 179.6 → 25.0 KB). `Motion`, `useKineto`, `v-motion`, `useKinetoTransition` and friends import the module a component uses the first time it is used, then create it; a component unmounted while its module is importing gets no instance. **Migration:** the adapters' exported `Kineto` is now the on-demand instance, so code that calls a module right away (`Kineto.tilt(el)`) needs `await Kineto.loadModules('tilt')` first, or `import '@dong-gri/kineto/all'` in the app. The jQuery adapter is unchanged.
 - **Every ESM entry now shares one Kineto instance.** `/all` and the default entry resolve to `dist/modular/all.js`, built on the same modular core as `/auto`, `/core`, the `modules/*` entries and the adapters, so mixing them never loads Kineto twice (it used to give a page two registries). `require()` (UMD) and the single-file `/min` build stay separate copies. The package gains `dist/modular/all.js` and seven shared chunks (96 files, no duplicated code); `tests/framework-qa/on-demand-qa.mjs` covers the adapter-only path.
 
@@ -15,6 +21,12 @@
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
+
+- **닫힌 패널 안의 등장 효과가 패널이 열릴 때 재생됩니다.** 숨긴 탭·아코디언·대화상자 안에서 만든 Reveal·Counter·Blur Text·Text Split은 아무도 못 보는 사이에 끝나거나 시작하지 못했는데, 이제 요소에 크기가 생길 때까지 기다렸다가 재생합니다. 숨긴 패널 안의 네이티브 Reveal `slide-left`/`slide-right`와 Squircle도 같습니다(Chromium의 네이티브 `corner-shape` 경로 포함).
+- GSAP 없이 도는 Reveal `mask`·`wipe`·`clock` 등장이 긴 프레임 하나 뒤에 움직임을 건너뛰지 않습니다. 한 프레임은 시계를 최대 `MAX_FRAME_STEP_MS`만큼만 진행합니다. Slider의 트랙·Radial 루프는 같은 `requestAnimationFrame` 타임스탬프가 반복되면 한 프레임으로 셉니다(`frameClock()`). 같은 타임스탬프를 받던 캐러셀이 98%에서 멈추던 문제가 사라졌습니다.
+- 모듈을 많이 등록해도 `Kineto.scan()`이 jsdom 30 이상에서 동작합니다. 합친 `[data-kt-*]` selector를 jsdom의 2048자 제한 아래로 나눕니다.
+- `release:ship`이 CI 통과 뒤, 태그를 만들기 전에 모든 lockfile audit를 돌립니다. 릴리스 워크플로는 태그가 생긴 뒤에야 audit를 해서, `v0.14.0`이 태그만 남고 게시되지 않았습니다.
+- 도구: `npm run audit:hidden-panel`은 데모 모듈마다 보이는 상태·다시 보이는 상태·숨긴 패널 안에서 만들어 보고 잘못 동작하는 모듈을 알려 줍니다. CI의 초록 job에 잘못 붙던 `attw exited with code 1` 주석이 사라졌고, Flip fold 테스트는 고정된 복사본을 polling으로 기다립니다.
 
 - **React·Vue 어댑터가 모듈을 필요할 때 불러옵니다. 어댑터만 쓰는 앱은 gzip 약 178 KB에서 24 KB로 줄어듭니다**(Vite: React 178.4 → 23.8 KB, Vue 179.6 → 25.0 KB). `Motion`, `useKineto`, `v-motion`, `useKinetoTransition` 등은 컴포넌트가 처음 쓰는 순간 그 모듈을 import한 뒤 생성하며, 모듈을 불러오는 도중 언마운트된 컴포넌트에는 인스턴스를 만들지 않습니다. **마이그레이션:** 어댑터가 내보내는 `Kineto`는 이제 on-demand 인스턴스이므로 모듈을 바로 호출하던 코드(`Kineto.tilt(el)`)는 먼저 `await Kineto.loadModules('tilt')`를 하거나 앱에서 `import '@dong-gri/kineto/all'`을 추가하세요. jQuery 어댑터는 그대로입니다.
 - **모든 ESM 엔트리가 Kineto 인스턴스 하나를 공유합니다.** `/all`과 기본 엔트리는 `dist/modular/all.js`로 연결되며, `/auto`, `/core`, `modules/*`, 어댑터와 같은 모듈형 코어 위에 만들어집니다. 그래서 엔트리를 섞어도 Kineto가 두 번 실리지 않습니다(예전에는 레지스트리가 둘이 됐습니다). `require()`(UMD)와 단일 파일 `/min`만 별도 사본입니다. 패키지에 `dist/modular/all.js`와 공유 청크 7개가 추가됐고(파일 96개, 중복 코드 없음), `tests/framework-qa/on-demand-qa.mjs`가 어댑터만 쓰는 경로를 검사합니다.

@@ -318,7 +318,10 @@ shard들이 비슷한 시간에 끝납니다(위치 순서로 나누던 때는 F
 Firefox 바이너리 설치는 시도당 `timeout 5m`으로 제한합니다. 재시도에서야 통과한 테스트는
 **flaky**로 보고됩니다(`Flaky:` 로그, CI warning annotation, lane 요약). 재시도 횟수를
 늘리지 말고 고정 대기 대신 조건 대기로 테스트를 고치십시오. 실패한 테스트와 assertion은
-로그인 없이 읽을 수 있는 annotation(`tests/ci-annotate.mjs`)에 남습니다. 테스트를 삭제하거나
+로그인 없이 읽을 수 있는 annotation(`tests/ci-annotate.mjs`)에 남습니다. 종료 코드를 호출한 쪽이
+직접 판단하는 자식 프로세스(찾은 항목마다 1로 끝나는 attw 등)는 `scripts/gh-actions.mjs`의
+`expectedExitEnv()`로 실행하십시오. 그러지 않으면 초록 job에 "exited with code 1" 실패 annotation이 붙어
+진짜 실패와 구분되지 않습니다. rAF로 상태를 기다리는 페이지 안 코드는 시간과 함께 실제로 그린 프레임 수도 세어 포기 시점을 정하고, 포기할 때 증거(프레임 수·가장 긴 간격·반복된 타임스탬프·페이지 오류)를 남기십시오(`tests/slider-variant-browser.mjs`의 `__frameDeadline`). 같은 실패가 **같은 숫자로** 두 번 나오면 흔들림이 아니라 결정적 결함입니다(2026-09-30 Slider). 제품 코드에서 프레임 사이 시간은 `time - last` 대신 `utils.frameClock()`으로 재십시오 — 반복된 타임스탬프에서 0이 되어 멈추지 않습니다. 테스트를 삭제하거나
 timeout을 무제한으로 늘리지 마십시오. 릴리스 전에는 `npm run verify`와
 `npm run test:live-site`까지 실행해야 합니다.
 
