@@ -1,6 +1,6 @@
 # Kineto 제품·기술 로드맵
 
-> 기준 버전: v0.14.1 · 작성일: 2026-08-02 · 검토: 2026-09-19
+> 기준 버전: v0.15.0 · 작성일: 2026-08-02 · 검토: 2026-09-19
 > 성격: 일정 약속이 아니라 우선순위와 진입·중단 조건을 정하는 실행 문서
 >
 > 2026-08-09 검토에서 추가·수정된 부분은 §2 병목 3개 항목, §3 하지 않을 일 2개 항목,
@@ -79,6 +79,13 @@ v0.12.3에서 휴대폰 탭 튐(에뮬레이션 스윕 20px 초과 10 → 0)·�
 ([입력 정책](hover-touch-policy.md)). 열린 품질 PR(Hover Roll 터치, Counter·Fullpage 지연 작업, observe 정리)을
 흡수했고, README 설치 절을 `core` + 쓰는 모듈 우선으로 바꾸며 모듈별 비용 표([module-cost](module-cost.md))를
 공개했습니다. 엔진(GSAP·Lenis)을 불러오지 못하면 `KT_ENGINE_UNAVAILABLE` 진단이 이유를 알려 줍니다.
+
+v0.15.0에서 크기와 구조를 정리합니다. 모든 ESM 엔트리(기본, `/all`, `/auto`, `/core`, `modules/*`, 어댑터)가
+모듈형 코어 하나를 공유하고, React·Vue 어댑터는 컴포넌트가 처음 쓰는 모듈만 불러옵니다. 어댑터만 쓰는 앱은 gzip
+178 KB에서 약 24 KB로 줄었고, 어댑터가 내보내는 `Kineto`로 모듈을 바로 부르는 코드는 `loadModules()`가 필요해
+마이너 버전으로 올립니다. Lazy는 폐기 예정 별칭의 렌더러를 Stylize에서 받아 모듈형 비용이 42% 줄었고, 동작이 같은
+중복 정리로 전체 번들 예산 여유를 되찾았습니다. 9월에 PR로만 남아 있던 수정(닫힌 패널 안의 등장 효과, 긴 프레임,
+슬라이더 타임스탬프, jsdom selector 길이)도 함께 들어가며, `release:ship`은 이제 태그 전에 잠금파일 audit를 실행합니다.
 
 v0.14.1에서 release workflow의 잠금파일 audit를 다시 통과시킵니다. v0.14.0 tag는 integrations fixture의 shadcn CLI가
 끌어오는 `deepmerge`(4.2.0 이후 전부 영향, 패치 없음)와 `minimatch` 때문에 게시 단계에서 멈췄고, fixture overrides로
