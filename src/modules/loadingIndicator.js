@@ -1,4 +1,4 @@
-import { clamp, createProgressOutputs } from '../utils.js';
+import { clamp, createProgressOutputs, snapshotAttributes } from '../utils.js';
 import {
   getTerminalFramePreset,
   TERMINAL_FRAME_LEGACY_PRESETS,
@@ -365,17 +365,8 @@ export default {
   offscreen: 'pause',
   create(el, opts = {}) {
     const type = variant(opts.type || opts.preset, ['spinner', 'dots', 'bar', 'shimmer', 'shimmer-wave', 'terminal'], 'spinner');
-    const original = {
-      style: el.getAttribute('style'),
-      className: el.getAttribute('class'),
-      role: el.getAttribute('role'),
-      aria: el.getAttribute('aria-label'),
-      busy: el.getAttribute('aria-busy'),
-      valueMin: el.getAttribute('aria-valuemin'),
-      valueMax: el.getAttribute('aria-valuemax'),
-      valueNow: el.getAttribute('aria-valuenow'),
-      hidden: el.hidden
-    };
+    const restoreAttributes = snapshotAttributes(el, ['style', 'class', 'role', 'aria-label', 'aria-busy', 'aria-valuemin', 'aria-valuemax', 'aria-valuenow']);
+    const originalHidden = el.hidden;
     const duration = Math.max(0.2, Number(opts.motionDuration ?? 1.1));
     const terminalStyle = variant(opts.terminalStyle, TERMINAL_STYLES, 'cursor');
     const determinate = (type === 'bar' && opts.indeterminate === false)
@@ -608,15 +599,8 @@ export default {
         progressSubscriptions.splice(0).forEach((unsubscribe) => unsubscribe());
         ui.destroy?.();
         progressOutputs.destroy();
-        if (original.style == null) el.removeAttribute('style'); else el.setAttribute('style', original.style);
-        if (original.className == null) el.removeAttribute('class'); else el.setAttribute('class', original.className);
-        if (original.role == null) el.removeAttribute('role'); else el.setAttribute('role', original.role);
-        if (original.aria == null) el.removeAttribute('aria-label'); else el.setAttribute('aria-label', original.aria);
-        if (original.busy == null) el.removeAttribute('aria-busy'); else el.setAttribute('aria-busy', original.busy);
-        if (original.valueMin == null) el.removeAttribute('aria-valuemin'); else el.setAttribute('aria-valuemin', original.valueMin);
-        if (original.valueMax == null) el.removeAttribute('aria-valuemax'); else el.setAttribute('aria-valuemax', original.valueMax);
-        if (original.valueNow == null) el.removeAttribute('aria-valuenow'); else el.setAttribute('aria-valuenow', original.valueNow);
-        el.hidden = original.hidden;
+        restoreAttributes();
+        el.hidden = originalHidden;
         delete el.dataset.ktLoadingState;
         settle('destroyed');
       }

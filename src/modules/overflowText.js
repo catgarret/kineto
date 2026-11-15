@@ -1,4 +1,4 @@
-import { acceptsAccessibleName, clamp, measureThenApply, numberOption, segmentText, srText, textOption } from '../utils.js';
+import { acceptsAccessibleName, clamp, dissolveFrames, measureThenApply, numberOption, segmentText, snapshotAttributes, srText, textOption } from '../utils.js';
 
 function normalizeMaskDirection(value) {
   const direction = String(value || 'top-to-bottom').toLowerCase();
@@ -110,10 +110,8 @@ export default {
     let hoverTouchArmTimer = null;
     let hoverTarget = null;
     const originalHTML = el.innerHTML;
-    const originalStyle = el.getAttribute('style');
     const originalTitle = el.getAttribute('title');
-    const originalRole = el.getAttribute('role');
-    const originalLive = el.getAttribute('aria-live');
+    const restoreAttributes = snapshotAttributes(el, ['style', 'title', 'role', 'aria-live']);
     const text = String(opts.text ?? el.textContent ?? '').trim();
     // Rolling items must be read before the element is emptied below,
     // otherwise markup children (div/span items) would be lost.
@@ -809,20 +807,8 @@ export default {
           spans.push(span);
         });
         const scramble = (entering) => Promise.all(spans.map((span) => {
-          const jx = (Math.random() - 0.5) * jitterAmp * 2;
-          const jy = (Math.random() - 0.5) * jitterAmp * 1.4;
           // Jitter + step flicker only — no blur, which read as a glow.
-          const frames = entering ? [
-            { opacity: 0, transform: `translate(${jx}px,${jy}px)` },
-            { opacity: 0.85, transform: `translate(${(-jx * 0.6).toFixed(1)}px,${(-jy * 0.6).toFixed(1)}px)`, offset: 0.45 },
-            { opacity: 0.3, transform: `translate(${(jx * 0.4).toFixed(1)}px,${(jy * 0.3).toFixed(1)}px)`, offset: 0.62 },
-            { opacity: 1, transform: 'translate(0,0)' }
-          ] : [
-            { opacity: 1, transform: 'translate(0,0)' },
-            { opacity: 0.25, transform: `translate(${(jx * 0.5).toFixed(1)}px,${(jy * 0.4).toFixed(1)}px)`, offset: 0.35 },
-            { opacity: 0.8, transform: `translate(${(-jx * 0.4).toFixed(1)}px,${(-jy * 0.5).toFixed(1)}px)`, offset: 0.55 },
-            { opacity: 0, transform: `translate(${jx}px,${jy}px)` }
-          ];
+          const frames = dissolveFrames(entering, jitterAmp);
           const player = span.animate(frames, {
             duration: dissolveMs,
             delay: Math.random() * dissolveMs * 0.5,
@@ -1062,10 +1048,7 @@ export default {
         detachHover();
         clearTimeout(hoverTouchTimer);
         screenReaderText.restore();
-        if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);
-        if (originalTitle == null) el.removeAttribute('title'); else el.setAttribute('title', originalTitle);
-        if (originalRole == null) el.removeAttribute('role'); else el.setAttribute('role', originalRole);
-        if (originalLive == null) el.removeAttribute('aria-live'); else el.setAttribute('aria-live', originalLive);
+        restoreAttributes();
         el.innerHTML = originalHTML;
         delete el.dataset.ktOverflowActive;
       }

@@ -27,6 +27,41 @@ function flipVisuals(opts) {
   return { seam, shadow, hasShadow: shadowValue !== 'none', separatorColor: opts.separatorColor || '' };
 }
 
+// One Solari flip cell — two static halves, two hinged flaps and the seam —
+// shared by the flip counter and the flip clock. `tile` holds the colours and
+// radius; `flip` is flipVisuals(opts).
+function buildFlipCell(tile, flip, char, className, extraStyle = '') {
+  const cellHeight = '1.24em';
+  const buildHalf = (top, hinged) => {
+    const half = document.createElement('span');
+    half.setAttribute('aria-hidden', 'true');
+    half.style.cssText = `position:absolute;left:0;right:0;height:50%;overflow:hidden;${top ? `top:0;border-radius:${tile.radius}px ${tile.radius}px 0 0` : `bottom:0;border-radius:0 0 ${tile.radius}px ${tile.radius}px`};background:${tile.tileColor};backface-visibility:hidden;`
+      + (hinged ? `transform-origin:50% ${top ? '100%' : '0%'};will-change:transform;z-index:3;` : 'z-index:1;');
+    const glyph = document.createElement('span');
+    glyph.style.cssText = `position:absolute;left:0;width:100%;height:${cellHeight};line-height:${cellHeight};text-align:center;${top ? 'top:0' : 'bottom:0'};color:${tile.tileText};`;
+    glyph.textContent = char;
+    half.appendChild(glyph);
+    return { half, glyph };
+  };
+  const cell = document.createElement('span');
+  cell.className = className;
+  cell.style.cssText = `display:inline-block;position:relative;width:1.34ch;height:${cellHeight};perspective:340px;${flip.hasShadow ? `filter:${flip.shadow};` : ''}${extraStyle}`;
+  const parts = {
+    topStatic: buildHalf(true, false),    // shows the NEXT digit
+    bottomStatic: buildHalf(false, false), // shows the CURRENT digit
+    topFlap: buildHalf(true, true),       // current digit, folds down
+    bottomFlap: buildHalf(false, true)    // next digit, unfolds
+  };
+  parts.bottomFlap.half.style.transform = 'rotateX(90deg)';
+  cell.append(parts.topStatic.half, parts.bottomStatic.half, parts.topFlap.half, parts.bottomFlap.half);
+  const seam = document.createElement('span');
+  seam.className = 'kt-counter-seam';
+  seam.setAttribute('aria-hidden', 'true');
+  seam.style.cssText = `position:absolute;left:0;right:0;top:50%;height:1px;margin-top:-0.5px;background:${flip.seam};z-index:4;pointer-events:none;`;
+  cell.appendChild(seam);
+  return { cell, parts };
+}
+
 function appendAffix(el, value, className) {
   if (!value) return;
   const node = document.createElement('span');
@@ -302,27 +337,13 @@ export default {
       el.style.gap = `${Math.max(0, Number(opts.gap ?? 3))}px`;
       appendAffix(el, prefix, 'kt-counter-prefix');
 
-      const tileColor = opts.tileColor || '#191b20';
-      const tileText = opts.tileTextColor || '#f6f7fb';
-      const radius = Math.max(0, Number(opts.tileRadius ?? 6));
-      const cellHeight = '1.24em';
+      const tile = {
+        tileColor: opts.tileColor || '#191b20',
+        tileText: opts.tileTextColor || '#f6f7fb',
+        radius: Math.max(0, Number(opts.tileRadius ?? 6))
+      };
       const flip = flipVisuals(opts);
       const cells = [];
-
-      const halfStyle = (top) => `position:absolute;left:0;right:0;height:50%;overflow:hidden;${top ? `top:0;border-radius:${radius}px ${radius}px 0 0` : `bottom:0;border-radius:0 0 ${radius}px ${radius}px`};background:${tileColor};backface-visibility:hidden;`;
-      const glyphStyle = (top) => `position:absolute;left:0;width:100%;height:${cellHeight};line-height:${cellHeight};text-align:center;${top ? 'top:0' : 'bottom:0'};color:${tileText};`;
-      const buildHalf = (top, hinged) => {
-        const half = document.createElement('span');
-        half.setAttribute('aria-hidden', 'true');
-        half.style.cssText = halfStyle(top) + (hinged
-          ? `transform-origin:50% ${top ? '100%' : '0%'};will-change:transform;z-index:3;`
-          : 'z-index:1;');
-        const glyph = document.createElement('span');
-        glyph.style.cssText = glyphStyle(top);
-        glyph.textContent = '0';
-        half.appendChild(glyph);
-        return { half, glyph };
-      };
 
       // Direction: count up folds down (classic Solari), count down folds up.
       const flipCountingUp = to >= from;
@@ -341,22 +362,9 @@ export default {
         }
         const startDigit = Number(flipFromDigits[flipDigitIndex] || '0');
         flipDigitIndex += 1;
-        const cell = document.createElement('span');
-        cell.className = 'kt-counter-flip-cell';
-        cell.style.cssText = `display:inline-block;position:relative;width:1.34ch;height:${cellHeight};perspective:340px;${flip.hasShadow ? `filter:${flip.shadow};` : ''}`;
-        const topStatic = buildHalf(true, false);     // shows the NEXT digit
-        const bottomStatic = buildHalf(false, false); // shows the CURRENT digit
-        const topFlap = buildHalf(true, true);        // current digit, folds down
-        const bottomFlap = buildHalf(false, true);    // next digit, unfolds
-        bottomFlap.half.style.transform = 'rotateX(90deg)';
-        cell.append(topStatic.half, bottomStatic.half, topFlap.half, bottomFlap.half);
-        const seam = document.createElement('span');
-        seam.className = 'kt-counter-seam';
-        seam.setAttribute('aria-hidden', 'true');
-        seam.style.cssText = `position:absolute;left:0;right:0;top:50%;height:1px;margin-top:-0.5px;background:${flip.seam};z-index:4;pointer-events:none;`;
-        cell.appendChild(seam);
+        const { cell, parts } = buildFlipCell(tile, flip, '0', 'kt-counter-flip-cell');
         el.appendChild(cell);
-        cells.push({ topStatic, bottomStatic, topFlap, bottomFlap, target: Number(char), start: startDigit });
+        cells.push({ ...parts, target: Number(char), start: startDigit });
       }
       appendAffix(el, suffix, 'kt-counter-suffix');
       showValue(finalValue);
@@ -551,38 +559,7 @@ export default {
         radius: Math.max(0, Number(opts.tileRadius ?? 6))
       };
       const makeFlipDigit = (char) => {
-        const f = flipConfig;
-        const cellHeight = '1.24em';
-        const halfStyle = (top) => `position:absolute;left:0;right:0;height:50%;overflow:hidden;${top ? `top:0;border-radius:${f.radius}px ${f.radius}px 0 0` : `bottom:0;border-radius:0 0 ${f.radius}px ${f.radius}px`};background:${f.tileColor};backface-visibility:hidden;`;
-        const glyphStyle = (top) => `position:absolute;left:0;width:100%;height:${cellHeight};line-height:${cellHeight};text-align:center;${top ? 'top:0' : 'bottom:0'};color:${f.tileText};`;
-        const buildHalf = (top, hinged) => {
-          const half = document.createElement('span');
-          half.setAttribute('aria-hidden', 'true');
-          half.style.cssText = halfStyle(top) + (hinged
-            ? `transform-origin:50% ${top ? '100%' : '0%'};will-change:transform;z-index:3;`
-            : 'z-index:1;');
-          const glyph = document.createElement('span');
-          glyph.style.cssText = glyphStyle(top);
-          glyph.textContent = char;
-          half.appendChild(glyph);
-          return { half, glyph };
-        };
-        const cell = document.createElement('span');
-        cell.className = 'kt-counter-digit kt-counter-clock-digit kt-counter-flip-cell';
-        cell.style.cssText = `display:inline-block;position:relative;width:1.34ch;height:1.24em;perspective:340px;${flipVis.hasShadow ? `filter:${flipVis.shadow};` : ''}margin:0 1px;`;
-        const parts = {
-          topStatic: buildHalf(true, false),
-          bottomStatic: buildHalf(false, false),
-          topFlap: buildHalf(true, true),
-          bottomFlap: buildHalf(false, true)
-        };
-        parts.bottomFlap.half.style.transform = 'rotateX(90deg)';
-        cell.append(parts.topStatic.half, parts.bottomStatic.half, parts.topFlap.half, parts.bottomFlap.half);
-        const seam = document.createElement('span');
-        seam.className = 'kt-counter-seam';
-        seam.setAttribute('aria-hidden', 'true');
-        seam.style.cssText = `position:absolute;left:0;right:0;top:50%;height:1px;margin-top:-0.5px;background:${flipVis.seam};z-index:4;pointer-events:none;`;
-        cell.appendChild(seam);
+        const { cell, parts } = buildFlipCell(flipConfig, flipVis, char, 'kt-counter-digit kt-counter-clock-digit kt-counter-flip-cell', 'margin:0 1px;');
         return { viewport: cell, parts, value: char };
       };
       const flipTo = (cell, nextChar) => {

@@ -1,3 +1,4 @@
+import { clamp } from '../../utils.js';
 import {
   getTerminalFramePreset,
   TERMINAL_FRAME_LEGACY_PRESETS
@@ -518,6 +519,3 @@ export function mountLegacyCharFrames(root, styleKey, opts, _controls) {
   };
 }
 
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
-}

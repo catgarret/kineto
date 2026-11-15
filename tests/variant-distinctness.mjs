@@ -104,7 +104,7 @@ const MODULE_AUDITS = {
     blur: ['filter-focus-pull', 'blur: (opts) => {', 'filter: `blur(${amount}px)`'],
     scale: ['scale-in-scale-out', 'scale: (opts) => ({', 'Number(opts.startScale ?? 0.82)'],
     clip: ['horizontal-clip-path-wipe', 'clip: {', "clipPath: 'inset(0 100% 0 0)'"],
-    dissolve: ['per-letter-stepped-flicker', "const dissolve = effectName === 'dissolve';", 'const dissolveFrames = (entering) => {'],
+    dissolve: ['per-letter-stepped-flicker', "const dissolve = effectName === 'dissolve';", 'dissolveFrames(entering, jitterAmp)'],
     shimmer: ['gradient-sweep-over-static-text', "if (effectName === 'shimmer') {", "[{ backgroundPosition: '160% 0' }, { backgroundPosition: '-160% 0' }]"],
     pop: ['per-letter-sampled-spring-overshoot', 'pop: () => popEffect()', 'function springProgress(t) {']
   },

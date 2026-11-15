@@ -1,4 +1,4 @@
-import { labeller } from '../utils.js';
+import { clamp, labeller } from '../utils.js';
 
 // Set on <html> while the viewer is open, so a page can restyle what sits under
 // it (a custom cursor, a sticky header) with a plain class selector instead of
@@ -667,9 +667,6 @@ function createManager(label) {
   };
 }
 
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
-}
 
 // Minimal, well-guarded JPEG EXIF reader → a compact "Camera · 1/200s · f/2.8 ·
 // ISO 400 · 50mm" string, or '' when there's no EXIF (webp/png/optimized) or the

@@ -1,4 +1,4 @@
-import { clamp, createProgressOutputs, selectAll } from '../utils.js';
+import { clamp, createProgressOutputs, selectAll, snapshotAttributes } from '../utils.js';
 
 // Reference-counted global scroll lock. Overlapping loaders used to each save
 // and restore <html>/<body> overflow independently, so a second loader would
@@ -251,18 +251,8 @@ export default {
     const source = opts.source || opts.progressSource || 'window';
     const minDuration = Math.max(0, Number(opts.minDuration ?? 0));
     const hideScrollbar = opts.hideScrollbar !== false;
-    const original = {
-      style: el.getAttribute('style'),
-      class: el.getAttribute('class'),
-      aria: el.getAttribute('aria-label'),
-      role: el.getAttribute('role'),
-      busy: el.getAttribute('aria-busy'),
-      live: el.getAttribute('aria-live'),
-      valueMin: el.getAttribute('aria-valuemin'),
-      valueMax: el.getAttribute('aria-valuemax'),
-      valueNow: el.getAttribute('aria-valuenow'),
-      hidden: el.hidden
-    };
+    const restoreAttributes = snapshotAttributes(el, ['style', 'aria-label', 'role', 'class', 'aria-busy', 'aria-live', 'aria-valuemin', 'aria-valuemax', 'aria-valuenow']);
+    const originalHidden = el.hidden;
     if (opts.className) el.classList.add(...String(opts.className).split(/\s+/).filter(Boolean));
     const progressUI = createProgressUI(el, type, opts);
     const progressOutputs = createProgressOutputs(el, {
@@ -679,16 +669,8 @@ export default {
         progressOutputs.destroy();
         if (progressUI.root && progressUI.root !== el) progressUI.root.remove();
         progressUI.fillEl?.remove();
-        if (original.style == null) el.removeAttribute('style'); else el.setAttribute('style', original.style);
-        if (original.aria == null) el.removeAttribute('aria-label'); else el.setAttribute('aria-label', original.aria);
-        if (original.role == null) el.removeAttribute('role'); else el.setAttribute('role', original.role);
-        if (original.class == null) el.removeAttribute('class'); else el.setAttribute('class', original.class);
-        if (original.busy == null) el.removeAttribute('aria-busy'); else el.setAttribute('aria-busy', original.busy);
-        if (original.live == null) el.removeAttribute('aria-live'); else el.setAttribute('aria-live', original.live);
-        if (original.valueMin == null) el.removeAttribute('aria-valuemin'); else el.setAttribute('aria-valuemin', original.valueMin);
-        if (original.valueMax == null) el.removeAttribute('aria-valuemax'); else el.setAttribute('aria-valuemax', original.valueMax);
-        if (original.valueNow == null) el.removeAttribute('aria-valuenow'); else el.setAttribute('aria-valuenow', original.valueNow);
-        el.hidden = original.hidden;
+        restoreAttributes();
+        el.hidden = originalHidden;
         delete el.dataset.ktLoaderState;
         settle('destroyed');
       }

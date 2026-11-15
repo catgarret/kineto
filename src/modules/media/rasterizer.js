@@ -15,7 +15,7 @@
 // aliases) own the DOM — wrapper, layers, lifecycle — through
 // ./stylizer.js and call `renderer.render(source, cellSize)` for every frame
 // they want; this file only knows how to draw.
-import { clamp, numberOption } from '../../utils.js';
+import { clamp, lerp, numberOption } from '../../utils.js';
 import { coverMap } from './common.js';
 
 // Ordered-dither threshold matrices, normalised to 0..1.
@@ -166,7 +166,6 @@ export function parseColor(value, fallback = [0, 0, 0], scope = null) {
   return rgb;
 }
 
-const mix = (from, to, amount) => from + (to - from) * amount;
 const luminance = (r, g, b) => (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
 
 export { coverMap } from './common.js';
@@ -390,7 +389,7 @@ export function createStylizedRenderer(canvas, config, { maxDpr = 2 } = {}) {
       if (tone < 0.5) { to = config.accent; tone *= 2; }
       else { from = config.accent; tone = tone * 2 - 1; }
     }
-    return [mix(from[0], to[0], tone), mix(from[1], to[1], tone), mix(from[2], to[2], tone)];
+    return [lerp(from[0], to[0], tone), lerp(from[1], to[1], tone), lerp(from[2], to[2], tone)];
   };
   const css = ([r, g, b]) => `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
 

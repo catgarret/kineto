@@ -1,4 +1,4 @@
-import { clamp, observeOnce } from '../utils.js';
+import { clamp, observeOnce, snapshotAttributes } from '../utils.js';
 import { fn as easingFunction } from '../easings.js';
 import { ANIMATED_EXTENSIONS, aliasRendererApi, coverMap, durationMs, isStylizedEffect } from './media/common.js';
 import { createLayer, ensureWrapper, releaseWrapper } from './media/wrapper.js';
@@ -395,6 +395,25 @@ export default {
       timers.add(timer);
       return timer;
     };
+    // The reveal loops' clock: frames start after `delay`, time stands still
+    // while the instance is paused, and `step(elapsed, time)` returns true to
+    // ask for the next frame.
+    const runClock = (delay, step) => {
+      let startTime = null;
+      let pausedAt = null;
+      const frame = (time) => {
+        if (destroyed) return;
+        if (paused) {
+          if (pausedAt == null) pausedAt = time;
+          rafId = requestAnimationFrame(frame);
+          return;
+        }
+        if (pausedAt != null && startTime != null) { startTime += time - pausedAt; pausedAt = null; }
+        if (startTime == null) startTime = time;
+        if (step(time - startTime, time)) rafId = requestAnimationFrame(frame);
+      };
+      later(() => { rafId = requestAnimationFrame(frame); }, delay);
+    };
     // The reveal steps' frames, tracked like `timers` so replay() and destroy()
     // can cancel them. An untracked frame wrote its opacity/transform after
     // destroy() had restored the image, or onto the run that replaced it.
@@ -768,8 +787,6 @@ export default {
         const context = canvas.getContext('2d', { alpha: true, desynchronized: true });
         noise = createNoiseCanvas(wrapper, opts, 4);
         noise.canvas.classList.add('kt-lazy-grain-canvas');
-        let startTime = null;
-        let pausedAt = null;
         let lastDraw = -Infinity;
         let cssWidth = 0;
         let cssHeight = 0;
@@ -812,19 +829,8 @@ export default {
             }
           }
         };
-        const frame = (time) => {
-          if (destroyed) return;
-          if (paused) {
-            if (pausedAt == null) pausedAt = time;
-            rafId = requestAnimationFrame(frame);
-            return;
-          }
-          if (pausedAt != null && startTime != null) {
-            startTime += time - pausedAt;
-            pausedAt = null;
-          }
-          if (startTime == null) startTime = time;
-          const raw = clamp((time - startTime) / duration, 0, 1);
+        const step = (elapsed, time) => {
+          const raw = clamp(elapsed / duration, 0, 1);
           const progress = clamp(ease(raw), 0, 1);
           if (time - lastDraw >= interval || raw >= 1) {
             sync();
@@ -835,10 +841,10 @@ export default {
             opts.onProgress?.(raw, el);
             lastDraw = time;
           }
-          if (raw < 1) rafId = requestAnimationFrame(frame);
-          else finish();
+          if (raw < 1) return true;
+          finish();
         };
-        later(() => { rafId = requestAnimationFrame(frame); }, delayMs);
+        runClock(delayMs, step);
         return;
       }
 
@@ -911,23 +917,10 @@ export default {
           context.drawImage(small, 0, 0, smallWidth, smallHeight, 0, 0, cssWidth, cssHeight);
         };
 
-        let startTime = null;
-        let pausedAt = null;
         let lastDraw = -Infinity;
         let lastStage = -1;
-        const frame = (time) => {
-          if (destroyed) return;
-          if (paused) {
-            if (pausedAt == null) pausedAt = time;
-            rafId = requestAnimationFrame(frame);
-            return;
-          }
-          if (pausedAt != null && startTime != null) {
-            startTime += time - pausedAt;
-            pausedAt = null;
-          }
-          if (startTime == null) startTime = time;
-          const progress = clamp((time - startTime) / Math.max(1, total), 0, 1);
+        const step = (elapsed, time) => {
+          const progress = clamp(elapsed / Math.max(1, total), 0, 1);
           if (noise) { noise.draw(time); noise.canvas.style.opacity = String(pxNoiseOpacity * Math.max(0, 1 - progress)); }
           const index = progress >= 1 ? steps.length - 1 : Math.min(steps.length - 1, Math.floor(progress * steps.length));
           // Never skip a stage: every configured pixel step renders and
@@ -948,11 +941,11 @@ export default {
             draw(steps[index]);
             lastDraw = time;
           }
-          rafId = requestAnimationFrame(frame);
+          return true;
         };
         sync();
         draw(steps[0]);
-        later(() => { rafId = requestAnimationFrame(frame); }, delayMs);
+        runClock(delayMs, step);
         return;
       }
 
@@ -972,8 +965,6 @@ export default {
         const strength = clamp(Number(opts.glitchStrength ?? 1), 0.1, 3);
         const slices = Math.max(2, Math.round(Number(opts.sliceCount ?? 7)));
         const delayMs = Math.max(0, Number(opts.delay ?? 60));
-        let startTime = null;
-        let pausedAt = null;
         const sync = () => {
           const box = wrapper.getBoundingClientRect();
           const dpr = clamp(window.devicePixelRatio || 1, 1, clamp(Number(opts.maxDpr ?? 2), 0.5, 4));
@@ -1010,23 +1001,15 @@ export default {
             context.globalAlpha = 1;
           }
         };
-        const frame = (time) => {
-          if (destroyed) return;
-          if (paused) {
-            if (pausedAt == null) pausedAt = time;
-            rafId = requestAnimationFrame(frame);
-            return;
-          }
-          if (pausedAt != null && startTime != null) { startTime += time - pausedAt; pausedAt = null; }
-          if (startTime == null) startTime = time;
-          const progress = clamp((time - startTime) / duration, 0, 1);
+        const step = (elapsed) => {
+          const progress = clamp(elapsed / duration, 0, 1);
           sync();
           drawGlitch(progress);
           opts.onProgress?.(progress, el);
-          if (progress < 1) rafId = requestAnimationFrame(frame);
-          else finish();
+          if (progress < 1) return true;
+          finish();
         };
-        later(() => { rafId = requestAnimationFrame(frame); }, delayMs);
+        runClock(delayMs, step);
         return;
       }
 
@@ -1092,21 +1075,8 @@ export default {
         const noiseOpacity = clamp(Number(opts.noise ?? (effect === 'print' ? 0.3 : 0.68)), 0, 1);
         const direction = opts.direction || 'down';
         const feather = Number(opts.feather ?? (effect === 'print' ? 12 : 8));
-        let startTime = null;
-        let pausedAt = null;
-        const frame = (time) => {
-          if (destroyed) return;
-          if (paused) {
-            if (pausedAt == null) pausedAt = time;
-            rafId = requestAnimationFrame(frame);
-            return;
-          }
-          if (pausedAt != null && startTime != null) {
-            startTime += time - pausedAt;
-            pausedAt = null;
-          }
-          if (startTime == null) startTime = time;
-          const raw = clamp((time - startTime) / duration, 0, 1);
+        const step = (elapsed, time) => {
+          const raw = clamp(elapsed / duration, 0, 1);
           const eased = 1 - Math.pow(1 - raw, 2.2);
           noise.draw(time);
           if (effect === 'print') {
@@ -1129,10 +1099,10 @@ export default {
             noise.canvas.style.opacity = String(noiseOpacity * Math.pow(1 - eased, 1.2));
           }
           opts.onProgress?.(raw, el);
-          if (raw < 1) rafId = requestAnimationFrame(frame);
-          else finish();
+          if (raw < 1) return true;
+          finish();
         };
-        later(() => { rafId = requestAnimationFrame(frame); }, delay);
+        runClock(delay, step);
         return;
       }
 
@@ -1189,8 +1159,7 @@ export default {
   },
 
   reduced(el, opts = {}) {
-    const originalStyle = el.getAttribute('style');
-    const originalSrc = el.getAttribute('src');
+    const restoreAttributes = snapshotAttributes(el, ['style', 'src']);
     const src = sourceOf(el, opts);
     if (src) el.src = src;
     el.style.opacity = '1';
@@ -1202,8 +1171,7 @@ export default {
       pause() {},
       resume() {},
       destroy() {
-        if (originalStyle == null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);
-        if (originalSrc == null) el.removeAttribute('src'); else el.setAttribute('src', originalSrc);
+        restoreAttributes();
       }
     };
   }

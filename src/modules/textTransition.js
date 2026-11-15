@@ -1,4 +1,4 @@
-import { cssEase, segmentText, srText, textOption, timeMs, wordSink } from '../utils.js';
+import { cssEase, dissolveFrames, segmentText, srText, textOption, timeMs, wordSink } from '../utils.js';
 
 /*
  * Text transition rebuilt around a single live node: the visible text is
@@ -277,23 +277,7 @@ export default {
     // Only the characters animate — not the word boxes holding them.
     const charSpans = () => Array.from(inner.querySelectorAll('.kt-text-char'));
 
-    // Per-character noisy dissolve frames: jitter plus stepped opacity
-    // flicker in random order (no blur — it reads as glow on colored text).
-    const dissolveFrames = (entering) => {
-      const jx = (Math.random() - 0.5) * jitterAmp * 2;
-      const jy = (Math.random() - 0.5) * jitterAmp * 1.4;
-      return entering ? [
-        { opacity: 0, transform: `translate(${jx}px,${jy}px)` },
-        { opacity: 0.85, transform: `translate(${(-jx * 0.6).toFixed(1)}px,${(-jy * 0.6).toFixed(1)}px)`, offset: 0.45 },
-        { opacity: 0.3, transform: `translate(${(jx * 0.4).toFixed(1)}px,${(jy * 0.3).toFixed(1)}px)`, offset: 0.62 },
-        { opacity: 1, transform: 'translate(0,0)' }
-      ] : [
-        { opacity: 1, transform: 'translate(0,0)' },
-        { opacity: 0.25, transform: `translate(${(jx * 0.5).toFixed(1)}px,${(jy * 0.4).toFixed(1)}px)`, offset: 0.35 },
-        { opacity: 0.8, transform: `translate(${(-jx * 0.4).toFixed(1)}px,${(-jy * 0.5).toFixed(1)}px)`, offset: 0.55 },
-        { opacity: 0, transform: `translate(${jx}px,${jy}px)` }
-      ];
-    };
+    const dissolveFramesFor = (entering) => dissolveFrames(entering, jitterAmp);
 
     const enter = (onDone) => {
       if (charMode) {
@@ -302,7 +286,7 @@ export default {
         if (!spans.length) { onDone?.(); return; }
         const order = staggerOrder(spans.length);
         spans.forEach((span, spanIndex) => {
-          const player = animate(span, dissolve ? dissolveFrames(true) : effect.enter, {
+          const player = animate(span, dissolve ? dissolveFramesFor(true) : effect.enter, {
             duration,
             delay: dissolve ? Math.random() * duration * 0.5 : order[spanIndex] * Math.min(stagger, 900 / Math.max(1, spans.length)),
             easing: dissolve ? `steps(${2 + Math.floor(Math.random() * 3)}, end)` : (effect.easing || (opts.ease ? cssEase(opts.ease) : 'cubic-bezier(.22,.8,.3,1)'))
@@ -327,7 +311,7 @@ export default {
         // text's entrance — not the old text's exit — is what reads.
         const quick = effect.quickLeave === true;
         spans.forEach((span, spanIndex) => {
-          const player = animate(span, dissolve ? dissolveFrames(false) : effect.leave, {
+          const player = animate(span, dissolve ? dissolveFramesFor(false) : effect.leave, {
             duration: quick ? Math.min(QUICK_LEAVE_MS, duration * 0.3) : duration * 0.55,
             delay: dissolve ? Math.random() * duration * 0.35 : quick ? 0 : spanIndex * Math.min(stagger * 0.6, 500 / Math.max(1, spans.length)),
             easing: dissolve ? `steps(${2 + Math.floor(Math.random() * 3)}, end)` : 'cubic-bezier(.5,0,.75,.4)'
