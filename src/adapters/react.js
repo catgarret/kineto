@@ -1,8 +1,28 @@
 import { Children, createContext, createElement, forwardRef, useContext, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import Kineto from '@dong-gri/kineto/all';
+import Kineto from '@dong-gri/kineto/auto';
 import presence from '@dong-gri/kineto/presence';
 
 const PresenceParentContext = createContext(null);
+
+// The adapters import the on-demand entry, which shares its core with every
+// ESM entry. A page that imports '@dong-gri/kineto' or '/all' has every module
+// registered already, so nothing changes there; otherwise a module is imported
+// the first time a component uses it, and created only if it is still wanted.
+function createWhenReady(type, el, options, stillWanted, onCreate) {
+  if (typeof Kineto[type] === 'function' || typeof Kineto.loadModules !== 'function') {
+    const instance = Kineto.create(type, el, options);
+    onCreate?.(instance);
+    return instance;
+  }
+  Kineto.loadModules([type]).then(() => {
+    if (!stillWanted()) return;
+    // Create first: `onCreate?.(Kineto.create(…))` would skip the create
+    // itself when no callback is passed (optional-call short-circuit).
+    const instance = Kineto.create(type, el, options);
+    onCreate?.(instance);
+  });
+  return null;
+}
 
 /**
  * React hook for one Kineto module.
@@ -15,8 +35,10 @@ export function useKineto(type, options = {}, dependencies = []) {
   useEffect(() => {
     const element = elementRef.current;
     if (!element || !type) return undefined;
-    instanceRef.current = Kineto.create(type, element, options);
+    let mounted = true;
+    createWhenReady(type, element, options, () => mounted, (instance) => { instanceRef.current = instance; });
     return () => {
+      mounted = false;
       // This element's own instance only: destroyModule(element, type) would
       // also destroy same-module instances of nested components.
       Kineto.getInstance(element, type)?.destroy?.();

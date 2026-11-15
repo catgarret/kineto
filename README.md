@@ -171,11 +171,17 @@ import '@dong-gri/kineto/style.css';
 createApp(App).use(KinetoVue).mount('#app');
 ```
 
-The adapters import the full entry (see [Framework adapters](#framework-adapters)).
-A React or Vue app that only renders `data-kt-*` markup can skip the adapter and
-use the modular `core` path above instead — call `Kineto.observe(root)` once so
-elements rendered later are picked up. Do not mix the two in one app: `core` and
-the full entry are separate registries.
+The React and Vue adapters load modules on demand: a component imports its
+module the first time it is used, so an app that only uses the adapters ships
+the core plus the modules its components use (about 24 KB gzip instead of the
+full runtime's 175 KB). Every ESM entry — the default, `/all`, `/auto`, `/core`
+and the adapters — shares **one** Kineto instance, so importing the full
+runtime next to an adapter loads nothing twice and registers every module up
+front. The adapters' exported `Kineto` is that on-demand instance: call
+`await Kineto.loadModules('tilt')` before `Kineto.tilt(…)`, unless the app also
+imports `@dong-gri/kineto/all`. A React or Vue app that only renders `data-kt-*`
+markup can skip the adapter — call `Kineto.observe(root)` once so elements
+rendered later are picked up.
 
 ## Quick start
 

@@ -49,14 +49,22 @@ try {
   assert.deepEqual(modular, { before: 0, after: ['slider'], api: 'function' });
 
   // The on-demand entry must find every module chunk inside the installed
-  // package (its import() paths are relative to dist/modular/auto.js), and the
-  // default entry must be the same Kineto instance as /all.
+  // package (its import() paths are relative to dist/modular/auto.js); on its
+  // own it registers nothing up front.
+  const onDemand = JSON.parse(execFileSync(process.execPath, [
+    '--input-type=module',
+    '--eval',
+    "import Auto from '@dong-gri/kineto/auto'; const before=Object.keys(Auto.registry).length; await Auto.loadModules(['slider','canvasEffect']); console.log(JSON.stringify({before,after:Object.keys(Auto.registry).sort()}))"
+  ], { cwd: temp, encoding: 'utf8' }));
+  assert.deepEqual(onDemand, { before: 0, after: ['canvasEffect', 'slider'] });
+  // Every ESM entry shares one Kineto instance, so a page that imports the
+  // full runtime and a React/Vue adapter (which imports /auto) loads it once.
   const entries = JSON.parse(execFileSync(process.execPath, [
     '--input-type=module',
     '--eval',
-    "import Auto from '@dong-gri/kineto/auto'; import Default from '@dong-gri/kineto'; import All from '@dong-gri/kineto/all'; const before=Object.keys(Auto.registry).length; await Auto.loadModules(['slider','canvasEffect']); console.log(JSON.stringify({before,after:Object.keys(Auto.registry).sort(),same:Default===All,full:Object.keys(All.registry).length}))"
+    "import Auto from '@dong-gri/kineto/auto'; import Default from '@dong-gri/kineto'; import All from '@dong-gri/kineto/all'; import Core from '@dong-gri/kineto/core'; console.log(JSON.stringify({same:Default===All&&All===Auto&&Auto===Core,full:Object.keys(All.registry).length}))"
   ], { cwd: temp, encoding: 'utf8' }));
-  assert.deepEqual(entries, { before: 0, after: ['canvasEffect', 'slider'], same: true, full: moduleCount });
+  assert.deepEqual(entries, { same: true, full: moduleCount });
 
   const cssPath = execFileSync(process.execPath, [
     '--input-type=commonjs',

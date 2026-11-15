@@ -7604,12 +7604,12 @@
     "./react": {
       "runtime": "adapter",
       "types": "react",
-      "summary": "React hooks and components over ./all."
+      "summary": "React hooks and components over ./auto: a component imports its module on first use. Shares the one core with every ESM entry."
     },
     "./vue": {
       "runtime": "adapter",
       "types": "vue",
-      "summary": "Vue plugin and components over ./all."
+      "summary": "Vue plugin and components over ./auto: a component imports its module on first use. Shares the one core with every ESM entry."
     },
     "./jquery": {
       "runtime": "adapter",

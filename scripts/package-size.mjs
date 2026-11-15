@@ -272,8 +272,13 @@ const BUDGET = {
   // packed / 2091.6 KB unpacked on 88 files; unpacked keeps ~1% headroom → 2112.
   // 2026-09-27 (audit fixes on top of the entry points): 2157.0 KB, same
   // 88 files; ~1% headroom → 2179.
+  // 2026-11-15 (one shared modular core: `/all` and the default entry resolve
+  // to dist/modular/all.js): 2151.2 KB unpacked on 96 files — all.js plus seven
+  // chunks for modules both all.js and their own entry import (loadingIndicator,
+  // stylize, cursor, canvasEffect, cardGlow, squircle, states). No code is
+  // duplicated; the module entries became thin re-exports of those chunks.
   unpackedKb: 2179,
-  files: 88
+  files: 96
 };
 
 console.log(`release package: ${packedKb.toFixed(1)} KB packed · ${unpackedKb.toFixed(1)} KB unpacked · ${files.length} files`);
@@ -300,6 +305,7 @@ const required = [
   'dist/kineto.umd.min.js',
   'dist/modular/core.js',
   'dist/modular/auto.js',
+  'dist/modular/all.js',
   'dist/kineto.default.js',
   'dist/modular/states.js',
   'dist/modular/presence.js',

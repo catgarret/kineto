@@ -1,6 +1,8 @@
 import type { ElementType, ForwardRefExoticComponent, HTMLAttributes, ReactNode, RefAttributes, RefObject } from 'react';
 import type { KinetoInstance, KinetoOptions, KinetoPresenceController, KinetoPresenceOptions, KinetoPresenceResult, KinetoPresenceStatus } from './index.js';
-import Kineto from './index.js';
+// The adapters use the on-demand entry (it shares one core with every ESM
+// entry): call `await Kineto.loadModules('tilt')` before `Kineto.tilt(…)`.
+import Kineto from './auto.js';
 
 export interface UseKinetoResult<T extends HTMLElement = HTMLElement> {
   ref: RefObject<T | null>;
