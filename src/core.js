@@ -689,25 +689,26 @@ function injectCSSFallback() {
   if (typeof document === 'undefined' || document.getElementById('kineto-inline-fallback')) return;
   const style = document.createElement('style');
   style.id = 'kineto-inline-fallback';
-  style.textContent = `
-    @property --kt-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
-    @keyframes kt-border-spin { to { --kt-angle: 360deg; } }
-    @keyframes kt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    @keyframes kt-aurora { to { transform: rotate(360deg); } }
-    @keyframes kt-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }
-    @keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-    .kt-cursor-active, .kt-cursor-active * { cursor: none !important; }
-    .kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }
-    .kt-cursor-active :is(${NATIVE_POINTER_FIELDS}), .kt-cursor-scope :is(${NATIVE_POINTER_FIELDS}),
-    .kt-cursor-active [data-kt-cursor-hide], .kt-cursor-active [data-kt-cursor-hide] *,
-    .kt-cursor-scope [data-kt-cursor-hide], .kt-cursor-scope [data-kt-cursor-hide] * { cursor: auto !important; }
-    .kt-tw-caret { animation: kt-caret .8s step-end infinite; }
-    .kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }
-    .kt-slider-wrap { position: relative; overflow: hidden; }
-    @media (prefers-reduced-motion: reduce) {
-      [data-kt-reveal], [data-kt-text-split], [data-kt-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }
-    }
-  `;
+  // One rule per string, joined without the indentation a template literal kept.
+  style.textContent = [
+    `@property --kt-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }`,
+    `@keyframes kt-border-spin { to { --kt-angle: 360deg; } }`,
+    `@keyframes kt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`,
+    `@keyframes kt-aurora { to { transform: rotate(360deg); } }`,
+    `@keyframes kt-aurora-drift { 0% { transform: translate3d(-3%,-2%,0) scale(1.06); } 100% { transform: translate3d(3%,2%,0) scale(1.12); } }`,
+    `@keyframes kt-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }`,
+    `.kt-cursor-active, .kt-cursor-active * { cursor: none !important; }`,
+    `.kt-cursor-scope, .kt-cursor-scope * { cursor: none !important; }`,
+    `.kt-cursor-active :is(${NATIVE_POINTER_FIELDS}), .kt-cursor-scope :is(${NATIVE_POINTER_FIELDS}),`,
+    `.kt-cursor-active [data-kt-cursor-hide], .kt-cursor-active [data-kt-cursor-hide] *,`,
+    `.kt-cursor-scope [data-kt-cursor-hide], .kt-cursor-scope [data-kt-cursor-hide] * { cursor: auto !important; }`,
+    `.kt-tw-caret { animation: kt-caret .8s step-end infinite; }`,
+    `.kt-slide { position: relative; flex: 0 0 100%; min-width: 0; }`,
+    `.kt-slider-wrap { position: relative; overflow: hidden; }`,
+    `@media (prefers-reduced-motion: reduce) {`,
+    `[data-kt-reveal], [data-kt-text-split], [data-kt-blur-text] { opacity: 1 !important; transform: none !important; filter: none !important; }`,
+    `}`,
+  ].join('');
   document.head.appendChild(style);
 }
 

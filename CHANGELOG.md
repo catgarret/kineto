@@ -7,12 +7,14 @@
 <!-- Add matching English release bullets here. -->
 
 - **Lazy is 42% smaller in the modular build** (gzip 16.6 → 9.7 KB on top of `/core`). It no longer carries the dither/ASCII/halftone renderer: its deprecated `dither` / `ascii` / `halftone` aliases now render through the Stylize module, which provides the renderer when it loads. The full builds (default, `/all`, UMD) always include Stylize, so nothing changes there; `/auto` loads Stylize the first time an alias is used; a `/core` page that uses an alias imports `@dong-gri/kineto/modules/stylize` as well, and without it the picture shows unstyled. The shared media helpers moved to `src/modules/media/common.js`.
+- Smaller full bundle with identical behaviour (UMD −3.9 KB raw, −0.3 KB gzip; Counter, Loader, Loading Indicator and Overflow Text modules each about 0.2 KB gzip lighter). Loader, Loading Indicator, Overflow Text and Lazy restore attributes through the shared `snapshotAttributes()`, which also removes the empty `style=""` some engines leave behind; the flip counter and the flip clock build their tiles with one function (the DOM is byte-identical); Text Transition and Overflow Text share their dissolve keyframes; Lazy's four reveal loops share one pausable clock; local copies of `clamp`/`lerp` are gone.
 
 ### 한국어
 
 <!-- 위 영문과 대응하는 한국어 릴리스 항목을 여기에 추가합니다. -->
 
 - **모듈형 빌드에서 Lazy가 42% 작아졌습니다**(`/core` 위 gzip 16.6 → 9.7 KB). Lazy는 더 이상 dither·ASCII·halftone 렌더러를 싣지 않습니다. 폐기 예정 별칭 `dither`·`ascii`·`halftone`은 이제 Stylize 모듈이 로드될 때 제공하는 렌더러로 그립니다. 전체 빌드(기본, `/all`, UMD)는 Stylize를 항상 포함하므로 달라지는 것이 없고, `/auto`는 별칭을 처음 쓸 때 Stylize를 불러오며, 별칭을 쓰는 `/core` 페이지는 `@dong-gri/kineto/modules/stylize`도 import해야 합니다(없으면 원본 이미지를 그대로 표시). 공용 미디어 헬퍼는 `src/modules/media/common.js`로 옮겼습니다.
+- 동작은 그대로 두고 전체 번들을 줄였습니다(UMD 원본 −3.9 KB, gzip −0.3 KB; Counter·Loader·Loading Indicator·Overflow Text 모듈이 각각 gzip 약 0.2 KB 가벼워짐). Loader·Loading Indicator·Overflow Text·Lazy는 공용 `snapshotAttributes()`로 속성을 복원하며, 일부 엔진이 남기던 빈 `style=""`도 지웁니다. 플립 카운터와 플립 시계는 타일을 한 함수로 만들고(DOM은 바이트 단위로 동일), Text Transition과 Overflow Text는 dissolve 키프레임을 공유하며, Lazy의 리빌 루프 네 개는 일시정지 가능한 시계 하나를 공유합니다. 모듈 안의 `clamp`/`lerp` 복사본은 없앴습니다.
 
 ## [0.14.1] - 2026-11-15
 

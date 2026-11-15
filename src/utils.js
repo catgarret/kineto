@@ -123,6 +123,27 @@ export function lerp(a, b, t) {
   return a + (b - a) * t;
 }
 
+/**
+ * Per-character noisy dissolve keyframes shared by Text Transition and Overflow
+ * Text: a random jitter plus stepped opacity flicker (no blur — it reads as a
+ * glow on coloured text). Each call draws a new jitter.
+ */
+export function dissolveFrames(entering, jitterAmp) {
+  const jx = (Math.random() - 0.5) * jitterAmp * 2;
+  const jy = (Math.random() - 0.5) * jitterAmp * 1.4;
+  return entering ? [
+    { opacity: 0, transform: `translate(${jx}px,${jy}px)` },
+    { opacity: 0.85, transform: `translate(${(-jx * 0.6).toFixed(1)}px,${(-jy * 0.6).toFixed(1)}px)`, offset: 0.45 },
+    { opacity: 0.3, transform: `translate(${(jx * 0.4).toFixed(1)}px,${(jy * 0.3).toFixed(1)}px)`, offset: 0.62 },
+    { opacity: 1, transform: 'translate(0,0)' }
+  ] : [
+    { opacity: 1, transform: 'translate(0,0)' },
+    { opacity: 0.25, transform: `translate(${(jx * 0.5).toFixed(1)}px,${(jy * 0.4).toFixed(1)}px)`, offset: 0.35 },
+    { opacity: 0.8, transform: `translate(${(-jx * 0.4).toFixed(1)}px,${(-jy * 0.5).toFixed(1)}px)`, offset: 0.55 },
+    { opacity: 0, transform: `translate(${jx}px,${jy}px)` }
+  ];
+}
+
 export function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
